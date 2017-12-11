@@ -62,9 +62,16 @@ public class OpenObjectConsoleHandler extends AbstractHandler {
             }
         }
         DBRRunnableWithResult<String> generator = GenerateSQLContributor.SELECT_GENERATOR(entities, true);
+        openConsole(workbenchWindow, generator, ds, "Query", true);
+        return null;
+    }
+
+
+    protected void openConsole(IWorkbenchWindow workbenchWindow, DBRRunnableWithResult<String> generator,
+                               DBPDataSourceContainer ds, String title, boolean doRun) {
         DBeaverUI.runInUI(workbenchWindow, generator);
         String sql = generator.getResult();
-        SQLEditor editor = OpenHandler.openSQLConsole(workbenchWindow, ds, "Query", sql);
+        SQLEditor editor = OpenHandler.openSQLConsole(workbenchWindow, ds, title, sql);
         if (editor != null) {
             AbstractJob execJob = new AbstractJob("Execute SQL in console") {
 
@@ -87,14 +94,14 @@ public class OpenObjectConsoleHandler extends AbstractHandler {
                     DBeaverUI.syncExec(new Runnable() {
                         @Override
                         public void run() {
-                            editor.processSQL(false, false);
+                            if (doRun) {
+                                editor.processSQL(false, false);
+                            }
                         }
                     });
                 }
             });
             execJob.schedule();
         }
-        return null;
     }
-
 }

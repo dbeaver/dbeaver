@@ -46,11 +46,12 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.model.sql.SQLDataSource;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
-import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -823,52 +824,11 @@ public class GenerateSQLContributor extends CompoundContributionItem {
             @Override
             protected void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, DBSProcedure proc) throws DBException {
                 Collection<? extends DBSProcedureParameter> parameters = proc.getParameters(monitor);
-                List<DBSProcedureParameter> inParameters = new ArrayList<>();
-                int maxParamLength = 0;
-                for (DBSProcedureParameter param : parameters) {
-                    if (param.getParameterKind() == DBSProcedureParameterKind.IN) {
-                        inParameters.add(param);
-                        if (param.getName().length() > maxParamLength) {
-                            maxParamLength = param.getName().length();
-                        }
-                    }
-                }
-
-                String dbName = proc.getDataSource().getInfo().getDatabaseProductName();
-                String schemaName;
-                switch (dbName) {
-                    case "Microsoft SQL Server":
-                        schemaName = proc.getContainer().getParentObject().getName();
-                        sql.append("USE [" + schemaName + "]\n");
-                        sql.append("GO\n\n");
-                        sql.append("DECLARE	@return_value int\n\n");
-                        sql.append("EXEC\t@return_value = [" + proc.getContainer().getName() +"].[" + proc.getName() + "]\n");
-                        for (int i = 0; i < inParameters.size(); i++) {
-                            String name = inParameters.get(i).getName();
-                            sql.append("\t\t" + name + " = ?");
-                            if (i < (inParameters.size() - 1)) {
-                                sql.append(", ");
-                            } else {
-                                sql.append(" ");
-                            }
-                            sql.append(CommonUtils.fixedLengthString("-- put the " + name + " parameter value instead of ?\n", (maxParamLength + 50) - name.length()/2));
-                        }
-                        sql.append("\nSELECT\t'Return Value' = @return_value\n\n");
-                        sql.append("GO\n\n");
-                        return;
-                default:
-                    schemaName = proc.getParentObject().getName();
-                    sql.append(("Oracle".equalsIgnoreCase(dbName) ? "CALL " + schemaName + "." : "select ") + proc.getName() + "(\n");
-                    for (int i = 0; i < inParameters.size(); i++) {
-                        sql.append("\t\t\t?");
-                        if (i < (inParameters.size() - 1)) {
-                            sql.append(",");
-                        } else {
-                            sql.append(" ");
-                        }
-                        sql.append("\t-- put the " + inParameters.get(i).getName() + " parameter value instead of ?\n");
-                    }
-                    sql.append(");\n\n");
+                DBPDataSource dataSource = proc.getDataSource();
+                if (dataSource instanceof SQLDataSource) {
+                    SQLDataSource sqlDataSource = (SQLDataSource) dataSource;
+                    SQLDialect sqlDialect = sqlDataSource.getSQLDialect();
+                    sqlDialect.generateStoredProcedureCall(sql, proc, parameters);
                 }
             }
         };
