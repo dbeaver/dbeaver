@@ -37,11 +37,12 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.generator.GenerateSQLContributor;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class RunProcedureConsoleHandler extends AbstractHandler {
+public class RunProcedureConsoleHandler extends OpenObjectConsoleHandler {
 
     public RunProcedureConsoleHandler()
     {
@@ -52,50 +53,27 @@ public class RunProcedureConsoleHandler extends AbstractHandler {
     {
         IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
         DBPDataSourceContainer ds = null;
+        String procName = null;
 
-        List<DBSObject> selectedObjects = NavigatorUtils.getSelectedObjects(
-            HandlerUtil.getCurrentSelection(event));
+        List<DBSObject> selectedObjects = NavigatorUtils.getSelectedObjects(HandlerUtil.getCurrentSelection(event));
         List<DBSProcedure> entities = new ArrayList<>();
         for (DBSObject object : selectedObjects) {
             if (object instanceof DBSProcedure) {
-                entities.add((DBSProcedure) object);
+                DBSProcedure proc = (DBSProcedure) object;
+                procName = proc.getName();
+                entities.add(proc);
                 ds = object.getDataSource().getContainer();
             }
         }
-        DBRRunnableWithResult<String> generator = GenerateSQLContributor.CALL_GENERATOR(entities);
-        DBeaverUI.runInUI(workbenchWindow, generator);
-        String sql = generator.getResult();
-        SQLEditor editor = OpenHandler.openSQLConsole(workbenchWindow, ds, "Query", sql);
-        if (editor != null) {
-            AbstractJob execJob = new AbstractJob("Execute SQL in console") {
 
-                @Override
-                protected IStatus run(DBRProgressMonitor monitor) {
-                    // If we open new connection for each editor it may take some time
-                    // So let's give it a chance and wait for 10 seconds
-                    for (int i = 0; i < 100; i++) {
-                        if (editor.getExecutionContext() != null) {
-                            break;
-                        }
-                        RuntimeUtils.pause(100);
-                    }
-                    return Status.OK_STATUS;
-                }
-            };
-            execJob.addJobChangeListener(new JobChangeAdapter() {
-                @Override
-                public void done(IJobChangeEvent event) {
-                    DBeaverUI.syncExec(new Runnable() {
-                        @Override
-                        public void run() {
-//                            editor.processSQL(false, false); TODO
-                        }
-                    });
-                }
-            });
-            execJob.schedule();
+        DBRRunnableWithResult<String> generator = GenerateSQLContributor.CALL_GENERATOR(entities);
+
+        String title = "Stored procedures call";
+        if (entities.size() == 1 && !CommonUtils.isEmpty(procName)) {
+            title = procName + " call";
         }
+
+        openConsole(workbenchWindow, generator, ds, title, false);
         return null;
     }
-
 }

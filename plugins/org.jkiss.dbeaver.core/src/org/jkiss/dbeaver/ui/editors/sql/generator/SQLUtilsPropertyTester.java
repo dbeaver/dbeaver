@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.ui.editors.sql.generator;
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchPart;
-import org.jkiss.dbeaver.model.impl.struct.AbstractProcedure;
+import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.registry.tools.ToolsRegistry;
@@ -65,8 +65,10 @@ public class SQLUtilsPropertyTester extends PropertyTester
             }
             case PROP_IS_PROCEDURE: {
                 DBSObject object = NavigatorUtils.getSelectedObject(structuredSelection);
-                return object instanceof DBSProcedure;
-//                        && "Microsoft SQL Server".equals(object.getDataSource().getInfo().getDatabaseProductName());
+                return object != null &&
+                        object instanceof DBSProcedure &&
+                        object.getDataSource() != null &&
+                        object.getDataSource() instanceof SQLDataSource;
             }
         }
         return false;
