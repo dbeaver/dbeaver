@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -41,21 +42,21 @@ public class HANAMetaModel extends GenericMetaModel
 
     public String getViewDDL(DBRProgressMonitor monitor, GenericTable sourceObject, Map<String, Object> options) throws DBException {
         GenericDataSource dataSource = sourceObject.getDataSource();
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read Netezza view source")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read HANA view source")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT v.definition " +
-                "FROM _v_view v, _v_objs_owned o " +
-                "WHERE v.objid = o.objid AND o.DATABASE=? AND v.VIEWNAME=?"))
+                "SELECT DEFINITION\n" +
+                    "FROM SYS.VIEWS\n" +
+                    "WHERE SCHEMA_NAME=? and VIEW_NAME=?"))
             {
                 dbStat.setString(1, sourceObject.getContainer().getName());
                 dbStat.setString(2, sourceObject.getName());
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.nextRow()) {
                         return
-                            "CREATE OR REPLACE VIEW " + sourceObject.getName() + " AS\n" +
+                            "CREATE VIEW " + sourceObject.getFullyQualifiedName(DBPEvaluationContext.DDL) + " AS\n" +
                             dbResult.getString(1);
                     }
-                    return "-- Netezza view definition not found";
+                    return "-- HANA view definition not found";
                 }
             }
         } catch (SQLException e) {
@@ -66,21 +67,18 @@ public class HANAMetaModel extends GenericMetaModel
     @Override
     public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
         GenericDataSource dataSource = sourceObject.getDataSource();
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read Netezza procedure source")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read HANA procedure source")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT p.proceduresignature,p.returns,p.proceduresource " +
-                "FROM _v_procedure p " +
-                "WHERE p.owner=? AND p.procedure=?"))
+                "SELECT SCHEMA_NAME,PROCEDURE_NAME,DEFINITION FROM SYS.PROCEDURES\n" +
+                    "WHERE SCHEMA_NAME = ? and PROCEDURE_NAME = ?"))
             {
                 dbStat.setString(1, sourceObject.getContainer().getName());
                 dbStat.setString(2, sourceObject.getName());
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.nextRow()) {
-                        return
-                            "CREATE OR REPLACE PROCEDURE " + dbResult.getString(1) + " RETURNS " + dbResult.getString(2) +
-                            "LANGUAGE NZPLSQL AS BEGIN_PROC\n" + dbResult.getString(3) + "\nEND_PROC;";
+                        return dbResult.getString(3);
                     }
-                    return "-- Netezza procedure source not found";
+                    return "-- HANA procedure source not found";
                 }
             }
         } catch (SQLException e) {
