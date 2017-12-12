@@ -103,7 +103,7 @@
             class="org.jkiss.dbeaver.ui.editors.sql.generator.SQLUtilsPropertyTester"
             id="org.jkiss.dbeaver.ui.editors.sql.generator.SQLUtilsPropertyTester"
             namespace="org.jkiss.dbeaver.ui.editors.sql.util"
-            properties="canGenerate,hasTools,isProcedure"
+            properties="canGenerate,hasTools"
             type="org.eclipse.ui.IWorkbenchPart"/>
         <propertyTester
             class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetPropertyTester"
@@ -1007,10 +1007,14 @@
             </enabledWhen>
         </handler>
         <handler commandId="command.org.jkiss.dbeaver.core.procedure.execute" class="org.jkiss.dbeaver.ui.editors.sql.handlers.RunProcedureConsoleHandler">
-            <parameter
-                    name="org.jkiss.dbeaver.core.resource.link.file.contenttype"
-                    value="org.jkiss.dbeaver.sql">
-            </parameter>
+            <enabledWhen>
+                <with variable="selection">
+                    <count value="+"/>
+                    <iterate operator="and">
+                        <adapt type="org.jkiss.dbeaver.model.struct.rdb.DBSProcedure"/>
+                    </iterate>
+                </with>
+            </enabledWhen>
         </handler>
 
         <handler commandId="org.jkiss.dbeaver.ui.editors.sql.rename" class="org.jkiss.dbeaver.ui.editors.sql.handlers.RenameHandler">
@@ -2091,11 +2095,7 @@
             <command
                   commandId="command.org.jkiss.dbeaver.core.procedure.execute"
                   label="%command.org.jkiss.dbeaver.core.procedure.execute.name">
-                <visibleWhen>
-                    <with variable="activePart">
-                        <test property="org.jkiss.dbeaver.ui.editors.sql.util.isProcedure"/>
-                    </with>
-                </visibleWhen>
+                <visibleWhen checkEnabled="true"/>
             </command>
             <command
                   commandId="org.jkiss.dbeaver.core.sql.editor.forSelection"
@@ -2730,6 +2730,7 @@
             <adapter type="org.jkiss.dbeaver.model.struct.DBSObject"/>
             <adapter type="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
             <adapter type="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
+            <adapter type="org.jkiss.dbeaver.model.struct.rdb.DBSProcedure"/>
             <adapter type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
             <adapter type="org.jkiss.dbeaver.model.DBPObject"/>
             <adapter type="org.eclipse.ui.views.properties.IPropertySource"/>

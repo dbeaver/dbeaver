@@ -542,7 +542,7 @@ public class BasicSQLDialect implements SQLDialect {
 
     // first line of the call stored procedure SQL (to be overridden)
     protected String getStoredProcedureCallInitialClause(DBSProcedure proc) {
-        return "select " + proc.getName() + "(\n";
+        return "select " + proc.getFullyQualifiedName(DBPEvaluationContext.DML) + "(\n";
     }
 
     @Override
