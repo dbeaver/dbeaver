@@ -58,17 +58,6 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
 
     private static final Log log = Log.getLog(PostgreSchema.class);
     
-    private static final String TABLE_CHILD_ID = "PostgreSchema.TABLE_CHILD";
-    
-    private static final String SQL_CHILDTABLE_QUERY =
-        "SELECT c.relname,a.*,pg_catalog.pg_get_expr(ad.adbin, ad.adrelid, true) as def_value,dsc.description" +
-        "\nFROM pg_catalog.pg_attribute a" +
-        "\nINNER JOIN pg_catalog.pg_class c ON (a.attrelid=c.oid)" +
-        "\nLEFT OUTER JOIN pg_catalog.pg_attrdef ad ON (a.attrelid=ad.adrelid AND a.attnum = ad.adnum)" +
-        "\nLEFT OUTER JOIN pg_catalog.pg_description dsc ON (c.oid=dsc.objoid AND a.attnum = dsc.objsubid)" +
-        "\nWHERE NOT a.attisdropped AND c.oid=? ORDER BY a.attnum";
-
-
     private final PostgreDatabase database;
     private long oid;
     private String name;
@@ -480,16 +469,12 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
         		return prepareChildrenStatement(session,owner);
         	}
         	
-/*
-        	JDBCPreparedStatementCachedImpl dbStat;
-        	
-        	dbStat = database.statmentCache.get(TABLE_CHILD_ID);
-        	if (dbStat == null) {
-        		dbStat = new JDBCPreparedStatementCachedImpl((JDBCPreparedStatementImpl) session.prepareStatement(SQL_CHILDTABLE_QUERY));
-        		database.statmentCache.put(TABLE_CHILD_ID, dbStat);
-        	}
-*/
-            JDBCPreparedStatement dbStat = session.prepareStatement(SQL_CHILDTABLE_QUERY);
+            JDBCPreparedStatement dbStat = session.prepareStatement("SELECT c.relname,a.*,pg_catalog.pg_get_expr(ad.adbin, ad.adrelid, true) as def_value,dsc.description" +
+                "\nFROM pg_catalog.pg_attribute a" +
+                "\nINNER JOIN pg_catalog.pg_class c ON (a.attrelid=c.oid)" +
+                "\nLEFT OUTER JOIN pg_catalog.pg_attrdef ad ON (a.attrelid=ad.adrelid AND a.attnum = ad.adnum)" +
+                "\nLEFT OUTER JOIN pg_catalog.pg_description dsc ON (c.oid=dsc.objoid AND a.attnum = dsc.objsubid)" +
+                "\nWHERE NOT a.attisdropped AND c.oid=? ORDER BY a.attnum");
         	dbStat.setLong(1, forTable.getObjectId());
             return dbStat;
         }
