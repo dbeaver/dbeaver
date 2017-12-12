@@ -36,7 +36,6 @@ public class SQLUtilsPropertyTester extends PropertyTester
     public static final String NAMESPACE = "org.jkiss.dbeaver.ui.editors.sql.util";
     public static final String PROP_CAN_GENERATE = "canGenerate";
     public static final String PROP_HAS_TOOLS = "hasTools";
-    public static final String PROP_IS_PROCEDURE = "isProcedure";
 
     public SQLUtilsPropertyTester() {
         super();
@@ -62,13 +61,6 @@ public class SQLUtilsPropertyTester extends PropertyTester
             case PROP_HAS_TOOLS: {
                 DBSObject object = NavigatorUtils.getSelectedObject(structuredSelection);
                 return object != null && !CommonUtils.isEmpty(ToolsRegistry.getInstance().getTools(structuredSelection));
-            }
-            case PROP_IS_PROCEDURE: {
-                DBSObject object = NavigatorUtils.getSelectedObject(structuredSelection);
-                return object != null &&
-                        object instanceof DBSProcedure &&
-                        object.getDataSource() != null &&
-                        object.getDataSource() instanceof SQLDataSource;
             }
         }
         return false;
