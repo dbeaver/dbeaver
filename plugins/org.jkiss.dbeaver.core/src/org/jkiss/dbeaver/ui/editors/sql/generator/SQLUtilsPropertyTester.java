@@ -19,7 +19,9 @@ package org.jkiss.dbeaver.ui.editors.sql.generator;
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchPart;
+import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.registry.tools.ToolsRegistry;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetSelection;
@@ -34,6 +36,7 @@ public class SQLUtilsPropertyTester extends PropertyTester
     public static final String NAMESPACE = "org.jkiss.dbeaver.ui.editors.sql.util";
     public static final String PROP_CAN_GENERATE = "canGenerate";
     public static final String PROP_HAS_TOOLS = "hasTools";
+    public static final String PROP_IS_PROCEDURE = "isProcedure";
 
     public SQLUtilsPropertyTester() {
         super();
@@ -59,6 +62,13 @@ public class SQLUtilsPropertyTester extends PropertyTester
             case PROP_HAS_TOOLS: {
                 DBSObject object = NavigatorUtils.getSelectedObject(structuredSelection);
                 return object != null && !CommonUtils.isEmpty(ToolsRegistry.getInstance().getTools(structuredSelection));
+            }
+            case PROP_IS_PROCEDURE: {
+                DBSObject object = NavigatorUtils.getSelectedObject(structuredSelection);
+                return object != null &&
+                        object instanceof DBSProcedure &&
+                        object.getDataSource() != null &&
+                        object.getDataSource() instanceof SQLDataSource;
             }
         }
         return false;
