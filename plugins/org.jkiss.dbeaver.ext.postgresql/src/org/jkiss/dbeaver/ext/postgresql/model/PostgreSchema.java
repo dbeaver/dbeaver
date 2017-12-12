@@ -413,10 +413,7 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
         @Override
         public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull PostgreSchema postgreSchema, @Nullable PostgreTableBase object, @Nullable String objectName) throws SQLException {
             final JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT c.oid,c.*,d.description,(select array_agg(i.inhparent) from pg_catalog.pg_inherits i where i.inhrelid = c.oid) parents\n"+
-//FIXME   pg_get_expr(relpartbound,c.oid) - partition condition (for properties)
-//valid only in Postgres 10 and above
-                //",pg_get_expr(relpartbound,c.oid) partexpr\n"+
+                "SELECT c.oid,c.*,d.description\n"+
                 "FROM pg_catalog.pg_class c\n" +
                 "LEFT OUTER JOIN pg_catalog.pg_description d ON d.objoid=c.oid AND d.objsubid=0\n" +
                 "WHERE c.relnamespace=? AND c.relkind not in ('i','c')" +
@@ -432,10 +429,6 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
             throws SQLException, DBException
         {
             final String kindString = JDBCUtils.safeGetString(dbResult, "relkind");
-            final Long[] parents = JDBCUtils.safeGetArray(dbResult, "parents");
-            /*if (parents != null) {
-            	return null;
-            }*/
             PostgreClass.RelKind kind;
             try {
                 kind = PostgreClass.RelKind.valueOf(kindString);
