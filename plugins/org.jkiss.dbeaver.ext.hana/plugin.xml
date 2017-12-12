@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.generic.meta">
+        <meta id="netezza" class="org.jkiss.dbeaver.ext.hana.model.HANAMetaModel" driverClass="com.sap.db.jdbc.Driver"/>
+    </extension>
+
+</plugin>
