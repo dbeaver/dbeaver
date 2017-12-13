@@ -850,10 +850,12 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                             statementStart++;
                         }
                         // remove trailing spaces
+/*
                         while (statementStart < tokenOffset && Character.isWhitespace(document.getChar(tokenOffset - 1))) {
                             tokenOffset--;
                             tokenLength++;
                         }
+*/
                         if (tokenOffset == statementStart) {
                             // Empty statement
                             if (token.isEOF()) {
@@ -879,7 +881,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                         // make script line
                         return new SQLQuery(
                             getDataSource(),
-                            queryText.trim(),
+                            queryText,
                             statementStart,
                                 queryEndPos - statementStart);
                     } catch (BadLocationException ex) {
