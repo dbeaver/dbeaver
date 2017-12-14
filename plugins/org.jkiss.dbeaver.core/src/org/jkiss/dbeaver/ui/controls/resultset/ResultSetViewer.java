@@ -2168,12 +2168,15 @@ public class ResultSetViewer extends Viewer
                     "] columns differs from referenced constraint [" + refConstraint.getName() + "] (" + ownAttrs.size() + "<>" + refAttrs.size() + ")");
         }
         // Add association constraints
-        for (DBSEntityAttributeRef ownAttr : ownAttrs) {
+        for (int i = 0; i < refAttrs.size(); i++) {
+            DBSEntityAttributeRef refAttr = refAttrs.get(i);
 
-            DBDAttributeBinding attrBinding = model.getAttributeBinding(ownAttr.getAttribute());
+            DBDAttributeBinding attrBinding = model.getAttributeBinding(refAttr.getAttribute());
             if (attrBinding == null) {
-                log.error("Can't find attribute binding for ref attribute '" + ownAttr.getAttribute().getName() + "'");
+                log.error("Can't find attribute binding for ref attribute '" + refAttr.getAttribute().getName() + "'");
             } else {
+                // Constrain use corresponding own attr
+                DBSEntityAttributeRef ownAttr = ownAttrs.get(i);
                 DBDAttributeConstraint constraint = new DBDAttributeConstraint(ownAttr.getAttribute(), visualPosition++);
                 constraint.setVisible(true);
                 constraints.add(constraint);
