@@ -196,7 +196,7 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
     {
         return tableCache.getTypedObjects(monitor, this, PostgreTable.class)
         		.stream()
-        		.filter(table -> table.getParents() == null)
+        		.filter(table -> !table.isPartition())
         		.collect(Collectors.toCollection(ArrayList::new));
     }
 
