@@ -450,14 +450,13 @@ public class SQLQueryJob extends DataSourceJob
                         break;
                     }
                 }
-
+            }
+            finally {
                 try {
-                    curResult.setWarnings(dbcStatement.getStatementWarnings());
+                    curResult.addWarnings(dbcStatement.getStatementWarnings());
                 } catch (Throwable e) {
                     log.warn("Can't read execution warnings", e);
                 }
-            }
-            finally {
                 //monitor.subTask("Close query");
                 if (!keepStatementOpen()) {
                     closeStatement();
