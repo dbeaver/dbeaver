@@ -85,6 +85,10 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
         return foreignKeys;
     }
 
+    public boolean isTablespaceSpecified() {
+        return tablespaceId != 0;
+    }
+
     @Property(viewable = true, order = 20)
     public PostgreTablespace getTablespace(DBRProgressMonitor monitor) throws DBException {
         if (tablespaceId == 0) {

@@ -117,7 +117,17 @@ public class PostgreTableManager extends SQLTableManager<PostgreTableBase, Postg
                     }
                     ddl.append(")");
                 }
-                ddl.append("\nWITH (\n\tOIDS=").append(table.isHasOids() ? "TRUE" : "FALSE").append("\n)");
+                ddl.append("\nWITH (\n\tOIDS=").append(table.isHasOids() ? "TRUE" : "FALSE");
+                ddl.append("\n)");
+                boolean hasOtherSpecs = false;
+                PostgreTablespace tablespace = table.getTablespace(monitor);
+                if (tablespace != null && table.isTablespaceSpecified()) {
+                    ddl.append("\nTABLESPACE ").append(tablespace.getName());
+                    hasOtherSpecs = true;
+                }
+                if (hasOtherSpecs) {
+                    ddl.append("\n");
+                }
             } catch (DBException e) {
                 log.error(e);
             }
