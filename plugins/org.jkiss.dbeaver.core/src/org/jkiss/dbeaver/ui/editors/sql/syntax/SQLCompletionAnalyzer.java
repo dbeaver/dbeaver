@@ -635,7 +635,7 @@ class SQLCompletionAnalyzer
             replaceString.length(), //cursorPosition the position of the cursor following the insert
                                 // relative to replacementOffset
             img, //image to display
-            new ContextInformation(img, displayString, displayString), //the context information associated with this proposal
+            null,//new ContextInformation(img, displayString, displayString), //the context information associated with this proposal
             proposalType,
             null,
             object);
@@ -654,7 +654,7 @@ class SQLCompletionAnalyzer
             replaceString, // replacementString
             replaceString.length(), //cursorPosition the position of the cursor following the insert
             null, //image to display
-            new ContextInformation(null, displayString, displayString), //the context information associated with this proposal
+            null,//new ContextInformation(null, displayString, displayString), //the context information associated with this proposal
             proposalType,
             description,
             null);
