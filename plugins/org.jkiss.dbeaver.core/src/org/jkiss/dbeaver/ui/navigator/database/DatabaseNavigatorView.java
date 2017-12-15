@@ -26,6 +26,9 @@ import org.jkiss.dbeaver.model.navigator.DBNEmptyNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSequence;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -40,12 +43,12 @@ public class DatabaseNavigatorView extends NavigatorViewBase implements DBPProje
 
     @Override
     protected IFilter getNavigatorFilter() {
-        return new IFilter() {
-            @Override
-            public boolean select(Object element) {
-                return !(element instanceof DBNDatabaseItem) ||
-                       !(((DBNDatabaseItem) element).getObject() instanceof DBSEntity);
+        return element -> {
+            if (!(element instanceof DBNDatabaseItem)) {
+                return true;
             }
+            DBSObject object = ((DBNDatabaseItem) element).getObject();
+            return !(object instanceof DBSEntity) && !(object instanceof DBSProcedure) && !(object instanceof DBSSequence);
         };
     }
 
