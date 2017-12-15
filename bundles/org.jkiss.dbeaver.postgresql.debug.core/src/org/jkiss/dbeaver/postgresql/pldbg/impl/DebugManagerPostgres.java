@@ -22,10 +22,15 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.jkiss.dbeaver.postgresql.pldbg.DebugException;
+import org.jkiss.dbeaver.postgresql.pldbg.DebugObject;
 import org.jkiss.dbeaver.postgresql.pldbg.DebugSession;
+import org.jkiss.dbeaver.postgresql.pldbg.SessionInfo;
 import org.jkiss.dbeaver.postgresql.pldbg.control.DebugManager;
 
 /**
@@ -46,29 +51,45 @@ public class DebugManagerPostgres implements DebugManager<Integer,Integer> {
 											 "	 join pg_user u on u.usesysid =   p.proowner "+
 											 "	 join pg_language l on l.oid = p. prolang "+
 											 "	where  "+
-											 "   l.lanname = 'sql' "+
+											 "   l.lanname = 'plpgsql' "+
 											 "	 and p.proname like '%?nameCtx%' "+
 											 "	 and u.usename like '%?userCtx%' "+
 											 "	order by  "+
 											 "	 n.nspname,p.proname"; 
 	
-	private static final String SQL_PID = "select pg_backend_pid() pid";
+	private static final String SQL_CURRENT_SESSION = "select pid,usename,application_name,state,query from pg_stat_activity where pid = pg_backend_pid()";
+
+	private final Map<Integer,DebugSessionPostgres> sessions = new HashMap<Integer,DebugSessionPostgres>(1);  
 
 	@Override
-	public Integer getCurrent() throws DebugException
+	public SessionInfoPostgres getCurrent() throws DebugException
 	{
-		 try (Statement stmt = connection.createStatement()) {
-			 
-			 ResultSet rs = stmt.executeQuery(SQL_PID);
-			 
-			 return rs.getInt("pid");
-			 
-			 
-		 } catch (SQLException e) {
-		        throw new DebugException(e);
-		   }
+		   try (Statement stmt = connection.createStatement()) {
+			   
+		        ResultSet rs = stmt.executeQuery(SQL_CURRENT_SESSION);
+		        
+		        if (rs.next()) {
+		        	
+		        	SessionInfoPostgres res = new SessionInfoPostgres(
+		        			rs.getInt("pid") ,
+		        			rs.getString("usename"), 
+		        			rs.getString("application_name"),
+		        			rs.getString("state"), 
+		        			rs.getString("query"));
+			        return res;
+		        }
+		        
+		        throw new DebugException("Error getting session");
+
+		        
+		    } catch (SQLException e) {
+		    	throw new DebugException(e);
+		    }
+		
 	}
 
+	
+	
 	@Override
 	public List<SessionInfoPostgres> getSessions() throws DebugException  
 	{ 
@@ -141,21 +162,39 @@ public class DebugManagerPostgres implements DebugManager<Integer,Integer> {
 	public DebugSession<SessionInfoPostgres, DebugObjectPostgres> getDebugSession(
 			Integer id) throws DebugException
 	{
-		return null;
+		return sessions.get(id);
 	}
 
 	@Override
-	public DebugSession<SessionInfoPostgres, DebugObjectPostgres> createDebugSession(
-			Integer id) throws DebugException
+	public DebugSessionPostgres createDebugSession() throws DebugException
 	{
-		return null;
+	
+		DebugSessionPostgres debugSession =  new DebugSessionPostgres(getCurrent(),connection);
+		
+		return debugSession;
+		 
 	}
 
 	@Override
 	public boolean isSessionExists(Integer id)
-	{
+	{		
+		return sessions.containsKey(id);
+	}
+
+
+
+	@Override
+	public void terminateSession(Integer id) {
 		// TODO Auto-generated method stub
-		return false;
+		
+	}
+
+
+
+	@Override
+	public List<DebugSession<?,?>> getDebugSessions()
+			throws DebugException {
+		return new ArrayList<DebugSession<?,?>>(sessions.values());
 	}
 
 

@@ -192,4 +192,12 @@ public class DebugSessionPostgres	implements DebugSession<SessionInfoPostgres, D
 		return null;
 	}
 
+
+	@Override
+	public String toString() {
+		return "DebugSessionPostgres [connection=" + connection + ", attached=" + attached + ", title=" + title
+				+ ", sessionId=" + sessionId + ", breakpoints=" + breakpoints + "]";
+	}
+
+	
 }

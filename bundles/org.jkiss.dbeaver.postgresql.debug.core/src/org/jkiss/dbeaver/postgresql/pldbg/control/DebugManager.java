@@ -23,12 +23,15 @@ import org.jkiss.dbeaver.postgresql.pldbg.DebugException;
 import org.jkiss.dbeaver.postgresql.pldbg.DebugObject;
 import org.jkiss.dbeaver.postgresql.pldbg.DebugSession;
 import org.jkiss.dbeaver.postgresql.pldbg.SessionInfo;
+import org.jkiss.dbeaver.postgresql.pldbg.impl.DebugSessionPostgres;
 
 public interface DebugManager<SESSIONID,OBJECTID> {
-    SESSIONID getCurrent() throws DebugException;
+	SessionInfo<SESSIONID> getCurrent() throws DebugException;
     List<? extends SessionInfo<SESSIONID>> getSessions() throws DebugException;
     DebugSession<? extends SessionInfo<SESSIONID>,? extends DebugObject<OBJECTID>> getDebugSession(SESSIONID id) throws DebugException;
-    DebugSession<? extends SessionInfo<SESSIONID>,? extends DebugObject<OBJECTID>> createDebugSession(SESSIONID id) throws DebugException;
+    List<DebugSession<?,?>> getDebugSessions() throws DebugException;
+    void terminateSession(SESSIONID id); 
+    DebugSession<? extends SessionInfo<SESSIONID>,? extends DebugObject<OBJECTID>> createDebugSession() throws DebugException;
     boolean isSessionExists(SESSIONID id);
     List<? extends DebugObject<OBJECTID>> getObjects(String ownerCtx, String nameCtx) throws DebugException;
 }

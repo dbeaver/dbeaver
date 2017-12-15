@@ -26,6 +26,8 @@ import org.jkiss.dbeaver.postgresql.pldbg.SessionInfo;
 @SuppressWarnings("nls")
 public class SessionInfoPostgres implements SessionInfo<Integer> {
 	
+	public static final String CREATE_LISTEN = "CREATE LISTEN";
+	
 	final int pid;
 	final String user;
 	final String application;
