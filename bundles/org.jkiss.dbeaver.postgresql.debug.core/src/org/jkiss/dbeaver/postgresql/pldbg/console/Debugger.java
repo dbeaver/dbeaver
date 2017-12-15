@@ -6,8 +6,10 @@ import java.sql.SQLException;
 import java.util.Scanner;
 
 import org.jkiss.dbeaver.postgresql.pldbg.DebugException;
+import org.jkiss.dbeaver.postgresql.pldbg.DebugSession;
 import org.jkiss.dbeaver.postgresql.pldbg.impl.DebugManagerPostgres;
 import org.jkiss.dbeaver.postgresql.pldbg.impl.DebugObjectPostgres;
+import org.jkiss.dbeaver.postgresql.pldbg.impl.DebugSessionPostgres;
 import org.jkiss.dbeaver.postgresql.pldbg.impl.SessionInfoPostgres;
 
 @SuppressWarnings("nls")
@@ -41,13 +43,15 @@ public class Debugger {
 	public static final String COMMAND_TERMINATE = "E";
 	public static final String COMMAND_SESSIONS = "W";
 	public static final String COMMAND_OBJ = "D";
+	public static final String COMMAND_NEW = "N";
+	public static final String COMMAND_DEBUG_LIST = "Q";
 	public static final String COMMAND_HELP = "?";
 	
 	public static final String ANY_ARG = "*";
 
 	public static void main(String[] args) throws DebugException {
 		
-		String url = "jdbc:postgresql://10.0.3.36/fsv_dev?user=fsv&password=fsv&ssl=false"; //"jdbc:postgresql://localhost/postgres?user=postgres&password=postgres&ssl=false";
+		String url = "jdbc:postgresql://192.168.229.133/postgres?user=postgres&password=postgres&ssl=false"; //"jdbc:postgresql://localhost/postgres?user=postgres&password=postgres&ssl=false";
 		
 		Connection conn;
 		DebugManagerPostgres pgDbgManager; 
@@ -72,6 +76,7 @@ public class Debugger {
 		    
 		    case COMMAND_HELP:
 		    	System.out.println("W Show sessions");
+		    	System.out.println("N New sessions");
 		    	System.out.println("D Show debug objects");
 				System.out.println("S Stack");
 				System.out.println("F Frame");
@@ -82,7 +87,7 @@ public class Debugger {
 				System.out.println("C Continue execution");
 				System.out.println("I Step into");
 				System.out.println("O Step over");
-				System.out.println("E Exit debugger");
+				System.out.println("E Exit debugger");				
 				System.out.println("? This help");
 				break;
 		    
@@ -123,11 +128,27 @@ public class Debugger {
 				break;
 				
 			case COMMAND_SESSIONS:
-				System.out.println("SESSIONS!!!");
 				 for (SessionInfoPostgres s : pgDbgManager.getSessions()) {
 					 System.out.println(s);
 				 }
+				break;
+				
+			case COMMAND_DEBUG_LIST:
+				if (pgDbgManager.getDebugSessions().size()==0){
+					System.out.println("no debug sessions");
+					break;
+				}
+				 for (DebugSession<?, ?> s : pgDbgManager.getDebugSessions()) {
+					 System.out.println(s);
+				 }
+				 
 				break;	
+			
+			case COMMAND_NEW:
+				DebugSessionPostgres s = pgDbgManager.createDebugSession();
+				System.out.println("created");
+				System.out.println(s);
+				break;		
 				
 			case COMMAND_OBJ:
 				String proc = ANY_ARG;
