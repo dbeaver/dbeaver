@@ -75,19 +75,25 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
 
     @Override
     public List<? extends GenericTrigger> loadTriggers(DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTable table) throws DBException {
-        assert table != null;
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container.getDataSource(), "Read triggers")) {
             String schema = getSystemSchema(getServerType(container.getDataSource()));
-            String catalog = DBUtils.getQuotedIdentifier(table.getCatalog());
-            String query =
-                "SELECT triggers.name FROM " + catalog + "." + schema + ".sysobjects tables, " + catalog + "." + schema + ".sysobjects triggers\n" +
-                "WHERE triggers.type = 'TR'\n" +
-                "AND triggers.deltrig = tables.id\n" +
-                "AND user_name(tables.uid) = ? AND tables.name = ?";
+            String catalog = DBUtils.getQuotedIdentifier(container.getCatalog());
+            StringBuilder query = new StringBuilder("SELECT triggers.name FROM " + catalog + "." + schema + ".sysobjects triggers");
+            if (table != null) {
+                query.append(",").append(catalog).append(".").append(schema).append(".sysobjects tables");
+            }
+            query.append("\nWHERE triggers.type = 'TR'\n");
+            if (table != null) {
+                query.append(
+                    "AND triggers.deltrig = tables.id\n" +
+                    "AND user_name(tables.uid) = ? AND tables.name = ?");
+            }
 
-            try (JDBCPreparedStatement dbStat = session.prepareStatement(query)) {
-                dbStat.setString(1, table.getSchema().getName());
-                dbStat.setString(2, table.getName());
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(query.toString())) {
+                if (table != null) {
+                    dbStat.setString(1, table.getSchema().getName());
+                    dbStat.setString(2, table.getName());
+                }
                 List<GenericTrigger> result = new ArrayList<>();
 
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {

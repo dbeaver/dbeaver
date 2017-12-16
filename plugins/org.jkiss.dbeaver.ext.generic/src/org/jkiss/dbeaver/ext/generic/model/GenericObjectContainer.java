@@ -312,9 +312,21 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
     @Override
     public Collection<? extends GenericTrigger> getTriggers(DBRProgressMonitor monitor) throws DBException {
         if (triggers == null) {
-            loadTriggers(monitor);
+            triggers = loadTriggers(monitor);
         }
         return triggers;
+    }
+
+    @Override
+    public Collection<? extends GenericTrigger> getTableTriggers(DBRProgressMonitor monitor) throws DBException {
+        List<GenericTrigger> tableTriggers = new ArrayList<>();
+        for (GenericTable table : getTables(monitor)) {
+            Collection<? extends GenericTrigger> tt = table.getTriggers(monitor);
+            if (!CommonUtils.isEmpty(tt)) {
+                tableTriggers.addAll(tt);
+            }
+        }
+        return tableTriggers;
     }
 
     @Association
@@ -409,17 +421,18 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
         }
     }
 
-    private synchronized void loadTriggers(DBRProgressMonitor monitor)
+    private synchronized List<? extends GenericTrigger> loadTriggers(DBRProgressMonitor monitor)
         throws DBException
     {
-        triggers = dataSource.getMetaModel().loadTriggers(monitor, this, null);
+        List<? extends GenericTrigger> triggers = dataSource.getMetaModel().loadTriggers(monitor, this, null);
 
         // Order procedures
-        if (triggers == null) {
-            triggers = new ArrayList<>();
+        if (this.triggers == null) {
+            this.triggers = new ArrayList<>();
         } else {
-            DBUtils.orderObjects(triggers);
+            DBUtils.orderObjects(this.triggers);
         }
+        return triggers;
     }
 
 }
