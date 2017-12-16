@@ -24,12 +24,15 @@ import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.TextViewer;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.eclipse.ui.texteditor.IEditorStatusLine;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLHyperlinkDetector;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 
 public class NavigateObjectHandler extends AbstractHandler {
 
@@ -65,7 +68,18 @@ public class NavigateObjectHandler extends AbstractHandler {
 
         IRegion curRegion = new Region(selection.getOffset(), 0);
         IHyperlink[] hyperLinks = hyperlinkDetector.detectHyperlinks(editor.getTextViewer(), curRegion, false);
-        return ArrayUtils.isEmpty(hyperLinks) ? null : hyperLinks[0];
+        if (!ArrayUtils.isEmpty(hyperLinks)) {
+            return hyperLinks[0];
+        }
+        String lastKeyword = hyperlinkDetector.getLastKeyword();
+        if (!CommonUtils.isEmpty(lastKeyword)) {
+            IEditorStatusLine statusLine = (IEditorStatusLine)editor.getAdapter(IEditorStatusLine.class);
+            if (statusLine != null) {
+                statusLine.setMessage(true, "Can't find metadata object for name '" + lastKeyword + "'", (Image)null);
+            }
+            editor.getEditorControl().getDisplay().beep();
+        }
+        return null;
     }
 
 /*
