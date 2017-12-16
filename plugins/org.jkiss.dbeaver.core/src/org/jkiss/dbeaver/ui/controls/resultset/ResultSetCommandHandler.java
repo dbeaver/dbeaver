@@ -414,11 +414,23 @@ public class ResultSetCommandHandler extends AbstractHandler {
                 break;
             }
             case CMD_EXPORT: {
+                List<Long> selectedRows = new ArrayList<>();
+                for (ResultSetRow selectedRow : rsv.getSelection().getSelectedRows()) {
+                    selectedRows.add(Long.valueOf(selectedRow.getRowNumber()));
+                }
+/*
+                List<String> selectedAttributes = new ArrayList<>();
+                for (DBDAttributeBinding attributeBinding : rsv.getSelection().getSelectedAttributes()) {
+                    selectedAttributes.add(attributeBinding.getName());
+                }
+*/
+
                 ActiveWizardDialog dialog = new ActiveWizardDialog(
                     HandlerUtil.getActiveWorkbenchWindow(event),
                     new DataTransferWizard(
-                        new IDataTransferProducer[]{
-                            new DatabaseTransferProducer(rsv.getDataContainer(), rsv.getModel().getDataFilter())},
+                        new IDataTransferProducer[] {
+                            new DatabaseTransferProducer(rsv.getDataContainer(), rsv.getModel().getDataFilter(), selectedRows)
+                        },
                         null
                     ),
                     rsv.getSelection()

@@ -32,6 +32,8 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 
+import java.util.List;
+
 /**
  * Data container transfer producer
  */
@@ -43,16 +45,22 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
     private DBSDataContainer dataContainer;
     @Nullable
     private DBDDataFilter dataFilter;
+    @Nullable
+    private List<Long> selectedRows;
+    //private List<String> selectedColumns;
 
     public DatabaseTransferProducer(@NotNull DBSDataContainer dataContainer)
     {
         this.dataContainer = dataContainer;
     }
 
-    public DatabaseTransferProducer(@NotNull DBSDataContainer dataContainer, @Nullable DBDDataFilter dataFilter)
+    public DatabaseTransferProducer(@NotNull DBSDataContainer dataContainer, @Nullable DBDDataFilter dataFilter,
+                                    @Nullable List<Long> selectedRows)
     {
         this.dataContainer = dataContainer;
         this.dataFilter = dataFilter;
+        //this.selectedColumns = selectedColumns;
+        this.selectedRows = selectedRows;
     }
 
     @Override
@@ -118,14 +126,16 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
                     // Perform export
                     if (settings.getExtractType() == DatabaseProducerSettings.ExtractType.SINGLE_QUERY) {
                         // Just do it in single query
-                        dataContainer.readData(transferSource, session, consumer, dataFilter, -1, -1, DBSDataContainer.FLAG_NONE);
+                        dataContainer.readData(
+                                transferSource, session, consumer, dataFilter, -1, -1, DBSDataContainer.FLAG_NONE,
+                                settings.isSelectedRowsOnly() ? selectedRows : null);
                     } else {
                         // Read all data by segments
                         long offset = 0;
                         int segmentSize = settings.getSegmentSize();
                         for (; ; ) {
                             DBCStatistics statistics = dataContainer.readData(
-                                transferSource, session, consumer, dataFilter, offset, segmentSize, DBSDataContainer.FLAG_NONE);
+                                transferSource, session, consumer, dataFilter, offset, segmentSize, DBSDataContainer.FLAG_NONE, null);
                             if (statistics == null || statistics.getRowsFetched() < segmentSize) {
                                 // Done
                                 break;

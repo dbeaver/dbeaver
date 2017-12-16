@@ -50,6 +50,8 @@ import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.data.AbstractDataEditor;
 
+import java.util.List;
+
 /**
  * CursorViewDialog
  */
@@ -185,7 +187,9 @@ public class CursorViewDialog extends ValueViewDialog implements IResultSetConta
 
         @NotNull
         @Override
-        public DBCStatistics readData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags) throws DBCException
+        public DBCStatistics readData(@NotNull DBCExecutionSource source, @NotNull DBCSession session,
+                                      @NotNull DBDDataReceiver dataReceiver, DBDDataFilter dataFilter,
+                                      long firstRow, long maxRows, long flags, List<Long> selectedRows) throws DBCException
         {
             DBCStatistics statistics = new DBCStatistics();
             DBRProgressMonitor monitor = session.getProgressMonitor();

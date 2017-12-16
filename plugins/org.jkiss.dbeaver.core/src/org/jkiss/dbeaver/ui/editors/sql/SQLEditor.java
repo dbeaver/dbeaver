@@ -1681,7 +1681,7 @@ public class SQLEditor extends SQLEditorBase implements
                         getSite().getWorkbenchWindow(),
                         new DataTransferWizard(
                             new IDataTransferProducer[] {
-                                new DatabaseTransferProducer(resultsContainer, null)},
+                                new DatabaseTransferProducer(resultsContainer, null, null)},
                             null),
                         new StructuredSelection(this));
                     dialog.open();
@@ -1921,10 +1921,10 @@ public class SQLEditor extends SQLEditorBase implements
 
         @NotNull
         @Override
-        public DBCStatistics readData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags) throws DBCException
+        public DBCStatistics readData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags, List<Long> selectedRows) throws DBCException
         {
             if (dataContainer != null) {
-                return dataContainer.readData(source, session, dataReceiver, dataFilter, firstRow, maxRows, flags);
+                return dataContainer.readData(source, session, dataReceiver, dataFilter, firstRow, maxRows, flags, null);
             }
             final SQLQueryJob job = queryProcessor.curJob;
             if (job == null) {

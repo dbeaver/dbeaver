@@ -189,7 +189,7 @@ class DatabaseMappingContainer implements DatabaseMappingObject {
             assert (dataSource != null);
             try (DBCSession session = DBUtils.openUtilSession(monitor, dataSource, "Read query meta data")) {
                 MetadataReceiver receiver = new MetadataReceiver();
-                source.readData(new AbstractExecutionSource(source, session.getExecutionContext(), this), session, receiver, null, 0, 1, DBSDataContainer.FLAG_NONE);
+                source.readData(new AbstractExecutionSource(source, session.getExecutionContext(), this), session, receiver, null, 0, 1, DBSDataContainer.FLAG_NONE, null);
                 for (DBCAttributeMetaData attr : receiver.attributes) {
                     if (DBUtils.isHiddenObject(attr)) {
                         continue;
