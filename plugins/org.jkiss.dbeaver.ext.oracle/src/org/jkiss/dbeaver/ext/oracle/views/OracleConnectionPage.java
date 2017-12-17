@@ -469,7 +469,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
             connectionInfo.getProviderProperties().remove(OracleConstants.PROP_INTERNAL_LOGON);
         }
 
-        saveConnectionURL(connectionInfo);
+        super.saveSettings(dataSource);
     }
 
     private void updateUI()
