@@ -357,6 +357,7 @@ public class SQLContextInformer
                 }
             }
 
+/*
             if (targetObject instanceof DBPScriptObject) {
                 try {
                     String definitionText = ((DBPScriptObject) targetObject).getObjectDefinitionText(monitor, null);
@@ -367,6 +368,7 @@ public class SQLContextInformer
                     log.error(e);
                 }
             }
+*/
         }
 
     }
