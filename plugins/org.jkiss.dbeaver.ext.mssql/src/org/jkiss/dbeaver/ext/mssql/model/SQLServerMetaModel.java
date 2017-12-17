@@ -208,6 +208,34 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     }
 
     @Override
+    public List<GenericSchema> loadSchemas(JDBCSession session, GenericDataSource dataSource, GenericCatalog catalog) throws DBException {
+        if (catalog == null || getServerType(dataSource) != ServerType.SQL_SERVER) {
+            return super.loadSchemas(session, dataSource, catalog);
+        }
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(
+            "SELECT * FROM " + DBUtils.getQuotedIdentifier(catalog) + ".sys.schemas ORDER BY name")) {
+            List<GenericSchema> result = new ArrayList<>();
+
+            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                while (dbResult.next()) {
+                    String name = JDBCUtils.safeGetString(dbResult, "name");
+                    if (name == null) {
+                        continue;
+                    }
+                    name = name.trim();
+                    GenericSchema schema = createSchemaImpl(
+                        dataSource, catalog, name);
+                    result.add(schema);
+                }
+            }
+            return result;
+
+        } catch (SQLException e) {
+            throw new DBException(e, dataSource);
+        }
+    }
+
+    @Override
     public boolean supportsSequences(GenericDataSource dataSource) {
         return getServerType(dataSource) == ServerType.SQL_SERVER;
     }
