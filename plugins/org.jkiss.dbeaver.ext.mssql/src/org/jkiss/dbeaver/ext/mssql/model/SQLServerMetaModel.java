@@ -209,16 +209,23 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
 
     @Override
     public List<GenericSchema> loadSchemas(JDBCSession session, GenericDataSource dataSource, GenericCatalog catalog) throws DBException {
-        if (catalog == null || getServerType(dataSource) != ServerType.SQL_SERVER) {
+        if (catalog == null) {
             return super.loadSchemas(session, dataSource, catalog);
         }
-        try (JDBCPreparedStatement dbStat = session.prepareStatement(
-            "SELECT * FROM " + DBUtils.getQuotedIdentifier(catalog) + ".sys.schemas ORDER BY name")) {
+        String sql;
+        if (getServerType(dataSource) == ServerType.SQL_SERVER && dataSource.isServerVersionAtLeast(9 ,0)) {
+            sql = "SELECT SCHEMA_NAME as name FROM " + DBUtils.getQuotedIdentifier(catalog) + ".INFORMATION_SCHEMA.SCHEMATA";
+        } else {
+            sql = "SELECT name FROM " + DBUtils.getQuotedIdentifier(catalog) + ".dbo.sysusers WHERE gid <> 0";
+        }
+        sql += "\nORDER BY name";
+
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
             List<GenericSchema> result = new ArrayList<>();
 
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                 while (dbResult.next()) {
-                    String name = JDBCUtils.safeGetString(dbResult, "name");
+                    String name = JDBCUtils.safeGetString(dbResult, 1);
                     if (name == null) {
                         continue;
                     }
