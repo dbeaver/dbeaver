@@ -37,7 +37,7 @@ import org.jkiss.dbeaver.postgresql.internal.debug.core.PostgreSqlDebugCoreMessa
 
 public class PostgreSqlDebugCore {
     
-    public static final String BUNDLE_SYMBOLIC_NAME = "org.jkiss.dbeaver.postgresql.debug.core"; //$NON-NLS-1$
+    public static final String BUNDLE_SYMBOLIC_NAME = "org.jkiss.dbeaver.ext.postgresql.debug.core"; //$NON-NLS-1$
     
     public static final String MODEL_IDENTIFIER = BUNDLE_SYMBOLIC_NAME;
 
