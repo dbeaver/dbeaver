@@ -21,9 +21,9 @@
    <extension
          point="org.eclipse.debug.ui.launchConfigurationTypeImages">
       <launchConfigurationTypeImage
-            configTypeID="org.jkiss.dbeaver.postgresql.debug.core.pgSQL"
+            configTypeID="org.jkiss.dbeaver.ext.postgresql.debug.core.pgSQL"
             icon="platform:/plugin/org.jkiss.dbeaver.ext.postgresql/$nl$/icons/postgresql_icon.png"
-            id="org.jkiss.dbeaver.postgresql.debug.ui.launchConfigurationTypeImages.launchConfigurationTypeImage.pgSQL">
+            id="org.jkiss.dbeaver.ext.postgresql.debug.ui.launchConfigurationTypeImages.launchConfigurationTypeImage.pgSQL">
       </launchConfigurationTypeImage>
    </extension>
    <extension
@@ -31,8 +31,8 @@
       <launchConfigurationTabGroup
             class="org.jkiss.dbeaver.postgresql.internal.debug.ui.PgSqlLaunchConfigurationTabGroup"
             description="%launchConfigurationTabGroups.launchConfigurationTabGroup.pgSQL.description"
-            id="org.jkiss.dbeaver.postgresql.debug.ui.launchConfigurationTabGroups.launchConfigurationTabGroup.pgSQL"
-            type="org.jkiss.dbeaver.postgresql.debug.core.pgSQL">
+            id="org.jkiss.dbeaver.ext.postgresql.debug.ui.launchConfigurationTabGroups.launchConfigurationTabGroup.pgSQL"
+            type="org.jkiss.dbeaver.ext.postgresql.debug.core.pgSQL">
          <launchMode
                description="%launchConfigurationTabGroups.launchConfigurationTabGroup.launchMode.pgSQL.debug.description"
                mode="debug">
@@ -45,11 +45,11 @@
             class="org.jkiss.dbeaver.postgresql.internal.debug.ui.PgSqlLaunchShortcut"
             description="%launchShortcuts.shortcut.pgSQL.description"
             icon="platform:/plugin/org.jkiss.dbeaver.ext.postgresql/$nl$/icons/postgresql_icon.png"
-            id="org.jkiss.dbeaver.postgresql.debug.ui.launchShortcuts.shortcut.pgSQL"
+            id="org.jkiss.dbeaver.ext.postgresql.debug.ui.launchShortcuts.shortcut.pgSQL"
             label="%launchShortcuts.shortcut.pgSQL.label"
             modes="debug">
          <configurationType
-               id="org.jkiss.dbeaver.postgresql.debug.core.pgSQL"></configurationType>
+               id="org.jkiss.dbeaver.ext.postgresql.debug.core.pgSQL"></configurationType>
          <contextualLaunch>
             <contextLabel
                   label="%launchShortcuts.shortcut.pgSQL.label"
@@ -78,7 +78,7 @@
          point="org.eclipse.debug.ui.debugModelPresentations">
       <debugModelPresentation
             class="org.jkiss.dbeaver.postgresql.internal.debug.ui.PgSqlDebugModelPresentation"
-            id="org.jkiss.dbeaver.postgresql.debug.core">
+            id="org.jkiss.dbeaver.ext.postgresql.debug.core">
       </debugModelPresentation>
    </extension>
 
