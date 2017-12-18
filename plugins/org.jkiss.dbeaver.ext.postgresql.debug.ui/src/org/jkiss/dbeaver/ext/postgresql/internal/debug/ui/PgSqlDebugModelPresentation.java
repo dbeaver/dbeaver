@@ -15,29 +15,34 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.postgresql.internal.debug.ui;
+package org.jkiss.dbeaver.ext.postgresql.internal.debug.ui;
 
-import org.eclipse.debug.ui.AbstractLaunchConfigurationTabGroup;
-import org.eclipse.debug.ui.CommonTab;
-import org.eclipse.debug.ui.ILaunchConfigurationDialog;
-import org.eclipse.debug.ui.ILaunchConfigurationTab;
+import org.eclipse.debug.core.model.IValue;
+import org.eclipse.debug.ui.IValueDetailListener;
+import org.eclipse.ui.IEditorInput;
+import org.jkiss.dbeaver.debug.ui.DatabaseDebugModelPresentation;
 
-public class PgSqlLaunchConfigurationTabGroup extends AbstractLaunchConfigurationTabGroup {
+public class PgSqlDebugModelPresentation extends DatabaseDebugModelPresentation {
 
-    public PgSqlLaunchConfigurationTabGroup()
+    @Override
+    public IEditorInput getEditorInput(Object element)
     {
+        // TODO Auto-generated method stub
+        return null;
     }
 
     @Override
-    public void createTabs(ILaunchConfigurationDialog dialog, String mode)
+    public String getEditorId(IEditorInput input, Object element)
     {
-        PgSqlTab pgSqlTab = new PgSqlTab();
-        CommonTab commonTab = new CommonTab();
-        ILaunchConfigurationTab[] tabs = new ILaunchConfigurationTab[] {
-                pgSqlTab,
-                commonTab
-            };
-            setTabs(tabs);
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public void computeDetail(IValue value, IValueDetailListener listener)
+    {
+        // TODO Auto-generated method stub
+
     }
 
 }

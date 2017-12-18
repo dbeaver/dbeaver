@@ -15,34 +15,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.postgresql.internal.debug.ui;
+package org.jkiss.dbeaver.ext.postgresql.internal.debug.ui;
 
-import org.eclipse.debug.core.model.IValue;
-import org.eclipse.debug.ui.IValueDetailListener;
-import org.eclipse.ui.IEditorInput;
-import org.jkiss.dbeaver.debug.ui.DatabaseDebugModelPresentation;
+import org.eclipse.debug.ui.AbstractLaunchConfigurationTabGroup;
+import org.eclipse.debug.ui.CommonTab;
+import org.eclipse.debug.ui.ILaunchConfigurationDialog;
+import org.eclipse.debug.ui.ILaunchConfigurationTab;
 
-public class PgSqlDebugModelPresentation extends DatabaseDebugModelPresentation {
+public class PgSqlLaunchConfigurationTabGroup extends AbstractLaunchConfigurationTabGroup {
 
-    @Override
-    public IEditorInput getEditorInput(Object element)
+    public PgSqlLaunchConfigurationTabGroup()
     {
-        // TODO Auto-generated method stub
-        return null;
     }
 
     @Override
-    public String getEditorId(IEditorInput input, Object element)
+    public void createTabs(ILaunchConfigurationDialog dialog, String mode)
     {
-        // TODO Auto-generated method stub
-        return null;
-    }
-
-    @Override
-    public void computeDetail(IValue value, IValueDetailListener listener)
-    {
-        // TODO Auto-generated method stub
-
+        PgSqlTab pgSqlTab = new PgSqlTab();
+        CommonTab commonTab = new CommonTab();
+        ILaunchConfigurationTab[] tabs = new ILaunchConfigurationTab[] {
+                pgSqlTab,
+                commonTab
+            };
+            setTabs(tabs);
     }
 
 }
