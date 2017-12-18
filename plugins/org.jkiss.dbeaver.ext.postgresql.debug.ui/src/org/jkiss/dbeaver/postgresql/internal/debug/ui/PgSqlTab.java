@@ -29,7 +29,7 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.debug.ui.DatabaseTab;
 import org.jkiss.dbeaver.ext.postgresql.PostgreActivator;
-import org.jkiss.dbeaver.postgresql.debug.core.PostgreSqlDebugCore;
+import org.jkiss.dbeaver.ext.postgresql.debug.core.PostgreSqlDebugCore;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 public class PgSqlTab extends DatabaseTab {

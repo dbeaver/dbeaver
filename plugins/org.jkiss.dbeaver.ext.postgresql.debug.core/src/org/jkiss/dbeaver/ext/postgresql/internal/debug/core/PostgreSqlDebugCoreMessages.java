@@ -15,29 +15,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.postgresql.internal.debug.ui;
+package org.jkiss.dbeaver.ext.postgresql.internal.debug.core;
 
 import org.eclipse.osgi.util.NLS;
 
-public class PostgreSqlDebugUiMessages extends NLS {
-
-    private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.postgresql.internal.debug.ui.PostgreSqlDebugUiMessages"; //$NON-NLS-1$
-    
-    public static String PgSqlLaunchShortcut_e_editor_empty;
-    public static String PgSqlLaunchShortcut_e_selection_empty;
-    public static String PgSqlLaunchShortcut_select_procedure_message;
-    public static String PgSqlLaunchShortcut_select_procedure_title;
-
-    public static String PgSqlTab_oid_group_text;
-
-    public static String PgSqlTab_oid_label_text;
-    
+public class PostgreSqlDebugCoreMessages extends NLS {
+    private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.postgresql.internal.debug.core.PostgreSqlDebugCoreMessages"; //$NON-NLS-1$
+    public static String PgSqlDebugController_connection_application_name;
+    public static String PgSqlDebugController_e_failed_session_close;
+    public static String PgSqlDebugController_e_failed_session_open;
+    public static String PgSqlDebugTarget_name_default;
+    public static String PgSqlThread_name;
+    public static String PostgreSqlDebugCore_e_procedure_required;
+    public static String PostgreSqlDebugCore_launch_configuration_name;
     static {
         // initialize resource bundle
-        NLS.initializeMessages(BUNDLE_NAME, PostgreSqlDebugUiMessages.class);
+        NLS.initializeMessages(BUNDLE_NAME, PostgreSqlDebugCoreMessages.class);
     }
 
-    private PostgreSqlDebugUiMessages()
+    private PostgreSqlDebugCoreMessages()
     {
     }
 }

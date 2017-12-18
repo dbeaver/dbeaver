@@ -15,29 +15,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.postgresql.internal.debug.ui;
+package org.jkiss.dbeaver.ext.postgresql.internal.debug.core.model;
 
+import org.eclipse.debug.core.DebugException;
 import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.debug.core.model.DatabaseThread;
+import org.jkiss.dbeaver.debug.core.model.IDatabaseDebugTarget;
+import org.jkiss.dbeaver.ext.postgresql.internal.debug.core.PostgreSqlDebugCoreMessages;
 
-public class PostgreSqlDebugUiMessages extends NLS {
-
-    private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.postgresql.internal.debug.ui.PostgreSqlDebugUiMessages"; //$NON-NLS-1$
+public class PgSqlThread extends DatabaseThread {
     
-    public static String PgSqlLaunchShortcut_e_editor_empty;
-    public static String PgSqlLaunchShortcut_e_selection_empty;
-    public static String PgSqlLaunchShortcut_select_procedure_message;
-    public static String PgSqlLaunchShortcut_select_procedure_title;
+    private final PgSqlDebugController controller;
 
-    public static String PgSqlTab_oid_group_text;
-
-    public static String PgSqlTab_oid_label_text;
-    
-    static {
-        // initialize resource bundle
-        NLS.initializeMessages(BUNDLE_NAME, PostgreSqlDebugUiMessages.class);
-    }
-
-    private PostgreSqlDebugUiMessages()
+    public PgSqlThread(IDatabaseDebugTarget target, PgSqlDebugController controller)
     {
+        super(target);
+        this.controller = controller;
     }
+
+    @Override
+    public String getName() throws DebugException
+    {
+        String name = NLS.bind(PostgreSqlDebugCoreMessages.PgSqlThread_name, controller.getSessionId());
+        return name;
+    }
+
 }
