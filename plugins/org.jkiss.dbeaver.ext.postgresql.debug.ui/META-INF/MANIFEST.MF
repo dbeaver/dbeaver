@@ -10,4 +10,4 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.debug.core,
  org.jkiss.dbeaver.debug.ui,
  org.jkiss.dbeaver.ext.postgresql,
- org.jkiss.dbeaver.postgresql.debug.core
+ org.jkiss.dbeaver.ext.postgresql.debug.core
