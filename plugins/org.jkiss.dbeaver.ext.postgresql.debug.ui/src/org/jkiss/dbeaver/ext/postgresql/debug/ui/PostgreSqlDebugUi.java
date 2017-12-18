@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.postgresql.debug.ui;
+package org.jkiss.dbeaver.ext.postgresql.debug.ui;
 
 public class PostgreSqlDebugUi {
 
