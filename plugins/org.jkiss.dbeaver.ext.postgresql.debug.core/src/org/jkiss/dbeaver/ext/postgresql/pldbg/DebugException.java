@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
- * Copyright (C) 2017 Alexander Fedorov (alexander.fedorov@jkiss.org)
+ * Copyright (C) 2017 Andrew Khitrin (ahitrin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,10 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.postgresql.debug.ui;
+package org.jkiss.dbeaver.ext.postgresql.pldbg;
 
-public class PostgreSqlDebugUi {
 
-    public static final String BUNDLE_SYMBOLIC_NAME = "org.jkiss.dbeaver.ext.postgresql.debug.ui"; //$NON-NLS-1$
+@SuppressWarnings("serial")
+public class DebugException extends Exception {
 
+	public DebugException(String message, Throwable e)
+	{
+		super(message, e);
+	}
+
+	public DebugException(String message)
+	{
+		super(message);
+	}
+
+	public DebugException(Throwable e)
+	{
+		super(e);
+	}
+
+	
+	
 }
