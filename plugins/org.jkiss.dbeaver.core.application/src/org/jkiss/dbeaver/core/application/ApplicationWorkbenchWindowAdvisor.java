@@ -270,9 +270,6 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
         IPreferenceStore ps = IDEWorkbenchPlugin.getDefault().getPreferenceStore();
         StringJoiner sj = new StringJoiner(" - "); //$NON-NLS-1$
 
-        if (ps.getBoolean("SHOW_PRODUCT_IN_TITLE")) {
-            sj.add(GeneralUtils.getProductTitle());
-        }
         if (ps.getBoolean("SHOW_LOCATION_NAME")) {
             String workspaceName = ps.getString("WORKSPACE_NAME");
             if (workspaceName != null && workspaceName.length() > 0) {
@@ -289,6 +286,9 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
             if (activeProject != null) {
                 sj.add(activeProject.getName()); //$NON-NLS-1$
             }
+        }
+        if (ps.getBoolean("SHOW_PRODUCT_IN_TITLE")) {
+            sj.add(GeneralUtils.getProductTitle());
         }
         IWorkbenchWindow window = getWindowConfigurer().getWindow();
         if (window != null) {
