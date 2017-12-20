@@ -2057,7 +2057,10 @@ public class ResultSetViewer extends Viewer
             }
         }
         filtersMenu.add(new Separator());
+        filtersMenu.add(new OrderByAttributeAction(attribute, true));
+        filtersMenu.add(new OrderByAttributeAction(attribute, false));
         filtersMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGGLE_ORDER));
+        filtersMenu.add(new Separator());
         filtersMenu.add(new ToggleServerSideOrderingAction());
         filtersMenu.add(new ShowFiltersAction(true));
     }
@@ -3419,6 +3422,23 @@ public class ResultSetViewer extends Viewer
                 constraint.setCriteria(null);
                 setDataFilter(dataFilter, true);
             }
+        }
+    }
+
+    private class OrderByAttributeAction extends Action {
+        private final DBDAttributeBinding attribute;
+        private final boolean ascending;
+
+        public OrderByAttributeAction(DBDAttributeBinding attribute, boolean ascending) {
+            super("Order by " + attribute.getName() + " " + (ascending ? "ASC" : "DESC"));
+            this.attribute = attribute;
+            this.ascending = ascending;
+        }
+
+        @Override
+        public void run()
+        {
+            toggleSortOrder(attribute, ascending, !ascending);
         }
     }
 
