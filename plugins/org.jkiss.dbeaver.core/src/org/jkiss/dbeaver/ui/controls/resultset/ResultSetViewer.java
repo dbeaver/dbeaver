@@ -1678,15 +1678,11 @@ public class ResultSetViewer extends Viewer
             // Filters and View
             manager.add(new Separator());
             {
-                String filtersShortcut = ActionUtils.findCommandDescription(ResultSetCommandHandler.CMD_FILTER_MENU, getSite(), true);
-                String menuName = CoreMessages.controls_resultset_viewer_action_order_filter;
-                if (!CommonUtils.isEmpty(filtersShortcut)) {
-                    menuName += " (" + filtersShortcut + ")";
-                }
                 MenuManager filtersMenu = new MenuManager(
-                    menuName,
+                    CoreMessages.controls_resultset_viewer_action_order_filter,
                     DBeaverIcons.getImageDescriptor(UIIcon.FILTER),
                     "filters"); //$NON-NLS-1$
+                filtersMenu.setActionDefinitionId(ResultSetCommandHandler.CMD_FILTER_MENU);
                 filtersMenu.setRemoveAllWhenShown(true);
                 filtersMenu.addMenuListener(manager1 -> fillFiltersMenu(attr, manager1));
                 manager.add(filtersMenu);
