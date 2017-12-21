@@ -116,6 +116,10 @@
                             <items label="%tree.sequence.node.name" path="sequence" property="sequences" icon="#sequence">
                             </items>
                         </folder>
+                        <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleQueue" label="%tree.queues.node.name" description="Queues">
+                            <items label="%tree.queue.node.name" path="queues" property="queues">
+                            </items>
+                        </folder>
                         <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDataType" label="%tree.types.node.name" icon="#data_types" description="Types">
                             <items label="%tree.type.node.name" path="type" property="dataTypes" icon="#data_type">
                                 <folder type="org.jkiss.dbeaver.ext.oracle.model.OracleDataTypeAttribute" label="%tree.attributes.node.name" icon="#attributes" description="Type attributes" visibleIf="object.hasAttributes()">
