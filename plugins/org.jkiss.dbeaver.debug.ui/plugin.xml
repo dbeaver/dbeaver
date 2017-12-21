@@ -20,21 +20,19 @@
 <plugin>
 
    <extension
-         point="org.eclipse.ui.menus">
-      <menuContribution
-            allPopups="false"
-            class="org.jkiss.dbeaver.debug.internal.ui.DebugContributionFactory"
-            locationURI="popup:org.eclipse.ui.popup.any?before=additions">
-      </menuContribution>
-   </extension>
-
-   <extension
          point="org.eclipse.core.runtime.adapters">
       <factory
             adaptableType="org.jkiss.dbeaver.ui.editors.entity.EntityEditor"
             class="org.jkiss.dbeaver.debug.internal.ui.actions.DebugActionAdapterFactory">
          <adapter
                type="org.eclipse.debug.ui.actions.IToggleBreakpointsTarget">
+         </adapter>
+      </factory>
+      <factory
+            adaptableType="org.jkiss.dbeaver.ui.editors.entity.EntityEditorInput"
+            class="org.jkiss.dbeaver.debug.internal.ui.actions.DebugActionAdapterFactory">
+         <adapter
+               type="org.eclipse.debug.ui.actions.ILaunchable">
          </adapter>
       </factory>
    </extension>

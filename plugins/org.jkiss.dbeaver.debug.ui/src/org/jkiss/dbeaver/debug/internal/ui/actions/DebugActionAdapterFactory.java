@@ -1,12 +1,16 @@
 package org.jkiss.dbeaver.debug.internal.ui.actions;
 
 import org.eclipse.core.runtime.IAdapterFactory;
+import org.eclipse.debug.ui.actions.ILaunchable;
 import org.eclipse.debug.ui.actions.IToggleBreakpointsTarget;
 import org.jkiss.dbeaver.debug.ui.actions.ToggleSqlBreakpointTarget;
 
 public class DebugActionAdapterFactory implements IAdapterFactory {
 
-    private static final Class<?>[] CLASSES = new Class[]{IToggleBreakpointsTarget.class};
+    private static final Class<?>[] CLASSES = new Class[] { ILaunchable.class, IToggleBreakpointsTarget.class };
+
+    private static final ILaunchable LAUNCHABLE = new ILaunchable() {
+    };
 
     private final IToggleBreakpointsTarget toggleBreakpointTarget = new ToggleSqlBreakpointTarget();
 
@@ -14,6 +18,9 @@ public class DebugActionAdapterFactory implements IAdapterFactory {
     @SuppressWarnings("unchecked")
     public <T> T getAdapter(Object adaptableObject, Class<T> adapterType)
     {
+        if (adapterType == ILaunchable.class) {
+            return (T) LAUNCHABLE;
+        }
         if (adapterType == IToggleBreakpointsTarget.class) {
             return (T) toggleBreakpointTarget;
         }

@@ -74,7 +74,7 @@ public abstract class LaunchContributionFactory extends ExtensionContributionFac
 
     protected String createContributionIdentifier()
     {
-        return DebugUi.BUNDLE_SYMBOLIC_NAME + '/' + id;
+        return DebugUI.BUNDLE_SYMBOLIC_NAME + '/' + id;
     }
 
     protected abstract LaunchContributionItem createContributionItem();
