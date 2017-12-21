@@ -1,4 +1,4 @@
-package org.jkiss.dbeaver.runtime.ui;
+package org.jkiss.dbeaver.ui;
 
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.ui.IActionBars;

@@ -67,7 +67,7 @@ public abstract class LaunchShortcut implements ILaunchShortcut2 {
             Object[] array = ((IStructuredSelection) selection).toArray();
             searchAndLaunch(array, mode, getEditorEmptyMessage());
         } else {
-            DBSObject databaseObject = DebugUi.extractDatabaseObject(editor);
+            DBSObject databaseObject = DebugUI.extractDatabaseObject(editor);
             if (databaseObject != null) {
                 Object[] array = new Object[] {databaseObject};
                 searchAndLaunch(array, mode, getEditorEmptyMessage());
@@ -129,7 +129,7 @@ public abstract class LaunchShortcut implements ILaunchShortcut2 {
                     config = createConfiguration(launchable);
                 } catch (CoreException e) {
                     IStatus status = e.getStatus();
-                    DebugUi.log(status);
+                    DebugUI.log(status);
                     MessageDialog.openError(getShell(), DebugUiMessages.LaunchShortcut_e_launch, status.getMessage());
                     return;
                 }
@@ -178,7 +178,7 @@ public abstract class LaunchShortcut implements ILaunchShortcut2 {
                 }
             }
         } catch (CoreException e) {
-            DebugUi.log(e.getStatus());
+            DebugUI.log(e.getStatus());
         }
         return candidateConfigs;
     }

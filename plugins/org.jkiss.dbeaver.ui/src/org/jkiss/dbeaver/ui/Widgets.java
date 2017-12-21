@@ -1,4 +1,4 @@
-package org.jkiss.dbeaver.runtime.ui;
+package org.jkiss.dbeaver.ui;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;

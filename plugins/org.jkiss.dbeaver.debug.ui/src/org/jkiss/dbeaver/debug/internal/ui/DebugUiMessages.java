@@ -28,7 +28,7 @@ public class DebugUiMessages extends NLS {
     public static String DatabaseTab_datasource_group_text;
     public static String DatabaseTab_datasource_label_text;
     public static String DatabaseTab_name;
-    public static String DebugContributionFactory_text;
+
     public static String LaunchShortcut_e_launch;
     public static String LaunchShortcut_select_cobfiguration_title;
     static {
