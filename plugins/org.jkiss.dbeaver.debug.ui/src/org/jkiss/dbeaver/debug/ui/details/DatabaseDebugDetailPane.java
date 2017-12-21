@@ -19,8 +19,8 @@ import org.eclipse.ui.IPropertyListener;
 import org.eclipse.ui.IWorkbenchPartConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.dbeaver.debug.ui.DebugUi;
-import org.jkiss.dbeaver.runtime.ui.ActionBars;
-import org.jkiss.dbeaver.runtime.ui.Widgets;
+import org.jkiss.dbeaver.ui.ActionBars;
+import org.jkiss.dbeaver.ui.Widgets;
 
 public abstract class DatabaseDebugDetailPane<EDITOR extends DatabaseDebugDetailEditor> implements IDetailPane2, IDetailPane3 {
 
