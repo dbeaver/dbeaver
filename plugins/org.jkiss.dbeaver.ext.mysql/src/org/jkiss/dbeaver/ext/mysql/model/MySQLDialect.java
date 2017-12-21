@@ -111,6 +111,11 @@ class MySQLDialect extends JDBCSQLDialect implements SQLRuleProvider {
     }
 
     @Override
+    public boolean supportsTableDropCascade() {
+        return true;
+    }
+
+    @Override
     public boolean supportsCommentQuery() {
         return true;
     }

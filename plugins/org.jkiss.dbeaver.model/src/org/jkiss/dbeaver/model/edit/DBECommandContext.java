@@ -37,7 +37,7 @@ public interface DBECommandContext extends DBPContextProvider {
 
     DBECommand getRedoCommand();
 
-    void saveChanges(DBRProgressMonitor monitor) throws DBException;
+    void saveChanges(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException;
 
     void resetChanges();
 

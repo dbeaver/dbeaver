@@ -213,6 +213,8 @@ public interface SQLDialect {
 
     boolean supportsAliasInUpdate();
 
+    boolean supportsTableDropCascade();
+
     /**
      * Check whether dialect support plain comment queries (queries which contains only comments)
      */

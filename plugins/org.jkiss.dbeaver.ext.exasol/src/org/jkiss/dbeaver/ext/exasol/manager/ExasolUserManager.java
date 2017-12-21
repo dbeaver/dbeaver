@@ -10,6 +10,7 @@ import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolUser;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
 import org.jkiss.dbeaver.ext.exasol.ui.ExasolUserDialog;
 import org.jkiss.dbeaver.ext.exasol.ui.ExasolUserQueryPassword;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
@@ -25,7 +26,7 @@ import org.jkiss.utils.CommonUtils;
 public class ExasolUserManager extends SQLObjectEditor<ExasolUser, ExasolDataSource> implements DBEObjectRenamer<ExasolUser> {
 	
 	@Override
-	public long getMakerOptions()
+	public long getMakerOptions(DBPDataSource dataSource)
 	{
 		return FEATURE_SAVE_IMMEDIATELY;
 	}

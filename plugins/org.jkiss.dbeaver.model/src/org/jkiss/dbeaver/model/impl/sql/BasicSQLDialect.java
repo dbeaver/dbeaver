@@ -365,6 +365,11 @@ public class BasicSQLDialect implements SQLDialect {
     }
 
     @Override
+    public boolean supportsTableDropCascade() {
+        return false;
+    }
+
+    @Override
     public boolean supportsCommentQuery() {
         return false;
     }
