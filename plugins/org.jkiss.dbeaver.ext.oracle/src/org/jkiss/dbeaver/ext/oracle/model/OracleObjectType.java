@@ -92,7 +92,13 @@ public enum OracleObjectType implements DBSObjectType {
         }
     }),
 	PROGRAM("PROGRAM", null, DBSObject.class, null),
-	QUEUE("QUEUE", null, DBSObject.class, null),
+    QUEUE("QUEUE", null, OracleQueue.class, new ObjectFinder() {
+        @Override
+        public OracleQueue findObject(DBRProgressMonitor monitor, OracleSchema schema, String objectName) throws DBException
+        {
+            return schema.queueCache.getObject(monitor, schema, objectName);
+        }
+    }),
 	RULE("RULE", null, DBSObject.class, null),
 	RULE_SET("RULE SET", null, DBSObject.class, null),
 	SCHEDULE("SCHEDULE", null, DBSObject.class, null),
