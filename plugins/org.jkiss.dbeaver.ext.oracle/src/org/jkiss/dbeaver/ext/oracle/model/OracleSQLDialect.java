@@ -342,6 +342,11 @@ class OracleSQLDialect extends JDBCSQLDialect {
     }
 
     @Override
+    public boolean supportsTableDropCascade() {
+        return true;
+    }
+
+    @Override
     public boolean isDelimiterAfterBlock() {
         return true;
     }

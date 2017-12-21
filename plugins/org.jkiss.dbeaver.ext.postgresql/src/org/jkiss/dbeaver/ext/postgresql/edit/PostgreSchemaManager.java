@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreRole;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.ui.PostgreCreateSchemaDialog;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
@@ -44,7 +45,7 @@ import java.util.Map;
 public class PostgreSchemaManager extends SQLObjectEditor<PostgreSchema, PostgreDatabase> implements DBEObjectRenamer<PostgreSchema> {
 
     @Override
-    public long getMakerOptions()
+    public long getMakerOptions(DBPDataSource dataSource)
     {
         return FEATURE_SAVE_IMMEDIATELY;
     }

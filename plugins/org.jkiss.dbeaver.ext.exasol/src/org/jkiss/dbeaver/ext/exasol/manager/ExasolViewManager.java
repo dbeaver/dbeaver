@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolSchema;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTableBase;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolView;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -40,7 +41,7 @@ public class ExasolViewManager
         extends SQLObjectEditor<ExasolView, ExasolSchema> implements DBEObjectRenamer<ExasolView> {
 
     @Override
-    public long getMakerOptions()
+    public long getMakerOptions(DBPDataSource dataSource)
     {
         return FEATURE_EDITOR_ON_CREATE;
     }

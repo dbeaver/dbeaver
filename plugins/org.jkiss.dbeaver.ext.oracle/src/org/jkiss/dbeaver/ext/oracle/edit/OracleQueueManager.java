@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.OracleQueue;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchema;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
@@ -38,7 +39,7 @@ import java.util.Map;
 public class OracleQueueManager extends SQLObjectEditor<OracleQueue, OracleSchema> {
 
     @Override
-    public long getMakerOptions()
+    public long getMakerOptions(DBPDataSource dataSource)
     {
         return FEATURE_EDITOR_ON_CREATE;
     }

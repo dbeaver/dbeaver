@@ -164,8 +164,10 @@ public class PostgreTableManager extends SQLTableManager<PostgreTableBase, Postg
         actions.add(
             new SQLDatabasePersistAction(
                 ModelMessages.model_jdbc_drop_table,
-                "DROP " + (command.getObject() instanceof PostgreTableForeign ? "FOREIGN TABLE" : "TABLE") +
-                    " " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)) //$NON-NLS-2$
+                "DROP " + (command.getObject() instanceof PostgreTableForeign ? "FOREIGN TABLE" : "TABLE") +  //$NON-NLS-2$
+                    " " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL) +  //$NON-NLS-2$
+                    (CommonUtils.getOption(options, OPTION_DELETE_CASCADE) ? " CASCADE" : "")
+            )
         );
     }
 
