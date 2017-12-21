@@ -18,7 +18,7 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IPropertyListener;
 import org.eclipse.ui.IWorkbenchPartConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
-import org.jkiss.dbeaver.debug.ui.DebugUi;
+import org.jkiss.dbeaver.debug.ui.DebugUI;
 import org.jkiss.dbeaver.ui.ActionBars;
 import org.jkiss.dbeaver.ui.Widgets;
 
@@ -135,7 +135,7 @@ public abstract class DatabaseDebugDetailPane<EDITOR extends DatabaseDebugDetail
         try {
             editor.setInput(input);
         } catch (CoreException e) {
-            DebugUi.log(e.getStatus());
+            DebugUI.log(e.getStatus());
         }
     }
 
@@ -162,7 +162,7 @@ public abstract class DatabaseDebugDetailPane<EDITOR extends DatabaseDebugDetail
             if (statusLine != null) {
                 statusLine.setErrorMessage(e.getMessage());
             } else {
-                DebugUi.log(e.getStatus());
+                DebugUI.log(e.getStatus());
             }
         }
     }

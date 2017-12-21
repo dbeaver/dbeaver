@@ -172,7 +172,7 @@ public class LaunchContributionItem extends ContributionItem {
             IWorkbenchPage activePage = window.getActivePage();
             if (activePage != null) {
                 IEditorPart activeEditor = activePage.getActiveEditor();
-                DBSObject databaseObject = DebugUi.extractDatabaseObject(activeEditor);
+                DBSObject databaseObject = DebugUI.extractDatabaseObject(activeEditor);
                 if (databaseObject != null) {
                     return new Object[] {databaseObject};
                 }
