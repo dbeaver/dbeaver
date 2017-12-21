@@ -757,7 +757,8 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner) throws SQLException
         {
             final JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) + " * FROM SYS.USER_QUEUES ORDER BY NAME");
+                "SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) + " * FROM SYS.ALL_QUEUES WHERE OWNER=? ORDER BY NAME");
+            dbStat.setString(1, owner.getName());
             return dbStat;
         }
 
