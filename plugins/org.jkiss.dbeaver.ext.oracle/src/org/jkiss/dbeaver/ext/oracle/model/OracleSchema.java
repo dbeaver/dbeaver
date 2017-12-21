@@ -61,6 +61,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
     final public IndexCache indexCache = new IndexCache();
     final public DataTypeCache dataTypeCache = new DataTypeCache();
     final public SequenceCache sequenceCache = new SequenceCache();
+    final public QueueCache queueCache = new QueueCache();
     final public PackageCache packageCache = new PackageCache();
     final public SynonymCache synonymCache = new SynonymCache();
     final public DBLinkCache dbLinkCache = new DBLinkCache();
@@ -208,6 +209,13 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         } else {
             return type;
         }
+    }
+
+    @Association
+    public Collection<OracleQueue> getQueues(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        return queueCache.getAllObjects(monitor, this);
     }
 
     @Association
@@ -738,6 +746,26 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         protected OracleSequence fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException
         {
             return new OracleSequence(owner, resultSet);
+        }
+    }
+
+    /**
+     * Queue cache implementation
+     */
+    static class QueueCache extends JDBCObjectCache<OracleSchema, OracleQueue> {
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner) throws SQLException
+        {
+            final JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) + " * FROM SYS.ALL_QUEUES WHERE OWNER=? ORDER BY NAME");
+            dbStat.setString(1, owner.getName());
+            return dbStat;
+        }
+
+        @Override
+        protected OracleQueue fetchObject(@NotNull JDBCSession session, @NotNull OracleSchema owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException
+        {
+            return new OracleQueue(owner, resultSet);
         }
     }
 
