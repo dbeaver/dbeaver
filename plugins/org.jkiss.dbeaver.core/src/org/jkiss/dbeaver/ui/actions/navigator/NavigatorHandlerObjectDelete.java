@@ -65,12 +65,14 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
 
     private IStructuredSelection structSelection;
     private Boolean deleteAll;
+    private Map<String, Object> deleteOptions = new HashMap<>();
     private List<DBRRunnableWithProgress> tasksToExecute = new ArrayList<>();
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         this.structSelection = null;
         this.deleteAll = null;
+        this.deleteOptions.clear();
         this.tasksToExecute.clear();
 
         final IWorkbenchWindow activeWorkbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
@@ -163,7 +165,9 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
                 object.getClass(),
                 false);
 
-            Map<String, Object> deleteOptions = new HashMap<>();
+            if (deleteAll == null || !deleteAll) {
+                this.deleteOptions.clear();
+            }
 
             ConfirmResult confirmResult = ConfirmResult.YES;
             if (!object.isPersisted() || commandTarget.getEditor() != null) {
