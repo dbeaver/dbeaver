@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
+import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.IFontProvider;
 import org.eclipse.jface.viewers.ISelection;
@@ -154,7 +155,12 @@ public class TabbedFolderPageProperties extends TabbedFolderPage implements IRef
         PropertiesPageControl(Composite parent) {
             super(parent, SWT.SHEET);
 
-            propertyTree = new PropertyTreeViewer(this, SWT.NONE);
+            propertyTree = new PropertyTreeViewer(this, SWT.NONE) {
+                @Override
+                protected void contributeContextMenu(IMenuManager manager, Object node, String category, DBPPropertyDescriptor property) {
+                    fillCustomActions(manager);
+                }
+            };
             propertyTree.setExtraLabelProvider(new PropertyLabelProvider());
             propertyTree.setExpandMode(PropertyTreeViewer.ExpandMode.FIRST);
             propertyTree.addSelectionChangedListener(event -> {
@@ -199,7 +205,7 @@ public class TabbedFolderPageProperties extends TabbedFolderPage implements IRef
         @Override
         protected void fillCustomActions(IContributionManager contributionManager) {
             super.fillCustomActions(contributionManager);
-            if (ArrayUtils.isEmpty(contributionManager.getItems())) {
+            {
                 contributionManager.add(ActionUtils.makeCommandContribution(
                     DBeaverUI.getActiveWorkbenchWindow(),
                     IWorkbenchCommandConstants.FILE_REFRESH));

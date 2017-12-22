@@ -924,6 +924,7 @@ public class CoreMessages extends NLS {
 	public static String ui_properties_task_add_folder;
 	public static String ui_properties_task_add_node;
 	public static String ui_properties_tree_viewer__to_default;
+	public static String ui_properties_tree_viewer_action_copy_name;
 	public static String ui_properties_tree_viewer_action_copy_value;
 	public static String ui_properties_tree_viewer_action_reset_value;
 	public static String ui_properties_tree_viewer_category_general;
