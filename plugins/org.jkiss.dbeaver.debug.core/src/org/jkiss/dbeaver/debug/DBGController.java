@@ -15,12 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.debug.core.model;
+package org.jkiss.dbeaver.debug;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 
-public interface IDatabaseDebugController {
+public interface DBGController {
 
     public IStatus connect(IProgressMonitor monitor);
 
