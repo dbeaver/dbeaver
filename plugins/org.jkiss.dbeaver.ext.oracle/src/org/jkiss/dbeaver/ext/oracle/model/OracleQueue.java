@@ -35,9 +35,10 @@ public class OracleQueue extends OracleSchemaObject {
 
     private static final Log log = Log.getLog(OracleQueue.class);
 
-    public static enum QueueType {
+    public enum QueueType {
         NORMAL_QUEUE,
-        EXCEPTION_QUEUE
+        EXCEPTION_QUEUE,
+        NON_PERSISTENT_QUEUE,
     };
 
     private String queueTable;
@@ -58,7 +59,11 @@ public class OracleQueue extends OracleSchemaObject {
     public OracleQueue(OracleSchema schema, ResultSet dbResult) {
         super(schema, JDBCUtils.safeGetString(dbResult, "NAME"), true);
         this.queueTable = JDBCUtils.safeGetString(dbResult, "QUEUE_TABLE");
-        this.queueType = QueueType.valueOf(JDBCUtils.safeGetString(dbResult, "QUEUE_TYPE"));
+        try {
+            this.queueType = QueueType.valueOf(JDBCUtils.safeGetString(dbResult, "QUEUE_TYPE"));
+        } catch (IllegalArgumentException e) {
+            this.queueType = null;
+        }
         this.maxRetries = JDBCUtils.safeGetInteger(dbResult, "MAX_RETRIES");
         this.retryDelay = JDBCUtils.safeGetInteger(dbResult, "RETRY_DELAY");
         this.qId = JDBCUtils.safeGetInt(dbResult, "QID");
