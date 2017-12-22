@@ -484,6 +484,14 @@ public class PropertyTreeViewer extends TreeViewer {
                 if (object instanceof TreeNode) {
                     final TreeNode prop = (TreeNode) object;
                     if (prop.property != null) {
+                        manager.add(new Action(CoreMessages.ui_properties_tree_viewer_action_copy_name) {
+                            @Override
+                            public void run()
+                            {
+                                UIUtils.setClipboardContents(Display.getDefault(), TextTransfer.getInstance(), prop.property.getDisplayName());
+                            }
+                        });
+
                         final String stringValue = CommonUtils.toString(getPropertyValue(prop));
                         if (!CommonUtils.isEmpty(stringValue)) {
                             manager.add(new Action(CoreMessages.ui_properties_tree_viewer_action_copy_value) {
