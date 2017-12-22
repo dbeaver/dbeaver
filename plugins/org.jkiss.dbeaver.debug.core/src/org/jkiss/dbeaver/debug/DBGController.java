@@ -17,12 +17,12 @@
  */
 package org.jkiss.dbeaver.debug;
 
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 public interface DBGController {
 
-    public IStatus connect(IProgressMonitor monitor);
+    public IStatus connect(DBRProgressMonitor monitor);
 
     public void resume();
 

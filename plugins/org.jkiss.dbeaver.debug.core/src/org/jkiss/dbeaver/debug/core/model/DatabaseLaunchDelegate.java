@@ -27,6 +27,7 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.LaunchConfigurationDelegate;
 import org.jkiss.dbeaver.debug.DBGController;
 import org.jkiss.dbeaver.debug.core.DebugCore;
+import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 
 public abstract class DatabaseLaunchDelegate<C extends DBGController> extends LaunchConfigurationDelegate {
 
@@ -41,7 +42,7 @@ public abstract class DatabaseLaunchDelegate<C extends DBGController> extends La
         DatabaseProcess process = createProcess(launch, configuration.getName());
         DatabaseDebugTarget<C> target = createDebugTarget(launch, controller, process);
         launch.addDebugTarget(target);
-        controller.connect(monitor);
+        controller.connect(new DefaultProgressMonitor(monitor));
     }
 
     protected Map<String, Object> extractAttributes(ILaunchConfiguration configuration)
