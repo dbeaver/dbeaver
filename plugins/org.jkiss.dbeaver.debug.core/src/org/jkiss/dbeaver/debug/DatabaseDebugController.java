@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.debug;
 
 import java.util.Map;
 
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
@@ -31,7 +30,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 
@@ -50,18 +49,17 @@ public class DatabaseDebugController implements DBGController {
     }
 
     @Override
-    public IStatus connect(IProgressMonitor monitor)
+    public IStatus connect(DBRProgressMonitor monitor)
     {
         DataSourceDescriptor dataSourceDescriptor = DataSourceRegistry.findDataSource(datasourceId);
         if (dataSourceDescriptor == null) {
             //FIXME:AF: provide error status
             return Status.CANCEL_STATUS;
         }
-        DefaultProgressMonitor dbrMonitor = new DefaultProgressMonitor(monitor);
         if (!dataSourceDescriptor.isConnected()) {
             
             try {
-                dataSourceDescriptor.connect(dbrMonitor, true, true);
+                dataSourceDescriptor.connect(monitor, true, true);
             } catch (DBException e) {
                 String message = NLS.bind(DebugMessages.DatabaseDebugController_e_connecting_datasource, dataSourceDescriptor);
                 IStatus error = new Status(IStatus.ERROR, DebugCore.BUNDLE_SYMBOLIC_NAME, message, e);
@@ -71,8 +69,8 @@ public class DatabaseDebugController implements DBGController {
         }
         try {
             DBPDataSource dataSource = dataSourceDescriptor.getDataSource();
-            this.debugContext = dataSource.openIsolatedContext(dbrMonitor, DebugMessages.DatabaseDebugController_debug_context_purpose);
-            this.debugSession = debugContext.openSession(dbrMonitor, DBCExecutionPurpose.UTIL, DebugMessages.DatabaseDebugController_debug_session_name);
+            this.debugContext = dataSource.openIsolatedContext(monitor, DebugMessages.DatabaseDebugController_debug_context_purpose);
+            this.debugSession = debugContext.openSession(monitor, DBCExecutionPurpose.UTIL, DebugMessages.DatabaseDebugController_debug_session_name);
             afterSessionOpen(debugSession);
         } catch (DBException e) {
             String message = NLS.bind(DebugMessages.DatabaseDebugController_e_opening_debug_context, dataSourceDescriptor);
