@@ -54,10 +54,8 @@ import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.controls.folders.TabbedFolderPage;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
-import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
-import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -72,10 +70,12 @@ public class TabbedFolderPageProperties extends TabbedFolderPage implements IRef
     private PropertyTreeViewer propertyTree;
     private DBPPropertySource curPropertySource;
     private PropertiesPageControl progressControl;
+    private boolean attached;
 
     public TabbedFolderPageProperties(IWorkbenchPart part, IDatabaseEditorInput input) {
         this.part = part;
         this.input = input;
+        this.attached = !DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.ENTITY_EDITOR_DETACH_INFO);
     }
 
     @Override
@@ -229,7 +229,7 @@ public class TabbedFolderPageProperties extends TabbedFolderPage implements IRef
     }
 
     private boolean isAttached() {
-        return !DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.ENTITY_EDITOR_DETACH_INFO);
+        return attached;
     }
 
     private void detachPropertiesPanel() {
@@ -239,7 +239,7 @@ public class TabbedFolderPageProperties extends TabbedFolderPage implements IRef
             title,
             title + " will require to reopen editor.\nAre you sure?")) {
             DBPPreferenceStore prefs = DBeaverCore.getGlobalPreferenceStore();
-            prefs.setValue(DBeaverPreferences.ENTITY_EDITOR_DETACH_INFO, !prefs.getBoolean(DBeaverPreferences.ENTITY_EDITOR_DETACH_INFO));
+            prefs.setValue(DBeaverPreferences.ENTITY_EDITOR_DETACH_INFO, attached);
             IEditorPart editor;
             if (part.getSite() instanceof MultiPageEditorSite) {
                 editor = ((MultiPageEditorSite) part.getSite()).getMultiPageEditor();
