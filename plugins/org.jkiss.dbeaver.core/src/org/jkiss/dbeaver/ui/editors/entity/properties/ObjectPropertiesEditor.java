@@ -29,8 +29,10 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.*;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
@@ -85,6 +87,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
     private SashForm sashForm;
     private boolean activated = false;
     private Composite propsPlaceholder;
+    @Nullable
     private TabbedFolderPageProperties propertiesPanel;
 
     public ObjectPropertiesEditor()
@@ -124,7 +127,9 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
             sashForm = UIUtils.createPartDivider(getSite().getPart(), container, SWT.VERTICAL);
             sashForm.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-            createPropertiesPanel(sashForm);
+            if (DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.ENTITY_EDITOR_DETACH_INFO)) {
+                createPropertiesPanel(sashForm);
+            }
             createFoldersPanel(sashForm, folders);
         }
     }
@@ -226,12 +231,16 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
             return;
         }
         activated = true;
-        propertiesPanel = new TabbedFolderPageProperties(this, getEditorInput());
+        if (DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.ENTITY_EDITOR_DETACH_INFO)) {
+            propertiesPanel = new TabbedFolderPageProperties(this, getEditorInput());
 
-        propertiesPanel.createControl(propsPlaceholder);
+            propertiesPanel.createControl(propsPlaceholder);
+        }
 
         pageControl.layout(true);
-        propsPlaceholder.layout(true);
+        if (propsPlaceholder != null) {
+            propsPlaceholder.layout(true);
+        }
 
         if (sashForm != null) {
             Runnable sashUpdater = new Runnable() {
@@ -428,7 +437,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
     public TabbedFolderInfo[] collectFolders(IWorkbenchPart part)
     {
         List<TabbedFolderInfo> tabList = new ArrayList<>();
-        //makeStandardPropertiesTabs(tabList);
+        makeStandardPropertiesTabs(tabList);
         if (part instanceof IDatabaseEditor) {
             makeDatabaseEditorTabs((IDatabaseEditor)part, tabList);
         }
@@ -437,14 +446,16 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
 
     private void makeStandardPropertiesTabs(List<TabbedFolderInfo> tabList)
     {
-        tabList.add(new TabbedFolderInfo(
-            //PropertiesContributor.CATEGORY_INFO,
-            PropertiesContributor.TAB_STANDARD,
-            CoreMessages.ui_properties_category_information,
-            DBIcon.TREE_INFO,
-            "General information",
-            false,
-            new TabbedFolderPageProperties(this, getEditorInput())));
+        if (!DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.ENTITY_EDITOR_DETACH_INFO)) {
+            tabList.add(new TabbedFolderInfo(
+                //PropertiesContributor.CATEGORY_INFO,
+                PropertiesContributor.TAB_STANDARD,
+                CoreMessages.ui_properties_category_information,
+                DBIcon.TREE_INFO,
+                "General information",
+                false,
+                new TabbedFolderPageProperties(this, getEditorInput())));
+        }
     }
 
     private void makeDatabaseEditorTabs(final IDatabaseEditor part, final List<TabbedFolderInfo> tabList)

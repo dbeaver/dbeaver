@@ -38,6 +38,8 @@ public final class DBeaverPreferences
     public static final String NAVIGATOR_SHOW_SQL_PREVIEW = "navigator.editor.show.preview"; //$NON-NLS-1$
     public static final String NAVIGATOR_SHOW_OBJECT_TIPS = "navigator.show.objects.tips"; //$NON-NLS-1$
 
+    public static final String ENTITY_EDITOR_DETACH_INFO = "entity.editor.info.detach"; //$NON-NLS-1$
+
     public static final String KEEP_STATEMENT_OPEN = "keep.statement.open"; //$NON-NLS-1$
 
     public static final String SCRIPT_COMMIT_TYPE = "script.commit.type"; //$NON-NLS-1$

@@ -194,26 +194,40 @@ public class PropertyTreeViewer extends TreeViewer {
         }
 
         super.setInput(root);
-        switch (expandMode) {
-            case ALL:
-                this.expandAll();
-                break;
-            case FIRST:
-                if (root instanceof Collection) {
-                    Collection rootItems = (Collection) root;
-                    if (!rootItems.isEmpty()) {
-                        Object first = rootItems.iterator().next();
-                        this.expandToLevel(first, ALL_LEVELS);
-                    }
-                } else {
-                    this.expandAll();
-                }
-                break;
-        }
 
         disposeOldEditor();
 
-        DBeaverUI.asyncExec(() -> UIUtils.packColumns(getTree(), true, new float[] {0.1f, 0.9f}));
+        DBeaverUI.asyncExec(new Runnable() {
+            @Override
+            public void run() {
+                Tree tree = getTree();
+                tree.setRedraw(false);
+                try {
+                    PropertyTreeViewer.this.expandAll();
+                    UIUtils.packColumns(tree, true, new float[]{0.1f, 0.9f});
+                    PropertyTreeViewer.this.collapseAll();
+
+                    switch (expandMode) {
+                        case ALL:
+                            PropertyTreeViewer.this.expandAll();
+                            break;
+                        case FIRST:
+                            if (root instanceof Collection) {
+                                Collection rootItems = (Collection) root;
+                                if (!rootItems.isEmpty()) {
+                                    Object first = rootItems.iterator().next();
+                                    PropertyTreeViewer.this.expandToLevel(first, ALL_LEVELS);
+                                }
+                            } else {
+                                PropertyTreeViewer.this.expandAll();
+                            }
+                            break;
+                    }
+                } finally {
+                    tree.setRedraw(true);
+                }
+            }
+        });
     }
 
     private Map<String, TreeNode> loadTreeNodes(@Nullable DBRProgressMonitor monitor, TreeNode parent, DBPPropertySource propertySource)
