@@ -22,7 +22,7 @@ import java.util.Map;
 
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.debug.core.model.DatabaseDebugController;
+import org.jkiss.dbeaver.debug.DatabaseDebugController;
 import org.jkiss.dbeaver.ext.postgresql.internal.debug.core.PostgreSqlDebugCoreMessages;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
