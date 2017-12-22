@@ -213,7 +213,7 @@ public class PropertyTreeViewer extends TreeViewer {
 
         disposeOldEditor();
 
-        DBeaverUI.asyncExec(() -> UIUtils.packColumns(getTree(), true, new float[]{0.5f, 0.5f}));
+        DBeaverUI.asyncExec(() -> UIUtils.packColumns(getTree(), false, null));
     }
 
     private Map<String, TreeNode> loadTreeNodes(@Nullable DBRProgressMonitor monitor, TreeNode parent, DBPPropertySource propertySource)
