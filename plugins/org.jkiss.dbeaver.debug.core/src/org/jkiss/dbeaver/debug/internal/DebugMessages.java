@@ -15,23 +15,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.debug.internal.core;
+package org.jkiss.dbeaver.debug.internal;
 
 import org.eclipse.osgi.util.NLS;
 
-public class DebugCoreMessages extends NLS {
+public class DebugMessages extends NLS {
 
-    private static final String BUNDLE_NAME = "org.jkiss.dbeaver.debug.internal.core.DebugCoreMessages"; //$NON-NLS-1$
+    private static final String BUNDLE_NAME = "org.jkiss.dbeaver.debug.internal.DebugMessages"; //$NON-NLS-1$
 
-    public static String DebugCore_e_read_attribute_generic;
-    public static String DebugCore_e_read_attribute_null;
-    public static String DebugCore_e_unable_to_retrieve_modes;
+    public static String DatabaseDebugController_debug_context_purpose;
+    public static String DatabaseDebugController_debug_session_name;
+    public static String DatabaseDebugController_e_connecting_datasource;
+    public static String DatabaseDebugController_e_opening_debug_context;
+
     static {
         // initialize resource bundle
-        NLS.initializeMessages(BUNDLE_NAME, DebugCoreMessages.class);
+        NLS.initializeMessages(BUNDLE_NAME, DebugMessages.class);
     }
 
-    private DebugCoreMessages()
+    private DebugMessages()
     {
     }
 }
