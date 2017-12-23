@@ -12,7 +12,7 @@ Prepare build
 
 Checkout entire DBeaver module from GitHub:
 
-	git clone https://github.com/serge-rider/dbeaver.git dbeaver
+	git clone https://github.com/dbeaver/dbeaver.git dbeaver
 
 In the root folder run
 
