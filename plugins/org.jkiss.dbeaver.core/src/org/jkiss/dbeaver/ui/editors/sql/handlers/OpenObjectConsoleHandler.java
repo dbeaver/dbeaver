@@ -56,13 +56,13 @@ public class OpenObjectConsoleHandler extends AbstractHandler {
             HandlerUtil.getCurrentSelection(event));
         List<DBSEntity> entities = new ArrayList<>();
         for (DBSObject object : selectedObjects) {
+            ds = object.getDataSource().getContainer();
             if (object instanceof DBSEntity) {
                 entities.add((DBSEntity) object);
-                ds = object.getDataSource().getContainer();
             }
         }
         DBRRunnableWithResult<String> generator = GenerateSQLContributor.SELECT_GENERATOR(entities, true);
-        openConsole(workbenchWindow, generator, ds, "Query", true);
+        openConsole(workbenchWindow, generator, ds, "Query", !entities.isEmpty());
         return null;
     }
 
