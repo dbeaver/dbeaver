@@ -93,8 +93,13 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
                 childType,
                 openEditor);
 
-            final DBSObject parentObject = ((DBNDatabaseNode)container).getObject();
-            createDatabaseObject(commandTarget, objectMaker, parentObject, sourceObject);
+            // Parent is model object - not node
+            final Object parentObject = container.getValueObject();
+            if (parentObject instanceof DBSObject) {
+                createDatabaseObject(commandTarget, objectMaker, (DBSObject) parentObject, sourceObject);
+            } else {
+                throw new DBException("Parent object type is not supported: " + parentObject);
+            }
         }
         catch (Throwable e) {
             DBUserInterface.getInstance().showError("Create object", null, e);
