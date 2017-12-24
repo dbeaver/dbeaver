@@ -9,7 +9,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <dbeaver-version>4.2.6</dbeaver-version>
+        <dbeaver-version>4.3.1</dbeaver-version>
         <dbeaver-product>DBeaver</dbeaver-product>
         <tycho-version>1.0.0</tycho-version>
         <tycho-versions-version>0.26.0</tycho-versions-version>
@@ -28,8 +28,8 @@
         <module>plugins/org.jkiss.dbeaver.core</module>
         <module>plugins/org.jkiss.dbeaver.ui</module>
 
-        <module>bundles/org.jkiss.dbeaver.debug.core</module>
-        <module>bundles/org.jkiss.dbeaver.debug.ui</module>
+        <module>plugins/org.jkiss.dbeaver.debug.core</module>
+        <module>plugins/org.jkiss.dbeaver.debug.ui</module>
 
         <module>plugins/org.jkiss.dbeaver.core.application</module>
         <module>plugins/org.jkiss.dbeaver.core.eclipse</module>
@@ -41,6 +41,7 @@
         <module>plugins/org.jkiss.dbeaver.ext.generic</module>
         <module>plugins/org.jkiss.dbeaver.ext.import-config</module>
         <module>plugins/org.jkiss.dbeaver.ext.h2</module>
+        <module>plugins/org.jkiss.dbeaver.ext.hana</module>
         <module>plugins/org.jkiss.dbeaver.ext.hsqldb</module>
         <module>plugins/org.jkiss.dbeaver.ext.informix</module>
         <module>plugins/org.jkiss.dbeaver.ext.mssql</module>
@@ -50,8 +51,8 @@
         <module>plugins/org.jkiss.dbeaver.ext.phoenix</module>
 
         <module>plugins/org.jkiss.dbeaver.ext.postgresql</module>
-        <module>bundles/org.jkiss.dbeaver.postgresql.debug.core</module>
-        <module>bundles/org.jkiss.dbeaver.postgresql.debug.ui</module>
+        <module>plugins/org.jkiss.dbeaver.ext.postgresql.debug.core</module>
+        <module>plugins/org.jkiss.dbeaver.ext.postgresql.debug.ui</module>
 
         <module>plugins/org.jkiss.dbeaver.ext.sqlite</module>
         <module>plugins/org.jkiss.dbeaver.ext.vertica</module>

@@ -75,19 +75,25 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
 
     @Override
     public List<? extends GenericTrigger> loadTriggers(DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTable table) throws DBException {
-        assert table != null;
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container.getDataSource(), "Read triggers")) {
             String schema = getSystemSchema(getServerType(container.getDataSource()));
-            String catalog = DBUtils.getQuotedIdentifier(table.getCatalog());
-            String query =
-                "SELECT triggers.name FROM " + catalog + "." + schema + ".sysobjects tables, " + catalog + "." + schema + ".sysobjects triggers\n" +
-                "WHERE triggers.type = 'TR'\n" +
-                "AND triggers.deltrig = tables.id\n" +
-                "AND user_name(tables.uid) = ? AND tables.name = ?";
+            String catalog = DBUtils.getQuotedIdentifier(container.getCatalog());
+            StringBuilder query = new StringBuilder("SELECT triggers.name FROM " + catalog + "." + schema + ".sysobjects triggers");
+            if (table != null) {
+                query.append(",").append(catalog).append(".").append(schema).append(".sysobjects tables");
+            }
+            query.append("\nWHERE triggers.type = 'TR'\n");
+            if (table != null) {
+                query.append(
+                    "AND triggers.deltrig = tables.id\n" +
+                    "AND user_name(tables.uid) = ? AND tables.name = ?");
+            }
 
-            try (JDBCPreparedStatement dbStat = session.prepareStatement(query)) {
-                dbStat.setString(1, table.getSchema().getName());
-                dbStat.setString(2, table.getName());
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(query.toString())) {
+                if (table != null) {
+                    dbStat.setString(1, table.getSchema().getName());
+                    dbStat.setString(2, table.getName());
+                }
                 List<GenericTrigger> result = new ArrayList<>();
 
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -199,6 +205,41 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     @Override
     public boolean useCatalogInObjectNames() {
         return false;
+    }
+
+    @Override
+    public List<GenericSchema> loadSchemas(JDBCSession session, GenericDataSource dataSource, GenericCatalog catalog) throws DBException {
+        if (catalog == null) {
+            return super.loadSchemas(session, dataSource, catalog);
+        }
+        String sql;
+        if (getServerType(dataSource) == ServerType.SQL_SERVER && dataSource.isServerVersionAtLeast(9 ,0)) {
+            sql = "SELECT SCHEMA_NAME as name FROM " + DBUtils.getQuotedIdentifier(catalog) + ".INFORMATION_SCHEMA.SCHEMATA";
+        } else {
+            sql = "SELECT name FROM " + DBUtils.getQuotedIdentifier(catalog) + ".dbo.sysusers WHERE gid <> 0";
+        }
+        sql += "\nORDER BY name";
+
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
+            List<GenericSchema> result = new ArrayList<>();
+
+            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                while (dbResult.next()) {
+                    String name = JDBCUtils.safeGetString(dbResult, 1);
+                    if (name == null) {
+                        continue;
+                    }
+                    name = name.trim();
+                    GenericSchema schema = createSchemaImpl(
+                        dataSource, catalog, name);
+                    result.add(schema);
+                }
+            }
+            return result;
+
+        } catch (SQLException e) {
+            throw new DBException(e, dataSource);
+        }
     }
 
     @Override

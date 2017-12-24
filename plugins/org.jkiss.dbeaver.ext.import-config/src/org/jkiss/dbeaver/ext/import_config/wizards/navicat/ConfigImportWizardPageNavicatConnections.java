@@ -45,12 +45,15 @@ import org.w3c.dom.NamedNodeMap;
 import au.com.bytecode.opencsv.CSVReader;
 
 public class ConfigImportWizardPageNavicatConnections extends ConfigImportWizardPage {
-	
-	protected ConfigImportWizardPageNavicatConnections()
+    
+    private NavicatEncrypt decryptor;
+    
+    protected ConfigImportWizardPageNavicatConnections()
     {
         super("Navicat");
         setTitle("Navicat");
         setDescription("Import Navicat connections");
+        decryptor = new NavicatEncrypt();
     }
 
     @Override
@@ -61,20 +64,22 @@ public class ConfigImportWizardPageNavicatConnections extends ConfigImportWizard
         ConfigImportWizardNavicat wizard = (ConfigImportWizardNavicat) getWizard();
         final DBPDriver driver = wizard.getDriver();
 
-        ImportDriverInfo driverInfo = new ImportDriverInfo(driver.getId(), driver.getName(), driver.getSampleURL(), driver.getDriverClassName());
+        ImportDriverInfo driverInfo = new ImportDriverInfo(driver.getId(), driver.getName(), driver.getSampleURL(),
+                driver.getDriverClassName());
         importData.addDriver(driverInfo);
 
         File inputFile = wizard.getInputFile();
         try (InputStream is = new FileInputStream(inputFile)) {
             try (Reader reader = new InputStreamReader(is, wizard.getInputFileEncoding())) {
-            	importNCX(importData, driverInfo, reader);
+                importNCX(importData, driverInfo, reader);
             }
         } catch (Exception e) {
             setErrorMessage(e.getMessage());
         }
     }
 
-    private void importNCX(ImportData importData, ImportDriverInfo driver, Reader reader) throws XMLException {
+    private void importNCX(ImportData importData, ImportDriverInfo driver, Reader reader) throws XMLException
+    {
         Document document = XMLUtils.parseDocument(reader);
         for (Element conElement : XMLUtils.getChildElementList(document.getDocumentElement())) {
             Map<String, String> conProps = new HashMap<>();
@@ -87,23 +92,40 @@ public class ConfigImportWizardPageNavicatConnections extends ConfigImportWizard
         }
     }
 
-    private void makeConnectionFromProps(ImportData importData, ImportDriverInfo driver, Map<String, String> conProps) {
+    private void makeConnectionFromProps(ImportData importData, ImportDriverInfo driver, Map<String, String> conProps)
+    {
         String name = conProps.get("ConnectionName");
-        
+        String password = decryptPassword(conProps.get("Password"));
+
         if (CommonUtils.isEmpty(name)) {
             return;
         }
         importData.addConnection(new ImportConnectionInfo(
-            driver,
-            conProps.get("ConnectionName"),
-            name,
+            driver, 
+            name, 
+            name, 
             "",
-            conProps.get("Host"),
-            conProps.get("Port"),
-            conProps.get("Database"),
-            conProps.get("UserName"),
-            ""
-        ));
+            conProps.get("Host"), 
+            conProps.get("Port"), 
+            conProps.get("Database"), 
+            conProps.get("UserName"), 
+            password
+         ));
     }
     
+    /**
+     * Decrypts password chiper-text
+     * 
+     * @param encryptedPassword
+     * @return Plain-text of password or empty string if unable to decrypt
+     */
+    private String decryptPassword(String encryptedPassword)
+    {
+        try {
+            return decryptor.decrypt(encryptedPassword);
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
 }

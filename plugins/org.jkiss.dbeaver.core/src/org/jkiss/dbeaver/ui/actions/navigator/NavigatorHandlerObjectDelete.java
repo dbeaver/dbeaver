@@ -27,13 +27,18 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
@@ -60,12 +65,14 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
 
     private IStructuredSelection structSelection;
     private Boolean deleteAll;
+    private Map<String, Object> deleteOptions = new HashMap<>();
     private List<DBRRunnableWithProgress> tasksToExecute = new ArrayList<>();
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         this.structSelection = null;
         this.deleteAll = null;
+        this.deleteOptions.clear();
         this.tasksToExecute.clear();
 
         final IWorkbenchWindow activeWorkbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
@@ -100,7 +107,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
 
     private void deleteLocalFolder(IWorkbenchWindow workbenchWindow, DBNLocalFolder localFolder)
     {
-        ConfirmResult confirmResult = confirmObjectDelete(workbenchWindow, localFolder, false);
+        ConfirmResult confirmResult = confirmObjectDelete(workbenchWindow, localFolder, false, null, false);
         if (confirmResult == ConfirmResult.NO) {
             return;
         }
@@ -110,7 +117,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
 
     private boolean deleteResource(IWorkbenchWindow workbenchWindow, final DBNResource resourceNode)
     {
-        ConfirmResult confirmResult = confirmObjectDelete(workbenchWindow, resourceNode, false);
+        ConfirmResult confirmResult = confirmObjectDelete(workbenchWindow, resourceNode, false, null, false);
         if (confirmResult == ConfirmResult.NO) {
             return false;
         }
@@ -150,14 +157,17 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
             if (objectMaker == null) {
                 throw new DBException("Object maker not found for type '" + object.getClass().getName() + "'"); //$NON-NLS-2$
             }
-
-            Map<String, Object> deleteOptions = null;
+            boolean supportsCascade = (objectMaker.getMakerOptions(object.getDataSource()) & DBEObjectMaker.FEATURE_DELETE_CASCADE) != 0;
 
             CommandTarget commandTarget = getCommandTarget(
                 workbenchWindow,
                 container,
                 object.getClass(),
                 false);
+
+            if (deleteAll == null || !deleteAll) {
+                this.deleteOptions.clear();
+            }
 
             ConfirmResult confirmResult = ConfirmResult.YES;
             if (!object.isPersisted() || commandTarget.getEditor() != null) {
@@ -172,7 +182,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
             } else {
                 // Persisted object - confirm delete
                 // Show "View script" only if we are not in some editor (because it have its own "View script" button)
-                confirmResult = confirmObjectDelete(workbenchWindow, node, commandTarget.getContext() != null && commandTarget.getEditor() == null );
+                confirmResult = confirmObjectDelete(workbenchWindow, node, supportsCascade, deleteOptions, commandTarget.getContext() != null && commandTarget.getEditor() == null );
                 if (confirmResult == ConfirmResult.NO) {
                     return false;
                 }
@@ -180,7 +190,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
 
             objectMaker.deleteObject(commandTarget.getContext(), node.getObject(), deleteOptions);
             if (confirmResult == ConfirmResult.DETAILS) {
-                if (!showScript(workbenchWindow, commandTarget.getContext(), CoreMessages.actions_navigator_delete_script)) {
+                if (!showScript(workbenchWindow, commandTarget.getContext(), deleteOptions, CoreMessages.actions_navigator_delete_script)) {
                     commandTarget.getContext().resetChanges();
                     // Show confirmation again
                     return deleteObject(workbenchWindow, node);
@@ -189,7 +199,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
 
             if (commandTarget.getEditor() == null && commandTarget.getContext() != null) {
                 // Persist object deletion - only if there is no host editor and we have a command context
-                ObjectSaver deleter = new ObjectSaver(commandTarget.getContext());
+                ObjectSaver deleter = new ObjectSaver(commandTarget.getContext(), deleteOptions);
 //                DBeaverUI.runInProgressDialog(deleter);
                 tasksToExecute.add(deleter);
             }
@@ -211,7 +221,7 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
                 final IDatabaseEditorInput editorInput = ((IDatabaseEditor)editor).getEditorInput();
                 if (editorInput.getDatabaseObject() == node.getObject()) {
 
-                    ConfirmResult confirmResult = confirmObjectDelete(workbenchWindow, node, false);
+                    ConfirmResult confirmResult = confirmObjectDelete(workbenchWindow, node, false, null, false);
                     if (confirmResult == ConfirmResult.NO) {
                         return true;
                     }
@@ -231,40 +241,24 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
         DETAILS,
     }
 
-    private ConfirmResult confirmObjectDelete(final IWorkbenchWindow workbenchWindow, final DBNNode node, final boolean viewScript)
+    private ConfirmResult confirmObjectDelete(final IWorkbenchWindow workbenchWindow, final DBNNode node, boolean supportsCascade, @Nullable Map<String, Object> deleteOptions, final boolean viewScript)
     {
         if (deleteAll != null) {
             return deleteAll ? ConfirmResult.YES : ConfirmResult.NO;
         }
-        ResourceBundle bundle = DBeaverActivator.getCoreResourceBundle();
-        String objectType = node instanceof DBNLocalFolder ? DBeaverPreferences.CONFIRM_LOCAL_FOLDER_DELETE : DBeaverPreferences.CONFIRM_ENTITY_DELETE;
-        String titleKey = ConfirmationDialog.RES_CONFIRM_PREFIX + objectType + "_" + ConfirmationDialog.RES_KEY_TITLE; //$NON-NLS-1$
-        String messageKey = ConfirmationDialog.RES_CONFIRM_PREFIX + objectType + "_" + ConfirmationDialog.RES_KEY_MESSAGE; //$NON-NLS-1$
 
-        String nodeTypeName = node.getNodeType();
-
-        MessageDialog dialog = new MessageDialog(
-            workbenchWindow.getShell(),
-            UIUtils.formatMessage(bundle.getString(titleKey), nodeTypeName, node.getNodeName()),
-            DBeaverIcons.getImage(UIIcon.REJECT),
-                UIUtils.formatMessage(bundle.getString(messageKey), nodeTypeName.toLowerCase(), node.getNodeName()),
-                MessageDialog.CONFIRM, null, 0)
-        {
-            @Override
-            protected void createButtonsForButtonBar(Composite parent)
-            {
-                createButton(parent, IDialogConstants.YES_ID, IDialogConstants.YES_LABEL, true);
-                createButton(parent, IDialogConstants.NO_ID, IDialogConstants.NO_LABEL, false);
-                if (structSelection.size() > 1) {
-                    createButton(parent, IDialogConstants.YES_TO_ALL_ID, IDialogConstants.YES_TO_ALL_LABEL, false);
-                    createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
-                }
-                if (viewScript) {
-                    createButton(parent, IDialogConstants.DETAILS_ID, CoreMessages.actions_navigator_view_script_button, false);
-                }
-            }
-        };
+        DeleteConfirmDialog dialog = new DeleteConfirmDialog(
+            workbenchWindow,
+            node instanceof DBNLocalFolder ? DBeaverPreferences.CONFIRM_LOCAL_FOLDER_DELETE : DBeaverPreferences.CONFIRM_ENTITY_DELETE,
+            node,
+            supportsCascade,
+            viewScript);
         int result = dialog.open();
+
+        if (deleteOptions != null && supportsCascade && dialog.cascadeCheck) {
+            deleteOptions.put(DBEObjectMaker.OPTION_DELETE_CASCADE, Boolean.TRUE);
+        }
+
         switch (result) {
             case IDialogConstants.YES_ID:
                 return ConfirmResult.YES;
@@ -310,4 +304,49 @@ public class NavigatorHandlerObjectDelete extends NavigatorHandlerObjectBase imp
     }
 
 
+    private class DeleteConfirmDialog extends MessageDialog {
+        private final boolean supportsCascade;
+        private final boolean viewScript;
+        private boolean cascadeCheck;
+
+        DeleteConfirmDialog(IWorkbenchWindow workbenchWindow, String objectType, DBNNode node, boolean supportsCascade, boolean viewScript) {
+            super(
+                workbenchWindow.getShell(),
+                UIUtils.formatMessage(DBeaverActivator.getCoreResourceBundle().getString(ConfirmationDialog.RES_CONFIRM_PREFIX + objectType + "_" + ConfirmationDialog.RES_KEY_TITLE), node.getNodeType(), node.getNodeName()),
+                DBeaverIcons.getImage(UIIcon.REJECT),
+                UIUtils.formatMessage(DBeaverActivator.getCoreResourceBundle().getString(ConfirmationDialog.RES_CONFIRM_PREFIX + objectType + "_" + ConfirmationDialog.RES_KEY_MESSAGE), node.getNodeType().toLowerCase(), node.getNodeName()),
+                MessageDialog.CONFIRM, null, 0);
+            this.supportsCascade = supportsCascade;
+            this.viewScript = viewScript;
+        }
+
+        @Override
+        protected Control createCustomArea(Composite parent) {
+            if (supportsCascade) {
+                Composite ph = UIUtils.createPlaceholder(parent, 1, 5);
+                Button cascadeCheckButton = UIUtils.createCheckbox(ph, "Cascade delete", "Delete all dependent/child objects", false, 0);
+                cascadeCheckButton.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        cascadeCheck = cascadeCheckButton.getSelection();
+                    }
+                });
+            }
+            return super.createCustomArea(parent);
+        }
+
+        @Override
+        protected void createButtonsForButtonBar(Composite parent)
+        {
+            createButton(parent, IDialogConstants.YES_ID, IDialogConstants.YES_LABEL, true);
+            createButton(parent, IDialogConstants.NO_ID, IDialogConstants.NO_LABEL, false);
+            if (structSelection.size() > 1) {
+                createButton(parent, IDialogConstants.YES_TO_ALL_ID, IDialogConstants.YES_TO_ALL_LABEL, false);
+                createButton(parent, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
+            }
+            if (viewScript) {
+                createButton(parent, IDialogConstants.DETAILS_ID, CoreMessages.actions_navigator_view_script_button, false);
+            }
+        }
+    }
 }

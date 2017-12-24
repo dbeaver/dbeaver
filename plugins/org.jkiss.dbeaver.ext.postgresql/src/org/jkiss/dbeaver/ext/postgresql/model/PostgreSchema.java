@@ -58,17 +58,6 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
 
     private static final Log log = Log.getLog(PostgreSchema.class);
     
-    private static final String TABLE_CHILD_ID = "PostgreSchema.TABLE_CHILD";
-    
-    private static final String SQL_CHILDTABLE_QUERY =
-        "SELECT c.relname,a.*,pg_catalog.pg_get_expr(ad.adbin, ad.adrelid, true) as def_value,dsc.description" +
-        "\nFROM pg_catalog.pg_attribute a" +
-        "\nINNER JOIN pg_catalog.pg_class c ON (a.attrelid=c.oid)" +
-        "\nLEFT OUTER JOIN pg_catalog.pg_attrdef ad ON (a.attrelid=ad.adrelid AND a.attnum = ad.adnum)" +
-        "\nLEFT OUTER JOIN pg_catalog.pg_description dsc ON (c.oid=dsc.objoid AND a.attnum = dsc.objsubid)" +
-        "\nWHERE NOT a.attisdropped AND c.oid=? ORDER BY a.attnum";
-
-
     private final PostgreDatabase database;
     private long oid;
     private String name;
@@ -207,7 +196,7 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
     {
         return tableCache.getTypedObjects(monitor, this, PostgreTable.class)
         		.stream()
-        		.filter(table -> table.getParents() == null)
+        		.filter(table -> !table.isPartition())
         		.collect(Collectors.toCollection(ArrayList::new));
     }
 
@@ -413,10 +402,7 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
         @Override
         public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull PostgreSchema postgreSchema, @Nullable PostgreTableBase object, @Nullable String objectName) throws SQLException {
             final JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT c.oid,c.*,d.description,(select array_agg(i.inhparent) from pg_catalog.pg_inherits i where i.inhrelid = c.oid) parents\n"+
-//FIXME   pg_get_expr(relpartbound,c.oid) - partition condition (for properties)
-//valid only in Postgres 10 and above
-                //",pg_get_expr(relpartbound,c.oid) partexpr\n"+
+                "SELECT c.oid,c.*,d.description\n"+
                 "FROM pg_catalog.pg_class c\n" +
                 "LEFT OUTER JOIN pg_catalog.pg_description d ON d.objoid=c.oid AND d.objsubid=0\n" +
                 "WHERE c.relnamespace=? AND c.relkind not in ('i','c')" +
@@ -432,10 +418,6 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
             throws SQLException, DBException
         {
             final String kindString = JDBCUtils.safeGetString(dbResult, "relkind");
-            final Long[] parents = JDBCUtils.safeGetArray(dbResult, "parents");
-            /*if (parents != null) {
-            	return null;
-            }*/
             PostgreClass.RelKind kind;
             try {
                 kind = PostgreClass.RelKind.valueOf(kindString);
@@ -487,16 +469,12 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
         		return prepareChildrenStatement(session,owner);
         	}
         	
-/*
-        	JDBCPreparedStatementCachedImpl dbStat;
-        	
-        	dbStat = database.statmentCache.get(TABLE_CHILD_ID);
-        	if (dbStat == null) {
-        		dbStat = new JDBCPreparedStatementCachedImpl((JDBCPreparedStatementImpl) session.prepareStatement(SQL_CHILDTABLE_QUERY));
-        		database.statmentCache.put(TABLE_CHILD_ID, dbStat);
-        	}
-*/
-            JDBCPreparedStatement dbStat = session.prepareStatement(SQL_CHILDTABLE_QUERY);
+            JDBCPreparedStatement dbStat = session.prepareStatement("SELECT c.relname,a.*,pg_catalog.pg_get_expr(ad.adbin, ad.adrelid, true) as def_value,dsc.description" +
+                "\nFROM pg_catalog.pg_attribute a" +
+                "\nINNER JOIN pg_catalog.pg_class c ON (a.attrelid=c.oid)" +
+                "\nLEFT OUTER JOIN pg_catalog.pg_attrdef ad ON (a.attrelid=ad.adrelid AND a.attnum = ad.adnum)" +
+                "\nLEFT OUTER JOIN pg_catalog.pg_description dsc ON (c.oid=dsc.objoid AND a.attnum = dsc.objsubid)" +
+                "\nWHERE NOT a.attisdropped AND c.oid=? ORDER BY a.attnum");
         	dbStat.setLong(1, forTable.getObjectId());
             return dbStat;
         }

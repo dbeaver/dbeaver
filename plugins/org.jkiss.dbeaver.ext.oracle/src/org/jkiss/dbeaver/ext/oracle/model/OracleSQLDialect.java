@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.utils.ArrayUtils;
 
 import java.util.Arrays;
@@ -341,6 +342,11 @@ class OracleSQLDialect extends JDBCSQLDialect {
     }
 
     @Override
+    public boolean supportsTableDropCascade() {
+        return true;
+    }
+
+    @Override
     public boolean isDelimiterAfterBlock() {
         return true;
     }
@@ -361,5 +367,11 @@ class OracleSQLDialect extends JDBCSQLDialect {
     @Override
     protected String[] getNonTransactionKeywords() {
         return ORACLE_NON_TRANSACTIONAL_KEYWORDS;
+    }
+
+    @Override
+    protected String getStoredProcedureCallInitialClause(DBSProcedure proc) {
+        String schemaName = proc.getParentObject().getName();
+        return "CALL " + schemaName + "." + proc.getName() + "(\n";
     }
 }
