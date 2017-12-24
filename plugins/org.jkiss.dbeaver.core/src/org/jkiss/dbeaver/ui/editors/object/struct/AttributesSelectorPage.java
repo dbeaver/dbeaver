@@ -215,7 +215,7 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
 
     protected int fillAttributeColumns(DBSEntityAttribute attribute, AttributeInfo attributeInfo, TableItem columnItem) {
         columnItem.setText(0, attribute.getName());
-        columnItem.setText(1, String.valueOf(attribute.getOrdinalPosition()));
+        //columnItem.setText(1, String.valueOf(attribute.getOrdinalPosition()));
         columnItem.setText(2, attribute.getFullTypeName());
         return 2;
     }
