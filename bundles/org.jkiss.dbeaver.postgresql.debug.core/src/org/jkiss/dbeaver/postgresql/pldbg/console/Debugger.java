@@ -76,13 +76,14 @@ public class Debugger {
 		    
 		    case COMMAND_HELP:
 		    	System.out.println("W Show sessions");
-		    	System.out.println("N New sessions");
+		    	System.out.println("N New session");
 		    	System.out.println("D Show debug objects");
 				System.out.println("S Stack");
 				System.out.println("F Frame");
 				System.out.println("V Variables");
 				System.out.println("= Set Variables");
 				System.out.println("L List breakpoint(s)");
+				System.out.println("Q List debug session(s)");
 				System.out.println("B Set breakpoint");
 				System.out.println("C Continue execution");
 				System.out.println("I Step into");
@@ -138,14 +139,14 @@ public class Debugger {
 					System.out.println("no debug sessions");
 					break;
 				}
-				 for (DebugSession<?, ?> s : pgDbgManager.getDebugSessions()) {
+				 for (DebugSession<?, ?,Integer> s : pgDbgManager.getDebugSessions()) {
 					 System.out.println(s);
 				 }
 				 
 				break;	
 			
 			case COMMAND_NEW:
-				DebugSessionPostgres s = pgDbgManager.createDebugSession();
+				DebugSessionPostgres s = pgDbgManager.createDebugSession(null);
 				System.out.println("created");
 				System.out.println(s);
 				break;		

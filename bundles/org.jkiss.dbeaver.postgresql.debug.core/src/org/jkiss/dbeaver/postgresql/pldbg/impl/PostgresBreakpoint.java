@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.postgresql.pldbg.impl;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -31,28 +30,34 @@ import org.jkiss.dbeaver.postgresql.pldbg.DebugException;
 @SuppressWarnings("nls")
 public class PostgresBreakpoint implements Breakpoint {
 	
-	private SessionInfoPostgres sessionInfo;
+	private final DebugObjectPostgres obj;
 	
-	private DebugObjectPostgres obj;
+	private final DebugSessionPostgres session;
 	
-	private final Connection connection;
-	
-	private long lineNo = -1;
-	
-	private int target;
+	private final BreakpointPropertiesPostgres properties;
 	
 	private static final String SQL_SET = "select * from pldbg_set_global_breakpoint(?sessionid, ?obj, ?line, ?target)";
 	
-	private boolean active = false;
-	
-	public PostgresBreakpoint(Connection connection,SessionInfoPostgres sessionInfo,DebugObjectPostgres obj, long lineNo, int target)
+	public PostgresBreakpoint(DebugSessionPostgres session,DebugObjectPostgres obj, BreakpointPropertiesPostgres properties) throws DebugException
 	{
-		super();
-		this.sessionInfo = sessionInfo;
+		if (session.isAttached()) {
+			throw new DebugException("Unable create breakpoint on waiting session");
+		}
+		this.session = session;
 		this.obj = obj;
-		this.lineNo = lineNo;
-		this.target = target;
-		this.connection = connection;
+	    this.properties = properties;
+	    try (Statement stmt = session.getConnection().createStatement()) {
+			   
+			     stmt.executeQuery(SQL_SET.replaceAll("\\?sessionid",String.valueOf(session.getSessionId()))
+		                  .replaceAll("\\?obj",String.valueOf(obj.getID()))
+		                  .replaceAll("\\?line",properties.isOnStart() ? "-1" : String.valueOf(properties.getLineNo()))
+		                  .replaceAll("\\?target",properties.isAll() ? null : String.valueOf(properties.getTargetId())));
+		          
+		        
+		    } catch (SQLException e) {
+		    	throw new DebugException(e);
+		    }
+			 	
 	}
 
 	@Override
@@ -61,39 +66,17 @@ public class PostgresBreakpoint implements Breakpoint {
 		return obj;
 	}
 
-	@Override
-	public long getLineNo()
-	{
-		return lineNo;
-	}
-
-	@Override
-	public void activate() throws DebugException{
-		
-		if (! active) {
-		
-			 try (Statement stmt = connection.createStatement()) {
-				 
-				 stmt.executeQuery(SQL_SET.replaceAll("\\?sessionid",String.valueOf(target))
-						                  .replaceAll("\\?obj",String.valueOf(obj.getID()))
-						                  .replaceAll("\\?line",String.valueOf(lineNo))
-						                  .replaceAll("\\?target",(sessionInfo == null ? "null" : String.valueOf(sessionInfo.pid)))
-						           );
-				 active = true;
-			 
-			 
-		 }catch (SQLException e) {
-		        throw new DebugException(e);
-		 }
-		
-	   }
-	}
 
 	@Override
 	public void drop() throws DebugException
 	{
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public BreakpointPropertiesPostgres getProperties() {		
+		return properties;
 	}
 	
 	
