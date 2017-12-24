@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.postgresql.pldbg.DebugException;
 import org.jkiss.dbeaver.postgresql.pldbg.DebugObject;
 import org.jkiss.dbeaver.postgresql.pldbg.DebugSession;
@@ -159,17 +160,17 @@ public class DebugManagerPostgres implements DebugManager<Integer,Integer> {
 	}
 
 	@Override
-	public DebugSession<SessionInfoPostgres, DebugObjectPostgres> getDebugSession(
+	public DebugSession<SessionInfoPostgres, DebugObjectPostgres,Integer> getDebugSession(
 			Integer id) throws DebugException
 	{
 		return sessions.get(id);
 	}
 
 	@Override
-	public DebugSessionPostgres createDebugSession() throws DebugException
+	public DebugSessionPostgres createDebugSession(JDBCSession session) throws DebugException
 	{
 	
-		DebugSessionPostgres debugSession =  new DebugSessionPostgres(getCurrent(),connection);
+		DebugSessionPostgres debugSession =  new DebugSessionPostgres(getCurrent(),session);
 		
 		return debugSession;
 		 
@@ -192,9 +193,8 @@ public class DebugManagerPostgres implements DebugManager<Integer,Integer> {
 
 
 	@Override
-	public List<DebugSession<?,?>> getDebugSessions()
-			throws DebugException {
-		return new ArrayList<DebugSession<?,?>>(sessions.values());
+	public List<DebugSession<?,?,Integer>> getDebugSessions()	throws DebugException {
+		return new ArrayList<DebugSession<?,?,Integer>>(sessions.values());
 	}
 
 

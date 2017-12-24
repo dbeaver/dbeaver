@@ -2,11 +2,11 @@ package org.jkiss.dbeaver.postgresql.pldbg;
 
 import java.util.List;
 
-public interface DebugSession<SESSIONINFO extends SessionInfo<?>,DEBUGOBJECT extends DebugObject<?>> {
+public interface  DebugSession<SESSIONINFO extends SessionInfo<?>,DEBUGOBJECT extends DebugObject<?>,SESSIONID> {
     SESSIONINFO getSessionInfo();
     String getTitle();
     List<? extends Breakpoint> getBreakpoints();
-    Breakpoint setBreakpoint(DEBUGOBJECT obj,long lineNo);
+    Breakpoint setBreakpoint(DEBUGOBJECT obj,BreakpointProperties properties);
     void removeBreakpoint(Breakpoint bp);
     void execContinue();
     void execStepInto();
@@ -15,5 +15,6 @@ public interface DebugSession<SESSIONINFO extends SessionInfo<?>,DEBUGOBJECT ext
     List<? extends Variable<?>> getVarables(String ctx);
     void setVariableVal(Variable<?> variable, Object value);
     List<? extends StackFrame> getStack();    
+    SESSIONID getSessionId();
     //move Stack
 }

@@ -24,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.jkiss.dbeaver.postgresql.pldbg.Breakpoint;
+import org.jkiss.dbeaver.postgresql.pldbg.BreakpointProperties;
 import org.jkiss.dbeaver.postgresql.pldbg.DebugException;
 import org.jkiss.dbeaver.postgresql.pldbg.DebugSession;
 import org.jkiss.dbeaver.postgresql.pldbg.StackFrame;
@@ -34,13 +35,15 @@ import org.jkiss.dbeaver.postgresql.pldbg.Variable;
  *
  */
 @SuppressWarnings("nls")
-public class DebugSessionPostgres	implements DebugSession<SessionInfoPostgres, DebugObjectPostgres> {
+public class DebugSessionPostgres implements DebugSession<SessionInfoPostgres, DebugObjectPostgres,Integer> {
 	
 	private final SessionInfoPostgres sessionInfo; 
 	
 	private final Connection connection;
 	
 	private boolean attached = false;
+	
+	private boolean waiting = false;
 	
 	private final String title;
 	
@@ -49,6 +52,8 @@ public class DebugSessionPostgres	implements DebugSession<SessionInfoPostgres, D
 	private static final String SQL_ATTACH = "select pldbg_wait_for_target(?sessionid)";
 	
 	private static final String SQL_LISTEN = "select pldbg_create_listener() as sessionid";
+	
+	private static final String SQL_GET_VARS = "select pldbg_create_listener() as sessionid";
 	
 	private static final int ATTACH_TIMEOUT = 300; // seconds
 	
@@ -82,19 +87,23 @@ public class DebugSessionPostgres	implements DebugSession<SessionInfoPostgres, D
 	}
 
 	
-	private void attach() throws DebugException{		
+	public void attach() throws DebugException{		
 		
 		   try (Statement stmt = connection.createStatement()) {
 			    
 			    connection.setClientInfo("ApplicationName", "Debugger wait for " + (sessionInfo == null ? " breakpoint" : String.valueOf(sessionInfo.pid)));	   
 			   
-			    attached = true;
+			    waiting = true;
 			   
 		        stmt.executeQuery(SQL_ATTACH.replaceAll("\\?sessionid",String.valueOf(sessionId))); //FIXME add TIMEOUT
 		        
-		        		        
+		        attached = true;
+		        
+		        waiting = false;
+		        
 		    } catch (SQLException e) {
 		    	attached = false;
+		    	waiting = false;
 		        throw new DebugException(e);
 		    }		
 		
@@ -130,7 +139,7 @@ public class DebugSessionPostgres	implements DebugSession<SessionInfoPostgres, D
 	}
 
 	@Override
-	public Breakpoint setBreakpoint(DebugObjectPostgres obj, long lineNo)
+	public Breakpoint setBreakpoint(DebugObjectPostgres obj,BreakpointProperties properties)
 	{
 		// TODO Auto-generated method stub
 		return null;
@@ -192,6 +201,12 @@ public class DebugSessionPostgres	implements DebugSession<SessionInfoPostgres, D
 		return null;
 	}
 
+	
+
+	public Connection getConnection() {
+		return connection;
+	}
+
 
 	@Override
 	public String toString() {
@@ -199,5 +214,22 @@ public class DebugSessionPostgres	implements DebugSession<SessionInfoPostgres, D
 				+ ", sessionId=" + sessionId + ", breakpoints=" + breakpoints + "]";
 	}
 
+
+	@Override
+	public Integer getSessionId() {
+		return sessionId;
+	}
+
+
+	public boolean isAttached() {
+		return attached;
+	}
+
+
+	public boolean isWaiting() {
+		return waiting;
+	}
+
+	
 	
 }

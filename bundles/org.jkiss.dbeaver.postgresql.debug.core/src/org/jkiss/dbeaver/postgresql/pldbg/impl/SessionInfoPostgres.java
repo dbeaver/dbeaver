@@ -40,12 +40,6 @@ public class SessionInfoPostgres implements SessionInfo<Integer> {
 		return pid;
 	}
 
-	@Override
-	public boolean isDebugWait()
-	{
-		return false;
-	}
-
 	public SessionInfoPostgres(int pid, String user, String application,
 			String state, String query)
 	{
