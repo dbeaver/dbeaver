@@ -186,7 +186,9 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         }
 
         final String folderId = getEditorInput().getDefaultFolderId();
-        folderComposite.switchFolder(folderId);
+        if (folderId != null) {
+            folderComposite.switchFolder(folderId);
+        }
 
         folderComposite.addFolderListener(new ITabbedFolderListener() {
             @Override

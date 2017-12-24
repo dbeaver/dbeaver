@@ -71,6 +71,7 @@ public class TabbedFolderPageProperties extends TabbedFolderPage implements IRef
     private DBPPropertySource curPropertySource;
     private PropertiesPageControl progressControl;
     private boolean attached;
+    private boolean activated;
 
     public TabbedFolderPageProperties(IWorkbenchPart part, IDatabaseEditorInput input) {
         this.part = part;
@@ -147,6 +148,14 @@ public class TabbedFolderPageProperties extends TabbedFolderPage implements IRef
             curPropertySource = input.getPropertySource();
             propertyTree.loadProperties(curPropertySource);
             refreshProperties();
+        }
+    }
+
+    @Override
+    public void aboutToBeShown() {
+        if (!activated) {
+            activated = true;
+            propertyTree.repackColumns();
         }
     }
 
