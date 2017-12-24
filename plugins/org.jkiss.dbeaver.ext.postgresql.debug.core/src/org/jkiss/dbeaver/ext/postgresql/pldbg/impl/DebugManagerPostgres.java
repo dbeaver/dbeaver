@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.postgresql.pldbg.impl;
+package org.jkiss.dbeaver.ext.postgresql.pldbg.impl;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -27,11 +27,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.jkiss.dbeaver.ext.postgresql.pldbg.DebugException;
+import org.jkiss.dbeaver.ext.postgresql.pldbg.DebugObject;
+import org.jkiss.dbeaver.ext.postgresql.pldbg.DebugSession;
+import org.jkiss.dbeaver.ext.postgresql.pldbg.SessionInfo;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.postgresql.pldbg.DebugException;
-import org.jkiss.dbeaver.postgresql.pldbg.DebugObject;
-import org.jkiss.dbeaver.postgresql.pldbg.DebugSession;
-import org.jkiss.dbeaver.postgresql.pldbg.SessionInfo;
 import org.jkiss.dbeaver.postgresql.pldbg.control.DebugManager;
 
 /**

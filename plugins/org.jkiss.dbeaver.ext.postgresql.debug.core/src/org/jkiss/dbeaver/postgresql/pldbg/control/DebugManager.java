@@ -19,11 +19,11 @@ package org.jkiss.dbeaver.postgresql.pldbg.control;
 
 import java.util.List;
 
+import org.jkiss.dbeaver.ext.postgresql.pldbg.DebugException;
+import org.jkiss.dbeaver.ext.postgresql.pldbg.DebugObject;
+import org.jkiss.dbeaver.ext.postgresql.pldbg.DebugSession;
+import org.jkiss.dbeaver.ext.postgresql.pldbg.SessionInfo;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.postgresql.pldbg.DebugException;
-import org.jkiss.dbeaver.postgresql.pldbg.DebugObject;
-import org.jkiss.dbeaver.postgresql.pldbg.DebugSession;
-import org.jkiss.dbeaver.postgresql.pldbg.SessionInfo;
 
 public interface DebugManager<SESSIONID,OBJECTID> {
 	SessionInfo<SESSIONID> getCurrent() throws DebugException;

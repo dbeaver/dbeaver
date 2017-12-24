@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.postgresql.pldbg.impl;
+package org.jkiss.dbeaver.ext.postgresql.pldbg.impl;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -23,12 +23,13 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.jkiss.dbeaver.postgresql.pldbg.Breakpoint;
-import org.jkiss.dbeaver.postgresql.pldbg.BreakpointProperties;
-import org.jkiss.dbeaver.postgresql.pldbg.DebugException;
-import org.jkiss.dbeaver.postgresql.pldbg.DebugSession;
-import org.jkiss.dbeaver.postgresql.pldbg.StackFrame;
-import org.jkiss.dbeaver.postgresql.pldbg.Variable;
+import org.jkiss.dbeaver.ext.postgresql.pldbg.Breakpoint;
+import org.jkiss.dbeaver.ext.postgresql.pldbg.BreakpointProperties;
+import org.jkiss.dbeaver.ext.postgresql.pldbg.DebugException;
+import org.jkiss.dbeaver.ext.postgresql.pldbg.DebugSession;
+import org.jkiss.dbeaver.ext.postgresql.pldbg.StackFrame;
+import org.jkiss.dbeaver.ext.postgresql.pldbg.Variable;
+
 
 /**
  * @author Andrey.Hitrin
