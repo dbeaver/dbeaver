@@ -98,6 +98,9 @@
                         <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTrigger" label="%tree.triggers.node.name" icon="#triggers" description="Global triggers" visibleIf="object.dataSource.metaModel.supportsDatabaseTriggers(object.dataSource)">
                             <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger"/>
                         </folder>
+                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTrigger" label="%tree.tableTriggers.node.name" icon="#triggers" description="All table triggers" visibleIf="object.dataSource.metaModel.supportsTriggers(object.dataSource)">
+                            <items label="%tree.trigger.node.name" path="trigger" property="tableTriggers" icon="#trigger"/>
+                        </folder>
                         <folder type="org.jkiss.dbeaver.model.struct.DBSDataType" label="%tree.dataTypes.node.name" icon="#data_types" description="Global data types">
                             <items label="%tree.dataType.node.name" path="dataType" property="dataTypes" icon="#data_type"/>
                         </folder>
@@ -416,6 +419,7 @@
                     id="sap_maxdb"
                     category="SAP"
                     label="MaxDB"
+                    icon="icons/sap_icon.png"
                     class="com.sap.dbtech.jdbc.DriverSapDB"
                     sampleURL="jdbc:sapdb://{host}[:{port}]/{database}"
                     defaultPort="7200"
@@ -635,8 +639,8 @@
                     sampleURL="jdbc:firebirdsql://{host}:{port}/{file}"
                     defaultPort="3050"
                     webURL=""
-                    description="Firebird JayBird driver">
-                    <file type="jar" path="maven:/org.firebirdsql.jdbc:jaybird-jdk17:RELEASE" bundle="!drivers.firebird"/>
+                    description="Firebird 2.x JayBird driver">
+                    <file type="jar" path="maven:/org.firebirdsql.jdbc:jaybird-jdk17:RELEASE[2.2.13]" bundle="!drivers.firebird"/>
 
                     <file type="license" path="drivers/firebird/LICENSE.txt" bundle="drivers.firebird"/>
                     <file type="jar" path="drivers/firebird/jaybird-full.jar" bundle="drivers.firebird"/>
@@ -644,6 +648,24 @@
                     <file type="lib" os="win32" arch="x86_64" path="drivers/firebird/jaybird_x64.dll" bundle="drivers.firebird"/>
                     <file type="lib" os="linux" arch="x86" path="drivers/firebird/libjaybird.so" bundle="drivers.firebird"/>
                     <file type="lib" os="linux" arch="x86_64" path="drivers/firebird/libjaybird_x64.so" bundle="drivers.firebird"/>
+
+                    <parameter name="supports-scroll" value="true"/>
+                    <parameter name="ddl-drop-column-short" value="true"/>
+                    <parameter name="script-delimiter-redefiner" value="SET TERM"/>
+                </driver>
+                <driver
+                    id="firebird_jaybird3"
+                    label="Firebird 3.x"
+                    icon="icons/firebird_icon.png"
+                    class="org.firebirdsql.jdbc.FBDriver"
+                    sampleURL="jdbc:firebirdsql://{host}:{port}/{file}"
+                    defaultPort="3050"
+                    webURL=""
+                    description="Firebird 3.x JayBird driver">
+                    <file type="jar" path="maven:/org.firebirdsql.jdbc:jaybird-jdk17:RELEASE[3.0.2]" bundle="!drivers.firebird"/>
+
+                    <file type="license" path="drivers/firebird3/LICENSE.txt" bundle="drivers.firebird"/>
+                    <file type="jar" path="drivers/firebird3/jaybird-full.jar" bundle="drivers.firebird"/>
 
                     <parameter name="supports-scroll" value="true"/>
                     <parameter name="ddl-drop-column-short" value="true"/>
@@ -804,6 +826,7 @@
                     id="sap_hana"
                     category="SAP"
                     label="HANA"
+                    icon="icons/sap_icon.png"
                     class="com.sap.db.jdbc.Driver"
                     sampleURL="jdbc:sap://{host}[:{port}]"
                     defaultPort="30015"

@@ -144,12 +144,7 @@ public class EditConstraintPage extends AttributesSelectorPage {
 
         final Text nameText = entity != null ? UIUtils.createLabelText(panel, "Name", constraintName) : null;
         if (nameText != null) {
-            nameText.addModifyListener(new ModifyListener() {
-                @Override
-                public void modifyText(ModifyEvent e) {
-                    constraintName = nameText.getText();
-                }
-            });
+            nameText.addModifyListener(e -> constraintName = nameText.getText());
         }
 
         UIUtils.createControlLabel(panel, CoreMessages.dialog_struct_edit_constrain_label_type);
@@ -163,7 +158,7 @@ public class EditConstraintPage extends AttributesSelectorPage {
             }
         }
         typeCombo.select(0);
-        typeCombo.setEnabled(constraintTypes.length > 1);
+        //typeCombo.setEnabled(constraintTypes.length > 1);
         typeCombo.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e)
@@ -185,16 +180,17 @@ public class EditConstraintPage extends AttributesSelectorPage {
                 toggleEditAreas();
             }
         });
-        
-        final Button enableConstraintButton = UIUtils.createCheckbox(panel, "Enable Constraint", true);
-        enableConstraintButton.setVisible(showEnable);
-        enableConstraintButton.addSelectionListener(new SelectionAdapter() {
-        	@Override
-        	public void widgetSelected(SelectionEvent e)
-        	{
-        		enableConstraint = enableConstraintButton.getSelection();
-        	}
-		});
+
+        {
+            final Button enableConstraintButton = UIUtils.createCheckbox(panel, "Enable Constraint", "Enable constraint after creation", true, 2);
+            enableConstraintButton.setVisible(showEnable);
+            enableConstraintButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    enableConstraint = enableConstraintButton.getSelection();
+                }
+            });
+        }
     }
 
     @Override

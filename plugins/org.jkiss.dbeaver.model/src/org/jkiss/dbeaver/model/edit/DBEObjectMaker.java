@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.edit;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -30,11 +31,14 @@ import java.util.Map;
  */
 public interface DBEObjectMaker<OBJECT_TYPE extends DBSObject, CONTAINER_TYPE> extends DBEObjectManager<OBJECT_TYPE> {
 
-    long FEATURE_SAVE_IMMEDIATELY = 1;
-    long FEATURE_CREATE_FROM_PASTE = 2;
-    long FEATURE_EDITOR_ON_CREATE = 4;
+    long FEATURE_SAVE_IMMEDIATELY       = 1;
+    long FEATURE_CREATE_FROM_PASTE      = 2;
+    long FEATURE_EDITOR_ON_CREATE       = 4;
+    long FEATURE_DELETE_CASCADE         = 8;
 
-    long getMakerOptions();
+    String OPTION_DELETE_CASCADE = "deleteCascade";
+
+    long getMakerOptions(DBPDataSource dataSource);
 
     /**
      * Provides access to objects cache.

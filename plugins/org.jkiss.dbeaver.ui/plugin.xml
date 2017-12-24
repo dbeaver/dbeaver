@@ -18,7 +18,7 @@
 -->
       <perspective
             class="org.jkiss.dbeaver.internal.ui.DBeaverPerspective"
-            icon="icons/perspective.png"
+            icon="icons/dbeaver_perspective.png"
             id="org.jkiss.dbeaver.core.perspective"
             name="%perspective.name">
       </perspective>
