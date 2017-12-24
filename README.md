@@ -51,7 +51,7 @@ Binaries are in `product/standalone/target/products`
 
 ## Notes
 
-- If you have any questions, suggestions, ideas, etc - <a href="mailto:serge@jkiss.org">write me</a>.
+- If you have any questions, suggestions, ideas, etc - <a href="mailto:support@jkiss.org">write us</a>.
 - Pull requests are welcome.
 - Visit https://dbeaver.jkiss.org or https://dbeaver.com for more information.
 - Thanks for using DBeaver! Star if you like it.
@@ -70,4 +70,4 @@ Those who read up to this point - you can use community discounts (check our <a 
 
 Save wild animals :) Thank you!  
 
-Serge
+DBeaver Team
