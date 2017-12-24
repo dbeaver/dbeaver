@@ -1,16 +1,17 @@
-package org.jkiss.dbeaver.postgresql.pldbg.console;
+package org.jkiss.dbeaver.ext.postgresql.pldbg.console;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.Scanner;
 
-import org.jkiss.dbeaver.postgresql.pldbg.DebugException;
-import org.jkiss.dbeaver.postgresql.pldbg.DebugSession;
-import org.jkiss.dbeaver.postgresql.pldbg.impl.DebugManagerPostgres;
-import org.jkiss.dbeaver.postgresql.pldbg.impl.DebugObjectPostgres;
-import org.jkiss.dbeaver.postgresql.pldbg.impl.DebugSessionPostgres;
-import org.jkiss.dbeaver.postgresql.pldbg.impl.SessionInfoPostgres;
+import org.jkiss.dbeaver.ext.postgresql.pldbg.DebugException;
+import org.jkiss.dbeaver.ext.postgresql.pldbg.DebugSession;
+import org.jkiss.dbeaver.ext.postgresql.pldbg.impl.DebugManagerPostgres;
+import org.jkiss.dbeaver.ext.postgresql.pldbg.impl.DebugObjectPostgres;
+import org.jkiss.dbeaver.ext.postgresql.pldbg.impl.DebugSessionPostgres;
+import org.jkiss.dbeaver.ext.postgresql.pldbg.impl.SessionInfoPostgres;
+
 
 @SuppressWarnings("nls")
 public class Debugger {
