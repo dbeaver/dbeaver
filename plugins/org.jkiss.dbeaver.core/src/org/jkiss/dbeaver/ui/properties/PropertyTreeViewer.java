@@ -203,6 +203,10 @@ public class PropertyTreeViewer extends TreeViewer {
 
         disposeOldEditor();
 
+        repackColumns();
+    }
+
+    public void repackColumns() {
         DBeaverUI.asyncExec(new Runnable() {
             @Override
             public void run() {
@@ -218,6 +222,7 @@ public class PropertyTreeViewer extends TreeViewer {
                             PropertyTreeViewer.this.expandAll();
                             break;
                         case FIRST:
+                            Object root = getInput();
                             if (root instanceof Collection) {
                                 Collection rootItems = (Collection) root;
                                 if (!rootItems.isEmpty()) {
