@@ -81,6 +81,9 @@ public class SQLServerDataSourceProvider extends JDBCDataSourceProvider implemen
                 url.append("databaseName=").append(connectionInfo.getDatabaseName());
             }
         }
+        if (connectionInfo.isNativeAuthentication()) {
+            url.append(";integratedSecurity=true");
+        }
         return url.toString();
     }
 

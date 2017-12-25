@@ -722,7 +722,7 @@ public class DataSourceDescriptor
 
             if (preferenceStore.getBoolean(ModelPreferences.CONNECT_USE_ENV_VARS)) {
                 this.resolvedConnectionInfo = new DBPConnectionConfiguration(this.tunnelConnectionInfo != null ? tunnelConnectionInfo : connectionInfo);
-                this.resolvedConnectionInfo.resolveSystemEnvironmentVariables();
+                this.resolvedConnectionInfo.finalConfigurationResolve();
             }
 
             this.dataSource = getDriver().getDataSourceProvider().openDataSource(monitor, this);
