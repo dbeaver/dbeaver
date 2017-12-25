@@ -60,14 +60,26 @@ public class SQLServerDataSourceProvider extends JDBCDataSourceProvider implemen
     @Override
     public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo) {
         StringBuilder url = new StringBuilder();
-        url.append("jdbc:sqlserver://")
-                .append(connectionInfo.getHostName());
+        boolean isJtds = SQLServerConstants.DRIVER_JTDS.equals(driver.getId());
+        if (isJtds) {
+            url.append("jdbc:jtds:sqlserver://");
+        } else {
+            url.append("jdbc:sqlserver://");
+        }
+
+        url.append(connectionInfo.getHostName());
         if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
             url.append(":").append(connectionInfo.getHostPort());
         }
-        url.append(";");
-        if (!CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
-            url.append("databaseName=").append(connectionInfo.getDatabaseName());
+        if (isJtds) {
+            if (!CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
+                url.append("/").append(connectionInfo.getDatabaseName());
+            }
+        } else {
+            url.append(";");
+            if (!CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
+                url.append("databaseName=").append(connectionInfo.getDatabaseName());
+            }
         }
         return url.toString();
     }
