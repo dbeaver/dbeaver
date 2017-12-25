@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.ui.data.editors;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.Nullable;
@@ -43,11 +45,14 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
     {
         boolean inline = valueController.getEditType() == IValueController.EditType.INLINE;
 
-        timeEditor = new CustomTimeEditor(
-            valueController.getEditPlaceholder(),
-            (inline ? SWT.BORDER : SWT.MULTI));
-        timeEditor.setEditable(!valueController.isReadOnly());
-
+		timeEditor = new CustomTimeEditor(valueController.getEditPlaceholder(), (inline ? SWT.BORDER : SWT.MULTI));
+		timeEditor.setEditable(!valueController.isReadOnly());
+		timeEditor.addSelectionAdapter(new SelectionAdapter() {
+				@Override
+				public void widgetSelected(SelectionEvent e) {
+					dirty = true;
+				}
+			});
         return timeEditor.getControl();
     }
 
