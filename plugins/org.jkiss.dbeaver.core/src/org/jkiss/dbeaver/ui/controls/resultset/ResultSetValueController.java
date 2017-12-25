@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
+import java.util.Arrays;
+import java.util.List;
+
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
@@ -37,9 +40,6 @@ import org.jkiss.dbeaver.ui.data.IRowController;
 import org.jkiss.dbeaver.ui.data.IValueManager;
 import org.jkiss.dbeaver.ui.data.registry.ValueManagerRegistry;
 
-import java.util.Arrays;
-import java.util.List;
-
 /**
 * ResultSetValueController
 */
@@ -50,6 +50,7 @@ public class ResultSetValueController implements IAttributeController, IRowContr
     protected final Composite inlinePlaceholder;
     protected ResultSetRow curRow;
     protected DBDAttributeBinding binding;
+	
 
     public ResultSetValueController(
         @NotNull IResultSetController controller,
@@ -173,22 +174,22 @@ public class ResultSetValueController implements IAttributeController, IRowContr
 
     @Override
     public IValueManager getValueManager() {
-        DBSAttributeBase valueType = binding.getPresentationAttribute();
-        final DBCExecutionContext executionContext = getExecutionContext();
-        Class<?> valueObjectType = getValueHandler().getValueObjectType(valueType);
-        if (valueObjectType == Object.class) {
-            // Try to get type from value itself
-            Object value = getValue();
-            if (value != null) {
-                valueObjectType = value.getClass();
-            }
-        }
+		DBSAttributeBase valueType = binding.getPresentationAttribute();
+		final DBCExecutionContext executionContext = getExecutionContext();
+		Class<?> valueObjectType = getValueHandler().getValueObjectType(valueType);
+		if (valueObjectType == Object.class) {
+			// Try to get type from value itself
+			Object value = getValue();
+			if (value != null) {
+				valueObjectType = value.getClass();
+			}
+		}
         return ValueManagerRegistry.findValueManager(
             executionContext == null ? null : executionContext.getDataSource(),
             valueType,
             valueObjectType);
     }
-
+	
     @Override
     public EditType getEditType()
     {
