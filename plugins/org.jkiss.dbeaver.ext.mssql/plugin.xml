@@ -35,7 +35,7 @@
             <drivers managable="true">
 
                 <driver
-                        id="mssql_jdbc"
+                        id="mssql_jdbc_jtds"
                         label="jTDS driver"
                         icon="icons/mssql_icon.png"
                         category="MS SQL Server"
