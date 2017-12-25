@@ -3335,7 +3335,7 @@
             <supports kind="STRING"/>
         </manager>
         <manager class="org.jkiss.dbeaver.ui.data.managers.DateTimeValueManager" id="org.jkiss.dbeaver.ui.data.managers.DateTimeValueManager">
-            <supports kind="NUMERIC" typeName = "DATETIME"/>
+            <supports kind="DATETIME"/>
         </manager>
         <manager class="org.jkiss.dbeaver.ui.data.managers.ArrayValueManager" id="org.jkiss.dbeaver.ui.data.managers.ArrayValueManager">
             <supports kind="ARRAY"/>
