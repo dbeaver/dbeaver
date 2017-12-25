@@ -16,10 +16,19 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPMessageType;
@@ -30,15 +39,13 @@ import org.jkiss.dbeaver.model.data.DBDRowIdentifier;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.data.formatters.TimestampFormatSample;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.data.IAttributeController;
 import org.jkiss.dbeaver.ui.data.IRowController;
 import org.jkiss.dbeaver.ui.data.IValueManager;
 import org.jkiss.dbeaver.ui.data.registry.ValueManagerRegistry;
-
-import java.util.Arrays;
-import java.util.List;
 
 /**
 * ResultSetValueController
@@ -50,6 +57,9 @@ public class ResultSetValueController implements IAttributeController, IRowContr
     protected final Composite inlinePlaceholder;
     protected ResultSetRow curRow;
     protected DBDAttributeBinding binding;
+	private final static Log log = Log.getLog(ResultSetValueController.class);
+	private final static String TIMESTAMP_DEFAULT_FORMAT = "yyyy-MM-dd HH:mm:ss";
+	private final static String FORMAT_PATTERN = "pattern";
 
     public ResultSetValueController(
         @NotNull IResultSetController controller,
@@ -176,19 +186,43 @@ public class ResultSetValueController implements IAttributeController, IRowContr
         DBSAttributeBase valueType = binding.getPresentationAttribute();
         final DBCExecutionContext executionContext = getExecutionContext();
         Class<?> valueObjectType = getValueHandler().getValueObjectType(valueType);
-        if (valueObjectType == Object.class) {
-            // Try to get type from value itself
-            Object value = getValue();
-            if (value != null) {
-                valueObjectType = value.getClass();
-            }
-        }
+		if (valueObjectType == Object.class) {
+			// Try to get type from value itself
+			Object value = getValue();
+			if (value != null) {
+				if (value instanceof String) {
+					String strObject = (String) value;
+					valueObjectType = value.getClass();
+					try {
+						String format = getTimestampFormat();
+						Date date = new SimpleDateFormat(format).parse(strObject);
+						if (date != null) {
+							return ValueManagerRegistry.findValueManager(
+									executionContext == null ? null : executionContext.getDataSource(), valueType,
+									date.getClass());
+						}
+					} catch (ParseException e) {
+						// log.warn("Value is not a Date"); //too expensive logging  
+					}
+				}
+			}
+		}
         return ValueManagerRegistry.findValueManager(
             executionContext == null ? null : executionContext.getDataSource(),
             valueType,
             valueObjectType);
     }
 
+	private String getTimestampFormat() {
+		TimestampFormatSample prefFormatt = new TimestampFormatSample();
+		Map<Object, Object> map = prefFormatt.getDefaultProperties(Locale.getDefault());
+		Object pattern = map.get(FORMAT_PATTERN);
+		if (pattern instanceof String) {
+			return (String) pattern;
+		}
+		return TIMESTAMP_DEFAULT_FORMAT;
+	}
+	
     @Override
     public EditType getEditType()
     {
