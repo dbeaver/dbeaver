@@ -65,13 +65,13 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
 
         UIUtils.createControlLabel(panel, "Time").setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
         timeEditor = new CustomTimeEditor(panel, style);
-        timeEditor.getControl().addModifyListener(new ModifyListener() {
-            @Override
-            public void modifyText(ModifyEvent e) {
-                dirty = true;
-            }
-        });
-
+		timeEditor.addSelectionAdapter(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				dirty = true;
+			}
+		});
+ 
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalAlignment = GridData.CENTER;
         timeEditor.getControl().setLayoutData(gd);
