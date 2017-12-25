@@ -51,7 +51,6 @@ public class DBPConnectionConfiguration implements DBPObject
     private DBPConnectionType connectionType;
     private String connectionColor;
     private int keepAliveInterval;
-    private boolean nativeAuthentication;
 
     public DBPConnectionConfiguration()
     {
@@ -62,7 +61,6 @@ public class DBPConnectionConfiguration implements DBPObject
         this.handlers = new ArrayList<>();
         this.bootstrap = new DBPConnectionBootstrap();
         this.keepAliveInterval = 0;
-        this.nativeAuthentication = false;
     }
 
     public DBPConnectionConfiguration(@NotNull DBPConnectionConfiguration info)
@@ -88,7 +86,6 @@ public class DBPConnectionConfiguration implements DBPObject
         }
         this.bootstrap = new DBPConnectionBootstrap(info.bootstrap);
         this.keepAliveInterval = info.keepAliveInterval;
-        this.nativeAuthentication = info.nativeAuthentication;
     }
 
     public String getClientHomeId()
@@ -171,14 +168,7 @@ public class DBPConnectionConfiguration implements DBPObject
         this.userPassword = userPassword;
     }
 
-    public boolean isNativeAuthentication() {
-        return nativeAuthentication;
-    }
-
-    public void setNativeAuthentication(boolean nativeAuthentication) {
-        this.nativeAuthentication = nativeAuthentication;
-    }
-////////////////////////////////////////////////////
+    ////////////////////////////////////////////////////
     // Properties (connection properties, usually used by driver)
 
     public String getProperty(String name)
@@ -364,22 +354,16 @@ public class DBPConnectionConfiguration implements DBPObject
             CommonUtils.equalObjects(this.events, source.events) &&
             CommonUtils.equalObjects(this.handlers, source.handlers) &&
             CommonUtils.equalObjects(this.bootstrap, source.bootstrap) &&
-            this.keepAliveInterval == source.keepAliveInterval &&
-            this.nativeAuthentication == source.nativeAuthentication;
+            this.keepAliveInterval == source.keepAliveInterval;
     }
 
-    public void finalConfigurationResolve() {
+    public void resolveSystemEnvironmentVariables() {
         hostName = GeneralUtils.replaceSystemEnvironmentVariables(hostName);
         hostPort = GeneralUtils.replaceSystemEnvironmentVariables(hostPort);
         serverName = GeneralUtils.replaceSystemEnvironmentVariables(serverName);
         databaseName = GeneralUtils.replaceSystemEnvironmentVariables(databaseName);
-        if (nativeAuthentication) {
-            userName = "";
-            userPassword = "";
-        } else {
-            userName = GeneralUtils.replaceSystemEnvironmentVariables(userName);
-            userPassword = GeneralUtils.replaceSystemEnvironmentVariables(userPassword);
-        }
+        userName = GeneralUtils.replaceSystemEnvironmentVariables(userName);
+        userPassword = GeneralUtils.replaceSystemEnvironmentVariables(userPassword);
         url = GeneralUtils.replaceSystemEnvironmentVariables(url);
     }
 }
