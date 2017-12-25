@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.impl.sql.edit.struct;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -29,6 +30,7 @@ import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLStructEditor;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableConstraint;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
@@ -51,9 +53,15 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
     private static final String BASE_TABLE_NAME = "NewTable"; //$NON-NLS-1$
 
     @Override
-    public long getMakerOptions()
+    public long getMakerOptions(DBPDataSource dataSource)
     {
-        return FEATURE_EDITOR_ON_CREATE;
+        long options = FEATURE_EDITOR_ON_CREATE;
+        if (dataSource instanceof SQLDataSource) {
+            if (((SQLDataSource) dataSource).getSQLDialect().supportsTableDropCascade()) {
+                options |= FEATURE_DELETE_CASCADE;
+            }
+        }
+        return options;
     }
 
     @Override
@@ -116,11 +124,14 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
     @Override
     protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
     {
+        OBJECT_TYPE object = command.getObject();
         actions.add(
             new SQLDatabasePersistAction(
                 ModelMessages.model_jdbc_drop_table,
-                "DROP " + (command.getObject().isView() ? "VIEW" : "TABLE") +
-                " " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)) //$NON-NLS-2$
+                "DROP " + (object.isView() ? "VIEW" : "TABLE") +  //$NON-NLS-2$
+                " " + object.getFullyQualifiedName(DBPEvaluationContext.DDL) +
+                (!object.isView() && CommonUtils.getOption(options, OPTION_DELETE_CASCADE) ? " CASCADE" : "")
+            )
         );
     }
 

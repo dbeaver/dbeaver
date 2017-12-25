@@ -16,12 +16,14 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
+import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Region;
 import org.eclipse.jface.text.hyperlink.AbstractHyperlinkDetector;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.ui.editors.entity.EntityHyperlink;
@@ -35,6 +37,8 @@ import java.util.List;
  */
 public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
 {
+    static protected final Log log = Log.getLog(SQLHyperlinkDetector.class);
+
     private SQLContextInformer contextInformer;
 
     public SQLHyperlinkDetector(SQLEditorBase editor, SQLSyntaxManager syntaxManager)
@@ -61,6 +65,19 @@ public class SQLHyperlinkDetector extends AbstractHyperlinkDetector
             }
             return links;
         }
+    }
+
+    public String getLastKeyword() {
+        final SQLIdentifierDetector.WordRegion wordRegion = this.contextInformer.getWordRegion();
+        if (wordRegion != null) {
+            final IRegion hlRegion = new Region(wordRegion.identStart, wordRegion.identEnd - wordRegion.identStart);
+            try {
+                return contextInformer.getEditor().getDocument().get(hlRegion.getOffset(), hlRegion.getLength());
+            } catch (BadLocationException e) {
+                log.error(e);
+            }
+        }
+        return null;
     }
 
     @Override

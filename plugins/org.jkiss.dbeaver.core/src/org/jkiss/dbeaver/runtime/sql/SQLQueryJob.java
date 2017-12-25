@@ -339,7 +339,7 @@ public class SQLQueryJob extends DataSourceJob
         }
 
         // Modify query (filters + parameters)
-        String queryText = originalQuery.getText().trim();
+        String queryText = originalQuery.getText();//.trim();
         if (dataFilter != null && dataFilter.hasFilters() && dataSource instanceof SQLDataSource) {
             String filteredQueryText = ((SQLDataSource) dataSource).getSQLDialect().addFiltersToQuery(
                 dataSource, queryText, dataFilter);
@@ -450,14 +450,13 @@ public class SQLQueryJob extends DataSourceJob
                         break;
                     }
                 }
-
+            }
+            finally {
                 try {
-                    curResult.setWarnings(dbcStatement.getStatementWarnings());
+                    curResult.addWarnings(dbcStatement.getStatementWarnings());
                 } catch (Throwable e) {
                     log.warn("Can't read execution warnings", e);
                 }
-            }
-            finally {
                 //monitor.subTask("Close query");
                 if (!keepStatementOpen()) {
                     closeStatement();

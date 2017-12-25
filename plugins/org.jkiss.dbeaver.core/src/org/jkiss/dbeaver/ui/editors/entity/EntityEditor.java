@@ -272,7 +272,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         }
     }
 
-    private boolean saveCommandContext(final DBRProgressMonitor monitor)
+    private boolean saveCommandContext(final DBRProgressMonitor monitor, Map<String, Object> options)
     {
         monitor.beginTask("Save entity", 1);
         Throwable error = null;
@@ -282,7 +282,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
             return true;
         }
         try {
-            commandContext.saveChanges(monitor);
+            commandContext.saveChanges(monitor, options);
         } catch (DBException e) {
             error = e;
         }
@@ -911,7 +911,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
             try {
                 final DBECommandContext commandContext = getCommandContext();
                 if (commandContext != null && commandContext.isDirty()) {
-                    success = saveCommandContext(monitor);
+                    success = saveCommandContext(monitor, DBPScriptObject.EMPTY_OPTIONS);
                 } else {
                     success = true;
                 }

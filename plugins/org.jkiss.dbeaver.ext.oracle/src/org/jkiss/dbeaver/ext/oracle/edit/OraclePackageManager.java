@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.oracle.edit;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.oracle.model.*;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -102,7 +103,7 @@ public class OraclePackageManager extends SQLObjectEditor<OraclePackage, OracleS
     }
 
     @Override
-    public long getMakerOptions()
+    public long getMakerOptions(DBPDataSource dataSource)
     {
         return FEATURE_EDITOR_ON_CREATE;
     }

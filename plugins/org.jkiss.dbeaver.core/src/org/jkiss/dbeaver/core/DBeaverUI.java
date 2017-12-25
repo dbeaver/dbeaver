@@ -192,9 +192,8 @@ public class DBeaverUI implements DBPPlatformUI {
 
     public static Display getDisplay() {
         IWorkbench workbench = PlatformUI.getWorkbench();
-        IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
-        if (window != null) {
-            return window.getShell().getDisplay();
+        if (workbench != null) {
+            return workbench.getDisplay();
         } else {
             return Display.getDefault();
         }

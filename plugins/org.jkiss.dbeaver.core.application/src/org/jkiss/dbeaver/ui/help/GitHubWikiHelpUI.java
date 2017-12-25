@@ -34,7 +34,7 @@ import java.net.URL;
 public class GitHubWikiHelpUI extends AbstractHelpUI {
 
     private static final Log log = Log.getLog(GitHubWikiHelpUI.class);
-    public static final String GITHUB_HELP_ROOT = "https://github.com/serge-rider/dbeaver/wiki/";
+    public static final String GITHUB_HELP_ROOT = "https://github.com/dbeaver/dbeaver/wiki/";
 
     @Override
     public void displayHelp()

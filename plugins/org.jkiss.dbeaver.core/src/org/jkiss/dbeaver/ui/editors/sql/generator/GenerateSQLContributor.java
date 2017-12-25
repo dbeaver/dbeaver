@@ -46,8 +46,12 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.model.sql.SQLDataSource;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -482,6 +486,24 @@ public class GenerateSQLContributor extends CompoundContributionItem {
         }
     }
 
+    private abstract static class ProcedureAnalysisRunner extends BaseAnalysisRunner<DBSProcedure> {
+
+        protected ProcedureAnalysisRunner(List<DBSProcedure> entities)
+        {
+            super(entities);
+        }
+
+        protected Collection<? extends DBSEntityAttribute> getAllAttributes(DBRProgressMonitor monitor, DBSProcedure object) throws DBException
+        {
+            return Collections.emptyList();
+        }
+
+        protected Collection<? extends DBSEntityAttribute> getKeyAttributes(DBRProgressMonitor monitor, DBSProcedure object) throws DBException
+        {
+            return Collections.emptyList();
+        }
+    }
+
     private abstract static class ResultSetAnalysisRunner extends BaseAnalysisRunner<ResultSetModel> {
 
         ResultSetAnalysisRunner(DBPDataSource dataSource, ResultSetModel model)
@@ -795,4 +817,20 @@ public class GenerateSQLContributor extends CompoundContributionItem {
         };
     }
 
+    @NotNull
+    public static SQLGenerator<DBSProcedure> CALL_GENERATOR(final List<DBSProcedure> entities) {
+        return new ProcedureAnalysisRunner(entities) {
+
+            @Override
+            protected void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, DBSProcedure proc) throws DBException {
+                Collection<? extends DBSProcedureParameter> parameters = proc.getParameters(monitor);
+                DBPDataSource dataSource = proc.getDataSource();
+                if (dataSource instanceof SQLDataSource) {
+                    SQLDataSource sqlDataSource = (SQLDataSource) dataSource;
+                    SQLDialect sqlDialect = sqlDataSource.getSQLDialect();
+                    sqlDialect.generateStoredProcedureCall(sql, proc, parameters);
+                }
+            }
+        };
+    }
 }

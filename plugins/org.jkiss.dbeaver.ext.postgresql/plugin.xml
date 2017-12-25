@@ -253,6 +253,7 @@
             <type name="JSONB"/>
             <type name="BIT"/>
             <type name="REFCURSOR"/>
+            <type name="MONEY"/>
         </provider>
     </extension>
 
@@ -333,6 +334,9 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataManager">
+        <manager class="org.jkiss.dbeaver.ui.data.managers.StringValueManager" id="org.jkiss.dbeaver.ext.postgresql.edit.PostgreMoneyValueManager">
+            <supports dataSource="postgresql" typeName="money"/>
+        </manager>
         <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreEnumValueManager" id="org.jkiss.dbeaver.ext.postgresql.edit.PostgreEnumValueManager">
             <supports dataSource="postgresql" extension="E"/>
         </manager>

@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.exasol.manager;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolFunction;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolSchema;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -41,7 +42,7 @@ public class ExasolFunctionManager extends SQLObjectEditor<ExasolFunction, Exaso
     }
 
     @Override
-    public long getMakerOptions() {
+    public long getMakerOptions(DBPDataSource dataSource) {
         return FEATURE_EDITOR_ON_CREATE;
     }
 
