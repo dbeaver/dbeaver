@@ -755,6 +755,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                 null,
                 connectionInfo.getUserName(),
                 dataSource.isSavePassword() ? connectionInfo.getUserPassword() : null);
+            xml.addAttribute(RegistryConstants.ATTR_NATIVE_AUTH, connectionInfo.isNativeAuthentication());
 
             if (!CommonUtils.isEmpty(connectionInfo.getClientHomeId())) {
                 xml.addAttribute(RegistryConstants.ATTR_HOME, connectionInfo.getClientHomeId());
@@ -1148,6 +1149,10 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                             if (curDataSource.isSavePassword()) {
                                 config.setUserPassword(creds[1]);
                             }
+                        }
+                        String nativeAuth = atts.getValue(RegistryConstants.ATTR_NATIVE_AUTH);
+                        if (nativeAuth != null) {
+                            config.setNativeAuthentication(Boolean.parseBoolean(nativeAuth));
                         }
                         config.setClientHomeId(atts.getValue(RegistryConstants.ATTR_HOME));
                         config.setConnectionType(
