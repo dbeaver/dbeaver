@@ -303,7 +303,7 @@ public abstract class ValueViewDialog extends Dialog implements IValueEditorStan
             opened = true;
             int result = super.open();
             if (result == IDialogConstants.OK_ID) {
-                getValueController().updateSelectionValue(editedValue);
+                getValueController().updateValue(editedValue, true);
             }
             return result;
         } finally {

@@ -26,7 +26,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEStructEditor;
@@ -51,10 +50,7 @@ import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
 
@@ -194,14 +190,14 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
         return result;
     }
 
-    protected static boolean showScript(IWorkbenchWindow workbenchWindow, DBECommandContext commandContext, String dialogTitle)
+    protected static boolean showScript(IWorkbenchWindow workbenchWindow, DBECommandContext commandContext, Map<String, Object> options, String dialogTitle)
     {
         Collection<? extends DBECommand> commands = commandContext.getFinalCommands();
         StringBuilder script = new StringBuilder();
         for (DBECommand command : commands) {
             script.append(
                 SQLUtils.generateScript(commandContext.getExecutionContext().getDataSource(),
-                    command.getPersistActions(DBPScriptObject.EMPTY_OPTIONS),
+                    command.getPersistActions(options),
                     false));
         }
         DatabaseNavigatorView view = UIUtils.findView(workbenchWindow, DatabaseNavigatorView.class);
@@ -259,17 +255,18 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
 
     protected static class ObjectSaver implements DBRRunnableWithProgress {
         private final DBECommandContext commander;
+        private Map<String, Object> options;
 
-        public ObjectSaver(DBECommandContext commandContext)
-        {
-            this.commander = commandContext;
+        public ObjectSaver(DBECommandContext commander, Map<String, Object> options) {
+            this.commander = commander;
+            this.options = options;
         }
 
         @Override
         public void run(DBRProgressMonitor monitor) throws InvocationTargetException
         {
             try {
-                commander.saveChanges(monitor);
+                commander.saveChanges(monitor, options);
             } catch (DBException e) {
                 throw new InvocationTargetException(e);
             }

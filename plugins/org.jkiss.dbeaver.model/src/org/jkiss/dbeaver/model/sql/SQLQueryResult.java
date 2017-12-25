@@ -20,6 +20,10 @@ package org.jkiss.dbeaver.model.sql;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 /**
  * SQLQueryResult
  */
@@ -35,7 +39,7 @@ public class SQLQueryResult
     private Throwable error;
     private long queryTime;
     private String resultSetName;
-    private Throwable[] warnings;
+    private List<Throwable> warnings;
 
     public SQLQueryResult(@NotNull SQLQuery statement)
     {
@@ -124,11 +128,17 @@ public class SQLQueryResult
         this.resultSetName = resultSetName;
     }
 
-    public Throwable[] getWarnings() {
+    public List<Throwable> getWarnings() {
         return warnings;
     }
 
-    public void setWarnings(Throwable[] warnings) {
-        this.warnings = warnings;
+    public void addWarnings(Throwable[] warnings) {
+        if (warnings == null) {
+            return;
+        }
+        if (this.warnings == null) {
+            this.warnings = new ArrayList<>();
+        }
+        Collections.addAll(this.warnings, warnings);
     }
 }

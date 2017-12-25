@@ -32,6 +32,7 @@ import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.internal.editors.text.EditorsPlugin;
@@ -403,6 +404,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         addAction(menu, GROUP_SQL_EXTRAS, SQLEditorContributor.ACTION_CONTENT_ASSIST_PROPOSAL);
         addAction(menu, GROUP_SQL_EXTRAS, SQLEditorContributor.ACTION_CONTENT_ASSIST_TIP);
         addAction(menu, GROUP_SQL_EXTRAS, SQLEditorContributor.ACTION_CONTENT_ASSIST_INFORMATION);
+        menu.insertBefore(IWorkbenchActionConstants.MB_ADDITIONS, ActionUtils.makeCommandContribution(getSite(), "org.jkiss.dbeaver.ui.editors.sql.navigate.object"));
+
         {
             MenuManager formatMenu = new MenuManager("Format", "format");
             IAction formatAction = getAction(SQLEditorContributor.ACTION_CONTENT_FORMAT_PROPOSAL);
@@ -850,10 +853,12 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                             statementStart++;
                         }
                         // remove trailing spaces
+/*
                         while (statementStart < tokenOffset && Character.isWhitespace(document.getChar(tokenOffset - 1))) {
                             tokenOffset--;
                             tokenLength++;
                         }
+*/
                         if (tokenOffset == statementStart) {
                             // Empty statement
                             if (token.isEOF()) {
@@ -879,7 +884,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                         // make script line
                         return new SQLQuery(
                             getDataSource(),
-                            queryText.trim(),
+                            queryText,
                             statementStart,
                                 queryEndPos - statementStart);
                     } catch (BadLocationException ex) {

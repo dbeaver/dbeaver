@@ -444,6 +444,8 @@ class ResultSetPersister {
                 if (this.listener != null) {
                     this.listener.onUpdate(error == null);
                 }
+            } else if (error != null) {
+                DBUserInterface.getInstance().showError("Data error", "Error generating script", error);
             }
 
             return Status.OK_STATUS;

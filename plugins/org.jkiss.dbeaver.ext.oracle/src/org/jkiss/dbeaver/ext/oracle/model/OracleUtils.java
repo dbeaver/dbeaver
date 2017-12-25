@@ -81,35 +81,42 @@ public class OracleUtils {
                     "begin DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'SEGMENT_ATTRIBUTES'," + ddlFormat.isShowSegments() + ");  end;");
             }
 
-            String ddlQuery = "SELECT " +
-                    "DBMS_METADATA.GET_DDL(?,?" + (schema == null ? "" : ",?") + ")";
-            if (ddlFormat != OracleDDLFormat.COMPACT) {
-                ddlQuery += " || ' ' || DBMS_METADATA.GET_DEPENDENT_DDL('COMMENT',?" + (schema == null ? "" : ",?") + ")";
-            }
-            ddlQuery += " TXT FROM DUAL";
+            String ddl;
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                    ddlQuery)) {
-                int paramIndex = 1;
-                dbStat.setString(paramIndex++, objectType);
-                dbStat.setString(paramIndex++, object.getName());
+                "SELECT DBMS_METADATA.GET_DDL(?,?" + (schema == null ? "" : ",?") + ") TXT FROM DUAL")) {
+                dbStat.setString(1, objectType);
+                dbStat.setString(2, object.getName());
                 if (schema != null) {
-                    dbStat.setString(paramIndex++, schema.getName());
-                }
-                if (ddlFormat != OracleDDLFormat.COMPACT) {
-                    dbStat.setString(paramIndex++, object.getName());
-                    if (schema != null) {
-                        dbStat.setString(paramIndex++, schema.getName());
-                    }
+                    dbStat.setString(3, schema.getName());
                 }
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.next()) {
-                        return dbResult.getString(1);
+                        ddl = dbResult.getString(1);
                     } else {
                         log.warn("No DDL for " + objectType + " '" + objectFullName + "'");
                         return "-- EMPTY DDL";
                     }
                 }
             }
+            if (ddlFormat != OracleDDLFormat.COMPACT) {
+                try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                    "SELECT DBMS_METADATA.GET_DEPENDENT_DDL('COMMENT',?" + (schema == null ? "" : ",?") + ") TXT FROM DUAL")) {
+                    dbStat.setString(1, object.getName());
+                    if (schema != null) {
+                        dbStat.setString(2, schema.getName());
+                    }
+                    try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                        if (dbResult.next()) {
+                            ddl += "\n" + dbResult.getString(1);
+                        }
+                    }
+                } catch (Exception e) {
+                    // No dependent DDL or something went wrong
+                    log.debug("Error reading dependent DDL", e);
+                }
+            }
+            return ddl;
+
         } catch (SQLException e) {
             if (object instanceof OracleTableBase) {
                 log.error("Error generating Oracle DDL. Generate default.", e);

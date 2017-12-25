@@ -55,12 +55,6 @@ public class PostgreViewManager extends SQLTableManager<PostgreTableBase, Postgr
     }
 
     @Override
-    public long getMakerOptions()
-    {
-        return FEATURE_EDITOR_ON_CREATE;
-    }
-
-    @Override
     protected void validateObjectProperties(ObjectChangeCommand command)
         throws DBException
     {
