@@ -251,7 +251,10 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
             passwordText.setText(CommonUtils.notEmpty(connectionInfo.getUserPassword()));
         }
         if (windowsAuthetticationButton != null) {
-            windowsAuthetticationButton.setSelection(connectionInfo.isNativeAuthentication());
+            String winAuthProperty = connectionInfo.getProviderProperty(SQLServerConstants.PROP_CONNECTION_WINDOWS_AUTH);
+            if (winAuthProperty != null) {
+                windowsAuthetticationButton.setSelection(Boolean.parseBoolean(winAuthProperty));
+            }
             enableTexts();
         }
 
@@ -278,7 +281,8 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
             connectionInfo.setUserPassword(passwordText.getText());
         }
         if (windowsAuthetticationButton != null) {
-            connectionInfo.setNativeAuthentication(windowsAuthetticationButton.getSelection());
+            connectionInfo.setProviderProperty(SQLServerConstants.PROP_CONNECTION_WINDOWS_AUTH,
+                    String.valueOf(windowsAuthetticationButton.getSelection()));
         }
         super.saveSettings(dataSource);
     }
