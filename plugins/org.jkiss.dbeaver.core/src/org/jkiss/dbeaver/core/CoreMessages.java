@@ -996,6 +996,7 @@ public class CoreMessages extends NLS {
 	public static String pref_page_database_resultsets_group_plain_text;
 	public static String pref_page_database_resultsets_lable_value_format;
 	public static String pref_page_database_resultsets_label_maximum_column_length;
+	public static String pref_page_database_resultsets_label_text_show_nulls;
 	public static String pref_page_database_resultsets_label_text_delimiter_leading;
 	public static String pref_page_database_resultsets_label_text_delimiter_trailing;
 	// Connections
