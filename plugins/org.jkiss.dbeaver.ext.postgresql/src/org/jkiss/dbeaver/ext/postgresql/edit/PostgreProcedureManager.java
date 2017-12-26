@@ -58,7 +58,7 @@ public class PostgreProcedureManager extends SQLObjectEditor<PostgreProcedure, P
         throws DBException
     {
         if (CommonUtils.isEmpty(command.getObject().getName())) {
-            throw new DBException("Procedure name cannot be empty");
+            throw new DBException("Function name cannot be empty");
         }
     }
 
