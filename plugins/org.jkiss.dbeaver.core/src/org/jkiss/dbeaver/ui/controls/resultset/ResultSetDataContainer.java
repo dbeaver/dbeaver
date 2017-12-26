@@ -23,14 +23,7 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.data.DBDValueMeta;
-import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionSource;
-import org.jkiss.dbeaver.model.exec.DBCResultSet;
-import org.jkiss.dbeaver.model.exec.DBCResultSetMetaData;
-import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.DBCStatement;
-import org.jkiss.dbeaver.model.exec.DBCStatistics;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -45,10 +38,10 @@ public class ResultSetDataContainer implements DBSDataContainer {
 
     private static final Log log = Log.getLog(ResultSetDataContainer.class);
 
-    private final ResultSetDataContainer dataContainer;
+    private final DBSDataContainer dataContainer;
     private final ResultSetModel model;
 
-    public ResultSetDataContainer(ResultSetDataContainer dataContainer, ResultSetModel model) {
+    public ResultSetDataContainer(DBSDataContainer dataContainer, ResultSetModel model) {
         this.dataContainer = dataContainer;
         this.model = model;
     }
