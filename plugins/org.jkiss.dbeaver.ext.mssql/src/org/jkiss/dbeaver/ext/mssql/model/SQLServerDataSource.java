@@ -22,12 +22,8 @@ import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSDataType;
-
-import java.sql.Connection;
-import java.util.Locale;
+import org.jkiss.utils.CommonUtils;
 
 public class SQLServerDataSource extends GenericDataSource {
 
@@ -39,7 +35,7 @@ public class SQLServerDataSource extends GenericDataSource {
 
     @Override
     protected String getConnectionUserName(DBPConnectionConfiguration connectionInfo) {
-        if ("TRUE".equalsIgnoreCase(connectionInfo.getProviderProperty(SQLServerConstants.PROP_CONNECTION_WINDOWS_AUTH))) {
+        if (CommonUtils.toBoolean(connectionInfo.getProviderProperty(SQLServerConstants.PROP_CONNECTION_WINDOWS_AUTH))) {
             return "";
         } else {
             return super.getConnectionUserName(connectionInfo);
@@ -48,7 +44,7 @@ public class SQLServerDataSource extends GenericDataSource {
 
     @Override
     protected String getConnectionUserPassword(DBPConnectionConfiguration connectionInfo) {
-        if ("TRUE".equalsIgnoreCase(connectionInfo.getProviderProperty(SQLServerConstants.PROP_CONNECTION_WINDOWS_AUTH))) {
+        if (CommonUtils.toBoolean(connectionInfo.getProviderProperty(SQLServerConstants.PROP_CONNECTION_WINDOWS_AUTH))) {
             return "";
         } else {
             return super.getConnectionUserPassword(connectionInfo);
