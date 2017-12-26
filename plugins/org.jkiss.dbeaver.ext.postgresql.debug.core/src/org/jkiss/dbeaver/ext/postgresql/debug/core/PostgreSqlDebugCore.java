@@ -19,8 +19,6 @@ package org.jkiss.dbeaver.ext.postgresql.debug.core;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
@@ -41,27 +39,11 @@ public class PostgreSqlDebugCore {
     
     public static final String CONFIGURATION_TYPE = BUNDLE_SYMBOLIC_NAME + '.' + "pgSQL";//$NON-NLS-1$
 
-    public static CoreException abort(String message) {
-        return abort(message, null);
-    }
-
-    public static CoreException abort(String message, Throwable th) {
-        return new CoreException(newErrorStatus(message, th));
-    }
-
-    public static Status newErrorStatus(String message) {
-        return newErrorStatus(message, null);
-    }
-
-    public static Status newErrorStatus(String message, Throwable th) {
-        return new Status(IStatus.ERROR, BUNDLE_SYMBOLIC_NAME, message, th) ;
-    }
-
     public static ILaunchConfigurationWorkingCopy createConfiguration(DBSObject launchable)
             throws CoreException {
         boolean isInstance = launchable instanceof PostgreProcedure;
         if (!isInstance) {
-            throw PostgreSqlDebugCore.abort(PostgreSqlDebugCoreMessages.PostgreSqlDebugCore_e_procedure_required);
+            throw DebugCore.abort(PostgreSqlDebugCoreMessages.PostgreSqlDebugCore_e_procedure_required);
         }
         PostgreProcedure procedure = (PostgreProcedure) launchable;
         PostgreDataSource dataSource = procedure.getDataSource();

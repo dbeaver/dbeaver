@@ -23,6 +23,7 @@ import java.util.List;
 import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.Log;
@@ -50,6 +51,14 @@ public class DebugCore {
     public static final String ATTR_OID_DEFAULT = ""; //$NON-NLS-1$
 
     private static Log log = Log.getLog(DebugCore.class);
+
+    public static CoreException abort(String message, Throwable th) {
+        return new CoreException(newErrorStatus(message, th));
+    }
+
+    public static CoreException abort(String message) {
+        return abort(message, null);
+    }
 
     public static boolean canLaunch(ILaunchConfiguration configuration, String mode) {
         if (configuration == null || !configuration.exists()) {
@@ -134,6 +143,14 @@ public class DebugCore {
         default:
             break;
         }
+    }
+
+    public static Status newErrorStatus(String message, Throwable th) {
+        return new Status(IStatus.ERROR, BUNDLE_SYMBOLIC_NAME, message, th) ;
+    }
+
+    public static Status newErrorStatus(String message) {
+        return newErrorStatus(message, null);
     }
 
 }
