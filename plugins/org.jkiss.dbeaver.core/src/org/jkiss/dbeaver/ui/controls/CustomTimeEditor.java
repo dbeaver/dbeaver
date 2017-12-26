@@ -33,29 +33,52 @@ import java.util.Date;
  * CustomTimeEditor
  */
 public class CustomTimeEditor {
+	private static final String TIMESTAMP = "timestamp";
+	private static final String DATE = "date";
+	private static final String TIME = "time";
+
 	private DateTime dateEditor;
 	private DateTime timeEditor;
 	private Composite basePart;
+	private String formaterId;
 
 	private static final Log log = Log.getLog(ViewerColumnController.class);
 
-	public CustomTimeEditor(Composite parent, int style) {
+	public CustomTimeEditor(Composite parent, int style, String formaterId) {
+		if (formaterId == null || formaterId.isEmpty()) {
+			formaterId = TIMESTAMP;
+		}
+		this.formaterId = formaterId;
 		basePart = new Composite(parent, SWT.BORDER);
-		GridLayout layout = new GridLayout(2, false);
+		GridLayout layout;
+		if (formaterId.equals(TIMESTAMP)) {
+			layout = new GridLayout(2, false);
+		} else {
+			layout = new GridLayout(1, false);
+		}
 		layout.marginHeight = 0;
 		layout.marginWidth = 0;
 		basePart.setLayout(layout);
 
-		GridData dateGD = new GridData(SWT.FILL,SWT.FILL,false,false,1,1);
-		dateGD.widthHint=110;
-		GridData timeGD = new GridData(SWT.FILL,SWT.FILL,false,false,1,1);
-		timeGD.widthHint=90;
-		
-		this.dateEditor = new DateTime(basePart, SWT.DATE | SWT.LONG | SWT.DROP_DOWN | style);
-		this.dateEditor.setLayoutData(dateGD);
-		
-		this.timeEditor = new DateTime(basePart, SWT.TIME | SWT.DROP_DOWN | style);
-		this.timeEditor.setLayoutData(timeGD);
+		GridData dateGD = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+		dateGD.minimumWidth = 110;
+		GridData timeGD = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+		timeGD.minimumWidth = 90;
+
+		if (formaterId.equals(TIMESTAMP)) {
+			this.dateEditor = new DateTime(basePart, SWT.DATE | SWT.LONG | SWT.DROP_DOWN | style);
+			this.dateEditor.setLayoutData(dateGD);
+
+			this.timeEditor = new DateTime(basePart, SWT.TIME | SWT.DROP_DOWN | style);
+			this.timeEditor.setLayoutData(timeGD);
+		} else if (formaterId.equals(DATE)) {
+			this.dateEditor = new DateTime(basePart, SWT.DATE | SWT.LONG | SWT.DROP_DOWN | style);
+			this.dateEditor.setLayoutData(dateGD);
+		} else if (formaterId.equals(TIME)) {
+			this.timeEditor = new DateTime(basePart, SWT.TIME | SWT.DROP_DOWN | style);
+			this.timeEditor.setLayoutData(timeGD);
+		}
+
 	}
 
 	public void addSelectionAdapter(SelectionAdapter listener) {
@@ -70,18 +93,32 @@ public class CustomTimeEditor {
 	public void setValue(@Nullable Date value) {
 		Calendar calendar = Calendar.getInstance();
 		if (value != null) {
-            calendar.setTime(value);
+			calendar.setTime(value);
 
 		}
-		dateEditor.setDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH),
-				calendar.get(Calendar.DAY_OF_MONTH));
-		timeEditor.setTime(calendar.get(Calendar.HOUR), calendar.get(Calendar.MINUTE), calendar.get(Calendar.SECOND));
+		if (dateEditor != null && !dateEditor.isDisposed()) {
+			dateEditor.setDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH),
+					calendar.get(Calendar.DAY_OF_MONTH));
+		}
+		if (timeEditor != null && !timeEditor.isDisposed()) {
+			timeEditor.setTime(calendar.get(Calendar.HOUR), calendar.get(Calendar.MINUTE),
+					calendar.get(Calendar.SECOND));
+		}
 	}
 
 	public Date getValue() throws DBException {
 		Calendar calendar = Calendar.getInstance();
-		calendar.set(dateEditor.getYear(), dateEditor.getMonth(), dateEditor.getDay(), timeEditor.getHours(),
-				timeEditor.getMinutes(), timeEditor.getSeconds());
+
+		if (formaterId.equals(TIMESTAMP)) {
+			calendar.set(dateEditor.getYear(), dateEditor.getMonth(), dateEditor.getDay(), timeEditor.getHours(),
+					timeEditor.getMinutes(), timeEditor.getSeconds());
+		} else if (formaterId.equals(DATE)) {
+			calendar.set(dateEditor.getYear(), dateEditor.getMonth(), dateEditor.getDay());
+
+		} else if (formaterId.equals(TIME)) {
+			calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH),
+					timeEditor.getHours(), timeEditor.getMinutes(), timeEditor.getSeconds());
+		}
 
 		return calendar.getTime();
 	}

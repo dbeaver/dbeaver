@@ -25,6 +25,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.impl.data.DateTimeCustomValueHandler;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.controls.CustomTimeEditor;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -32,47 +33,53 @@ import org.jkiss.dbeaver.ui.data.IValueController;
 import java.util.Date;
 
 /**
-* DateTimeInlineEditor
-*/
+ * DateTimeInlineEditor
+ */
 public class DateTimeInlineEditor extends BaseValueEditor<Control> {
-    private CustomTimeEditor timeEditor;
+	private CustomTimeEditor timeEditor;
 
-    public DateTimeInlineEditor(IValueController controller) {
-        super(controller);
-    }
+	public DateTimeInlineEditor(IValueController controller) {
+		super(controller);
+	}
 
-    @Override
-    protected Control createControl(Composite editPlaceholder)
-    {
-        boolean inline = valueController.getEditType() == IValueController.EditType.INLINE;
+	@Override
+	protected Control createControl(Composite editPlaceholder) {
+		boolean inline = valueController.getEditType() == IValueController.EditType.INLINE;
+		String formaterId = "";
+		Object valueHandler = valueController.getValueHandler();
+		if (valueHandler instanceof DateTimeCustomValueHandler) {
+			DateTimeCustomValueHandler dateTimeValueHandler = (DateTimeCustomValueHandler) valueHandler;
+			formaterId = dateTimeValueHandler.getFormatterId(valueController.getValueType());
+		}
 
-		timeEditor = new CustomTimeEditor(valueController.getEditPlaceholder(), (inline ? SWT.BORDER : SWT.MULTI));
+		timeEditor = new CustomTimeEditor(valueController.getEditPlaceholder(), (inline ? SWT.BORDER : SWT.MULTI),formaterId);
 		timeEditor.setEditable(!valueController.isReadOnly());
 		timeEditor.addSelectionAdapter(new SelectionAdapter() {
-				@Override
-				public void widgetSelected(SelectionEvent e) {
-					dirty = true;
-				}
-			});
-        return timeEditor.getControl();
-    }
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				dirty = true;
+			}
+		});
+		return timeEditor.getControl();
+	}
 
-    @Override
-    public Object extractEditorValue() throws DBException {
-        try (DBCSession session = valueController.getExecutionContext().openSession(new VoidProgressMonitor(), DBCExecutionPurpose.UTIL, "Make datetime value from editor")) {
-            return valueController.getValueHandler().getValueFromObject(session, valueController.getValueType(), timeEditor.getValue(), false);
-        }
-    }
+	@Override
+	public Object extractEditorValue() throws DBException {
+		try (DBCSession session = valueController.getExecutionContext().openSession(new VoidProgressMonitor(),
+				DBCExecutionPurpose.UTIL, "Make datetime value from editor")) {
+			return valueController.getValueHandler().getValueFromObject(session, valueController.getValueType(),
+					timeEditor.getValue(), false);
+		}
+	}
 
-    @Override
-    public void primeEditorValue(@Nullable Object value) throws DBException
-    {
-        if (value instanceof Date) {
-            timeEditor.setValue((Date) value);
-        }
-        if (valueController.getEditType() == IValueController.EditType.INLINE) {
-            timeEditor.selectAll();
-        }
-    }
+	@Override
+	public void primeEditorValue(@Nullable Object value) throws DBException {
+		if (value instanceof Date) {
+			timeEditor.setValue((Date) value);
+		}
+		if (valueController.getEditType() == IValueController.EditType.INLINE) {
+			timeEditor.selectAll();
+		}
+	}
 
 }
