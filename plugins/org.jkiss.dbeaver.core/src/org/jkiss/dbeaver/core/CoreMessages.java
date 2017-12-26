@@ -414,6 +414,8 @@ public class CoreMessages extends NLS {
 	public static String data_transfer_wizard_output_checkbox_new_connection;
 	public static String data_transfer_wizard_output_checkbox_open_folder;
 	public static String data_transfer_wizard_output_checkbox_select_row_count;
+	public static String data_transfer_wizard_output_checkbox_selected_columns_only;
+	public static String data_transfer_wizard_output_checkbox_selected_rows_only;
 	public static String data_transfer_wizard_output_combo_extract_type_item_by_segments;
 	public static String data_transfer_wizard_output_combo_extract_type_item_single_query;
 	public static String data_transfer_wizard_output_description;
