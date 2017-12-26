@@ -16,13 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.controls;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Locale;
-import java.util.Map;
-
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.layout.GridData;
@@ -32,35 +25,37 @@ import org.eclipse.swt.widgets.DateTime;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.impl.data.formatters.TimestampFormatSample;
+
+import java.util.Calendar;
+import java.util.Date;
 
 /**
  * CustomTimeEditor
  */
 public class CustomTimeEditor {
-	private final static String FORMAT_PATTERN = "pattern";
 	private DateTime dateEditor;
 	private DateTime timeEditor;
 	private Composite basePart;
-	private static final String TIMESTAMP_DEFAULT_FORMAT = "yyyy-MM-dd HH:mm:ss";
-	private String format = "";
 
 	private static final Log log = Log.getLog(ViewerColumnController.class);
 
 	public CustomTimeEditor(Composite parent, int style) {
 		basePart = new Composite(parent, SWT.BORDER);
 		GridLayout layout = new GridLayout(2, false);
-		layout.marginHeight = 1;
-		layout.marginWidth = 1;
+		layout.marginHeight = 0;
+		layout.marginWidth = 0;
 		basePart.setLayout(layout);
 
-		this.dateEditor = new DateTime(basePart, SWT.DATE | SWT.DROP_DOWN | style);
-		GridData layoutDataDate = new GridData(GridData.FILL, GridData.FILL, true, true, 1, 1);
-		GridData layoutDataTime = new GridData(GridData.END, GridData.FILL, true, true, 1, 1);
-		this.dateEditor.setLayoutData(layoutDataDate);
+		GridData dateGD = new GridData(SWT.FILL,SWT.FILL,false,false,1,1);
+		dateGD.widthHint=110;
+		GridData timeGD = new GridData(SWT.FILL,SWT.FILL,false,false,1,1);
+		timeGD.widthHint=90;
+		
+		this.dateEditor = new DateTime(basePart, SWT.DATE | SWT.LONG | SWT.DROP_DOWN | style);
+		this.dateEditor.setLayoutData(dateGD);
+		
 		this.timeEditor = new DateTime(basePart, SWT.TIME | SWT.DROP_DOWN | style);
-		this.timeEditor.setLayoutData(layoutDataTime);
-		this.format = getTimestampFormat();
+		this.timeEditor.setLayoutData(timeGD);
 	}
 
 	public void addSelectionAdapter(SelectionAdapter listener) {
@@ -72,26 +67,10 @@ public class CustomTimeEditor {
 		}
 	}
 
-	private String getTimestampFormat() {
-		TimestampFormatSample prefFormatt = new TimestampFormatSample();
-		Map<Object, Object> map = prefFormatt.getDefaultProperties(Locale.getDefault());
-		Object pattern = map.get(FORMAT_PATTERN);
-		if (pattern instanceof String) {
-			format = (String) pattern;
-			return format;
-		}
-		return TIMESTAMP_DEFAULT_FORMAT;
-	}
-
-	public void setValue(@Nullable String value) {
+	public void setValue(@Nullable Date value) {
 		Calendar calendar = Calendar.getInstance();
 		if (value != null) {
-			try {
-				Date date = new SimpleDateFormat(format).parse((String) value);
-				calendar.setTime(date);
-			} catch (ParseException e) {
-				log.error("Input value is null", e);
-			}
+            calendar.setTime(value);
 
 		}
 		dateEditor.setDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH),
@@ -99,13 +78,12 @@ public class CustomTimeEditor {
 		timeEditor.setTime(calendar.get(Calendar.HOUR), calendar.get(Calendar.MINUTE), calendar.get(Calendar.SECOND));
 	}
 
-	public String getValue() throws DBException {
+	public Date getValue() throws DBException {
 		Calendar calendar = Calendar.getInstance();
 		calendar.set(dateEditor.getYear(), dateEditor.getMonth(), dateEditor.getDay(), timeEditor.getHours(),
 				timeEditor.getMinutes(), timeEditor.getSeconds());
 
-		return new SimpleDateFormat(format).format(calendar.getTime());
-
+		return calendar.getTime();
 	}
 
 	public void setEditable(boolean editable) {

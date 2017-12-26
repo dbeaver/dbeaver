@@ -23,12 +23,13 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.controls.CustomTimeEditor;
 import org.jkiss.dbeaver.ui.data.IValueController;
+
+import java.util.Date;
 
 /**
 * DateTimeInlineEditor
@@ -59,18 +60,16 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
     @Override
     public Object extractEditorValue() throws DBException {
         try (DBCSession session = valueController.getExecutionContext().openSession(new VoidProgressMonitor(), DBCExecutionPurpose.UTIL, "Make datetime value from editor")) {
-            final String strValue = timeEditor.getValue();
-            return valueController.getValueHandler().getValueFromObject(session, valueController.getValueType(), strValue, false);
+            return valueController.getValueHandler().getValueFromObject(session, valueController.getValueType(), timeEditor.getValue(), false);
         }
     }
 
     @Override
     public void primeEditorValue(@Nullable Object value) throws DBException
     {
-        final String strValue = value == null ?
-            "" :
-            valueController.getValueHandler().getValueDisplayString(valueController.getValueType(), value, DBDDisplayFormat.EDIT);
-        timeEditor.setValue(strValue);
+        if (value instanceof Date) {
+            timeEditor.setValue((Date) value);
+        }
         if (valueController.getEditType() == IValueController.EditType.INLINE) {
             timeEditor.selectAll();
         }
