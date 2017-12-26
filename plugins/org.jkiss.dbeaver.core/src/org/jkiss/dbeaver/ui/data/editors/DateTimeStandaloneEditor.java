@@ -26,6 +26,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.impl.data.DateTimeCustomValueHandler;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomTimeEditor;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -59,9 +60,14 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
         if (valueController.isReadOnly()) {
             style |= SWT.READ_ONLY;
         }
-
+        String formaterId = "";
+		Object valueHandler = valueController.getValueHandler();
+		if (valueHandler instanceof DateTimeCustomValueHandler) {
+			DateTimeCustomValueHandler dateTimeValueHandler = (DateTimeCustomValueHandler) valueHandler;
+			formaterId = dateTimeValueHandler.getFormatterId(valueController.getValueType());
+		}
         UIUtils.createControlLabel(panel, "Time").setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-        timeEditor = new CustomTimeEditor(panel, style);
+        timeEditor = new CustomTimeEditor(panel, style,formaterId);
 		timeEditor.addSelectionAdapter(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
