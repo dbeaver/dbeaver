@@ -19,15 +19,16 @@ package org.jkiss.dbeaver.ext.postgresql.internal.debug.core.model;
 
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.debug.ProcedureDebugController;
 import org.jkiss.dbeaver.debug.core.model.DatabaseThread;
 import org.jkiss.dbeaver.debug.core.model.IDatabaseDebugTarget;
 import org.jkiss.dbeaver.ext.postgresql.internal.debug.core.PostgreSqlDebugCoreMessages;
 
 public class PgSqlThread extends DatabaseThread {
     
-    private final PgSqlDebugController controller;
+    private final ProcedureDebugController controller;
 
-    public PgSqlThread(IDatabaseDebugTarget target, PgSqlDebugController controller)
+    public PgSqlThread(IDatabaseDebugTarget target, ProcedureDebugController controller)
     {
         super(target);
         this.controller = controller;

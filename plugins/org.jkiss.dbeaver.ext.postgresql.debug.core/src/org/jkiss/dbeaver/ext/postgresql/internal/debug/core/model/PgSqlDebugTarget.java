@@ -21,20 +21,21 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.IProcess;
+import org.jkiss.dbeaver.debug.ProcedureDebugController;
 import org.jkiss.dbeaver.debug.core.DebugCore;
 import org.jkiss.dbeaver.debug.core.model.DatabaseDebugTarget;
 import org.jkiss.dbeaver.debug.core.model.DatabaseThread;
 import org.jkiss.dbeaver.ext.postgresql.internal.debug.core.PostgreSqlDebugCoreMessages;
 
-public class PgSqlDebugTarget extends DatabaseDebugTarget<PgSqlDebugController> {
+public class PgSqlDebugTarget extends DatabaseDebugTarget<ProcedureDebugController> {
     
-    public PgSqlDebugTarget(ILaunch launch, IProcess process, PgSqlDebugController controller)
+    public PgSqlDebugTarget(ILaunch launch, IProcess process, ProcedureDebugController controller)
     {
         super(DebugCore.MODEL_IDENTIFIER_PROCEDURE, launch, process, controller);
     }
 
     @Override
-    protected DatabaseThread newThread(PgSqlDebugController controller)
+    protected DatabaseThread newThread(ProcedureDebugController controller)
     {
         return new PgSqlThread(this, controller);
     }
