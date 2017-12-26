@@ -39,6 +39,7 @@
     <extension-point id="org.jkiss.dbeaver.tools" name="%extension-point.org.jkiss.dbeaver.tools.name" schema="schema/org.jkiss.dbeaver.tools.exsd"/>
     <extension-point id="org.jkiss.dbeaver.product.bundles" name="%extension-point.org.jkiss.dbeaver.product.bundles.name" schema="schema/org.jkiss.dbeaver.product.bundles.exsd"/>
     <extension-point id="org.jkiss.dbeaver.workbenchHandler" name="%extension-point.org.jkiss.dbeaver.workbenchHandler.name" schema="schema/org.jkiss.dbeaver.workbenchHandler.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.language" name="%extension-point.org.jkiss.dbeaver.language.name" schema="schema/org.jkiss.dbeaver.language.exsd"/>
 
     <extension point="org.eclipse.core.contenttype.contentTypes">
         <content-type
@@ -3609,6 +3610,14 @@
                 label="HTML"
                 description="%sql.convert.html.description"
                 class="org.jkiss.dbeaver.ui.editors.sql.convert.impl.HTMLSQLConverter"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.language">
+        <language code="en" label="%language.en.label"/>
+        <language code="zh" label="%language.zh.label"/>
+        <language code="ru" label="%language.ru.label"/>
+        <language code="it" label="%language.it.label"/>
+        <language code="de" label="%language.de.label"/>
     </extension>
 
     <extension
