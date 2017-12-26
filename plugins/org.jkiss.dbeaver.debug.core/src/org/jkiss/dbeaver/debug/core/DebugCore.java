@@ -46,6 +46,9 @@ public class DebugCore {
     public static final String ATTR_DATABASE = BUNDLE_SYMBOLIC_NAME + '.' + "ATTR_DATABASE"; //$NON-NLS-1$
     public static final String ATTR_DATABASE_DEFAULT = ""; //$NON-NLS-1$
     
+    public static final String ATTR_OID = BUNDLE_SYMBOLIC_NAME + '.' + "ATTR_OID"; //$NON-NLS-1$
+    public static final String ATTR_OID_DEFAULT = ""; //$NON-NLS-1$
+
     private static Log log = Log.getLog(DebugCore.class);
 
     public static boolean canLaunch(ILaunchConfiguration configuration, String mode) {
