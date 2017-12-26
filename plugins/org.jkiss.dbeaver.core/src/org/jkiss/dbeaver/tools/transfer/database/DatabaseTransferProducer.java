@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetDataContainer;
 
 /**
  * Data container transfer producer
@@ -68,8 +69,15 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
         DatabaseProducerSettings settings)
         throws DBException {
         String contextTask = CoreMessages.data_transfer_wizard_job_task_export;
+
         DBPDataSource dataSource = getSourceObject().getDataSource();
         assert (dataSource != null);
+
+        if (dataContainer instanceof ResultSetDataContainer) {
+            ((ResultSetDataContainer) dataContainer).getOptions().setExportSelectedRows(settings.isSelectedRowsOnly());
+            ((ResultSetDataContainer) dataContainer).getOptions().setExportSelectedColumns(settings.isSelectedColumnsOnly());
+        }
+
         boolean newConnection = settings.isOpenNewConnections();
         boolean forceDataReadTransactions = Boolean.TRUE.equals(dataSource.getDataSourceFeature(FEATURE_FORCE_TRANSACTIONS));
         DBCExecutionContext context = newConnection ?
