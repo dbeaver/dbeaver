@@ -208,7 +208,7 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant
                         public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
                             PostgreProcedure procedure = procSchema.getProcedure(monitor, procId);
                             if (procedure == null) {
-                                throw new DBException("Procedure '" + procName + "' not found in schema '" + procSchema.getName() + "'");
+                                throw new DBException("Function '" + procName + "' not found in schema '" + procSchema.getName() + "'");
                             }
                             return procedure;
                         }
