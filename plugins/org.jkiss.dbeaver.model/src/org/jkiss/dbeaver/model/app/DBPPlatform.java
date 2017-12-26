@@ -42,7 +42,7 @@ public interface DBPPlatform
     DBPApplication getApplication();
 
     @NotNull
-    Locale getRuntimeLocale();
+    DBPPlatformLanguage getLanguage();
 
     @NotNull
     DBNModel getNavigatorModel();

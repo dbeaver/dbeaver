@@ -33,13 +33,19 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.app.DBPPlatformLanguage;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.registry.language.PlatformLanguageDescriptor;
+import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TextWithOpenFile;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.utils.SystemVariablesResolver;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.List;
 
 /**
  * PrefPageDatabaseGeneral
@@ -49,6 +55,7 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.common"; //$NON-NLS-1$
 
     private Button automaticUpdateCheck;
+    private Combo workspaceLanguage;
 
     private Button longOperationsCheck;
     private Spinner longOperationsTimeout;
@@ -76,9 +83,23 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
         Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
 
         {
-            Group groupObjects = UIUtils.createControlGroup(composite, CoreMessages.pref_page_ui_general_group_general, 1, GridData.VERTICAL_ALIGN_BEGINNING, 300);
-            automaticUpdateCheck = UIUtils.createCheckbox(groupObjects, CoreMessages.pref_page_ui_general_checkbox_automatic_updates, false);
-            automaticUpdateCheck.setLayoutData(new GridData(GridData.BEGINNING, GridData.BEGINNING, true, false, 2, 1));
+            Group groupObjects = UIUtils.createControlGroup(composite, CoreMessages.pref_page_ui_general_group_general, 2, GridData.VERTICAL_ALIGN_BEGINNING, 300);
+            automaticUpdateCheck = UIUtils.createCheckbox(groupObjects, CoreMessages.pref_page_ui_general_checkbox_automatic_updates, null, false, 2);
+            //automaticUpdateCheck.setLayoutData(new GridData(GridData.BEGINNING, GridData.BEGINNING, true, false, 2, 1));
+
+            workspaceLanguage = UIUtils.createLabelCombo(groupObjects, "Language", "Application language - used for UI localization", SWT.READ_ONLY | SWT.DROP_DOWN);
+            List<PlatformLanguageDescriptor> languages = PlatformLanguageRegistry.getInstance().getLanguages();
+            DBPPlatformLanguage pLanguage = DBeaverCore.getInstance().getLanguage();
+            for (int i = 0; i < languages.size(); i++) {
+                PlatformLanguageDescriptor lang = languages.get(i);
+                workspaceLanguage.add(lang.getLabel());
+                if (CommonUtils.equalObjects(pLanguage, lang)) {
+                    workspaceLanguage.select(i);
+                }
+            }
+            if (workspaceLanguage.getSelectionIndex() < 0) {
+                workspaceLanguage.select(0);
+            }
         }
 
         // Agent settings
@@ -165,6 +186,10 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
     @Override
     public boolean performOk()
     {
+        if (workspaceLanguage.getSelectionIndex() >= 0) {
+            PlatformLanguageDescriptor language = PlatformLanguageRegistry.getInstance().getLanguages().get(workspaceLanguage.getSelectionIndex());
+            DBeaverCore.getInstance().setPlatformLanguage(language);
+        }
         DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
 
         store.setValue(DBeaverPreferences.UI_AUTO_UPDATE_CHECK, automaticUpdateCheck.getSelection());
