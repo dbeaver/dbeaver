@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.debug.ProcedureDebugController;
 import org.jkiss.dbeaver.debug.core.DebugCore;
 import org.jkiss.dbeaver.debug.core.model.DatabaseDebugTarget;
 import org.jkiss.dbeaver.debug.core.model.DatabaseThread;
+import org.jkiss.dbeaver.debug.core.model.ProcedureThread;
 import org.jkiss.dbeaver.ext.postgresql.internal.debug.core.PostgreSqlDebugCoreMessages;
 
 public class PgSqlDebugTarget extends DatabaseDebugTarget<ProcedureDebugController> {
@@ -37,7 +38,7 @@ public class PgSqlDebugTarget extends DatabaseDebugTarget<ProcedureDebugControll
     @Override
     protected DatabaseThread newThread(ProcedureDebugController controller)
     {
-        return new PgSqlThread(this, controller);
+        return new ProcedureThread(this, controller);
     }
 
     @Override
