@@ -39,11 +39,9 @@ public class PostgreSqlDebugCore {
     
     public static final String BUNDLE_SYMBOLIC_NAME = "org.jkiss.dbeaver.ext.postgresql.debug.core"; //$NON-NLS-1$
     
-    public static final String MODEL_IDENTIFIER = BUNDLE_SYMBOLIC_NAME;
+    public static final String CONFIGURATION_TYPE = BUNDLE_SYMBOLIC_NAME + '.' + "pgSQL";//$NON-NLS-1$
 
-    public static final String CONFIGURATION_TYPE = MODEL_IDENTIFIER + '.' + "pgSQL";//$NON-NLS-1$
-
-    public static final String ATTR_OID = MODEL_IDENTIFIER + '.' + "ATTR_OID"; //$NON-NLS-1$
+    public static final String ATTR_OID = BUNDLE_SYMBOLIC_NAME + '.' + "ATTR_OID"; //$NON-NLS-1$
 
     public static final String ATTR_OID_DEFAULT = ""; //$NON-NLS-1$
 
