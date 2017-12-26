@@ -32,7 +32,7 @@ public class SQLServerMessages extends NLS {
 
     public static String dialog_connection_advanced_tab;
     public static String dialog_connection_advanced_tab_tooltip;
-    public static String dialog_connection_browse_button;
+    public static String dialog_connection_windows_authentication_button;
     public static String dialog_connection_database_schema_label;
     public static String dialog_connection_general_tab;
     public static String dialog_connection_general_tab_tooltip;
