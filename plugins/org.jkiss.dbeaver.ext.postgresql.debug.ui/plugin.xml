@@ -78,7 +78,7 @@
          point="org.eclipse.debug.ui.debugModelPresentations">
       <debugModelPresentation
             class="org.jkiss.dbeaver.ext.postgresql.internal.debug.ui.PgSqlDebugModelPresentation"
-            id="org.jkiss.dbeaver.ext.postgresql.debug.core">
+            id="org.jkiss.dbeaver.debug.core.procedure">
       </debugModelPresentation>
    </extension>
 
