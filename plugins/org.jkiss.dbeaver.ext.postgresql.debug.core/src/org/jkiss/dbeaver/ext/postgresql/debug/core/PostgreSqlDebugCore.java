@@ -41,10 +41,6 @@ public class PostgreSqlDebugCore {
     
     public static final String CONFIGURATION_TYPE = BUNDLE_SYMBOLIC_NAME + '.' + "pgSQL";//$NON-NLS-1$
 
-    public static final String ATTR_OID = BUNDLE_SYMBOLIC_NAME + '.' + "ATTR_OID"; //$NON-NLS-1$
-
-    public static final String ATTR_OID_DEFAULT = ""; //$NON-NLS-1$
-
     public static CoreException abort(String message) {
         return abort(message, null);
     }
@@ -82,7 +78,7 @@ public class PostgreSqlDebugCore {
         ILaunchConfigurationWorkingCopy workingCopy = createConfiguration(container, name);
         workingCopy.setAttribute(DebugCore.ATTR_DATASOURCE, dataSourceContainer.getId());
         workingCopy.setAttribute(DebugCore.ATTR_DATABASE, databaseName);
-        workingCopy.setAttribute(ATTR_OID, String.valueOf(procedure.getObjectId()));
+        workingCopy.setAttribute(DebugCore.ATTR_OID, String.valueOf(procedure.getObjectId()));
         return workingCopy;
     }
 
