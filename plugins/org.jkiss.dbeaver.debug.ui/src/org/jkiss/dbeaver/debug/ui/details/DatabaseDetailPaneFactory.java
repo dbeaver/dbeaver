@@ -10,7 +10,7 @@ import org.eclipse.debug.ui.IDetailPane;
 import org.eclipse.debug.ui.IDetailPaneFactory;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.jkiss.dbeaver.debug.core.DebugCore;
-import org.jkiss.dbeaver.debug.internal.ui.DebugUiMessages;
+import org.jkiss.dbeaver.debug.internal.ui.DebugUIMessages;
 
 public class DatabaseDetailPaneFactory implements IDetailPaneFactory {
 
@@ -73,7 +73,7 @@ public class DatabaseDetailPaneFactory implements IDetailPaneFactory {
     {
         if (names == null) {
             names.put(DatabaseStandardBreakpointPane.DETAIL_PANE_STANDARD_BREAKPOINT,
-                    DebugUiMessages.DatabaseStandardBreakpointPane_name);
+                    DebugUIMessages.DatabaseStandardBreakpointPane_name);
         }
         return names;
     }
@@ -88,7 +88,7 @@ public class DatabaseDetailPaneFactory implements IDetailPaneFactory {
     {
         if (descriptions == null) {
             descriptions.put(DatabaseStandardBreakpointPane.DETAIL_PANE_STANDARD_BREAKPOINT,
-                    DebugUiMessages.DatabaseStandardBreakpointPane_description);
+                    DebugUIMessages.DatabaseStandardBreakpointPane_description);
         }
         return descriptions;
     }

@@ -42,7 +42,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
-import org.jkiss.dbeaver.debug.internal.ui.DebugUiInternals;
+import org.jkiss.dbeaver.debug.internal.ui.DebugUIInternals;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 public class LaunchContributionItem extends ContributionItem {
@@ -81,14 +81,14 @@ public class LaunchContributionItem extends ContributionItem {
         int accelerator = 1;
         List<ILaunchConfiguration> configurations = extractSharedConfigurations(selected);
         for (ILaunchConfiguration configuration : configurations) {
-            IAction action = DebugUiInternals.createConfigurationAction(configuration, mode, accelerator);
+            IAction action = DebugUIInternals.createConfigurationAction(configuration, mode, accelerator);
             if (action != null) {
                 accelerator++;
                 ActionContributionItem item = new ActionContributionItem(action);
                 item.fill(menu, -1);
             }
         }
-        Map<IAction, String> shortcutActions = DebugUiInternals.createShortcutActions(selected, mode, accelerator);
+        Map<IAction, String> shortcutActions = DebugUIInternals.createShortcutActions(selected, mode, accelerator);
         // we need a separator if the shared config entry has been added
         // and there are following shortcuts
         if (menu.getItemCount() > 0 && shortcutActions.size() > 0) {
@@ -186,7 +186,7 @@ public class LaunchContributionItem extends ContributionItem {
     {
         List<ILaunchConfiguration> configurations = new ArrayList<>();
         for (Object object : selection) {
-            ILaunchConfiguration config = DebugUiInternals.isSharedConfig(object);
+            ILaunchConfiguration config = DebugUIInternals.isSharedConfig(object);
             if (config != null) {
                 configurations.add(config);
             }

@@ -19,8 +19,8 @@ package org.jkiss.dbeaver.debug.internal.ui;
 
 import org.eclipse.osgi.util.NLS;
 
-public class DebugUiMessages extends NLS {
-    private static final String BUNDLE_NAME = "org.jkiss.dbeaver.debug.internal.ui.DebugUiMessages"; //$NON-NLS-1$
+public class DebugUIMessages extends NLS {
+    private static final String BUNDLE_NAME = "org.jkiss.dbeaver.debug.internal.ui.DebugUIMessages"; //$NON-NLS-1$
     public static String DatabaseStandardBreakpointPane_description;
     public static String DatabaseStandardBreakpointPane_name;
     public static String DatabaseTab_database_group_text;
@@ -33,10 +33,10 @@ public class DebugUiMessages extends NLS {
     public static String LaunchShortcut_select_cobfiguration_title;
     static {
         // initialize resource bundle
-        NLS.initializeMessages(BUNDLE_NAME, DebugUiMessages.class);
+        NLS.initializeMessages(BUNDLE_NAME, DebugUIMessages.class);
     }
 
-    private DebugUiMessages()
+    private DebugUIMessages()
     {
     }
 }
