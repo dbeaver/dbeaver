@@ -17,12 +17,19 @@
  */
 package org.jkiss.dbeaver.debug;
 
-import org.eclipse.core.runtime.IStatus;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBRResult;
 
+//FIXME:AF: we need "operation result" interface like IStatus to express the result of operation
+//FIXME:AF: so let's return void for now and let's throw an exception for any issue (poor practice)
+
+/**
+ * This interface is expected to be used in synch manner
+ *
+ */
 public interface DBGController {
 
-    public IStatus connect(DBRProgressMonitor monitor);
+    public DBRResult connect(DBRProgressMonitor monitor);
 
     public void resume();
 
