@@ -96,8 +96,8 @@ class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoadService<
                 dataFilter,
                 offset,
                 maxRows,
-                DBSDataContainer.FLAG_READ_PSEUDO
-            );
+                DBSDataContainer.FLAG_READ_PSEUDO,
+                null);
         } catch (DBException e) {
             error = e;
         } finally {

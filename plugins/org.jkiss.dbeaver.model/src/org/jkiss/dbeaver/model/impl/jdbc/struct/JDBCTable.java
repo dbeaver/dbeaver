@@ -42,6 +42,8 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.ArrayUtils;
 
+import java.util.List;
+
 /**
  * JDBC abstract table implementation
  */
@@ -104,7 +106,10 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
     @NotNull
     @Override
-    public DBCStatistics readData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @NotNull DBDDataReceiver dataReceiver, @Nullable DBDDataFilter dataFilter, long firstRow, long maxRows, long flags)
+    public DBCStatistics readData(@NotNull DBCExecutionSource source, @NotNull DBCSession session,
+                                  @NotNull DBDDataReceiver dataReceiver, @Nullable DBDDataFilter dataFilter,
+                                  long firstRow, long maxRows, long flags,
+                                  List<Long> selectedRows)
         throws DBCException
     {
         DBCStatistics statistics = new DBCStatistics();
@@ -193,7 +198,9 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                                 // Fetch not more than max rows
                                 break;
                             }
-                            dataReceiver.fetchRow(session, dbResult);
+                            if (selectedRows == null || selectedRows.contains(rowCount)) {
+                                dataReceiver.fetchRow(session, dbResult);
+                            }
                             rowCount++;
                             if (rowCount % 100 == 0) {
                                 monitor.subTask(rowCount + ModelMessages.model_jdbc__rows_fetched);

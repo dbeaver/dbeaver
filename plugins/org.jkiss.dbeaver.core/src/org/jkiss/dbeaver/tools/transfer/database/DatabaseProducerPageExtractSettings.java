@@ -40,6 +40,9 @@ public class DatabaseProducerPageExtractSettings extends ActiveWizardPage<DataTr
     private Text segmentSizeText;
     private Button newConnectionCheckbox;
     private Button rowCountCheckbox;
+    //private Button selectedColumnsOnlyCheckbox;
+    private Label selectedRowsOnlyLabel;
+    private Button selectedRowsOnlyCheckbox;
 
     public DatabaseProducerPageExtractSettings() {
         super("Extraction settings");
@@ -84,7 +87,9 @@ public class DatabaseProducerPageExtractSettings extends ActiveWizardPage<DataTr
             }
             threadsNumText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 3, 1));
 
+            GridData gridData = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 3, 1);
             {
+
                 UIUtils.createControlLabel(generalSettings, CoreMessages.data_transfer_wizard_output_label_extract_type);
                 rowsExtractType = new Combo(generalSettings, SWT.DROP_DOWN | SWT.READ_ONLY);
                 rowsExtractType.setItems(new String[] {
@@ -125,7 +130,7 @@ public class DatabaseProducerPageExtractSettings extends ActiveWizardPage<DataTr
                     settings.setOpenNewConnections(newConnectionCheckbox.getSelection());
                 }
             });
-            newConnectionCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 3, 1));
+            newConnectionCheckbox.setLayoutData(gridData);
 
             rowCountCheckbox = UIUtils.createLabelCheckbox(generalSettings, CoreMessages.data_transfer_wizard_output_checkbox_select_row_count, true);
             rowCountCheckbox.addSelectionListener(new SelectionAdapter() {
@@ -134,7 +139,31 @@ public class DatabaseProducerPageExtractSettings extends ActiveWizardPage<DataTr
                     settings.setQueryRowCount(rowCountCheckbox.getSelection());
                 }
             });
-            rowCountCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 3, 1));
+            rowCountCheckbox.setLayoutData(gridData);
+
+            boolean hasSelection = getWizard().getCurrentSelection() != null && !getWizard().getCurrentSelection().isEmpty();
+/*
+            selectedColumnsOnlyCheckbox = UIUtils.createLabelCheckbox(generalSettings, CoreMessages.data_transfer_wizard_output_checkbox_selected_columns_only, false);
+            selectedColumnsOnlyCheckbox.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    settings.setSelectedColumnsOnly(selectedColumnsOnlyCheckbox.getSelection());
+                }
+            });
+            selectedColumnsOnlyCheckbox.setEnabled(hasSelection);
+            selectedColumnsOnlyCheckbox.setLayoutData(gridData);
+*/
+            selectedRowsOnlyLabel = UIUtils.createControlLabel(generalSettings, CoreMessages.data_transfer_wizard_output_checkbox_selected_rows_only);
+            selectedRowsOnlyCheckbox = new Button(generalSettings, SWT.CHECK);
+            selectedRowsOnlyCheckbox.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    settings.setSelectedRowsOnly(selectedRowsOnlyCheckbox.getSelection());
+                }
+            });
+            selectedRowsOnlyLabel.setEnabled(hasSelection);
+            selectedRowsOnlyCheckbox.setEnabled(hasSelection);
+            selectedRowsOnlyCheckbox.setLayoutData(gridData);
         }
 
         setControl(composite);
