@@ -24,6 +24,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.e4.core.services.nls.ILocaleChangeService;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
@@ -46,6 +47,7 @@ import org.jkiss.dbeaver.registry.PluginServiceRegistry;
 import org.jkiss.dbeaver.registry.ProjectRegistry;
 import org.jkiss.dbeaver.registry.datatype.DataTypeProviderRegistry;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
+import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
 import org.jkiss.dbeaver.registry.sql.SQLFormatterConfigurationRegistry;
 import org.jkiss.dbeaver.runtime.IPluginService;
 import org.jkiss.dbeaver.runtime.jobs.KeepAliveJob;
@@ -65,6 +67,7 @@ import java.net.ProxySelector;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * DBeaverCore
@@ -77,6 +80,7 @@ public class DBeaverCore implements DBPPlatform {
     private static final Log log = Log.getLog(DBeaverCore.class);
 
     public static final String TEMP_PROJECT_NAME = ".dbeaver-temp"; //$NON-NLS-1$
+    public static final String PLATFORM_LANGUAGE_PROP = "platform-language"; //$NON-NLS-1$
 
     private static final DBPApplication DEFAULT_APPLICATION = new EclipseApplication();
 
@@ -88,6 +92,7 @@ public class DBeaverCore implements DBPPlatform {
 
     private File tempFolder;
     private IWorkspace workspace;
+    private DBPPlatformLanguage language;
     private OSDescriptor localSystem;
 
     private DBNModel navigatorModel;
@@ -181,10 +186,26 @@ public class DBeaverCore implements DBPPlatform {
         long startTime = System.currentTimeMillis();
         log.debug("Initialize Core...");
 
+        DBPPreferenceStore prefsStore = getGlobalPreferenceStore();
+
         // Register properties adapter
         this.workspace = ResourcesPlugin.getWorkspace();
 
         this.localSystem = new OSDescriptor(Platform.getOS(), Platform.getOSArch());
+        {
+            String runtimeLocaleString = prefsStore.getString(PLATFORM_LANGUAGE_PROP);
+            if (!CommonUtils.isEmpty(runtimeLocaleString)) {
+                this.language = PlatformLanguageRegistry.getInstance().getLanguage(Locale.forLanguageTag(runtimeLocaleString));
+                if (this.language == null) {
+                    log.warn("Runtime locale '" + runtimeLocaleString + "' not found");
+                } else {
+                    changeRuntimeLocale(this.language);
+                }
+            }
+            if (this.language == null) {
+                this.language = PlatformLanguageRegistry.getInstance().getLanguage(Locale.ENGLISH);
+            }
+        }
 
         QMUtils.initApplication(this);
         this.queryManager = new QMControllerImpl();
@@ -324,6 +345,31 @@ public class DBeaverCore implements DBPPlatform {
     @Override
     public DBPApplication getApplication() {
         return application;
+    }
+
+    @NotNull
+    @Override
+    public DBPPlatformLanguage getLanguage() {
+        return language;
+    }
+
+    public void setPlatformLanguage(@NotNull DBPPlatformLanguage language) {
+        if (CommonUtils.equalObjects(language, this.language)) {
+            return;
+        }
+        changeRuntimeLocale(language);
+        this.language = language;
+        getGlobalPreferenceStore().setValue(PLATFORM_LANGUAGE_PROP, language.getCode());
+    }
+
+    private void changeRuntimeLocale(@NotNull DBPPlatformLanguage runtimeLocale) {
+        // Check locale
+        ILocaleChangeService localeService = PlatformUI.getWorkbench().getService(ILocaleChangeService.class);
+        if (localeService != null) {
+            localeService.changeApplicationLocale(runtimeLocale.getCode());
+        } else {
+            log.warn("Can't resolve locale change service");
+        }
     }
 
     @NotNull

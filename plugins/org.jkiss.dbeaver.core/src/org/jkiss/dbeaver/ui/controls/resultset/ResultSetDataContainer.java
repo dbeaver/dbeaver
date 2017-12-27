@@ -23,16 +23,10 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.data.DBDValueMeta;
-import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionSource;
-import org.jkiss.dbeaver.model.exec.DBCResultSet;
-import org.jkiss.dbeaver.model.exec.DBCResultSetMetaData;
-import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.DBCStatement;
-import org.jkiss.dbeaver.model.exec.DBCStatistics;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,12 +39,14 @@ public class ResultSetDataContainer implements DBSDataContainer {
 
     private static final Log log = Log.getLog(ResultSetDataContainer.class);
 
-    private final ResultSetDataContainer dataContainer;
+    private final DBSDataContainer dataContainer;
     private final ResultSetModel model;
+    private ResultSetDataContainerOptions options;
 
-    public ResultSetDataContainer(ResultSetDataContainer dataContainer, ResultSetModel model) {
+    public ResultSetDataContainer(DBSDataContainer dataContainer, ResultSetModel model, ResultSetDataContainerOptions options) {
         this.dataContainer = dataContainer;
         this.model = model;
+        this.options = options;
     }
 
     @Override
@@ -73,40 +69,63 @@ public class ResultSetDataContainer implements DBSDataContainer {
         return DATA_SELECT | DATA_COUNT;
     }
 
+    public ResultSetDataContainerOptions getOptions() {
+        return options;
+    }
+
     @Override
     public DBCStatistics readData(DBCExecutionSource source, DBCSession session, DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags) throws DBCException {
-        DBCStatistics statistics = new DBCStatistics();
+        if (proceedSelectedRowsOnly() || proceedSelectedColumnsOnly()) {
 
-        long startTime = System.currentTimeMillis();
+            long startTime = System.currentTimeMillis();
+            DBCStatistics statistics = new DBCStatistics();
+            statistics.setExecuteTime(System.currentTimeMillis() - startTime);
 
-        statistics.setExecuteTime(System.currentTimeMillis() - startTime);
-
-        //LocalSta
-        ModelResultSet resultSet = new ModelResultSet(session);
-        long resultCount = 0;
-        try {
-            dataReceiver.fetchStart(session, resultSet, firstRow, maxRows);
-            while (resultSet.nextRow()) {
-                resultCount++;
-                dataReceiver.fetchRow(session, resultSet);
-            }
-        } finally {
+            //LocalSta
+            ModelResultSet resultSet = new ModelResultSet(session);
+            long resultCount = 0;
             try {
-                dataReceiver.fetchEnd(session, resultSet);
-            } catch (DBCException e) {
-                log.error("Error while finishing result set fetch", e); //$NON-NLS-1$
+                dataReceiver.fetchStart(session, resultSet, firstRow, maxRows);
+                while (resultSet.nextRow()) {
+                    if (!proceedSelectedRowsOnly() || options.getSelectedRows().contains(resultCount)) {
+                        dataReceiver.fetchRow(session, resultSet);
+                    }
+                    resultCount++;
+                }
+            } finally {
+                try {
+                    dataReceiver.fetchEnd(session, resultSet);
+                } catch (DBCException e) {
+                    log.error("Error while finishing result set fetch", e); //$NON-NLS-1$
+                }
+                resultSet.close();
+                dataReceiver.close();
             }
-            resultSet.close();
-            dataReceiver.close();
+            statistics.setFetchTime(System.currentTimeMillis() - startTime);
+            statistics.setRowsFetched(resultCount);
+            return statistics;
+        } else {
+            return dataContainer.readData(source, session, dataReceiver, dataFilter, firstRow, maxRows, flags);
         }
-        statistics.setFetchTime(System.currentTimeMillis() - startTime);
-        statistics.setRowsFetched(resultCount);
-        return statistics;
+    }
+
+    private boolean proceedSelectedColumnsOnly() {
+        return options.isExportSelectedColumns() && !CommonUtils.isEmpty(options.getSelectedColumns());
+    }
+
+    private boolean proceedSelectedRowsOnly() {
+        return options.isExportSelectedRows() && !CommonUtils.isEmpty(options.getSelectedRows());
     }
 
     @Override
     public long countData(DBCExecutionSource source, DBCSession session, DBDDataFilter dataFilter) throws DBCException {
-        return model.getRowCount();
+        if (proceedSelectedRowsOnly()) {
+            return options.getSelectedRows().size();
+        } else if (proceedSelectedColumnsOnly()) {
+            return model.getRowCount();
+        } else {
+            return dataContainer.countData(source, session, dataFilter);
+        }
     }
 
     @Override
@@ -192,10 +211,14 @@ public class ResultSetDataContainer implements DBSDataContainer {
             return new DBCResultSetMetaData() {
                 @Override
                 public List<DBCAttributeMetaData> getAttributes() {
-                    DBDAttributeBinding[] attributes = model.getAttributes();
-                    List<DBCAttributeMetaData> meta = new ArrayList<>(attributes.length);
+                    List<DBDAttributeBinding> attributes = model.getVisibleAttributes();
+                    List<DBCAttributeMetaData> meta = new ArrayList<>(attributes.size());
+                    boolean selectedColumnsOnly = proceedSelectedColumnsOnly();
                     for (DBDAttributeBinding attribute : attributes) {
-                        meta.add(attribute.getMetaAttribute());
+                        DBCAttributeMetaData metaAttribute = attribute.getMetaAttribute();
+                        if (!selectedColumnsOnly || options.getSelectedColumns().contains(metaAttribute.getName())) {
+                            meta.add(metaAttribute);
+                        }
                     }
                     return meta;
                 }

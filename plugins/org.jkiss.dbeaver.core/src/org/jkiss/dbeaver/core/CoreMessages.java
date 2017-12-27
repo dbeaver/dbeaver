@@ -414,6 +414,8 @@ public class CoreMessages extends NLS {
 	public static String data_transfer_wizard_output_checkbox_new_connection;
 	public static String data_transfer_wizard_output_checkbox_open_folder;
 	public static String data_transfer_wizard_output_checkbox_select_row_count;
+	public static String data_transfer_wizard_output_checkbox_selected_columns_only;
+	public static String data_transfer_wizard_output_checkbox_selected_rows_only;
 	public static String data_transfer_wizard_output_combo_extract_type_item_by_segments;
 	public static String data_transfer_wizard_output_combo_extract_type_item_single_query;
 	public static String data_transfer_wizard_output_description;
@@ -994,6 +996,7 @@ public class CoreMessages extends NLS {
 	public static String pref_page_database_resultsets_group_plain_text;
 	public static String pref_page_database_resultsets_lable_value_format;
 	public static String pref_page_database_resultsets_label_maximum_column_length;
+	public static String pref_page_database_resultsets_label_text_show_nulls;
 	public static String pref_page_database_resultsets_label_text_delimiter_leading;
 	public static String pref_page_database_resultsets_label_text_delimiter_trailing;
 	// Connections
