@@ -3633,8 +3633,9 @@
         <language code="en" label="%language.en.label"/>
         <language code="zh" label="%language.zh.label"/>
         <language code="ru" label="%language.ru.label"/>
-        <language code="it" label="%language.it.label"/>
+        <language code="fr" label="%language.fr.label"/>
         <language code="de" label="%language.de.label"/>
+        <language code="it" label="%language.it.label"/>
     </extension>
 
     <extension
