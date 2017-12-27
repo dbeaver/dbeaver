@@ -2280,6 +2280,14 @@
                 </command>
                 <separator name="misc" visible="true"/>
                 <command
+                        commandId="org.jkiss.dbeaver.ui.tools.select.connection"
+                        label="%command.org.jkiss.dbeaver.ui.tools.select.connection.name"
+                        tooltip="%command.org.jkiss.dbeaver.ui.tools.select.connection.description"/>
+                <command
+                        commandId="org.jkiss.dbeaver.ui.tools.select.schema"
+                        label="%command.org.jkiss.dbeaver.ui.tools.select.schema.name"
+                        tooltip="%command.org.jkiss.dbeaver.ui.tools.select.schema.description"/>
+                <command
                       commandId="org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel"
                       label="%command.org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel.name"
                       tooltip="%command.org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel.description"/>
@@ -2327,6 +2335,15 @@
                 <command
                       commandId="org.jkiss.dbeaver.ui.editors.sql.export.data"
                       label="%command.org.jkiss.dbeaver.ui.editors.sql.export.data.name"/>
+                <separator name="additions_active_object" visible="true"/>
+                <command
+                        commandId="org.jkiss.dbeaver.ui.tools.select.connection"
+                        label="%command.org.jkiss.dbeaver.ui.tools.select.connection.name"
+                        tooltip="%command.org.jkiss.dbeaver.ui.tools.select.connection.description"/>
+                <command
+                        commandId="org.jkiss.dbeaver.ui.tools.select.schema"
+                        label="%command.org.jkiss.dbeaver.ui.tools.select.schema.name"
+                        tooltip="%command.org.jkiss.dbeaver.ui.tools.select.schema.description"/>
             </menu>
             <menu id="org.jkiss.dbeaver.ui.editors.sql.SQLEditor.file" label="%menu.org.jkiss.dbeaver.ui.editors.sql.SQLEditor.file.label">
                 <command
