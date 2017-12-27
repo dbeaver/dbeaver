@@ -156,6 +156,16 @@ public class DatabaseProducerPageExtractSettings extends ActiveWizardPage<DataTr
                         settings.setSelectedRowsOnly(selectedRowsOnlyCheckbox.getSelection());
                     }
                 });
+
+                SelectionAdapter listener = new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        boolean selection = selectedColumnsOnlyCheckbox.getSelection() || selectedRowsOnlyCheckbox.getSelection();
+                        newConnectionCheckbox.setEnabled(!selection);
+                    }
+                };
+                selectedColumnsOnlyCheckbox.addSelectionListener(listener);
+                selectedRowsOnlyCheckbox.addSelectionListener(listener);
             }
         }
 
