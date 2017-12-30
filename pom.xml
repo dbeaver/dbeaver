@@ -31,8 +31,6 @@
         <module>plugins/org.jkiss.dbeaver.debug.core</module>
         <module>plugins/org.jkiss.dbeaver.debug.ui</module>
 
-        <module>plugins/org.jkiss.dbeaver.core.application</module>
-        <module>plugins/org.jkiss.dbeaver.core.eclipse</module>
         <module>plugins/org.jkiss.dbeaver.ext.db2</module>
         <module>plugins/org.jkiss.dbeaver.ext.derby</module>
         <module>plugins/org.jkiss.dbeaver.ext.erd</module>
@@ -63,7 +61,6 @@
         <module>plugins/org.jkiss.dbeaver.ext.ui.svg</module>
         <module>plugins/org.jkiss.dbeaver.data.office</module>
         <module>plugins/org.jkiss.dbeaver.model</module>
-        <module>plugins/org.jkiss.dbeaver.test</module>
 
         <module>features/org.jkiss.dbeaver.core.feature</module>
         <module>features/org.jkiss.dbeaver.ext.db2.feature</module>
@@ -144,9 +141,10 @@
         <module>nls/features/org.jkiss.dbeaver.ext.ui.svg.nls.feature</module>
 
         <!-- Product -->
-
         <module>product/standalone</module>
 
+        <!-- Test -->
+        <module>plugins/org.jkiss.dbeaver.test</module>
         <module>tests/org.jkiss.dbeaver.runtime.ide.core.tests</module>
 
     </modules>
