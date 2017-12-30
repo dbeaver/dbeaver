@@ -27,7 +27,6 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PreferenceLinkArea;
 import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.jkiss.code.Nullable;
@@ -63,7 +62,7 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
     private Button longOperationsCheck;
     private Spinner longOperationsTimeout;
 
-    private Combo defaultResourceEncoding;
+    //private Combo defaultResourceEncoding;
 
     private Button logsDebugEnabled;
     private TextWithOpenFile logsDebugLocation;
@@ -126,6 +125,7 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
             }
         }
 
+/*
         {
             // Resources
             Group groupResources = UIUtils.createControlGroup(composite, CoreMessages.pref_page_ui_general_group_resources, 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
@@ -135,6 +135,7 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
             defaultResourceEncoding.setToolTipText(CoreMessages.pref_page_ui_general_label_set_default_resource_encoding_tip);
 
         }
+*/
 
         {
             // Logs
@@ -186,7 +187,7 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
         longOperationsCheck.setSelection(store.getBoolean(DBeaverPreferences.AGENT_LONG_OPERATION_NOTIFY));
         longOperationsTimeout.setSelection(store.getInt(DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT));
 
-        defaultResourceEncoding.setText(store.getString(DBeaverPreferences.DEFAULT_RESOURCE_ENCODING));
+        //defaultResourceEncoding.setText(store.getString(DBeaverPreferences.DEFAULT_RESOURCE_ENCODING));
 
         logsDebugEnabled.setSelection(store.getBoolean(DBeaverPreferences.LOGS_DEBUG_ENABLED));
         logsDebugLocation.setText(store.getString(DBeaverPreferences.LOGS_DEBUG_LOCATION));
@@ -202,7 +203,7 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
         store.setValue(DBeaverPreferences.AGENT_LONG_OPERATION_NOTIFY, longOperationsCheck.getSelection());
         store.setValue(DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT, longOperationsTimeout.getSelection());
 
-        store.setValue(DBeaverPreferences.DEFAULT_RESOURCE_ENCODING, defaultResourceEncoding.getText());
+        //store.setValue(DBeaverPreferences.DEFAULT_RESOURCE_ENCODING, defaultResourceEncoding.getText());
 
         store.setValue(DBeaverPreferences.LOGS_DEBUG_ENABLED, logsDebugEnabled.getSelection());
         store.setValue(DBeaverPreferences.LOGS_DEBUG_LOCATION, logsDebugLocation.getText());

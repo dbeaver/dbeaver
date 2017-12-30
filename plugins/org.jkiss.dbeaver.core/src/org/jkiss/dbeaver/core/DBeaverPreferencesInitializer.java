@@ -56,7 +56,7 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
         DBPPreferenceStore store = new BundlePreferenceStore(DBeaverActivator.getInstance().getBundle());
 
         // Resources
-        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.DEFAULT_RESOURCE_ENCODING, GeneralUtils.UTF8_ENCODING);
+        //PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.DEFAULT_RESOURCE_ENCODING, GeneralUtils.UTF8_ENCODING);
 
         // Agent
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.AGENT_ENABLED, true);

@@ -102,12 +102,14 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 
         TrayDialog.setDialogHelpAvailable(true);
 
+/*
         // Set default resource encoding to UTF-8
         String defEncoding = DBeaverCore.getGlobalPreferenceStore().getString(DBeaverPreferences.DEFAULT_RESOURCE_ENCODING);
         if (CommonUtils.isEmpty(defEncoding)) {
             defEncoding = GeneralUtils.UTF8_ENCODING;
         }
         ResourcesPlugin.getPlugin().getPluginPreferences().setValue(ResourcesPlugin.PREF_ENCODING, defEncoding);
+*/
     }
 
     /**
