@@ -14,4 +14,6 @@ cache:
 
 before_install: 
  - echo "MAVEN_OPTS='-Xmx2048m -XX:MaxPermSize=512m'" > ~/.mavenrc
- - mvn clean
+
+before_script: 
+ - mvn clean -X
