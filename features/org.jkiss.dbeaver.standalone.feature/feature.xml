@@ -24,7 +24,9 @@
 
     <includes id="org.jkiss.dbeaver.rcp.feature" version="0.0.0"/>
     <includes id="org.jkiss.dbeaver.core.feature" version="0.0.0"/>
+    <!--
     <includes id="org.jkiss.dbeaver.debug.feature" version="0.0.0"/>
+    -->
     <includes id="org.jkiss.dbeaver.ext.generic.feature" version="0.0.0"/>
     <includes id="org.jkiss.dbeaver.ext.mysql.feature" version="0.0.0"/>
     <includes id="org.jkiss.dbeaver.ext.oracle.feature" version="0.0.0"/>
