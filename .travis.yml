@@ -12,8 +12,6 @@ cache:
   directories:
   - $HOME/.m2
 
-before_install: 
- - echo "MAVEN_OPTS='-Xmx2048m -XX:MaxPermSize=512m'" > ~/.mavenrc
+before_install: echo "MAVEN_OPTS='-Xmx2048m -XX:MaxPermSize=512m'" > ~/.mavenrc
 
-before_script: 
- - mvn clean -X
+install: true
