@@ -71,9 +71,7 @@
         <module>features/org.jkiss.dbeaver.ext.exasol.feature</module>
         <module>features/org.jkiss.dbeaver.ext.office.feature</module>
         <module>features/org.jkiss.dbeaver.ext.ui.svg.feature</module>
-        <!-- 
         <module>features/org.jkiss.dbeaver.debug.feature</module>
-         -->
         <module>features/org.jkiss.dbeaver.rcp.feature</module>
         <module>features/org.jkiss.dbeaver.runtime.feature</module>
         <module>features/org.jkiss.dbeaver.standalone.feature</module>
