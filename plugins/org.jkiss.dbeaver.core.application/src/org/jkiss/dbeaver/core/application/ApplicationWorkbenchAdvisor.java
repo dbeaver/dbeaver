@@ -36,11 +36,9 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.application.update.DBeaverVersionChecker;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.ui.DBeaverUIConstants;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditorInput;
@@ -79,7 +77,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
         "org.eclipse.team.ui.TeamPreferences",
 
     };
-    private DBPPreferenceListener settingsChangeListener;
+    //private DBPPreferenceListener settingsChangeListener;
 
     @Override
     public WorkbenchWindowAdvisor createWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer) {
@@ -144,6 +142,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 
         startVersionChecker();
 
+/*
         settingsChangeListener = event -> {
             if (isPropertyChangeRequiresRestart(event.getProperty())) {
                 if (UIUtils.confirmAction(null,
@@ -155,6 +154,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
             }
         };
         DBeaverCore.getGlobalPreferenceStore().addPropertyChangeListener(settingsChangeListener);
+*/
 
     }
 
@@ -186,7 +186,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 
     @Override
     public boolean preShutdown() {
-        DBeaverCore.getGlobalPreferenceStore().removePropertyChangeListener(settingsChangeListener);
+        //DBeaverCore.getGlobalPreferenceStore().removePropertyChangeListener(settingsChangeListener);
 
         if (!saveAndCleanup()) {
             // User rejected to exit

@@ -24,7 +24,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.e4.core.services.nls.ILocaleChangeService;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
@@ -64,10 +63,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.Authenticator;
 import java.net.ProxySelector;
-import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.file.Files;
-import java.nio.file.OpenOption;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
@@ -81,6 +77,7 @@ public class DBeaverCore implements DBPPlatform {
     // The plug-in ID
     public static final String PLUGIN_ID = "org.jkiss.dbeaver.core"; //$NON-NLS-1$
     public static final String APP_CONFIG_FILE = "dbeaver.ini";
+    public static final String ECLIPSE_CONFIG_FILE = "eclipse.ini";
     public static final String TEMP_PROJECT_NAME = ".dbeaver-temp"; //$NON-NLS-1$
 
     private static final Log log = Log.getLog(DBeaverCore.class);
@@ -365,14 +362,18 @@ public class DBeaverCore implements DBPPlatform {
         }
 
         try {
-            //changeRuntimeLocale(language);
-            URI configPath = Platform.getInstallLocation().getURL().toURI();
-            File iniFile = new File(new File(configPath), APP_CONFIG_FILE);
-            if (iniFile.exists()) {
-                List<String> configLines = Files.readAllLines(iniFile.toPath());
-                setConfigNLS(configLines, language.getCode());
-                Files.write(iniFile.toPath(), configLines, StandardOpenOption.WRITE);
+            File configPath = new File(Platform.getInstallLocation().getURL().toURI());
+            File iniFile = new File(configPath, ECLIPSE_CONFIG_FILE);
+            if (!iniFile.exists()) {
+                iniFile = new File(configPath, APP_CONFIG_FILE);
             }
+            if (!iniFile.exists()) {
+                throw new IOException("Application configuration file (" + iniFile.getAbsolutePath() + ") not found. Default language cannot be changed.");
+            }
+            List<String> configLines = Files.readAllLines(iniFile.toPath());
+            setConfigNLS(configLines, language.getCode());
+            Files.write(iniFile.toPath(), configLines, StandardOpenOption.WRITE);
+
             this.language = language;
             // This property is fake. But we set it to trigger property change listener
             // which will ask to restart workbench.

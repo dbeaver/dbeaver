@@ -89,8 +89,11 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
             Group groupObjects = UIUtils.createControlGroup(composite, CoreMessages.pref_page_ui_general_group_general, 2, GridData.VERTICAL_ALIGN_BEGINNING, 300);
             automaticUpdateCheck = UIUtils.createCheckbox(groupObjects, CoreMessages.pref_page_ui_general_checkbox_automatic_updates, null, false, 2);
             //automaticUpdateCheck.setLayoutData(new GridData(GridData.BEGINNING, GridData.BEGINNING, true, false, 2, 1));
+        }
+        {
+            Group groupLanguage = UIUtils.createControlGroup(composite, CoreMessages.pref_page_ui_general_group_language, 2, GridData.VERTICAL_ALIGN_BEGINNING, 300);
 
-            workspaceLanguage = UIUtils.createLabelCombo(groupObjects, "Language", "Application language - used for UI localization", SWT.READ_ONLY | SWT.DROP_DOWN);
+            workspaceLanguage = UIUtils.createLabelCombo(groupLanguage, CoreMessages.pref_page_ui_general_combo_language, CoreMessages.pref_page_ui_general_combo_language_tip, SWT.READ_ONLY | SWT.DROP_DOWN);
             List<PlatformLanguageDescriptor> languages = PlatformLanguageRegistry.getInstance().getLanguages();
             DBPPlatformLanguage pLanguage = DBeaverCore.getInstance().getLanguage();
             for (int i = 0; i < languages.size(); i++) {
@@ -103,6 +106,9 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
             if (workspaceLanguage.getSelectionIndex() < 0) {
                 workspaceLanguage.select(0);
             }
+
+            Label tipLabel = UIUtils.createLabel(groupLanguage, CoreMessages.pref_page_ui_general_label_options_take_effect_after_restart);
+            tipLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false , 2, 1));
         }
 
         // Agent settings
