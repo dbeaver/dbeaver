@@ -87,20 +87,24 @@ public class PostgreConstants {
     public static Map<String, String> SERIAL_TYPES = new HashMap<>();
     public static Map<String, String> DATA_TYPE_ALIASES = new HashMap<>();
 
+    public static final String TYPE_INT2 = "int2";
+    public static final String TYPE_INT4 = "int4";
+    public static final String TYPE_INT8 = "int8";
+
     static {
-        DATA_TYPE_ALIASES.put("integer", "int4");
-        DATA_TYPE_ALIASES.put("int", "int4");
-        DATA_TYPE_ALIASES.put("bigint", "int8");
-        DATA_TYPE_ALIASES.put("bigserial", "int8");
-        DATA_TYPE_ALIASES.put("smallint", "int2");
+        DATA_TYPE_ALIASES.put("integer", TYPE_INT4);
+        DATA_TYPE_ALIASES.put("int", TYPE_INT4);
+        DATA_TYPE_ALIASES.put("bigint", TYPE_INT8);
+        DATA_TYPE_ALIASES.put("bigserial", TYPE_INT8);
+        DATA_TYPE_ALIASES.put("smallint", TYPE_INT2);
 
         DATA_TYPE_ALIASES.put("double precision", "float8");
         DATA_TYPE_ALIASES.put("real", "float4");
 
-        SERIAL_TYPES.put("serial", "int4");
-        SERIAL_TYPES.put("serial8", "int8");
-        SERIAL_TYPES.put("serial2", "int2");
-        SERIAL_TYPES.put("smallserial", "int2");
-        SERIAL_TYPES.put("bigserial", "int8");
+        SERIAL_TYPES.put("serial", TYPE_INT4);
+        SERIAL_TYPES.put("serial8", TYPE_INT8);
+        SERIAL_TYPES.put("serial2", TYPE_INT2);
+        SERIAL_TYPES.put("smallserial", TYPE_INT2);
+        SERIAL_TYPES.put("bigserial", TYPE_INT8);
     }
 }
