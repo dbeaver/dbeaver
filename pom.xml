@@ -31,6 +31,8 @@
         <module>plugins/org.jkiss.dbeaver.debug.core</module>
         <module>plugins/org.jkiss.dbeaver.debug.ui</module>
 
+        <module>plugins/org.jkiss.dbeaver.core.application</module>
+        <module>plugins/org.jkiss.dbeaver.core.eclipse</module>
         <module>plugins/org.jkiss.dbeaver.ext.db2</module>
         <module>plugins/org.jkiss.dbeaver.ext.derby</module>
         <module>plugins/org.jkiss.dbeaver.ext.erd</module>
