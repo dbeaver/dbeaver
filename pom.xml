@@ -63,6 +63,7 @@
         <module>plugins/org.jkiss.dbeaver.model</module>
 
         <module>features/org.jkiss.dbeaver.core.feature</module>
+        <module>features/org.jkiss.dbeaver.debug.feature</module>
         <module>features/org.jkiss.dbeaver.ext.db2.feature</module>
         <module>features/org.jkiss.dbeaver.ext.generic.feature</module>
         <module>features/org.jkiss.dbeaver.ext.mysql.feature</module>
@@ -71,9 +72,6 @@
         <module>features/org.jkiss.dbeaver.ext.exasol.feature</module>
         <module>features/org.jkiss.dbeaver.ext.office.feature</module>
         <module>features/org.jkiss.dbeaver.ext.ui.svg.feature</module>
-        <!-- 
-        <module>features/org.jkiss.dbeaver.debug.feature</module>
-         -->
         <module>features/org.jkiss.dbeaver.rcp.feature</module>
         <module>features/org.jkiss.dbeaver.runtime.feature</module>
         <module>features/org.jkiss.dbeaver.standalone.feature</module>
