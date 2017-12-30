@@ -36,9 +36,11 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.application.update.DBeaverVersionChecker;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.ui.DBeaverUIConstants;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditorInput;
@@ -77,6 +79,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
         "org.eclipse.team.ui.TeamPreferences",
 
     };
+    private DBPPreferenceListener settingsChangeListener;
 
     @Override
     public WorkbenchWindowAdvisor createWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer) {
@@ -140,6 +143,26 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
         filterPreferencePages();
 
         startVersionChecker();
+
+        settingsChangeListener = event -> {
+            if (isPropertyChangeRequiresRestart(event.getProperty())) {
+                if (UIUtils.confirmAction(null,
+                    "System preference change",
+                    "System setting '" + event.getProperty() + "' has been changed. You will need to restart workbench to complete the change. Restart now?"))
+                {
+                    PlatformUI.getWorkbench().restart();
+                }
+            }
+        };
+        DBeaverCore.getGlobalPreferenceStore().addPropertyChangeListener(settingsChangeListener);
+
+    }
+
+    protected boolean isPropertyChangeRequiresRestart(String property) {
+        return
+            property.equals(DBeaverPreferences.LOGS_DEBUG_ENABLED) ||
+            property.equals(DBeaverPreferences.LOGS_DEBUG_LOCATION) ||
+            property.equals(DBeaverPreferences.PLATFORM_LANGUAGE);
     }
 
     private void filterPreferencePages() {
@@ -163,6 +186,8 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 
     @Override
     public boolean preShutdown() {
+        DBeaverCore.getGlobalPreferenceStore().removePropertyChangeListener(settingsChangeListener);
+
         if (!saveAndCleanup()) {
             // User rejected to exit
             return false;

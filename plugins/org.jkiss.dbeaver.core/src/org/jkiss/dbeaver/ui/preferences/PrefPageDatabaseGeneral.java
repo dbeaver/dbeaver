@@ -27,12 +27,15 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PreferenceLinkArea;
 import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.app.DBPPlatformLanguage;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.registry.language.PlatformLanguageDescriptor;
@@ -186,10 +189,6 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
     @Override
     public boolean performOk()
     {
-        if (workspaceLanguage.getSelectionIndex() >= 0) {
-            PlatformLanguageDescriptor language = PlatformLanguageRegistry.getInstance().getLanguages().get(workspaceLanguage.getSelectionIndex());
-            DBeaverCore.getInstance().setPlatformLanguage(language);
-        }
         DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
 
         store.setValue(DBeaverPreferences.UI_AUTO_UPDATE_CHECK, automaticUpdateCheck.getSelection());
@@ -203,6 +202,15 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
         store.setValue(DBeaverPreferences.LOGS_DEBUG_LOCATION, logsDebugLocation.getText());
 
         PrefUtils.savePreferenceStore(store);
+
+        if (workspaceLanguage.getSelectionIndex() >= 0) {
+            PlatformLanguageDescriptor language = PlatformLanguageRegistry.getInstance().getLanguages().get(workspaceLanguage.getSelectionIndex());
+            try {
+                DBeaverCore.getInstance().setPlatformLanguage(language);
+            } catch (DBException e) {
+                DBeaverUI.getInstance().showError("Change language", "Can't switch language to " + language, e);
+            }
+        }
 
         return true;
     }
