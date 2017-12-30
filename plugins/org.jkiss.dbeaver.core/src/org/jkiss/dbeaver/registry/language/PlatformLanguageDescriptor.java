@@ -61,4 +61,8 @@ public class PlatformLanguageDescriptor extends AbstractContextDescriptor implem
         return description;
     }
 
+    @Override
+    public String toString() {
+        return code;
+    }
 }

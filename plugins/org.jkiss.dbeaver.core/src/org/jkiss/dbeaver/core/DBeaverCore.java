@@ -55,6 +55,7 @@ import org.jkiss.dbeaver.runtime.qm.QMControllerImpl;
 import org.jkiss.dbeaver.runtime.qm.QMLogFileWriter;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
 import org.osgi.framework.Bundle;
@@ -63,6 +64,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.Authenticator;
 import java.net.ProxySelector;
+import java.nio.file.AccessDeniedException;
 import java.nio.file.Files;
 import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
@@ -362,7 +364,7 @@ public class DBeaverCore implements DBPPlatform {
         }
 
         try {
-            File configPath = new File(Platform.getInstallLocation().getURL().toURI());
+            File configPath = RuntimeUtils.getLocalFileFromURL(Platform.getInstallLocation().getURL());
             File iniFile = new File(configPath, ECLIPSE_CONFIG_FILE);
             if (!iniFile.exists()) {
                 iniFile = new File(configPath, APP_CONFIG_FILE);
@@ -378,8 +380,10 @@ public class DBeaverCore implements DBPPlatform {
             // This property is fake. But we set it to trigger property change listener
             // which will ask to restart workbench.
             getGlobalPreferenceStore().setValue(DBeaverPreferences.PLATFORM_LANGUAGE, language.getCode());
+        } catch (AccessDeniedException e) {
+            throw new DBException("Can't save startup configuration - access denied", e);
         } catch (Exception e) {
-            throw new DBException("Error saving startup configuration", e);
+            throw new DBException("Unexpected error while saving startup configuration", e);
         }
     }
 
