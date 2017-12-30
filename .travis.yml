@@ -1,5 +1,5 @@
 language: java
-script: mvn clean verify
+script: mvn verify
 dist: precise
 jdk:
   - oraclejdk8
@@ -12,4 +12,6 @@ cache:
   directories:
   - $HOME/.m2
 
-before_install: echo "MAVEN_OPTS='-Xmx2048m -XX:MaxPermSize=512m'" > ~/.mavenrc
+before_install: 
+ - echo "MAVEN_OPTS='-Xmx2048m -XX:MaxPermSize=512m'" > ~/.mavenrc
+ - mvn clean
