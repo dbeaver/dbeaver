@@ -17,21 +17,21 @@
 
 package org.jkiss.dbeaver.postgresql.pldbg.control;
 
+import java.sql.Connection;
 import java.util.List;
 
 import org.jkiss.dbeaver.ext.postgresql.pldbg.DebugException;
 import org.jkiss.dbeaver.ext.postgresql.pldbg.DebugObject;
 import org.jkiss.dbeaver.ext.postgresql.pldbg.DebugSession;
 import org.jkiss.dbeaver.ext.postgresql.pldbg.SessionInfo;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 
 public interface DebugManager<SESSIONID,OBJECTID> {
-	SessionInfo<SESSIONID> getCurrent() throws DebugException;
+	SessionInfo<SESSIONID> getSessionInfo(Connection connection) throws DebugException;
     List<? extends SessionInfo<SESSIONID>> getSessions() throws DebugException;
     DebugSession<? extends SessionInfo<SESSIONID>,? extends DebugObject<OBJECTID>,SESSIONID> getDebugSession(SESSIONID id) throws DebugException;
     List<DebugSession<?,?,SESSIONID>> getDebugSessions() throws DebugException;
     void terminateSession(SESSIONID id); 
-    DebugSession<? extends SessionInfo<SESSIONID>,? extends DebugObject<OBJECTID>,SESSIONID> createDebugSession(JDBCSession session) throws DebugException;
+    DebugSession<? extends SessionInfo<SESSIONID>,? extends DebugObject<OBJECTID>,SESSIONID> createDebugSession(Connection connection) throws DebugException;
     boolean isSessionExists(SESSIONID id);
     List<? extends DebugObject<OBJECTID>> getObjects(String ownerCtx, String nameCtx) throws DebugException;
 }

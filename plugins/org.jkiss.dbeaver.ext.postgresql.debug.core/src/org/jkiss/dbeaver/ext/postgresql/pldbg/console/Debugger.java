@@ -3,14 +3,18 @@ package org.jkiss.dbeaver.ext.postgresql.pldbg.console;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
+import java.util.List;
 import java.util.Scanner;
 
 import org.jkiss.dbeaver.ext.postgresql.pldbg.DebugException;
 import org.jkiss.dbeaver.ext.postgresql.pldbg.DebugSession;
+import org.jkiss.dbeaver.ext.postgresql.pldbg.impl.BreakpointPropertiesPostgres;
 import org.jkiss.dbeaver.ext.postgresql.pldbg.impl.DebugManagerPostgres;
 import org.jkiss.dbeaver.ext.postgresql.pldbg.impl.DebugObjectPostgres;
 import org.jkiss.dbeaver.ext.postgresql.pldbg.impl.DebugSessionPostgres;
+import org.jkiss.dbeaver.ext.postgresql.pldbg.impl.PostgresBreakpoint;
 import org.jkiss.dbeaver.ext.postgresql.pldbg.impl.SessionInfoPostgres;
+import org.jkiss.dbeaver.ext.postgresql.pldbg.impl.stub.JDBCSessionStub;
 
 
 @SuppressWarnings("nls")
@@ -32,6 +36,7 @@ public class Debugger {
      */
 	
 	public static final String PROMPT = ">";	
+	public static final String COMMAND_ATTACH = "A";
 	public static final String COMMAND_STACK = "S";
 	public static final String COMMAND_FRAME = "F";
 	public static final String COMMAND_VARIABLES = "V";
@@ -49,6 +54,78 @@ public class Debugger {
 	public static final String COMMAND_HELP = "?";
 	
 	public static final String ANY_ARG = "*";
+	
+	public static DebugSessionPostgres chooseSession(Scanner sc,DebugManagerPostgres pgDbgManager) throws DebugException{
+		
+		DebugSessionPostgres debugSession = null;
+		
+		List<DebugSession<?,?,Integer>> sessions = pgDbgManager.getDebugSessions();
+		
+		Scanner scArg;
+		
+		if (sessions.size() == 1) {
+			
+			debugSession = (DebugSessionPostgres) sessions.get(0);
+			
+		} else {
+			
+			 System.out.println("Choose debug session (0 for quit) :");
+			
+			 int sessNo = 1;
+			 
+			 for (DebugSession<?, ?,Integer> s : pgDbgManager.getDebugSessions()) {
+				 System.out.println(String.format(" (%d) %s", sessNo++,s.toString()));
+			 }
+			 
+			 
+			 int sessionId = -1;
+			 
+			String argc =sc.nextLine();
+			 
+			while (sessionId <0) {
+			 
+			 String strSessionid = "";
+			 
+			 scArg = new Scanner(argc);
+				
+				if (scArg.hasNext()) {
+				
+					strSessionid = scArg.next();
+					
+					if (strSessionid.trim().length() > 0) {
+
+						try {
+							
+							sessionId = Integer.valueOf(strSessionid);
+							
+						} catch (Exception e) {
+							System.out.println(String.format("Incorrect session ID %s", strSessionid));
+							sessionId = -1;
+						}
+						
+						if (sessionId ==0) {
+							break;
+						}
+						
+						if (sessionId > sessions.size()) {
+							System.out.println(String.format("Incorrect session ID %s", strSessionid));
+							sessionId = -1;									
+						} else {
+							debugSession = (DebugSessionPostgres) sessions.get(sessionId -1);
+							break;
+						}
+					}
+					
+				}
+				scArg.close();
+			
+		     }
+			
+		}
+		
+		return debugSession;
+		
+	}
 
 	public static void main(String[] args) throws DebugException {
 		
@@ -110,11 +187,111 @@ public class Debugger {
 				break;
 
 			case COMMAND_BREAKPOINT:
-				System.out.println("BREAKPOINT!!!");
+				
+				String strObjId = ANY_ARG;
+				String strLineNo= ANY_ARG;
+				
+				String argc =sc.nextLine();
+				
+				if (argc.length() > 0) {
+					
+					scArg = new Scanner(argc);
+					
+					if (scArg.hasNext()) {
+					
+						strObjId = scArg.next();
+						
+						if (scArg.hasNext()) {
+							
+							argc = scArg.nextLine();
+							
+							if (argc.length() > 0) {
+								strLineNo = argc;	
+							}
+							
+						}
+						
+					}
+					scArg.close();
+					
+				}
+				
+				int objId = -1;
+				
+				try {
+					
+					objId = Integer.valueOf(strObjId.trim());
+					
+				} catch (Exception e) {
+					System.out.println(String.format("Incorrect object ID '%s'", strObjId));
+					break;
+				}
+				
+				int lineNo = -1;
+				
+				if (strLineNo.trim().length() > 0) {
+					
+					try {
+						
+						lineNo = Integer.valueOf(strLineNo.trim());
+						
+					} catch (Exception e) {
+						System.out.println(String.format("Incorrect line number '%s'", strLineNo));
+						break;
+					}
+					
+				}
+				
+				DebugObjectPostgres debugObject = null;
+				
+				for (DebugObjectPostgres o : pgDbgManager.getObjects("_","_")) {
+					 if (o.getID() == objId) {
+						 debugObject = o;
+					 }
+				 }
+				
+				if (debugObject == null) {
+					System.out.println(String.format("Object ID '%s' no found", strObjId));
+					break;					
+				}
+				
+				if ( pgDbgManager.getDebugSessions().size() == 0) {
+					System.out.println("Debug sessions not found");
+					break;
+				}
+				
+				DebugSessionPostgres debugSession = chooseSession(sc,pgDbgManager);
+				
+				if (debugSession == null) {
+					break;
+				}
+				
+				BreakpointPropertiesPostgres bpp = lineNo > 0 ? new BreakpointPropertiesPostgres(lineNo) : new BreakpointPropertiesPostgres();
+				
+				PostgresBreakpoint bp = (PostgresBreakpoint) debugSession.setBreakpoint(debugObject, bpp);
+				 
+				System.out.println("Breakpoint set");
+				
+				System.out.println(bp.toString());
+				
 				break;
 				
 			case COMMAND_BREAKPOINT_LIST:
-				System.out.println("BREAKPOINT LIST!!!");
+				if ( pgDbgManager.getDebugSessions().size() == 0) {
+					System.out.println("Debug sessions not found");
+					break;
+				}
+				
+				DebugSessionPostgres debugSessionBL = chooseSession(sc,pgDbgManager);
+				
+				if (debugSessionBL == null) {
+					break;
+				}
+					
+				for(PostgresBreakpoint bpl : debugSessionBL.getBreakpoints()) {
+					System.out.println(bpl.toString());
+				}
+
 				break;	
 
 			case COMMAND_CONTINUE:
@@ -147,9 +324,16 @@ public class Debugger {
 				break;	
 			
 			case COMMAND_NEW:
-				DebugSessionPostgres s = pgDbgManager.createDebugSession(null);
-				System.out.println("created");
-				System.out.println(s);
+				try {
+					 Connection debugConn = DriverManager.getConnection(url);
+					 DebugSessionPostgres s = pgDbgManager.createDebugSession(debugConn);
+					 System.out.println("created");
+					 System.out.println(s);
+
+				} catch (SQLException e) {					
+					e.printStackTrace();
+					break;
+				}
 				break;		
 				
 			case COMMAND_OBJ:
@@ -188,9 +372,24 @@ public class Debugger {
 				
 				break;	
 
+			case COMMAND_ATTACH:
+				if ( pgDbgManager.getDebugSessions().size() == 0) {
+					System.out.println("Debug sessions not found");
+					break;
+				}
+				
+				DebugSessionPostgres debugSessionA = chooseSession(sc,pgDbgManager);
+				
+				if (debugSessionA == null) {
+					break;
+				}
+					
+
+				System.out.println("Waiting for target session ...");
+				
+				debugSessionA.attach();
+				
 			case COMMAND_TERMINATE:
-				//System.out.println("EXIT !!!");
-				//break;
 				System.out.println("EXIT.....");
 				return;
 

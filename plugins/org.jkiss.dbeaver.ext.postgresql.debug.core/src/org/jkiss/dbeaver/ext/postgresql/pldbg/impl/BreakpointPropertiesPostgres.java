@@ -55,6 +55,14 @@ public class BreakpointPropertiesPostgres implements BreakpointProperties {
 		this.all = true;
 	}
 
+
+
+	@Override
+	public String toString() {
+		return "BreakpointPropertiesPostgres [lineNo=" + lineNo + ", onStart=" + onStart + ", targetId=" + targetId
+				+ ", all=" + all + "]";
+	}
+
 	
 	
 }

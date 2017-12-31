@@ -38,7 +38,9 @@ import org.jkiss.dbeaver.ext.postgresql.pldbg.Variable;
 @SuppressWarnings("nls")
 public class DebugSessionPostgres implements DebugSession<SessionInfoPostgres, DebugObjectPostgres,Integer> {
 	
-	private final SessionInfoPostgres sessionInfo; 
+	private final SessionInfoPostgres sessionManagerInfo;
+	
+	private final SessionInfoPostgres sessionTargetInfo;
 	
 	private final Connection connection;
 	
@@ -65,7 +67,7 @@ public class DebugSessionPostgres implements DebugSession<SessionInfoPostgres, D
 		
 		   try (Statement stmt = connection.createStatement()) {
 			   
-		        ResultSet rs = stmt.executeQuery(SQL_LISTEN.replaceAll("\\?sessionid",String.valueOf(sessionId)));
+		        ResultSet rs = stmt.executeQuery(SQL_LISTEN);
 			    
 			    	   
 		        if (rs.next()) {
@@ -91,8 +93,12 @@ public class DebugSessionPostgres implements DebugSession<SessionInfoPostgres, D
 	public void attach() throws DebugException{		
 		
 		   try (Statement stmt = connection.createStatement()) {
-			    
-			    connection.setClientInfo("ApplicationName", "Debugger wait for " + (sessionInfo == null ? " breakpoint" : String.valueOf(sessionInfo.pid)));	   
+			   
+			   connection.setAutoCommit(false);
+			   
+			   connection.setClientInfo("ApplicationName", "Debugger wait for " + (sessionManagerInfo == null ? " breakpoint" : String.valueOf(sessionManagerInfo.pid)));
+			   
+			   connection.commit();
 			   
 			    waiting = true;
 			   
@@ -110,12 +116,13 @@ public class DebugSessionPostgres implements DebugSession<SessionInfoPostgres, D
 		
 	}
 
-	public DebugSessionPostgres(SessionInfoPostgres sessionInfo,Connection connection) throws DebugException
+	public DebugSessionPostgres(SessionInfoPostgres sessionManagerInfo,SessionInfoPostgres sessionTargetInfo,Connection connection) throws DebugException
 	{
 		super();
-		this.sessionInfo = sessionInfo;
+		this.sessionManagerInfo = sessionManagerInfo;
+		this.sessionTargetInfo = sessionTargetInfo;
 		this.connection = connection;
-		this.title = sessionInfo.application;
+		this.title = sessionManagerInfo.application;
 		sessionId = listen();
 	}
 
@@ -123,7 +130,7 @@ public class DebugSessionPostgres implements DebugSession<SessionInfoPostgres, D
 	public SessionInfoPostgres getSessionInfo()
 	{
 		
-		return sessionInfo;
+		return sessionManagerInfo;
 	}
 
 	@Override
@@ -140,10 +147,11 @@ public class DebugSessionPostgres implements DebugSession<SessionInfoPostgres, D
 	}
 
 	@Override
-	public Breakpoint setBreakpoint(DebugObjectPostgres obj,BreakpointProperties properties)
+	public Breakpoint setBreakpoint(DebugObjectPostgres obj,BreakpointProperties properties) throws DebugException
 	{
-		// TODO Auto-generated method stub
-		return null;
+		PostgresBreakpoint bp = new PostgresBreakpoint(this,obj,(BreakpointPropertiesPostgres) properties);
+		breakpoints.add(bp);
+		return bp;
 	}
 
 	@Override
@@ -212,7 +220,7 @@ public class DebugSessionPostgres implements DebugSession<SessionInfoPostgres, D
 	@Override
 	public String toString() {
 		return "DebugSessionPostgres [connection=" + connection + ", attached=" + attached + ", title=" + title
-				+ ", sessionId=" + sessionId + ", breakpoints=" + breakpoints + "]";
+				+ ", sessionId=" + sessionId + ", breakpoints=" + breakpoints + "ManagerSession=("+ sessionManagerInfo.toString() +") Session=("+ sessionTargetInfo.toString()+") "+"]";
 	}
 
 

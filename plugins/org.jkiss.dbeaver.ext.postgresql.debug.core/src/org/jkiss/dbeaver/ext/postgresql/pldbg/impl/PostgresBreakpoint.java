@@ -23,10 +23,6 @@ import org.jkiss.dbeaver.ext.postgresql.pldbg.Breakpoint;
 import org.jkiss.dbeaver.ext.postgresql.pldbg.DebugException;
 
 
-/**
- * @author Andrey.Hitrin
- *
- */
 @SuppressWarnings("nls")
 public class PostgresBreakpoint implements Breakpoint {
 	
@@ -51,7 +47,7 @@ public class PostgresBreakpoint implements Breakpoint {
 			     stmt.executeQuery(SQL_SET.replaceAll("\\?sessionid",String.valueOf(session.getSessionId()))
 		                  .replaceAll("\\?obj",String.valueOf(obj.getID()))
 		                  .replaceAll("\\?line",properties.isOnStart() ? "-1" : String.valueOf(properties.getLineNo()))
-		                  .replaceAll("\\?target",properties.isAll() ? null : String.valueOf(properties.getTargetId())));
+		                  .replaceAll("\\?target",properties.isAll() ? "null" : String.valueOf(properties.getTargetId())));
 		          
 		        
 		    } catch (SQLException e) {
@@ -77,6 +73,11 @@ public class PostgresBreakpoint implements Breakpoint {
 	@Override
 	public BreakpointPropertiesPostgres getProperties() {		
 		return properties;
+	}
+
+	@Override
+	public String toString() {
+		return "PostgresBreakpoint [obj=" + obj + ", session id =" + session.getSessionId() + ", properties=" + properties + "]";
 	}
 	
 	

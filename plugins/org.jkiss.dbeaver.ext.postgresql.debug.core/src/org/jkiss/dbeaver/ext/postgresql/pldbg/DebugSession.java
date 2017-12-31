@@ -6,7 +6,7 @@ public interface  DebugSession<SESSIONINFO extends SessionInfo<?>,DEBUGOBJECT ex
     SESSIONINFO getSessionInfo();
     String getTitle();
     List<? extends Breakpoint> getBreakpoints();
-    Breakpoint setBreakpoint(DEBUGOBJECT obj,BreakpointProperties properties);
+    Breakpoint setBreakpoint(DEBUGOBJECT obj,BreakpointProperties properties) throws DebugException;
     void removeBreakpoint(Breakpoint bp);
     void execContinue();
     void execStepInto();

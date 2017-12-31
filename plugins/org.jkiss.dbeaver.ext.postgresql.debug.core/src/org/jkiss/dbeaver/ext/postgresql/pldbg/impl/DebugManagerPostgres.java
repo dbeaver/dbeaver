@@ -22,7 +22,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -31,7 +30,6 @@ import org.jkiss.dbeaver.ext.postgresql.pldbg.DebugException;
 import org.jkiss.dbeaver.ext.postgresql.pldbg.DebugObject;
 import org.jkiss.dbeaver.ext.postgresql.pldbg.DebugSession;
 import org.jkiss.dbeaver.ext.postgresql.pldbg.SessionInfo;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.postgresql.pldbg.control.DebugManager;
 
 /**
@@ -63,9 +61,9 @@ public class DebugManagerPostgres implements DebugManager<Integer,Integer> {
 	private final Map<Integer,DebugSessionPostgres> sessions = new HashMap<Integer,DebugSessionPostgres>(1);  
 
 	@Override
-	public SessionInfoPostgres getCurrent() throws DebugException
+	public SessionInfoPostgres getSessionInfo(Connection connectionTarget) throws DebugException
 	{
-		   try (Statement stmt = connection.createStatement()) {
+		   try (Statement stmt = connectionTarget.createStatement()) {
 			   
 		        ResultSet rs = stmt.executeQuery(SQL_CURRENT_SESSION);
 		        
@@ -167,10 +165,14 @@ public class DebugManagerPostgres implements DebugManager<Integer,Integer> {
 	}
 
 	@Override
-	public DebugSessionPostgres createDebugSession(JDBCSession session) throws DebugException
+	public DebugSessionPostgres createDebugSession(Connection connectionTarget) throws DebugException
 	{
+		
+		SessionInfoPostgres targetInfo = getSessionInfo(connectionTarget);
 	
-		DebugSessionPostgres debugSession =  new DebugSessionPostgres(getCurrent(),session);
+		DebugSessionPostgres debugSession =  new DebugSessionPostgres(getSessionInfo(this.connection),targetInfo ,connectionTarget);
+		
+		sessions.put(targetInfo.getPid(), debugSession);
 		
 		return debugSession;
 		 
