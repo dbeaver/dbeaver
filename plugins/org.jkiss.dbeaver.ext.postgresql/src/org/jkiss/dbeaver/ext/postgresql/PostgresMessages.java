@@ -32,6 +32,7 @@ public class PostgresMessages extends NLS {
 	public static String wizard_backup_page_setting_group_security_btn_reset_default;
 
 	/* wizard restore*/
+	public static String wizard_restore_title;
 	public static String wizard_restore_page_setting_btn_clean_first;
 	public static String wizard_restore_page_setting_description;
 	public static String wizard_restore_page_setting_label_backup_file;
