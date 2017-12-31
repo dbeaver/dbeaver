@@ -363,15 +363,20 @@ public class DBeaverCore implements DBPPlatform {
             return;
         }
 
+        File configPath;
         try {
-            File configPath = RuntimeUtils.getLocalFileFromURL(Platform.getInstallLocation().getURL());
-            File iniFile = new File(configPath, ECLIPSE_CONFIG_FILE);
-            if (!iniFile.exists()) {
-                iniFile = new File(configPath, APP_CONFIG_FILE);
-            }
-            if (!iniFile.exists()) {
-                throw new IOException("Application configuration file (" + iniFile.getAbsolutePath() + ") not found. Default language cannot be changed.");
-            }
+            configPath = RuntimeUtils.getLocalFileFromURL(Platform.getInstallLocation().getURL());
+        } catch (IOException e) {
+            throw new DBException("Can't detect application installation folder.", e);
+        }
+        File iniFile = new File(configPath, ECLIPSE_CONFIG_FILE);
+        if (!iniFile.exists()) {
+            iniFile = new File(configPath, APP_CONFIG_FILE);
+        }
+        if (!iniFile.exists()) {
+            throw new DBException("Application configuration file (" + iniFile.getAbsolutePath() + ") not found. Default language cannot be changed.");
+        }
+        try {
             List<String> configLines = Files.readAllLines(iniFile.toPath());
             setConfigNLS(configLines, language.getCode());
             Files.write(iniFile.toPath(), configLines, StandardOpenOption.WRITE);
@@ -381,7 +386,8 @@ public class DBeaverCore implements DBPPlatform {
             // which will ask to restart workbench.
             getGlobalPreferenceStore().setValue(DBeaverPreferences.PLATFORM_LANGUAGE, language.getCode());
         } catch (AccessDeniedException e) {
-            throw new DBException("Can't save startup configuration - access denied", e);
+            throw new DBException("Can't save startup configuration - access denied.\n" +
+                "You could try to change national locale manually in '" + iniFile.getAbsolutePath() + "'. Refer to readme.txt file for details.", e);
         } catch (Exception e) {
             throw new DBException("Unexpected error while saving startup configuration", e);
         }
