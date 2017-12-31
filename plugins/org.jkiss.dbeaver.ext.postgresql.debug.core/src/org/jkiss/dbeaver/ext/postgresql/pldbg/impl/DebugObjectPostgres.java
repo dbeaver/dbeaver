@@ -18,10 +18,6 @@ package org.jkiss.dbeaver.ext.postgresql.pldbg.impl;
 
 import org.jkiss.dbeaver.ext.postgresql.pldbg.DebugObject;
 
-/**
- * @author Andrey.Hitrin
- *
- */
 @SuppressWarnings("nls")
 public class DebugObjectPostgres implements DebugObject<Integer> {
 	
