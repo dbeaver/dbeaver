@@ -22,6 +22,8 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
@@ -44,10 +46,12 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.runtime.properties.*;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ObjectViewerRenderer;
@@ -60,6 +64,8 @@ import org.jkiss.utils.CommonUtils;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.List;
+import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 /**
  * ObjectListControl
@@ -1167,6 +1173,97 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             return Status.OK_STATUS;
         }
     }
+
+    protected void addColumnConfigAction(IContributionManager contributionManager) {
+        Action configColumnsAction = new Action(
+            CoreMessages.obj_editor_properties_control_action_configure_columns,
+            DBeaverIcons.getImageDescriptor(UIIcon.CONFIGURATION)) {
+            @Override
+            public void run() {
+                columnController.configureColumns();
+            }
+        };
+        configColumnsAction.setDescription(CoreMessages.obj_editor_properties_control_action_configure_columns_description);
+        contributionManager.add(configColumnsAction);
+    }
+
+    /**
+     * Searcher. Filters elements by name
+     */
+    public class SearcherFilter implements ISearchExecutor {
+
+        @Override
+        public boolean performSearch(String searchString, int options) {
+            try {
+                SearchFilter searchFilter = new SearchFilter(
+                    searchString,
+                    (options & SEARCH_CASE_SENSITIVE) != 0);
+                getItemsViewer().setFilters(new ViewerFilter[]{searchFilter});
+                return true;
+            } catch (PatternSyntaxException e) {
+                log.error(e.getMessage());
+                return false;
+            }
+        }
+
+        @Override
+        public void cancelSearch() {
+            getItemsViewer().setFilters(new ViewerFilter[]{});
+        }
+    }
+
+    private class SearchFilter extends ViewerFilter {
+        final Pattern pattern;
+
+        public SearchFilter(String searchString, boolean caseSensitiveSearch) throws PatternSyntaxException {
+            pattern = Pattern.compile(SQLUtils.makeLikePattern(searchString), caseSensitiveSearch ? 0 : Pattern.CASE_INSENSITIVE);
+        }
+
+        @Override
+        public boolean select(Viewer viewer, Object parentElement, Object element) {
+            if (element instanceof DBNNode) {
+                return pattern.matcher(((DBNNode) element).getName()).find();
+            }
+            return false;
+        }
+    }
+
+    /**
+     * Legacy searcher. Highlights foudn elements
+     */
+    protected class SearcherHighligther extends ObjectSearcher<DBNNode> {
+        @Override
+        protected void setInfo(String message)
+        {
+            ObjectListControl.this.setInfo(message);
+        }
+
+        @Override
+        protected Collection<DBNNode> getContent()
+        {
+            return (Collection<DBNNode>) getItemsViewer().getInput();
+        }
+
+        @Override
+        protected void selectObject(DBNNode object)
+        {
+            getItemsViewer().setSelection(object == null ? new StructuredSelection() : new StructuredSelection(object));
+        }
+
+        @Override
+        protected void updateObject(DBNNode object)
+        {
+            getItemsViewer().update(object, null);
+        }
+
+        @Override
+        protected void revealObject(DBNNode object)
+        {
+            getItemsViewer().reveal(object);
+        }
+
+    }
+
 
     protected class ViewerRenderer extends ObjectViewerRenderer {
         protected ViewerRenderer() {

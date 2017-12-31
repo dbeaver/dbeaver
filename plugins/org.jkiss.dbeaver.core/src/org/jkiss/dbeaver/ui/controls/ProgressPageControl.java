@@ -274,11 +274,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
                 ((GridLayout)searchControlsComposite.getLayout()).numColumns = 2;
                 defaultToolbarManager.removeAll();
                 if (isSearchPossible() && isSearchEnabled()) {
-                    defaultToolbarManager.add(ActionUtils.makeCommandContribution(
-                        PlatformUI.getWorkbench(),
-                            IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE,
-                            CoreMessages.controls_progress_page_toolbar_title,
-                            UIIcon.SEARCH));
+                    addSearchAction(defaultToolbarManager);
                 }
                 Label phLabel = new Label(searchControlsComposite, SWT.NONE);
                 phLabel.setText(""); //$NON-NLS-1$
@@ -304,6 +300,17 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         } finally {
             searchControlsComposite.getParent().setRedraw(true);
         }
+    }
+
+    /**
+     * Default search action (standard Eclipse EDIT_FIND_AND_REPLACE command)
+     */
+    protected void addSearchAction(IContributionManager contributionManager) {
+        contributionManager.add(ActionUtils.makeCommandContribution(
+            PlatformUI.getWorkbench(),
+            IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE,
+            CoreMessages.controls_progress_page_toolbar_title,
+            UIIcon.SEARCH));
     }
 
     private void createProgressControls()
@@ -500,7 +507,10 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
             curSearchJob.cancel();
             curSearchJob = null;
         }
-        getSearchRunner().cancelSearch();
+        ISearchExecutor searchRunner = getSearchRunner();
+        if (searchRunner != null) {
+            searchRunner.cancelSearch();
+        }
 
         if (hide) {
             hideControls(true);
