@@ -58,6 +58,11 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
         return new SQLServerDataSource(monitor, container, this);
     }
 
+    @Override
+    public GenericCatalog createCatalogImpl(GenericDataSource dataSource, String catalogName) {
+        return new SQLServerDatabase(dataSource, catalogName);
+    }
+
     public String getViewDDL(DBRProgressMonitor monitor, GenericTable sourceObject, Map<String, Object> options) throws DBException {
         return extractSource(monitor, sourceObject.getDataSource(), sourceObject.getCatalog().getName(), sourceObject.getSchema().getName(), sourceObject.getName());
     }

@@ -27,11 +27,28 @@ import org.jkiss.utils.CommonUtils;
 
 public class SQLServerDataSource extends GenericDataSource {
 
-    public SQLServerDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, GenericMetaModel metaModel)
+    public SQLServerDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
+        throws DBException
+    {
+        this(monitor, container,
+            new SQLServerMetaModel(
+                container.getDriver().getSampleURL().contains(":sqlserver")
+            ));
+    }
+
+    SQLServerDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, SQLServerMetaModel metaModel)
         throws DBException
     {
         super(monitor, container, metaModel, new SQLServerDialect());
     }
+
+    //////////////////////////////////////////////////////////
+    // Databases
+
+
+
+    //////////////////////////////////////////////////////////
+    // Windows authentication
 
     @Override
     protected String getConnectionUserName(DBPConnectionConfiguration connectionInfo) {
