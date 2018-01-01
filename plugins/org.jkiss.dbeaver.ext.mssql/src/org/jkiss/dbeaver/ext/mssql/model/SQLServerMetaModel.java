@@ -186,7 +186,8 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     @Override
     public List<GenericSchema> loadSchemas(JDBCSession session, GenericDataSource dataSource, GenericCatalog catalog) throws DBException {
         if (catalog == null) {
-            return super.loadSchemas(session, dataSource, catalog);
+            // Schemas MUST be in catalog
+            return null;
         }
         String sql;
         if (getServerType() == ServerType.SQL_SERVER && dataSource.isServerVersionAtLeast(9 ,0)) {
