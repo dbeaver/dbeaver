@@ -216,7 +216,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
         if (getServerType(dataSource) == ServerType.SQL_SERVER && dataSource.isServerVersionAtLeast(9 ,0)) {
             sql = "SELECT SCHEMA_NAME as name FROM " + DBUtils.getQuotedIdentifier(catalog) + ".INFORMATION_SCHEMA.SCHEMATA";
         } else {
-            sql = "SELECT name FROM " + DBUtils.getQuotedIdentifier(catalog) + ".dbo.sysusers WHERE gid <> 0";
+            sql = "SELECT name FROM " + DBUtils.getQuotedIdentifier(catalog) + ".dbo.sysusers";
         }
         sql += "\nORDER BY name";
 
