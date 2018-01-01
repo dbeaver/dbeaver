@@ -30,15 +30,11 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IWorkbenchCommandConstants;
-import org.eclipse.ui.PlatformUI;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
@@ -46,8 +42,6 @@ import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.itemlist.DatabaseObjectListControl;
-import org.jkiss.dbeaver.ui.controls.itemlist.ObjectListControl;
-import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -150,6 +144,24 @@ public class SelectObjectDialog<T extends DBPObject> extends Dialog {
                             super.completeLoading(items);
                             performSearch(ISearchContextProvider.SearchType.NONE);
                             getItemsViewer().getControl().setFocus();
+
+                            if (modeless) {
+                                FocusAdapter focusListener = new FocusAdapter() {
+                                    @Override
+                                    public void focusLost(FocusEvent e) {
+                                        DBeaverUI.asyncExec(() -> {
+                                            if (!UIUtils.isParent(getShell(), getShell().getDisplay().getFocusControl())) {
+                                                cancelPressed();
+                                            }
+                                        });
+                                    }
+                                };
+                                getItemsViewer().getControl().addFocusListener(focusListener);
+                                Text searchControl = getSearchTextControl();
+                                if (searchControl != null) {
+                                    searchControl.addFocusListener(focusListener);
+                                }
+                            }
                         }
                     });
             }
@@ -222,16 +234,12 @@ public class SelectObjectDialog<T extends DBPObject> extends Dialog {
         gd.heightHint = 300;
         gd.minimumWidth = 300;
         objectList.setLayoutData(gd);
-        objectList.getSelectionProvider().addSelectionChangedListener(new ISelectionChangedListener() {
-            @Override
-            public void selectionChanged(SelectionChangedEvent event)
-            {
-                IStructuredSelection selection = (IStructuredSelection) event.getSelection();
-                selectedObjects.clear();
-                selectedObjects.addAll(selection.toList());
-                if (!modeless) {
-                    getButton(IDialogConstants.OK_ID).setEnabled(!selectedObjects.isEmpty());
-                }
+        objectList.getSelectionProvider().addSelectionChangedListener(event -> {
+            IStructuredSelection selection = (IStructuredSelection) event.getSelection();
+            selectedObjects.clear();
+            selectedObjects.addAll(selection.toList());
+            if (!modeless) {
+                getButton(IDialogConstants.OK_ID).setEnabled(!selectedObjects.isEmpty());
             }
         });
         objectList.setDoubleClickHandler(event -> {
@@ -241,22 +249,6 @@ public class SelectObjectDialog<T extends DBPObject> extends Dialog {
         });
 
         objectList.loadData();
-
-        Control listControl = objectList.getItemsViewer().getControl();
-        listControl.setFocus();
-
-        if (modeless) {
-            listControl.addFocusListener(new FocusAdapter() {
-                @Override
-                public void focusLost(FocusEvent e) {
-                    DBeaverUI.asyncExec(() -> {
-                        if (!UIUtils.isParent(getShell(), getShell().getDisplay().getFocusControl())) {
-                            cancelPressed();
-                        }
-                    });
-                }
-            });
-        }
 
         return group;
     }
