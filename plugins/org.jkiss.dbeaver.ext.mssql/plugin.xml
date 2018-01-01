@@ -21,7 +21,7 @@
 
     <extension point="org.jkiss.dbeaver.generic.meta">
         <meta id="sqlserver" class="org.jkiss.dbeaver.ext.mssql.model.SQLServerMetaModel"
-              driverClass="net.sourceforge.jtds.jdbc.Driver,com.microsoft.sqlserver.jdbc.SQLServerDriver"/>
+              driverClass="net.sourceforge.jtds.jdbc.Driver,com.microsoft.sqlserver.jdbc.SQLServerDriver,com.sybase.jdbc4.jdbc.SybDriver"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
@@ -110,36 +110,7 @@
                     <file type="license" path="drivers/mssql/LICENSE.txt" bundle="drivers.mssql"/>
                 </driver>
 
-            </drivers>
-
-            <views>
-                <view
-                        id="org.jkiss.dbeaver.ext.mssql.dataSourceWizardView"
-                        targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
-                        label="%sqlserver.dialog.connection.header"
-                        class="org.jkiss.dbeaver.ext.mssql.ui.SQLServerConnectionPage"
-                        icon="icons/database.png">
-                </view>
-                <view
-                        class="org.jkiss.dbeaver.ext.mssql.ui.SQLServerConnectionPage"
-                        icon="icons/database.png"
-                        id="org.jkiss.dbeaver.ext.mssql.dataSourceEditorView"
-                        label="%sqlserver.dialog.connection.header"
-                        targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog">
-                </view>
-            </views>
-        </datasource>
-
-        <!-- Sybase -->
-
-        <datasource
-                class="org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider"
-                description="%datasource.sybase.description"
-                id="sybase"
-                parent="generic"
-                label="Sybase"
-                icon="icons/sybase_icon.png">
-            <drivers managable="true">
+                <!-- Sybase -->
 
                 <driver
                         id="sybase_jtds"
@@ -197,6 +168,23 @@
                 </driver>
 
             </drivers>
+
+            <views>
+                <view
+                        id="org.jkiss.dbeaver.ext.mssql.dataSourceWizardView"
+                        targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
+                        label="%sqlserver.dialog.connection.header"
+                        class="org.jkiss.dbeaver.ext.mssql.ui.SQLServerConnectionPage"
+                        icon="icons/database.png">
+                </view>
+                <view
+                        class="org.jkiss.dbeaver.ext.mssql.ui.SQLServerConnectionPage"
+                        icon="icons/database.png"
+                        id="org.jkiss.dbeaver.ext.mssql.dataSourceEditorView"
+                        label="%sqlserver.dialog.connection.header"
+                        targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog">
+                </view>
+            </views>
 
         </datasource>
     </extension>
