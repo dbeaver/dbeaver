@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.ext.mssql;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerDataSource;
-import org.jkiss.dbeaver.ext.mssql.model.SQLServerMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPClientHome;
@@ -60,8 +59,8 @@ public class SQLServerDataSourceProvider extends JDBCDataSourceProvider implemen
     @Override
     public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo) {
         StringBuilder url = new StringBuilder();
-        boolean isJtds = driver.getSampleURL().startsWith("jdbc:jtds");
-        boolean isSqlServer = driver.getSampleURL().contains(":sqlserver");
+        boolean isJtds = SQLServerUtils.isDriverJtds(driver);
+        boolean isSqlServer = SQLServerUtils.isDriverSqlServer(driver);
         if (isSqlServer) {
             // SQL Server
             if (isJtds) {
@@ -119,9 +118,7 @@ public class SQLServerDataSourceProvider extends JDBCDataSourceProvider implemen
             @NotNull DBPDataSourceContainer container)
             throws DBException
     {
-        return new SQLServerDataSource(monitor, container, new SQLServerMetaModel(
-            container.getDriver().getSampleURL().contains(":sqlserver")
-        ));
+        return new SQLServerDataSource(monitor, container);
     }
 
     @Override

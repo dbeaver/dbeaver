@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
- * Copyright (C) 2010-2017 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2017 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.mssql.SQLServerActivator;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.SQLServerMessages;
+import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.ui.ICompositeDialogPage;
@@ -35,11 +36,6 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
 import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
 import org.jkiss.utils.CommonUtils;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 public class SQLServerConnectionPage extends ConnectionPageAbstract implements ICompositeDialogPage
 {
@@ -50,19 +46,12 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
     private Text userNameText;
     private Label passwordLabel;
     private Text passwordText;
-    private Button windowsAuthetticationButton;
+    private Button windowsAuthenticationButton;
 
-    private Composite settingsGroup;
-
-    private Map<String, List<Control>> propGroupMap = new HashMap<>();
-
-    private static final String GROUP_HOST = "host"; //$NON-NLS-1$
-    private static final String GROUP_DB = "db"; //$NON-NLS-1$
-    private static final String GROUP_LOGIN = "login"; //$NON-NLS-1$
     private boolean activated;
 
-    private static ImageDescriptor LOGO_IMG = SQLServerActivator.getImageDescriptor("icons/mssql_logo.png");
-
+    private static ImageDescriptor MSSQL_LOGO_IMG = SQLServerActivator.getImageDescriptor("icons/mssql_logo.png");
+    private static ImageDescriptor SYBASE_LOGO_IMG = SQLServerActivator.getImageDescriptor("icons/sybase_logo.png");
 
     @Override
     public void dispose()
@@ -73,7 +62,7 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
     @Override
     public void createControl(Composite composite)
     {
-        settingsGroup = new Composite(composite, SWT.NONE);
+        Composite settingsGroup = new Composite(composite, SWT.NONE);
         GridLayout gl = new GridLayout(4, false);
         gl.marginHeight = 10;
         gl.marginWidth = 10;
@@ -99,11 +88,6 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
             gd = new GridData(GridData.CENTER);
             gd.widthHint = 60;
             portText.setLayoutData(gd);
-
-            addControlToGroup(GROUP_HOST, hostLabel);
-            addControlToGroup(GROUP_HOST, hostText);
-            addControlToGroup(GROUP_HOST, portLabel);
-            addControlToGroup(GROUP_HOST, portText);
         }
 
         {
@@ -115,25 +99,21 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.grabExcessHorizontalSpace = true;
             //gd.widthHint = 270;
-            //gd.horizontalSpan = 3;
+            gd.horizontalSpan = 3;
             dbText.setLayoutData(gd);
-
-            Control emptyLabel = createEmptyLabel(settingsGroup, 1);
-
-            addControlToGroup(GROUP_DB, dbLabel);
-            addControlToGroup(GROUP_DB, dbText);
-            addControlToGroup(GROUP_DB, emptyLabel);
         }
 
         {
-            windowsAuthetticationButton = UIUtils.createLabelCheckbox(settingsGroup, SQLServerMessages.dialog_connection_windows_authentication_button, false);
-            addControlToGroup(GROUP_DB, windowsAuthetticationButton);
-
-            Control emptyLabel = new Label(settingsGroup, SWT.NONE);
-            gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
-            gd.horizontalSpan = 2;
-            gd.widthHint = 0;
-            emptyLabel.setLayoutData(gd);
+            if (SQLServerUtils.isDriverSqlServer(getSite().getDriver())) {
+                windowsAuthenticationButton = UIUtils.createLabelCheckbox(settingsGroup, SQLServerMessages.dialog_connection_windows_authentication_button, false);
+                windowsAuthenticationButton.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        enableTexts();
+                    }
+                });
+                createEmptyLabel(settingsGroup, 1);
+            }
 
             userNameLabel = new Label(settingsGroup, SWT.NONE);
             userNameLabel.setText(SQLServerMessages.dialog_connection_user_name_label);
@@ -144,7 +124,7 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
             gd.grabExcessHorizontalSpace = true;
             userNameText.setLayoutData(gd);
 
-            emptyLabel = createEmptyLabel(settingsGroup, 2);
+            createEmptyLabel(settingsGroup, 1);
 
             passwordLabel = new Label(settingsGroup, SWT.NONE);
             passwordLabel.setText(SQLServerMessages.dialog_connection_password_label);
@@ -155,18 +135,7 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
             gd.grabExcessHorizontalSpace = true;
             passwordText.setLayoutData(gd);
 
-            windowsAuthetticationButton.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    enableTexts();
-                }
-            });
-
-            addControlToGroup(GROUP_LOGIN, userNameLabel);
-            addControlToGroup(GROUP_LOGIN, userNameText);
-            addControlToGroup(GROUP_LOGIN, emptyLabel);
-            addControlToGroup(GROUP_LOGIN, passwordLabel);
-            addControlToGroup(GROUP_LOGIN, passwordText);
+            createEmptyLabel(settingsGroup, 1);
         }
 
         createDriverPanel(settingsGroup);
@@ -174,24 +143,14 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
     }
 
     private void enableTexts() {
-        boolean selection = windowsAuthetticationButton.getSelection();
-        userNameLabel.setEnabled(!selection);
-        userNameText.setEnabled(!selection);
-        passwordLabel.setEnabled(!selection);
-        passwordText.setEnabled(!selection);
+        boolean isWindowsAuth = windowsAuthenticationButton != null && windowsAuthenticationButton.getSelection();
+        userNameLabel.setEnabled(!isWindowsAuth);
+        userNameText.setEnabled(!isWindowsAuth);
+        passwordLabel.setEnabled(!isWindowsAuth);
+        passwordText.setEnabled(!isWindowsAuth);
     }
 
-    private void addControlToGroup(String group, Control control)
-    {
-        List<Control> controlList = propGroupMap.get(group);
-        if (controlList == null) {
-            controlList = new ArrayList<>();
-            propGroupMap.put(group, controlList);
-        }
-        controlList.add(control);
-    }
-
-    private Control createEmptyLabel(Composite parent, int verticalSpan)
+    private void createEmptyLabel(Composite parent, int verticalSpan)
     {
         Label emptyLabel = new Label(parent, SWT.NONE);
         GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
@@ -199,7 +158,6 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
         gd.verticalSpan = verticalSpan;
         gd.widthHint = 0;
         emptyLabel.setLayoutData(gd);
-        return emptyLabel;
     }
 
     @Override
@@ -215,8 +173,10 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
     {
         super.loadSettings();
 
+        boolean isSqlServer = SQLServerUtils.isDriverSqlServer(getSite().getDriver());
+
         if (!activated) {
-            setImageDescriptor(LOGO_IMG);
+            setImageDescriptor(isSqlServer ? MSSQL_LOGO_IMG : SYBASE_LOGO_IMG);
         }
 
         // Load values from new connection info
@@ -250,10 +210,10 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
         if (passwordText != null) {
             passwordText.setText(CommonUtils.notEmpty(connectionInfo.getUserPassword()));
         }
-        if (windowsAuthetticationButton != null) {
+        if (windowsAuthenticationButton != null) {
             String winAuthProperty = connectionInfo.getProviderProperty(SQLServerConstants.PROP_CONNECTION_WINDOWS_AUTH);
             if (winAuthProperty != null) {
-                windowsAuthetticationButton.setSelection(Boolean.parseBoolean(winAuthProperty));
+                windowsAuthenticationButton.setSelection(Boolean.parseBoolean(winAuthProperty));
             }
             enableTexts();
         }
@@ -280,9 +240,9 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
         if (passwordText != null) {
             connectionInfo.setUserPassword(passwordText.getText());
         }
-        if (windowsAuthetticationButton != null) {
+        if (windowsAuthenticationButton != null) {
             connectionInfo.setProviderProperty(SQLServerConstants.PROP_CONNECTION_WINDOWS_AUTH,
-                    String.valueOf(windowsAuthetticationButton.getSelection()));
+                    String.valueOf(windowsAuthenticationButton.getSelection()));
         }
         super.saveSettings(dataSource);
     }
