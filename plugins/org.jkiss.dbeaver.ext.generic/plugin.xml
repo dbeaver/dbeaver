@@ -415,6 +415,7 @@
                     <file type="license" path="drivers/jtds/LICENSE.txt" bundle="drivers.jtds"/>
                     <file type="jar" path="drivers/jtds/jtds.jar" bundle="drivers.jtds"/>
                 </driver>
+
                 <driver
                     id="sap_maxdb"
                     category="SAP"
