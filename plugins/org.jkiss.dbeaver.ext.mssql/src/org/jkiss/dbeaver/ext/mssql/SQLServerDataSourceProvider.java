@@ -60,30 +60,55 @@ public class SQLServerDataSourceProvider extends JDBCDataSourceProvider implemen
     @Override
     public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo) {
         StringBuilder url = new StringBuilder();
-        boolean isJtds = SQLServerConstants.DRIVER_JTDS.equals(driver.getId());
-        if (isJtds) {
-            url.append("jdbc:jtds:sqlserver://");
+        boolean isJtds = driver.getSampleURL().startsWith("jdbc:jtds");
+        boolean isSqlServer = driver.getSampleURL().contains(":sqlserver");
+        if (isSqlServer) {
+            // SQL Server
+            if (isJtds) {
+                url.append("jdbc:jtds:sqlserver://");
+            } else {
+                url.append("jdbc:sqlserver://");
+            }
+            url.append(connectionInfo.getHostName());
+            if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
+                url.append(":").append(connectionInfo.getHostPort());
+            }
+            if (isJtds) {
+                if (!CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
+                    url.append("/").append(connectionInfo.getDatabaseName());
+                }
+            } else {
+                url.append(";");
+                if (!CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
+                    url.append("databaseName=").append(connectionInfo.getDatabaseName());
+                }
+            }
+            if ("TRUE".equalsIgnoreCase(connectionInfo.getProviderProperty(SQLServerConstants.PROP_CONNECTION_WINDOWS_AUTH))) {
+                url.append(";integratedSecurity=true");
+            }
         } else {
-            url.append("jdbc:sqlserver://");
+            // Sybase
+            if (isJtds) {
+                url.append("jdbc:jtds:sybase://");
+                url.append(connectionInfo.getHostName());
+                if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
+                    url.append(":").append(connectionInfo.getHostPort());
+                }
+                if (!CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
+                    url.append("/").append(connectionInfo.getDatabaseName());
+                }
+            } else {
+                url.append("jdbc:sybase:Tds:");
+                url.append(connectionInfo.getHostName());
+                if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
+                    url.append(":").append(connectionInfo.getHostPort());
+                }
+                if (!CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
+                    url.append("?ServiceName").append(connectionInfo.getDatabaseName());
+                }
+            }
         }
 
-        url.append(connectionInfo.getHostName());
-        if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
-            url.append(":").append(connectionInfo.getHostPort());
-        }
-        if (isJtds) {
-            if (!CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
-                url.append("/").append(connectionInfo.getDatabaseName());
-            }
-        } else {
-            url.append(";");
-            if (!CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
-                url.append("databaseName=").append(connectionInfo.getDatabaseName());
-            }
-        }
-        if ("TRUE".equalsIgnoreCase(connectionInfo.getProviderProperty(SQLServerConstants.PROP_CONNECTION_WINDOWS_AUTH))) {
-            url.append(";integratedSecurity=true");
-        }
         return url.toString();
     }
 
@@ -94,7 +119,9 @@ public class SQLServerDataSourceProvider extends JDBCDataSourceProvider implemen
             @NotNull DBPDataSourceContainer container)
             throws DBException
     {
-        return new SQLServerDataSource(monitor, container, new SQLServerMetaModel());
+        return new SQLServerDataSource(monitor, container, new SQLServerMetaModel(
+            container.getDriver().getSampleURL().contains(":sqlserver")
+        ));
     }
 
     @Override

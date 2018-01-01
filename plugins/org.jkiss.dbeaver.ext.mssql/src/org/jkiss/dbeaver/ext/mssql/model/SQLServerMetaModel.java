@@ -22,7 +22,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformProvider;
@@ -31,13 +30,10 @@ import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,8 +46,11 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
 {
     private static final Log log = Log.getLog(SQLServerMetaModel.class);
 
-    public SQLServerMetaModel() {
+    private final boolean sqlServer;
+
+    public SQLServerMetaModel(boolean sqlServer) {
         super();
+        this.sqlServer = sqlServer;
     }
 
     @Override
@@ -76,7 +75,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     @Override
     public List<? extends GenericTrigger> loadTriggers(DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTable table) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container.getDataSource(), "Read triggers")) {
-            String schema = getSystemSchema(getServerType(container.getDataSource()));
+            String schema = getSystemSchema(getServerType());
             String catalog = DBUtils.getQuotedIdentifier(container.getCatalog());
             StringBuilder query = new StringBuilder("SELECT triggers.name FROM " + catalog + "." + schema + ".sysobjects triggers");
             if (table != null) {
@@ -136,7 +135,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     }
 
     private String extractSource(DBRProgressMonitor monitor, GenericDataSource dataSource, String catalog, String schema, String name) throws DBException {
-        ServerType serverType = getServerType(dataSource);
+        ServerType serverType = getServerType();
         String systemSchema = getSystemSchema(serverType);
         catalog = DBUtils.getQuotedIdentifier(dataSource, catalog);
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read source code")) {
@@ -165,31 +164,8 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
         }
     }
 
-    public static ServerType getServerType(DBPDataSource dataSource) {
-        JDBCExecutionContext context = (JDBCExecutionContext) dataSource.getDefaultContext(true);
-        try {
-            Connection connection = context.getConnection(new VoidProgressMonitor());
-            String connectionClass = connection.getClass().getName();
-            if (connectionClass.contains("jtds")) {
-                try {
-                    Integer serverType = (Integer) connection.getClass().getMethod("getServerType").invoke(connection);
-                    if (serverType == 1) {
-                        return ServerType.SQL_SERVER;
-                    } else {
-                        return ServerType.SYBASE;
-                    }
-                } catch (Throwable e) {
-                    log.debug("Can't determine JTDS driver type", e);
-                    return ServerType.SQL_SERVER;
-                }
-            } else if (connectionClass.contains("microsoft")) {
-                return ServerType.SQL_SERVER;
-            } else {
-                return ServerType.SYBASE;
-            }
-        } catch (SQLException e) {
-            return ServerType.UNKNOWN;
-        }
+    public ServerType getServerType() {
+        return sqlServer ? ServerType.SQL_SERVER : ServerType.SYBASE;
     }
 
     @Override
@@ -213,7 +189,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
             return super.loadSchemas(session, dataSource, catalog);
         }
         String sql;
-        if (getServerType(dataSource) == ServerType.SQL_SERVER && dataSource.isServerVersionAtLeast(9 ,0)) {
+        if (getServerType() == ServerType.SQL_SERVER && dataSource.isServerVersionAtLeast(9 ,0)) {
             sql = "SELECT SCHEMA_NAME as name FROM " + DBUtils.getQuotedIdentifier(catalog) + ".INFORMATION_SCHEMA.SCHEMATA";
         } else {
             sql = "SELECT name FROM " + DBUtils.getQuotedIdentifier(catalog) + ".dbo.sysusers";
@@ -244,7 +220,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
 
     @Override
     public boolean supportsSequences(GenericDataSource dataSource) {
-        return getServerType(dataSource) == ServerType.SQL_SERVER;
+        return getServerType() == ServerType.SQL_SERVER;
     }
 
     @Override
