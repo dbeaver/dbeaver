@@ -25,6 +25,9 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
+
+        <!-- SQL Server -->
+
         <datasource
                 class="org.jkiss.dbeaver.ext.mssql.SQLServerDataSourceProvider"
                 description="%datasource.mssql.description"
@@ -35,15 +38,15 @@
             <drivers managable="true">
 
                 <driver
-                        id="mssql_jdbc_jtds"
-                        label="jTDS driver"
-                        icon="icons/mssql_icon.png"
-                        category="MS SQL Server"
-                        class="net.sourceforge.jtds.jdbc.Driver"
-                        sampleURL="jdbc:jtds:sqlserver://{host}[:{port}][/{database}]"
-                        defaultPort="1433"
-                        webURL="http://jtds.sourceforge.net/"
-                        description="jTDS SQL Server driver">
+                    id="mssql_jdbc_jtds"
+                    label="jTDS driver"
+                    icon="icons/mssql_icon.png"
+                    category="MS SQL Server"
+                    class="net.sourceforge.jtds.jdbc.Driver"
+                    sampleURL="jdbc:jtds:sqlserver://{host}[:{port}][/{database}]"
+                    defaultPort="1433"
+                    webURL="http://jtds.sourceforge.net/"
+                    description="jTDS SQL Server driver">
 
                     <replace provider="generic" driver="mssql"/>
 
@@ -71,15 +74,15 @@
                 </driver>
 
                 <driver
-                        id="mssql_jdbc_ms"
-                        label="Microsoft Driver 2"
-                        icon="icons/mssql_icon.png"
-                        category="MS SQL Server"
-                        class="com.microsoft.sqlserver.jdbc.SQLServerDriver"
-                        sampleURL="jdbc:sqlserver://{host}[:{port}][;databaseName={database}]"
-                        defaultPort="1433"
-                        webURL="http://msdn.microsoft.com/en-us/sqlserver/aa937724"
-                        description="Microsoft JDBC Driver for SQL Server">
+                    id="mssql_jdbc_ms"
+                    label="Microsoft Driver 2"
+                    icon="icons/mssql_icon.png"
+                    category="MS SQL Server"
+                    class="com.microsoft.sqlserver.jdbc.SQLServerDriver"
+                    sampleURL="jdbc:sqlserver://{host}[:{port}][;databaseName={database}]"
+                    defaultPort="1433"
+                    webURL="http://msdn.microsoft.com/en-us/sqlserver/aa937724"
+                    description="Microsoft JDBC Driver for SQL Server">
 
                     <replace provider="generic" driver="mssql_ms"/>
 
@@ -106,13 +109,14 @@
                     <file type="lib" os="win32" arch="x86_64" path="drivers/mssql/xa/x64/sqljdbc_xa.dll" bundle="drivers.mssql"/>
                     <file type="license" path="drivers/mssql/LICENSE.txt" bundle="drivers.mssql"/>
                 </driver>
+
             </drivers>
 
             <views>
                 <view
                         id="org.jkiss.dbeaver.ext.mssql.dataSourceWizardView"
                         targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
-                        label="%dialog.connection.header"
+                        label="%sqlserver.dialog.connection.header"
                         class="org.jkiss.dbeaver.ext.mssql.ui.SQLServerConnectionPage"
                         icon="icons/database.png">
                 </view>
@@ -120,10 +124,80 @@
                         class="org.jkiss.dbeaver.ext.mssql.ui.SQLServerConnectionPage"
                         icon="icons/database.png"
                         id="org.jkiss.dbeaver.ext.mssql.dataSourceEditorView"
-                        label="%dialog.connection.header"
+                        label="%sqlserver.dialog.connection.header"
                         targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog">
                 </view>
             </views>
+        </datasource>
+
+        <!-- Sybase -->
+
+        <datasource
+                class="org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider"
+                description="%datasource.sybase.description"
+                id="sybase"
+                parent="generic"
+                label="Sybase"
+                icon="icons/sybase_icon.png">
+            <drivers managable="true">
+
+                <driver
+                        id="sybase_jtds"
+                        label="Sybase"
+                        icon="icons/sybase_icon.png"
+                        class="net.sourceforge.jtds.jdbc.Driver"
+                        sampleURL="jdbc:jtds:sybase://{host}[:{port}][/{database}]"
+                        defaultPort="5000"
+                        webURL="http://jtds.sourceforge.net/"
+                        description="Sybase jTDS driver">
+
+                    <replace provider="generic" driver="sybase"/>
+                    <property name="loginTimeout" value="20"/>
+
+                    <parameter name="query-get-active-db">select db_name()</parameter>
+                    <parameter name="query-set-active-db">use [?]</parameter>
+                    <parameter name="script-delimiter" value="go"/>
+                    <parameter name="ddl-drop-column-short" value="true"/>
+                    <parameter name="supports-multiple-results" value="true"/>
+
+                    <parameter name="native-format-timestamp" value="'{ts '''yyyy-MM-dd HH:mm:ss.ffffff'''}'"/>
+                    <parameter name="native-format-time" value="''HH:mm:ss.SSS''"/>
+
+                    <file type="jar" path="maven:/net.sourceforge.jtds:jtds:RELEASE" bundle="!drivers.jtds"/>
+                    <file type="license" path="drivers/jtds/LICENSE.txt" bundle="drivers.jtds"/>
+                    <file type="jar" path="drivers/jtds/jtds.jar" bundle="drivers.jtds"/>
+                </driver>
+
+                <driver
+                        id="sybase_jconn"
+                        label="Sybase jConnect"
+                        icon="icons/sybase_icon.png"
+                        class="com.sybase.jdbc4.jdbc.SybDriver"
+                        sampleURL="jdbc:sybase:Tds:{host}[:{port}][?ServiceName={database}]"
+                        defaultPort="5000"
+                        webURL="http://infocenter.sybase.com/help/index.jsp?topic=/com.sybase.infocenter.dc01776.1604/doc/html/san1357754912881.html"
+                        description="Sybase jConnect driver">
+
+                    <property name="loginTimeout" value="20"/>
+
+                    <parameter name="query-get-active-db">select db_name()</parameter>
+                    <parameter name="query-set-active-db">use [?]</parameter>
+                    <parameter name="script-delimiter" value="go"/>
+                    <parameter name="ddl-drop-column-short" value="true"/>
+                    <parameter name="supports-multiple-results" value="true"/>
+
+                    <parameter name="native-format-timestamp" value="'{ts '''yyyy-MM-dd HH:mm:ss.ffffff'''}'"/>
+                    <parameter name="native-format-time" value="''HH:mm:ss.SSS''"/>
+
+                    <file type="jar" path="repo:/drivers/sybase/jconnect/jconn4.jar" bundle="!drivers.sybase.jconnect"/>
+                    <file type="license" path="repo:/drivers/sybase/jconnect/LICENSE.txt" bundle="!drivers.sybase.jconnect"/>
+
+                    <file type="jar" path="drivers/sybase/jconnect/jconn4.jar" bundle="drivers.sybase.jconnect"/>
+                    <file type="license" path="drivers/sybase/jconnect/LICENSE.txt" bundle="drivers.sybase.jconnect"/>
+                </driver>
+
+            </drivers>
+
         </datasource>
     </extension>
 
