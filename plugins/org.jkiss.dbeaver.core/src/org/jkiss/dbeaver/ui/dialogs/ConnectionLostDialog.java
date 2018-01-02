@@ -35,7 +35,7 @@ public class ConnectionLostDialog extends ErrorDialog {
         super(
             parentShell,
             "Connection lost",
-            "Connection to '" + container.getName() + "' was lost and cannot be re-established.\nWhat to you want to do?",
+            "Connection to '" + container.getName() + "' was lost and cannot be re-established.\nWhat do you want to do?",
             GeneralUtils.makeExceptionStatus(error),
             IStatus.INFO | IStatus.WARNING | IStatus.ERROR);
         this.stopButtonName = stopButtonName;
