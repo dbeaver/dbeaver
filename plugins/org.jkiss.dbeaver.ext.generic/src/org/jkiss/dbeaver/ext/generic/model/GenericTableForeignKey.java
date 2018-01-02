@@ -18,11 +18,15 @@ package org.jkiss.dbeaver.ext.generic.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableForeignKey;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
+import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyDeferability;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.utils.CommonUtils;
@@ -33,8 +37,10 @@ import java.util.List;
 /**
  * GenericTableForeignKey
  */
-public class GenericTableForeignKey extends JDBCTableForeignKey<GenericTable, GenericPrimaryKey>
+public class GenericTableForeignKey extends JDBCTableForeignKey<GenericTable, DBSEntityReferrer>
 {
+    private static final Log log = Log.getLog(GenericTableForeignKey.class);
+
     private DBSForeignKeyDeferability deferability;
     private List<GenericTableForeignKeyColumnTable> columns;
 
@@ -42,7 +48,7 @@ public class GenericTableForeignKey extends JDBCTableForeignKey<GenericTable, Ge
         GenericTable table,
         String name,
         @Nullable String remarks,
-        GenericPrimaryKey referencedKey,
+        DBSEntityReferrer referencedKey,
         DBSForeignKeyModifyRule deleteRule,
         DBSForeignKeyModifyRule updateRule,
         DBSForeignKeyDeferability deferability,
@@ -82,7 +88,13 @@ public class GenericTableForeignKey extends JDBCTableForeignKey<GenericTable, Ge
     void setColumns(DBRProgressMonitor monitor, List<GenericTableForeignKeyColumnTable> columns)
     {
         this.columns = columns;
-        final List<GenericTableConstraintColumn> refColumns = referencedKey.getAttributeReferences(monitor);
+        final List<? extends DBSEntityAttributeRef> refColumns;
+        try {
+            refColumns = referencedKey.getAttributeReferences(monitor);
+        } catch (DBException e) {
+            log.error("Error getting referenced key columns", e);
+            return;
+        }
         if (refColumns != null && this.columns.size() > refColumns.size()) {
             // [JDBC: Progress bug. All FK columns are duplicated]
             for (int i = 0; i < this.columns.size(); ) {
