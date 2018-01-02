@@ -23,24 +23,16 @@ public class SQLServerMessages extends NLS {
     static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.mssql.SQLServerResources"; //$NON-NLS-1$
 
     /* PostgreConnectionPage */
-    public static String dialog_setting_connection_host;
-    public static String dialog_setting_connection_port;
-    public static String dialog_setting_connection_database;
-    public static String dialog_setting_connection_user;
-    public static String dialog_setting_connection_password;
     public static String dialog_setting_connection_settings;
 
-    public static String dialog_connection_advanced_tab;
-    public static String dialog_connection_advanced_tab_tooltip;
     public static String dialog_connection_windows_authentication_button;
     public static String dialog_connection_database_schema_label;
-    public static String dialog_connection_general_tab;
-    public static String dialog_connection_general_tab_tooltip;
     public static String dialog_connection_host_label;
     public static String dialog_connection_password_label;
     public static String dialog_connection_port_label;
-    public static String dialog_connection_test_connection_button;
     public static String dialog_connection_user_name_label;
+    public static String dialog_setting_show_all_schemas;
+    public static String dialog_setting_show_all_schemas_tip;
 
     static {
         // initialize resource bundle

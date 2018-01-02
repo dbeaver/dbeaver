@@ -199,13 +199,17 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
             // Schemas MUST be in catalog
             return null;
         }
+        boolean showAllSchemas = ((SQLServerDataSource) dataSource).isShowAllSchemas();
 
         String sysSchema = DBUtils.getQuotedIdentifier(catalog) + "." + getSystemSchema();
         String sql =
-            "SELECT DISTINCT u.name\n" +
-            "FROM " + sysSchema + ".sysusers u, " + sysSchema + ".sysobjects o\n" +
-            "WHERE u.uid=o.uid\n" +
-            "ORDER BY 1";
+            showAllSchemas ?
+                "SELECT name FROM " + sysSchema + ".sysusers ORDER BY name"
+                :
+                "SELECT DISTINCT u.name\n" +
+                "FROM " + sysSchema + ".sysusers u, " + sysSchema + ".sysobjects o\n" +
+                "WHERE u.uid=o.uid\n" +
+                "ORDER BY 1";
 
         try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
             List<GenericSchema> result = new ArrayList<>();

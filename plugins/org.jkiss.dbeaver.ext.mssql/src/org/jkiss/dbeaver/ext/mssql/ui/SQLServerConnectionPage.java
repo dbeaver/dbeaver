@@ -47,6 +47,7 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
     private Label passwordLabel;
     private Text passwordText;
     private Button windowsAuthenticationButton;
+    private Button showAllSchemas;
 
     private boolean activated;
 
@@ -138,6 +139,17 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
             createEmptyLabel(settingsGroup, 1);
         }
 
+        {
+            Group secureGroup = new Group(settingsGroup, SWT.NONE);
+            secureGroup.setText(SQLServerMessages.dialog_setting_connection_settings);
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.horizontalSpan = 4;
+            secureGroup.setLayoutData(gd);
+            secureGroup.setLayout(new GridLayout(2, false));
+
+            showAllSchemas = UIUtils.createCheckbox(secureGroup, SQLServerMessages.dialog_setting_show_all_schemas, SQLServerMessages.dialog_setting_show_all_schemas_tip, true, 2);
+        }
+
         createDriverPanel(settingsGroup);
         setControl(settingsGroup);
     }
@@ -217,6 +229,7 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
             }
             enableTexts();
         }
+        showAllSchemas.setSelection(CommonUtils.toBoolean(connectionInfo.getProviderProperty(SQLServerConstants.PROP_SHOW_ALL_SCHEMAS)));
 
         activated = true;
     }
@@ -244,6 +257,11 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
             connectionInfo.setProviderProperty(SQLServerConstants.PROP_CONNECTION_WINDOWS_AUTH,
                     String.valueOf(windowsAuthenticationButton.getSelection()));
         }
+        if (showAllSchemas != null) {
+            connectionInfo.setProviderProperty(SQLServerConstants.PROP_SHOW_ALL_SCHEMAS,
+                String.valueOf(showAllSchemas.getSelection()));
+        }
+
         super.saveSettings(dataSource);
     }
 

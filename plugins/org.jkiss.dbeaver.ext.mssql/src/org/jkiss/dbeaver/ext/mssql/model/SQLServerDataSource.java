@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ext.mssql.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
-import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -45,7 +44,9 @@ public class SQLServerDataSource extends GenericDataSource {
     //////////////////////////////////////////////////////////
     // Databases
 
-
+    protected boolean isShowAllSchemas() {
+        return CommonUtils.toBoolean(getContainer().getConnectionConfiguration().getProviderProperty(SQLServerConstants.PROP_SHOW_ALL_SCHEMAS));
+    }
 
     //////////////////////////////////////////////////////////
     // Windows authentication
