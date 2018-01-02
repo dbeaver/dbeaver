@@ -34,7 +34,7 @@ import java.util.List;
  */
 public abstract class JDBCTableForeignKey<
     TABLE extends JDBCTable,
-    PRIMARY_KEY extends JDBCTableConstraint<TABLE>>
+    PRIMARY_KEY extends DBSEntityReferrer>
     extends JDBCTableConstraint<TABLE>
     implements DBSTableForeignKey
 {
@@ -96,7 +96,7 @@ public abstract class JDBCTableForeignKey<
     @Property(viewable = true, order = 3)
     public TABLE getReferencedTable()
     {
-        return referencedKey == null ? null : referencedKey.getTable();
+        return referencedKey == null ? null : (TABLE) referencedKey.getParentObject();
     }
 
     @Nullable
