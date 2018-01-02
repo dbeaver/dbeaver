@@ -18,17 +18,22 @@
 
 package org.jkiss.dbeaver.ui.dialogs.tools;
 
+import org.eclipse.jface.fieldassist.SimpleContentProposalProvider;
+import org.eclipse.jface.fieldassist.TextContentAdapter;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 public abstract class AbstractToolWizardPage<WIZARD extends AbstractToolWizard> extends WizardPage {
 
     protected final WIZARD wizard;
+
+    protected Text extraCommandArgsText;
 
     protected AbstractToolWizardPage(WIZARD wizard, String pageName)
     {
@@ -48,6 +53,16 @@ public abstract class AbstractToolWizardPage<WIZARD extends AbstractToolWizard> 
         UIUtils.createPushButton(buttonsPanel, "None", null, new CheckListener(table, false));
     }
 
+    protected void createExtraArgsInput(Composite outputGroup) {
+        extraCommandArgsText = UIUtils.createLabelText(outputGroup, "Extra command args", wizard.getExtraCommandArgs());
+        extraCommandArgsText.setToolTipText("Set extra command args for tool executable.");
+        UIUtils.installContentProposal(
+            extraCommandArgsText,
+            new TextContentAdapter(),
+            new SimpleContentProposalProvider(new String[]{}));
+        extraCommandArgsText.addModifyListener(e -> wizard.setExtraCommandArgs(extraCommandArgsText.getText()));
+
+    }
 
     private static class CheckListener extends SelectionAdapter {
         private final Table table;

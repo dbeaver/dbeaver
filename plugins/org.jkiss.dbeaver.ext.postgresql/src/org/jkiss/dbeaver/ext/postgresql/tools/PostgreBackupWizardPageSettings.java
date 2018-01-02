@@ -89,7 +89,9 @@ class PostgreBackupWizardPageSettings extends PostgreWizardPageSettings<PostgreB
 
         useInsertsCheck = UIUtils.createCheckbox(formatGroup,
         	PostgresMessages.wizard_backup_page_setting_checkbox_use_insert,
-            false
+            null,
+            false,
+            2
         );
         useInsertsCheck.addSelectionListener(changeListener);
 
@@ -115,6 +117,7 @@ class PostgreBackupWizardPageSettings extends PostgreWizardPageSettings<PostgreB
         if (wizard.getOutputFolder() != null) {
             outputFolderText.setText(wizard.getOutputFolder().getAbsolutePath());
         }
+        createExtraArgsInput(outputGroup);
 
         createSecurityGroup(composite);
 

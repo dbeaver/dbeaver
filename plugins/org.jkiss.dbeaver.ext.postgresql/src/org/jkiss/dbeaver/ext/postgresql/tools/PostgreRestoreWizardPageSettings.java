@@ -81,6 +81,8 @@ class PostgreRestoreWizardPageSettings extends PostgreWizardPageSettings<Postgre
         inputFileText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         inputFileText.getTextControl().addListener(SWT.Modify, updateListener);
 
+        createExtraArgsInput(inputGroup);
+
         createSecurityGroup(composite);
 
         setControl(composite);
