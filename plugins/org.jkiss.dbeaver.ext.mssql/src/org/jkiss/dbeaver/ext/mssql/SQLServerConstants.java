@@ -29,4 +29,5 @@ public class SQLServerConstants {
     public static final String DRIVER_MS = "mssql_jdbc_ms";
 
     public static final String PROP_CONNECTION_WINDOWS_AUTH = DBConstants.INTERNAL_PROP_PREFIX + "connection-windows-auth@";
+    public static final String PROP_SHOW_ALL_SCHEMAS = DBConstants.INTERNAL_PROP_PREFIX + "show-all-schemas@";
 }
