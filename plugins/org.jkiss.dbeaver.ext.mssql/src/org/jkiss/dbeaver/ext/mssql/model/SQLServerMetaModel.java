@@ -54,13 +54,18 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     }
 
     @Override
-    public GenericDataSource createDataSourceImpl(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
+    public SQLServerDataSource createDataSourceImpl(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
         return new SQLServerDataSource(monitor, container, this);
     }
 
     @Override
-    public GenericCatalog createCatalogImpl(GenericDataSource dataSource, String catalogName) {
+    public SQLServerDatabase createCatalogImpl(GenericDataSource dataSource, String catalogName) {
         return new SQLServerDatabase(dataSource, catalogName);
+    }
+
+    @Override
+    public SQLServerSchema createSchemaImpl(GenericDataSource dataSource, GenericCatalog catalog, String schemaName) throws DBException {
+        return new SQLServerSchema(dataSource, catalog, schemaName);
     }
 
     public String getViewDDL(DBRProgressMonitor monitor, GenericTable sourceObject, Map<String, Object> options) throws DBException {
@@ -80,7 +85,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     @Override
     public List<? extends GenericTrigger> loadTriggers(DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTable table) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container.getDataSource(), "Read triggers")) {
-            String schema = getSystemSchema(getServerType());
+            String schema = getSystemSchema();
             String catalog = DBUtils.getQuotedIdentifier(container.getCatalog());
             StringBuilder query = new StringBuilder("SELECT triggers.name FROM " + catalog + "." + schema + ".sysobjects triggers");
             if (table != null) {
@@ -119,8 +124,8 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     }
 
     @NotNull
-    private String getSystemSchema(ServerType serverType) {
-        return serverType == ServerType.SQL_SERVER ? "sys" : "dbo";
+    private String getSystemSchema() {
+        return sqlServer ? "sys" : "dbo";
     }
 
     @Override
@@ -141,7 +146,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
 
     private String extractSource(DBRProgressMonitor monitor, GenericDataSource dataSource, String catalog, String schema, String name) throws DBException {
         ServerType serverType = getServerType();
-        String systemSchema = getSystemSchema(serverType);
+        String systemSchema = getSystemSchema();
         catalog = DBUtils.getQuotedIdentifier(dataSource, catalog);
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read source code")) {
             String mdQuery = serverType == ServerType.SQL_SERVER ?
@@ -174,7 +179,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     }
 
     @Override
-    public GenericTableIndex createIndexImpl(GenericTable table, boolean nonUnique, String qualifier, long cardinality, String indexName, DBSIndexType indexType, boolean persisted) {
+    public SQLServerIndex createIndexImpl(GenericTable table, boolean nonUnique, String qualifier, long cardinality, String indexName, DBSIndexType indexType, boolean persisted) {
         return new SQLServerIndex(table, nonUnique, qualifier, cardinality, indexName, indexType, persisted);
     }
 
@@ -194,13 +199,13 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
             // Schemas MUST be in catalog
             return null;
         }
-        String sql;
-        if (getServerType() == ServerType.SQL_SERVER && dataSource.isServerVersionAtLeast(9 ,0)) {
-            sql = "SELECT SCHEMA_NAME as name FROM " + DBUtils.getQuotedIdentifier(catalog) + ".INFORMATION_SCHEMA.SCHEMATA";
-        } else {
-            sql = "SELECT name FROM " + DBUtils.getQuotedIdentifier(catalog) + ".dbo.sysusers";
-        }
-        sql += "\nORDER BY name";
+
+        String sysSchema = DBUtils.getQuotedIdentifier(catalog) + "." + getSystemSchema();
+        String sql =
+            "SELECT DISTINCT u.name\n" +
+            "FROM " + sysSchema + ".sysusers u, " + sysSchema + ".sysobjects o\n" +
+            "WHERE u.uid=o.uid\n" +
+            "ORDER BY 1";
 
         try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
             List<GenericSchema> result = new ArrayList<>();
@@ -212,7 +217,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
                         continue;
                     }
                     name = name.trim();
-                    GenericSchema schema = createSchemaImpl(
+                    SQLServerSchema schema = createSchemaImpl(
                         dataSource, catalog, name);
                     result.add(schema);
                 }
@@ -233,7 +238,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     public List<GenericSequence> loadSequences(DBRProgressMonitor monitor, GenericStructContainer container) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container.getDataSource(), "Read system sequences")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT * FROM "+ DBUtils.getQuotedIdentifier(container.getCatalog()) + ".sys.sequences WHERE schema_name(schema_id)=?")) {
+                "SELECT * FROM " + DBUtils.getQuotedIdentifier(container.getCatalog()) + "." + getSystemSchema() + ".sequences WHERE schema_name(schema_id)=?")) {
                 dbStat.setString(1, container.getSchema().getName());
                 List<GenericSequence> result = new ArrayList<>();
 
@@ -262,5 +267,15 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
         } catch (SQLException e) {
             throw new DBException(e, container.getDataSource());
         }
+    }
+
+    @Override
+    public SQLServerTable createTableImpl(GenericStructContainer container, String tableName, String tableType, JDBCResultSet dbResult) {
+        return new SQLServerTable(container, tableName, tableType, dbResult);
+    }
+
+    @Override
+    public boolean isSystemTable(GenericTable table) {
+        return getSystemSchema().equals(table.getSchema().getName()) && table.getName().startsWith("sys");
     }
 }
