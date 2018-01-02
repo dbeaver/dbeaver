@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.syntax;
 
-import org.eclipse.jface.text.contentassist.ContextInformation;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -545,10 +544,12 @@ class SQLCompletionAnalyzer
         String replaceString = null;
         DBPDataSource dataSource = request.editor.getDataSource();
         if (dataSource != null) {
+            DBPPreferenceStore prefs = request.editor.getActivePreferenceStore();
+
             // If we replace short name with referenced object
             // and current active schema (catalog) is not this object's container then
             // replace with full qualified name
-            if (!request.editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.PROPOSAL_SHORT_NAME) && object instanceof DBSObjectReference) {
+            if (!prefs.getBoolean(SQLPreferenceConstants.PROPOSAL_SHORT_NAME) && object instanceof DBSObjectReference) {
                 if (request.wordDetector.getFullWord().indexOf(request.editor.getSyntaxManager().getStructSeparator()) == -1) {
                     DBSObjectReference structObject = (DBSObjectReference) object;
                     if (structObject.getContainer() != null) {
@@ -564,7 +565,11 @@ class SQLCompletionAnalyzer
                 }
             }
             if (replaceString == null) {
-                replaceString = DBUtils.getQuotedIdentifier(dataSource, object.getName());
+                if (prefs.getBoolean(SQLPreferenceConstants.PROPOSAL_ALWAYS_FQ) && object instanceof DBPQualifiedObject) {
+                    replaceString = ((DBPQualifiedObject)object).getFullyQualifiedName(DBPEvaluationContext.DML);
+                } else {
+                    replaceString = DBUtils.getQuotedIdentifier(dataSource, object.getName());
+                }
             }
         } else {
             replaceString = DBUtils.getObjectShortName(object);
@@ -596,7 +601,8 @@ class SQLCompletionAnalyzer
         if (dataSource != null) {
             if (isObject) {
                 // Escape replace string if required
-                replaceString = DBUtils.getQuotedIdentifier(dataSource, replaceString);
+                // FIXME: do not escape! it may (will) escape identifiers twice
+                //replaceString = DBUtils.getQuotedIdentifier(dataSource, replaceString);
             }
         }
 
