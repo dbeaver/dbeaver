@@ -103,7 +103,7 @@ public class SQLServerDataSourceProvider extends JDBCDataSourceProvider implemen
                     url.append(":").append(connectionInfo.getHostPort());
                 }
                 if (!CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
-                    url.append("?ServiceName").append(connectionInfo.getDatabaseName());
+                    url.append("?ServiceName=").append(connectionInfo.getDatabaseName());
                 }
             }
         }
