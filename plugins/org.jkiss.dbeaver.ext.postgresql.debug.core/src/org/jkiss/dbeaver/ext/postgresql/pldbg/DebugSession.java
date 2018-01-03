@@ -10,11 +10,11 @@ public interface  DebugSession<SESSIONINFO extends SessionInfo<?>,DEBUGOBJECT ex
     void removeBreakpoint(Breakpoint bp);
     void execContinue();
     void execStepInto();
-    void execStepOver();
+    void execStepOver() throws DebugException;
     void abort();
     List<? extends Variable<?>> getVarables(String ctx);
     void setVariableVal(Variable<?> variable, Object value);
-    List<? extends StackFrame> getStack();    
+    List<? extends StackFrame> getStack() throws DebugException;    
     SESSIONID getSessionId();
     //move Stack
 }
