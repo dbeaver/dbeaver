@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.pldbg.impl;
 
+import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -32,19 +33,20 @@ public class PostgresBreakpoint implements Breakpoint {
 	
 	private final BreakpointPropertiesPostgres properties;
 	
-	private static final String SQL_SET = "select * from pldbg_set_global_breakpoint(?sessionid, ?obj, ?line, ?target)";
+	private static final String SQL_SET_GLOBAL = "select pldbg_set_global_breakpoint(?sessionid, ?obj, ?line, ?target)";
+	private static final String SQL_SET = "select pldbg_set_breakpoint(?sessionid, ?obj, ?line, ?target)";
 	
 	public PostgresBreakpoint(DebugSessionPostgres session,DebugObjectPostgres obj, BreakpointPropertiesPostgres properties) throws DebugException
 	{
-		if (session.isAttached()) {
-			throw new DebugException("Unable create breakpoint on waiting session");
-		}
+
 		this.session = session;
 		this.obj = obj;
 	    this.properties = properties;
 	    try (Statement stmt = session.getConnection().createStatement()) {
 			   
-			     stmt.executeQuery(SQL_SET.replaceAll("\\?sessionid",String.valueOf(session.getSessionId()))
+	    	     String sqlCommand = properties.isGlobal() ? SQL_SET_GLOBAL : SQL_SET;
+	    	
+			     stmt.executeQuery(sqlCommand.replaceAll("\\?sessionid",String.valueOf(session.getSessionId()))
 		                  .replaceAll("\\?obj",String.valueOf(obj.getID()))
 		                  .replaceAll("\\?line",properties.isOnStart() ? "-1" : String.valueOf(properties.getLineNo()))
 		                  .replaceAll("\\?target",properties.isAll() ? "null" : String.valueOf(properties.getTargetId())));

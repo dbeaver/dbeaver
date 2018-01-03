@@ -8,7 +8,7 @@ public class BreakpointPropertiesPostgres implements BreakpointProperties {
 	private final boolean onStart;
 	private final long targetId;
 	private final boolean all;
-	
+	private final boolean global;
 	
 	
 	public long getLineNo() {
@@ -33,26 +33,32 @@ public class BreakpointPropertiesPostgres implements BreakpointProperties {
 		return all;
 	}
 
+	public boolean isGlobal() {
+		return global;
+	}
 
-	public BreakpointPropertiesPostgres(long lineNo, long targetId) {
+	public BreakpointPropertiesPostgres(long lineNo, long targetId,boolean global) {
 		this.lineNo = lineNo;
 		this.onStart = lineNo < 0;
 		this.targetId = targetId;
 		this.all = targetId < 0;
+		this.global = global;
 	}
 
-	public BreakpointPropertiesPostgres(long lineNo) {
+	public BreakpointPropertiesPostgres(long lineNo,boolean global) {
 		this.lineNo = lineNo;
 		this.onStart = lineNo < 0;
 		this.targetId = -1;
 		this.all = true;
+		this.global = global;
 	}
 
-	public BreakpointPropertiesPostgres() {
+	public BreakpointPropertiesPostgres(boolean global) {
 		this.lineNo = -1;
 		this.onStart = true;
 		this.targetId = -1;
 		this.all = true;
+		this.global = global;
 	}
 
 
@@ -60,7 +66,7 @@ public class BreakpointPropertiesPostgres implements BreakpointProperties {
 	@Override
 	public String toString() {
 		return "BreakpointPropertiesPostgres [lineNo=" + lineNo + ", onStart=" + onStart + ", targetId=" + targetId
-				+ ", all=" + all + "]";
+				+ ", all=" + all + ", global=" + global + "]";
 	}
 
 	

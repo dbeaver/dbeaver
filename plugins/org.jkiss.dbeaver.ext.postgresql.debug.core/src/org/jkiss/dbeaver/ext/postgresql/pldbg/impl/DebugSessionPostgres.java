@@ -43,23 +43,27 @@ public class DebugSessionPostgres implements DebugSession<SessionInfoPostgres, D
 	
 	private final Connection connection;
 	
-	private boolean attached = false;
-	
 	private final String title;
 	
 	private final int sessionId;
 	
 	private static final String SQL_ATTACH = "select pldbg_wait_for_target(?sessionid)";
+
+	private static final String SQL_ATTACH_BREAKPOINT = "select pldbg_wait_for_breakpoint(?sessionid)";
 	
 	private static final String SQL_LISTEN = "select pldbg_create_listener() as sessionid";
 	
-	private static final String SQL_GET_VARS = "select pldbg_create_listener() as sessionid";
+	private static final String SQL_GET_VARS = "select * from pldbg_get_variables()";
 	
 	private static final String SQL_GET_STACK = "select * from pldbg_get_stack(?sessionid)";
 
 	private static final String SQL_STEP_OVER = "select pldbg_step_over(?sessionid)";
+
+	private static final String SQL_STEP_INTO = "select pldbg_step_into(?sessionid)";
 	
-	private static final int ATTACH_TIMEOUT = 300; // seconds
+	private static final String SQL_CONTINUE = "select pldbg_continue(?sessionid)";	
+	
+	//private static final int ATTACH_TIMEOUT = 300; // seconds TODO
 	
 	private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock(true); 
 	
@@ -81,35 +85,14 @@ public class DebugSessionPostgres implements DebugSession<SessionInfoPostgres, D
 		   throw new DebugException(e1.getMessage());
 	   }
 		
-		if (attached) {
-			lock.writeLock().unlock();
-			throw new DebugException("Debug session in attached state");
-		}
-		
 		if (isWaiting()) {
 			lock.writeLock().unlock();
 			throw new DebugException("Debug session in waiting state");
 		}
 		
-		DebugSessionResult res;
-		
-		
-		if (task.isDone()) {
-
-			try {
-				res = task.get();
-			} catch (InterruptedException | ExecutionException e1) {
-				lock.writeLock().unlock();
-				throw new DebugException(e1);
-			} 
-			
-			if(!res.isResult()) {
-				lock.writeLock().unlock();
-				throw new DebugException(res.getException());
-			}
-			
-		}
-		
+		if (!isDone()) {
+			   throw new DebugException("Debug session in incorrect state");
+		}		
 		
 		   try (Statement stmt = connection.createStatement()) {
 			   
@@ -118,7 +101,7 @@ public class DebugSessionPostgres implements DebugSession<SessionInfoPostgres, D
 		        if (rs.next()) {
 		        	
 		        	 connection.setClientInfo("ApplicationName", "Debug Mode : " + String.valueOf(sessionId));
-		        	return rs.getInt("sessionid");
+		        	 return rs.getInt("sessionid");
 		        	
 		        	
 		        } else {
@@ -136,7 +119,7 @@ public class DebugSessionPostgres implements DebugSession<SessionInfoPostgres, D
 	}
 
 	
-	public void attach() throws DebugException{
+	public void attach(boolean breakpoint) throws DebugException{
 
 		   try {
 			   
@@ -148,47 +131,25 @@ public class DebugSessionPostgres implements DebugSession<SessionInfoPostgres, D
 			
 		   }
 		
-     	   if (attached) {
-	    	   throw new DebugException("Debug session in attached state");
-		   }
-		
 		   if (isWaiting()) {
 			   throw new DebugException("Debug session in waiting state");
 		   }
 
-			if (task.isDone()) {
-				DebugSessionResult res;
-				
-				try {
-					res = task.get();
-				} catch (InterruptedException | ExecutionException e1) {
-					throw new DebugException(e1);
-				} 
-				
-				if(!res.isResult()) {
-					throw new DebugException(res.getException());
-				}
-			}
+		   if (!isDone()) {
+			   throw new DebugException("Debug session in incorrect state");
+		   }
 		
-		   try (Statement stmt = connection.createStatement()) {
+		   try {
 			   
-			   connection.setAutoCommit(false);
+			   if (breakpoint) {
+				   runAsync(SQL_ATTACH_BREAKPOINT.replaceAll("\\?sessionid",String.valueOf(sessionId)),
+						     String.valueOf(sessionId) + " breakpoint attached to " + String.valueOf(sessionManagerInfo.pid));				   
+				   
+			   } else {
+				   runAsync(SQL_ATTACH.replaceAll("\\?sessionid",String.valueOf(sessionId)),
+						     String.valueOf(sessionId) + " global attached to " + String.valueOf(sessionManagerInfo.pid));				   
+			   }
 			   
-			   connection.setClientInfo("ApplicationName", "Debugger wait for " + (sessionManagerInfo == null ? " breakpoint" : String.valueOf(sessionManagerInfo.pid)));
-			   
-			   connection.commit();
-			   
-			   worker.execSQL(SQL_ATTACH.replaceAll("\\?sessionid",String.valueOf(sessionId)));
-			   
-			   workerThread = new Thread(task);
-			   
-			   workerThread.setName(String.valueOf(sessionId) + " attached to " + String.valueOf(sessionManagerInfo.pid));
-			   
-			   workerThread.start();
-			   
-		    } catch (SQLException e) {
-		        throw new DebugException(e);
-		        
 			} finally {
 				   lock.writeLock().unlock();
 			}		
@@ -201,9 +162,7 @@ public class DebugSessionPostgres implements DebugSession<SessionInfoPostgres, D
 		this.sessionTargetInfo = sessionTargetInfo;
 		this.connection = connection;
 		this.title = sessionManagerInfo.application;
-		this.attached = false;
 		this.worker = new DebugSessionWorker(this.connection);
-		this.task = new FutureTask<DebugSessionResult>(worker);
 		sessionId = listen();
 	}
 
@@ -228,43 +187,36 @@ public class DebugSessionPostgres implements DebugSession<SessionInfoPostgres, D
 	}
 
 	@Override
-	public Breakpoint setBreakpoint(DebugObjectPostgres obj,BreakpointProperties properties) throws DebugException
-	{
+	public Breakpoint setBreakpoint(DebugObjectPostgres obj,BreakpointProperties properties) throws DebugException	{
 		
 		try {
+
 			lock.readLock().lockInterruptibly();
-		} catch (InterruptedException e) {
-			throw new DebugException(e.getMessage());
+
+		} catch (InterruptedException e1) {
+
+			throw new DebugException(e1.getMessage());
+
 		}
 
 		if (isWaiting()) {
 			throw new DebugException("Debug session in waiting state");
 		}
-		
-		if (task.isDone()) {
 
-			DebugSessionResult res;
-			
-			try {
-				res = task.get();
-			} catch (InterruptedException | ExecutionException e1) {
-				throw new DebugException(e1);
-			} 
-			
-			if(!res.isResult()) {
-				throw new DebugException(res.getException());
-			}
+		if (!isDone()) {
+			throw new DebugException("Debug session in incorrect state");
 		}
-		
+
 		PostgresBreakpoint bp = null;
-		
+
 		try {
-			bp = new PostgresBreakpoint(this,obj,(BreakpointPropertiesPostgres) properties);
-			breakpoints.add(bp);			
+			bp = new PostgresBreakpoint(this, obj, (BreakpointPropertiesPostgres) properties);
+			breakpoints.add(bp);
+
 		} finally {
 			lock.readLock().unlock();
 		}
-		
+
 		return bp;
 	}
 
@@ -276,21 +228,27 @@ public class DebugSessionPostgres implements DebugSession<SessionInfoPostgres, D
 	}
 
 	@Override
-	public void execContinue()
+	public void execContinue() throws DebugException
 	{
-		// TODO Auto-generated method stub
+		execStep(SQL_CONTINUE," continue for ");
 		
 	}
 
 	@Override
-	public void execStepInto()
+	public void execStepInto() throws DebugException
 	{
-		// TODO Auto-generated method stub
+		execStep(SQL_STEP_INTO," step into for ");
+		
+	}
+	
+	@Override
+	public void execStepOver() throws DebugException
+	{
+		execStep(SQL_STEP_OVER," step over for ");
 		
 	}
 
-	@Override
-	public void execStepOver()  throws DebugException
+	public void execStep(String commandSQL,String name)  throws DebugException
 	{
 		
 		   try {
@@ -303,46 +261,19 @@ public class DebugSessionPostgres implements DebugSession<SessionInfoPostgres, D
 				
 			   }
 			
-	     	   if (attached) {
-		    	   throw new DebugException("Debug session in attached state");
-			   }
-			
 			   if (isWaiting()) {
 				   throw new DebugException("Debug session in waiting state");
 			   }
-
-				if (task.isDone()) {
-					DebugSessionResult res;
-					
-					try {
-						res = task.get();
-					} catch (InterruptedException | ExecutionException e1) {
-						throw new DebugException(e1);
-					} 
-					
-					if(!res.isResult()) {
-						throw new DebugException(res.getException());
-					}
-				}
-			
-			   try (Statement stmt = connection.createStatement()) {
-				   
 			   
-				   connection.setAutoCommit(false);
-				   
-				   worker.execSQL(SQL_STEP_OVER.replaceAll("\\?sessionid",String.valueOf(sessionId)));
-				   
-				   task = new FutureTask<DebugSessionResult>(worker);
-				   
-				   workerThread = new Thread(task);
-				   
-				   workerThread.setName(String.valueOf(sessionId) + " step other for " + String.valueOf(sessionManagerInfo.pid));
-				   
-				   workerThread.start();
-				   
-			    } catch (SQLException e) {
-			        throw new DebugException(e);
-			        
+			   if (!isDone()) {
+				   throw new DebugException("Debug session in incorrect state");
+			   }
+
+				try {
+					
+				  runAsync(commandSQL.replaceAll("\\?sessionid",String.valueOf(sessionId)),
+						   String.valueOf(sessionId) + name + String.valueOf(sessionManagerInfo.pid));
+
 				} finally {
 					   lock.writeLock().unlock();
 				}		
@@ -381,41 +312,20 @@ public class DebugSessionPostgres implements DebugSession<SessionInfoPostgres, D
 			throw new DebugException(e.getMessage());
 		}
 		
-		if (attached) {
-			lock.readLock().unlock();
-			throw new DebugException("Debug session in attached state");
-		}
-		
 		if (isWaiting()) {
 			lock.readLock().unlock();
 			throw new DebugException("Debug session in waiting state");
 		}
 		
-		DebugSessionResult res;
-		
-		
-		if (task.isDone()) {
-
-			try {
-				res = task.get();
-			} catch (InterruptedException | ExecutionException e1) {
-				lock.writeLock().unlock();
-				throw new DebugException(e1);
-			} 
-			
-			if(!res.isResult()) {
-				lock.writeLock().unlock();
-				throw new DebugException(res.getException());
-			}
-			
-		}
+		 if (!isDone()) {
+			   throw new DebugException("Debug session in incorrect state");
+		   }
 		
 		
 		 try (Statement stmt = connection.createStatement()) {
 			   
 		        ResultSet rs = stmt.executeQuery(SQL_GET_STACK.replaceAll("\\?sessionid",String.valueOf(sessionId)));
-		        //CREATE TYPE frame      AS ( level INT, targetname TEXT, func OID, linenumber INTEGER, args TEXT );
-		        //c PostgresStackFrame(int level, String name, String oid, int lineNo, String args) {
+		        
 		        while(rs.next()){
 		        	 PostgresStackFrame frame = new PostgresStackFrame (
 		        			 rs.getInt("level"),
@@ -426,6 +336,7 @@ public class DebugSessionPostgres implements DebugSession<SessionInfoPostgres, D
 		        			); 		        	
 		        	 stack.add(frame);
 		        }
+		        
 		    } catch (SQLException e) {
 		        throw new DebugException(e);
 		    } finally {
@@ -443,7 +354,7 @@ public class DebugSessionPostgres implements DebugSession<SessionInfoPostgres, D
 
 	@Override
 	public String toString() {
-		return "DebugSessionPostgres "+(isWaiting() ? "WAITING" : "READY")+" [connection=" + connection + ", attached=" + attached + ", title=" + title
+		return "DebugSessionPostgres "+(isWaiting() ? "WAITING" : "READY")+" [connection=" + connection + ", title=" + title
 				+ ", sessionId=" + sessionId + ", breakpoints=" + breakpoints + "ManagerSession=("+ sessionManagerInfo.toString() +") Session=("+ sessionTargetInfo.toString()+") "+"]";
 	}
 
@@ -453,14 +364,57 @@ public class DebugSessionPostgres implements DebugSession<SessionInfoPostgres, D
 		return sessionId;
 	}
 
-
-	public boolean isAttached() {
-		return attached;
-	}
-
-
 	public boolean isWaiting() {
-		return !task.isDone() && (workerThread == null ? false : workerThread.isAlive());
+		return (task == null ? false : !task.isDone()) 
+				&& (workerThread == null ? false : workerThread.isAlive());
+	}
+	
+	public boolean isDone() throws DebugException {
+		
+		if (task == null) return true;
+		
+		if (task.isDone()) {
+			
+			DebugSessionResult res;
+			
+			try {
+				res = task.get();
+			} catch (InterruptedException | ExecutionException e1) {
+				throw new DebugException(e1);
+			}
+			
+			if (res.getException() != null) {
+				System.out.println("WARNING " + res.getException().getMessage());
+			}
+			
+			return res.isResult();
+			
+		}	
+		
+		return false; 
+		
+	}
+	
+	private void runAsync(String commandSQL,String name) throws DebugException {
+		
+		   try (Statement stmt = connection.createStatement()) {
+			   
+			   connection.setAutoCommit(false);
+			   
+			   worker.execSQL(commandSQL);
+			   
+			   task = new FutureTask<DebugSessionResult>(worker);
+			   
+			   workerThread = new Thread(task);
+			   
+			   workerThread.setName(name);
+			   
+			   workerThread.start();
+			   
+		    } catch (SQLException e) {
+		        throw new DebugException(e);
+		        
+			} 		
 	}
 
 }
