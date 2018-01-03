@@ -41,6 +41,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage
     private Combo csInsertCase;
     private Button csHideDuplicates;
     private Button csShortName;
+    private Button csLongName;
     private Button csInsertSpace;
     private Button csUseGlobalSearch;
 
@@ -63,6 +64,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage
             store.contains(SQLPreferenceConstants.PROPOSAL_INSERT_CASE) ||
             store.contains(SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS) ||
             store.contains(SQLPreferenceConstants.PROPOSAL_SHORT_NAME) ||
+            store.contains(SQLPreferenceConstants.PROPOSAL_ALWAYS_FQ) ||
             store.contains(SQLPreferenceConstants.INSERT_SPACE_AFTER_PROPOSALS) ||
             store.contains(SQLPreferenceConstants.USE_GLOBAL_ASSISTANT) ||
 
@@ -115,6 +117,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage
 
             csHideDuplicates = UIUtils.createCheckbox(assistGroup, CoreMessages.pref_page_sql_completion_label_hide_duplicate_names, null, false, 2);
             csShortName = UIUtils.createCheckbox(assistGroup, CoreMessages.pref_page_sql_completion_label_use_short_names, null, false, 2);
+            csLongName = UIUtils.createCheckbox(assistGroup, CoreMessages.pref_page_sql_completion_label_use_long_names, null, false, 2);
             csInsertSpace = UIUtils.createCheckbox(assistGroup, CoreMessages.pref_page_sql_completion_label_insert_space, null, false, 2);
             csUseGlobalSearch = UIUtils.createCheckbox(assistGroup, CoreMessages.pref_page_sql_completion_label_use_global_search, CoreMessages.pref_page_sql_completion_label_use_global_search_tip, false, 2);
         }
@@ -140,6 +143,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage
 
             csHideDuplicates.setSelection(store.getBoolean(SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS));
             csShortName.setSelection(store.getBoolean(SQLPreferenceConstants.PROPOSAL_SHORT_NAME));
+            csLongName.setSelection(store.getBoolean(SQLPreferenceConstants.PROPOSAL_ALWAYS_FQ));
             csInsertSpace.setSelection(store.getBoolean(SQLPreferenceConstants.INSERT_SPACE_AFTER_PROPOSALS));
 
             csUseGlobalSearch.setSelection(store.getBoolean(SQLPreferenceConstants.USE_GLOBAL_ASSISTANT));
@@ -161,6 +165,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage
             store.setValue(SQLPreferenceConstants.PROPOSAL_INSERT_CASE, csInsertCase.getSelectionIndex());
             store.setValue(SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS, csHideDuplicates.getSelection());
             store.setValue(SQLPreferenceConstants.PROPOSAL_SHORT_NAME, csShortName.getSelection());
+            store.setValue(SQLPreferenceConstants.PROPOSAL_ALWAYS_FQ, csLongName.getSelection());
             store.setValue(SQLPreferenceConstants.INSERT_SPACE_AFTER_PROPOSALS, csInsertSpace.getSelection());
             store.setValue(SQLPreferenceConstants.USE_GLOBAL_ASSISTANT, csUseGlobalSearch.getSelection());
 
@@ -181,6 +186,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage
         store.setToDefault(SQLPreferenceConstants.PROPOSAL_INSERT_CASE);
         store.setToDefault(SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS);
         store.setToDefault(SQLPreferenceConstants.PROPOSAL_SHORT_NAME);
+        store.setToDefault(SQLPreferenceConstants.PROPOSAL_ALWAYS_FQ);
         store.setToDefault(SQLPreferenceConstants.INSERT_SPACE_AFTER_PROPOSALS);
         store.setToDefault(SQLPreferenceConstants.USE_GLOBAL_ASSISTANT);
 

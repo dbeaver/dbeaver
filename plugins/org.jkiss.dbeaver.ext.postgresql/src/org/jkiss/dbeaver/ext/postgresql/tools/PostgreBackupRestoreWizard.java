@@ -68,6 +68,8 @@ abstract class PostgreBackupRestoreWizard<PROCESS_ARG extends PostgreDatabaseBac
             isExportWizard() ? "pg_dump" : "pg_restore"); //$NON-NLS-1$
         String dumpPath = dumpBinary.getAbsolutePath();
         cmd.add(dumpPath);
+
+        addExtraCommandArgs(cmd);
     }
 
     @Override

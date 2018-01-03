@@ -117,7 +117,7 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
                             if (object == null) {
                                 object = super.getCachedObject(objectName);
                                 if (object == null) {
-                                    log.debug("Object '" + objectName + "' not found");
+                                    log.debug("Object '" + objectName + "' not found in struct cache (" + getClass().getSimpleName() + ")");
                                     continue;
                                 }
                             }
