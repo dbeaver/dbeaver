@@ -23,6 +23,7 @@ import org.eclipse.debug.core.ILaunch;
 import org.jkiss.dbeaver.debug.ProcedureDebugController;
 import org.jkiss.dbeaver.debug.core.model.DatabaseLaunchDelegate;
 import org.jkiss.dbeaver.debug.core.model.DatabaseProcess;
+import org.jkiss.dbeaver.debug.core.model.ProcedureDebugTarget;
 
 public class PgSqlLaunchDelegate extends DatabaseLaunchDelegate<ProcedureDebugController> {
 
@@ -40,10 +41,10 @@ public class PgSqlLaunchDelegate extends DatabaseLaunchDelegate<ProcedureDebugCo
     }
 
     @Override
-    protected PgSqlDebugTarget createDebugTarget(ILaunch launch, ProcedureDebugController controller,
+    protected ProcedureDebugTarget createDebugTarget(ILaunch launch, ProcedureDebugController controller,
             DatabaseProcess process)
     {
-        return new PgSqlDebugTarget(launch, process, controller);
+        return new ProcedureDebugTarget(launch, process, controller);
     }
 
 }

@@ -29,6 +29,8 @@ public class DebugCoreMessages extends NLS {
 
     public static String ProcedureThread_name;
 
+    public static String ProcedureDebugTarget_name_default;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, DebugCoreMessages.class);
