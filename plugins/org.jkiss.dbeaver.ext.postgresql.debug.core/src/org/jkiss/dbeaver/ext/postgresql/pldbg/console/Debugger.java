@@ -290,7 +290,7 @@ public class Debugger {
 					break;
 				}
 				
-				BreakpointPropertiesPostgres bpp = lineNo > 0 ? new BreakpointPropertiesPostgres(lineNo) : new BreakpointPropertiesPostgres();
+				BreakpointPropertiesPostgres bpp = lineNo > 0 ? new BreakpointPropertiesPostgres(lineNo,true) : new BreakpointPropertiesPostgres(true);
 				
 				PostgresBreakpoint bp = (PostgresBreakpoint) debugSession.setBreakpoint(debugObject, bpp);
 				 
@@ -323,12 +323,40 @@ public class Debugger {
 				break;	
 
 			case COMMAND_CONTINUE:
-				System.out.println("CONTINUE!!!");
-				break;
+				if ( pgDbgManager.getDebugSessions().size() == 0) {
+					System.out.println("Debug sessions not found");
+					break;
+				}
+				
+				DebugSessionPostgres debugSessionSC = chooseSession(sc,pgDbgManager);
+				
+				if (debugSessionSC == null) {
+					break;
+				}
+				
+				debugSessionSC.execContinue();
+
+				System.out.println("Continue ...");
+				
+				break;	
 
 			case COMMAND_INTO:
-				System.out.println("STEP INTO !!!");
-				break;
+				if ( pgDbgManager.getDebugSessions().size() == 0) {
+					System.out.println("Debug sessions not found");
+					break;
+				}
+				
+				DebugSessionPostgres debugSessionSI = chooseSession(sc,pgDbgManager);
+				
+				if (debugSessionSI == null) {
+					break;
+				}
+				
+				debugSessionSI.execStepInto();
+
+				System.out.println("Step Into ...");
+				
+				break;	
 
 			case COMMAND_OVER:
 				
@@ -430,7 +458,7 @@ public class Debugger {
 
 				System.out.println("Waiting for target session ...");
 				
-				debugSessionA.attach();
+				debugSessionA.attach(false);
 				
 				break;
 				
