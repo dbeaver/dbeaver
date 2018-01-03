@@ -16,59 +16,73 @@
  */
 package org.jkiss.dbeaver.ui.data.editors;
 
+import java.util.Date;
+
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.impl.data.DateTimeCustomValueHandler;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.controls.CustomTimeEditor;
 import org.jkiss.dbeaver.ui.data.IValueController;
 
 /**
-* DateTimeInlineEditor
-*/
+ * DateTimeInlineEditor
+ */
 public class DateTimeInlineEditor extends BaseValueEditor<Control> {
-    private CustomTimeEditor timeEditor;
+	private CustomTimeEditor timeEditor;
 
-    public DateTimeInlineEditor(IValueController controller) {
-        super(controller);
-    }
+	public DateTimeInlineEditor(IValueController controller) {
+		super(controller);
+	}
 
-    @Override
-    protected Control createControl(Composite editPlaceholder)
-    {
-        boolean inline = valueController.getEditType() == IValueController.EditType.INLINE;
+	@Override
+	protected Control createControl(Composite editPlaceholder) {
+		boolean inline = valueController.getEditType() == IValueController.EditType.INLINE;
 
-        timeEditor = new CustomTimeEditor(
-            valueController.getEditPlaceholder(),
-            (inline ? SWT.BORDER : SWT.MULTI));
-        timeEditor.setEditable(!valueController.isReadOnly());
+		String formaterId = "";
+		Object valueHandler = valueController.getValueHandler();
+		if (valueHandler instanceof DateTimeCustomValueHandler) {
+			DateTimeCustomValueHandler dateTimeValueHandler = (DateTimeCustomValueHandler) valueHandler;
+			formaterId = dateTimeValueHandler.getFormatterId(valueController.getValueType());
+		}
 
-        return timeEditor.getControl();
-    }
+		timeEditor = new CustomTimeEditor(valueController.getEditPlaceholder(), (inline ? SWT.BORDER : SWT.MULTI),
+				formaterId);
+		timeEditor.setEditable(!valueController.isReadOnly());
+		timeEditor.addSelectionAdapter(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				dirty = true;
+			}
+		});
 
-    @Override
-    public Object extractEditorValue() throws DBException {
-        try (DBCSession session = valueController.getExecutionContext().openSession(new VoidProgressMonitor(), DBCExecutionPurpose.UTIL, "Make datetime value from editor")) {
-            final String strValue = timeEditor.getValue();
-            return valueController.getValueHandler().getValueFromObject(session, valueController.getValueType(), strValue, false);
-        }
-    }
+		return timeEditor.getControl();
+	}
 
-    @Override
-    public void primeEditorValue(@Nullable Object value) throws DBException
-    {
-        final String strValue = value == null ?
-            "" :
-            valueController.getValueHandler().getValueDisplayString(valueController.getValueType(), value, DBDDisplayFormat.EDIT);
-        timeEditor.setValue(strValue);
-        if (valueController.getEditType() == IValueController.EditType.INLINE) {
-            timeEditor.selectAll();
-        }
-    }
+	@Override
+	public Object extractEditorValue() throws DBException {
+		try (DBCSession session = valueController.getExecutionContext().openSession(new VoidProgressMonitor(),
+				DBCExecutionPurpose.UTIL, "Make datetime value from editor")) {
+			return valueController.getValueHandler().getValueFromObject(session, valueController.getValueType(),
+					timeEditor.getValue(), false);
+		}
+	}
+
+	@Override
+	public void primeEditorValue(@Nullable Object value) throws DBException {
+		if (value instanceof Date) {
+			timeEditor.setValue((Date) value);
+		}
+		if (valueController.getEditType() == IValueController.EditType.INLINE) {
+			timeEditor.selectAll();
+		}
+	}
 
 }

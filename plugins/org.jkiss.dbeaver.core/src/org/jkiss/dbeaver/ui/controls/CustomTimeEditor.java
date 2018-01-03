@@ -16,62 +16,127 @@
  */
 package org.jkiss.dbeaver.ui.controls;
 
+import java.util.Calendar;
+import java.util.Date;
+
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.DateTime;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 
 /**
  * CustomTimeEditor
  */
 public class CustomTimeEditor {
-    private Text timeEditor;
-//    private Button timePickerButton;
+	private static final String TIMESTAMP = "timestamp";
+	private static final String DATE = "date";
+	private static final String TIME = "time";
 
-    public CustomTimeEditor(Composite parent, int style) {
-        this.timeEditor = new Text(parent, style);
-/*
-        Composite ph = UIUtils.createPlaceholder(parent, 2);
-        this.timeEditor = new Text(ph, style);
+	private DateTime dateEditor;
+	private DateTime timeEditor;
+	private Composite basePart;
+	private String formaterId;
 
-        this.timePickerButton = new Button(ph, SWT.FLAT | SWT.ARROW | SWT.DOWN);
-        this.timePickerButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                super.widgetSelected(e);
-                UIUtils.showMessageBox(timePickerButton.getShell(), "asdf", "sdf", SWT.ICON_INFORMATION);
-            }
-        });
-*/
-    }
+	private static final Log log = Log.getLog(ViewerColumnController.class);
 
-    public void setValue(@Nullable String value) {
-        if (value == null) {
-            timeEditor.setText("");
-        } else {
-            timeEditor.setText(value);
-        }
-    }
+	public CustomTimeEditor(Composite parent, int style, String formaterId) {
+		if (formaterId == null || formaterId.isEmpty()) {
+			formaterId = TIMESTAMP;
+		}
+		this.formaterId = formaterId;
+		basePart = new Composite(parent, SWT.BORDER);
+		GridLayout layout;
+		if (formaterId.equals(TIMESTAMP)) {
+			layout = new GridLayout(2, false);
+		} else {
+			layout = new GridLayout(1, false);
+		}
+		layout.marginHeight = 0;
+		layout.marginWidth = 0;
+		basePart.setLayout(layout);
 
-    public String getValue()
-        throws DBException {
-        final String timeText = timeEditor.getText();
-        if (timeText.isEmpty()) {
-            return null;
-        }
-        return timeText;
-    }
+		GridData dateGD = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+		dateGD.minimumWidth = 110;
+		GridData timeGD = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+		timeGD.minimumWidth = 90;
 
+		if (formaterId.equals(TIMESTAMP)) {
+			this.dateEditor = new DateTime(basePart, SWT.DATE | SWT.LONG | SWT.DROP_DOWN | style);
+			this.dateEditor.setLayoutData(dateGD);
 
-    public void setEditable(boolean editable) {
-        timeEditor.setEditable(editable);
-    }
+			this.timeEditor = new DateTime(basePart, SWT.TIME | SWT.DROP_DOWN | style);
+			this.timeEditor.setLayoutData(timeGD);
+		} else if (formaterId.equals(DATE)) {
+			this.dateEditor = new DateTime(basePart, SWT.DATE | SWT.LONG | SWT.DROP_DOWN | style);
+			this.dateEditor.setLayoutData(dateGD);
+		} else if (formaterId.equals(TIME)) {
+			this.timeEditor = new DateTime(basePart, SWT.TIME | SWT.DROP_DOWN | style);
+			this.timeEditor.setLayoutData(timeGD);
+		}
 
-    public Text getControl() {
-        return timeEditor;
-    }
+	}
 
-    public void selectAll() {
-        timeEditor.selectAll();
-    }
+	public void addSelectionAdapter(SelectionAdapter listener) {
+		if (dateEditor != null && !dateEditor.isDisposed()) {
+			dateEditor.addSelectionListener(listener);
+		}
+		if (timeEditor != null && !timeEditor.isDisposed()) {
+			timeEditor.addSelectionListener(listener);
+		}
+	}
+
+	public void setValue(@Nullable Date value) {
+		Calendar calendar = Calendar.getInstance();
+		if (value != null) {
+			calendar.setTime(value);
+
+		}
+		if (dateEditor != null && !dateEditor.isDisposed()) {
+			dateEditor.setDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH),
+					calendar.get(Calendar.DAY_OF_MONTH));
+		}
+		if (timeEditor != null && !timeEditor.isDisposed()) {
+			timeEditor.setTime(calendar.get(Calendar.HOUR), calendar.get(Calendar.MINUTE),
+					calendar.get(Calendar.SECOND));
+		}
+	}
+
+	public Date getValue() throws DBException {
+		Calendar calendar = Calendar.getInstance();
+
+		if (formaterId.equals(TIMESTAMP)) {
+			calendar.set(dateEditor.getYear(), dateEditor.getMonth(), dateEditor.getDay(), timeEditor.getHours(),
+					timeEditor.getMinutes(), timeEditor.getSeconds());
+		} else if (formaterId.equals(DATE)) {
+			calendar.set(dateEditor.getYear(), dateEditor.getMonth(), dateEditor.getDay());
+
+		} else if (formaterId.equals(TIME)) {
+			calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH),
+					timeEditor.getHours(), timeEditor.getMinutes(), timeEditor.getSeconds());
+		}
+
+		return calendar.getTime();
+	}
+
+	public void setEditable(boolean editable) {
+		if (this.dateEditor != null && !this.dateEditor.isDisposed()) {
+			this.dateEditor.setEnabled(editable);
+		}
+
+		if (this.timeEditor != null && !this.timeEditor.isDisposed()) {
+			this.timeEditor.setEnabled(editable);
+		}
+	}
+
+	public Composite getControl() {
+		return basePart;
+	}
+
+	public void selectAll() {
+	}
 }
