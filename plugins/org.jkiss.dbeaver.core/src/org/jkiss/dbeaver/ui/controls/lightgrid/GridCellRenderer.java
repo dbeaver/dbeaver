@@ -31,8 +31,8 @@ import org.jkiss.dbeaver.ui.UIUtils;
  */
 class GridCellRenderer extends AbstractRenderer
 {
-    private static final int LEFT_MARGIN = 4;
-    private static final int RIGHT_MARGIN = 4;
+    private static final int LEFT_MARGIN = 6;
+    private static final int RIGHT_MARGIN = 6;
     private static final int TOP_MARGIN = 0;
 
     private static final int TEXT_TOP_MARGIN = 1;
@@ -145,7 +145,7 @@ class GridCellRenderer extends AbstractRenderer
 
         if (image != null && columnAlign == IGridContentProvider.ALIGN_RIGHT) {
             int y = bounds.y + (bounds.height - imageBounds.height) / 2;
-            gc.drawImage(image, bounds.x + bounds.width - imageBounds.width - INSIDE_MARGIN, y);
+            gc.drawImage(image, bounds.x + bounds.width - imageBounds.width - RIGHT_MARGIN, y);
         }
 
         if (grid.isLinesVisible()) {
