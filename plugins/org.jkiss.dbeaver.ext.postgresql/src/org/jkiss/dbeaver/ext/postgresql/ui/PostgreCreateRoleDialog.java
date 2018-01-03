@@ -39,7 +39,7 @@ public class PostgreCreateRoleDialog extends BaseDialog
 
     private String name;
     private String password;
-    private boolean isUser;
+    private boolean isUser = true;
 
     public PostgreCreateRoleDialog(Shell parentShell, PostgreDatabase database) {
         super(parentShell, PostgreMessages.dialog_create_role_title, null);

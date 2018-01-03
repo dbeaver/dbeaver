@@ -23,15 +23,20 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreRole;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.ui.PostgreCreateRoleDialog;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UITask;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -70,13 +75,39 @@ public class PostgreRoleManager extends SQLObjectEditor<PostgreRole, PostgreData
 
     @Override
     protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
+        final PostgreRole role = command.getObject();
+        final StringBuilder script = new StringBuilder("CREATE ROLE " + DBUtils.getQuotedIdentifier(role));
+        addRoleOptions(script, role);
 
+        actions.add(
+            new SQLDatabasePersistAction("Create role", script.toString()) //$NON-NLS-2$
+        );
     }
 
     @Override
     protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options) {
-
+        actions.add(
+            new SQLDatabasePersistAction("Drop role", "DROP ROLE " + DBUtils.getQuotedIdentifier(command.getObject())) //$NON-NLS-2$
+        );
     }
+
+    private void addRoleOptions(StringBuilder script, PostgreRole role) {
+        if (role.isSuperUser()) script.append(" SUPERUSER"); else script.append(" NOSUPERUSER");
+        if (role.isCreateDatabase()) script.append(" CREATEDB"); else script.append(" NOCREATEDB");
+        if (role.isCreateRole()) script.append(" CREATEROLE"); else script.append(" NOCREATEROLE");
+        if (role.isInherit()) script.append(" INHERIT"); else script.append(" NOINHERIT");
+        if (role.isCanLogin()) script.append(" LOGIN"); else script.append(" NOLOGIN");
+
+        if (role.isUser() && !CommonUtils.isEmpty(role.getPassword())) {
+            script.append(" PASSWORD ").append("'").append(role.getDataSource().getSQLDialect().escapeString(role.getPassword())).append("'");
+        }
+        //if (role.isCreateDatabase()) script.append(" CONNECTION LIMIT connlimit");
+/*
+PASSWORD password
+VALID UNTIL 'timestamp'
+*/
+    }
+
 
 }
 
