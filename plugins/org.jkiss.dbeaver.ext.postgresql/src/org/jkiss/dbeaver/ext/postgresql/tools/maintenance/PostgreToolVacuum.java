@@ -24,7 +24,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.postgresql.PostgresMessages;
+import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreObject;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
@@ -67,12 +67,12 @@ public class PostgreToolVacuum implements IExternalTool
 
         public SQLDialog(IWorkbenchPartSite partSite, Collection<PostgreTableBase> selectedTables)
         {
-            super(partSite, PostgresMessages.tool_vacuum_title_table, selectedTables);
+            super(partSite, PostgreMessages.tool_vacuum_title_table, selectedTables);
         }
 
         public SQLDialog(IWorkbenchPartSite partSite, PostgreDatabase database)
         {
-            super(partSite, PostgresMessages.tool_vacuum_title_database, database);
+            super(partSite, PostgreMessages.tool_vacuum_title_database, database);
         }
 
         @Override
@@ -91,15 +91,15 @@ public class PostgreToolVacuum implements IExternalTool
 
         @Override
         protected void createControls(Composite parent) {
-            Group optionsGroup = UIUtils.createControlGroup(parent, PostgresMessages.tool_vacuum_group_option, 1, 0, 0);
+            Group optionsGroup = UIUtils.createControlGroup(parent, PostgreMessages.tool_vacuum_group_option, 1, 0, 0);
             optionsGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            fullCheck = UIUtils.createCheckbox(optionsGroup, "Full", PostgresMessages.tool_vacuum_full_check_tooltip, false, 0);
+            fullCheck = UIUtils.createCheckbox(optionsGroup, "Full", PostgreMessages.tool_vacuum_full_check_tooltip, false, 0);
             fullCheck.addSelectionListener(SQL_CHANGE_LISTENER);
-            freezeCheck = UIUtils.createCheckbox(optionsGroup, "Freeze", PostgresMessages.tool_vacuum_freeze_check_tooltip, false, 0);
+            freezeCheck = UIUtils.createCheckbox(optionsGroup, "Freeze", PostgreMessages.tool_vacuum_freeze_check_tooltip, false, 0);
             freezeCheck.addSelectionListener(SQL_CHANGE_LISTENER);
-            analyzeCheck = UIUtils.createCheckbox(optionsGroup, "Analyze", PostgresMessages.tool_vacuum_analyze_check_tooltip, false, 0);
+            analyzeCheck = UIUtils.createCheckbox(optionsGroup, "Analyze", PostgreMessages.tool_vacuum_analyze_check_tooltip, false, 0);
             analyzeCheck.addSelectionListener(SQL_CHANGE_LISTENER);
-            dpsCheck = UIUtils.createCheckbox(optionsGroup, "Disable page skipping", PostgresMessages.tool_vacuum_dps_check_tooltip, false, 0);
+            dpsCheck = UIUtils.createCheckbox(optionsGroup, "Disable page skipping", PostgreMessages.tool_vacuum_dps_check_tooltip, false, 0);
             dpsCheck.addSelectionListener(SQL_CHANGE_LISTENER);
 
             createObjectsSelector(parent);
