@@ -74,6 +74,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
     private Action actionCheckAll;
     private Action actionCheckNone;
     private List<PostgrePermission> currentPrivs;
+    private Map<String, TreeItem> schemaMap = new HashMap<>();;
 
     public void createPartControl(Composite parent) {
         this.boldFont = UIUtils.makeBoldFont(parent.getFont());
@@ -302,24 +303,16 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
     private void fillPrivileges(Collection<PostgrePermission> privs) {
         roleOrObjectTable.setRedraw(false);
         try {
-            Map<String, TreeItem> schemaMap = new HashMap<>();
+            schemaMap.clear();
             currentPrivs = new ArrayList<>(privs);
             for (PostgrePermission permission : currentPrivs) {
                 TreeItem permItem;
                 if (isRoleEditor()) {
                     PostgreRolePermission rolePermission = (PostgreRolePermission) permission;
-                    TreeItem schemaItem = schemaMap.get(rolePermission.getSchemaName());
-                    if (schemaItem == null) {
-                        schemaItem = new TreeItem(roleOrObjectTable, SWT.LEFT);
-                        schemaItem.setText(rolePermission.getSchemaName());
-                        schemaItem.setData(rolePermission.getSchemaName());
-                        //schemaItem.setExpanded(true);
-                        schemaItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_SCHEMA));
-                        schemaMap.put(rolePermission.getSchemaName(), schemaItem);
-                    }
+                    TreeItem schemaItem = getOrCreateSchemaItem(rolePermission);
                     permItem = new TreeItem(schemaItem, SWT.LEFT);
                     permItem.setText(0,
-                        rolePermission.getFullTableName());
+                        rolePermission.getTableName());
                 } else {
                     permItem = new TreeItem(roleOrObjectTable, SWT.LEFT);
                     permItem.setText(0,
@@ -331,6 +324,18 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
         } finally {
             roleOrObjectTable.setRedraw(true);
         }
+    }
+
+    private TreeItem getOrCreateSchemaItem(PostgreRolePermission rolePermission) {
+        TreeItem schemaItem = schemaMap.get(rolePermission.getSchemaName());
+        if (schemaItem == null) {
+            schemaItem = new TreeItem(roleOrObjectTable, SWT.LEFT);
+            schemaItem.setText(rolePermission.getSchemaName());
+            schemaItem.setData(rolePermission.getSchemaName());
+            schemaItem.setImage(DBeaverIcons.getImage(DBIcon.TREE_SCHEMA));
+            schemaMap.put(rolePermission.getSchemaName(), schemaItem);
+        }
+        return schemaItem;
     }
 
     public DBIcon getObjectIcon() {
