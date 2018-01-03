@@ -21,20 +21,16 @@ package org.jkiss.dbeaver.ext.erd.model;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import java.lang.reflect.InvocationTargetException;
 
 /**
  * Provides base class support for model objects to participate in event handling framework
@@ -50,7 +46,7 @@ public abstract class ERDObject<OBJECT> implements IAdaptable, DBPNamedObject
 	public static final String OUTPUT = "OUTPUT";
 	public static final String NAME = "NAME";
 
-	protected transient PropertyChangeSupport listeners = new PropertyChangeSupport(this);
+	private transient PropertyChangeSupport listeners = new PropertyChangeSupport(this);
 
     protected OBJECT object;
     private PropertyCollector propertyCollector = null;
@@ -97,28 +93,23 @@ public abstract class ERDObject<OBJECT> implements IAdaptable, DBPNamedObject
 
     public void openEditor() {
         if (object instanceof DBSObject) {
-            DBeaverUI.runUIJob("Open object editor", new DBRRunnableWithProgress() {
-                @Override
-                public void run(DBRProgressMonitor monitor)
-                    throws InvocationTargetException, InterruptedException
-                {
-                    DBNDatabaseNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(
-                        monitor,
-                        (DBSObject) object,
-                        true
-                    );
-                    if (node != null) {
-                        NavigatorUtils.openNavigatorNode(node, DBeaverUI.getActiveWorkbenchWindow());
-                    }
+            DBeaverUI.runUIJob("Open object editor", monitor -> {
+                DBNDatabaseNode node = NavigatorUtils.getNodeByObject(
+                    monitor,
+                    (DBSObject) object,
+                    true
+                );
+                if (node != null) {
+                    NavigatorUtils.openNavigatorNode(node, DBeaverUI.getActiveWorkbenchWindow());
                 }
             });
         }
     }
 
     @Override
-    public Object getAdapter(Class adapter) {
+    public <T> T getAdapter(Class<T> adapter) {
         if (adapter == DBPPropertySource.class) {
-            return getPropertyCollector();
+            return adapter.cast(getPropertyCollector());
         }
         return null;
     }

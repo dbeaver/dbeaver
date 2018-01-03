@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -530,7 +531,7 @@ class SQLCompletionAnalyzer
 
     private SQLCompletionProposal makeProposalsFromObject(DBSObject object)
     {
-        DBNNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(monitor, object, false);
+        DBNNode node = NavigatorUtils.getNodeByObject(monitor, object, false);
         return makeProposalsFromObject(object, node == null ? null : node.getNodeIconDefault());
     }
 
