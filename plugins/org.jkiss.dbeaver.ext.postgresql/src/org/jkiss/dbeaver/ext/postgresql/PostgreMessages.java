@@ -127,9 +127,14 @@ public class PostgreMessages extends NLS {
 	public static String dialog_setting_connection_settings;
 	public static String dialog_setting_connection_localClient;
 	public static String dialog_setting_connection_nondefaultDatabase;
-	
-	
-	
+
+	/* PostgreCreateRoleDialog */
+	public static String dialog_create_role_title;
+	public static String dialog_create_role_group_general;
+	public static String dialog_create_role_label_role_name;
+	public static String dialog_create_role_label_user_password;
+	public static String dialog_create_role_label_user_role;
+
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, PostgreMessages.class);

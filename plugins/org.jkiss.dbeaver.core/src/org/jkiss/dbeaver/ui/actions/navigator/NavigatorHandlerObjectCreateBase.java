@@ -141,7 +141,7 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
             try {
                 newObject = objectMaker.createNewObject(monitor, commandTarget.getContext(), parentObject, sourceObject);
                 if (newObject == null) {
-                    return GeneralUtils.makeErrorStatus("Null object returned");
+                    return Status.CANCEL_STATUS;//GeneralUtils.makeErrorStatus("Null object returned");
                 }
                 if (parentObject instanceof DBSObject) {
                     if ((objectMaker.getMakerOptions(((DBSObject) parentObject).getDataSource()) & DBEObjectMaker.FEATURE_SAVE_IMMEDIATELY) != 0) {
