@@ -8,13 +8,13 @@ import java.util.Scanner;
 
 import org.jkiss.dbeaver.ext.postgresql.pldbg.DebugException;
 import org.jkiss.dbeaver.ext.postgresql.pldbg.DebugSession;
+import org.jkiss.dbeaver.ext.postgresql.pldbg.StackFrame;
 import org.jkiss.dbeaver.ext.postgresql.pldbg.impl.BreakpointPropertiesPostgres;
 import org.jkiss.dbeaver.ext.postgresql.pldbg.impl.DebugManagerPostgres;
 import org.jkiss.dbeaver.ext.postgresql.pldbg.impl.DebugObjectPostgres;
 import org.jkiss.dbeaver.ext.postgresql.pldbg.impl.DebugSessionPostgres;
 import org.jkiss.dbeaver.ext.postgresql.pldbg.impl.PostgresBreakpoint;
 import org.jkiss.dbeaver.ext.postgresql.pldbg.impl.SessionInfoPostgres;
-import org.jkiss.dbeaver.ext.postgresql.pldbg.impl.stub.JDBCSessionStub;
 
 
 @SuppressWarnings("nls")
@@ -80,9 +80,11 @@ public class Debugger {
 			 
 			 int sessionId = -1;
 			 
-			String argc =sc.nextLine();
+			
 			 
 			while (sessionId <0) {
+				
+			 String argc =sc.nextLine();	
 			 
 			 String strSessionid = "";
 			 
@@ -171,7 +173,29 @@ public class Debugger {
 				break;
 		    
 			case COMMAND_STACK:
-				System.out.println("STACK!!!");
+				
+				
+				if ( pgDbgManager.getDebugSessions().size() == 0) {
+					System.out.println("Debug sessions not found");
+					break;
+				}
+				
+				DebugSessionPostgres debugSessionSL = chooseSession(sc,pgDbgManager);
+				
+				if (debugSessionSL == null) {
+					break;
+				}
+				
+				List<StackFrame> stack = debugSessionSL.getStack();
+				
+				if (stack.size() == 0) {
+					System.out.println("No stack defined");
+				}
+					
+				for(StackFrame s : stack) {
+					System.out.println(s.toString());
+				}
+
 				break;
 
 			case COMMAND_FRAME:
@@ -287,6 +311,10 @@ public class Debugger {
 				if (debugSessionBL == null) {
 					break;
 				}
+				
+				if (debugSessionBL.getBreakpoints().size() == 0) {
+					System.out.println("No breakpoints defined");
+				}
 					
 				for(PostgresBreakpoint bpl : debugSessionBL.getBreakpoints()) {
 					System.out.println(bpl.toString());
@@ -303,8 +331,23 @@ public class Debugger {
 				break;
 
 			case COMMAND_OVER:
-				System.out.println("STEP OVER!!!");
-				break;
+				
+				if ( pgDbgManager.getDebugSessions().size() == 0) {
+					System.out.println("Debug sessions not found");
+					break;
+				}
+				
+				DebugSessionPostgres debugSessionSO = chooseSession(sc,pgDbgManager);
+				
+				if (debugSessionSO == null) {
+					break;
+				}
+				
+				debugSessionSO.execStepOver();
+
+				System.out.println("Step over ...");
+				
+				break;	
 				
 			case COMMAND_SESSIONS:
 				 for (SessionInfoPostgres s : pgDbgManager.getSessions()) {
@@ -388,6 +431,8 @@ public class Debugger {
 				System.out.println("Waiting for target session ...");
 				
 				debugSessionA.attach();
+				
+				break;
 				
 			case COMMAND_TERMINATE:
 				System.out.println("EXIT.....");
