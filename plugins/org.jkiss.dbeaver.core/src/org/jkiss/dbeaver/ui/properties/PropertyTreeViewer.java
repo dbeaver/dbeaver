@@ -215,11 +215,9 @@ public class PropertyTreeViewer extends TreeViewer {
                 try {
                     PropertyTreeViewer.this.expandAll();
                     UIUtils.packColumns(tree, true, new float[]{0.1f, 0.9f});
-                    PropertyTreeViewer.this.collapseAll();
 
                     switch (expandMode) {
                         case ALL:
-                            PropertyTreeViewer.this.expandAll();
                             break;
                         case FIRST:
                             Object root = getInput();
@@ -227,6 +225,7 @@ public class PropertyTreeViewer extends TreeViewer {
                                 Collection rootItems = (Collection) root;
                                 if (!rootItems.isEmpty()) {
                                     Object first = rootItems.iterator().next();
+                                    PropertyTreeViewer.this.collapseAll();
                                     PropertyTreeViewer.this.expandToLevel(first, ALL_LEVELS);
                                 }
                             } else {

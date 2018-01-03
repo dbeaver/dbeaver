@@ -127,7 +127,11 @@ public class BrowseObjectDialog extends Dialog {
                     DBNNode node = (DBNNode) iter.next();
                     if (node instanceof DBSWrapper) {
                         DBSObject object = DBUtils.getAdapter(DBSObject.class, ((DBSWrapper) node).getObject());
-                        if (object != null && matchesType(object.getClass(), true)) {
+                        if (object != null) {
+                            if (!matchesType(object.getClass(), true)) {
+                                selectedObjects.clear();
+                                break;
+                            }
                             selectedObjects.add(node);
                         }
                     }
@@ -186,6 +190,16 @@ public class BrowseObjectDialog extends Dialog {
         if (scDialog.open() == IDialogConstants.OK_ID) {
             List<DBNNode> result = scDialog.getSelectedObjects();
             return result.isEmpty() ? null : result.get(0);
+        } else {
+            return null;
+        }
+    }
+
+    public static List<DBNNode> selectObjects(Shell parentShell, String title, DBNNode rootNode, DBNNode selectedNode, Class<?>[] allowedTypes, Class<?>[] resultTypes)
+    {
+        BrowseObjectDialog scDialog = new BrowseObjectDialog(parentShell, title, rootNode, selectedNode, false, allowedTypes, resultTypes);
+        if (scDialog.open() == IDialogConstants.OK_ID) {
+            return scDialog.getSelectedObjects();
         } else {
             return null;
         }

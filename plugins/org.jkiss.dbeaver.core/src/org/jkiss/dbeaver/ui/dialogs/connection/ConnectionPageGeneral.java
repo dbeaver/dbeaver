@@ -655,7 +655,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
     private static class ConnectionFolderLabelProvider extends LabelProvider {
         @Override
         public Image getImage(Object element) {
-            return DBeaverIcons.getImage(DBIcon.TREE_DATABASE_CATEGORY);
+            return DBeaverIcons.getImage(DBIcon.TREE_FOLDER_DATABASE);
         }
 
         @Override

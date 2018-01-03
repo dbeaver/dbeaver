@@ -127,6 +127,15 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     }
 
     @Override
+    public void deactivatePage() {
+        DataSourceDescriptor connectionInfo = getActiveDataSource();
+        if (this.activated.contains(connectionInfo) && this.connectionEditor != null) {
+            this.connectionEditor.saveSettings(connectionInfo);
+        }
+        super.deactivatePage();
+    }
+
+    @Override
     public Image getImage() {
         if (this.connectionEditor != null) {
             Image image = this.connectionEditor.getImage();

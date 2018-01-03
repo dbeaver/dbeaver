@@ -24,12 +24,16 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -37,8 +41,13 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.IRefreshablePart;
+import org.jkiss.dbeaver.ui.UIConfirmation;
+import org.jkiss.dbeaver.ui.UITask;
+import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
+import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
 import java.util.*;
 
@@ -130,6 +139,27 @@ public class NavigatorHandlerRefresh extends AbstractHandler {
                             }
                         }
                         if (skip) {
+                            continue;
+                        }
+                    }
+                    // Check for dirty editor (some local changes) and ask for confirmation
+                    if (node instanceof DBNDatabaseFolder && !(node.getParentNode() instanceof DBNDatabaseFolder) && node.getParentNode() instanceof DBNDatabaseNode) {
+                        // USe parent if this node is a folder
+                        node = node.getParentNode();
+                    }
+
+                    IEditorPart nodeEditor = NavigatorHandlerObjectOpen.findEntityEditor(DBeaverUI.getActiveWorkbenchWindow(), node);
+                    if (nodeEditor != null && nodeEditor.isDirty()) {
+                        if (!new UIConfirmation() {
+                            @Override
+                            protected Boolean runTask() {
+                                return ConfirmationDialog.showConfirmDialog(
+                                    null,
+                                    DBeaverPreferences.CONFIRM_ENTITY_REVERT,
+                                    ConfirmationDialog.QUESTION,
+                                    nodeEditor.getTitle()) == IDialogConstants.YES_ID;
+                            }
+                        }.execute()) {
                             continue;
                         }
                     }

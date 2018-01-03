@@ -1,0 +1,3 @@
+instructions.configure=\
+  addRepository(type:0,location:https${#58}//dbeaver.jkiss.org/update/ce/latest/,name:DBeaver update site,enabled:true);\
+  addRepository(type:1,location:https${#58}//dbeaver.jkiss.org/update/ce/latest/,name:DBeaver update site,enabled:true);

@@ -279,11 +279,6 @@ public class CoreMessages extends NLS {
 	public static String dialog_connection_events_checkbox_wait_finish;
 	public static String dialog_connection_events_checkbox_wait_finish_timeout;
 	
-	public static String model_connection_events_event_after_connect;
-	public static String model_connection_events_event_after_disconnect;
-	public static String model_connection_events_event_before_connect;
-	public static String model_connection_events_event_before_disconnect;
-
 	public static String dialog_connection_events_label_command;
 	public static String dialog_connection_events_label_event;
 	public static String dialog_connection_events_title;
@@ -414,6 +409,8 @@ public class CoreMessages extends NLS {
 	public static String data_transfer_wizard_output_checkbox_new_connection;
 	public static String data_transfer_wizard_output_checkbox_open_folder;
 	public static String data_transfer_wizard_output_checkbox_select_row_count;
+	public static String data_transfer_wizard_output_checkbox_selected_columns_only;
+	public static String data_transfer_wizard_output_checkbox_selected_rows_only;
 	public static String data_transfer_wizard_output_combo_extract_type_item_by_segments;
 	public static String data_transfer_wizard_output_combo_extract_type_item_single_query;
 	public static String data_transfer_wizard_output_description;
@@ -861,9 +858,12 @@ public class CoreMessages extends NLS {
 	public static String pref_page_target_link_show_global_settings;
 	
 	public static String pref_page_ui_general_checkbox_automatic_updates;
+	public static String pref_page_ui_general_combo_language;
+	public static String pref_page_ui_general_combo_language_tip;
 	public static String pref_page_ui_general_keep_database_editors;
 	public static String pref_page_ui_general_refresh_editor_on_open;
 	public static String pref_page_ui_general_group_general;
+	public static String pref_page_ui_general_group_language;
 	public static String pref_page_ui_general_group_editors;
 	public static String pref_page_ui_general_group_http_proxy;
 	public static String pref_page_ui_general_label_proxy_host;
@@ -994,6 +994,7 @@ public class CoreMessages extends NLS {
 	public static String pref_page_database_resultsets_group_plain_text;
 	public static String pref_page_database_resultsets_lable_value_format;
 	public static String pref_page_database_resultsets_label_maximum_column_length;
+	public static String pref_page_database_resultsets_label_text_show_nulls;
 	public static String pref_page_database_resultsets_label_text_delimiter_leading;
 	public static String pref_page_database_resultsets_label_text_delimiter_trailing;
 	// Connections
@@ -1050,6 +1051,7 @@ public class CoreMessages extends NLS {
 	public static String pref_page_sql_completion_label_insert_case;
 	public static String pref_page_sql_completion_label_hide_duplicate_names;
 	public static String pref_page_sql_completion_label_use_short_names;
+	public static String pref_page_sql_completion_label_use_long_names;
 	public static String pref_page_sql_completion_label_insert_space;
 	public static String pref_page_sql_completion_label_use_global_search;
 	public static String pref_page_sql_completion_label_use_global_search_tip;
