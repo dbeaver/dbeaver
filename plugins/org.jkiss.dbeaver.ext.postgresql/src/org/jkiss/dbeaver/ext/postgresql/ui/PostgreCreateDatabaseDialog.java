@@ -31,7 +31,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.ext.postgresql.PostgresMessages;
+import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -61,7 +61,7 @@ public class PostgreCreateDatabaseDialog extends BaseDialog
     private PostgreTablespace tablespace;
 
     public PostgreCreateDatabaseDialog(Shell parentShell, PostgreDataSource dataSource) {
-        super(parentShell, PostgresMessages.dialog_create_db_title, null);
+        super(parentShell, PostgreMessages.dialog_create_db_title, null);
         this.dataSource = dataSource;
     }
 
@@ -69,9 +69,9 @@ public class PostgreCreateDatabaseDialog extends BaseDialog
     protected Composite createDialogArea(Composite parent) {
         final Composite composite = super.createDialogArea(parent);
 
-        final Composite groupGeneral = UIUtils.createControlGroup(composite, PostgresMessages.dialog_create_db_group_general, 2, GridData.FILL_HORIZONTAL, SWT.NONE);
+        final Composite groupGeneral = UIUtils.createControlGroup(composite, PostgreMessages.dialog_create_db_group_general, 2, GridData.FILL_HORIZONTAL, SWT.NONE);
 
-        final Text nameText = UIUtils.createLabelText(groupGeneral, PostgresMessages.dialog_create_db_label_db_name, ""); //$NON-NLS-2$
+        final Text nameText = UIUtils.createLabelText(groupGeneral, PostgreMessages.dialog_create_db_label_db_name, ""); //$NON-NLS-2$
         nameText.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e) {
@@ -80,7 +80,7 @@ public class PostgreCreateDatabaseDialog extends BaseDialog
             }
         });
 
-        final Combo userCombo = UIUtils.createLabelCombo(groupGeneral, PostgresMessages.dialog_create_db_label_owner, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+        final Combo userCombo = UIUtils.createLabelCombo(groupGeneral, PostgreMessages.dialog_create_db_label_owner, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
         userCombo.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -88,8 +88,8 @@ public class PostgreCreateDatabaseDialog extends BaseDialog
             }
         });
 
-        final Composite groupDefinition = UIUtils.createControlGroup(composite, PostgresMessages.dialog_create_db_group_definition, 2, GridData.FILL_HORIZONTAL, SWT.NONE);
-        final Combo templateCombo = UIUtils.createLabelCombo(groupDefinition, PostgresMessages.dialog_create_db_label_template_db, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+        final Composite groupDefinition = UIUtils.createControlGroup(composite, PostgreMessages.dialog_create_db_group_definition, 2, GridData.FILL_HORIZONTAL, SWT.NONE);
+        final Combo templateCombo = UIUtils.createLabelCombo(groupDefinition, PostgreMessages.dialog_create_db_label_template_db, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
         templateCombo.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
@@ -97,14 +97,14 @@ public class PostgreCreateDatabaseDialog extends BaseDialog
             }
         });
 
-        final Combo encodingCombo = UIUtils.createLabelCombo(groupDefinition, PostgresMessages.dialog_create_db_label_encoding, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+        final Combo encodingCombo = UIUtils.createLabelCombo(groupDefinition, PostgreMessages.dialog_create_db_label_encoding, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
         encodingCombo.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 encoding = allEncodings.get(encodingCombo.getSelectionIndex());
             }
         });
-        final Combo tablespaceCombo = UIUtils.createLabelCombo(groupDefinition, PostgresMessages.dialog_create_db_label_tablesapce, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+        final Combo tablespaceCombo = UIUtils.createLabelCombo(groupDefinition, PostgreMessages.dialog_create_db_label_tablesapce, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
         tablespaceCombo.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
