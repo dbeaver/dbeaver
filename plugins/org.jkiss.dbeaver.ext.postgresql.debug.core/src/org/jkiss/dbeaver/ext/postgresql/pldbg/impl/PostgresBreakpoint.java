@@ -14,88 +14,78 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.jkiss.dbeaver.ext.postgresql.pldbg.impl;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 
 import org.jkiss.dbeaver.ext.postgresql.pldbg.Breakpoint;
 import org.jkiss.dbeaver.ext.postgresql.pldbg.DebugException;
 
-
-/**
- * @author Andrey.Hitrin
- *
- */
 @SuppressWarnings("nls")
 public class PostgresBreakpoint implements Breakpoint {
-	
-	private SessionInfoPostgres sessionInfo;
-	
-	private DebugObjectPostgres obj;
-	
-	private final Connection connection;
-	
-	private long lineNo = -1;
-	
-	private int target;
-	
-	private static final String SQL_SET = "select * from pldbg_set_global_breakpoint(?sessionid, ?obj, ?line, ?target)";
-	
-	private boolean active = false;
-	
-	public PostgresBreakpoint(Connection connection,SessionInfoPostgres sessionInfo,DebugObjectPostgres obj, long lineNo, int target)
-	{
-		super();
-		this.sessionInfo = sessionInfo;
-		this.obj = obj;
-		this.lineNo = lineNo;
-		this.target = target;
-		this.connection = connection;
-	}
 
-	@Override
-	public DebugObjectPostgres getObj()
-	{
-		return obj;
-	}
+    private final DebugObjectPostgres obj;
 
-	@Override
-	public long getLineNo()
-	{
-		return lineNo;
-	}
+    private final DebugSessionPostgres session;
 
-	@Override
-	public void activate() throws DebugException{
-		
-		if (! active) {
-		
-			 try (Statement stmt = connection.createStatement()) {
-				 
-				 stmt.executeQuery(SQL_SET.replaceAll("\\?sessionid",String.valueOf(target))
-						                  .replaceAll("\\?obj",String.valueOf(obj.getID()))
-						                  .replaceAll("\\?line",String.valueOf(lineNo))
-						                  .replaceAll("\\?target",(sessionInfo == null ? "null" : String.valueOf(sessionInfo.pid)))
-						           );
-				 active = true;
-			 
-			 
-		 }catch (SQLException e) {
-		        throw new DebugException(e);
-		 }
-		
-	   }
-	}
+    private final BreakpointPropertiesPostgres properties;
 
-	@Override
-	public void drop() throws DebugException
-	{
-		// TODO Auto-generated method stub
-		
-	}
-	
-	
+    private static final String SQL_SET_GLOBAL = "select pldbg_set_global_breakpoint(?sessionid, ?obj, ?line, ?target)";
+    private static final String SQL_SET = "select pldbg_set_breakpoint(?sessionid, ?obj, ?line)";
+    private static final String SQL_DROP = "select pldbg_drop_breakpoint(?sessionid, ?obj, ?line)";
+
+    public PostgresBreakpoint(DebugSessionPostgres session, DebugObjectPostgres obj,
+            BreakpointPropertiesPostgres properties) throws DebugException {
+
+        this.session = session;
+        this.obj = obj;
+        this.properties = properties;
+        try (Statement stmt = session.getConnection().createStatement()) {
+
+            String sqlCommand = properties.isGlobal() ? SQL_SET_GLOBAL : SQL_SET;
+
+            stmt.executeQuery(sqlCommand.replaceAll("\\?sessionid", String.valueOf(session.getSessionId()))
+                    .replaceAll("\\?obj", String.valueOf(obj.getID()))
+                    .replaceAll("\\?line", properties.isOnStart() ? "-1" : String.valueOf(properties.getLineNo()))
+                    .replaceAll("\\?target", properties.isAll() ? "null"
+                            : String.valueOf(properties.getTargetId())));
+
+        } catch (SQLException e) {
+            throw new DebugException(e);
+        }
+
+    }
+
+    @Override
+    public DebugObjectPostgres getObj() {
+        return obj;
+    }
+
+    @Override
+    public void drop() throws DebugException {
+        try (Statement stmt = session.getConnection().createStatement()) {
+
+            stmt.executeQuery(SQL_DROP.replaceAll("\\?sessionid", String.valueOf(session.getSessionId()))
+                    .replaceAll("\\?obj", String.valueOf(obj.getID()))
+                    .replaceAll("\\?line", properties.isOnStart() ? "-1" : String.valueOf(properties.getLineNo())));
+
+        } catch (SQLException e) {
+            throw new DebugException(e);
+        }
+
+    }
+
+    @Override
+    public BreakpointPropertiesPostgres getProperties() {
+        return properties;
+    }
+
+    @Override
+    public String toString() {
+        return "PostgresBreakpoint [obj=" + obj + ", session id =" + session.getSessionId() + ", properties="
+                + properties + "]";
+    }
 
 }

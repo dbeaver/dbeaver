@@ -18,7 +18,9 @@ package org.jkiss.dbeaver.ext.postgresql.edit;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -49,6 +51,21 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
         public void appendModifier(PostgreTableColumn column, StringBuilder sql, DBECommandAbstract<PostgreTableColumn> command) {
             sql.append(' ');
             final PostgreDataType dataType = column.getDataType();
+            String defValue = column.getDefaultValue();
+            if (!CommonUtils.isEmpty(defValue) && defValue.contains("nextval")) {
+                // Use serial type name
+                switch (dataType.getName()) {
+                    case PostgreConstants.TYPE_INT2:
+                        sql.append("smallserial");
+                        return;
+                    case PostgreConstants.TYPE_INT4:
+                        sql.append("serial");
+                        return;
+                    case PostgreConstants.TYPE_INT8:
+                        sql.append("bigserial");
+                        return;
+                }
+            }
             final PostgreDataType rawType = dataType.getElementType();
             if (rawType != null) {
                 sql.append(rawType.getTypeName());
@@ -88,6 +105,24 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
         }
     };
 
+    protected final ColumnModifier<PostgreTableColumn> PostgreDefaultModifier = new ColumnModifier<PostgreTableColumn>() {
+        @Override
+        public void appendModifier(PostgreTableColumn column, StringBuilder sql, DBECommandAbstract<PostgreTableColumn> command) {
+            String defaultValue = column.getDefaultValue();
+            if (!CommonUtils.isEmpty(defaultValue) && defaultValue.contains("nextval")) {
+                // Use serial type name
+                switch (column.getDataType().getName()) {
+                    case PostgreConstants.TYPE_INT2:
+                    case PostgreConstants.TYPE_INT4:
+                    case PostgreConstants.TYPE_INT8:
+                        return;
+                }
+            }
+            DefaultModifier.appendModifier(column, sql, command);
+        }
+    };
+
+
     @Nullable
     @Override
     public DBSObjectCache<? extends DBSObject, PostgreTableColumn> getObjectsCache(PostgreTableColumn object)
@@ -97,7 +132,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
 
     protected ColumnModifier[] getSupportedModifiers(PostgreTableColumn column)
     {
-        return new ColumnModifier[] {PostgreDataTypeModifier, NullNotNullModifier, DefaultModifier};
+        return new ColumnModifier[] {PostgreDataTypeModifier, NullNotNullModifier, PostgreDefaultModifier};
     }
 
     @Override

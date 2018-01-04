@@ -82,9 +82,7 @@ public class PostgreProcedureManager extends SQLObjectEditor<PostgreProcedure, P
     @Override
     protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
     {
-        if (command.getProperties().size() > 1 || command.getProperty("description") == null) {
-            createOrReplaceProcedureQuery(actions, command.getObject());
-        }
+        createOrReplaceProcedureQuery(actions, command.getObject());
     }
 
     @Override

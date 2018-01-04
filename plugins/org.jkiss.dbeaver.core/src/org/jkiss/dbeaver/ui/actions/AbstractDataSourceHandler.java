@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.ui.actions;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -53,15 +52,14 @@ public abstract class AbstractDataSourceHandler extends AbstractHandler {
         }
 
         ISelection selection = HandlerUtil.getCurrentSelection(event);
-        if (selection instanceof IStructuredSelection) {
-            DBSObject selectedObject = NavigatorUtils.getSelectedObject((IStructuredSelection) selection);
-            if (selectedObject != null) {
-                DBPDataSource dataSource = selectedObject.getDataSource();
-                if (dataSource != null) {
-                    return dataSource.getDefaultContext(false);
-                }
+        DBSObject selectedObject = NavigatorUtils.getSelectedObject(selection);
+        if (selectedObject != null) {
+            DBPDataSource dataSource = selectedObject.getDataSource();
+            if (dataSource != null) {
+                return dataSource.getDefaultContext(false);
             }
         }
+
         return null;
     }
 
@@ -83,15 +81,15 @@ public abstract class AbstractDataSourceHandler extends AbstractHandler {
             return container;
         }
         ISelection selection = HandlerUtil.getCurrentSelection(event);
-        if (selection instanceof IStructuredSelection) {
-            DBSObject selectedObject = NavigatorUtils.getSelectedObject((IStructuredSelection) selection);
-            if (selectedObject instanceof DBPDataSourceContainer) {
-                return (DBPDataSourceContainer)selectedObject;
-            } else if (selectedObject != null) {
-                DBPDataSource dataSource = selectedObject.getDataSource();
-                return dataSource == null ? null : dataSource.getContainer();
-            }
+
+        DBSObject selectedObject = NavigatorUtils.getSelectedObject(selection);
+        if (selectedObject instanceof DBPDataSourceContainer) {
+            return (DBPDataSourceContainer)selectedObject;
+        } else if (selectedObject != null) {
+            DBPDataSource dataSource = selectedObject.getDataSource();
+            return dataSource == null ? null : dataSource.getContainer();
         }
+
         return null;
     }
 
