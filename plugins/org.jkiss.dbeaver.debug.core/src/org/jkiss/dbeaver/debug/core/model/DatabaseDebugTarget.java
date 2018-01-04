@@ -28,8 +28,9 @@ import org.eclipse.debug.core.model.IDebugTarget;
 import org.eclipse.debug.core.model.IMemoryBlock;
 import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.debug.core.model.IThread;
+import org.jkiss.dbeaver.debug.DBGController;
 
-public abstract class DatabaseDebugTarget<C extends IDatabaseDebugController> extends DatabaseDebugElement implements IDatabaseDebugTarget {
+public abstract class DatabaseDebugTarget<C extends DBGController> extends DatabaseDebugElement implements IDatabaseDebugTarget {
 
     private final String modelIdentifier;
 

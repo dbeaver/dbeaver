@@ -22,7 +22,7 @@ import java.util.Map;
 
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.debug.core.model.DatabaseDebugController;
+import org.jkiss.dbeaver.debug.ProcedureDebugController;
 import org.jkiss.dbeaver.ext.postgresql.internal.debug.core.PostgreSqlDebugCoreMessages;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
@@ -32,7 +32,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 
-public class PgSqlDebugController extends DatabaseDebugController {
+public class PgSqlDebugController extends ProcedureDebugController {
     
     private static final String PROPERTY_APPLICATION_NAME = "ApplicationName"; //$NON-NLS-1$
     private static final String SELECT_FROM_PLDBG_ABORT_TARGET = "select * from pldbg_abort_target(?)"; //$NON-NLS-1$
@@ -40,16 +40,9 @@ public class PgSqlDebugController extends DatabaseDebugController {
 
     private static final Log log = Log.getLog(PgSqlDebugController.class);
 
-    private Integer sessionId;
-    
     public PgSqlDebugController(String datasourceId, String databaseName, Map<String, Object> attributes)
     {
         super(datasourceId, databaseName, attributes);
-    }
-    
-    public Integer getSessionId()
-    {
-        return sessionId;
     }
     
     @Override
@@ -65,8 +58,9 @@ public class PgSqlDebugController extends DatabaseDebugController {
                         while (dbResult.nextRow()) {
                             final Object cellValue = dbResult.getAttributeValue(0);
                             if (cellValue instanceof Integer) {
-                                this.sessionId = (Integer) cellValue;
-                                String applicationName = NLS.bind(PostgreSqlDebugCoreMessages.PgSqlDebugController_connection_application_name, sessionId);
+                                Integer cellValueInteger = (Integer) cellValue;
+                                setSessionId(cellValueInteger.toString());
+                                String applicationName = NLS.bind(PostgreSqlDebugCoreMessages.PgSqlDebugController_connection_application_name, getSessionId());
                                 try {
                                     jdbcSession.getOriginal().setClientInfo(PROPERTY_APPLICATION_NAME, applicationName);
                                 } catch (SQLException e) {
@@ -90,10 +84,10 @@ public class PgSqlDebugController extends DatabaseDebugController {
             JDBCSession jdbcSession = (JDBCSession) session;
             String query = SELECT_FROM_PLDBG_ABORT_TARGET;
             try (final JDBCPreparedStatement prepared = jdbcSession.prepareStatement(query)) {
-                prepared.setInt(1, sessionId);
+                prepared.setString(1, getSessionId());
                 prepared.execute();
             } catch (SQLException e) {
-                String message = NLS.bind(PostgreSqlDebugCoreMessages.PgSqlDebugController_e_failed_session_close, sessionId, session.getDataSource());
+                String message = NLS.bind(PostgreSqlDebugCoreMessages.PgSqlDebugController_e_failed_session_close, getSessionId(), session.getDataSource());
                 log.error(message, e);
             }
         }

@@ -1,4 +1,4 @@
-package org.jkiss.dbeaver.debug.core.model;
+package org.jkiss.dbeaver.debug.core.breakpoints;
 
 import java.util.HashMap;
 import java.util.Map;

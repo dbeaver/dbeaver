@@ -15,14 +15,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.debug.core.model;
+package org.jkiss.dbeaver.debug;
 
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBRResult;
 
-public interface IDatabaseDebugController {
+//FIXME:AF: we need "operation result" interface like IStatus to express the result of operation
+//FIXME:AF: so let's return void for now and let's throw an exception for any issue (poor practice)
 
-    public IStatus connect(IProgressMonitor monitor);
+/**
+ * This interface is expected to be used in synch manner
+ *
+ */
+public interface DBGController {
+
+    public DBRResult connect(DBRProgressMonitor monitor);
 
     public void resume();
 
