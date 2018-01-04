@@ -22,12 +22,17 @@ import java.util.Map;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.LaunchConfigurationDelegate;
+import org.jkiss.dbeaver.debug.DBGController;
 import org.jkiss.dbeaver.debug.core.DebugCore;
+import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBRResult;
+import org.jkiss.dbeaver.runtime.core.RuntimeCore;
 
-public abstract class DatabaseLaunchDelegate<C extends IDatabaseDebugController> extends LaunchConfigurationDelegate {
+public abstract class DatabaseLaunchDelegate<C extends DBGController> extends LaunchConfigurationDelegate {
 
     @Override
     public void launch(ILaunchConfiguration configuration, String mode, ILaunch launch, IProgressMonitor monitor)
@@ -40,7 +45,12 @@ public abstract class DatabaseLaunchDelegate<C extends IDatabaseDebugController>
         DatabaseProcess process = createProcess(launch, configuration.getName());
         DatabaseDebugTarget<C> target = createDebugTarget(launch, controller, process);
         launch.addDebugTarget(target);
-        controller.connect(monitor);
+        DefaultProgressMonitor progress = new DefaultProgressMonitor(monitor);
+        DBRResult connectResult = controller.connect(progress);
+        IStatus status = RuntimeCore.toStatus(connectResult);
+        if (!status.isOK()) {
+            throw new CoreException(status);
+        }
     }
 
     protected Map<String, Object> extractAttributes(ILaunchConfiguration configuration)

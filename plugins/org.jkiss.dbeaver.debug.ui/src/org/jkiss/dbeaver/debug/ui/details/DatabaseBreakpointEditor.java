@@ -5,7 +5,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.jkiss.dbeaver.debug.core.model.IDatabaseBreakpoint;
+import org.jkiss.dbeaver.debug.core.breakpoints.IDatabaseBreakpoint;
 import org.jkiss.dbeaver.ui.Widgets;
 
 public class DatabaseBreakpointEditor extends DatabaseDebugDetailEditor {
