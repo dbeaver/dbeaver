@@ -27,19 +27,15 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import org.jkiss.dbeaver.ext.postgresql.pldbg.Breakpoint;
-import org.jkiss.dbeaver.ext.postgresql.pldbg.BreakpointProperties;
-import org.jkiss.dbeaver.ext.postgresql.pldbg.DebugException;
-import org.jkiss.dbeaver.ext.postgresql.pldbg.DebugSession;
-import org.jkiss.dbeaver.ext.postgresql.pldbg.StackFrame;
-import org.jkiss.dbeaver.ext.postgresql.pldbg.Variable;
+import org.jkiss.dbeaver.debug.*;
+import org.jkiss.dbeaver.debug.DBGBreakpoint;
 
 @SuppressWarnings("nls")
-public class DebugSessionPostgres implements DebugSession<SessionInfoPostgres, DebugObjectPostgres, Integer> {
+public class PostgreDebugSession implements DBGSession<PostgreDebugSessionInfo, PostgreDebugObject, Integer> {
 
-    private final SessionInfoPostgres sessionManagerInfo;
+    private final PostgreDebugSessionInfo sessionManagerInfo;
 
-    private final SessionInfoPostgres sessionDebugInfo;
+    private final PostgreDebugSessionInfo sessionDebugInfo;
 
     private final Connection connection;
 
@@ -67,15 +63,15 @@ public class DebugSessionPostgres implements DebugSession<SessionInfoPostgres, D
 
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock(true);
 
-    private List<PostgresBreakpoint> breakpoints = new ArrayList<PostgresBreakpoint>(1);
+    private List<PostgreDebugBreakpoint> breakpoints = new ArrayList<PostgreDebugBreakpoint>(1);
 
-    private DebugSessionWorker worker;
+    private PostgreDebugSessionWorker worker;
 
-    private FutureTask<DebugSessionResult> task;
+    private FutureTask<PostgreDebugSessionResult> task;
 
     private Thread workerThread = null;
 
-    private int listen() throws DebugException {
+    private int listen() throws DBGException {
 
         acquireWriteLock();
 
@@ -90,19 +86,19 @@ public class DebugSessionPostgres implements DebugSession<SessionInfoPostgres, D
 
             } else {
 
-                throw new DebugException("Unable to create debug instance");
+                throw new DBGException("Unable to create debug instance");
 
             }
 
         } catch (SQLException e) {
-            throw new DebugException(e);
+            throw new DBGException(e);
         } finally {
             lock.writeLock().unlock();
         }
 
     }
 
-    public void attach(boolean breakpoint) throws DebugException {
+    public void attach(boolean breakpoint) throws DBGException {
 
         acquireWriteLock();
 
@@ -124,18 +120,18 @@ public class DebugSessionPostgres implements DebugSession<SessionInfoPostgres, D
 
     }
 
-    public DebugSessionPostgres(SessionInfoPostgres sessionManagerInfo, SessionInfoPostgres sessionDebugInfo,
-            Connection connection) throws DebugException {
+    public PostgreDebugSession(PostgreDebugSessionInfo sessionManagerInfo, PostgreDebugSessionInfo sessionDebugInfo,
+                               Connection connection) throws DBGException {
         this.sessionManagerInfo = sessionManagerInfo;
         this.sessionDebugInfo = sessionDebugInfo;
         this.connection = connection;
         this.title = sessionManagerInfo.application;
-        this.worker = new DebugSessionWorker(this.connection);
+        this.worker = new PostgreDebugSessionWorker(this.connection);
         sessionId = listen();
     }
 
     @Override
-    public SessionInfoPostgres getSessionInfo() {
+    public PostgreDebugSessionInfo getSessionInfo() {
 
         return sessionDebugInfo;
     }
@@ -146,20 +142,20 @@ public class DebugSessionPostgres implements DebugSession<SessionInfoPostgres, D
     }
 
     @Override
-    public List<PostgresBreakpoint> getBreakpoints() {
+    public List<PostgreDebugBreakpoint> getBreakpoints() {
 
         return breakpoints;
     }
 
     @Override
-    public Breakpoint setBreakpoint(DebugObjectPostgres obj, BreakpointProperties properties) throws DebugException {
+    public DBGBreakpoint setBreakpoint(PostgreDebugObject obj, DBGBreakpointProperties properties) throws DBGException {
 
         acquireReadLock();
 
-        PostgresBreakpoint bp = null;
+        PostgreDebugBreakpoint bp = null;
 
         try {
-            bp = new PostgresBreakpoint(this, obj, (BreakpointPropertiesPostgres) properties);
+            bp = new PostgreDebugBreakpoint(this, obj, (PostgreDebugBreakpointProperties) properties);
             breakpoints.add(bp);
 
         } finally {
@@ -170,7 +166,7 @@ public class DebugSessionPostgres implements DebugSession<SessionInfoPostgres, D
     }
 
     @Override
-    public void removeBreakpoint(Breakpoint bp) throws DebugException {
+    public void removeBreakpoint(DBGBreakpoint bp) throws DBGException {
 
         acquireReadLock();
 
@@ -187,24 +183,24 @@ public class DebugSessionPostgres implements DebugSession<SessionInfoPostgres, D
     }
 
     @Override
-    public void execContinue() throws DebugException {
+    public void execContinue() throws DBGException {
         execStep(SQL_CONTINUE, " continue for ");
 
     }
 
     @Override
-    public void execStepInto() throws DebugException {
+    public void execStepInto() throws DBGException {
         execStep(SQL_STEP_INTO, " step into for ");
 
     }
 
     @Override
-    public void execStepOver() throws DebugException {
+    public void execStepOver() throws DBGException {
         execStep(SQL_STEP_OVER, " step over for ");
 
     }
 
-    public void execStep(String commandSQL, String name) throws DebugException {
+    public void execStep(String commandSQL, String name) throws DBGException {
 
         acquireWriteLock();
 
@@ -220,7 +216,7 @@ public class DebugSessionPostgres implements DebugSession<SessionInfoPostgres, D
     }
 
     @Override
-    public void abort() throws DebugException {
+    public void abort() throws DBGException {
 
         acquireReadLock();
 
@@ -231,7 +227,7 @@ public class DebugSessionPostgres implements DebugSession<SessionInfoPostgres, D
             task = null;
 
         } catch (SQLException e) {
-            throw new DebugException(e);
+            throw new DBGException(e);
         } finally {
             lock.readLock().unlock();
         }
@@ -248,7 +244,7 @@ public class DebugSessionPostgres implements DebugSession<SessionInfoPostgres, D
                 if (!isDone()) {
                     task.cancel(true);
                 }
-            } catch (DebugException e1) {
+            } catch (DBGException e1) {
                 e1.printStackTrace();
             }
 
@@ -265,11 +261,11 @@ public class DebugSessionPostgres implements DebugSession<SessionInfoPostgres, D
     }
 
     @Override
-    public List<Variable<?>> getVarables() throws DebugException {
+    public List<DBGVariable<?>> getVarables() throws DBGException {
 
         acquireReadLock();
 
-        List<Variable<?>> vars = new ArrayList<>();
+        List<DBGVariable<?>> vars = new ArrayList<>();
 
         try (Statement stmt = connection.createStatement()) {
 
@@ -277,7 +273,7 @@ public class DebugSessionPostgres implements DebugSession<SessionInfoPostgres, D
 
             while (rs.next()) {
 
-                PostgresVariable var = new PostgresVariable(rs.getString("name"), rs.getString("varclass"),
+                PostgreDebugVariable var = new PostgreDebugVariable(rs.getString("name"), rs.getString("varclass"),
                         rs.getInt("linenumber"), rs.getBoolean("isunique"), rs.getBoolean("isconst"),
                         rs.getBoolean("isnotnull"), rs.getInt("dtype"), rs.getString("value"));
 
@@ -285,7 +281,7 @@ public class DebugSessionPostgres implements DebugSession<SessionInfoPostgres, D
             }
 
         } catch (SQLException e) {
-            throw new DebugException(e);
+            throw new DBGException(e);
         } finally {
             lock.readLock().unlock();
         }
@@ -295,29 +291,29 @@ public class DebugSessionPostgres implements DebugSession<SessionInfoPostgres, D
     }
 
     @Override
-    public void setVariableVal(Variable<?> variable, Object value) throws DebugException {
+    public void setVariableVal(DBGVariable<?> variable, Object value) throws DBGException {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public List<StackFrame> getStack() throws DebugException {
+    public List<DBGStackFrame> getStack() throws DBGException {
         acquireReadLock();
 
-        List<StackFrame> stack = new ArrayList<StackFrame>(1);
+        List<DBGStackFrame> stack = new ArrayList<DBGStackFrame>(1);
 
         try (Statement stmt = connection.createStatement()) {
 
             ResultSet rs = stmt.executeQuery(SQL_GET_STACK.replaceAll("\\?sessionid", String.valueOf(sessionId)));
 
             while (rs.next()) {
-                PostgresStackFrame frame = new PostgresStackFrame(rs.getInt("level"), rs.getString("targetname"),
+                PostgreDebugStackFrame frame = new PostgreDebugStackFrame(rs.getInt("level"), rs.getString("targetname"),
                         rs.getInt("func"), rs.getInt("linenumber"), rs.getString("args"));
                 stack.add(frame);
             }
 
         } catch (SQLException e) {
-            throw new DebugException(e);
+            throw new DBGException(e);
         } finally {
             lock.readLock().unlock();
         }
@@ -330,7 +326,7 @@ public class DebugSessionPostgres implements DebugSession<SessionInfoPostgres, D
 
     @Override
     public String toString() {
-        return "DebugSessionPostgres " + (isWaiting() ? "WAITING" : "READY") + " [connection=" + connection + ", title="
+        return "PostgreDebugSession " + (isWaiting() ? "WAITING" : "READY") + " [connection=" + connection + ", title="
                 + title + ", sessionId=" + sessionId + ", breakpoints=" + breakpoints + "ManagerSession=("
                 + sessionManagerInfo.toString() + ") Session=(" + sessionDebugInfo.toString() + ") " + "]";
     }
@@ -344,19 +340,19 @@ public class DebugSessionPostgres implements DebugSession<SessionInfoPostgres, D
         return (task == null ? false : !task.isDone()) && (workerThread == null ? false : workerThread.isAlive());
     }
 
-    public boolean isDone() throws DebugException {
+    public boolean isDone() throws DBGException {
 
         if (task == null)
             return true;
 
         if (task.isDone()) {
 
-            DebugSessionResult res;
+            PostgreDebugSessionResult res;
 
             try {
                 res = task.get();
             } catch (InterruptedException | ExecutionException e1) {
-                throw new DebugException(e1);
+                throw new DBGException(e1);
             }
 
             if (res.getException() != null) {
@@ -371,7 +367,7 @@ public class DebugSessionPostgres implements DebugSession<SessionInfoPostgres, D
 
     }
 
-    private void runAsync(String commandSQL, String name) throws DebugException {
+    private void runAsync(String commandSQL, String name) throws DBGException {
 
         try (Statement stmt = connection.createStatement()) {
 
@@ -379,7 +375,7 @@ public class DebugSessionPostgres implements DebugSession<SessionInfoPostgres, D
 
             worker.execSQL(commandSQL);
 
-            task = new FutureTask<DebugSessionResult>(worker);
+            task = new FutureTask<PostgreDebugSessionResult>(worker);
 
             workerThread = new Thread(task);
 
@@ -388,12 +384,12 @@ public class DebugSessionPostgres implements DebugSession<SessionInfoPostgres, D
             workerThread.start();
 
         } catch (SQLException e) {
-            throw new DebugException(e);
+            throw new DBGException(e);
 
         }
     }
 
-    private void acquireReadLock() throws DebugException {
+    private void acquireReadLock() throws DBGException {
 
         try {
 
@@ -401,40 +397,40 @@ public class DebugSessionPostgres implements DebugSession<SessionInfoPostgres, D
 
         } catch (InterruptedException e1) {
 
-            throw new DebugException(e1.getMessage());
+            throw new DBGException(e1.getMessage());
 
         }
 
         if (isWaiting()) {
             lock.readLock().unlock();
-            throw new DebugException("Debug session in waiting state");
+            throw new DBGException("Debug session in waiting state");
         }
 
         if (!isDone()) {
             lock.readLock().unlock();
-            throw new DebugException("Debug session in incorrect state");
+            throw new DBGException("Debug session in incorrect state");
         }
 
     }
 
-    private void acquireWriteLock() throws DebugException {
+    private void acquireWriteLock() throws DBGException {
 
         try {
 
             lock.writeLock().lockInterruptibly();
 
         } catch (InterruptedException e1) {
-            throw new DebugException(e1.getMessage());
+            throw new DBGException(e1.getMessage());
         }
 
         if (isWaiting()) {
             lock.writeLock().unlock();
-            throw new DebugException("Debug session in waiting state");
+            throw new DBGException("Debug session in waiting state");
         }
 
         if (!isDone()) {
             lock.writeLock().unlock();
-            throw new DebugException("Debug session in incorrect state");
+            throw new DBGException("Debug session in incorrect state");
         }
 
     }

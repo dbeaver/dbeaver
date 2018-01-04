@@ -26,12 +26,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.jkiss.dbeaver.ext.postgresql.pldbg.DebugException;
-import org.jkiss.dbeaver.ext.postgresql.pldbg.DebugSession;
-import org.jkiss.dbeaver.postgresql.pldbg.control.DebugManager;
+import org.jkiss.dbeaver.debug.DBGException;
+import org.jkiss.dbeaver.debug.DBGSession;
+import org.jkiss.dbeaver.debug.DBGSessionManager;
 
 @SuppressWarnings("nls")
-public class DebugManagerPostgres implements DebugManager<Integer, Integer> {
+public class PostgreDebugSessionManager implements DBGSessionManager<Integer, Integer> {
 
     private final Connection connection;
 
@@ -45,48 +45,48 @@ public class DebugManagerPostgres implements DebugManager<Integer, Integer> {
 
     private static final String SQL_CURRENT_SESSION = "select pid,usename,application_name,state,query from pg_stat_activity where pid = pg_backend_pid()";
 
-    private final Map<Integer, DebugSessionPostgres> sessions = new HashMap<Integer, DebugSessionPostgres>(1);
+    private final Map<Integer, PostgreDebugSession> sessions = new HashMap<Integer, PostgreDebugSession>(1);
 
     @Override
-    public SessionInfoPostgres getSessionInfo(Connection connectionTarget) throws DebugException {
+    public PostgreDebugSessionInfo getSessionInfo(Connection connectionTarget) throws DBGException {
         try (Statement stmt = connectionTarget.createStatement()) {
 
             ResultSet rs = stmt.executeQuery(SQL_CURRENT_SESSION);
 
             if (rs.next()) {
 
-                SessionInfoPostgres res = new SessionInfoPostgres(rs.getInt("pid"), rs.getString("usename"),
+                PostgreDebugSessionInfo res = new PostgreDebugSessionInfo(rs.getInt("pid"), rs.getString("usename"),
                         rs.getString("application_name"), rs.getString("state"), rs.getString("query"));
                 return res;
             }
 
-            throw new DebugException("Error getting session");
+            throw new DBGException("Error getting session");
 
         } catch (SQLException e) {
-            throw new DebugException(e);
+            throw new DBGException(e);
         }
 
     }
 
     @Override
-    public List<SessionInfoPostgres> getSessions() throws DebugException {
+    public List<PostgreDebugSessionInfo> getSessions() throws DBGException {
 
         try (Statement stmt = connection.createStatement()) {
 
             ResultSet rs = stmt.executeQuery(SQL_SESSION);
 
-            List<SessionInfoPostgres> res = new ArrayList<SessionInfoPostgres>();
+            List<PostgreDebugSessionInfo> res = new ArrayList<PostgreDebugSessionInfo>();
 
             while (rs.next()) {
 
-                res.add(new SessionInfoPostgres(rs.getInt("pid"), rs.getString("usename"),
+                res.add(new PostgreDebugSessionInfo(rs.getInt("pid"), rs.getString("usename"),
                         rs.getString("application_name"), rs.getString("state"), rs.getString("query")));
             }
 
             return res;
 
         } catch (SQLException e) {
-            throw new DebugException(e);
+            throw new DBGException(e);
         }
 
     }
@@ -94,23 +94,23 @@ public class DebugManagerPostgres implements DebugManager<Integer, Integer> {
     /**
      * @param connection
      */
-    public DebugManagerPostgres(Connection connection) {
+    public PostgreDebugSessionManager(Connection connection) {
         super();
         this.connection = connection;
     }
 
     @Override
-    public List<DebugObjectPostgres> getObjects(String ownerCtx, String nameCtx) throws DebugException {
+    public List<PostgreDebugObject> getObjects(String ownerCtx, String nameCtx) throws DBGException {
         try (Statement stmt = connection.createStatement()) {
 
             ResultSet rs = stmt.executeQuery(
                     SQL_OBJECT.replaceAll("\\?nameCtx", nameCtx).replaceAll("\\?userCtx", ownerCtx).toLowerCase());
 
-            List<DebugObjectPostgres> res = new ArrayList<DebugObjectPostgres>();
+            List<PostgreDebugObject> res = new ArrayList<PostgreDebugObject>();
 
             while (rs.next()) {
 
-                res.add(new DebugObjectPostgres(rs.getInt("oid"), rs.getString("proname"), rs.getString("owner"),
+                res.add(new PostgreDebugObject(rs.getInt("oid"), rs.getString("proname"), rs.getString("owner"),
                         rs.getString("nspname"), rs.getString("lang")));
 
             }
@@ -118,22 +118,22 @@ public class DebugManagerPostgres implements DebugManager<Integer, Integer> {
             return res;
 
         } catch (SQLException e) {
-            throw new DebugException(e);
+            throw new DBGException(e);
         }
     }
 
     @Override
-    public DebugSession<SessionInfoPostgres, DebugObjectPostgres, Integer> getDebugSession(Integer id)
-            throws DebugException {
+    public DBGSession<PostgreDebugSessionInfo, PostgreDebugObject, Integer> getDebugSession(Integer id)
+            throws DBGException {
         return sessions.get(id);
     }
 
     @Override
-    public DebugSessionPostgres createDebugSession(Connection connectionTarget) throws DebugException {
+    public PostgreDebugSession createDebugSession(Connection connectionTarget) throws DBGException {
 
-        SessionInfoPostgres targetInfo = getSessionInfo(connectionTarget);
+        PostgreDebugSessionInfo targetInfo = getSessionInfo(connectionTarget);
 
-        DebugSessionPostgres debugSession = new DebugSessionPostgres(getSessionInfo(this.connection), targetInfo,
+        PostgreDebugSession debugSession = new PostgreDebugSession(getSessionInfo(this.connection), targetInfo,
                 connectionTarget);
 
         sessions.put(targetInfo.getPid(), debugSession);
@@ -150,7 +150,7 @@ public class DebugManagerPostgres implements DebugManager<Integer, Integer> {
     @Override
     public void terminateSession(Integer id) {
 
-        DebugSessionPostgres session = sessions.get(id);
+        PostgreDebugSession session = sessions.get(id);
 
         if (session != null) {
 
@@ -163,8 +163,8 @@ public class DebugManagerPostgres implements DebugManager<Integer, Integer> {
     }
 
     @Override
-    public List<DebugSession<?, ?, Integer>> getDebugSessions() throws DebugException {
-        return new ArrayList<DebugSession<?, ?, Integer>>(sessions.values());
+    public List<DBGSession<?, ?, Integer>> getDebugSessions() throws DBGException {
+        return new ArrayList<DBGSession<?, ?, Integer>>(sessions.values());
     }
 
 }

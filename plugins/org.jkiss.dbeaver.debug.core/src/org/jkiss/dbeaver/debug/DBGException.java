@@ -1,5 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
  * Copyright (C) 2017 Andrew Khitrin (ahitrin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,8 +16,21 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ext.postgresql.pldbg;
+package org.jkiss.dbeaver.debug;
 
-public enum VariableType {
-    NUMBER, TEXT, DATE, BLOB
+@SuppressWarnings("serial")
+public class DBGException extends Exception {
+
+    public DBGException(String message, Throwable e) {
+        super(message, e);
+    }
+
+    public DBGException(String message) {
+        super(message);
+    }
+
+    public DBGException(Throwable e) {
+        super(e);
+    }
+
 }

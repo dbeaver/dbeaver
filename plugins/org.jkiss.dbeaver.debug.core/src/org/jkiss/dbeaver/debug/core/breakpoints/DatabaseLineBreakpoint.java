@@ -15,19 +15,16 @@ import org.jkiss.dbeaver.debug.core.DebugCore;
 public class DatabaseLineBreakpoint extends DatabaseBreakpoint implements IDatabaseLineBreakpoint {
 
     public DatabaseLineBreakpoint(IResource resource, final int lineNumber, final int charStart, final int charEnd,
-            final boolean add) throws DebugException
-    {
+                                  final boolean add) throws DebugException {
         this(resource, lineNumber, charStart, charEnd, add, new HashMap<String, Object>(),
-                DebugCore.BREAKPOINT_DATABASE_LINE);
+            DebugCore.BREAKPOINT_DATABASE_LINE);
     }
 
     protected DatabaseLineBreakpoint(final IResource resource, final int lineNumber, final int charStart,
-            final int charEnd, final boolean add, final Map<String, Object> attributes, final String markerType) throws DebugException
-    {
+                                     final int charEnd, final boolean add, final Map<String, Object> attributes, final String markerType) throws DebugException {
         IWorkspaceRunnable wr = new IWorkspaceRunnable() {
             @Override
-            public void run(IProgressMonitor monitor) throws CoreException
-            {
+            public void run(IProgressMonitor monitor) throws CoreException {
 
                 // create the marker
                 setMarker(resource.createMarker(markerType));
@@ -44,8 +41,7 @@ public class DatabaseLineBreakpoint extends DatabaseBreakpoint implements IDatab
     }
 
     @Override
-    public int getLineNumber() throws CoreException
-    {
+    public int getLineNumber() throws CoreException {
         IMarker m = getMarker();
         if (m != null) {
             return m.getAttribute(IMarker.LINE_NUMBER, -1);
@@ -54,8 +50,7 @@ public class DatabaseLineBreakpoint extends DatabaseBreakpoint implements IDatab
     }
 
     @Override
-    public int getCharStart() throws CoreException
-    {
+    public int getCharStart() throws CoreException {
         IMarker m = getMarker();
         if (m != null) {
             return m.getAttribute(IMarker.CHAR_START, -1);
@@ -64,8 +59,7 @@ public class DatabaseLineBreakpoint extends DatabaseBreakpoint implements IDatab
     }
 
     @Override
-    public int getCharEnd() throws CoreException
-    {
+    public int getCharEnd() throws CoreException {
         IMarker m = getMarker();
         if (m != null) {
             return m.getAttribute(IMarker.CHAR_END, -1);
@@ -74,8 +68,7 @@ public class DatabaseLineBreakpoint extends DatabaseBreakpoint implements IDatab
     }
 
     public void addLineBreakpointAttributes(Map<String, Object> attributes, String modelIdentifier, boolean enabled,
-            int lineNumber, int charStart, int charEnd)
-    {
+                                            int lineNumber, int charStart, int charEnd) {
         attributes.put(IBreakpoint.ID, modelIdentifier);
         attributes.put(IBreakpoint.ENABLED, Boolean.valueOf(enabled));
         attributes.put(IMarker.LINE_NUMBER, new Integer(lineNumber));

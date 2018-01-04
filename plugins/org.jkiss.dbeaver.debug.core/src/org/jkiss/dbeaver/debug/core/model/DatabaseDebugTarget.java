@@ -45,58 +45,50 @@ public abstract class DatabaseDebugTarget<C extends DBGController> extends Datab
     private boolean suspended = false;
     private boolean terminated = false;
 
-    public DatabaseDebugTarget(String modelIdentifier, ILaunch launch, IProcess process, C controller)
-    {
+    public DatabaseDebugTarget(String modelIdentifier, ILaunch launch, IProcess process, C controller) {
         super(null);
         this.modelIdentifier = modelIdentifier;
         this.launch = launch;
         this.process = process;
         this.controller = controller;
         this.thread = newThread(controller);
-        this.threads = new IThread[] {thread};
+        this.threads = new IThread[]{thread};
     }
-    
+
     protected abstract DatabaseThread newThread(C controller);
 
     @Override
-    public IDebugTarget getDebugTarget()
-    {
+    public IDebugTarget getDebugTarget() {
         return this;
     }
-    
+
     @Override
-    public String getModelIdentifier()
-    {
+    public String getModelIdentifier() {
         return modelIdentifier;
     }
-    
+
     @Override
-    public ILaunch getLaunch()
-    {
+    public ILaunch getLaunch() {
         return launch;
     }
 
     @Override
-    public IProcess getProcess()
-    {
+    public IProcess getProcess() {
         return process;
     }
 
     @Override
-    public IThread[] getThreads() throws DebugException
-    {
+    public IThread[] getThreads() throws DebugException {
         return threads;
     }
 
     @Override
-    public boolean hasThreads() throws DebugException
-    {
+    public boolean hasThreads() throws DebugException {
         return !terminated && threads.length > 0;
     }
 
     @Override
-    public String getName() throws DebugException
-    {
+    public String getName() throws DebugException {
         if (name == null) {
             try {
                 ILaunchConfiguration configuration = getLaunch().getLaunchConfiguration();
@@ -104,21 +96,20 @@ public abstract class DatabaseDebugTarget<C extends DBGController> extends Datab
                 if (name == null) {
                     name = getDefaultName();
                 }
-            }
-            catch (CoreException e) {
+            } catch (CoreException e) {
                 name = getDefaultName();
             }
-            
+
         }
         return name;
     }
-    
+
     protected abstract String getConfiguredName(ILaunchConfiguration configuration) throws CoreException;
+
     protected abstract String getDefaultName();
 
     @Override
-    public void handleDebugEvents(DebugEvent[] events)
-    {
+    public void handleDebugEvents(DebugEvent[] events) {
         for (int i = 0; i < events.length; i++) {
             DebugEvent event = events[i];
             if (event.getKind() == DebugEvent.TERMINATE && event.getSource().equals(process)) {
@@ -128,20 +119,17 @@ public abstract class DatabaseDebugTarget<C extends DBGController> extends Datab
     }
 
     @Override
-    public boolean canTerminate()
-    {
+    public boolean canTerminate() {
         return !terminated;
     }
 
     @Override
-    public boolean isTerminated()
-    {
+    public boolean isTerminated() {
         return terminated;
     }
 
     @Override
-    public void terminate() throws DebugException
-    {
+    public void terminate() throws DebugException {
         terminated();
     }
 
@@ -154,26 +142,22 @@ public abstract class DatabaseDebugTarget<C extends DBGController> extends Datab
     }
 
     @Override
-    public boolean canResume()
-    {
-        return thread!= null && !terminated && suspended;
+    public boolean canResume() {
+        return thread != null && !terminated && suspended;
     }
 
     @Override
-    public boolean canSuspend()
-    {
-        return thread!= null && !terminated && !suspended;
+    public boolean canSuspend() {
+        return thread != null && !terminated && !suspended;
     }
 
     @Override
-    public boolean isSuspended()
-    {
+    public boolean isSuspended() {
         return suspended;
     }
 
     @Override
-    public void resume() throws DebugException
-    {
+    public void resume() throws DebugException {
         suspended = false;
         controller.resume();
         if (thread.isSuspended()) {
@@ -183,8 +167,7 @@ public abstract class DatabaseDebugTarget<C extends DBGController> extends Datab
     }
 
     @Override
-    public void suspend() throws DebugException
-    {
+    public void suspend() throws DebugException {
         controller.suspend();
     }
 
@@ -195,63 +178,53 @@ public abstract class DatabaseDebugTarget<C extends DBGController> extends Datab
     }
 
     @Override
-    public boolean supportsBreakpoint(IBreakpoint breakpoint)
-    {
+    public boolean supportsBreakpoint(IBreakpoint breakpoint) {
         return false;
     }
 
     @Override
-    public void breakpointAdded(IBreakpoint breakpoint)
-    {
+    public void breakpointAdded(IBreakpoint breakpoint) {
         //FIXME:AF:delegare to controller
     }
 
     @Override
-    public void breakpointRemoved(IBreakpoint breakpoint, IMarkerDelta delta)
-    {
+    public void breakpointRemoved(IBreakpoint breakpoint, IMarkerDelta delta) {
         //FIXME:AF:delegare to controller
     }
 
     @Override
-    public void breakpointChanged(IBreakpoint breakpoint, IMarkerDelta delta)
-    {
+    public void breakpointChanged(IBreakpoint breakpoint, IMarkerDelta delta) {
         //FIXME:AF:delegare to controller
     }
 
     @Override
-    public void breakpointManagerEnablementChanged(boolean enabled)
-    {
+    public void breakpointManagerEnablementChanged(boolean enabled) {
         // TODO Auto-generated method stub
-        
+
     }
 
     @Override
-    public boolean canDisconnect()
-    {
+    public boolean canDisconnect() {
         return false;
     }
 
     @Override
-    public void disconnect() throws DebugException
-    {
+    public void disconnect() throws DebugException {
         //FIXME:AF:delegare to controller
     }
 
     @Override
-    public boolean isDisconnected()
-    {
+    public boolean isDisconnected() {
         return false;
     }
 
     @Override
-    public boolean supportsStorageRetrieval()
-    {
+    public boolean supportsStorageRetrieval() {
         return false;
     }
 
     @Override
-    public IMemoryBlock getMemoryBlock(long startAddress, long length) throws DebugException
-    {
+    public IMemoryBlock getMemoryBlock(long startAddress, long length) throws DebugException {
         return null;
     }
 

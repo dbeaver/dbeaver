@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
- * Copyright (C) 2017 Alexander Fedorov (alexander.fedorov@jkiss.org)
+ * Copyright (C) 2017 Andrew Khitrin (ahitrin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,23 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.debug.core.model;
 
-import org.eclipse.debug.core.model.DebugElement;
+package org.jkiss.dbeaver.debug;
 
-public class DatabaseDebugElement extends DebugElement {
-
-    public DatabaseDebugElement(IDatabaseDebugTarget target) {
-        super(target);
-    }
-
-    public IDatabaseDebugTarget geDatabaseDebugTarget() {
-        return (IDatabaseDebugTarget) getDebugTarget();
-    }
-
-    @Override
-    public String getModelIdentifier() {
-        return getDebugTarget().getModelIdentifier();
-    }
+public interface DBGBreakpointProperties {
 
 }

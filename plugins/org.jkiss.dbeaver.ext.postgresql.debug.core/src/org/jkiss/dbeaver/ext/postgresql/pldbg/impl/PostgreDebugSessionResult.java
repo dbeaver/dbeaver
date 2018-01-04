@@ -15,21 +15,26 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ext.postgresql.pldbg;
+package org.jkiss.dbeaver.ext.postgresql.pldbg.impl;
 
-@SuppressWarnings("serial")
-public class DebugException extends Exception {
+public class PostgreDebugSessionResult {
 
-    public DebugException(String message, Throwable e) {
-        super(message, e);
+    private final boolean result;
+
+    private final Exception exception;
+
+    public PostgreDebugSessionResult(boolean result, Exception exception) {
+        super();
+        this.result = result;
+        this.exception = exception;
     }
 
-    public DebugException(String message) {
-        super(message);
+    public boolean isResult() {
+        return result;
     }
 
-    public DebugException(Throwable e) {
-        super(e);
+    public Exception getException() {
+        return exception;
     }
 
 }

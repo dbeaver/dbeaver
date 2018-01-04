@@ -36,8 +36,7 @@ public abstract class DatabaseLaunchDelegate<C extends DBGController> extends La
 
     @Override
     public void launch(ILaunchConfiguration configuration, String mode, ILaunch launch, IProgressMonitor monitor)
-            throws CoreException
-    {
+        throws CoreException {
         String datasourceId = DebugCore.extractDatasource(configuration);
         String databaseName = DebugCore.extractDatabase(configuration);
         Map<String, Object> attributes = extractAttributes(configuration);
@@ -53,8 +52,7 @@ public abstract class DatabaseLaunchDelegate<C extends DBGController> extends La
         }
     }
 
-    protected Map<String, Object> extractAttributes(ILaunchConfiguration configuration)
-    {
+    protected Map<String, Object> extractAttributes(ILaunchConfiguration configuration) {
         Map<String, Object> attributes = new HashMap<>();
         return attributes;
     }

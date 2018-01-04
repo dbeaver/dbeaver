@@ -23,18 +23,16 @@ import org.jkiss.dbeaver.debug.ProcedureDebugController;
 import org.jkiss.dbeaver.debug.internal.core.DebugCoreMessages;
 
 public class ProcedureThread extends DatabaseThread {
-    
+
     private final ProcedureDebugController controller;
 
-    public ProcedureThread(IDatabaseDebugTarget target, ProcedureDebugController controller)
-    {
+    public ProcedureThread(IDatabaseDebugTarget target, ProcedureDebugController controller) {
         super(target);
         this.controller = controller;
     }
 
     @Override
-    public String getName() throws DebugException
-    {
+    public String getName() throws DebugException {
         String name = NLS.bind(DebugCoreMessages.ProcedureThread_name, controller.getSessionId());
         return name;
     }

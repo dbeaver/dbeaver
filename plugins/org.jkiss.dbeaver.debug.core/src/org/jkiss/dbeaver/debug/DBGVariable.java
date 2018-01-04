@@ -1,5 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
  * Copyright (C) 2017 Andrew Khitrin (ahitrin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,10 +16,14 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ext.postgresql.pldbg;
+package org.jkiss.dbeaver.debug;
 
-public interface SessionInfo<SESSIONID> {
+public interface DBGVariable<T> {
 
-    SESSIONID getID();
+    T getVal();
+
+    String getName();
+
+    DBGVariableType getType();
 
 }
