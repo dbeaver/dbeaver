@@ -92,8 +92,10 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
 
                             List<DBNNode> tableNodes = BrowseObjectDialog.selectObjects(getSite().getShell(), "Select object", schemasNode, null,
                                 new Class[]{Object.class}, new Class[]{PostgreTableBase.class});
-                            for (DBNNode node : tableNodes) {
+                            if (tableNodes != null) {
+                                for (DBNNode node : tableNodes) {
 
+                                }
                             }
                         } else {
                             List<PostgreRole> allRoles = new ArrayList<>(getDatabaseObject().getDatabase().getAuthIds(monitor));
