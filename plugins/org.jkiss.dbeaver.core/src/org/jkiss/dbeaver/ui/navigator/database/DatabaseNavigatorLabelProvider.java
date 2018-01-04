@@ -38,16 +38,16 @@ import org.jkiss.utils.CommonUtils;
 /**
  * DatabaseNavigatorLabelProvider
 */
-class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implements IFontProvider, IColorProvider
+public class DatabaseNavigatorLabelProvider extends ColumnLabelProvider implements IFontProvider, IColorProvider
 {
-    private Font normalFont;
-    private Font boldFont;
-    private Font italicFont;
+    protected Font normalFont;
+    protected Font boldFont;
+    protected Font italicFont;
     //private Font boldItalicFont;
-    private Color lockedForeground;
-    private Color transientForeground;
+    protected Color lockedForeground;
+    protected Color transientForeground;
 
-    DatabaseNavigatorLabelProvider(Viewer viewer)
+    public DatabaseNavigatorLabelProvider(Viewer viewer)
     {
         //this.view = view;
         this.normalFont = viewer.getControl().getFont();

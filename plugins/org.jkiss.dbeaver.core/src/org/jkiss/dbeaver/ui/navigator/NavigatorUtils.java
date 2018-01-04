@@ -111,12 +111,12 @@ public class NavigatorUtils {
         }
     }
 
-    public static DBSObject getSelectedObject(IStructuredSelection selection)
+    public static DBSObject getSelectedObject(ISelection selection)
     {
-        if (selection.isEmpty()) {
+        if (selection.isEmpty() || !(selection instanceof IStructuredSelection)) {
             return null;
         }
-        return DBUtils.getFromObject(selection.getFirstElement());
+        return DBUtils.getFromObject(((IStructuredSelection)selection).getFirstElement());
     }
 
     public static List<DBSObject> getSelectedObjects(ISelection selection)
