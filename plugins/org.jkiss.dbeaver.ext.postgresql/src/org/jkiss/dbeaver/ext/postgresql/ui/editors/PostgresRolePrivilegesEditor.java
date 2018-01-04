@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
@@ -191,6 +192,9 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
         treeViewer.addFilter(new ViewerFilter() {
             @Override
             public boolean select(Viewer viewer, Object parentElement, Object element) {
+                if (element instanceof DBNNode && !(element instanceof DBNDatabaseNode)) {
+                    return false;
+                }
                 if (element instanceof DBNDatabaseFolder) {
                     try {
                         Class<?> childType = Class.forName(((DBNDatabaseFolder) element).getMeta().getType());
@@ -341,18 +345,6 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
         actionCheckNone.setEnabled(data != null);
     }
 
-    public DBIcon getObjectIcon() {
-        return isRoleEditor() ? UIIcon.ACTION_OBJECT : UIIcon.ACTION_USER;
-    }
-
-    public DBIcon getObjectAddIcon() {
-        return isRoleEditor() ? UIIcon.ACTION_OBJECT_ADD : UIIcon.ACTION_USER_ADD;
-    }
-
-    public DBIcon getObjectRemoveIcon() {
-        return isRoleEditor() ? UIIcon.ACTION_OBJECT_DELETE : UIIcon.ACTION_USER_DELETE;
-    }
-
     private boolean isRoleEditor() {
         return getDatabaseObject() instanceof PostgreRole;
     }
@@ -375,23 +367,6 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
             return;
         }
         isLoaded = true;
-
-        {
-            // Load navigator tree
-            DBRProgressMonitor monitor = new VoidProgressMonitor();
-            DBNDatabaseNode dbNode = NavigatorUtils.getNodeByObject(getDatabaseObject().getDatabase());
-            DBNDatabaseNode rootNode;
-            if (isRoleEditor()) {
-                rootNode = NavigatorUtils.getChildFolder(monitor, dbNode, PostgreSchema.class);
-            } else {
-                rootNode = NavigatorUtils.getChildFolder(monitor, dbNode, PostgreRole.class);
-            }
-            if (rootNode == null) {
-                DBeaverUI.getInstance().showError("Object tree", "Can't detect root node for objects tree");
-            } else {
-                roleOrObjectTable.reloadTree(rootNode);
-            }
-        }
 
         DBeaverUI.asyncExec(() -> {
             UIUtils.packColumns(permissionTable, false);
@@ -439,6 +414,20 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                     super.completeLoading(privs);
                     for (PostgrePermission perm : privs) {
                         permissionMap.put(perm.getName(), perm);
+                    }
+                    // Load navigator tree
+                    DBRProgressMonitor monitor = new VoidProgressMonitor();
+                    DBNDatabaseNode dbNode = NavigatorUtils.getNodeByObject(getDatabaseObject().getDatabase());
+                    DBNDatabaseNode rootNode;
+                    if (isRoleEditor()) {
+                        rootNode = NavigatorUtils.getChildFolder(monitor, dbNode, PostgreSchema.class);
+                    } else {
+                        rootNode = NavigatorUtils.getChildFolder(monitor, dbNode, PostgreRole.class);
+                    }
+                    if (rootNode == null) {
+                        DBeaverUI.getInstance().showError("Object tree", "Can't detect root node for objects tree");
+                    } else {
+                        roleOrObjectTable.reloadTree(rootNode);
                     }
                 }
             };
