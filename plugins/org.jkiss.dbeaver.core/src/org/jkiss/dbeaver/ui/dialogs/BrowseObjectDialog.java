@@ -91,7 +91,8 @@ public class BrowseObjectDialog extends Dialog {
         gd.heightHint = 500;
         navigatorTree.setLayoutData(gd);
 
-        navigatorTree.getViewer().addFilter(new ViewerFilter() {
+        final TreeViewer treeViewer = navigatorTree.getViewer();
+        treeViewer.addFilter(new ViewerFilter() {
             @Override
             public boolean select(Viewer viewer, Object parentElement, Object element)
             {
@@ -115,12 +116,12 @@ public class BrowseObjectDialog extends Dialog {
             }
         });
         if (selectedNode != null) {
-            navigatorTree.getViewer().setSelection(new StructuredSelection(selectedNode));
+            treeViewer.setSelection(new StructuredSelection(selectedNode));
             selectedObjects.add(selectedNode);
         }
-        navigatorTree.getViewer().addSelectionChangedListener(event -> {
+        treeViewer.addSelectionChangedListener(event -> {
             selectedObjects.clear();
-            IStructuredSelection selection = (IStructuredSelection) navigatorTree.getViewer().getSelection();
+            IStructuredSelection selection = (IStructuredSelection) treeViewer.getSelection();
             for (Iterator iter = selection.iterator(); iter.hasNext(); ) {
                 DBNNode node = (DBNNode) iter.next();
                 if (node instanceof DBSWrapper) {
@@ -136,7 +137,8 @@ public class BrowseObjectDialog extends Dialog {
             }
             getButton(IDialogConstants.OK_ID).setEnabled(!selectedObjects.isEmpty());
         });
-        navigatorTree.getViewer().getTree().setFocus();
+        treeViewer.addDoubleClickListener(event -> okPressed());
+        treeViewer.getTree().setFocus();
 
         return group;
     }
