@@ -27,179 +27,144 @@ import java.util.List;
 import java.util.Map;
 
 import org.jkiss.dbeaver.ext.postgresql.pldbg.DebugException;
-import org.jkiss.dbeaver.ext.postgresql.pldbg.DebugObject;
 import org.jkiss.dbeaver.ext.postgresql.pldbg.DebugSession;
-import org.jkiss.dbeaver.ext.postgresql.pldbg.SessionInfo;
 import org.jkiss.dbeaver.postgresql.pldbg.control.DebugManager;
 
-/**
- * @author Andrey.Hitrin
- *
- */
 @SuppressWarnings("nls")
-public class DebugManagerPostgres implements DebugManager<Integer,Integer> {
-	
-	private final Connection connection;
-	
-	private static final String SQL_SESSION = "select pid,usename,application_name,state,query from pg_stat_activity";
-	
-	private static final String SQL_OBJECT = "select  p.oid,p.proname,u.usename as owner,n.nspname, l.lanname as lang "+  
-											 " from "+    
-											 "	pg_catalog.pg_namespace n "+ 
-											 " join pg_catalog.pg_proc p on p.pronamespace = n.oid "+ 
-											 "	 join pg_user u on u.usesysid =   p.proowner "+
-											 "	 join pg_language l on l.oid = p. prolang "+
-											 "	where  "+
-											 "   l.lanname = 'plpgsql' "+
-											 "	 and p.proname like '%?nameCtx%' "+
-											 "	 and u.usename like '%?userCtx%' "+
-											 "	order by  "+
-											 "	 n.nspname,p.proname"; 
-	
-	private static final String SQL_CURRENT_SESSION = "select pid,usename,application_name,state,query from pg_stat_activity where pid = pg_backend_pid()";
+public class DebugManagerPostgres implements DebugManager<Integer, Integer> {
 
-	private final Map<Integer,DebugSessionPostgres> sessions = new HashMap<Integer,DebugSessionPostgres>(1);  
+    private final Connection connection;
 
-	@Override
-	public SessionInfoPostgres getSessionInfo(Connection connectionTarget) throws DebugException
-	{
-		   try (Statement stmt = connectionTarget.createStatement()) {
-			   
-		        ResultSet rs = stmt.executeQuery(SQL_CURRENT_SESSION);
-		        
-		        if (rs.next()) {
-		        	
-		        	SessionInfoPostgres res = new SessionInfoPostgres(
-		        			rs.getInt("pid") ,
-		        			rs.getString("usename"), 
-		        			rs.getString("application_name"),
-		        			rs.getString("state"), 
-		        			rs.getString("query"));
-			        return res;
-		        }
-		        
-		        throw new DebugException("Error getting session");
+    private static final String SQL_SESSION = "select pid,usename,application_name,state,query from pg_stat_activity";
 
-		        
-		    } catch (SQLException e) {
-		    	throw new DebugException(e);
-		    }
-		
-	}
+    private static final String SQL_OBJECT = "select  p.oid,p.proname,u.usename as owner,n.nspname, l.lanname as lang "
+            + " from " + "	pg_catalog.pg_namespace n " + " join pg_catalog.pg_proc p on p.pronamespace = n.oid "
+            + "	 join pg_user u on u.usesysid =   p.proowner " + "	 join pg_language l on l.oid = p. prolang "
+            + "	where  " + "   l.lanname = 'plpgsql' " + "	 and p.proname like '%?nameCtx%' "
+            + "	 and u.usename like '%?userCtx%' " + "	order by  " + "	 n.nspname,p.proname";
 
-	
-	
-	@Override
-	public List<SessionInfoPostgres> getSessions() throws DebugException  
-	{ 
-		
-		   try (Statement stmt = connection.createStatement()) {
-			   
-		        ResultSet rs = stmt.executeQuery(SQL_SESSION);
-		        
-		        List<SessionInfoPostgres> res = new  ArrayList<SessionInfoPostgres>();
+    private static final String SQL_CURRENT_SESSION = "select pid,usename,application_name,state,query from pg_stat_activity where pid = pg_backend_pid()";
 
-		        while (rs.next()) {
-		        	
-		        	res.add(new SessionInfoPostgres(
-		        			rs.getInt("pid") ,
-		        			rs.getString("usename"), 
-		        			rs.getString("application_name"),
-		        			rs.getString("state"), 
-		        			rs.getString("query")));
-		        }
-		        
-		        return res;
-		        
-		    } catch (SQLException e) {
-		        throw new DebugException(e);
-		    }
-		
-	}
+    private final Map<Integer, DebugSessionPostgres> sessions = new HashMap<Integer, DebugSessionPostgres>(1);
 
+    @Override
+    public SessionInfoPostgres getSessionInfo(Connection connectionTarget) throws DebugException {
+        try (Statement stmt = connectionTarget.createStatement()) {
 
+            ResultSet rs = stmt.executeQuery(SQL_CURRENT_SESSION);
 
-	/**
-	 * @param connection
-	 */
-	public DebugManagerPostgres(Connection connection)
-	{
-		super();
-		this.connection = connection;
-	}
+            if (rs.next()) {
 
-	@Override
-	public List<DebugObjectPostgres> getObjects(String ownerCtx,
-			String nameCtx) throws DebugException
-	{
-		   try (Statement stmt = connection.createStatement()) {
-			   
-			   
-		        ResultSet rs = stmt.executeQuery(SQL_OBJECT.replaceAll("\\?nameCtx", nameCtx).replaceAll("\\?userCtx", ownerCtx).toLowerCase());
-		        
-		        List<DebugObjectPostgres> res = new  ArrayList<DebugObjectPostgres>();
+                SessionInfoPostgres res = new SessionInfoPostgres(rs.getInt("pid"), rs.getString("usename"),
+                        rs.getString("application_name"), rs.getString("state"), rs.getString("query"));
+                return res;
+            }
 
-		        while (rs.next()) {
-		        	
-		        	res.add(new DebugObjectPostgres(
-		        			rs.getInt("oid") ,
-		        			rs.getString("proname"), 
-		        			rs.getString("owner"),
-		        			rs.getString("nspname"), 
-		        			rs.getString("lang")));
+            throw new DebugException("Error getting session");
 
-		        }
-		        
-		        return res;
-		        
-		    } catch (SQLException e) {
-		        throw new DebugException(e);
-		    }
-	}
+        } catch (SQLException e) {
+            throw new DebugException(e);
+        }
 
-	@Override
-	public DebugSession<SessionInfoPostgres, DebugObjectPostgres,Integer> getDebugSession(
-			Integer id) throws DebugException
-	{
-		return sessions.get(id);
-	}
+    }
 
-	@Override
-	public DebugSessionPostgres createDebugSession(Connection connectionTarget) throws DebugException
-	{
-		
-		SessionInfoPostgres targetInfo = getSessionInfo(connectionTarget);
-	
-		DebugSessionPostgres debugSession =  new DebugSessionPostgres(getSessionInfo(this.connection),targetInfo ,connectionTarget);
-		
-		sessions.put(targetInfo.getPid(), debugSession);
-		
-		return debugSession;
-		 
-	}
+    @Override
+    public List<SessionInfoPostgres> getSessions() throws DebugException {
 
-	@Override
-	public boolean isSessionExists(Integer id)
-	{		
-		return sessions.containsKey(id);
-	}
+        try (Statement stmt = connection.createStatement()) {
 
+            ResultSet rs = stmt.executeQuery(SQL_SESSION);
 
+            List<SessionInfoPostgres> res = new ArrayList<SessionInfoPostgres>();
 
-	@Override
-	public void terminateSession(Integer id) {
-		// TODO Auto-generated method stub
-		
-	}
+            while (rs.next()) {
 
+                res.add(new SessionInfoPostgres(rs.getInt("pid"), rs.getString("usename"),
+                        rs.getString("application_name"), rs.getString("state"), rs.getString("query")));
+            }
 
+            return res;
 
-	@Override
-	public List<DebugSession<?,?,Integer>> getDebugSessions()	throws DebugException {
-		return new ArrayList<DebugSession<?,?,Integer>>(sessions.values());
-	}
+        } catch (SQLException e) {
+            throw new DebugException(e);
+        }
 
+    }
 
-	
+    /**
+     * @param connection
+     */
+    public DebugManagerPostgres(Connection connection) {
+        super();
+        this.connection = connection;
+    }
+
+    @Override
+    public List<DebugObjectPostgres> getObjects(String ownerCtx, String nameCtx) throws DebugException {
+        try (Statement stmt = connection.createStatement()) {
+
+            ResultSet rs = stmt.executeQuery(
+                    SQL_OBJECT.replaceAll("\\?nameCtx", nameCtx).replaceAll("\\?userCtx", ownerCtx).toLowerCase());
+
+            List<DebugObjectPostgres> res = new ArrayList<DebugObjectPostgres>();
+
+            while (rs.next()) {
+
+                res.add(new DebugObjectPostgres(rs.getInt("oid"), rs.getString("proname"), rs.getString("owner"),
+                        rs.getString("nspname"), rs.getString("lang")));
+
+            }
+
+            return res;
+
+        } catch (SQLException e) {
+            throw new DebugException(e);
+        }
+    }
+
+    @Override
+    public DebugSession<SessionInfoPostgres, DebugObjectPostgres, Integer> getDebugSession(Integer id)
+            throws DebugException {
+        return sessions.get(id);
+    }
+
+    @Override
+    public DebugSessionPostgres createDebugSession(Connection connectionTarget) throws DebugException {
+
+        SessionInfoPostgres targetInfo = getSessionInfo(connectionTarget);
+
+        DebugSessionPostgres debugSession = new DebugSessionPostgres(getSessionInfo(this.connection), targetInfo,
+                connectionTarget);
+
+        sessions.put(targetInfo.getPid(), debugSession);
+
+        return debugSession;
+
+    }
+
+    @Override
+    public boolean isSessionExists(Integer id) {
+        return sessions.containsKey(id);
+    }
+
+    @Override
+    public void terminateSession(Integer id) {
+
+        DebugSessionPostgres session = sessions.get(id);
+
+        if (session != null) {
+
+            session.close();
+
+            sessions.remove(id);
+
+        }
+
+    }
+
+    @Override
+    public List<DebugSession<?, ?, Integer>> getDebugSessions() throws DebugException {
+        return new ArrayList<DebugSession<?, ?, Integer>>(sessions.values());
+    }
 
 }
