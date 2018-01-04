@@ -16,9 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.ui.editors;
 
-import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
-import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
@@ -31,8 +29,10 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.RowLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.IWorkbenchCommandConstants;
@@ -41,7 +41,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
-import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
@@ -53,10 +52,10 @@ import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.LoadingJob;
-import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
+import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorLabelProvider;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
@@ -77,8 +76,6 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
     private boolean isLoaded;
     private DatabaseNavigatorTree roleOrObjectTable;
     private Table permissionTable;
-    private Action actionCheckAll;
-    private Action actionCheckNone;
 
     private PostgrePermission currentPermission;
     private DBSObject currentObject;
@@ -135,30 +132,6 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                 }
             };
 */
-            actionCheckAll = new Action("All") {
-                @Override
-                public void run() {
-                    boolean hadNonChecked = false;
-                    for (TableItem item : permissionTable.getItems()) {
-                        if (!item.getChecked()) hadNonChecked = true;
-                        item.setChecked(true);
-                    }
-                    if (hadNonChecked) updateCurrentPrivileges();
-                }
-            };
-            actionCheckNone = new Action("None") {
-                @Override
-                public void run() {
-                    boolean hadChecked = false;
-                    for (TableItem item : permissionTable.getItems()) {
-                        item.setChecked(false);
-                        if (item.getChecked()) hadChecked = true;
-                    }
-                    if (hadChecked) {
-                        updateCurrentPrivileges();
-                    }
-                }
-            };
         }
 
         this.pageControl = new PageControl(parent);
@@ -207,105 +180,83 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
             }
         });
 
-        permissionTable = new Table(composite, SWT.FULL_SELECTION | SWT.CHECK);
-        permissionTable.setLayoutData(new GridData(GridData.FILL_BOTH));
-        permissionTable.setHeaderVisible(true);
-        permissionTable.setLinesVisible(true);
-        UIUtils.createTableColumn(permissionTable, SWT.LEFT, "Permission");
-        UIUtils.createTableColumn(permissionTable, SWT.CENTER, "With GRANT");
-        UIUtils.createTableColumn(permissionTable, SWT.CENTER, "With Hierarchy");
-        permissionTable.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                if (e.detail == SWT.CHECK) {
-                    updateCurrentPrivileges();
-                }
-            }
-        });
-        permissionTable.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseDown(MouseEvent e) {
-                super.mouseDown(e);
-            }
-        });
+        {
+            Composite permEditPanel = new Composite(composite, SWT.NONE);
+            permEditPanel.setLayout(new GridLayout(1, true));
+            //permEditPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        for (PostgrePrivilegeType pt : PostgrePrivilegeType.values()) {
-            if (!pt.isValid()) {
-                continue;
+            permissionTable = new Table(permEditPanel, SWT.FULL_SELECTION | SWT.CHECK);
+            permissionTable.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            permissionTable.setHeaderVisible(true);
+            permissionTable.setLinesVisible(true);
+            UIUtils.createTableColumn(permissionTable, SWT.LEFT, "Permission");
+            UIUtils.createTableColumn(permissionTable, SWT.CENTER, "With GRANT");
+            UIUtils.createTableColumn(permissionTable, SWT.CENTER, "With Hierarchy");
+            permissionTable.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    if (e.detail == SWT.CHECK) {
+                        updateCurrentPrivileges(((TableItem) e.item).getChecked(), (PostgrePrivilegeType) e.item.getData());
+                    }
+                }
+            });
+            permissionTable.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseDown(MouseEvent e) {
+                    super.mouseDown(e);
+                }
+            });
+
+            for (PostgrePrivilegeType pt : PostgrePrivilegeType.values()) {
+                if (!pt.isValid()) {
+                    continue;
+                }
+                TableItem privItem = new TableItem(permissionTable, SWT.LEFT);
+                privItem.setText(0, pt.name());
+                privItem.setData(pt);
             }
-            TableItem privItem = new TableItem(permissionTable, SWT.LEFT);
-            privItem.setText(0, pt.name());
-            privItem.setData(pt);
+
+            Composite buttonPanel = new Composite(permEditPanel, SWT.NONE);
+            buttonPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            buttonPanel.setLayout(new RowLayout());
+
+            Button actionCheckAll = UIUtils.createPushButton(buttonPanel, "Check All", null, new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    boolean hadNonChecked = false;
+                    for (TableItem item : permissionTable.getItems()) {
+                        if (!item.getChecked()) hadNonChecked = true;
+                        item.setChecked(true);
+                    }
+                    if (hadNonChecked) updateCurrentPrivileges(true, null);
+                }
+            });
+            Button actionCheckNone = UIUtils.createPushButton(buttonPanel, "Check None", null, new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    boolean hadChecked = false;
+                    for (TableItem item : permissionTable.getItems()) {
+                        if (item.getChecked()) hadChecked = true;
+                        item.setChecked(false);
+                    }
+                    if (hadChecked) {
+                        updateCurrentPrivileges(false, null);
+                    }
+                }
+            });
+
         }
 
         pageControl.createOrSubstituteProgressPanel(getSite());
         updateObjectPermissions(null, null);
-        registerContextMenu();
     }
 
     private PostgrePermission getObjectPermissions(DBSObject object) {
         return permissionMap.get(DBUtils.getObjectFullName(object, DBPEvaluationContext.DDL));
     }
 
-    private void updateCurrentPrivileges() {
+    private void updateCurrentPrivileges(boolean grant, PostgrePrivilegeType data) {
         //System.out.println("Privs changed");
-    }
-
-    private void registerContextMenu()
-    {
-/*
-        // Register objects context menu
-        {
-            MenuManager menuMgr = new MenuManager();
-            menuMgr.addMenuListener(manager -> {
-                manager.add(actionGrant);
-                manager.add(actionRevoke);
-            });
-
-            menuMgr.setRemoveAllWhenShown(true);
-            Menu menu = menuMgr.createContextMenu(roleOrObjectTable);
-            roleOrObjectTable.setMenu(menu);
-        }
-*/
-        // Register objects context menu
-        {
-            MenuManager menuMgr = new MenuManager();
-            menuMgr.addMenuListener(manager -> {
-                manager.add(actionCheckAll);
-                manager.add(actionCheckNone);
-            });
-
-            menuMgr.setRemoveAllWhenShown(true);
-            Menu menu = menuMgr.createContextMenu(permissionTable);
-            permissionTable.setMenu(menu);
-        }
-    }
-
-    private void openPermObject() {
-        DBSObject selectedObject = NavigatorUtils.getSelectedObject(roleOrObjectTable.getViewer().getSelection());
-        if (selectedObject == null) {
-            updateObjectPermissions(null, null);
-        } else {
-            PostgrePermission permission = permissionMap.get(selectedObject);
-            updateObjectPermissions(permission, selectedObject);
-        }
-
-/*
-        new AbstractJob("Open target object") {
-            @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
-                try {
-                    final PostgreObject targetObject = permission.getTargetObject(monitor);
-                    if (targetObject != null) {
-                        DBeaverUI.syncExec(() -> NavigatorHandlerObjectOpen.openEntityEditor(targetObject));
-                    }
-                } catch (DBException e) {
-                    return GeneralUtils.makeExceptionStatus(e);
-                }
-                return Status.OK_STATUS;
-            }
-        }.schedule();
-*/
     }
 
     private void updateObjectPermissions(PostgrePermission data, DBSObject curObject) {
@@ -341,8 +292,6 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                 }
             }
         }
-        actionCheckAll.setEnabled(data != null);
-        actionCheckNone.setEnabled(data != null);
     }
 
     private boolean isRoleEditor() {
@@ -438,12 +387,10 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
             super.fillCustomActions(contributionManager);
 
             contributionManager.add(new Separator());
-            contributionManager.add(actionCheckAll);
-            contributionManager.add(actionCheckNone);
-            contributionManager.add(new Separator());
 
             IWorkbenchSite workbenchSite = getSite();
             if (workbenchSite != null) {
+                DatabaseEditorUtils.contributeStandardEditorActions(workbenchSite, contributionManager);
                 contributionManager.add(ActionUtils.makeCommandContribution(workbenchSite, IWorkbenchCommandConstants.FILE_REFRESH));
             }
         }
