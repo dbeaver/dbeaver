@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ext.postgresql.pldbg.console;
+package org.jkiss.dbeaver.ext.postgresql.debug.internal.console;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -27,8 +27,8 @@ import org.jkiss.dbeaver.debug.DBGException;
 import org.jkiss.dbeaver.debug.DBGSession;
 import org.jkiss.dbeaver.debug.DBGStackFrame;
 import org.jkiss.dbeaver.debug.DBGVariable;
-import org.jkiss.dbeaver.ext.postgresql.pldbg.impl.*;
-import org.jkiss.dbeaver.ext.postgresql.pldbg.impl.PostgreDebugBreakpoint;
+import org.jkiss.dbeaver.ext.postgresql.debug.internal.impl.*;
+import org.jkiss.dbeaver.ext.postgresql.debug.internal.impl.PostgreDebugBreakpoint;
 
 @SuppressWarnings("nls")
 public class Debugger {

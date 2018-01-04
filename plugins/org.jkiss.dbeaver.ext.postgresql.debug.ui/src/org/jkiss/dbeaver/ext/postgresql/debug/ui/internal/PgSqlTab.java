@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.postgresql.internal.debug.ui;
+package org.jkiss.dbeaver.ext.postgresql.debug.ui.internal;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
@@ -58,9 +58,9 @@ public class PgSqlTab extends DatabaseTab {
 
     protected void createOidComponent(Composite comp)
     {
-        Group datasourceGroup = UIUtils.createControlGroup(comp, PostgreSqlDebugUiMessages.PgSqlTab_oid_group_text, 2, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
+        Group datasourceGroup = UIUtils.createControlGroup(comp, PostgreDebugUIMessages.PgSqlTab_oid_group_text, 2, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
 
-        oidText = UIUtils.createLabelText(datasourceGroup, PostgreSqlDebugUiMessages.PgSqlTab_oid_label_text, DebugCore.ATTR_OID_DEFAULT);
+        oidText = UIUtils.createLabelText(datasourceGroup, PostgreDebugUIMessages.PgSqlTab_oid_label_text, DebugCore.ATTR_OID_DEFAULT);
         oidText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         oidText.addModifyListener(modifyListener);
     }
