@@ -15,8 +15,9 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ext.postgresql.pldbg.control;
+package org.jkiss.dbeaver.postgresql.pldbg.control;
 
+import java.sql.Connection;
 import java.util.List;
 
 import org.jkiss.dbeaver.ext.postgresql.pldbg.DebugException;
@@ -25,10 +26,12 @@ import org.jkiss.dbeaver.ext.postgresql.pldbg.DebugSession;
 import org.jkiss.dbeaver.ext.postgresql.pldbg.SessionInfo;
 
 public interface DebugManager<SESSIONID,OBJECTID> {
-    SESSIONID getCurrent() throws DebugException;
+	SessionInfo<SESSIONID> getSessionInfo(Connection connection) throws DebugException;
     List<? extends SessionInfo<SESSIONID>> getSessions() throws DebugException;
-    DebugSession<? extends SessionInfo<SESSIONID>,? extends DebugObject<OBJECTID>> getDebugSession(SESSIONID id) throws DebugException;
-    DebugSession<? extends SessionInfo<SESSIONID>,? extends DebugObject<OBJECTID>> createDebugSession(SESSIONID id) throws DebugException;
+    DebugSession<? extends SessionInfo<SESSIONID>,? extends DebugObject<OBJECTID>,SESSIONID> getDebugSession(SESSIONID id) throws DebugException;
+    List<DebugSession<?,?,SESSIONID>> getDebugSessions() throws DebugException;
+    void terminateSession(SESSIONID id); 
+    DebugSession<? extends SessionInfo<SESSIONID>,? extends DebugObject<OBJECTID>,SESSIONID> createDebugSession(Connection connection) throws DebugException;
     boolean isSessionExists(SESSIONID id);
     List<? extends DebugObject<OBJECTID>> getObjects(String ownerCtx, String nameCtx) throws DebugException;
 }

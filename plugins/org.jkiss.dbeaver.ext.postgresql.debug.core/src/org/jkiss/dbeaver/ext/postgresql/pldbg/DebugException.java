@@ -14,27 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.postgresql.pldbg;
 
+package org.jkiss.dbeaver.ext.postgresql.pldbg;
 
 @SuppressWarnings("serial")
 public class DebugException extends Exception {
 
-	public DebugException(String message, Throwable e)
-	{
-		super(message, e);
-	}
+    public DebugException(String message, Throwable e) {
+        super(message, e);
+    }
 
-	public DebugException(String message)
-	{
-		super(message);
-	}
+    public DebugException(String message) {
+        super(message);
+    }
 
-	public DebugException(Throwable e)
-	{
-		super(e);
-	}
+    public DebugException(Throwable e) {
+        super(e);
+    }
 
-	
-	
 }
