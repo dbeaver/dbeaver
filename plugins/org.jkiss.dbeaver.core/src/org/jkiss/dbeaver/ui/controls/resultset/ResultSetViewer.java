@@ -1587,6 +1587,24 @@ public class ResultSetViewer extends Viewer
         showContextMenuAtCursor(menuManager);
     }
 
+    void showDistinctFilter(DBDAttributeBinding curAttribute) { 	
+    	
+		 ResultSetRow[] rows = null;
+	     Collection<ResultSetRow> selectedRows = getSelection().getSelectedRows();
+	     rows = selectedRows.toArray(new ResultSetRow[selectedRows.size()]);
+	   
+	     
+	     CustomCheckboxCombo combo = new CustomCheckboxCombo(getSite().getShell(), SWT.NONE, null, ResultSetViewer.this, curAttribute, rows);
+	     
+	     Point cursorLocation = getActivePresentation().getCursorLocation();
+	     Control control = getActivePresentation().getControl();
+	     Point location = control.getDisplay().map(control, null, cursorLocation);
+	     combo.setLocation(location);
+	     combo.setVisible(true);
+        
+    }
+    
+    
     void showReferencesMenu() {
         ResultSetRow currentRow = getCurrentRow();
         if (currentRow == null || currentRow.getRowNumber() < 0) {

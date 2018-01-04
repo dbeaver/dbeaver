@@ -41,8 +41,8 @@ class GridColumn {
 	 */
 	private static final int DEFAULT_WIDTH = 10;
 
-    private static final int topMargin = 3;
-    private static final int bottomMargin = 3;
+    private static final int topMargin = 6;
+    private static final int bottomMargin = 6;
     private static final int leftMargin = 6;
     private static final int rightMargin = 6;
     private static final int imageSpacing = 3;
@@ -114,6 +114,23 @@ class GridColumn {
 		}
 	}
 
+	
+	
+	public boolean isOverFilterButton (int x, int y) {
+		 Rectangle bounds = getBounds();
+	        if (y < bounds.y || y > bounds.y + bounds.height) {
+	            return false;
+	        }
+        Rectangle sortBounds = GridColumnRenderer.getSortControlBounds();
+        Rectangle filterBounds = GridColumnRenderer.getFilterControlBounds();
+        
+		int filterEnd = bounds.width - rightMargin - sortBounds.width;
+		int filterBegin = filterEnd - filterBounds.width;
+		
+		return  x >= filterBegin && x <= filterEnd && y < bounds.y + sortBounds.height;
+	}
+	
+	
     public boolean isOverSortArrow(int x, int y)
     {
         if (!isSortable()) {
@@ -203,6 +220,8 @@ class GridColumn {
             x += rightMargin + GridColumnRenderer.getSortControlBounds().width;
         }
 
+        x+= GridColumnRenderer.getFilterControlBounds().width;
+        
         if (!CommonUtils.isEmpty(children)) {
             int childWidth = 0;
             for (GridColumn child : children) {

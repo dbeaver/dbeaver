@@ -100,6 +100,7 @@ public class ResultSetCommandHandler extends AbstractHandler {
     public static final String CMD_GENERATE_SCRIPT = "org.jkiss.dbeaver.core.resultset.generateScript";
     public static final String CMD_NAVIGATE_LINK = "org.jkiss.dbeaver.core.resultset.navigateLink";
     public static final String CMD_FILTER_MENU = "org.jkiss.dbeaver.core.resultset.filterMenu";
+    public static final String CMD_FILTERDISTINCT = "org.jkiss.dbeaver.core.resultset.filterDistinct";
     public static final String CMD_REFERENCES_MENU = "org.jkiss.dbeaver.core.resultset.referencesMenu";
     public static final String CMD_COPY_COLUMN_NAMES = "org.jkiss.dbeaver.core.resultset.grid.copyColumnNames";
     public static final String CMD_COPY_ROW_NAMES = "org.jkiss.dbeaver.core.resultset.grid.copyRowNames";
@@ -408,6 +409,12 @@ public class ResultSetCommandHandler extends AbstractHandler {
             case CMD_FILTER_MENU: {
                 rsv.showFiltersMenu();
                 break;
+            }
+            case CMD_FILTERDISTINCT: {
+            	event.getParameters();
+            	Event sourceEvent = (Event)event.getTrigger();
+            	rsv.showDistinctFilter((DBDAttributeBinding)sourceEvent.data);
+            	break;
             }
             case CMD_REFERENCES_MENU: {
                 rsv.showReferencesMenu();
