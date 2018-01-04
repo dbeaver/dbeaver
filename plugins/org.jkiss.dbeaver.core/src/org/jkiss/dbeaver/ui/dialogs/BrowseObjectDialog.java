@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
+import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTreeFilter;
 import org.jkiss.dbeaver.ui.navigator.database.load.TreeLoadNode;
 
 import java.util.ArrayList;
@@ -84,7 +85,7 @@ public class BrowseObjectDialog extends Dialog {
         GridData gd = new GridData(GridData.FILL_BOTH);
         group.setLayoutData(gd);
 
-        navigatorTree = new DatabaseNavigatorTree(group, rootNode, (singleSelection ? SWT.SINGLE : SWT.MULTI) | SWT.BORDER);
+        navigatorTree = new DatabaseNavigatorTree(group, rootNode, (singleSelection ? SWT.SINGLE : SWT.MULTI) | SWT.BORDER, false, new DatabaseNavigatorTreeFilter());
         gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 500;
         gd.heightHint = 500;
@@ -117,28 +118,25 @@ public class BrowseObjectDialog extends Dialog {
             navigatorTree.getViewer().setSelection(new StructuredSelection(selectedNode));
             selectedObjects.add(selectedNode);
         }
-        navigatorTree.getViewer().addSelectionChangedListener(new ISelectionChangedListener() {
-            @Override
-            public void selectionChanged(SelectionChangedEvent event)
-            {
-                selectedObjects.clear();
-                IStructuredSelection selection = (IStructuredSelection) navigatorTree.getViewer().getSelection();
-                for (Iterator iter = selection.iterator(); iter.hasNext(); ) {
-                    DBNNode node = (DBNNode) iter.next();
-                    if (node instanceof DBSWrapper) {
-                        DBSObject object = DBUtils.getAdapter(DBSObject.class, ((DBSWrapper) node).getObject());
-                        if (object != null) {
-                            if (!matchesType(object.getClass(), true)) {
-                                selectedObjects.clear();
-                                break;
-                            }
-                            selectedObjects.add(node);
+        navigatorTree.getViewer().addSelectionChangedListener(event -> {
+            selectedObjects.clear();
+            IStructuredSelection selection = (IStructuredSelection) navigatorTree.getViewer().getSelection();
+            for (Iterator iter = selection.iterator(); iter.hasNext(); ) {
+                DBNNode node = (DBNNode) iter.next();
+                if (node instanceof DBSWrapper) {
+                    DBSObject object = DBUtils.getAdapter(DBSObject.class, ((DBSWrapper) node).getObject());
+                    if (object != null) {
+                        if (!matchesType(object.getClass(), true)) {
+                            selectedObjects.clear();
+                            break;
                         }
+                        selectedObjects.add(node);
                     }
                 }
-                getButton(IDialogConstants.OK_ID).setEnabled(!selectedObjects.isEmpty());
             }
+            getButton(IDialogConstants.OK_ID).setEnabled(!selectedObjects.isEmpty());
         });
+        navigatorTree.getViewer().getTree().setFocus();
 
         return group;
     }
