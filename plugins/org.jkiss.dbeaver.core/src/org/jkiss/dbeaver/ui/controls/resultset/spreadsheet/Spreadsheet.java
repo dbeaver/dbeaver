@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.controls.resultset.spreadsheet;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.accessibility.Accessible;
 import org.eclipse.swt.accessibility.AccessibleEvent;
@@ -39,6 +40,7 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.ui.controls.lightgrid.*;
 import org.jkiss.dbeaver.ui.controls.resultset.AbstractPresentation;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 
 /**
  * ResultSetControl
@@ -107,6 +109,7 @@ public class Spreadsheet extends LightGrid implements Listener {
         super.addListener(SWT.KeyUp, this);
         super.addListener(LightGrid.Event_ChangeSort, this);
         super.addListener(LightGrid.Event_NavigateLink, this);
+        super.addListener(LightGrid.Event_FilterColumn, this);
 
         tableEditor = new SpreadsheetCellEditor(this);
         tableEditor.horizontalAlignment = SWT.LEFT;
@@ -308,6 +311,12 @@ public class Spreadsheet extends LightGrid implements Listener {
             case LightGrid.Event_ChangeSort:
                 presentation.changeSorting(event.data, event.stateMask);
                 break;
+            case LightGrid.Event_FilterColumn:
+            	//showFiltersMenu
+            	presentation.showFiltering(event.data);
+            	
+            	
+            	break;                
             case LightGrid.Event_NavigateLink:
                 // Perform navigation async because it may change grid content and
                 // we don't want to mess current grid state
