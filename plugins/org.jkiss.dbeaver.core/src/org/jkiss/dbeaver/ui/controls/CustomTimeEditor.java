@@ -28,30 +28,28 @@ import org.eclipse.swt.widgets.DateTime;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 
 /**
  * CustomTimeEditor
  */
 public class CustomTimeEditor {
-	private static final String TIMESTAMP = "timestamp";
-	private static final String DATE = "date";
-	private static final String TIME = "time";
 
+	private Composite basePart;
 	private DateTime dateEditor;
 	private DateTime timeEditor;
-	private Composite basePart;
 	private String formaterId;
 
 	private static final Log log = Log.getLog(ViewerColumnController.class);
 
 	public CustomTimeEditor(Composite parent, int style, String formaterId) {
 		if (formaterId == null || formaterId.isEmpty()) {
-			formaterId = TIMESTAMP;
+			formaterId = DBDDataFormatter.TYPE_NAME_TIMESTAMP;
 		}
 		this.formaterId = formaterId;
 		basePart = new Composite(parent, SWT.BORDER);
 		GridLayout layout;
-		if (formaterId.equals(TIMESTAMP)) {
+		if (formaterId.equals(DBDDataFormatter.TYPE_NAME_TIMESTAMP)) {
 			layout = new GridLayout(2, false);
 		} else {
 			layout = new GridLayout(1, false);
@@ -65,16 +63,16 @@ public class CustomTimeEditor {
 		GridData timeGD = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
 		timeGD.minimumWidth = 90;
 
-		if (formaterId.equals(TIMESTAMP)) {
+		if (formaterId.equals(DBDDataFormatter.TYPE_NAME_TIMESTAMP)) {
 			this.dateEditor = new DateTime(basePart, SWT.DATE | SWT.LONG | SWT.DROP_DOWN | style);
 			this.dateEditor.setLayoutData(dateGD);
 
 			this.timeEditor = new DateTime(basePart, SWT.TIME | SWT.DROP_DOWN | style);
 			this.timeEditor.setLayoutData(timeGD);
-		} else if (formaterId.equals(DATE)) {
+		} else if (formaterId.equals(DBDDataFormatter.TYPE_NAME_DATE)) {
 			this.dateEditor = new DateTime(basePart, SWT.DATE | SWT.LONG | SWT.DROP_DOWN | style);
 			this.dateEditor.setLayoutData(dateGD);
-		} else if (formaterId.equals(TIME)) {
+		} else if (formaterId.equals(DBDDataFormatter.TYPE_NAME_TIME)) {
 			this.timeEditor = new DateTime(basePart, SWT.TIME | SWT.DROP_DOWN | style);
 			this.timeEditor.setLayoutData(timeGD);
 		}
@@ -109,13 +107,13 @@ public class CustomTimeEditor {
 	public Date getValue() throws DBException {
 		Calendar calendar = Calendar.getInstance();
 
-		if (formaterId.equals(TIMESTAMP)) {
+		if (formaterId.equals(DBDDataFormatter.TYPE_NAME_TIMESTAMP)) {
 			calendar.set(dateEditor.getYear(), dateEditor.getMonth(), dateEditor.getDay(), timeEditor.getHours(),
 					timeEditor.getMinutes(), timeEditor.getSeconds());
-		} else if (formaterId.equals(DATE)) {
+		} else if (formaterId.equals(DBDDataFormatter.TYPE_NAME_DATE)) {
 			calendar.set(dateEditor.getYear(), dateEditor.getMonth(), dateEditor.getDay());
 
-		} else if (formaterId.equals(TIME)) {
+		} else if (formaterId.equals(DBDDataFormatter.TYPE_NAME_TIME)) {
 			calendar.set(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH), calendar.get(Calendar.DAY_OF_MONTH),
 					timeEditor.getHours(), timeEditor.getMinutes(), timeEditor.getSeconds());
 		}
