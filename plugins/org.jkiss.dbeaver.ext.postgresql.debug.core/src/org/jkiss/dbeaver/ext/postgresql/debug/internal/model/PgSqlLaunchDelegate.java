@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.postgresql.internal.debug.core.model;
+package org.jkiss.dbeaver.ext.postgresql.debug.internal.model;
 
 import java.util.Map;
 

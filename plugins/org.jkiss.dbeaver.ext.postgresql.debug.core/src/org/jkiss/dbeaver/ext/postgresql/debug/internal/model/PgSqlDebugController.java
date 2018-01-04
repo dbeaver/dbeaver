@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.postgresql.internal.debug.core.model;
+package org.jkiss.dbeaver.ext.postgresql.debug.internal.model;
 
 import java.sql.SQLException;
 import java.util.Map;
@@ -23,7 +23,7 @@ import java.util.Map;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.debug.ProcedureDebugController;
-import org.jkiss.dbeaver.ext.postgresql.internal.debug.core.PostgreSqlDebugCoreMessages;
+import org.jkiss.dbeaver.ext.postgresql.debug.internal.PostgreDebugCoreMessages;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -60,7 +60,7 @@ public class PgSqlDebugController extends ProcedureDebugController {
                             if (cellValue instanceof Integer) {
                                 Integer cellValueInteger = (Integer) cellValue;
                                 setSessionId(cellValueInteger.toString());
-                                String applicationName = NLS.bind(PostgreSqlDebugCoreMessages.PgSqlDebugController_connection_application_name, getSessionId());
+                                String applicationName = NLS.bind(PostgreDebugCoreMessages.PgSqlDebugController_connection_application_name, getSessionId());
                                 try {
                                     jdbcSession.getOriginal().setClientInfo(PROPERTY_APPLICATION_NAME, applicationName);
                                 } catch (SQLException e) {
@@ -71,7 +71,7 @@ public class PgSqlDebugController extends ProcedureDebugController {
                     }
                 }
             } catch (DBCException e) {
-                String message = NLS.bind(PostgreSqlDebugCoreMessages.PgSqlDebugController_e_failed_session_open, session.getDataSource());
+                String message = NLS.bind(PostgreDebugCoreMessages.PgSqlDebugController_e_failed_session_open, session.getDataSource());
                 log.error(message, e);
             }
         }
@@ -87,7 +87,7 @@ public class PgSqlDebugController extends ProcedureDebugController {
                 prepared.setString(1, getSessionId());
                 prepared.execute();
             } catch (SQLException e) {
-                String message = NLS.bind(PostgreSqlDebugCoreMessages.PgSqlDebugController_e_failed_session_close, getSessionId(), session.getDataSource());
+                String message = NLS.bind(PostgreDebugCoreMessages.PgSqlDebugController_e_failed_session_close, getSessionId(), session.getDataSource());
                 log.error(message, e);
             }
         }

@@ -15,7 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.postgresql.internal.debug.ui;
+package org.jkiss.dbeaver.ext.postgresql.debug.ui.internal;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
@@ -31,25 +31,25 @@ public class PgSqlLaunchShortcut extends LaunchShortcut {
     @Override
     protected String getSelectionEmptyMessage()
     {
-        return PostgreSqlDebugUiMessages.PgSqlLaunchShortcut_e_selection_empty;
+        return PostgreDebugUIMessages.PgSqlLaunchShortcut_e_selection_empty;
     }
 
     @Override
     protected String getEditorEmptyMessage()
     {
-        return PostgreSqlDebugUiMessages.PgSqlLaunchShortcut_e_editor_empty;
+        return PostgreDebugUIMessages.PgSqlLaunchShortcut_e_editor_empty;
     }
 
     @Override
     protected String getLaunchableSelectionTitle(String mode)
     {
-        return PostgreSqlDebugUiMessages.PgSqlLaunchShortcut_select_procedure_title;
+        return PostgreDebugUIMessages.PgSqlLaunchShortcut_select_procedure_title;
     }
 
     @Override
     protected String getLaunchableSelectionMessage(String mode)
     {
-        return PostgreSqlDebugUiMessages.PgSqlLaunchShortcut_select_procedure_message;
+        return PostgreDebugUIMessages.PgSqlLaunchShortcut_select_procedure_message;
     }
 
     @Override
