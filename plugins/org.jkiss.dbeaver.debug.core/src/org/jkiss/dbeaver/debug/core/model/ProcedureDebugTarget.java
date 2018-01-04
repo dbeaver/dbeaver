@@ -15,28 +15,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.postgresql.internal.debug.core.model;
+package org.jkiss.dbeaver.debug.core.model;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.IProcess;
-import org.jkiss.dbeaver.debug.core.model.DatabaseDebugTarget;
-import org.jkiss.dbeaver.debug.core.model.DatabaseThread;
-import org.jkiss.dbeaver.ext.postgresql.debug.core.PostgreSqlDebugCore;
-import org.jkiss.dbeaver.ext.postgresql.internal.debug.core.PostgreSqlDebugCoreMessages;
+import org.jkiss.dbeaver.debug.ProcedureDebugController;
+import org.jkiss.dbeaver.debug.core.DebugCore;
+import org.jkiss.dbeaver.debug.internal.core.DebugCoreMessages;
 
-public class PgSqlDebugTarget extends DatabaseDebugTarget<PgSqlDebugController> {
+public class ProcedureDebugTarget extends DatabaseDebugTarget<ProcedureDebugController> {
     
-    public PgSqlDebugTarget(ILaunch launch, IProcess process, PgSqlDebugController controller)
+    public ProcedureDebugTarget(ILaunch launch, IProcess process, ProcedureDebugController controller)
     {
-        super(PostgreSqlDebugCore.MODEL_IDENTIFIER, launch, process, controller);
+        super(DebugCore.MODEL_IDENTIFIER_PROCEDURE, launch, process, controller);
     }
 
     @Override
-    protected DatabaseThread newThread(PgSqlDebugController controller)
+    protected DatabaseThread newThread(ProcedureDebugController controller)
     {
-        return new PgSqlThread(this, controller);
+        return new ProcedureThread(this, controller);
     }
 
     @Override
@@ -48,7 +47,7 @@ public class PgSqlDebugTarget extends DatabaseDebugTarget<PgSqlDebugController> 
     @Override
     protected String getDefaultName()
     {
-        return PostgreSqlDebugCoreMessages.PgSqlDebugTarget_name_default;
+        return DebugCoreMessages.ProcedureDebugTarget_name_default;
     }
 
 }

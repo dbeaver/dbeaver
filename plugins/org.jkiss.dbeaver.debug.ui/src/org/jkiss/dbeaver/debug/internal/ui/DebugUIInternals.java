@@ -43,7 +43,7 @@ import org.eclipse.ui.activities.WorkbenchActivityHelper;
 import org.jkiss.dbeaver.debug.core.DebugCore;
 
 @SuppressWarnings("restriction")
-public class DebugUiInternals {
+public class DebugUIInternals {
 
     public static ILaunchConfiguration isSharedConfig(Object receiver)
     {

@@ -83,7 +83,7 @@ public class PgSqlLaunchShortcut extends LaunchShortcut {
         }
 
         try {
-            String oid = config.getAttribute(PostgreSqlDebugCore.ATTR_OID, String.valueOf(0));
+            String oid = config.getAttribute(DebugCore.ATTR_OID, String.valueOf(0));
             long objectId = procedure.getObjectId();
             if (!(Long.parseLong(oid)==objectId)) {
                 return false;

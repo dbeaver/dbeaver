@@ -15,28 +15,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.debug.internal.core;
+package org.jkiss.dbeaver.debug.internal.ui;
 
 import org.eclipse.osgi.util.NLS;
 
-public class DebugCoreMessages extends NLS {
+public class DebugUIMessages extends NLS {
+    private static final String BUNDLE_NAME = "org.jkiss.dbeaver.debug.internal.ui.DebugUIMessages"; //$NON-NLS-1$
+    public static String DatabaseStandardBreakpointPane_description;
+    public static String DatabaseStandardBreakpointPane_name;
+    public static String DatabaseTab_database_group_text;
+    public static String DatabaseTab_database_label_text;
+    public static String DatabaseTab_datasource_group_text;
+    public static String DatabaseTab_datasource_label_text;
+    public static String DatabaseTab_name;
 
-    private static final String BUNDLE_NAME = "org.jkiss.dbeaver.debug.internal.core.DebugCoreMessages"; //$NON-NLS-1$
-
-    public static String DebugCore_e_read_attribute_generic;
-    public static String DebugCore_e_read_attribute_null;
-    public static String DebugCore_e_unable_to_retrieve_modes;
-
-    public static String ProcedureThread_name;
-
-    public static String ProcedureDebugTarget_name_default;
-
+    public static String LaunchShortcut_e_launch;
+    public static String LaunchShortcut_select_cobfiguration_title;
     static {
         // initialize resource bundle
-        NLS.initializeMessages(BUNDLE_NAME, DebugCoreMessages.class);
+        NLS.initializeMessages(BUNDLE_NAME, DebugUIMessages.class);
     }
 
-    private DebugCoreMessages()
+    private DebugUIMessages()
     {
     }
 }
