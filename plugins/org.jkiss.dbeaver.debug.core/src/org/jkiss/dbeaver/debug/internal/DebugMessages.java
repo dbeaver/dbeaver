@@ -15,28 +15,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.debug.internal.ui;
+package org.jkiss.dbeaver.debug.internal;
 
 import org.eclipse.osgi.util.NLS;
 
-public class DebugUiMessages extends NLS {
-    private static final String BUNDLE_NAME = "org.jkiss.dbeaver.debug.internal.ui.DebugUiMessages"; //$NON-NLS-1$
-    public static String DatabaseStandardBreakpointPane_description;
-    public static String DatabaseStandardBreakpointPane_name;
-    public static String DatabaseTab_database_group_text;
-    public static String DatabaseTab_database_label_text;
-    public static String DatabaseTab_datasource_group_text;
-    public static String DatabaseTab_datasource_label_text;
-    public static String DatabaseTab_name;
+public class DebugMessages extends NLS {
 
-    public static String LaunchShortcut_e_launch;
-    public static String LaunchShortcut_select_cobfiguration_title;
+    private static final String BUNDLE_NAME = "org.jkiss.dbeaver.debug.internal.DebugMessages"; //$NON-NLS-1$
+
+    public static String DatabaseDebugController_debug_context_purpose;
+    public static String DatabaseDebugController_debug_session_name;
+    public static String DatabaseDebugController_e_connecting_datasource;
+    public static String DatabaseDebugController_e_opening_debug_context;
+
     static {
         // initialize resource bundle
-        NLS.initializeMessages(BUNDLE_NAME, DebugUiMessages.class);
+        NLS.initializeMessages(BUNDLE_NAME, DebugMessages.class);
     }
 
-    private DebugUiMessages()
+    private DebugMessages()
     {
     }
 }

@@ -15,14 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.postgresql.internal.debug.ui;
+package org.jkiss.dbeaver.debug.internal.ui;
 
 import org.eclipse.debug.core.model.IValue;
 import org.eclipse.debug.ui.IValueDetailListener;
 import org.eclipse.ui.IEditorInput;
 import org.jkiss.dbeaver.debug.ui.DatabaseDebugModelPresentation;
 
-public class PgSqlDebugModelPresentation extends DatabaseDebugModelPresentation {
+public class ProcedureDebugModelPresentation extends DatabaseDebugModelPresentation {
 
     @Override
     public IEditorInput getEditorInput(Object element)

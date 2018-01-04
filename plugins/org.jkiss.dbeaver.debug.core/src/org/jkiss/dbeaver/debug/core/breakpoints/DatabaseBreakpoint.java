@@ -1,4 +1,4 @@
-package org.jkiss.dbeaver.debug.core.model;
+package org.jkiss.dbeaver.debug.core.breakpoints;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.DebugPlugin;

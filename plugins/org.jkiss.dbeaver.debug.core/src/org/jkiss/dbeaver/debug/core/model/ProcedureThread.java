@@ -15,19 +15,18 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.postgresql.internal.debug.core.model;
+package org.jkiss.dbeaver.debug.core.model;
 
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.osgi.util.NLS;
-import org.jkiss.dbeaver.debug.core.model.DatabaseThread;
-import org.jkiss.dbeaver.debug.core.model.IDatabaseDebugTarget;
-import org.jkiss.dbeaver.ext.postgresql.internal.debug.core.PostgreSqlDebugCoreMessages;
+import org.jkiss.dbeaver.debug.ProcedureDebugController;
+import org.jkiss.dbeaver.debug.internal.core.DebugCoreMessages;
 
-public class PgSqlThread extends DatabaseThread {
+public class ProcedureThread extends DatabaseThread {
     
-    private final PgSqlDebugController controller;
+    private final ProcedureDebugController controller;
 
-    public PgSqlThread(IDatabaseDebugTarget target, PgSqlDebugController controller)
+    public ProcedureThread(IDatabaseDebugTarget target, ProcedureDebugController controller)
     {
         super(target);
         this.controller = controller;
@@ -36,7 +35,7 @@ public class PgSqlThread extends DatabaseThread {
     @Override
     public String getName() throws DebugException
     {
-        String name = NLS.bind(PostgreSqlDebugCoreMessages.PgSqlThread_name, controller.getSessionId());
+        String name = NLS.bind(DebugCoreMessages.ProcedureThread_name, controller.getSessionId());
         return name;
     }
 

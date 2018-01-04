@@ -23,6 +23,7 @@ import java.util.List;
 import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.Log;
@@ -33,7 +34,9 @@ public class DebugCore {
 
     public static final String BUNDLE_SYMBOLIC_NAME = "org.jkiss.dbeaver.debug.core"; //$NON-NLS-1$
 
+    //FIXME: AF: revisit, looks like we can live without it
     public static final String MODEL_IDENTIFIER_DATABASE = BUNDLE_SYMBOLIC_NAME + '.' + "database"; //$NON-NLS-1$
+    public static final String MODEL_IDENTIFIER_PROCEDURE = BUNDLE_SYMBOLIC_NAME + '.' + "procedure"; //$NON-NLS-1$
     
     public static final String BREAKPOINT_DATABASE = BUNDLE_SYMBOLIC_NAME + '.' + "databaseBreakpointMarker"; //$NON-NLS-1$
     public static final String BREAKPOINT_DATABASE_LINE = BUNDLE_SYMBOLIC_NAME + '.' + "databaseLineBreakpointMarker"; //$NON-NLS-1$
@@ -44,7 +47,18 @@ public class DebugCore {
     public static final String ATTR_DATABASE = BUNDLE_SYMBOLIC_NAME + '.' + "ATTR_DATABASE"; //$NON-NLS-1$
     public static final String ATTR_DATABASE_DEFAULT = ""; //$NON-NLS-1$
     
+    public static final String ATTR_OID = BUNDLE_SYMBOLIC_NAME + '.' + "ATTR_OID"; //$NON-NLS-1$
+    public static final String ATTR_OID_DEFAULT = ""; //$NON-NLS-1$
+
     private static Log log = Log.getLog(DebugCore.class);
+
+    public static CoreException abort(String message, Throwable th) {
+        return new CoreException(newErrorStatus(message, th));
+    }
+
+    public static CoreException abort(String message) {
+        return abort(message, null);
+    }
 
     public static boolean canLaunch(ILaunchConfiguration configuration, String mode) {
         if (configuration == null || !configuration.exists()) {
@@ -129,6 +143,14 @@ public class DebugCore {
         default:
             break;
         }
+    }
+
+    public static Status newErrorStatus(String message, Throwable th) {
+        return new Status(IStatus.ERROR, BUNDLE_SYMBOLIC_NAME, message, th) ;
+    }
+
+    public static Status newErrorStatus(String message) {
+        return newErrorStatus(message, null);
     }
 
 }
