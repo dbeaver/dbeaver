@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 
 import java.sql.SQLException;
@@ -200,6 +201,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
             return null;
         }
         boolean showAllSchemas = ((SQLServerDataSource) dataSource).isShowAllSchemas();
+        final DBSObjectFilter schemaFilters = dataSource.getContainer().getObjectFilter(GenericSchema.class, catalog, false);
 
         String sysSchema = DBUtils.getQuotedIdentifier(catalog) + "." + getSystemSchema();
         String sql =
@@ -221,6 +223,11 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
                         continue;
                     }
                     name = name.trim();
+                    if (schemaFilters != null && !schemaFilters.matches(name)) {
+                        // Doesn't match filter
+                        continue;
+                    }
+
                     SQLServerSchema schema = createSchemaImpl(
                         dataSource, catalog, name);
                     result.add(schema);
