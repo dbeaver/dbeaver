@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.runtime.sql.commands;
 
 import org.eclipse.ui.IURIEditorInput;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.ide.IDEEncoding;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -67,7 +68,7 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
 
         final String fileContents;
         try (InputStream is = new FileInputStream(incFile)) {
-            Reader reader = new InputStreamReader(is, DBeaverCore.getGlobalPreferenceStore().getString(DBeaverPreferences.DEFAULT_RESOURCE_ENCODING));
+            Reader reader = new InputStreamReader(is, IDEEncoding.getResourceEncoding());
             fileContents = IOUtils.readToString(reader);
         } catch (IOException e) {
             throw new DBException("IO error reading file '" + fileName + "'", e);

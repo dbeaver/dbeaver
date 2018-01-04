@@ -19,74 +19,56 @@ package org.jkiss.dbeaver.ext.postgresql.pldbg.impl;
 
 import org.jkiss.dbeaver.ext.postgresql.pldbg.SessionInfo;
 
-/**
- * @author Andrey.Hitrin
- *
- */
 @SuppressWarnings("nls")
 public class SessionInfoPostgres implements SessionInfo<Integer> {
-	
-	final int pid;
-	final String user;
-	final String application;
-	final String state;
-	final String query;
-	
-	@Override
-	public Integer getID()
-	{
-		return pid;
-	}
 
-	@Override
-	public boolean isDebugWait()
-	{
-		return false;
-	}
+    public static final String CREATE_LISTEN = "CREATE LISTEN";
 
-	public SessionInfoPostgres(int pid, String user, String application,
-			String state, String query)
-	{
-		super();
-		this.pid = pid;
-		this.user = user;
-		this.application = application;
-		this.state = state;
-		this.query = query;
-	}
+    final int pid;
+    final String user;
+    final String application;
+    final String state;
+    final String query;
 
-	public int getPid()
-	{
-		return pid;
-	}
+    @Override
+    public Integer getID() {
+        return pid;
+    }
 
-	public String getUser()
-	{
-		return user;
-	}
+    public SessionInfoPostgres(int pid, String user, String application, String state, String query) {
+        super();
+        this.pid = pid;
+        this.user = user;
+        this.application = application;
+        this.state = state;
+        this.query = query;
+    }
 
-	public String getApplication()
-	{
-		return application;
-	}
+    public int getPid() {
+        return pid;
+    }
 
-	public String getState()
-	{
-		return state;
-	}
+    public String getUser() {
+        return user;
+    }
 
-	public String getQuery()
-	{
-		return query;
-	}
+    public String getApplication() {
+        return application;
+    }
 
-	@Override
-	public String toString()
-	{
-		
-		return "pid:" + String.valueOf(pid) + ", user: " + user + ", application: `" + application + "`, state: " +state+ ", query: " + query.replace('\n', '\\') ;
-	}
-	
-	
+    public String getState() {
+        return state;
+    }
+
+    public String getQuery() {
+        return query;
+    }
+
+    @Override
+    public String toString() {
+
+        return "pid:" + String.valueOf(pid) + ", user: " + user + ", application: `" + application + "`, state: "
+                + state + ", query: " + query.replace('\n', '\\');
+    }
 
 }

@@ -107,7 +107,7 @@ public class DBNLocalFolder extends DBNNode implements DBNContainer
                 break;
             }
         }
-        return DBIcon.TREE_DATABASE_CATEGORY;
+        return DBIcon.TREE_FOLDER_DATABASE;
 /*
         if (dsIcon == null) {
             return DBIcon.TREE_DATABASE_CATEGORY;

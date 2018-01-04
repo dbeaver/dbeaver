@@ -21,6 +21,7 @@ import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
+import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -40,7 +41,7 @@ class PostgreRestoreWizard extends PostgreBackupRestoreWizard<PostgreDatabaseRes
     boolean cleanFirst;
 
     PostgreRestoreWizard(PostgreDatabase database) {
-        super(Collections.singletonList(database), "Database restore");
+        super(Collections.singletonList(database), PostgreMessages.wizard_restore_title);
         restoreInfo = new PostgreDatabaseRestoreInfo(database);
     }
 

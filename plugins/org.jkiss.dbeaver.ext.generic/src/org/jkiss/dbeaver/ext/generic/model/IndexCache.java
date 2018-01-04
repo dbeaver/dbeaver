@@ -93,7 +93,8 @@ class IndexCache extends JDBCCompositeCache<GenericStructContainer, GenericTable
                 // Table index statistic. Not a real index.
                 log.debug("Skip statistics index '" + indexName + "' in '" + DBUtils.getObjectFullName(parent, DBPEvaluationContext.DDL) + "'");
                 return null;
-            // indexType = DBSIndexType.STATISTIC; break;
+//                indexType = DBSIndexType.STATISTIC;
+//                break;
             case DatabaseMetaData.tableIndexClustered:
                 indexType = DBSIndexType.CLUSTERED;
                 break;

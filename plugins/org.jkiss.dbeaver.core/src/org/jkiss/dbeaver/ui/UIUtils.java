@@ -240,7 +240,13 @@ public class UIUtils {
             final TreeColumn[] columns = tree.getColumns();
             for (TreeColumn column : columns) {
                 column.pack();
-                totalWidth += column.getWidth();
+                int colWidth = column.getWidth();
+                if (colWidth > clientArea.width) {
+                    // Too wide column - make it a bit narrower
+                    colWidth = clientArea.width;
+                    column.setWidth(colWidth);
+                }
+                totalWidth += colWidth;
             }
             if (fit) {
                 int areaWidth = clientArea.width;

@@ -21,7 +21,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.postgresql.PostgresMessages;
+import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreObject;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
@@ -58,12 +58,12 @@ public class PostgreToolAnalyze implements IExternalTool
 
         public SQLDialog(IWorkbenchPartSite partSite, List<PostgreTableBase> selectedTables)
         {
-            super(partSite, PostgresMessages.tool_analyze_title_table, selectedTables);
+            super(partSite, PostgreMessages.tool_analyze_title_table, selectedTables);
         }
 
         public SQLDialog(IWorkbenchPartSite partSite, PostgreDatabase database)
         {
-            super(partSite, PostgresMessages.tool_analyze_title_database, database);
+            super(partSite, PostgreMessages.tool_analyze_title_database, database);
         }
 
         @Override

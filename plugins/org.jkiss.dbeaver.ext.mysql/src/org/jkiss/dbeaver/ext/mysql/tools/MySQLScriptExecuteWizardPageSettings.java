@@ -103,6 +103,7 @@ public class MySQLScriptExecuteWizardPageSettings extends MySQLWizardPageSetting
                 wizard.setLogLevel(MySQLScriptExecuteWizard.LogLevel.valueOf(logLevelCombo.getText()));
             }
         });
+        createExtraArgsInput(settingsGroup);
 
         createSecurityGroup(composite);
 

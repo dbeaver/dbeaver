@@ -36,7 +36,6 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
 
     private Text outputFolderText;
     private Text outputFileText;
-    private Text extraCommandArgsText;
     private Combo methodCombo;
     private Button noCreateStatementsCheck;
     private Button addDropStatementsCheck;
@@ -122,19 +121,8 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
             }
         });
 
-        extraCommandArgsText = UIUtils.createLabelText(outputGroup, "Extra command args", wizard.getExtraCommandArgs());
-        extraCommandArgsText.setToolTipText("Set extra command args for mysqldump.");
-        UIUtils.installContentProposal(
-                extraCommandArgsText,
-                new TextContentAdapter(),
-                new SimpleContentProposalProvider(new String[]{}));
-        extraCommandArgsText.addModifyListener(new ModifyListener() {
-            @Override
-            public void modifyText(ModifyEvent e) {
-                wizard.setExtraCommandArgs(extraCommandArgsText.getText());
-            }
-        });
-        
+        createExtraArgsInput(outputGroup);
+
         if (wizard.getOutputFolder() != null) {
             outputFolderText.setText(wizard.getOutputFolder().getAbsolutePath());
         }

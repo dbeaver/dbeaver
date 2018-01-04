@@ -96,13 +96,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         //layout.horizontalSpacing = 0;
         //layout.verticalSpacing = 0;
         this.setLayout(layout);
-        addDisposeListener(new DisposeListener() {
-            @Override
-            public void widgetDisposed(DisposeEvent e)
-            {
-                disposeControl();
-            }
-        });
+        addDisposeListener(e -> disposeControl());
         searchNotFoundColor = new Color(getDisplay(), 255, 128, 128);
     }
 
@@ -173,9 +167,13 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         }
     }
 
-    ProgressPageControl getProgressControl()
+    private ProgressPageControl getProgressControl()
     {
         return ownerPageControl != null ? ownerPageControl : this;
+    }
+
+    public Text getSearchTextControl() {
+        return searchText;
     }
 
     public Composite createContentContainer()
@@ -274,11 +272,7 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
                 ((GridLayout)searchControlsComposite.getLayout()).numColumns = 2;
                 defaultToolbarManager.removeAll();
                 if (isSearchPossible() && isSearchEnabled()) {
-                    defaultToolbarManager.add(ActionUtils.makeCommandContribution(
-                        PlatformUI.getWorkbench(),
-                            IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE,
-                            CoreMessages.controls_progress_page_toolbar_title,
-                            UIIcon.SEARCH));
+                    addSearchAction(defaultToolbarManager);
                 }
                 Label phLabel = new Label(searchControlsComposite, SWT.NONE);
                 phLabel.setText(""); //$NON-NLS-1$
@@ -304,6 +298,17 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         } finally {
             searchControlsComposite.getParent().setRedraw(true);
         }
+    }
+
+    /**
+     * Default search action (standard Eclipse EDIT_FIND_AND_REPLACE command)
+     */
+    protected void addSearchAction(IContributionManager contributionManager) {
+        contributionManager.add(ActionUtils.makeCommandContribution(
+            PlatformUI.getWorkbench(),
+            IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE,
+            CoreMessages.controls_progress_page_toolbar_title,
+            UIIcon.SEARCH));
     }
 
     private void createProgressControls()
@@ -376,26 +381,22 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
                 }
             }
         });
-        searchText.addModifyListener(new ModifyListener() {
-            @Override
-            public void modifyText(ModifyEvent e)
-            {
-                curSearchText = searchText.getText();
-                if (curSearchJob == null) {
-                    curSearchJob = new UIJob(CoreMessages.controls_progress_page_job_search) {
-                        @Override
-                        public IStatus runInUIThread(IProgressMonitor monitor)
-                        {
-                            if (monitor.isCanceled()) {
-                                return Status.CANCEL_STATUS;
-                            }
-                            performSearch(SearchType.NEXT);
-                            curSearchJob = null;
-                            return Status.OK_STATUS;
+        searchText.addModifyListener(e -> {
+            curSearchText = searchText.getText();
+            if (curSearchJob == null) {
+                curSearchJob = new UIJob(CoreMessages.controls_progress_page_job_search) {
+                    @Override
+                    public IStatus runInUIThread(IProgressMonitor monitor)
+                    {
+                        if (monitor.isCanceled()) {
+                            return Status.CANCEL_STATUS;
                         }
-                    };
-                    curSearchJob.schedule(200);
-                }
+                        performSearch(SearchType.NEXT);
+                        curSearchJob = null;
+                        return Status.OK_STATUS;
+                    }
+                };
+                curSearchJob.schedule(200);
             }
         });
 
@@ -500,7 +501,10 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
             curSearchJob.cancel();
             curSearchJob = null;
         }
-        getSearchRunner().cancelSearch();
+        ISearchExecutor searchRunner = getSearchRunner();
+        if (searchRunner != null) {
+            searchRunner.cancelSearch();
+        }
 
         if (hide) {
             hideControls(true);
