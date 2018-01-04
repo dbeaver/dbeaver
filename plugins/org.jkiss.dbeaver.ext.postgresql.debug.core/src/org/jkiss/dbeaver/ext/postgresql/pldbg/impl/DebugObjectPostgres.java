@@ -14,74 +14,59 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.jkiss.dbeaver.ext.postgresql.pldbg.impl;
 
 import org.jkiss.dbeaver.ext.postgresql.pldbg.DebugObject;
 
 @SuppressWarnings("nls")
 public class DebugObjectPostgres implements DebugObject<Integer> {
-	
-	private final Integer oid;
-	
-	private final String proname;
-	
-	private final String owner;
-	
-	private final String schema;
-	
-	private final String lang;
 
-	/**
-	 * @param oid
-	 * @param proname
-	 * @param owner
-	 * @param schema
-	 * @param lang
-	 */
-	public DebugObjectPostgres(Integer oid, String proname, String owner,
-			String schema, String lang)
-	{
-		super();
-		this.oid = oid;
-		this.proname = proname;
-		this.owner = owner;
-		this.schema = schema;
-		this.lang = lang;
-	}
+    private final Integer oid;
 
-	public String getOwner()
-	{
-		return owner;
-	}
+    private final String proname;
 
-	public String getSchema()
-	{
-		return schema;
-	}
+    private final String owner;
 
-	public String getLang()
-	{
-		return lang;
-	}
+    private final String schema;
 
-	@Override
-	public Integer getID()
-	{
-		return oid;
-	}
+    private final String lang;
 
-	@Override
-	public String getName()
-	{
-		return proname;
-	}
+    public DebugObjectPostgres(Integer oid, String proname, String owner, String schema, String lang) {
+        super();
+        this.oid = oid;
+        this.proname = proname;
+        this.owner = owner;
+        this.schema = schema;
+        this.lang = lang;
+    }
 
-	@Override
-	public String toString()
-	{		
-		return "id:" + String.valueOf(oid)  + ", name: `"+ proname + "("+lang+")" + ", user: " + owner +"(" + schema + ")";
-	}
+    public String getOwner() {
+        return owner;
+    }
 
-	
-	
+    public String getSchema() {
+        return schema;
+    }
+
+    public String getLang() {
+        return lang;
+    }
+
+    @Override
+    public Integer getID() {
+        return oid;
+    }
+
+    @Override
+    public String getName() {
+        return proname;
+    }
+
+    @Override
+    public String toString() {
+        return "id:" + String.valueOf(oid) + ", name: `" + proname + "(" + lang + ")" + ", user: " + owner + "("
+                + schema + ")";
+    }
+
 }
