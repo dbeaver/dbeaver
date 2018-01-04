@@ -104,6 +104,9 @@ public class DataExporterJSON extends StreamExporterAbstract {
         for (int i = 0; i < row.length; i++) {
             DBDAttributeBinding column = columns.get(i);
             String columnName = column.getLabel();
+            if (CommonUtils.isEmpty(columnName)) {
+                columnName = column.getName();
+            }
             out.write("\t\t\"" + escapeJsonString(columnName) + "\" : ");
             Object cellValue = row[i];
             if (DBUtils.isNullValue(cellValue)) {
