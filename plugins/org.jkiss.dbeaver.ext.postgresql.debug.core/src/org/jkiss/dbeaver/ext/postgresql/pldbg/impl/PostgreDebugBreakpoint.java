@@ -20,24 +20,24 @@ package org.jkiss.dbeaver.ext.postgresql.pldbg.impl;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import org.jkiss.dbeaver.ext.postgresql.pldbg.Breakpoint;
-import org.jkiss.dbeaver.ext.postgresql.pldbg.DebugException;
+import org.jkiss.dbeaver.debug.DBGBreakpoint;
+import org.jkiss.dbeaver.debug.DBGException;
 
 @SuppressWarnings("nls")
-public class PostgresBreakpoint implements Breakpoint {
+public class PostgreDebugBreakpoint implements DBGBreakpoint {
 
-    private final DebugObjectPostgres obj;
+    private final PostgreDebugObject obj;
 
-    private final DebugSessionPostgres session;
+    private final PostgreDebugSession session;
 
-    private final BreakpointPropertiesPostgres properties;
+    private final PostgreDebugBreakpointProperties properties;
 
     private static final String SQL_SET_GLOBAL = "select pldbg_set_global_breakpoint(?sessionid, ?obj, ?line, ?target)";
     private static final String SQL_SET = "select pldbg_set_breakpoint(?sessionid, ?obj, ?line)";
     private static final String SQL_DROP = "select pldbg_drop_breakpoint(?sessionid, ?obj, ?line)";
 
-    public PostgresBreakpoint(DebugSessionPostgres session, DebugObjectPostgres obj,
-            BreakpointPropertiesPostgres properties) throws DebugException {
+    public PostgreDebugBreakpoint(PostgreDebugSession session, PostgreDebugObject obj,
+                                  PostgreDebugBreakpointProperties properties) throws DBGException {
 
         this.session = session;
         this.obj = obj;
@@ -53,18 +53,18 @@ public class PostgresBreakpoint implements Breakpoint {
                             : String.valueOf(properties.getTargetId())));
 
         } catch (SQLException e) {
-            throw new DebugException(e);
+            throw new DBGException(e);
         }
 
     }
 
     @Override
-    public DebugObjectPostgres getObj() {
+    public PostgreDebugObject getDebugObject() {
         return obj;
     }
 
     @Override
-    public void drop() throws DebugException {
+    public void drop() throws DBGException {
         try (Statement stmt = session.getConnection().createStatement()) {
 
             stmt.executeQuery(SQL_DROP.replaceAll("\\?sessionid", String.valueOf(session.getSessionId()))
@@ -72,19 +72,19 @@ public class PostgresBreakpoint implements Breakpoint {
                     .replaceAll("\\?line", properties.isOnStart() ? "-1" : String.valueOf(properties.getLineNo())));
 
         } catch (SQLException e) {
-            throw new DebugException(e);
+            throw new DBGException(e);
         }
 
     }
 
     @Override
-    public BreakpointPropertiesPostgres getProperties() {
+    public PostgreDebugBreakpointProperties getProperties() {
         return properties;
     }
 
     @Override
     public String toString() {
-        return "PostgresBreakpoint [obj=" + obj + ", session id =" + session.getSessionId() + ", properties="
+        return "PostgreDebugBreakpoint [obj=" + obj + ", session id =" + session.getSessionId() + ", properties="
                 + properties + "]";
     }
 

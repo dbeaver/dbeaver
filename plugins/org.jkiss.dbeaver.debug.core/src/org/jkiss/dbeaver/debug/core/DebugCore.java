@@ -37,7 +37,7 @@ public class DebugCore {
     //FIXME: AF: revisit, looks like we can live without it
     public static final String MODEL_IDENTIFIER_DATABASE = BUNDLE_SYMBOLIC_NAME + '.' + "database"; //$NON-NLS-1$
     public static final String MODEL_IDENTIFIER_PROCEDURE = BUNDLE_SYMBOLIC_NAME + '.' + "procedure"; //$NON-NLS-1$
-    
+
     public static final String BREAKPOINT_DATABASE = BUNDLE_SYMBOLIC_NAME + '.' + "databaseBreakpointMarker"; //$NON-NLS-1$
     public static final String BREAKPOINT_DATABASE_LINE = BUNDLE_SYMBOLIC_NAME + '.' + "databaseLineBreakpointMarker"; //$NON-NLS-1$
 
@@ -46,7 +46,7 @@ public class DebugCore {
 
     public static final String ATTR_DATABASE = BUNDLE_SYMBOLIC_NAME + '.' + "ATTR_DATABASE"; //$NON-NLS-1$
     public static final String ATTR_DATABASE_DEFAULT = ""; //$NON-NLS-1$
-    
+
     public static final String ATTR_OID = BUNDLE_SYMBOLIC_NAME + '.' + "ATTR_OID"; //$NON-NLS-1$
     public static final String ATTR_OID_DEFAULT = ""; //$NON-NLS-1$
 
@@ -70,11 +70,10 @@ public class DebugCore {
             String message = NLS.bind(DebugCoreMessages.DebugCore_e_unable_to_retrieve_modes, configuration);
             log.error(message, e);
             return false;
-        }       
+        }
     }
 
-    public static List<DBSObject> extractLaunchable(Object[] scope)
-    {
+    public static List<DBSObject> extractLaunchable(Object[] scope) {
         List<DBSObject> extracted = new ArrayList<>();
         if (scope == null) {
             return extracted;
@@ -88,7 +87,7 @@ public class DebugCore {
         }
         return extracted;
     }
-    
+
     public static String extractDatasource(ILaunchConfiguration configuration) {
         return extractStringAttribute(configuration, ATTR_DATASOURCE, ATTR_DATASOURCE_DEFAULT);
     }
@@ -125,28 +124,28 @@ public class DebugCore {
         String message = status.getMessage();
         Throwable exception = status.getException();
         switch (severity) {
-        case IStatus.CANCEL:
-            delegate.debug(message, exception);
-            break;
-        case IStatus.ERROR:
-            delegate.error(message, exception);
-            break;
-        case IStatus.WARNING:
-            delegate.warn(message, exception);
-            break;
-        case IStatus.INFO:
-            delegate.info(message, exception);
-            break;
-        case IStatus.OK:
-            delegate.trace(message, exception);
-            break;
-        default:
-            break;
+            case IStatus.CANCEL:
+                delegate.debug(message, exception);
+                break;
+            case IStatus.ERROR:
+                delegate.error(message, exception);
+                break;
+            case IStatus.WARNING:
+                delegate.warn(message, exception);
+                break;
+            case IStatus.INFO:
+                delegate.info(message, exception);
+                break;
+            case IStatus.OK:
+                delegate.trace(message, exception);
+                break;
+            default:
+                break;
         }
     }
 
     public static Status newErrorStatus(String message, Throwable th) {
-        return new Status(IStatus.ERROR, BUNDLE_SYMBOLIC_NAME, message, th) ;
+        return new Status(IStatus.ERROR, BUNDLE_SYMBOLIC_NAME, message, th);
     }
 
     public static Status newErrorStatus(String message) {

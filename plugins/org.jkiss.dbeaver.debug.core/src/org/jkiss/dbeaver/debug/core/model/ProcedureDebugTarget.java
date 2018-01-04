@@ -26,27 +26,23 @@ import org.jkiss.dbeaver.debug.core.DebugCore;
 import org.jkiss.dbeaver.debug.internal.core.DebugCoreMessages;
 
 public class ProcedureDebugTarget extends DatabaseDebugTarget<ProcedureDebugController> {
-    
-    public ProcedureDebugTarget(ILaunch launch, IProcess process, ProcedureDebugController controller)
-    {
+
+    public ProcedureDebugTarget(ILaunch launch, IProcess process, ProcedureDebugController controller) {
         super(DebugCore.MODEL_IDENTIFIER_PROCEDURE, launch, process, controller);
     }
 
     @Override
-    protected DatabaseThread newThread(ProcedureDebugController controller)
-    {
+    protected DatabaseThread newThread(ProcedureDebugController controller) {
         return new ProcedureThread(this, controller);
     }
 
     @Override
-    protected String getConfiguredName(ILaunchConfiguration configuration) throws CoreException
-    {
+    protected String getConfiguredName(ILaunchConfiguration configuration) throws CoreException {
         return configuration.getName();
     }
 
     @Override
-    protected String getDefaultName()
-    {
+    protected String getDefaultName() {
         return DebugCoreMessages.ProcedureDebugTarget_name_default;
     }
 

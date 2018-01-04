@@ -17,10 +17,10 @@
 
 package org.jkiss.dbeaver.ext.postgresql.pldbg.impl;
 
-import org.jkiss.dbeaver.ext.postgresql.pldbg.DebugObject;
+import org.jkiss.dbeaver.debug.DBGObject;
 
 @SuppressWarnings("nls")
-public class DebugObjectPostgres implements DebugObject<Integer> {
+public class PostgreDebugObject implements DBGObject<Integer> {
 
     private final Integer oid;
 
@@ -32,7 +32,7 @@ public class DebugObjectPostgres implements DebugObject<Integer> {
 
     private final String lang;
 
-    public DebugObjectPostgres(Integer oid, String proname, String owner, String schema, String lang) {
+    public PostgreDebugObject(Integer oid, String proname, String owner, String schema, String lang) {
         super();
         this.oid = oid;
         this.proname = proname;

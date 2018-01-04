@@ -17,10 +17,10 @@
 
 package org.jkiss.dbeaver.ext.postgresql.pldbg.impl;
 
-import org.jkiss.dbeaver.ext.postgresql.pldbg.SessionInfo;
+import org.jkiss.dbeaver.debug.DBGSessionInfo;
 
 @SuppressWarnings("nls")
-public class SessionInfoPostgres implements SessionInfo<Integer> {
+public class PostgreDebugSessionInfo implements DBGSessionInfo<Integer> {
 
     public static final String CREATE_LISTEN = "CREATE LISTEN";
 
@@ -35,7 +35,7 @@ public class SessionInfoPostgres implements SessionInfo<Integer> {
         return pid;
     }
 
-    public SessionInfoPostgres(int pid, String user, String application, String state, String query) {
+    public PostgreDebugSessionInfo(int pid, String user, String application, String state, String query) {
         super();
         this.pid = pid;
         this.user = user;

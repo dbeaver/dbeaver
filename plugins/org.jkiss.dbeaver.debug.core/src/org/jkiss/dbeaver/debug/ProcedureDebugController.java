@@ -5,19 +5,16 @@ import java.util.Map;
 public class ProcedureDebugController extends DatabaseDebugController {
 
     private String sessionId;
-    
-    public ProcedureDebugController(String datasourceId, String databaseName, Map<String, Object> attributes)
-    {
+
+    public ProcedureDebugController(String datasourceId, String databaseName, Map<String, Object> attributes) {
         super(datasourceId, databaseName, attributes);
     }
-    
-    public String getSessionId()
-    {
+
+    public String getSessionId() {
         return sessionId;
     }
-    
-    public void setSessionId(String sessionId)
-    {
+
+    public void setSessionId(String sessionId) {
         this.sessionId = sessionId;
     }
 

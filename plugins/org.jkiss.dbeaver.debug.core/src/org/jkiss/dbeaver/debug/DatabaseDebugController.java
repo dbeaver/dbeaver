@@ -34,31 +34,29 @@ import org.jkiss.dbeaver.runtime.DBRResult;
 import org.jkiss.dbeaver.runtime.DefaultResult;
 
 public class DatabaseDebugController implements DBGController {
-    
+
     private static final Log log = Log.getLog(DatabaseDebugController.class);
 
     private final String datasourceId;
-    
+
     private DBCExecutionContext debugContext;
     private DBCSession debugSession;
-    
-    public DatabaseDebugController(String datasourceId, String databaseName, Map<String, Object> attributes)
-    {
+
+    public DatabaseDebugController(String datasourceId, String databaseName, Map<String, Object> attributes) {
         this.datasourceId = datasourceId;
     }
 
     @Override
-    public DBRResult connect(DBRProgressMonitor monitor)
-    {
+    public DBRResult connect(DBRProgressMonitor monitor) {
         DataSourceDescriptor dataSourceDescriptor = DataSourceRegistry.findDataSource(datasourceId);
         if (dataSourceDescriptor == null) {
             String message = NLS.bind("Unable to find data source with id {0}", datasourceId);
-            
+
             return DefaultResult.error(message);
         }
         DBPDataSource dataSource = dataSourceDescriptor.getDataSource();
         if (!dataSourceDescriptor.isConnected()) {
-            
+
             try {
                 //FIXME: AF: the contract of this call is not clear, we need some utility for this 
                 dataSourceDescriptor.connect(monitor, true, true);
@@ -80,33 +78,28 @@ public class DatabaseDebugController implements DBGController {
         return DefaultResult.ok();
     }
 
-    protected void afterSessionOpen(DBCSession session)
-    {
+    protected void afterSessionOpen(DBCSession session) {
         //do nothing by default
     }
 
-    protected void beforeSessionClose(DBCSession session)
-    {
+    protected void beforeSessionClose(DBCSession session) {
         //do nothing by default
     }
 
     @Override
-    public void resume()
-    {
+    public void resume() {
         // TODO Auto-generated method stub
-        
+
     }
 
     @Override
-    public void suspend()
-    {
+    public void suspend() {
         // TODO Auto-generated method stub
-        
+
     }
 
     @Override
-    public void terminate()
-    {
+    public void terminate() {
         beforeSessionClose(this.debugSession);
         if (this.debugSession != null) {
             this.debugSession.close();
@@ -118,5 +111,5 @@ public class DatabaseDebugController implements DBGController {
             this.debugContext = null;
         }
     }
-    
+
 }
