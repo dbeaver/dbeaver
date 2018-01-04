@@ -75,7 +75,7 @@
                                         <items label="%tree.partitions.node.name" path="partition" property="partitions" icon="#partition" virtual="true" recursive="../..">
                                         </items>
                                     </folder>
-                                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase" label="%tree.tablechildren.node.name" icon="#folder_table" description="Table children" virtual="true">
+                                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableReal" label="%tree.tablechildren.node.name" icon="#folder_table" description="Table children" virtual="true">
                                         <items label="%tree.tablechildren.node.name" path="subTables" property="subTables" icon="#table" virtual="true" recursive="../.." >
                                         </items>
                                     </folder>
