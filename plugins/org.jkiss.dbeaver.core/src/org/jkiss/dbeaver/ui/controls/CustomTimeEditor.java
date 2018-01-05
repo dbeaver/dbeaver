@@ -54,9 +54,9 @@ public class CustomTimeEditor {
 		layout.horizontalSpacing = 1;
 		layout.verticalSpacing = 1;
 		basePart.setLayout(layout);
-		
+
 		GridData dateTimeData = new GridData(SWT.FILL, SWT.FILL, true, true);
-	
+
 		if (formaterId.equals(DBDDataFormatter.TYPE_NAME_TIMESTAMP)) {
 			this.dateEditor = new DateTime(basePart, SWT.DATE | SWT.MEDIUM | SWT.DROP_DOWN | style);
 			this.dateEditor.setLayoutData(dateTimeData);
