@@ -48,33 +48,27 @@ public class CustomTimeEditor {
 		}
 		this.formaterId = formaterId;
 		basePart = new Composite(parent, SWT.BORDER);
-		GridLayout layout;
-		if (formaterId.equals(DBDDataFormatter.TYPE_NAME_TIMESTAMP)) {
-			layout = new GridLayout(2, false);
-		} else {
-			layout = new GridLayout(1, false);
-		}
-		layout.marginHeight = 0;
-		layout.marginWidth = 0;
+		GridLayout layout = new GridLayout(1, false);
+		layout.marginHeight = 1;
+		layout.marginWidth = 1;
+		layout.horizontalSpacing = 1;
+		layout.verticalSpacing = 1;
 		basePart.setLayout(layout);
-
-		GridData dateGD = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
-		dateGD.minimumWidth = 110;
-		GridData timeGD = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
-		timeGD.minimumWidth = 90;
-
+		
+		GridData dateTimeData = new GridData(SWT.FILL, SWT.FILL, true, true);
+	
 		if (formaterId.equals(DBDDataFormatter.TYPE_NAME_TIMESTAMP)) {
-			this.dateEditor = new DateTime(basePart, SWT.DATE | SWT.LONG | SWT.DROP_DOWN | style);
-			this.dateEditor.setLayoutData(dateGD);
+			this.dateEditor = new DateTime(basePart, SWT.DATE | SWT.MEDIUM | SWT.DROP_DOWN | style);
+			this.dateEditor.setLayoutData(dateTimeData);
 
-			this.timeEditor = new DateTime(basePart, SWT.TIME | SWT.DROP_DOWN | style);
-			this.timeEditor.setLayoutData(timeGD);
+			this.timeEditor = new DateTime(basePart, SWT.TIME | SWT.MEDIUM | SWT.DROP_DOWN | style);
+			this.timeEditor.setLayoutData(dateTimeData);
 		} else if (formaterId.equals(DBDDataFormatter.TYPE_NAME_DATE)) {
-			this.dateEditor = new DateTime(basePart, SWT.DATE | SWT.LONG | SWT.DROP_DOWN | style);
-			this.dateEditor.setLayoutData(dateGD);
+			this.dateEditor = new DateTime(basePart, SWT.DATE | SWT.MEDIUM | SWT.DROP_DOWN | style);
+			this.dateEditor.setLayoutData(dateTimeData);
 		} else if (formaterId.equals(DBDDataFormatter.TYPE_NAME_TIME)) {
-			this.timeEditor = new DateTime(basePart, SWT.TIME | SWT.DROP_DOWN | style);
-			this.timeEditor.setLayoutData(timeGD);
+			this.timeEditor = new DateTime(basePart, SWT.TIME | SWT.MEDIUM | SWT.DROP_DOWN | style);
+			this.timeEditor.setLayoutData(dateTimeData);
 		}
 
 	}
