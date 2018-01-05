@@ -40,9 +40,11 @@ import org.eclipse.ui.IWorkbenchSite;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.ext.postgresql.edit.PostgreCommandGrantPrivilege;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.edit.DBECommandReflector;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -147,7 +149,14 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
             public Font getFont(Object element) {
                 if (element instanceof DBNDatabaseNode) {
                     DBSObject object = ((DBNDatabaseNode) element).getObject();
-                    if (getObjectPermissions(object) != null) {
+                    if (object instanceof PostgreSchema) {
+                        String schemaPrefix = DBUtils.getQuotedIdentifier(object) + ".";
+                        for (String tableName : permissionMap.keySet()) {
+                            if (tableName.startsWith(schemaPrefix)) {
+                                return boldFont;
+                            }
+                        }
+                    } else if (getObjectPermissions(object) != null) {
                         return boldFont;
                     }
                 }
@@ -255,8 +264,33 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
         return permissionMap.get(DBUtils.getObjectFullName(object, DBPEvaluationContext.DDL));
     }
 
-    private void updateCurrentPrivileges(boolean grant, PostgrePrivilegeType data) {
-        //System.out.println("Privs changed");
+    private void updateCurrentPrivileges(boolean grant, PostgrePrivilegeType privilegeType) {
+
+        // Add command
+        addChangeCommand(
+            new PostgreCommandGrantPrivilege(
+                getDatabaseObject(),
+                grant,
+                currentPermission,
+                privilegeType),
+            new DBECommandReflector<PostgrePermissionsOwner, PostgreCommandGrantPrivilege>() {
+                @Override
+                public void redoCommand(PostgreCommandGrantPrivilege cmd)
+                {
+//                    if (!privTable.isDisposed() && curCatalog == selectedCatalog && curTable == selectedTable) {
+//                        privTable.checkPrivilege(privilege, isGrant);
+//                    }
+//                    updateLocalData(privilege, isGrant, curCatalog, curTable);
+                }
+                @Override
+                public void undoCommand(PostgreCommandGrantPrivilege cmd)
+                {
+//                    if (!privTable.isDisposed() && curCatalog == selectedCatalog && curTable == selectedTable) {
+//                        privTable.checkPrivilege(privilege, !isGrant);
+//                    }
+//                    updateLocalData(privilege, !isGrant, curCatalog, curTable);
+                }
+            });
     }
 
     private void updateObjectPermissions(PostgrePermission data, DBSObject curObject) {
