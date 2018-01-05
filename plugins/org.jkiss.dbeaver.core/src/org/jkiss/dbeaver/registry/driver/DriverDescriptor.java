@@ -409,6 +409,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         return id;
     }
 
+    @Override
+    public String getProviderId() {
+        return providerDescriptor.getId();
+    }
+
     @Property(viewable = true, order = 2)
     public String getCategory()
     {
