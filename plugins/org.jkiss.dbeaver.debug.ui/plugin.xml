@@ -35,6 +35,13 @@
                type="org.eclipse.debug.ui.actions.ILaunchable">
          </adapter>
       </factory>
+      <factory
+            adaptableType="org.jkiss.dbeaver.model.navigator.DBNDatabaseObject"
+            class="org.jkiss.dbeaver.debug.internal.ui.actions.DebugActionAdapterFactory">
+         <adapter
+               type="org.eclipse.debug.ui.actions.ILaunchable">
+         </adapter>
+      </factory>
    </extension>
 
    <extension

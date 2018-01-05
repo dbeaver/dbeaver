@@ -29,31 +29,28 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.DBRResult;
 import org.jkiss.dbeaver.runtime.DefaultResult;
 
-public class DatabaseDebugController implements DBGController {
+public class DBGBaseController implements DBGController {
 
-    private static final Log log = Log.getLog(DatabaseDebugController.class);
+    private static final Log log = Log.getLog(DBGBaseController.class);
 
-    private final String datasourceId;
+    private DataSourceDescriptor dataSourceDescriptor;
 
     private DBCExecutionContext debugContext;
     private DBCSession debugSession;
 
-    public DatabaseDebugController(String datasourceId, String databaseName, Map<String, Object> attributes) {
-        this.datasourceId = datasourceId;
+    public DBGBaseController() {
+    }
+
+    @Override
+    public void init(DataSourceDescriptor dataSourceDescriptor, String databaseName, Map<String, Object> attributes) {
+        this.dataSourceDescriptor = dataSourceDescriptor;
     }
 
     @Override
     public DBRResult connect(DBRProgressMonitor monitor) {
-        DataSourceDescriptor dataSourceDescriptor = DataSourceRegistry.findDataSource(datasourceId);
-        if (dataSourceDescriptor == null) {
-            String message = NLS.bind("Unable to find data source with id {0}", datasourceId);
-
-            return DefaultResult.error(message);
-        }
         DBPDataSource dataSource = dataSourceDescriptor.getDataSource();
         if (!dataSourceDescriptor.isConnected()) {
 
@@ -110,6 +107,12 @@ public class DatabaseDebugController implements DBGController {
             this.debugContext.close();
             this.debugContext = null;
         }
+    }
+
+    @Override
+    public void dispose() {
+        // TODO Auto-generated method stub
+        
     }
 
 }
