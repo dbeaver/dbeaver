@@ -409,7 +409,6 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
     private class PageControl extends ProgressPageControl {
         PageControl(Composite parent) {
             super(parent, SWT.SHEET);
-
         }
 
         ProgressVisualizer<Collection<PostgrePermission>> createLoadVisualizer() {
