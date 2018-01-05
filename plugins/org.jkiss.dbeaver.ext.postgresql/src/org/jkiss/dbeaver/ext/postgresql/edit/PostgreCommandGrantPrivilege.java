@@ -79,10 +79,9 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePerm
     @Override
     public DBECommand<?> merge(DBECommand<?> prevCommand, Map<Object, Object> userParams)
     {
-/*
         if (prevCommand instanceof PostgreCommandGrantPrivilege) {
             PostgreCommandGrantPrivilege prevGrant = (PostgreCommandGrantPrivilege)prevCommand;
-            if (prevGrant.schema == schema && prevGrant.permission == permission && prevGrant.privilege == privilege) {
+            if (prevGrant.permission == permission && prevGrant.privilege == privilege) {
                 if (prevGrant.grant == grant) {
                     return prevCommand;
                 } else {
@@ -90,7 +89,6 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePerm
                 }
             }
         }
-*/
         return super.merge(prevCommand, userParams);
     }
 
