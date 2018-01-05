@@ -64,9 +64,7 @@ import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTreeFilter;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 /**
  * PostgresRolePrivilegesEditor
@@ -84,58 +82,6 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
     private Map<String, PostgrePermission> permissionMap = new HashMap<>();
 
     public void createPartControl(Composite parent) {
-
-        {
-/*
-            actionGrant = new Action("Grant " + (isRoleEditor() ? "object" : "role"), DBeaverIcons.getImageDescriptor(getObjectAddIcon())) {
-                @Override
-                public void run() {
-                    try {
-                        VoidProgressMonitor monitor = new VoidProgressMonitor();
-                        if (isRoleEditor()) {
-                            DBNDatabaseNode dbNode = NavigatorUtils.getNodeByObject(getDatabaseObject().getDatabase());
-                            DBNDatabaseNode schemasNode = NavigatorUtils.getChildFolder(monitor, dbNode, PostgreSchema.class);
-
-                            List<DBNNode> tableNodes = BrowseObjectDialog.selectObjects(getSite().getShell(), "Select object", schemasNode, null,
-                                new Class[]{Object.class}, new Class[]{PostgreTableBase.class});
-                            if (tableNodes != null) {
-                                for (DBNNode node : tableNodes) {
-
-                                }
-                            }
-                        } else {
-                            List<PostgreRole> allRoles = new ArrayList<>(getDatabaseObject().getDatabase().getAuthIds(monitor));
-                            if (currentPrivs != null) {
-                                for (PostgrePermission p : currentPrivs) {
-                                    allRoles.remove(p.getTargetObject(monitor));
-                                }
-                            }
-                            SelectObjectDialog<PostgreRole> roleSelector = new SelectObjectDialog<>(
-                                getSite().getShell(),
-                                "Select role",
-                                true,
-                                "Permissions/Role/Selector",
-                                allRoles,
-                                null);
-                            if (roleSelector.open() == IDialogConstants.OK_ID) {
-
-                            }
-                        }
-                    } catch (DBException e) {
-                        DBeaverUI.getInstance().showError("Load object", "Error loading permission objects", e);
-                    }
-                }
-            };
-
-            actionRevoke = new Action("Revoke " + (isRoleEditor() ? "object" : "role"), DBeaverIcons.getImageDescriptor(getObjectRemoveIcon())) {
-                @Override
-                public void run() {
-                    super.run();
-                }
-            };
-*/
-        }
-
         this.pageControl = new PageControl(parent);
 
         SashForm composite = UIUtils.createPartDivider(getSite().getPart(), this.pageControl, SWT.HORIZONTAL);
@@ -192,7 +138,6 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
         {
             Composite permEditPanel = new Composite(composite, SWT.NONE);
             permEditPanel.setLayout(new GridLayout(1, true));
-            //permEditPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             permissionTable = new Table(permEditPanel, SWT.FULL_SELECTION | SWT.CHECK);
             permissionTable.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
@@ -229,7 +174,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
             buttonPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             buttonPanel.setLayout(new RowLayout());
 
-            Button actionCheckAll = UIUtils.createPushButton(buttonPanel, "Check All", null, new SelectionAdapter() {
+            UIUtils.createPushButton(buttonPanel, "Grant All", null, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     boolean hadNonChecked = false;
@@ -240,7 +185,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                     if (hadNonChecked) updateCurrentPrivileges(true, null);
                 }
             });
-            Button actionCheckNone = UIUtils.createPushButton(buttonPanel, "Check None", null, new SelectionAdapter() {
+            UIUtils.createPushButton(buttonPanel, "Revoke All", null, new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     boolean hadChecked = false;
@@ -266,6 +211,33 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
 
     private void updateCurrentPrivileges(boolean grant, PostgrePrivilegeType privilegeType) {
 
+        if (currentPermission == null) {
+            if (currentObject == null) {
+                DBeaverUI.getInstance().showError("Update privilege", "Can't update privilege - no current object");
+                return;
+            }
+            if (isRoleEditor()) {
+                PostgreTableBase table = (PostgreTableBase) currentObject;
+
+                List<PostgrePrivilege> privileges = new ArrayList<>();
+//                privileges.add(new PostgrePrivilege(
+//                    getDatabaseObject().getDataSource().getContainer().getConnectionConfiguration().getUserName(),
+//                    getDatabaseObject().getName(),
+//                    table.getSchema().getDatabase().getName(),
+//                    table.getSchema().getName(),
+//                    table.getName(),
+//                    privilegeType,
+//                    false,
+//                    false));
+
+                currentPermission = new PostgreRolePermission(getDatabaseObject(), table.getSchema().getName(), table.getName(), privileges);
+            } else {
+                List<PostgrePrivilege> privileges = new ArrayList<>();
+                currentPermission = new PostgreTablePermission(getDatabaseObject(), currentObject.getName(), privileges);
+            }
+            // Add to map
+            permissionMap.put(currentPermission.getName(), currentPermission);
+        }
         // Add command
         addChangeCommand(
             new PostgreCommandGrantPrivilege(
@@ -395,6 +367,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                 @Override
                 public void completeLoading(Collection<PostgrePermission> privs) {
                     super.completeLoading(privs);
+                    permissionMap.clear();
                     for (PostgrePermission perm : privs) {
                         permissionMap.put(perm.getName(), perm);
                     }
