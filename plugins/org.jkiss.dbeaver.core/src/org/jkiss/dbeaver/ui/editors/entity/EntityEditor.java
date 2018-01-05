@@ -241,6 +241,12 @@ public class EntityEditor extends MultiPageDatabaseEditor
             previewResult = showChanges(true);
         }
 
+        if (previewResult == IDialogConstants.IGNORE_ID) {
+            // There are no changes to save
+            // Let's just refresh dirty status
+            firePropertyChange(IEditorPart.PROP_DIRTY);
+            return;
+        }
         if (previewResult != IDialogConstants.PROCEED_ID) {
             monitor.setCanceled(true);
             return;
@@ -394,6 +400,9 @@ public class EntityEditor extends MultiPageDatabaseEditor
             return IDialogConstants.CANCEL_ID;
         }
         Collection<? extends DBECommand> commands = commandContext.getFinalCommands();
+        if (CommonUtils.isEmpty(commands)) {
+            return IDialogConstants.IGNORE_ID;
+        }
         StringBuilder script = new StringBuilder();
         for (DBECommand command : commands) {
             try {
