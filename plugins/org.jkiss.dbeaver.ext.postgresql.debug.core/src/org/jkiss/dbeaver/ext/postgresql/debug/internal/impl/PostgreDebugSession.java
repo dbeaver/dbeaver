@@ -30,6 +30,7 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.jkiss.dbeaver.debug.*;
 import org.jkiss.dbeaver.debug.DBGBreakpoint;
+import org.jkiss.dbeaver.runtime.DBRResult;
 
 @SuppressWarnings("nls")
 public class PostgreDebugSession implements DBGSession<PostgreDebugSessionInfo, PostgreDebugObject, Integer> {
@@ -68,7 +69,7 @@ public class PostgreDebugSession implements DBGSession<PostgreDebugSessionInfo, 
 
     private PostgreDebugSessionWorker worker;
 
-    private FutureTask<PostgreDebugSessionResult> task;
+    private FutureTask<DBRResult> task;
 
     private Thread workerThread = null;
 
@@ -348,7 +349,7 @@ public class PostgreDebugSession implements DBGSession<PostgreDebugSessionInfo, 
 
         if (task.isDone()) {
 
-            PostgreDebugSessionResult res;
+            DBRResult res;
 
             try {
                 res = task.get();
@@ -360,7 +361,7 @@ public class PostgreDebugSession implements DBGSession<PostgreDebugSessionInfo, 
                 System.out.println("WARNING " + res.getException().getMessage());
             }
 
-            return res.isResult();
+            return res.isOK();
 
         }
 
@@ -376,7 +377,7 @@ public class PostgreDebugSession implements DBGSession<PostgreDebugSessionInfo, 
 
             worker.execSQL(commandSQL);
 
-            task = new FutureTask<PostgreDebugSessionResult>(worker);
+            task = new FutureTask<DBRResult>(worker);
 
             workerThread = new Thread(task);
 

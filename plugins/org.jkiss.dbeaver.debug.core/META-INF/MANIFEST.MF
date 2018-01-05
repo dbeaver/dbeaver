@@ -12,4 +12,6 @@ Require-Bundle: org.eclipse.core.runtime,
 Export-Package: org.jkiss.dbeaver.debug,
  org.jkiss.dbeaver.debug.core,
  org.jkiss.dbeaver.debug.core.breakpoints,
- org.jkiss.dbeaver.debug.core.model
+ org.jkiss.dbeaver.debug.core.model,
+ org.jkiss.dbeaver.runtime,
+ org.jkiss.dbeaver.runtime.core
