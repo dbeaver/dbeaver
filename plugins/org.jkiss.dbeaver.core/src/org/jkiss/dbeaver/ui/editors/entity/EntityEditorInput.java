@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSFolder;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
 
 /**
@@ -38,6 +39,15 @@ public class EntityEditorInput extends DatabaseEditorInput<DBNDatabaseNode>
     public EntityEditorInput(@NotNull DBNDatabaseNode dbnDatabaseNode, @Nullable DBECommandContext commandContext)
     {
         super(dbnDatabaseNode, commandContext);
+    }
+    
+    @Override
+    public <T> T getAdapter(Class<T> adapter) {
+        if (adapter == DBSObject.class) {
+            DBSObject databaseObject = getDatabaseObject();
+            return adapter.cast(databaseObject);
+        }
+        return super.getAdapter(adapter);
     }
 
     @Override
