@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.ext.postgresql.debug.internal;
 import org.eclipse.osgi.util.NLS;
 
 public class PostgreDebugCoreMessages extends NLS {
-    private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.postgresql.internal.debug.core.PostgreDebugCoreMessages"; //$NON-NLS-1$
+    private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.postgresql.debug.internal.core.PostgreDebugCoreMessages"; //$NON-NLS-1$
     public static String PgSqlDebugController_connection_application_name;
     public static String PgSqlDebugController_e_failed_session_close;
     public static String PgSqlDebugController_e_failed_session_open;

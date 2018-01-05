@@ -26,9 +26,12 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.LaunchConfigurationDelegate;
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.debug.DBGController;
 import org.jkiss.dbeaver.debug.core.DebugCore;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.DBRResult;
 import org.jkiss.dbeaver.runtime.core.RuntimeCore;
 
@@ -37,10 +40,15 @@ public abstract class DatabaseLaunchDelegate<C extends DBGController> extends La
     @Override
     public void launch(ILaunchConfiguration configuration, String mode, ILaunch launch, IProgressMonitor monitor)
         throws CoreException {
-        String datasourceId = DebugCore.extractDatasource(configuration);
-        String databaseName = DebugCore.extractDatabase(configuration);
+        String datasourceId = DebugCore.extractDatasourceId(configuration);
+        DataSourceDescriptor datasourceDescriptor = DataSourceRegistry.findDataSource(datasourceId);
+        if (datasourceDescriptor == null) {
+            String message = NLS.bind("Unable to find data source with id {0}", datasourceId);
+            throw new CoreException(DebugCore.newErrorStatus(message));
+        }
+        String databaseName = DebugCore.extractDatabaseName(configuration);
         Map<String, Object> attributes = extractAttributes(configuration);
-        C controller = createController(datasourceId, databaseName, attributes);
+        C controller = createController(datasourceDescriptor, databaseName, attributes);
         DatabaseProcess process = createProcess(launch, configuration.getName());
         DatabaseDebugTarget<C> target = createDebugTarget(launch, controller, process);
         launch.addDebugTarget(target);
@@ -57,7 +65,7 @@ public abstract class DatabaseLaunchDelegate<C extends DBGController> extends La
         return attributes;
     }
 
-    protected abstract C createController(String datasourceId, String databaseName, Map<String, Object> attributes);
+    protected abstract C createController(DataSourceDescriptor datasourceDescriptor, String databaseName, Map<String, Object> attributes) throws CoreException;
 
     protected abstract DatabaseProcess createProcess(ILaunch launch, String name);
 
