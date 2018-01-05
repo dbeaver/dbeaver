@@ -72,8 +72,7 @@ public class TreeLoadVisualizer implements ILoadVisualizer<Object[]> {
         try {
             viewerControl.setRedraw(false);
 
-            Widget widget = viewer.testFindItem(parent);
-            if (widget != null && !widget.isDisposed()) {
+            {
                 TreeItem item = (TreeItem) viewer.testFindItem(placeHolder);
                 if (children == null) {
                     // Some error occurred. In good case children must be at least an empty array
@@ -82,7 +81,7 @@ public class TreeLoadVisualizer implements ILoadVisualizer<Object[]> {
                     viewer.add(parent, children);
                 }
                 if (item != null && !item.isDisposed()) {
-                    if (item.getParentItem() != null && !item.getParentItem().isDisposed() || this.parent instanceof IWorkspaceRoot) {
+                    if ((item.getParentItem() == null || !item.getParentItem().isDisposed()) || this.parent instanceof IWorkspaceRoot) {
                         viewer.remove(placeHolder);
                     }
                 }
