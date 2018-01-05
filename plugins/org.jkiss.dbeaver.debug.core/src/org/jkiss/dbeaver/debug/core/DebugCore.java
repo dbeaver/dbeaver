@@ -27,14 +27,25 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.debug.DBGControllerRegistry;
+import org.jkiss.dbeaver.debug.DBGProcedureController;
+import org.jkiss.dbeaver.debug.internal.core.DebugCoreActivator;
 import org.jkiss.dbeaver.debug.internal.core.DebugCoreMessages;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
+import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 
 public class DebugCore {
 
     public static final String BUNDLE_SYMBOLIC_NAME = "org.jkiss.dbeaver.debug.core"; //$NON-NLS-1$
 
-    //FIXME: AF: revisit, looks like we can live without it
+    public static final String EP_PROCEDURE_CONTROLLERS_ID = "procedureControllers"; //$NON-NLS-1$
+    public static final String EP_PROCEDURE_CONTROLLERS_CONTROLLER = "controller"; //$NON-NLS-1$
+    public static final String EP_PROCEDURE_CONTROLLERS_CONTROLLER_PROVIDER_ID = "providerId"; //$NON-NLS-1$
+    public static final String EP_PROCEDURE_CONTROLLERS_CONTROLLER_CLASS = "class"; //$NON-NLS-1$
+
+    // FIXME: AF: revisit, looks like we can live without it
     public static final String MODEL_IDENTIFIER_DATABASE = BUNDLE_SYMBOLIC_NAME + '.' + "database"; //$NON-NLS-1$
     public static final String MODEL_IDENTIFIER_PROCEDURE = BUNDLE_SYMBOLIC_NAME + '.' + "procedure"; //$NON-NLS-1$
 
@@ -88,15 +99,16 @@ public class DebugCore {
         return extracted;
     }
 
-    public static String extractDatasource(ILaunchConfiguration configuration) {
+    public static String extractDatasourceId(ILaunchConfiguration configuration) {
         return extractStringAttribute(configuration, ATTR_DATASOURCE, ATTR_DATASOURCE_DEFAULT);
     }
 
-    public static String extractDatabase(ILaunchConfiguration configuration) {
+    public static String extractDatabaseName(ILaunchConfiguration configuration) {
         return extractStringAttribute(configuration, ATTR_DATABASE, ATTR_DATABASE_DEFAULT);
     }
 
-    public static String extractStringAttribute(ILaunchConfiguration configuration, String attributeName, String defaultValue) {
+    public static String extractStringAttribute(ILaunchConfiguration configuration, String attributeName,
+            String defaultValue) {
         if (configuration == null) {
             String message = NLS.bind(DebugCoreMessages.DebugCore_e_read_attribute_null, attributeName);
             log.error(message);
@@ -105,42 +117,44 @@ public class DebugCore {
         try {
             return configuration.getAttribute(attributeName, defaultValue);
         } catch (CoreException e) {
-            String message = NLS.bind(DebugCoreMessages.DebugCore_e_read_attribute_generic, attributeName, configuration);
+            String message = NLS.bind(DebugCoreMessages.DebugCore_e_read_attribute_generic, attributeName,
+                    configuration);
             log.error(message, e);
             return defaultValue;
         }
     }
 
+    // FIXME: AF: move to org.jkiss.dbeaver.Log
     public static void log(Log delegate, IStatus status) {
         if (delegate == null) {
-            //no way to log
+            // no way to log
             return;
         }
         if (status == null) {
-            //nothing to log
+            // nothing to log
             return;
         }
         int severity = status.getSeverity();
         String message = status.getMessage();
         Throwable exception = status.getException();
         switch (severity) {
-            case IStatus.CANCEL:
-                delegate.debug(message, exception);
-                break;
-            case IStatus.ERROR:
-                delegate.error(message, exception);
-                break;
-            case IStatus.WARNING:
-                delegate.warn(message, exception);
-                break;
-            case IStatus.INFO:
-                delegate.info(message, exception);
-                break;
-            case IStatus.OK:
-                delegate.trace(message, exception);
-                break;
-            default:
-                break;
+        case IStatus.CANCEL:
+            delegate.debug(message, exception);
+            break;
+        case IStatus.ERROR:
+            delegate.error(message, exception);
+            break;
+        case IStatus.WARNING:
+            delegate.warn(message, exception);
+            break;
+        case IStatus.INFO:
+            delegate.info(message, exception);
+            break;
+        case IStatus.OK:
+            delegate.trace(message, exception);
+            break;
+        default:
+            break;
         }
     }
 
@@ -150,6 +164,31 @@ public class DebugCore {
 
     public static Status newErrorStatus(String message) {
         return newErrorStatus(message, null);
+    }
+
+    public static String extractProviderId(DataSourceDescriptor datasourceDescriptor) {
+        if (datasourceDescriptor == null) {
+            return null;
+        }
+        DriverDescriptor driverDescriptor = datasourceDescriptor.getDriver();
+        if (driverDescriptor == null) {
+            return null;
+        }
+        DataSourceProviderDescriptor providerDescriptor = driverDescriptor.getProviderDescriptor();
+        if (providerDescriptor == null) {
+            return null;
+        }
+        return providerDescriptor.getId();
+    }
+
+    public static DBGControllerRegistry<DBGProcedureController> getProcedureControllerRegistry() {
+        return DebugCoreActivator.getDefault().getProcedureControllerRegistry();
+    }
+
+    public static DBGProcedureController findProcedureController(DataSourceDescriptor datasourceDescriptor) {
+        String providerId = extractProviderId(datasourceDescriptor);
+        DBGControllerRegistry<DBGProcedureController> controllerRegistry = getProcedureControllerRegistry();
+        return controllerRegistry.createController(providerId);
     }
 
 }

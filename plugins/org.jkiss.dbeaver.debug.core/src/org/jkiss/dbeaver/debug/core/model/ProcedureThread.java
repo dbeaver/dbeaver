@@ -19,14 +19,14 @@ package org.jkiss.dbeaver.debug.core.model;
 
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.osgi.util.NLS;
-import org.jkiss.dbeaver.debug.ProcedureDebugController;
+import org.jkiss.dbeaver.debug.DBGProcedureController;
 import org.jkiss.dbeaver.debug.internal.core.DebugCoreMessages;
 
 public class ProcedureThread extends DatabaseThread {
 
-    private final ProcedureDebugController controller;
+    private final DBGProcedureController controller;
 
-    public ProcedureThread(IDatabaseDebugTarget target, ProcedureDebugController controller) {
+    public ProcedureThread(IDatabaseDebugTarget target, DBGProcedureController controller) {
         super(target);
         this.controller = controller;
     }

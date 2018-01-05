@@ -15,3 +15,5 @@ Export-Package: org.jkiss.dbeaver.debug,
  org.jkiss.dbeaver.debug.core.model,
  org.jkiss.dbeaver.runtime,
  org.jkiss.dbeaver.runtime.core
+Bundle-Activator: org.jkiss.dbeaver.debug.internal.core.DebugCoreActivator
+Bundle-ActivationPolicy: lazy

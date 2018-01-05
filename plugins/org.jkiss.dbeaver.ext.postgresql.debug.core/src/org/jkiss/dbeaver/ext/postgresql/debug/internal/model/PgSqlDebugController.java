@@ -18,11 +18,10 @@
 package org.jkiss.dbeaver.ext.postgresql.debug.internal.model;
 
 import java.sql.SQLException;
-import java.util.Map;
 
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.debug.ProcedureDebugController;
+import org.jkiss.dbeaver.debug.DBGProcedureController;
 import org.jkiss.dbeaver.ext.postgresql.debug.internal.PostgreDebugCoreMessages;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
@@ -32,7 +31,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 
-public class PgSqlDebugController extends ProcedureDebugController {
+public class PgSqlDebugController extends DBGProcedureController {
     
     private static final String PROPERTY_APPLICATION_NAME = "ApplicationName"; //$NON-NLS-1$
     private static final String SELECT_FROM_PLDBG_ABORT_TARGET = "select * from pldbg_abort_target(?)"; //$NON-NLS-1$
@@ -40,9 +39,9 @@ public class PgSqlDebugController extends ProcedureDebugController {
 
     private static final Log log = Log.getLog(PgSqlDebugController.class);
 
-    public PgSqlDebugController(String datasourceId, String databaseName, Map<String, Object> attributes)
+    public PgSqlDebugController()
     {
-        super(datasourceId, databaseName, attributes);
+        super();
     }
     
     @Override

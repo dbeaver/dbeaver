@@ -17,7 +17,10 @@
  */
 package org.jkiss.dbeaver.debug;
 
+import java.util.Map;
+
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.DBRResult;
 
 //FIXME:AF: we need "operation result" interface like IStatus to express the result of operation
@@ -27,13 +30,17 @@ import org.jkiss.dbeaver.runtime.DBRResult;
  * This interface is expected to be used in synch manner
  */
 public interface DBGController {
+    
+    void init(DataSourceDescriptor dataSourceDescriptor, String databaseName, Map<String, Object> attributes);
 
     public DBRResult connect(DBRProgressMonitor monitor);
 
-    public void resume();
+    void resume();
 
-    public void suspend();
+    void suspend();
 
-    public void terminate();
+    void terminate();
+    
+    void dispose();
 
 }
