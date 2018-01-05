@@ -104,13 +104,13 @@ public class DatabaseTab extends AbstractLaunchConfigurationTab {
 
     protected void initializeDatasource(ILaunchConfiguration configuration)
     {
-        String extracted = DebugCore.extractDatasource(configuration);
+        String extracted = DebugCore.extractDatasourceId(configuration);
         datasourceText.setText(extracted);
     }
 
     protected void initializeDatabase(ILaunchConfiguration configuration)
     {
-        String extracted = DebugCore.extractDatabase(configuration);
+        String extracted = DebugCore.extractDatabaseName(configuration);
         databaseText.setText(extracted);
     }
 

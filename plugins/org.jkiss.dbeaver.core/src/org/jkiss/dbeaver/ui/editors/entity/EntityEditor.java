@@ -760,6 +760,11 @@ public class EntityEditor extends MultiPageDatabaseEditor
         if (adapter == IPropertySheetPage.class) {
             return adapter.cast(new PropertyPageStandard());
         }
+        if (adapter == DBSObject.class) {
+            IDatabaseEditorInput editorInput = getEditorInput();
+            DBSObject databaseObject = editorInput.getDatabaseObject();
+            return adapter.cast(databaseObject);
+        }
         return super.getAdapter(adapter);
     }
 
