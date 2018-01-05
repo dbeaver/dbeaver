@@ -65,7 +65,10 @@
                         ifEmpty="false"
                         operator="and">
                      <adapt
-                           type="org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure">
+                           type="org.jkiss.dbeaver.model.struct.DBSObject">
+                        <instanceof
+                              value="org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure">
+                        </instanceof>
                      </adapt>
                   </iterate>
                </with>

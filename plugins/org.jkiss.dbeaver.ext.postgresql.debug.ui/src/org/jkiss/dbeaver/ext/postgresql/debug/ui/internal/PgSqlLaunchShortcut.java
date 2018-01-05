@@ -70,13 +70,13 @@ public class PgSqlLaunchShortcut extends LaunchShortcut {
         }
         PostgreProcedure procedure = (PostgreProcedure) launchable;
 
-        String datasource = DebugCore.extractDatasource(config);
+        String datasource = DebugCore.extractDatasourceId(config);
         String id = launchable.getDataSource().getContainer().getId();
         if (!datasource.equals(id)) {
             return false;
         }
 
-        String database = DebugCore.extractDatabase(config);
+        String database = DebugCore.extractDatabaseName(config);
         String databaseName = launchable.getDataSource().getName();
         if (!database.equals(databaseName)) {
             return false;

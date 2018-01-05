@@ -21,7 +21,7 @@ import org.eclipse.osgi.util.NLS;
 
 public class PostgreDebugUIMessages extends NLS {
 
-    private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.postgresql.internal.debug.ui.PostgreDebugUIMessages"; //$NON-NLS-1$
+    private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.postgresql.debug.ui.internal.PostgreDebugUIMessages"; //$NON-NLS-1$
     
     public static String PgSqlLaunchShortcut_e_editor_empty;
     public static String PgSqlLaunchShortcut_e_selection_empty;
