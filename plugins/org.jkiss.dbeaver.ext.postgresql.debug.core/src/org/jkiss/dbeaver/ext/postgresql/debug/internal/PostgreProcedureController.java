@@ -15,14 +15,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.postgresql.debug.internal.model;
+package org.jkiss.dbeaver.ext.postgresql.debug.internal;
 
 import java.sql.SQLException;
 
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.debug.DBGProcedureController;
-import org.jkiss.dbeaver.ext.postgresql.debug.internal.PostgreDebugCoreMessages;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -31,15 +30,17 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 
-public class PgSqlDebugController extends DBGProcedureController {
+//FIXME: AF: adapter type for PostgreDebugSessionManager/PostgreDebugSession
+//FIXME: AF: rework up to DBGBaseController if needed
+public class PostgreProcedureController extends DBGProcedureController {
     
     private static final String PROPERTY_APPLICATION_NAME = "ApplicationName"; //$NON-NLS-1$
     private static final String SELECT_FROM_PLDBG_ABORT_TARGET = "select * from pldbg_abort_target(?)"; //$NON-NLS-1$
     private static final String SELECT_PLDBG_CREATE_LISTENER = "select pldbg_create_listener() as sessionid"; //$NON-NLS-1$
 
-    private static final Log log = Log.getLog(PgSqlDebugController.class);
+    private static final Log log = Log.getLog(PostgreProcedureController.class);
 
-    public PgSqlDebugController()
+    public PostgreProcedureController()
     {
         super();
     }
