@@ -116,12 +116,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
             }
         });
         treeViewer.addSelectionChangedListener(event -> {
-            List<DBSObject> selectedObjects = NavigatorUtils.getSelectedObjects(treeViewer.getSelection());
-            if (CommonUtils.isEmpty(selectedObjects)) {
-                updateObjectPermissions(null);
-            } else {
-                updateObjectPermissions(selectedObjects);
-            }
+            handleSelectionChange();
         });
         treeViewer.addFilter(new ViewerFilter() {
             @Override
@@ -212,6 +207,15 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
 
         pageControl.createOrSubstituteProgressPanel(getSite());
         updateObjectPermissions(null);
+    }
+
+    private void handleSelectionChange() {
+        List<DBSObject> selectedObjects = NavigatorUtils.getSelectedObjects(roleOrObjectTable.getViewer().getSelection());
+        if (CommonUtils.isEmpty(selectedObjects)) {
+            updateObjectPermissions(null);
+        } else {
+            updateObjectPermissions(selectedObjects);
+        }
     }
 
     private PostgrePermission getObjectPermissions(DBSObject object) {
@@ -389,8 +393,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                     }
                 }
             },
-            pageControl.createLoadVisualizer())
-            .schedule();
+            pageControl.createLoadVisualizer()).schedule();
     }
 
     @Override
@@ -432,6 +435,8 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                     } else {
                         roleOrObjectTable.reloadTree(rootNode);
                     }
+                    roleOrObjectTable.getViewer().getControl().setFocus();
+                    handleSelectionChange();
                 }
             };
         }
