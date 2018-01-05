@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.mssql.model;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -39,6 +40,14 @@ public class SQLServerDataSource extends GenericDataSource {
         throws DBException
     {
         super(monitor, container, metaModel, new SQLServerDialect());
+    }
+
+    @Override
+    public Object getDataSourceFeature(String featureId) {
+        if (DBConstants.FEATURE_LIMIT_AFFECTS_DML.equals(featureId)) {
+            return true;
+        }
+        return super.getDataSourceFeature(featureId);
     }
 
     //////////////////////////////////////////////////////////
