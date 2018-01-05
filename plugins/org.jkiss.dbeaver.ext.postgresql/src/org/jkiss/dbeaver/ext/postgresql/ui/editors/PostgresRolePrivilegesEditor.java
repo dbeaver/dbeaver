@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.postgresql.ui.editors;
 
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
@@ -62,6 +63,7 @@ import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorLabelProvider;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTreeFilter;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -76,10 +78,12 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
 
     private boolean isLoaded;
     private DatabaseNavigatorTree roleOrObjectTable;
+    private Composite permEditPanel;
     private Table permissionTable;
+    private ControlEnableState permissionsEnable;
 
-    private PostgrePermission currentPermission;
-    private DBSObject currentObject;
+    private DBSObject[] currentObjects;
+    private PostgrePermission[] currentPermissions;
     private Map<String, PostgrePermission> permissionMap = new HashMap<>();
     private Text objectDescriptionText;
 
@@ -138,7 +142,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
         });
 
         {
-            Composite permEditPanel = new Composite(composite, SWT.NONE);
+            permEditPanel = new Composite(composite, SWT.NONE);
             permEditPanel.setLayout(new GridLayout(1, true));
 
             permissionTable = new Table(permEditPanel, SWT.FULL_SELECTION | SWT.CHECK);
@@ -216,58 +220,62 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
 
     private void updateCurrentPrivileges(boolean grant, PostgrePrivilegeType privilegeType) {
 
-        if (currentPermission == null) {
-            if (currentObject == null) {
-                DBeaverUI.getInstance().showError("Update privilege", "Can't update privilege - no current object");
-                return;
-            }
-            if (isRoleEditor()) {
-                PostgreTableBase table = (PostgreTableBase) currentObject;
-
-                List<PostgrePrivilege> privileges = new ArrayList<>();
-//                privileges.add(new PostgrePrivilege(
-//                    getDatabaseObject().getDataSource().getContainer().getConnectionConfiguration().getUserName(),
-//                    getDatabaseObject().getName(),
-//                    table.getSchema().getDatabase().getName(),
-//                    table.getSchema().getName(),
-//                    table.getName(),
-//                    privilegeType,
-//                    false,
-//                    false));
-
-                currentPermission = new PostgreRolePermission(getDatabaseObject(), table.getSchema().getName(), table.getName(), privileges);
-            } else {
-                List<PostgrePrivilege> privileges = new ArrayList<>();
-                currentPermission = new PostgreTablePermission(getDatabaseObject(), currentObject.getName(), privileges);
-            }
-            // Add to map
-            permissionMap.put(currentPermission.getName(), currentPermission);
+        if (ArrayUtils.isEmpty(currentObjects)) {
+            DBeaverUI.getInstance().showError("Update privilege", "Can't update privilege - no current object");
+            return;
         }
-        // Add command
-        addChangeCommand(
-            new PostgreCommandGrantPrivilege(
-                getDatabaseObject(),
-                grant,
-                currentPermission,
-                privilegeType),
-            new DBECommandReflector<PostgrePermissionsOwner, PostgreCommandGrantPrivilege>() {
-                @Override
-                public void redoCommand(PostgreCommandGrantPrivilege cmd)
-                {
+
+        for (int i = 0; i < currentObjects.length; i++) {
+            DBSObject currentObject = currentObjects[i];
+            PostgrePermission permission = currentPermissions[i];
+            if (permission == null) {
+                if (!grant) {
+                    // No permission - nothing to revoke
+                    continue;
+                }
+                if (isRoleEditor()) {
+                    PostgreTableBase table = (PostgreTableBase) currentObject;
+                    permission = new PostgreRolePermission(getDatabaseObject(), table.getSchema().getName(), table.getName(), Collections.emptyList());
+                } else {
+                    permission = new PostgreTablePermission(getDatabaseObject(), currentObject.getName(), Collections.emptyList());
+                }
+                // Add to map
+                permissionMap.put(permission.getName(), permission);
+            } else {
+                // Check for privilege was already granted for this object
+                boolean hasPriv = permission.getPermission(privilegeType) != PostgrePermission.NONE;
+                if (grant == hasPriv) {
+                    continue;
+                }
+            }
+
+            // Add command
+            addChangeCommand(
+                new PostgreCommandGrantPrivilege(
+                    getDatabaseObject(),
+                    grant,
+                    permission,
+                    privilegeType),
+                new DBECommandReflector<PostgrePermissionsOwner, PostgreCommandGrantPrivilege>() {
+                    @Override
+                    public void redoCommand(PostgreCommandGrantPrivilege cmd)
+                    {
 //                    if (!privTable.isDisposed() && curCatalog == selectedCatalog && curTable == selectedTable) {
 //                        privTable.checkPrivilege(privilege, isGrant);
 //                    }
 //                    updateLocalData(privilege, isGrant, curCatalog, curTable);
-                }
-                @Override
-                public void undoCommand(PostgreCommandGrantPrivilege cmd)
-                {
+                    }
+                    @Override
+                    public void undoCommand(PostgreCommandGrantPrivilege cmd)
+                    {
 //                    if (!privTable.isDisposed() && curCatalog == selectedCatalog && curTable == selectedTable) {
 //                        privTable.checkPrivilege(privilege, !isGrant);
 //                    }
 //                    updateLocalData(privilege, !isGrant, curCatalog, curTable);
-                }
-            });
+                    }
+                });
+
+        }
     }
 
     private void updateObjectPermissions(List<DBSObject> objects) {
@@ -283,31 +291,47 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                 objectNames.append(DBUtils.getObjectFullName(object.getDataSource(), object, DBPEvaluationContext.DML));
             }
         }
+        boolean editEnabled;
         if (hasBadObjects) {
             objectDescriptionText.setText("<no objects>");
 
-            this.currentPermission = null;
-            this.currentObject = null;
+            this.currentPermissions = null;
+            this.currentObjects = null;
+            editEnabled = false;
+
         } else {
             objectDescriptionText.setText(objectNames.toString());
 
-            this.currentObject = objects.get(0);
-            this.currentPermission = getObjectPermissions(this.currentObject);
+            this.currentObjects = objects.toArray(new DBSObject[objects.size()]);
+            this.currentPermissions = new PostgrePermission[this.currentObjects.length];
+            for (int i = 0; i < currentObjects.length; i++) {
+                this.currentPermissions[i] = getObjectPermissions(currentObjects[i]);
+            }
+            editEnabled = !CommonUtils.isEmpty(objects);
         }
 
-        if (currentPermission == null) {
+        if (editEnabled) {
+            if (permissionsEnable != null) {
+                permissionsEnable.restore();
+                permissionsEnable = null;
+            }
+        } else {
+            if (permissionsEnable == null) {
+                permissionsEnable = ControlEnableState.disable(permEditPanel);
+            }
+        }
+
+        if (ArrayUtils.isEmpty(currentPermissions)) {
             // We have object(s) but no permissions for them
-            permissionTable.setEnabled(!CommonUtils.isEmpty(objects));
             for (TableItem item : permissionTable.getItems()) {
                 item.setChecked(false);
                 item.setText(1, "");
                 item.setText(2, "");
             }
         } else {
-            permissionTable.setEnabled(true);
             for (TableItem item : permissionTable.getItems()) {
                 PostgrePrivilegeType privType = (PostgrePrivilegeType) item.getData();
-                short perm = currentPermission.getPermission(privType);
+                short perm = currentPermissions[0] == null ? PostgrePermission.NONE : currentPermissions[0].getPermission(privType);
                 item.setChecked((perm & PostgrePermission.GRANTED) != 0);
                 if ((perm & PostgrePermission.WITH_GRANT_OPTION) != 0) {
                     item.setText(1, "X");
