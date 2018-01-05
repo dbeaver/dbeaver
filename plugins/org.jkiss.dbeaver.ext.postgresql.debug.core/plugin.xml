@@ -33,7 +33,7 @@
    <extension
          point="org.jkiss.dbeaver.debug.core.procedureControllers">
       <controller
-            class="org.jkiss.dbeaver.ext.postgresql.debug.internal.model.PgSqlDebugController"
+            class="org.jkiss.dbeaver.ext.postgresql.debug.internal.PostgreProcedureController"
             providerId="postgresql">
       </controller>
    </extension>
