@@ -31,10 +31,10 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchSite;
 import org.jkiss.dbeaver.DBException;
@@ -62,6 +62,7 @@ import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorLabelProvider;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTreeFilter;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -80,6 +81,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
     private PostgrePermission currentPermission;
     private DBSObject currentObject;
     private Map<String, PostgrePermission> permissionMap = new HashMap<>();
+    private Text objectDescriptionText;
 
     public void createPartControl(Composite parent) {
         this.pageControl = new PageControl(parent);
@@ -87,7 +89,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
         SashForm composite = UIUtils.createPartDivider(getSite().getPart(), this.pageControl, SWT.HORIZONTAL);
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        roleOrObjectTable = new DatabaseNavigatorTree(composite, DBeaverCore.getInstance().getNavigatorModel().getRoot(), SWT.FULL_SELECTION, false, new DatabaseNavigatorTreeFilter());
+        roleOrObjectTable = new DatabaseNavigatorTree(composite, DBeaverCore.getInstance().getNavigatorModel().getRoot(), SWT.MULTI | SWT.FULL_SELECTION, false, new DatabaseNavigatorTreeFilter());
         roleOrObjectTable.setLayoutData(new GridData(GridData.FILL_BOTH));
         final TreeViewer treeViewer = roleOrObjectTable.getViewer();
         treeViewer.setLabelProvider(new DatabaseNavigatorLabelProvider(treeViewer) {
@@ -110,11 +112,11 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
             }
         });
         treeViewer.addSelectionChangedListener(event -> {
-            DBSObject selectedObject = NavigatorUtils.getSelectedObject(treeViewer.getSelection());
-            if (selectedObject == null) {
-                updateObjectPermissions(null, null);
+            List<DBSObject> selectedObjects = NavigatorUtils.getSelectedObjects(treeViewer.getSelection());
+            if (CommonUtils.isEmpty(selectedObjects)) {
+                updateObjectPermissions(null);
             } else {
-                updateObjectPermissions(getObjectPermissions(selectedObject), selectedObject);
+                updateObjectPermissions(selectedObjects);
             }
         });
         treeViewer.addFilter(new ViewerFilter() {
@@ -199,10 +201,13 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                 }
             });
 
+            objectDescriptionText = new Text(permEditPanel, SWT.READ_ONLY | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
+            objectDescriptionText.setLayoutData(new GridData(GridData.FILL_BOTH));
+
         }
 
         pageControl.createOrSubstituteProgressPanel(getSite());
-        updateObjectPermissions(null, null);
+        updateObjectPermissions(null);
     }
 
     private PostgrePermission getObjectPermissions(DBSObject object) {
@@ -265,16 +270,34 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
             });
     }
 
-    private void updateObjectPermissions(PostgrePermission data, DBSObject curObject) {
-        this.currentPermission = data;
-        if (curObject instanceof PostgreTableBase || curObject instanceof PostgreRole) {
-            this.currentObject = curObject;
+    private void updateObjectPermissions(List<DBSObject> objects) {
+        boolean hasBadObjects = CommonUtils.isEmpty(objects);
+        StringBuilder objectNames = new StringBuilder();
+        if (!hasBadObjects) {
+            for (DBSObject object : objects) {
+                if (!(object instanceof PostgreTableBase) && !(object instanceof PostgreRole)) {
+                    hasBadObjects = true;
+                    break;
+                }
+                if (objectNames.length() > 0) objectNames.append(", ");
+                objectNames.append(DBUtils.getObjectFullName(object.getDataSource(), object, DBPEvaluationContext.DML));
+            }
+        }
+        if (hasBadObjects) {
+            objectDescriptionText.setText("<no objects>");
+
+            this.currentPermission = null;
+            this.currentObject = null;
         } else {
-            this.currentObject = curObject = null;
+            objectDescriptionText.setText(objectNames.toString());
+
+            this.currentObject = objects.get(0);
+            this.currentPermission = getObjectPermissions(this.currentObject);
         }
 
-        if (data == null) {
-            permissionTable.setEnabled(curObject != null);
+        if (currentPermission == null) {
+            // We have object(s) but no permissions for them
+            permissionTable.setEnabled(!CommonUtils.isEmpty(objects));
             for (TableItem item : permissionTable.getItems()) {
                 item.setChecked(false);
                 item.setText(1, "");
@@ -284,7 +307,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
             permissionTable.setEnabled(true);
             for (TableItem item : permissionTable.getItems()) {
                 PostgrePrivilegeType privType = (PostgrePrivilegeType) item.getData();
-                short perm = data.getPermission(privType);
+                short perm = currentPermission.getPermission(privType);
                 item.setChecked((perm & PostgrePermission.GRANTED) != 0);
                 if ((perm & PostgrePermission.WITH_GRANT_OPTION) != 0) {
                     item.setText(1, "X");
@@ -351,7 +374,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
     {
         isLoaded = false;
         DBeaverUI.syncExec(() -> {
-                updateObjectPermissions(null, null);
+                updateObjectPermissions(null);
         });
         activatePart();
     }
