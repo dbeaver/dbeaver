@@ -287,7 +287,8 @@ public class Debugger {
             return;
         }
 
-        pgDbgManager = new PostgreDebugSessionManager(conn);
+        // TODO: fix connection
+        pgDbgManager = new PostgreDebugSessionManager(null);
 
         Scanner sc = new Scanner(System.in);
         Scanner scArg;
@@ -664,7 +665,8 @@ public class Debugger {
             case COMMAND_NEW:
                 try {
                     Connection debugConn = DriverManager.getConnection(url);
-                    PostgreDebugSession s = pgDbgManager.createDebugSession(debugConn);
+                    // TODO: fix connection
+                    PostgreDebugSession s = pgDbgManager.createDebugSession(null);
                     System.out.println("created");
                     System.out.println(s);
 

@@ -17,33 +17,28 @@
  */
 package org.jkiss.dbeaver.debug.core;
 
-import java.util.Map;
-
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunch;
-import org.eclipse.osgi.util.NLS;
-import org.jkiss.dbeaver.debug.DBGProcedureController;
+import org.jkiss.dbeaver.debug.DBGController;
+import org.jkiss.dbeaver.debug.DBGException;
 import org.jkiss.dbeaver.debug.core.model.DatabaseProcess;
 import org.jkiss.dbeaver.debug.core.model.ProcedureDebugTarget;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
-public class ProcedureLaunchDelegate extends DatabaseLaunchDelegate<DBGProcedureController<?,?>> {
+import java.util.Map;
+
+public class ProcedureLaunchDelegate extends DatabaseLaunchDelegate {
 
     @Override
-    protected DBGProcedureController<?,?> createController(DataSourceDescriptor datasourceDescriptor, String databaseName,
-            Map<String, Object> attributes) throws CoreException {
-        String providerId = DebugCore.extractProviderId(datasourceDescriptor);
-        if (providerId == null) {
-            String message = NLS.bind("Unable to setup procedure debug for {0}", datasourceDescriptor.getName());
-            throw new CoreException(DebugCore.newErrorStatus(message));
+    protected DBGController createController(DBPDataSourceContainer dataSourceContainer, String databaseName,
+                                             Map<String, Object> attributes) throws CoreException
+    {
+        try {
+            return DebugCore.findProcedureController(dataSourceContainer);
+        } catch (DBGException e) {
+            throw new CoreException(GeneralUtils.makeExceptionStatus(e));
         }
-        DBGProcedureController<?,?> procedureController = DebugCore.findProcedureController(datasourceDescriptor);
-        if (procedureController == null) {
-            String message = NLS.bind("Procedure debug is not supported for {0}", datasourceDescriptor.getName());
-            throw new CoreException(DebugCore.newErrorStatus(message));
-        }
-        procedureController.init(datasourceDescriptor, databaseName, attributes);
-        return procedureController;
     }
 
     @Override
@@ -52,8 +47,7 @@ public class ProcedureLaunchDelegate extends DatabaseLaunchDelegate<DBGProcedure
     }
 
     @Override
-    protected ProcedureDebugTarget createDebugTarget(ILaunch launch, DBGProcedureController<?,?> controller,
-            DatabaseProcess process) {
+    protected ProcedureDebugTarget createDebugTarget(ILaunch launch, DBGController controller, DatabaseProcess process) {
         return new ProcedureDebugTarget(launch, process, controller);
     }
 

@@ -1,7 +1,9 @@
 package org.jkiss.dbeaver.debug;
 
-public interface DBGControllerRegistry<C extends DBGController> {
-    
-    C createController(String dataTypeProviderId);
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+
+public interface DBGControllerRegistry {
+
+    DBGController createController(DBPDataSourceContainer dataSource) throws DBGException;
 
 }

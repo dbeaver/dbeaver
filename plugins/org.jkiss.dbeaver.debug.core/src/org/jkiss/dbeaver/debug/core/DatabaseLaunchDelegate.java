@@ -30,11 +30,13 @@ import org.jkiss.dbeaver.debug.DBGController;
 import org.jkiss.dbeaver.debug.DBGException;
 import org.jkiss.dbeaver.debug.core.model.DatabaseDebugTarget;
 import org.jkiss.dbeaver.debug.core.model.DatabaseProcess;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
-public abstract class DatabaseLaunchDelegate<C extends DBGController> extends LaunchConfigurationDelegate {
+public abstract class DatabaseLaunchDelegate extends LaunchConfigurationDelegate {
 
     @Override
     public void launch(ILaunchConfiguration configuration, String mode, ILaunch launch, IProgressMonitor monitor)
@@ -47,16 +49,15 @@ public abstract class DatabaseLaunchDelegate<C extends DBGController> extends La
         }
         String databaseName = DebugCore.extractDatabaseName(configuration);
         Map<String, Object> attributes = extractAttributes(configuration);
-        C controller = createController(datasourceDescriptor, databaseName, attributes);
+        DBGController controller = createController(datasourceDescriptor, databaseName, attributes);
         DatabaseProcess process = createProcess(launch, configuration.getName());
-        DatabaseDebugTarget<C> target = createDebugTarget(launch, controller, process);
+        DatabaseDebugTarget<DBGController> target = createDebugTarget(launch, controller, process);
         launch.addDebugTarget(target);
         DefaultProgressMonitor progress = new DefaultProgressMonitor(monitor);
         try {
             controller.connect(progress);
         } catch (DBGException e) {
-            String message = NLS.bind("Unable to connect to {0}", datasourceDescriptor.getName());
-            throw new CoreException(DebugCore.newErrorStatus(message));
+            throw new CoreException(GeneralUtils.makeExceptionStatus("Error connecting debug controller", e));
         }
     }
 
@@ -65,10 +66,10 @@ public abstract class DatabaseLaunchDelegate<C extends DBGController> extends La
         return attributes;
     }
 
-    protected abstract C createController(DataSourceDescriptor datasourceDescriptor, String databaseName, Map<String, Object> attributes) throws CoreException;
+    protected abstract DBGController createController(DBPDataSourceContainer dataSourceContainer, String databaseName, Map<String, Object> attributes) throws CoreException;
 
     protected abstract DatabaseProcess createProcess(ILaunch launch, String name);
 
-    protected abstract DatabaseDebugTarget<C> createDebugTarget(ILaunch launch, C controller, DatabaseProcess process);
+    protected abstract DatabaseDebugTarget<DBGController> createDebugTarget(ILaunch launch, DBGController controller, DatabaseProcess process);
 
 }

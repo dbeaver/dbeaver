@@ -18,25 +18,17 @@
 
 package org.jkiss.dbeaver.ext.postgresql.debug.internal.impl;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import org.jkiss.dbeaver.debug.*;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-
-import org.eclipse.debug.core.DebugException;
-import org.jkiss.dbeaver.debug.DBGBreakpoint;
-import org.jkiss.dbeaver.debug.DBGBreakpointProperties;
-import org.jkiss.dbeaver.debug.DBGException;
-import org.jkiss.dbeaver.debug.DBGSession;
-import org.jkiss.dbeaver.debug.DBGStackFrame;
-import org.jkiss.dbeaver.debug.DBGVariable;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 
 @SuppressWarnings("nls")
 public class PostgreDebugSession implements DBGSession<PostgreDebugSessionInfo, PostgreDebugObject, Integer, Integer> {
@@ -45,7 +37,7 @@ public class PostgreDebugSession implements DBGSession<PostgreDebugSessionInfo, 
 
     private final PostgreDebugSessionInfo sessionDebugInfo;
 
-    private final Connection connection;
+    private final JDBCExecutionContext connection;
 
     private final String title;
 
@@ -83,13 +75,13 @@ public class PostgreDebugSession implements DBGSession<PostgreDebugSessionInfo, 
 
         acquireWriteLock();
 
-        try (Statement stmt = connection.createStatement()) {
+        try (Statement stmt = getConnection(connection).createStatement()) {
 
             ResultSet rs = stmt.executeQuery(SQL_LISTEN);
 
             if (rs.next()) {
 
-                connection.setClientInfo("ApplicationName", "Debug Mode : " + String.valueOf(sessionId));
+                getConnection(connection).setClientInfo("ApplicationName", "Debug Mode : " + String.valueOf(sessionId));
                 return rs.getInt("sessionid");
 
             } else {
@@ -99,7 +91,7 @@ public class PostgreDebugSession implements DBGSession<PostgreDebugSessionInfo, 
             }
 
         } catch (SQLException e) {
-            throw new DBGException(e);
+            throw new DBGException("SQL error", e);
         } finally {
             lock.writeLock().unlock();
         }
@@ -129,12 +121,16 @@ public class PostgreDebugSession implements DBGSession<PostgreDebugSessionInfo, 
     }
 
     public PostgreDebugSession(PostgreDebugSessionInfo sessionManagerInfo, PostgreDebugSessionInfo sessionDebugInfo,
-                               Connection connection) throws DBGException {
+                               JDBCExecutionContext connection) throws DBGException {
         this.sessionManagerInfo = sessionManagerInfo;
         this.sessionDebugInfo = sessionDebugInfo;
         this.connection = connection;
         this.title = sessionManagerInfo.application;
         sessionId = listen();
+    }
+
+    private static Connection getConnection(DBCExecutionContext connectionTarget) throws SQLException {
+        return ((JDBCExecutionContext) connectionTarget).getConnection(new VoidProgressMonitor());
     }
 
     @Override
@@ -227,14 +223,14 @@ public class PostgreDebugSession implements DBGSession<PostgreDebugSessionInfo, 
 
         acquireReadLock();
 
-        try (Statement stmt = connection.createStatement()) {
+        try (Statement stmt = getConnection(connection).createStatement()) {
 
             stmt.execute(SQL_ABORT.replaceAll("\\?sessionid", String.valueOf(sessionId)));
 
             task = null;
 
         } catch (SQLException e) {
-            throw new DBGException(e);
+            throw new DBGException("SQL error", e);
         } finally {
             lock.readLock().unlock();
         }
@@ -257,10 +253,6 @@ public class PostgreDebugSession implements DBGSession<PostgreDebugSessionInfo, 
 
             connection.close();
 
-        } catch (SQLException e) {
-
-            e.printStackTrace();
-
         } finally {
             lock.writeLock().unlock();
         }
@@ -274,7 +266,7 @@ public class PostgreDebugSession implements DBGSession<PostgreDebugSessionInfo, 
 
         List<DBGVariable<?>> vars = new ArrayList<>();
 
-        try (Statement stmt = connection.createStatement()) {
+        try (Statement stmt = getConnection(connection).createStatement()) {
 
             ResultSet rs = stmt.executeQuery(SQL_GET_VARS.replaceAll("\\?sessionid", String.valueOf(sessionId)));
 
@@ -288,7 +280,7 @@ public class PostgreDebugSession implements DBGSession<PostgreDebugSessionInfo, 
             }
 
         } catch (SQLException e) {
-            throw new DBGException(e);
+            throw new DBGException("SQL error", e);
         } finally {
             lock.readLock().unlock();
         }
@@ -302,7 +294,7 @@ public class PostgreDebugSession implements DBGSession<PostgreDebugSessionInfo, 
         
         acquireReadLock();
             
-            try (PreparedStatement stmt = connection.prepareStatement(SQL_SET_VAR)) {
+            try (PreparedStatement stmt = getConnection(connection).prepareStatement(SQL_SET_VAR)) {
                 
               if (variable instanceof PostgreDebugVariable){  
                 
@@ -329,7 +321,7 @@ public class PostgreDebugSession implements DBGSession<PostgreDebugSessionInfo, 
 
 
             } catch (SQLException e) {
-                throw new DBGException(e);
+                throw new DBGException("SQL error", e);
             } finally {
                 lock.readLock().unlock();
             }
@@ -342,7 +334,7 @@ public class PostgreDebugSession implements DBGSession<PostgreDebugSessionInfo, 
 
         List<DBGStackFrame> stack = new ArrayList<DBGStackFrame>(1);
 
-        try (Statement stmt = connection.createStatement()) {
+        try (Statement stmt = getConnection(connection).createStatement()) {
 
             ResultSet rs = stmt.executeQuery(SQL_GET_STACK.replaceAll("\\?sessionid", String.valueOf(sessionId)));
 
@@ -353,15 +345,19 @@ public class PostgreDebugSession implements DBGSession<PostgreDebugSessionInfo, 
             }
 
         } catch (SQLException e) {
-            throw new DBGException(e);
+            throw new DBGException("SQL error", e);
         } finally {
             lock.readLock().unlock();
         }
         return stack;
     }
 
-    public Connection getConnection() {
-        return connection;
+    public Connection getConnection() throws DBGException {
+        try {
+            return getConnection(connection);
+        } catch (SQLException e) {
+            throw new DBGException("SQL error", e);
+        }
     }
 
     @Override
@@ -389,7 +385,7 @@ public class PostgreDebugSession implements DBGSession<PostgreDebugSessionInfo, 
             try {
                 task.get();
             } catch (InterruptedException e) {
-                throw new DBGException(e);
+                throw new DBGException("SQL error", e);
             } catch (ExecutionException e) {
                 System.out.println("WARNING " + e.getMessage());
                 return false;
@@ -404,6 +400,7 @@ public class PostgreDebugSession implements DBGSession<PostgreDebugSessionInfo, 
 
     private void runAsync(String commandSQL, String name) throws DBGException {
 
+        Connection connection = getConnection();
         try (Statement stmt = connection.createStatement()) {
 
             connection.setAutoCommit(false);
@@ -419,7 +416,7 @@ public class PostgreDebugSession implements DBGSession<PostgreDebugSessionInfo, 
             workerThread.start();
 
         } catch (SQLException e) {
-            throw new DBGException(e);
+            throw new DBGException("SQL error", e);
 
         }
     }

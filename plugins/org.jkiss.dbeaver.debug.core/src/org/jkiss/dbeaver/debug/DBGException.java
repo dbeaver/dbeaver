@@ -18,8 +18,11 @@
 
 package org.jkiss.dbeaver.debug;
 
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSource;
+
 @SuppressWarnings("serial")
-public class DBGException extends Exception {
+public class DBGException extends DBException {
 
     public DBGException(String message, Throwable e) {
         super(message, e);
@@ -29,8 +32,11 @@ public class DBGException extends Exception {
         super(message);
     }
 
-    public DBGException(Throwable e) {
-        super(e);
+    public DBGException(Throwable cause, DBPDataSource dataSource) {
+        super(cause, dataSource);
     }
 
+    public DBGException(String message, Throwable cause, DBPDataSource dataSource) {
+        super(message, cause, dataSource);
+    }
 }

@@ -27,15 +27,13 @@ import org.jkiss.dbeaver.registry.DataSourceDescriptor;
  */
 public interface DBGController {
 
-    void init(DataSourceDescriptor dataSourceDescriptor, String databaseName, Map<String, Object> attributes);
+    DBGSession connect(DBRProgressMonitor monitor) throws DBGException;
 
-    void connect(DBRProgressMonitor monitor) throws DBGException;
+    void resume(DBRProgressMonitor monitor, DBGSession session) throws DBGException;
 
-    void resume() throws DBGException;
+    void suspend(DBRProgressMonitor monitor, DBGSession session) throws DBGException;
 
-    void suspend() throws DBGException;
-
-    void terminate() throws DBGException;
+    void terminate(DBRProgressMonitor monitor, DBGSession session) throws DBGException;
 
     void dispose() throws DBGException;
 
