@@ -183,6 +183,8 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_COLORIZE_DATA_TYPES, false);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS, true);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_ROW_BATCH_SIZE, 1);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_STRING_USE_CONTENT_EDITOR, false);
+
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_TEXT_MAX_COLUMN_SIZE, 255);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_TEXT_VALUE_FORMAT, DBDDisplayFormat.EDIT.name());
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_TEXT_SHOW_NULLS, false);
