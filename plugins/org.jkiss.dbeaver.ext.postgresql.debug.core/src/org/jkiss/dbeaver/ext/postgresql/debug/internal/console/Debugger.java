@@ -205,7 +205,7 @@ public class Debugger {
 
         PostgreDebugSession debugSession = null;
 
-        List<DBGSession<?, ?, Integer>> sessions = pgDbgManager.getDebugSessions();
+        List<DBGSession<?, ?, Integer, Integer>> sessions = pgDbgManager.getDebugSessions();
 
         Scanner scArg;
 
@@ -219,7 +219,7 @@ public class Debugger {
 
             int sessNo = 1;
 
-            for (DBGSession<?, ?, Integer> s : sessions) {
+            for (DBGSession<?, ?, Integer, Integer> s : sessions) {
                 System.out.println(String.format(" (%d) %s", sessNo++, s.toString()));
             }
 
@@ -655,7 +655,7 @@ public class Debugger {
                     System.out.println("no debug sessions");
                     break;
                 }
-                for (DBGSession<?, ?, Integer> s : pgDbgManager.getDebugSessions()) {
+                for (DBGSession<?, ?, Integer, Integer> s : pgDbgManager.getDebugSessions()) {
                     System.out.println(s);
                 }
 
