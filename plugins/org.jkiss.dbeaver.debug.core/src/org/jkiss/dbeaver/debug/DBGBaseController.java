@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 
-public abstract class DBGBaseController <SESSION_ID_TYPE, OBJECT_ID_TYPE> implements DBGController {
+public abstract class DBGBaseController<SID_TYPE, OID_TYPE> implements DBGController {
 
     private static final Log log = Log.getLog(DBGBaseController.class);
 
@@ -38,8 +38,6 @@ public abstract class DBGBaseController <SESSION_ID_TYPE, OBJECT_ID_TYPE> implem
 
     private DBCExecutionContext debugContext;
     private DBCSession debugSession;
-    private DBGSessionManager<SESSION_ID_TYPE, OBJECT_ID_TYPE> dbgSessionManager;
-    private DBGSession<DBGSessionInfo<SESSION_ID_TYPE>, DBGObject<OBJECT_ID_TYPE>, SESSION_ID_TYPE> dbgSession;
 
     public DBGBaseController() {
     }
@@ -49,42 +47,42 @@ public abstract class DBGBaseController <SESSION_ID_TYPE, OBJECT_ID_TYPE> implem
         this.dataSourceDescriptor = dataSourceDescriptor;
     }
 
-    protected abstract DBGSessionManager<SESSION_ID_TYPE, OBJECT_ID_TYPE> initSessionManager(DBCSession session) throws DBGException;
-
     @Override
     public void connect(DBRProgressMonitor monitor) throws DBGException {
         DBPDataSource dataSource = dataSourceDescriptor.getDataSource();
         if (!dataSourceDescriptor.isConnected()) {
 
             try {
-                //FIXME: AF: the contract of this call is not clear, we need some utility for this 
+                // FIXME: AF: the contract of this call is not clear, we need
+                // some utility for this
                 dataSourceDescriptor.connect(monitor, true, true);
             } catch (DBException e) {
-                String message = NLS.bind(DebugMessages.DatabaseDebugController_e_connecting_datasource, dataSourceDescriptor);
+                String message = NLS.bind(DebugMessages.DatabaseDebugController_e_connecting_datasource,
+                        dataSourceDescriptor);
                 log.error(message, e);
                 throw new DBGException(message, e);
             }
         }
         try {
-            this.debugContext = dataSource.openIsolatedContext(monitor, DebugMessages.DatabaseDebugController_debug_context_purpose);
-            this.debugSession = debugContext.openSession(monitor, DBCExecutionPurpose.UTIL, DebugMessages.DatabaseDebugController_debug_session_name);
+            this.debugContext = dataSource.openIsolatedContext(monitor,
+                    DebugMessages.DatabaseDebugController_debug_context_purpose);
+            this.debugSession = debugContext.openSession(monitor, DBCExecutionPurpose.UTIL,
+                    DebugMessages.DatabaseDebugController_debug_session_name);
             afterSessionOpen(debugSession);
         } catch (DBException e) {
-            String message = NLS.bind(DebugMessages.DatabaseDebugController_e_opening_debug_context, dataSourceDescriptor);
+            String message = NLS.bind(DebugMessages.DatabaseDebugController_e_opening_debug_context,
+                    dataSourceDescriptor);
             log.error(message, e);
             throw new DBGException(message, e);
         }
     }
 
     protected void afterSessionOpen(DBCSession session) throws DBGException {
-        this.dbgSessionManager = initSessionManager(session);
+        //do nothing by default
     }
 
     protected void beforeSessionClose(DBCSession session) throws DBGException {
-        if (this.dbgSessionManager != null) {
-            this.dbgSessionManager.dispose();;
-        }
-        this.dbgSessionManager = null;
+        //do nothing by default
     }
 
     @Override
@@ -116,7 +114,7 @@ public abstract class DBGBaseController <SESSION_ID_TYPE, OBJECT_ID_TYPE> implem
     @Override
     public void dispose() {
         // TODO Auto-generated method stub
-        
+
     }
 
 }
