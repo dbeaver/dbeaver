@@ -207,6 +207,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     }
 
     @Override
+    @Property(order = 5)
     public long getObjectId() {
         return oid;
     }
