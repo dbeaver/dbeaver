@@ -26,15 +26,17 @@ public interface DBGSessionManager<SESSION_ID_TYPE, OBJECT_ID_TYPE> {
 
     List<? extends DBGSessionInfo<SESSION_ID_TYPE>> getSessions() throws DBGException;
 
-    DBGSession<? extends DBGSessionInfo<SESSION_ID_TYPE>, ? extends DBGObject<OBJECT_ID_TYPE>, SESSION_ID_TYPE> getDebugSession(SESSION_ID_TYPE id) throws DBGException;
+    DBGSession<? extends DBGSessionInfo<SESSION_ID_TYPE>, ? extends DBGObject<OBJECT_ID_TYPE>, SESSION_ID_TYPE, OBJECT_ID_TYPE> getDebugSession(SESSION_ID_TYPE id) throws DBGException;
 
-    List<DBGSession<?, ?, SESSION_ID_TYPE>> getDebugSessions() throws DBGException;
+    List<DBGSession<?, ?, SESSION_ID_TYPE, OBJECT_ID_TYPE>> getDebugSessions() throws DBGException;
 
     void terminateSession(SESSION_ID_TYPE id);
 
-    DBGSession<? extends DBGSessionInfo<SESSION_ID_TYPE>, ? extends DBGObject<OBJECT_ID_TYPE>, SESSION_ID_TYPE> createDebugSession(Connection connection) throws DBGException;
+    DBGSession<? extends DBGSessionInfo<SESSION_ID_TYPE>, ? extends DBGObject<OBJECT_ID_TYPE>, SESSION_ID_TYPE, OBJECT_ID_TYPE> createDebugSession(Connection connection) throws DBGException;
 
     boolean isSessionExists(SESSION_ID_TYPE id);
 
     List<? extends DBGObject<OBJECT_ID_TYPE>> getObjects(String ownerCtx, String nameCtx) throws DBGException;
+
+    void dispose();
 }

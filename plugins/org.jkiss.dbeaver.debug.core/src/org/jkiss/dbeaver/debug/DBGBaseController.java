@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 
-public class DBGBaseController implements DBGController {
+public abstract class DBGBaseController<SID_TYPE, OID_TYPE> implements DBGController {
 
     private static final Log log = Log.getLog(DBGBaseController.class);
 
@@ -53,30 +53,35 @@ public class DBGBaseController implements DBGController {
         if (!dataSourceDescriptor.isConnected()) {
 
             try {
-                //FIXME: AF: the contract of this call is not clear, we need some utility for this 
+                // FIXME: AF: the contract of this call is not clear, we need
+                // some utility for this
                 dataSourceDescriptor.connect(monitor, true, true);
             } catch (DBException e) {
-                String message = NLS.bind(DebugMessages.DatabaseDebugController_e_connecting_datasource, dataSourceDescriptor);
+                String message = NLS.bind(DebugMessages.DatabaseDebugController_e_connecting_datasource,
+                        dataSourceDescriptor);
                 log.error(message, e);
                 throw new DBGException(message, e);
             }
         }
         try {
-            this.debugContext = dataSource.openIsolatedContext(monitor, DebugMessages.DatabaseDebugController_debug_context_purpose);
-            this.debugSession = debugContext.openSession(monitor, DBCExecutionPurpose.UTIL, DebugMessages.DatabaseDebugController_debug_session_name);
+            this.debugContext = dataSource.openIsolatedContext(monitor,
+                    DebugMessages.DatabaseDebugController_debug_context_purpose);
+            this.debugSession = debugContext.openSession(monitor, DBCExecutionPurpose.UTIL,
+                    DebugMessages.DatabaseDebugController_debug_session_name);
             afterSessionOpen(debugSession);
         } catch (DBException e) {
-            String message = NLS.bind(DebugMessages.DatabaseDebugController_e_opening_debug_context, dataSourceDescriptor);
+            String message = NLS.bind(DebugMessages.DatabaseDebugController_e_opening_debug_context,
+                    dataSourceDescriptor);
             log.error(message, e);
             throw new DBGException(message, e);
         }
     }
 
-    protected void afterSessionOpen(DBCSession session) {
+    protected void afterSessionOpen(DBCSession session) throws DBGException {
         //do nothing by default
     }
 
-    protected void beforeSessionClose(DBCSession session) {
+    protected void beforeSessionClose(DBCSession session) throws DBGException {
         //do nothing by default
     }
 
@@ -109,7 +114,7 @@ public class DBGBaseController implements DBGController {
     @Override
     public void dispose() {
         // TODO Auto-generated method stub
-        
+
     }
 
 }

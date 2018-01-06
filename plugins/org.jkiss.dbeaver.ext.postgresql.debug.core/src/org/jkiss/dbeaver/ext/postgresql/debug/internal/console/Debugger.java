@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.debug.DBGSession;
 import org.jkiss.dbeaver.debug.DBGStackFrame;
 import org.jkiss.dbeaver.debug.DBGVariable;
 import org.jkiss.dbeaver.ext.postgresql.debug.internal.impl.*;
-import org.jkiss.dbeaver.ext.postgresql.debug.internal.impl.PostgreDebugBreakpoint;
 
 @SuppressWarnings("nls")
 public class Debugger {
@@ -55,6 +54,79 @@ public class Debugger {
     public static final String COMMAND_HELP = "?";
 
     public static final String ANY_ARG = "*";
+    
+    
+    public static DBGVariable<?> chooseVariable(Scanner sc, PostgreDebugSessionManager pgDbgManager,
+            PostgreDebugSession session) throws DBGException {
+
+        DBGVariable<?> v = null;
+
+        List<DBGVariable<?>> vars = session.getVarables();
+
+        Scanner scArg;
+
+        if (vars.size() == 1) {
+
+            v = (PostgreDebugVariable) vars.get(0);
+
+        } else {
+
+            System.out.println("Choose variable (0 for quit) :");
+
+            int varNo = 1;
+
+            for (DBGVariable<?> cv : vars) {
+                System.out.println(String.format(" (%d) %s", varNo++, cv.toString()));
+            }
+
+            int varId = -1;
+
+            while (varId < 0) {
+
+                String argc = sc.nextLine();
+
+                String strvarid = "";
+
+                scArg = new Scanner(argc);
+
+                if (scArg.hasNext()) {
+
+                    strvarid = scArg.next();
+
+                    if (strvarid.trim().length() > 0) {
+
+                        try {
+
+                            varId = Integer.valueOf(strvarid);
+
+                        } catch (Exception e) {
+                            System.out.println(String.format("Incorrect var ID %s", strvarid));
+                            varId = -1;
+                        }
+
+                        if (varId == 0) {
+                            break;
+                        }
+
+                        if (varId > vars.size()) {
+                            System.out.println(String.format("Incorrect var ID %s", strvarid));
+                            varId = -1;
+                        } else {
+                            v = vars.get(varId - 1);
+                            break;
+                        }
+                    }
+
+                }
+                scArg.close();
+
+            }
+
+        }
+
+        return v;
+
+    }
 
     public static PostgreDebugBreakpoint chooseBreakpoint(Scanner sc, PostgreDebugSessionManager pgDbgManager,
                                                           PostgreDebugSession session) throws DBGException {
@@ -133,7 +205,7 @@ public class Debugger {
 
         PostgreDebugSession debugSession = null;
 
-        List<DBGSession<?, ?, Integer>> sessions = pgDbgManager.getDebugSessions();
+        List<DBGSession<?, ?, Integer, Integer>> sessions = pgDbgManager.getDebugSessions();
 
         Scanner scArg;
 
@@ -147,7 +219,7 @@ public class Debugger {
 
             int sessNo = 1;
 
-            for (DBGSession<?, ?, Integer> s : sessions) {
+            for (DBGSession<?, ?, Integer, Integer> s : sessions) {
                 System.out.println(String.format(" (%d) %s", sessNo++, s.toString()));
             }
 
@@ -339,7 +411,45 @@ public class Debugger {
                 break;
 
             case COMMAND_VARIABLE_SET:
-                System.out.println("VARIABLE_SET!!!");
+                
+                String strVal = "";
+
+                String argcV = sc.nextLine();
+
+                if (argcV.length() > 0) {
+
+                    scArg = new Scanner(argcV);
+
+                    if (scArg.hasNext()) {
+
+                        strVal = scArg.next();
+
+                    }
+                    scArg.close();
+
+                }
+                
+                if (pgDbgManager.getDebugSessions().size() == 0) {
+                    System.out.println("Debug sessions not found");
+                    break;
+                }
+
+                PostgreDebugSession debugSessionVS = chooseSession(sc, pgDbgManager);
+
+                if (debugSessionVS == null) {
+                    break;
+                }
+
+                
+                DBGVariable<?> var = chooseVariable(sc, pgDbgManager,debugSessionVS);
+                
+                if (var == null) {
+                    break;
+                }
+
+                debugSessionVS.setVariableVal(var, strVal);
+                
+                System.out.println(String.format("Variable Set %s",strVal));
                 break;
 
             case COMMAND_BREAKPOINT:
@@ -545,7 +655,7 @@ public class Debugger {
                     System.out.println("no debug sessions");
                     break;
                 }
-                for (DBGSession<?, ?, Integer> s : pgDbgManager.getDebugSessions()) {
+                for (DBGSession<?, ?, Integer, Integer> s : pgDbgManager.getDebugSessions()) {
                     System.out.println(s);
                 }
 

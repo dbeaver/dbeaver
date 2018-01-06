@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.debug;
 
 import java.util.List;
 
-public interface DBGSession<SESSION_INFO extends DBGSessionInfo<?>, DEBUG_OBJECT extends DBGObject<?>, SESSION_ID_TYPE> {
+public interface DBGSession<SESSION_INFO extends DBGSessionInfo<SESSION_ID_TYPE>, DEBUG_OBJECT extends DBGObject<OBJECT_ID_TYPE>, SESSION_ID_TYPE, OBJECT_ID_TYPE> {
     SESSION_INFO getSessionInfo();
 
     String getTitle();
