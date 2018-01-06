@@ -37,4 +37,6 @@ public interface DBGSessionManager<SESSION_ID_TYPE, OBJECT_ID_TYPE> {
     boolean isSessionExists(SESSION_ID_TYPE id);
 
     List<? extends DBGObject<OBJECT_ID_TYPE>> getObjects(String ownerCtx, String nameCtx) throws DBGException;
+
+    void dispose();
 }

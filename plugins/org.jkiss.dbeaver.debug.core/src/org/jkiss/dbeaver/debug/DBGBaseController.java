@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 
-public class DBGBaseController implements DBGController {
+public abstract class DBGBaseController <SESSION_ID_TYPE, OBJECT_ID_TYPE> implements DBGController {
 
     private static final Log log = Log.getLog(DBGBaseController.class);
 
@@ -38,6 +38,8 @@ public class DBGBaseController implements DBGController {
 
     private DBCExecutionContext debugContext;
     private DBCSession debugSession;
+    private DBGSessionManager<SESSION_ID_TYPE, OBJECT_ID_TYPE> dbgSessionManager;
+    private DBGSession<DBGSessionInfo<SESSION_ID_TYPE>, DBGObject<OBJECT_ID_TYPE>, SESSION_ID_TYPE> dbgSession;
 
     public DBGBaseController() {
     }
@@ -46,6 +48,8 @@ public class DBGBaseController implements DBGController {
     public void init(DataSourceDescriptor dataSourceDescriptor, String databaseName, Map<String, Object> attributes) {
         this.dataSourceDescriptor = dataSourceDescriptor;
     }
+
+    protected abstract DBGSessionManager<SESSION_ID_TYPE, OBJECT_ID_TYPE> initSessionManager(DBCSession session) throws DBGException;
 
     @Override
     public void connect(DBRProgressMonitor monitor) throws DBGException {
@@ -72,12 +76,15 @@ public class DBGBaseController implements DBGController {
         }
     }
 
-    protected void afterSessionOpen(DBCSession session) {
-        //do nothing by default
+    protected void afterSessionOpen(DBCSession session) throws DBGException {
+        this.dbgSessionManager = initSessionManager(session);
     }
 
-    protected void beforeSessionClose(DBCSession session) {
-        //do nothing by default
+    protected void beforeSessionClose(DBCSession session) throws DBGException {
+        if (this.dbgSessionManager != null) {
+            this.dbgSessionManager.dispose();;
+        }
+        this.dbgSessionManager = null;
     }
 
     @Override
