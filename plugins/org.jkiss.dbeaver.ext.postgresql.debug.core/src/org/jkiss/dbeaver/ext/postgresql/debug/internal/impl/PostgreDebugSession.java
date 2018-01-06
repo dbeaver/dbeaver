@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.ext.postgresql.debug.internal.impl;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -28,12 +29,14 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.eclipse.debug.core.DebugException;
 import org.jkiss.dbeaver.debug.DBGBreakpoint;
 import org.jkiss.dbeaver.debug.DBGBreakpointProperties;
 import org.jkiss.dbeaver.debug.DBGException;
 import org.jkiss.dbeaver.debug.DBGSession;
 import org.jkiss.dbeaver.debug.DBGStackFrame;
 import org.jkiss.dbeaver.debug.DBGVariable;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 
 @SuppressWarnings("nls")
 public class PostgreDebugSession implements DBGSession<PostgreDebugSessionInfo, PostgreDebugObject, Integer> {
@@ -55,6 +58,8 @@ public class PostgreDebugSession implements DBGSession<PostgreDebugSessionInfo, 
     private static final String SQL_LISTEN = "select pldbg_create_listener() as sessionid";
 
     private static final String SQL_GET_VARS = "select * from pldbg_get_variables(?sessionid)";
+    
+    private static final String SQL_SET_VAR = "select pldbg_deposit_value(?,?,?,?)";
 
     private static final String SQL_GET_STACK = "select * from pldbg_get_stack(?sessionid)";
 
@@ -294,7 +299,40 @@ public class PostgreDebugSession implements DBGSession<PostgreDebugSessionInfo, 
 
     @Override
     public void setVariableVal(DBGVariable<?> variable, Object value) throws DBGException {
-        // TODO Auto-generated method stub
+        
+        acquireReadLock();
+            
+            try (PreparedStatement stmt = connection.prepareStatement(SQL_SET_VAR)) {
+                
+              if (variable instanceof PostgreDebugVariable){  
+                
+                if (value instanceof String){
+                    
+                    PostgreDebugVariable var = (PostgreDebugVariable) variable;
+                    
+                    stmt.setInt(1,sessionId);
+                    stmt.setString(2,var.getName());
+                    stmt.setInt(3,var.getLinenumber());
+                    stmt.setString(4,(String) value);
+                    
+                    stmt.execute();
+
+                }else {
+                    lock.readLock().unlock();
+                    throw new DBGException("Incorrect variable value class");
+                }
+                
+            } else {
+                lock.readLock().unlock();
+                throw new DBGException("Incorrect variable class");
+            }
+
+
+            } catch (SQLException e) {
+                throw new DBGException(e);
+            } finally {
+                lock.readLock().unlock();
+            }
 
     }
 
