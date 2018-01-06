@@ -54,7 +54,7 @@ public class PostgreDebugBreakpoint implements DBGBreakpoint {
                             : String.valueOf(properties.getTargetId())));
 
         } catch (SQLException e) {
-            throw new DBGException(e);
+            throw new DBGException("SQL error", e);
         }
 
     }
@@ -73,7 +73,7 @@ public class PostgreDebugBreakpoint implements DBGBreakpoint {
                     .replaceAll("\\?line", properties.isOnStart() ? "-1" : String.valueOf(properties.getLineNo())));
 
         } catch (SQLException e) {
-            throw new DBGException(e);
+            throw new DBGException("SQL error", e);
         }
 
     }

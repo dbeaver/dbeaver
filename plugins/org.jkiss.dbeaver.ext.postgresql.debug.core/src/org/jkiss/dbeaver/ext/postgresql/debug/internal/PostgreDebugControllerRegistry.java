@@ -15,26 +15,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.debug.core.model;
+package org.jkiss.dbeaver.ext.postgresql.debug.internal;
 
-import org.eclipse.debug.core.DebugException;
-import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.debug.DBGController;
-import org.jkiss.dbeaver.debug.internal.core.DebugCoreMessages;
+import org.jkiss.dbeaver.debug.DBGControllerRegistry;
+import org.jkiss.dbeaver.debug.DBGException;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 
-public class ProcedureThread extends DatabaseThread {
-
-    private final DBGController controller;
-
-    public ProcedureThread(IDatabaseDebugTarget target, DBGController controller) {
-        super(target);
-        this.controller = controller;
-    }
+public class PostgreDebugControllerRegistry implements DBGControllerRegistry {
 
     @Override
-    public String getName() throws DebugException {
-        String name = NLS.bind(DebugCoreMessages.ProcedureThread_name, controller.getClass().getSimpleName());
-        return name;
+    public DBGController createController(DBPDataSourceContainer dataSource) throws DBGException {
+        return new PostgreDebugController(dataSource);
     }
-
 }

@@ -21,18 +21,18 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.IProcess;
-import org.jkiss.dbeaver.debug.DBGProcedureController;
+import org.jkiss.dbeaver.debug.DBGController;
 import org.jkiss.dbeaver.debug.core.DebugCore;
 import org.jkiss.dbeaver.debug.internal.core.DebugCoreMessages;
 
-public class ProcedureDebugTarget extends DatabaseDebugTarget<DBGProcedureController<?,?>> {
+public class ProcedureDebugTarget extends DatabaseDebugTarget<DBGController> {
 
-    public ProcedureDebugTarget(ILaunch launch, IProcess process, DBGProcedureController<?,?> controller) {
+    public ProcedureDebugTarget(ILaunch launch, IProcess process, DBGController controller) {
         super(DebugCore.MODEL_IDENTIFIER_PROCEDURE, launch, process, controller);
     }
 
     @Override
-    protected DatabaseThread newThread(DBGProcedureController<?,?> controller) {
+    protected DatabaseThread newThread(DBGController controller) {
         return new ProcedureThread(this, controller);
     }
 

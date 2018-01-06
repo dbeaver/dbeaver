@@ -18,11 +18,13 @@
 
 package org.jkiss.dbeaver.debug;
 
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+
 import java.sql.Connection;
 import java.util.List;
 
 public interface DBGSessionManager<SESSION_ID_TYPE, OBJECT_ID_TYPE> {
-    DBGSessionInfo<SESSION_ID_TYPE> getSessionInfo(Connection connection) throws DBGException;
+    DBGSessionInfo<SESSION_ID_TYPE> getSessionInfo(DBCExecutionContext connection) throws DBGException;
 
     List<? extends DBGSessionInfo<SESSION_ID_TYPE>> getSessions() throws DBGException;
 
@@ -32,7 +34,7 @@ public interface DBGSessionManager<SESSION_ID_TYPE, OBJECT_ID_TYPE> {
 
     void terminateSession(SESSION_ID_TYPE id);
 
-    DBGSession<? extends DBGSessionInfo<SESSION_ID_TYPE>, ? extends DBGObject<OBJECT_ID_TYPE>, SESSION_ID_TYPE, OBJECT_ID_TYPE> createDebugSession(Connection connection) throws DBGException;
+    DBGSession<? extends DBGSessionInfo<SESSION_ID_TYPE>, ? extends DBGObject<OBJECT_ID_TYPE>, SESSION_ID_TYPE, OBJECT_ID_TYPE> createDebugSession(DBCExecutionContext connection) throws DBGException;
 
     boolean isSessionExists(SESSION_ID_TYPE id);
 

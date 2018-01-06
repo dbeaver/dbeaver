@@ -32,7 +32,9 @@ import org.eclipse.debug.core.model.IThread;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.debug.DBGController;
 import org.jkiss.dbeaver.debug.DBGException;
+import org.jkiss.dbeaver.debug.DBGSession;
 import org.jkiss.dbeaver.debug.core.DebugCore;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 
 public abstract class DatabaseDebugTarget<C extends DBGController> extends DatabaseDebugElement implements IDatabaseDebugTarget {
 
@@ -43,6 +45,8 @@ public abstract class DatabaseDebugTarget<C extends DBGController> extends Datab
     private final C controller;
     private final DatabaseThread thread;
     private final IThread[] threads;
+
+    private DBGSession debugSession;
 
     private String name;
 
@@ -146,7 +150,7 @@ public abstract class DatabaseDebugTarget<C extends DBGController> extends Datab
             terminated = true;
             suspended = false;
             try {
-                controller.terminate();
+                controller.terminate(getProgressMonitor(), debugSession);
             } catch (DBGException e) {
                 String message = NLS.bind("Error terminating {0}", getName());
                 IStatus status = DebugCore.newErrorStatus(message, e);
@@ -174,7 +178,7 @@ public abstract class DatabaseDebugTarget<C extends DBGController> extends Datab
     public void resume() throws DebugException {
         suspended = false;
         try {
-            controller.resume();
+            controller.resume(getProgressMonitor(), debugSession);
         } catch (DBGException e) {
             String message = NLS.bind("Error resuming {0}", getName());
             IStatus status = DebugCore.newErrorStatus(message, e);
@@ -189,12 +193,16 @@ public abstract class DatabaseDebugTarget<C extends DBGController> extends Datab
     @Override
     public void suspend() throws DebugException {
         try {
-            controller.suspend();
+            controller.suspend(getProgressMonitor(), debugSession);
         } catch (DBGException e) {
             String message = NLS.bind("Error suspending {0}", getName());
             IStatus status = DebugCore.newErrorStatus(message, e);
             throw new DebugException(status);
         }
+    }
+
+    private VoidProgressMonitor getProgressMonitor() {
+        return new VoidProgressMonitor();
     }
 
     public void suspended(int detail) {

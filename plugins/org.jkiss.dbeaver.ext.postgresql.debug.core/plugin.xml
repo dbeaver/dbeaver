@@ -30,12 +30,9 @@
             name="%launchConfigurationTypes.launchConfigurationType.pgSQL.name">
       </launchConfigurationType>
    </extension>
-   <extension
-         point="org.jkiss.dbeaver.debug.core.procedureControllers">
-      <controller
-            class="org.jkiss.dbeaver.ext.postgresql.debug.internal.PostgreProcedureController"
-            providerId="postgresql">
-      </controller>
+
+   <extension point="org.jkiss.dbeaver.debug.core.controllers">
+      <controller datasource="postgresql" class="org.jkiss.dbeaver.ext.postgresql.debug.internal.PostgreDebugControllerRegistry"/>
    </extension>
 
 </plugin>

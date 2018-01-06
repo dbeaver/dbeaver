@@ -17,98 +17,61 @@
  */
 package org.jkiss.dbeaver.debug;
 
-import java.util.Map;
-
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.debug.internal.DebugMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 
-public abstract class DBGBaseController<SID_TYPE, OID_TYPE> implements DBGController {
+public abstract class DBGBaseController implements DBGController {
 
     private static final Log log = Log.getLog(DBGBaseController.class);
 
-    private DataSourceDescriptor dataSourceDescriptor;
+    private DBPDataSourceContainer dataSourceContainer;
 
-    private DBCExecutionContext debugContext;
-    private DBCSession debugSession;
+    public DBGBaseController(DBPDataSourceContainer dataSourceContainer) {
+        this.dataSourceContainer = dataSourceContainer;
+    }
 
-    public DBGBaseController() {
+    public DBPDataSourceContainer getDataSourceContainer() {
+        return dataSourceContainer;
     }
 
     @Override
-    public void init(DataSourceDescriptor dataSourceDescriptor, String databaseName, Map<String, Object> attributes) {
-        this.dataSourceDescriptor = dataSourceDescriptor;
-    }
-
-    @Override
-    public void connect(DBRProgressMonitor monitor) throws DBGException {
-        DBPDataSource dataSource = dataSourceDescriptor.getDataSource();
-        if (!dataSourceDescriptor.isConnected()) {
-
-            try {
-                // FIXME: AF: the contract of this call is not clear, we need
-                // some utility for this
-                dataSourceDescriptor.connect(monitor, true, true);
-            } catch (DBException e) {
-                String message = NLS.bind(DebugMessages.DatabaseDebugController_e_connecting_datasource,
-                        dataSourceDescriptor);
-                log.error(message, e);
-                throw new DBGException(message, e);
-            }
+    public DBGSession connect(DBRProgressMonitor monitor) throws DBGException {
+        DBPDataSource dataSource = dataSourceContainer.getDataSource();
+        if (!dataSourceContainer.isConnected()) {
+            throw new DBGException("Not connected to database");
         }
         try {
-            this.debugContext = dataSource.openIsolatedContext(monitor,
-                    DebugMessages.DatabaseDebugController_debug_context_purpose);
-            this.debugSession = debugContext.openSession(monitor, DBCExecutionPurpose.UTIL,
-                    DebugMessages.DatabaseDebugController_debug_session_name);
-            afterSessionOpen(debugSession);
+            return createSession(monitor, dataSource);
         } catch (DBException e) {
             String message = NLS.bind(DebugMessages.DatabaseDebugController_e_opening_debug_context,
-                    dataSourceDescriptor);
+                dataSourceContainer);
             log.error(message, e);
             throw new DBGException(message, e);
         }
     }
 
-    protected void afterSessionOpen(DBCSession session) throws DBGException {
-        //do nothing by default
-    }
-
-    protected void beforeSessionClose(DBCSession session) throws DBGException {
-        //do nothing by default
-    }
+    protected abstract DBGSession createSession(DBRProgressMonitor monitor, DBPDataSource dataSource) throws DBGException;
 
     @Override
-    public void resume() throws DBGException {
+    public void resume(DBRProgressMonitor monitor, DBGSession session) throws DBGException {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public void suspend() throws DBGException {
+    public void suspend(DBRProgressMonitor monitor, DBGSession session) throws DBGException {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public void terminate() throws DBGException {
-        beforeSessionClose(this.debugSession);
-        if (this.debugSession != null) {
-            this.debugSession.close();
-            this.debugSession = null;
-        }
+    public void terminate(DBRProgressMonitor monitor, DBGSession session) throws DBGException {
 
-        if (this.debugContext != null) {
-            this.debugContext.close();
-            this.debugContext = null;
-        }
     }
 
     @Override

@@ -17,9 +17,6 @@
  */
 package org.jkiss.dbeaver.debug.core;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
@@ -27,23 +24,20 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.debug.DBGController;
 import org.jkiss.dbeaver.debug.DBGControllerRegistry;
-import org.jkiss.dbeaver.debug.DBGProcedureController;
+import org.jkiss.dbeaver.debug.DBGException;
 import org.jkiss.dbeaver.debug.internal.core.DebugCoreActivator;
 import org.jkiss.dbeaver.debug.internal.core.DebugCoreMessages;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
-import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class DebugCore {
 
     public static final String BUNDLE_SYMBOLIC_NAME = "org.jkiss.dbeaver.debug.core"; //$NON-NLS-1$
-
-    public static final String EP_PROCEDURE_CONTROLLERS_ID = "procedureControllers"; //$NON-NLS-1$
-    public static final String EP_PROCEDURE_CONTROLLERS_CONTROLLER = "controller"; //$NON-NLS-1$
-    public static final String EP_PROCEDURE_CONTROLLERS_CONTROLLER_PROVIDER_ID = "providerId"; //$NON-NLS-1$
-    public static final String EP_PROCEDURE_CONTROLLERS_CONTROLLER_CLASS = "class"; //$NON-NLS-1$
 
     // FIXME: AF: revisit, looks like we can live without it
     public static final String MODEL_IDENTIFIER_DATABASE = BUNDLE_SYMBOLIC_NAME + '.' + "database"; //$NON-NLS-1$
@@ -136,29 +130,16 @@ public class DebugCore {
         return newErrorStatus(message, null);
     }
 
-    public static String extractProviderId(DataSourceDescriptor datasourceDescriptor) {
-        if (datasourceDescriptor == null) {
-            return null;
-        }
-        DriverDescriptor driverDescriptor = datasourceDescriptor.getDriver();
-        if (driverDescriptor == null) {
-            return null;
-        }
-        DataSourceProviderDescriptor providerDescriptor = driverDescriptor.getProviderDescriptor();
-        if (providerDescriptor == null) {
-            return null;
-        }
-        return providerDescriptor.getId();
+    public static DBGControllerRegistry getProcedureControllerRegistry(DBPDataSourceContainer dataSourceContainer) {
+        return DebugControllersRegistry.getInstance().createControllerRegistry(dataSourceContainer);
     }
 
-    public static DBGControllerRegistry<DBGProcedureController> getProcedureControllerRegistry() {
-        return DebugCoreActivator.getDefault().getProcedureControllerRegistry();
-    }
-
-    public static DBGProcedureController findProcedureController(DataSourceDescriptor datasourceDescriptor) {
-        String providerId = extractProviderId(datasourceDescriptor);
-        DBGControllerRegistry<DBGProcedureController> controllerRegistry = getProcedureControllerRegistry();
-        return controllerRegistry.createController(providerId);
+    public static DBGController findProcedureController(DBPDataSourceContainer dataSourceContainer) throws DBGException {
+        DBGControllerRegistry registry = getProcedureControllerRegistry(dataSourceContainer);
+        if (registry == null) {
+            throw new DBGException("Can't find registry for datasource '" + dataSourceContainer.getDriver().getProviderId() + "'");
+        }
+        return registry.createController(dataSourceContainer);
     }
 
 }

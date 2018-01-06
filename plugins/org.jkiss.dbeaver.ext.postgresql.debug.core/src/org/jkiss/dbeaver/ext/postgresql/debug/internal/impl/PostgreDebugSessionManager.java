@@ -30,49 +30,56 @@ import java.util.Map;
 import org.jkiss.dbeaver.debug.DBGException;
 import org.jkiss.dbeaver.debug.DBGSession;
 import org.jkiss.dbeaver.debug.DBGSessionManager;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 
 @SuppressWarnings("nls")
 public class PostgreDebugSessionManager implements DBGSessionManager<Integer, Integer> {
 
-    private final Connection connection;
+    private final DBCExecutionContext context;
 
     private static final String SQL_SESSION = "select pid,usename,application_name,state,query from pg_stat_activity";
 
     private static final String SQL_OBJECT = "select  p.oid,p.proname,u.usename as owner,n.nspname, l.lanname as lang "
-            + " from " + "	pg_catalog.pg_namespace n " + " join pg_catalog.pg_proc p on p.pronamespace = n.oid "
-            + "	 join pg_user u on u.usesysid =   p.proowner " + "	 join pg_language l on l.oid = p. prolang "
-            + "	where  " + "   l.lanname = 'plpgsql' " + "	 and p.proname like '%?nameCtx%' "
-            + "	 and u.usename like '%?userCtx%' " + "	order by  " + "	 n.nspname,p.proname";
+        + " from " + "	pg_catalog.pg_namespace n " + " join pg_catalog.pg_proc p on p.pronamespace = n.oid "
+        + "	 join pg_user u on u.usesysid =   p.proowner " + "	 join pg_language l on l.oid = p. prolang "
+        + "	where  " + "   l.lanname = 'plpgsql' " + "	 and p.proname like '%?nameCtx%' "
+        + "	 and u.usename like '%?userCtx%' " + "	order by  " + "	 n.nspname,p.proname";
 
     private static final String SQL_CURRENT_SESSION = "select pid,usename,application_name,state,query from pg_stat_activity where pid = pg_backend_pid()";
 
     private final Map<Integer, PostgreDebugSession> sessions = new HashMap<Integer, PostgreDebugSession>(1);
 
     @Override
-    public PostgreDebugSessionInfo getSessionInfo(Connection connectionTarget) throws DBGException {
-        try (Statement stmt = connectionTarget.createStatement()) {
+    public PostgreDebugSessionInfo getSessionInfo(DBCExecutionContext connectionTarget) throws DBGException {
+        try (Statement stmt = getConnection(connectionTarget).createStatement()) {
 
             ResultSet rs = stmt.executeQuery(SQL_CURRENT_SESSION);
 
             if (rs.next()) {
 
                 PostgreDebugSessionInfo res = new PostgreDebugSessionInfo(rs.getInt("pid"), rs.getString("usename"),
-                        rs.getString("application_name"), rs.getString("state"), rs.getString("query"));
+                    rs.getString("application_name"), rs.getString("state"), rs.getString("query"));
                 return res;
             }
 
             throw new DBGException("Error getting session");
 
         } catch (SQLException e) {
-            throw new DBGException(e);
+            throw new DBGException("SQ Lerror", e);
         }
 
+    }
+
+    private static Connection getConnection(DBCExecutionContext connectionTarget) throws SQLException {
+        return ((JDBCExecutionContext) connectionTarget).getConnection(new VoidProgressMonitor());
     }
 
     @Override
     public List<PostgreDebugSessionInfo> getSessions() throws DBGException {
 
-        try (Statement stmt = connection.createStatement()) {
+        try (Statement stmt = getConnection(context).createStatement()) {
 
             ResultSet rs = stmt.executeQuery(SQL_SESSION);
 
@@ -81,61 +88,60 @@ public class PostgreDebugSessionManager implements DBGSessionManager<Integer, In
             while (rs.next()) {
 
                 res.add(new PostgreDebugSessionInfo(rs.getInt("pid"), rs.getString("usename"),
-                        rs.getString("application_name"), rs.getString("state"), rs.getString("query")));
+                    rs.getString("application_name"), rs.getString("state"), rs.getString("query")));
             }
 
             return res;
 
         } catch (SQLException e) {
-            throw new DBGException(e);
+            throw new DBGException("SQL error", e);
         }
 
     }
 
     /**
-     * @param connection
+     * @param context
      */
-    public PostgreDebugSessionManager(Connection connection) {
+    public PostgreDebugSessionManager(DBCExecutionContext context) {
         super();
-        this.connection = connection;
+        this.context = context;
     }
 
     @Override
     public List<PostgreDebugObject> getObjects(String ownerCtx, String nameCtx) throws DBGException {
-        try (Statement stmt = connection.createStatement()) {
+        try (Statement stmt = getConnection(context).createStatement()) {
 
             ResultSet rs = stmt.executeQuery(
-                    SQL_OBJECT.replaceAll("\\?nameCtx", nameCtx).replaceAll("\\?userCtx", ownerCtx).toLowerCase());
+                SQL_OBJECT.replaceAll("\\?nameCtx", nameCtx).replaceAll("\\?userCtx", ownerCtx).toLowerCase());
 
             List<PostgreDebugObject> res = new ArrayList<PostgreDebugObject>();
 
             while (rs.next()) {
 
                 res.add(new PostgreDebugObject(rs.getInt("oid"), rs.getString("proname"), rs.getString("owner"),
-                        rs.getString("nspname"), rs.getString("lang")));
+                    rs.getString("nspname"), rs.getString("lang")));
 
             }
 
             return res;
 
         } catch (SQLException e) {
-            throw new DBGException(e);
+            throw new DBGException("SQL error", e);
         }
     }
 
     @Override
     public DBGSession<PostgreDebugSessionInfo, PostgreDebugObject, Integer, Integer> getDebugSession(Integer id)
-            throws DBGException {
+        throws DBGException {
         return sessions.get(id);
     }
 
     @Override
-    public PostgreDebugSession createDebugSession(Connection connectionTarget) throws DBGException {
+    public PostgreDebugSession createDebugSession(DBCExecutionContext connectionTarget) throws DBGException {
 
         PostgreDebugSessionInfo targetInfo = getSessionInfo(connectionTarget);
 
-        PostgreDebugSession debugSession = new PostgreDebugSession(getSessionInfo(this.connection), targetInfo,
-                connectionTarget);
+        PostgreDebugSession debugSession = new PostgreDebugSession(getSessionInfo(this.context), targetInfo, (JDBCExecutionContext) connectionTarget);
 
         sessions.put(targetInfo.getPid(), debugSession);
 
@@ -170,6 +176,7 @@ public class PostgreDebugSessionManager implements DBGSessionManager<Integer, In
 
     @Override
     public void dispose() {
+        context.close();
         //FIXME: AF: perform cleanup for everything cached
     }
 
