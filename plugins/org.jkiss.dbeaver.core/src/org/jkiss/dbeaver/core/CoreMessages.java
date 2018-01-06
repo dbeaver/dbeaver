@@ -339,6 +339,8 @@ public class CoreMessages extends NLS {
 	public static String dialog_data_format_profiles_error_title;
 	public static String dialog_data_format_profiles_title;
 	public static String dialog_data_label_value;
+	public static String dialog_text_view_open_editor;
+	public static String dialog_text_view_open_editor_tip;
 	
 	public static String dialog_driver_manager_button_delete;
 	public static String dialog_driver_manager_button_edit;
@@ -795,6 +797,9 @@ public class CoreMessages extends NLS {
 	public static String pref_page_database_resultsets_label_fetch_size;
 	public static String pref_page_database_resultsets_label_read_metadata;
 	public static String pref_page_database_resultsets_label_read_references;
+	public static String pref_page_database_resultsets_group_string;
+	public static String pref_page_database_resultsets_checkbox_string_use_editor;
+	public static String pref_page_database_resultsets_checkbox_string_use_editor_tip;
 
     public static String pref_page_query_manager_checkbox_ddl_executions;
 	public static String pref_page_query_manager_checkbox_metadata_read;
