@@ -23,10 +23,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.concurrent.Callable;
 
-import org.jkiss.dbeaver.runtime.DBRResult;
-import org.jkiss.dbeaver.runtime.DefaultResult;
-
-public class PostgreDebugSessionWorker implements Callable<DBRResult> {
+public class PostgreDebugSessionWorker implements Callable<Void> {
 
     private final Connection conn;
     private String sql = "";
@@ -42,16 +39,15 @@ public class PostgreDebugSessionWorker implements Callable<DBRResult> {
     }
 
     @Override
-    public DBRResult call() throws Exception
+    public Void call() throws Exception
     {
 
         try (Statement stmt = conn.createStatement()) {
             stmt.executeQuery(sql);
-            return DefaultResult.ok();
-
+            return null;
         } catch (SQLException e) {
             String message = String.format("Failed to execute %s", sql);
-            return DefaultResult.error(message, e);
+            throw new Exception(message, e);
         }
     }
 
