@@ -36,7 +36,7 @@ public class ProcedureDebugControllerRegistry implements DBGControllerRegistry<D
                 return controller;
             }
         } catch (CoreException e) {
-            DebugCore.log(log, e.getStatus());
+            Log.log(log, e.getStatus());
         }
         return null;
     }
