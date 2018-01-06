@@ -69,7 +69,7 @@ public class PostgreDebugSession implements DBGSession<PostgreDebugSessionInfo, 
 
     private PostgreDebugSessionWorker worker;
 
-    private FutureTask<DBRResult> task;
+    private FutureTask<Void> task;
 
     private Thread workerThread = null;
 
@@ -348,20 +348,15 @@ public class PostgreDebugSession implements DBGSession<PostgreDebugSessionInfo, 
             return true;
 
         if (task.isDone()) {
-
-            DBRResult res;
-
             try {
-                res = task.get();
-            } catch (InterruptedException | ExecutionException e1) {
-                throw new DBGException(e1);
+                task.get();
+            } catch (InterruptedException e) {
+                throw new DBGException(e);
+            } catch (ExecutionException e) {
+                System.out.println("WARNING " + e.getMessage());
+                return false;
             }
-
-            if (res.getException() != null) {
-                System.out.println("WARNING " + res.getException().getMessage());
-            }
-
-            return res.isOK();
+            return true;
 
         }
 
@@ -377,7 +372,7 @@ public class PostgreDebugSession implements DBGSession<PostgreDebugSessionInfo, 
 
             worker.execSQL(commandSQL);
 
-            task = new FutureTask<DBRResult>(worker);
+            task = new FutureTask<Void>(worker);
 
             workerThread = new Thread(task);
 
