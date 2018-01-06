@@ -29,8 +29,6 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.runtime.DBRResult;
-import org.jkiss.dbeaver.runtime.DefaultResult;
 
 public class DBGBaseController implements DBGController {
 
@@ -50,7 +48,7 @@ public class DBGBaseController implements DBGController {
     }
 
     @Override
-    public DBRResult connect(DBRProgressMonitor monitor) {
+    public void connect(DBRProgressMonitor monitor) throws DBGException {
         DBPDataSource dataSource = dataSourceDescriptor.getDataSource();
         if (!dataSourceDescriptor.isConnected()) {
 
@@ -60,7 +58,7 @@ public class DBGBaseController implements DBGController {
             } catch (DBException e) {
                 String message = NLS.bind(DebugMessages.DatabaseDebugController_e_connecting_datasource, dataSourceDescriptor);
                 log.error(message, e);
-                return DefaultResult.error(message, e);
+                throw new DBGException(message, e);
             }
         }
         try {
@@ -70,9 +68,8 @@ public class DBGBaseController implements DBGController {
         } catch (DBException e) {
             String message = NLS.bind(DebugMessages.DatabaseDebugController_e_opening_debug_context, dataSourceDescriptor);
             log.error(message, e);
-            return DefaultResult.error(message, e);
+            throw new DBGException(message, e);
         }
-        return DefaultResult.ok();
     }
 
     protected void afterSessionOpen(DBCSession session) {
@@ -84,19 +81,19 @@ public class DBGBaseController implements DBGController {
     }
 
     @Override
-    public void resume() {
+    public void resume() throws DBGException {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public void suspend() {
+    public void suspend() throws DBGException {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public void terminate() {
+    public void terminate() throws DBGException {
         beforeSessionClose(this.debugSession);
         if (this.debugSession != null) {
             this.debugSession.close();

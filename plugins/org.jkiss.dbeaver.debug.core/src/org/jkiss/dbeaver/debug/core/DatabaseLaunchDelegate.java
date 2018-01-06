@@ -22,19 +22,17 @@ import java.util.Map;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.LaunchConfigurationDelegate;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.debug.DBGController;
+import org.jkiss.dbeaver.debug.DBGException;
 import org.jkiss.dbeaver.debug.core.model.DatabaseDebugTarget;
 import org.jkiss.dbeaver.debug.core.model.DatabaseProcess;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
-import org.jkiss.dbeaver.runtime.DBRResult;
-import org.jkiss.dbeaver.runtime.core.RuntimeCore;
 
 public abstract class DatabaseLaunchDelegate<C extends DBGController> extends LaunchConfigurationDelegate {
 
@@ -54,10 +52,11 @@ public abstract class DatabaseLaunchDelegate<C extends DBGController> extends La
         DatabaseDebugTarget<C> target = createDebugTarget(launch, controller, process);
         launch.addDebugTarget(target);
         DefaultProgressMonitor progress = new DefaultProgressMonitor(monitor);
-        DBRResult connectResult = controller.connect(progress);
-        IStatus status = RuntimeCore.toStatus(connectResult);
-        if (!status.isOK()) {
-            throw new CoreException(status);
+        try {
+            controller.connect(progress);
+        } catch (DBGException e) {
+            String message = NLS.bind("Unable to connect to {0}", datasourceDescriptor.getName());
+            throw new CoreException(DebugCore.newErrorStatus(message));
         }
     }
 

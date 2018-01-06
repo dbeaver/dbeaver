@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.debug.core.model;
 
 import org.eclipse.core.resources.IMarkerDelta;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.ILaunch;
@@ -28,7 +29,10 @@ import org.eclipse.debug.core.model.IDebugTarget;
 import org.eclipse.debug.core.model.IMemoryBlock;
 import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.debug.core.model.IThread;
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.debug.DBGController;
+import org.jkiss.dbeaver.debug.DBGException;
+import org.jkiss.dbeaver.debug.core.DebugCore;
 
 public abstract class DatabaseDebugTarget<C extends DBGController> extends DatabaseDebugElement implements IDatabaseDebugTarget {
 
@@ -113,7 +117,11 @@ public abstract class DatabaseDebugTarget<C extends DBGController> extends Datab
         for (int i = 0; i < events.length; i++) {
             DebugEvent event = events[i];
             if (event.getKind() == DebugEvent.TERMINATE && event.getSource().equals(process)) {
-                terminated();
+                try {
+                    terminated();
+                } catch (DebugException e) {
+                    DebugCore.log(e.getStatus());
+                }
             }
         }
     }
@@ -133,11 +141,17 @@ public abstract class DatabaseDebugTarget<C extends DBGController> extends Datab
         terminated();
     }
 
-    public synchronized void terminated() {
+    public synchronized void terminated() throws DebugException {
         if (!terminated) {
             terminated = true;
             suspended = false;
-            controller.terminate();
+            try {
+                controller.terminate();
+            } catch (DBGException e) {
+                String message = NLS.bind("Error terminating {0}", getName());
+                IStatus status = DebugCore.newErrorStatus(message, e);
+                throw new DebugException(status);
+            }
         }
     }
 
@@ -159,7 +173,13 @@ public abstract class DatabaseDebugTarget<C extends DBGController> extends Datab
     @Override
     public void resume() throws DebugException {
         suspended = false;
-        controller.resume();
+        try {
+            controller.resume();
+        } catch (DBGException e) {
+            String message = NLS.bind("Error resuming {0}", getName());
+            IStatus status = DebugCore.newErrorStatus(message, e);
+            throw new DebugException(status);
+        }
         if (thread.isSuspended()) {
             thread.resumedByTarget();
         }
@@ -168,7 +188,13 @@ public abstract class DatabaseDebugTarget<C extends DBGController> extends Datab
 
     @Override
     public void suspend() throws DebugException {
-        controller.suspend();
+        try {
+            controller.suspend();
+        } catch (DBGException e) {
+            String message = NLS.bind("Error suspending {0}", getName());
+            IStatus status = DebugCore.newErrorStatus(message, e);
+            throw new DebugException(status);
+        }
     }
 
     public void suspended(int detail) {
