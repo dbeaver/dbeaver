@@ -39,7 +39,7 @@ import org.jkiss.dbeaver.debug.DBGVariable;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 
 @SuppressWarnings("nls")
-public class PostgreDebugSession implements DBGSession<PostgreDebugSessionInfo, PostgreDebugObject, Integer> {
+public class PostgreDebugSession implements DBGSession<PostgreDebugSessionInfo, PostgreDebugObject, Integer, Integer> {
 
     private final PostgreDebugSessionInfo sessionManagerInfo;
 
