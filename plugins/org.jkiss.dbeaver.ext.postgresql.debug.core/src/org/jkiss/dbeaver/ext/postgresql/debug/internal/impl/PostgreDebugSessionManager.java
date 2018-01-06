@@ -124,7 +124,7 @@ public class PostgreDebugSessionManager implements DBGSessionManager<Integer, In
     }
 
     @Override
-    public DBGSession<PostgreDebugSessionInfo, PostgreDebugObject, Integer> getDebugSession(Integer id)
+    public DBGSession<PostgreDebugSessionInfo, PostgreDebugObject, Integer, Integer> getDebugSession(Integer id)
             throws DBGException {
         return sessions.get(id);
     }
@@ -164,8 +164,8 @@ public class PostgreDebugSessionManager implements DBGSessionManager<Integer, In
     }
 
     @Override
-    public List<DBGSession<?, ?, Integer>> getDebugSessions() throws DBGException {
-        return new ArrayList<DBGSession<?, ?, Integer>>(sessions.values());
+    public List<DBGSession<?, ?, Integer, Integer>> getDebugSessions() throws DBGException {
+        return new ArrayList<DBGSession<?, ?, Integer, Integer>>(sessions.values());
     }
 
     @Override

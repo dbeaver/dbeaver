@@ -27,17 +27,17 @@ import org.jkiss.dbeaver.debug.core.model.DatabaseProcess;
 import org.jkiss.dbeaver.debug.core.model.ProcedureDebugTarget;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 
-public class ProcedureLaunchDelegate extends DatabaseLaunchDelegate<DBGProcedureController> {
+public class ProcedureLaunchDelegate extends DatabaseLaunchDelegate<DBGProcedureController<?,?>> {
 
     @Override
-    protected DBGProcedureController createController(DataSourceDescriptor datasourceDescriptor, String databaseName,
+    protected DBGProcedureController<?,?> createController(DataSourceDescriptor datasourceDescriptor, String databaseName,
             Map<String, Object> attributes) throws CoreException {
         String providerId = DebugCore.extractProviderId(datasourceDescriptor);
         if (providerId == null) {
             String message = NLS.bind("Unable to setup procedure debug for {0}", datasourceDescriptor.getName());
             throw new CoreException(DebugCore.newErrorStatus(message));
         }
-        DBGProcedureController procedureController = DebugCore.findProcedureController(datasourceDescriptor);
+        DBGProcedureController<?,?> procedureController = DebugCore.findProcedureController(datasourceDescriptor);
         if (procedureController == null) {
             String message = NLS.bind("Procedure debug is not supported for {0}", datasourceDescriptor.getName());
             throw new CoreException(DebugCore.newErrorStatus(message));
@@ -52,7 +52,7 @@ public class ProcedureLaunchDelegate extends DatabaseLaunchDelegate<DBGProcedure
     }
 
     @Override
-    protected ProcedureDebugTarget createDebugTarget(ILaunch launch, DBGProcedureController controller,
+    protected ProcedureDebugTarget createDebugTarget(ILaunch launch, DBGProcedureController<?,?> controller,
             DatabaseProcess process) {
         return new ProcedureDebugTarget(launch, process, controller);
     }
