@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.ui.IRefreshablePart;
 import org.jkiss.dbeaver.ui.data.IStreamValueManager;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditorStandalone;
+import org.jkiss.dbeaver.ui.data.managers.stream.TextStreamValueManager;
 import org.jkiss.dbeaver.ui.data.registry.StreamValueManagerDescriptor;
 import org.jkiss.dbeaver.ui.data.registry.ValueManagerRegistry;
 import org.jkiss.dbeaver.ui.dialogs.ColumnInfoPanel;
@@ -66,14 +67,12 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
     }
 
     @Nullable
-    public static ContentEditor openEditor(IValueController valueController, DBDContent content)
+    public static ContentEditor openEditor(IValueController valueController)
     {
         ContentEditorInput editorInput;
         // Save data to file
         try {
-            LOBInitializer initializer = new LOBInitializer(
-                valueController,
-                content);
+            LOBInitializer initializer = new LOBInitializer(valueController);
             //valueController.getValueSite().getWorkbenchWindow().run(true, true, initializer);
             DBeaverUI.runInProgressService(initializer);
             editorInput = initializer.editorInput;
@@ -114,14 +113,14 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
 
     private static class LOBInitializer implements DBRRunnableWithProgress {
         IValueController valueController;
-        DBDContent content;
+        Object value;
         IEditorPart[] editorParts;
         IEditorPart defaultPart;
         ContentEditorInput editorInput;
 
-        public LOBInitializer(IValueController valueController, DBDContent content) {
+        public LOBInitializer(IValueController valueController) {
             this.valueController = valueController;
-            this.content = content;
+            this.value = valueController.getValue();
         }
 
         private LOBInitializer(IValueController valueController, IEditorPart[] editorParts, IEditorPart defaultPart, @Nullable ContentEditorInput editorInput)
@@ -136,40 +135,47 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
         public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
         {
             try {
-                if (content != null && editorParts == null) {
-                    Map<StreamValueManagerDescriptor, IStreamValueManager.MatchType> streamManagers =
-                        ValueManagerRegistry.getInstance().getApplicableStreamManagers(monitor, valueController.getValueType(), content);
+                if (value != null && editorParts == null) {
                     List<IEditorPart> parts = new ArrayList<>();
-                    IStreamValueManager.MatchType defaultMatch = null;
-                    for (Map.Entry<StreamValueManagerDescriptor, IStreamValueManager.MatchType> entry : streamManagers.entrySet()) {
-                        IStreamValueManager streamValueManager = entry.getKey().getInstance();
-                        try {
-                            IEditorPart editorPart = streamValueManager.createEditorPart(valueController);
-                            IStreamValueManager.MatchType matchType = entry.getValue();
-                            if (defaultPart == null) {
-                                defaultPart = editorPart;
-                                defaultMatch = matchType;
-                            } else {
-                                boolean setDefault = false;
-                                switch (matchType) {
-                                    case EXCLUSIVE:
-                                    case PRIMARY:
-                                        setDefault = true;
-                                        break;
-                                    case DEFAULT:
-                                        setDefault = (defaultMatch == IStreamValueManager.MatchType.APPLIES);
-                                        break;
-                                    default:
-                                        break;
-                                }
-                                if (setDefault) {
+                    if (value instanceof String) {
+                        TextStreamValueManager valueManager = new TextStreamValueManager();
+                        defaultPart = valueManager.createEditorPart(valueController);
+                        parts.add(defaultPart);
+                    } else if (value instanceof DBDContent) {
+                        DBDContent content = (DBDContent) value;
+                        Map<StreamValueManagerDescriptor, IStreamValueManager.MatchType> streamManagers =
+                            ValueManagerRegistry.getInstance().getApplicableStreamManagers(monitor, valueController.getValueType(), content);
+                        IStreamValueManager.MatchType defaultMatch = null;
+                        for (Map.Entry<StreamValueManagerDescriptor, IStreamValueManager.MatchType> entry : streamManagers.entrySet()) {
+                            IStreamValueManager streamValueManager = entry.getKey().getInstance();
+                            try {
+                                IEditorPart editorPart = streamValueManager.createEditorPart(valueController);
+                                IStreamValueManager.MatchType matchType = entry.getValue();
+                                if (defaultPart == null) {
                                     defaultPart = editorPart;
                                     defaultMatch = matchType;
+                                } else {
+                                    boolean setDefault = false;
+                                    switch (matchType) {
+                                        case EXCLUSIVE:
+                                        case PRIMARY:
+                                            setDefault = true;
+                                            break;
+                                        case DEFAULT:
+                                            setDefault = (defaultMatch == IStreamValueManager.MatchType.APPLIES);
+                                            break;
+                                        default:
+                                            break;
+                                    }
+                                    if (setDefault) {
+                                        defaultPart = editorPart;
+                                        defaultMatch = matchType;
+                                    }
                                 }
+                                parts.add(editorPart);
+                            } catch (DBException e) {
+                                log.error(e);
                             }
-                            parts.add(editorPart);
-                        } catch (DBException e) {
-                            log.error(e);
                         }
                     }
                     editorParts = parts.toArray(new IEditorPart[parts.size()]);
@@ -246,7 +252,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
 
                     ContentEditorInput editorInput = getEditorInput();
                     editorInput.updateContentFromFile(monitor);
-                    editorInput.getValueController().updateValue(editorInput.getContent(), true);
+                    editorInput.getValueController().updateValue(editorInput.getValue(), true);
 
                     // Close editor
                     closeValueEditor();
@@ -300,11 +306,6 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
     {
         super.init(site, input);
         setPartName(input.getName());
-
-        DBDContent content = getContent();
-        if (content == null) {
-            return;
-        }
 
         // Fill nested editorParts info
         IEditorPart[] editorParts = getEditorInput().getEditors();
@@ -367,10 +368,6 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
     @Override
     protected void createPages() {
         super.createPages();
-        DBDContent content = getContent();
-        if (content == null) {
-            return;
-        }
         ContentPartInfo defaultPage = null;
         for (ContentPartInfo contentPart : contentParts) {
             if (contentPart.isDefault) {
@@ -454,15 +451,10 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
     }
 
     @Nullable
-    DBDContent getContent()
+    Object getValue()
     {
         IValueController valueController = getValueController();
-        Object value = valueController == null? null : valueController.getValue();
-        if (value instanceof DBDContent) {
-            return (DBDContent) value;
-        } else {
-            return null;
-        }
+        return valueController == null? null : valueController.getValue();
     }
 
     @Nullable
@@ -499,7 +491,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
             }
         });
 
-        return getEditorInput().getContent();
+        return getEditorInput().getValue();
     }
 
     @Override

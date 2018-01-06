@@ -466,7 +466,8 @@ public class UIUtils {
     {
         Label textLabel = new Label(parent, SWT.NONE);
         textLabel.setText(label + ": "); //$NON-NLS-1$
-        textLabel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_CENTER));
+        // TODO: Should we make it right-aligned? Looks good but not in Eclipse-style
+        textLabel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_CENTER /*| GridData.HORIZONTAL_ALIGN_END*/));
         return textLabel;
     }
 
