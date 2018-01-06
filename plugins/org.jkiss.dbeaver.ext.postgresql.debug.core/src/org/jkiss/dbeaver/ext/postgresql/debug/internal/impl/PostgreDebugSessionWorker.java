@@ -26,16 +26,12 @@ import java.util.concurrent.Callable;
 public class PostgreDebugSessionWorker implements Callable<Void> {
 
     private final Connection conn;
-    private String sql = "";
+    private final String sql;
 
-    public void execSQL(String sqlCommand)
-    {
-        this.sql = sqlCommand;
-    }
-
-    public PostgreDebugSessionWorker(Connection conn)
+    public PostgreDebugSessionWorker(Connection conn, String sqlCommand)
     {
         this.conn = conn;
+        this.sql = sqlCommand;
     }
 
     @Override

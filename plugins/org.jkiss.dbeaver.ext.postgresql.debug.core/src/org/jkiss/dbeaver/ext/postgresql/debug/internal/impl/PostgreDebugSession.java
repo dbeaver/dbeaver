@@ -70,8 +70,6 @@ public class PostgreDebugSession implements DBGSession<PostgreDebugSessionInfo, 
 
     private List<PostgreDebugBreakpoint> breakpoints = new ArrayList<PostgreDebugBreakpoint>(1);
 
-    private PostgreDebugSessionWorker worker;
-
     private FutureTask<Void> task;
 
     private Thread workerThread = null;
@@ -131,7 +129,6 @@ public class PostgreDebugSession implements DBGSession<PostgreDebugSessionInfo, 
         this.sessionDebugInfo = sessionDebugInfo;
         this.connection = connection;
         this.title = sessionManagerInfo.application;
-        this.worker = new PostgreDebugSessionWorker(this.connection);
         sessionId = listen();
     }
 
@@ -373,7 +370,7 @@ public class PostgreDebugSession implements DBGSession<PostgreDebugSessionInfo, 
 
             connection.setAutoCommit(false);
 
-            worker.execSQL(commandSQL);
+            PostgreDebugSessionWorker worker = new PostgreDebugSessionWorker(connection, commandSQL);
 
             task = new FutureTask<Void>(worker);
 
