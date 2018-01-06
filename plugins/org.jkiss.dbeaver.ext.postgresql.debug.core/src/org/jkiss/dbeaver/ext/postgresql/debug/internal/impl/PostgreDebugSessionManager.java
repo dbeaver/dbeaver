@@ -168,4 +168,9 @@ public class PostgreDebugSessionManager implements DBGSessionManager<Integer, In
         return new ArrayList<DBGSession<?, ?, Integer>>(sessions.values());
     }
 
+    @Override
+    public void dispose() {
+        //FIXME: AF: perform cleanup for everything cached
+    }
+
 }
