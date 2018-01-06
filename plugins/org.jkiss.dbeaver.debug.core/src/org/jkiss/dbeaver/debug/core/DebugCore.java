@@ -63,6 +63,10 @@ public class DebugCore {
 
     private static Log log = Log.getLog(DebugCore.class);
 
+    public static void log(IStatus status) {
+        Log.log(log, status);
+    }
+
     public static CoreException abort(String message, Throwable th) {
         return new CoreException(newErrorStatus(message, th));
     }
@@ -121,40 +125,6 @@ public class DebugCore {
                     configuration);
             log.error(message, e);
             return defaultValue;
-        }
-    }
-
-    // FIXME: AF: move to org.jkiss.dbeaver.Log
-    public static void log(Log delegate, IStatus status) {
-        if (delegate == null) {
-            // no way to log
-            return;
-        }
-        if (status == null) {
-            // nothing to log
-            return;
-        }
-        int severity = status.getSeverity();
-        String message = status.getMessage();
-        Throwable exception = status.getException();
-        switch (severity) {
-        case IStatus.CANCEL:
-            delegate.debug(message, exception);
-            break;
-        case IStatus.ERROR:
-            delegate.error(message, exception);
-            break;
-        case IStatus.WARNING:
-            delegate.warn(message, exception);
-            break;
-        case IStatus.INFO:
-            delegate.info(message, exception);
-            break;
-        case IStatus.OK:
-            delegate.trace(message, exception);
-            break;
-        default:
-            break;
         }
     }
 
