@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.debug;
 
 public interface DBGBreakpoint {
 
-    DBGObject<?> getDebugObject();
+    DBGObject getDebugObject();
 
     DBGBreakpointProperties getProperties();
 
