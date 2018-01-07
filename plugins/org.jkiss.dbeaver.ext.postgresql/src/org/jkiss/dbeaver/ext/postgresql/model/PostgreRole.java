@@ -176,7 +176,7 @@ public class PostgreRole implements PostgreObject, PostgrePermissionsOwner, DBPP
         return oid;
     }
 
-    @Property(category = CAT_FLAGS, editable = true, updatable = true, order = 10)
+    @Property(editable = true, updatable = true, order = 10)
     public boolean isSuperUser() {
         return superUser;
     }
@@ -185,7 +185,7 @@ public class PostgreRole implements PostgreObject, PostgrePermissionsOwner, DBPP
         this.superUser = superUser;
     }
 
-    @Property(category = CAT_FLAGS, editable = true, updatable = true, order = 11)
+    @Property(editable = true, updatable = true, order = 11)
     public boolean isInherit() {
         return inherit;
     }
@@ -194,7 +194,7 @@ public class PostgreRole implements PostgreObject, PostgrePermissionsOwner, DBPP
         this.inherit = inherit;
     }
 
-    @Property(category = CAT_FLAGS, editable = true, updatable = true, order = 12)
+    @Property(editable = true, updatable = true, order = 12)
     public boolean isCreateRole() {
         return createRole;
     }
@@ -203,7 +203,7 @@ public class PostgreRole implements PostgreObject, PostgrePermissionsOwner, DBPP
         this.createRole = createRole;
     }
 
-    @Property(category = CAT_FLAGS, editable = true, updatable = true, order = 13)
+    @Property(editable = true, updatable = true, order = 13)
     public boolean isCreateDatabase() {
         return createDatabase;
     }
@@ -212,7 +212,7 @@ public class PostgreRole implements PostgreObject, PostgrePermissionsOwner, DBPP
         this.createDatabase = createDatabase;
     }
 
-    @Property(category = CAT_FLAGS, editable = true, updatable = true, order = 14)
+    @Property(editable = true, updatable = true, order = 14)
     public boolean isCanLogin() {
         return canLogin;
     }
@@ -221,7 +221,7 @@ public class PostgreRole implements PostgreObject, PostgrePermissionsOwner, DBPP
         this.canLogin = canLogin;
     }
 
-    @Property(category = CAT_FLAGS, editable = true, updatable = true, order = 15)
+    @Property(editable = true, updatable = true, order = 15)
     public boolean isReplication() {
         return replication;
     }
@@ -230,7 +230,7 @@ public class PostgreRole implements PostgreObject, PostgrePermissionsOwner, DBPP
         this.replication = replication;
     }
 
-    @Property(category = CAT_FLAGS, editable = true, updatable = true, order = 16)
+    @Property(editable = true, updatable = true, order = 16)
     public boolean isBypassRls() {
         return bypassRls;
     }

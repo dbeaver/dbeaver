@@ -77,10 +77,21 @@ public class PostgreRoleManager extends SQLObjectEditor<PostgreRole, PostgreData
     protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
         final PostgreRole role = command.getObject();
         final StringBuilder script = new StringBuilder("CREATE ROLE " + DBUtils.getQuotedIdentifier(role));
-        addRoleOptions(script, role);
+        addRoleOptions(script, role, true);
 
         actions.add(
             new SQLDatabasePersistAction("Create role", script.toString()) //$NON-NLS-2$
+        );
+    }
+
+    @Override
+    protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) {
+        final PostgreRole role = command.getObject();
+        final StringBuilder script = new StringBuilder("ALTER ROLE " + DBUtils.getQuotedIdentifier(role));
+        addRoleOptions(script, role, false);
+
+        actionList.add(
+            new SQLDatabasePersistAction("Alter role", script.toString()) //$NON-NLS-2$
         );
     }
 
@@ -91,14 +102,14 @@ public class PostgreRoleManager extends SQLObjectEditor<PostgreRole, PostgreData
         );
     }
 
-    private void addRoleOptions(StringBuilder script, PostgreRole role) {
+    private void addRoleOptions(StringBuilder script, PostgreRole role, boolean create) {
         if (role.isSuperUser()) script.append(" SUPERUSER"); else script.append(" NOSUPERUSER");
         if (role.isCreateDatabase()) script.append(" CREATEDB"); else script.append(" NOCREATEDB");
         if (role.isCreateRole()) script.append(" CREATEROLE"); else script.append(" NOCREATEROLE");
         if (role.isInherit()) script.append(" INHERIT"); else script.append(" NOINHERIT");
         if (role.isCanLogin()) script.append(" LOGIN"); else script.append(" NOLOGIN");
 
-        if (role.isUser() && !CommonUtils.isEmpty(role.getPassword())) {
+        if (create && role.isUser() && !CommonUtils.isEmpty(role.getPassword())) {
             script.append(" PASSWORD ").append("'").append(role.getDataSource().getSQLDialect().escapeString(role.getPassword())).append("'");
         }
         //if (role.isCreateDatabase()) script.append(" CONNECTION LIMIT connlimit");
