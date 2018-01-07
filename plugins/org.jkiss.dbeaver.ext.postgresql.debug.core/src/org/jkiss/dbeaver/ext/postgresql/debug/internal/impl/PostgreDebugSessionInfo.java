@@ -68,13 +68,6 @@ public class PostgreDebugSessionInfo implements DBGSessionInfo {
         return query;
     }
 
-    @Override
-    public String toString() {
-
-        return "pid:" + String.valueOf(pid) + ", user: " + user + ", application: `" + application + "`, state: "
-                + state + ", query: " + query.replace('\n', '\\');
-    }
-
     public Map<String, Object> toMap() {
         //FIXME: declare constants elsewhere, it is the part of metadata
         Map<String, Object> map = new HashMap<String, Object>();
@@ -84,6 +77,13 @@ public class PostgreDebugSessionInfo implements DBGSessionInfo {
         map.put("state", state);
         map.put("query", query);
         return map;
+    }
+
+    @Override
+    public String toString() {
+
+        return "pid:" + String.valueOf(pid) + ", user: " + user + ", application: `" + application + "`, state: "
+                + state + ", query: " + query.replace('\n', '\\');
     }
 
 }

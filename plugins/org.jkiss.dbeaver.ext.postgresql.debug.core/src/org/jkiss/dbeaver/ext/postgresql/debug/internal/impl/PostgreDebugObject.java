@@ -18,6 +18,9 @@
 
 package org.jkiss.dbeaver.ext.postgresql.debug.internal.impl;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.jkiss.dbeaver.debug.DBGObject;
 
 @SuppressWarnings("nls")
@@ -62,6 +65,17 @@ public class PostgreDebugObject implements DBGObject {
     @Override
     public String getName() {
         return proname;
+    }
+    
+    @Override
+    public Map<String, Object> toMap() {
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("oid", oid);
+        map.put("proname", proname);
+        map.put("owner", owner);
+        map.put("schema", schema);
+        map.put("lang", lang);
+        return map;
     }
 
     @Override
