@@ -19,10 +19,11 @@
 package org.jkiss.dbeaver.debug;
 
 import java.util.List;
+import java.util.Map;
 
-public interface DBGSession<SESSION_INFO extends DBGSessionInfo, DEBUG_OBJECT extends DBGObject> {
+public interface DBGSession<DEBUG_OBJECT extends DBGObject> {
 
-    SESSION_INFO getSessionInfo();
+    Map<String, Object> getSessionInfo();
 
     String getTitle();
 
