@@ -95,20 +95,14 @@ public class PostgreDebugSession implements DBGSession {
             
             this.connection = connection;
             
-            try (Statement stmt = getConnection(connection).createStatement()) {
-
-                ResultSet rs = stmt.executeQuery(SQL_LISTEN);
+            try (Statement stmt = getConnection(connection).createStatement();
+                    ResultSet rs = stmt.executeQuery(SQL_LISTEN)) {
 
                 if (rs.next()) {
-
                     getConnection(connection).setClientInfo("ApplicationName", "Debug Mode : " + String.valueOf(sessionId));
                     sessionId =  rs.getInt("sessionid");
-
-
                 } else {
-
                     throw new DBGException("Unable to create debug instance");
-
                 }
 
             } catch (SQLException e) {
@@ -277,16 +271,20 @@ public class PostgreDebugSession implements DBGSession {
 
         List<DBGVariable<?>> vars = new ArrayList<>();
 
-        try (Statement stmt = getConnection(connection).createStatement()) {
-
-            ResultSet rs = stmt.executeQuery(SQL_GET_VARS.replaceAll("\\?sessionid", String.valueOf(sessionId)));
+        String sql = SQL_GET_VARS.replaceAll("\\?sessionid", String.valueOf(sessionId));
+        try (Statement stmt = getConnection(connection).createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
 
             while (rs.next()) {
-
-                PostgreDebugVariable var = new PostgreDebugVariable(rs.getString("name"), rs.getString("varclass"),
-                        rs.getInt("linenumber"), rs.getBoolean("isunique"), rs.getBoolean("isconst"),
-                        rs.getBoolean("isnotnull"), rs.getInt("dtype"), rs.getString("value"));
-
+                String name = rs.getString("name");
+                String varclass = rs.getString("varclass");
+                int linenumber = rs.getInt("linenumber");
+                boolean isunique = rs.getBoolean("isunique");
+                boolean isconst = rs.getBoolean("isconst");
+                boolean isnotnull = rs.getBoolean("isnotnull");
+                int dtype = rs.getInt("dtype");
+                String value = rs.getString("value");
+                PostgreDebugVariable var = new PostgreDebugVariable(name, varclass, linenumber, isunique, isconst,
+                        isnotnull, dtype, value);
                 vars.add(var);
             }
 
@@ -345,13 +343,15 @@ public class PostgreDebugSession implements DBGSession {
 
         List<DBGStackFrame> stack = new ArrayList<DBGStackFrame>(1);
 
-        try (Statement stmt = getConnection(connection).createStatement()) {
-
-            ResultSet rs = stmt.executeQuery(SQL_GET_STACK.replaceAll("\\?sessionid", String.valueOf(sessionId)));
-
+        String sql = SQL_GET_STACK.replaceAll("\\?sessionid", String.valueOf(sessionId));
+        try (Statement stmt = getConnection(connection).createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
-                PostgreDebugStackFrame frame = new PostgreDebugStackFrame(rs.getInt("level"), rs.getString("targetname"),
-                        rs.getInt("func"), rs.getInt("linenumber"), rs.getString("args"));
+                int level = rs.getInt("level");
+                String targetname = rs.getString("targetname");
+                int func = rs.getInt("func");
+                int linenumber = rs.getInt("linenumber");
+                String args = rs.getString("args");
+                PostgreDebugStackFrame frame = new PostgreDebugStackFrame(level, targetname, func, linenumber, args);
                 stack.add(frame);
             }
 
