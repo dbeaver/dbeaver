@@ -26,6 +26,16 @@ import org.jkiss.dbeaver.debug.DBGSessionInfo;
 @SuppressWarnings("nls")
 public class PostgreDebugSessionInfo implements DBGSessionInfo {
 
+    public static final String QUERY_PROP = "query";
+
+    public static final String STATE_PROP = "state";
+
+    public static final String APP_PROP = "application";
+
+    public static final String USER_PROP = "user";
+
+    public static final String PID = "pid";
+
     public static final String CREATE_LISTEN = "CREATE LISTEN";
 
     final int pid;
@@ -69,13 +79,12 @@ public class PostgreDebugSessionInfo implements DBGSessionInfo {
     }
 
     public Map<String, Object> toMap() {
-        //FIXME: declare constants elsewhere, it is the part of metadata
         Map<String, Object> map = new HashMap<String, Object>();
-        map.put("pid", pid);
-        map.put("user", user);
-        map.put("application", application);
-        map.put("state", state);
-        map.put("query", query);
+        map.put(PID, pid);
+        map.put(USER_PROP, user);
+        map.put(APP_PROP, application);
+        map.put(STATE_PROP, state);
+        map.put(QUERY_PROP, query);
         return map;
     }
 
