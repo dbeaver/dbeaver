@@ -23,17 +23,17 @@ import java.util.List;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 
 public interface DBGSessionManager<SESSION_ID_TYPE, OBJECT_ID_TYPE> {
-    DBGSessionInfo<SESSION_ID_TYPE> getSessionInfo(DBCExecutionContext connection) throws DBGException;
+    DBGSessionInfo getSessionInfo(DBCExecutionContext connection) throws DBGException;
 
-    List<? extends DBGSessionInfo<SESSION_ID_TYPE>> getSessions() throws DBGException;
+    List<? extends DBGSessionInfo> getSessions() throws DBGException;
 
-    DBGSession<? extends DBGSessionInfo<SESSION_ID_TYPE>, ? extends DBGObject, SESSION_ID_TYPE, OBJECT_ID_TYPE> getDebugSession(SESSION_ID_TYPE id) throws DBGException;
+    DBGSession<? extends DBGSessionInfo, ? extends DBGObject, SESSION_ID_TYPE, OBJECT_ID_TYPE> getDebugSession(SESSION_ID_TYPE id) throws DBGException;
 
     List<DBGSession<?, ?, SESSION_ID_TYPE, OBJECT_ID_TYPE>> getDebugSessions() throws DBGException;
 
     void terminateSession(SESSION_ID_TYPE id);
 
-    DBGSession<? extends DBGSessionInfo<SESSION_ID_TYPE>, ? extends DBGObject, SESSION_ID_TYPE, OBJECT_ID_TYPE> createDebugSession(DBCExecutionContext connection) throws DBGException;
+    DBGSession<? extends DBGSessionInfo, ? extends DBGObject, SESSION_ID_TYPE, OBJECT_ID_TYPE> createDebugSession(DBCExecutionContext connection) throws DBGException;
 
     boolean isSessionExists(SESSION_ID_TYPE id);
 

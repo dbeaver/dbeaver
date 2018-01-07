@@ -21,7 +21,7 @@ package org.jkiss.dbeaver.ext.postgresql.debug.internal.impl;
 import org.jkiss.dbeaver.debug.DBGSessionInfo;
 
 @SuppressWarnings("nls")
-public class PostgreDebugSessionInfo implements DBGSessionInfo<Integer> {
+public class PostgreDebugSessionInfo implements DBGSessionInfo {
 
     public static final String CREATE_LISTEN = "CREATE LISTEN";
 
