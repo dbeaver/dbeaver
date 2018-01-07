@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.debug.DBGBreakpoint;
 import org.jkiss.dbeaver.debug.DBGBreakpointProperties;
 import org.jkiss.dbeaver.debug.DBGException;
+import org.jkiss.dbeaver.debug.DBGObject;
 import org.jkiss.dbeaver.debug.DBGSession;
 import org.jkiss.dbeaver.debug.DBGSessionInfo;
 import org.jkiss.dbeaver.debug.DBGStackFrame;
@@ -42,7 +43,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 
 @SuppressWarnings("nls")
-public class PostgreDebugSession implements DBGSession<PostgreDebugObject> {
+public class PostgreDebugSession implements DBGSession {
 
     private static final Log log = Log.getLog(PostgreDebugSession.class);
     
@@ -165,14 +166,14 @@ public class PostgreDebugSession implements DBGSession<PostgreDebugObject> {
     }
 
     @Override
-    public DBGBreakpoint setBreakpoint(PostgreDebugObject obj, DBGBreakpointProperties properties) throws DBGException {
+    public DBGBreakpoint setBreakpoint(DBGObject obj, DBGBreakpointProperties properties) throws DBGException {
 
         acquireReadLock();
 
         PostgreDebugBreakpoint bp = null;
 
         try {
-            bp = new PostgreDebugBreakpoint(this, obj, (PostgreDebugBreakpointProperties) properties);
+            bp = new PostgreDebugBreakpoint(this, (PostgreDebugObject)obj, (PostgreDebugBreakpointProperties) properties);
             breakpoints.add(bp);
 
         } finally {

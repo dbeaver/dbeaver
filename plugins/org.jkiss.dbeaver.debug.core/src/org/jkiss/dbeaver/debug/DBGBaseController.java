@@ -40,7 +40,7 @@ public abstract class DBGBaseController implements DBGController {
     }
 
     @Override
-    public DBGSession<?> connect(DBRProgressMonitor monitor) throws DBGException {
+    public DBGSession connect(DBRProgressMonitor monitor) throws DBGException {
         DBPDataSource dataSource = dataSourceContainer.getDataSource();
         if (!dataSourceContainer.isConnected()) {
             throw new DBGException("Not connected to database");
@@ -55,22 +55,22 @@ public abstract class DBGBaseController implements DBGController {
         }
     }
 
-    protected abstract DBGSession<?> createSession(DBRProgressMonitor monitor, DBPDataSource dataSource) throws DBGException;
+    protected abstract DBGSession createSession(DBRProgressMonitor monitor, DBPDataSource dataSource) throws DBGException;
 
     @Override
-    public void resume(DBRProgressMonitor monitor, DBGSession<?> session) throws DBGException {
+    public void resume(DBRProgressMonitor monitor, DBGSession session) throws DBGException {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public void suspend(DBRProgressMonitor monitor, DBGSession<?> session) throws DBGException {
+    public void suspend(DBRProgressMonitor monitor, DBGSession session) throws DBGException {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public void terminate(DBRProgressMonitor monitor, DBGSession<?> session) throws DBGException {
+    public void terminate(DBRProgressMonitor monitor, DBGSession session) throws DBGException {
 
     }
 
