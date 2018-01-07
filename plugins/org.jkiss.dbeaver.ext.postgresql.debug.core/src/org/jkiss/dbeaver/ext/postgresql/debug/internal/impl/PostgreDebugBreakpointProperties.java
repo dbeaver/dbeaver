@@ -18,6 +18,9 @@
 
 package org.jkiss.dbeaver.ext.postgresql.debug.internal.impl;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.jkiss.dbeaver.debug.DBGBreakpointProperties;
 
 public class PostgreDebugBreakpointProperties implements DBGBreakpointProperties {
@@ -70,6 +73,17 @@ public class PostgreDebugBreakpointProperties implements DBGBreakpointProperties
         this.targetId = -1;
         this.all = true;
         this.global = global;
+    }
+
+    @Override
+    public Map<String, Object> toMap() {
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("lineNo", lineNo);
+        map.put("onStart", onStart);
+        map.put("targetId", targetId);
+        map.put("all", all);
+        map.put("global", global);
+        return map;
     }
 
     @Override

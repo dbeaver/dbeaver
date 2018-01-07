@@ -25,7 +25,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -35,6 +34,7 @@ import org.jkiss.dbeaver.debug.DBGBreakpoint;
 import org.jkiss.dbeaver.debug.DBGBreakpointProperties;
 import org.jkiss.dbeaver.debug.DBGException;
 import org.jkiss.dbeaver.debug.DBGSession;
+import org.jkiss.dbeaver.debug.DBGSessionInfo;
 import org.jkiss.dbeaver.debug.DBGStackFrame;
 import org.jkiss.dbeaver.debug.DBGVariable;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -150,9 +150,8 @@ public class PostgreDebugSession implements DBGSession<PostgreDebugObject> {
     }
 
     @Override
-    public Map<String, Object> getSessionInfo() {
-
-        return sessionDebugInfo.toMap();
+    public DBGSessionInfo getSessionInfo() {
+        return sessionDebugInfo;
     }
 
     @Override
@@ -162,7 +161,6 @@ public class PostgreDebugSession implements DBGSession<PostgreDebugObject> {
 
     @Override
     public List<PostgreDebugBreakpoint> getBreakpoints() {
-
         return breakpoints;
     }
 
