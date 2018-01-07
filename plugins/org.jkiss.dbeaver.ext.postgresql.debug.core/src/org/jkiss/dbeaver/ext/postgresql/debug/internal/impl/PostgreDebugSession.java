@@ -32,7 +32,7 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 @SuppressWarnings("nls")
-public class PostgreDebugSession implements DBGSession<PostgreDebugSessionInfo, PostgreDebugObject, Integer, Integer> {
+public class PostgreDebugSession implements DBGSession<PostgreDebugSessionInfo, PostgreDebugObject> {
 
     private static final Log log = Log.getLog(PostgreDebugSession.class);
     

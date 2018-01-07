@@ -35,7 +35,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 
 @SuppressWarnings("nls")
-public class PostgreDebugSessionManager implements DBGSessionManager<Integer, Integer> {
+public class PostgreDebugSessionManager implements DBGSessionManager {
 
     private final DBCExecutionContext context;
 
@@ -131,7 +131,7 @@ public class PostgreDebugSessionManager implements DBGSessionManager<Integer, In
     }
 
     @Override
-    public DBGSession<PostgreDebugSessionInfo, PostgreDebugObject, Integer, Integer> getDebugSession(Integer id)
+    public DBGSession<PostgreDebugSessionInfo, PostgreDebugObject> getDebugSession(Object id)
         throws DBGException {
         return sessions.get(id);
     }
@@ -154,12 +154,12 @@ public class PostgreDebugSessionManager implements DBGSessionManager<Integer, In
     }
 
     @Override
-    public boolean isSessionExists(Integer id) {
+    public boolean isSessionExists(Object id) {
         return sessions.containsKey(id);
     }
 
     @Override
-    public void terminateSession(Integer id) {
+    public void terminateSession(Object id) {
 
         PostgreDebugSession session = sessions.get(id);
 
@@ -174,8 +174,8 @@ public class PostgreDebugSessionManager implements DBGSessionManager<Integer, In
     }
 
     @Override
-    public List<DBGSession<?, ?, Integer, Integer>> getDebugSessions() throws DBGException {
-        return new ArrayList<DBGSession<?, ?, Integer, Integer>>(sessions.values());
+    public List<DBGSession<?, ?>> getDebugSessions() throws DBGException {
+        return new ArrayList<DBGSession<?, ?>>(sessions.values());
     }
 
     @Override

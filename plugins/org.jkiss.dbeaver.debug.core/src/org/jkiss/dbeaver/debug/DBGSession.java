@@ -20,7 +20,8 @@ package org.jkiss.dbeaver.debug;
 
 import java.util.List;
 
-public interface DBGSession<SESSION_INFO extends DBGSessionInfo, DEBUG_OBJECT extends DBGObject, SESSION_ID_TYPE, OBJECT_ID_TYPE> {
+public interface DBGSession<SESSION_INFO extends DBGSessionInfo, DEBUG_OBJECT extends DBGObject> {
+
     SESSION_INFO getSessionInfo();
 
     String getTitle();
@@ -47,7 +48,7 @@ public interface DBGSession<SESSION_INFO extends DBGSessionInfo, DEBUG_OBJECT ex
 
     List<? extends DBGStackFrame> getStack() throws DBGException;
 
-    SESSION_ID_TYPE getSessionId();
+    Object getSessionId();
 
     // move Stack
 }

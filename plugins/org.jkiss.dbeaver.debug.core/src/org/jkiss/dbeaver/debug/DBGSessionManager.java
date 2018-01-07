@@ -22,20 +22,20 @@ import java.util.List;
 
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 
-public interface DBGSessionManager<SESSION_ID_TYPE, OBJECT_ID_TYPE> {
+public interface DBGSessionManager {
     DBGSessionInfo getSessionInfo(DBCExecutionContext connection) throws DBGException;
 
     List<? extends DBGSessionInfo> getSessions() throws DBGException;
 
-    DBGSession<? extends DBGSessionInfo, ? extends DBGObject, SESSION_ID_TYPE, OBJECT_ID_TYPE> getDebugSession(SESSION_ID_TYPE id) throws DBGException;
+    DBGSession<? extends DBGSessionInfo, ? extends DBGObject> getDebugSession(Object id) throws DBGException;
 
-    List<DBGSession<?, ?, SESSION_ID_TYPE, OBJECT_ID_TYPE>> getDebugSessions() throws DBGException;
+    List<DBGSession<?, ?>> getDebugSessions() throws DBGException;
 
-    void terminateSession(SESSION_ID_TYPE id);
+    void terminateSession(Object id);
 
-    DBGSession<? extends DBGSessionInfo, ? extends DBGObject, SESSION_ID_TYPE, OBJECT_ID_TYPE> createDebugSession(DBCExecutionContext connection) throws DBGException;
+    DBGSession<? extends DBGSessionInfo, ? extends DBGObject> createDebugSession(DBCExecutionContext connection) throws DBGException;
 
-    boolean isSessionExists(SESSION_ID_TYPE id);
+    boolean isSessionExists(Object id);
 
     List<? extends DBGObject> getObjects(String ownerCtx, String nameCtx) throws DBGException;
 
