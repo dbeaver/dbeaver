@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.debug.DBGSession;
 import org.jkiss.dbeaver.debug.DBGStackFrame;
 import org.jkiss.dbeaver.debug.DBGVariable;
 import org.jkiss.dbeaver.ext.postgresql.debug.internal.impl.*;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 
 @SuppressWarnings("nls")
 public class Debugger {
@@ -726,7 +727,8 @@ public class Debugger {
 
                 System.out.println("Waiting for target session ...");
 
-                debugSessionA.attach(false);
+//FIXME:AF: Andrew, please migrate to attach(JDBCExecutionContext connection,int OID,int targetPID) API
+//                debugSessionA.attach(false);
 
                 break;
 
