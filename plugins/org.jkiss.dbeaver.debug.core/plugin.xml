@@ -2,8 +2,6 @@
 <?eclipse version="3.4"?>
 <plugin>
 
-   <extension-point id="org.jkiss.dbeaver.debug.core.controllers" name="%procedureControllers.name" schema="schema/procedureControllers.exsd"/>
-
    <extension
          id="databaseBreakpointMarker"
          name="%databaseBreakpoint.name"

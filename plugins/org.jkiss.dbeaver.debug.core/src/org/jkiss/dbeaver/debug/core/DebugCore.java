@@ -17,6 +17,9 @@
  */
 package org.jkiss.dbeaver.debug.core;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
@@ -25,15 +28,10 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.debug.DBGController;
-import org.jkiss.dbeaver.debug.DBGControllerRegistry;
 import org.jkiss.dbeaver.debug.DBGException;
-import org.jkiss.dbeaver.debug.internal.core.DebugCoreActivator;
 import org.jkiss.dbeaver.debug.internal.core.DebugCoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-
-import java.util.ArrayList;
-import java.util.List;
 
 public class DebugCore {
 
@@ -130,16 +128,14 @@ public class DebugCore {
         return newErrorStatus(message, null);
     }
 
-    public static DBGControllerRegistry getProcedureControllerRegistry(DBPDataSourceContainer dataSourceContainer) {
-        return DebugControllersRegistry.getInstance().createControllerRegistry(dataSourceContainer);
-    }
-
     public static DBGController findProcedureController(DBPDataSourceContainer dataSourceContainer) throws DBGException {
-        DBGControllerRegistry registry = getProcedureControllerRegistry(dataSourceContainer);
-        if (registry == null) {
-            throw new DBGException("Can't find registry for datasource '" + dataSourceContainer.getDriver().getProviderId() + "'");
+        DBGController controller = Adapters.adapt(dataSourceContainer, DBGController.class);
+        if (controller != null) {
+            return controller;
         }
-        return registry.createController(dataSourceContainer);
+        String providerId = dataSourceContainer.getDriver().getProviderId();
+        String message = NLS.bind("Unable to find controller for datasource \"{0}\"", providerId);
+        throw new DBGException(message);
     }
 
 }
