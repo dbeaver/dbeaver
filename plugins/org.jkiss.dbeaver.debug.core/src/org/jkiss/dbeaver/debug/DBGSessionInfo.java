@@ -18,8 +18,8 @@
 
 package org.jkiss.dbeaver.debug;
 
-public interface DBGSessionInfo<SESSION_ID_TYPE> {
+public interface DBGSessionInfo {
 
-    SESSION_ID_TYPE getID();
+    Object getID();
 
 }
