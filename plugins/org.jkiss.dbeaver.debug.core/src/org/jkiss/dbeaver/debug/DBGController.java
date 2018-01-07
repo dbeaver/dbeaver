@@ -17,23 +17,20 @@
  */
 package org.jkiss.dbeaver.debug;
 
-import java.util.Map;
-
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 
 /**
  * This interface is expected to be used in synch manner
  */
 public interface DBGController {
 
-    DBGSession connect(DBRProgressMonitor monitor) throws DBGException;
+    DBGSession<?> connect(DBRProgressMonitor monitor) throws DBGException;
 
-    void resume(DBRProgressMonitor monitor, DBGSession session) throws DBGException;
+    void resume(DBRProgressMonitor monitor, DBGSession<?> session) throws DBGException;
 
-    void suspend(DBRProgressMonitor monitor, DBGSession session) throws DBGException;
+    void suspend(DBRProgressMonitor monitor, DBGSession<?> session) throws DBGException;
 
-    void terminate(DBRProgressMonitor monitor, DBGSession session) throws DBGException;
+    void terminate(DBRProgressMonitor monitor, DBGSession<?> session) throws DBGException;
 
     void dispose() throws DBGException;
 

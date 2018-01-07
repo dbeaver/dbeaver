@@ -27,13 +27,13 @@ public interface DBGSessionManager {
 
     List<? extends DBGSessionInfo> getSessions() throws DBGException;
 
-    DBGSession<? extends DBGSessionInfo, ? extends DBGObject> getDebugSession(Object id) throws DBGException;
+    DBGSession<? extends DBGObject> getDebugSession(Object id) throws DBGException;
 
-    List<DBGSession<?, ?>> getDebugSessions() throws DBGException;
+    List<DBGSession<?>> getDebugSessions() throws DBGException;
 
     void terminateSession(Object id);
 
-    DBGSession<? extends DBGSessionInfo, ? extends DBGObject> createDebugSession(DBCExecutionContext connection) throws DBGException;
+    DBGSession<? extends DBGObject> createDebugSession(DBCExecutionContext connection) throws DBGException;
 
     boolean isSessionExists(Object id);
 

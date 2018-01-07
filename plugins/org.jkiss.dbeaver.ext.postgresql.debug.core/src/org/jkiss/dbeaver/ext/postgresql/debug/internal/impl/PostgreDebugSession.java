@@ -18,21 +18,31 @@
 
 package org.jkiss.dbeaver.ext.postgresql.debug.internal.impl;
 
-import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.debug.*;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.debug.DBGBreakpoint;
+import org.jkiss.dbeaver.debug.DBGBreakpointProperties;
+import org.jkiss.dbeaver.debug.DBGException;
+import org.jkiss.dbeaver.debug.DBGSession;
+import org.jkiss.dbeaver.debug.DBGStackFrame;
+import org.jkiss.dbeaver.debug.DBGVariable;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+
 @SuppressWarnings("nls")
-public class PostgreDebugSession implements DBGSession<PostgreDebugSessionInfo, PostgreDebugObject> {
+public class PostgreDebugSession implements DBGSession<PostgreDebugObject> {
 
     private static final Log log = Log.getLog(PostgreDebugSession.class);
     
@@ -140,9 +150,9 @@ public class PostgreDebugSession implements DBGSession<PostgreDebugSessionInfo, 
     }
 
     @Override
-    public PostgreDebugSessionInfo getSessionInfo() {
+    public Map<String, Object> getSessionInfo() {
 
-        return sessionDebugInfo;
+        return sessionDebugInfo.toMap();
     }
 
     @Override

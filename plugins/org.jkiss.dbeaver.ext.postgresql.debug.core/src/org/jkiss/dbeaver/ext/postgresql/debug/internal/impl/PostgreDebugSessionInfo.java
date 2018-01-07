@@ -18,6 +18,9 @@
 
 package org.jkiss.dbeaver.ext.postgresql.debug.internal.impl;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.jkiss.dbeaver.debug.DBGSessionInfo;
 
 @SuppressWarnings("nls")
@@ -70,6 +73,17 @@ public class PostgreDebugSessionInfo implements DBGSessionInfo {
 
         return "pid:" + String.valueOf(pid) + ", user: " + user + ", application: `" + application + "`, state: "
                 + state + ", query: " + query.replace('\n', '\\');
+    }
+
+    public Map<String, Object> toMap() {
+        //FIXME: declare constants elsewhere, it is the part of metadata
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("pid", pid);
+        map.put("user", user);
+        map.put("application", application);
+        map.put("state", state);
+        map.put("query", query);
+        return map;
     }
 
 }
