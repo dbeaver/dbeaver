@@ -21,7 +21,7 @@ package org.jkiss.dbeaver.ext.postgresql.debug.internal.impl;
 import org.jkiss.dbeaver.debug.DBGObject;
 
 @SuppressWarnings("nls")
-public class PostgreDebugObject implements DBGObject<Integer> {
+public class PostgreDebugObject implements DBGObject {
 
     private final Integer oid;
 

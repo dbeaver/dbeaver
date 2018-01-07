@@ -18,9 +18,9 @@
 
 package org.jkiss.dbeaver.debug;
 
-public interface DBGObject<OBJECT_ID_TYPE> {
+public interface DBGObject {
 
-    OBJECT_ID_TYPE getID();
+    Object getID();
 
     String getName();
 
