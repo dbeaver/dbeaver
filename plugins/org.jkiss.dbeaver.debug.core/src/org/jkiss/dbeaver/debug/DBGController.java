@@ -24,13 +24,13 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
  */
 public interface DBGController {
 
-    DBGSession<?> connect(DBRProgressMonitor monitor) throws DBGException;
+    DBGSession connect(DBRProgressMonitor monitor) throws DBGException;
 
-    void resume(DBRProgressMonitor monitor, DBGSession<?> session) throws DBGException;
+    void resume(DBRProgressMonitor monitor, DBGSession session) throws DBGException;
 
-    void suspend(DBRProgressMonitor monitor, DBGSession<?> session) throws DBGException;
+    void suspend(DBRProgressMonitor monitor, DBGSession session) throws DBGException;
 
-    void terminate(DBRProgressMonitor monitor, DBGSession<?> session) throws DBGException;
+    void terminate(DBRProgressMonitor monitor, DBGSession session) throws DBGException;
 
     void dispose() throws DBGException;
 

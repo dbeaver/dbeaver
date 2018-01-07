@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.debug;
 
 import java.util.List;
 
-public interface DBGSession<DEBUG_OBJECT extends DBGObject> {
+public interface DBGSession {
 
     DBGSessionInfo getSessionInfo();
 
@@ -28,7 +28,7 @@ public interface DBGSession<DEBUG_OBJECT extends DBGObject> {
 
     List<? extends DBGBreakpoint> getBreakpoints();
 
-    DBGBreakpoint setBreakpoint(DEBUG_OBJECT obj, DBGBreakpointProperties properties) throws DBGException;
+    DBGBreakpoint setBreakpoint(DBGObject obj, DBGBreakpointProperties properties) throws DBGException;
 
     void removeBreakpoint(DBGBreakpoint bp) throws DBGException;
 
