@@ -141,8 +141,12 @@ public class PostgreDebugSessionManager implements DBGSessionManager<Integer, In
 
         PostgreDebugSessionInfo targetInfo = getSessionInfo(connectionTarget);
 
-        PostgreDebugSession debugSession = new PostgreDebugSession(getSessionInfo(this.context), targetInfo, (JDBCExecutionContext) connectionTarget);
-
+        PostgreDebugSession debugSession = new PostgreDebugSession(getSessionInfo(this.context), targetInfo);
+        
+        debugSession.attach((JDBCExecutionContext) connectionTarget, 16749, -1);
+        //FIXME 16749 - OID for debug proc
+        //FIXME -1 - target PID (-1 for ANY PID)
+        
         sessions.put(targetInfo.getPid(), debugSession);
 
         return debugSession;
