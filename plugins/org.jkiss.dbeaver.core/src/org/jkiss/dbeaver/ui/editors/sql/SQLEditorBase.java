@@ -171,6 +171,13 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         setSourceViewerConfiguration(new SQLEditorSourceViewerConfiguration(this, getPreferenceStore()));
         setKeyBindingScopes(new String[]{TEXT_EDITOR_CONTEXT, SQLEditorContributions.SQL_EDITOR_CONTEXT});  //$NON-NLS-1$
     }
+    
+    @Override
+    protected void initializeEditor() {
+        super.initializeEditor();
+        setEditorContextMenuId(SQLEditorContributions.SQL_EDITOR_CONTEXT_MENU_ID);
+        setRulerContextMenuId(SQLEditorContributions.SQL_RULER_CONTEXT_MENU_ID);
+    }
 
     @Nullable
     public abstract DBCExecutionContext getExecutionContext();
