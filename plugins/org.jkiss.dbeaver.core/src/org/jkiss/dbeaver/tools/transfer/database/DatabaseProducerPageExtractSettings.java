@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.tools.transfer.database;
 
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -27,6 +28,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 
 public class DatabaseProducerPageExtractSettings extends ActiveWizardPage<DataTransferWizard> {
@@ -85,6 +87,7 @@ public class DatabaseProducerPageExtractSettings extends ActiveWizardPage<DataTr
             threadsNumText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 3, 1));
 
             {
+
                 UIUtils.createControlLabel(generalSettings, CoreMessages.data_transfer_wizard_output_label_extract_type);
                 rowsExtractType = new Combo(generalSettings, SWT.DROP_DOWN | SWT.READ_ONLY);
                 rowsExtractType.setItems(new String[] {
@@ -118,23 +121,52 @@ public class DatabaseProducerPageExtractSettings extends ActiveWizardPage<DataTr
                 segmentSizeText.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 1, 1));
             }
 
-            newConnectionCheckbox = UIUtils.createLabelCheckbox(generalSettings, CoreMessages.data_transfer_wizard_output_checkbox_new_connection, true);
+            newConnectionCheckbox = UIUtils.createCheckbox(generalSettings, CoreMessages.data_transfer_wizard_output_checkbox_new_connection, null, true, 4);
             newConnectionCheckbox.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     settings.setOpenNewConnections(newConnectionCheckbox.getSelection());
                 }
             });
-            newConnectionCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 3, 1));
 
-            rowCountCheckbox = UIUtils.createLabelCheckbox(generalSettings, CoreMessages.data_transfer_wizard_output_checkbox_select_row_count, true);
+            rowCountCheckbox = UIUtils.createCheckbox(generalSettings, CoreMessages.data_transfer_wizard_output_checkbox_select_row_count, null, true, 4);
             rowCountCheckbox.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     settings.setQueryRowCount(rowCountCheckbox.getSelection());
                 }
             });
-            rowCountCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 3, 1));
+
+            IStructuredSelection curSelection = getWizard().getCurrentSelection();
+            boolean hasSelection = curSelection != null && !curSelection.isEmpty() && curSelection.getFirstElement() instanceof GridPos;
+
+            if (hasSelection) {
+                Button selectedColumnsOnlyCheckbox = UIUtils.createCheckbox(generalSettings, CoreMessages.data_transfer_wizard_output_checkbox_selected_columns_only, null, false, 4);
+                selectedColumnsOnlyCheckbox.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        settings.setSelectedColumnsOnly(selectedColumnsOnlyCheckbox.getSelection());
+                    }
+                });
+
+                Button selectedRowsOnlyCheckbox = UIUtils.createCheckbox(generalSettings, CoreMessages.data_transfer_wizard_output_checkbox_selected_rows_only, null, false, 4);
+                selectedRowsOnlyCheckbox.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        settings.setSelectedRowsOnly(selectedRowsOnlyCheckbox.getSelection());
+                    }
+                });
+
+                SelectionAdapter listener = new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        boolean selection = selectedColumnsOnlyCheckbox.getSelection() || selectedRowsOnlyCheckbox.getSelection();
+                        newConnectionCheckbox.setEnabled(!selection);
+                    }
+                };
+                selectedColumnsOnlyCheckbox.addSelectionListener(listener);
+                selectedRowsOnlyCheckbox.addSelectionListener(listener);
+            }
         }
 
         setControl(composite);

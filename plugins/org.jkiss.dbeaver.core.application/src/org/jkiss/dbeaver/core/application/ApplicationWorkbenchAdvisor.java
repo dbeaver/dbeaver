@@ -77,6 +77,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
         "org.eclipse.team.ui.TeamPreferences",
 
     };
+    //private DBPPreferenceListener settingsChangeListener;
 
     @Override
     public WorkbenchWindowAdvisor createWorkbenchWindowAdvisor(IWorkbenchWindowConfigurer configurer) {
@@ -101,12 +102,14 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 
         TrayDialog.setDialogHelpAvailable(true);
 
+/*
         // Set default resource encoding to UTF-8
         String defEncoding = DBeaverCore.getGlobalPreferenceStore().getString(DBeaverPreferences.DEFAULT_RESOURCE_ENCODING);
         if (CommonUtils.isEmpty(defEncoding)) {
             defEncoding = GeneralUtils.UTF8_ENCODING;
         }
         ResourcesPlugin.getPlugin().getPluginPreferences().setValue(ResourcesPlugin.PREF_ENCODING, defEncoding);
+*/
     }
 
     /**
@@ -140,6 +143,28 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
         filterPreferencePages();
 
         startVersionChecker();
+
+/*
+        settingsChangeListener = event -> {
+            if (isPropertyChangeRequiresRestart(event.getProperty())) {
+                if (UIUtils.confirmAction(null,
+                    "System preference change",
+                    "System setting '" + event.getProperty() + "' has been changed. You will need to restart workbench to complete the change. Restart now?"))
+                {
+                    PlatformUI.getWorkbench().restart();
+                }
+            }
+        };
+        DBeaverCore.getGlobalPreferenceStore().addPropertyChangeListener(settingsChangeListener);
+*/
+
+    }
+
+    protected boolean isPropertyChangeRequiresRestart(String property) {
+        return
+            property.equals(DBeaverPreferences.LOGS_DEBUG_ENABLED) ||
+            property.equals(DBeaverPreferences.LOGS_DEBUG_LOCATION) ||
+            property.equals(DBeaverPreferences.PLATFORM_LANGUAGE);
     }
 
     private void filterPreferencePages() {
@@ -163,6 +188,8 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 
     @Override
     public boolean preShutdown() {
+        //DBeaverCore.getGlobalPreferenceStore().removePropertyChangeListener(settingsChangeListener);
+
         if (!saveAndCleanup()) {
             // User rejected to exit
             return false;

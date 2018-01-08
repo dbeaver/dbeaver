@@ -48,6 +48,17 @@ public class PostgrePrivilege {
         this.withHierarchy = JDBCUtils.safeGetBoolean(dbResult, "with_hierarchy");
     }
 
+    public PostgrePrivilege(String grantor, String grantee, String tableCatalog, String tableSchema, String tableName, PostgrePrivilegeType privilegeType, boolean isGrantable, boolean withHierarchy) {
+        this.grantor = grantor;
+        this.grantee = grantee;
+        this.tableCatalog = tableCatalog;
+        this.tableSchema = tableSchema;
+        this.tableName = tableName;
+        this.privilegeType = privilegeType;
+        this.isGrantable = isGrantable;
+        this.withHierarchy = withHierarchy;
+    }
+
     public String getGrantor() {
         return grantor;
     }

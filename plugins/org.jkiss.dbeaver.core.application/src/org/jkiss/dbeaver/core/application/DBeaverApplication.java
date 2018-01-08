@@ -162,6 +162,9 @@ public class DBeaverApplication implements IApplication, DBPApplication {
                 return IApplication.EXIT_RESTART;
             }
             return IApplication.EXIT_OK;
+        } catch (Throwable e) {
+            log.debug("Internal error in workbench lifecycle", e);
+            return IApplication.EXIT_OK;
         } finally {
             shutdown();
 /*

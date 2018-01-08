@@ -16,15 +16,36 @@
  */
 package org.jkiss.dbeaver.ui.editors;
 
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IContributionManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IWorkbenchCommandConstants;
+import org.eclipse.ui.IWorkbenchSite;
+import org.eclipse.ui.part.MultiPageEditorPart;
+import org.eclipse.ui.part.MultiPageEditorSite;
+import org.jkiss.dbeaver.core.CoreCommands;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
+import org.jkiss.dbeaver.model.edit.DBEObjectReorderer;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
+import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerFilterConfig;
+import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
+
+import java.util.List;
 
 /**
  * DB editor utils
@@ -64,6 +85,24 @@ public class DatabaseEditorUtils {
         } else {
             rootComposite.setBackground(bgColor);
         }
+    }
+
+    public static void contributeStandardEditorActions(IWorkbenchSite workbenchSite, IContributionManager contributionManager)
+    {
+        contributionManager.add(ActionUtils.makeCommandContribution(
+            workbenchSite,
+            IWorkbenchCommandConstants.FILE_SAVE,
+            null,
+            UIIcon.SAVE,
+            null,
+            true));
+        contributionManager.add(ActionUtils.makeCommandContribution(
+            workbenchSite,
+            IWorkbenchCommandConstants.FILE_REVERT,
+            null,
+            UIIcon.RESET,
+            null,
+            true));
     }
 
 }

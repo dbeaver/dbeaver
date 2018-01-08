@@ -9,7 +9,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <dbeaver-version>4.3.1</dbeaver-version>
+        <dbeaver-version>4.3.2</dbeaver-version>
         <dbeaver-product>DBeaver</dbeaver-product>
         <tycho-version>1.0.0</tycho-version>
         <tycho-versions-version>0.26.0</tycho-versions-version>
@@ -63,9 +63,9 @@
         <module>plugins/org.jkiss.dbeaver.ext.ui.svg</module>
         <module>plugins/org.jkiss.dbeaver.data.office</module>
         <module>plugins/org.jkiss.dbeaver.model</module>
-        <module>plugins/org.jkiss.dbeaver.test</module>
 
         <module>features/org.jkiss.dbeaver.core.feature</module>
+        <module>features/org.jkiss.dbeaver.debug.feature</module>
         <module>features/org.jkiss.dbeaver.ext.db2.feature</module>
         <module>features/org.jkiss.dbeaver.ext.generic.feature</module>
         <module>features/org.jkiss.dbeaver.ext.mysql.feature</module>
@@ -143,9 +143,10 @@
         <module>nls/features/org.jkiss.dbeaver.ext.ui.svg.nls.feature</module>
 
         <!-- Product -->
-
         <module>product/standalone</module>
 
+        <!-- Test -->
+        <module>plugins/org.jkiss.dbeaver.test</module>
         <module>tests/org.jkiss.dbeaver.runtime.ide.core.tests</module>
 
     </modules>

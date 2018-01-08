@@ -208,7 +208,7 @@ public class SQLRuleManager extends RuleBasedScanner {
             boolean hasSingleQuoteRule = false, hasDoubleQuoteRule = false;
             if (!ArrayUtils.isEmpty(quoteStrings)) {
                 for (int i = 0; i < quoteStrings.length; i++) {
-                    rules.add(new SingleLineRule(quoteStrings[i][0], quoteStrings[i][1], quotedToken, (char) 0));
+                    rules.add(new SingleLineRule(quoteStrings[i][0], quoteStrings[i][1], quotedToken, '\\'));
                     if (quoteStrings[i][0].equals(SQLConstants.STR_QUOTE_SINGLE) && quoteStrings[i][0].equals(quoteStrings[i][1])) {
                         hasSingleQuoteRule = true;
                     } else if (quoteStrings[i][1].equals(SQLConstants.STR_QUOTE_DOUBLE) && quoteStrings[i][0].equals(quoteStrings[i][1])) {
@@ -218,10 +218,10 @@ public class SQLRuleManager extends RuleBasedScanner {
                 }
             }
             if (!hasSingleQuoteRule) {
-                rules.add(new MultiLineRule(SQLConstants.STR_QUOTE_SINGLE, SQLConstants.STR_QUOTE_SINGLE, stringToken, (char) 0));
+                rules.add(new MultiLineRule(SQLConstants.STR_QUOTE_SINGLE, SQLConstants.STR_QUOTE_SINGLE, stringToken, '\\'));
             }
             if (!hasDoubleQuoteRule) {
-                rules.add(new MultiLineRule(SQLConstants.STR_QUOTE_DOUBLE, SQLConstants.STR_QUOTE_DOUBLE, quotedToken, (char) 0));
+                rules.add(new MultiLineRule(SQLConstants.STR_QUOTE_DOUBLE, SQLConstants.STR_QUOTE_DOUBLE, quotedToken, '\\'));
             }
         }
 

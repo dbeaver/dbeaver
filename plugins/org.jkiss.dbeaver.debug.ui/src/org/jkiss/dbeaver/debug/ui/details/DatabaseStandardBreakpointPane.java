@@ -1,7 +1,7 @@
 package org.jkiss.dbeaver.debug.ui.details;
 
 import org.eclipse.swt.widgets.Composite;
-import org.jkiss.dbeaver.debug.internal.ui.DebugUiMessages;
+import org.jkiss.dbeaver.debug.internal.ui.DebugUIMessages;
 import org.jkiss.dbeaver.debug.ui.DebugUI;
 
 public class DatabaseStandardBreakpointPane extends DatabaseDebugDetailPane<DatabaseBreakpointEditor> {
@@ -11,8 +11,8 @@ public class DatabaseStandardBreakpointPane extends DatabaseDebugDetailPane<Data
 
     public DatabaseStandardBreakpointPane()
     {
-        super(DebugUiMessages.DatabaseStandardBreakpointPane_name,
-                DebugUiMessages.DatabaseStandardBreakpointPane_description, DETAIL_PANE_STANDARD_BREAKPOINT);
+        super(DebugUIMessages.DatabaseStandardBreakpointPane_name,
+                DebugUIMessages.DatabaseStandardBreakpointPane_description, DETAIL_PANE_STANDARD_BREAKPOINT);
     }
 
     @Override

@@ -22,13 +22,17 @@
    <extension
          point="org.eclipse.debug.core.launchConfigurationTypes">
       <launchConfigurationType
-            delegate="org.jkiss.dbeaver.ext.postgresql.internal.debug.core.model.PgSqlLaunchDelegate"
+            delegate="org.jkiss.dbeaver.debug.core.ProcedureLaunchDelegate"
             delegateDescription="%launchConfigurationTypes.launchConfigurationType.pgSQL.delegateDescription"
             delegateName="%launchConfigurationTypes.launchConfigurationType.pgSQL.delegateName"
             id="org.jkiss.dbeaver.ext.postgresql.debug.core.pgSQL"
             modes="debug"
             name="%launchConfigurationTypes.launchConfigurationType.pgSQL.name">
       </launchConfigurationType>
+   </extension>
+
+   <extension point="org.jkiss.dbeaver.debug.core.controllers">
+      <controller datasource="postgresql" class="org.jkiss.dbeaver.ext.postgresql.debug.internal.PostgreDebugControllerRegistry"/>
    </extension>
 
 </plugin>

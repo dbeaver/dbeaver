@@ -24,7 +24,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.postgresql.PostgresMessages;
+import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreObject;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -59,7 +59,7 @@ public class PostgreToolTruncate implements IExternalTool
 
         public SQLDialog(IWorkbenchPartSite partSite, Collection<PostgreTableBase> selectedTables)
         {
-            super(partSite, PostgresMessages.tool_truncate_title_table, selectedTables);
+            super(partSite, PostgreMessages.tool_truncate_title_table, selectedTables);
         }
 
         @Override
@@ -82,13 +82,13 @@ public class PostgreToolTruncate implements IExternalTool
 
         @Override
         protected void createControls(Composite parent) {
-            Group optionsGroup = UIUtils.createControlGroup(parent, PostgresMessages.tool_truncate_group_option, 1, 0, 0);
+            Group optionsGroup = UIUtils.createControlGroup(parent, PostgreMessages.tool_truncate_group_option, 1, 0, 0);
             optionsGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            onlyCheck = UIUtils.createCheckbox(optionsGroup,  PostgresMessages.tool_truncate_checkbox_only, PostgresMessages.tool_truncate_checkbox_only_tooltip, false, 0);
+            onlyCheck = UIUtils.createCheckbox(optionsGroup,  PostgreMessages.tool_truncate_checkbox_only, PostgreMessages.tool_truncate_checkbox_only_tooltip, false, 0);
             onlyCheck.addSelectionListener(SQL_CHANGE_LISTENER);
-            restartIdentityCheck = UIUtils.createCheckbox(optionsGroup,  PostgresMessages.tool_truncate_checkbox_restart, PostgresMessages.tool_truncate_checkbox_restart_tooltip, false, 0);
+            restartIdentityCheck = UIUtils.createCheckbox(optionsGroup,  PostgreMessages.tool_truncate_checkbox_restart, PostgreMessages.tool_truncate_checkbox_restart_tooltip, false, 0);
             restartIdentityCheck.addSelectionListener(SQL_CHANGE_LISTENER);
-            cascadeCheck = UIUtils.createCheckbox(optionsGroup, PostgresMessages.tool_truncate_checkbox_cascade, PostgresMessages.tool_truncate_checkbox_cascade_tooltip, false, 0);
+            cascadeCheck = UIUtils.createCheckbox(optionsGroup, PostgreMessages.tool_truncate_checkbox_cascade, PostgreMessages.tool_truncate_checkbox_cascade_tooltip, false, 0);
             cascadeCheck.addSelectionListener(SQL_CHANGE_LISTENER);
 
             createObjectsSelector(parent);

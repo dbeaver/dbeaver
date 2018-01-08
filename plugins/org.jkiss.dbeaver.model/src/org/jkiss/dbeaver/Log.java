@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver;
 
 import org.eclipse.core.runtime.ILog;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.bundle.ModelActivator;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -31,9 +32,8 @@ import java.util.Date;
  */
 public class Log
 {
-    private static String corePluginID = ModelPreferences.PLUGIN_ID;
+    private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS"); //$NON-NLS-1$
 
-    private static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS");
     private static final ILog eclipseLog = ModelActivator.getInstance().getLog();
     private static Listener[] listeners = new Listener[0];
 
@@ -45,6 +45,40 @@ public class Log
 
     public static Log getLog(Class<?> forClass) {
         return new Log(forClass.getName());
+    }
+
+    public static void log(Log delegate, IStatus status) {
+        if (status == null) {
+            // nothing to log
+            return;
+        }
+        if (delegate == null) {
+            getEclipseLog().log(status);
+            // no way to log
+            return;
+        }
+        int severity = status.getSeverity();
+        String message = status.getMessage();
+        Throwable exception = status.getException();
+        switch (severity) {
+        case IStatus.CANCEL:
+            delegate.debug(message, exception);
+            break;
+        case IStatus.ERROR:
+            delegate.error(message, exception);
+            break;
+        case IStatus.WARNING:
+            delegate.warn(message, exception);
+            break;
+        case IStatus.INFO:
+            delegate.info(message, exception);
+            break;
+        case IStatus.OK:
+            delegate.trace(message, exception);
+            break;
+        default:
+            break;
+        }
     }
 
     private Log(String name)
@@ -106,16 +140,12 @@ public class Log
 
     public void debug(Object message, Throwable t)
     {
-        ModelActivator activator = ModelActivator.getInstance();
         debugMessage(message, t, System.err);
-//        if (activator != null) {
-//            debugMessage(message, t, activator.getDebugWriter());
-//        }
     }
 
     private static void debugMessage(Object message, Throwable t, PrintStream debugWriter) {
         synchronized (Log.class) {
-            debugWriter.print(sdf.format(new Date()) + " - ");
+            debugWriter.print(sdf.format(new Date()) + " - "); //$NON-NLS-1$
             debugWriter.println(message);
             if (t != null) {
                 t.printStackTrace(debugWriter);
@@ -134,10 +164,8 @@ public class Log
             return;
         }
         debugMessage(message, null, System.err);
-        eclipseLog.log(new Status(
-            Status.INFO,
-            corePluginID,
-            message == null ? null : message.toString()));
+        int severity = Status.INFO;
+        getEclipseLog().log(createStatus(severity, message));
     }
 
     public void info(Object message, Throwable t)
@@ -152,10 +180,8 @@ public class Log
             return;
         }
         debugMessage(message, null, System.err);
-        ModelActivator.getInstance().getLog().log(new Status(
-            Status.WARNING,
-            corePluginID,
-            message == null ? null : message.toString()));
+        int severity = Status.WARNING;
+        getEclipseLog().log(createStatus(severity, message));
     }
 
     public void warn(Object message, Throwable t)
@@ -170,10 +196,8 @@ public class Log
             return;
         }
         debugMessage(message, null, System.err);
-        ModelActivator.getInstance().getLog().log(new Status(
-            Status.ERROR,
-            corePluginID,
-            message == null ? null : message.toString()));
+        int severity = Status.ERROR;
+        getEclipseLog().log(createStatus(severity, message));
     }
 
     public void error(Object message, Throwable t)
@@ -194,25 +218,24 @@ public class Log
     private static void writeExceptionStatus(int severity, Object message, Throwable t)
     {
         debugMessage(message, t, System.err);
-        ModelActivator activator = ModelActivator.getInstance();
-        if (activator != null) {
-            // Activator may be null in some unclear circumstances (like shutdown is in progress)
-            ILog log = activator.getLog();
-            if (log != null) {
-                if (t == null) {
-                    log.log(new Status(
-                        severity,
-                        corePluginID,
-                        message == null ? null : message.toString()));
-                } else {
-                    if (message == null) {
-                        log.log(GeneralUtils.makeExceptionStatus(severity, t));
-                    } else {
-                        log.log(GeneralUtils.makeExceptionStatus(severity, message.toString(), t));
-                    }
-                }
+        ILog log = getEclipseLog();
+        if (t == null) {
+            log.log(createStatus(severity, message));
+        } else {
+            if (message == null) {
+                log.log(GeneralUtils.makeExceptionStatus(severity, t));
+            } else {
+                log.log(GeneralUtils.makeExceptionStatus(severity, message.toString(), t));
             }
         }
+    }
+
+    private static Status createStatus(int severity, Object message) {
+        //we never include Exception to the status for some reason
+        return new Status(
+            severity,
+            ModelPreferences.PLUGIN_ID,
+            message == null ? null : message.toString());
     }
 
     public static void addListener(Listener listener) {

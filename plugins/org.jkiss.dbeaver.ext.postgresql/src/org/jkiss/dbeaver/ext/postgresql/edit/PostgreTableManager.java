@@ -93,7 +93,7 @@ public class PostgreTableManager extends SQLTableManager<PostgreTableBase, Postg
                     " IS " + SQLUtils.quoteString(command.getObject(), command.getObject().getDescription())));
         }
         for (PostgreTableColumn column : command.getObject().getCachedAttributes()) {
-            if (!column.isPersisted() && !CommonUtils.isEmpty(column.getDescription())) {
+            if (!CommonUtils.isEmpty(column.getDescription())) {
                 actions.add(new SQLDatabasePersistAction("Set column comment", "COMMENT ON COLUMN " +
                     DBUtils.getObjectFullName(command.getObject(), DBPEvaluationContext.DDL) + "." + DBUtils.getQuotedIdentifier(column) +
                     " IS " + SQLUtils.quoteString(column, column.getDescription())));

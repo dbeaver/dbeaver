@@ -1,6 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2017 Andrew Khitrin (ahitrin@gmail.com) 
+ * Copyright (C) 2017 Andrew Khitrin (ahitrin@gmail.com)
+ * 				 2017 Dmitriy.Gurov (dvgurov@gmail.com) 
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,6 +62,7 @@ public class PostgreLockManager extends LockGraphManager<PostgreLock,Integer> im
 														   "('AccessExclusiveLock','AccessShareLock',1), ('AccessExclusiveLock','RowShareLock',2), ('AccessExclusiveLock','RowExclusiveLock',3), ('AccessExclusiveLock','ShareUpdateExclusiveLock',4),   ('AccessExclusiveLock','ShareLock',5), ('AccessExclusiveLock','ShareRowExclusiveLock',6), ('AccessExclusiveLock','ExclusiveLock',7),  ('AccessExclusiveLock','AccessExclusiveLock',8) "+ 
 													   ") as t (mode1,mode2,prt)     "+ 
 											")	  "+ 
+											",real_locks as ("+		   
 											"select 	  "+ 
 											"la.pid as blocked_pid, "+ 
 											"blocked_activity.usename  AS blocked_user, "+ 
@@ -86,7 +88,34 @@ public class PostgreLockManager extends LockGraphManager<PostgreLock,Integer> im
 											") la "+ 
 											"join pg_catalog.pg_stat_activity blocked_activity  ON blocked_activity.pid = la.pid "+ 
 											"join pg_catalog.pg_stat_activity blocking_activity  ON blocking_activity.pid = la.blocked "+ 
-											"where la.rid = 1";
+											"where la.rid = 1) "+
+											
+", root_quest as ( "+
+"   select blocking_pid as blocking_pid from real_locks "+ 
+   " except "+
+   " select blocked_pid from real_locks ) "+
+" select blocked_pid, "+
+"       blocked_user, "+
+ "      blocking_pid, "+
+  "     blocking_user, "+
+   "    blocked_statement, "+
+    "   statement_in "+
+    " from"+
+     "  real_locks"+
+" union"+
+" select"+
+       " real_locks.blocking_pid, "+
+       " real_locks.blocking_user, "+
+       " null::integer, "+
+       " null::text, "+
+       " real_locks.statement_in, "+
+       " null::text "+
+    " from"+
+       " real_locks, "+
+       " root_quest "+
+    " where"+
+       " real_locks.blocking_pid = root_quest.blocking_pid "
+											;
 	
 	public static final String LOCK_ITEM_QUERY = "select "+
 			" coalesce(db.datname,'') as datname, "+
