@@ -31,7 +31,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.impl.data.DateTimeCustomValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.CustomTimeEditor;
+import org.jkiss.dbeaver.ui.controls.DateTimeEditor;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.dialogs.data.ValueViewDialog;
 
@@ -40,7 +40,7 @@ import org.jkiss.dbeaver.ui.dialogs.data.ValueViewDialog;
  */
 public class DateTimeStandaloneEditor extends ValueViewDialog {
 
-	private CustomTimeEditor timeEditor;
+	private DateTimeEditor timeEditor;
 	private boolean dirty;
 
 	public DateTimeStandaloneEditor(IValueController valueController) {
@@ -69,7 +69,7 @@ public class DateTimeStandaloneEditor extends ValueViewDialog {
 		}
 		UIUtils.createControlLabel(panel, "Time").setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
 
-		timeEditor = new CustomTimeEditor(panel, style, formaterId);
+		timeEditor = new DateTimeEditor(panel, style, formaterId);
 		timeEditor.addSelectionAdapter(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {

@@ -33,7 +33,7 @@ import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 /**
  * CustomTimeEditor
  */
-public class CustomTimeEditor {
+public class DateTimeEditor {
 
 	private Composite basePart;
 	private DateTime dateEditor;
@@ -42,7 +42,7 @@ public class CustomTimeEditor {
 
 	private static final Log log = Log.getLog(ViewerColumnController.class);
 
-	public CustomTimeEditor(Composite parent, int style, String formaterId) {
+	public DateTimeEditor(Composite parent, int style, String formaterId) {
 		if (formaterId == null || formaterId.isEmpty()) {
 			formaterId = DBDDataFormatter.TYPE_NAME_TIMESTAMP;
 		}

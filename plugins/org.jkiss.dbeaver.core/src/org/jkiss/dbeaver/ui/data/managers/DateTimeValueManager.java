@@ -21,6 +21,7 @@ import org.eclipse.jface.action.IContributionManager;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -63,10 +64,11 @@ public class DateTimeValueManager extends BaseValueManager {
     public IValueEditor createEditor(@NotNull IValueController controller)
         throws DBException
     {
+    	boolean useStringEditor = controller.getExecutionContext().getDataSource().getContainer().getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_DATETIME_USE_CONTENT_EDITOR) ;
         switch (controller.getEditType()) {
             case INLINE:
             case PANEL:
-                return new DateTimeInlineEditor(controller);
+                return new DateTimeInlineEditor(controller, useStringEditor);
             case EDITOR:
                 return new DateTimeStandaloneEditor(controller);
             default:
