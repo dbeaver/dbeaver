@@ -24,25 +24,11 @@ import org.jkiss.dbeaver.DBException;
 /**
  * CustomTimeEditor
  */
-public class CustomTimeEditor {
+public class CustomDateTimeEditor {
     private Text timeEditor;
-//    private Button timePickerButton;
 
-    public CustomTimeEditor(Composite parent, int style) {
+	public CustomDateTimeEditor(Composite parent, int style) {
         this.timeEditor = new Text(parent, style);
-/*
-        Composite ph = UIUtils.createPlaceholder(parent, 2);
-        this.timeEditor = new Text(ph, style);
-
-        this.timePickerButton = new Button(ph, SWT.FLAT | SWT.ARROW | SWT.DOWN);
-        this.timePickerButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                super.widgetSelected(e);
-                UIUtils.showMessageBox(timePickerButton.getShell(), "asdf", "sdf", SWT.ICON_INFORMATION);
-            }
-        });
-*/
     }
 
     public void setValue(@Nullable String value) {

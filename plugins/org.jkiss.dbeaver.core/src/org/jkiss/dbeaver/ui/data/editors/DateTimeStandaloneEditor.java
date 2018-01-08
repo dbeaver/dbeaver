@@ -17,9 +17,9 @@
 
 package org.jkiss.dbeaver.ui.data.editors;
 
+import java.util.Date;
+
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -28,100 +28,101 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.impl.data.DateTimeCustomValueHandler;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.CustomTimeEditor;
+import org.jkiss.dbeaver.ui.controls.DateTimeEditor;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.dialogs.data.ValueViewDialog;
-
-import java.util.Date;
 
 /**
  * DateTimeStandaloneEditor
  */
 public class DateTimeStandaloneEditor extends ValueViewDialog {
 
-    private CustomTimeEditor timeEditor;
-    private boolean dirty;
+	private DateTimeEditor timeEditor;
+	private boolean dirty;
 
-    public DateTimeStandaloneEditor(IValueController valueController) {
-        super(valueController);
-    }
+	public DateTimeStandaloneEditor(IValueController valueController) {
+		super(valueController);
+	}
 
-    @Override
-    protected Control createDialogArea(Composite parent)
-    {
-        IValueController valueController = getValueController();
-        Object value = valueController.getValue();
+	@Override
+	protected Control createDialogArea(Composite parent) {
+		IValueController valueController = getValueController();
+		Object value = valueController.getValue();
 
-        Composite dialogGroup = (Composite)super.createDialogArea(parent);
-        Composite panel = UIUtils.createPlaceholder(dialogGroup, 3);
-        panel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		Composite dialogGroup = (Composite) super.createDialogArea(parent);
+		Composite panel = UIUtils.createPlaceholder(dialogGroup, 3);
+		panel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        int style = SWT.BORDER;
-        if (valueController.isReadOnly()) {
-            style |= SWT.READ_ONLY;
-        }
+		int style = SWT.BORDER;
+		if (valueController.isReadOnly()) {
+			style |= SWT.READ_ONLY;
+		}
 
-        UIUtils.createControlLabel(panel, "Time").setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-        timeEditor = new CustomTimeEditor(panel, style);
-        timeEditor.getControl().addModifyListener(new ModifyListener() {
-            @Override
-            public void modifyText(ModifyEvent e) {
-                dirty = true;
-            }
-        });
+		String formaterId = "";
+		Object valueHandler = valueController.getValueHandler();
+		if (valueHandler instanceof DateTimeCustomValueHandler) {
+			DateTimeCustomValueHandler dateTimeValueHandler = (DateTimeCustomValueHandler) valueHandler;
+			formaterId = dateTimeValueHandler.getFormatterId(valueController.getValueType());
+		}
+		UIUtils.createControlLabel(panel, "Time").setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
 
-        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.horizontalAlignment = GridData.CENTER;
-        timeEditor.getControl().setLayoutData(gd);
+		timeEditor = new DateTimeEditor(panel, style, formaterId);
+		timeEditor.addSelectionAdapter(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				dirty = true;
+			}
+		});
 
-        primeEditorValue(value);
+		GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+		gd.horizontalAlignment = GridData.CENTER;
+		timeEditor.getControl().setLayoutData(gd);
 
-        Button button = UIUtils.createPushButton(panel, "Set Current", null);
-        button.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+		primeEditorValue(value);
 
-        button.setEnabled(!valueController.isReadOnly());
-        button.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e)
-            {
-                primeEditorValue(new Date());
-            }
-        });
+		Button button = UIUtils.createPushButton(panel, "Set Current", null);
+		button.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
-        return dialogGroup;
-    }
+		button.setEnabled(!valueController.isReadOnly());
+		button.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				primeEditorValue(new Date());
+			}
+		});
 
-    @Override
-    public Object extractEditorValue() throws DBException {
-        final String strValue = timeEditor.getValue();
-        return getValueController().getValueHandler().getValueFromObject(null, getValueController().getValueType(), strValue, false);
-    }
+		return dialogGroup;
+	}
 
-    @Override
-    public void primeEditorValue(@Nullable Object value)
-    {
-        final String strValue = value == null ?
-            "" :
-            getValueController().getValueHandler().getValueDisplayString(getValueController().getValueType(), value, DBDDisplayFormat.EDIT);
-        timeEditor.setValue(strValue);
-    }
+	@Override
+	public Object extractEditorValue() throws DBException {
+		DBSTypedObject valueType = getValueController().getValueType();
+		return getValueController().getValueHandler().getValueFromObject(null, valueType, timeEditor.getValue(), false);
+	}
 
-    @Override
-    public boolean isDirty() {
-        return dirty;
-    }
+	@Override
+	public void primeEditorValue(@Nullable Object value) {
+		if (value instanceof Date) {
+			timeEditor.setValue((Date) value);
+		}
+	}
 
-    @Override
-    public void setDirty(boolean dirty) {
-        this.dirty = dirty;
-    }
+	@Override
+	public boolean isDirty() {
+		return dirty;
+	}
 
-    @Override
-    public Control getControl()
-    {
-        return null;
-    }
+	@Override
+	public void setDirty(boolean dirty) {
+		this.dirty = dirty;
+	}
+
+	@Override
+	public Control getControl() {
+		return null;
+	}
 
 }
