@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.debug.DBGController;
 import org.jkiss.dbeaver.debug.core.DebugCore;
 import org.jkiss.dbeaver.debug.internal.core.DebugCoreMessages;
 
-public class ProcedureDebugTarget extends DatabaseDebugTarget<DBGController> {
+public class ProcedureDebugTarget extends DatabaseDebugTarget {
 
     public ProcedureDebugTarget(ILaunch launch, IProcess process, DBGController controller) {
         super(DebugCore.MODEL_IDENTIFIER_PROCEDURE, launch, process, controller);

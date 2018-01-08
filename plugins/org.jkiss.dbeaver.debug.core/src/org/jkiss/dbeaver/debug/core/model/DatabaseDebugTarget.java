@@ -36,13 +36,13 @@ import org.jkiss.dbeaver.debug.DBGSession;
 import org.jkiss.dbeaver.debug.core.DebugCore;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 
-public abstract class DatabaseDebugTarget<C extends DBGController> extends DatabaseDebugElement implements IDatabaseDebugTarget {
+public abstract class DatabaseDebugTarget extends DatabaseDebugElement implements IDatabaseDebugTarget {
 
     private final String modelIdentifier;
 
     private final ILaunch launch;
     private final IProcess process;
-    private final C controller;
+    private final DBGController controller;
     private final DatabaseThread thread;
     private final IThread[] threads;
 
@@ -53,7 +53,7 @@ public abstract class DatabaseDebugTarget<C extends DBGController> extends Datab
     private boolean suspended = false;
     private boolean terminated = false;
 
-    public DatabaseDebugTarget(String modelIdentifier, ILaunch launch, IProcess process, C controller) {
+    public DatabaseDebugTarget(String modelIdentifier, ILaunch launch, IProcess process, DBGController controller) {
         super(null);
         this.modelIdentifier = modelIdentifier;
         this.launch = launch;
@@ -63,7 +63,7 @@ public abstract class DatabaseDebugTarget<C extends DBGController> extends Datab
         this.threads = new IThread[]{thread};
     }
 
-    protected abstract DatabaseThread newThread(C controller);
+    protected abstract DatabaseThread newThread(DBGController controller);
 
     @Override
     public IDebugTarget getDebugTarget() {
