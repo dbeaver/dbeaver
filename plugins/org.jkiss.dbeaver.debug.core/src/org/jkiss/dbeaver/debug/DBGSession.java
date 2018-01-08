@@ -20,14 +20,15 @@ package org.jkiss.dbeaver.debug;
 
 import java.util.List;
 
-public interface DBGSession<SESSION_INFO extends DBGSessionInfo<SESSION_ID_TYPE>, DEBUG_OBJECT extends DBGObject<OBJECT_ID_TYPE>, SESSION_ID_TYPE, OBJECT_ID_TYPE> {
-    SESSION_INFO getSessionInfo();
+public interface DBGSession {
+
+    DBGSessionInfo getSessionInfo();
 
     String getTitle();
 
     List<? extends DBGBreakpoint> getBreakpoints();
 
-    DBGBreakpoint setBreakpoint(DEBUG_OBJECT obj, DBGBreakpointProperties properties) throws DBGException;
+    DBGBreakpoint setBreakpoint(DBGObject obj, DBGBreakpointProperties properties) throws DBGException;
 
     void removeBreakpoint(DBGBreakpoint bp) throws DBGException;
 
@@ -47,7 +48,7 @@ public interface DBGSession<SESSION_INFO extends DBGSessionInfo<SESSION_ID_TYPE>
 
     List<? extends DBGStackFrame> getStack() throws DBGException;
 
-    SESSION_ID_TYPE getSessionId();
+    Object getSessionId();
 
     // move Stack
 }

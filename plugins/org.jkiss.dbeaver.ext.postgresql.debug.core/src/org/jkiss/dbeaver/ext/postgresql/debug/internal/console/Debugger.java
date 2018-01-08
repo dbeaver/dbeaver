@@ -27,8 +27,13 @@ import org.jkiss.dbeaver.debug.DBGException;
 import org.jkiss.dbeaver.debug.DBGSession;
 import org.jkiss.dbeaver.debug.DBGStackFrame;
 import org.jkiss.dbeaver.debug.DBGVariable;
-import org.jkiss.dbeaver.ext.postgresql.debug.internal.impl.*;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.ext.postgresql.debug.internal.impl.PostgreDebugBreakpoint;
+import org.jkiss.dbeaver.ext.postgresql.debug.internal.impl.PostgreDebugBreakpointProperties;
+import org.jkiss.dbeaver.ext.postgresql.debug.internal.impl.PostgreDebugObject;
+import org.jkiss.dbeaver.ext.postgresql.debug.internal.impl.PostgreDebugSession;
+import org.jkiss.dbeaver.ext.postgresql.debug.internal.impl.PostgreDebugSessionInfo;
+import org.jkiss.dbeaver.ext.postgresql.debug.internal.impl.PostgreDebugSessionManager;
+import org.jkiss.dbeaver.ext.postgresql.debug.internal.impl.PostgreDebugVariable;
 
 @SuppressWarnings("nls")
 public class Debugger {
@@ -206,7 +211,7 @@ public class Debugger {
 
         PostgreDebugSession debugSession = null;
 
-        List<DBGSession<?, ?, Integer, Integer>> sessions = pgDbgManager.getDebugSessions();
+        List<DBGSession> sessions = pgDbgManager.getDebugSessions();
 
         Scanner scArg;
 
@@ -220,7 +225,7 @@ public class Debugger {
 
             int sessNo = 1;
 
-            for (DBGSession<?, ?, Integer, Integer> s : sessions) {
+            for (DBGSession s : sessions) {
                 System.out.println(String.format(" (%d) %s", sessNo++, s.toString()));
             }
 
@@ -333,7 +338,7 @@ public class Debugger {
                     break;
                 }
 
-                pgDbgManager.terminateSession(debugSessionC.getSessionInfo().getPid());
+                pgDbgManager.terminateSession(debugSessionC.getSessionId());
 
                 System.out.println("Session closed");
 
@@ -657,7 +662,7 @@ public class Debugger {
                     System.out.println("no debug sessions");
                     break;
                 }
-                for (DBGSession<?, ?, Integer, Integer> s : pgDbgManager.getDebugSessions()) {
+                for (DBGSession s : pgDbgManager.getDebugSessions()) {
                     System.out.println(s);
                 }
 

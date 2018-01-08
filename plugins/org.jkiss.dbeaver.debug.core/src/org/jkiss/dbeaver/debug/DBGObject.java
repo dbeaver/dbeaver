@@ -18,10 +18,13 @@
 
 package org.jkiss.dbeaver.debug;
 
-public interface DBGObject<OBJECT_ID_TYPE> {
+import java.util.Map;
 
-    OBJECT_ID_TYPE getID();
+public interface DBGObject {
+
+    Object getID();
 
     String getName();
 
+    Map<String, Object> toMap();
 }

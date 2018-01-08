@@ -35,7 +35,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 
 @SuppressWarnings("nls")
-public class PostgreDebugSessionManager implements DBGSessionManager<Integer, Integer> {
+public class PostgreDebugSessionManager implements DBGSessionManager {
 
     private final DBCExecutionContext context;
 
@@ -53,14 +53,16 @@ public class PostgreDebugSessionManager implements DBGSessionManager<Integer, In
 
     @Override
     public PostgreDebugSessionInfo getSessionInfo(DBCExecutionContext connectionTarget) throws DBGException {
-        try (Statement stmt = getConnection(connectionTarget).createStatement()) {
-
-            ResultSet rs = stmt.executeQuery(SQL_CURRENT_SESSION);
+        try (Statement stmt = getConnection(connectionTarget).createStatement();
+                ResultSet rs = stmt.executeQuery(SQL_CURRENT_SESSION)) {
 
             if (rs.next()) {
-
-                PostgreDebugSessionInfo res = new PostgreDebugSessionInfo(rs.getInt("pid"), rs.getString("usename"),
-                    rs.getString("application_name"), rs.getString("state"), rs.getString("query"));
+                int pid = rs.getInt("pid");
+                String usename = rs.getString("usename");
+                String applicationName = rs.getString("application_name");
+                String state = rs.getString("state");
+                String query = rs.getString("query");
+                PostgreDebugSessionInfo res = new PostgreDebugSessionInfo(pid, usename, applicationName, state, query);
                 return res;
             }
 
@@ -79,16 +81,17 @@ public class PostgreDebugSessionManager implements DBGSessionManager<Integer, In
     @Override
     public List<PostgreDebugSessionInfo> getSessions() throws DBGException {
 
-        try (Statement stmt = getConnection(context).createStatement()) {
-
-            ResultSet rs = stmt.executeQuery(SQL_SESSION);
-
+        try (Statement stmt = getConnection(context).createStatement(); ResultSet rs = stmt.executeQuery(SQL_SESSION)) {
             List<PostgreDebugSessionInfo> res = new ArrayList<PostgreDebugSessionInfo>();
 
             while (rs.next()) {
-
-                res.add(new PostgreDebugSessionInfo(rs.getInt("pid"), rs.getString("usename"),
-                    rs.getString("application_name"), rs.getString("state"), rs.getString("query")));
+                int pid = rs.getInt("pid");
+                String usename = rs.getString("usename");
+                String state = rs.getString("state");
+                String applicationName = rs.getString("application_name");
+                String query = rs.getString("query");
+                PostgreDebugSessionInfo info = new PostgreDebugSessionInfo(pid, usename, applicationName, state, query);
+                res.add(info);
             }
 
             return res;
@@ -109,18 +112,19 @@ public class PostgreDebugSessionManager implements DBGSessionManager<Integer, In
 
     @Override
     public List<PostgreDebugObject> getObjects(String ownerCtx, String nameCtx) throws DBGException {
-        try (Statement stmt = getConnection(context).createStatement()) {
-
-            ResultSet rs = stmt.executeQuery(
-                SQL_OBJECT.replaceAll("\\?nameCtx", nameCtx).replaceAll("\\?userCtx", ownerCtx).toLowerCase());
+        String sql = SQL_OBJECT.replaceAll("\\?nameCtx", nameCtx).replaceAll("\\?userCtx", ownerCtx).toLowerCase();
+        try (Statement stmt = getConnection(context).createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
 
             List<PostgreDebugObject> res = new ArrayList<PostgreDebugObject>();
 
             while (rs.next()) {
-
-                res.add(new PostgreDebugObject(rs.getInt("oid"), rs.getString("proname"), rs.getString("owner"),
-                    rs.getString("nspname"), rs.getString("lang")));
-
+                int oid = rs.getInt("oid");
+                String proname = rs.getString("proname");
+                String owner = rs.getString("owner");
+                String nspname = rs.getString("nspname");
+                String lang = rs.getString("lang");
+                PostgreDebugObject object = new PostgreDebugObject(oid, proname, owner, nspname, lang);
+                res.add(object);
             }
 
             return res;
@@ -131,7 +135,7 @@ public class PostgreDebugSessionManager implements DBGSessionManager<Integer, In
     }
 
     @Override
-    public DBGSession<PostgreDebugSessionInfo, PostgreDebugObject, Integer, Integer> getDebugSession(Integer id)
+    public DBGSession getDebugSession(Object id)
         throws DBGException {
         return sessions.get(id);
     }
@@ -154,12 +158,12 @@ public class PostgreDebugSessionManager implements DBGSessionManager<Integer, In
     }
 
     @Override
-    public boolean isSessionExists(Integer id) {
+    public boolean isSessionExists(Object id) {
         return sessions.containsKey(id);
     }
 
     @Override
-    public void terminateSession(Integer id) {
+    public void terminateSession(Object id) {
 
         PostgreDebugSession session = sessions.get(id);
 
@@ -174,8 +178,8 @@ public class PostgreDebugSessionManager implements DBGSessionManager<Integer, In
     }
 
     @Override
-    public List<DBGSession<?, ?, Integer, Integer>> getDebugSessions() throws DBGException {
-        return new ArrayList<DBGSession<?, ?, Integer, Integer>>(sessions.values());
+    public List<DBGSession> getDebugSessions() throws DBGException {
+        return new ArrayList<DBGSession>(sessions.values());
     }
 
     @Override
