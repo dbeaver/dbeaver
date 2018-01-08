@@ -36,6 +36,7 @@ public class LoadingJob<RESULT>  extends AbstractJob {
     private static final Log log = Log.getLog(LoadingJob.class);
 
     public static final Object LOADING_FAMILY = new Object();
+    private boolean loadFinished;
 
     public static <RESULT> LoadingJob<RESULT> createService(
         ILoadService<RESULT> loadingService,
@@ -78,7 +79,7 @@ public class LoadingJob<RESULT>  extends AbstractJob {
             ((AbstractLoadService) this.loadingService).initService(monitor, this);
         }
 
-        LoadingUIJob<RESULT> updateUIJob = new LoadingUIJob<>(this, monitor);
+        LoadingUIJob<RESULT> updateUIJob = new LoadingUIJob<>(this);
         updateUIJob.schedule();
         Throwable error = null;
         RESULT result = null;
@@ -92,6 +93,7 @@ public class LoadingJob<RESULT>  extends AbstractJob {
             return new Status(Status.CANCEL, DBeaverCore.PLUGIN_ID, "Loading interrupted");
         }
         finally {
+            loadFinished = true;
             DBeaverUI.asyncExec(new LoadFinisher(result, error));
         }
         return Status.OK_STATUS;
@@ -112,7 +114,7 @@ public class LoadingJob<RESULT>  extends AbstractJob {
         private final RESULT innerResult;
         private final Throwable innerError;
 
-        public LoadFinisher(RESULT innerResult, Throwable innerError)
+        LoadFinisher(RESULT innerResult, Throwable innerError)
         {
             this.innerResult = innerResult;
             this.innerError = innerError;
@@ -133,39 +135,21 @@ public class LoadingJob<RESULT>  extends AbstractJob {
         }
     }
 
-    static class LoadingUIJob<RESULT> extends AbstractUIJob {
+    class LoadingUIJob<RESULT> extends AbstractUIJob {
 
         private static final long DELAY = 200;
 
-        private ILoadService<RESULT> loadService;
         private ILoadVisualizer<RESULT> visualizer;
-        private DBRProgressMonitor mainMonitor;
 
-        LoadingUIJob(LoadingJob<RESULT> loadingJob, DBRProgressMonitor mainMonitor)
-        {
+        LoadingUIJob(LoadingJob<RESULT> loadingJob) {
             super(loadingJob.getName());
-            this.loadService = loadingJob.getLoadingService();
             this.visualizer = loadingJob.getVisualizer();
-            this.mainMonitor = mainMonitor;
             setSystem(true);
         }
 
         @Override
-        public IStatus runInUIThread(DBRProgressMonitor monitor)
-        {
-    /*
-            if (mainMonitor.isCanceled()) {
-                // Try to cancel current load service
-                try {
-                    loadService.cancel();
-                }
-                catch (InvocationTargetException e) {
-                    log.warn("Error while canceling service", e.getTargetException());
-                }
-                return Status.CANCEL_STATUS;
-            } else {
-    */
-                if (!visualizer.isCompleted()) {
+        public IStatus runInUIThread(DBRProgressMonitor monitor) {
+                if (!visualizer.isCompleted() && !loadFinished) {
                     visualizer.visualizeLoading();
                     schedule(DELAY);
                 }

@@ -475,7 +475,6 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
     private void updateUI()
     {
         if (activated) {
-            saveSettings(site.getActiveDataSource());
             site.updateButtons();
         }
     }

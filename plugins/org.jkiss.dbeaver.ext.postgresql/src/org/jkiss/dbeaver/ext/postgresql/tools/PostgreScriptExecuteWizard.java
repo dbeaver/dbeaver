@@ -20,9 +20,8 @@ package org.jkiss.dbeaver.ext.postgresql.tools;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider;
 import org.jkiss.dbeaver.ext.postgresql.PostgreServerHome;
-import org.jkiss.dbeaver.ext.postgresql.PostgresMessages;
+import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractScriptExecuteWizard;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -39,7 +38,7 @@ class PostgreScriptExecuteWizard extends AbstractScriptExecuteWizard<PostgreData
 
     PostgreScriptExecuteWizard(PostgreDatabase catalog, boolean isImport)
     {
-        super(Collections.singleton(catalog), isImport ? PostgresMessages.wizard_script_title_import_db : PostgresMessages.wizard_script_title_execute_script);
+        super(Collections.singleton(catalog), isImport ? PostgreMessages.wizard_script_title_import_db : PostgreMessages.wizard_script_title_execute_script);
         this.isImport = isImport;
         this.mainPage = new PostgreScriptExecuteWizardPageSettings(this);
     }

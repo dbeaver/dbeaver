@@ -15,7 +15,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.debug.core.DebugCore;
-import org.jkiss.dbeaver.debug.core.model.DatabaseLineBreakpoint;
+import org.jkiss.dbeaver.debug.core.breakpoints.DatabaseLineBreakpoint;
 import org.jkiss.dbeaver.model.app.DBPProjectManager;
 
 public class ToggleSqlBreakpointTarget implements IToggleBreakpointsTargetExtension2 {

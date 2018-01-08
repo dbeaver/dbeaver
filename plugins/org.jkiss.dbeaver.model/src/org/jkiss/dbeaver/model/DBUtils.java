@@ -930,7 +930,10 @@ public final class DBUtils {
         // or some DML. For DML statements we mustn't set limits
         // because it sets update rows limit [SQL Server]
         boolean selectQuery = sqlQuery.getType() == SQLQueryType.SELECT && sqlQuery.isPlainSelect();
-        final boolean hasLimits = selectQuery && offset >= 0 && maxRows > 0;
+        final boolean hasLimits = offset > 0 || (selectQuery && maxRows > 0);
+        // This is a flag for any potential SELECT query
+        boolean possiblySelect = sqlQuery.getType() == SQLQueryType.SELECT || sqlQuery.getType() == SQLQueryType.UNKNOWN;
+        boolean limitAffectsDML = Boolean.TRUE.equals(session.getDataSource().getDataSourceFeature(DBConstants.FEATURE_LIMIT_AFFECTS_DML));
 
         DBCQueryTransformer limitTransformer = null, fetchAllTransformer = null;
         if (selectQuery) {
@@ -940,7 +943,7 @@ public final class DBUtils {
                     if (session.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL)) {
                         limitTransformer = transformProvider.createQueryTransformer(DBCQueryTransformType.RESULT_SET_LIMIT);
                     }
-                } else if (offset <= 0 && maxRows <= 0) {
+                } else if (maxRows <= 0) {
                     fetchAllTransformer = transformProvider.createQueryTransformer(DBCQueryTransformType.FETCH_ALL_TABLE);
                 }
             }
@@ -961,7 +964,7 @@ public final class DBUtils {
             makeStatement(session, queryText, hasLimits);
         dbStat.setStatementSource(executionSource);
 
-        if (hasLimits || offset > 0) {
+        if (offset > 0 || hasLimits || (possiblySelect && maxRows > 0 && !limitAffectsDML)) {
             if (limitTransformer == null) {
                 // Set explicit limit - it is safe because we pretty sure that this is a plain SELECT query
                 dbStat.setLimit(offset, maxRows);

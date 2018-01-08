@@ -79,7 +79,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         super(parent, SWT.NONE);
         this.setLayout(new FillLayout());
         this.navigatorFilter = navigatorFilter;
-        this.defaultSelection = new StructuredSelection(rootNode);
+        this.defaultSelection = new TreeSelection(new TreePath(new Object[]{rootNode}));
         this.model = DBeaverCore.getInstance().getNavigatorModel();
         this.model.addListener(this);
         addDisposeListener(e -> {
@@ -497,7 +497,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
     private static class CustomFilteredTree extends FilteredTree {
         CustomFilteredTree(DatabaseNavigatorTree navigatorTree, int treeStyle) {
             super(navigatorTree, treeStyle, new TreeFilter(navigatorTree.navigatorFilter), true);
-            setInitialText("Type table/view name to filter");
+            setInitialText("Type part of object name to filter");
             ((GridLayout)getLayout()).verticalSpacing = 0;
 
             UIUtils.addDefaultEditActionsSupport(DBeaverUI.getActiveWorkbenchWindow(), getFilterControl());

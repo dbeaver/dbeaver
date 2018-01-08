@@ -30,7 +30,7 @@ import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.debug.core.DebugCore;
-import org.jkiss.dbeaver.debug.internal.ui.DebugUiMessages;
+import org.jkiss.dbeaver.debug.internal.ui.DebugUIMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 public class DatabaseTab extends AbstractLaunchConfigurationTab {
@@ -70,10 +70,10 @@ public class DatabaseTab extends AbstractLaunchConfigurationTab {
 
     protected void createDatasourceComponent(Composite comp)
     {
-        Group datasourceGroup = UIUtils.createControlGroup(comp, DebugUiMessages.DatabaseTab_datasource_group_text, 2, GridData.FILL_HORIZONTAL,
+        Group datasourceGroup = UIUtils.createControlGroup(comp, DebugUIMessages.DatabaseTab_datasource_group_text, 2, GridData.FILL_HORIZONTAL,
                 SWT.DEFAULT);
 
-        datasourceText = UIUtils.createLabelText(datasourceGroup, DebugUiMessages.DatabaseTab_datasource_label_text, DebugCore.ATTR_DATASOURCE_DEFAULT);
+        datasourceText = UIUtils.createLabelText(datasourceGroup, DebugUIMessages.DatabaseTab_datasource_label_text, DebugCore.ATTR_DATASOURCE_DEFAULT);
         datasourceText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         datasourceText.addModifyListener(modifyListener);
         datasourceText.setEditable(false);
@@ -81,9 +81,9 @@ public class DatabaseTab extends AbstractLaunchConfigurationTab {
 
     protected void createDatabaseComponent(Composite comp)
     {
-        Group databaseGroup = UIUtils.createControlGroup(comp, DebugUiMessages.DatabaseTab_database_group_text, 2, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
+        Group databaseGroup = UIUtils.createControlGroup(comp, DebugUIMessages.DatabaseTab_database_group_text, 2, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
 
-        databaseText = UIUtils.createLabelText(databaseGroup, DebugUiMessages.DatabaseTab_database_label_text, DebugCore.ATTR_DATABASE_DEFAULT);
+        databaseText = UIUtils.createLabelText(databaseGroup, DebugUIMessages.DatabaseTab_database_label_text, DebugCore.ATTR_DATABASE_DEFAULT);
         databaseText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         databaseText.addModifyListener(modifyListener);
     }
@@ -104,13 +104,13 @@ public class DatabaseTab extends AbstractLaunchConfigurationTab {
 
     protected void initializeDatasource(ILaunchConfiguration configuration)
     {
-        String extracted = DebugCore.extractDatasource(configuration);
+        String extracted = DebugCore.extractDatasourceId(configuration);
         datasourceText.setText(extracted);
     }
 
     protected void initializeDatabase(ILaunchConfiguration configuration)
     {
-        String extracted = DebugCore.extractDatabase(configuration);
+        String extracted = DebugCore.extractDatabaseName(configuration);
         databaseText.setText(extracted);
     }
 
@@ -124,7 +124,7 @@ public class DatabaseTab extends AbstractLaunchConfigurationTab {
     @Override
     public String getName()
     {
-        return DebugUiMessages.DatabaseTab_name;
+        return DebugUIMessages.DatabaseTab_name;
     }
 
 }

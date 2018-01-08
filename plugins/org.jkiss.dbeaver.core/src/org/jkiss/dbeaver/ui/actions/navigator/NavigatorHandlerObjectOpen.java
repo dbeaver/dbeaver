@@ -139,12 +139,6 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
             openConnectionEditor(workbenchWindow, dataSourceContainer);
             return null;
         }
-/*
-        if (!selectedNode.isPersisted()) {
-            log.debug("Node '" + selectedNode.getNodeName() + "' s not persisted. Open not possible.");
-            return null;
-        }
-*/
         try {
             String defaultFolderId = null;
             if (selectedNode instanceof DBNDatabaseFolder && !(selectedNode.getParentNode() instanceof DBNDatabaseFolder) && selectedNode.getParentNode() instanceof DBNDatabaseNode) {
@@ -152,36 +146,14 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                 selectedNode = selectedNode.getParentNode();
             }
 
-            DatabaseEditorInputFactory.setLookupEditor(true);
-            try {
-                for (IEditorReference ref : workbenchWindow.getActivePage().getEditorReferences()) {
-                    IEditorInput editorInput;
-                    try {
-                        editorInput = ref.getEditorInput();
-                    } catch (Throwable e) {
-                        continue;
-                    }
-                    if (editorInput instanceof INavigatorEditorInput) {
-                        boolean matches;
-                        if (editorInput instanceof DatabaseLazyEditorInput) {
-                            matches = selectedNode.getNodeItemPath().equals(((DatabaseLazyEditorInput) editorInput).getNodePath());
-                        } else {
-                            matches = ((INavigatorEditorInput) editorInput).getNavigatorNode() == selectedNode;
-                        }
-                        if (matches) {
-                            final IEditorPart editor = ref.getEditor(true);
-                            if (editor instanceof ITabbedFolderContainer && defaultFolderId != null) {
-                                // Activate default folder
-                                ((ITabbedFolderContainer) editor).switchFolder(defaultFolderId);
-                            }
-                            workbenchWindow.getActivePage().activate(editor);
-                            return editor;
-                        }
-                    }
+            IEditorPart editor = findEntityEditor(workbenchWindow, selectedNode);
+            if (editor != null) {
+                if (editor instanceof ITabbedFolderContainer && defaultFolderId != null) {
+                    // Activate default folder
+                    ((ITabbedFolderContainer) editor).switchFolder(defaultFolderId);
                 }
-            }
-            finally {
-                DatabaseEditorInputFactory.setLookupEditor(false);
+                workbenchWindow.getActivePage().activate(editor);
+                return editor;
             }
 
             if (selectedNode instanceof DBNDatabaseObject) {
@@ -220,6 +192,35 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
             DBUserInterface.getInstance().showError(CoreMessages.actions_navigator_error_dialog_open_entity_title, "Can't open entity '" + selectedNode.getNodeName() + "'", ex);
             return null;
         }
+    }
+
+    public static IEditorPart findEntityEditor(IWorkbenchWindow workbenchWindow, DBNNode node) {
+        DatabaseEditorInputFactory.setLookupEditor(true);
+        try {
+            for (IEditorReference ref : workbenchWindow.getActivePage().getEditorReferences()) {
+                IEditorInput editorInput;
+                try {
+                    editorInput = ref.getEditorInput();
+                } catch (Throwable e) {
+                    continue;
+                }
+                if (editorInput instanceof INavigatorEditorInput) {
+                    boolean matches;
+                    if (editorInput instanceof DatabaseLazyEditorInput) {
+                        matches = node.getNodeItemPath().equals(((DatabaseLazyEditorInput) editorInput).getNodePath());
+                    } else {
+                        matches = ((INavigatorEditorInput) editorInput).getNavigatorNode() == node;
+                    }
+                    if (matches) {
+                        return ref.getEditor(true);
+                    }
+                }
+            }
+        }
+        finally {
+            DatabaseEditorInputFactory.setLookupEditor(false);
+        }
+        return null;
     }
 
     private static void refreshDatabaseNode(@NotNull DBNDatabaseNode selectedNode) throws InvocationTargetException, InterruptedException {

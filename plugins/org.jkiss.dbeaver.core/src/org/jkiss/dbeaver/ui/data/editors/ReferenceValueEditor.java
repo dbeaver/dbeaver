@@ -52,6 +52,7 @@ import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.editors.data.DatabaseDataEditor;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditDictionaryPage;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -140,7 +141,7 @@ public class ReferenceValueEditor {
                                 @Override
                                 public void run(DBRProgressMonitor monitor)
                                     throws InvocationTargetException, InterruptedException {
-                                    DBNDatabaseNode tableNode = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(
+                                    DBNDatabaseNode tableNode = NavigatorUtils.getNodeByObject(
                                         monitor,
                                         refTable,
                                         true

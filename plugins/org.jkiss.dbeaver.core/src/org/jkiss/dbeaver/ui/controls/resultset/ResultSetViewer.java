@@ -1816,9 +1816,10 @@ public class ResultSetViewer extends Viewer
         if (singleSource == null) {
             return null;
         }
-        String menuName = ActionUtils.findCommandDescription(ResultSetCommandHandler.CMD_REFERENCES_MENU, getSite(), false);
+        String menuName = ActionUtils.findCommandName(ResultSetCommandHandler.CMD_REFERENCES_MENU);
 
         MenuManager refTablesMenu = new MenuManager(menuName, null, "ref-tables");
+        refTablesMenu.setActionDefinitionId(ResultSetCommandHandler.CMD_REFERENCES_MENU);
         refTablesMenu.add(NOREFS_ACTION);
         refTablesMenu.addMenuListener(manager -> fillRefTablesActions(row, singleSource, manager));
 

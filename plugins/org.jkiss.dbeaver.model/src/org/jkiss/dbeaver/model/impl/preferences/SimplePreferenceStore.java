@@ -29,7 +29,7 @@ import java.util.Map;
  * However, save will always use THIS store, not parent.
  * Originally copied from standard PreferenceStore class
  */
-public abstract class SimplePreferenceStore extends AbstractPreferenceStore implements DBPPreferenceListener {
+public abstract class SimplePreferenceStore extends AbstractPreferenceStore {
     private DBPPreferenceStore parentStore;
     private Map<String, String> properties;
     private Map<String, String> defaultProperties;
@@ -46,7 +46,10 @@ public abstract class SimplePreferenceStore extends AbstractPreferenceStore impl
         this();
         this.parentStore = parentStore;
         if (parentStore != null) {
-            parentStore.addPropertyChangeListener(this);
+            // FIXME: ? adding self as parent change listener produces too many events. And this seems to be senseless.
+            // FIXME: but i'm not 100% sure.
+            // FIXME: In any case we have to remove listener at dispose to avoid leaks and dead links.
+            //parentStore.addPropertyChangeListener(this);
         }
     }
 
@@ -97,22 +100,6 @@ public abstract class SimplePreferenceStore extends AbstractPreferenceStore impl
     {
         return (properties.containsKey(name) || defaultProperties
             .containsKey(name));
-    }
-
-    @Override
-    public void firePropertyChangeEvent(String name, Object oldValue, Object newValue)
-    {
-        final Object[] finalListeners = getListeners();
-        // Do we need to fire an event.
-        if (finalListeners.length > 0
-            && (oldValue == null || !oldValue.equals(newValue))) {
-            final PreferenceChangeEvent pe = new PreferenceChangeEvent(this, name,
-                oldValue, newValue);
-            for (int i = 0; i < finalListeners.length; ++i) {
-                final DBPPreferenceListener l = (DBPPreferenceListener) finalListeners[i];
-                l.preferenceChange(pe);
-            }
-        }
     }
 
     @Override
@@ -399,11 +386,4 @@ public abstract class SimplePreferenceStore extends AbstractPreferenceStore impl
         }
     }
 
-    @Override
-    public void preferenceChange(PreferenceChangeEvent event)
-    {
-        for (Object listener : getListeners()) {
-            ((DBPPreferenceListener)listener).preferenceChange(event);
-        }
-    }
 }
