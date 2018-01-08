@@ -51,7 +51,7 @@ public abstract class DatabaseLaunchDelegate extends LaunchConfigurationDelegate
         Map<String, Object> attributes = extractAttributes(configuration);
         DBGController controller = createController(datasourceDescriptor, databaseName, attributes);
         DatabaseProcess process = createProcess(launch, configuration.getName());
-        DatabaseDebugTarget<DBGController> target = createDebugTarget(launch, controller, process);
+        DatabaseDebugTarget target = createDebugTarget(launch, controller, process);
         launch.addDebugTarget(target);
         DefaultProgressMonitor progress = new DefaultProgressMonitor(monitor);
         try {
@@ -70,6 +70,6 @@ public abstract class DatabaseLaunchDelegate extends LaunchConfigurationDelegate
 
     protected abstract DatabaseProcess createProcess(ILaunch launch, String name);
 
-    protected abstract DatabaseDebugTarget<DBGController> createDebugTarget(ILaunch launch, DBGController controller, DatabaseProcess process);
+    protected abstract DatabaseDebugTarget createDebugTarget(ILaunch launch, DBGController controller, DatabaseProcess process);
 
 }
