@@ -204,14 +204,26 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
         final DBSObjectFilter schemaFilters = dataSource.getContainer().getObjectFilter(GenericSchema.class, catalog, false);
 
         String sysSchema = DBUtils.getQuotedIdentifier(catalog) + "." + getSystemSchema();
-        String sql =
-            showAllSchemas ?
-                "SELECT name FROM " + sysSchema + ".sysusers ORDER BY name"
-                :
-                "SELECT DISTINCT u.name\n" +
-                "FROM " + sysSchema + ".sysusers u, " + sysSchema + ".sysobjects o\n" +
-                "WHERE u.uid=o.uid\n" +
-                "ORDER BY 1";
+        String sql;
+        if (showAllSchemas) {
+            if (getServerType() == ServerType.SQL_SERVER && dataSource.isServerVersionAtLeast(9 ,0)) {
+                sql = "SELECT name FROM " + DBUtils.getQuotedIdentifier(catalog) + ".sys.schemas";
+            } else {
+                sql = "SELECT name FROM " + DBUtils.getQuotedIdentifier(catalog) + ".dbo.sysusers";
+            }
+        } else {
+            if (getServerType() == ServerType.SQL_SERVER) {
+                sql = "SELECT DISTINCT s.name\n" +
+                    "FROM " + sysSchema + ".schemas s, " + sysSchema + ".sysobjects o\n" +
+                    "WHERE s.schema_id=o.uid\n" +
+                    "ORDER BY 1";
+            } else {
+                sql = "SELECT DISTINCT u.name\n" +
+                    "FROM " + sysSchema + ".sysusers u, " + sysSchema + ".sysobjects o\n" +
+                    "WHERE u.uid=o.uid\n" +
+                    "ORDER BY 1";
+            }
+        }
 
         try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
             List<GenericSchema> result = new ArrayList<>();
