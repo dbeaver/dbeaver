@@ -109,6 +109,6 @@ public abstract class DateTimeCustomValueHandler extends DateTimeValueHandler {
     }
 
     @NotNull
-    protected abstract String getFormatterId(DBSTypedObject column);
+    public abstract String getFormatterId(DBSTypedObject column);
 
 }
