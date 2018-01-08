@@ -72,7 +72,7 @@ public class GenericCatalog extends GenericObjectContainer implements DBSCatalog
     {
         if (schemas == null && !isInitialized) {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, this.getDataSource(), "Load catalog schemas")) {
-                this.schemas = this.getDataSource().loadSchemas(session, this);
+                this.schemas = this.getDataSource().getMetaModel().loadSchemas(session, getDataSource(), this);
                 this.isInitialized = true;
             }
         }

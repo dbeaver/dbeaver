@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<!--
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2017 Alexander Fedorov (alexander.fedorov@jkiss.org)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+  -->
+<plugin>
+
+   <extension
+         point="org.eclipse.core.runtime.adapters">
+      <factory
+            adaptableType="org.jkiss.dbeaver.ui.editors.entity.EntityEditor"
+            class="org.jkiss.dbeaver.debug.internal.ui.actions.DebugActionAdapterFactory">
+         <adapter
+               type="org.eclipse.debug.ui.actions.IToggleBreakpointsTarget">
+         </adapter>
+      </factory>
+      <factory
+            adaptableType="org.jkiss.dbeaver.ui.editors.entity.EntityEditorInput"
+            class="org.jkiss.dbeaver.debug.internal.ui.actions.DebugActionAdapterFactory">
+         <adapter
+               type="org.eclipse.debug.ui.actions.ILaunchable">
+         </adapter>
+      </factory>
+      <factory
+            adaptableType="org.jkiss.dbeaver.model.navigator.DBNDatabaseObject"
+            class="org.jkiss.dbeaver.debug.internal.ui.actions.DebugActionAdapterFactory">
+         <adapter
+               type="org.eclipse.debug.ui.actions.ILaunchable">
+         </adapter>
+      </factory>
+   </extension>
+
+   <extension
+         point="org.eclipse.debug.ui.debugModelPresentations">
+      <debugModelPresentation
+            class="org.jkiss.dbeaver.debug.internal.ui.ProcedureDebugModelPresentation"
+            id="org.jkiss.dbeaver.debug.core.procedure">
+      </debugModelPresentation>
+   </extension>
+
+   <extension
+         point="org.eclipse.debug.ui.detailPaneFactories">
+      <detailFactories
+            class="org.jkiss.dbeaver.debug.ui.details.DatabaseDetailPaneFactory"
+            id="org.jkiss.dbeaver.debug.ui.detailPaneFactories.detailFactories.database">
+      </detailFactories>
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.handlers">
+      <handler
+            class="org.jkiss.dbeaver.debug.ui.actions.ToggleBreakpointHandler"
+            commandId="org.eclipse.debug.ui.commands.ToggleBreakpoint">
+      </handler>
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="false"
+            locationURI="popup:#SQLRulerContext?before=additions">
+         <command
+               commandId="org.eclipse.debug.ui.commands.ToggleBreakpoint"
+               label="%command.ToggleBreakpoint.label"
+               style="push">
+         </command>
+      </menuContribution>
+   </extension>
+
+</plugin>

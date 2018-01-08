@@ -22,7 +22,6 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.ui.IWorkbenchSite;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -89,7 +88,7 @@ public class EntityHyperlink implements IHyperlink
             monitor.beginTask("Resolve object " + reference.getName(), 1);
             try {
                 DBSObject object = reference.resolveObject(monitor);
-                node = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(monitor, object, true);
+                node = NavigatorUtils.getNodeByObject(monitor, object, true);
 
                 if (node != null) {
                     DBeaverUI.asyncExec(new Runnable() {

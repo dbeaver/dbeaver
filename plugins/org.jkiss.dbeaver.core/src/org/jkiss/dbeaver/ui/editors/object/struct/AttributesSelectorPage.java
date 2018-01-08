@@ -215,7 +215,7 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
 
     protected int fillAttributeColumns(DBSEntityAttribute attribute, AttributeInfo attributeInfo, TableItem columnItem) {
         columnItem.setText(0, attribute.getName());
-        columnItem.setText(1, String.valueOf(attribute.getOrdinalPosition()));
+        //columnItem.setText(1, String.valueOf(attribute.getOrdinalPosition()));
         columnItem.setText(2, attribute.getFullTypeName());
         return 2;
     }
@@ -288,10 +288,10 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
         final Composite tableGroup = new Composite(panel, SWT.NONE);
         tableGroup.setLayout(new GridLayout(2, false));
         tableGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        Text tableNameLabel = UIUtils.createLabelText(
+        UIUtils.createLabelText(
             tableGroup,
             CoreMessages.dialog_struct_columns_select_label_table,
-            DBUtils.getObjectFullName(entity, DBPEvaluationContext.UI), SWT.BORDER | SWT.READ_ONLY);
+            DBUtils.getObjectFullName(entity, DBPEvaluationContext.UI), SWT.BORDER | SWT.READ_ONLY, new GridData(GridData.FILL_HORIZONTAL));
         return tableGroup;
     }
 

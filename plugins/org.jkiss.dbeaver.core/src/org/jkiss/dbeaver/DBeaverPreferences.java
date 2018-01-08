@@ -26,6 +26,8 @@ public final class DBeaverPreferences
     public static final String AGENT_LONG_OPERATION_NOTIFY = "agent.long.operation.notify"; //$NON-NLS-1$
     public static final String AGENT_LONG_OPERATION_TIMEOUT = "agent.long.operation.timeout"; //$NON-NLS-1$
 
+    public static final String PLATFORM_LANGUAGE = "platform.language"; //$NON-NLS-1$
+
     public static final String NAVIGATOR_EXPAND_ON_CONNECT = "navigator.expand.on.connect"; //$NON-NLS-1$
     public static final String NAVIGATOR_SORT_ALPHABETICALLY = "navigator.sort.case.insensitive"; //$NON-NLS-1$
     public static final String NAVIGATOR_SORT_FOLDERS_FIRST = "navigator.sort.forlers.first"; //$NON-NLS-1$
@@ -37,6 +39,9 @@ public final class DBeaverPreferences
     public static final String NAVIGATOR_CONNECTION_DOUBLE_CLICK = "navigator.connection.doubleClick"; //$NON-NLS-1$
     public static final String NAVIGATOR_SHOW_SQL_PREVIEW = "navigator.editor.show.preview"; //$NON-NLS-1$
     public static final String NAVIGATOR_SHOW_OBJECT_TIPS = "navigator.show.objects.tips"; //$NON-NLS-1$
+
+    public static final String ENTITY_EDITOR_DETACH_INFO = "entity.editor.info.detach"; //$NON-NLS-1$
+    public static final String ENTITY_EDITOR_INFO_SASH_STATE = "entity.editor.info.sash.state"; //$NON-NLS-1$
 
     public static final String KEEP_STATEMENT_OPEN = "keep.statement.open"; //$NON-NLS-1$
 
@@ -132,13 +137,15 @@ public final class DBeaverPreferences
     public static final String RESULT_SET_DOUBLE_CLICK = "resultset.behavior.doubleClick"; //$NON-NLS-1$
     public static final String RESULT_SET_ROW_BATCH_SIZE = "resultset.show.row.batch.size"; //$NON-NLS-1$
     public static final String RESULT_SET_PRESENTATION = "resultset.presentation.active"; //$NON-NLS-1$
+    public static final String RESULT_SET_STRING_USE_CONTENT_EDITOR = "resultset.string.use.content.editor"; //$NON-NLS-1$
 
     public static final String RESULT_TEXT_MAX_COLUMN_SIZE = "resultset.text.max.column.size"; //$NON-NLS-1$
     public static final String RESULT_TEXT_VALUE_FORMAT = "resultset.text.value.format"; //$NON-NLS-1$
+    public static final String RESULT_TEXT_SHOW_NULLS = "resultset.text.show.nulls"; //$NON-NLS-1$
     public static final String RESULT_TEXT_DELIMITER_LEADING = "resultset.text.delimiter.leading"; //$NON-NLS-1$
     public static final String RESULT_TEXT_DELIMITER_TRAILING = "resultset.text.delimiter.trailing"; //$NON-NLS-1$
 
-    public static final String DEFAULT_RESOURCE_ENCODING = "resource.encoding.default";
+    //public static final String DEFAULT_RESOURCE_ENCODING = "resource.encoding.default";
 
     public static final String LOGS_DEBUG_ENABLED = "logs.debug.enabled";
     public static final String LOGS_DEBUG_LOCATION = "logs.debug.location";

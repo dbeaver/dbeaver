@@ -20,6 +20,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
@@ -47,7 +48,7 @@ public class PostgreProcedureManager extends SQLObjectEditor<PostgreProcedure, P
     }
 
     @Override
-    public long getMakerOptions()
+    public long getMakerOptions(DBPDataSource dataSource)
     {
         return FEATURE_EDITOR_ON_CREATE;
     }
@@ -81,9 +82,7 @@ public class PostgreProcedureManager extends SQLObjectEditor<PostgreProcedure, P
     @Override
     protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
     {
-        if (command.getProperties().size() > 1 || command.getProperty("description") == null) {
-            createOrReplaceProcedureQuery(actions, command.getObject());
-        }
+        createOrReplaceProcedureQuery(actions, command.getObject());
     }
 
     @Override

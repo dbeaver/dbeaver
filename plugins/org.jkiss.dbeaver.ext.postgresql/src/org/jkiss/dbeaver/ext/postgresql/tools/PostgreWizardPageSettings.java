@@ -26,7 +26,7 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
-import org.jkiss.dbeaver.ext.postgresql.PostgresMessages;
+import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.registry.encode.EncryptionException;
@@ -69,20 +69,20 @@ public abstract class PostgreWizardPageSettings<WIZARD extends AbstractToolWizar
             wizard.setToolUserPassword(authPassword == null ? connectionInfo.getUserPassword() : authPassword);
             final boolean savePassword = authUser != null;
             Group securityGroup = UIUtils.createControlGroup(
-                parent, PostgresMessages.wizard_backup_page_setting_group_security, 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
+                parent, PostgreMessages.wizard_backup_page_setting_group_security, 2, GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
             Label infoLabel = new Label(securityGroup, SWT.NONE);
-            infoLabel.setText(NLS.bind(PostgresMessages.wizard_backup_page_setting_group_security_label_info, wizard.getConnectionInfo().getUserName(),
+            infoLabel.setText(NLS.bind(PostgreMessages.wizard_backup_page_setting_group_security_label_info, wizard.getConnectionInfo().getUserName(),
            		 wizard.getObjectsName()));
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
             infoLabel.setLayoutData(gd);
             Button authButton = new Button(securityGroup, SWT.PUSH);
-            authButton.setText(PostgresMessages.wizard_backup_page_setting_group_security_btn_authentication);
+            authButton.setText(PostgreMessages.wizard_backup_page_setting_group_security_btn_authentication);
             authButton.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e)
                 {
-                    BaseAuthDialog authDialog = new BaseAuthDialog(getShell(), PostgresMessages.wizard_backup_page_setting_group_security_btn_authentication, false);
+                    BaseAuthDialog authDialog = new BaseAuthDialog(getShell(), PostgreMessages.wizard_backup_page_setting_group_security_btn_authentication, false);
                     authDialog.setUserName(wizard.getToolUserName());
                     authDialog.setUserPassword(wizard.getToolUserPassword());
                     authDialog.setSavePassword(savePassword);
@@ -103,7 +103,7 @@ public abstract class PostgreWizardPageSettings<WIZARD extends AbstractToolWizar
             });
 
             Button resetButton = new Button(securityGroup, SWT.PUSH);
-            resetButton.setText(PostgresMessages.wizard_backup_page_setting_group_security_btn_reset_default);
+            resetButton.setText(PostgreMessages.wizard_backup_page_setting_group_security_btn_reset_default);
             resetButton.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e)

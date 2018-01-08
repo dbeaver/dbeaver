@@ -356,6 +356,19 @@ public class SQLContextInformer
                     info.append(descriptor.getDisplayName()).append(": ").append(propString).append("\n");
                 }
             }
+
+/*
+            if (targetObject instanceof DBPScriptObject) {
+                try {
+                    String definitionText = ((DBPScriptObject) targetObject).getObjectDefinitionText(monitor, null);
+                    if (!CommonUtils.isEmpty(definitionText)) {
+                        info.append("<hr><pre>").append(definitionText).append("</pre>");
+                    }
+                } catch (DBException e) {
+                    log.error(e);
+                }
+            }
+*/
         }
 
     }

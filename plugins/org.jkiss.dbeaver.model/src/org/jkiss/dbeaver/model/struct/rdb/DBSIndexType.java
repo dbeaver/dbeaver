@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
 public class DBSIndexType implements DBPNamedObject
 {
     public static final DBSIndexType UNKNOWN = new DBSIndexType("UNKNOWN", ModelMessages.model_struct_Unknown); //$NON-NLS-1$
-    //public static final DBSIndexType STATISTIC = new DBSIndexType("STATISTIC", CoreMessages.model_struct_Statistic); //$NON-NLS-1$
+    public static final DBSIndexType STATISTIC = new DBSIndexType("STATISTIC", ModelMessages.model_struct_Statistic); //$NON-NLS-1$
     public static final DBSIndexType CLUSTERED = new DBSIndexType("CLUSTERED", ModelMessages.model_struct_Clustered); //$NON-NLS-1$
     public static final DBSIndexType HASHED = new DBSIndexType("HASHED", ModelMessages.model_struct_Hashed); //$NON-NLS-1$
     public static final DBSIndexType OTHER = new DBSIndexType("OTHER", ModelMessages.model_struct_Other); //$NON-NLS-1$

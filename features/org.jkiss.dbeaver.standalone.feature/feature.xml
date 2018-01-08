@@ -2,7 +2,7 @@
 <feature
         id="org.jkiss.dbeaver.standalone.feature"
         label="%featureName"
-        version="4.3.0"
+        version="4.3.2"
         provider-name="%providerName"
         plugin="org.jkiss.dbeaver.core.application">
 
@@ -30,6 +30,10 @@
     <includes id="org.jkiss.dbeaver.ext.wmi.feature" version="0.0.0"/>
     <includes id="org.jkiss.dbeaver.ext.db2.feature" version="0.0.0"/>
     <includes id="org.jkiss.dbeaver.ext.exasol.feature" version="0.0.0"/>
+
+<!--
+    <includes id="org.jkiss.dbeaver.debug.feature" version="0.0.0"/>
+-->
 
     <!-- P2 for RCP -->
     <includes id="org.eclipse.equinox.p2.rcp.feature" version="0.0.0"/>

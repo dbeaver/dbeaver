@@ -56,7 +56,7 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
         DBPPreferenceStore store = new BundlePreferenceStore(DBeaverActivator.getInstance().getBundle());
 
         // Resources
-        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.DEFAULT_RESOURCE_ENCODING, GeneralUtils.UTF8_ENCODING);
+        //PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.DEFAULT_RESOURCE_ENCODING, GeneralUtils.UTF8_ENCODING);
 
         // Agent
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.AGENT_ENABLED, true);
@@ -77,6 +77,7 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NAVIGATOR_SHOW_SQL_PREVIEW, true);
 
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NAVIGATOR_SHOW_OBJECT_TIPS, true);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.ENTITY_EDITOR_DETACH_INFO, true);
 
         // Common
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.KEEP_STATEMENT_OPEN, false);
@@ -123,6 +124,7 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.PROPOSAL_INSERT_CASE, SQLPreferenceConstants.PROPOSAL_CASE_DEFAULT);
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS, false);
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.PROPOSAL_SHORT_NAME, false);
+            PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.PROPOSAL_ALWAYS_FQ, false);
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.INSERT_SPACE_AFTER_PROPOSALS, false);
             PrefUtils.setDefaultPreferenceValue(store, SQLPreferenceConstants.USE_GLOBAL_ASSISTANT, false);
 
@@ -181,8 +183,11 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_COLORIZE_DATA_TYPES, false);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS, true);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_ROW_BATCH_SIZE, 1);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_STRING_USE_CONTENT_EDITOR, false);
+
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_TEXT_MAX_COLUMN_SIZE, 255);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_TEXT_VALUE_FORMAT, DBDDisplayFormat.EDIT.name());
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_TEXT_SHOW_NULLS, false);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_TEXT_DELIMITER_LEADING, false);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_TEXT_DELIMITER_TRAILING, true);
 

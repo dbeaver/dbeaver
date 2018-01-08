@@ -85,6 +85,10 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
         return foreignKeys;
     }
 
+    public boolean isTablespaceSpecified() {
+        return tablespaceId != 0;
+    }
+
     @Property(viewable = true, order = 20)
     public PostgreTablespace getTablespace(DBRProgressMonitor monitor) throws DBException {
         if (tablespaceId == 0) {
@@ -174,6 +178,9 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
         return result;
     }
 
+    /**
+     * Sub tables = child tables
+     */
     @Property(viewable = false, order = 31)
     public List<PostgreTableBase> getSubTables(DBRProgressMonitor monitor) throws DBException {
         final List<PostgreTableInheritance> si = getSubInheritance(monitor);
@@ -182,7 +189,10 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
         }
         List<PostgreTableBase> result = new ArrayList<>(si.size());
         for (int i1 = 0; i1 < si.size(); i1++) {
-            result.add(si.get(i1).getParentObject());
+            PostgreTableBase table = si.get(i1).getParentObject();
+            if (!table.isPartition()) {
+                result.add(table);
+            }
         }
         return result;
     }
@@ -240,9 +250,9 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
                 String sql = "SELECT i.*,c.relnamespace " +
                     "FROM pg_catalog.pg_inherits i,pg_catalog.pg_class c " +
                     "WHERE i.inhparent=? AND c.oid=i.inhrelid";
-                if (getDataSource().isServerVersionAtLeast(10, 0)) {
-                    sql += " AND c.relispartition=false";
-                }
+//                if (getDataSource().isServerVersionAtLeast(10, 0)) {
+//                    sql += " AND c.relispartition=false";
+//                }
                 try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
                     dbStat.setLong(1, getObjectId());
                     try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -277,20 +287,25 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
             if (subTables == null) {
                 subTables = Collections.emptyList();
             }
+            DBUtils.orderObjects(subTables);
         }
         return subTables;
     }
 
-    // TODO: fix partitions lookup (similar to getSubInheritance). Partitions may reside in different schema.
     @Association
     public Collection<PostgreTableBase> getPartitions(DBRProgressMonitor monitor) throws DBException {
-        List<PostgreTableBase> partitions = new ArrayList<>();
-        for(PostgreTableBase t : getSchema().tableCache.getCachedObjects()) {
-            if (t.isParentOf(this.getObjectId()) && t.isPartition()) {
-                partitions.add(t);
+        final List<PostgreTableInheritance> si = getSubInheritance(monitor);
+        if (si.isEmpty()) {
+            return Collections.emptyList();
+        }
+        List<PostgreTableBase> result = new ArrayList<>(si.size());
+        for (int i1 = 0; i1 < si.size(); i1++) {
+            PostgreTableBase table = si.get(i1).getParentObject();
+            if (table.isPartition()) {
+                result.add(table);
             }
         }
-	    return partitions;
+        return result;
     }
 
 }

@@ -1,0 +1,12 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: %Bundle-Name
+Bundle-SymbolicName: org.jkiss.dbeaver.ext.postgresql.debug.core;singleton:=true
+Bundle-Version: 1.0.2
+Bundle-Vendor: %Bundle-Vendor
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Require-Bundle: org.eclipse.core.runtime,
+ org.jkiss.dbeaver.ext.postgresql,
+ org.jkiss.dbeaver.core,
+ org.jkiss.dbeaver.debug.core
+Export-Package: org.jkiss.dbeaver.ext.postgresql.debug.core

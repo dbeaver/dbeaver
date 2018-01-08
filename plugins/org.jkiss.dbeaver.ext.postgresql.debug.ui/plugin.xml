@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<!--
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2017 Alexander Fedorov (alexander.fedorov@jkiss.org)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+  -->
+<plugin>
+   <extension
+         point="org.eclipse.debug.ui.launchConfigurationTypeImages">
+      <launchConfigurationTypeImage
+            configTypeID="org.jkiss.dbeaver.ext.postgresql.debug.core.pgSQL"
+            icon="platform:/plugin/org.jkiss.dbeaver.ext.postgresql/$nl$/icons/postgresql_icon.png"
+            id="org.jkiss.dbeaver.ext.postgresql.debug.ui.launchConfigurationTypeImages.launchConfigurationTypeImage.pgSQL">
+      </launchConfigurationTypeImage>
+   </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+      <launchConfigurationTabGroup
+            class="org.jkiss.dbeaver.ext.postgresql.debug.ui.internal.PgSqlLaunchConfigurationTabGroup"
+            description="%launchConfigurationTabGroups.launchConfigurationTabGroup.pgSQL.description"
+            id="org.jkiss.dbeaver.ext.postgresql.debug.ui.launchConfigurationTabGroups.launchConfigurationTabGroup.pgSQL"
+            type="org.jkiss.dbeaver.ext.postgresql.debug.core.pgSQL">
+         <launchMode
+               description="%launchConfigurationTabGroups.launchConfigurationTabGroup.launchMode.pgSQL.debug.description"
+               mode="debug">
+         </launchMode>
+      </launchConfigurationTabGroup>
+   </extension>
+   <extension
+         point="org.eclipse.debug.ui.launchShortcuts">
+      <shortcut
+            class="org.jkiss.dbeaver.ext.postgresql.debug.ui.internal.PgSqlLaunchShortcut"
+            description="%launchShortcuts.shortcut.pgSQL.description"
+            icon="platform:/plugin/org.jkiss.dbeaver.ext.postgresql/$nl$/icons/postgresql_icon.png"
+            id="org.jkiss.dbeaver.ext.postgresql.debug.ui.launchShortcuts.shortcut.pgSQL"
+            label="%launchShortcuts.shortcut.pgSQL.label"
+            modes="debug">
+         <configurationType
+               id="org.jkiss.dbeaver.ext.postgresql.debug.core.pgSQL"></configurationType>
+         <contextualLaunch>
+            <contextLabel
+                  label="%launchShortcuts.shortcut.pgSQL.label"
+                  mode="debug">
+            </contextLabel>
+            <enablement>
+               <with
+                     variable="selection">
+                  <count
+                        value="1">
+                  </count>
+                  <iterate
+                        ifEmpty="false"
+                        operator="and">
+                     <adapt
+                           type="org.jkiss.dbeaver.model.struct.DBSObject">
+                        <instanceof
+                              value="org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure">
+                        </instanceof>
+                     </adapt>
+                  </iterate>
+               </with>
+            </enablement>
+         </contextualLaunch>
+      </shortcut>
+   </extension>
+
+</plugin>

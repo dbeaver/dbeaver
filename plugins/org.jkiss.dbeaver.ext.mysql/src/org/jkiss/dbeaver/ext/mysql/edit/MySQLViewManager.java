@@ -47,12 +47,6 @@ public class MySQLViewManager extends MySQLTableManager {
     }
 
     @Override
-    public long getMakerOptions()
-    {
-        return FEATURE_EDITOR_ON_CREATE;
-    }
-
-    @Override
     protected void validateObjectProperties(ObjectChangeCommand command)
         throws DBException
     {

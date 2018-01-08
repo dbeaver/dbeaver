@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension
+         id="databaseBreakpointMarker"
+         name="%databaseBreakpoint.name"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.eclipse.debug.core.breakpointMarker">
+      </super>
+   </extension>
+   <extension
+         id="databaseLineBreakpointMarker"
+         name="%databaseLineBreakpoint.name"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.eclipse.debug.core.lineBreakpointMarker">
+      </super>
+      <super
+            type="org.jkiss.dbeaver.debug.core.databaseBreakpointMarker">
+      </super>
+   </extension>
+   <extension
+         point="org.eclipse.debug.core.breakpoints">
+      <breakpoint
+            class="org.jkiss.dbeaver.debug.core.breakpoints.DatabaseLineBreakpoint"
+            id="org.jkiss.dbeaver.debug.core.databaseLineBreakpoint"
+            markerType="org.jkiss.dbeaver.debug.core.databaseLineBreakpointMarker"
+            name="%databaseLineBreakpoint.name">
+      </breakpoint>
+   </extension>
+
+</plugin>

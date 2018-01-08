@@ -25,6 +25,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.io.PrintWriter;
 import java.sql.SQLException;
+import java.util.List;
 
 /**
  * Default output reader.
@@ -50,8 +51,8 @@ public class DefaultServerOutputReader implements DBCServerOutputReader
 
     @Override
     public void readServerOutput(DBRProgressMonitor monitor, DBCExecutionContext context, PrintWriter output) throws DBCException {
-        Throwable[] warnings = queryResult.getWarnings();
-        if (warnings != null && warnings.length > 0) {
+        List<Throwable> warnings = queryResult.getWarnings();
+        if (warnings != null && warnings.size() > 0) {
             for (Throwable warning : warnings) {
                 if (warning instanceof SQLException) {
                     String sqlState = ((SQLException) warning).getSQLState();

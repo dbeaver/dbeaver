@@ -1,0 +1,17 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: %Bundle-Name
+Bundle-SymbolicName: org.jkiss.dbeaver.debug.core;singleton:=true
+Bundle-Version: 1.0.2
+Bundle-Vendor: %Bundle-Vendor
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.debug.core;visibility:=reexport,
+ org.jkiss.dbeaver.model;visibility:=reexport,
+ org.jkiss.dbeaver.core
+Export-Package: org.jkiss.dbeaver.debug,
+ org.jkiss.dbeaver.debug.core,
+ org.jkiss.dbeaver.debug.core.breakpoints,
+ org.jkiss.dbeaver.debug.core.model
+Bundle-Activator: org.jkiss.dbeaver.debug.internal.core.DebugCoreActivator
+Bundle-ActivationPolicy: lazy

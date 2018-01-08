@@ -28,6 +28,9 @@ import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
@@ -362,6 +365,11 @@ public class BasicSQLDialect implements SQLDialect {
     }
 
     @Override
+    public boolean supportsTableDropCascade() {
+        return false;
+    }
+
+    @Override
     public boolean supportsCommentQuery() {
         return false;
     }
@@ -521,4 +529,42 @@ public class BasicSQLDialect implements SQLDialect {
         return null;
     }
 
+    /**
+     * @param inParameters empty list to collect IN parameters
+     */
+    protected int getMaxParameterLength(Collection<? extends DBSProcedureParameter> parameters, List<DBSProcedureParameter> inParameters) {
+        int maxParamLength = 0;
+        for (DBSProcedureParameter param : parameters) {
+            if (param.getParameterKind() == DBSProcedureParameterKind.IN) {
+                inParameters.add(param);
+                if (param.getName().length() > maxParamLength) {
+                    maxParamLength = param.getName().length();
+                }
+            }
+        }
+        return maxParamLength;
+    }
+
+    // first line of the call stored procedure SQL (to be overridden)
+    protected String getStoredProcedureCallInitialClause(DBSProcedure proc) {
+        return "select " + proc.getFullyQualifiedName(DBPEvaluationContext.DML) + "(\n";
+    }
+
+    @Override
+    public void generateStoredProcedureCall(StringBuilder sql, DBSProcedure proc, Collection<? extends DBSProcedureParameter> parameters) {
+        List<DBSProcedureParameter> inParameters = new ArrayList<>();
+        getMaxParameterLength(parameters, inParameters);
+        sql.append(getStoredProcedureCallInitialClause(proc));
+        for (int i = 0; i < inParameters.size(); i++) {
+            sql.append("\t\t\t?");
+            if (i < (inParameters.size() - 1)) {
+                sql.append(",");
+            } else {
+                sql.append(" ");
+            }
+            String typeName = inParameters.get(i).getParameterType().getFullTypeName();
+            sql.append("\t-- put the " + inParameters.get(i).getName() + " parameter value instead of '?' (" + typeName + ")\n");
+        }
+        sql.append(");\n\n");
+    }
 }

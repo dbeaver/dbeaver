@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.mssql;
 
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 
 /**
  * SQLServerUtils
@@ -27,4 +28,11 @@ public class SQLServerUtils {
     private static final Log log = Log.getLog(SQLServerUtils.class);
 
 
+    public static boolean isDriverSqlServer(DBPDriver driver) {
+        return driver.getSampleURL().contains(":sqlserver");
+    }
+
+    public static boolean isDriverJtds(DBPDriver driver) {
+        return driver.getSampleURL().startsWith("jdbc:jtds");
+    }
 }

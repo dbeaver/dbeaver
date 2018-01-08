@@ -122,8 +122,8 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
             {
                 TreeViewer viewer = tree.getViewer();
                 IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
-                if (selection.size() == 1) {
-                    Object node = selection.getFirstElement();
+                for (Object node : selection.toArray()) {
+                    //Object node = selection.getFirstElement();
                     if ((node instanceof DBNResource && ((DBNResource) node).getResource() instanceof IFolder)) {
                         toggleNode(viewer, node);
                     } else if (node instanceof DBNDataSource) {

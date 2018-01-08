@@ -41,10 +41,15 @@ public class DataTransferWizard extends Wizard implements IExportWizard {
     private static final String RS_EXPORT_WIZARD_DIALOG_SETTINGS = "DataTransfer";//$NON-NLS-1$
 
     private DataTransferSettings settings;
+    private IStructuredSelection currentSelection;
 
     public DataTransferWizard(@Nullable IDataTransferProducer[] producers, @Nullable IDataTransferConsumer[] consumers) {
         this.settings = new DataTransferSettings(producers, consumers);
         loadSettings();
+    }
+
+    public IStructuredSelection getCurrentSelection() {
+        return currentSelection;
     }
 
     private void loadSettings()
@@ -79,6 +84,7 @@ public class DataTransferWizard extends Wizard implements IExportWizard {
     public void init(IWorkbench workbench, IStructuredSelection currentSelection) {
         setWindowTitle(CoreMessages.data_transfer_wizard_name);
         setNeedsProgressMonitor(true);
+        this.currentSelection = currentSelection;
     }
 
     @Nullable

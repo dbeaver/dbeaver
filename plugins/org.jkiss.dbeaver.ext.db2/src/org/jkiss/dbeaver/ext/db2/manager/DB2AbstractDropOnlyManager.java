@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.db2.manager;
 
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.DBPSaveableObject;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -37,7 +38,7 @@ public abstract class DB2AbstractDropOnlyManager<OBJECT_TYPE extends DBSObject &
     extends SQLObjectEditor<OBJECT_TYPE, CONTAINER_TYPE> {
 
     @Override
-    public long getMakerOptions()
+    public long getMakerOptions(DBPDataSource dataSource)
     {
         return 0;
     }

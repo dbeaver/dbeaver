@@ -26,6 +26,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
@@ -53,7 +54,7 @@ public class DB2SchemaManager extends SQLObjectEditor<DB2Schema, DB2DataSource> 
     private static final String SQL_DROP_SCHEMA = "DROP SCHEMA %s RESTRICT";
 
     @Override
-    public long getMakerOptions()
+    public long getMakerOptions(DBPDataSource dataSource)
     {
         return FEATURE_SAVE_IMMEDIATELY;
     }

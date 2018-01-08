@@ -17,7 +17,7 @@
             icon="icons/vertica_icon.png">
 
             <tree path="vertica" label="Vertica data source">
-                <folder type="org.jkiss.dbeaver.ext.vertica.model.VerticaSchema" label="%tree.schemas.node.name" icon="#folder_database" description="Schemas">
+                <folder type="org.jkiss.dbeaver.ext.vertica.model.VerticaSchema" label="%tree.schemas.node.name" icon="#folder_schema" description="Schemas">
                     <items label="#schema" path="schema" property="schemas" icon="#schema" optional="true">
                         <icon if="object.system" icon="#schema_system"/>
                         <folder type="org.jkiss.dbeaver.ext.vertica.model.VerticaTable" label="%tree.tables.node.name" icon="#folder_table" description="Tables">

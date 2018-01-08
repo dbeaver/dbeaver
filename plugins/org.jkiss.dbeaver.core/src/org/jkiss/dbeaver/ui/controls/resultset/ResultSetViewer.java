@@ -1678,15 +1678,11 @@ public class ResultSetViewer extends Viewer
             // Filters and View
             manager.add(new Separator());
             {
-                String filtersShortcut = ActionUtils.findCommandDescription(ResultSetCommandHandler.CMD_FILTER_MENU, getSite(), true);
-                String menuName = CoreMessages.controls_resultset_viewer_action_order_filter;
-                if (!CommonUtils.isEmpty(filtersShortcut)) {
-                    menuName += " (" + filtersShortcut + ")";
-                }
                 MenuManager filtersMenu = new MenuManager(
-                    menuName,
+                    CoreMessages.controls_resultset_viewer_action_order_filter,
                     DBeaverIcons.getImageDescriptor(UIIcon.FILTER),
                     "filters"); //$NON-NLS-1$
+                filtersMenu.setActionDefinitionId(ResultSetCommandHandler.CMD_FILTER_MENU);
                 filtersMenu.setRemoveAllWhenShown(true);
                 filtersMenu.addMenuListener(manager1 -> fillFiltersMenu(attr, manager1));
                 manager.add(filtersMenu);
@@ -1820,9 +1816,10 @@ public class ResultSetViewer extends Viewer
         if (singleSource == null) {
             return null;
         }
-        String menuName = ActionUtils.findCommandDescription(ResultSetCommandHandler.CMD_REFERENCES_MENU, getSite(), false);
+        String menuName = ActionUtils.findCommandName(ResultSetCommandHandler.CMD_REFERENCES_MENU);
 
         MenuManager refTablesMenu = new MenuManager(menuName, null, "ref-tables");
+        refTablesMenu.setActionDefinitionId(ResultSetCommandHandler.CMD_REFERENCES_MENU);
         refTablesMenu.add(NOREFS_ACTION);
         refTablesMenu.addMenuListener(manager -> fillRefTablesActions(row, singleSource, manager));
 
@@ -2061,7 +2058,10 @@ public class ResultSetViewer extends Viewer
             }
         }
         filtersMenu.add(new Separator());
+        filtersMenu.add(new OrderByAttributeAction(attribute, true));
+        filtersMenu.add(new OrderByAttributeAction(attribute, false));
         filtersMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGGLE_ORDER));
+        filtersMenu.add(new Separator());
         filtersMenu.add(new ToggleServerSideOrderingAction());
         filtersMenu.add(new ShowFiltersAction(true));
     }
@@ -2168,12 +2168,15 @@ public class ResultSetViewer extends Viewer
                     "] columns differs from referenced constraint [" + refConstraint.getName() + "] (" + ownAttrs.size() + "<>" + refAttrs.size() + ")");
         }
         // Add association constraints
-        for (DBSEntityAttributeRef ownAttr : ownAttrs) {
+        for (int i = 0; i < refAttrs.size(); i++) {
+            DBSEntityAttributeRef refAttr = refAttrs.get(i);
 
-            DBDAttributeBinding attrBinding = model.getAttributeBinding(ownAttr.getAttribute());
+            DBDAttributeBinding attrBinding = model.getAttributeBinding(refAttr.getAttribute());
             if (attrBinding == null) {
-                log.error("Can't find attribute binding for ref attribute '" + ownAttr.getAttribute().getName() + "'");
+                log.error("Can't find attribute binding for ref attribute '" + refAttr.getAttribute().getName() + "'");
             } else {
+                // Constrain use corresponding own attr
+                DBSEntityAttributeRef ownAttr = ownAttrs.get(i);
                 DBDAttributeConstraint constraint = new DBDAttributeConstraint(ownAttr.getAttribute(), visualPosition++);
                 constraint.setVisible(true);
                 constraints.add(constraint);
@@ -3420,6 +3423,23 @@ public class ResultSetViewer extends Viewer
                 constraint.setCriteria(null);
                 setDataFilter(dataFilter, true);
             }
+        }
+    }
+
+    private class OrderByAttributeAction extends Action {
+        private final DBDAttributeBinding attribute;
+        private final boolean ascending;
+
+        public OrderByAttributeAction(DBDAttributeBinding attribute, boolean ascending) {
+            super("Order by " + attribute.getName() + " " + (ascending ? "ASC" : "DESC"));
+            this.attribute = attribute;
+            this.ascending = ascending;
+        }
+
+        @Override
+        public void run()
+        {
+            toggleSortOrder(attribute, ascending, !ascending);
         }
     }
 

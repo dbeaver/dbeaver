@@ -75,7 +75,7 @@
                                         <items label="%tree.partitions.node.name" path="partition" property="partitions" icon="#partition" virtual="true" recursive="../..">
                                         </items>
                                     </folder>
-                                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase" label="%tree.tablechildren.node.name" icon="#folder_table" description="Table children" virtual="true">
+                                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableReal" label="%tree.tablechildren.node.name" icon="#folder_table" description="Table children" virtual="true">
                                         <items label="%tree.tablechildren.node.name" path="subTables" property="subTables" icon="#table" virtual="true" recursive="../.." >
                                         </items>
                                     </folder>
@@ -253,6 +253,7 @@
             <type name="JSONB"/>
             <type name="BIT"/>
             <type name="REFCURSOR"/>
+            <type name="MONEY"/>
         </provider>
     </extension>
 
@@ -290,6 +291,9 @@
         <manager
             class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreProcedureManager"
             objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure"/>
+        <manager
+            class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreRoleManager"
+            objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreRole"/>
 
         <editor id="postgresql.role.permissions" class="org.jkiss.dbeaver.ext.postgresql.ui.editors.PostgresRolePrivilegesEditor"
                 label="%db.editor.role.permission.name" description="%db.editor.role.permission.description" icon="#permissions" position="additions_middle" type="folder">
@@ -314,6 +318,7 @@
                 contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="folder">
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTable"/>
         </editor>
+
     </extension>
 
     <extension point="org.eclipse.ui.editors">
@@ -333,6 +338,9 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataManager">
+        <manager class="org.jkiss.dbeaver.ui.data.managers.StringValueManager" id="org.jkiss.dbeaver.ext.postgresql.edit.PostgreMoneyValueManager">
+            <supports dataSource="postgresql" typeName="money"/>
+        </manager>
         <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreEnumValueManager" id="org.jkiss.dbeaver.ext.postgresql.edit.PostgreEnumValueManager">
             <supports dataSource="postgresql" extension="E"/>
         </manager>
