@@ -44,6 +44,9 @@ public class DebugCore {
     public static final String BREAKPOINT_DATABASE = BUNDLE_SYMBOLIC_NAME + '.' + "databaseBreakpointMarker"; //$NON-NLS-1$
     public static final String BREAKPOINT_DATABASE_LINE = BUNDLE_SYMBOLIC_NAME + '.' + "databaseLineBreakpointMarker"; //$NON-NLS-1$
 
+    public static final String ATTR_DRIVER = BUNDLE_SYMBOLIC_NAME + '.' + "ATTR_DRIVER"; //$NON-NLS-1$
+    public static final String ATTR_DRIVER_DEFAULT = ""; //$NON-NLS-1$
+
     public static final String ATTR_DATASOURCE = BUNDLE_SYMBOLIC_NAME + '.' + "ATTR_DATASOURCE"; //$NON-NLS-1$
     public static final String ATTR_DATASOURCE_DEFAULT = ""; //$NON-NLS-1$
 
@@ -93,6 +96,10 @@ public class DebugCore {
             }
         }
         return extracted;
+    }
+
+    public static String extractDriverId(ILaunchConfiguration configuration) {
+        return extractStringAttribute(configuration, ATTR_DRIVER, ATTR_DRIVER_DEFAULT);
     }
 
     public static String extractDatasourceId(ILaunchConfiguration configuration) {
