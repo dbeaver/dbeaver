@@ -54,6 +54,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
 
     private Spinner textMaxColumnSize;
     private ValueFormatSelector textValueFormat;
+    private Button showNulls;
     private Button textDelimiterLeading;
     private Button textDelimiterTrailing;
 
@@ -80,6 +81,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
             store.contains(DBeaverPreferences.RESULT_SET_ROW_BATCH_SIZE) ||
             store.contains(DBeaverPreferences.RESULT_TEXT_MAX_COLUMN_SIZE) ||
             store.contains(DBeaverPreferences.RESULT_TEXT_VALUE_FORMAT) ||
+            store.contains(DBeaverPreferences.RESULT_TEXT_SHOW_NULLS) ||
             store.contains(DBeaverPreferences.RESULT_TEXT_DELIMITER_LEADING) ||
             store.contains(DBeaverPreferences.RESULT_TEXT_DELIMITER_TRAILING)
             ;
@@ -125,6 +127,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
 
             textMaxColumnSize = UIUtils.createLabelSpinner(uiGroup, CoreMessages.pref_page_database_resultsets_label_maximum_column_length, 0, 10, Integer.MAX_VALUE);
             textValueFormat = new ValueFormatSelector(uiGroup);
+            showNulls = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_text_show_nulls, null, false, 2);
             textDelimiterLeading = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_text_delimiter_leading, null, false, 2);
             textDelimiterTrailing = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_text_delimiter_trailing, null, false, 2);
         }
@@ -152,6 +155,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
 
             textMaxColumnSize.setSelection(store.getInt(DBeaverPreferences.RESULT_TEXT_MAX_COLUMN_SIZE));
             textValueFormat.select(DBDDisplayFormat.safeValueOf(store.getString(DBeaverPreferences.RESULT_TEXT_VALUE_FORMAT)));
+            showNulls.setSelection(store.getBoolean(DBeaverPreferences.RESULT_TEXT_SHOW_NULLS));
             textDelimiterLeading.setSelection(store.getBoolean(DBeaverPreferences.RESULT_TEXT_DELIMITER_LEADING));
             textDelimiterTrailing.setSelection(store.getBoolean(DBeaverPreferences.RESULT_TEXT_DELIMITER_TRAILING));
         } catch (Exception e) {
@@ -176,6 +180,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
             store.setValue(DBeaverPreferences.RESULT_SET_SHOW_CONNECTION_NAME, showConnectionName.getSelection());
             store.setValue(DBeaverPreferences.RESULT_TEXT_MAX_COLUMN_SIZE, textMaxColumnSize.getSelection());
             store.setValue(DBeaverPreferences.RESULT_TEXT_VALUE_FORMAT, textValueFormat.getSelection().name());
+            store.setValue(DBeaverPreferences.RESULT_TEXT_SHOW_NULLS, showNulls.getSelection());
             store.setValue(DBeaverPreferences.RESULT_TEXT_DELIMITER_LEADING, textDelimiterLeading.getSelection());
             store.setValue(DBeaverPreferences.RESULT_TEXT_DELIMITER_TRAILING, textDelimiterLeading.getSelection());
         } catch (Exception e) {
@@ -201,6 +206,7 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
         store.setToDefault(DBeaverPreferences.RESULT_SET_SHOW_CONNECTION_NAME);
         store.setToDefault(DBeaverPreferences.RESULT_TEXT_MAX_COLUMN_SIZE);
         store.setToDefault(DBeaverPreferences.RESULT_TEXT_VALUE_FORMAT);
+        store.setToDefault(DBeaverPreferences.RESULT_TEXT_SHOW_NULLS);
         store.setToDefault(DBeaverPreferences.RESULT_TEXT_DELIMITER_LEADING);
         store.setToDefault(DBeaverPreferences.RESULT_TEXT_DELIMITER_TRAILING);
     }

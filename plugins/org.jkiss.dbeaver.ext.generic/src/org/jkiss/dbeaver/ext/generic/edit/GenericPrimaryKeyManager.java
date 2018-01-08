@@ -51,7 +51,7 @@ public class GenericPrimaryKeyManager extends SQLConstraintManager<GenericPrimar
                 EditConstraintPage editPage = new EditConstraintPage(
                     "Create constraint",
                     parent,
-                    new DBSEntityConstraintType[] {DBSEntityConstraintType.PRIMARY_KEY} );
+                    new DBSEntityConstraintType[] {DBSEntityConstraintType.PRIMARY_KEY, DBSEntityConstraintType.UNIQUE_KEY} );
                 if (!editPage.edit()) {
                     return null;
                 }

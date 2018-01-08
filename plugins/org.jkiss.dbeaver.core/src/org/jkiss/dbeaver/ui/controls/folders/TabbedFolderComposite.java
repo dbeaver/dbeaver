@@ -302,12 +302,15 @@ public class TabbedFolderComposite extends Composite implements ITabbedFolderCon
             GridData gd = (GridData) folderPane.folderList.getLayoutData();
             // Try to get height info from first folder tab state
             final TabbedFolderState.TabState tabState = folderState.getTabState(folderPane.folders[0].getId(), true);
+/*
             if (tabState.height > 0) {
                 // Set height for all tabs but last
                 gd.heightHint = tabState.height;
             }
+*/
             gd.widthHint = maxWidth;
             gd.minimumHeight = folderPane.folderList.getTabHeight();
+/*
             folderPane.folderList.addControlListener(new ControlAdapter() {
                 @Override
                 public void controlResized(ControlEvent e) {
@@ -316,6 +319,7 @@ public class TabbedFolderComposite extends Composite implements ITabbedFolderCon
                     TabbedFoldersRegistry.getInstance().saveConfig();
                 }
             });
+*/
         }
 
         // Re-layout

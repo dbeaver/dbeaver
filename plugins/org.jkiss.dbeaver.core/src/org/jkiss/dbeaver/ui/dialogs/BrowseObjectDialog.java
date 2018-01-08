@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
+import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTreeFilter;
 import org.jkiss.dbeaver.ui.navigator.database.load.TreeLoadNode;
 
 import java.util.ArrayList;
@@ -84,13 +85,14 @@ public class BrowseObjectDialog extends Dialog {
         GridData gd = new GridData(GridData.FILL_BOTH);
         group.setLayoutData(gd);
 
-        navigatorTree = new DatabaseNavigatorTree(group, rootNode, (singleSelection ? SWT.SINGLE : SWT.MULTI) | SWT.BORDER);
+        navigatorTree = new DatabaseNavigatorTree(group, rootNode, (singleSelection ? SWT.SINGLE : SWT.MULTI) | SWT.BORDER, false, new DatabaseNavigatorTreeFilter());
         gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 500;
         gd.heightHint = 500;
         navigatorTree.setLayoutData(gd);
 
-        navigatorTree.getViewer().addFilter(new ViewerFilter() {
+        final TreeViewer treeViewer = navigatorTree.getViewer();
+        treeViewer.addFilter(new ViewerFilter() {
             @Override
             public boolean select(Viewer viewer, Object parentElement, Object element)
             {
@@ -114,27 +116,29 @@ public class BrowseObjectDialog extends Dialog {
             }
         });
         if (selectedNode != null) {
-            navigatorTree.getViewer().setSelection(new StructuredSelection(selectedNode));
+            treeViewer.setSelection(new StructuredSelection(selectedNode));
             selectedObjects.add(selectedNode);
         }
-        navigatorTree.getViewer().addSelectionChangedListener(new ISelectionChangedListener() {
-            @Override
-            public void selectionChanged(SelectionChangedEvent event)
-            {
-                selectedObjects.clear();
-                IStructuredSelection selection = (IStructuredSelection) navigatorTree.getViewer().getSelection();
-                for (Iterator iter = selection.iterator(); iter.hasNext(); ) {
-                    DBNNode node = (DBNNode) iter.next();
-                    if (node instanceof DBSWrapper) {
-                        DBSObject object = DBUtils.getAdapter(DBSObject.class, ((DBSWrapper) node).getObject());
-                        if (object != null && matchesType(object.getClass(), true)) {
-                            selectedObjects.add(node);
+        treeViewer.addSelectionChangedListener(event -> {
+            selectedObjects.clear();
+            IStructuredSelection selection = (IStructuredSelection) treeViewer.getSelection();
+            for (Iterator iter = selection.iterator(); iter.hasNext(); ) {
+                DBNNode node = (DBNNode) iter.next();
+                if (node instanceof DBSWrapper) {
+                    DBSObject object = DBUtils.getAdapter(DBSObject.class, ((DBSWrapper) node).getObject());
+                    if (object != null) {
+                        if (!matchesType(object.getClass(), true)) {
+                            selectedObjects.clear();
+                            break;
                         }
+                        selectedObjects.add(node);
                     }
                 }
-                getButton(IDialogConstants.OK_ID).setEnabled(!selectedObjects.isEmpty());
             }
+            getButton(IDialogConstants.OK_ID).setEnabled(!selectedObjects.isEmpty());
         });
+        treeViewer.addDoubleClickListener(event -> okPressed());
+        treeViewer.getTree().setFocus();
 
         return group;
     }
@@ -186,6 +190,16 @@ public class BrowseObjectDialog extends Dialog {
         if (scDialog.open() == IDialogConstants.OK_ID) {
             List<DBNNode> result = scDialog.getSelectedObjects();
             return result.isEmpty() ? null : result.get(0);
+        } else {
+            return null;
+        }
+    }
+
+    public static List<DBNNode> selectObjects(Shell parentShell, String title, DBNNode rootNode, DBNNode selectedNode, Class<?>[] allowedTypes, Class<?>[] resultTypes)
+    {
+        BrowseObjectDialog scDialog = new BrowseObjectDialog(parentShell, title, rootNode, selectedNode, false, allowedTypes, resultTypes);
+        if (scDialog.open() == IDialogConstants.OK_ID) {
+            return scDialog.getSelectedObjects();
         } else {
             return null;
         }

@@ -23,6 +23,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
@@ -35,6 +36,8 @@ import org.jkiss.dbeaver.runtime.TasksJob;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.Map;
 
 public class NavigatorHandlerObjectRename extends NavigatorHandlerObjectBase {
 
@@ -110,11 +113,12 @@ public class NavigatorHandlerObjectRename extends NavigatorHandlerObjectBase {
 
                         objectRenamer.renameObject(commandTarget.getContext(), object, newName);
                         if (object.isPersisted() && commandTarget.getEditor() == null) {
-                            if (!showScript(workbenchWindow, commandTarget.getContext(), "Rename script")) {
+                            Map<String, Object> options = DBPScriptObject.EMPTY_OPTIONS;
+                            if (!showScript(workbenchWindow, commandTarget.getContext(), options, "Rename script")) {
                                 commandTarget.getContext().resetChanges();
                                 return false;
                             } else {
-                                ObjectSaver renamer = new ObjectSaver(commandTarget.getContext());
+                                ObjectSaver renamer = new ObjectSaver(commandTarget.getContext(), options);
                                 TasksJob.runTask("Rename object '" + object.getName() + "'", renamer);
                             }
                         } else {

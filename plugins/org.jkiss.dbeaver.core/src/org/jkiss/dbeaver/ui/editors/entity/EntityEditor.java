@@ -241,6 +241,12 @@ public class EntityEditor extends MultiPageDatabaseEditor
             previewResult = showChanges(true);
         }
 
+        if (previewResult == IDialogConstants.IGNORE_ID) {
+            // There are no changes to save
+            // Let's just refresh dirty status
+            firePropertyChange(IEditorPart.PROP_DIRTY);
+            return;
+        }
         if (previewResult != IDialogConstants.PROCEED_ID) {
             monitor.setCanceled(true);
             return;
@@ -272,7 +278,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         }
     }
 
-    private boolean saveCommandContext(final DBRProgressMonitor monitor)
+    private boolean saveCommandContext(final DBRProgressMonitor monitor, Map<String, Object> options)
     {
         monitor.beginTask("Save entity", 1);
         Throwable error = null;
@@ -282,7 +288,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
             return true;
         }
         try {
-            commandContext.saveChanges(monitor);
+            commandContext.saveChanges(monitor, options);
         } catch (DBException e) {
             error = e;
         }
@@ -394,6 +400,9 @@ public class EntityEditor extends MultiPageDatabaseEditor
             return IDialogConstants.CANCEL_ID;
         }
         Collection<? extends DBECommand> commands = commandContext.getFinalCommands();
+        if (CommonUtils.isEmpty(commands)) {
+            return IDialogConstants.IGNORE_ID;
+        }
         StringBuilder script = new StringBuilder();
         for (DBECommand command : commands) {
             try {
@@ -751,6 +760,11 @@ public class EntityEditor extends MultiPageDatabaseEditor
         if (adapter == IPropertySheetPage.class) {
             return adapter.cast(new PropertyPageStandard());
         }
+        if (adapter == DBSObject.class) {
+            IDatabaseEditorInput editorInput = getEditorInput();
+            DBSObject databaseObject = editorInput.getDatabaseObject();
+            return adapter.cast(databaseObject);
+        }
         return super.getAdapter(adapter);
     }
 
@@ -911,7 +925,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
             try {
                 final DBECommandContext commandContext = getCommandContext();
                 if (commandContext != null && commandContext.isDirty()) {
-                    success = saveCommandContext(monitor);
+                    success = saveCommandContext(monitor, DBPScriptObject.EMPTY_OPTIONS);
                 } else {
                     success = true;
                 }

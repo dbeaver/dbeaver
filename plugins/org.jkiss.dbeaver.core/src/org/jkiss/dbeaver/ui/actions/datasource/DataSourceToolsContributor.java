@@ -55,10 +55,7 @@ public class DataSourceToolsContributor extends DataSourceMenuContributor
             return;
         }
         ISelection selection = selectionProvider.getSelection();
-        if (!(selection instanceof IStructuredSelection)) {
-            return;
-        }
-        DBSObject selectedObject = NavigatorUtils.getSelectedObject((IStructuredSelection) selection);
+        DBSObject selectedObject = NavigatorUtils.getSelectedObject(selection);
 
         if (selectedObject != null) {
             List<ToolDescriptor> tools = ToolsRegistry.getInstance().getTools((IStructuredSelection) selection);

@@ -1,7 +1,7 @@
 Development process
 =================================
 
-DBeaver CE sources can be checked out from https://github.com/serge-rider/dbeaver
+DBeaver CE sources can be checked out from https://github.com/dbeaver/dbeaver
 There are a few other repositories (EE version, product installer, tools, DBeaver web site) which are not public.
 These repositories are not required to build or work in CE version.
 
@@ -15,8 +15,9 @@ Pull requests should always be based on devel.
 Other public branches could be created for some particular needs.
 
 Notes:
-	serge-rider/dbeaver GitHub repository was initially imported from dbeaver SVN repository.
-	As a result there are a few inconsistencies in commits history.
+	/dbeaver/dbeaver GitHub repository was migrated from /serge-rider/dbeaver GitHub repository.
+	Which was initially imported from dbeaver SVN repository on jkiss.org site.
+	As a result there were a few inconsistencies in commits history.
 	Commit owners wasn't properly migrated so you will see unrecognized users in old commits.
 
 	User "jurgen" = "serge-rider" AKA Serge Rider

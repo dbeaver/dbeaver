@@ -45,6 +45,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -240,6 +242,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
     private void printGrid(boolean append) {
         DBPPreferenceStore prefs = getController().getPreferenceStore();
         int maxColumnSize = prefs.getInt(DBeaverPreferences.RESULT_TEXT_MAX_COLUMN_SIZE);
+        boolean showNulls = prefs.getBoolean(DBeaverPreferences.RESULT_TEXT_SHOW_NULLS);
         boolean delimLeading = prefs.getBoolean(DBeaverPreferences.RESULT_TEXT_DELIMITER_LEADING);
         boolean delimTrailing = prefs.getBoolean(DBeaverPreferences.RESULT_TEXT_DELIMITER_TRAILING);
         DBDDisplayFormat displayFormat = DBDDisplayFormat.safeValueOf(prefs.getString(DBeaverPreferences.RESULT_TEXT_VALUE_FORMAT));
@@ -311,6 +314,8 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
                 String displayString = getCellString(model, attr, row, displayFormat);
                 if (displayString.length() >= colWidths[k] - 1) {
                     displayString = CommonUtils.truncateString(displayString, colWidths[k] - 1);
+                } else if (showNulls && displayString.isEmpty() && DBUtils.isNullValue(model.getCellValue(attr, row))) {
+                    displayString = DBConstants.NULL_VALUE_LABEL;
                 }
                 grid.append(displayString);
                 for (int j = colWidths[k] - displayString.length(); j > 0; j--) {

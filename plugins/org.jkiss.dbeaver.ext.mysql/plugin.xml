@@ -30,7 +30,7 @@
                   icon="icons/mysql_icon.png"
                   label="MySQL data source"
                   path="mysql">
-                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog" label="%tree.databases.node.name" icon="#folder_database" description="Server databases">
+                <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog" label="%tree.databases.node.name" icon="#folder_schema" description="Server databases">
                     <items label="%tree.database.node.name" path="database" property="catalogs" icon="#database">
                         <folder type="org.jkiss.dbeaver.ext.mysql.model.MySQLTable" label="%tree.tables.node.name" icon="#folder_table" description="Tables">
                             <items label="%tree.table.node.name" path="table" property="tables" icon="#table">
@@ -150,6 +150,7 @@
                     <file type="license" path="drivers/mysql/LICENSE.txt" bundle="drivers.mysql"/>
                     <file type="jar" path="drivers/mysql/mysql-connector-java.jar" bundle="drivers.mysql"/>
                     <property name="connectTimeout" value="20000"/>
+                    <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                 </driver>
                 <driver
                     id="mariaDB"
@@ -161,6 +162,7 @@
                     webURL="https://mariadb.com/kb/en/mariadb/about-mariadb-connector-j/"
                     description="MySQL standard driver">
                     <file type="jar" path="maven:/org.mariadb.jdbc:mariadb-java-client:RELEASE[1.5.5]" bundle="!drivers.mariadb"/>
+                    <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                 </driver>
             </drivers>
             <views>

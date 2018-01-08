@@ -9,6 +9,6 @@
     <relativePath>../../</relativePath>
   </parent>
   <artifactId>org.jkiss.dbeaver.ext.teradata</artifactId>
-  <version>1.0.39</version>
+  <version>1.0.41</version>
   <packaging>eclipse-plugin</packaging>
 </project>

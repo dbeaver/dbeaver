@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.postgresql;singleton:=true
-Bundle-Version: 2.1.44
-Bundle-Release-Date: 20171208
+Bundle-Version: 2.1.46
+Bundle-Release-Date: 20180108
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.ui.views,
@@ -21,4 +21,6 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Vendor: %Bundle-Vendor
 Bundle-ClassPath: .
 Bundle-Activator: org.jkiss.dbeaver.ext.postgresql.PostgreActivator
+Export-Package: org.jkiss.dbeaver.ext.postgresql,
+ org.jkiss.dbeaver.ext.postgresql.model
 

@@ -98,6 +98,9 @@
                         <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTrigger" label="%tree.triggers.node.name" icon="#triggers" description="Global triggers" visibleIf="object.dataSource.metaModel.supportsDatabaseTriggers(object.dataSource)">
                             <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger"/>
                         </folder>
+                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTrigger" label="%tree.tableTriggers.node.name" icon="#triggers" description="All table triggers" visibleIf="object.dataSource.metaModel.supportsTriggers(object.dataSource)">
+                            <items label="%tree.trigger.node.name" path="trigger" property="tableTriggers" icon="#trigger"/>
+                        </folder>
                         <folder type="org.jkiss.dbeaver.model.struct.DBSDataType" label="%tree.dataTypes.node.name" icon="#data_types" description="Global data types">
                             <items label="%tree.dataType.node.name" path="dataType" property="dataTypes" icon="#data_type"/>
                         </folder>
@@ -321,28 +324,7 @@
                     defaultPort="1433"
                     webURL="http://jtds.sourceforge.net/"
                     description="jTDS SQL Server driver">
-
-                    <property name="loginTimeout" value="20"/>
-
-                    <parameter name="query-get-active-db" value="select db_name()"/>
-                    <parameter name="query-set-active-db" value="use [?]"/>
-                    <parameter name="script-delimiter" value="go"/>
-                    <parameter name="supports-scroll" value="true"/>
-                    <parameter name="supports-multiple-results" value="true"/>
-
-                    <parameter name="native-format-timestamp" value="'{ts '''yyyy-MM-dd HH:mm:ss.fff'''}'"/>
-                    <parameter name="native-format-time" value="''HH:mm:ss.SSS''"/>
-
-                    <parameter name="script-delimiter-after-query" value="true"/>
-
-                    <file type="jar" path="maven:/net.sourceforge.jtds:jtds:RELEASE" bundle="!drivers.jtds"/>
-                    <file type="lib" os="win32" arch="x86" path="repo:/drivers/jtds/SSO/x86/ntlmauth.dll" bundle="!drivers.jtds"/>
-                    <file type="lib" os="win32" arch="x86_64" path="repo:/drivers/jtds/SSO/x64/ntlmauth.dll" bundle="!drivers.jtds"/>
-
-                    <file type="license" path="drivers/jtds/LICENSE.txt" bundle="drivers.jtds"/>
-                    <file type="jar" path="drivers/jtds/jtds.jar" bundle="drivers.jtds"/>
-                    <file type="lib" os="win32" arch="x86" path="drivers/jtds/SSO/x86/ntlmauth.dll" bundle="drivers.jtds"/>
-                    <file type="lib" os="win32" arch="x86_64" path="drivers/jtds/SSO/x64/ntlmauth.dll" bundle="drivers.jtds"/>
+                    <!-- Replaced by SQL Server extension. We keep it for backward compatibility (driver id reference).  -->
                 </driver>
 
                 <driver
@@ -355,36 +337,7 @@
                     defaultPort="1433"
                     webURL="http://msdn.microsoft.com/en-us/sqlserver/aa937724"
                     description="Microsoft JDBC Driver for SQL Server ">
-                    <parameter name="query-get-active-db" value="select db_name()"/>
-                    <parameter name="query-set-active-db" value="use [?]"/>
-                    <parameter name="script-delimiter" value="go"/>
-                    <parameter name="supports-multiple-results" value="true"/>
-
-                    <parameter name="native-format-timestamp" value="'{ts '''yyyy-MM-dd HH:mm:ss.fff'''}'"/>
-                    <parameter name="native-format-time" value="''HH:mm:ss.SSS''"/>
-                    <parameter name="script-delimiter-after-query" value="true"/>
-
-<!--
-                    <fileSource url="http://www.microsoft.com/en-us/download/details.aspx?displaylang=en&amp;id=11774"
-                                name="Microsoft JDBC Drivers"
-                                instruction=".">
-                        <file name="sqljdbc41.jar" description="JDBC driver"/>
-                    </fileSource>
--->
-
-                    <file type="jar" path="repo:/drivers/mssql/sqljdbc4.jar" bundle="!drivers.mssql"/>
-                    <file type="lib" os="win32" arch="x86" path="repo:/drivers/mssql/auth/x86/sqljdbc_auth.dll" bundle="!drivers.mssql"/>
-                    <file type="lib" os="win32" arch="x86_64" path="repo:/drivers/mssql/auth/x64/sqljdbc_auth.dll" bundle="!drivers.mssql"/>
-                    <file type="lib" os="win32" arch="x86" path="repo:/drivers/mssql/xa/x86/sqljdbc_xa.dll" bundle="!drivers.mssql"/>
-                    <file type="lib" os="win32" arch="x86_64" path="repo:/drivers/mssql/xa/x64/sqljdbc_xa.dll" bundle="!drivers.mssql"/>
-                    <file type="license" path="repo:/drivers/mssql/LICENSE.txt" bundle="!drivers.mssql"/>
-
-                    <file type="jar" path="drivers/mssql/sqljdbc4.jar" bundle="drivers.mssql"/>
-                    <file type="lib" os="win32" arch="x86" path="drivers/mssql/auth/x86/sqljdbc_auth.dll" bundle="drivers.mssql"/>
-                    <file type="lib" os="win32" arch="x86_64" path="drivers/mssql/auth/x64/sqljdbc_auth.dll" bundle="drivers.mssql"/>
-                    <file type="lib" os="win32" arch="x86" path="drivers/mssql/xa/x86/sqljdbc_xa.dll" bundle="drivers.mssql"/>
-                    <file type="lib" os="win32" arch="x86_64" path="drivers/mssql/xa/x64/sqljdbc_xa.dll" bundle="drivers.mssql"/>
-                    <file type="license" path="drivers/mssql/LICENSE.txt" bundle="drivers.mssql"/>
+                    <!-- Replaced by SQL Server extension. We keep it for backward compatibility (driver id reference).  -->
                 </driver>
 
                 <driver
@@ -396,26 +349,14 @@
                     defaultPort="5000"
                     webURL="http://jtds.sourceforge.net/"
                     description="Sybase jTDS driver">
-
-                    <property name="loginTimeout" value="20"/>
-
-                    <!--parameter name="query-get-active-db">select db_name()</query>
-                    <parameter name="query-set-active-db">use ?</query-->
-                    <parameter name="script-delimiter" value="go"/>
-                    <parameter name="ddl-drop-column-short" value="true"/>
-                    <parameter name="supports-multiple-results" value="true"/>
-
-                    <parameter name="native-format-timestamp" value="'{ts '''yyyy-MM-dd HH:mm:ss.ffffff'''}'"/>
-                    <parameter name="native-format-time" value="''HH:mm:ss.SSS''"/>
-
-                    <file type="jar" path="maven:/net.sourceforge.jtds:jtds:RELEASE" bundle="!drivers.jtds"/>
-                    <file type="license" path="drivers/jtds/LICENSE.txt" bundle="drivers.jtds"/>
-                    <file type="jar" path="drivers/jtds/jtds.jar" bundle="drivers.jtds"/>
+                    <!-- Replaced by SQL Server extension. We keep it for backward compatibility (driver id reference).  -->
                 </driver>
+
                 <driver
                     id="sap_maxdb"
                     category="SAP"
                     label="MaxDB"
+                    icon="icons/sap_icon.png"
                     class="com.sap.dbtech.jdbc.DriverSapDB"
                     sampleURL="jdbc:sapdb://{host}[:{port}]/{database}"
                     defaultPort="7200"
@@ -635,8 +576,8 @@
                     sampleURL="jdbc:firebirdsql://{host}:{port}/{file}"
                     defaultPort="3050"
                     webURL=""
-                    description="Firebird JayBird driver">
-                    <file type="jar" path="maven:/org.firebirdsql.jdbc:jaybird-jdk17:RELEASE" bundle="!drivers.firebird"/>
+                    description="Firebird 2.x JayBird driver">
+                    <file type="jar" path="maven:/org.firebirdsql.jdbc:jaybird-jdk17:RELEASE[2.2.13]" bundle="!drivers.firebird"/>
 
                     <file type="license" path="drivers/firebird/LICENSE.txt" bundle="drivers.firebird"/>
                     <file type="jar" path="drivers/firebird/jaybird-full.jar" bundle="drivers.firebird"/>
@@ -644,6 +585,24 @@
                     <file type="lib" os="win32" arch="x86_64" path="drivers/firebird/jaybird_x64.dll" bundle="drivers.firebird"/>
                     <file type="lib" os="linux" arch="x86" path="drivers/firebird/libjaybird.so" bundle="drivers.firebird"/>
                     <file type="lib" os="linux" arch="x86_64" path="drivers/firebird/libjaybird_x64.so" bundle="drivers.firebird"/>
+
+                    <parameter name="supports-scroll" value="true"/>
+                    <parameter name="ddl-drop-column-short" value="true"/>
+                    <parameter name="script-delimiter-redefiner" value="SET TERM"/>
+                </driver>
+                <driver
+                    id="firebird_jaybird3"
+                    label="Firebird 3.x"
+                    icon="icons/firebird_icon.png"
+                    class="org.firebirdsql.jdbc.FBDriver"
+                    sampleURL="jdbc:firebirdsql://{host}:{port}/{file}"
+                    defaultPort="3050"
+                    webURL=""
+                    description="Firebird 3.x JayBird driver">
+                    <file type="jar" path="maven:/org.firebirdsql.jdbc:jaybird-jdk17:RELEASE[3.0.2]" bundle="!drivers.firebird"/>
+
+                    <file type="license" path="drivers/firebird3/LICENSE.txt" bundle="drivers.firebird"/>
+                    <file type="jar" path="drivers/firebird3/jaybird-full.jar" bundle="drivers.firebird"/>
 
                     <parameter name="supports-scroll" value="true"/>
                     <parameter name="ddl-drop-column-short" value="true"/>
@@ -804,6 +763,7 @@
                     id="sap_hana"
                     category="SAP"
                     label="HANA"
+                    icon="icons/sap_icon.png"
                     class="com.sap.db.jdbc.Driver"
                     sampleURL="jdbc:sap://{host}[:{port}]"
                     defaultPort="30015"

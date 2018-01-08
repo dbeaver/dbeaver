@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ui.controls;
 
+import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IPropertyListener;
@@ -155,4 +156,8 @@ public class ObjectEditorPageControl extends ProgressPageControl {
     }
 */
 
+    @Override
+    protected void fillCustomActions(IContributionManager contributionManager) {
+        super.fillCustomActions(contributionManager);
+    }
 }

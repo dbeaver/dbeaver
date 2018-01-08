@@ -3,8 +3,8 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: %Bundle-Vendor
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.exasol;singleton:=true
-Bundle-Version: 1.0.29
-Bundle-Release-Date: 20171208
+Bundle-Version: 1.0.31
+Bundle-Release-Date: 20180108
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Activator: org.jkiss.dbeaver.ext.exasol.Activator
 Bundle-ActivationPolicy: lazy

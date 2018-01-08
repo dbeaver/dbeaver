@@ -19,8 +19,8 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPRefreshableObject;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.access.DBAUser;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -39,7 +39,7 @@ import java.util.*;
 /**
  * PostgreRole
  */
-public class PostgreRole implements PostgreObject, PostgrePermissionsOwner, DBPRefreshableObject {
+public class PostgreRole implements PostgreObject, PostgrePermissionsOwner, DBPPersistedObject, DBPSaveableObject, DBPRefreshableObject, DBPNamedObject2, DBAUser {
 
     public static final String CAT_SETTINGS = "Settings";
     public static final String CAT_FLAGS = "Flags";
@@ -57,6 +57,7 @@ public class PostgreRole implements PostgreObject, PostgrePermissionsOwner, DBPR
     private int connLimit;
     private String password;
     private Date validUntil;
+    private boolean persisted;
     private MembersCache membersCache = new MembersCache(true);
     private MembersCache belongsCache = new MembersCache(false);
 
@@ -85,6 +86,14 @@ public class PostgreRole implements PostgreObject, PostgrePermissionsOwner, DBPR
 
     }
 
+    public PostgreRole(PostgreDatabase database, String name, String password, boolean isUser) {
+        this.database = database;
+        this.name = name;
+        this.password = password;
+        this.canLogin = isUser;
+        this.persisted = false;
+    }
+
     public PostgreRole(PostgreDatabase database, ResultSet dbResult)
         throws SQLException
     {
@@ -95,6 +104,8 @@ public class PostgreRole implements PostgreObject, PostgrePermissionsOwner, DBPR
     private void loadInfo(ResultSet dbResult)
         throws SQLException
     {
+        this.persisted = true;
+
         this.oid = JDBCUtils.safeGetLong(dbResult, "oid");
         this.name = JDBCUtils.safeGetString(dbResult, "rolname");
         this.superUser = JDBCUtils.safeGetBoolean(dbResult, "rolsuper");
@@ -127,17 +138,30 @@ public class PostgreRole implements PostgreObject, PostgrePermissionsOwner, DBPR
         return database.getDataSource();
     }
 
+    public boolean isUser() {
+        return canLogin;
+    }
+
     @Override
     public boolean isPersisted() {
-        return true;
+        return this.persisted;
+    }
+
+    @Override
+    public void setPersisted(boolean persisted) {
+        this.persisted = persisted;
     }
 
     @NotNull
     @Override
-    @Property(viewable = true, order = 1)
-    public String getName()
-    {
+    @Property(viewable = true, editable = true, updatable = true, order = 1)
+    public String getName() {
         return name;
+    }
+
+    @Override
+    public void setName(String newName) {
+        this.name = newName;
     }
 
     @NotNull
@@ -152,54 +176,94 @@ public class PostgreRole implements PostgreObject, PostgrePermissionsOwner, DBPR
         return oid;
     }
 
-    @Property(category = CAT_FLAGS, order = 10)
+    @Property(editable = true, updatable = true, order = 10)
     public boolean isSuperUser() {
         return superUser;
     }
 
-    @Property(category = CAT_FLAGS, order = 11)
+    public void setSuperUser(boolean superUser) {
+        this.superUser = superUser;
+    }
+
+    @Property(editable = true, updatable = true, order = 11)
     public boolean isInherit() {
         return inherit;
     }
 
-    @Property(category = CAT_FLAGS, order = 12)
+    public void setInherit(boolean inherit) {
+        this.inherit = inherit;
+    }
+
+    @Property(editable = true, updatable = true, order = 12)
     public boolean isCreateRole() {
         return createRole;
     }
 
-    @Property(category = CAT_FLAGS, order = 13)
+    public void setCreateRole(boolean createRole) {
+        this.createRole = createRole;
+    }
+
+    @Property(editable = true, updatable = true, order = 13)
     public boolean isCreateDatabase() {
         return createDatabase;
     }
 
-    @Property(category = CAT_FLAGS, order = 14)
+    public void setCreateDatabase(boolean createDatabase) {
+        this.createDatabase = createDatabase;
+    }
+
+    @Property(editable = true, updatable = true, order = 14)
     public boolean isCanLogin() {
         return canLogin;
     }
 
-    @Property(category = CAT_FLAGS, order = 15)
+    public void setCanLogin(boolean canLogin) {
+        this.canLogin = canLogin;
+    }
+
+    @Property(editable = true, updatable = true, order = 15)
     public boolean isReplication() {
         return replication;
     }
 
-    @Property(category = CAT_FLAGS, order = 16)
+    public void setReplication(boolean replication) {
+        this.replication = replication;
+    }
+
+    @Property(editable = true, updatable = true, order = 16)
     public boolean isBypassRls() {
         return bypassRls;
     }
 
-    @Property(category = CAT_SETTINGS, order = 20)
+    public void setBypassRls(boolean bypassRls) {
+        this.bypassRls = bypassRls;
+    }
+
+    @Property(category = CAT_SETTINGS, editable = true, updatable = true, order = 20)
     public int getConnLimit() {
         return connLimit;
     }
 
-    @Property(hidden = true, category = CAT_SETTINGS, order = 21)
+    public void setConnLimit(int connLimit) {
+        this.connLimit = connLimit;
+    }
+
+    @Property(hidden = true, category = CAT_SETTINGS, editable = true, updatable = true, order = 21)
     public String getPassword() {
         return password;
     }
 
-    @Property(category = CAT_SETTINGS, order = 22)
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    @Property(category = CAT_SETTINGS, editable = true, updatable = true, order = 22)
     public Date getValidUntil() {
         return validUntil;
+    }
+
+    public void setValidUntil(Date validUntil) {
+        this.validUntil = validUntil;
     }
 
     @Association

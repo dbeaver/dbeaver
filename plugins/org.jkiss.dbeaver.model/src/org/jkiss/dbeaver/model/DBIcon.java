@@ -103,7 +103,6 @@ public class DBIcon implements DBPImage
     public static final DBIcon TREE_FOLDER_KEY = new DBIcon("folder_key", "tree/folder_key.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon PROJECT = new DBIcon("project", "project.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon CONNECTIONS = new DBIcon("connections", "connections.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon TYPE_BOOLEAN = new DBIcon("boolean", "types/boolean.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon TYPE_NUMBER = new DBIcon("number", "types/number.png"); //$NON-NLS-1$ //$NON-NLS-2$

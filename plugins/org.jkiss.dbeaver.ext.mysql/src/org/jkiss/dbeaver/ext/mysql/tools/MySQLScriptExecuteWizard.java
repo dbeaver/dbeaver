@@ -94,6 +94,7 @@ class MySQLScriptExecuteWizard extends AbstractScriptExecuteWizard<MySQLCatalog,
         if (noBeep) {
             cmd.add("--no-beep"); //$NON-NLS-1$
         }
+        addExtraCommandArgs(cmd);
     }
 
     @Override

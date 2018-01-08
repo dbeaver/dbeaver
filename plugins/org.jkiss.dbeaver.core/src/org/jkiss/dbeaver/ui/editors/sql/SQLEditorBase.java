@@ -32,9 +32,10 @@ import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PreferencesUtil;
-import org.eclipse.ui.internal.editors.text.EditorsPlugin;
+import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.texteditor.*;
 import org.eclipse.ui.texteditor.templates.ITemplatesPage;
 import org.eclipse.ui.themes.IThemeManager;
@@ -76,16 +77,16 @@ import java.util.ResourceBundle;
  * SQL Executor
  */
 public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisualizer {
+    
     static protected final Log log = Log.getLog(SQLEditorBase.class);
-    public static final String SQL_EDITOR_CONTEXT = "org.jkiss.dbeaver.ui.editors.sql";
 
     static {
         // SQL editor preferences. Do this here because it initializes display
         // (that's why we can't run it in prefs initializer classes which run before workbench creation)
         {
-            IPreferenceStore editorStore = EditorsPlugin.getDefault().getPreferenceStore();
+            IPreferenceStore editorStore = EditorsUI.getPreferenceStore();
             editorStore.setDefault(SQLPreferenceConstants.MATCHING_BRACKETS, true);
-            editorStore.setDefault(SQLPreferenceConstants.MATCHING_BRACKETS_COLOR, "128,128,128");
+            editorStore.setDefault(SQLPreferenceConstants.MATCHING_BRACKETS_COLOR, "128,128,128"); //$NON-NLS-1$
         }
     }
 
@@ -130,7 +131,14 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
 
         //setDocumentProvider(new SQLDocumentProvider());
         setSourceViewerConfiguration(new SQLEditorSourceViewerConfiguration(this, getPreferenceStore()));
-        setKeyBindingScopes(new String[]{TEXT_EDITOR_CONTEXT, SQL_EDITOR_CONTEXT});  //$NON-NLS-1$
+        setKeyBindingScopes(new String[]{TEXT_EDITOR_CONTEXT, SQLEditorContributions.SQL_EDITOR_CONTEXT});  //$NON-NLS-1$
+    }
+    
+    @Override
+    protected void initializeEditor() {
+        super.initializeEditor();
+        setEditorContextMenuId(SQLEditorContributions.SQL_EDITOR_CONTEXT_MENU_ID);
+        setRulerContextMenuId(SQLEditorContributions.SQL_RULER_CONTEXT_MENU_ID);
     }
 
     @Nullable
@@ -303,18 +311,18 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         }
     }
 */
-
+    
+    @SuppressWarnings("unchecked")
     @Override
-    public Object getAdapter(Class required)
-    {
+    public <T> T getAdapter(Class<T> required) {
         if (projectionSupport != null) {
             Object adapter = projectionSupport.getAdapter(
                 getSourceViewer(), required);
             if (adapter != null)
-                return adapter;
+                return (T) adapter;
         }
         if (ITemplatesPage.class.equals(required)) {
-            return getTemplatesPage();
+            return (T) getTemplatesPage();
         }
 
         return super.getAdapter(required);
@@ -403,6 +411,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         addAction(menu, GROUP_SQL_EXTRAS, SQLEditorContributor.ACTION_CONTENT_ASSIST_PROPOSAL);
         addAction(menu, GROUP_SQL_EXTRAS, SQLEditorContributor.ACTION_CONTENT_ASSIST_TIP);
         addAction(menu, GROUP_SQL_EXTRAS, SQLEditorContributor.ACTION_CONTENT_ASSIST_INFORMATION);
+        menu.insertBefore(IWorkbenchActionConstants.MB_ADDITIONS, ActionUtils.makeCommandContribution(getSite(), "org.jkiss.dbeaver.ui.editors.sql.navigate.object"));
+
         {
             MenuManager formatMenu = new MenuManager("Format", "format");
             IAction formatAction = getAction(SQLEditorContributor.ACTION_CONTENT_FORMAT_PROPOSAL);
@@ -850,10 +860,12 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                             statementStart++;
                         }
                         // remove trailing spaces
+/*
                         while (statementStart < tokenOffset && Character.isWhitespace(document.getChar(tokenOffset - 1))) {
                             tokenOffset--;
                             tokenLength++;
                         }
+*/
                         if (tokenOffset == statementStart) {
                             // Empty statement
                             if (token.isEOF()) {
@@ -879,7 +891,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                         // make script line
                         return new SQLQuery(
                             getDataSource(),
-                            queryText.trim(),
+                            queryText,
                             statementStart,
                                 queryEndPos - statementStart);
                     } catch (BadLocationException ex) {

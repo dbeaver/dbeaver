@@ -240,7 +240,13 @@ public class UIUtils {
             final TreeColumn[] columns = tree.getColumns();
             for (TreeColumn column : columns) {
                 column.pack();
-                totalWidth += column.getWidth();
+                int colWidth = column.getWidth();
+                if (colWidth > clientArea.width) {
+                    // Too wide column - make it a bit narrower
+                    colWidth = clientArea.width;
+                    column.setWidth(colWidth);
+                }
+                totalWidth += colWidth;
             }
             if (fit) {
                 int areaWidth = clientArea.width;
@@ -460,7 +466,8 @@ public class UIUtils {
     {
         Label textLabel = new Label(parent, SWT.NONE);
         textLabel.setText(label + ": "); //$NON-NLS-1$
-        textLabel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_CENTER));
+        // TODO: Should we make it right-aligned? Looks good but not in Eclipse-style
+        textLabel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_CENTER /*| GridData.HORIZONTAL_ALIGN_END*/));
         return textLabel;
     }
 
