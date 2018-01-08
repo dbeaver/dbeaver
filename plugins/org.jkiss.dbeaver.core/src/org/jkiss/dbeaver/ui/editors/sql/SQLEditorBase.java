@@ -116,8 +116,6 @@ import org.jkiss.utils.Pair;
  */
 public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisualizer {
     
-    public static final String SQL_EDITOR_CONTEXT = "org.jkiss.dbeaver.ui.editors.sql";
-
     static protected final Log log = Log.getLog(SQLEditorBase.class);
 
     static {
@@ -126,7 +124,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         {
             IPreferenceStore editorStore = EditorsUI.getPreferenceStore();
             editorStore.setDefault(SQLPreferenceConstants.MATCHING_BRACKETS, true);
-            editorStore.setDefault(SQLPreferenceConstants.MATCHING_BRACKETS_COLOR, "128,128,128");
+            editorStore.setDefault(SQLPreferenceConstants.MATCHING_BRACKETS_COLOR, "128,128,128"); //$NON-NLS-1$
         }
     }
 
@@ -171,7 +169,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
 
         //setDocumentProvider(new SQLDocumentProvider());
         setSourceViewerConfiguration(new SQLEditorSourceViewerConfiguration(this, getPreferenceStore()));
-        setKeyBindingScopes(new String[]{TEXT_EDITOR_CONTEXT, SQL_EDITOR_CONTEXT});  //$NON-NLS-1$
+        setKeyBindingScopes(new String[]{TEXT_EDITOR_CONTEXT, SQLEditorContributions.SQL_EDITOR_CONTEXT});  //$NON-NLS-1$
     }
 
     @Nullable
@@ -344,18 +342,18 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         }
     }
 */
-
+    
+    @SuppressWarnings("unchecked")
     @Override
-    public Object getAdapter(Class required)
-    {
+    public <T> T getAdapter(Class<T> required) {
         if (projectionSupport != null) {
             Object adapter = projectionSupport.getAdapter(
                 getSourceViewer(), required);
             if (adapter != null)
-                return adapter;
+                return (T) adapter;
         }
         if (ITemplatesPage.class.equals(required)) {
-            return getTemplatesPage();
+            return (T) getTemplatesPage();
         }
 
         return super.getAdapter(required);
