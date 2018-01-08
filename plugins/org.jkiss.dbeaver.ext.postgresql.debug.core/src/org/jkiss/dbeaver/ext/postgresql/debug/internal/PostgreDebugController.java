@@ -52,7 +52,7 @@ public class PostgreDebugController extends DBGBaseController {
         PostgreDebugSessionManager sessionManager = getSessionManager(monitor);
         try {
             JDBCExecutionContext sessionContext = (JDBCExecutionContext) getDataSourceContainer().getDataSource().openIsolatedContext(monitor, "Debug session");
-            return this.sessionManager.createDebugSession(sessionContext);
+            return sessionManager.createDebugSession(sessionContext);
         } catch (DBException e) {
             throw new DBGException("Can't initiate debug session", e);
         }
