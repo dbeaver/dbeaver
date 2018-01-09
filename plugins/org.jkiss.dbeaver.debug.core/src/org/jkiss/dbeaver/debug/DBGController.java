@@ -47,7 +47,7 @@ public interface DBGController {
 
     void terminateSession(Object id);
 
-    DBGSession createDebugSession(DBCExecutionContext connection) throws DBGException;
+    DBGSession createDebugSession(DBGSessionInfo targetInfo, DBCExecutionContext connection) throws DBGException;
 
     boolean isSessionExists(Object id);
 

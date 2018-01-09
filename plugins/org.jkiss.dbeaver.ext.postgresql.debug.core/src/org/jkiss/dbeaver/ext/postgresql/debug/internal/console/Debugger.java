@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.debug.DBGVariable;
 import org.jkiss.dbeaver.ext.postgresql.debug.internal.impl.PostgreDebugBreakpointProperties;
 import org.jkiss.dbeaver.ext.postgresql.debug.internal.impl.PostgreDebugController;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 
 @SuppressWarnings("nls")
 public class Debugger {
@@ -674,7 +675,8 @@ public class Debugger {
                 try {
                     Connection debugConn = DriverManager.getConnection(url);
                     // TODO: fix connection
-                    DBGSession s = controller.createDebugSession(null);
+                    DBCExecutionContext executionContext = null;
+                    DBGSession s = controller.createDebugSession(null, executionContext);
                     System.out.println("created");
                     System.out.println(s);
 
