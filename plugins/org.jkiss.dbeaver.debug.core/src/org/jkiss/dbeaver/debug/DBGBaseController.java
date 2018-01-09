@@ -23,13 +23,16 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.debug.internal.DebugMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 public abstract class DBGBaseController implements DBGController {
 
     private static final Log log = Log.getLog(DBGBaseController.class);
 
-    private DBPDataSourceContainer dataSourceContainer;
+    private final DBPDataSourceContainer dataSourceContainer;
+
+    private DBCExecutionContext executionContext;
 
     public DBGBaseController(DBPDataSourceContainer dataSourceContainer) {
         this.dataSourceContainer = dataSourceContainer;
@@ -38,7 +41,11 @@ public abstract class DBGBaseController implements DBGController {
     public DBPDataSourceContainer getDataSourceContainer() {
         return dataSourceContainer;
     }
-
+    
+    public DBCExecutionContext getExecutionContext() {
+        return executionContext;
+    }
+    
     @Override
     public DBGSession connect(DBRProgressMonitor monitor) throws DBGException {
         DBPDataSource dataSource = dataSourceContainer.getDataSource();
@@ -55,7 +62,15 @@ public abstract class DBGBaseController implements DBGController {
         }
     }
 
-    protected abstract DBGSession createSession(DBRProgressMonitor monitor, DBPDataSource dataSource) throws DBGException;
+    protected DBGSession createSession(DBRProgressMonitor monitor, DBPDataSource dataSource) throws DBGException {
+        try {
+            this.executionContext = dataSource.openIsolatedContext(monitor, "Debug controller");
+            DBCExecutionContext sessionContext = dataSource.openIsolatedContext(monitor, "Debug session");
+            return createDebugSession(sessionContext);
+        } catch (DBException e) {
+            throw new DBGException("Can't initiate debug session", e);
+        }
+    }
 
     @Override
     public void resume(DBRProgressMonitor monitor, DBGSession session) throws DBGException {
@@ -76,8 +91,8 @@ public abstract class DBGBaseController implements DBGController {
 
     @Override
     public void dispose() {
-        // TODO Auto-generated method stub
-
+        executionContext.close();
+        //FIXME: AF: perform cleanup for everything cached
     }
 
 }
