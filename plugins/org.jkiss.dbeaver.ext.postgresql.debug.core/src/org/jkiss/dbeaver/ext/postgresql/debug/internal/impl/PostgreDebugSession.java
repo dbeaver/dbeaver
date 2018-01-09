@@ -57,18 +57,14 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
  *    procedure will be reached     <br/>
  *
  */
-@SuppressWarnings("nls")
 public class PostgreDebugSession implements DBGSession {
 
     private static final Log log = Log.getLog(PostgreDebugSession.class);
     
-    private final PostgreDebugSessionInfo sessionManagerInfo;
-
-    private final PostgreDebugSessionInfo sessionDebugInfo;
+    private final DBGSessionInfo sessionInfo;
+    private final Object targetId;
 
     private JDBCExecutionContext connection = null;
-
-    private final String title;
 
     private int sessionId = -1;
 
@@ -101,6 +97,19 @@ public class PostgreDebugSession implements DBGSession {
     private FutureTask<Void> task;
 
     private Thread workerThread = null;
+
+    /**
+     * Create session with two description 
+     * after creation session need to be attached to postgres procedure by attach method
+     * 
+     * @param sessionManagerInfo - manager (caller connection) description
+     * @param sessionDebugInfo - session (debugger client connection) description
+     * @throws DBGException
+     */
+    public PostgreDebugSession(PostgreDebugSessionInfo sessionInfo, Object targetId) throws DBGException {
+        this.sessionInfo = sessionInfo;
+        this.targetId = targetId;
+    }
 
     /**
      * This method attach debug session to debug object (procedure) 
@@ -139,7 +148,7 @@ public class PostgreDebugSession implements DBGSession {
             this.entry = new PostgreDebugBreakpoint(this,obj,properties);
             
             runAsync(SQL_ATTACH.replaceAll("\\?sessionid", String.valueOf(sessionId)),
-                    String.valueOf(sessionId) + " global attached to " + String.valueOf(sessionManagerInfo.pid));
+                    String.valueOf(sessionId) + " global attached to " + String.valueOf(targetId));
 
             /*if (breakpoint) {
                 runAsync(SQL_ATTACH_BREAKPOINT.replaceAll("\\?sessionid", String.valueOf(sessionId)),
@@ -158,21 +167,6 @@ public class PostgreDebugSession implements DBGSession {
     }
 
     /**
-     * Create session with two description 
-     * after creation session need to be attached to postgres procedure by attach method
-     * 
-     * @param sessionManagerInfo - manager (caller connection) description
-     * @param sessionDebugInfo - session (debugger client connection) description
-     * @throws DBGException
-     */
-    public PostgreDebugSession(PostgreDebugSessionInfo sessionManagerInfo, PostgreDebugSessionInfo sessionDebugInfo) throws DBGException {
-        this.sessionManagerInfo = sessionManagerInfo;
-        this.sessionDebugInfo = sessionDebugInfo;
-        this.title = sessionManagerInfo.application;
-
-    }
-
-    /**
      * @param connectionTarget - DBCExecutionContext of debug client (will be used in debug process)
      * @return Connection - java.sql.Connection
      * @throws SQLException
@@ -184,12 +178,12 @@ public class PostgreDebugSession implements DBGSession {
 
     @Override
     public DBGSessionInfo getSessionInfo() {
-        return sessionDebugInfo;
+        return sessionInfo;
     }
 
     @Override
     public String getTitle() {
-        return title;
+        return sessionInfo.getTitle();
     }
 
     @Override
@@ -265,7 +259,7 @@ public class PostgreDebugSession implements DBGSession {
         try {
 
             runAsync(commandSQL.replaceAll("\\?sessionid", String.valueOf(sessionId)),
-                    String.valueOf(sessionId) + name + String.valueOf(sessionManagerInfo.pid));
+                    String.valueOf(sessionId) + name + String.valueOf(targetId));
 
         } finally {
             lock.writeLock().unlock();
@@ -426,8 +420,8 @@ public class PostgreDebugSession implements DBGSession {
     @Override
     public String toString() {
         return "PostgreDebugSession " + (isWaiting() ? "WAITING" : "READY") + " [connection=" + connection + ", title="
-                + title + ", sessionId=" + sessionId + ", breakpoints=" + breakpoints + "ManagerSession=("
-                + sessionManagerInfo.toString() + ") Session=(" + sessionDebugInfo.toString() + ") " + "]";
+                + getTitle() + ", sessionId=" + sessionId + ", breakpoints=" + breakpoints + "targetId=("
+                + targetId + ") Session=(" + sessionInfo.toString() + ") " + "]";
     }
 
     @Override

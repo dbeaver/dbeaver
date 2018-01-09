@@ -17,6 +17,11 @@
  */
 package org.jkiss.dbeaver.debug;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -31,6 +36,8 @@ public abstract class DBGBaseController implements DBGController {
     private static final Log log = Log.getLog(DBGBaseController.class);
 
     private final DBPDataSourceContainer dataSourceContainer;
+
+    private final Map<Object, DBGSession> sessions = new HashMap<Object, DBGSession>(1);
 
     private DBCExecutionContext executionContext;
 
@@ -53,7 +60,9 @@ public abstract class DBGBaseController implements DBGController {
             throw new DBGException("Not connected to database");
         }
         try {
-            return createSession(monitor, dataSource);
+            this.executionContext = dataSource.openIsolatedContext(monitor, "Debug controller");
+            DBGSession createSession = createSession(monitor, dataSource);
+            return createSession;
         } catch (DBException e) {
             String message = NLS.bind(DebugMessages.DatabaseDebugController_e_opening_debug_context,
                 dataSourceContainer);
@@ -64,9 +73,11 @@ public abstract class DBGBaseController implements DBGController {
 
     protected DBGSession createSession(DBRProgressMonitor monitor, DBPDataSource dataSource) throws DBGException {
         try {
-            this.executionContext = dataSource.openIsolatedContext(monitor, "Debug controller");
+            DBGSessionInfo targetInfo = getSessionInfo(getExecutionContext());
             DBCExecutionContext sessionContext = dataSource.openIsolatedContext(monitor, "Debug session");
-            return createDebugSession(sessionContext);
+            DBGSession debugSession = createDebugSession(targetInfo, sessionContext);
+            sessions.put(targetInfo.getID(), debugSession);
+            return debugSession;
         } catch (DBException e) {
             throw new DBGException("Can't initiate debug session", e);
         }
@@ -93,6 +104,30 @@ public abstract class DBGBaseController implements DBGController {
     public void dispose() {
         executionContext.close();
         //FIXME: AF: perform cleanup for everything cached
+    }
+
+    @Override
+    public DBGSession getDebugSession(Object id) throws DBGException {
+        return sessions.get(id);
+    }
+
+    @Override
+    public boolean isSessionExists(Object id) {
+        return sessions.containsKey(id);
+    }
+
+    @Override
+    public void terminateSession(Object id) {
+        DBGSession session = sessions.get(id);
+        if (session != null) {
+            session.close();
+            sessions.remove(id);
+        }
+    }
+
+    @Override
+    public List<DBGSession> getDebugSessions() throws DBGException {
+        return new ArrayList<DBGSession>(sessions.values());
     }
 
 }
