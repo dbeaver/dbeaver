@@ -63,6 +63,7 @@
         <module>plugins/org.jkiss.dbeaver.ext.ui.svg</module>
         <module>plugins/org.jkiss.dbeaver.data.office</module>
         <module>plugins/org.jkiss.dbeaver.model</module>
+        <module>plugins/org.jkiss.dbeaver.ext.mockdata</module>
 
         <module>features/org.jkiss.dbeaver.core.feature</module>
         <module>features/org.jkiss.dbeaver.debug.feature</module>
