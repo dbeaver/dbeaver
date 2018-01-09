@@ -15,13 +15,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.postgresql.debug.internal;
+package org.jkiss.dbeaver.ext.postgresql.debug.internal.impl;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.debug.DBGBaseController;
 import org.jkiss.dbeaver.debug.DBGException;
 import org.jkiss.dbeaver.debug.DBGSession;
-import org.jkiss.dbeaver.ext.postgresql.debug.internal.impl.PostgreDebugSessionManager;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
