@@ -9,9 +9,8 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.views,
  org.eclipse.jface,
  org.eclipse.jface.text,
- org.jkiss.dbeaver.core,
  org.eclipse.ui.workbench.texteditor,
- org.jkiss.dbeaver.ext.generic
+ org.jkiss.dbeaver.core,
  org.jkiss.utils
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
