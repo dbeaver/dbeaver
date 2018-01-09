@@ -21,6 +21,7 @@ import org.eclipse.jface.action.IContributionManager;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -38,40 +39,42 @@ import java.util.Date;
  */
 public class DateTimeValueManager extends BaseValueManager {
 
-    protected static final Log log = Log.getLog(DateTimeValueManager.class);
+	protected static final Log log = Log.getLog(DateTimeValueManager.class);
 
-    @Override
-    public void contributeActions(@NotNull IContributionManager manager, @NotNull final IValueController controller, @Nullable IValueEditor activeEditor)
-        throws DBCException
-    {
-        super.contributeActions(manager, controller, activeEditor);
-        manager.add(new Action(CoreMessages.model_jdbc_set_to_current_time, DBeaverIcons.getImageDescriptor(DBIcon.TYPE_DATETIME)) {
-            @Override
-            public void run() {
-                controller.updateValue(new Date(), true);
-            }
-        });
-    }
+	@Override
+	public void contributeActions(@NotNull IContributionManager manager, @NotNull final IValueController controller,
+			@Nullable IValueEditor activeEditor) throws DBCException {
+		super.contributeActions(manager, controller, activeEditor);
+		manager.add(new Action(CoreMessages.model_jdbc_set_to_current_time,
+				DBeaverIcons.getImageDescriptor(DBIcon.TYPE_DATETIME)) {
+			@Override
+			public void run() {
+				controller.updateValue(new Date(), true);
+			}
+		});
+	}
 
-    @NotNull
-    @Override
-    public IValueController.EditType[] getSupportedEditTypes() {
-        return new IValueController.EditType[] {IValueController.EditType.INLINE, IValueController.EditType.PANEL, IValueController.EditType.EDITOR};
-    }
+	@NotNull
+	@Override
+	public IValueController.EditType[] getSupportedEditTypes() {
+		return new IValueController.EditType[] { IValueController.EditType.INLINE, IValueController.EditType.PANEL,
+				IValueController.EditType.EDITOR };
+	}
 
-    @Override
-    public IValueEditor createEditor(@NotNull IValueController controller)
-        throws DBException
-    {
-        switch (controller.getEditType()) {
-            case INLINE:
-            case PANEL:
-                return new DateTimeInlineEditor(controller);
-            case EDITOR:
-                return new DateTimeStandaloneEditor(controller);
-            default:
-                return null;
-        }
-    }
+	@Override
+	public IValueEditor createEditor(@NotNull IValueController controller) throws DBException {
+
+		boolean isUseDateTimeEditor = controller.getExecutionContext().getDataSource().getContainer()
+				.getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_DATETIME_USE_CONTENT_EDITOR);
+		switch (controller.getEditType()) {
+		case INLINE:
+		case PANEL:
+			return new DateTimeInlineEditor(controller, isUseDateTimeEditor);
+		case EDITOR:
+			return new DateTimeStandaloneEditor(controller);
+		default:
+			return null;
+		}
+	}
 
 }
