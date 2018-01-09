@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.debug.DBGBaseController;
 import org.jkiss.dbeaver.debug.DBGException;
 import org.jkiss.dbeaver.debug.DBGSession;
+import org.jkiss.dbeaver.debug.DBGSessionManager;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
@@ -28,13 +29,13 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 public class PostgreDebugController extends DBGBaseController {
 
-    private PostgreDebugSessionManager sessionManager;
+    private DBGSessionManager sessionManager;
 
     public PostgreDebugController(DBPDataSourceContainer dataSourceDescriptor) {
         super(dataSourceDescriptor);
     }
 
-    private PostgreDebugSessionManager getSessionManager(DBRProgressMonitor monitor) throws DBGException  {
+    private DBGSessionManager getSessionManager(DBRProgressMonitor monitor) throws DBGException  {
         if (sessionManager == null) {
             try {
                 JDBCExecutionContext controllerContext = (JDBCExecutionContext) getDataSourceContainer().getDataSource().openIsolatedContext(monitor, "Debug controller");
@@ -48,7 +49,7 @@ public class PostgreDebugController extends DBGBaseController {
 
     @Override
     protected DBGSession createSession(DBRProgressMonitor monitor, DBPDataSource dataSource) throws DBGException {
-        PostgreDebugSessionManager sessionManager = getSessionManager(monitor);
+        DBGSessionManager sessionManager = getSessionManager(monitor);
         try {
             JDBCExecutionContext sessionContext = (JDBCExecutionContext) getDataSourceContainer().getDataSource().openIsolatedContext(monitor, "Debug session");
             return sessionManager.createDebugSession(sessionContext);

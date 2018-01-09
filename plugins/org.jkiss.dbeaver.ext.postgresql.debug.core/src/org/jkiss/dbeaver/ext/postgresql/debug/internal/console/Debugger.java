@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.debug.DBGException;
 import org.jkiss.dbeaver.debug.DBGObject;
 import org.jkiss.dbeaver.debug.DBGSession;
 import org.jkiss.dbeaver.debug.DBGSessionInfo;
+import org.jkiss.dbeaver.debug.DBGSessionManager;
 import org.jkiss.dbeaver.debug.DBGStackFrame;
 import org.jkiss.dbeaver.debug.DBGVariable;
 import org.jkiss.dbeaver.ext.postgresql.debug.internal.impl.PostgreDebugBreakpointProperties;
@@ -61,7 +62,7 @@ public class Debugger {
     public static final String ANY_ARG = "*";
     
     
-    public static DBGVariable<?> chooseVariable(Scanner sc, PostgreDebugSessionManager pgDbgManager,
+    public static DBGVariable<?> chooseVariable(Scanner sc, DBGSessionManager pgDbgManager,
             DBGSession session) throws DBGException {
 
         DBGVariable<?> v = null;
@@ -133,7 +134,7 @@ public class Debugger {
 
     }
 
-    public static DBGBreakpoint chooseBreakpoint(Scanner sc, PostgreDebugSessionManager pgDbgManager,
+    public static DBGBreakpoint chooseBreakpoint(Scanner sc, DBGSessionManager pgDbgManager,
                                                           DBGSession session) throws DBGException {
 
         DBGBreakpoint bp = null;
@@ -205,7 +206,7 @@ public class Debugger {
 
     }
 
-    public static DBGSession chooseSession(Scanner sc, PostgreDebugSessionManager pgDbgManager)
+    public static DBGSession chooseSession(Scanner sc, DBGSessionManager pgDbgManager)
             throws DBGException {
 
         DBGSession debugSession = null;
@@ -282,7 +283,7 @@ public class Debugger {
         String url = "jdbc:postgresql://192.168.229.133/postgres?user=postgres&password=postgres&ssl=false"; // "jdbc:postgresql://localhost/postgres?user=postgres&password=postgres&ssl=false";
 
         Connection conn;
-        PostgreDebugSessionManager pgDbgManager;
+        DBGSessionManager pgDbgManager;
         try {
 
             conn = DriverManager.getConnection(url);
