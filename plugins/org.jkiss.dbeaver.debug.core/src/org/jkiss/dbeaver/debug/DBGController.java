@@ -17,6 +17,9 @@
  */
 package org.jkiss.dbeaver.debug;
 
+import java.util.List;
+
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
@@ -33,5 +36,21 @@ public interface DBGController {
     void terminate(DBRProgressMonitor monitor, DBGSession session) throws DBGException;
 
     void dispose() throws DBGException;
+
+    DBGSessionInfo getSessionInfo(DBCExecutionContext connection) throws DBGException;
+
+    List<? extends DBGSessionInfo> getSessions() throws DBGException;
+
+    DBGSession getDebugSession(Object id) throws DBGException;
+
+    List<DBGSession> getDebugSessions() throws DBGException;
+
+    void terminateSession(Object id);
+
+    DBGSession createDebugSession(DBCExecutionContext connection) throws DBGException;
+
+    boolean isSessionExists(Object id);
+
+    List<? extends DBGObject> getObjects(String ownerCtx, String nameCtx) throws DBGException;
 
 }
