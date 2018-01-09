@@ -35,13 +35,13 @@ import org.jkiss.dbeaver.ui.actions.navigator.NavigatorActionExecuteTool;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class DataSourceToolsContributor extends DataSourceMenuContributor
 {
 
+
+    private static final boolean SHOW_GROUPS_AS_SUBMENU = false;
 
     @Override
     protected void fillContributionItems(List<IContributionItem> menuItems)
@@ -72,12 +72,21 @@ public class DataSourceToolsContributor extends DataSourceMenuContributor
                 IWorkbenchPart activePart = workbenchWindow.getActivePage().getActivePart();
                 if (activePart != null) {
                     Map<ToolGroupDescriptor, IMenuManager> groupsMap = new HashMap<>();
+                    Set<ToolGroupDescriptor> groupSet = new HashSet<>();
                     for (ToolDescriptor tool : tools) {
                         hasTools = true;
                         IMenuManager parentMenu = null;
                         if (tool.getGroup() != null) {
-                            parentMenu = getGroupMenu(menuItems, groupsMap, tool.getGroup());
+                            if (SHOW_GROUPS_AS_SUBMENU) {
+                                parentMenu = getGroupMenu(menuItems, groupsMap, tool.getGroup());
+                            } else {
+                                if (!groupSet.contains(tool.getGroup())) {
+                                    groupSet.add(tool.getGroup());
+                                    menuItems.add(new Separator(tool.getGroup().getId()));
+                                }
+                            }
                         }
+
                         IAction action = ActionUtils.makeAction(
                             new NavigatorActionExecuteTool(workbenchWindow, tool),
                             activePart.getSite(),
