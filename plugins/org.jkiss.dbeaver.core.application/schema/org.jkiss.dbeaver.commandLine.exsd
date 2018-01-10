@@ -40,7 +40,7 @@
    <element name="parameter">
       <complexType>
           <attribute name="name" type="string"/>
-          <attribute name="logName" type="string"/>
+          <attribute name="longName" type="string"/>
           <attribute name="description" type="string"/>
           <attribute name="hasArg" type="boolean"/>
           <attribute name="exitAfterExecute" type="boolean"/>
