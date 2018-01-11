@@ -38,7 +38,7 @@ public interface DBSDataManipulator extends DBSDataContainer {
     int DATA_UPDATE         = 1 << 17;
     int DATA_DELETE         = 1 << 18;
 
-    interface ExecuteBatch {
+    interface ExecuteBatch extends AutoCloseable {
         void add(@NotNull Object[] attributeValues) throws DBCException;
 
         @NotNull
