@@ -426,7 +426,8 @@
 
     <extension point="org.jkiss.dbeaver.tools">
         <tools>
-            <toolGroup id="org.jkiss.dbeaver.ext.oracle.tools.maintenance" label="Statistics"/>
+            <toolGroup id="org.jkiss.dbeaver.ext.oracle.tools.statistics" label="Statistics"/>
+            <toolGroup id="org.jkiss.dbeaver.ext.oracle.tools.maintenance" label="Maintenance"/>
             <tool
                     class="org.jkiss.dbeaver.ext.oracle.tools.OracleToolScript"
                     description="Execute script with native client"
@@ -439,6 +440,7 @@
                     class="org.jkiss.dbeaver.ext.oracle.tools.maintenance.OracleToolValidateStructure"
                     description="Validate Structure"
                     id="org.jkiss.dbeaver.ext.oracle.tools.maintenance.OracleToolTruncate"
+                    group="org.jkiss.dbeaver.ext.oracle.tools.statistics"
                     label="Validate Structure"
                     singleton="false">
                 <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTable"/>
@@ -447,6 +449,7 @@
                     class="org.jkiss.dbeaver.ext.oracle.tools.maintenance.OracleToolGatherStatistics"
                     description="Gather statistics"
                     id="org.jkiss.dbeaver.ext.oracle.tools.maintenance.OracleToolGatherStatistics"
+                    group="org.jkiss.dbeaver.ext.oracle.tools.statistics"
                     label="Gather Statistics"
                     singleton="false">
                 <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTable"/>
@@ -457,6 +460,7 @@
                     class="org.jkiss.dbeaver.ext.oracle.tools.maintenance.OracleToolTruncate"
                     description="Truncate table"
                     id="org.jkiss.dbeaver.ext.oracle.tools.maintenance.OracleToolTruncate"
+                    group="org.jkiss.dbeaver.ext.oracle.tools.maintenance"
                     label="Truncate"
                     singleton="false">
                 <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleTable"/>

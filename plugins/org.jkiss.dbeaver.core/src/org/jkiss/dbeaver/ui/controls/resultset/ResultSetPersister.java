@@ -484,19 +484,17 @@ class ResultSetPersister {
                         if (monitor.isCanceled()) break;
                         try {
                             DBSDataManipulator dataContainer = getDataManipulator(statement.entity);
-                            DBSDataManipulator.ExecuteBatch batch = dataContainer.deleteData(
+                            try (DBSDataManipulator.ExecuteBatch batch = dataContainer.deleteData(
                                 session,
                                 DBDAttributeValue.getAttributes(statement.keyAttributes),
-                                new ExecutionSource(dataContainer));
-                            try {
+                                new ExecutionSource(dataContainer)))
+                            {
                                 batch.add(DBDAttributeValue.getValues(statement.keyAttributes));
                                 if (generateScript) {
                                     batch.generatePersistActions(session, script);
                                 } else {
                                     deleteStats.accumulate(batch.execute(session));
                                 }
-                            } finally {
-                                batch.close();
                             }
                             processStatementChanges(statement);
                         } catch (DBException e) {
@@ -509,20 +507,18 @@ class ResultSetPersister {
                         if (monitor.isCanceled()) break;
                         try {
                             DBSDataManipulator dataContainer = getDataManipulator(statement.entity);
-                            DBSDataManipulator.ExecuteBatch batch = dataContainer.insertData(
+                            try (DBSDataManipulator.ExecuteBatch batch = dataContainer.insertData(
                                 session,
                                 DBDAttributeValue.getAttributes(statement.keyAttributes),
                                 statement.needKeys() ? new KeyDataReceiver(statement) : null,
-                                new ExecutionSource(dataContainer));
-                            try {
+                                new ExecutionSource(dataContainer)))
+                            {
                                 batch.add(DBDAttributeValue.getValues(statement.keyAttributes));
                                 if (generateScript) {
                                     batch.generatePersistActions(session, script);
                                 } else {
                                     insertStats.accumulate(batch.execute(session));
                                 }
-                            } finally {
-                                batch.close();
                             }
                             processStatementChanges(statement);
                         } catch (DBException e) {
@@ -535,13 +531,13 @@ class ResultSetPersister {
                         if (monitor.isCanceled()) break;
                         try {
                             DBSDataManipulator dataContainer = getDataManipulator(statement.entity);
-                            DBSDataManipulator.ExecuteBatch batch = dataContainer.updateData(
+                            try (DBSDataManipulator.ExecuteBatch batch = dataContainer.updateData(
                                 session,
                                 DBDAttributeValue.getAttributes(statement.updateAttributes),
                                 DBDAttributeValue.getAttributes(statement.keyAttributes),
                                 null,
-                                new ExecutionSource(dataContainer));
-                            try {
+                                new ExecutionSource(dataContainer)))
+                            {
                                 // Make single array of values
                                 Object[] attributes = new Object[statement.updateAttributes.size() + statement.keyAttributes.size()];
                                 for (int i = 0; i < statement.updateAttributes.size(); i++) {
@@ -557,8 +553,6 @@ class ResultSetPersister {
                                 } else {
                                     updateStats.accumulate(batch.execute(session));
                                 }
-                            } finally {
-                                batch.close();
                             }
                             processStatementChanges(statement);
                         } catch (DBException e) {
