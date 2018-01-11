@@ -17,7 +17,6 @@
  */
 package org.jkiss.dbeaver.ext.mockdata;
 
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
@@ -26,7 +25,13 @@ import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.DBPClientHome;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.DBCStatistics;
+import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractToolWizard;
@@ -118,18 +123,34 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
     }
 
     @Override
-    public boolean executeProcess(DBRProgressMonitor monitor, DBSDataManipulator arg)
-            throws IOException, CoreException, InterruptedException {
+    public boolean executeProcess(DBRProgressMonitor monitor, DBSDataManipulator dataManipulator) {
 
-        log.debug(">>>>>>>> executeProcess " + arg.getName());
-
-        logPage.appendLog("Remove old data " + removeOldData + "\n");
         if (removeOldData) {
-            // TODO remove all old data
+            logPage.appendLog("Removing old data from the '" + dataManipulator.getName() + "'.\n");
+            DBCStatistics deleteStats = new DBCStatistics();
+            DBCExecutionContext context = dataManipulator.getDataSource().getDefaultContext(true);
+            try (DBCSession session = context.openSession(monitor, DBCExecutionPurpose.USER, MockDataMessages.tools_mockdata_generate_data_task)) {
+                AbstractExecutionSource executionSource = new AbstractExecutionSource(dataManipulator, session.getExecutionContext(), this);
+                DBSDataManipulator.ExecuteBatch batch = dataManipulator.deleteData(session, new DBSAttributeBase[]{}, executionSource);
+                try {
+                    batch.add(new Object[] {});
+                    deleteStats.accumulate(batch.execute(session));
+                } finally {
+                    batch.close();
+                }
+            } catch (Exception e) {
+                log.error("Error removing data from the '" + dataManipulator.getName() + "'", e);
+            } finally {
+                monitor.done();
+            }
+            logPage.appendLog("    Rows updated: " + deleteStats.getRowsUpdated() + "\n");
+            logPage.appendLog("    Duration: " + deleteStats.getExecuteTime() + "ms\n");
+        } else {
+            logPage.appendLog("Old data isn't removed\n");
         }
 
         // TODO generate and insert the mock data to the table
-        logPage.appendLog("Generate and insert the mock data to the table " + arg.getName() + "\n\n");
+        logPage.appendLog("\nGenerate and insert the mock data into the table '" + dataManipulator.getName() + "' isn't implemented yet.\n\n");
 
         return true;
     }
