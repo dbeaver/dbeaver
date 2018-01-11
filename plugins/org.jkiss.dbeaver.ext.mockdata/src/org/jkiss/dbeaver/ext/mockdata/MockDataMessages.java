@@ -30,11 +30,14 @@ public class MockDataMessages extends NLS {
     public MockDataMessages() {
     }
 
+    public static String tools_mockdata_generate_data_task;
+
     public static String tools_mockdata_wizard_page_name;
+    public static String tools_mockdata_wizard_message_process_completed;
+
     public static String tools_mockdata_wizard_page_settings_group_settings;
     public static String tools_mockdata_wizard_page_settings_page_name;
     public static String tools_mockdata_wizard_page_settings_page_description;
     public static String tools_mockdata_wizard_page_settings_checkbox_remove_old_data;
-    public static String tools_mockdata_wizard_message_process_completed;
 
 }

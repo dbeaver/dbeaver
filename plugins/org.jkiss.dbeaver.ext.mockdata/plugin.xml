@@ -6,9 +6,9 @@
     <extension point="org.jkiss.dbeaver.tools">
         <tools>
             <tool
-                    class="org.jkiss.dbeaver.ext.mockdata.MockData"
+                    class="org.jkiss.dbeaver.ext.mockdata.MockDataGenerateTool"
                     description="Mock Data"
-                    id="org.jkiss.dbeaver.ext.mockdata.MockData"
+                    id="org.jkiss.dbeaver.ext.mockdata.MockDataGenerateTool"
                     label="Mock Data"
                     singleton="false">
                 <objectType name="org.jkiss.dbeaver.model.struct.DBSDataManipulator" forceCheck="true"/>

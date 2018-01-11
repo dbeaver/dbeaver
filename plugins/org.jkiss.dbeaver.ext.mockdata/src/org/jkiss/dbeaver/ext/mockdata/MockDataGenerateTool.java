@@ -17,18 +17,20 @@
  */
 package org.jkiss.dbeaver.ext.mockdata;
 
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tools.IExternalTool;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.tools.ToolWizardDialog;
 
 import java.util.ArrayList;
 import java.util.Collection;
 
-public class MockData implements IExternalTool {
+public class MockDataGenerateTool implements IExternalTool {
     public void execute(IWorkbenchWindow window, IWorkbenchPart activePart, Collection<DBSObject> objects) throws DBException {
 
         ArrayList<DBSDataManipulator> dbObjects = new ArrayList<>();
@@ -36,9 +38,43 @@ public class MockData implements IExternalTool {
             dbObjects.add((DBSDataManipulator) obj);
         }
 
+        MockDataExecuteWizard wizard = new MockDataExecuteWizard(dbObjects, MockDataMessages.tools_mockdata_wizard_page_name);
         ToolWizardDialog dialog = new ToolWizardDialog(
                 window,
-                new MockDataExecuteWizard(dbObjects, MockDataMessages.tools_mockdata_wizard_page_name));
+                wizard) {
+
+            private boolean removeOldDataConfirmed = false;
+
+            @Override
+            protected void finishPressed() {
+                if (doRemoveDataConfirmation()) {
+                    return;
+                }
+                super.finishPressed();
+            }
+
+            @Override
+            protected void nextPressed() {
+                IWizardPage currentPage = getCurrentPage();
+                if (currentPage instanceof MockDataWizardPageSettings) {
+                    if (doRemoveDataConfirmation()) {
+                        return;
+                    }
+                }
+                super.nextPressed();
+            }
+
+            private boolean doRemoveDataConfirmation() {
+                if (wizard.removeOldData && !removeOldDataConfirmed) {
+                    if (UIUtils.confirmAction(getShell(), "Mock Data Wizard", "Are you sure you want to delete old data?")) {
+                        removeOldDataConfirmed = true;
+                    } else {
+                        return true;
+                    }
+                }
+                return false;
+            }
+        };
         dialog.open();
     }
 }
