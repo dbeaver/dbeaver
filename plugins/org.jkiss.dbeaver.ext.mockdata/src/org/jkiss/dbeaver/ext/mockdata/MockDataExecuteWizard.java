@@ -68,24 +68,6 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
         super.addPages();
     }
 
-/*
-    @Override
-    public IWizardPage getNextPage(IWizardPage page) {
-        if (page == settingsPage) {
-            return null;
-        }
-        return super.getNextPage(page);
-    }
-
-    @Override
-    public IWizardPage getPreviousPage(IWizardPage page) {
-        if (page == logPage) {
-            return settingsPage;
-        }
-        return super.getPreviousPage(page);
-    }
-*/
-
     @Override
     public void onSuccess(long workTime) {
         UIUtils.showMessageBox(
@@ -93,7 +75,6 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                 MockDataMessages.tools_mockdata_wizard_page_name,
                 CommonUtils.truncateString(NLS.bind(MockDataMessages.tools_mockdata_wizard_message_process_completed, getObjectsName()), 255),
                 SWT.ICON_INFORMATION);
-        //UIUtils.launchProgram(outputFolder.getAbsolutePath());
     }
 
     public DBPClientHome findServerHome(String clientHomeId) {
@@ -139,14 +120,16 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                     batch.close();
                 }
             } catch (Exception e) {
-                log.error("Error removing data from the '" + dataManipulator.getName() + "'", e);
+                String message = "Error removing data from the '" + dataManipulator.getName() + "'.";
+                log.error(message, e);
+                logPage.appendLog(message, true);
             } finally {
                 monitor.done();
             }
             logPage.appendLog("    Rows updated: " + deleteStats.getRowsUpdated() + "\n");
             logPage.appendLog("    Duration: " + deleteStats.getExecuteTime() + "ms\n");
         } else {
-            logPage.appendLog("Old data isn't removed\n");
+            logPage.appendLog("Old data isn't removed.\n");
         }
 
         // TODO generate and insert the mock data to the table
