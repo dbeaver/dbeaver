@@ -17,33 +17,43 @@
  */
 package org.jkiss.dbeaver.debug.core.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IBreakpoint;
 import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.debug.core.model.IThread;
+import org.jkiss.dbeaver.debug.DBGController;
+import org.jkiss.dbeaver.debug.DBGException;
+import org.jkiss.dbeaver.debug.DBGStackFrame;
 
+/**
+ * Delegates mostly everything to its debug target
+ *
+ */
 public abstract class DatabaseThread extends DatabaseDebugElement implements IThread {
+    
+    private final Object sessionKey;
 
-    public DatabaseThread(IDatabaseDebugTarget target) {
+    public DatabaseThread(IDatabaseDebugTarget target, Object sessionKey) {
         super(target);
+        this.sessionKey = sessionKey;
     }
 
     @Override
     public boolean canResume() {
-        // TODO Auto-generated method stub
-        return false;
+        return getDebugTarget().canResume();
     }
 
     @Override
     public boolean canSuspend() {
-        // TODO Auto-generated method stub
-        return false;
+        return getDebugTarget().canSuspend();
     }
 
     @Override
     public boolean isSuspended() {
-        // TODO Auto-generated method stub
-        return false;
+        return getDebugTarget().isSuspended();
     }
 
     @Override
@@ -102,8 +112,7 @@ public abstract class DatabaseThread extends DatabaseDebugElement implements ITh
 
     @Override
     public boolean canTerminate() {
-        // TODO Auto-generated method stub
-        return false;
+        return getDebugTarget().canTerminate();
     }
 
     @Override
@@ -114,25 +123,31 @@ public abstract class DatabaseThread extends DatabaseDebugElement implements ITh
 
     @Override
     public void terminate() throws DebugException {
-        // TODO Auto-generated method stub
-
+        getDebugTarget().terminate();
     }
 
     @Override
     public IStackFrame[] getStackFrames() throws DebugException {
-        // TODO Auto-generated method stub
-        return null;
+        List<IStackFrame> frames = new ArrayList<IStackFrame>();
+        DBGController controller = getController();
+        try {
+            List<? extends DBGStackFrame> stack = controller.getStack(sessionKey);
+            stack.size();
+        } catch (DBGException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return (IStackFrame[]) frames.toArray(new IStackFrame[frames.size()]);
     }
 
     @Override
     public boolean hasStackFrames() throws DebugException {
-        // TODO Auto-generated method stub
-        return false;
+        return true;
     }
 
     @Override
     public int getPriority() throws DebugException {
-        // TODO Auto-generated method stub
+        // no idea for now
         return 0;
     }
 

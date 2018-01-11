@@ -53,8 +53,8 @@ public abstract class DatabaseLaunchDelegate extends LaunchConfigurationDelegate
         controller.init(attributes);
         DatabaseProcess process = createProcess(launch, configuration.getName());
         DatabaseDebugTarget target = createDebugTarget(launch, controller, process);
-        launch.addDebugTarget(target);
         target.connect(monitor);
+        launch.addDebugTarget(target);
     }
 
     protected Map<String, Object> extractAttributes(ILaunchConfiguration configuration) {

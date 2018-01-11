@@ -17,6 +17,9 @@
  */
 package org.jkiss.dbeaver.debug.core.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.core.resources.IMarkerDelta;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -33,7 +36,6 @@ import org.eclipse.debug.core.model.IThread;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.debug.DBGController;
 import org.jkiss.dbeaver.debug.DBGException;
-import org.jkiss.dbeaver.debug.DBGSession;
 import org.jkiss.dbeaver.debug.core.DebugCore;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -45,8 +47,8 @@ public abstract class DatabaseDebugTarget extends DatabaseDebugElement implement
     private final ILaunch launch;
     private final IProcess process;
     private final DBGController controller;
-    private final DatabaseThread thread;
-    private final IThread[] threads;
+    private final List<IThread> threads;
+    private DatabaseThread thread;
 
     private String name;
 
@@ -61,11 +63,15 @@ public abstract class DatabaseDebugTarget extends DatabaseDebugElement implement
         this.launch = launch;
         this.process = process;
         this.controller = controller;
-        this.thread = newThread(controller);
-        this.threads = new IThread[]{thread};
+        this.threads = new ArrayList<IThread>();
     }
     
-    protected abstract DatabaseThread newThread(DBGController controller);
+    @Override
+    public DBGController getController() {
+        return controller;
+    }
+    
+    protected abstract DatabaseThread newThread(DBGController controller, Object sessionKey);
 
     @Override
     public IDebugTarget getDebugTarget() {
@@ -89,12 +95,12 @@ public abstract class DatabaseDebugTarget extends DatabaseDebugElement implement
 
     @Override
     public IThread[] getThreads() throws DebugException {
-        return threads;
+        return (IThread[]) threads.toArray(new IThread[threads.size()]);
     }
 
     @Override
     public boolean hasThreads() throws DebugException {
-        return !terminated && threads.length > 0;
+        return !terminated && threads.size() > 0;
     }
 
     @Override
@@ -136,6 +142,8 @@ public abstract class DatabaseDebugTarget extends DatabaseDebugElement implement
     public void connect(IProgressMonitor monitor) throws CoreException {
         try {
             sessionKey = this.controller.attach(new DefaultProgressMonitor(monitor));
+            this.thread = newThread(controller, sessionKey);
+            threads.add(thread);
         } catch (DBGException e) {
             String message = NLS.bind("Failed to connect {0) to the target", getName());
             IStatus error = DebugCore.newErrorStatus(message, e);
