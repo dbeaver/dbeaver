@@ -109,6 +109,16 @@ public abstract class DBGBaseController implements DBGController {
         executionContext.close();
         //FIXME: AF: perform cleanup for everything cached
     }
+    
+    @Override
+    public List<? extends DBGStackFrame> getStack(Object id) throws DBGException {
+        DBGSession session = getDebugSession(id);
+        if (session == null) {
+            String message = NLS.bind("Session for {0} is not available", id);
+            throw new DBGException(message);
+        }
+        return session.getStack();
+    }
 
     @Override
     public DBGSession getDebugSession(Object id) throws DBGException {

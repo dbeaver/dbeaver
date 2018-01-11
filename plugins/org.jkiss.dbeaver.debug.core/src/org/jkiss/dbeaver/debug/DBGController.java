@@ -63,7 +63,8 @@ public interface DBGController {
     void detach(Object key, DBRProgressMonitor monitor) throws DBGException;
     
     void dispose() throws DBGException;
-
+    
+    List<? extends DBGStackFrame> getStack(Object id) throws DBGException;
 
     DBGSessionInfo getSessionInfo(DBCExecutionContext connection) throws DBGException;
 
