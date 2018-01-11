@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.ext.postgresql.debug.internal.impl.PostgreDebugBreakpoi
 import org.jkiss.dbeaver.ext.postgresql.debug.internal.impl.PostgreDebugController;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 
 @SuppressWarnings("nls")
 public class Debugger {
@@ -341,7 +342,7 @@ public class Debugger {
                     break;
                 }
 
-                controller.terminateSession(debugSessionC.getSessionId());
+                controller.detach(debugSessionC.getSessionId(), new VoidProgressMonitor());
 
                 System.out.println("Session closed");
 
