@@ -66,7 +66,7 @@ public class MockDataGenerateTool implements IExternalTool {
 
             private boolean doRemoveDataConfirmation() {
                 if (wizard.removeOldData && !removeOldDataConfirmed) {
-                    if (UIUtils.confirmAction(getShell(), "Mock Data Wizard", "Are you sure you want to delete old data?")) {
+                    if (UIUtils.confirmAction(getShell(), MockDataMessages.tools_mockdata_wizard_title, MockDataMessages.tools_mockdata_confirm_delete_old_data_message)) {
                         removeOldDataConfirmed = true;
                     } else {
                         return true;
