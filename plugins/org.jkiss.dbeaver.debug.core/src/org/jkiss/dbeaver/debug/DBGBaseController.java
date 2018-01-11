@@ -32,11 +32,12 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 public abstract class DBGBaseController implements DBGController {
-
+    
     private static final Log log = Log.getLog(DBGBaseController.class);
 
     private final DBPDataSourceContainer dataSourceContainer;
 
+    private final Map<String, Object> configuration = new HashMap<String, Object>();
     private final Map<Object, DBGSession> sessions = new HashMap<Object, DBGSession>(1);
 
     private DBCExecutionContext executionContext;
@@ -54,15 +55,25 @@ public abstract class DBGBaseController implements DBGController {
     }
     
     @Override
-    public DBGSession connect(DBRProgressMonitor monitor) throws DBGException {
+    public void init(Map<String, Object> context) {
+        this.configuration.putAll(context);
+    }
+    
+    @Override
+    public Object attach(DBRProgressMonitor monitor) throws DBGException {
         DBPDataSource dataSource = dataSourceContainer.getDataSource();
         if (!dataSourceContainer.isConnected()) {
             throw new DBGException("Not connected to database");
         }
         try {
             this.executionContext = dataSource.openIsolatedContext(monitor, "Debug controller");
-            DBGSession createSession = createSession(monitor, dataSource);
-            return createSession;
+            DBGSessionInfo targetInfo = getSessionInfo(getExecutionContext());
+            DBCExecutionContext sessionContext = dataSource.openIsolatedContext(monitor, "Debug session");
+            DBGSession debugSession = createDebugSession(targetInfo, sessionContext);
+            Object id = targetInfo.getID();
+            sessions.put(id, debugSession);
+            attachSession(debugSession, sessionContext, configuration);
+            return id;
         } catch (DBException e) {
             String message = NLS.bind(DebugMessages.DatabaseDebugController_e_opening_debug_context,
                 dataSourceContainer);
@@ -70,34 +81,27 @@ public abstract class DBGBaseController implements DBGController {
             throw new DBGException(message, e);
         }
     }
+    
+    public abstract void attachSession(DBGSession session, DBCExecutionContext sessionContext, Map<String, Object> configuataion) throws DBGException;
 
-    protected DBGSession createSession(DBRProgressMonitor monitor, DBPDataSource dataSource) throws DBGException {
-        try {
-            DBGSessionInfo targetInfo = getSessionInfo(getExecutionContext());
-            DBCExecutionContext sessionContext = dataSource.openIsolatedContext(monitor, "Debug session");
-            DBGSession debugSession = createDebugSession(targetInfo, sessionContext);
-            sessions.put(targetInfo.getID(), debugSession);
-            return debugSession;
-        } catch (DBException e) {
-            throw new DBGException("Can't initiate debug session", e);
+    @Override
+    public void resume(DBRProgressMonitor monitor) throws DBGException {
+        // TODO Auto-generated method stub
+
+    }
+
+    @Override
+    public void suspend(DBRProgressMonitor monitor) throws DBGException {
+        // TODO Auto-generated method stub
+
+    }
+    
+    @Override
+    public void detach(Object key, DBRProgressMonitor monitor) throws DBGException {
+        DBGSession session = sessions.remove(key);
+        if (session != null) {
+            session.close();
         }
-    }
-
-    @Override
-    public void resume(DBRProgressMonitor monitor, DBGSession session) throws DBGException {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void suspend(DBRProgressMonitor monitor, DBGSession session) throws DBGException {
-        // TODO Auto-generated method stub
-
-    }
-
-    @Override
-    public void terminate(DBRProgressMonitor monitor, DBGSession session) throws DBGException {
-
     }
 
     @Override
@@ -114,15 +118,6 @@ public abstract class DBGBaseController implements DBGController {
     @Override
     public boolean isSessionExists(Object id) {
         return sessions.containsKey(id);
-    }
-
-    @Override
-    public void terminateSession(Object id) {
-        DBGSession session = sessions.get(id);
-        if (session != null) {
-            session.close();
-            sessions.remove(id);
-        }
     }
 
     @Override

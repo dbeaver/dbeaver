@@ -182,11 +182,6 @@ public class PostgreDebugSession implements DBGSession {
     }
 
     @Override
-    public String getTitle() {
-        return sessionInfo.getTitle();
-    }
-
-    @Override
     public List<PostgreDebugBreakpoint> getBreakpoints() {
         return breakpoints;
     }
@@ -419,8 +414,7 @@ public class PostgreDebugSession implements DBGSession {
 
     @Override
     public String toString() {
-        return "PostgreDebugSession " + (isWaiting() ? "WAITING" : "READY") + " [connection=" + connection + ", title="
-                + getTitle() + ", sessionId=" + sessionId + ", breakpoints=" + breakpoints + "targetId=("
+        return "PostgreDebugSession " + (isWaiting() ? "WAITING" : "READY") + " [connection=" + connection + ", sessionId=" + sessionId + ", breakpoints=" + breakpoints + "targetId=("
                 + targetId + ") Session=(" + sessionInfo.toString() + ") " + "]";
     }
 

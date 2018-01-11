@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.debug.core.model;
 
 import org.eclipse.core.resources.IMarkerDelta;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.DebugException;
@@ -34,6 +35,7 @@ import org.jkiss.dbeaver.debug.DBGController;
 import org.jkiss.dbeaver.debug.DBGException;
 import org.jkiss.dbeaver.debug.DBGSession;
 import org.jkiss.dbeaver.debug.core.DebugCore;
+import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 
 public abstract class DatabaseDebugTarget extends DatabaseDebugElement implements IDatabaseDebugTarget {
@@ -46,12 +48,12 @@ public abstract class DatabaseDebugTarget extends DatabaseDebugElement implement
     private final DatabaseThread thread;
     private final IThread[] threads;
 
-    private DBGSession debugSession;
-
     private String name;
 
     private boolean suspended = false;
     private boolean terminated = false;
+
+    private Object sessionKey;
 
     public DatabaseDebugTarget(String modelIdentifier, ILaunch launch, IProcess process, DBGController controller) {
         super(null);
@@ -62,7 +64,7 @@ public abstract class DatabaseDebugTarget extends DatabaseDebugElement implement
         this.thread = newThread(controller);
         this.threads = new IThread[]{thread};
     }
-
+    
     protected abstract DatabaseThread newThread(DBGController controller);
 
     @Override
@@ -129,6 +131,17 @@ public abstract class DatabaseDebugTarget extends DatabaseDebugElement implement
             }
         }
     }
+    
+    @Override
+    public void connect(IProgressMonitor monitor) throws CoreException {
+        try {
+            sessionKey = this.controller.attach(new DefaultProgressMonitor(monitor));
+        } catch (DBGException e) {
+            String message = NLS.bind("Failed to connect {0) to the target", getName());
+            IStatus error = DebugCore.newErrorStatus(message, e);
+            throw new CoreException(error);
+        }
+    }
 
     @Override
     public boolean canTerminate() {
@@ -150,7 +163,7 @@ public abstract class DatabaseDebugTarget extends DatabaseDebugElement implement
             terminated = true;
             suspended = false;
             try {
-                controller.terminate(getProgressMonitor(), debugSession);
+                controller.detach(sessionKey, getProgressMonitor());
             } catch (DBGException e) {
                 String message = NLS.bind("Error terminating {0}", getName());
                 IStatus status = DebugCore.newErrorStatus(message, e);
@@ -178,7 +191,7 @@ public abstract class DatabaseDebugTarget extends DatabaseDebugElement implement
     public void resume() throws DebugException {
         suspended = false;
         try {
-            controller.resume(getProgressMonitor(), debugSession);
+            controller.resume(getProgressMonitor());
         } catch (DBGException e) {
             String message = NLS.bind("Error resuming {0}", getName());
             IStatus status = DebugCore.newErrorStatus(message, e);
@@ -193,7 +206,7 @@ public abstract class DatabaseDebugTarget extends DatabaseDebugElement implement
     @Override
     public void suspend() throws DebugException {
         try {
-            controller.suspend(getProgressMonitor(), debugSession);
+            controller.suspend(getProgressMonitor());
         } catch (DBGException e) {
             String message = NLS.bind("Error suspending {0}", getName());
             IStatus status = DebugCore.newErrorStatus(message, e);

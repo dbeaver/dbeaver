@@ -24,8 +24,6 @@ public interface DBGSession {
 
     DBGSessionInfo getSessionInfo();
 
-    String getTitle();
-
     List<? extends DBGBreakpoint> getBreakpoints();
 
     DBGBreakpoint setBreakpoint(DBGObject obj, DBGBreakpointProperties properties) throws DBGException;

@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.debug;
 
 import java.util.List;
+import java.util.Map;
 
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -27,15 +28,42 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
  */
 public interface DBGController {
 
-    DBGSession connect(DBRProgressMonitor monitor) throws DBGException;
+    public static final String DATABASE_NAME = "databaseName"; //$NON-NLS-1$
+    public static final String PROCEDURE_OID = "procedureOID"; //$NON-NLS-1$
+    public static final String PROCESS_ID = "processID"; //$NON-NLS-1$
 
-    void resume(DBRProgressMonitor monitor, DBGSession session) throws DBGException;
+    /*
+     * General lifecycle
+     */
 
-    void suspend(DBRProgressMonitor monitor, DBGSession session) throws DBGException;
+    /**
+     * Sets debug context like OID etc.
+     * @param context
+     */
+    void init(Map<String, Object> context);
 
-    void terminate(DBRProgressMonitor monitor, DBGSession session) throws DBGException;
-
+    /**
+     * 
+     * @param monitor
+     * @return key to use for <code>detach</code>
+     * @throws DBGException
+     */
+    Object attach(DBRProgressMonitor monitor) throws DBGException;
+    
+    void suspend(DBRProgressMonitor monitor) throws DBGException;
+    
+    void resume(DBRProgressMonitor monitor) throws DBGException;
+    
+    /**
+     * 
+     * @param key the key obtained as a result of <code>attach</code>
+     * @param monitor
+     * @throws DBGException
+     */
+    void detach(Object key, DBRProgressMonitor monitor) throws DBGException;
+    
     void dispose() throws DBGException;
+
 
     DBGSessionInfo getSessionInfo(DBCExecutionContext connection) throws DBGException;
 
@@ -44,8 +72,6 @@ public interface DBGController {
     DBGSession getDebugSession(Object id) throws DBGException;
 
     List<DBGSession> getDebugSessions() throws DBGException;
-
-    void terminateSession(Object id);
 
     DBGSession createDebugSession(DBGSessionInfo targetInfo, DBCExecutionContext connection) throws DBGException;
 

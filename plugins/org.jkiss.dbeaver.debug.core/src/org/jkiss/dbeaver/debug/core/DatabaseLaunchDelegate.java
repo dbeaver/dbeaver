@@ -27,14 +27,11 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.LaunchConfigurationDelegate;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.debug.DBGController;
-import org.jkiss.dbeaver.debug.DBGException;
 import org.jkiss.dbeaver.debug.core.model.DatabaseDebugTarget;
 import org.jkiss.dbeaver.debug.core.model.DatabaseProcess;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 
 public abstract class DatabaseLaunchDelegate extends LaunchConfigurationDelegate {
 
@@ -47,26 +44,32 @@ public abstract class DatabaseLaunchDelegate extends LaunchConfigurationDelegate
             String message = NLS.bind("Unable to find data source with id {0}", datasourceId);
             throw new CoreException(DebugCore.newErrorStatus(message));
         }
-        String databaseName = DebugCore.extractDatabaseName(configuration);
         Map<String, Object> attributes = extractAttributes(configuration);
-        DBGController controller = createController(datasourceDescriptor, databaseName, attributes);
+        DBGController controller = createController(datasourceDescriptor);
+        if (controller == null) {
+            String message = NLS.bind("Unable to find debug controller for datasource {0}", datasourceDescriptor);
+            throw new CoreException(DebugCore.newErrorStatus(message));
+        }
+        controller.init(attributes);
         DatabaseProcess process = createProcess(launch, configuration.getName());
         DatabaseDebugTarget target = createDebugTarget(launch, controller, process);
         launch.addDebugTarget(target);
-        DefaultProgressMonitor progress = new DefaultProgressMonitor(monitor);
-        try {
-            controller.connect(progress);
-        } catch (DBGException e) {
-            throw new CoreException(GeneralUtils.makeExceptionStatus("Error connecting debug controller", e));
-        }
+        target.connect(monitor);
     }
 
     protected Map<String, Object> extractAttributes(ILaunchConfiguration configuration) {
         Map<String, Object> attributes = new HashMap<>();
+        String databaseName = DebugCore.extractDatabaseName(configuration);
+        attributes.put(DBGController.DATABASE_NAME, databaseName);
+        //FIXME:AF:extract from launch configuration
+        //FIXME 16749 - OID for debug proc
+        attributes.put(DBGController.PROCEDURE_OID, 16749);
+        //FIXME -1 - target PID (-1 for ANY PID)
+        attributes.put(DBGController.PROCESS_ID, -1);
         return attributes;
     }
 
-    protected abstract DBGController createController(DBPDataSourceContainer dataSourceContainer, String databaseName, Map<String, Object> attributes) throws CoreException;
+    protected abstract DBGController createController(DBPDataSourceContainer dataSourceContainer) throws CoreException;
 
     protected abstract DatabaseProcess createProcess(ILaunch launch, String name);
 

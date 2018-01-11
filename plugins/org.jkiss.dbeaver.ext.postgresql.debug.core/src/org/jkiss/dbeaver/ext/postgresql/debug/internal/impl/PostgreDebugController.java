@@ -23,9 +23,11 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 import org.jkiss.dbeaver.debug.DBGBaseController;
 import org.jkiss.dbeaver.debug.DBGException;
+import org.jkiss.dbeaver.debug.DBGSession;
 import org.jkiss.dbeaver.debug.DBGSessionInfo;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -129,11 +131,19 @@ public class PostgreDebugController extends DBGBaseController {
         PostgreDebugSessionInfo sessionInfo = getSessionInfo(sessionContext);
         PostgreDebugSession debugSession = new PostgreDebugSession(sessionInfo, targetInfo.getID());
         
-        debugSession.attach((JDBCExecutionContext) sessionContext, 16749, -1);
-        //FIXME 16749 - OID for debug proc
-        //FIXME -1 - target PID (-1 for ANY PID)
         return debugSession;
 
+    }
+    
+    @Override
+    public void attachSession(DBGSession session, DBCExecutionContext sessionContext, Map<String, Object> configuration) throws DBGException {
+        PostgreDebugSession pgSession = (PostgreDebugSession) session;
+        JDBCExecutionContext jdbcContext = (JDBCExecutionContext) sessionContext;
+        //FIXME 16749 - OID for debug proc
+        //FIXME -1 - target PID (-1 for ANY PID)
+        Integer oid = (Integer) configuration.get(PROCEDURE_OID);
+        Integer pid = (Integer) configuration.get(PROCESS_ID);
+        pgSession.attach(jdbcContext, oid, pid);
     }
 
 }
