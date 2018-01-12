@@ -26,12 +26,12 @@ public class DatabaseDebugElement extends DebugElement {
         super(target);
     }
 
-    public IDatabaseDebugTarget geDatabaseDebugTarget() {
+    public IDatabaseDebugTarget getDatabaseDebugTarget() {
         return (IDatabaseDebugTarget) getDebugTarget();
     }
     
     public DBGController getController() {
-        return geDatabaseDebugTarget().getController();
+        return getDatabaseDebugTarget().getController();
     }
 
     @Override

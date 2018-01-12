@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.debug;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -72,7 +73,7 @@ public abstract class DBGBaseController implements DBGController {
             DBGSession debugSession = createDebugSession(targetInfo, sessionContext);
             Object id = targetInfo.getID();
             sessions.put(id, debugSession);
-            attachSession(debugSession, sessionContext, configuration);
+            attachSession(debugSession, sessionContext, configuration, monitor);
             return id;
         } catch (DBException e) {
             String message = NLS.bind(DebugMessages.DatabaseDebugController_e_opening_debug_context,
@@ -82,7 +83,7 @@ public abstract class DBGBaseController implements DBGController {
         }
     }
     
-    public abstract void attachSession(DBGSession session, DBCExecutionContext sessionContext, Map<String, Object> configuataion) throws DBGException;
+    public abstract void attachSession(DBGSession session, DBCExecutionContext sessionContext, Map<String, Object> configuataion, DBRProgressMonitor monitor) throws DBGException, DBException;
 
     @Override
     public void resume(DBRProgressMonitor monitor) throws DBGException {
@@ -107,7 +108,10 @@ public abstract class DBGBaseController implements DBGController {
     @Override
     public void dispose() {
         executionContext.close();
-        //FIXME: AF: perform cleanup for everything cached
+        Collection<DBGSession> values = sessions.values();
+        for (DBGSession session : values) {
+            session.close();
+        }
     }
     
     @Override

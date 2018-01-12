@@ -132,8 +132,8 @@ public class PostgreDebugSession implements DBGSession {
                     ResultSet rs = stmt.executeQuery(SQL_LISTEN)) {
 
                 if (rs.next()) {
-                    getConnection(connection).setClientInfo("ApplicationName", "Debug Mode : " + String.valueOf(sessionId));
                     sessionId =  rs.getInt("sessionid");
+                    getConnection(connection).setClientInfo("ApplicationName", "Debug Mode : " + String.valueOf(sessionId));
                 } else {
                     throw new DBGException("Unable to create debug instance");
                 }
