@@ -300,7 +300,7 @@ public class PostgreDebugSession implements DBGSession {
     }
 
     @Override
-    public List<DBGVariable<?>> getVarables() throws DBGException {
+    public List<DBGVariable<?>> getVariables() throws DBGException {
 
         acquireReadLock();
 
