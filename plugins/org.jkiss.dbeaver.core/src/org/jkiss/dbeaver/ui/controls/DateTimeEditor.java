@@ -21,6 +21,8 @@ import java.util.Date;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.TraverseEvent;
+import org.eclipse.swt.events.TraverseListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -81,6 +83,15 @@ public class DateTimeEditor {
 		}
 		if (timeEditor != null && !timeEditor.isDisposed()) {
 			timeEditor.addSelectionListener(listener);
+		}
+	}
+
+	public void addTraversedListener(TraverseListener listener) {
+		if (dateEditor != null && !dateEditor.isDisposed()) {
+			dateEditor.addTraverseListener(listener);
+		}
+		if (timeEditor != null && !timeEditor.isDisposed()) {
+			timeEditor.addTraverseListener(listener);
 		}
 	}
 

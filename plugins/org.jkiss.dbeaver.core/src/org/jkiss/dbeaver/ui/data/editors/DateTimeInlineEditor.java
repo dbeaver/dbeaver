@@ -21,6 +21,8 @@ import java.util.Date;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.TraverseEvent;
+import org.eclipse.swt.events.TraverseListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.Nullable;
@@ -32,6 +34,7 @@ import org.jkiss.dbeaver.model.impl.data.DateTimeCustomValueHandler;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.controls.CustomDateTimeEditor;
 import org.jkiss.dbeaver.ui.controls.DateTimeEditor;
+import org.jkiss.dbeaver.ui.data.IMultiController;
 import org.jkiss.dbeaver.ui.data.IValueController;
 
 /**
@@ -68,7 +71,20 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
 					dirty = true;
 				}
 			});
-			
+
+			timeEditor.addTraversedListener(new TraverseListener() {
+
+				@Override
+				public void keyTraversed(TraverseEvent e) {
+					if (e.detail == SWT.TRAVERSE_TAB_NEXT || e.detail == SWT.TRAVERSE_TAB_PREVIOUS) {
+						 saveValue();
+                         ((IMultiController) valueController).nextInlineEditor(e.detail == SWT.TRAVERSE_TAB_NEXT);
+                         e.doit = false;
+                         e.detail = SWT.TRAVERSE_NONE;
+					}
+				}
+			});
+
 			return timeEditor.getControl();
 
 		} else {
