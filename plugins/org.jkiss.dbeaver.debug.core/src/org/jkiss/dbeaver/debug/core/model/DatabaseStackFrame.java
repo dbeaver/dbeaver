@@ -1,21 +1,30 @@
 package org.jkiss.dbeaver.debug.core.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IRegisterGroup;
 import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.debug.core.model.IThread;
 import org.eclipse.debug.core.model.IVariable;
+import org.jkiss.dbeaver.debug.DBGException;
+import org.jkiss.dbeaver.debug.DBGSession;
 import org.jkiss.dbeaver.debug.DBGStackFrame;
+import org.jkiss.dbeaver.debug.DBGVariable;
 
 public class DatabaseStackFrame extends DatabaseDebugElement implements IStackFrame {
     
+    private static final IVariable[] NO_VARIABLES = new IVariable[0];
     private final DBGStackFrame dbgStackFrame;
     private final DatabaseThread thread;
+    private final Object sessionKey;
 
-    public DatabaseStackFrame(DatabaseThread thread, DBGStackFrame dbgStackFrame) {
+    public DatabaseStackFrame(DatabaseThread thread, DBGStackFrame dbgStackFrame, Object sessionKey) {
         super(thread.getDatabaseDebugTarget());
         this.thread = thread;
         this.dbgStackFrame = dbgStackFrame;
+        this.sessionKey = sessionKey;
     }
 
     @Override
@@ -115,14 +124,28 @@ public class DatabaseStackFrame extends DatabaseDebugElement implements IStackFr
 
     @Override
     public IVariable[] getVariables() throws DebugException {
-        // TODO Auto-generated method stub
-        return null;
+        try {
+            DBGSession debugSession = getController().getDebugSession(sessionKey);
+            List<? extends DBGVariable<?>> dbgVariables = debugSession.getVariables();
+            if (dbgVariables.size() == 0) {
+                return NO_VARIABLES;
+            }
+            List<DatabaseVariable> variables = new ArrayList<DatabaseVariable>();
+            for (DBGVariable<?> dbgVariable : dbgVariables) {
+                DatabaseVariable e = new DatabaseVariable(getDatabaseDebugTarget(), dbgVariable);
+                variables.add(e);
+            }
+            return (DatabaseVariable[]) variables.toArray(new DatabaseVariable[variables.size()]);
+        } catch (DBGException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return NO_VARIABLES;
     }
 
     @Override
     public boolean hasVariables() throws DebugException {
-        // TODO Auto-generated method stub
-        return false;
+        return true;
     }
 
     @Override

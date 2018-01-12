@@ -133,7 +133,7 @@ public abstract class DatabaseThread extends DatabaseDebugElement implements ITh
         try {
             List<? extends DBGStackFrame> stack = controller.getStack(sessionKey);
             for (DBGStackFrame dbgStackFrame : stack) {
-                DatabaseStackFrame frame = new DatabaseStackFrame(this, dbgStackFrame);
+                DatabaseStackFrame frame = new DatabaseStackFrame(this, dbgStackFrame, sessionKey);
                 frames.add(frame);
             }
         } catch (DBGException e) {

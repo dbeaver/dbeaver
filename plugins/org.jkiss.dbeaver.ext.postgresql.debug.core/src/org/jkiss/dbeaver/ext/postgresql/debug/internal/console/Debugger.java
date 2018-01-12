@@ -70,7 +70,7 @@ public class Debugger {
 
         DBGVariable<?> v = null;
 
-        List<? extends DBGVariable<?>> vars = session.getVarables();
+        List<? extends DBGVariable<?>> vars = session.getVariables();
 
         Scanner scArg;
 
@@ -409,7 +409,7 @@ public class Debugger {
                     break;
                 }
 
-                List<? extends DBGVariable<?>> vars = debugSessionVL.getVarables();
+                List<? extends DBGVariable<?>> vars = debugSessionVL.getVariables();
 
                 if (vars.size() == 0) {
                     System.out.println("No vars defined");

@@ -40,7 +40,7 @@ public interface DBGSession {
 
     void close();
 
-    List<? extends DBGVariable<?>> getVarables() throws DBGException;
+    List<? extends DBGVariable<?>> getVariables() throws DBGException;
 
     void setVariableVal(DBGVariable<?> variable, Object value) throws DBGException;
 
