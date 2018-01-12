@@ -30,6 +30,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
 import org.jkiss.dbeaver.debug.core.model.DatabaseProcess;
+import org.jkiss.dbeaver.debug.core.model.DatabaseStackFrame;
 import org.jkiss.dbeaver.debug.core.model.DatabaseThread;
 import org.jkiss.dbeaver.debug.core.model.IDatabaseDebugTarget;
 
@@ -71,6 +72,10 @@ public class DatabaseDebugModelPresentation extends LabelProvider implements IDe
     {
         // FIXME:AF: register adapters
         try {
+            if (element instanceof DatabaseStackFrame) {
+                DatabaseStackFrame stackFrame = (DatabaseStackFrame) element;
+                return stackFrame.getName();
+            }
             if (element instanceof DatabaseThread) {
                 DatabaseThread thread = (DatabaseThread) element;
                 return thread.getName();

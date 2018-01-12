@@ -128,11 +128,14 @@ public abstract class DatabaseThread extends DatabaseDebugElement implements ITh
 
     @Override
     public IStackFrame[] getStackFrames() throws DebugException {
-        List<IStackFrame> frames = new ArrayList<IStackFrame>();
+        List<DatabaseStackFrame> frames = new ArrayList<DatabaseStackFrame>();
         DBGController controller = getController();
         try {
             List<? extends DBGStackFrame> stack = controller.getStack(sessionKey);
-            stack.size();
+            for (DBGStackFrame dbgStackFrame : stack) {
+                DatabaseStackFrame frame = new DatabaseStackFrame(this, dbgStackFrame);
+                frames.add(frame);
+            }
         } catch (DBGException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

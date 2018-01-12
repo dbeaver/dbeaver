@@ -145,8 +145,9 @@ public abstract class DatabaseDebugTarget extends DatabaseDebugElement implement
             this.thread = newThread(controller, sessionKey);
             threads.add(thread);
         } catch (DBGException e) {
-            String message = NLS.bind("Failed to connect {0) to the target", getName());
+            String message = NLS.bind("Failed to connect {0} to the target", getName());
             IStatus error = DebugCore.newErrorStatus(message, e);
+            process.terminate();
             throw new CoreException(error);
         }
     }
@@ -176,6 +177,8 @@ public abstract class DatabaseDebugTarget extends DatabaseDebugElement implement
                 String message = NLS.bind("Error terminating {0}", getName());
                 IStatus status = DebugCore.newErrorStatus(message, e);
                 throw new DebugException(status);
+            } finally {
+                controller.dispose();
             }
         }
     }
