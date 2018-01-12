@@ -48,6 +48,7 @@ public class DateTimeEditor {
 		}
 		this.formaterId = formaterId;
 		basePart = new Composite(parent, SWT.BORDER);
+
 		GridLayout layout = new GridLayout(1, false);
 		layout.marginHeight = 1;
 		layout.marginWidth = 1;
@@ -55,20 +56,21 @@ public class DateTimeEditor {
 		layout.verticalSpacing = 1;
 		basePart.setLayout(layout);
 
-		GridData dateTimeData = new GridData(SWT.FILL, SWT.FILL, true, true);
+		GridData dateData = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		GridData timeData = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
 
 		if (formaterId.equals(DBDDataFormatter.TYPE_NAME_TIMESTAMP)) {
-			this.dateEditor = new DateTime(basePart, SWT.DATE | SWT.MEDIUM | SWT.DROP_DOWN | style);
-			this.dateEditor.setLayoutData(dateTimeData);
+			this.dateEditor = new DateTime(basePart, SWT.DATE | SWT.DROP_DOWN | style);
+			this.dateEditor.setLayoutData(dateData);
 
-			this.timeEditor = new DateTime(basePart, SWT.TIME | SWT.MEDIUM | SWT.DROP_DOWN | style);
-			this.timeEditor.setLayoutData(dateTimeData);
+			this.timeEditor = new DateTime(basePart, SWT.TIME | SWT.DROP_DOWN | style);
+			this.timeEditor.setLayoutData(timeData);
 		} else if (formaterId.equals(DBDDataFormatter.TYPE_NAME_DATE)) {
-			this.dateEditor = new DateTime(basePart, SWT.DATE | SWT.MEDIUM | SWT.DROP_DOWN | style);
-			this.dateEditor.setLayoutData(dateTimeData);
+			this.dateEditor = new DateTime(basePart, SWT.DATE | SWT.DROP_DOWN | style);
+			this.dateEditor.setLayoutData(dateData);
 		} else if (formaterId.equals(DBDDataFormatter.TYPE_NAME_TIME)) {
-			this.timeEditor = new DateTime(basePart, SWT.TIME | SWT.MEDIUM | SWT.DROP_DOWN | style);
-			this.timeEditor.setLayoutData(dateTimeData);
+			this.timeEditor = new DateTime(basePart, SWT.TIME | SWT.DROP_DOWN | style);
+			this.timeEditor.setLayoutData(timeData);
 		}
 
 	}

@@ -68,7 +68,7 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
 					dirty = true;
 				}
 			});
-
+			
 			return timeEditor.getControl();
 
 		} else {
