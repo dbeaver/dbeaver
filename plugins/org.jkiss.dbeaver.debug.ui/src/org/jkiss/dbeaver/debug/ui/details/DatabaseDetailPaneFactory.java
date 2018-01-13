@@ -22,15 +22,19 @@ public class DatabaseDetailPaneFactory implements IDetailPaneFactory {
     {
         HashSet<String> set = new HashSet<>();
         if (selection.size() == 1) {
-            IBreakpoint b = (IBreakpoint) selection.getFirstElement();
-            try {
-                String type = b.getMarker().getType();
-                if (DebugCore.BREAKPOINT_DATABASE_LINE.equals(type)) {
-                    set.add(DatabaseStandardBreakpointPane.DETAIL_PANE_STANDARD_BREAKPOINT);
-                } else {
-                    set.add(DatabaseStandardBreakpointPane.DETAIL_PANE_STANDARD_BREAKPOINT);
+            Object first = selection.getFirstElement();
+            if (first instanceof IBreakpoint) {
+                IBreakpoint breakpoint = (IBreakpoint) first;
+                try {
+                    String type = breakpoint.getMarker().getType();
+                    if (DebugCore.BREAKPOINT_DATABASE_LINE.equals(type)) {
+                        set.add(DatabaseStandardBreakpointPane.DETAIL_PANE_STANDARD_BREAKPOINT);
+                    } else {
+                        set.add(DatabaseStandardBreakpointPane.DETAIL_PANE_STANDARD_BREAKPOINT);
+                    }
+                } catch (CoreException e) {
                 }
-            } catch (CoreException e) {
+                
             }
         }
         return set;
@@ -40,15 +44,19 @@ public class DatabaseDetailPaneFactory implements IDetailPaneFactory {
     public String getDefaultDetailPane(IStructuredSelection selection)
     {
         if (selection.size() == 1) {
-            IBreakpoint b = (IBreakpoint) selection.getFirstElement();
-            try {
-                String type = b.getMarker().getType();
-                if (DebugCore.BREAKPOINT_DATABASE_LINE.equals(type)) {
-                    return DatabaseStandardBreakpointPane.DETAIL_PANE_STANDARD_BREAKPOINT;
-                } else {
-                    return DatabaseStandardBreakpointPane.DETAIL_PANE_STANDARD_BREAKPOINT;
+            Object first = selection.getFirstElement();
+            if (first instanceof IBreakpoint) {
+                IBreakpoint breakpoint = (IBreakpoint) first;
+                try {
+                    String type = breakpoint.getMarker().getType();
+                    if (DebugCore.BREAKPOINT_DATABASE_LINE.equals(type)) {
+                        return DatabaseStandardBreakpointPane.DETAIL_PANE_STANDARD_BREAKPOINT;
+                    } else {
+                        return DatabaseStandardBreakpointPane.DETAIL_PANE_STANDARD_BREAKPOINT;
+                    }
+                } catch (CoreException e) {
                 }
-            } catch (CoreException e) {
+                
             }
         }
         return null;
