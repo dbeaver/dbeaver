@@ -147,8 +147,8 @@
 
         <!-- Test -->
         <module>plugins/org.jkiss.dbeaver.test</module>
-        <!--module>tests/org.jkiss.dbeaver.runtime.ide.core.tests</module>
-	    -->
+        <module>tests/org.jkiss.dbeaver.runtime.ide.core.tests</module>
+	    
     </modules>
 
     <repositories>
