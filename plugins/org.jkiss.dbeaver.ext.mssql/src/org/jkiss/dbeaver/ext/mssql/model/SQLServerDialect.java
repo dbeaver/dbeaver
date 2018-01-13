@@ -94,7 +94,7 @@ public class SQLServerDialect extends GenericSQLDialect implements SQLRuleProvid
         sql.append("EXEC\t@return_value = [" + proc.getContainer().getName() +"].[" + proc.getName() + "]\n");
         for (int i = 0; i < inParameters.size(); i++) {
             String name = inParameters.get(i).getName();
-            sql.append("\t\t" + name + " = ?");
+            sql.append("\t\t" + name + " = :").append(CommonUtils.escapeIdentifier(name));
             if (i < (inParameters.size() - 1)) {
                 sql.append(", ");
             } else {

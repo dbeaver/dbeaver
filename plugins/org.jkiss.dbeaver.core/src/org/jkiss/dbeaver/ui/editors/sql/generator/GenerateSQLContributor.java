@@ -127,6 +127,15 @@ public class GenerateSQLContributor extends CompoundContributionItem {
         if (menu.size() > 0) {
             menu.add(new Separator());
         }
+        List<DBSProcedure> procedures = new ArrayList<>();
+        for (DBPScriptObject so : scriptObjects) {
+            if (so instanceof DBSProcedure) {
+                procedures.add((DBSProcedure) so);
+            }
+        }
+        if (!procedures.isEmpty()) {
+            menu.add(makeAction("CALL", CALL_GENERATOR(procedures)));
+        }
         menu.add(makeAction("DDL", new SQLGenerator<DBPScriptObject>(scriptObjects) {
             @Override
             public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, DBPScriptObject object) throws DBException {
