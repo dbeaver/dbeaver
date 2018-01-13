@@ -54,6 +54,10 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
         this.sqlServer = sqlServer;
     }
 
+    public boolean isSqlServer() {
+        return sqlServer;
+    }
+
     @Override
     public SQLServerDataSource createDataSourceImpl(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
         return new SQLServerDataSource(monitor, container, this);
