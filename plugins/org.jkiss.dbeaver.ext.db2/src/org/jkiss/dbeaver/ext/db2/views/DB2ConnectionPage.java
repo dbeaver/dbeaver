@@ -70,7 +70,6 @@ public class DB2ConnectionPage extends ConnectionPageAbstract implements ICompos
             @Override
             public void modifyText(ModifyEvent e)
             {
-                saveSettings(site.getActiveDataSource());
                 site.updateButtons();
             }
         };

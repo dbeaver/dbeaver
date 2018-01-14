@@ -8,8 +8,7 @@ import org.jkiss.dbeaver.debug.core.DebugCore;
 public class DatabaseBreakpoint extends Breakpoint implements IDatabaseBreakpoint {
 
     @Override
-    public String getModelIdentifier()
-    {
+    public String getModelIdentifier() {
         return DebugCore.MODEL_IDENTIFIER_DATABASE;
     }
 

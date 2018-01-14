@@ -72,7 +72,6 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
             public void modifyText(ModifyEvent e)
             {
                 if (activated) {
-                    saveSettings(site.getActiveDataSource());
                     site.updateButtons();
                 }
             }

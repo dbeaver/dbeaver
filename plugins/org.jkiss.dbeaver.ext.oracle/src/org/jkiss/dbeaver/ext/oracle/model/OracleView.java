@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.meta.PropertyGroup;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.Reader;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
@@ -48,16 +49,12 @@ public class OracleView extends OracleTableBase implements OracleSourceObject
     private static final Log log = Log.getLog(OracleView.class);
 
     public class AdditionalInfo extends TableAdditionalInfo {
-        private String text;
         private String typeText;
         private String oidText;
         private String typeOwner;
         private String typeName;
         private OracleView superView;
 
-        //@Property(hidden = true, editable = true, updatable = true, order = -1)
-        public String getText() { return text; }
-        public void setText(String text) { this.text = text; }
 
         @Property(viewable = false, order = 10)
         public Object getType(DBRProgressMonitor monitor) throws DBException
@@ -80,6 +77,7 @@ public class OracleView extends OracleTableBase implements OracleSourceObject
     }
 
     private final AdditionalInfo additionalInfo = new AdditionalInfo();
+    private String viewText;
 
     public OracleView(OracleSchema schema, String name)
     {
@@ -117,16 +115,15 @@ public class OracleView extends OracleTableBase implements OracleSourceObject
     @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException
     {
-        return getAdditionalInfo(monitor).getText();
+        if (viewText == null) {
+            viewText = OracleUtils.getDDL(monitor, getTableTypeName(), this, OracleDDLFormat.COMPACT, options);
+        }
+        return viewText;
     }
 
     public void setObjectDefinitionText(String source)
     {
-        if (source == null) {
-            additionalInfo.loaded = false;
-        } else {
-            additionalInfo.setText(source);
-        }
+        this.viewText = source;
     }
 
     @Override
@@ -159,24 +156,29 @@ public class OracleView extends OracleTableBase implements OracleSourceObject
         this.valid = OracleUtils.getObjectStatus(monitor, this, OracleObjectType.VIEW);
     }
 
+    public String getViewText() {
+        return viewText;
+    }
+
+    public void setViewText(String viewText) {
+        this.viewText = viewText;
+    }
+
     private void loadAdditionalInfo(DBRProgressMonitor monitor) throws DBException
     {
         if (!isPersisted()) {
             additionalInfo.loaded = true;
             return;
         }
-        String viewText = null;
         try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Load table status")) {
             boolean isOracle9 = getDataSource().isAtLeastV9();
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT TEXT,TYPE_TEXT,OID_TEXT,VIEW_TYPE_OWNER,VIEW_TYPE" + (isOracle9 ? ",SUPERVIEW_NAME" : "") + "\n" +
+                "SELECT TYPE_TEXT,OID_TEXT,VIEW_TYPE_OWNER,VIEW_TYPE" + (isOracle9 ? ",SUPERVIEW_NAME" : "") + "\n" +
                     "FROM SYS.ALL_VIEWS WHERE OWNER=? AND VIEW_NAME=?")) {
                 dbStat.setString(1, getContainer().getName());
                 dbStat.setString(2, getName());
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.next()) {
-                        viewText = JDBCUtils.safeGetString(dbResult, "TEXT");
-                        additionalInfo.setText(viewText);
                         additionalInfo.setTypeText(JDBCUtils.safeGetStringTrimmed(dbResult, "TYPE_TEXT"));
                         additionalInfo.setOidText(JDBCUtils.safeGetStringTrimmed(dbResult, "OID_TEXT"));
                         additionalInfo.typeOwner = JDBCUtils.safeGetStringTrimmed(dbResult, "VIEW_TYPE_OWNER");
@@ -197,6 +199,7 @@ public class OracleView extends OracleTableBase implements OracleSourceObject
         catch (SQLException e) {
             throw new DBCException(e, getDataSource());
         }
+/*
         if (viewText != null) {
             StringBuilder paramsList = new StringBuilder();
             Collection<OracleTableColumn> attributes = getAttributes(monitor);
@@ -212,7 +215,7 @@ public class OracleView extends OracleTableBase implements OracleSourceObject
             }
             viewText = "CREATE OR REPLACE VIEW " + getFullyQualifiedName(DBPEvaluationContext.DDL) + paramsList + "\nAS\n" + viewText;
         }
-        additionalInfo.setText(viewText);
+*/
     }
 
     @Override

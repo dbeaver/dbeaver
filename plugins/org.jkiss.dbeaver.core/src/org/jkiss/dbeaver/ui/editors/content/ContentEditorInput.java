@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.model.impl.BytesContentStorage;
 import org.jkiss.dbeaver.model.impl.ExternalContentStorage;
 import org.jkiss.dbeaver.model.impl.StringContentStorage;
 import org.jkiss.dbeaver.model.impl.TemporaryContentStorage;
+import org.jkiss.dbeaver.model.impl.data.StringContent;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.runtime.LocalFileStorage;
@@ -54,6 +55,7 @@ import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.IOUtils;
 
 import java.io.*;
 
@@ -159,14 +161,18 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider,
         return null;
     }
 
-    public DBDContent getContent()
-        throws DBCException
-    {
-        Object value = valueController.getValue();
+    public Object getValue() throws DBCException {
+        return valueController.getValue();
+    }
+
+    private DBDContent getContent() throws DBCException {
+        Object value = getValue();
         if (value instanceof DBDContent) {
-            return (DBDContent)value;
+            return (DBDContent) value;
+        } else if (value instanceof String) {
+            return new StringContent(valueController.getExecutionContext().getDataSource(), (String)value);
         } else {
-            throw new DBCException("Value doesn't support streaming");
+            throw new DBCException("Unsupported content value type: " + value);
         }
     }
 
@@ -268,13 +274,27 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider,
             release();
             contentFile = extFile;
             contentDetached = true;
-            getContent().updateContents(
-                new DefaultProgressMonitor(monitor),
-                new ExternalContentStorage(DBeaverCore.getInstance(), extFile));
+            Object value = getValue();
+            if (value instanceof DBDContent) {
+                ((DBDContent)value).updateContents(
+                    new DefaultProgressMonitor(monitor),
+                    new ExternalContentStorage(DBeaverCore.getInstance(), extFile));
+            } else {
+                updateStringValueFromFile(extFile);
+            }
             refreshContentParts(extFile);
         }
         catch (Throwable e) {
             throw new CoreException(GeneralUtils.makeExceptionStatus(e));
+        }
+    }
+
+    private void updateStringValueFromFile(File extFile) throws DBException {
+        try (FileReader is = new FileReader(extFile)) {
+            String str = IOUtils.readToString(is);
+            valueController.updateValue(str, false);
+        } catch (IOException e) {
+            throw new DBException("Error reading content from file", e);
         }
     }
 
@@ -319,30 +339,37 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider,
         }
 
         DBRProgressMonitor localMonitor = RuntimeUtils.makeMonitor(monitor);
-        DBDContent content = getContent();
-        DBDContentStorage storage = content.getContents(localMonitor);
-        if (storage instanceof DBDContentStorageLocal) {
-            // Nothing to update - we user content's storage
-            contentDetached = true;
-        } else if (storage instanceof DBDContentCached) {
-            // Create new storage and pass it to content
-            try (FileInputStream is = new FileInputStream(contentFile)) {
-                if (storage instanceof StringContentStorage) {
-                    try (Reader reader = new InputStreamReader(is, fileCharset)) {
-                        storage = StringContentStorage.createFromReader(reader);
+        Object value = getValue();
+        if (value instanceof DBDContent) {
+            DBDContent content = (DBDContent) value;
+            DBDContentStorage storage = content.getContents(localMonitor);
+            if (storage instanceof DBDContentStorageLocal) {
+                // Nothing to update - we user content's storage
+                contentDetached = true;
+            } else if (storage instanceof DBDContentCached) {
+                // Create new storage and pass it to content
+                try (FileInputStream is = new FileInputStream(contentFile)) {
+                    if (storage instanceof StringContentStorage) {
+                        try (Reader reader = new InputStreamReader(is, fileCharset)) {
+                            storage = StringContentStorage.createFromReader(reader);
+                        }
+                    } else {
+                        storage = BytesContentStorage.createFromStream(is, contentFile.length(), fileCharset);
                     }
-                } else {
-                    storage = BytesContentStorage.createFromStream(is, contentFile.length(), fileCharset);
+                    //StringContentStorage.
+                    contentDetached = content.updateContents(localMonitor, storage);
+                } catch (IOException e) {
+                    throw new DBException("Error reading content from file", e);
                 }
-                //StringContentStorage.
+            } else {
+                // Create new storage and pass it to content
+                storage = new TemporaryContentStorage(DBeaverCore.getInstance(), contentFile, fileCharset);
                 contentDetached = content.updateContents(localMonitor, storage);
-            } catch (IOException e) {
-                throw new DBException("Error reading content from file", e);
             }
         } else {
-            // Create new storage and pass it to content
-            storage = new TemporaryContentStorage(DBeaverCore.getInstance(), contentFile, fileCharset);
-            contentDetached = content.updateContents(localMonitor, storage);
+            // Just read as string
+            updateStringValueFromFile(contentFile);
+            contentDetached = true;
         }
     }
 

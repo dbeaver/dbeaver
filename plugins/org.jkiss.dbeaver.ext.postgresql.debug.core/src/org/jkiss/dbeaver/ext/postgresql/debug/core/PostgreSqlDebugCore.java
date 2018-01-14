@@ -25,7 +25,7 @@ import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.debug.core.DebugCore;
-import org.jkiss.dbeaver.ext.postgresql.internal.debug.core.PostgreSqlDebugCoreMessages;
+import org.jkiss.dbeaver.ext.postgresql.debug.internal.PostgreDebugCoreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
@@ -43,7 +43,7 @@ public class PostgreSqlDebugCore {
             throws CoreException {
         boolean isInstance = launchable instanceof PostgreProcedure;
         if (!isInstance) {
-            throw DebugCore.abort(PostgreSqlDebugCoreMessages.PostgreSqlDebugCore_e_procedure_required);
+            throw DebugCore.abort(PostgreDebugCoreMessages.PostgreSqlDebugCore_e_procedure_required);
         }
         PostgreProcedure procedure = (PostgreProcedure) launchable;
         PostgreDataSource dataSource = procedure.getDataSource();
@@ -54,10 +54,11 @@ public class PostgreSqlDebugCore {
         String databaseName = database.getName();
         Object[] bindings = new Object[] {dataSourceContainer.getName(), databaseName,
                 procedure.getName(), schema.getName()};
-        String name = NLS.bind(PostgreSqlDebugCoreMessages.PostgreSqlDebugCore_launch_configuration_name, bindings);
+        String name = NLS.bind(PostgreDebugCoreMessages.PostgreSqlDebugCore_launch_configuration_name, bindings);
         //Let's use metadata area for storage
         IContainer container = null;
         ILaunchConfigurationWorkingCopy workingCopy = createConfiguration(container, name);
+        workingCopy.setAttribute(DebugCore.ATTR_DRIVER, dataSourceContainer.getDriver().getId());
         workingCopy.setAttribute(DebugCore.ATTR_DATASOURCE, dataSourceContainer.getId());
         workingCopy.setAttribute(DebugCore.ATTR_DATABASE, databaseName);
         workingCopy.setAttribute(DebugCore.ATTR_OID, String.valueOf(procedure.getObjectId()));

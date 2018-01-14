@@ -36,7 +36,6 @@ public class DebugCoreMessages extends NLS {
         NLS.initializeMessages(BUNDLE_NAME, DebugCoreMessages.class);
     }
 
-    private DebugCoreMessages()
-    {
+    private DebugCoreMessages() {
     }
 }

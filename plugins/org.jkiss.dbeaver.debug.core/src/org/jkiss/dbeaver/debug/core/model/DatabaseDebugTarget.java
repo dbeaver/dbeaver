@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.debug.core.model;
 
 import org.eclipse.core.resources.IMarkerDelta;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.ILaunch;
@@ -28,7 +29,12 @@ import org.eclipse.debug.core.model.IDebugTarget;
 import org.eclipse.debug.core.model.IMemoryBlock;
 import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.debug.core.model.IThread;
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.debug.DBGController;
+import org.jkiss.dbeaver.debug.DBGException;
+import org.jkiss.dbeaver.debug.DBGSession;
+import org.jkiss.dbeaver.debug.core.DebugCore;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 
 public abstract class DatabaseDebugTarget<C extends DBGController> extends DatabaseDebugElement implements IDatabaseDebugTarget {
 
@@ -40,63 +46,57 @@ public abstract class DatabaseDebugTarget<C extends DBGController> extends Datab
     private final DatabaseThread thread;
     private final IThread[] threads;
 
+    private DBGSession debugSession;
+
     private String name;
 
     private boolean suspended = false;
     private boolean terminated = false;
 
-    public DatabaseDebugTarget(String modelIdentifier, ILaunch launch, IProcess process, C controller)
-    {
+    public DatabaseDebugTarget(String modelIdentifier, ILaunch launch, IProcess process, C controller) {
         super(null);
         this.modelIdentifier = modelIdentifier;
         this.launch = launch;
         this.process = process;
         this.controller = controller;
         this.thread = newThread(controller);
-        this.threads = new IThread[] {thread};
+        this.threads = new IThread[]{thread};
     }
-    
+
     protected abstract DatabaseThread newThread(C controller);
 
     @Override
-    public IDebugTarget getDebugTarget()
-    {
+    public IDebugTarget getDebugTarget() {
         return this;
     }
-    
+
     @Override
-    public String getModelIdentifier()
-    {
+    public String getModelIdentifier() {
         return modelIdentifier;
     }
-    
+
     @Override
-    public ILaunch getLaunch()
-    {
+    public ILaunch getLaunch() {
         return launch;
     }
 
     @Override
-    public IProcess getProcess()
-    {
+    public IProcess getProcess() {
         return process;
     }
 
     @Override
-    public IThread[] getThreads() throws DebugException
-    {
+    public IThread[] getThreads() throws DebugException {
         return threads;
     }
 
     @Override
-    public boolean hasThreads() throws DebugException
-    {
+    public boolean hasThreads() throws DebugException {
         return !terminated && threads.length > 0;
     }
 
     @Override
-    public String getName() throws DebugException
-    {
+    public String getName() throws DebugException {
         if (name == null) {
             try {
                 ILaunchConfiguration configuration = getLaunch().getLaunchConfiguration();
@@ -104,78 +104,86 @@ public abstract class DatabaseDebugTarget<C extends DBGController> extends Datab
                 if (name == null) {
                     name = getDefaultName();
                 }
-            }
-            catch (CoreException e) {
+            } catch (CoreException e) {
                 name = getDefaultName();
             }
-            
+
         }
         return name;
     }
-    
+
     protected abstract String getConfiguredName(ILaunchConfiguration configuration) throws CoreException;
+
     protected abstract String getDefaultName();
 
     @Override
-    public void handleDebugEvents(DebugEvent[] events)
-    {
+    public void handleDebugEvents(DebugEvent[] events) {
         for (int i = 0; i < events.length; i++) {
             DebugEvent event = events[i];
             if (event.getKind() == DebugEvent.TERMINATE && event.getSource().equals(process)) {
-                terminated();
+                try {
+                    terminated();
+                } catch (DebugException e) {
+                    DebugCore.log(e.getStatus());
+                }
             }
         }
     }
 
     @Override
-    public boolean canTerminate()
-    {
+    public boolean canTerminate() {
         return !terminated;
     }
 
     @Override
-    public boolean isTerminated()
-    {
+    public boolean isTerminated() {
         return terminated;
     }
 
     @Override
-    public void terminate() throws DebugException
-    {
+    public void terminate() throws DebugException {
         terminated();
     }
 
-    public synchronized void terminated() {
+    public synchronized void terminated() throws DebugException {
         if (!terminated) {
             terminated = true;
             suspended = false;
-            controller.terminate();
+            try {
+                controller.terminate(getProgressMonitor(), debugSession);
+            } catch (DBGException e) {
+                String message = NLS.bind("Error terminating {0}", getName());
+                IStatus status = DebugCore.newErrorStatus(message, e);
+                throw new DebugException(status);
+            }
         }
     }
 
     @Override
-    public boolean canResume()
-    {
-        return thread!= null && !terminated && suspended;
+    public boolean canResume() {
+        return thread != null && !terminated && suspended;
     }
 
     @Override
-    public boolean canSuspend()
-    {
-        return thread!= null && !terminated && !suspended;
+    public boolean canSuspend() {
+        return thread != null && !terminated && !suspended;
     }
 
     @Override
-    public boolean isSuspended()
-    {
+    public boolean isSuspended() {
         return suspended;
     }
 
     @Override
-    public void resume() throws DebugException
-    {
+    public void resume() throws DebugException {
         suspended = false;
-        controller.resume();
+        try {
+            controller.resume(getProgressMonitor(), debugSession);
+        } catch (DBGException e) {
+            String message = NLS.bind("Error resuming {0}", getName());
+            IStatus status = DebugCore.newErrorStatus(message, e);
+            throw new DebugException(status);
+        }
         if (thread.isSuspended()) {
             thread.resumedByTarget();
         }
@@ -183,9 +191,18 @@ public abstract class DatabaseDebugTarget<C extends DBGController> extends Datab
     }
 
     @Override
-    public void suspend() throws DebugException
-    {
-        controller.suspend();
+    public void suspend() throws DebugException {
+        try {
+            controller.suspend(getProgressMonitor(), debugSession);
+        } catch (DBGException e) {
+            String message = NLS.bind("Error suspending {0}", getName());
+            IStatus status = DebugCore.newErrorStatus(message, e);
+            throw new DebugException(status);
+        }
+    }
+
+    private VoidProgressMonitor getProgressMonitor() {
+        return new VoidProgressMonitor();
     }
 
     public void suspended(int detail) {
@@ -195,63 +212,53 @@ public abstract class DatabaseDebugTarget<C extends DBGController> extends Datab
     }
 
     @Override
-    public boolean supportsBreakpoint(IBreakpoint breakpoint)
-    {
+    public boolean supportsBreakpoint(IBreakpoint breakpoint) {
         return false;
     }
 
     @Override
-    public void breakpointAdded(IBreakpoint breakpoint)
-    {
+    public void breakpointAdded(IBreakpoint breakpoint) {
         //FIXME:AF:delegare to controller
     }
 
     @Override
-    public void breakpointRemoved(IBreakpoint breakpoint, IMarkerDelta delta)
-    {
+    public void breakpointRemoved(IBreakpoint breakpoint, IMarkerDelta delta) {
         //FIXME:AF:delegare to controller
     }
 
     @Override
-    public void breakpointChanged(IBreakpoint breakpoint, IMarkerDelta delta)
-    {
+    public void breakpointChanged(IBreakpoint breakpoint, IMarkerDelta delta) {
         //FIXME:AF:delegare to controller
     }
 
     @Override
-    public void breakpointManagerEnablementChanged(boolean enabled)
-    {
+    public void breakpointManagerEnablementChanged(boolean enabled) {
         // TODO Auto-generated method stub
-        
+
     }
 
     @Override
-    public boolean canDisconnect()
-    {
+    public boolean canDisconnect() {
         return false;
     }
 
     @Override
-    public void disconnect() throws DebugException
-    {
+    public void disconnect() throws DebugException {
         //FIXME:AF:delegare to controller
     }
 
     @Override
-    public boolean isDisconnected()
-    {
+    public boolean isDisconnected() {
         return false;
     }
 
     @Override
-    public boolean supportsStorageRetrieval()
-    {
+    public boolean supportsStorageRetrieval() {
         return false;
     }
 
     @Override
-    public IMemoryBlock getMemoryBlock(long startAddress, long length) throws DebugException
-    {
+    public IMemoryBlock getMemoryBlock(long startAddress, long length) throws DebugException {
         return null;
     }
 

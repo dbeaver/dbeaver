@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.navigator.database;
 
 import org.eclipse.jface.viewers.IFilter;
+import org.jkiss.dbeaver.model.access.DBAUser;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseItem;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -33,6 +34,10 @@ public class DatabaseNavigatorTreeFilter implements IFilter {
             return true;
         }
         DBSObject object = ((DBNDatabaseItem) element).getObject();
-        return !(object instanceof DBSEntity) && !(object instanceof DBSProcedure) && !(object instanceof DBSSequence);
+        return
+            !(object instanceof DBSEntity) &&
+            !(object instanceof DBSProcedure) &&
+            !(object instanceof DBSSequence) &&
+            !(object instanceof DBAUser);
     }
 }

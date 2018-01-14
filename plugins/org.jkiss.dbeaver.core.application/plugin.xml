@@ -21,6 +21,8 @@
 
 <plugin> 
 
+    <extension-point id="org.jkiss.dbeaver.commandLine" name="Command line extension" schema="schema/org.jkiss.dbeaver.commandLine.exsd"/>
+
   <extension point="org.eclipse.core.runtime.applications" id="standalone" name="%extension.standalone.name"> 
     <application visible="true"> 
       <run class="org.jkiss.dbeaver.core.application.DBeaverApplication"/> 
@@ -28,13 +30,18 @@
   </extension>
 
   <extension point="org.eclipse.core.runtime.products" id="product">
-    <product application="org.jkiss.dbeaver.core.application.standalone" description="%productSubTitle" name="DBeaver">
+        <product application="org.jkiss.dbeaver.core.application.standalone" description="%productSubTitle" name="%productName">
+            <property name="aboutText" value="%aboutText"/>
       <property name="copyright" value="%productCopyright"/>
       <property name="subTitle" value="%productSubTitle"/>
       <property name="website" value="%productWebsite"/>
       <property name="email" value="%productEmail"/>
       <property name="versionUpdateURL" value="https://dbeaver.jkiss.org/product/version.xml"/>
-      <property name="appName" value="DBeaver"/>
+            <property name="windowImages" value="/icons/dbeaver16.png,/icons/dbeaver32.png,/icons/dbeaver48.png,/icons/dbeaver64.png,/icons/dbeaver256.png"/>
+            <property name="appName" value="%productName"/>
+            <property name="startupForegroundColor" value="000000"/>
+            <property name="startupMessageRect" value="323,275,242,25"/>
+            <property name="startupProgressRect" value="323,260,242,10"/>
       <property name="versionInfoCoord" value="125,265"/>
       <property name="versionInfoSize" value="12"/>
       <property name="versionInfoColor" value="0,0,0"/>
@@ -42,6 +49,7 @@
       <property name="cssTheme" value="org.eclipse.e4.ui.css.theme.e4_classic"/>
       <property name="applicationCSSResources" value="platform:/plugin/org.eclipse.platform/images/"/>
       <property name="rendererFactoryUri" value="bundleclass://org.jkiss.dbeaver.core/org.jkiss.dbeaver.ui.e4.DBeaverRendererFactory"/>
+            <property name="preferenceCustomization" value="plugin_customization.ini"/>
 
     </product>
   </extension>  
@@ -55,7 +63,6 @@
   <extension point="org.eclipse.ui.commands">    
   </extension>  
 
-<!--
   <extension point="org.eclipse.ui.commandImages">
     <image commandId="org.eclipse.ui.file.save" icon="icons/eclipse/save.png" disabledIcon="icons/eclipse/save_d.png"/>
     <image commandId="org.eclipse.ui.file.saveAs" icon="icons/eclipse/save_as.png" disabledIcon="icons/eclipse/save_as_d.png"/>
@@ -75,7 +82,6 @@
     <image commandId="org.eclipse.ui.edit.text.gotoLastEditPosition" icon="icons/eclipse/last_edit_location.png" disabledIcon="icons/eclipse/last_edit_location_d.png"/>
     <image commandId="org.eclipse.search.ui.openSearchDialog" icon="icons/eclipse/search.png" disabledIcon="icons/eclipse/search_d.png"/>
   </extension>
--->
 
   <extension point="org.eclipse.ui.views"> 
     <view id="org.eclipse.ui.views.ProgressView" 
@@ -224,7 +230,7 @@
       <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.db.general"/> 
     </page>  
     <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.main.resultset" class="org.jkiss.dbeaver.ui.preferences.PrefPageResultSetMain" name="%pref.page.name.resultset"></page>  
-    <page category="org.jkiss.dbeaver.preferences.main.resultset" id="org.jkiss.dbeaver.preferences.main.resultset.binaries" class="org.jkiss.dbeaver.ui.preferences.PrefPageResultSetBinaries" name="%pref.page.name.resultset.binaries"> 
+        <page category="org.jkiss.dbeaver.preferences.main.resultset" id="org.jkiss.dbeaver.preferences.main.resultset.editors" class="org.jkiss.dbeaver.ui.preferences.PrefPageResultSetEditors" name="%pref.page.name.resultset.editors">
       <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.content"/> 
     </page>  
     <page category="org.jkiss.dbeaver.preferences.main.resultset" id="org.jkiss.dbeaver.preferences.main.resultset.presentation" class="org.jkiss.dbeaver.ui.preferences.PrefPageResultSetPresentation" name="%pref.page.name.resultset.presentation"></page>  

@@ -36,35 +36,30 @@ public class DatabaseProcess implements IProcess {
 
     private boolean terminated = false;
 
-    public DatabaseProcess(ILaunch launch, String name)
-    {
+    public DatabaseProcess(ILaunch launch, String name) {
         this.launch = launch;
         this.name = name;
         launch.addProcess(this);
     }
 
     @Override
-    public <T> T getAdapter(Class<T> adapter)
-    {
+    public <T> T getAdapter(Class<T> adapter) {
         IAdapterManager adapterManager = Platform.getAdapterManager();
         return adapterManager.getAdapter(this, adapter);
     }
 
     @Override
-    public boolean canTerminate()
-    {
+    public boolean canTerminate() {
         return !terminated;
     }
 
     @Override
-    public boolean isTerminated()
-    {
+    public boolean isTerminated() {
         return terminated;
     }
 
     @Override
-    public void terminate() throws DebugException
-    {
+    public void terminate() throws DebugException {
         if (!terminated) {
             terminated = true;
             launch.removeProcess(this);
@@ -73,38 +68,32 @@ public class DatabaseProcess implements IProcess {
     }
 
     @Override
-    public String getLabel()
-    {
+    public String getLabel() {
         return name;
     }
 
     @Override
-    public ILaunch getLaunch()
-    {
+    public ILaunch getLaunch() {
         return launch;
     }
 
     @Override
-    public IStreamsProxy getStreamsProxy()
-    {
+    public IStreamsProxy getStreamsProxy() {
         return null;
     }
 
     @Override
-    public void setAttribute(String key, String value)
-    {
+    public void setAttribute(String key, String value) {
         attributes.put(key, value);
     }
 
     @Override
-    public String getAttribute(String key)
-    {
+    public String getAttribute(String key) {
         return attributes.get(key);
     }
 
     @Override
-    public int getExitValue() throws DebugException
-    {
+    public int getExitValue() throws DebugException {
         return 0;
     }
 

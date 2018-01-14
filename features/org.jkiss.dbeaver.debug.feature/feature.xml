@@ -2,7 +2,7 @@
 <feature
       id="org.jkiss.dbeaver.debug.feature"
       label="%featureName"
-      version="1.0.0"
+      version="4.3.2"
       provider-name="%providerName">
 
    <description>

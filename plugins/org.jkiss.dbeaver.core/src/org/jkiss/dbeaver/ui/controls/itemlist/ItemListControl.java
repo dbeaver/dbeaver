@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerFilterConfig;
+import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -140,20 +141,7 @@ public class ItemListControl extends NodeListControl
             final MultiPageEditorPart editor = ((MultiPageEditorSite) workbenchSite).getMultiPageEditor();
             if (editor instanceof EntityEditor) {
                 contributionManager.add(new Separator());
-                contributionManager.add(ActionUtils.makeCommandContribution(
-                    workbenchSite,
-                    IWorkbenchCommandConstants.FILE_SAVE,
-                    null,
-                    UIIcon.SAVE,
-                    null,
-                    true));
-                contributionManager.add(ActionUtils.makeCommandContribution(
-                    workbenchSite,
-                    IWorkbenchCommandConstants.FILE_REVERT,
-                    null,
-                    UIIcon.RESET,
-                    null,
-                    true));
+                DatabaseEditorUtils.contributeStandardEditorActions(workbenchSite, contributionManager);
             }
         }
     }

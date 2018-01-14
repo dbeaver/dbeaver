@@ -18,10 +18,12 @@ package org.jkiss.dbeaver.ui.data.managers;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.editors.StringInlineEditor;
 import org.jkiss.dbeaver.ui.dialogs.data.TextViewDialog;
+import org.jkiss.dbeaver.ui.editors.content.ContentEditor;
 
 /**
  * String value manager
@@ -43,7 +45,11 @@ public class StringValueManager extends BaseValueManager {
             case PANEL:
                 return new StringInlineEditor(controller);
             case EDITOR:
-                return new TextViewDialog(controller);
+                if (controller.getExecutionContext().getDataSource().getContainer().getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_STRING_USE_CONTENT_EDITOR)) {
+                    return ContentEditor.openEditor(controller);
+                } else {
+                    return new TextViewDialog(controller);
+                }
             default:
                 return null;
         }
