@@ -402,13 +402,15 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                     }
                     query.append(getAttributeName(attribute)).append("=?"); //$NON-NLS-1$
                 }
-                query.append("\nWHERE "); //$NON-NLS-1$
-                hasKey = false;
-                for (int i = 0; i < keyAttributes.length; i++) {
-                    DBSAttributeBase attribute = keyAttributes[i];
-                    if (hasKey) query.append(" AND "); //$NON-NLS-1$
-                    hasKey = true;
-                    appendAttributeCriteria(tableAlias, dialect, query, attribute, attributeValues[updateAttributes.length + i]);
+                if (keyAttributes.length > 0) {
+                    query.append("\nWHERE "); //$NON-NLS-1$
+                    hasKey = false;
+                    for (int i = 0; i < keyAttributes.length; i++) {
+                        DBSAttributeBase attribute = keyAttributes[i];
+                        if (hasKey) query.append(" AND "); //$NON-NLS-1$
+                        hasKey = true;
+                        appendAttributeCriteria(tableAlias, dialect, query, attribute, attributeValues[updateAttributes.length + i]);
+                    }
                 }
 
                 // Execute
@@ -456,13 +458,14 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
                 if (tableAlias != null) {
                     query.append(' ').append(tableAlias);
                 }
-                query.append("\nWHERE "); //$NON-NLS-1$ //$NON-NLS-2$
-
-                boolean hasKey = false;
-                for (int i = 0; i < keyAttributes.length; i++) {
-                    if (hasKey) query.append(" AND "); //$NON-NLS-1$
-                    hasKey = true;
-                    appendAttributeCriteria(tableAlias, dialect, query, keyAttributes[i], attributeValues[i]);
+                if (keyAttributes.length > 0) {
+                    query.append("\nWHERE "); //$NON-NLS-1$ //$NON-NLS-2$
+                    boolean hasKey = false;
+                    for (int i = 0; i < keyAttributes.length; i++) {
+                        if (hasKey) query.append(" AND "); //$NON-NLS-1$
+                        hasKey = true;
+                        appendAttributeCriteria(tableAlias, dialect, query, keyAttributes[i], attributeValues[i]);
+                    }
                 }
 
                 // Execute

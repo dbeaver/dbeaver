@@ -18,7 +18,7 @@ import org.jkiss.dbeaver.debug.core.DebugCore;
 import org.jkiss.dbeaver.debug.core.breakpoints.DatabaseLineBreakpoint;
 import org.jkiss.dbeaver.model.app.DBPProjectManager;
 
-public class ToggleSqlBreakpointTarget implements IToggleBreakpointsTargetExtension2 {
+public class ToggleProcedureBreakpointTarget implements IToggleBreakpointsTargetExtension2 {
     
     @Override
     public void toggleBreakpoints(IWorkbenchPart part, ISelection selection) throws CoreException

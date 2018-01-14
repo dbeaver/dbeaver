@@ -253,6 +253,9 @@ public class DBeaverApplication implements IApplication, DBPApplication {
             // Error may occur if -data parameter was specified at startup
             System.err.println("Can't switch workspace to '" + defaultHomePath + "' - " + e.getMessage());  //$NON-NLS-1$ //$NON-NLS-2$
         }
+        // Custom parameters
+        DBeaverCommandLine.handleCustomParameters();
+
         return true;
     }
 

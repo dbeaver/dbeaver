@@ -31,8 +31,15 @@
       </launchConfigurationType>
    </extension>
 
-   <extension point="org.jkiss.dbeaver.debug.core.controllers">
-      <controller datasource="postgresql" class="org.jkiss.dbeaver.ext.postgresql.debug.internal.PostgreDebugControllerRegistry"/>
+   <extension
+         point="org.eclipse.core.runtime.adapters">
+      <factory
+            adaptableType="org.jkiss.dbeaver.model.DBPDataSourceContainer"
+            class="org.jkiss.dbeaver.ext.postgresql.debug.internal.PostgreDebugAdapterFactory">
+         <adapter
+               type="org.jkiss.dbeaver.debug.DBGController">
+         </adapter>
+      </factory>
    </extension>
 
 </plugin>

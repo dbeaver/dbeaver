@@ -60,4 +60,25 @@
       </detailFactories>
    </extension>
 
+   <extension
+         point="org.eclipse.ui.handlers">
+      <handler
+            class="org.jkiss.dbeaver.debug.ui.actions.ToggleBreakpointHandler"
+            commandId="org.eclipse.debug.ui.commands.ToggleBreakpoint">
+      </handler>
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="false"
+            locationURI="popup:#SQLRulerContext?before=additions">
+         <command
+               commandId="org.eclipse.debug.ui.commands.ToggleBreakpoint"
+               label="%command.ToggleBreakpoint.label"
+               style="push">
+         </command>
+      </menuContribution>
+   </extension>
+
 </plugin>

@@ -175,9 +175,7 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
     @Override
     public boolean isComplete()
     {
-        return hostText != null && portText != null &&
-                !CommonUtils.isEmpty(hostText.getText()) &&
-                !CommonUtils.isEmpty(portText.getText());
+        return hostText != null && !CommonUtils.isEmpty(hostText.getText());
     }
 
     @Override

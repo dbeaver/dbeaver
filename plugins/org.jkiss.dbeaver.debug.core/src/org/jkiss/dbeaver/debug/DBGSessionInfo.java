@@ -18,8 +18,12 @@
 
 package org.jkiss.dbeaver.debug;
 
-public interface DBGSessionInfo<SESSION_ID_TYPE> {
+import java.util.Map;
 
-    SESSION_ID_TYPE getID();
+public interface DBGSessionInfo {
+
+    Object getID();
+    
+    Map<String, Object> toMap();
 
 }

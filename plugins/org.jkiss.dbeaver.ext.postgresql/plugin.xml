@@ -399,6 +399,7 @@
                     class="org.jkiss.dbeaver.ext.postgresql.tools.maintenance.PostgreToolAnalyze"
                     description="%tools.analyze.description"
                     id="org.jkiss.dbeaver.ext.postgresql.tools.maintenance.PostgreToolAnalyze"
+                    group="org.jkiss.dbeaver.ext.postgresql.tools.maintenance"
                     label="%tools.analyze.name"
                     singleton="false">
                 <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
@@ -408,6 +409,7 @@
                     class="org.jkiss.dbeaver.ext.postgresql.tools.maintenance.PostgreToolVacuum"
                     description="%tools.vacuum.description"
                     id="org.jkiss.dbeaver.ext.postgresql.tools.maintenance.PostgreToolVacuum"
+                    group="org.jkiss.dbeaver.ext.postgresql.tools.maintenance"
                     label="%tools.vacuum.name"
                     singleton="false">
                 <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
@@ -417,6 +419,7 @@
                     class="org.jkiss.dbeaver.ext.postgresql.tools.maintenance.PostgreToolTruncate"
                     description="%tools.truncate.description"
                     id="org.jkiss.dbeaver.ext.postgresql.tools.maintenance.PostgreToolTruncate"
+                    group="org.jkiss.dbeaver.ext.postgresql.tools.maintenance"
                     label="%tools.truncate.name"
                     singleton="false">
                 <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase"/>

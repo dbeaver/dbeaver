@@ -20,22 +20,20 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.DefaultParser;
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
+import org.eclipse.core.runtime.IConfigurationElement;
+import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreCommands;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.core.application.rpc.IInstanceController;
 import org.jkiss.dbeaver.core.application.rpc.InstanceClient;
-import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
+import org.osgi.framework.Bundle;
 
 import java.rmi.RemoteException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 /**
  * Command line processing.
@@ -49,6 +47,8 @@ import java.util.List;
 public class DBeaverCommandLine
 {
     private static final Log log = Log.getLog(DBeaverCommandLine.class);
+
+    public static final String EXTENSION_ID = "org.jkiss.dbeaver.commandLine";
 
     public static final String PARAM_HELP = "help";
     public static final String PARAM_FILE = "f";
@@ -80,6 +80,54 @@ public class DBeaverCommandLine
         .addOption("nosplash", false, "No splash screen")
         .addOption("showlocation", false, "Show location")
         ;
+
+    public interface ParameterHandler {
+
+        void handleParameter(String name, String value);
+
+    }
+
+    private static class ParameterDescriptor {
+        String name;
+        String longName;
+        String description;
+        boolean hasArg;
+        boolean exitAfterExecute;
+        ParameterHandler handler;
+
+        public ParameterDescriptor(IConfigurationElement config) throws Exception {
+            this.name = config.getAttribute("name");
+            this.longName = config.getAttribute("longName");
+            this.description = config.getAttribute("description");
+            this.hasArg = CommonUtils.toBoolean(config.getAttribute("hasArg"));
+            this.exitAfterExecute = CommonUtils.toBoolean(config.getAttribute("exitAfterExecute"));
+            Bundle cBundle = Platform.getBundle(config.getContributor().getName());
+            Class<?> implClass = cBundle.loadClass(config.getAttribute("handler"));
+            handler = (ParameterHandler) implClass.newInstance();
+        }
+    }
+
+    private static Map<String, ParameterDescriptor> customParameters = new LinkedHashMap<>();
+
+    static {
+        IExtensionRegistry er = Platform.getExtensionRegistry();
+        // Load datasource providers from external plugins
+        IConfigurationElement[] extElements = er.getConfigurationElementsFor(EXTENSION_ID);
+        for (IConfigurationElement ext : extElements) {
+            if ("parameter".equals(ext.getName())) {
+                try {
+                    ParameterDescriptor parameter = new ParameterDescriptor(ext);
+                    customParameters.put(parameter.name, parameter);
+                } catch (Exception e) {
+                    log.error("Can't load contributed parameter", e);
+                }
+            }
+        }
+
+        for (ParameterDescriptor param : customParameters.values()) {
+            ALL_OPTIONS.addOption(param.name, param.longName, param.hasArg, param.description);
+        }
+    }
 
     /**
      * @return true if called should exit after CLI processing
@@ -171,7 +219,7 @@ public class DBeaverCommandLine
             HelpFormatter helpFormatter = new HelpFormatter();
             helpFormatter.setWidth(120);
             helpFormatter.setOptionComparator((o1, o2) -> 0);
-            helpFormatter.printHelp("dbeaver", GeneralUtils.getProductTitle(), ALL_OPTIONS, "(C) 2017 JKISS", true);
+            helpFormatter.printHelp("dbeaver", GeneralUtils.getProductTitle(), ALL_OPTIONS, "(C) 2018 JKISS", true);
             return true;
         }
         if (commandLine.hasOption(PARAM_NEW_INSTANCE)) {
@@ -199,5 +247,22 @@ public class DBeaverCommandLine
             log.error("Error while calling remote server", e);
         }
         return false;
+    }
+
+    public static void handleCustomParameters() {
+        CommandLine commandLine = getCommandLine();
+        if (commandLine == null) {
+            return;
+        }
+        for (ParameterDescriptor param : customParameters.values()) {
+            if (!param.exitAfterExecute) {
+
+            }
+            if (commandLine.hasOption(param.name)) {
+                param.handler.handleParameter(
+                    param.name,
+                    param.hasArg ? commandLine.getOptionValue(param.name) : null);
+            }
+        }
     }
 }

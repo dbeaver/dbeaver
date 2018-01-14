@@ -58,6 +58,7 @@ public class PostgreSqlDebugCore {
         //Let's use metadata area for storage
         IContainer container = null;
         ILaunchConfigurationWorkingCopy workingCopy = createConfiguration(container, name);
+        workingCopy.setAttribute(DebugCore.ATTR_DRIVER, dataSourceContainer.getDriver().getId());
         workingCopy.setAttribute(DebugCore.ATTR_DATASOURCE, dataSourceContainer.getId());
         workingCopy.setAttribute(DebugCore.ATTR_DATABASE, databaseName);
         workingCopy.setAttribute(DebugCore.ATTR_OID, String.valueOf(procedure.getObjectId()));
