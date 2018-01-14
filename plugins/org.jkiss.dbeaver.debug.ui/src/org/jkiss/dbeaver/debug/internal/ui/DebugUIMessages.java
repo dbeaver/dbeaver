@@ -20,13 +20,21 @@ package org.jkiss.dbeaver.debug.internal.ui;
 import org.eclipse.osgi.util.NLS;
 
 public class DebugUIMessages extends NLS {
+
     private static final String BUNDLE_NAME = "org.jkiss.dbeaver.debug.internal.ui.DebugUIMessages"; //$NON-NLS-1$
+
     public static String DatabaseStandardBreakpointPane_description;
     public static String DatabaseStandardBreakpointPane_name;
+
+    public static String DatabaseTab_driver_group_text;
+    public static String DatabaseTab_driver_label_text;
     public static String DatabaseTab_database_group_text;
     public static String DatabaseTab_database_label_text;
     public static String DatabaseTab_datasource_group_text;
     public static String DatabaseTab_datasource_label_text;
+    public static String DatabaseTab_oid_group_text;
+    public static String DatabaseTab_oid_label_text;
+    
     public static String DatabaseTab_name;
 
     public static String LaunchShortcut_e_launch;

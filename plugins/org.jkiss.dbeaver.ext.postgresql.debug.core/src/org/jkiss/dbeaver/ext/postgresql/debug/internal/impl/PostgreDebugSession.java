@@ -18,21 +18,47 @@
 
 package org.jkiss.dbeaver.ext.postgresql.debug.internal.impl;
 
-import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.debug.*;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.debug.DBGBreakpoint;
+import org.jkiss.dbeaver.debug.DBGBreakpointProperties;
+import org.jkiss.dbeaver.debug.DBGException;
+import org.jkiss.dbeaver.debug.DBGObject;
+import org.jkiss.dbeaver.debug.DBGSession;
+import org.jkiss.dbeaver.debug.DBGSessionInfo;
+import org.jkiss.dbeaver.debug.DBGStackFrame;
+import org.jkiss.dbeaver.debug.DBGVariable;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+
+/**
+ * Typical scenario for debug session <br/>
+ * <br/>
+ * 0. create session (now it can only attached to target Procedure)<br/><br/>
+ * 1. attach to target this method attaches to a debugging target and listening on the given port - 
+ *    waiting for run procedure in other session(s) debugger client should invoke this function after creation
+ *    also created implicit breakpoint for target procedure, after this call debug session in <b>WAITING</b> state - 
+ *    isDone returns false and is isWaiting returns true<br/><br/>
+ * 2. when target procedure will called debug session implicit breakpoint will be reached
+ *    and session goes in state <b>READY</b> (isDone - true, isWaiting - true) in this state possible to call
+ *    getStack, getVariables, setVariables, setBreakpoint or execStepXXX\continue<br/><br/>
+ * 3. when execStepXXX or continue will called session goes in <b>WAITING</b> state until next breakpoint or end of 
+ *    procedure will be reached     <br/>
+ *
+ */
 @SuppressWarnings("nls")
-public class PostgreDebugSession implements DBGSession<PostgreDebugSessionInfo, PostgreDebugObject, Integer, Integer> {
+public class PostgreDebugSession implements DBGSession {
 
     private static final Log log = Log.getLog(PostgreDebugSession.class);
     
@@ -70,12 +96,21 @@ public class PostgreDebugSession implements DBGSession<PostgreDebugSessionInfo, 
 
     private List<PostgreDebugBreakpoint> breakpoints = new ArrayList<PostgreDebugBreakpoint>(1);
     
-    private PostgreDebugBreakpoint entry;
+    private PostgreDebugBreakpoint entry = null;
 
     private FutureTask<Void> task;
 
     private Thread workerThread = null;
 
+    /**
+     * This method attach debug session to debug object (procedure) 
+     * and wait forever while target or any (depend on targetPID) session will run target procedure  
+     * 
+     * @param connection - connection for debug session after attach this connection will forever belong to debug
+     * @param OID - OID for target procedure
+     * @param targetPID - target session PID (-1 for any target)
+     * @throws DBGException
+     */
     public void attach(JDBCExecutionContext connection,int OID,int targetPID) throws DBGException {
 
         lock.writeLock().lock();
@@ -84,20 +119,14 @@ public class PostgreDebugSession implements DBGSession<PostgreDebugSessionInfo, 
             
             this.connection = connection;
             
-            try (Statement stmt = getConnection(connection).createStatement()) {
-
-                ResultSet rs = stmt.executeQuery(SQL_LISTEN);
+            try (Statement stmt = getConnection(connection).createStatement();
+                    ResultSet rs = stmt.executeQuery(SQL_LISTEN)) {
 
                 if (rs.next()) {
-
                     getConnection(connection).setClientInfo("ApplicationName", "Debug Mode : " + String.valueOf(sessionId));
                     sessionId =  rs.getInt("sessionid");
-
-
                 } else {
-
                     throw new DBGException("Unable to create debug instance");
-
                 }
 
             } catch (SQLException e) {
@@ -107,7 +136,7 @@ public class PostgreDebugSession implements DBGSession<PostgreDebugSessionInfo, 
             PostgreDebugBreakpointProperties properties = new PostgreDebugBreakpointProperties(true);
             PostgreDebugObject obj = new PostgreDebugObject(OID,"ENTRY","SESSION","THIS","PG"); 
             
-            entry = new PostgreDebugBreakpoint(this,obj,properties);
+            this.entry = new PostgreDebugBreakpoint(this,obj,properties);
             
             runAsync(SQL_ATTACH.replaceAll("\\?sessionid", String.valueOf(sessionId)),
                     String.valueOf(sessionId) + " global attached to " + String.valueOf(sessionManagerInfo.pid));
@@ -128,6 +157,14 @@ public class PostgreDebugSession implements DBGSession<PostgreDebugSessionInfo, 
 
     }
 
+    /**
+     * Create session with two description 
+     * after creation session need to be attached to postgres procedure by attach method
+     * 
+     * @param sessionManagerInfo - manager (caller connection) description
+     * @param sessionDebugInfo - session (debugger client connection) description
+     * @throws DBGException
+     */
     public PostgreDebugSession(PostgreDebugSessionInfo sessionManagerInfo, PostgreDebugSessionInfo sessionDebugInfo) throws DBGException {
         this.sessionManagerInfo = sessionManagerInfo;
         this.sessionDebugInfo = sessionDebugInfo;
@@ -135,13 +172,18 @@ public class PostgreDebugSession implements DBGSession<PostgreDebugSessionInfo, 
 
     }
 
+    /**
+     * @param connectionTarget - DBCExecutionContext of debug client (will be used in debug process)
+     * @return Connection - java.sql.Connection
+     * @throws SQLException
+     */
     private static Connection getConnection(DBCExecutionContext connectionTarget) throws SQLException {
         return ((JDBCExecutionContext) connectionTarget).getConnection(new VoidProgressMonitor());
     }
 
-    @Override
-    public PostgreDebugSessionInfo getSessionInfo() {
 
+    @Override
+    public DBGSessionInfo getSessionInfo() {
         return sessionDebugInfo;
     }
 
@@ -152,19 +194,18 @@ public class PostgreDebugSession implements DBGSession<PostgreDebugSessionInfo, 
 
     @Override
     public List<PostgreDebugBreakpoint> getBreakpoints() {
-
         return breakpoints;
     }
 
     @Override
-    public DBGBreakpoint setBreakpoint(PostgreDebugObject obj, DBGBreakpointProperties properties) throws DBGException {
+    public DBGBreakpoint setBreakpoint(DBGObject obj, DBGBreakpointProperties properties) throws DBGException {
 
         acquireReadLock();
 
         PostgreDebugBreakpoint bp = null;
 
         try {
-            bp = new PostgreDebugBreakpoint(this, obj, (PostgreDebugBreakpointProperties) properties);
+            bp = new PostgreDebugBreakpoint(this, (PostgreDebugObject)obj, (PostgreDebugBreakpointProperties) properties);
             breakpoints.add(bp);
 
         } finally {
@@ -209,6 +250,14 @@ public class PostgreDebugSession implements DBGSession<PostgreDebugSessionInfo, 
 
     }
 
+    /**
+     * Execute step SQL command  asynchronously, set debug session name to 
+     * [sessionID] name [managerPID] 
+     * 
+     * @param commandSQL - SQL command for execute step
+     * @param name - session 'name' part
+     * @throws DBGException
+     */
     public void execStep(String commandSQL, String name) throws DBGException {
 
         acquireWriteLock();
@@ -268,16 +317,20 @@ public class PostgreDebugSession implements DBGSession<PostgreDebugSessionInfo, 
 
         List<DBGVariable<?>> vars = new ArrayList<>();
 
-        try (Statement stmt = getConnection(connection).createStatement()) {
-
-            ResultSet rs = stmt.executeQuery(SQL_GET_VARS.replaceAll("\\?sessionid", String.valueOf(sessionId)));
+        String sql = SQL_GET_VARS.replaceAll("\\?sessionid", String.valueOf(sessionId));
+        try (Statement stmt = getConnection(connection).createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
 
             while (rs.next()) {
-
-                PostgreDebugVariable var = new PostgreDebugVariable(rs.getString("name"), rs.getString("varclass"),
-                        rs.getInt("linenumber"), rs.getBoolean("isunique"), rs.getBoolean("isconst"),
-                        rs.getBoolean("isnotnull"), rs.getInt("dtype"), rs.getString("value"));
-
+                String name = rs.getString("name");
+                String varclass = rs.getString("varclass");
+                int linenumber = rs.getInt("linenumber");
+                boolean isunique = rs.getBoolean("isunique");
+                boolean isconst = rs.getBoolean("isconst");
+                boolean isnotnull = rs.getBoolean("isnotnull");
+                int dtype = rs.getInt("dtype");
+                String value = rs.getString("value");
+                PostgreDebugVariable var = new PostgreDebugVariable(name, varclass, linenumber, isunique, isconst,
+                        isnotnull, dtype, value);
                 vars.add(var);
             }
 
@@ -336,13 +389,15 @@ public class PostgreDebugSession implements DBGSession<PostgreDebugSessionInfo, 
 
         List<DBGStackFrame> stack = new ArrayList<DBGStackFrame>(1);
 
-        try (Statement stmt = getConnection(connection).createStatement()) {
-
-            ResultSet rs = stmt.executeQuery(SQL_GET_STACK.replaceAll("\\?sessionid", String.valueOf(sessionId)));
-
+        String sql = SQL_GET_STACK.replaceAll("\\?sessionid", String.valueOf(sessionId));
+        try (Statement stmt = getConnection(connection).createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
-                PostgreDebugStackFrame frame = new PostgreDebugStackFrame(rs.getInt("level"), rs.getString("targetname"),
-                        rs.getInt("func"), rs.getInt("linenumber"), rs.getString("args"));
+                int level = rs.getInt("level");
+                String targetname = rs.getString("targetname");
+                int func = rs.getInt("func");
+                int linenumber = rs.getInt("linenumber");
+                String args = rs.getString("args");
+                PostgreDebugStackFrame frame = new PostgreDebugStackFrame(level, targetname, func, linenumber, args);
                 stack.add(frame);
             }
 
@@ -354,6 +409,12 @@ public class PostgreDebugSession implements DBGSession<PostgreDebugSessionInfo, 
         return stack;
     }
 
+    /**
+     * Return connection used in debug session 
+     * 
+     * @return java.sql.Connection
+     * @throws DBGException
+     */
     public Connection getConnection() throws DBGException {
         try {
             return getConnection(connection);
@@ -373,11 +434,21 @@ public class PostgreDebugSession implements DBGSession<PostgreDebugSessionInfo, 
     public Integer getSessionId() {
         return sessionId;
     }
-
+    
+    /**
+     * Return true if session up and running debug thread
+     * 
+     * @return boolean
+     */
     public boolean isWaiting() {
         return (task == null ? false : !task.isDone()) && (workerThread == null ? false : workerThread.isAlive());
     }
 
+    /**
+     * Return true if session waiting target connection (on breakpoint, after step or continue) in debug thread
+     * 
+     * @return boolean
+     */
     public boolean isDone(){
 
         if (task == null)
@@ -401,10 +472,22 @@ public class PostgreDebugSession implements DBGSession<PostgreDebugSessionInfo, 
 
     }
     
+    /**
+     * Return true if debug session up and running on server 
+     * 
+     * @return boolean
+     */
     public boolean isAttached() {
         return (connection != null && sessionId > 0);
     }
 
+    /**
+     *  Start thread for SQL command
+     * 
+     * @param commandSQL
+     * @param name
+     * @throws DBGException
+     */
     private void runAsync(String commandSQL, String name) throws DBGException {
 
         Connection connection = getConnection();
@@ -428,6 +511,11 @@ public class PostgreDebugSession implements DBGSession<PostgreDebugSessionInfo, 
         }
     }
 
+    /**
+     * Try to acquire shared lock 
+     * 
+     * @throws DBGException
+     */
     private void acquireReadLock() throws DBGException {
 
         try {
@@ -457,6 +545,11 @@ public class PostgreDebugSession implements DBGSession<PostgreDebugSessionInfo, 
 
     }
 
+    /**
+     *  Try to acquire exclusive lock 
+     * 
+     * @throws DBGException
+     */
     private void acquireWriteLock() throws DBGException {
 
         try {

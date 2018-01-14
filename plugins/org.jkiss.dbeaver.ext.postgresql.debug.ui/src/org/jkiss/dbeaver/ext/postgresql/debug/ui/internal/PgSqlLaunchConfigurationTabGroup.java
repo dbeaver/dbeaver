@@ -21,6 +21,7 @@ import org.eclipse.debug.ui.AbstractLaunchConfigurationTabGroup;
 import org.eclipse.debug.ui.CommonTab;
 import org.eclipse.debug.ui.ILaunchConfigurationDialog;
 import org.eclipse.debug.ui.ILaunchConfigurationTab;
+import org.jkiss.dbeaver.debug.ui.DatabaseTab;
 
 public class PgSqlLaunchConfigurationTabGroup extends AbstractLaunchConfigurationTabGroup {
 
@@ -31,10 +32,10 @@ public class PgSqlLaunchConfigurationTabGroup extends AbstractLaunchConfiguratio
     @Override
     public void createTabs(ILaunchConfigurationDialog dialog, String mode)
     {
-        PgSqlTab pgSqlTab = new PgSqlTab();
+        DatabaseTab databaseTab = new DatabaseTab();
         CommonTab commonTab = new CommonTab();
         ILaunchConfigurationTab[] tabs = new ILaunchConfigurationTab[] {
-                pgSqlTab,
+                databaseTab,
                 commonTab
             };
             setTabs(tabs);

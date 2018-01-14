@@ -17,10 +17,7 @@
  */
 package org.jkiss.dbeaver.debug;
 
-import java.util.Map;
-
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 
 /**
  * This interface is expected to be used in synch manner

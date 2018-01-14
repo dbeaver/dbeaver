@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
- * Copyright (C) 2017 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,17 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.postgresql.debug.internal;
+package org.jkiss.dbeaver.ui.editors.sql;
 
-import org.jkiss.dbeaver.debug.DBGController;
-import org.jkiss.dbeaver.debug.DBGControllerRegistry;
-import org.jkiss.dbeaver.debug.DBGException;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+public class SQLEditorContributions {
 
-public class PostgreDebugControllerRegistry implements DBGControllerRegistry {
+    public static final String SQL_EDITOR_CONTEXT = "org.jkiss.dbeaver.ui.editors.sql"; //$NON-NLS-1$
 
-    @Override
-    public DBGController createController(DBPDataSourceContainer dataSource) throws DBGException {
-        return new PostgreDebugController(dataSource);
-    }
+    public static final String SQL_EDITOR_CONTEXT_MENU_ID = "#SQLEditorContext"; //$NON-NLS-1$
+    public static final String SQL_RULER_CONTEXT_MENU_ID = "#SQLRulerContext"; //$NON-NLS-1$
+
 }
