@@ -1049,33 +1049,14 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 	// Filtering
     
     public void showFiltering(Object columnElement) {
-//    	final ResultSetViewer rsv = (ResultSetViewer) controller.getContainer().getResultSetController();
-//    	rsv.showFiltersMenu();
-//    	
-    	
+
     	if(getSelection().getSelectedRows().size() == 0 || !getSelection().getSelectedAttributes().contains(columnElement)) {
-    		setCurrentAttribute((DBDAttributeBinding)columnElement);
-    		scrollToRow(RowPosition.FIRST);
-    	}    	
+    		spreadsheet.deselectAll();
+    		controller.showDistinctFilter((DBDAttributeBinding) columnElement);
+    	}   
+    	else
+    		controller.showDistinctFilter(curAttribute);
     	
-    	IHandlerService handlerService = PlatformUI.getWorkbench().getService(IHandlerService.class);
-    	Event event = new Event();
-    	event.data = columnElement;
-    	try {
-			handlerService.executeCommand(ResultSetCommandHandler.CMD_FILTERDISTINCT, event);
-		} catch (ExecutionException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (NotDefinedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (NotEnabledException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (NotHandledException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
     }
 
     ///////////////////////////////////////////////
