@@ -35,7 +35,7 @@ import org.jkiss.dbeaver.model.data.DBDDataFormatter;
  */
 public class DateTimeEditor {
 
-	private Composite parent;
+
 	private DateTime dateEditor;
 	private DateTime timeEditor;
 	private String formaterId;
@@ -43,7 +43,7 @@ public class DateTimeEditor {
 	private static final Log log = Log.getLog(ViewerColumnController.class);
 
 	public DateTimeEditor(Composite parent, int style, String formaterId) {
-		this.parent = parent;
+		
 		FillLayout layout = new FillLayout();
 		layout.type = SWT.VERTICAL;
 		parent.setLayout(layout);
@@ -127,7 +127,7 @@ public class DateTimeEditor {
 	}
 
 	public Composite getControl() {
-		return parent;
+		return null;
 	}
 
 	public void selectAll() {
