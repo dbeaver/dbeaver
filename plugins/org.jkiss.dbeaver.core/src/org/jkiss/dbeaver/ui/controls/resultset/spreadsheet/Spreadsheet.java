@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui.controls.resultset.spreadsheet;
 import org.eclipse.jface.action.IMenuListener;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.accessibility.Accessible;
 import org.eclipse.swt.accessibility.AccessibleEvent;
@@ -31,16 +30,25 @@ import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.ui.controls.lightgrid.*;
+import org.jkiss.dbeaver.ui.controls.lightgrid.GridCell;
+import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
+import org.jkiss.dbeaver.ui.controls.lightgrid.IGridContentProvider;
+import org.jkiss.dbeaver.ui.controls.lightgrid.IGridController;
+import org.jkiss.dbeaver.ui.controls.lightgrid.IGridLabelProvider;
+import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 import org.jkiss.dbeaver.ui.controls.resultset.AbstractPresentation;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 
 /**
  * ResultSetControl
