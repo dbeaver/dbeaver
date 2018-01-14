@@ -880,6 +880,10 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         }
         if (editor instanceof IValueEditorStandalone) {
             valueController.registerEditor((IValueEditorStandalone)editor);
+            Control editorControl = editor.getControl();
+            if (editorControl != null) {
+                editorControl.addDisposeListener(e -> valueController.unregisterEditor((IValueEditorStandalone)editor));
+            }
             // show dialog in separate job to avoid block
             new UIJob("Open separate editor") {
                 @Override

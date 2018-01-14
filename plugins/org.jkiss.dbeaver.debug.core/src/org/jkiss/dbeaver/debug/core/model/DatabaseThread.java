@@ -24,161 +24,138 @@ import org.eclipse.debug.core.model.IThread;
 
 public abstract class DatabaseThread extends DatabaseDebugElement implements IThread {
 
-    public DatabaseThread(IDatabaseDebugTarget target)
-    {
+    public DatabaseThread(IDatabaseDebugTarget target) {
         super(target);
     }
 
     @Override
-    public boolean canResume()
-    {
+    public boolean canResume() {
         // TODO Auto-generated method stub
         return false;
     }
 
     @Override
-    public boolean canSuspend()
-    {
+    public boolean canSuspend() {
         // TODO Auto-generated method stub
         return false;
     }
 
     @Override
-    public boolean isSuspended()
-    {
+    public boolean isSuspended() {
         // TODO Auto-generated method stub
         return false;
     }
 
     @Override
-    public void resume() throws DebugException
-    {
+    public void resume() throws DebugException {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public void suspend() throws DebugException
-    {
+    public void suspend() throws DebugException {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public boolean canStepInto()
-    {
+    public boolean canStepInto() {
         // TODO Auto-generated method stub
         return false;
     }
 
     @Override
-    public boolean canStepOver()
-    {
+    public boolean canStepOver() {
         // TODO Auto-generated method stub
         return false;
     }
 
     @Override
-    public boolean canStepReturn()
-    {
+    public boolean canStepReturn() {
         // TODO Auto-generated method stub
         return false;
     }
 
     @Override
-    public boolean isStepping()
-    {
+    public boolean isStepping() {
         // TODO Auto-generated method stub
         return false;
     }
 
     @Override
-    public void stepInto() throws DebugException
-    {
+    public void stepInto() throws DebugException {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public void stepOver() throws DebugException
-    {
+    public void stepOver() throws DebugException {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public void stepReturn() throws DebugException
-    {
+    public void stepReturn() throws DebugException {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public boolean canTerminate()
-    {
+    public boolean canTerminate() {
         // TODO Auto-generated method stub
         return false;
     }
 
     @Override
-    public boolean isTerminated()
-    {
+    public boolean isTerminated() {
         // TODO Auto-generated method stub
         return false;
     }
 
     @Override
-    public void terminate() throws DebugException
-    {
+    public void terminate() throws DebugException {
         // TODO Auto-generated method stub
 
     }
 
     @Override
-    public IStackFrame[] getStackFrames() throws DebugException
-    {
+    public IStackFrame[] getStackFrames() throws DebugException {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public boolean hasStackFrames() throws DebugException
-    {
+    public boolean hasStackFrames() throws DebugException {
         // TODO Auto-generated method stub
         return false;
     }
 
     @Override
-    public int getPriority() throws DebugException
-    {
+    public int getPriority() throws DebugException {
         // TODO Auto-generated method stub
         return 0;
     }
 
     @Override
-    public IStackFrame getTopStackFrame() throws DebugException
-    {
+    public IStackFrame getTopStackFrame() throws DebugException {
         // TODO Auto-generated method stub
         return null;
     }
 
     @Override
-    public IBreakpoint[] getBreakpoints()
-    {
+    public IBreakpoint[] getBreakpoints() {
         // TODO Auto-generated method stub
         return null;
     }
 
-    public void resumedByTarget()
-    {
+    public void resumedByTarget() {
         // TODO Auto-generated method stub
-        
+
     }
 
-    public void setStepping(boolean b)
-    {
+    public void setStepping(boolean b) {
         // TODO Auto-generated method stub
-        
+
     }
 
 }

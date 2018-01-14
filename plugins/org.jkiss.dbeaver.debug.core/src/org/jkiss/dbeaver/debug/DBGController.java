@@ -18,23 +18,20 @@
 package org.jkiss.dbeaver.debug;
 
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.runtime.DBRResult;
-
-//FIXME:AF: we need "operation result" interface like IStatus to express the result of operation
-//FIXME:AF: so let's return void for now and let's throw an exception for any issue (poor practice)
 
 /**
  * This interface is expected to be used in synch manner
- *
  */
 public interface DBGController {
 
-    public DBRResult connect(DBRProgressMonitor monitor);
+    DBGSession connect(DBRProgressMonitor monitor) throws DBGException;
 
-    public void resume();
+    void resume(DBRProgressMonitor monitor, DBGSession session) throws DBGException;
 
-    public void suspend();
+    void suspend(DBRProgressMonitor monitor, DBGSession session) throws DBGException;
 
-    public void terminate();
+    void terminate(DBRProgressMonitor monitor, DBGSession session) throws DBGException;
+
+    void dispose() throws DBGException;
 
 }

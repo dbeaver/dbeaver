@@ -29,7 +29,7 @@
    <extension
          point="org.eclipse.debug.ui.launchConfigurationTabGroups">
       <launchConfigurationTabGroup
-            class="org.jkiss.dbeaver.ext.postgresql.internal.debug.ui.PgSqlLaunchConfigurationTabGroup"
+            class="org.jkiss.dbeaver.ext.postgresql.debug.ui.internal.PgSqlLaunchConfigurationTabGroup"
             description="%launchConfigurationTabGroups.launchConfigurationTabGroup.pgSQL.description"
             id="org.jkiss.dbeaver.ext.postgresql.debug.ui.launchConfigurationTabGroups.launchConfigurationTabGroup.pgSQL"
             type="org.jkiss.dbeaver.ext.postgresql.debug.core.pgSQL">
@@ -42,7 +42,7 @@
    <extension
          point="org.eclipse.debug.ui.launchShortcuts">
       <shortcut
-            class="org.jkiss.dbeaver.ext.postgresql.internal.debug.ui.PgSqlLaunchShortcut"
+            class="org.jkiss.dbeaver.ext.postgresql.debug.ui.internal.PgSqlLaunchShortcut"
             description="%launchShortcuts.shortcut.pgSQL.description"
             icon="platform:/plugin/org.jkiss.dbeaver.ext.postgresql/$nl$/icons/postgresql_icon.png"
             id="org.jkiss.dbeaver.ext.postgresql.debug.ui.launchShortcuts.shortcut.pgSQL"
@@ -65,7 +65,10 @@
                         ifEmpty="false"
                         operator="and">
                      <adapt
-                           type="org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure">
+                           type="org.jkiss.dbeaver.model.struct.DBSObject">
+                        <instanceof
+                              value="org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure">
+                        </instanceof>
                      </adapt>
                   </iterate>
                </with>

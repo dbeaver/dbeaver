@@ -135,6 +135,10 @@ public class PostgreMessages extends NLS {
 	public static String dialog_create_role_label_user_password;
 	public static String dialog_create_role_label_user_role;
 
+	/* Permissions */
+	public static String edit_command_grant_privilege_action_grant_privilege;
+	public static String edit_command_grant_privilege_action_revoke_privilege;
+
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, PostgreMessages.class);

@@ -27,30 +27,40 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.debug.DBGController;
+import org.jkiss.dbeaver.debug.DBGException;
 import org.jkiss.dbeaver.debug.internal.core.DebugCoreMessages;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 public class DebugCore {
 
     public static final String BUNDLE_SYMBOLIC_NAME = "org.jkiss.dbeaver.debug.core"; //$NON-NLS-1$
 
-    //FIXME: AF: revisit, looks like we can live without it
+    // FIXME: AF: revisit, looks like we can live without it
     public static final String MODEL_IDENTIFIER_DATABASE = BUNDLE_SYMBOLIC_NAME + '.' + "database"; //$NON-NLS-1$
     public static final String MODEL_IDENTIFIER_PROCEDURE = BUNDLE_SYMBOLIC_NAME + '.' + "procedure"; //$NON-NLS-1$
-    
+
     public static final String BREAKPOINT_DATABASE = BUNDLE_SYMBOLIC_NAME + '.' + "databaseBreakpointMarker"; //$NON-NLS-1$
     public static final String BREAKPOINT_DATABASE_LINE = BUNDLE_SYMBOLIC_NAME + '.' + "databaseLineBreakpointMarker"; //$NON-NLS-1$
+
+    public static final String ATTR_DRIVER = BUNDLE_SYMBOLIC_NAME + '.' + "ATTR_DRIVER"; //$NON-NLS-1$
+    public static final String ATTR_DRIVER_DEFAULT = ""; //$NON-NLS-1$
 
     public static final String ATTR_DATASOURCE = BUNDLE_SYMBOLIC_NAME + '.' + "ATTR_DATASOURCE"; //$NON-NLS-1$
     public static final String ATTR_DATASOURCE_DEFAULT = ""; //$NON-NLS-1$
 
     public static final String ATTR_DATABASE = BUNDLE_SYMBOLIC_NAME + '.' + "ATTR_DATABASE"; //$NON-NLS-1$
     public static final String ATTR_DATABASE_DEFAULT = ""; //$NON-NLS-1$
-    
+
     public static final String ATTR_OID = BUNDLE_SYMBOLIC_NAME + '.' + "ATTR_OID"; //$NON-NLS-1$
     public static final String ATTR_OID_DEFAULT = ""; //$NON-NLS-1$
 
     private static Log log = Log.getLog(DebugCore.class);
+
+    public static void log(IStatus status) {
+        Log.log(log, status);
+    }
 
     public static CoreException abort(String message, Throwable th) {
         return new CoreException(newErrorStatus(message, th));
@@ -70,11 +80,10 @@ public class DebugCore {
             String message = NLS.bind(DebugCoreMessages.DebugCore_e_unable_to_retrieve_modes, configuration);
             log.error(message, e);
             return false;
-        }       
+        }
     }
 
-    public static List<DBSObject> extractLaunchable(Object[] scope)
-    {
+    public static List<DBSObject> extractLaunchable(Object[] scope) {
         List<DBSObject> extracted = new ArrayList<>();
         if (scope == null) {
             return extracted;
@@ -88,16 +97,21 @@ public class DebugCore {
         }
         return extracted;
     }
-    
-    public static String extractDatasource(ILaunchConfiguration configuration) {
+
+    public static String extractDriverId(ILaunchConfiguration configuration) {
+        return extractStringAttribute(configuration, ATTR_DRIVER, ATTR_DRIVER_DEFAULT);
+    }
+
+    public static String extractDatasourceId(ILaunchConfiguration configuration) {
         return extractStringAttribute(configuration, ATTR_DATASOURCE, ATTR_DATASOURCE_DEFAULT);
     }
 
-    public static String extractDatabase(ILaunchConfiguration configuration) {
+    public static String extractDatabaseName(ILaunchConfiguration configuration) {
         return extractStringAttribute(configuration, ATTR_DATABASE, ATTR_DATABASE_DEFAULT);
     }
 
-    public static String extractStringAttribute(ILaunchConfiguration configuration, String attributeName, String defaultValue) {
+    public static String extractStringAttribute(ILaunchConfiguration configuration, String attributeName,
+            String defaultValue) {
         if (configuration == null) {
             String message = NLS.bind(DebugCoreMessages.DebugCore_e_read_attribute_null, attributeName);
             log.error(message);
@@ -106,51 +120,29 @@ public class DebugCore {
         try {
             return configuration.getAttribute(attributeName, defaultValue);
         } catch (CoreException e) {
-            String message = NLS.bind(DebugCoreMessages.DebugCore_e_read_attribute_generic, attributeName, configuration);
+            String message = NLS.bind(DebugCoreMessages.DebugCore_e_read_attribute_generic, attributeName,
+                    configuration);
             log.error(message, e);
             return defaultValue;
         }
     }
 
-    public static void log(Log delegate, IStatus status) {
-        if (delegate == null) {
-            //no way to log
-            return;
-        }
-        if (status == null) {
-            //nothing to log
-            return;
-        }
-        int severity = status.getSeverity();
-        String message = status.getMessage();
-        Throwable exception = status.getException();
-        switch (severity) {
-        case IStatus.CANCEL:
-            delegate.debug(message, exception);
-            break;
-        case IStatus.ERROR:
-            delegate.error(message, exception);
-            break;
-        case IStatus.WARNING:
-            delegate.warn(message, exception);
-            break;
-        case IStatus.INFO:
-            delegate.info(message, exception);
-            break;
-        case IStatus.OK:
-            delegate.trace(message, exception);
-            break;
-        default:
-            break;
-        }
-    }
-
     public static Status newErrorStatus(String message, Throwable th) {
-        return new Status(IStatus.ERROR, BUNDLE_SYMBOLIC_NAME, message, th) ;
+        return new Status(IStatus.ERROR, BUNDLE_SYMBOLIC_NAME, message, th);
     }
 
     public static Status newErrorStatus(String message) {
         return newErrorStatus(message, null);
+    }
+
+    public static DBGController findProcedureController(DBPDataSourceContainer dataSourceContainer) throws DBGException {
+        DBGController controller = Adapters.adapt(dataSourceContainer, DBGController.class);
+        if (controller != null) {
+            return controller;
+        }
+        String providerId = dataSourceContainer.getDriver().getProviderId();
+        String message = NLS.bind("Unable to find controller for datasource \"{0}\"", providerId);
+        throw new DBGException(message);
     }
 
 }

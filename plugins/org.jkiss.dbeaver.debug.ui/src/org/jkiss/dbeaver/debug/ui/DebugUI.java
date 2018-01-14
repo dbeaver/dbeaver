@@ -22,7 +22,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.debug.core.DebugCore;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
@@ -52,7 +51,7 @@ public class DebugUI {
     }
 
     public static void log(IStatus status) {
-        DebugCore.log(log, status);
+        Log.log(log, status);
     }
 
 }

@@ -35,6 +35,13 @@
                type="org.eclipse.debug.ui.actions.ILaunchable">
          </adapter>
       </factory>
+      <factory
+            adaptableType="org.jkiss.dbeaver.model.navigator.DBNDatabaseObject"
+            class="org.jkiss.dbeaver.debug.internal.ui.actions.DebugActionAdapterFactory">
+         <adapter
+               type="org.eclipse.debug.ui.actions.ILaunchable">
+         </adapter>
+      </factory>
    </extension>
 
    <extension
@@ -51,6 +58,27 @@
             class="org.jkiss.dbeaver.debug.ui.details.DatabaseDetailPaneFactory"
             id="org.jkiss.dbeaver.debug.ui.detailPaneFactories.detailFactories.database">
       </detailFactories>
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.handlers">
+      <handler
+            class="org.jkiss.dbeaver.debug.ui.actions.ToggleBreakpointHandler"
+            commandId="org.eclipse.debug.ui.commands.ToggleBreakpoint">
+      </handler>
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="false"
+            locationURI="popup:#SQLRulerContext?before=additions">
+         <command
+               commandId="org.eclipse.debug.ui.commands.ToggleBreakpoint"
+               label="%command.ToggleBreakpoint.label"
+               style="push">
+         </command>
+      </menuContribution>
    </extension>
 
 </plugin>

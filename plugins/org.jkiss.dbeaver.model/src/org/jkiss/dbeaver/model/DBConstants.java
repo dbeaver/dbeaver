@@ -28,6 +28,8 @@ import java.util.Locale;
  */
 public class DBConstants {
 
+    public static final String FEATURE_LIMIT_AFFECTS_DML = "datasource.limit-affects-dml";
+
     public static final int METADATA_FETCH_SIZE = 1000;
 
     public static final String DATA_SOURCE_PROPERTY_USER = "user"; //NON-NLS-1

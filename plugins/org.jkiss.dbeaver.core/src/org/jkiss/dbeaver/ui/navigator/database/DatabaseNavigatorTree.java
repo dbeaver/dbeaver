@@ -79,7 +79,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         super(parent, SWT.NONE);
         this.setLayout(new FillLayout());
         this.navigatorFilter = navigatorFilter;
-        this.defaultSelection = new StructuredSelection(rootNode);
+        this.defaultSelection = new TreeSelection(new TreePath(new Object[]{rootNode}));
         this.model = DBeaverCore.getInstance().getNavigatorModel();
         this.model.addListener(this);
         addDisposeListener(e -> {

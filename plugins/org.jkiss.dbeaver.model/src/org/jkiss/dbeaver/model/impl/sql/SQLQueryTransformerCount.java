@@ -88,7 +88,6 @@ public class SQLQueryTransformerCount implements SQLQueryTransformer {
                     for (SelectItem item : select.getSelectItems()) {
                         if (item instanceof SelectExpressionItem) {
                             exprs.add(((SelectExpressionItem)item).getExpression());
-                            break;
                         }
                     }
                     if (!exprs.isEmpty()) {

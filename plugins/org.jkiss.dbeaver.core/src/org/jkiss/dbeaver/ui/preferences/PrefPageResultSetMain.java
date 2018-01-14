@@ -112,19 +112,19 @@ public class PrefPageResultSetMain extends TargetPrefPage
             });
         }
 
-        // Transactions settings
+        // Misc settings
         {
-            Group txnGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_editor_group_misc, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Group miscGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_editor_group_misc, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
 
-            keepStatementOpenCheck = UIUtils.createCheckbox(txnGroup, CoreMessages.pref_page_database_general_checkbox_keep_cursor, false);
-            rollbackOnErrorCheck = UIUtils.createCheckbox(txnGroup, CoreMessages.pref_page_database_general_checkbox_rollback_on_error, false);
-            alwaysUseAllColumns = UIUtils.createCheckbox(txnGroup, CoreMessages.pref_page_content_editor_checkbox_keys_always_use_all_columns, false);
-            newRowsAfter = UIUtils.createCheckbox(txnGroup, CoreMessages.pref_page_content_editor_checkbox_new_rows_after, false);
-            refreshAfterUpdate = UIUtils.createCheckbox(txnGroup, CoreMessages.pref_page_content_editor_checkbox_refresh_after_update, false);
+            keepStatementOpenCheck = UIUtils.createCheckbox(miscGroup, CoreMessages.pref_page_database_general_checkbox_keep_cursor, false);
+            rollbackOnErrorCheck = UIUtils.createCheckbox(miscGroup, CoreMessages.pref_page_database_general_checkbox_rollback_on_error, false);
+            alwaysUseAllColumns = UIUtils.createCheckbox(miscGroup, CoreMessages.pref_page_content_editor_checkbox_keys_always_use_all_columns, false);
+            newRowsAfter = UIUtils.createCheckbox(miscGroup, CoreMessages.pref_page_content_editor_checkbox_new_rows_after, false);
+            refreshAfterUpdate = UIUtils.createCheckbox(miscGroup, CoreMessages.pref_page_content_editor_checkbox_refresh_after_update, false);
         }
 
         {
-            Group advGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_results_group_advanced, 1, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            Group advGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_results_group_advanced, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
 
             advUseFetchSize = UIUtils.createCheckbox(advGroup, CoreMessages.pref_page_database_resultsets_label_fetch_size, CoreMessages.pref_page_database_resultsets_label_fetch_size_tip, false, 1);
         }

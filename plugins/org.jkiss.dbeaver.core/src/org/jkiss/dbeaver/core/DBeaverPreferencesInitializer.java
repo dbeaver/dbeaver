@@ -77,7 +77,7 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NAVIGATOR_SHOW_SQL_PREVIEW, true);
 
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NAVIGATOR_SHOW_OBJECT_TIPS, true);
-        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.ENTITY_EDITOR_DETACH_INFO, false);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.ENTITY_EDITOR_DETACH_INFO, true);
 
         // Common
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.KEEP_STATEMENT_OPEN, false);
@@ -183,6 +183,8 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_COLORIZE_DATA_TYPES, false);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS, true);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_ROW_BATCH_SIZE, 1);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_STRING_USE_CONTENT_EDITOR, false);
+
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_TEXT_MAX_COLUMN_SIZE, 255);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_TEXT_VALUE_FORMAT, DBDDisplayFormat.EDIT.name());
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_TEXT_SHOW_NULLS, false);

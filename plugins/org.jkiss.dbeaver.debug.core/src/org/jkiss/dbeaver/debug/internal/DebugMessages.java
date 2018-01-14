@@ -33,7 +33,6 @@ public class DebugMessages extends NLS {
         NLS.initializeMessages(BUNDLE_NAME, DebugMessages.class);
     }
 
-    private DebugMessages()
-    {
+    private DebugMessages() {
     }
 }

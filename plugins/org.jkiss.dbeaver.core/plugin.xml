@@ -317,7 +317,6 @@
         <command id="org.jkiss.dbeaver.core.resultset.grid.copyColumnNames" name="%command.org.jkiss.dbeaver.core.resultset.grid.copyColumnNames.name" description="%command.org.jkiss.dbeaver.core.resultset.grid.copyColumnNames.description" categoryId="org.jkiss.dbeaver.core.rs"/>
         <command id="org.jkiss.dbeaver.core.resultset.grid.copyRowNames" name="%command.org.jkiss.dbeaver.core.resultset.grid.copyRowNames.name" description="%command.org.jkiss.dbeaver.core.resultset.grid.copyRowNames.description" categoryId="org.jkiss.dbeaver.core.rs"/>
         <command id="org.jkiss.dbeaver.core.resultset.filterMenu" name="%command.org.jkiss.dbeaver.core.resultset.filterMenu.name" description="%command.org.jkiss.dbeaver.core.resultset.filterMenu.description" categoryId="org.jkiss.dbeaver.core.rs"/>
-        <command id="org.jkiss.dbeaver.core.resultset.filterDistinct" name="%command.org.jkiss.dbeaver.core.resultset.filterDistinct.name" description="%command.org.jkiss.dbeaver.core.resultset.filterDistinct.description" categoryId="org.jkiss.dbeaver.core.rs"/>
         <command id="org.jkiss.dbeaver.core.resultset.referencesMenu" name="%command.org.jkiss.dbeaver.core.resultset.referencesMenu.name" description="%command.org.jkiss.dbeaver.core.resultset.referencesMenu.description" categoryId="org.jkiss.dbeaver.core.rs"/>
         <command id="org.jkiss.dbeaver.core.resultset.toggleOrder" name="%command.org.jkiss.dbeaver.core.resultset.toggleOrder.name" description="%command.org.jkiss.dbeaver.core.resultset.toggleOrder.description" categoryId="org.jkiss.dbeaver.core.rs"/>
         <command id="org.jkiss.dbeaver.core.resultset.export" name="%command.org.jkiss.dbeaver.core.resultset.export.name" description="%command.org.jkiss.dbeaver.core.resultset.export.description" categoryId="org.jkiss.dbeaver.core.rs"/>
@@ -1353,9 +1352,6 @@
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.resultset.filterMenu" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
-            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.resultset.part"/></activeWhen>
-        </handler>
-        <handler commandId="org.jkiss.dbeaver.core.resultset.filterDistinct" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
             <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.resultset.part"/></activeWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.resultset.referencesMenu" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
@@ -2626,7 +2622,7 @@
                 </or>
             </enabledWhen>
         </page>
-        <page category="org.jkiss.dbeaver.preferences.main.resultset" id="org.jkiss.dbeaver.preferences.main.resultset.binaries" class="org.jkiss.dbeaver.ui.preferences.PrefPageResultSetBinaries" name="%page.org.jkiss.dbeaver.preferences.main.resultset.binaries.name">
+        <page category="org.jkiss.dbeaver.preferences.main.resultset" id="org.jkiss.dbeaver.preferences.main.resultset.editors" class="org.jkiss.dbeaver.ui.preferences.PrefPageResultSetEditors" name="%page.org.jkiss.dbeaver.preferences.main.resultset.editors.name">
             <enabledWhen>
                 <or>
                     <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
@@ -3469,6 +3465,7 @@
                     <property id="header" label="%dataTransfer.processor.csv.property.header.name" type="string" description="%dataTransfer.processor.csv.property.header.description" defaultValue="top" required="true" validValues="none,top,bottom,both"/>
                     <property id="escape" label="%dataTransfer.processor.csv.property.escape.name" type="string" description="%dataTransfer.processor.csv.property.escape.description" defaultValue="quotes" required="true" validValues="quotes,escape"/>
                     <property id="quoteChar" label="%dataTransfer.processor.csv.property.quoteChar.name" type="string" description="%dataTransfer.processor.csv.property.quoteChar.description" defaultValue="&quot;" required="false"/>
+                    <property id="quoteAlways" label="%dataTransfer.processor.csv.property.quoteAlways.name" type="boolean" description="%dataTransfer.processor.csv.property.quoteAlways.description" defaultValue="false" required="false"/>
                     <property id="nullString" label="%dataTransfer.processor.csv.property.nullString.name" type="string" description="%dataTransfer.processor.csv.property.nullString.description" defaultValue="" required="false"/>
                 </propertyGroup>
             </processor>
