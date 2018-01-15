@@ -22,7 +22,8 @@ import java.util.Date;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.TraverseListener;
-import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DateTime;
 import org.jkiss.code.Nullable;
@@ -35,7 +36,6 @@ import org.jkiss.dbeaver.model.data.DBDDataFormatter;
  */
 public class DateTimeEditor {
 
-
 	private DateTime dateEditor;
 	private DateTime timeEditor;
 	private String formaterId;
@@ -43,10 +43,17 @@ public class DateTimeEditor {
 	private static final Log log = Log.getLog(ViewerColumnController.class);
 
 	public DateTimeEditor(Composite parent, int style, String formaterId) {
-		
-		FillLayout layout = new FillLayout();
-		layout.type = SWT.VERTICAL;
-		parent.setLayout(layout);
+
+		Composite basePart = new Composite(parent, SWT.BORDER);
+
+		GridLayout layout = new GridLayout(1, false);
+		layout.marginHeight = 1;
+		layout.marginWidth = 1;
+		layout.horizontalSpacing = 1;
+		layout.verticalSpacing = 1;
+		basePart.setLayout(layout);
+		GridData dateData = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		GridData timeData = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
 
 		if (formaterId == null || formaterId.isEmpty()) {
 			formaterId = DBDDataFormatter.TYPE_NAME_TIMESTAMP;
@@ -54,13 +61,17 @@ public class DateTimeEditor {
 		this.formaterId = formaterId;
 
 		if (formaterId.equals(DBDDataFormatter.TYPE_NAME_TIMESTAMP)) {
-			this.dateEditor = new DateTime(parent, SWT.DATE | SWT.DROP_DOWN | style);
+			this.dateEditor = new DateTime(basePart, SWT.DATE | SWT.DROP_DOWN | style);
+			this.dateEditor.setLayoutData(dateData);
 
-			this.timeEditor = new DateTime(parent, SWT.TIME | SWT.DROP_DOWN | style);
+			this.timeEditor = new DateTime(basePart, SWT.TIME | SWT.DROP_DOWN | style);
+			this.timeEditor.setLayoutData(timeData);
 		} else if (formaterId.equals(DBDDataFormatter.TYPE_NAME_DATE)) {
-			this.dateEditor = new DateTime(parent, SWT.DATE | SWT.DROP_DOWN | style);
+			this.dateEditor = new DateTime(basePart, SWT.DATE | SWT.DROP_DOWN | style);
+			this.dateEditor.setLayoutData(dateData);
 		} else if (formaterId.equals(DBDDataFormatter.TYPE_NAME_TIME)) {
-			this.timeEditor = new DateTime(parent, SWT.TIME | SWT.DROP_DOWN | style);
+			this.timeEditor = new DateTime(basePart, SWT.TIME | SWT.DROP_DOWN | style);
+			this.timeEditor.setLayoutData(timeData);
 		}
 
 	}
