@@ -24,7 +24,7 @@ import java.util.Map;
 import org.jkiss.dbeaver.debug.DBGObjectDescriptor;
 
 @SuppressWarnings("nls")
-public class PostgreObjectDescriptor implements DBGObjectDescriptor {
+public class PostgreDebugObjectDescriptor implements DBGObjectDescriptor {
 
     private final Integer oid;
 
@@ -36,7 +36,7 @@ public class PostgreObjectDescriptor implements DBGObjectDescriptor {
 
     private final String lang;
 
-    public PostgreObjectDescriptor(Integer oid, String proname, String owner, String schema, String lang) {
+    public PostgreDebugObjectDescriptor(Integer oid, String proname, String owner, String schema, String lang) {
         super();
         this.oid = oid;
         this.proname = proname;

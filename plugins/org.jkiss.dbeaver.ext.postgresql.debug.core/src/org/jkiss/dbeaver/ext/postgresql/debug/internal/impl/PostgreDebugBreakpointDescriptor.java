@@ -21,13 +21,13 @@ package org.jkiss.dbeaver.ext.postgresql.debug.internal.impl;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import org.jkiss.dbeaver.debug.DBGBreakpoint;
+import org.jkiss.dbeaver.debug.DBGBreakpointDescriptor;
 import org.jkiss.dbeaver.debug.DBGException;
 
 @SuppressWarnings("nls")
-public class PostgreDebugBreakpoint implements DBGBreakpoint {
+public class PostgreDebugBreakpointDescriptor implements DBGBreakpointDescriptor {
 
-    private final PostgreObjectDescriptor obj;
+    private final PostgreDebugObjectDescriptor obj;
 
     private final PostgreDebugSession session;
 
@@ -36,7 +36,7 @@ public class PostgreDebugBreakpoint implements DBGBreakpoint {
     private static final String SQL_SET_GLOBAL = "select pldbg_set_global_breakpoint(?sessionid, ?obj, ?line, ?target)";
     private static final String SQL_SET = "select pldbg_set_breakpoint(?sessionid, ?obj, ?line)";
 
-    public PostgreDebugBreakpoint(PostgreDebugSession session, PostgreObjectDescriptor obj,
+    public PostgreDebugBreakpointDescriptor(PostgreDebugSession session, PostgreDebugObjectDescriptor obj,
                                   PostgreDebugBreakpointProperties properties) throws DBGException {
 
         this.session = session;
@@ -59,7 +59,7 @@ public class PostgreDebugBreakpoint implements DBGBreakpoint {
     }
 
     @Override
-    public PostgreObjectDescriptor getObjectDescriptor() {
+    public PostgreDebugObjectDescriptor getObjectDescriptor() {
         return obj;
     }
 
@@ -70,7 +70,7 @@ public class PostgreDebugBreakpoint implements DBGBreakpoint {
 
     @Override
     public String toString() {
-        return "PostgreDebugBreakpoint [obj=" + obj + ", session id =" + session.getSessionId() + ", properties="
+        return "PostgreDebugBreakpointDescriptor [obj=" + obj + ", session id =" + session.getSessionId() + ", properties="
                 + properties + "]";
     }
 

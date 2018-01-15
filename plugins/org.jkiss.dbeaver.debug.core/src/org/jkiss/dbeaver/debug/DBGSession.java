@@ -24,11 +24,11 @@ public interface DBGSession {
 
     DBGSessionInfo getSessionInfo();
 
-    List<? extends DBGBreakpoint> getBreakpoints();
+    List<? extends DBGBreakpointDescriptor> getBreakpoints();
 
-    DBGBreakpoint setBreakpoint(DBGObjectDescriptor obj, DBGBreakpointProperties properties) throws DBGException;
+    DBGBreakpointDescriptor setBreakpoint(DBGObjectDescriptor obj, DBGBreakpointProperties properties) throws DBGException;
 
-    void removeBreakpoint(DBGBreakpoint bp) throws DBGException;
+    void removeBreakpoint(DBGBreakpointDescriptor bp) throws DBGException;
 
     void execContinue() throws DBGException;
 

@@ -30,7 +30,7 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.debug.DBGBreakpoint;
+import org.jkiss.dbeaver.debug.DBGBreakpointDescriptor;
 import org.jkiss.dbeaver.debug.DBGBreakpointProperties;
 import org.jkiss.dbeaver.debug.DBGException;
 import org.jkiss.dbeaver.debug.DBGObjectDescriptor;
@@ -92,9 +92,9 @@ public class PostgreDebugSession implements DBGSession {
 
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock(true);
 
-    private List<PostgreDebugBreakpoint> breakpoints = new ArrayList<PostgreDebugBreakpoint>(1);
+    private List<PostgreDebugBreakpointDescriptor> breakpoints = new ArrayList<PostgreDebugBreakpointDescriptor>(1);
     
-    private PostgreDebugBreakpoint entry = null;
+    private PostgreDebugBreakpointDescriptor entry = null;
 
     private FutureTask<Void> task;
 
@@ -145,9 +145,9 @@ public class PostgreDebugSession implements DBGSession {
             } 
 
             PostgreDebugBreakpointProperties properties = new PostgreDebugBreakpointProperties(true);
-            PostgreObjectDescriptor obj = new PostgreObjectDescriptor(OID,"ENTRY","SESSION","THIS","PG"); 
+            PostgreDebugObjectDescriptor obj = new PostgreDebugObjectDescriptor(OID,"ENTRY","SESSION","THIS","PG"); 
             
-            this.entry = new PostgreDebugBreakpoint(this,obj,properties);
+            this.entry = new PostgreDebugBreakpointDescriptor(this,obj,properties);
             
             runAsync(SQL_ATTACH.replaceAll("\\?sessionid", String.valueOf(sessionId)),
                     String.valueOf(sessionId) + " global attached to " + String.valueOf(targetId));
@@ -184,19 +184,19 @@ public class PostgreDebugSession implements DBGSession {
     }
 
     @Override
-    public List<PostgreDebugBreakpoint> getBreakpoints() {
+    public List<PostgreDebugBreakpointDescriptor> getBreakpoints() {
         return breakpoints;
     }
 
     @Override
-    public DBGBreakpoint setBreakpoint(DBGObjectDescriptor obj, DBGBreakpointProperties properties) throws DBGException {
+    public DBGBreakpointDescriptor setBreakpoint(DBGObjectDescriptor obj, DBGBreakpointProperties properties) throws DBGException {
 
         acquireReadLock();
 
-        PostgreDebugBreakpoint bp = null;
+        PostgreDebugBreakpointDescriptor bp = null;
 
         try {
-            bp = new PostgreDebugBreakpoint(this, (PostgreObjectDescriptor)obj, (PostgreDebugBreakpointProperties) properties);
+            bp = new PostgreDebugBreakpointDescriptor(this, (PostgreDebugObjectDescriptor)obj, (PostgreDebugBreakpointProperties) properties);
             breakpoints.add(bp);
 
         } finally {
@@ -207,7 +207,7 @@ public class PostgreDebugSession implements DBGSession {
     }
 
     @Override
-    public void removeBreakpoint(DBGBreakpoint bp) throws DBGException {
+    public void removeBreakpoint(DBGBreakpointDescriptor bp) throws DBGException {
 
         acquireReadLock();
 
