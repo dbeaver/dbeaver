@@ -18,9 +18,6 @@
 
 package org.jkiss.dbeaver.ext.postgresql.debug.internal.impl;
 
-import java.sql.SQLException;
-import java.sql.Statement;
-
 import org.jkiss.dbeaver.debug.DBGBreakpointDescriptor;
 import org.jkiss.dbeaver.debug.DBGException;
 
@@ -33,28 +30,11 @@ public class PostgreDebugBreakpointDescriptor implements DBGBreakpointDescriptor
 
     private final PostgreDebugBreakpointProperties properties;
 
-    private static final String SQL_SET_GLOBAL = "select pldbg_set_global_breakpoint(?sessionid, ?obj, ?line, ?target)";
-    private static final String SQL_SET = "select pldbg_set_breakpoint(?sessionid, ?obj, ?line)";
-
     public PostgreDebugBreakpointDescriptor(PostgreDebugSession session, PostgreDebugObjectDescriptor obj,
                                   PostgreDebugBreakpointProperties properties) throws DBGException {
-
         this.session = session;
         this.obj = obj;
         this.properties = properties;
-        try (Statement stmt = session.getConnection().createStatement()) {
-
-            String sqlCommand = properties.isGlobal() ? SQL_SET_GLOBAL : SQL_SET;
-
-            stmt.executeQuery(sqlCommand.replaceAll("\\?sessionid", String.valueOf(session.getSessionId()))
-                    .replaceAll("\\?obj", String.valueOf(obj.getID()))
-                    .replaceAll("\\?line", properties.isOnStart() ? "-1" : String.valueOf(properties.getLineNo()))
-                    .replaceAll("\\?target", properties.isAll() ? "null"
-                            : String.valueOf(properties.getTargetId())));
-
-        } catch (SQLException e) {
-            throw new DBGException("SQL error", e);
-        }
 
     }
 

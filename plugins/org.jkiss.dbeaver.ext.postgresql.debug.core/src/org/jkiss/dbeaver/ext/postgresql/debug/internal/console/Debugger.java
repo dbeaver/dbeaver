@@ -543,12 +543,12 @@ public class Debugger {
                     break;
                 }
 
-                DBGBreakpointProperties bpp = lineNo > 0 ? new PostgreDebugBreakpointProperties(lineNo, true)
+                DBGBreakpointProperties bp = lineNo > 0 ? new PostgreDebugBreakpointProperties(lineNo, true)
                         : new PostgreDebugBreakpointProperties(true);
 
-                DBGBreakpointDescriptor bp = debugSession.setBreakpoint(debugObject, bpp);
+                debugSession.addBreakpoint(debugObject, bp);
 
-                System.out.println("Breakpoint set");
+                System.out.println("Breakpoint added");
 
                 System.out.println(bp.toString());
 
