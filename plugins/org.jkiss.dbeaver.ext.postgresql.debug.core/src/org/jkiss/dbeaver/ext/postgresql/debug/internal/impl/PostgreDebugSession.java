@@ -30,10 +30,10 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.debug.DBGBreakpoint;
+import org.jkiss.dbeaver.debug.DBGBreakpointDescriptor;
 import org.jkiss.dbeaver.debug.DBGBreakpointProperties;
 import org.jkiss.dbeaver.debug.DBGException;
-import org.jkiss.dbeaver.debug.DBGObject;
+import org.jkiss.dbeaver.debug.DBGObjectDescriptor;
 import org.jkiss.dbeaver.debug.DBGSession;
 import org.jkiss.dbeaver.debug.DBGSessionInfo;
 import org.jkiss.dbeaver.debug.DBGStackFrame;
@@ -57,24 +57,19 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
  *    procedure will be reached     <br/>
  *
  */
-@SuppressWarnings("nls")
 public class PostgreDebugSession implements DBGSession {
 
     private static final Log log = Log.getLog(PostgreDebugSession.class);
     
-    private final PostgreDebugSessionInfo sessionManagerInfo;
-
-    private final PostgreDebugSessionInfo sessionDebugInfo;
+    private final DBGSessionInfo sessionInfo;
+    private final Object targetId;
 
     private JDBCExecutionContext connection = null;
-
-    private final String title;
 
     private int sessionId = -1;
 
     private static final String SQL_ATTACH = "select pldbg_wait_for_target(?sessionid)";
 
-    private static final String SQL_ATTACH_BREAKPOINT = "select pldbg_wait_for_breakpoint(?sessionid)";
 
     private static final String SQL_LISTEN = "select pldbg_create_listener() as sessionid";
 
@@ -92,15 +87,31 @@ public class PostgreDebugSession implements DBGSession {
 
     private static final String SQL_ABORT = "select pldbg_abort_target(?sessionid)";
 
+    private static final String SQL_SET_GLOBAL_BREAKPOINT = "select pldbg_set_global_breakpoint(?sessionid, ?obj, ?line, ?target)";
+    private static final String SQL_SET_BREAKPOINT = "select pldbg_set_breakpoint(?sessionid, ?obj, ?line)";
+    private static final String SQL_DROP_BREAKPOINT = "select pldbg_drop_breakpoint(?sessionid, ?obj, ?line)";
+    private static final String SQL_ATTACH_BREAKPOINT = "select pldbg_wait_for_breakpoint(?sessionid)";
+
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock(true);
 
-    private List<PostgreDebugBreakpoint> breakpoints = new ArrayList<PostgreDebugBreakpoint>(1);
+    private List<PostgreDebugBreakpointDescriptor> breakpoints = new ArrayList<PostgreDebugBreakpointDescriptor>(1);
     
-    private PostgreDebugBreakpoint entry = null;
-
     private FutureTask<Void> task;
 
     private Thread workerThread = null;
+
+    /**
+     * Create session with two description 
+     * after creation session need to be attached to postgres procedure by attach method
+     * 
+     * @param sessionManagerInfo - manager (caller connection) description
+     * @param sessionDebugInfo - session (debugger client connection) description
+     * @throws DBGException
+     */
+    public PostgreDebugSession(PostgreDebugSessionInfo sessionInfo, Object targetId) throws DBGException {
+        this.sessionInfo = sessionInfo;
+        this.targetId = targetId;
+    }
 
     /**
      * This method attach debug session to debug object (procedure) 
@@ -123,8 +134,8 @@ public class PostgreDebugSession implements DBGSession {
                     ResultSet rs = stmt.executeQuery(SQL_LISTEN)) {
 
                 if (rs.next()) {
-                    getConnection(connection).setClientInfo("ApplicationName", "Debug Mode : " + String.valueOf(sessionId));
                     sessionId =  rs.getInt("sessionid");
+                    getConnection(connection).setClientInfo("ApplicationName", "Debug Mode : " + String.valueOf(sessionId));
                 } else {
                     throw new DBGException("Unable to create debug instance");
                 }
@@ -134,12 +145,11 @@ public class PostgreDebugSession implements DBGSession {
             } 
 
             PostgreDebugBreakpointProperties properties = new PostgreDebugBreakpointProperties(true);
-            PostgreDebugObject obj = new PostgreDebugObject(OID,"ENTRY","SESSION","THIS","PG"); 
-            
-            this.entry = new PostgreDebugBreakpoint(this,obj,properties);
+            PostgreDebugObjectDescriptor obj = new PostgreDebugObjectDescriptor(OID,"ENTRY","SESSION","THIS","PG"); 
+            addBreakpoint(obj, properties);
             
             runAsync(SQL_ATTACH.replaceAll("\\?sessionid", String.valueOf(sessionId)),
-                    String.valueOf(sessionId) + " global attached to " + String.valueOf(sessionManagerInfo.pid));
+                    String.valueOf(sessionId) + " global attached to " + String.valueOf(targetId));
 
             /*if (breakpoint) {
                 runAsync(SQL_ATTACH_BREAKPOINT.replaceAll("\\?sessionid", String.valueOf(sessionId)),
@@ -158,21 +168,6 @@ public class PostgreDebugSession implements DBGSession {
     }
 
     /**
-     * Create session with two description 
-     * after creation session need to be attached to postgres procedure by attach method
-     * 
-     * @param sessionManagerInfo - manager (caller connection) description
-     * @param sessionDebugInfo - session (debugger client connection) description
-     * @throws DBGException
-     */
-    public PostgreDebugSession(PostgreDebugSessionInfo sessionManagerInfo, PostgreDebugSessionInfo sessionDebugInfo) throws DBGException {
-        this.sessionManagerInfo = sessionManagerInfo;
-        this.sessionDebugInfo = sessionDebugInfo;
-        this.title = sessionManagerInfo.application;
-
-    }
-
-    /**
      * @param connectionTarget - DBCExecutionContext of debug client (will be used in debug process)
      * @return Connection - java.sql.Connection
      * @throws SQLException
@@ -184,45 +179,62 @@ public class PostgreDebugSession implements DBGSession {
 
     @Override
     public DBGSessionInfo getSessionInfo() {
-        return sessionDebugInfo;
+        return sessionInfo;
     }
 
     @Override
-    public String getTitle() {
-        return title;
-    }
-
-    @Override
-    public List<PostgreDebugBreakpoint> getBreakpoints() {
+    public List<PostgreDebugBreakpointDescriptor> getBreakpoints() {
         return breakpoints;
     }
 
     @Override
-    public DBGBreakpoint setBreakpoint(DBGObject obj, DBGBreakpointProperties properties) throws DBGException {
+    public void addBreakpoint(DBGObjectDescriptor object, DBGBreakpointProperties properties) throws DBGException {
 
         acquireReadLock();
 
-        PostgreDebugBreakpoint bp = null;
+        PostgreDebugBreakpointDescriptor bp = null;
 
         try {
-            bp = new PostgreDebugBreakpoint(this, (PostgreDebugObject)obj, (PostgreDebugBreakpointProperties) properties);
+            PostgreDebugBreakpointProperties bpd = (PostgreDebugBreakpointProperties) properties;
+            bp = new PostgreDebugBreakpointDescriptor(this, (PostgreDebugObjectDescriptor)object, bpd);
+            try (Statement stmt = getConnection().createStatement()) {
+
+                String sqlCommand = bpd.isGlobal() ? SQL_SET_GLOBAL_BREAKPOINT : SQL_SET_BREAKPOINT;
+
+                stmt.executeQuery(sqlCommand.replaceAll("\\?sessionid", String.valueOf(getSessionId()))
+                        .replaceAll("\\?obj", String.valueOf(object.getID()))
+                        .replaceAll("\\?line", bpd.isOnStart() ? "-1" : String.valueOf(bpd.getLineNo()))
+                        .replaceAll("\\?target", bpd.isAll() ? "null"
+                                : String.valueOf(bpd.getTargetId())));
+
+            } catch (SQLException e) {
+                throw new DBGException("SQL error", e);
+            }
             breakpoints.add(bp);
 
         } finally {
             lock.readLock().unlock();
         }
 
-        return bp;
     }
 
     @Override
-    public void removeBreakpoint(DBGBreakpoint bp) throws DBGException {
+    public void removeBreakpoint(DBGBreakpointDescriptor bp) throws DBGException {
 
         acquireReadLock();
 
         try {
 
-            bp.drop();
+            try (Statement stmt = getConnection().createStatement()) {
+
+                PostgreDebugBreakpointProperties properties = (PostgreDebugBreakpointProperties) bp.getProperties();
+                stmt.executeQuery(SQL_DROP_BREAKPOINT.replaceAll("\\?sessionid", String.valueOf(getSessionId()))
+                        .replaceAll("\\?obj", String.valueOf(bp.getObjectDescriptor().getID()))
+                        .replaceAll("\\?line", properties.isOnStart() ? "-1" : String.valueOf(properties.getLineNo())));
+
+            } catch (SQLException e) {
+                throw new DBGException("SQL error", e);
+            }
 
             breakpoints.remove(bp);
 
@@ -265,7 +277,7 @@ public class PostgreDebugSession implements DBGSession {
         try {
 
             runAsync(commandSQL.replaceAll("\\?sessionid", String.valueOf(sessionId)),
-                    String.valueOf(sessionId) + name + String.valueOf(sessionManagerInfo.pid));
+                    String.valueOf(sessionId) + name + String.valueOf(targetId));
 
         } finally {
             lock.writeLock().unlock();
@@ -311,7 +323,7 @@ public class PostgreDebugSession implements DBGSession {
     }
 
     @Override
-    public List<DBGVariable<?>> getVarables() throws DBGException {
+    public List<DBGVariable<?>> getVariables() throws DBGException {
 
         acquireReadLock();
 
@@ -415,7 +427,7 @@ public class PostgreDebugSession implements DBGSession {
      * @return java.sql.Connection
      * @throws DBGException
      */
-    public Connection getConnection() throws DBGException {
+    private Connection getConnection() throws DBGException {
         try {
             return getConnection(connection);
         } catch (SQLException e) {
@@ -425,9 +437,8 @@ public class PostgreDebugSession implements DBGSession {
 
     @Override
     public String toString() {
-        return "PostgreDebugSession " + (isWaiting() ? "WAITING" : "READY") + " [connection=" + connection + ", title="
-                + title + ", sessionId=" + sessionId + ", breakpoints=" + breakpoints + "ManagerSession=("
-                + sessionManagerInfo.toString() + ") Session=(" + sessionDebugInfo.toString() + ") " + "]";
+        return "PostgreDebugSession " + (isWaiting() ? "WAITING" : "READY") + " [connection=" + connection + ", sessionId=" + sessionId + ", breakpoints=" + breakpoints + "targetId=("
+                + targetId + ") Session=(" + sessionInfo.toString() + ") " + "]";
     }
 
     @Override
