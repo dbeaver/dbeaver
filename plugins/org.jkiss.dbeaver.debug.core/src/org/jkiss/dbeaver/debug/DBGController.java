@@ -56,11 +56,11 @@ public interface DBGController {
     
     /**
      * 
-     * @param key the key obtained as a result of <code>attach</code>
+     * @param sessionkey the key obtained as a result of <code>attach</code>
      * @param monitor
      * @throws DBGException
      */
-    void detach(Object key, DBRProgressMonitor monitor) throws DBGException;
+    void detach(Object sessionkey, DBRProgressMonitor monitor) throws DBGException;
     
     void dispose();
     
@@ -79,5 +79,13 @@ public interface DBGController {
     boolean isSessionExists(Object id);
 
     List<? extends DBGObjectDescriptor> getObjects(String ownerCtx, String nameCtx) throws DBGException;
+
+    boolean canStepInto(Object sessionKey);
+    boolean canStepOver(Object sessionKey);
+    boolean canStepReturn(Object sessionKey);
+
+    void stepInto(Object sessionKey) throws DBGException;
+    void stepOver(Object sessionKey) throws DBGException;
+    void stepReturn(Object sessionKey) throws DBGException;
 
 }

@@ -15,6 +15,7 @@ import org.jkiss.dbeaver.debug.DBGVariable;
 
 public class DatabaseStackFrame extends DatabaseDebugElement implements IStackFrame {
     
+    private static final IRegisterGroup[] NO_REGISTER_GROUPS = new IRegisterGroup[0];
     private static final IVariable[] NO_VARIABLES = new IVariable[0];
     private final DBGStackFrame dbgStackFrame;
     private final DatabaseThread thread;
@@ -29,92 +30,77 @@ public class DatabaseStackFrame extends DatabaseDebugElement implements IStackFr
 
     @Override
     public boolean canStepInto() {
-        // TODO Auto-generated method stub
-        return false;
+        return thread.canStepInto();
     }
 
     @Override
     public boolean canStepOver() {
-        // TODO Auto-generated method stub
-        return false;
+       return thread.canStepOver();
     }
 
     @Override
     public boolean canStepReturn() {
-        // TODO Auto-generated method stub
-        return false;
+        return thread.canStepReturn();
     }
 
     @Override
     public boolean isStepping() {
-        // TODO Auto-generated method stub
-        return false;
+        return thread.isStepping();
     }
 
     @Override
     public void stepInto() throws DebugException {
-        // TODO Auto-generated method stub
-
+        thread.stepInto();
     }
 
     @Override
     public void stepOver() throws DebugException {
-        // TODO Auto-generated method stub
-
+        thread.stepOver();
     }
 
     @Override
     public void stepReturn() throws DebugException {
-        // TODO Auto-generated method stub
-
+        thread.canStepReturn();
     }
 
     @Override
     public boolean canResume() {
-        // TODO Auto-generated method stub
-        return false;
+        return thread.canResume();
     }
 
     @Override
     public boolean canSuspend() {
-        // TODO Auto-generated method stub
-        return false;
+        return thread.canSuspend();
     }
 
     @Override
     public boolean isSuspended() {
-        // TODO Auto-generated method stub
-        return false;
+        return thread.isSuspended();
     }
 
     @Override
     public void resume() throws DebugException {
-        // TODO Auto-generated method stub
-
+        thread.resume();
     }
 
     @Override
     public void suspend() throws DebugException {
-        // TODO Auto-generated method stub
-
+        thread.suspend();
     }
 
     @Override
     public boolean canTerminate() {
-        // TODO Auto-generated method stub
-        return false;
+        return thread.canTerminate();
     }
 
     @Override
     public boolean isTerminated() {
-        // TODO Auto-generated method stub
-        return false;
+        return thread.isTerminated();
     }
 
     @Override
     public void terminate() throws DebugException {
-        // TODO Auto-generated method stub
-
+        thread.terminate();
     }
 
     @Override
@@ -172,13 +158,11 @@ public class DatabaseStackFrame extends DatabaseDebugElement implements IStackFr
 
     @Override
     public IRegisterGroup[] getRegisterGroups() throws DebugException {
-        // TODO Auto-generated method stub
-        return null;
+        return NO_REGISTER_GROUPS;
     }
 
     @Override
     public boolean hasRegisterGroups() throws DebugException {
-        // TODO Auto-generated method stub
         return false;
     }
 

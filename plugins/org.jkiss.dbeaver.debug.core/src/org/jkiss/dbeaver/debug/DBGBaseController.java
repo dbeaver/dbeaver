@@ -98,8 +98,8 @@ public abstract class DBGBaseController implements DBGController {
     }
     
     @Override
-    public void detach(Object key, DBRProgressMonitor monitor) throws DBGException {
-        DBGSession session = sessions.remove(key);
+    public void detach(Object sessionkey, DBRProgressMonitor monitor) throws DBGException {
+        DBGSession session = sessions.remove(sessionkey);
         if (session != null) {
             session.close();
         }
@@ -138,5 +138,46 @@ public abstract class DBGBaseController implements DBGController {
     public List<DBGSession> getDebugSessions() throws DBGException {
         return new ArrayList<DBGSession>(sessions.values());
     }
+    
+    @Override
+    public boolean canStepInto(Object sessionKey) {
+        return true;
+    }
 
+    @Override
+    public boolean canStepOver(Object sessionKey) {
+        return true;
+    }
+
+    @Override
+    public boolean canStepReturn(Object sessionKey) {
+        // hmm, not sure 
+        return false;
+    }
+
+    @Override
+    public void stepInto(Object sessionKey) throws DBGException {
+        DBGSession session = getDebugSession(sessionKey);
+        if (session == null) {
+            String message = NLS.bind("Session for {0} is not available", sessionKey);
+            throw new DBGException(message);
+        }
+        session.execStepInto();
+    }
+    
+    @Override
+    public void stepOver(Object sessionKey) throws DBGException {
+        DBGSession session = getDebugSession(sessionKey);
+        if (session == null) {
+            String message = NLS.bind("Session for {0} is not available", sessionKey);
+            throw new DBGException(message);
+        }
+        session.execStepOver();
+    }
+
+    @Override
+    public void stepReturn(Object sessionKey) throws DBGException {
+        //throw DBGException?
+    }
+    
 }
