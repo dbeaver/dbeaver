@@ -68,9 +68,9 @@ public abstract class DBGBaseController implements DBGController {
         }
         try {
             this.executionContext = dataSource.openIsolatedContext(monitor, "Debug controller");
-            DBGSessionInfo targetInfo = getSessionInfo(getExecutionContext());
+            DBGSessionInfo targetInfo = getSessionDescriptor(getExecutionContext());
             DBCExecutionContext sessionContext = dataSource.openIsolatedContext(monitor, "Debug session");
-            DBGSession debugSession = createDebugSession(targetInfo, sessionContext);
+            DBGSession debugSession = createSession(targetInfo, sessionContext);
             Object id = targetInfo.getID();
             sessions.put(id, debugSession);
             attachSession(debugSession, sessionContext, configuration, monitor);
@@ -116,7 +116,7 @@ public abstract class DBGBaseController implements DBGController {
     
     @Override
     public List<? extends DBGStackFrame> getStack(Object id) throws DBGException {
-        DBGSession session = getDebugSession(id);
+        DBGSession session = findSession(id);
         if (session == null) {
             String message = NLS.bind("Session for {0} is not available", id);
             throw new DBGException(message);
@@ -125,7 +125,7 @@ public abstract class DBGBaseController implements DBGController {
     }
 
     @Override
-    public DBGSession getDebugSession(Object id) throws DBGException {
+    public DBGSession findSession(Object id) throws DBGException {
         return sessions.get(id);
     }
 
@@ -135,7 +135,7 @@ public abstract class DBGBaseController implements DBGController {
     }
 
     @Override
-    public List<DBGSession> getDebugSessions() throws DBGException {
+    public List<DBGSession> getSessions() throws DBGException {
         return new ArrayList<DBGSession>(sessions.values());
     }
     
@@ -157,7 +157,7 @@ public abstract class DBGBaseController implements DBGController {
 
     @Override
     public void stepInto(Object sessionKey) throws DBGException {
-        DBGSession session = getDebugSession(sessionKey);
+        DBGSession session = findSession(sessionKey);
         if (session == null) {
             String message = NLS.bind("Session for {0} is not available", sessionKey);
             throw new DBGException(message);
@@ -167,7 +167,7 @@ public abstract class DBGBaseController implements DBGController {
     
     @Override
     public void stepOver(Object sessionKey) throws DBGException {
-        DBGSession session = getDebugSession(sessionKey);
+        DBGSession session = findSession(sessionKey);
         if (session == null) {
             String message = NLS.bind("Session for {0} is not available", sessionKey);
             throw new DBGException(message);

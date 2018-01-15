@@ -77,7 +77,7 @@ public class PostgreDebugController extends DBGBaseController {
     }
     
     @Override
-    public PostgreDebugSessionInfo getSessionInfo(DBCExecutionContext connectionTarget) throws DBGException {
+    public PostgreDebugSessionInfo getSessionDescriptor(DBCExecutionContext connectionTarget) throws DBGException {
         try (Statement stmt = getConnection(connectionTarget).createStatement();
                 ResultSet rs = stmt.executeQuery(SQL_CURRENT_SESSION)) {
 
@@ -104,7 +104,7 @@ public class PostgreDebugController extends DBGBaseController {
     }
 
     @Override
-    public List<PostgreDebugSessionInfo> getSessions() throws DBGException {
+    public List<PostgreDebugSessionInfo> getSessionDescriptors() throws DBGException {
         DBCExecutionContext executionContext = getExecutionContext();
         try (Statement stmt = getConnection(executionContext).createStatement(); ResultSet rs = stmt.executeQuery(SQL_SESSION)) {
             List<PostgreDebugSessionInfo> res = new ArrayList<PostgreDebugSessionInfo>();
@@ -153,8 +153,8 @@ public class PostgreDebugController extends DBGBaseController {
     }
 
     @Override
-    public PostgreDebugSession createDebugSession(DBGSessionInfo targetInfo, DBCExecutionContext sessionContext) throws DBGException {
-        PostgreDebugSessionInfo sessionInfo = getSessionInfo(sessionContext);
+    public PostgreDebugSession createSession(DBGSessionInfo targetInfo, DBCExecutionContext sessionContext) throws DBGException {
+        PostgreDebugSessionInfo sessionInfo = getSessionDescriptor(sessionContext);
         PostgreDebugSession debugSession = new PostgreDebugSession(sessionInfo, targetInfo.getID());
         
         return debugSession;

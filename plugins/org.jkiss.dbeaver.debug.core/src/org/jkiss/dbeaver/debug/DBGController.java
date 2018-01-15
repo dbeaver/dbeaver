@@ -64,21 +64,20 @@ public interface DBGController {
     
     void dispose();
     
-    List<? extends DBGStackFrame> getStack(Object id) throws DBGException;
+    DBGSessionInfo getSessionDescriptor(DBCExecutionContext connection) throws DBGException;
+    List<? extends DBGSessionInfo> getSessionDescriptors() throws DBGException;
 
-    DBGSessionInfo getSessionInfo(DBCExecutionContext connection) throws DBGException;
-
-    List<? extends DBGSessionInfo> getSessions() throws DBGException;
-
-    DBGSession getDebugSession(Object id) throws DBGException;
-
-    List<DBGSession> getDebugSessions() throws DBGException;
-
-    DBGSession createDebugSession(DBGSessionInfo targetInfo, DBCExecutionContext connection) throws DBGException;
-
+    DBGSession findSession(Object id) throws DBGException;
+    List<DBGSession> getSessions() throws DBGException;
+    DBGSession createSession(DBGSessionInfo targetInfo, DBCExecutionContext connection) throws DBGException;
     boolean isSessionExists(Object id);
 
+    List<? extends DBGStackFrame> getStack(Object id) throws DBGException;
     List<? extends DBGObjectDescriptor> getObjects(String ownerCtx, String nameCtx) throws DBGException;
+
+    /*
+     * Stepping
+     */
 
     boolean canStepInto(Object sessionKey);
     boolean canStepOver(Object sessionKey);
