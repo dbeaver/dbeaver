@@ -1054,7 +1054,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     
     public void showFiltering(Object columnElement) {
 
-    	if(getSelection().getSelectedRows().size() == 0 || !getSelection().getSelectedAttributes().contains(columnElement)) {
+    	if(getSelection().getSelectedRows().size() == 0 || !getSelection().getSelectedAttributes().contains(columnElement) || curAttribute == null) {
     		spreadsheet.deselectAll();
     		controller.showDistinctFilter((DBDAttributeBinding) columnElement);
     	}   
