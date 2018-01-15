@@ -214,7 +214,7 @@ public class Debugger {
 
         DBGSession debugSession = null;
 
-        List<DBGSession> sessions = controller.getDebugSessions();
+        List<DBGSession> sessions = controller.getSessions();
 
         Scanner scArg;
 
@@ -331,7 +331,7 @@ public class Debugger {
 
             case COMMAND_CLOSE:
 
-                if (controller.getDebugSessions().size() == 0) {
+                if (controller.getSessions().size() == 0) {
                     System.out.println("Debug sessions not found");
                     break;
                 }
@@ -350,7 +350,7 @@ public class Debugger {
 
             case COMMAND_ABORT:
 
-                if (controller.getDebugSessions().size() == 0) {
+                if (controller.getSessions().size() == 0) {
                     System.out.println("Debug sessions not found");
                     break;
                 }
@@ -369,7 +369,7 @@ public class Debugger {
 
             case COMMAND_STACK:
 
-                if (controller.getDebugSessions().size() == 0) {
+                if (controller.getSessions().size() == 0) {
                     System.out.println("Debug sessions not found");
                     break;
                 }
@@ -398,7 +398,7 @@ public class Debugger {
 
             case COMMAND_VARIABLES:
 
-                if (controller.getDebugSessions().size() == 0) {
+                if (controller.getSessions().size() == 0) {
                     System.out.println("Debug sessions not found");
                     break;
                 }
@@ -440,7 +440,7 @@ public class Debugger {
 
                 }
                 
-                if (controller.getDebugSessions().size() == 0) {
+                if (controller.getSessions().size() == 0) {
                     System.out.println("Debug sessions not found");
                     break;
                 }
@@ -532,7 +532,7 @@ public class Debugger {
                     break;
                 }
 
-                if (controller.getDebugSessions().size() == 0) {
+                if (controller.getSessions().size() == 0) {
                     System.out.println("Debug sessions not found");
                     break;
                 }
@@ -555,7 +555,7 @@ public class Debugger {
                 break;
 
             case COMMAND_BREAKPOINT_LIST:
-                if (controller.getDebugSessions().size() == 0) {
+                if (controller.getSessions().size() == 0) {
                     System.out.println("Debug sessions not found");
                     break;
                 }
@@ -577,7 +577,7 @@ public class Debugger {
                 break;
 
             case COMMAND_BREAKPOINT_REMOVE:
-                if (controller.getDebugSessions().size() == 0) {
+                if (controller.getSessions().size() == 0) {
                     System.out.println("Debug sessions not found");
                     break;
                 }
@@ -601,7 +601,7 @@ public class Debugger {
                 break;
 
             case COMMAND_CONTINUE:
-                if (controller.getDebugSessions().size() == 0) {
+                if (controller.getSessions().size() == 0) {
                     System.out.println("Debug sessions not found");
                     break;
                 }
@@ -619,7 +619,7 @@ public class Debugger {
                 break;
 
             case COMMAND_INTO:
-                if (controller.getDebugSessions().size() == 0) {
+                if (controller.getSessions().size() == 0) {
                     System.out.println("Debug sessions not found");
                     break;
                 }
@@ -638,7 +638,7 @@ public class Debugger {
 
             case COMMAND_OVER:
 
-                if (controller.getDebugSessions().size() == 0) {
+                if (controller.getSessions().size() == 0) {
                     System.out.println("Debug sessions not found");
                     break;
                 }
@@ -656,17 +656,17 @@ public class Debugger {
                 break;
 
             case COMMAND_SESSIONS:
-                for (DBGSessionInfo s : controller.getSessions()) {
+                for (DBGSessionInfo s : controller.getSessionDescriptors()) {
                     System.out.println(s);
                 }
                 break;
 
             case COMMAND_DEBUG_LIST:
-                if (controller.getDebugSessions().size() == 0) {
+                if (controller.getSessions().size() == 0) {
                     System.out.println("no debug sessions");
                     break;
                 }
-                for (DBGSession s : controller.getDebugSessions()) {
+                for (DBGSession s : controller.getSessions()) {
                     System.out.println(s);
                 }
 
@@ -677,7 +677,7 @@ public class Debugger {
                     Connection debugConn = DriverManager.getConnection(url);
                     // TODO: fix connection
                     DBCExecutionContext executionContext = null;
-                    DBGSession s = controller.createDebugSession(null, executionContext);
+                    DBGSession s = controller.createSession(null, executionContext);
                     System.out.println("created");
                     System.out.println(s);
 
@@ -724,7 +724,7 @@ public class Debugger {
                 break;
 
             case COMMAND_ATTACH:
-                if (controller.getDebugSessions().size() == 0) {
+                if (controller.getSessions().size() == 0) {
                     System.out.println("Debug sessions not found");
                     break;
                 }
