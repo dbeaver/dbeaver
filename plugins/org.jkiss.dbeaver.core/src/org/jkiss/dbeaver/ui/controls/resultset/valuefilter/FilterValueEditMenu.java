@@ -8,14 +8,25 @@ import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.FocusListener;
+import org.eclipse.swt.events.ModifyEvent;
+import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.events.TraverseEvent;
 import org.eclipse.swt.events.TraverseListener;
+import org.eclipse.swt.events.VerifyEvent;
+import org.eclipse.swt.events.VerifyListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -43,18 +54,24 @@ public class FilterValueEditMenu extends Composite{
 
 private void init(Control trigger) {
 		
-		shell = new Shell(display, SWT.BORDER | SWT.APPLICATION_MODAL);
+		shell = new Shell(display, SWT.BORDER);
 		shell.setLayout(new GridLayout());
 		
-		shell.addTraverseListener(new TraverseListener() {
-			
-			@Override
-			public void keyTraversed(TraverseEvent e) {
-				if (e.detail == SWT.TRAVERSE_ESCAPE)
-		    		 shell.setVisible(false);
-		    		 shell.close(); 	
-			}
-		});
+//		shell.addTraverseListener(new TraverseListener() {
+//			
+//			@Override
+//			public void keyTraversed(TraverseEvent e) {
+//				if (e.detail == SWT.TRAVERSE_ESCAPE)
+//		    		 shell.setVisible(false);
+//		    		 shell.close(); 	
+//			}
+//		});
+		shell.addListener(SWT.Deactivate, e-> {
+	       	 if (shell != null && !shell.isDisposed()) {
+	    		 shell.setVisible(false);	    
+	    		 shell.dispose();    		 
+	    	 }
+		   	});
 		
 	   	createMultiValueSelector(shell);
 	   	shell.pack();
