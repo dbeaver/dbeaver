@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.debug.DBGBreakpoint;
 import org.jkiss.dbeaver.debug.DBGBreakpointProperties;
 import org.jkiss.dbeaver.debug.DBGController;
 import org.jkiss.dbeaver.debug.DBGException;
-import org.jkiss.dbeaver.debug.DBGObject;
+import org.jkiss.dbeaver.debug.DBGObjectDescriptor;
 import org.jkiss.dbeaver.debug.DBGSession;
 import org.jkiss.dbeaver.debug.DBGSessionInfo;
 import org.jkiss.dbeaver.debug.DBGStackFrame;
@@ -519,9 +519,9 @@ public class Debugger {
 
                 }
 
-                DBGObject debugObject = null;
+                DBGObjectDescriptor debugObject = null;
 
-                for (DBGObject o : controller.getObjects("_", "_")) {
+                for (DBGObjectDescriptor o : controller.getObjects("_", "_")) {
                     if (objId.equals(o.getID())) {
                         debugObject = o;
                     }
@@ -716,7 +716,7 @@ public class Debugger {
 
                 }
 
-                for (DBGObject o : controller.getObjects(owner.equals(ANY_ARG) ? "_" : owner,
+                for (DBGObjectDescriptor o : controller.getObjects(owner.equals(ANY_ARG) ? "_" : owner,
                         proc.equals(ANY_ARG) ? "_" : proc)) {
                     System.out.println(o);
                 }

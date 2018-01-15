@@ -128,12 +128,12 @@ public class PostgreDebugController extends DBGBaseController {
     }
 
     @Override
-    public List<PostgreDebugObject> getObjects(String ownerCtx, String nameCtx) throws DBGException {
+    public List<PostgreObjectDescriptor> getObjects(String ownerCtx, String nameCtx) throws DBGException {
         DBCExecutionContext executionContext = getExecutionContext();
         String sql = SQL_OBJECT.replaceAll("\\?nameCtx", nameCtx).replaceAll("\\?userCtx", ownerCtx).toLowerCase();
         try (Statement stmt = getConnection(executionContext).createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
 
-            List<PostgreDebugObject> res = new ArrayList<PostgreDebugObject>();
+            List<PostgreObjectDescriptor> res = new ArrayList<PostgreObjectDescriptor>();
 
             while (rs.next()) {
                 int oid = rs.getInt("oid");
@@ -141,7 +141,7 @@ public class PostgreDebugController extends DBGBaseController {
                 String owner = rs.getString("owner");
                 String nspname = rs.getString("nspname");
                 String lang = rs.getString("lang");
-                PostgreDebugObject object = new PostgreDebugObject(oid, proname, owner, nspname, lang);
+                PostgreObjectDescriptor object = new PostgreObjectDescriptor(oid, proname, owner, nspname, lang);
                 res.add(object);
             }
 

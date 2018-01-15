@@ -26,7 +26,7 @@ public interface DBGSession {
 
     List<? extends DBGBreakpoint> getBreakpoints();
 
-    DBGBreakpoint setBreakpoint(DBGObject obj, DBGBreakpointProperties properties) throws DBGException;
+    DBGBreakpoint setBreakpoint(DBGObjectDescriptor obj, DBGBreakpointProperties properties) throws DBGException;
 
     void removeBreakpoint(DBGBreakpoint bp) throws DBGException;
 

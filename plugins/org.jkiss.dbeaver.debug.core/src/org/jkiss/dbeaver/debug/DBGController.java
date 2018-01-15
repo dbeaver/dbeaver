@@ -78,6 +78,6 @@ public interface DBGController {
 
     boolean isSessionExists(Object id);
 
-    List<? extends DBGObject> getObjects(String ownerCtx, String nameCtx) throws DBGException;
+    List<? extends DBGObjectDescriptor> getObjects(String ownerCtx, String nameCtx) throws DBGException;
 
 }
