@@ -243,5 +243,5 @@ public class PostgreDebugController extends DBGBaseController {
         String call = sb.toString();
         return call;
     }
-    
+
 }

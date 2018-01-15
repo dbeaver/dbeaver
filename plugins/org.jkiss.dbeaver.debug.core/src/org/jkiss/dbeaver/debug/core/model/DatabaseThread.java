@@ -20,13 +20,16 @@ package org.jkiss.dbeaver.debug.core.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IBreakpoint;
 import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.debug.core.model.IThread;
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.debug.DBGController;
 import org.jkiss.dbeaver.debug.DBGException;
 import org.jkiss.dbeaver.debug.DBGStackFrame;
+import org.jkiss.dbeaver.debug.core.DebugCore;
 
 /**
  * Delegates mostly everything to its debug target
@@ -70,20 +73,20 @@ public abstract class DatabaseThread extends DatabaseDebugElement implements ITh
 
     @Override
     public boolean canStepInto() {
-        // TODO Auto-generated method stub
-        return false;
+        DBGController controller = getController();
+        return controller.canStepInto(sessionKey);
     }
 
     @Override
     public boolean canStepOver() {
-        // TODO Auto-generated method stub
-        return false;
+        DBGController controller = getController();
+        return controller.canStepOver(sessionKey);
     }
 
     @Override
     public boolean canStepReturn() {
-        // TODO Auto-generated method stub
-        return false;
+        DBGController controller = getController();
+        return controller.canStepReturn(sessionKey);
     }
 
     @Override
@@ -94,20 +97,38 @@ public abstract class DatabaseThread extends DatabaseDebugElement implements ITh
 
     @Override
     public void stepInto() throws DebugException {
-        // TODO Auto-generated method stub
-
+        DBGController controller = getController();
+        try {
+            controller.stepInto(sessionKey);
+        } catch (DBGException e) {
+            String message = NLS.bind("Step into failed for session {0}", sessionKey);
+            IStatus status = DebugCore.newErrorStatus(message, e);
+            throw new DebugException(status);
+        }
     }
 
     @Override
     public void stepOver() throws DebugException {
-        // TODO Auto-generated method stub
-
+        DBGController controller = getController();
+        try {
+            controller.stepOver(sessionKey);
+        } catch (DBGException e) {
+            String message = NLS.bind("Step over failed for session {0}", sessionKey);
+            IStatus status = DebugCore.newErrorStatus(message, e);
+            throw new DebugException(status);
+        }
     }
 
     @Override
     public void stepReturn() throws DebugException {
-        // TODO Auto-generated method stub
-
+        DBGController controller = getController();
+        try {
+            controller.stepReturn(sessionKey);
+        } catch (DBGException e) {
+            String message = NLS.bind("Step return failed for session {0}", sessionKey);
+            IStatus status = DebugCore.newErrorStatus(message, e);
+            throw new DebugException(status);
+        }
     }
 
     @Override
@@ -117,8 +138,7 @@ public abstract class DatabaseThread extends DatabaseDebugElement implements ITh
 
     @Override
     public boolean isTerminated() {
-        // TODO Auto-generated method stub
-        return false;
+        return getDebugTarget().isTerminated();
     }
 
     @Override
