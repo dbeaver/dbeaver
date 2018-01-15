@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.debug;
 
 import java.util.Map;
 
+//FIXME:AF:Merge into DBGBreakpointDescriptor
 public interface DBGBreakpointProperties {
 
     Map<String, Object> toMap();

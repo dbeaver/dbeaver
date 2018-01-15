@@ -21,10 +21,10 @@ package org.jkiss.dbeaver.ext.postgresql.debug.internal.impl;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.jkiss.dbeaver.debug.DBGObject;
+import org.jkiss.dbeaver.debug.DBGObjectDescriptor;
 
 @SuppressWarnings("nls")
-public class PostgreDebugObject implements DBGObject {
+public class PostgreDebugObjectDescriptor implements DBGObjectDescriptor {
 
     private final Integer oid;
 
@@ -36,7 +36,7 @@ public class PostgreDebugObject implements DBGObject {
 
     private final String lang;
 
-    public PostgreDebugObject(Integer oid, String proname, String owner, String schema, String lang) {
+    public PostgreDebugObjectDescriptor(Integer oid, String proname, String owner, String schema, String lang) {
         super();
         this.oid = oid;
         this.proname = proname;

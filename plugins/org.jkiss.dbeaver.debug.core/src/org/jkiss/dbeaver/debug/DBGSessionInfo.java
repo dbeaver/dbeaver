@@ -24,6 +24,8 @@ public interface DBGSessionInfo {
 
     Object getID();
     
+    String getTitle();
+    
     Map<String, Object> toMap();
 
 }
