@@ -18,7 +18,7 @@
 
 package org.jkiss.dbeaver.debug;
 
-public interface DBGBreakpoint {
+public interface DBGBreakpointDescriptor {
 
     DBGObjectDescriptor getObjectDescriptor();
 

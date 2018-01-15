@@ -23,7 +23,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Scanner;
 
-import org.jkiss.dbeaver.debug.DBGBreakpoint;
+import org.jkiss.dbeaver.debug.DBGBreakpointDescriptor;
 import org.jkiss.dbeaver.debug.DBGBreakpointProperties;
 import org.jkiss.dbeaver.debug.DBGController;
 import org.jkiss.dbeaver.debug.DBGException;
@@ -137,12 +137,12 @@ public class Debugger {
 
     }
 
-    public static DBGBreakpoint chooseBreakpoint(Scanner sc, DBGController controller, DBGSession session)
+    public static DBGBreakpointDescriptor chooseBreakpoint(Scanner sc, DBGController controller, DBGSession session)
             throws DBGException {
 
-        DBGBreakpoint bp = null;
+        DBGBreakpointDescriptor bp = null;
 
-        List<? extends DBGBreakpoint> bps = session.getBreakpoints();
+        List<? extends DBGBreakpointDescriptor> bps = session.getBreakpoints();
 
         Scanner scArg;
 
@@ -156,7 +156,7 @@ public class Debugger {
 
             int bpNo = 1;
 
-            for (DBGBreakpoint b : bps) {
+            for (DBGBreakpointDescriptor b : bps) {
                 System.out.println(String.format(" (%d) %s", bpNo++, b.toString()));
             }
 
@@ -546,7 +546,7 @@ public class Debugger {
                 DBGBreakpointProperties bpp = lineNo > 0 ? new PostgreDebugBreakpointProperties(lineNo, true)
                         : new PostgreDebugBreakpointProperties(true);
 
-                DBGBreakpoint bp = debugSession.setBreakpoint(debugObject, bpp);
+                DBGBreakpointDescriptor bp = debugSession.setBreakpoint(debugObject, bpp);
 
                 System.out.println("Breakpoint set");
 
@@ -570,7 +570,7 @@ public class Debugger {
                     System.out.println("No breakpoints defined");
                 }
 
-                for (DBGBreakpoint bpl : debugSessionBL.getBreakpoints()) {
+                for (DBGBreakpointDescriptor bpl : debugSessionBL.getBreakpoints()) {
                     System.out.println(bpl.toString());
                 }
 
@@ -592,7 +592,7 @@ public class Debugger {
                     System.out.println("No breakpoints defined");
                 }
 
-                DBGBreakpoint bpr = chooseBreakpoint(sc, controller, debugSessionBR);
+                DBGBreakpointDescriptor bpr = chooseBreakpoint(sc, controller, debugSessionBR);
 
                 debugSessionBR.removeBreakpoint(bpr);
 
