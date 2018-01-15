@@ -88,6 +88,8 @@ public class PostgreDebugSession implements DBGSession {
 
     private static final String SQL_ABORT = "select pldbg_abort_target(?sessionid)";
 
+    private static final String SQL_DROP_BREAKPOINT = "select pldbg_drop_breakpoint(?sessionid, ?obj, ?line)";
+
     private final ReentrantReadWriteLock lock = new ReentrantReadWriteLock(true);
 
     private List<PostgreDebugBreakpoint> breakpoints = new ArrayList<PostgreDebugBreakpoint>(1);
@@ -211,7 +213,16 @@ public class PostgreDebugSession implements DBGSession {
 
         try {
 
-            bp.drop();
+            try (Statement stmt = getConnection().createStatement()) {
+
+                PostgreDebugBreakpointProperties properties = (PostgreDebugBreakpointProperties) bp.getProperties();
+                stmt.executeQuery(SQL_DROP_BREAKPOINT.replaceAll("\\?sessionid", String.valueOf(getSessionId()))
+                        .replaceAll("\\?obj", String.valueOf(bp.getObjectDescriptor().getID()))
+                        .replaceAll("\\?line", properties.isOnStart() ? "-1" : String.valueOf(properties.getLineNo())));
+
+            } catch (SQLException e) {
+                throw new DBGException("SQL error", e);
+            }
 
             breakpoints.remove(bp);
 

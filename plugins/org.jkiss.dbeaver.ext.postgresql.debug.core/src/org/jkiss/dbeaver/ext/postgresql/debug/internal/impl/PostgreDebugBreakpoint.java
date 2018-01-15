@@ -35,7 +35,6 @@ public class PostgreDebugBreakpoint implements DBGBreakpoint {
 
     private static final String SQL_SET_GLOBAL = "select pldbg_set_global_breakpoint(?sessionid, ?obj, ?line, ?target)";
     private static final String SQL_SET = "select pldbg_set_breakpoint(?sessionid, ?obj, ?line)";
-    private static final String SQL_DROP = "select pldbg_drop_breakpoint(?sessionid, ?obj, ?line)";
 
     public PostgreDebugBreakpoint(PostgreDebugSession session, PostgreObjectDescriptor obj,
                                   PostgreDebugBreakpointProperties properties) throws DBGException {
@@ -62,20 +61,6 @@ public class PostgreDebugBreakpoint implements DBGBreakpoint {
     @Override
     public PostgreObjectDescriptor getObjectDescriptor() {
         return obj;
-    }
-
-    @Override
-    public void drop() throws DBGException {
-        try (Statement stmt = session.getConnection().createStatement()) {
-
-            stmt.executeQuery(SQL_DROP.replaceAll("\\?sessionid", String.valueOf(session.getSessionId()))
-                    .replaceAll("\\?obj", String.valueOf(obj.getID()))
-                    .replaceAll("\\?line", properties.isOnStart() ? "-1" : String.valueOf(properties.getLineNo())));
-
-        } catch (SQLException e) {
-            throw new DBGException("SQL error", e);
-        }
-
     }
 
     @Override

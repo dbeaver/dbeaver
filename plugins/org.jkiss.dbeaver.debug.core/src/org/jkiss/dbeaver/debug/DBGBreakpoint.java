@@ -24,6 +24,4 @@ public interface DBGBreakpoint {
 
     DBGBreakpointProperties getProperties();
 
-    void drop() throws DBGException;
-
 }
