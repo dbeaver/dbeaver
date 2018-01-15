@@ -33,7 +33,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.debug.DBGBreakpoint;
 import org.jkiss.dbeaver.debug.DBGBreakpointProperties;
 import org.jkiss.dbeaver.debug.DBGException;
-import org.jkiss.dbeaver.debug.DBGObject;
+import org.jkiss.dbeaver.debug.DBGObjectDescriptor;
 import org.jkiss.dbeaver.debug.DBGSession;
 import org.jkiss.dbeaver.debug.DBGSessionInfo;
 import org.jkiss.dbeaver.debug.DBGStackFrame;
@@ -143,7 +143,7 @@ public class PostgreDebugSession implements DBGSession {
             } 
 
             PostgreDebugBreakpointProperties properties = new PostgreDebugBreakpointProperties(true);
-            PostgreDebugObject obj = new PostgreDebugObject(OID,"ENTRY","SESSION","THIS","PG"); 
+            PostgreObjectDescriptor obj = new PostgreObjectDescriptor(OID,"ENTRY","SESSION","THIS","PG"); 
             
             this.entry = new PostgreDebugBreakpoint(this,obj,properties);
             
@@ -187,14 +187,14 @@ public class PostgreDebugSession implements DBGSession {
     }
 
     @Override
-    public DBGBreakpoint setBreakpoint(DBGObject obj, DBGBreakpointProperties properties) throws DBGException {
+    public DBGBreakpoint setBreakpoint(DBGObjectDescriptor obj, DBGBreakpointProperties properties) throws DBGException {
 
         acquireReadLock();
 
         PostgreDebugBreakpoint bp = null;
 
         try {
-            bp = new PostgreDebugBreakpoint(this, (PostgreDebugObject)obj, (PostgreDebugBreakpointProperties) properties);
+            bp = new PostgreDebugBreakpoint(this, (PostgreObjectDescriptor)obj, (PostgreDebugBreakpointProperties) properties);
             breakpoints.add(bp);
 
         } finally {

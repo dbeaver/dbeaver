@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.debug;
 
 import java.util.Map;
 
-public interface DBGObject {
+public interface DBGObjectDescriptor {
 
     Object getID();
 

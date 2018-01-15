@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.debug.DBGException;
 @SuppressWarnings("nls")
 public class PostgreDebugBreakpoint implements DBGBreakpoint {
 
-    private final PostgreDebugObject obj;
+    private final PostgreObjectDescriptor obj;
 
     private final PostgreDebugSession session;
 
@@ -37,7 +37,7 @@ public class PostgreDebugBreakpoint implements DBGBreakpoint {
     private static final String SQL_SET = "select pldbg_set_breakpoint(?sessionid, ?obj, ?line)";
     private static final String SQL_DROP = "select pldbg_drop_breakpoint(?sessionid, ?obj, ?line)";
 
-    public PostgreDebugBreakpoint(PostgreDebugSession session, PostgreDebugObject obj,
+    public PostgreDebugBreakpoint(PostgreDebugSession session, PostgreObjectDescriptor obj,
                                   PostgreDebugBreakpointProperties properties) throws DBGException {
 
         this.session = session;
@@ -60,7 +60,7 @@ public class PostgreDebugBreakpoint implements DBGBreakpoint {
     }
 
     @Override
-    public PostgreDebugObject getDebugObject() {
+    public PostgreObjectDescriptor getObjectDescriptor() {
         return obj;
     }
 
