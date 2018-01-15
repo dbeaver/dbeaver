@@ -85,7 +85,7 @@ private void init(Control trigger) {
 		shell.addListener(SWT.Deactivate, e-> {
 	       	 if (shell != null && !shell.isDisposed()) {
 	    		 shell.setVisible(false);	    
-	    		 shell.dispose();    		 
+	    		 shell.close();    		 
 	    	 }
 		   	});
 		
@@ -158,7 +158,6 @@ private void init(Control trigger) {
 			public void selectionChanged(SelectionChangedEvent event) {
 				value = ((DBDLabelValuePair) event.getStructuredSelection().getFirstElement());
 				shell.setVisible(false);
-	    		shell.close();
 				
 			}
 		});
