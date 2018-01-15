@@ -35,6 +35,7 @@ import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.debug.core.model.IThread;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.debug.DBGController;
+import org.jkiss.dbeaver.debug.DBGEvent;
 import org.jkiss.dbeaver.debug.DBGException;
 import org.jkiss.dbeaver.debug.core.DebugCore;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
@@ -263,17 +264,28 @@ public abstract class DatabaseDebugTarget extends DatabaseDebugElement implement
 
     @Override
     public boolean canDisconnect() {
-        return false;
+        return true;
     }
 
     @Override
     public void disconnect() throws DebugException {
-        //FIXME:AF:delegare to controller
+        try {
+            controller.detach(sessionKey, getProgressMonitor());
+        } catch (DBGException e) {
+            String message = NLS.bind("Error disconnecting {0}", getName());
+            IStatus status = DebugCore.newErrorStatus(message, e);
+            throw new DebugException(status);
+        }
     }
 
     @Override
     public boolean isDisconnected() {
         return false;
+    }
+    
+    @Override
+    public DebugEvent toDebugEvent(DBGEvent event) {
+        return new DebugEvent(event.getSource(), DebugEvent.MODEL_SPECIFIC);
     }
 
     @Override
