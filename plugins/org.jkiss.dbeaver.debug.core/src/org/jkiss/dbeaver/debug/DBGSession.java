@@ -24,13 +24,11 @@ public interface DBGSession {
 
     DBGSessionInfo getSessionInfo();
 
-    String getTitle();
+    List<? extends DBGBreakpointDescriptor> getBreakpoints();
 
-    List<? extends DBGBreakpoint> getBreakpoints();
+    void addBreakpoint(DBGObjectDescriptor object, DBGBreakpointProperties properties) throws DBGException;
 
-    DBGBreakpoint setBreakpoint(DBGObject obj, DBGBreakpointProperties properties) throws DBGException;
-
-    void removeBreakpoint(DBGBreakpoint bp) throws DBGException;
+    void removeBreakpoint(DBGBreakpointDescriptor bp) throws DBGException;
 
     void execContinue() throws DBGException;
 
@@ -42,7 +40,7 @@ public interface DBGSession {
 
     void close();
 
-    List<? extends DBGVariable<?>> getVarables() throws DBGException;
+    List<? extends DBGVariable<?>> getVariables() throws DBGException;
 
     void setVariableVal(DBGVariable<?> variable, Object value) throws DBGException;
 
