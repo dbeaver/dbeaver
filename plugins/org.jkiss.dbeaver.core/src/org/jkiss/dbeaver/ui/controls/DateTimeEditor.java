@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 public class DateTimeEditor {
 
 	private Composite basePart;
+
 	private DateTime dateEditor;
 	private DateTime timeEditor;
 	private String formaterId;
@@ -44,6 +45,7 @@ public class DateTimeEditor {
 	private static final Log log = Log.getLog(ViewerColumnController.class);
 
 	public DateTimeEditor(Composite parent, int style, String formaterId) {
+
 		if (formaterId == null || formaterId.isEmpty()) {
 			formaterId = DBDDataFormatter.TYPE_NAME_TIMESTAMP;
 		}
@@ -69,7 +71,6 @@ public class DateTimeEditor {
 		} else if (formaterId.equals(DBDDataFormatter.TYPE_NAME_DATE)) {
 			this.dateEditor = new DateTime(basePart, SWT.DATE | SWT.DROP_DOWN | style);
 			this.dateEditor.setLayoutData(dateData);
-
 		} else if (formaterId.equals(DBDDataFormatter.TYPE_NAME_TIME)) {
 			this.timeEditor = new DateTime(basePart, SWT.TIME | SWT.DROP_DOWN | style);
 			this.timeEditor.setLayoutData(timeData);
