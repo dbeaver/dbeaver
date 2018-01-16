@@ -19,8 +19,10 @@ package org.jkiss.dbeaver.ext.mssql.model;
 import org.eclipse.jface.text.rules.IRule;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
+import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
 import org.jkiss.dbeaver.runtime.sql.SQLRuleProvider;
@@ -43,6 +45,8 @@ public class SQLServerDialect extends GenericSQLDialect implements SQLRuleProvid
             {"\"", "\""},
     };
 
+    private SQLServerDataSource dataSource;
+
     public SQLServerDialect() {
         super("SQLServer");
     }
@@ -50,6 +54,7 @@ public class SQLServerDialect extends GenericSQLDialect implements SQLRuleProvid
     public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(dataSource, metaData);
         addSQLKeyword("TOP");
+        this.dataSource = (SQLServerDataSource) dataSource;
     }
 
     public String[][] getIdentifierQuoteStrings() {
@@ -59,6 +64,18 @@ public class SQLServerDialect extends GenericSQLDialect implements SQLRuleProvid
     @Override
     public String[][] getBlockBoundStrings() {
         return TSQL_BEGIN_END_BLOCK;
+    }
+
+    @Override
+    public MultiValueInsertMode getMultiValueInsertMode() {
+        if (((SQLServerMetaModel)dataSource.getMetaModel()).isSqlServer()) {
+            if (dataSource.isServerVersionAtLeast(SQLServerConstants.SQL_SERVER_2008_VERSION_MAJOR, 0)) {
+                return MultiValueInsertMode.GROUP_ROWS;
+            }
+            return super.getMultiValueInsertMode();
+        } else {
+            return super.getMultiValueInsertMode();
+        }
     }
 
     @Override
@@ -77,7 +94,7 @@ public class SQLServerDialect extends GenericSQLDialect implements SQLRuleProvid
         sql.append("EXEC\t@return_value = [" + proc.getContainer().getName() +"].[" + proc.getName() + "]\n");
         for (int i = 0; i < inParameters.size(); i++) {
             String name = inParameters.get(i).getName();
-            sql.append("\t\t" + name + " = ?");
+            sql.append("\t\t" + name + " = :").append(CommonUtils.escapeIdentifier(name));
             if (i < (inParameters.size() - 1)) {
                 sql.append(", ");
             } else {

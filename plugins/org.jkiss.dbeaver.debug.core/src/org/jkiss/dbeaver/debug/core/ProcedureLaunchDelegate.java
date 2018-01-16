@@ -26,13 +26,10 @@ import org.jkiss.dbeaver.debug.core.model.ProcedureDebugTarget;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
-import java.util.Map;
-
 public class ProcedureLaunchDelegate extends DatabaseLaunchDelegate {
 
     @Override
-    protected DBGController createController(DBPDataSourceContainer dataSourceContainer, String databaseName,
-                                             Map<String, Object> attributes) throws CoreException
+    protected DBGController createController(DBPDataSourceContainer dataSourceContainer) throws CoreException
     {
         try {
             return DebugCore.findProcedureController(dataSourceContainer);

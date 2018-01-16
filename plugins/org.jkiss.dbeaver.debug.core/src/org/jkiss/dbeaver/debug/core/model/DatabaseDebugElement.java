@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.debug.core.model;
 
 import org.eclipse.debug.core.model.DebugElement;
+import org.jkiss.dbeaver.debug.DBGController;
 
 public class DatabaseDebugElement extends DebugElement {
 
@@ -25,8 +26,12 @@ public class DatabaseDebugElement extends DebugElement {
         super(target);
     }
 
-    public IDatabaseDebugTarget geDatabaseDebugTarget() {
+    public IDatabaseDebugTarget getDatabaseDebugTarget() {
         return (IDatabaseDebugTarget) getDebugTarget();
+    }
+    
+    public DBGController getController() {
+        return getDatabaseDebugTarget().getController();
     }
 
     @Override

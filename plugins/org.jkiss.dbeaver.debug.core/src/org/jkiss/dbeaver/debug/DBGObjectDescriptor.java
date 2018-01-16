@@ -18,12 +18,13 @@
 
 package org.jkiss.dbeaver.debug;
 
-public interface DBGBreakpoint {
+import java.util.Map;
 
-    DBGObject getDebugObject();
+public interface DBGObjectDescriptor {
 
-    DBGBreakpointProperties getProperties();
+    Object getID();
 
-    void drop() throws DBGException;
+    String getName();
 
+    Map<String, Object> toMap();
 }

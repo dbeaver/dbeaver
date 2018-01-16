@@ -3,6 +3,7 @@ package org.jkiss.dbeaver.ext.postgresql.debug.internal;
 import org.eclipse.core.runtime.IAdapterFactory;
 import org.jkiss.dbeaver.debug.DBGController;
 import org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider;
+import org.jkiss.dbeaver.ext.postgresql.debug.internal.impl.PostgreDebugController;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
