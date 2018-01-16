@@ -18,8 +18,6 @@
 package org.jkiss.dbeaver.ext.mockdata;
 
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.osgi.util.NLS;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
@@ -35,34 +33,31 @@ import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractToolWizard;
-import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Random;
 
 public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulator, DBSDataManipulator> implements IImportWizard{
 
     private static final Log log = Log.getLog(MockDataExecuteWizard.class);
 
     private MockDataWizardPageSettings settingsPage;
+    private MockDataSettings mockDataSettings;
 
-    boolean removeOldData;
-
-    public MockDataExecuteWizard(Collection<DBSDataManipulator> dbObjects, String task) {
+    public MockDataExecuteWizard(MockDataSettings mockDataSettings, Collection<DBSDataManipulator> dbObjects, String task) {
         super(dbObjects, task);
         this.clientHomeRequired = false;
+        this.mockDataSettings = mockDataSettings;
     }
 
     @Override
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         setWindowTitle(task);
         setNeedsProgressMonitor(true);
-        settingsPage = new MockDataWizardPageSettings(this);
+        settingsPage = new MockDataWizardPageSettings(this, mockDataSettings);
     }
 
     @Override
@@ -74,11 +69,13 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
 
     @Override
     public void onSuccess(long workTime) {
+/*
         UIUtils.showMessageBox(
                 getShell(),
                 MockDataMessages.tools_mockdata_wizard_page_name,
                 CommonUtils.truncateString(NLS.bind(MockDataMessages.tools_mockdata_wizard_message_process_completed, getObjectsName()), 255),
                 SWT.ICON_INFORMATION);
+*/
     }
 
     public DBPClientHome findServerHome(String clientHomeId) {
@@ -114,7 +111,7 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
         DBCSession session = context.openSession(monitor, DBCExecutionPurpose.USER, MockDataMessages.tools_mockdata_generate_data_task);
         AbstractExecutionSource executionSource = new AbstractExecutionSource(dataManipulator, session.getExecutionContext(), this);
         try {
-            if (removeOldData) {
+            if (mockDataSettings.isRemoveOldData()) {
                 logPage.appendLog("Removing old data from the '" + dataManipulator.getName() + "'.\n");
                 DBCStatistics deleteStats = new DBCStatistics();
                 try {
@@ -126,7 +123,7 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                         batch.close();
                     }
                 } catch (Exception e) {
-                    String message = "Error removing data from the '" + dataManipulator.getName() + "'.";
+                    String message = "Error removing the data.";
                     log.error(message, e);
                     logPage.appendLog(message, true);
                 } finally {
@@ -139,45 +136,50 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
             }
 
             try {
+                logPage.appendLog("\nInserting Mock Data into the '" + dataManipulator.getName() + "'.\n");
                 DBCStatistics insertStats = new DBCStatistics();
 
-                List<DBDAttributeValue> keyAttributes = new ArrayList<>();
-                Collection<? extends DBSEntityAttribute> attributes = ((DBSEntity) dataManipulator).getAttributes(monitor);
-                Random random = new Random();
-                for (DBSEntityAttribute attribute : attributes) {
-                    Object value = attribute.getDefaultValue();
-                    DBSDataType dataType = ((DBSTypedObjectEx) attribute).getDataType();
-                    DBPDataKind dataKind = dataType.getDataKind();
-                    switch (dataKind) {
-                        case NUMERIC:
-                            value = MockDataGenerator.generateNumeric((int) attribute.getMaxLength(), attribute.getPrecision(), attribute.getScale()); break;
-                        case STRING:
-                            value = MockDataGenerator.generateTextUpTo((int) attribute.getMaxLength()); break;
-                        case DATETIME:
-                            value = MockDataGenerator.generateDate(); break;
+                for (int i = 0; i < mockDataSettings.getRowsNumber(); i++) {
+                    List<DBDAttributeValue> keyAttributes = new ArrayList<>();
+                    Collection<? extends DBSEntityAttribute> attributes = ((DBSEntity) dataManipulator).getAttributes(monitor);
+                    for (DBSEntityAttribute attribute : attributes) {
+                        Object value = attribute.getDefaultValue();
+                        DBSDataType dataType = ((DBSTypedObjectEx) attribute).getDataType();
+                        DBPDataKind dataKind = dataType.getDataKind();
+                        switch (dataKind) {
+                            case NUMERIC:
+                                value = MockDataGenerator.generateNumeric((int) attribute.getMaxLength(), attribute.getPrecision(), attribute.getScale()); break;
+                            case STRING:
+                                value = MockDataGenerator.generateTextUpTo((int) attribute.getMaxLength()); break;
+                            case DATETIME:
+                                value = MockDataGenerator.generateDate(); break;
+                        }
+                        keyAttributes.add(new DBDAttributeValue(attribute, value));
                     }
-                    keyAttributes.add(new DBDAttributeValue(attribute, value));
+
+                    try (DBSDataManipulator.ExecuteBatch batch = dataManipulator.insertData(
+                            session,
+                            DBDAttributeValue.getAttributes(keyAttributes),
+                            null,
+                            executionSource))
+                    {
+                        batch.add(DBDAttributeValue.getValues(keyAttributes));
+                        insertStats.accumulate(batch.execute(session));
+                    }
                 }
 
-                try (DBSDataManipulator.ExecuteBatch batch = dataManipulator.insertData(
-                        session,
-                        DBDAttributeValue.getAttributes(keyAttributes),
-                        null,
-                        executionSource))
-                {
-                    batch.add(DBDAttributeValue.getValues(keyAttributes));
-                    insertStats.accumulate(batch.execute(session));
-                }
+                logPage.appendLog("    Rows updated: " + insertStats.getRowsUpdated() + "\n");
+                logPage.appendLog("    Duration: " + insertStats.getExecuteTime() + "ms\n");
+
             } catch (DBException e) {
-                e.printStackTrace();
+                String message = "Error inserting Mock Data.";
+                log.error(message, e);
+                logPage.appendLog(message, true);
             }
 
         } finally {
             session.close();
         }
-
-        // TODO generate and insert the mock data to the table
-        logPage.appendLog("\nGenerate and insert the mock data into the table '" + dataManipulator.getName() + "' isn't implemented yet.\n\n");
 
         return true;
     }

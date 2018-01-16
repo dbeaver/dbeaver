@@ -24,18 +24,23 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Spinner;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractToolWizardPage;
 
 public class MockDataWizardPageSettings extends AbstractToolWizardPage<MockDataExecuteWizard>
 {
-    private Button removeOldDataCheck;
+    private MockDataSettings mockDataSettings;
 
-    protected MockDataWizardPageSettings(MockDataExecuteWizard wizard)
+    private Button removeOldDataCheck;
+    private Spinner rowsSpinner;
+
+    protected MockDataWizardPageSettings(MockDataExecuteWizard wizard, MockDataSettings mockDataSettings)
     {
         super(wizard, MockDataMessages.tools_mockdata_wizard_page_settings_page_name);
         setTitle(MockDataMessages.tools_mockdata_wizard_page_settings_page_name);
         setDescription((MockDataMessages.tools_mockdata_wizard_page_settings_page_description));
+        this.mockDataSettings = mockDataSettings;
     }
 
     public void createControl(Composite parent)
@@ -49,9 +54,20 @@ public class MockDataWizardPageSettings extends AbstractToolWizardPage<MockDataE
             }
         };
 
-        Group settingsGroup = UIUtils.createControlGroup(composite, MockDataMessages.tools_mockdata_wizard_page_settings_group_settings, 3, GridData.FILL_HORIZONTAL, 0);
-        removeOldDataCheck = UIUtils.createCheckbox(settingsGroup, MockDataMessages.tools_mockdata_wizard_page_settings_checkbox_remove_old_data, wizard.removeOldData);
+        Group settingsGroup = UIUtils.createControlGroup(
+                composite, MockDataMessages.tools_mockdata_wizard_page_settings_group_settings, 4, GridData.FILL_HORIZONTAL, 0);
+
+        this.removeOldDataCheck = UIUtils.createLabelCheckbox(
+                settingsGroup,
+                MockDataMessages.tools_mockdata_wizard_page_settings_checkbox_remove_old_data,
+                mockDataSettings.isRemoveOldData());
         removeOldDataCheck.addSelectionListener(changeListener);
+        removeOldDataCheck.setLayoutData(
+                new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 3, 1));
+
+        this.rowsSpinner = UIUtils.createLabelSpinner(settingsGroup, "Rows", mockDataSettings.getRowsNumber(), 1, Integer.MAX_VALUE);
+        rowsSpinner.addSelectionListener(changeListener);
+        rowsSpinner.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 3, 1));
 
         setControl(composite);
 
@@ -59,9 +75,8 @@ public class MockDataWizardPageSettings extends AbstractToolWizardPage<MockDataE
 
     private void updateState()
     {
-        wizard.removeOldData = removeOldDataCheck.getSelection();
-
-        getContainer().updateButtons();
+        mockDataSettings.setRemoveOldData(removeOldDataCheck.getSelection());
+        mockDataSettings.setRowsNumber(rowsSpinner.getSelection());
     }
 
     @Override

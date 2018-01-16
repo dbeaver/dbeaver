@@ -31,6 +31,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 
 public class MockDataGenerateTool implements IExternalTool {
+
+    private MockDataSettings mockDataSettings = new MockDataSettings();
+
     public void execute(IWorkbenchWindow window, IWorkbenchPart activePart, Collection<DBSObject> objects) throws DBException {
 
         ArrayList<DBSDataManipulator> dbObjects = new ArrayList<>();
@@ -38,7 +41,8 @@ public class MockDataGenerateTool implements IExternalTool {
             dbObjects.add((DBSDataManipulator) obj);
         }
 
-        MockDataExecuteWizard wizard = new MockDataExecuteWizard(dbObjects, MockDataMessages.tools_mockdata_wizard_page_name);
+        MockDataExecuteWizard wizard = new MockDataExecuteWizard(
+                mockDataSettings, dbObjects, MockDataMessages.tools_mockdata_wizard_page_name);
         ToolWizardDialog dialog = new ToolWizardDialog(
                 window,
                 wizard) {
@@ -65,7 +69,7 @@ public class MockDataGenerateTool implements IExternalTool {
             }
 
             private boolean doRemoveDataConfirmation() {
-                if (wizard.removeOldData && !removeOldDataConfirmed) {
+                if (mockDataSettings.isRemoveOldData() && !removeOldDataConfirmed) {
                     if (UIUtils.confirmAction(getShell(), MockDataMessages.tools_mockdata_wizard_title, MockDataMessages.tools_mockdata_confirm_delete_old_data_message)) {
                         removeOldDataConfirmed = true;
                     } else {
