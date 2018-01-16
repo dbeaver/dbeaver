@@ -36,12 +36,14 @@ import org.eclipse.debug.core.model.IThread;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.debug.DBGController;
 import org.jkiss.dbeaver.debug.DBGEvent;
+import org.jkiss.dbeaver.debug.DBGEventHandler;
 import org.jkiss.dbeaver.debug.DBGException;
 import org.jkiss.dbeaver.debug.core.DebugCore;
+import org.jkiss.dbeaver.debug.core.DebugEvents;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 
-public abstract class DatabaseDebugTarget extends DatabaseDebugElement implements IDatabaseDebugTarget {
+public abstract class DatabaseDebugTarget extends DatabaseDebugElement implements IDatabaseDebugTarget, DBGEventHandler {
 
     private final String modelIdentifier;
 
@@ -64,6 +66,7 @@ public abstract class DatabaseDebugTarget extends DatabaseDebugElement implement
         this.launch = launch;
         this.process = process;
         this.controller = controller;
+        this.controller.registerEventHandler(this);
         this.threads = new ArrayList<IThread>();
     }
     
@@ -174,6 +177,7 @@ public abstract class DatabaseDebugTarget extends DatabaseDebugElement implement
             suspended = false;
             try {
                 controller.detach(sessionKey, getProgressMonitor());
+                controller.unregisterEventHandler(this);
             } catch (DBGException e) {
                 String message = NLS.bind("Error terminating {0}", getName());
                 IStatus status = DebugCore.newErrorStatus(message, e);
@@ -285,7 +289,7 @@ public abstract class DatabaseDebugTarget extends DatabaseDebugElement implement
     
     @Override
     public DebugEvent toDebugEvent(DBGEvent event) {
-        return new DebugEvent(event.getSource(), DebugEvent.MODEL_SPECIFIC);
+        return new DebugEvent(event.getSource(), event.getKind(), event.getDetails());
     }
 
     @Override
@@ -296,6 +300,12 @@ public abstract class DatabaseDebugTarget extends DatabaseDebugElement implement
     @Override
     public IMemoryBlock getMemoryBlock(long startAddress, long length) throws DebugException {
         return null;
+    }
+    
+    @Override
+    public void handleDebugEvent(DBGEvent event) {
+        DebugEvent debugEvent = toDebugEvent(event);
+        DebugEvents.fireEvent(debugEvent);
     }
 
 }

@@ -155,7 +155,7 @@ public class PostgreDebugController extends DBGBaseController {
     @Override
     public PostgreDebugSession createSession(DBGSessionInfo targetInfo, DBCExecutionContext sessionContext) throws DBGException {
         PostgreDebugSessionInfo sessionInfo = getSessionDescriptor(sessionContext);
-        PostgreDebugSession debugSession = new PostgreDebugSession(sessionInfo, targetInfo.getID());
+        PostgreDebugSession debugSession = new PostgreDebugSession(this, sessionInfo, targetInfo.getID());
         
         return debugSession;
 

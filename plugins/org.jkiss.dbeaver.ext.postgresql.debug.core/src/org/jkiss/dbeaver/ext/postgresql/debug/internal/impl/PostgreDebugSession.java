@@ -30,8 +30,11 @@ import java.util.concurrent.FutureTask;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.debug.DBGBaseController;
+import org.jkiss.dbeaver.debug.DBGBaseSession;
 import org.jkiss.dbeaver.debug.DBGBreakpointDescriptor;
 import org.jkiss.dbeaver.debug.DBGBreakpointProperties;
+import org.jkiss.dbeaver.debug.DBGEvent;
 import org.jkiss.dbeaver.debug.DBGException;
 import org.jkiss.dbeaver.debug.DBGObjectDescriptor;
 import org.jkiss.dbeaver.debug.DBGSession;
@@ -57,7 +60,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
  *    procedure will be reached     <br/>
  *
  */
-public class PostgreDebugSession implements DBGSession {
+public class PostgreDebugSession extends DBGBaseSession {
 
     private static final Log log = Log.getLog(PostgreDebugSession.class);
     
@@ -96,7 +99,7 @@ public class PostgreDebugSession implements DBGSession {
 
     private List<PostgreDebugBreakpointDescriptor> breakpoints = new ArrayList<PostgreDebugBreakpointDescriptor>(1);
     
-    private FutureTask<Void> task;
+    private FutureTask<DBGEvent> task;
 
     private Thread workerThread = null;
 
@@ -108,7 +111,8 @@ public class PostgreDebugSession implements DBGSession {
      * @param sessionDebugInfo - session (debugger client connection) description
      * @throws DBGException
      */
-    public PostgreDebugSession(PostgreDebugSessionInfo sessionInfo, Object targetId) throws DBGException {
+    public PostgreDebugSession(DBGBaseController controller, PostgreDebugSessionInfo sessionInfo, Object targetId) throws DBGException {
+        super(controller);
         this.sessionInfo = sessionInfo;
         this.targetId = targetId;
     }
@@ -148,8 +152,9 @@ public class PostgreDebugSession implements DBGSession {
             PostgreDebugObjectDescriptor obj = new PostgreDebugObjectDescriptor(OID,"ENTRY","SESSION","THIS","PG"); 
             addBreakpoint(obj, properties);
             
-            runAsync(SQL_ATTACH.replaceAll("\\?sessionid", String.valueOf(sessionId)),
-                    String.valueOf(sessionId) + " global attached to " + String.valueOf(targetId));
+            String sessionParam = String.valueOf(getSessionId());
+            String taskName = sessionParam + " global attached to " + String.valueOf(targetId);
+            runAsync(SQL_ATTACH.replaceAll("\\?sessionid", sessionParam), taskName, new DBGEvent(this, DBGEvent.ATTACH));
 
             /*if (breakpoint) {
                 runAsync(SQL_ATTACH_BREAKPOINT.replaceAll("\\?sessionid", String.valueOf(sessionId)),
@@ -246,19 +251,18 @@ public class PostgreDebugSession implements DBGSession {
 
     @Override
     public void execContinue() throws DBGException {
-        execStep(SQL_CONTINUE, " continue for ");
-
+        execStep(SQL_CONTINUE, " continue for ", DBGEvent.RESUME);
     }
 
     @Override
     public void execStepInto() throws DBGException {
-        execStep(SQL_STEP_INTO, " step into for ");
+        execStep(SQL_STEP_INTO, " step into for ", DBGEvent.STEP_INTO);
 
     }
 
     @Override
     public void execStepOver() throws DBGException {
-        execStep(SQL_STEP_OVER, " step over for ");
+        execStep(SQL_STEP_OVER, " step over for ", DBGEvent.STEP_OVER);
 
     }
 
@@ -270,14 +274,15 @@ public class PostgreDebugSession implements DBGSession {
      * @param name - session 'name' part
      * @throws DBGException
      */
-    public void execStep(String commandSQL, String name) throws DBGException {
+    public void execStep(String commandSQL, String name, int eventDetail) throws DBGException {
 
         acquireWriteLock();
 
         try {
+            DBGEvent event = new DBGEvent(this, DBGEvent.RESUME, eventDetail);
 
             runAsync(commandSQL.replaceAll("\\?sessionid", String.valueOf(sessionId)),
-                    String.valueOf(sessionId) + name + String.valueOf(targetId));
+                    String.valueOf(sessionId) + name + String.valueOf(targetId), event);
 
         } finally {
             lock.writeLock().unlock();
@@ -401,7 +406,7 @@ public class PostgreDebugSession implements DBGSession {
 
         List<DBGStackFrame> stack = new ArrayList<DBGStackFrame>(1);
 
-        String sql = SQL_GET_STACK.replaceAll("\\?sessionid", String.valueOf(sessionId));
+        String sql = SQL_GET_STACK.replaceAll("\\?sessionid", String.valueOf(getSessionId()));
         try (Statement stmt = getConnection(connection).createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
             while (rs.next()) {
                 int level = rs.getInt("level");
@@ -467,7 +472,8 @@ public class PostgreDebugSession implements DBGSession {
 
         if (task.isDone()) {
             try {
-                task.get();
+                DBGEvent dbgEvent = task.get();
+                getController().fireEvent(dbgEvent);
             } catch (InterruptedException e) {
                 log.error("DEBUG INTERRUPT ERROR ",e);
                 return false;
@@ -499,16 +505,16 @@ public class PostgreDebugSession implements DBGSession {
      * @param name
      * @throws DBGException
      */
-    private void runAsync(String commandSQL, String name) throws DBGException {
+    private void runAsync(String commandSQL, String name, DBGEvent event) throws DBGException {
 
         Connection connection = getConnection();
         try (Statement stmt = connection.createStatement()) {
 
             connection.setAutoCommit(false);
 
-            PostgreDebugSessionWorker worker = new PostgreDebugSessionWorker(connection, commandSQL);
+            PostgreDebugSessionWorker worker = new PostgreDebugSessionWorker(connection, commandSQL, event);
 
-            task = new FutureTask<Void>(worker);
+            task = new FutureTask<DBGEvent>(worker);
 
             workerThread = new Thread(task);
 

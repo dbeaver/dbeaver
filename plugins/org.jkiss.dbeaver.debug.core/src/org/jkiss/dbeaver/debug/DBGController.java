@@ -86,5 +86,12 @@ public interface DBGController {
     void stepInto(Object sessionKey) throws DBGException;
     void stepOver(Object sessionKey) throws DBGException;
     void stepReturn(Object sessionKey) throws DBGException;
+    
+    /*
+     * Events
+     */
+    
+    void registerEventHandler(DBGEventHandler eventHandler);
+    void unregisterEventHandler(DBGEventHandler eventHandler);
 
 }

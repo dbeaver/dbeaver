@@ -23,6 +23,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -40,6 +41,8 @@ public abstract class DBGBaseController implements DBGController {
 
     private final Map<String, Object> configuration = new HashMap<String, Object>();
     private final Map<Object, DBGSession> sessions = new HashMap<Object, DBGSession>(1);
+
+    private ListenerList<DBGEventHandler> eventHandlers = new ListenerList<>();
 
     private DBCExecutionContext executionContext;
 
@@ -112,6 +115,10 @@ public abstract class DBGBaseController implements DBGController {
         for (DBGSession session : values) {
             session.close();
         }
+        Object[] listeners = eventHandlers.getListeners();
+        for (Object listener : listeners) {
+            unregisterEventHandler((DBGEventHandler) listener);
+        }
     }
     
     @Override
@@ -178,6 +185,22 @@ public abstract class DBGBaseController implements DBGController {
     @Override
     public void stepReturn(Object sessionKey) throws DBGException {
         //throw DBGException?
+    }
+    
+    @Override
+    public void registerEventHandler(DBGEventHandler eventHandler) {
+        eventHandlers.add(eventHandler);
+    }
+    
+    @Override
+    public void unregisterEventHandler(DBGEventHandler eventHandler) {
+        eventHandlers.remove(eventHandler);
+    }
+    
+    public void fireEvent(DBGEvent event) {
+        for (DBGEventHandler eventHandler : eventHandlers) {
+            eventHandler.handleDebugEvent(event);
+        }
     }
     
 }
