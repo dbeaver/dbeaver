@@ -444,7 +444,14 @@ public class SQLQueryJob extends DataSourceJob
                     }
 
                     if (dataSource.getInfo().supportsMultipleResults()) {
-                        hasResultSet = dbcStatement.nextResults();
+                        try {
+                            hasResultSet = dbcStatement.nextResults();
+                        } catch (DBCException e) {
+                            log.error(e);
+                            // #2792: Check this twice. Some drivers (e.g. Sybase jConnect)
+                            // throw error on n'th result fetch - but it still can keep fetching next results
+                            hasResultSet = dbcStatement.nextResults();
+                        }
                         updateCount = hasResultSet ? -1 : 0;
                     } else {
                         break;
