@@ -76,15 +76,30 @@ public class DateTimeInlineEditor extends BaseValueEditor<Control> {
 
 				@Override
 				public void keyTraversed(TraverseEvent e) {
+					IMultiController controller = null;
+					if (valueController instanceof IMultiController) {
+						controller = (IMultiController) valueController;
+					}
+
 					if (e.detail == SWT.TRAVERSE_TAB_NEXT || e.detail == SWT.TRAVERSE_TAB_PREVIOUS) {
-						 saveValue();
-                         ((IMultiController) valueController).nextInlineEditor(e.detail == SWT.TRAVERSE_TAB_NEXT);
-                         e.doit = false;
-                         e.detail = SWT.TRAVERSE_NONE;
+						saveValue();
+						if (controller != null) {
+							controller.nextInlineEditor(e.detail == SWT.TRAVERSE_TAB_NEXT);
+						}
+						e.doit = false;
+						e.detail = SWT.TRAVERSE_NONE;
+					} else if (e.detail == SWT.TRAVERSE_RETURN) {
+						if (!valueController.isReadOnly()) {
+							saveValue();
+						}
+						if (controller != null) {
+							controller.closeInlineEditor();
+						}
+						e.doit = false;
+						e.detail = SWT.TRAVERSE_NONE;
 					}
 				}
 			});
-
 			return timeEditor.getControl();
 
 		} else {

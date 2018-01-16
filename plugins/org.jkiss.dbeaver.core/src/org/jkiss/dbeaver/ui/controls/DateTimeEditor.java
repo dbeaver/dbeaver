@@ -22,7 +22,8 @@ import java.util.Date;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.TraverseListener;
-import org.eclipse.swt.layout.FillLayout;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.DateTime;
 import org.jkiss.code.Nullable;
@@ -35,7 +36,7 @@ import org.jkiss.dbeaver.model.data.DBDDataFormatter;
  */
 public class DateTimeEditor {
 
-	private Composite parent;
+	private Composite basePart;
 	private DateTime dateEditor;
 	private DateTime timeEditor;
 	private String formaterId;
@@ -43,24 +44,35 @@ public class DateTimeEditor {
 	private static final Log log = Log.getLog(ViewerColumnController.class);
 
 	public DateTimeEditor(Composite parent, int style, String formaterId) {
-		this.parent = parent;
-		FillLayout layout = new FillLayout();
-		layout.type = SWT.VERTICAL;
-		parent.setLayout(layout);
-
 		if (formaterId == null || formaterId.isEmpty()) {
 			formaterId = DBDDataFormatter.TYPE_NAME_TIMESTAMP;
 		}
 		this.formaterId = formaterId;
+		basePart = new Composite(parent, SWT.BORDER);
+
+		GridLayout layout = new GridLayout(1, true);
+		layout.marginHeight = 1;
+		layout.marginWidth = 1;
+		layout.horizontalSpacing = 1;
+		layout.verticalSpacing = 1;
+		basePart.setLayout(layout);
+
+		GridData dateData = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+		GridData timeData = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
 
 		if (formaterId.equals(DBDDataFormatter.TYPE_NAME_TIMESTAMP)) {
-			this.dateEditor = new DateTime(parent, SWT.DATE | SWT.DROP_DOWN | style);
+			this.dateEditor = new DateTime(basePart, SWT.DATE | SWT.DROP_DOWN | style);
+			this.dateEditor.setLayoutData(dateData);
 
-			this.timeEditor = new DateTime(parent, SWT.TIME | SWT.DROP_DOWN | style);
+			this.timeEditor = new DateTime(basePart, SWT.TIME | SWT.DROP_DOWN | style);
+			this.timeEditor.setLayoutData(timeData);
 		} else if (formaterId.equals(DBDDataFormatter.TYPE_NAME_DATE)) {
-			this.dateEditor = new DateTime(parent, SWT.DATE | SWT.DROP_DOWN | style);
+			this.dateEditor = new DateTime(basePart, SWT.DATE | SWT.DROP_DOWN | style);
+			this.dateEditor.setLayoutData(dateData);
+
 		} else if (formaterId.equals(DBDDataFormatter.TYPE_NAME_TIME)) {
-			this.timeEditor = new DateTime(parent, SWT.TIME | SWT.DROP_DOWN | style);
+			this.timeEditor = new DateTime(basePart, SWT.TIME | SWT.DROP_DOWN | style);
+			this.timeEditor.setLayoutData(timeData);
 		}
 
 	}
@@ -89,13 +101,16 @@ public class DateTimeEditor {
 			calendar.setTime(value);
 
 		}
+
 		if (dateEditor != null && !dateEditor.isDisposed()) {
 			dateEditor.setDate(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH),
 					calendar.get(Calendar.DAY_OF_MONTH));
+
 		}
 		if (timeEditor != null && !timeEditor.isDisposed()) {
 			timeEditor.setTime(calendar.get(Calendar.HOUR), calendar.get(Calendar.MINUTE),
 					calendar.get(Calendar.SECOND));
+
 		}
 	}
 
@@ -117,6 +132,7 @@ public class DateTimeEditor {
 	}
 
 	public void setEditable(boolean editable) {
+
 		if (this.dateEditor != null && !this.dateEditor.isDisposed()) {
 			this.dateEditor.setEnabled(editable);
 		}
@@ -124,12 +140,14 @@ public class DateTimeEditor {
 		if (this.timeEditor != null && !this.timeEditor.isDisposed()) {
 			this.timeEditor.setEnabled(editable);
 		}
+
 	}
 
 	public Composite getControl() {
-		return parent;
+		return null; // return null for restrict adding listeners in the multiContolEditor
 	}
 
 	public void selectAll() {
 	}
+
 }
