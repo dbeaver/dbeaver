@@ -23,24 +23,28 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.concurrent.Callable;
 
-public class PostgreDebugSessionWorker implements Callable<Void> {
+import org.jkiss.dbeaver.debug.DBGEvent;
+
+public class PostgreDebugSessionWorker implements Callable<DBGEvent> {
 
     private final Connection conn;
     private final String sql;
+    private final DBGEvent event;
 
-    public PostgreDebugSessionWorker(Connection conn, String sqlCommand)
+    public PostgreDebugSessionWorker(Connection conn, String sqlCommand, DBGEvent event)
     {
         this.conn = conn;
         this.sql = sqlCommand;
+        this.event = event;
     }
 
     @Override
-    public Void call() throws Exception
+    public DBGEvent call() throws Exception
     {
 
         try (Statement stmt = conn.createStatement()) {
             stmt.executeQuery(sql);
-            return null;
+            return event;
         } catch (SQLException e) {
             String message = String.format("Failed to execute %s", sql);
             throw new Exception(message, e);
