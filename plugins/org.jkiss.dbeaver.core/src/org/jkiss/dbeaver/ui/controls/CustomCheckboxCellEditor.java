@@ -28,6 +28,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ui.ImageUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -128,7 +129,8 @@ public class CustomCheckboxCellEditor extends CellEditor {
         checked = !checked;
         setCheckIcon();
         applyEditorValue();
-        fireApplyEditorValue();
+        // Run in async to avoid NPE. fireApplyEditorValue disposes and nullifies editor
+        DBeaverUI.asyncExec(this::fireApplyEditorValue);
     }
 
     @Override
