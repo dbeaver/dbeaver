@@ -39,6 +39,10 @@ public class SQLWordRule implements IRule {
         this.defaultToken = defaultToken;
     }
 
+    public boolean hasWord(String word) {
+        return fWords.containsKey(word.toLowerCase());
+    }
+
     public void addWord(String word, IToken token) {
         fWords.put(word.toLowerCase(), token);
     }

@@ -175,6 +175,7 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE, true);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_SHOW_ODD_ROWS, true);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_SHOW_CELL_ICONS, true);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_SHOW_ATTR_FILTERS, true);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_DOUBLE_CLICK, Spreadsheet.DoubleClickBehavior.INLINE_EDITOR.name());
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_AUTO_SWITCH_MODE, false);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_SHOW_DESCRIPTION, false);

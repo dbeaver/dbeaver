@@ -351,6 +351,11 @@ class OracleSQLDialect extends JDBCSQLDialect {
         return true;
     }
 
+    @Override
+    public boolean isDelimiterAfterQuery() {
+        return false;
+    }
+
     @NotNull
     @Override
     public DBDBinaryFormatter getNativeBinaryFormatter() {
