@@ -1450,6 +1450,15 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         }
 
         @Override
+        public boolean isElementSupportsFilter(Object element) {
+            if (element instanceof DBDAttributeBinding) {
+                return (controller.getDataContainer().getSupportedFeatures() & DBSDataContainer.DATA_FILTER) != 0 &&
+                    controller.getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_SHOW_ATTR_FILTERS);
+            }
+            return false;
+        }
+
+        @Override
         public int getCellState(Object colElement, Object rowElement, String cellText) {
             int state = STATE_NONE;
             boolean recordMode = controller.isRecordMode();

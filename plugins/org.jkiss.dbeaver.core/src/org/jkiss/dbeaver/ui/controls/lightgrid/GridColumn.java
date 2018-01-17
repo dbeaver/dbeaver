@@ -114,23 +114,23 @@ class GridColumn {
 		}
 	}
 
-	
-	
-	public boolean isOverFilterButton (int x, int y) {
-		 Rectangle bounds = getBounds();
-	        if (y < bounds.y || y > bounds.y + bounds.height) {
-	            return false;
-	        }
-        Rectangle sortBounds = GridColumnRenderer.getSortControlBounds();
+    public boolean isOverFilterButton(int x, int y) {
+	    if (!isFilterable()) {
+	        return false;
+        }
+        Rectangle bounds = getBounds();
+        if (y < bounds.y || y > bounds.y + bounds.height) {
+            return false;
+        }
+        Rectangle sortBounds = isSortable() ? GridColumnRenderer.getSortControlBounds() : null;
         Rectangle filterBounds = GridColumnRenderer.getFilterControlBounds();
-        
-		int filterEnd = bounds.width - rightMargin - sortBounds.width;
-		int filterBegin = filterEnd - filterBounds.width;
-		
-		return  x >= filterBegin && x <= filterEnd && y < bounds.y + sortBounds.height;
-	}
-	
-	
+
+        int filterEnd = bounds.width - rightMargin - (sortBounds == null  ? 0 : sortBounds.width);
+        int filterBegin = filterEnd - filterBounds.width;
+
+        return x >= filterBegin && x <= filterEnd && y < bounds.y + (sortBounds == null ? 0 : sortBounds.height);
+    }
+
     public boolean isOverSortArrow(int x, int y)
     {
         if (!isSortable()) {
@@ -236,6 +236,11 @@ class GridColumn {
     public boolean isSortable()
     {
         return grid.getContentProvider().getSortOrder(element) != SWT.NONE;
+    }
+
+    public boolean isFilterable()
+    {
+        return grid.getContentProvider().isElementSupportsFilter(element);
     }
 
 	/**
