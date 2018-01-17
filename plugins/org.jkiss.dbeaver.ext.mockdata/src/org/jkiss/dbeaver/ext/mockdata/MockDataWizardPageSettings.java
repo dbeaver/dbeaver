@@ -66,7 +66,7 @@ public class MockDataWizardPageSettings extends AbstractToolWizardPage<MockDataE
 
         this.rowsText = UIUtils.createLabelText(
                 settingsGroup, "Rows", String.valueOf(mockDataSettings.getRowsNumber()), SWT.BORDER,
-                new GridData(120, SWT.DEFAULT));
+                new GridData(110, SWT.DEFAULT));
         rowsText.addSelectionListener(changeListener);
         rowsText.addVerifyListener(UIUtils.getLongVerifyListener(rowsText));
         rowsText.addModifyListener(new ModifyListener() {
