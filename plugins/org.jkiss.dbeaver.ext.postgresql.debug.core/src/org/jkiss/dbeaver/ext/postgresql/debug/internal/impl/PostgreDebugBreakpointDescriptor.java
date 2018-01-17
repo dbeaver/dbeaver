@@ -26,13 +26,9 @@ public class PostgreDebugBreakpointDescriptor implements DBGBreakpointDescriptor
 
     private final PostgreDebugObjectDescriptor obj;
 
-    private final PostgreDebugSession session;
-
     private final PostgreDebugBreakpointProperties properties;
 
-    public PostgreDebugBreakpointDescriptor(PostgreDebugSession session, PostgreDebugObjectDescriptor obj,
-                                  PostgreDebugBreakpointProperties properties) throws DBGException {
-        this.session = session;
+    public PostgreDebugBreakpointDescriptor(PostgreDebugObjectDescriptor obj, PostgreDebugBreakpointProperties properties) throws DBGException {
         this.obj = obj;
         this.properties = properties;
 
@@ -50,8 +46,7 @@ public class PostgreDebugBreakpointDescriptor implements DBGBreakpointDescriptor
 
     @Override
     public String toString() {
-        return "PostgreDebugBreakpointDescriptor [obj=" + obj + ", session id =" + session.getSessionId() + ", properties="
-                + properties + "]";
+        return "PostgreDebugBreakpointDescriptor [obj=" + obj + ", properties=" + properties + "]";
     }
 
 }

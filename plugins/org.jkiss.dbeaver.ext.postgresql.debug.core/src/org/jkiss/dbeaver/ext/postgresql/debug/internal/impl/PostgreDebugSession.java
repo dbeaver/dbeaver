@@ -28,10 +28,8 @@ import java.util.List;
 import org.jkiss.dbeaver.debug.DBGBaseController;
 import org.jkiss.dbeaver.debug.DBGBaseSession;
 import org.jkiss.dbeaver.debug.DBGBreakpointDescriptor;
-import org.jkiss.dbeaver.debug.DBGBreakpointProperties;
 import org.jkiss.dbeaver.debug.DBGEvent;
 import org.jkiss.dbeaver.debug.DBGException;
-import org.jkiss.dbeaver.debug.DBGObjectDescriptor;
 import org.jkiss.dbeaver.debug.DBGSessionInfo;
 import org.jkiss.dbeaver.debug.DBGStackFrame;
 import org.jkiss.dbeaver.debug.DBGVariable;
@@ -132,7 +130,8 @@ public class PostgreDebugSession extends DBGBaseSession {
 
             PostgreDebugBreakpointProperties properties = new PostgreDebugBreakpointProperties(true);
             PostgreDebugObjectDescriptor obj = new PostgreDebugObjectDescriptor(OID,"ENTRY","SESSION","THIS","PG"); 
-            addBreakpoint(obj, properties);
+            PostgreDebugBreakpointDescriptor bp = new PostgreDebugBreakpointDescriptor(obj, properties);
+            addBreakpoint(bp);
             
             String sessionParam = String.valueOf(getSessionId());
             String taskName = sessionParam + " global attached to " + String.valueOf(targetId);
@@ -165,21 +164,20 @@ public class PostgreDebugSession extends DBGBaseSession {
     }
 
     @Override
-    public void addBreakpoint(DBGObjectDescriptor object, DBGBreakpointProperties properties) throws DBGException {
+    public void addBreakpoint(DBGBreakpointDescriptor descriptor) throws DBGException {
 
         acquireReadLock();
 
-        PostgreDebugBreakpointDescriptor bp = null;
 
         try {
-            PostgreDebugBreakpointProperties bpd = (PostgreDebugBreakpointProperties) properties;
-            bp = new PostgreDebugBreakpointDescriptor(this, (PostgreDebugObjectDescriptor)object, bpd);
+            PostgreDebugBreakpointDescriptor bp = (PostgreDebugBreakpointDescriptor) descriptor;
+            PostgreDebugBreakpointProperties bpd = (PostgreDebugBreakpointProperties) bp.getProperties();
             try (Statement stmt = getConnection().createStatement()) {
 
                 String sqlCommand = bpd.isGlobal() ? SQL_SET_GLOBAL_BREAKPOINT : SQL_SET_BREAKPOINT;
 
                 stmt.executeQuery(sqlCommand.replaceAll("\\?sessionid", String.valueOf(getSessionId()))
-                        .replaceAll("\\?obj", String.valueOf(object.getID()))
+                        .replaceAll("\\?obj", String.valueOf(descriptor.getObjectDescriptor().getID()))
                         .replaceAll("\\?line", bpd.isOnStart() ? "-1" : String.valueOf(bpd.getLineNo()))
                         .replaceAll("\\?target", bpd.isAll() ? "null"
                                 : String.valueOf(bpd.getTargetId())));
