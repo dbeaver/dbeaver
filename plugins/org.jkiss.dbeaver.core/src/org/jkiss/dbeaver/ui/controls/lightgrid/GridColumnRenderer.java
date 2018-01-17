@@ -158,8 +158,8 @@ class GridColumnRenderer extends AbstractRenderer
 
         if (hasFilters) {
             gc.drawImage(IMAGE_FILTER,
-                bounds.x + bounds.width - ARROW_MARGIN - filterBounds.width -
-                    (sortOrder != SWT.NONE ? sortBounds.width + 1 : 0),
+                bounds.x + bounds.width - filterBounds.width -
+                    (sortOrder != SWT.NONE ? IMAGE_SPACING + sortBounds.width + 1 : ARROW_MARGIN),
                 y);
         }
 
