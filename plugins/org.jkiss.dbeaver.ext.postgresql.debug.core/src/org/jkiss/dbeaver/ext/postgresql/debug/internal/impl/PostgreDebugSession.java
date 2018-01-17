@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.debug.DBGSession;
 import org.jkiss.dbeaver.debug.DBGSessionInfo;
 import org.jkiss.dbeaver.debug.DBGStackFrame;
 import org.jkiss.dbeaver.debug.DBGVariable;
+import org.jkiss.dbeaver.debug.DBGWorker;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -512,7 +513,7 @@ public class PostgreDebugSession extends DBGBaseSession {
 
             connection.setAutoCommit(false);
 
-            PostgreDebugSessionWorker worker = new PostgreDebugSessionWorker(connection, commandSQL, event);
+            DBGWorker worker = new DBGWorker(connection, commandSQL, event);
 
             task = new FutureTask<DBGEvent>(worker);
 
