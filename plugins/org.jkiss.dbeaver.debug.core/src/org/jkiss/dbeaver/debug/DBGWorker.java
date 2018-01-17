@@ -16,22 +16,20 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ext.postgresql.debug.internal.impl;
+package org.jkiss.dbeaver.debug;
 
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.concurrent.Callable;
 
-import org.jkiss.dbeaver.debug.DBGEvent;
-
-public class PostgreDebugSessionWorker implements Callable<DBGEvent> {
+public class DBGWorker implements Callable<DBGEvent> {
 
     private final Connection conn;
     private final String sql;
     private final DBGEvent event;
 
-    public PostgreDebugSessionWorker(Connection conn, String sqlCommand, DBGEvent event)
+    public DBGWorker(Connection conn, String sqlCommand, DBGEvent event)
     {
         this.conn = conn;
         this.sql = sqlCommand;
