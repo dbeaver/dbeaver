@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.ext.mockdata;
 public class MockDataSettings {
 
     private boolean removeOldData;
-    private int rowsNumber;
+    private long rowsNumber = 10;
 
     public boolean isRemoveOldData() {
         return removeOldData;
@@ -30,11 +30,11 @@ public class MockDataSettings {
         this.removeOldData = removeOldData;
     }
 
-    public int getRowsNumber() {
+    public long getRowsNumber() {
         return rowsNumber;
     }
 
-    public void setRowsNumber(int rowsNumber) {
+    public void setRowsNumber(long rowsNumber) {
         this.rowsNumber = rowsNumber;
     }
 }

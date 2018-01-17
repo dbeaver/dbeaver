@@ -141,9 +141,9 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                 logPage.appendLog("\nInserting Mock Data into the '" + dataManipulator.getName() + "'.\n");
                 DBCStatistics insertStats = new DBCStatistics();
 
-                int rowsNumber = mockDataSettings.getRowsNumber();
-                int quotient = rowsNumber / BATCH_SIZE;
-                int modulo = rowsNumber % BATCH_SIZE;
+                long rowsNumber = mockDataSettings.getRowsNumber();
+                long quotient = rowsNumber / BATCH_SIZE;
+                long modulo = rowsNumber % BATCH_SIZE;
                 if (modulo > 0) {
                     quotient++;
                 }
