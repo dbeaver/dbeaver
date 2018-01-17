@@ -23,15 +23,26 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.ListenerList;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.debug.core.DebugCore;
 import org.jkiss.dbeaver.debug.internal.DebugMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.DBCStatement;
+import org.jkiss.dbeaver.model.exec.DBCStatementType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 
 public abstract class DBGBaseController implements DBGController {
     
@@ -203,4 +214,30 @@ public abstract class DBGBaseController implements DBGController {
         }
     }
     
+    protected void executeProcedure(DBPDataSource dataSource, Map<String, Object> configuration, DBRProgressMonitor monitor) throws DBException {
+        String procedureName = String.valueOf(configuration.get(PROCEDURE_NAME));
+        String call = String.valueOf(configuration.get(PROCEDURE_CALL));
+        String taskName = NLS.bind("Execute procedure {0}", procedureName);
+        Job job = new Job(taskName) {
+            
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {
+                try {
+                    try (final DBCSession execSession = DBUtils.openUtilSession(new VoidProgressMonitor(), dataSource, taskName)) {
+                        try (final DBCStatement dbStat = execSession.prepareStatement(DBCStatementType.EXEC, call, true, false,
+                                false)) {
+                            dbStat.executeStatement();
+                        }
+                    }
+                } catch (DBCException e) {
+                    log.error(taskName, e);
+                    return DebugCore.newErrorStatus(taskName, e);
+                    
+                }
+                return Status.OK_STATUS;
+            }
+        };
+        job.schedule();
+    }
+
 }
