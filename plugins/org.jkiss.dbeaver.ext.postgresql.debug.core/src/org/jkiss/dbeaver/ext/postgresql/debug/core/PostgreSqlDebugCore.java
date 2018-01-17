@@ -49,16 +49,20 @@ public class PostgreSqlDebugCore {
         PostgreSchema schema = procedure.getContainer();
         
         String databaseName = database.getName();
-        Object[] bindings = new Object[] {dataSourceContainer.getName(), databaseName,
-                procedure.getName(), schema.getName()};
+        String schemaName = schema.getName();
+        String procedureName = procedure.getName();
+        Object[] bindings = new Object[] { dataSourceContainer.getName(), databaseName, procedureName, schemaName };
         String name = NLS.bind(PostgreDebugCoreMessages.PostgreSqlDebugCore_launch_configuration_name, bindings);
         //Let's use metadata area for storage
         IContainer container = null;
         ILaunchConfigurationWorkingCopy workingCopy = DebugCore.createConfiguration(container, CONFIGURATION_TYPE, name);
-        workingCopy.setAttribute(DebugCore.ATTR_DRIVER, dataSourceContainer.getDriver().getId());
-        workingCopy.setAttribute(DebugCore.ATTR_DATASOURCE, dataSourceContainer.getId());
-        workingCopy.setAttribute(DebugCore.ATTR_DATABASE, databaseName);
-        workingCopy.setAttribute(DebugCore.ATTR_OID, String.valueOf(procedure.getObjectId()));
+        workingCopy.setAttribute(DebugCore.ATTR_DRIVER_ID, dataSourceContainer.getDriver().getId());
+        workingCopy.setAttribute(DebugCore.ATTR_DATASOURCE_ID, dataSourceContainer.getId());
+        workingCopy.setAttribute(DebugCore.ATTR_DATABASE_NAME, databaseName);
+        workingCopy.setAttribute(DebugCore.ATTR_SCHEMA_NAME, schemaName);
+        workingCopy.setAttribute(DebugCore.ATTR_PROCEDURE_OID, String.valueOf(procedure.getObjectId()));
+        workingCopy.setAttribute(DebugCore.ATTR_PROCEDURE_NAME, procedureName);
+        workingCopy.setAttribute(DebugCore.ATTR_PROCEDURE_CALL, DebugCore.composeProcedureCall(procedure));
         return workingCopy;
     }
 }
