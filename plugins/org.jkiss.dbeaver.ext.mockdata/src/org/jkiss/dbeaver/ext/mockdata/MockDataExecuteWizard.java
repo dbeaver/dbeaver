@@ -139,33 +139,39 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                 logPage.appendLog("\nInserting Mock Data into the '" + dataManipulator.getName() + "'.\n");
                 DBCStatistics insertStats = new DBCStatistics();
 
-                for (int i = 0; i < mockDataSettings.getRowsNumber(); i++) {
-                    List<DBDAttributeValue> keyAttributes = new ArrayList<>();
-                    Collection<? extends DBSEntityAttribute> attributes = ((DBSEntity) dataManipulator).getAttributes(monitor);
-                    for (DBSEntityAttribute attribute : attributes) {
-                        Object value = attribute.getDefaultValue();
-                        DBSDataType dataType = ((DBSTypedObjectEx) attribute).getDataType();
-                        DBPDataKind dataKind = dataType.getDataKind();
-                        switch (dataKind) {
-                            case NUMERIC:
-                                value = MockDataGenerator.generateNumeric((int) attribute.getMaxLength(), attribute.getPrecision(), attribute.getScale()); break;
-                            case STRING:
-                                value = MockDataGenerator.generateTextUpTo((int) attribute.getMaxLength()); break;
-                            case DATETIME:
-                                value = MockDataGenerator.generateDate(); break;
+                DBSDataManipulator.ExecuteBatch batch = null;
+                try {
+                    for (int i = 0; i < mockDataSettings.getRowsNumber(); i++) {
+                        List<DBDAttributeValue> attributeValues = new ArrayList<>();
+                        Collection<? extends DBSEntityAttribute> attributes = ((DBSEntity) dataManipulator).getAttributes(monitor);
+                        for (DBSEntityAttribute attribute : attributes) {
+                            Object value = attribute.getDefaultValue();
+                            DBSDataType dataType = ((DBSTypedObjectEx) attribute).getDataType();
+                            DBPDataKind dataKind = dataType.getDataKind();
+                            switch (dataKind) {
+                                case NUMERIC:
+                                    value = MockDataGenerator.generateNumeric((int) attribute.getMaxLength(), attribute.getPrecision(), attribute.getScale()); break;
+                                case STRING:
+                                    value = MockDataGenerator.generateTextUpTo((int) attribute.getMaxLength()); break;
+                                case DATETIME:
+                                    value = MockDataGenerator.generateDate(); break;
+                            }
+                            attributeValues.add(new DBDAttributeValue(attribute, value));
                         }
-                        keyAttributes.add(new DBDAttributeValue(attribute, value));
-                    }
 
-                    try (DBSDataManipulator.ExecuteBatch batch = dataManipulator.insertData(
-                            session,
-                            DBDAttributeValue.getAttributes(keyAttributes),
-                            null,
-                            executionSource))
-                    {
-                        batch.add(DBDAttributeValue.getValues(keyAttributes));
-                        insertStats.accumulate(batch.execute(session));
+                            if (batch == null) {
+                                batch = dataManipulator.insertData(
+                                        session,
+                                        DBDAttributeValue.getAttributes(attributeValues),
+                                        null,
+                                        executionSource);
+                            }
+                            batch.add(DBDAttributeValue.getValues(attributeValues));
                     }
+                    insertStats.accumulate(batch.execute(session));
+                }
+                finally {
+                    batch.close();
                 }
 
                 logPage.appendLog("    Rows updated: " + insertStats.getRowsUpdated() + "\n");
