@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui.dialogs.tools;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyleRange;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -82,10 +83,18 @@ public class DatabaseWizardPageLog extends WizardPage {
             public void run() {
                 synchronized (DatabaseWizardPageLog.this) {
                     if (!dumpLogText.isDisposed()) {
+                        int caretOffset = dumpLogText.getCaretOffset();
                         dumpLogText.append(line);
                         //dumpLogText.append(ContentUtils.getDefaultLineSeparator());
                         dumpLogText.setCaretOffset(dumpLogText.getCharCount());
                         dumpLogText.showSelection();
+                        if (error) {
+                            StyleRange style1Range = new StyleRange();
+                            style1Range.start = caretOffset;
+                            style1Range.length = line.length();
+                            style1Range.foreground = dumpLogText.getDisplay().getSystemColor(SWT.COLOR_RED);
+                            dumpLogText.setStyleRange(style1Range);
+                        }
                     }
                 }
             }
