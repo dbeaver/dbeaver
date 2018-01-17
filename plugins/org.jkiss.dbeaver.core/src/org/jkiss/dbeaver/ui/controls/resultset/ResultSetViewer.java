@@ -1595,7 +1595,7 @@ public class ResultSetViewer extends Viewer
     	Collection<ResultSetRow> selectedRows = getSelection().getSelectedRows();
 	    ResultSetRow[] rows = selectedRows.toArray(new ResultSetRow[selectedRows.size()]);
 	      
-	    FilterValueEditMenu menu = new FilterValueEditMenu(getSite().getShell(), SWT.NONE, null, ResultSetViewer.this, curAttribute, rows);
+	    FilterValueEditMenu menu = new FilterValueEditMenu(getSite().getShell(), ResultSetViewer.this, curAttribute, rows);
 	    
 	    Point location =  getSite().getWorkbenchWindow().getWorkbench().getDisplay().getCursorLocation();
 
