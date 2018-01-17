@@ -84,6 +84,8 @@ public interface IResultSetController extends DBPContextProvider {
     void rejectChanges();
 
     List<DBEPersistAction> generateChangesScript(@NotNull DBRProgressMonitor monitor);
+    
+    void showDistinctFilter(DBDAttributeBinding curAttribute);
 
     void toggleSortOrder(DBDAttributeBinding columnElement, boolean forceAscending, boolean forceDescending);
 
