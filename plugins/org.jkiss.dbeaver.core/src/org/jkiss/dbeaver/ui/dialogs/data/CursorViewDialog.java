@@ -119,7 +119,7 @@ public class CursorViewDialog extends ValueViewDialog implements IResultSetConta
     @Override
     public Control getControl()
     {
-        return resultSetViewer.getControl();
+        return resultSetViewer == null ? null : resultSetViewer.getControl();
     }
 
     @Override

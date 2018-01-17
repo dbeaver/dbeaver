@@ -33,6 +33,11 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset.spreadsheet;
 
+import org.eclipse.core.commands.ExecutionEvent;
+import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.commands.NotEnabledException;
+import org.eclipse.core.commands.NotHandledException;
+import org.eclipse.core.commands.common.NotDefinedException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -56,6 +61,10 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.handlers.HandlerUtil;
+import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.themes.ITheme;
@@ -84,6 +93,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.PropertyPageStandard;
 import org.jkiss.dbeaver.ui.controls.lightgrid.*;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation.RowPosition;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.ViewValuePanel;
 import org.jkiss.dbeaver.ui.data.IMultiController;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -1037,6 +1047,21 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         boolean altPressed = (state & SWT.ALT) == SWT.ALT;
         controller.toggleSortOrder((DBDAttributeBinding) columnElement, ctrlPressed, altPressed);
     }
+    
+
+	///////////////////////////////////////////////
+	// Filtering
+    
+    public void showFiltering(Object columnElement) {
+
+    	if(getSelection().getSelectedRows().size() == 0 || !getSelection().getSelectedAttributes().contains(columnElement) || curAttribute == null) {
+    		spreadsheet.deselectAll();
+    		controller.showDistinctFilter((DBDAttributeBinding) columnElement);
+    	}   
+    	else
+    		controller.showDistinctFilter(curAttribute);
+    	
+    }
 
     ///////////////////////////////////////////////
     // Misc
@@ -1422,6 +1447,15 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 }
             }
             return ALIGN_LEFT;
+        }
+
+        @Override
+        public boolean isElementSupportsFilter(Object element) {
+            if (element instanceof DBDAttributeBinding) {
+                return (controller.getDataContainer().getSupportedFeatures() & DBSDataContainer.DATA_FILTER) != 0 &&
+                    controller.getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_SHOW_ATTR_FILTERS);
+            }
+            return false;
         }
 
         @Override

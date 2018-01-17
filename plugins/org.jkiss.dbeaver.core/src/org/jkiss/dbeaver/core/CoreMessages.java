@@ -995,6 +995,7 @@ public class CoreMessages extends NLS {
 	public static String pref_page_database_resultsets_label_right_justify_numbers_and_date;
 	public static String pref_page_database_resultsets_label_row_batch_size;
 	public static String pref_page_database_resultsets_label_show_cell_icons;
+	public static String pref_page_database_resultsets_label_show_attr_filters;
 	public static String pref_page_database_resultsets_label_double_click_behavior;
 	public static String pref_page_database_resultsets_group_plain_text;
 	public static String pref_page_database_resultsets_lable_value_format;
