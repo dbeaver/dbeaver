@@ -19,10 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.debug.core;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.debug.core.DebugPlugin;
-import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
-import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.debug.core.DebugCore;
 import org.jkiss.dbeaver.ext.postgresql.debug.internal.PostgreDebugCoreMessages;
@@ -57,19 +54,11 @@ public class PostgreSqlDebugCore {
         String name = NLS.bind(PostgreDebugCoreMessages.PostgreSqlDebugCore_launch_configuration_name, bindings);
         //Let's use metadata area for storage
         IContainer container = null;
-        ILaunchConfigurationWorkingCopy workingCopy = createConfiguration(container, name);
+        ILaunchConfigurationWorkingCopy workingCopy = DebugCore.createConfiguration(container, CONFIGURATION_TYPE, name);
         workingCopy.setAttribute(DebugCore.ATTR_DRIVER, dataSourceContainer.getDriver().getId());
         workingCopy.setAttribute(DebugCore.ATTR_DATASOURCE, dataSourceContainer.getId());
         workingCopy.setAttribute(DebugCore.ATTR_DATABASE, databaseName);
         workingCopy.setAttribute(DebugCore.ATTR_OID, String.valueOf(procedure.getObjectId()));
-        return workingCopy;
-    }
-
-    public static ILaunchConfigurationWorkingCopy createConfiguration(IContainer container, String name)
-            throws CoreException {
-        ILaunchManager manager = DebugPlugin.getDefault().getLaunchManager();
-        ILaunchConfigurationType type = manager.getLaunchConfigurationType(CONFIGURATION_TYPE);
-        ILaunchConfigurationWorkingCopy workingCopy = type.newInstance(container, name);
         return workingCopy;
     }
 }

@@ -20,11 +20,16 @@ package org.jkiss.dbeaver.debug.core;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.debug.core.ILaunchConfigurationType;
+import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
+import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.debug.DBGController;
@@ -68,6 +73,14 @@ public class DebugCore {
 
     public static CoreException abort(String message) {
         return abort(message, null);
+    }
+
+    public static ILaunchConfigurationWorkingCopy createConfiguration(IContainer container, String typeName, String name)
+            throws CoreException {
+        ILaunchManager manager = DebugPlugin.getDefault().getLaunchManager();
+        ILaunchConfigurationType type = manager.getLaunchConfigurationType(typeName);
+        ILaunchConfigurationWorkingCopy workingCopy = type.newInstance(container, name);
+        return workingCopy;
     }
 
     public static boolean canLaunch(ILaunchConfiguration configuration, String mode) {
