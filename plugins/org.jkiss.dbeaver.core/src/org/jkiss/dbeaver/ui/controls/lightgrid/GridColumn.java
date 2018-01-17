@@ -125,7 +125,7 @@ class GridColumn {
         Rectangle sortBounds = isSortable() ? GridColumnRenderer.getSortControlBounds() : null;
         Rectangle filterBounds = GridColumnRenderer.getFilterControlBounds();
 
-        int filterEnd = bounds.width - rightMargin - (sortBounds == null  ? 0 : sortBounds.width);
+        int filterEnd = bounds.width - (sortBounds == null ? GridColumnRenderer.ARROW_MARGIN : sortBounds.width + GridColumnRenderer.IMAGE_SPACING);
         int filterBegin = filterEnd - filterBounds.width;
 
         return x >= filterBegin && x <= filterEnd && y < bounds.y + (sortBounds == null ? 0 : sortBounds.height);
