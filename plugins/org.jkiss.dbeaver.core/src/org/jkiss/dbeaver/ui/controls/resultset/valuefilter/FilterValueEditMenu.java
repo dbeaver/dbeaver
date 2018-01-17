@@ -90,7 +90,7 @@ public class FilterValueEditMenu extends Dialog {
         tableComposite.setLayoutData(gd);
         tableComposite.setLayout(new GridLayout(1, false));
 
-        filter.setupTable(tableComposite, SWT.BORDER | SWT.SINGLE | SWT.NO_SCROLL | SWT.V_SCROLL, false, false, new GridData(GridData.FILL_BOTH));
+        filter.setupTable(tableComposite, SWT.BORDER | SWT.SINGLE | SWT.NO_SCROLL | SWT.V_SCROLL, true, false, new GridData(GridData.FILL_BOTH));
         Table table = filter.table.getTable();
 
         TableViewerColumn resultsetColumn = new TableViewerColumn(filter.table, SWT.NONE);

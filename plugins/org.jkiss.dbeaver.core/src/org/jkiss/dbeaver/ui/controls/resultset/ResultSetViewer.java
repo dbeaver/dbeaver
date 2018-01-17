@@ -1601,23 +1601,19 @@ public class ResultSetViewer extends Viewer
 
      	menu.setLocation(location);
 
-	    if (menu.open() == IDialogConstants.OK_ID) {	     	
-	       	Object value = menu.getValue();
-	       	
-	       	DBDDataFilter filter = new DBDDataFilter(model.getDataFilter());
-	           DBDAttributeConstraint constraint = filter.getConstraint(curAttribute);
-	           if (constraint != null) {
-	               constraint.setOperator(DBCLogicalOperator.EQUALS);
-	               constraint.setValue(value);
-	               setDataFilter(filter, true);
-	           }
-	       } 
-	           return;
-	     
-	     
+        if (menu.open() == IDialogConstants.OK_ID) {
+            Object value = menu.getValue();
+
+            DBDDataFilter filter = new DBDDataFilter(model.getDataFilter());
+            DBDAttributeConstraint constraint = filter.getConstraint(curAttribute);
+            if (constraint != null) {
+                constraint.setOperator(DBCLogicalOperator.EQUALS);
+                constraint.setValue(value);
+                setDataFilter(filter, true);
+            }
+        }
     }
-    
-    
+
     void showReferencesMenu() {
         ResultSetRow currentRow = getCurrentRow();
         if (currentRow == null || currentRow.getRowNumber() < 0) {

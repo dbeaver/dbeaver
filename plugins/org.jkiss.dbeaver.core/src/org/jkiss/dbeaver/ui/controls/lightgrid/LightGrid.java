@@ -3068,25 +3068,23 @@ public abstract class LightGrid extends Canvas {
                 }
             }
         }
-        
-        
-        if(hoveringOnColumnFilter) {
-        	handleHoverOnColumnHeader(e.x, e.y);
-        	 if(hoveringOnColumnFilter) {
-        		 if (e.button == 1) {
-                     Event event = new Event();
-                     event.x = e.x;
-                     event.y = e.y;
-                     event.data = columnBeingFiltered == null ? null : columnBeingFiltered.getElement();
-                     event.stateMask = e.stateMask;
-                     notifyListeners(Event_FilterColumn, event);
-                     return;
-                 }
-        		 
-        	 }
+
+        if (hoveringOnColumnFilter) {
+            handleHoverOnColumnHeader(e.x, e.y);
+            if (hoveringOnColumnFilter) {
+                if (e.button == 1) {
+                    Event event = new Event();
+                    event.x = e.x;
+                    event.y = e.y;
+                    event.data = columnBeingFiltered == null ? null : columnBeingFiltered.getElement();
+                    event.stateMask = e.stateMask;
+                    notifyListeners(Event_FilterColumn, event);
+                    return;
+                }
+
+            }
         }
-        
-        
+
         if (resizingColumn) {
             resizingColumn = false;
             handleHoverOnColumnHeader(e.x, e.y); // resets cursor if
