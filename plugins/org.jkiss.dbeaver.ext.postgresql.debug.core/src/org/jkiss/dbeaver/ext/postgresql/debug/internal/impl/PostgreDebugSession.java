@@ -81,8 +81,6 @@ public class PostgreDebugSession extends DBGBaseSession {
     private static final String SQL_DROP_BREAKPOINT = "select pldbg_drop_breakpoint(?sessionid, ?obj, ?line)";
     private static final String SQL_ATTACH_BREAKPOINT = "select pldbg_wait_for_breakpoint(?sessionid)";
 
-    private List<PostgreDebugBreakpointDescriptor> breakpoints = new ArrayList<PostgreDebugBreakpointDescriptor>(1);
-    
     /**
      * Create session with two description 
      * after creation session need to be attached to postgres procedure by attach method
@@ -158,65 +156,25 @@ public class PostgreDebugSession extends DBGBaseSession {
         return sessionInfo;
     }
 
-    @Override
-    public List<PostgreDebugBreakpointDescriptor> getBreakpoints() {
-        return breakpoints;
+    protected String composeAddBreakpointCommand(DBGBreakpointDescriptor descriptor) {
+        PostgreDebugBreakpointDescriptor bp = (PostgreDebugBreakpointDescriptor) descriptor;
+        PostgreDebugBreakpointProperties bpd = (PostgreDebugBreakpointProperties) bp.getProperties();
+        String sqlPattern = bpd.isGlobal() ? SQL_SET_GLOBAL_BREAKPOINT : SQL_SET_BREAKPOINT;
+    
+        String sqlCommand = sqlPattern.replaceAll("\\?sessionid", String.valueOf(getSessionId()))
+                .replaceAll("\\?obj", String.valueOf(descriptor.getObjectDescriptor().getID()))
+                .replaceAll("\\?line", bpd.isOnStart() ? "-1" : String.valueOf(bpd.getLineNo()))
+                .replaceAll("\\?target", bpd.isAll() ? "null"
+                        : String.valueOf(bpd.getTargetId()));
+        return sqlCommand;
     }
 
-    @Override
-    public void addBreakpoint(DBGBreakpointDescriptor descriptor) throws DBGException {
-
-        acquireReadLock();
-
-
-        try {
-            PostgreDebugBreakpointDescriptor bp = (PostgreDebugBreakpointDescriptor) descriptor;
-            PostgreDebugBreakpointProperties bpd = (PostgreDebugBreakpointProperties) bp.getProperties();
-            try (Statement stmt = getConnection().createStatement()) {
-
-                String sqlCommand = bpd.isGlobal() ? SQL_SET_GLOBAL_BREAKPOINT : SQL_SET_BREAKPOINT;
-
-                stmt.executeQuery(sqlCommand.replaceAll("\\?sessionid", String.valueOf(getSessionId()))
-                        .replaceAll("\\?obj", String.valueOf(descriptor.getObjectDescriptor().getID()))
-                        .replaceAll("\\?line", bpd.isOnStart() ? "-1" : String.valueOf(bpd.getLineNo()))
-                        .replaceAll("\\?target", bpd.isAll() ? "null"
-                                : String.valueOf(bpd.getTargetId())));
-
-            } catch (SQLException e) {
-                throw new DBGException("SQL error", e);
-            }
-            breakpoints.add(bp);
-
-        } finally {
-            lock.readLock().unlock();
-        }
-
-    }
-
-    @Override
-    public void removeBreakpoint(DBGBreakpointDescriptor bp) throws DBGException {
-
-        acquireReadLock();
-
-        try {
-
-            try (Statement stmt = getConnection().createStatement()) {
-
-                PostgreDebugBreakpointProperties properties = (PostgreDebugBreakpointProperties) bp.getProperties();
-                stmt.executeQuery(SQL_DROP_BREAKPOINT.replaceAll("\\?sessionid", String.valueOf(getSessionId()))
-                        .replaceAll("\\?obj", String.valueOf(bp.getObjectDescriptor().getID()))
-                        .replaceAll("\\?line", properties.isOnStart() ? "-1" : String.valueOf(properties.getLineNo())));
-
-            } catch (SQLException e) {
-                throw new DBGException("SQL error", e);
-            }
-
-            breakpoints.remove(bp);
-
-        } finally {
-            lock.readLock().unlock();
-        }
-
+    protected String composeRemoveBreakpointCommand(DBGBreakpointDescriptor bp) {
+        PostgreDebugBreakpointProperties properties = (PostgreDebugBreakpointProperties) bp.getProperties();
+        String sqlCommand = SQL_DROP_BREAKPOINT.replaceAll("\\?sessionid", String.valueOf(getSessionId()))
+                .replaceAll("\\?obj", String.valueOf(bp.getObjectDescriptor().getID()))
+                .replaceAll("\\?line", properties.isOnStart() ? "-1" : String.valueOf(properties.getLineNo()));
+        return sqlCommand;
     }
 
     @Override
@@ -260,23 +218,8 @@ public class PostgreDebugSession extends DBGBaseSession {
 
     }
 
-    @Override
-    public void abort() throws DBGException {
-
-        acquireReadLock();
-
-        try (Statement stmt = getConnection().createStatement()) {
-
-            stmt.execute(SQL_ABORT.replaceAll("\\?sessionid", String.valueOf(sessionId)));
-//FIXME: move to finally?
-            task = null;
-
-        } catch (SQLException e) {
-            throw new DBGException("SQL error", e);
-        } finally {
-            lock.readLock().unlock();
-        }
-
+    protected String composeAbortCommand() {
+        return SQL_ABORT.replaceAll("\\?sessionid", String.valueOf(sessionId));
     }
 
     @Override
@@ -380,7 +323,7 @@ public class PostgreDebugSession extends DBGBaseSession {
 
     @Override
     public String toString() {
-        return "PostgreDebugSession " + (isWaiting() ? "WAITING" : "READY") + " [sessionId=" + sessionId + ", breakpoints=" + breakpoints + "targetId=("
+        return "PostgreDebugSession " + (isWaiting() ? "WAITING" : "READY") + " [sessionId=" + sessionId + ", breakpoints=" + getBreakpoints() + "targetId=("
                 + targetId + ") Session=(" + sessionInfo.toString() + ") " + "]";
     }
 
@@ -396,72 +339,6 @@ public class PostgreDebugSession extends DBGBaseSession {
      */
     public boolean isAttached() {
         return super.isAttached() && (sessionId > 0);
-    }
-
-    /**
-     * Try to acquire shared lock 
-     * 
-     * @throws DBGException
-     */
-    private void acquireReadLock() throws DBGException {
-
-        try {
-
-            lock.readLock().lockInterruptibly();
-
-        } catch (InterruptedException e1) {
-
-            throw new DBGException(e1.getMessage());
-
-        }
-
-        if (!isAttached()) {
-            lock.readLock().unlock();
-            throw new DBGException("Debug session not attached");
-        }
-        
-        if (isWaiting()) {
-            lock.readLock().unlock();
-            throw new DBGException("Debug session in waiting state");
-        }
-
-        if (!isDone()) {
-            lock.readLock().unlock();
-            throw new DBGException("Debug session in incorrect state");
-        }
-
-    }
-
-    /**
-     *  Try to acquire exclusive lock 
-     * 
-     * @throws DBGException
-     */
-    private void acquireWriteLock() throws DBGException {
-
-        try {
-
-            lock.writeLock().lockInterruptibly();
-
-        } catch (InterruptedException e1) {
-            throw new DBGException(e1.getMessage());
-        }
-        
-        if (!isAttached()) {
-            lock.writeLock().unlock();
-            throw new DBGException("Debug session not attached");
-        }
-
-        if (isWaiting()) {
-            lock.writeLock().unlock();
-            throw new DBGException("Debug session in waiting state");
-        }
-
-        if (!isDone()) {
-            lock.writeLock().unlock();
-            throw new DBGException("Debug session in incorrect state");
-        }
-
     }
 
 }
