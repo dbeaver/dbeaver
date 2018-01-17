@@ -26,9 +26,9 @@ public interface DBGSession {
 
     List<? extends DBGBreakpointDescriptor> getBreakpoints();
 
-    void addBreakpoint(DBGObjectDescriptor object, DBGBreakpointProperties properties) throws DBGException;
+    void addBreakpoint(DBGBreakpointDescriptor descriptor) throws DBGException;
 
-    void removeBreakpoint(DBGBreakpointDescriptor bp) throws DBGException;
+    void removeBreakpoint(DBGBreakpointDescriptor descriptor) throws DBGException;
 
     void execContinue() throws DBGException;
 
