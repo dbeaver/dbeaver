@@ -379,4 +379,9 @@ class OracleSQLDialect extends JDBCSQLDialect {
         String schemaName = proc.getParentObject().getName();
         return "CALL " + schemaName + "." + proc.getName() + "(\n";
     }
+
+    @Override
+    public String getScriptDelimiter() {
+        return super.getScriptDelimiter();
+    }
 }
