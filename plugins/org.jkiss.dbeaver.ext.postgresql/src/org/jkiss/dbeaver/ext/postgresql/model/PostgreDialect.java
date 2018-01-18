@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.utils.ArrayUtils;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 /**
@@ -58,14 +59,42 @@ class PostgreDialect extends JDBCSQLDialect {
         addSQLKeyword("ILIKE");
         addSQLKeyword("ELSIF");
         addSQLKeyword("ELSEIF");
+        addSQLKeyword("ANALYSE");
+        addSQLKeyword("ANALYZE");
+        addSQLKeyword("CONCURRENTLY");
+        addSQLKeyword("FREEZE");
+        addSQLKeyword("LANGUAGE");
+        addSQLKeyword("MODULE");
+        addSQLKeyword("OFFSET");
+        addSQLKeyword("PUBLIC");
+        addSQLKeyword("RETURNING");
+        addSQLKeyword("VARIADIC");
 
-        addFunctions(Collections.singleton("CURRENT_DATABASE"));
+        addFunctions(
+                Arrays.asList(
+                        "CURRENT_DATABASE", 
+                        "ARRAY_AGG",
+                        "BIT_AND",
+                        "BIT_OR",
+                        "BOOL_AND",
+                        "BOOL_OR",
+                        "JSON_AGG",
+                        "JSONB_AGG",
+                        "JSON_OBJECT_AGG",
+                        "JSONB_OBJECT_AGG",
+                        "STRING_AGG",
+                        "XMLAGG",
+                        "BIT_LENGTH",
+                        "CURRENT_CATALOG",
+                        "CURRENT_SCHEMA",
+                        "SQLCODE",
+                        "LENGTH",
+                        "SQLERROR"
+                        ));
 
-        removeSQLKeyword("PUBLIC");
         removeSQLKeyword("LENGTH");
-        removeSQLKeyword("LANGUAGE");
+        
     }
-
 /*
     @NotNull
     @Override
