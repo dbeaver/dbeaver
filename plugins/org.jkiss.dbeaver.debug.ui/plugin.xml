@@ -57,6 +57,23 @@
       <detailFactories
             class="org.jkiss.dbeaver.debug.ui.details.DatabaseDetailPaneFactory"
             id="org.jkiss.dbeaver.debug.ui.detailPaneFactories.detailFactories.database">
+         <enablement>
+            <with
+                  variable="selection">
+               <count
+                     value="1">
+               </count>
+               <iterate
+                     operator="or">
+                  <instanceof
+                        value="org.jkiss.dbeaver.debug.core.breakpoints.IDatabaseBreakpoint">
+                  </instanceof>
+               </iterate>
+               <iterate
+                     operator="or">
+               </iterate>
+            </with>
+         </enablement>
       </detailFactories>
    </extension>
 
