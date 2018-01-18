@@ -17,9 +17,13 @@
  */
 package org.jkiss.dbeaver.debug.internal.ui;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IValue;
 import org.eclipse.debug.ui.IValueDetailListener;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IEditorInput;
+import org.jkiss.dbeaver.debug.core.DebugCore;
 import org.jkiss.dbeaver.debug.ui.DatabaseDebugModelPresentation;
 
 public class ProcedureDebugModelPresentation extends DatabaseDebugModelPresentation {
@@ -41,8 +45,15 @@ public class ProcedureDebugModelPresentation extends DatabaseDebugModelPresentat
     @Override
     public void computeDetail(IValue value, IValueDetailListener listener)
     {
-        // TODO Auto-generated method stub
-
+        try {
+            String valueString = value.getValueString();
+            listener.detailComputed(value, valueString);
+        } catch (DebugException e) {
+            String message = NLS.bind("Unable to compute valie for {0}", value);
+            IStatus status = DebugCore.newErrorStatus(message, e);
+            DebugCore.log(status);
+            listener.detailComputed(value, e.getMessage());
+        }
     }
 
 }
