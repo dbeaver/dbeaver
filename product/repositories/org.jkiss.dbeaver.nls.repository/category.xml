@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+   <description name="DBeaver - NLS bundles" url="https://dbeaver.jkiss.org/update/nls/latest">DBeaver - NLS bundles</description>
+
+   <feature id="org.jkiss.dbeaver.runtime.nls.feature">
+      <category name="org.jikss.dbeaver.nls.category"/>
+   </feature>
+   <category-def name="org.jikss.dbeaver.nls.category" label="DBeaver NL Support"/>
+</site>
