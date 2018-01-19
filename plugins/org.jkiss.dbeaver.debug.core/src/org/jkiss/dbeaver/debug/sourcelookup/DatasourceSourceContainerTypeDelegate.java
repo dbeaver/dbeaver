@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
- * Copyright (C) 2017-2018 Andrew Khitrin (ahitrin@gmail.com)
  * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,28 +15,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.debug.sourcelookup;
 
-package org.jkiss.dbeaver.debug;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.debug.core.sourcelookup.ISourceContainer;
+import org.eclipse.debug.core.sourcelookup.containers.AbstractSourceContainerTypeDelegate;
 
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPDataSource;
+public class DatasourceSourceContainerTypeDelegate extends AbstractSourceContainerTypeDelegate {
 
-@SuppressWarnings("serial")
-public class DBGException extends DBException {
-
-    public DBGException(String message, Throwable e) {
-        super(message, e);
+    @Override
+    public ISourceContainer createSourceContainer(String memento) throws CoreException {
+        // TODO Auto-generated method stub
+        return null;
     }
 
-    public DBGException(String message) {
-        super(message);
+    @Override
+    public String getMemento(ISourceContainer container) throws CoreException {
+        // TODO Auto-generated method stub
+        return null;
     }
 
-    public DBGException(Throwable cause, DBPDataSource dataSource) {
-        super(cause, dataSource);
-    }
-
-    public DBGException(String message, Throwable cause, DBPDataSource dataSource) {
-        super(message, cause, dataSource);
-    }
 }

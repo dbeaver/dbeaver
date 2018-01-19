@@ -52,7 +52,7 @@ public class DatabaseVariable extends DatabaseDebugElement implements IVariable 
 
     @Override
     public String getName() throws DebugException {
-        return dbgVariable.toString();
+        return dbgVariable.getName();
     }
 
     @Override
