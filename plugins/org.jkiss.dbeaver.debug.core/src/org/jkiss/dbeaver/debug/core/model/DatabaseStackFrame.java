@@ -8,6 +8,7 @@ import org.eclipse.debug.core.model.IRegisterGroup;
 import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.debug.core.model.IThread;
 import org.eclipse.debug.core.model.IVariable;
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.debug.DBGException;
 import org.jkiss.dbeaver.debug.DBGSession;
 import org.jkiss.dbeaver.debug.DBGStackFrame;
@@ -153,7 +154,9 @@ public class DatabaseStackFrame extends DatabaseDebugElement implements IStackFr
 
     @Override
     public String getName() throws DebugException {
-        return dbgStackFrame.toString();
+        String pattern = "{0} line: {1}";
+        String name = NLS.bind(pattern, dbgStackFrame.getName(), dbgStackFrame.getLine());
+        return name;
     }
 
     @Override
