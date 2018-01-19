@@ -713,6 +713,10 @@ public class DataSourceDescriptor
                     }
 */
 
+                    if (preferenceStore.getBoolean(ModelPreferences.CONNECT_USE_ENV_VARS)) {
+                        tunnelConfiguration = new DBWHandlerConfiguration(tunnelConfiguration);
+                        tunnelConfiguration.resolveSystemEnvironmentVariables();
+                    }
                     tunnelConnectionInfo = tunnel.initializeTunnel(monitor, registry.getPlatform(), tunnelConfiguration, connectionInfo);
                 } catch (Exception e) {
                     throw new DBCException("Can't initialize tunnel", e);
