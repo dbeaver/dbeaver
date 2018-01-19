@@ -44,6 +44,8 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
 
     private static final Log log = Log.getLog(MockDataExecuteWizard.class);
 
+    public static final int BATCH_SIZE = 1000;
+
     private MockDataWizardPageSettings settingsPage;
     private MockDataSettings mockDataSettings;
 
@@ -123,7 +125,7 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                         batch.close();
                     }
                 } catch (Exception e) {
-                    String message = "Error removing the data.";
+                    String message = "    Error removing the data: " + e.getMessage() + ".";
                     log.error(message, e);
                     logPage.appendLog(message, true);
                 } finally {
@@ -139,32 +141,51 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                 logPage.appendLog("\nInserting Mock Data into the '" + dataManipulator.getName() + "'.\n");
                 DBCStatistics insertStats = new DBCStatistics();
 
-                for (int i = 0; i < mockDataSettings.getRowsNumber(); i++) {
-                    List<DBDAttributeValue> keyAttributes = new ArrayList<>();
-                    Collection<? extends DBSEntityAttribute> attributes = ((DBSEntity) dataManipulator).getAttributes(monitor);
-                    for (DBSEntityAttribute attribute : attributes) {
-                        Object value = attribute.getDefaultValue();
-                        DBSDataType dataType = ((DBSTypedObjectEx) attribute).getDataType();
-                        DBPDataKind dataKind = dataType.getDataKind();
-                        switch (dataKind) {
-                            case NUMERIC:
-                                value = MockDataGenerator.generateNumeric((int) attribute.getMaxLength(), attribute.getPrecision(), attribute.getScale()); break;
-                            case STRING:
-                                value = MockDataGenerator.generateTextUpTo((int) attribute.getMaxLength()); break;
-                            case DATETIME:
-                                value = MockDataGenerator.generateDate(); break;
-                        }
-                        keyAttributes.add(new DBDAttributeValue(attribute, value));
-                    }
+                long rowsNumber = mockDataSettings.getRowsNumber();
+                long quotient = rowsNumber / BATCH_SIZE;
+                long modulo = rowsNumber % BATCH_SIZE;
+                if (modulo > 0) {
+                    quotient++;
+                }
+                int counter = 0;
 
-                    try (DBSDataManipulator.ExecuteBatch batch = dataManipulator.insertData(
-                            session,
-                            DBDAttributeValue.getAttributes(keyAttributes),
-                            null,
-                            executionSource))
-                    {
-                        batch.add(DBDAttributeValue.getValues(keyAttributes));
+                DBSDataManipulator.ExecuteBatch batch = null;
+                for (int q = 0; q < quotient; q++) {
+                    try {
+                        for (int i = 0; i < BATCH_SIZE; i++) {
+                            List<DBDAttributeValue> attributeValues = new ArrayList<>();
+                            Collection<? extends DBSEntityAttribute> attributes = ((DBSEntity) dataManipulator).getAttributes(monitor);
+                            for (DBSEntityAttribute attribute : attributes) {
+                                Object value = attribute.getDefaultValue();
+                                DBSDataType dataType = ((DBSTypedObjectEx) attribute).getDataType();
+                                DBPDataKind dataKind = dataType.getDataKind();
+                                switch (dataKind) {
+                                    case NUMERIC:
+                                        value = MockDataGenerator.generateNumeric((int) attribute.getMaxLength(), attribute.getPrecision(), attribute.getScale()); break;
+                                    case STRING:
+                                        value = MockDataGenerator.generateTextUpTo((int) attribute.getMaxLength()); break;
+                                    case DATETIME:
+                                        value = MockDataGenerator.generateDate(); break;
+                                }
+                                attributeValues.add(new DBDAttributeValue(attribute, value));
+                            }
+
+                            if (batch == null) {
+                                batch = dataManipulator.insertData(
+                                        session,
+                                        DBDAttributeValue.getAttributes(attributeValues),
+                                        null,
+                                        executionSource);
+                            }
+                            if (counter++ < rowsNumber) {
+                                batch.add(DBDAttributeValue.getValues(attributeValues));
+                            }
+                        }
                         insertStats.accumulate(batch.execute(session));
+                    }
+                    finally {
+                        batch.close();
+                        batch = null;
                     }
                 }
 
@@ -172,7 +193,7 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                 logPage.appendLog("    Duration: " + insertStats.getExecuteTime() + "ms\n");
 
             } catch (DBException e) {
-                String message = "Error inserting Mock Data.";
+                String message = "    Error inserting Mock Data: " + e.getMessage() + ".";
                 log.error(message, e);
                 logPage.appendLog(message, true);
             }
