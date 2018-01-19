@@ -1,7 +1,8 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
- * Copyright (C) 2017 Alexander Fedorov (alexander.fedorov@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2017-2018 Andrew Khitrin (ahitrin@gmail.com)
+ * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,8 +30,11 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 public interface DBGController {
 
     public static final String DATABASE_NAME = "databaseName"; //$NON-NLS-1$
+    public static final String SCHEMA_NAME = "schemaName"; //$NON-NLS-1$
     public static final String PROCEDURE_OID = "procedureOID"; //$NON-NLS-1$
     public static final String PROCESS_ID = "processID"; //$NON-NLS-1$
+    public static final String PROCEDURE_NAME = "procedureName"; //$NON-NLS-1$
+    public static final String PROCEDURE_CALL = "procedureCall"; //$NON-NLS-1$
 
     /*
      * General lifecycle
@@ -86,5 +90,12 @@ public interface DBGController {
     void stepInto(Object sessionKey) throws DBGException;
     void stepOver(Object sessionKey) throws DBGException;
     void stepReturn(Object sessionKey) throws DBGException;
+    
+    /*
+     * Events
+     */
+    
+    void registerEventHandler(DBGEventHandler eventHandler);
+    void unregisterEventHandler(DBGEventHandler eventHandler);
 
 }

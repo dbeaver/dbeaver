@@ -15,26 +15,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.mockdata;
+package org.jkiss.dbeaver.ext.mockdata.model;
 
-public class MockDataSettings {
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 
-    private boolean removeOldData;
-    private long rowsNumber = 10;
+import java.util.Map;
 
-    public boolean isRemoveOldData() {
-        return removeOldData;
-    }
+/**
+ * Value generator interface
+ */
+public interface MockValueGenerator {
 
-    public void setRemoveOldData(boolean removeOldData) {
-        this.removeOldData = removeOldData;
-    }
+    void init(DBSDataManipulator container, Map<String, Object> properties) throws DBCException;
 
-    public long getRowsNumber() {
-        return rowsNumber;
-    }
+    void nextRow();
 
-    public void setRowsNumber(long rowsNumber) {
-        this.rowsNumber = rowsNumber;
-    }
+    Object generateValue(DBDAttributeBinding attribute)
+        throws DBCException;
+
+    void dispose();
 }
