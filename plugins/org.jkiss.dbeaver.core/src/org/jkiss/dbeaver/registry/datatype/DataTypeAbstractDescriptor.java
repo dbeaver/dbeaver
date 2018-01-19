@@ -160,9 +160,9 @@ public abstract class DataTypeAbstractDescriptor<DESCRIPTOR> extends AbstractDes
         return supportedDataSources.isEmpty();
     }
 
-    public boolean supportsDataSource(DBPDataSource dataSource, DataSourceProviderDescriptor descriptor)
+    public boolean supportsDataSource(DBPDataSource dataSource)
     {
-        return supportedDataSources.contains(descriptor.getId()) || supportedDataSources.contains(dataSource.getClass().getName());
+        return supportedDataSources.contains(dataSource.getContainer().getDriver().getProviderId()) || supportedDataSources.contains(dataSource.getClass().getName());
     }
 
     @Override
