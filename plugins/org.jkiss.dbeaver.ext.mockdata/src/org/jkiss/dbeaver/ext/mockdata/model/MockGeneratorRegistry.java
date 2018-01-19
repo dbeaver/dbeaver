@@ -85,6 +85,20 @@ public class MockGeneratorRegistry
         return null;
     }
 
+    public List<MockGeneratorDescriptor> findAllGenerators(DBPDataSource dataSource, DBSTypedObject typedObject) {
+
+        List<MockGeneratorDescriptor> result = new ArrayList<>();
+        for (MockGeneratorDescriptor descriptor : generators) {
+
+            if (((!descriptor.isGlobal() && descriptor.supportsDataSource(dataSource) && descriptor.supportsType(typedObject)) ||
+                (descriptor.isGlobal() && descriptor.supportsType(typedObject))))
+            {
+                result.add(descriptor);
+            }
+        }
+        return result;
+    }
+
     /**
      * Find generator by id
      */
