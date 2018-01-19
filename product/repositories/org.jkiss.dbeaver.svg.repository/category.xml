@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site>
+    <description name="DBeaver - SVG format" url="https://dbeaver.jkiss.org/update/svg/latest">DBeaver - SVG format support</description>
+
+    <feature id="org.jkiss.dbeaver.ext.ui.svg.feature">
+        <category name="org.jikss.dbeaver.svg.category"/>
+    </feature>
+    <category-def name="org.jikss.dbeaver.svg.category" label="DBeaver SVG format support"/>
+</site>
