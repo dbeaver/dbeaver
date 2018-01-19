@@ -55,6 +55,8 @@ public class DebugCore {
     public static final String BREAKPOINT_DATABASE = BUNDLE_SYMBOLIC_NAME + '.' + "databaseBreakpointMarker"; //$NON-NLS-1$
     public static final String BREAKPOINT_DATABASE_LINE = BUNDLE_SYMBOLIC_NAME + '.' + "databaseLineBreakpointMarker"; //$NON-NLS-1$
 
+    public static final String SOURCE_CONTAINER_TYPE_DATASOURCE = BUNDLE_SYMBOLIC_NAME + '.' + "datasourceSourceContainerType"; //$NON-NLS-1$
+
     public static final String ATTR_DRIVER_ID = BUNDLE_SYMBOLIC_NAME + '.' + "ATTR_DRIVER_ID"; //$NON-NLS-1$
     public static final String ATTR_DRIVER_ID_DEFAULT = ""; //$NON-NLS-1$
 
@@ -75,6 +77,9 @@ public class DebugCore {
 
     public static final String ATTR_PROCEDURE_CALL = BUNDLE_SYMBOLIC_NAME + '.' + "ATTR_PROCEDURE_CALL"; //$NON-NLS-1$
     public static final String ATTR_PROCEDURE_CALL_DEFAULT = ""; //$NON-NLS-1$
+
+    public static final String ATTR_NODE_PATH = BUNDLE_SYMBOLIC_NAME + '.' + "ATTR_NODE_PATH"; //$NON-NLS-1$
+    public static final String ATTR_NODE_PATH_DEFAULT = ""; //$NON-NLS-1$
 
     private static Log log = Log.getLog(DebugCore.class);
 
@@ -181,6 +186,10 @@ public class DebugCore {
 
     public static String extractProcedureCall(ILaunchConfiguration configuration) {
         return extractStringAttribute(configuration, ATTR_PROCEDURE_CALL, ATTR_PROCEDURE_CALL_DEFAULT);
+    }
+
+    public static String extractNodePath(ILaunchConfiguration configuration) {
+        return extractStringAttribute(configuration, ATTR_NODE_PATH, ATTR_NODE_PATH_DEFAULT);
     }
 
     public static String extractStringAttribute(ILaunchConfiguration configuration, String attributeName,

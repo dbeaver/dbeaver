@@ -142,14 +142,14 @@ public class DatabaseStackFrame extends DatabaseDebugElement implements IStackFr
 
     @Override
     public int getCharStart() throws DebugException {
-        // TODO Auto-generated method stub
-        return 0;
+        // unknown
+        return -1;
     }
 
     @Override
     public int getCharEnd() throws DebugException {
-        // TODO Auto-generated method stub
-        return 0;
+        // unknown
+        return -1;
     }
 
     @Override

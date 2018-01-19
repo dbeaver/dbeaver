@@ -21,6 +21,7 @@ import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.debug.core.DebugCore;
 import org.jkiss.dbeaver.ext.postgresql.debug.internal.PostgreDebugCoreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
@@ -28,6 +29,9 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNModel;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 public class PostgreSqlDebugCore {
@@ -63,6 +67,9 @@ public class PostgreSqlDebugCore {
         workingCopy.setAttribute(DebugCore.ATTR_PROCEDURE_OID, String.valueOf(procedure.getObjectId()));
         workingCopy.setAttribute(DebugCore.ATTR_PROCEDURE_NAME, procedureName);
         workingCopy.setAttribute(DebugCore.ATTR_PROCEDURE_CALL, DebugCore.composeProcedureCall(procedure));
+        final DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
+        DBNDatabaseNode node = navigatorModel.getNodeByObject(procedure);
+        workingCopy.setAttribute(DebugCore.ATTR_NODE_PATH, node.getNodeItemPath());
         return workingCopy;
     }
 }

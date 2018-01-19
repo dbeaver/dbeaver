@@ -306,6 +306,7 @@ public abstract class DatabaseDebugTarget extends DatabaseDebugElement implement
     public void handleDebugEvent(DBGEvent event) {
         DebugEvent debugEvent = toDebugEvent(event);
         DebugEvents.fireEvent(debugEvent);
+//        DebugEvents.fireEvent(new DebugEvent(this, DebugEvent.SUSPEND, DebugEvent.BREAKPOINT));
     }
 
 }
