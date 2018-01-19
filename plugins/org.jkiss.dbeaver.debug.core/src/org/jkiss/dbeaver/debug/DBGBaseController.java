@@ -1,7 +1,8 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
- * Copyright (C) 2017 Alexander Fedorov (alexander.fedorov@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2017-2018 Andrew Khitrin (ahitrin@gmail.com)
+ * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,14 +24,26 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.ListenerList;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.debug.core.DebugCore;
 import org.jkiss.dbeaver.debug.internal.DebugMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.exec.DBCStatement;
+import org.jkiss.dbeaver.model.exec.DBCStatementType;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 
 public abstract class DBGBaseController implements DBGController {
     
@@ -40,6 +53,8 @@ public abstract class DBGBaseController implements DBGController {
 
     private final Map<String, Object> configuration = new HashMap<String, Object>();
     private final Map<Object, DBGSession> sessions = new HashMap<Object, DBGSession>(1);
+
+    private ListenerList<DBGEventHandler> eventHandlers = new ListenerList<>();
 
     private DBCExecutionContext executionContext;
 
@@ -112,6 +127,10 @@ public abstract class DBGBaseController implements DBGController {
         for (DBGSession session : values) {
             session.close();
         }
+        Object[] listeners = eventHandlers.getListeners();
+        for (Object listener : listeners) {
+            unregisterEventHandler((DBGEventHandler) listener);
+        }
     }
     
     @Override
@@ -180,4 +199,46 @@ public abstract class DBGBaseController implements DBGController {
         //throw DBGException?
     }
     
+    @Override
+    public void registerEventHandler(DBGEventHandler eventHandler) {
+        eventHandlers.add(eventHandler);
+    }
+    
+    @Override
+    public void unregisterEventHandler(DBGEventHandler eventHandler) {
+        eventHandlers.remove(eventHandler);
+    }
+    
+    public void fireEvent(DBGEvent event) {
+        for (DBGEventHandler eventHandler : eventHandlers) {
+            eventHandler.handleDebugEvent(event);
+        }
+    }
+    
+    protected void executeProcedure(DBPDataSource dataSource, Map<String, Object> configuration, DBRProgressMonitor monitor) throws DBException {
+        String procedureName = String.valueOf(configuration.get(PROCEDURE_NAME));
+        String call = String.valueOf(configuration.get(PROCEDURE_CALL));
+        String taskName = NLS.bind("Execute procedure {0}", procedureName);
+        Job job = new Job(taskName) {
+            
+            @Override
+            protected IStatus run(IProgressMonitor monitor) {
+                try {
+                    try (final DBCSession execSession = DBUtils.openUtilSession(new VoidProgressMonitor(), dataSource, taskName)) {
+                        try (final DBCStatement dbStat = execSession.prepareStatement(DBCStatementType.EXEC, call, true, false,
+                                false)) {
+                            dbStat.executeStatement();
+                        }
+                    }
+                } catch (DBCException e) {
+                    log.error(taskName, e);
+                    return DebugCore.newErrorStatus(taskName, e);
+                    
+                }
+                return Status.OK_STATUS;
+            }
+        };
+        job.schedule();
+    }
+
 }

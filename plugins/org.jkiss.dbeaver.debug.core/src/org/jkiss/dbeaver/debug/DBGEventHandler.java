@@ -16,28 +16,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package org.jkiss.dbeaver.debug;
 
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPDataSource;
+public interface DBGEventHandler {
+    
+    void handleDebugEvent(DBGEvent event);
 
-@SuppressWarnings("serial")
-public class DBGException extends DBException {
-
-    public DBGException(String message, Throwable e) {
-        super(message, e);
-    }
-
-    public DBGException(String message) {
-        super(message);
-    }
-
-    public DBGException(Throwable cause, DBPDataSource dataSource) {
-        super(cause, dataSource);
-    }
-
-    public DBGException(String message, Throwable cause, DBPDataSource dataSource) {
-        super(message, cause, dataSource);
-    }
 }

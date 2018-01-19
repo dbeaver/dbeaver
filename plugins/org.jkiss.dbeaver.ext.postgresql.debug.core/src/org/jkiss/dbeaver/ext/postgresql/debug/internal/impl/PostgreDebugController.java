@@ -22,46 +22,23 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.debug.DBGBaseController;
 import org.jkiss.dbeaver.debug.DBGException;
 import org.jkiss.dbeaver.debug.DBGSession;
 import org.jkiss.dbeaver.debug.DBGSessionInfo;
-import org.jkiss.dbeaver.debug.core.DebugCore;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
-import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.DBCStatement;
-import org.jkiss.dbeaver.model.exec.DBCStatementType;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
-import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
 
 public class PostgreDebugController extends DBGBaseController {
     
-    private static Log log = Log.getLog(PostgreDebugController.class);
-
     private static final String SQL_SESSION = "select pid,usename,application_name,state,query from pg_stat_activity"; //$NON-NLS-1$
     
     private static final String SQL_OBJECT = "select  p.oid,p.proname,u.usename as owner,n.nspname, l.lanname as lang " //$NON-NLS-1$
@@ -94,7 +71,7 @@ public class PostgreDebugController extends DBGBaseController {
             throw new DBGException("Error getting session");
 
         } catch (SQLException e) {
-            throw new DBGException("SQ Lerror", e);
+            throw new DBGException("SQL error", e);
         }
 
     }
@@ -155,7 +132,7 @@ public class PostgreDebugController extends DBGBaseController {
     @Override
     public PostgreDebugSession createSession(DBGSessionInfo targetInfo, DBCExecutionContext sessionContext) throws DBGException {
         PostgreDebugSessionInfo sessionInfo = getSessionDescriptor(sessionContext);
-        PostgreDebugSession debugSession = new PostgreDebugSession(sessionInfo, targetInfo.getID());
+        PostgreDebugSession debugSession = new PostgreDebugSession(this, sessionInfo, targetInfo.getID());
         
         return debugSession;
 
@@ -169,79 +146,9 @@ public class PostgreDebugController extends DBGBaseController {
         //FIXME -1 - target PID (-1 for ANY PID)
         int oid = Integer.parseInt(String.valueOf(configuration.get(PROCEDURE_OID)));
         int pid = Integer.parseInt(String.valueOf(configuration.get(PROCESS_ID)));
-        String databaseName = String.valueOf(configuration.get(DATABASE_NAME));
         pgSession.attach(sessionJdbc, oid, pid);
         DBPDataSource dataSource = sessionContext.getDataSource();
-        executeProcedure(configuration, monitor, oid, databaseName, dataSource);
-    }
-
-    private void executeProcedure(Map<String, Object> configuration, DBRProgressMonitor monitor, int oid,
-            String databaseName, DBPDataSource dataSource) throws DBException {
-        if (dataSource instanceof PostgreDataSource) {
-            PostgreDataSource pgDS = (PostgreDataSource) dataSource;
-            PostgreDatabase database = pgDS.getDatabase(databaseName);
-            PostgreSchema schema = database.getSchema(monitor, "public");
-            PostgreProcedure procedure = schema.getProcedure(monitor, oid);
-            String call = composeProcedureCall(procedure, configuration, monitor);
-            String taskName = NLS.bind("Execute procedure {0}", procedure.getName());
-            Job job = new Job(taskName) {
-                
-                @Override
-                protected IStatus run(IProgressMonitor monitor) {
-                    try {
-                        try (final DBCSession execSession = DBUtils.openUtilSession(new VoidProgressMonitor(), dataSource, taskName)) {
-                            try (final DBCStatement dbStat = execSession.prepareStatement(DBCStatementType.EXEC, call, true, false,
-                                    false)) {
-                                dbStat.executeStatement();
-                            }
-                        }
-                    } catch (DBCException e) {
-                        log.error(taskName, e);
-                        return DebugCore.newErrorStatus(taskName, e);
-                        
-                    }
-                    return Status.OK_STATUS;
-                }
-            };
-            job.schedule();
-        }
-    }
-
-    private String composeProcedureCall(DBSProcedure procedure, Map<String, Object> configuration,
-            DBRProgressMonitor monitor) throws DBException {
-        StringBuilder sb = new StringBuilder();
-        sb.append("select").append(' ').append(procedure.getName());
-        sb.append('(');
-        Collection<? extends DBSProcedureParameter> parameters = procedure.getParameters(monitor);
-        if (parameters.size() > 0) {
-            for (DBSProcedureParameter parameter : parameters) {
-                String name = parameter.getName();
-                Object value = configuration.get(name);
-                if (value == null) {
-                    value = '?';
-                    sb.append(value);
-                } else {
-                    DBSTypedObject parameterType = parameter.getParameterType();
-                    DBPDataKind dataKind = parameterType.getDataKind();
-                    switch (dataKind) {
-                    case STRING:
-                        sb.append('\'');
-                        sb.append(value);
-                        sb.append('\'');
-                        break;
-
-                    default:
-                        sb.append(value);
-                        break;
-                    }
-                }
-                sb.append(',');
-            }
-            sb.deleteCharAt(sb.length()-1);
-        }
-        sb.append(')');
-        String call = sb.toString();
-        return call;
+        executeProcedure(dataSource, configuration, monitor);
     }
 
 }
