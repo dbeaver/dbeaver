@@ -124,7 +124,7 @@ public class DBeaverInstanceServer implements IInstanceController {
                 case "autoCommit": autoCommit = CommonUtils.toBoolean(paramValue); break;
                 default:
                     if (paramName.length() > 5 && paramName.startsWith("prop.")) {
-                        paramName = paramName.substring(6);
+                        paramName = paramName.substring(5);
                         conProperties.put(paramName, paramValue);
                     }
             }

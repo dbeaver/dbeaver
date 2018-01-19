@@ -18,20 +18,31 @@
 package org.jkiss.dbeaver.debug.core;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.debug.core.ILaunchConfigurationType;
+import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
+import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.debug.DBGController;
 import org.jkiss.dbeaver.debug.DBGException;
 import org.jkiss.dbeaver.debug.internal.core.DebugCoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
 
 public class DebugCore {
 
@@ -44,17 +55,31 @@ public class DebugCore {
     public static final String BREAKPOINT_DATABASE = BUNDLE_SYMBOLIC_NAME + '.' + "databaseBreakpointMarker"; //$NON-NLS-1$
     public static final String BREAKPOINT_DATABASE_LINE = BUNDLE_SYMBOLIC_NAME + '.' + "databaseLineBreakpointMarker"; //$NON-NLS-1$
 
-    public static final String ATTR_DRIVER = BUNDLE_SYMBOLIC_NAME + '.' + "ATTR_DRIVER"; //$NON-NLS-1$
-    public static final String ATTR_DRIVER_DEFAULT = ""; //$NON-NLS-1$
+    public static final String SOURCE_CONTAINER_TYPE_DATASOURCE = BUNDLE_SYMBOLIC_NAME + '.' + "datasourceSourceContainerType"; //$NON-NLS-1$
 
-    public static final String ATTR_DATASOURCE = BUNDLE_SYMBOLIC_NAME + '.' + "ATTR_DATASOURCE"; //$NON-NLS-1$
-    public static final String ATTR_DATASOURCE_DEFAULT = ""; //$NON-NLS-1$
+    public static final String ATTR_DRIVER_ID = BUNDLE_SYMBOLIC_NAME + '.' + "ATTR_DRIVER_ID"; //$NON-NLS-1$
+    public static final String ATTR_DRIVER_ID_DEFAULT = ""; //$NON-NLS-1$
 
-    public static final String ATTR_DATABASE = BUNDLE_SYMBOLIC_NAME + '.' + "ATTR_DATABASE"; //$NON-NLS-1$
-    public static final String ATTR_DATABASE_DEFAULT = ""; //$NON-NLS-1$
+    public static final String ATTR_DATASOURCE_ID = BUNDLE_SYMBOLIC_NAME + '.' + "ATTR_DATASOURCE_ID"; //$NON-NLS-1$
+    public static final String ATTR_DATASOURCE_ID_DEFAULT = ""; //$NON-NLS-1$
 
-    public static final String ATTR_OID = BUNDLE_SYMBOLIC_NAME + '.' + "ATTR_OID"; //$NON-NLS-1$
-    public static final String ATTR_OID_DEFAULT = ""; //$NON-NLS-1$
+    public static final String ATTR_DATABASE_NAME = BUNDLE_SYMBOLIC_NAME + '.' + "ATTR_DATABASE_NAME"; //$NON-NLS-1$
+    public static final String ATTR_DATABASE_NAME_DEFAULT = ""; //$NON-NLS-1$
+
+    public static final String ATTR_SCHEMA_NAME = BUNDLE_SYMBOLIC_NAME + '.' + "ATTR_SCHEMA_NAME"; //$NON-NLS-1$
+    public static final String ATTR_SCHEMA_NAME_DEFAULT = ""; //$NON-NLS-1$
+
+    public static final String ATTR_PROCEDURE_OID = BUNDLE_SYMBOLIC_NAME + '.' + "ATTR_PROCEDURE_OID"; //$NON-NLS-1$
+    public static final String ATTR_PROCEDURE_OID_DEFAULT = ""; //$NON-NLS-1$
+
+    public static final String ATTR_PROCEDURE_NAME = BUNDLE_SYMBOLIC_NAME + '.' + "ATTR_PROCEDURE_NAME"; //$NON-NLS-1$
+    public static final String ATTR_PROCEDURE_NAME_DEFAULT = ""; //$NON-NLS-1$
+
+    public static final String ATTR_PROCEDURE_CALL = BUNDLE_SYMBOLIC_NAME + '.' + "ATTR_PROCEDURE_CALL"; //$NON-NLS-1$
+    public static final String ATTR_PROCEDURE_CALL_DEFAULT = ""; //$NON-NLS-1$
+
+    public static final String ATTR_NODE_PATH = BUNDLE_SYMBOLIC_NAME + '.' + "ATTR_NODE_PATH"; //$NON-NLS-1$
+    public static final String ATTR_NODE_PATH_DEFAULT = ""; //$NON-NLS-1$
 
     private static Log log = Log.getLog(DebugCore.class);
 
@@ -68,6 +93,43 @@ public class DebugCore {
 
     public static CoreException abort(String message) {
         return abort(message, null);
+    }
+
+    public static String composeProcedureCall(DBSProcedure procedure, DBRProgressMonitor monitor) throws DBException {
+        StringBuilder sb = new StringBuilder();
+        sb.append("select").append(' ').append(procedure.getName());
+        sb.append('(');
+        Collection<? extends DBSProcedureParameter> parameters = procedure.getParameters(monitor);
+        int size = parameters.size();
+        if (size > 0) {
+            for (int i = 0; i < size; i++) {
+                Object value = '?';
+                sb.append(value);
+                sb.append(',');
+            }
+            sb.deleteCharAt(sb.length()-1);
+        }
+        sb.append(')');
+        String call = sb.toString();
+        return call;
+    }
+
+    public static String composeProcedureCall(DBSProcedure procedure) {
+        try {
+            return composeProcedureCall(procedure, new VoidProgressMonitor());
+        } catch (DBException e) {
+            String message = NLS.bind("Failed to compose call for {0}", procedure);
+            log.error(message , e);
+            return ATTR_PROCEDURE_CALL_DEFAULT;
+        }
+    }
+
+    public static ILaunchConfigurationWorkingCopy createConfiguration(IContainer container, String typeName, String name)
+            throws CoreException {
+        ILaunchManager manager = DebugPlugin.getDefault().getLaunchManager();
+        ILaunchConfigurationType type = manager.getLaunchConfigurationType(typeName);
+        ILaunchConfigurationWorkingCopy workingCopy = type.newInstance(container, name);
+        return workingCopy;
     }
 
     public static boolean canLaunch(ILaunchConfiguration configuration, String mode) {
@@ -99,15 +161,35 @@ public class DebugCore {
     }
 
     public static String extractDriverId(ILaunchConfiguration configuration) {
-        return extractStringAttribute(configuration, ATTR_DRIVER, ATTR_DRIVER_DEFAULT);
+        return extractStringAttribute(configuration, ATTR_DRIVER_ID, ATTR_DRIVER_ID_DEFAULT);
     }
 
     public static String extractDatasourceId(ILaunchConfiguration configuration) {
-        return extractStringAttribute(configuration, ATTR_DATASOURCE, ATTR_DATASOURCE_DEFAULT);
+        return extractStringAttribute(configuration, ATTR_DATASOURCE_ID, ATTR_DATASOURCE_ID_DEFAULT);
     }
 
     public static String extractDatabaseName(ILaunchConfiguration configuration) {
-        return extractStringAttribute(configuration, ATTR_DATABASE, ATTR_DATABASE_DEFAULT);
+        return extractStringAttribute(configuration, ATTR_DATABASE_NAME, ATTR_DATABASE_NAME_DEFAULT);
+    }
+
+    public static String extractSchemaName(ILaunchConfiguration configuration) {
+        return extractStringAttribute(configuration, ATTR_SCHEMA_NAME, ATTR_SCHEMA_NAME_DEFAULT);
+    }
+
+    public static String extractProcedureOid(ILaunchConfiguration configuration) {
+        return extractStringAttribute(configuration, ATTR_PROCEDURE_OID, ATTR_PROCEDURE_OID_DEFAULT);
+    }
+
+    public static String extractProcedureName(ILaunchConfiguration configuration) {
+        return extractStringAttribute(configuration, ATTR_PROCEDURE_NAME, ATTR_PROCEDURE_NAME_DEFAULT);
+    }
+
+    public static String extractProcedureCall(ILaunchConfiguration configuration) {
+        return extractStringAttribute(configuration, ATTR_PROCEDURE_CALL, ATTR_PROCEDURE_CALL_DEFAULT);
+    }
+
+    public static String extractNodePath(ILaunchConfiguration configuration) {
+        return extractStringAttribute(configuration, ATTR_NODE_PATH, ATTR_NODE_PATH_DEFAULT);
     }
 
     public static String extractStringAttribute(ILaunchConfiguration configuration, String attributeName,

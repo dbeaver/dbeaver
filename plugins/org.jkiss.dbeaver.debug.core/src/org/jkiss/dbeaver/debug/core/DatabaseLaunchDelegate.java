@@ -59,17 +59,16 @@ public abstract class DatabaseLaunchDelegate extends LaunchConfigurationDelegate
 
     protected Map<String, Object> extractAttributes(ILaunchConfiguration configuration) throws CoreException {
         Map<String, Object> attributes = new HashMap<>();
-        String databaseName = DebugCore.extractDatabaseName(configuration);
-        attributes.put(DBGController.DATABASE_NAME, databaseName);
-        String oid = DebugCore.extractStringAttribute(configuration, DebugCore.ATTR_OID, DebugCore.ATTR_OID_DEFAULT);
-        attributes.put(DBGController.PROCEDURE_OID, oid);
+        attributes.put(DBGController.DATABASE_NAME, DebugCore.extractDatabaseName(configuration));
+        attributes.put(DBGController.SCHEMA_NAME, DebugCore.extractSchemaName(configuration));
+        attributes.put(DBGController.PROCEDURE_OID, DebugCore.extractProcedureOid(configuration));
+        attributes.put(DBGController.PROCEDURE_NAME, DebugCore.extractProcedureName(configuration));
+        attributes.put(DBGController.PROCEDURE_CALL, DebugCore.extractProcedureCall(configuration));
         //FIXME:AF:extract from launch configuration
         //FIXME -1 - target PID (-1 for ANY PID)
         attributes.put(DBGController.PROCESS_ID, -1);
         //Well, put it all for now
         attributes.putAll(configuration.getAttributes());
-        //FIXME:AF:and little hack until we implemented the parameter storage during launch config creation
-        attributes.put("tabname", "pg_class");
         return attributes;
     }
 

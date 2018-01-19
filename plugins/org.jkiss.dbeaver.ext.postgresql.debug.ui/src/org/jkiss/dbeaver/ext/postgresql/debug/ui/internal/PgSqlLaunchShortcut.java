@@ -77,13 +77,19 @@ public class PgSqlLaunchShortcut extends LaunchShortcut {
         }
 
         String database = DebugCore.extractDatabaseName(config);
-        String databaseName = launchable.getDataSource().getName();
+        String databaseName = procedure.getDatabase().getName();
         if (!database.equals(databaseName)) {
             return false;
         }
 
+        String schema = DebugCore.extractSchemaName(config);
+        String schemaName = procedure.getContainer().getName();
+        if (!schema.equals(schemaName)) {
+            return false;
+        }
+
         try {
-            String oid = config.getAttribute(DebugCore.ATTR_OID, String.valueOf(0));
+            String oid = config.getAttribute(DebugCore.ATTR_PROCEDURE_OID, String.valueOf(0));
             long objectId = procedure.getObjectId();
             if (!(Long.parseLong(oid)==objectId)) {
                 return false;

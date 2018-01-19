@@ -693,10 +693,12 @@ public class DataSourceDescriptor
                 try {
                     if (!tunnelConfiguration.isSavePassword()) {
                         DBWTunnel.AuthCredentials rc = tunnel.getRequiredCredentials(tunnelConfiguration);
-                        if (!DataSourceHandler.askForPassword(this, tunnelConfiguration, rc == DBWTunnel.AuthCredentials.PASSWORD)) {
-                            DataSourceHandler.updateDataSourceObject(this);
-                            tunnel = null;
-                            return false;
+                        if (rc != DBWTunnel.AuthCredentials.NONE) {
+                            if (!DataSourceHandler.askForPassword(this, tunnelConfiguration, rc == DBWTunnel.AuthCredentials.PASSWORD)) {
+                                DataSourceHandler.updateDataSourceObject(this);
+                                tunnel = null;
+                                return false;
+                            }
                         }
                     }
 
