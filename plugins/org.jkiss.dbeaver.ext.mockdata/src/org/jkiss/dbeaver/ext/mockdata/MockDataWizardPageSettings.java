@@ -17,14 +17,13 @@
  */
 package org.jkiss.dbeaver.ext.mockdata;
 
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Spinner;
+import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractToolWizardPage;
 
@@ -33,7 +32,7 @@ public class MockDataWizardPageSettings extends AbstractToolWizardPage<MockDataE
     private MockDataSettings mockDataSettings;
 
     private Button removeOldDataCheck;
-    private Spinner rowsSpinner;
+    private Text rowsText;
 
     protected MockDataWizardPageSettings(MockDataExecuteWizard wizard, MockDataSettings mockDataSettings)
     {
@@ -65,9 +64,17 @@ public class MockDataWizardPageSettings extends AbstractToolWizardPage<MockDataE
         removeOldDataCheck.setLayoutData(
                 new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 3, 1));
 
-        this.rowsSpinner = UIUtils.createLabelSpinner(settingsGroup, "Rows", mockDataSettings.getRowsNumber(), 1, Integer.MAX_VALUE);
-        rowsSpinner.addSelectionListener(changeListener);
-        rowsSpinner.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 3, 1));
+        this.rowsText = UIUtils.createLabelText(
+                settingsGroup, "Rows", String.valueOf(mockDataSettings.getRowsNumber()), SWT.BORDER,
+                new GridData(110, SWT.DEFAULT));
+        rowsText.addSelectionListener(changeListener);
+        rowsText.addVerifyListener(UIUtils.getLongVerifyListener(rowsText));
+        rowsText.addModifyListener(new ModifyListener() {
+            @Override
+            public void modifyText(ModifyEvent e) {
+                updateState();
+            }
+        });
 
         setControl(composite);
 
@@ -76,7 +83,7 @@ public class MockDataWizardPageSettings extends AbstractToolWizardPage<MockDataE
     private void updateState()
     {
         mockDataSettings.setRemoveOldData(removeOldDataCheck.getSelection());
-        mockDataSettings.setRowsNumber(rowsSpinner.getSelection());
+        mockDataSettings.setRowsNumber(Long.parseLong(rowsText.getText()));
     }
 
     @Override
