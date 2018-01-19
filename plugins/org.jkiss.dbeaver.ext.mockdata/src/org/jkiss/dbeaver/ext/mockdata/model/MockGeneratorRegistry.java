@@ -47,7 +47,7 @@ public class MockGeneratorRegistry
         return instance;
     }
 
-    private final Map<String, MockGeneratorDescriptor> generators = new HashMap<>();
+    private final List<MockGeneratorDescriptor> generators = new ArrayList<>();
 
     private MockGeneratorRegistry()
     {
@@ -59,8 +59,8 @@ public class MockGeneratorRegistry
         for (IConfigurationElement ext : extConfigs) {
             // Load functions
             if (TAG_GENERATOR.equals(ext.getName())) {
-                MockGeneratorDescriptor commandDescriptor = new MockGeneratorDescriptor(ext);
-                this.generators.put(commandDescriptor.getId(), commandDescriptor);
+                MockGeneratorDescriptor generatorDescriptor = new MockGeneratorDescriptor(ext);
+                this.generators.add(generatorDescriptor);
             }
         }
     }
@@ -70,32 +70,26 @@ public class MockGeneratorRegistry
         generators.clear();
     }
 
-
-    public List<MockGeneratorDescriptor> findTransformers(DBPDataSource dataSource, DBSTypedObject typedObject, Boolean custom) {
-        DBPDriver driver = dataSource.getContainer().getDriver();
-        if (!(driver instanceof DriverDescriptor)) {
-            log.warn("Bad datasource specified (driver is not recognized by registry) - " + dataSource);
-            return null;
-        }
-
-        // Find in default providers
-        List<MockGeneratorDescriptor> result = null;
-        for (MockGeneratorDescriptor descriptor : generators.values()) {
+    /**
+     * Find generator by data source and some typed object (e.g. attribute)
+     */
+    public MockGeneratorDescriptor findGenerator(DBPDataSource dataSource, DBSTypedObject typedObject) {
+        for (MockGeneratorDescriptor descriptor : generators) {
 
             if (((!descriptor.isGlobal() && descriptor.supportsDataSource(dataSource) && descriptor.supportsType(typedObject)) ||
                     (descriptor.isGlobal() && descriptor.supportsType(typedObject))))
             {
-                if (result == null) {
-                    result = new ArrayList<>();
-                }
-                result.add(descriptor);
+                return descriptor;
             }
         }
-        return result;
+        return null;
     }
 
-    public MockGeneratorDescriptor getTransformer(String id) {
-        for (MockGeneratorDescriptor descriptor : generators.values()) {
+    /**
+     * Find generator by id
+     */
+    public MockGeneratorDescriptor getGenerator(String id) {
+        for (MockGeneratorDescriptor descriptor : generators) {
             if (id.equals(descriptor.getId())) {
                 return descriptor;
             }
