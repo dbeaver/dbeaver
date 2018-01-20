@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformProvider;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformType;
@@ -79,6 +80,23 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
 
     @Override
     public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
+        if (isSqlServer()) {
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject.getDataSource(), "Read routine definition")) {
+                try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                    "SELECT definition FROM " + DBUtils.getQuotedIdentifier(sourceObject.getCatalog()) + ".sys.sql_modules WHERE object_id=OBJECT_ID(?)"
+                )) {
+                    dbStat.setString(1, sourceObject.getFullyQualifiedName(DBPEvaluationContext.DML));
+                    try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                        if (dbResult.nextRow()) {
+                            return dbResult.getString(1);
+                        }
+                        return "-- Routine '" + sourceObject.getName() + "' definition not found in ";
+                    }
+                }
+            } catch (SQLException e) {
+                throw new DBException(e, sourceObject.getDataSource());
+            }
+        }
         return extractSource(monitor, sourceObject.getDataSource(), sourceObject.getCatalog().getName(), sourceObject.getSchema().getName(), sourceObject.getName());
     }
 
