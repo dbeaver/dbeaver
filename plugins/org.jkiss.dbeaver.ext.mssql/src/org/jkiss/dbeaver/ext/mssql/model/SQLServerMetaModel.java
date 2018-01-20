@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
+import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -80,7 +81,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
 
     @Override
     public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
-        if (isSqlServer()) {
+        if (isSqlServer() && sourceObject.getDataSource().isServerVersionAtLeast(SQLServerConstants.SQL_SERVER_2005_VERSION_MAJOR,0)) {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject.getDataSource(), "Read routine definition")) {
                 try (JDBCPreparedStatement dbStat = session.prepareStatement(
                     "SELECT definition FROM " + DBUtils.getQuotedIdentifier(sourceObject.getCatalog()) + ".sys.sql_modules WHERE object_id=OBJECT_ID(?)"
@@ -228,7 +229,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
         String sysSchema = DBUtils.getQuotedIdentifier(catalog) + "." + getSystemSchema();
         String sql;
         if (showAllSchemas) {
-            if (getServerType() == ServerType.SQL_SERVER && dataSource.isServerVersionAtLeast(9 ,0)) {
+            if (getServerType() == ServerType.SQL_SERVER && dataSource.isServerVersionAtLeast(SQLServerConstants.SQL_SERVER_2005_VERSION_MAJOR ,0)) {
                 sql = "SELECT name FROM " + DBUtils.getQuotedIdentifier(catalog) + ".sys.schemas";
             } else {
                 sql = "SELECT name FROM " + DBUtils.getQuotedIdentifier(catalog) + ".dbo.sysusers";
