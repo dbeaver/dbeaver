@@ -54,6 +54,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
     private Text statementDelimiterText;
     private Button ignoreNativeDelimiter;
     private Button blankLineDelimiter;
+    private Button removeTrailingDelimiter;
 
     private Button enableSQLParameters;
     private Button enableSQLAnonymousParameters;
@@ -82,6 +83,8 @@ public class PrefPageSQLExecute extends TargetPrefPage
             store.contains(ModelPreferences.SCRIPT_STATEMENT_DELIMITER) ||
             store.contains(ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER) ||
             store.contains(ModelPreferences.SCRIPT_STATEMENT_DELIMITER_BLANK) ||
+            store.contains(ModelPreferences.QUERY_REMOVE_TRAILING_DELIMITER) ||
+
             store.contains(ModelPreferences.SQL_PARAMETERS_ENABLED) ||
             store.contains(ModelPreferences.SQL_PARAMETERS_IN_DDL_ENABLED) ||
             store.contains(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED) ||
@@ -107,7 +110,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
 
         // General settings
         {
-            Composite commonGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_editor_group_common, 2, GridData.FILL_HORIZONTAL, 0);
+            Composite commonGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_editor_group_common, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
             {
                 invalidateBeforeExecuteCheck = UIUtils.createCheckbox(commonGroup, CoreMessages.pref_page_sql_editor_label_invalidate_before_execute, null, false, 2);
                 soundOnQueryEnd = UIUtils.createCheckbox(commonGroup, CoreMessages.pref_page_sql_editor_label_sound_on_query_end, null, false, 2);
@@ -180,6 +183,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
             //statementDelimiterText.setTextLimit(1);
             ignoreNativeDelimiter = UIUtils.createCheckbox(delimGroup, CoreMessages.pref_page_sql_editor_checkbox_ignore_native_delimiter, null, false, 2);
             blankLineDelimiter = UIUtils.createCheckbox(delimGroup, CoreMessages.pref_page_sql_editor_checkbox_blank_line_delimiter, null, false, 2);
+            removeTrailingDelimiter = UIUtils.createCheckbox(delimGroup, CoreMessages.pref_page_sql_editor_checkbox_remove_trailing_delimiter, null, false, 2);
         }
 
         return composite;
@@ -204,6 +208,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
             statementDelimiterText.setText(store.getString(ModelPreferences.SCRIPT_STATEMENT_DELIMITER));
             ignoreNativeDelimiter.setSelection(store.getBoolean(ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER));
             blankLineDelimiter.setSelection(store.getBoolean(ModelPreferences.SCRIPT_STATEMENT_DELIMITER_BLANK));
+            removeTrailingDelimiter.setSelection(store.getBoolean(ModelPreferences.QUERY_REMOVE_TRAILING_DELIMITER));
 
             enableSQLParameters.setSelection(store.getBoolean(ModelPreferences.SQL_PARAMETERS_ENABLED));
             enableSQLAnonymousParameters.setSelection(store.getBoolean(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED));
@@ -234,6 +239,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
             store.setValue(ModelPreferences.SCRIPT_STATEMENT_DELIMITER, statementDelimiterText.getText());
             store.setValue(ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER, ignoreNativeDelimiter.getSelection());
             store.setValue(ModelPreferences.SCRIPT_STATEMENT_DELIMITER_BLANK, blankLineDelimiter.getSelection());
+            store.setValue(ModelPreferences.QUERY_REMOVE_TRAILING_DELIMITER, removeTrailingDelimiter.getSelection());
 
             store.setValue(ModelPreferences.SQL_PARAMETERS_ENABLED, enableSQLParameters.getSelection());
             store.setValue(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED, enableSQLAnonymousParameters.getSelection());
@@ -262,12 +268,13 @@ public class PrefPageSQLExecute extends TargetPrefPage
 
         store.setToDefault(ModelPreferences.SCRIPT_STATEMENT_DELIMITER);
         store.setToDefault(ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER);
+        store.setToDefault(ModelPreferences.SCRIPT_STATEMENT_DELIMITER_BLANK);
+        store.setToDefault(ModelPreferences.QUERY_REMOVE_TRAILING_DELIMITER);
 
         store.setToDefault(ModelPreferences.SQL_PARAMETERS_ENABLED);
         store.setToDefault(ModelPreferences.SQL_PARAMETERS_IN_DDL_ENABLED);
         store.setToDefault(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED);
         store.setToDefault(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_MARK);
-        store.setToDefault(ModelPreferences.SCRIPT_STATEMENT_DELIMITER_BLANK);
 
         store.setToDefault(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX);
         store.setToDefault(SQLPreferenceConstants.BEEP_ON_QUERY_END);
