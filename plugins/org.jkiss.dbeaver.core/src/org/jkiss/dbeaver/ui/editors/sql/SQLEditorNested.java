@@ -18,6 +18,10 @@ package org.jkiss.dbeaver.ui.editors.sql;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
@@ -41,6 +45,7 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.compile.DBCCompileLog;
 import org.jkiss.dbeaver.model.exec.compile.DBCSourceHost;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -228,23 +233,45 @@ public abstract class SQLEditorNested<T extends DBSObject>
             final Document document = new Document();
 
             if (sourceText == null) {
-                document.set(SQLUtils.generateCommentLine(getDataSource(), "Loading '" + getEditorInput().getName() + "' source..."));
-                try {
-                    DBeaverUI.runInProgressService(monitor -> {
+                sourceText = SQLUtils.generateCommentLine(getDataSource(), "Loading '" + getEditorInput().getName() + "' source...");
+                document.set(sourceText);
+
+                AbstractJob job = new AbstractJob("Load SQL source") {
+                    {
+                        setUser(true);
+                    }
+                    @Override
+                    protected IStatus run(DBRProgressMonitor monitor) {
                         try {
                             sourceText = getSourceText(monitor);
-                        } catch (DBException e) {
-                            throw new InvocationTargetException(e);
+                            if (sourceText == null) {
+                                sourceText = SQLUtils.generateCommentLine(getDataSource(), "Empty source");
+                            }
+                            return Status.OK_STATUS;
+                        } catch (Exception e) {
+                            sourceText = "/* ERROR WHILE READING SOURCE:\n\n" + e.getMessage() + "\n*/";
+                            return Status.CANCEL_STATUS;
                         }
-                    });
-                    if (sourceText == null) {
-                        sourceText = SQLUtils.generateCommentLine(getDataSource(), "Empty source");
                     }
-                } catch (Throwable e) {
-                    sourceText = "/* ERROR WHILE READING SOURCE:\n\n" + e.getMessage() + "\n*/";
-                    throw new CoreException(GeneralUtils.makeExceptionStatus(e));
-                }
-
+                };
+                job.addJobChangeListener(new JobChangeAdapter() {
+                    @Override
+                    public void done(IJobChangeEvent event) {
+                        DBeaverUI.asyncExec(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    SQLEditorNested.this.init(getEditorSite(), getEditorInput());
+                                    SQLEditorNested.this.reloadSyntaxRules();
+                                } catch (PartInitException e) {
+                                    log.error(e);
+                                }
+                            }
+                        });
+                        super.done(event);
+                    }
+                });
+                job.schedule();
             }
             // Set text
             document.set(sourceText);
