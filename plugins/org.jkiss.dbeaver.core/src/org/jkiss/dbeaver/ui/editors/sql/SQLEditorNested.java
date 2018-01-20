@@ -21,7 +21,10 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
-import org.eclipse.jface.text.*;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.Document;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRegion;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.FocusEvent;
@@ -39,16 +42,15 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.compile.DBCCompileLog;
 import org.jkiss.dbeaver.model.exec.compile.DBCSourceHost;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.runtime.TasksJob;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ObjectCompilerLogViewer;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextDocumentProvider;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -65,6 +67,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
     private ObjectCompilerLogViewer compileLog;
     private Control editorControl;
     private SashForm editorSash;
+    private boolean activated;
 
     public SQLEditorNested() {
         super();
@@ -155,6 +158,10 @@ public abstract class SQLEditorNested<T extends DBSObject>
 
     @Override
     public void activatePart() {
+        if (!activated) {
+            reloadSyntaxRules();
+            activated = true;
+        }
     }
 
     @Override
@@ -185,6 +192,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
                 log.error(e);
             }
         }
+        reloadSyntaxRules();
     }
 
     protected String getCompileCommandId()
@@ -221,53 +229,28 @@ public abstract class SQLEditorNested<T extends DBSObject>
 
             if (sourceText == null) {
                 document.set(SQLUtils.generateCommentLine(getDataSource(), "Loading '" + getEditorInput().getName() + "' source..."));
-                TasksJob.runTask("Read source", new DBRRunnableWithProgress() {
-                    @Override
-                    public void run(final DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                try {
+                    DBeaverUI.runInProgressService(monitor -> {
                         try {
                             sourceText = getSourceText(monitor);
-                            if (sourceText == null) {
-                                sourceText = SQLUtils.generateCommentLine(getDataSource(), "Empty source");
-                            }
-                        } catch (Throwable e) {
-                            sourceText = "/* ERROR WHILE READING SOURCE:\n\n" + e.getMessage() + "\n*/";
+                        } catch (DBException e) {
                             throw new InvocationTargetException(e);
-                        } finally {
-                            DBeaverUI.syncExec(new Runnable() {
-                                @Override
-                                public void run() {
-                                    resetDocumentContents(monitor);
-                                }
-                            });
                         }
+                    });
+                    if (sourceText == null) {
+                        sourceText = SQLUtils.generateCommentLine(getDataSource(), "Empty source");
                     }
-                });
-            } else {
-                // Set text
-                document.set(sourceText);
-                sourceLoaded = true;
-            }
-
-            return document;
-        }
-
-        private void resetDocumentContents(DBRProgressMonitor monitor) {
-            if (isDisposed()) {
-                return;
-            }
-
-            try {
-                doResetDocument(getEditorInput(), RuntimeUtils.getNestedMonitor(monitor));
-                // Reset undo queue
-                if (getSourceViewer() instanceof ITextViewerExtension6) {
-                    ((ITextViewerExtension6) getSourceViewer()).getUndoManager().reset();
+                } catch (Throwable e) {
+                    sourceText = "/* ERROR WHILE READING SOURCE:\n\n" + e.getMessage() + "\n*/";
+                    throw new CoreException(GeneralUtils.makeExceptionStatus(e));
                 }
 
-                // Load syntax
-                reloadSyntaxRules();
-            } catch (CoreException e) {
-                log.error(e);
             }
+            // Set text
+            document.set(sourceText);
+            sourceLoaded = true;
+
+            return document;
         }
 
         @Override

@@ -17,8 +17,6 @@
 package org.jkiss.dbeaver.ui.actions;
 
 import org.eclipse.core.expressions.PropertyTester;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
 import org.eclipse.ui.PlatformUI;
@@ -34,8 +32,6 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.qm.QMUtils;
-import org.jkiss.dbeaver.model.runtime.AbstractJob;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.IPluginService;
 import org.jkiss.dbeaver.runtime.qm.DefaultExecutionHandler;
 import org.jkiss.dbeaver.ui.ActionUtils;
@@ -191,16 +187,7 @@ public class DataSourcePropertyTester extends PropertyTester
         }
 
         private void updateUI(Runnable runnable) {
-            new AbstractJob("Update UI after QM event") {
-                {
-                    setSystem(true);
-                }
-                @Override
-                protected IStatus run(DBRProgressMonitor monitor) {
-                    runnable.run();
-                    return Status.OK_STATUS;
-                }
-            }.schedule();
+            DBeaverUI.asyncExec(runnable);
         }
     }
 
