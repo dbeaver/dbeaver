@@ -516,7 +516,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         ITextSelection selection = (ITextSelection) getSelectionProvider().getSelection();
         String selText = selection.getText();
 
-        selText = SQLUtils.trimQueryStatement(getSyntaxManager(), selText, !syntaxManager.getDialect().isDelimiterAfterQuery());
+        if (getActivePreferenceStore().getBoolean(ModelPreferences.QUERY_REMOVE_TRAILING_DELIMITER)) {
+            selText = SQLUtils.trimQueryStatement(getSyntaxManager(), selText, !syntaxManager.getDialect().isDelimiterAfterQuery());
+        }
         if (!CommonUtils.isEmpty(selText)) {
             SQLScriptElement parsedElement = parseQuery(getDocument(), selection.getOffset(), selection.getOffset() + selection.getLength(), selection.getOffset(), false, false);
             if (parsedElement instanceof SQLControlCommand) {
