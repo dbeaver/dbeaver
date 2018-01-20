@@ -311,12 +311,14 @@ public final class SQLUtils {
 
     public static String trimQueryStatement(SQLSyntaxManager syntaxManager, String sql, boolean trimDelimiter)
     {
-        //sql = sql.trim();
-        if (!trimDelimiter) {
+        if (sql.isEmpty() || !trimDelimiter) {
             // Do not trim delimiter
             return sql;
         }
 
+        // Here we cur trailing query delimiter. most of DBs don't expect it in the end of query
+        // However Oracle REQUIRES that block queries (e.g. DDL like CREATE PROCEDURE) must have trailing delimiter
+        // So we check whether this query is a block query (by checking for all SQL dialect block delimiters)
         String trailingSpaces = "";
         {
             int trailingSpacesCount = 0;
@@ -332,21 +334,42 @@ public final class SQLUtils {
             }
         }
         for (String statementDelimiter : syntaxManager.getStatementDelimiters()) {
-            if (sql.endsWith(statementDelimiter) && sql.length() > statementDelimiter.length()) {
-                if (Character.isAlphabetic(statementDelimiter.charAt(0))) {
-                    // Delimiter is alphabetic (e.g. "GO") so it must be prefixed with whitespace
-                    char lastChar = sql.charAt(sql.length() - statementDelimiter.length() - 1);
-                    if (Character.isUnicodeIdentifierPart(lastChar)) {
-                        return sql + trailingSpaces;
-                    }
-                }
-                // Remove trailing delimiter only if it is not block end
-                String trimmed = sql.substring(0, sql.length() - statementDelimiter.length());
-                String test = trimmed.toUpperCase().trim();
-                if (!test.endsWith(SQLConstants.BLOCK_END)) {
-                    sql = trimmed;
+            if (!sql.endsWith(statementDelimiter) && sql.length() > statementDelimiter.length()) {
+                continue;
+            }
+            if (Character.isAlphabetic(statementDelimiter.charAt(0))) {
+                // Delimiter is alphabetic (e.g. "GO") so it must be prefixed with whitespace
+                char lastChar = sql.charAt(sql.length() - statementDelimiter.length() - 1);
+                if (Character.isUnicodeIdentifierPart(lastChar)) {
+                    break;
                 }
             }
+            // Remove trailing delimiter only if it is not block end
+            boolean isBlockQuery = false;
+            String trimmed = sql.substring(0, sql.length() - statementDelimiter.length());
+            {
+                String test = trimmed.toUpperCase().trim();
+                for (String[] blocks : syntaxManager.getDialect().getBlockBoundStrings()) {
+                    int endIndex = test.indexOf(blocks[1]);
+                    if (endIndex > 0) {
+                        // This is a block query if it ends with 'END' or with 'END id'
+                        if (test.endsWith(blocks[1])) {
+                            isBlockQuery = true;
+                            break;
+                        } else {
+                            String afterEnd = test.substring(endIndex + blocks[1].length()).trim();
+                            if (CommonUtils.isJavaIdentifier(afterEnd)) {
+                                isBlockQuery = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+            if (!isBlockQuery) {
+                sql = trimmed;
+            }
+            break;
         }
         return sql + trailingSpaces;
     }
