@@ -70,6 +70,8 @@ class PostgreDialect extends JDBCSQLDialect {
         addSQLKeyword("RETURNING");
         addSQLKeyword("VARIADIC");
         addSQLKeyword("PERFORM");
+        addSQLKeyword("FOREACH");
+        addSQLKeyword("LOOP");
 
         addFunctions(
                 Arrays.asList(
@@ -94,6 +96,11 @@ class PostgreDialect extends JDBCSQLDialect {
                         ));
 
         removeSQLKeyword("LENGTH");
+
+        addDataTypes(
+            Arrays.asList(
+                "void")
+        );
         
     }
 /*
