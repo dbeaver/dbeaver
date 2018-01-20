@@ -114,6 +114,12 @@ public class BasicSQLDialect implements SQLDialect {
         allKeywords.remove(keyword);
     }
 
+    protected void addSQLKeywords(Collection<String> allKeywords) {
+        for (String kw : allKeywords) {
+            addSQLKeyword(kw);
+        }
+    }
+
     protected void addFunctions(Collection<String> allFunctions) {
         functions.addAll(allFunctions);
         addKeywords(allFunctions, DBPKeywordType.FUNCTION);
