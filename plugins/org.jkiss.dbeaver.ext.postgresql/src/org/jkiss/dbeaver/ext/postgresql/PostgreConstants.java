@@ -100,6 +100,7 @@ public class PostgreConstants {
 
         DATA_TYPE_ALIASES.put("double precision", "float8");
         DATA_TYPE_ALIASES.put("real", "float4");
+        DATA_TYPE_ALIASES.put("void", "void");
 
         SERIAL_TYPES.put("serial", TYPE_INT4);
         SERIAL_TYPES.put("serial8", TYPE_INT8);

@@ -96,12 +96,6 @@ class PostgreDialect extends JDBCSQLDialect {
                         ));
 
         removeSQLKeyword("LENGTH");
-
-        addDataTypes(
-            Arrays.asList(
-                "void")
-        );
-        
     }
 /*
     @NotNull
