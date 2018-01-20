@@ -69,6 +69,7 @@ class PostgreDialect extends JDBCSQLDialect {
         addSQLKeyword("PUBLIC");
         addSQLKeyword("RETURNING");
         addSQLKeyword("VARIADIC");
+        addSQLKeyword("PERFORM");
 
         addFunctions(
                 Arrays.asList(
