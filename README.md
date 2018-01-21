@@ -10,7 +10,7 @@ Supports any database which has JDBC driver (which basically means - ANY databas
 
 * Has a lot of <a href="https://github.com/dbeaver/dbeaver/wiki">features</a> including metadata editor, SQL editor, rich data editor, ERD, data export/import/migration, SQL execution plans, etc.
 * Based on <a href="http://www.eclipse.org/">Eclipse</a> platform.
-* Uses plugins architecture and provides additional functionality for the following databases: MySQL/MariaDB, PostgreSQL, Oracle, DB2 LUW, Exasol, SQL Server, SQLite, Firebird, H2, HSQLDB, Derby, Teradata, Vertica, Netezza, Informix.
+* Uses plugins architecture and provides additional functionality for the following databases: MySQL/MariaDB, PostgreSQL, Oracle, DB2 LUW, Exasol, SQL Server, Sybase/SAP ASE, SQLite, Firebird, H2, HSQLDB, Derby, Teradata, Vertica, Netezza, Informix, etc.
 
 <a href="https://dbeaver.jkiss.org/product/dbeaver-ss-classic.png"><img src="https://dbeaver.jkiss.org/product/dbeaver-ss-classic.png" width="400"/></a>
 <a href="https://dbeaver.jkiss.org/product/dbeaver-ss-dark.png"><img src="https://dbeaver.jkiss.org/product/dbeaver-ss-dark.png" width="400"/></a>
@@ -23,9 +23,9 @@ You can download prebuilt binaries from <a href="https://dbeaver.jkiss.org/downl
 
 DBeaver requires Java (JRE) 1.8+ to run.
 
-* <b>Windows</b> installer includes JRE so just use it and don't think about internals.
+* <b>Windows</b> and <b>MacOS X</b> installers includes JRE so just use it and don't think about internals.
 * On <b>Linux</b> you may need to install Java manually (usually by running `sudo apt-get install default-jre` or something similar).
-* On <b>MacOS X</b> you may need to download Java (JDK) from <a href="http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html">Oracle web site</a>. Or use <a href="http://stackoverflow.com/questions/24342886/how-to-install-java-8-on-mac">these instructions</a>.
+* If you don't use installer (on Windows or Mac OS X) you may need to download Java (JDK) from <a href="http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html">Oracle web site</a>.
 
 ## Documentation
 
