@@ -14,14 +14,20 @@
     <packaging>pom</packaging>
     <name>DBeaver NLS plugins and features</name>
 
+    <properties>
+        <babel-p2-repo.url>http://download.eclipse.org/technology/babel/update-site/R0.15.1/oxygen</babel-p2-repo.url>
+    </properties>
+
+    <!-- Add Babel Repository -->
+<!--
     <repositories>
-        <!-- Add Babel Repository -->
         <repository>
-            <id>p2-babel</id>
+            <id>babel-p2-repo</id>
             <layout>p2</layout>
-            <url>http://download.eclipse.org/technology/babel/update-site/R0.15.1/oxygen</url>
+            <url>${babel-p2-repo.url}</url>
         </repository>
     </repositories>
+-->
 
     <modules>
         <!-- DBeaver RCP NLS -->
