@@ -135,25 +135,26 @@ public abstract class DBGBaseController implements DBGController {
     
     @Override
     public List<? extends DBGStackFrame> getStack(Object id) throws DBGException {
-        DBGSession session = findSession(id);
-        if (session == null) {
-            String message = NLS.bind("Session for {0} is not available", id);
-            throw new DBGException(message);
-        }
+        DBGSession session = findAccessibleSession(id);
         return session.getStack();
     }
-
+    
     @Override
+    public List<? extends DBGVariable<?>> getVariables(Object id) throws DBGException {
+        DBGSession session = findAccessibleSession(id);
+        return session.getVariables();
+    }
+
+    public abstract DBGSession createSession(DBGSessionInfo targetInfo, DBCExecutionContext connection) throws DBGException;
+
     public DBGSession findSession(Object id) throws DBGException {
         return sessions.get(id);
     }
 
-    @Override
     public boolean isSessionExists(Object id) {
         return sessions.containsKey(id);
     }
 
-    @Override
     public List<DBGSession> getSessions() throws DBGException {
         return new ArrayList<DBGSession>(sessions.values());
     }
@@ -176,21 +177,13 @@ public abstract class DBGBaseController implements DBGController {
 
     @Override
     public void stepInto(Object sessionKey) throws DBGException {
-        DBGSession session = findSession(sessionKey);
-        if (session == null) {
-            String message = NLS.bind("Session for {0} is not available", sessionKey);
-            throw new DBGException(message);
-        }
+        DBGSession session = findAccessibleSession(sessionKey);
         session.execStepInto();
     }
-    
+
     @Override
     public void stepOver(Object sessionKey) throws DBGException {
-        DBGSession session = findSession(sessionKey);
-        if (session == null) {
-            String message = NLS.bind("Session for {0} is not available", sessionKey);
-            throw new DBGException(message);
-        }
+        DBGSession session = findAccessibleSession(sessionKey);
         session.execStepOver();
     }
 
@@ -198,7 +191,17 @@ public abstract class DBGBaseController implements DBGController {
     public void stepReturn(Object sessionKey) throws DBGException {
         //throw DBGException?
     }
-    
+
+    protected DBGSession findAccessibleSession(Object sessionKey) throws DBGException {
+        DBGSession session = findSession(sessionKey);
+        if (session == null) {
+            String message = NLS.bind("Session for {0} is not available", sessionKey);
+            throw new DBGException(message);
+        }
+        //FIXME:AF: check for accessible state here
+        return session;
+    }
+
     @Override
     public void registerEventHandler(DBGEventHandler eventHandler) {
         eventHandlers.add(eventHandler);

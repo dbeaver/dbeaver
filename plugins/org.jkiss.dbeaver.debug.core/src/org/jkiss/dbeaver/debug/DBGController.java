@@ -71,12 +71,8 @@ public interface DBGController {
     DBGSessionInfo getSessionDescriptor(DBCExecutionContext connection) throws DBGException;
     List<? extends DBGSessionInfo> getSessionDescriptors() throws DBGException;
 
-    DBGSession findSession(Object id) throws DBGException;
-    List<DBGSession> getSessions() throws DBGException;
-    DBGSession createSession(DBGSessionInfo targetInfo, DBCExecutionContext connection) throws DBGException;
-    boolean isSessionExists(Object id);
-
     List<? extends DBGStackFrame> getStack(Object id) throws DBGException;
+    List<? extends DBGVariable<?>> getVariables(Object id) throws DBGException;
     List<? extends DBGObjectDescriptor> getObjects(String ownerCtx, String nameCtx) throws DBGException;
 
     /*
