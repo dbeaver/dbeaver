@@ -30,5 +30,29 @@
             name="%databaseLineBreakpoint.name">
       </breakpoint>
    </extension>
+   <extension
+         point="org.eclipse.debug.core.sourceLocators">
+      <sourceLocator
+            class="org.jkiss.dbeaver.debug.sourcelookup.ProcedureSourceLookupDirector"
+            id="org.jkiss.dbeaver.debug.core.procedureSourceLocator"
+            name="%procedureSourceLocator.name">
+      </sourceLocator>
+   </extension>
+   <extension
+         point="org.eclipse.debug.core.sourcePathComputers">
+      <sourcePathComputer
+            class="org.jkiss.dbeaver.debug.sourcelookup.ProcedureSourcePathComputer"
+            id="org.jkiss.dbeaver.debug.core.procedureSourcePathComputer">
+      </sourcePathComputer>
+   </extension>
+   <extension
+         point="org.eclipse.debug.core.sourceContainerTypes">
+      <sourceContainerType
+            class="org.jkiss.dbeaver.debug.sourcelookup.DatasourceSourceContainerTypeDelegate"
+            description="A collection of databases"
+            id="org.jkiss.dbeaver.debug.core.datasourceSourceContainerType"
+            name="Databases">
+      </sourceContainerType>
+   </extension>
 
 </plugin>

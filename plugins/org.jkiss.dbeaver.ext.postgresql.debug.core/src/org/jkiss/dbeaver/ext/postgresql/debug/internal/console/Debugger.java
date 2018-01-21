@@ -23,17 +23,21 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Scanner;
 
+import org.jkiss.dbeaver.debug.DBGBreakpointDescriptor;
+import org.jkiss.dbeaver.debug.DBGController;
 import org.jkiss.dbeaver.debug.DBGException;
+import org.jkiss.dbeaver.debug.DBGObjectDescriptor;
 import org.jkiss.dbeaver.debug.DBGSession;
+import org.jkiss.dbeaver.debug.DBGSessionInfo;
 import org.jkiss.dbeaver.debug.DBGStackFrame;
 import org.jkiss.dbeaver.debug.DBGVariable;
-import org.jkiss.dbeaver.ext.postgresql.debug.internal.impl.PostgreDebugBreakpoint;
+import org.jkiss.dbeaver.ext.postgresql.debug.internal.impl.PostgreDebugBreakpointDescriptor;
 import org.jkiss.dbeaver.ext.postgresql.debug.internal.impl.PostgreDebugBreakpointProperties;
-import org.jkiss.dbeaver.ext.postgresql.debug.internal.impl.PostgreDebugObject;
-import org.jkiss.dbeaver.ext.postgresql.debug.internal.impl.PostgreDebugSession;
-import org.jkiss.dbeaver.ext.postgresql.debug.internal.impl.PostgreDebugSessionInfo;
-import org.jkiss.dbeaver.ext.postgresql.debug.internal.impl.PostgreDebugSessionManager;
-import org.jkiss.dbeaver.ext.postgresql.debug.internal.impl.PostgreDebugVariable;
+import org.jkiss.dbeaver.ext.postgresql.debug.internal.impl.PostgreDebugController;
+import org.jkiss.dbeaver.ext.postgresql.debug.internal.impl.PostgreDebugObjectDescriptor;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 
 @SuppressWarnings("nls")
 public class Debugger {
@@ -62,18 +66,18 @@ public class Debugger {
     public static final String ANY_ARG = "*";
     
     
-    public static DBGVariable<?> chooseVariable(Scanner sc, PostgreDebugSessionManager pgDbgManager,
-            PostgreDebugSession session) throws DBGException {
+    public static DBGVariable<?> chooseVariable(Scanner sc, DBGController controller,
+            DBGSession session) throws DBGException {
 
         DBGVariable<?> v = null;
 
-        List<DBGVariable<?>> vars = session.getVarables();
+        List<? extends DBGVariable<?>> vars = session.getVariables();
 
         Scanner scArg;
 
         if (vars.size() == 1) {
 
-            v = (PostgreDebugVariable) vars.get(0);
+            v = vars.get(0);
 
         } else {
 
@@ -134,18 +138,18 @@ public class Debugger {
 
     }
 
-    public static PostgreDebugBreakpoint chooseBreakpoint(Scanner sc, PostgreDebugSessionManager pgDbgManager,
-                                                          PostgreDebugSession session) throws DBGException {
+    public static DBGBreakpointDescriptor chooseBreakpoint(Scanner sc, DBGController controller, DBGSession session)
+            throws DBGException {
 
-        PostgreDebugBreakpoint bp = null;
+        DBGBreakpointDescriptor bp = null;
 
-        List<PostgreDebugBreakpoint> bps = session.getBreakpoints();
+        List<? extends DBGBreakpointDescriptor> bps = session.getBreakpoints();
 
         Scanner scArg;
 
         if (bps.size() == 1) {
 
-            bp = (PostgreDebugBreakpoint) bps.get(0);
+            bp = bps.get(0);
 
         } else {
 
@@ -153,7 +157,7 @@ public class Debugger {
 
             int bpNo = 1;
 
-            for (PostgreDebugBreakpoint b : bps) {
+            for (DBGBreakpointDescriptor b : bps) {
                 System.out.println(String.format(" (%d) %s", bpNo++, b.toString()));
             }
 
@@ -206,18 +210,18 @@ public class Debugger {
 
     }
 
-    public static PostgreDebugSession chooseSession(Scanner sc, PostgreDebugSessionManager pgDbgManager)
+    public static DBGSession chooseSession(Scanner sc, DBGController controller)
             throws DBGException {
 
-        PostgreDebugSession debugSession = null;
+        DBGSession debugSession = null;
 
-        List<DBGSession> sessions = pgDbgManager.getDebugSessions();
+        List<DBGSession> sessions = controller.getSessions();
 
         Scanner scArg;
 
         if (sessions.size() == 1) {
 
-            debugSession = (PostgreDebugSession) sessions.get(0);
+            debugSession = sessions.get(0);
 
         } else {
 
@@ -262,7 +266,7 @@ public class Debugger {
                             System.out.println(String.format("Incorrect session ID %s", strSessionid));
                             sessionId = -1;
                         } else {
-                            debugSession = (PostgreDebugSession) sessions.get(sessionId - 1);
+                            debugSession = sessions.get(sessionId - 1);
                             break;
                         }
                     }
@@ -281,9 +285,10 @@ public class Debugger {
     public static void main(String[] args) throws DBGException {
 
         String url = "jdbc:postgresql://192.168.229.133/postgres?user=postgres&password=postgres&ssl=false"; // "jdbc:postgresql://localhost/postgres?user=postgres&password=postgres&ssl=false";
+        DBPDataSourceContainer dataSource = null;
 
         Connection conn;
-        PostgreDebugSessionManager pgDbgManager;
+        DBGController controller;
         try {
 
             conn = DriverManager.getConnection(url);
@@ -294,7 +299,7 @@ public class Debugger {
         }
 
         // TODO: fix connection
-        pgDbgManager = new PostgreDebugSessionManager(null);
+        controller = new PostgreDebugController(dataSource);
 
         Scanner sc = new Scanner(System.in);
         Scanner scArg;
@@ -327,18 +332,18 @@ public class Debugger {
 
             case COMMAND_CLOSE:
 
-                if (pgDbgManager.getDebugSessions().size() == 0) {
+                if (controller.getSessions().size() == 0) {
                     System.out.println("Debug sessions not found");
                     break;
                 }
 
-                PostgreDebugSession debugSessionC = chooseSession(sc, pgDbgManager);
+                DBGSession debugSessionC = chooseSession(sc, controller);
 
                 if (debugSessionC == null) {
                     break;
                 }
 
-                pgDbgManager.terminateSession(debugSessionC.getSessionId());
+                controller.detach(debugSessionC.getSessionId(), new VoidProgressMonitor());
 
                 System.out.println("Session closed");
 
@@ -346,12 +351,12 @@ public class Debugger {
 
             case COMMAND_ABORT:
 
-                if (pgDbgManager.getDebugSessions().size() == 0) {
+                if (controller.getSessions().size() == 0) {
                     System.out.println("Debug sessions not found");
                     break;
                 }
 
-                PostgreDebugSession debugSessionAB = chooseSession(sc, pgDbgManager);
+                DBGSession debugSessionAB = chooseSession(sc, controller);
 
                 if (debugSessionAB == null) {
                     break;
@@ -365,18 +370,18 @@ public class Debugger {
 
             case COMMAND_STACK:
 
-                if (pgDbgManager.getDebugSessions().size() == 0) {
+                if (controller.getSessions().size() == 0) {
                     System.out.println("Debug sessions not found");
                     break;
                 }
 
-                PostgreDebugSession debugSessionSL = chooseSession(sc, pgDbgManager);
+                DBGSession debugSessionSL = chooseSession(sc, controller);
 
                 if (debugSessionSL == null) {
                     break;
                 }
 
-                List<DBGStackFrame> stack = debugSessionSL.getStack();
+                List<? extends DBGStackFrame> stack = debugSessionSL.getStack();
 
                 if (stack.size() == 0) {
                     System.out.println("No stack defined");
@@ -394,18 +399,18 @@ public class Debugger {
 
             case COMMAND_VARIABLES:
 
-                if (pgDbgManager.getDebugSessions().size() == 0) {
+                if (controller.getSessions().size() == 0) {
                     System.out.println("Debug sessions not found");
                     break;
                 }
 
-                PostgreDebugSession debugSessionVL = chooseSession(sc, pgDbgManager);
+                DBGSession debugSessionVL = chooseSession(sc, controller);
 
                 if (debugSessionVL == null) {
                     break;
                 }
 
-                List<DBGVariable<?>> vars = debugSessionVL.getVarables();
+                List<? extends DBGVariable<?>> vars = debugSessionVL.getVariables();
 
                 if (vars.size() == 0) {
                     System.out.println("No vars defined");
@@ -436,19 +441,19 @@ public class Debugger {
 
                 }
                 
-                if (pgDbgManager.getDebugSessions().size() == 0) {
+                if (controller.getSessions().size() == 0) {
                     System.out.println("Debug sessions not found");
                     break;
                 }
 
-                PostgreDebugSession debugSessionVS = chooseSession(sc, pgDbgManager);
+                DBGSession debugSessionVS = chooseSession(sc, controller);
 
                 if (debugSessionVS == null) {
                     break;
                 }
 
                 
-                DBGVariable<?> var = chooseVariable(sc, pgDbgManager,debugSessionVS);
+                DBGVariable<?> var = chooseVariable(sc, controller,debugSessionVS);
                 
                 if (var == null) {
                     break;
@@ -489,7 +494,7 @@ public class Debugger {
 
                 }
 
-                int objId = -1;
+                Integer objId = -1;
 
                 try {
 
@@ -515,10 +520,10 @@ public class Debugger {
 
                 }
 
-                PostgreDebugObject debugObject = null;
+                DBGObjectDescriptor debugObject = null;
 
-                for (PostgreDebugObject o : pgDbgManager.getObjects("_", "_")) {
-                    if (o.getID() == objId) {
+                for (DBGObjectDescriptor o : controller.getObjects("_", "_")) {
+                    if (objId.equals(o.getID())) {
                         debugObject = o;
                     }
                 }
@@ -528,35 +533,37 @@ public class Debugger {
                     break;
                 }
 
-                if (pgDbgManager.getDebugSessions().size() == 0) {
+                if (controller.getSessions().size() == 0) {
                     System.out.println("Debug sessions not found");
                     break;
                 }
 
-                PostgreDebugSession debugSession = chooseSession(sc, pgDbgManager);
+                DBGSession debugSession = chooseSession(sc, controller);
 
                 if (debugSession == null) {
                     break;
                 }
 
-                PostgreDebugBreakpointProperties bpp = lineNo > 0 ? new PostgreDebugBreakpointProperties(lineNo, true)
+                PostgreDebugBreakpointProperties breakpointProperties = lineNo > 0
+                        ? new PostgreDebugBreakpointProperties(lineNo, true)
                         : new PostgreDebugBreakpointProperties(true);
 
-                PostgreDebugBreakpoint bp = (PostgreDebugBreakpoint) debugSession.setBreakpoint(debugObject, bpp);
+                PostgreDebugBreakpointDescriptor descriptor = new PostgreDebugBreakpointDescriptor((PostgreDebugObjectDescriptor)debugObject, breakpointProperties);
+                debugSession.addBreakpoint(descriptor);
 
-                System.out.println("Breakpoint set");
+                System.out.println("Breakpoint added");
 
-                System.out.println(bp.toString());
+                System.out.println(breakpointProperties.toString());
 
                 break;
 
             case COMMAND_BREAKPOINT_LIST:
-                if (pgDbgManager.getDebugSessions().size() == 0) {
+                if (controller.getSessions().size() == 0) {
                     System.out.println("Debug sessions not found");
                     break;
                 }
 
-                PostgreDebugSession debugSessionBL = chooseSession(sc, pgDbgManager);
+                DBGSession debugSessionBL = chooseSession(sc, controller);
 
                 if (debugSessionBL == null) {
                     break;
@@ -566,19 +573,19 @@ public class Debugger {
                     System.out.println("No breakpoints defined");
                 }
 
-                for (PostgreDebugBreakpoint bpl : debugSessionBL.getBreakpoints()) {
+                for (DBGBreakpointDescriptor bpl : debugSessionBL.getBreakpoints()) {
                     System.out.println(bpl.toString());
                 }
 
                 break;
 
             case COMMAND_BREAKPOINT_REMOVE:
-                if (pgDbgManager.getDebugSessions().size() == 0) {
+                if (controller.getSessions().size() == 0) {
                     System.out.println("Debug sessions not found");
                     break;
                 }
 
-                PostgreDebugSession debugSessionBR = chooseSession(sc, pgDbgManager);
+                DBGSession debugSessionBR = chooseSession(sc, controller);
 
                 if (debugSessionBR == null) {
                     break;
@@ -588,7 +595,7 @@ public class Debugger {
                     System.out.println("No breakpoints defined");
                 }
 
-                PostgreDebugBreakpoint bpr = chooseBreakpoint(sc, pgDbgManager, debugSessionBR);
+                DBGBreakpointDescriptor bpr = chooseBreakpoint(sc, controller, debugSessionBR);
 
                 debugSessionBR.removeBreakpoint(bpr);
 
@@ -597,12 +604,12 @@ public class Debugger {
                 break;
 
             case COMMAND_CONTINUE:
-                if (pgDbgManager.getDebugSessions().size() == 0) {
+                if (controller.getSessions().size() == 0) {
                     System.out.println("Debug sessions not found");
                     break;
                 }
 
-                PostgreDebugSession debugSessionSC = chooseSession(sc, pgDbgManager);
+                DBGSession debugSessionSC = chooseSession(sc, controller);
 
                 if (debugSessionSC == null) {
                     break;
@@ -615,12 +622,12 @@ public class Debugger {
                 break;
 
             case COMMAND_INTO:
-                if (pgDbgManager.getDebugSessions().size() == 0) {
+                if (controller.getSessions().size() == 0) {
                     System.out.println("Debug sessions not found");
                     break;
                 }
 
-                PostgreDebugSession debugSessionSI = chooseSession(sc, pgDbgManager);
+                DBGSession debugSessionSI = chooseSession(sc, controller);
 
                 if (debugSessionSI == null) {
                     break;
@@ -634,12 +641,12 @@ public class Debugger {
 
             case COMMAND_OVER:
 
-                if (pgDbgManager.getDebugSessions().size() == 0) {
+                if (controller.getSessions().size() == 0) {
                     System.out.println("Debug sessions not found");
                     break;
                 }
 
-                PostgreDebugSession debugSessionSO = chooseSession(sc, pgDbgManager);
+                DBGSession debugSessionSO = chooseSession(sc, controller);
 
                 if (debugSessionSO == null) {
                     break;
@@ -652,17 +659,17 @@ public class Debugger {
                 break;
 
             case COMMAND_SESSIONS:
-                for (PostgreDebugSessionInfo s : pgDbgManager.getSessions()) {
+                for (DBGSessionInfo s : controller.getSessionDescriptors()) {
                     System.out.println(s);
                 }
                 break;
 
             case COMMAND_DEBUG_LIST:
-                if (pgDbgManager.getDebugSessions().size() == 0) {
+                if (controller.getSessions().size() == 0) {
                     System.out.println("no debug sessions");
                     break;
                 }
-                for (DBGSession s : pgDbgManager.getDebugSessions()) {
+                for (DBGSession s : controller.getSessions()) {
                     System.out.println(s);
                 }
 
@@ -672,7 +679,8 @@ public class Debugger {
                 try {
                     Connection debugConn = DriverManager.getConnection(url);
                     // TODO: fix connection
-                    PostgreDebugSession s = pgDbgManager.createDebugSession(null);
+                    DBCExecutionContext executionContext = null;
+                    DBGSession s = controller.createSession(null, executionContext);
                     System.out.println("created");
                     System.out.println(s);
 
@@ -711,7 +719,7 @@ public class Debugger {
 
                 }
 
-                for (PostgreDebugObject o : pgDbgManager.getObjects(owner.equals(ANY_ARG) ? "_" : owner,
+                for (DBGObjectDescriptor o : controller.getObjects(owner.equals(ANY_ARG) ? "_" : owner,
                         proc.equals(ANY_ARG) ? "_" : proc)) {
                     System.out.println(o);
                 }
@@ -719,12 +727,12 @@ public class Debugger {
                 break;
 
             case COMMAND_ATTACH:
-                if (pgDbgManager.getDebugSessions().size() == 0) {
+                if (controller.getSessions().size() == 0) {
                     System.out.println("Debug sessions not found");
                     break;
                 }
 
-                PostgreDebugSession debugSessionA = chooseSession(sc, pgDbgManager);
+                DBGSession debugSessionA = chooseSession(sc, controller);
 
                 if (debugSessionA == null) {
                     break;

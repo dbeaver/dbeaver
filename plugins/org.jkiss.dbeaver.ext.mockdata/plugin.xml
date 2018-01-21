@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+    <extension-point id="org.jkiss.dbeaver.mockGenerator" name="Mock data generator" schema="schema/org.jkiss.dbeaver.mockGenerator.exsd"/>
+
+    <extension point="org.jkiss.dbeaver.tools">
+        <tools>
+            <tool
+                    class="org.jkiss.dbeaver.ext.mockdata.MockDataGenerateTool"
+                    description="Mock Data"
+                    id="org.jkiss.dbeaver.ext.mockdata.MockDataGenerateTool"
+                    label="Mock Data"
+                    singleton="false">
+                <objectType name="org.jkiss.dbeaver.model.struct.DBSDataManipulator" forceCheck="true"/>
+            </tool>
+        </tools>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.mockGenerator">
+
+        <generator
+            id="simpleString"
+            label="Simple String"
+            description="Simple string value generator"
+            class="org.jkiss.dbeaver.ext.mockdata.generator.SimpleStringGenerator">
+            <type kind="STRING"/>
+
+            <property id="template" label="Template string" type="string"
+                defaultValue="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."/>
+        </generator>
+
+    </extension>
+
+</plugin>

@@ -30,14 +30,24 @@ import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Listener;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.ui.controls.lightgrid.*;
+import org.jkiss.dbeaver.ui.controls.lightgrid.GridCell;
+import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
+import org.jkiss.dbeaver.ui.controls.lightgrid.IGridContentProvider;
+import org.jkiss.dbeaver.ui.controls.lightgrid.IGridController;
+import org.jkiss.dbeaver.ui.controls.lightgrid.IGridLabelProvider;
+import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 import org.jkiss.dbeaver.ui.controls.resultset.AbstractPresentation;
 
 /**
@@ -107,6 +117,7 @@ public class Spreadsheet extends LightGrid implements Listener {
         super.addListener(SWT.KeyUp, this);
         super.addListener(LightGrid.Event_ChangeSort, this);
         super.addListener(LightGrid.Event_NavigateLink, this);
+        super.addListener(LightGrid.Event_FilterColumn, this);
 
         tableEditor = new SpreadsheetCellEditor(this);
         tableEditor.horizontalAlignment = SWT.LEFT;
@@ -308,6 +319,12 @@ public class Spreadsheet extends LightGrid implements Listener {
             case LightGrid.Event_ChangeSort:
                 presentation.changeSorting(event.data, event.stateMask);
                 break;
+            case LightGrid.Event_FilterColumn:
+            	//showFiltersMenu
+            	presentation.showFiltering(event.data);
+            	
+            	
+            	break;                
             case LightGrid.Event_NavigateLink:
                 // Perform navigation async because it may change grid content and
                 // we don't want to mess current grid state

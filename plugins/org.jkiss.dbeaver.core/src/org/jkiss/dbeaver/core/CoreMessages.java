@@ -825,6 +825,7 @@ public class CoreMessages extends NLS {
 	public static String pref_page_sql_editor_checkbox_fetch_resultsets;
 	public static String pref_page_sql_editor_text_statement_delimiter;
     public static String pref_page_sql_editor_checkbox_ignore_native_delimiter;
+	public static String pref_page_sql_editor_checkbox_remove_trailing_delimiter;
 	public static String pref_page_sql_editor_checkbox_blank_line_delimiter;
 	public static String pref_page_sql_editor_checkbox_enable_sql_parameters;
 	public static String pref_page_sql_editor_title_pattern;
@@ -995,6 +996,7 @@ public class CoreMessages extends NLS {
 	public static String pref_page_database_resultsets_label_right_justify_numbers_and_date;
 	public static String pref_page_database_resultsets_label_row_batch_size;
 	public static String pref_page_database_resultsets_label_show_cell_icons;
+	public static String pref_page_database_resultsets_label_show_attr_filters;
 	public static String pref_page_database_resultsets_label_double_click_behavior;
 	public static String pref_page_database_resultsets_group_plain_text;
 	public static String pref_page_database_resultsets_lable_value_format;
@@ -1024,6 +1026,9 @@ public class CoreMessages extends NLS {
 	// SQLExecute
 	public static String pref_page_sql_editor_label_sql_timeout_tip;
 	public static String pref_page_sql_editor_enable_parameters_in_ddl;
+	public static String pref_page_sql_editor_enable_parameters_in_ddl_tip;
+	public static String pref_page_sql_editor_enable_variables;
+	public static String pref_page_sql_editor_enable_variables_tip;
 	// SQLFormat
 	public static String pref_page_sql_format_group_auto_close;
 	public static String pref_page_sql_format_label_single_quotes;

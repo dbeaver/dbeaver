@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.import_config;singleton:=true
-Bundle-Version: 2.1.36
-Bundle-Release-Date: 20180108
+Bundle-Version: 2.1.37
+Bundle-Release-Date: 20180122
 Bundle-Activator: org.jkiss.dbeaver.ext.import_config.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,

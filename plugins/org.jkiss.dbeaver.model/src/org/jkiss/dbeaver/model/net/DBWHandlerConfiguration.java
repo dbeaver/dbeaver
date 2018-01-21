@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.HashMap;
@@ -151,5 +152,17 @@ public class DBWHandlerConfiguration {
             CommonUtils.equalObjects(this.password, source.password) &&
             this.savePassword == source.savePassword &&
             CommonUtils.equalObjects(this.properties, source.properties);
+    }
+
+    public void resolveSystemEnvironmentVariables() {
+        userName = userName != null ? GeneralUtils.replaceSystemEnvironmentVariables(userName) : null;
+        password = password != null ? GeneralUtils.replaceSystemEnvironmentVariables(password) : null;
+        for (String prop : this.properties.keySet()) {
+            String value = this.properties.get(prop);
+            if (!CommonUtils.isEmpty(value)) {
+                this.properties.put(prop, GeneralUtils.replaceSystemEnvironmentVariables(value));
+            }
+        }
+
     }
 }

@@ -25,15 +25,15 @@ import org.jkiss.dbeaver.debug.DBGController;
 import org.jkiss.dbeaver.debug.core.DebugCore;
 import org.jkiss.dbeaver.debug.internal.core.DebugCoreMessages;
 
-public class ProcedureDebugTarget extends DatabaseDebugTarget<DBGController> {
+public class ProcedureDebugTarget extends DatabaseDebugTarget {
 
     public ProcedureDebugTarget(ILaunch launch, IProcess process, DBGController controller) {
         super(DebugCore.MODEL_IDENTIFIER_PROCEDURE, launch, process, controller);
     }
 
     @Override
-    protected DatabaseThread newThread(DBGController controller) {
-        return new ProcedureThread(this, controller);
+    protected DatabaseThread newThread(DBGController controller, Object sessionKey) {
+        return new ProcedureThread(this, sessionKey);
     }
 
     @Override

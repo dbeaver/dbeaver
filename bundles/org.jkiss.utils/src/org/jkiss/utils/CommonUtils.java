@@ -29,7 +29,10 @@ import java.util.*;
 public class CommonUtils {
 
     public static boolean isJavaIdentifier(@NotNull CharSequence str) {
-        for (int i = 0; i < str.length(); i++) {
+        if (str.length() == 0 || !Character.isJavaIdentifierStart(str.charAt(0))) {
+            return false;
+        }
+        for (int i = 1; i < str.length(); i++) {
             if (!Character.isJavaIdentifierPart(str.charAt(i))) {
                 return false;
             }

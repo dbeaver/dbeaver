@@ -104,7 +104,7 @@ public class DefaultValueViewDialog extends ValueViewDialog {
     @Override
     public Control getControl()
     {
-        return panelEditor.getControl();
+        return panelEditor == null ? null : panelEditor.getControl();
     }
 
 }

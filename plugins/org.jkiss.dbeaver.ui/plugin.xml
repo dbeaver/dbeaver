@@ -2,8 +2,7 @@
 <?eclipse version="3.4"?>
 <plugin>
 
-   <extension
-         point="org.eclipse.core.expressions.definitions">
+   <extension point="org.eclipse.core.expressions.definitions">
       <definition id="DBeaverPerspectiveActive">
           <with variable="activeWorkbenchWindow.activePerspective">
               <equals value="org.jkiss.dbeaver.core.perspective"/>

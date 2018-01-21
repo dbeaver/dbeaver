@@ -27,7 +27,9 @@
             delegateName="%launchConfigurationTypes.launchConfigurationType.pgSQL.delegateName"
             id="org.jkiss.dbeaver.ext.postgresql.debug.core.pgSQL"
             modes="debug"
-            name="%launchConfigurationTypes.launchConfigurationType.pgSQL.name">
+            name="%launchConfigurationTypes.launchConfigurationType.pgSQL.name"
+            sourceLocatorId="org.jkiss.dbeaver.debug.core.procedureSourceLocator"
+            sourcePathComputerId="org.jkiss.dbeaver.debug.core.procedureSourcePathComputer">
       </launchConfigurationType>
    </extension>
 

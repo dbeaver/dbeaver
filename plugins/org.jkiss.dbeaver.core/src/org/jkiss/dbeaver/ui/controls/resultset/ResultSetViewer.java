@@ -81,6 +81,8 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.*;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.controls.resultset.valuefilter.FilterValueEditDialog;
+import org.jkiss.dbeaver.ui.controls.resultset.valuefilter.FilterValueEditMenu;
 import org.jkiss.dbeaver.ui.controls.resultset.view.EmptyPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.view.StatisticsPresentation;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -1586,6 +1588,31 @@ public class ResultSetViewer extends Viewer
         fillFiltersMenu(curAttribute, menuManager);
         showContextMenuAtCursor(menuManager);
     }
+    
+    @Override
+    public void showDistinctFilter(DBDAttributeBinding curAttribute) { 	
+    		
+    	Collection<ResultSetRow> selectedRows = getSelection().getSelectedRows();
+	    ResultSetRow[] rows = selectedRows.toArray(new ResultSetRow[selectedRows.size()]);
+	      
+	    FilterValueEditMenu menu = new FilterValueEditMenu(getSite().getShell(), ResultSetViewer.this, curAttribute, rows);
+	    
+	    Point location =  getSite().getWorkbenchWindow().getWorkbench().getDisplay().getCursorLocation();
+
+     	menu.setLocation(location);
+
+        if (menu.open() == IDialogConstants.OK_ID) {
+            Object value = menu.getValue();
+
+            DBDDataFilter filter = new DBDDataFilter(model.getDataFilter());
+            DBDAttributeConstraint constraint = filter.getConstraint(curAttribute);
+            if (constraint != null) {
+                constraint.setOperator(DBCLogicalOperator.EQUALS);
+                constraint.setValue(value);
+                setDataFilter(filter, true);
+            }
+        }
+    }
 
     void showReferencesMenu() {
         ResultSetRow currentRow = getCurrentRow();
@@ -2035,6 +2062,7 @@ public class ResultSetViewer extends Viewer
                     filtersMenu.add(new FilterByAttributeAction(operator, FilterByAttributeType.NONE, attribute));
                 }
             }
+            // Operators with single input
             for (FilterByAttributeType type : FilterByAttributeType.values()) {
                 if (type == FilterByAttributeType.NONE) {
                     // Value filters are available only if certain cell is selected
@@ -3377,6 +3405,7 @@ public class ResultSetViewer extends Viewer
         }
     }
 
+
     private class FilterByAttributeAction extends Action {
         private final DBCLogicalOperator operator;
         private final FilterByAttributeType type;
@@ -3405,6 +3434,44 @@ public class ResultSetViewer extends Viewer
             }
         }
     }
+    
+    
+    
+    private class FilterByValueAction extends Action {
+    	private final DBCLogicalOperator operator;
+        private final FilterByAttributeType type;
+        private final DBDAttributeBinding attribute;
+        private final Object value;
+        
+        
+        FilterByValueAction(DBCLogicalOperator operator, FilterByAttributeType type, DBDAttributeBinding attribute, Object value)
+        {
+            super(attribute.getName() + " = " + CommonUtils.truncateString(String.valueOf(value), 64), null);
+            this.operator = operator;
+            this.type = type;
+            this.attribute = attribute;
+            this.value = value;
+        }
+
+        
+        @Override
+        public void run()
+        {
+            
+            if (operator.getArgumentCount() != 0 && value == null) {
+                return;
+            }
+            DBDDataFilter filter = new DBDDataFilter(model.getDataFilter());
+            DBDAttributeConstraint constraint = filter.getConstraint(attribute);
+            if (constraint != null) {
+                constraint.setOperator(operator);
+                constraint.setValue(value);
+                setDataFilter(filter, true);
+            }
+        }
+    }
+    
+    
 
     private class FilterResetAttributeAction extends Action {
         private final DBDAttributeBinding attribute;

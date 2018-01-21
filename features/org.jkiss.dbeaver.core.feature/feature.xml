@@ -2,7 +2,7 @@
 <feature
         id="org.jkiss.dbeaver.core.feature"
         label="%featureName"
-        version="4.3.2"
+        version="4.3.3"
         provider-name="%providerName"
         plugin="org.jkiss.dbeaver.core">
 
@@ -30,8 +30,19 @@
         <import plugin="org.eclipse.jface.text"/>
         <import plugin="org.eclipse.ui.views"/>
         <import plugin="org.eclipse.search"/>
+
+        <!--
+            GEF/draw2d are needed by all custom renderers (ERD, Locks, etc)
+        -->
         <import plugin="org.eclipse.draw2d"/>
         <import plugin="org.eclipse.gef"/>
+
+        <!--
+            Debug plugins are required (implicitly) by many 3rd party extensions like Git.
+            And we need them anyway.
+        -->
+        <import plugin="org.eclipse.debug.core"/>
+        <import plugin="org.eclipse.debug.ui"/>
     </requires>
 
     <!-- 3rd party -->
@@ -49,5 +60,8 @@
     <plugin id="org.jkiss.dbeaver.ext.import_config" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ext.ui.locks" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.utils" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+<!--
+    <plugin id="org.jkiss.dbeaver.ext.mockdata" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+-->
 
 </feature>

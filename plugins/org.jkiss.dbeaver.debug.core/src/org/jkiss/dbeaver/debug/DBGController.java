@@ -1,7 +1,8 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
- * Copyright (C) 2017 Alexander Fedorov (alexander.fedorov@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2017-2018 Andrew Khitrin (ahitrin@gmail.com)
+ * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +18,10 @@
  */
 package org.jkiss.dbeaver.debug;
 
+import java.util.List;
+import java.util.Map;
+
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
@@ -24,14 +29,73 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
  */
 public interface DBGController {
 
-    DBGSession connect(DBRProgressMonitor monitor) throws DBGException;
+    public static final String DATABASE_NAME = "databaseName"; //$NON-NLS-1$
+    public static final String SCHEMA_NAME = "schemaName"; //$NON-NLS-1$
+    public static final String PROCEDURE_OID = "procedureOID"; //$NON-NLS-1$
+    public static final String PROCESS_ID = "processID"; //$NON-NLS-1$
+    public static final String PROCEDURE_NAME = "procedureName"; //$NON-NLS-1$
+    public static final String PROCEDURE_CALL = "procedureCall"; //$NON-NLS-1$
 
-    void resume(DBRProgressMonitor monitor, DBGSession session) throws DBGException;
+    /*
+     * General lifecycle
+     */
 
-    void suspend(DBRProgressMonitor monitor, DBGSession session) throws DBGException;
+    /**
+     * Sets debug context like OID etc.
+     * @param context
+     */
+    void init(Map<String, Object> context);
 
-    void terminate(DBRProgressMonitor monitor, DBGSession session) throws DBGException;
+    /**
+     * 
+     * @param monitor
+     * @return key to use for <code>detach</code>
+     * @throws DBGException
+     */
+    Object attach(DBRProgressMonitor monitor) throws DBGException;
+    
+    void suspend(DBRProgressMonitor monitor) throws DBGException;
+    
+    void resume(DBRProgressMonitor monitor) throws DBGException;
+    
+    /**
+     * 
+     * @param sessionkey the key obtained as a result of <code>attach</code>
+     * @param monitor
+     * @throws DBGException
+     */
+    void detach(Object sessionkey, DBRProgressMonitor monitor) throws DBGException;
+    
+    void dispose();
+    
+    DBGSessionInfo getSessionDescriptor(DBCExecutionContext connection) throws DBGException;
+    List<? extends DBGSessionInfo> getSessionDescriptors() throws DBGException;
 
-    void dispose() throws DBGException;
+    DBGSession findSession(Object id) throws DBGException;
+    List<DBGSession> getSessions() throws DBGException;
+    DBGSession createSession(DBGSessionInfo targetInfo, DBCExecutionContext connection) throws DBGException;
+    boolean isSessionExists(Object id);
+
+    List<? extends DBGStackFrame> getStack(Object id) throws DBGException;
+    List<? extends DBGObjectDescriptor> getObjects(String ownerCtx, String nameCtx) throws DBGException;
+
+    /*
+     * Stepping
+     */
+
+    boolean canStepInto(Object sessionKey);
+    boolean canStepOver(Object sessionKey);
+    boolean canStepReturn(Object sessionKey);
+
+    void stepInto(Object sessionKey) throws DBGException;
+    void stepOver(Object sessionKey) throws DBGException;
+    void stepReturn(Object sessionKey) throws DBGException;
+    
+    /*
+     * Events
+     */
+    
+    void registerEventHandler(DBGEventHandler eventHandler);
+    void unregisterEventHandler(DBGEventHandler eventHandler);
 
 }

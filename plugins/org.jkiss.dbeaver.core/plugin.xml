@@ -1742,15 +1742,29 @@
         <!-- Database toolbar -->
         <menuContribution allPopups="false" locationURI="toolbar:org.eclipse.ui.main.toolbar?before=additions">
             <toolbar id="dbeaver-general" label="%toolbar.dbeaver-general.label">
-                <command commandId="org.jkiss.dbeaver.core.new.connection" label="%command.org.jkiss.dbeaver.core.new.connection.name" tooltip="%command.org.jkiss.dbeaver.core.new.connection.description"/>
+                <command commandId="org.jkiss.dbeaver.core.new.connection" label="%command.org.jkiss.dbeaver.core.new.connection.name" tooltip="%command.org.jkiss.dbeaver.core.new.connection.description">
+                    <visibleWhen><reference definitionId="DBeaverPerspectiveActive"/></visibleWhen>
+                </command>
                 <separator name="sql-tools" visible="true"/>
-                <command commandId="org.jkiss.dbeaver.core.connect" label="%command.org.jkiss.dbeaver.core.connect.name"/>
-                <command commandId="org.jkiss.dbeaver.core.invalidate" label="%command.org.jkiss.dbeaver.core.invalidate.name"/>
-                <command commandId="org.jkiss.dbeaver.core.disconnect" label="%command.org.jkiss.dbeaver.core.disconnect.name"/>
+                <command commandId="org.jkiss.dbeaver.core.connect" label="%command.org.jkiss.dbeaver.core.connect.name">
+                    <visibleWhen><reference definitionId="DBeaverPerspectiveActive"/></visibleWhen>
+                </command>
+                <command commandId="org.jkiss.dbeaver.core.invalidate" label="%command.org.jkiss.dbeaver.core.invalidate.name">
+                    <visibleWhen><reference definitionId="DBeaverPerspectiveActive"/></visibleWhen>
+                </command>
+                <command commandId="org.jkiss.dbeaver.core.disconnect" label="%command.org.jkiss.dbeaver.core.disconnect.name">
+                    <visibleWhen><reference definitionId="DBeaverPerspectiveActive"/></visibleWhen>
+                </command>
                 <separator name="sql-tools" visible="true"/>
-                <command commandId="org.jkiss.dbeaver.core.sql.editor.open" label="%command.org.jkiss.dbeaver.core.sql.editor.open.name"/>
-                <command commandId="org.jkiss.dbeaver.core.sql.editor.recent" label="%command.org.jkiss.dbeaver.core.sql.editor.recent.name"/>
-                <command commandId="org.jkiss.dbeaver.core.sql.editor.create" label="%command.org.jkiss.dbeaver.core.sql.editor.create.name"/>
+                <command commandId="org.jkiss.dbeaver.core.sql.editor.open" label="%command.org.jkiss.dbeaver.core.sql.editor.open.name">
+                    <visibleWhen><reference definitionId="DBeaverPerspectiveActive"/></visibleWhen>
+                </command>
+                <command commandId="org.jkiss.dbeaver.core.sql.editor.recent" label="%command.org.jkiss.dbeaver.core.sql.editor.recent.name">
+                    <visibleWhen><reference definitionId="DBeaverPerspectiveActive"/></visibleWhen>
+                </command>
+                <command commandId="org.jkiss.dbeaver.core.sql.editor.create" label="%command.org.jkiss.dbeaver.core.sql.editor.create.name">
+                    <visibleWhen><reference definitionId="DBeaverPerspectiveActive"/></visibleWhen>
+                </command>
                 <separator name="additions" visible="false"/>
             </toolbar>
             <toolbar id="dbeaver-transactions" label="%toolbar.dbeaver-transactions.label">
@@ -3465,6 +3479,7 @@
                     <property id="header" label="%dataTransfer.processor.csv.property.header.name" type="string" description="%dataTransfer.processor.csv.property.header.description" defaultValue="top" required="true" validValues="none,top,bottom,both"/>
                     <property id="escape" label="%dataTransfer.processor.csv.property.escape.name" type="string" description="%dataTransfer.processor.csv.property.escape.description" defaultValue="quotes" required="true" validValues="quotes,escape"/>
                     <property id="quoteChar" label="%dataTransfer.processor.csv.property.quoteChar.name" type="string" description="%dataTransfer.processor.csv.property.quoteChar.description" defaultValue="&quot;" required="false"/>
+                    <property id="quoteAlways" label="%dataTransfer.processor.csv.property.quoteAlways.name" type="boolean" description="%dataTransfer.processor.csv.property.quoteAlways.description" defaultValue="false" required="false"/>
                     <property id="nullString" label="%dataTransfer.processor.csv.property.nullString.name" type="string" description="%dataTransfer.processor.csv.property.nullString.description" defaultValue="" required="false"/>
                 </propertyGroup>
             </processor>

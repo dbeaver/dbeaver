@@ -2,7 +2,7 @@
 <feature
       id="org.jkiss.dbeaver.debug.feature"
       label="%featureName"
-      version="4.3.2"
+      version="4.3.3"
       provider-name="%providerName">
 
    <description>
@@ -18,8 +18,7 @@
    </license>
 
    <requires>
-      <import plugin="org.eclipse.debug.core"/>
-      <import plugin="org.eclipse.debug.ui"/>
+      <import feature="org.jkiss.dbeaver.core.feature" version="1.0.0"/>
    </requires>
 
    <plugin

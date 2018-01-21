@@ -18,10 +18,17 @@ package org.jkiss.dbeaver.ui.editors.sql;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
-import org.eclipse.jface.text.*;
+import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.Document;
+import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRegion;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.FocusEvent;
@@ -38,17 +45,17 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.compile.DBCCompileLog;
 import org.jkiss.dbeaver.model.exec.compile.DBCSourceHost;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.runtime.TasksJob;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ObjectCompilerLogViewer;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextDocumentProvider;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -65,6 +72,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
     private ObjectCompilerLogViewer compileLog;
     private Control editorControl;
     private SashForm editorSash;
+    private boolean activated;
 
     public SQLEditorNested() {
         super();
@@ -155,6 +163,10 @@ public abstract class SQLEditorNested<T extends DBSObject>
 
     @Override
     public void activatePart() {
+        if (!activated) {
+            reloadSyntaxRules();
+            activated = true;
+        }
     }
 
     @Override
@@ -185,6 +197,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
                 log.error(e);
             }
         }
+        reloadSyntaxRules();
     }
 
     protected String getCompileCommandId()
@@ -220,54 +233,51 @@ public abstract class SQLEditorNested<T extends DBSObject>
             final Document document = new Document();
 
             if (sourceText == null) {
-                document.set(SQLUtils.generateCommentLine(getDataSource(), "Loading '" + getEditorInput().getName() + "' source..."));
-                TasksJob.runTask("Read source", new DBRRunnableWithProgress() {
+                sourceText = SQLUtils.generateCommentLine(getDataSource(), "Loading '" + getEditorInput().getName() + "' source...");
+                document.set(sourceText);
+
+                AbstractJob job = new AbstractJob("Load SQL source") {
+                    {
+                        setUser(true);
+                    }
                     @Override
-                    public void run(final DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                    protected IStatus run(DBRProgressMonitor monitor) {
                         try {
                             sourceText = getSourceText(monitor);
                             if (sourceText == null) {
                                 sourceText = SQLUtils.generateCommentLine(getDataSource(), "Empty source");
                             }
-                        } catch (Throwable e) {
+                            return Status.OK_STATUS;
+                        } catch (Exception e) {
                             sourceText = "/* ERROR WHILE READING SOURCE:\n\n" + e.getMessage() + "\n*/";
-                            throw new InvocationTargetException(e);
-                        } finally {
-                            DBeaverUI.syncExec(new Runnable() {
-                                @Override
-                                public void run() {
-                                    resetDocumentContents(monitor);
-                                }
-                            });
+                            return Status.CANCEL_STATUS;
                         }
                     }
+                };
+                job.addJobChangeListener(new JobChangeAdapter() {
+                    @Override
+                    public void done(IJobChangeEvent event) {
+                        DBeaverUI.asyncExec(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    SQLEditorNested.this.init(getEditorSite(), getEditorInput());
+                                    SQLEditorNested.this.reloadSyntaxRules();
+                                } catch (PartInitException e) {
+                                    log.error(e);
+                                }
+                            }
+                        });
+                        super.done(event);
+                    }
                 });
-            } else {
-                // Set text
-                document.set(sourceText);
-                sourceLoaded = true;
+                job.schedule();
             }
+            // Set text
+            document.set(sourceText);
+            sourceLoaded = true;
 
             return document;
-        }
-
-        private void resetDocumentContents(DBRProgressMonitor monitor) {
-            if (isDisposed()) {
-                return;
-            }
-
-            try {
-                doResetDocument(getEditorInput(), RuntimeUtils.getNestedMonitor(monitor));
-                // Reset undo queue
-                if (getSourceViewer() instanceof ITextViewerExtension6) {
-                    ((ITextViewerExtension6) getSourceViewer()).getUndoManager().reset();
-                }
-
-                // Load syntax
-                reloadSyntaxRules();
-            } catch (CoreException e) {
-                log.error(e);
-            }
         }
 
         @Override
