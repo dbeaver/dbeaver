@@ -61,6 +61,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
     private Text anonymousParameterMarkText;
     private Text namedParameterPrefixText;
     private Button enableParametersInDDL;
+    private Button enableVariables;
 
     public PrefPageSQLExecute()
     {
@@ -90,6 +91,8 @@ public class PrefPageSQLExecute extends TargetPrefPage
             store.contains(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED) ||
             store.contains(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_MARK) ||
             store.contains(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX) ||
+            store.contains(ModelPreferences.SQL_VARIABLES_ENABLED) ||
+
             store.contains(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE) ||
             store.contains(SQLPreferenceConstants.MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE) ||
             store.contains(SQLPreferenceConstants.BEEP_ON_QUERY_END) ||
@@ -173,7 +176,8 @@ public class PrefPageSQLExecute extends TargetPrefPage
             anonymousParameterMarkText.setTextLimit(1);
             namedParameterPrefixText = UIUtils.createLabelText(paramsGroup, CoreMessages.pref_page_sql_editor_text_named_parameter_prefix, "", SWT.BORDER, new GridData(32, SWT.DEFAULT));
             namedParameterPrefixText.setTextLimit(1);
-            enableParametersInDDL = UIUtils.createCheckbox(paramsGroup, CoreMessages.pref_page_sql_editor_enable_parameters_in_ddl, null, false, 2);
+            enableParametersInDDL = UIUtils.createCheckbox(paramsGroup, CoreMessages.pref_page_sql_editor_enable_parameters_in_ddl, CoreMessages.pref_page_sql_editor_enable_parameters_in_ddl_tip, false, 2);
+            enableVariables = UIUtils.createCheckbox(paramsGroup, CoreMessages.pref_page_sql_editor_enable_variables, CoreMessages.pref_page_sql_editor_enable_variables_tip, false, 2);
         }
 
         // Delimiters
@@ -215,6 +219,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
             anonymousParameterMarkText.setText(store.getString(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_MARK));
             namedParameterPrefixText.setText(store.getString(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX));
             enableParametersInDDL.setSelection(store.getBoolean(ModelPreferences.SQL_PARAMETERS_IN_DDL_ENABLED));
+            enableVariables.setSelection(store.getBoolean(ModelPreferences.SQL_VARIABLES_ENABLED));
         } catch (Exception e) {
             log.warn(e);
         }
@@ -246,6 +251,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
             store.setValue(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_MARK, anonymousParameterMarkText.getText());
             store.setValue(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX, namedParameterPrefixText.getText());
             store.setValue(ModelPreferences.SQL_PARAMETERS_IN_DDL_ENABLED, enableParametersInDDL.getSelection());
+            store.setValue(ModelPreferences.SQL_VARIABLES_ENABLED, enableVariables.getSelection());
         } catch (Exception e) {
             log.warn(e);
         }
@@ -275,6 +281,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
         store.setToDefault(ModelPreferences.SQL_PARAMETERS_IN_DDL_ENABLED);
         store.setToDefault(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED);
         store.setToDefault(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_MARK);
+        store.setToDefault(ModelPreferences.SQL_VARIABLES_ENABLED);
 
         store.setToDefault(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX);
         store.setToDefault(SQLPreferenceConstants.BEEP_ON_QUERY_END);

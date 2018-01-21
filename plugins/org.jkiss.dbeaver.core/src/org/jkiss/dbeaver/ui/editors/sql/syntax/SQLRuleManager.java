@@ -36,10 +36,7 @@ import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.registry.sql.SQLCommandHandlerDescriptor;
 import org.jkiss.dbeaver.registry.sql.SQLCommandsRegistry;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.rules.LineCommentRule;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.rules.SQLDelimiterRule;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.rules.SQLDelimiterSetRule;
-import org.jkiss.dbeaver.ui.editors.sql.syntax.rules.SQLParameterRule;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.rules.*;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.*;
 import org.jkiss.dbeaver.ui.editors.text.TextWhiteSpaceDetector;
 import org.jkiss.utils.ArrayUtils;
@@ -158,6 +155,8 @@ public class SQLRuleManager extends RuleBasedScanner {
             new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_DELIMITER, SWT.COLOR_RED), null, SWT.NORMAL));
         final SQLParameterToken parameterToken = new SQLParameterToken(
             new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_PARAMETER, SWT.COLOR_DARK_BLUE), null, SWT.BOLD));
+        final SQLVariableToken variableToken = new SQLVariableToken(
+            new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_PARAMETER, SWT.COLOR_DARK_BLUE), null, SWT.BOLD));
         final IToken otherToken = new Token(
             new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_TEXT), null, SWT.NORMAL));
         final SQLBlockHeaderToken blockHeaderToken = new SQLBlockHeaderToken(
@@ -200,6 +199,12 @@ public class SQLRuleManager extends RuleBasedScanner {
                 rules.add(new EndOfLineRule(commandPrefix + controlCommand.getId(), controlToken)); //$NON-NLS-1$
             }
         }
+        {
+            if (!minimalRules && syntaxManager.isVariablesEnabled()) {
+                // Variable rule
+                rules.add(new SQLVariableRule(parameterToken));
+            }
+        }
 
         {
             // Add rules for delimited identifiers and string literals.
@@ -214,7 +219,6 @@ public class SQLRuleManager extends RuleBasedScanner {
                     } else if (quoteStrings[i][1].equals(SQLConstants.STR_QUOTE_DOUBLE) && quoteStrings[i][0].equals(quoteStrings[i][1])) {
                         hasDoubleQuoteRule = true;
                     }
-
                 }
             }
             if (!hasSingleQuoteRule) {
