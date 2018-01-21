@@ -1026,6 +1026,9 @@ public class CoreMessages extends NLS {
 	// SQLExecute
 	public static String pref_page_sql_editor_label_sql_timeout_tip;
 	public static String pref_page_sql_editor_enable_parameters_in_ddl;
+	public static String pref_page_sql_editor_enable_parameters_in_ddl_tip;
+	public static String pref_page_sql_editor_enable_variables;
+	public static String pref_page_sql_editor_enable_variables_tip;
 	// SQLFormat
 	public static String pref_page_sql_format_group_auto_close;
 	public static String pref_page_sql_format_label_single_quotes;
