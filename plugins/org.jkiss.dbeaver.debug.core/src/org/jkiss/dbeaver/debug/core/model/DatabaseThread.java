@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IBreakpoint;
 import org.eclipse.debug.core.model.IStackFrame;
@@ -39,7 +40,22 @@ public abstract class DatabaseThread extends DatabaseDebugElement implements ITh
     
     private final Object sessionKey;
 
-    public DatabaseThread(IDatabaseDebugTarget target, Object sessionKey) {
+    /**
+     * Whether this thread is stepping
+     */
+    private boolean stepping = false;
+
+    /**
+     * The stackframes associated with this thread
+     */
+    private List<DatabaseStackFrame> fFrames = new ArrayList<>(1);
+
+    /**
+     * The stackframes to be reused on suspension
+     */
+    private List<DatabaseStackFrame> fOldFrames;
+
+    public DatabaseThread(DatabaseDebugTarget target, Object sessionKey) {
         super(target);
         this.sessionKey = sessionKey;
     }
@@ -91,20 +107,13 @@ public abstract class DatabaseThread extends DatabaseDebugElement implements ITh
 
     @Override
     public boolean isStepping() {
-        // TODO Auto-generated method stub
-        return false;
+        return stepping;
     }
 
     @Override
     public void stepInto() throws DebugException {
-        DBGController controller = getController();
-        try {
-            controller.stepInto(sessionKey);
-        } catch (DBGException e) {
-            String message = NLS.bind("Step into failed for session {0}", sessionKey);
-            IStatus status = DebugCore.newErrorStatus(message, e);
-            throw new DebugException(status);
-        }
+        aboutToResume(DebugEvent.STEP_INTO, true);
+        getDatabaseDebugTarget().stepInto();
     }
 
     @Override
@@ -131,6 +140,14 @@ public abstract class DatabaseThread extends DatabaseDebugElement implements ITh
         }
     }
 
+    private void aboutToResume(int detail, boolean stepping) {
+        fOldFrames = new ArrayList<>(fFrames);
+        fFrames.clear();
+        setStepping(stepping);
+//        setBreakpoints(null);
+        fireResumeEvent(detail);
+    }
+
     @Override
     public boolean canTerminate() {
         return getDebugTarget().canTerminate();
@@ -143,29 +160,76 @@ public abstract class DatabaseThread extends DatabaseDebugElement implements ITh
 
     @Override
     public void terminate() throws DebugException {
+        fFrames.clear();
         getDebugTarget().terminate();
     }
 
     @Override
     public IStackFrame[] getStackFrames() throws DebugException {
-        List<DatabaseStackFrame> frames = new ArrayList<DatabaseStackFrame>();
-        DBGController controller = getController();
-        try {
-            List<? extends DBGStackFrame> stack = controller.getStack(sessionKey);
-            for (DBGStackFrame dbgStackFrame : stack) {
-                DatabaseStackFrame frame = new DatabaseStackFrame(this, dbgStackFrame, sessionKey);
-                frames.add(frame);
+        if (isSuspended()) {
+            if (fFrames.size() == 0) {
+                getStackFrames0();
             }
+        }
+
+        return fFrames.toArray(new IStackFrame[fFrames.size()]);
+    }
+
+    /**
+     * Retrieves the current stack frames in the thread possibly waiting until the frames are populated
+     * 
+     */
+    private void getStackFrames0() throws DebugException {
+        List<? extends DBGStackFrame> stackFrames;
+        try {
+            stackFrames = getDatabaseDebugTarget().getStackFrames();
+            buildStack(stackFrames);
         } catch (DBGException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        return (IStackFrame[]) frames.toArray(new IStackFrame[frames.size()]);
     }
 
     @Override
     public boolean hasStackFrames() throws DebugException {
         return true;
+    }
+
+    public void buildStack(List<? extends DBGStackFrame> stackFrames) {
+        
+        if (fOldFrames != null && (stackFrames.size() - 1) / 4 != fOldFrames.size()) {
+            fOldFrames.clear();
+            fOldFrames = null; // stack size changed..do not preserve
+        }
+        for (DBGStackFrame dbgStackFrame : stackFrames) {
+            addFrame(dbgStackFrame, sessionKey);
+        }
+        
+    }
+
+    private void addFrame(DBGStackFrame stackFrameId , Object sessionKey) {
+        DatabaseStackFrame frame = getOldFrame();
+
+        if (frame == null /*|| !frame.getFilePath().equals(filePath)*/) {
+            frame = new DatabaseStackFrame(this, stackFrameId, sessionKey);
+        } else {
+//            frame.setFilePath(filePath);
+//            frame.setId(stackFrameId);
+//            frame.setLineNumber(lineNumber);
+//            frame.setName(name);
+        }
+        fFrames.add(frame);
+    }
+
+    private DatabaseStackFrame getOldFrame() {
+        if (fOldFrames == null) {
+            return null;
+        }
+        DatabaseStackFrame frame = fOldFrames.remove(0);
+        if (fOldFrames.isEmpty()) {
+            fOldFrames = null;
+        }
+        return frame;
     }
 
     @Override
@@ -176,7 +240,14 @@ public abstract class DatabaseThread extends DatabaseDebugElement implements ITh
 
     @Override
     public IStackFrame getTopStackFrame() throws DebugException {
-        // TODO Auto-generated method stub
+        if (isSuspended()) {
+            if (fFrames.size() == 0) {
+                getStackFrames0();
+            }
+            if (fFrames.size() > 0) {
+                return fFrames.get(0);
+            }
+        }
         return null;
     }
 
@@ -191,9 +262,8 @@ public abstract class DatabaseThread extends DatabaseDebugElement implements ITh
 
     }
 
-    public void setStepping(boolean b) {
-        // TODO Auto-generated method stub
-
+    public void setStepping(boolean stepping) {
+        this.stepping = stepping;
     }
 
 }
