@@ -43,9 +43,9 @@ public class DBGWorker implements Callable<Void> {
     {
 
         try (Statement stmt = session.getConnection().createStatement()) {
-            session.getController().fireEvent(before);
+            session.fireEvent(before);
             stmt.executeQuery(sql);
-            session.getController().fireEvent(after);
+            session.fireEvent(after);
             return null;
         } catch (SQLException e) {
             String message = String.format("Failed to execute %s", sql);

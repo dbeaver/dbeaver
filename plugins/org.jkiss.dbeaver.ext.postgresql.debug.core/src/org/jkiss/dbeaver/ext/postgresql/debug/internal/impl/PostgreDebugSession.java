@@ -89,7 +89,7 @@ public class PostgreDebugSession extends DBGBaseSession {
      * @param sessionDebugInfo - session (debugger client connection) description
      * @throws DBGException
      */
-    public PostgreDebugSession(DBGBaseController controller, PostgreDebugSessionInfo sessionInfo, Object targetId) throws DBGException {
+    PostgreDebugSession(DBGBaseController controller, PostgreDebugSessionInfo sessionInfo, Object targetId) throws DBGException {
         super(controller);
         this.sessionInfo = sessionInfo;
         this.targetId = targetId;

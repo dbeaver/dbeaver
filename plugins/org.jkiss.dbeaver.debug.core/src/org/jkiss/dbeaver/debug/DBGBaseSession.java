@@ -47,7 +47,7 @@ public abstract class DBGBaseSession implements DBGSession {
 
     private final List<DBGBreakpointDescriptor> breakpoints = new ArrayList<>(1);
 
-    public DBGBaseSession(DBGBaseController controller) {
+    protected DBGBaseSession(DBGBaseController controller) {
         this.controller = controller;
     }
 
@@ -234,7 +234,7 @@ public abstract class DBGBaseSession implements DBGSession {
         }
 
     }
-
+    
     /**
      * Try to acquire exclusive lock
      * 
@@ -258,6 +258,10 @@ public abstract class DBGBaseSession implements DBGSession {
             lock.writeLock().unlock();
             throw new DBGException("Debug session in incorrect state");
         }
+    }
+
+    protected void fireEvent(DBGEvent event) {
+        controller.fireEvent(event);
     }
 
 }
