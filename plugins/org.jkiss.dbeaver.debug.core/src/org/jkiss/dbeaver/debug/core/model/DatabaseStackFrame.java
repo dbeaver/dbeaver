@@ -112,8 +112,7 @@ public class DatabaseStackFrame extends DatabaseDebugElement implements IStackFr
     @Override
     public IVariable[] getVariables() throws DebugException {
         try {
-            DBGSession debugSession = getController().findSession(sessionKey);
-            List<? extends DBGVariable<?>> dbgVariables = debugSession.getVariables();
+            List<? extends DBGVariable<?>> dbgVariables = getController().getVariables(sessionKey);
             if (dbgVariables.size() == 0) {
                 return NO_VARIABLES;
             }
