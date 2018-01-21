@@ -35,15 +35,20 @@ class GridColumnRenderer extends AbstractRenderer
 {
     public static final int LEFT_MARGIN = 6;
     public static final int RIGHT_MARGIN = 6;
-    public static final int BOTTOM_MARGIN = 3;
-    public static final int TOP_MARGIN = 3;
+    public static final int BOTTOM_MARGIN = 6;
+    public static final int TOP_MARGIN = 6;
     public static final int ARROW_MARGIN = 6;
     public static final int IMAGE_SPACING = 3;
 
     public static final Image IMAGE_ASTERISK = DBeaverIcons.getImage(UIIcon.SORT_UNKNOWN);
     public static final Image IMAGE_DESC = DBeaverIcons.getImage(UIIcon.SORT_DECREASE);
     public static final Image IMAGE_ASC = DBeaverIcons.getImage(UIIcon.SORT_INCREASE);
-    public static final int SORT_WIDTH = 16;
+    public static final Image IMAGE_FILTER = DBeaverIcons.getImage(UIIcon.FILTER);
+
+    public static final int SORT_WIDTH = IMAGE_DESC.getBounds().width;
+    public static final int FILTER_WIDTH = IMAGE_FILTER.getBounds().width;
+    
+    
 
     public  GridColumnRenderer(LightGrid grid) {
         super(grid);
@@ -51,6 +56,10 @@ class GridColumnRenderer extends AbstractRenderer
 
     public static Rectangle getSortControlBounds() {
         return IMAGE_DESC.getBounds();
+    }
+    
+    public static Rectangle getFilterControlBounds() {
+    	return IMAGE_FILTER.getBounds();
     }
 
     @Nullable
@@ -74,10 +83,14 @@ class GridColumnRenderer extends AbstractRenderer
     }
 
     public void paint(GC gc, Rectangle bounds, boolean selected, boolean hovering, Object element) {
+
+        boolean hasFilters = grid.getContentProvider().isElementSupportsFilter(element);
+
         //GridColumn col = grid.getColumnByElement(cell.col);
         //AbstractRenderer arrowRenderer = col.getSortRenderer();
         int sortOrder = grid.getContentProvider().getSortOrder(element);
-        Rectangle sortBounds = getSortControlBounds();
+        final Rectangle sortBounds = getSortControlBounds();
+        final Rectangle filterBounds = getFilterControlBounds();
 
         // set the font to be used to display the text.
         gc.setFont(getColumnFont(element));
@@ -117,7 +130,9 @@ class GridColumnRenderer extends AbstractRenderer
         } else {
             width -= ARROW_MARGIN + sortBounds.width + ARROW_MARGIN;
         }
-
+        if (hasFilters) {
+            width -= filterBounds.width;
+        }
         //gc.setForeground(getDisplay().getSystemColor(SWT.COLOR_WIDGET_FOREGROUND));
 
         int y = bounds.y + TOP_MARGIN;
@@ -139,6 +154,13 @@ class GridColumnRenderer extends AbstractRenderer
                 sortBounds.y = y;
             }
             paintSort(gc, sortBounds, sortOrder);
+        }
+
+        if (hasFilters) {
+            gc.drawImage(IMAGE_FILTER,
+                bounds.x + bounds.width - filterBounds.width -
+                    (sortOrder != SWT.NONE ? IMAGE_SPACING + sortBounds.width + 1 : ARROW_MARGIN),
+                y);
         }
 
         {
@@ -237,5 +259,4 @@ class GridColumnRenderer extends AbstractRenderer
         }
 */
     }
-
 }

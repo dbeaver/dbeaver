@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.utils.ArrayUtils;
 
+import java.util.Arrays;
 import java.util.Collections;
 
 /**
@@ -50,29 +51,58 @@ class PostgreDialect extends JDBCSQLDialect {
     public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(dataSource, metaData);
 
-        addSQLKeyword("SHOW");
-        addSQLKeyword("TYPE");
-        addSQLKeyword("USER");
-        addSQLKeyword("COMMENT");
-        addSQLKeyword("MATERIALIZED");
-        addSQLKeyword("ILIKE");
-        addSQLKeyword("ELSIF");
-        addSQLKeyword("ELSEIF");
+        addSQLKeywords(
+            Arrays.asList(
+                "SHOW",
+                "TYPE",
+                "USER",
+                "COMMENT",
+                "MATERIALIZED",
+                "ILIKE",
+                "ELSIF",
+                "ELSEIF",
+                "ANALYSE",
+                "ANALYZE",
+                "CONCURRENTLY",
+                "FREEZE",
+                "LANGUAGE",
+                "MODULE",
+                "OFFSET",
+                "PUBLIC",
+                "RETURNING",
+                "VARIADIC",
+                "PERFORM",
+                "FOREACH",
+                "LOOP",
+                "PERFORM",
+                "RAISE",
+                "NOTICE"
+            ));
 
-        addFunctions(Collections.singleton("CURRENT_DATABASE"));
+        addFunctions(
+            Arrays.asList(
+                "CURRENT_DATABASE",
+                "ARRAY_AGG",
+                "BIT_AND",
+                "BIT_OR",
+                "BOOL_AND",
+                "BOOL_OR",
+                "JSON_AGG",
+                "JSONB_AGG",
+                "JSON_OBJECT_AGG",
+                "JSONB_OBJECT_AGG",
+                "STRING_AGG",
+                "XMLAGG",
+                "BIT_LENGTH",
+                "CURRENT_CATALOG",
+                "CURRENT_SCHEMA",
+                "SQLCODE",
+                "LENGTH",
+                "SQLERROR"
+            ));
 
-        removeSQLKeyword("PUBLIC");
         removeSQLKeyword("LENGTH");
-        removeSQLKeyword("LANGUAGE");
     }
-
-/*
-    @NotNull
-    @Override
-    public MultiValueInsertMode getMultiValueInsertMode() {
-        return MultiValueInsertMode.GROUP_ROWS;
-    }
-*/
 
     @Override
     public int getCatalogUsage() {
@@ -90,6 +120,7 @@ class PostgreDialect extends JDBCSQLDialect {
         return "$" + SQLConstants.KEYWORD_PATTERN_CHARS + "$";
     }
 
+    @NotNull
     @Override
     public MultiValueInsertMode getMultiValueInsertMode() {
         return MultiValueInsertMode.GROUP_ROWS;

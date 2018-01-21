@@ -22,7 +22,9 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
+import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformProvider;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformType;
@@ -54,6 +56,10 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
         this.sqlServer = sqlServer;
     }
 
+    public boolean isSqlServer() {
+        return sqlServer;
+    }
+
     @Override
     public SQLServerDataSource createDataSourceImpl(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
         return new SQLServerDataSource(monitor, container, this);
@@ -75,6 +81,23 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
 
     @Override
     public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
+        if (isSqlServer() && sourceObject.getDataSource().isServerVersionAtLeast(SQLServerConstants.SQL_SERVER_2005_VERSION_MAJOR,0)) {
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject.getDataSource(), "Read routine definition")) {
+                try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                    "SELECT definition FROM " + DBUtils.getQuotedIdentifier(sourceObject.getCatalog()) + ".sys.sql_modules WHERE object_id=OBJECT_ID(?)"
+                )) {
+                    dbStat.setString(1, sourceObject.getFullyQualifiedName(DBPEvaluationContext.DML));
+                    try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                        if (dbResult.nextRow()) {
+                            return dbResult.getString(1);
+                        }
+                        return "-- Routine '" + sourceObject.getName() + "' definition not found in ";
+                    }
+                }
+            } catch (SQLException e) {
+                throw new DBException(e, sourceObject.getDataSource());
+            }
+        }
         return extractSource(monitor, sourceObject.getDataSource(), sourceObject.getCatalog().getName(), sourceObject.getSchema().getName(), sourceObject.getName());
     }
 
@@ -206,7 +229,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
         String sysSchema = DBUtils.getQuotedIdentifier(catalog) + "." + getSystemSchema();
         String sql;
         if (showAllSchemas) {
-            if (getServerType() == ServerType.SQL_SERVER && dataSource.isServerVersionAtLeast(9 ,0)) {
+            if (getServerType() == ServerType.SQL_SERVER && dataSource.isServerVersionAtLeast(SQLServerConstants.SQL_SERVER_2005_VERSION_MAJOR ,0)) {
                 sql = "SELECT name FROM " + DBUtils.getQuotedIdentifier(catalog) + ".sys.schemas";
             } else {
                 sql = "SELECT name FROM " + DBUtils.getQuotedIdentifier(catalog) + ".dbo.sysusers";

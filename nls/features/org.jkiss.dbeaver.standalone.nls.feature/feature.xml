@@ -2,7 +2,7 @@
 <feature
       id="org.jkiss.dbeaver.standalone.nls.feature"
       label="%featureName"
-      version="1.0.5"
+      version="1.0.6"
       provider-name="%providerName">
 
    <description>
@@ -21,52 +21,26 @@
       <update label="DBeaver Universal Database Manager" url="https://dbeaver.jkiss.org/"/>
    </url>
 
-   <includes
-         id="org.jkiss.dbeaver.rcp.nls.feature"
-         version="0.0.0"/>
+   <includes id="org.jkiss.dbeaver.rcp.nls.feature" version="0.0.0"/>
+   <includes id="org.jkiss.dbeaver.runtime.nls.feature" version="0.0.0"/>
+   <includes id="org.jkiss.dbeaver.ext.generic.nls.feature" version="0.0.0"/>
+   <includes id="org.jkiss.dbeaver.ext.db2.nls.feature" version="0.0.0"/>
+   <includes id="org.jkiss.dbeaver.ext.exasol.nls.feature" version="0.0.0"/>
+   <includes id="org.jkiss.dbeaver.ext.mysql.nls.feature" version="0.0.0"/>
+   <includes id="org.jkiss.dbeaver.ext.oracle.nls.feature" version="0.0.0"/>
+   <includes id="org.jkiss.dbeaver.ext.wmi.nls.feature" version="0.0.0"/>
 
-   <includes
-         id="org.jkiss.dbeaver.runtime.nls.feature"
-         version="0.0.0"/>
+   <!-- Plugins NLS -->
+   <plugin id="org.jkiss.dbeaver.ext.sample.database.nls" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
+   <plugin id="org.jkiss.dbeaver.core.application.nls" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
 
-   <includes
-         id="org.jkiss.dbeaver.ext.generic.nls.feature"
-         version="0.0.0"/>
+   <!-- Eclipse plugins NLS from Babel -->
+<!--
+   <plugin id="org.eclipse.ui.workbench.nl_de" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
+   <plugin id="org.eclipse.ui.workbench.nl_fr" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
+   <plugin id="org.eclipse.ui.workbench.nl_ru" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
+   <plugin id="org.eclipse.ui.workbench.nl_zh" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
+-->
 
-   <includes
-         id="org.jkiss.dbeaver.ext.db2.nls.feature"
-         version="0.0.0"/>
-
-   <includes
-         id="org.jkiss.dbeaver.ext.exasol.nls.feature"
-         version="0.0.0"/>
-
-   <includes
-         id="org.jkiss.dbeaver.ext.mysql.nls.feature"
-         version="0.0.0"/>
-
-   <includes
-         id="org.jkiss.dbeaver.ext.oracle.nls.feature"
-         version="0.0.0"/>
-
-   <includes
-         id="org.jkiss.dbeaver.ext.wmi.nls.feature"
-         version="0.0.0"/>
-
-   <plugin
-         id="org.jkiss.dbeaver.ext.sample.database.nls"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         fragment="true"
-         unpack="false"/>
-
-   <plugin
-         id="org.jkiss.dbeaver.core.application.nls"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         fragment="true"
-         unpack="false"/>
 
 </feature>

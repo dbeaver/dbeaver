@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.controls;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.viewers.CellEditor;
+import org.eclipse.jface.viewers.ColumnViewerEditorActivationEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusAdapter;
 import org.eclipse.swt.events.FocusEvent;
@@ -27,6 +28,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ui.ImageUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -51,15 +53,6 @@ public class CustomCheckboxCellEditor extends CellEditor {
         checkBox = new Label(parent, SWT.NONE);
         setCheckIcon();
         checkBox.setFont(parent.getFont());
-        checkBox.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseDown(MouseEvent e) {
-                checked = !checked;
-                applyEditorValue();
-                // This is needed for MacOS
-                fireApplyEditorValue();
-            }
-        });
 
         checkBox.addFocusListener(new FocusAdapter() {
             @Override
@@ -120,4 +113,31 @@ public class CustomCheckboxCellEditor extends CellEditor {
     protected int getDoubleClickTimeout() {
         return 0;
     }
+
+    @Override
+    public void activate() {
+        checkBox.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseDown(MouseEvent e) {
+                checked = !checked;
+                setCheckIcon();
+                applyEditorValue();
+                fireApplyEditorValue();
+            }
+        });
+
+        checked = !checked;
+        setCheckIcon();
+        applyEditorValue();
+        // Run in async to avoid NPE. fireApplyEditorValue disposes and nullifies editor
+        DBeaverUI.asyncExec(this::fireApplyEditorValue);
+    }
+
+    @Override
+    public void activate(ColumnViewerEditorActivationEvent activationEvent) {
+        if (activationEvent.eventType != ColumnViewerEditorActivationEvent.TRAVERSAL) {
+            super.activate(activationEvent);
+        }
+    }
+
 }

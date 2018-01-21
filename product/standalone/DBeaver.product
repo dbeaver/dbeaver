@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?pde version="3.5"?>
 
-<product name="DBeaver" uid="org.jkiss.dbeaver.core.product" id="org.jkiss.dbeaver.core.application.product" application="org.jkiss.dbeaver.core.application.standalone" version="4.3.2" useFeatures="true" includeLaunchers="true">
+<product name="DBeaver" uid="org.jkiss.dbeaver.core.product" id="org.jkiss.dbeaver.core.application.product" application="org.jkiss.dbeaver.core.application.standalone" version="4.3.3" useFeatures="true" includeLaunchers="true">
 
    <configIni use="default">
    </configIni>

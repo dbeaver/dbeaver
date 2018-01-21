@@ -17,10 +17,21 @@
  */
 package org.jkiss.dbeaver.debug.core.model;
 
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.IBreakpointManagerListener;
 import org.eclipse.debug.core.IDebugEventSetListener;
 import org.eclipse.debug.core.model.IDebugTarget;
+import org.jkiss.dbeaver.debug.DBGController;
+import org.jkiss.dbeaver.debug.DBGEvent;
 
 public interface IDatabaseDebugTarget extends IDebugTarget, IDebugEventSetListener, IBreakpointManagerListener {
+    
+    DebugEvent toDebugEvent(DBGEvent event);
+    
+    DBGController getController();
+    
+    void connect(IProgressMonitor monitor) throws CoreException;
 
 }

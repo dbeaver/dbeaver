@@ -351,6 +351,11 @@ class OracleSQLDialect extends JDBCSQLDialect {
         return true;
     }
 
+    @Override
+    public boolean isDelimiterAfterQuery() {
+        return false;
+    }
+
     @NotNull
     @Override
     public DBDBinaryFormatter getNativeBinaryFormatter() {
@@ -373,5 +378,10 @@ class OracleSQLDialect extends JDBCSQLDialect {
     protected String getStoredProcedureCallInitialClause(DBSProcedure proc) {
         String schemaName = proc.getParentObject().getName();
         return "CALL " + schemaName + "." + proc.getName() + "(\n";
+    }
+
+    @Override
+    public String getScriptDelimiter() {
+        return super.getScriptDelimiter();
     }
 }

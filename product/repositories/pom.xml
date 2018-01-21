@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.jkiss.dbeaver</groupId>
+        <artifactId>dbeaver</artifactId>
+        <version>1.0.0</version>
+        <relativePath>../../</relativePath>
+    </parent>
+    <version>1.0.0</version>
+    <artifactId>dbeaver-p2-repos</artifactId>
+    <packaging>pom</packaging>
+    <name>DBeaver P2 Repositories</name>
+
+    <modules>
+        <module>org.jkiss.dbeaver.ce.repository</module>
+        <module>org.jkiss.dbeaver.nls.repository</module>
+        <module>org.jkiss.dbeaver.office.repository</module>
+        <module>org.jkiss.dbeaver.svg.repository</module>
+    </modules>
+
+</project>

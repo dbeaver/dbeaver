@@ -114,6 +114,12 @@ public class BasicSQLDialect implements SQLDialect {
         allKeywords.remove(keyword);
     }
 
+    protected void addSQLKeywords(Collection<String> allKeywords) {
+        for (String kw : allKeywords) {
+            addSQLKeyword(kw);
+        }
+    }
+
     protected void addFunctions(Collection<String> allFunctions) {
         functions.addAll(allFunctions);
         addKeywords(allFunctions, DBPKeywordType.FUNCTION);
@@ -556,14 +562,16 @@ public class BasicSQLDialect implements SQLDialect {
         getMaxParameterLength(parameters, inParameters);
         sql.append(getStoredProcedureCallInitialClause(proc));
         for (int i = 0; i < inParameters.size(); i++) {
-            sql.append("\t\t\t?");
+            DBSProcedureParameter parameter = inParameters.get(i);
+            sql.append("\t\t\t:").append(CommonUtils.escapeIdentifier(parameter.getName()));
             if (i < (inParameters.size() - 1)) {
                 sql.append(",");
             } else {
                 sql.append(" ");
             }
-            String typeName = inParameters.get(i).getParameterType().getFullTypeName();
-            sql.append("\t-- put the " + inParameters.get(i).getName() + " parameter value instead of '?' (" + typeName + ")\n");
+            String typeName = parameter.getParameterType().getFullTypeName();
+            sql.append("\t-- put the ").append(parameter.getName())
+                .append(" parameter value instead of '").append(parameter.getName()).append("' (").append(typeName).append(")\n");
         }
         sql.append(");\n\n");
     }

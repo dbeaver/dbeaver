@@ -81,7 +81,10 @@ import java.lang.reflect.Method;
 import java.nio.charset.Charset;
 import java.text.DecimalFormatSymbols;
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.Collection;
+import java.util.Locale;
+import java.util.ResourceBundle;
+import java.util.SortedMap;
 
 /**
  * UI Utils
@@ -129,6 +132,29 @@ public class UIUtils {
                     }
                 }
                 e.doit = true;
+            }
+        };
+    }
+
+    public static VerifyListener getLongVerifyListener(Text text) {
+        return new VerifyListener() {
+            @Override
+            public void verifyText(VerifyEvent e) {
+
+                // get old text and create new text by using the VerifyEvent.text
+                final String oldS = text.getText();
+                String newS = oldS.substring(0, e.start) + e.text + oldS.substring(e.end);
+
+                boolean isLong = true;
+                try {
+                    Long.parseLong(newS);
+                }
+                catch(NumberFormatException ex) {
+                    isLong = false;
+                }
+
+                if(!isLong)
+                    e.doit = false;
             }
         };
     }

@@ -30,6 +30,8 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCColumnKeyType;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.sql.SQLConstants;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableColumn;
@@ -149,7 +151,11 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
         if (defaultValue != null) {
             switch (getDataKind()) {
                 case STRING:
-                    defaultValue = "'" + defaultValue + "'";
+                    // Escape if it is not NULL (#1913)
+                    // Although I didn't reproduce that locally - perhaps depends on server config.
+                    if (!SQLConstants.NULL_VALUE.equals(defaultValue)) {
+                        defaultValue = SQLUtils.quoteString(getDataSource(), defaultValue);
+                    }
                     break;
                 case DATETIME:
                     if (!defaultValue.isEmpty() && Character.isDigit(defaultValue.charAt(0))) {

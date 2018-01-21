@@ -54,7 +54,7 @@ public class OracleViewManager extends SQLObjectEditor<OracleView, OracleSchema>
         if (CommonUtils.isEmpty(command.getObject().getName())) {
             throw new DBException("View name cannot be empty");
         }
-        if (CommonUtils.isEmpty(command.getObject().getAdditionalInfo().getText())) {
+        if (CommonUtils.isEmpty(command.getObject().getViewText())) {
             throw new DBException("View definition cannot be empty");
         }
     }
@@ -70,7 +70,7 @@ public class OracleViewManager extends SQLObjectEditor<OracleView, OracleSchema>
     protected OracleView createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, OracleSchema parent, Object copyFrom)
     {
         OracleView newView = new OracleView(parent, "NEW_VIEW"); //$NON-NLS-1$
-        newView.getAdditionalInfo().setText("CREATE OR REPLACE VIEW " + newView.getFullyQualifiedName(DBPEvaluationContext.DDL) + " AS\nSELECT");
+        newView.setViewText("CREATE OR REPLACE VIEW " + newView.getFullyQualifiedName(DBPEvaluationContext.DDL) + " AS\nSELECT");
         return newView;
     }
 
@@ -99,7 +99,7 @@ public class OracleViewManager extends SQLObjectEditor<OracleView, OracleSchema>
         final OracleView view = command.getObject();
         boolean hasComment = command.getProperty("comment") != null;
         if (!hasComment || command.getProperties().size() > 1) {
-            actions.add(new SQLDatabasePersistAction("Create view", view.getAdditionalInfo().getText()));
+            actions.add(new SQLDatabasePersistAction("Create view", view.getViewText()));
         }
         if (hasComment) {
             actions.add(new SQLDatabasePersistAction(

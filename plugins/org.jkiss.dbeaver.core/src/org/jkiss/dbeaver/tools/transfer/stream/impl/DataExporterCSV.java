@@ -43,6 +43,7 @@ public class DataExporterCSV extends StreamExporterAbstract {
     private static final String PROP_DELIMITER = "delimiter";
     private static final String PROP_HEADER = "header";
     private static final String PROP_QUOTE_CHAR = "quoteChar";
+    private static final String PROP_QUOTE_ALWAYS = "quoteAlways";
     private static final String PROP_NULL_STRING = "nullString";
     private static final char DEF_DELIMITER = ',';
     private static final String DEF_QUOTE_CHAR = "\"";
@@ -56,6 +57,7 @@ public class DataExporterCSV extends StreamExporterAbstract {
     private String delimiter;
     private char quoteChar = '"';
     private boolean useQuotes = true;
+    private boolean quoteAlways = true;
     private String rowDelimiter;
     private String nullString;
     private HeaderPosition headerPosition;
@@ -85,6 +87,7 @@ public class DataExporterCSV extends StreamExporterAbstract {
         Object nullStringProp = site.getProperties().get(PROP_NULL_STRING);
         nullString = nullStringProp == null ? null : nullStringProp.toString();
         useQuotes = quoteChar != ' ';
+        quoteAlways = CommonUtils.toBoolean(site.getProperties().get(PROP_QUOTE_ALWAYS));
         out = site.getWriter();
         rowDelimiter = GeneralUtils.getDefaultLineSeparator();
         try {
@@ -185,9 +188,11 @@ public class DataExporterCSV extends StreamExporterAbstract {
         }
         // check for needed quote
         final boolean hasQuotes = useQuotes && value.indexOf(quoteChar) != -1;
-        if (!quote && !value.isEmpty()) {
+        if (quoteAlways) {
+            quote = true;
+        } else if (!quote && !value.isEmpty()) {
             if (hasQuotes ||
-                value.indexOf(delimiter) != -1 ||
+                value.contains(delimiter) ||
                 value.indexOf('\r') != -1 ||
                 value.indexOf('\n') != -1 ||
                 value.contains(rowDelimiter))

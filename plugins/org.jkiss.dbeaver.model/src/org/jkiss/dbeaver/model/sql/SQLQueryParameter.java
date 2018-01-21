@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.sql;
 
+import org.jkiss.dbeaver.utils.GeneralUtils;
+
 /**
  * SQL statement parameter info
  */
@@ -82,7 +84,9 @@ public class SQLQueryParameter {
     }
 
     public String getTitle() {
-        if (name.startsWith(":")) {
+        if (GeneralUtils.isVariablePattern(name)) {
+            return GeneralUtils.stripVariablePattern(name);
+        } else if (name.startsWith(":")) {
             return name.substring(1);
         } else {
             return name;

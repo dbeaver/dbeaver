@@ -30,4 +30,9 @@ public class SQLServerConstants {
 
     public static final String PROP_CONNECTION_WINDOWS_AUTH = DBConstants.INTERNAL_PROP_PREFIX + "connection-windows-auth@";
     public static final String PROP_SHOW_ALL_SCHEMAS = DBConstants.INTERNAL_PROP_PREFIX + "show-all-schemas@";
+
+    // https://support.microsoft.com/en-us/help/321185/how-to-determine-the-version--edition-and-update-level-of-sql-server-a
+    public static final int SQL_SERVER_2016_VERSION_MAJOR = 13;
+    public static final int SQL_SERVER_2008_VERSION_MAJOR = 10;
+    public static final int SQL_SERVER_2005_VERSION_MAJOR = 9;
 }
