@@ -25,7 +25,6 @@ import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IBreakpoint;
 import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.debug.core.model.IThread;
-import org.eclipse.debug.core.model.IVariable;
 import org.jkiss.dbeaver.debug.DBGController;
 import org.jkiss.dbeaver.debug.DBGException;
 import org.jkiss.dbeaver.debug.DBGStackFrame;
@@ -41,11 +40,7 @@ public abstract class DatabaseThread extends DatabaseDebugElement implements ITh
 
     private boolean stepping = false;
 
-    private boolean fRefreshProperties = true;
     private List<DatabaseStackFrame> frames = new ArrayList<>(1);
-    private List<DatabaseStackFrame> cachedFrames;
-
-    private List<DatabaseVariable> variables;
 
     public DatabaseThread(DatabaseDebugTarget target, Object sessionKey) {
         super(target);
@@ -121,8 +116,6 @@ public abstract class DatabaseThread extends DatabaseDebugElement implements ITh
     }
 
     private void aboutToResume(int detail, boolean stepping) {
-        fRefreshProperties = true;
-        cachedFrames = new ArrayList<>(frames);
         frames.clear();
         setStepping(stepping);
 //        setBreakpoints(null);
@@ -172,39 +165,14 @@ public abstract class DatabaseThread extends DatabaseDebugElement implements ITh
     }
 
     public void rebuildStack(List<? extends DBGStackFrame> stackFrames) {
-        //FIXME:AF:revisit this check
-        if (cachedFrames != null && (stackFrames.size() - 1) / 4 != cachedFrames.size()) {
-            cachedFrames.clear();
-            cachedFrames = null; // stack size changed..do not preserve
-        }
         for (DBGStackFrame dbgStackFrame : stackFrames) {
             addFrame(dbgStackFrame, sessionKey);
         }
     }
 
     private void addFrame(DBGStackFrame stackFrameId , Object sessionKey) {
-        DatabaseStackFrame frame = getOldFrame();
-
-        if (frame == null /*|| !frame.getFilePath().equals(filePath)*/) {
-            frame = new DatabaseStackFrame(this, stackFrameId, sessionKey);
-        } else {
-//            frame.setFilePath(filePath);
-//            frame.setId(stackFrameId);
-//            frame.setLineNumber(lineNumber);
-//            frame.setName(name);
-        }
+        DatabaseStackFrame frame = new DatabaseStackFrame(this, stackFrameId);
         frames.add(frame);
-    }
-
-    private DatabaseStackFrame getOldFrame() {
-        if (cachedFrames == null) {
-            return null;
-        }
-        DatabaseStackFrame frame = cachedFrames.remove(0);
-        if (cachedFrames.isEmpty()) {
-            cachedFrames = null;
-        }
-        return frame;
     }
 
     @Override
@@ -240,29 +208,15 @@ public abstract class DatabaseThread extends DatabaseDebugElement implements ITh
         this.stepping = stepping;
     }
 
-    protected IVariable[] requestVariables() throws DebugException {
-        if (fRefreshProperties) {
-            try {
-                List<? extends DBGVariable<?>> variables = getDatabaseDebugTarget().requestVariables();
-                rebuildVariables(variables);
-            } catch (DBGException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-        }
-        return (IVariable[]) variables.toArray(new IVariable[variables.size()]);
-    }
-
-    public void rebuildVariables(List<? extends DBGVariable<?>> dbgVariables) {
+    protected List<? extends DBGVariable<?>> requestVariables() throws DebugException {
+        List<DBGVariable<?>> variables = new ArrayList<DBGVariable<?>>();
         try {
-            variables.clear();
-            for (DBGVariable<?> dbgVariable : dbgVariables) {
-                DatabaseVariable variable = new DatabaseVariable(getDatabaseDebugTarget(), dbgVariable);
-                variables.add(variable);
-            }
-        } finally {
-            fRefreshProperties = false;
+            variables.addAll(getDatabaseDebugTarget().requestVariables());
+        } catch (DBGException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
+        return variables;
     }
 
 }
