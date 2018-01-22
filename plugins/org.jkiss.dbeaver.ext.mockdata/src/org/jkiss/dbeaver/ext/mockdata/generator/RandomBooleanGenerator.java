@@ -17,35 +17,17 @@
  */
 package org.jkiss.dbeaver.ext.mockdata.generator;
 
-import org.jkiss.dbeaver.ext.mockdata.model.MockValueGenerator;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
-import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 
-import java.util.Map;
-import java.util.Random;
-
-public class RandomBooleanGenerator implements MockValueGenerator {
-
-    private Random random = new Random();
-
-    @Override
-    public void init(DBSDataManipulator container, Map<String, Object> properties) throws DBCException {
-
-    }
-
-    @Override
-    public void nextRow() {
-
-    }
+public class RandomBooleanGenerator extends AbstractMockValueGenerator {
 
     @Override
     public Object generateValue(DBSAttributeBase attribute) throws DBCException {
-        return new Boolean(random.nextBoolean());
-    }
-
-    @Override
-    public void dispose() {
-
+        if (isGenerateNULL()) {
+            return null;
+        } else {
+            return new Boolean(random.nextBoolean());
+        }
     }
 }
