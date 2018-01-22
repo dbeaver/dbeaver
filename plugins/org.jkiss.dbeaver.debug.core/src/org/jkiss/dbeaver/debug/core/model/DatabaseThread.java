@@ -20,15 +20,18 @@ package org.jkiss.dbeaver.debug.core.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IBreakpoint;
 import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.debug.core.model.IThread;
+import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.debug.DBGController;
 import org.jkiss.dbeaver.debug.DBGException;
 import org.jkiss.dbeaver.debug.DBGStackFrame;
 import org.jkiss.dbeaver.debug.DBGVariable;
+import org.jkiss.dbeaver.debug.core.DebugCore;
 
 /**
  * Delegates mostly everything to its debug target
@@ -64,14 +67,13 @@ public abstract class DatabaseThread extends DatabaseDebugElement implements ITh
 
     @Override
     public void resume() throws DebugException {
-        // TODO Auto-generated method stub
-
+        aboutToResume(DebugEvent.CLIENT_REQUEST, false);
+        getDebugTarget().resume();
     }
 
     @Override
     public void suspend() throws DebugException {
-        // TODO Auto-generated method stub
-
+        getDebugTarget().suspend();
     }
 
     @Override
@@ -112,7 +114,7 @@ public abstract class DatabaseThread extends DatabaseDebugElement implements ITh
     @Override
     public void stepReturn() throws DebugException {
         aboutToResume(DebugEvent.STEP_RETURN, true);
-        getDatabaseDebugTarget().stepOver();
+        getDatabaseDebugTarget().stepReturn();
     }
 
     private void aboutToResume(int detail, boolean stepping) {
@@ -154,8 +156,9 @@ public abstract class DatabaseThread extends DatabaseDebugElement implements ITh
             stackFrames = getDatabaseDebugTarget().requestStackFrames();
             rebuildStack(stackFrames);
         } catch (DBGException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            String message = NLS.bind("Error reading stack for {0}", getName());
+            IStatus status = DebugCore.newErrorStatus(message, e);
+            throw new DebugException(status);
         }
     }
 
@@ -213,8 +216,9 @@ public abstract class DatabaseThread extends DatabaseDebugElement implements ITh
         try {
             variables.addAll(getDatabaseDebugTarget().requestVariables());
         } catch (DBGException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            String message = NLS.bind("Error reading variables for {0}", getName());
+            IStatus status = DebugCore.newErrorStatus(message, e);
+            throw new DebugException(status);
         }
         return variables;
     }

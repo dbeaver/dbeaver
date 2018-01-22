@@ -32,7 +32,6 @@ import org.eclipse.debug.core.model.IBreakpoint;
 import org.eclipse.debug.core.model.IDebugTarget;
 import org.eclipse.debug.core.model.IMemoryBlock;
 import org.eclipse.debug.core.model.IProcess;
-import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.debug.core.model.IThread;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.debug.DBGController;
@@ -317,11 +316,6 @@ public abstract class DatabaseDebugTarget extends DatabaseDebugElement implement
 
     public boolean canStepReturn() {
         return controller.canStepReturn(sessionKey);
-    }
-
-    public boolean isStepping() {
-        // TODO Auto-generated method stub
-        return false;
     }
 
     public void stepInto() throws DebugException {
