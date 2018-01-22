@@ -17,15 +17,18 @@ public class DatabaseStackFrame extends DatabaseDebugElement implements IStackFr
     
     private static final IRegisterGroup[] NO_REGISTER_GROUPS = new IRegisterGroup[0];
     private static final IVariable[] NO_VARIABLES = new IVariable[0];
-    private final DBGStackFrame dbgStackFrame;
-    private final DatabaseThread thread;
-    private final Object sessionKey;
 
-    public DatabaseStackFrame(DatabaseThread thread, DBGStackFrame dbgStackFrame, Object sessionKey) {
+    private final List<DatabaseVariable> variables = new ArrayList<DatabaseVariable>();
+    
+    private final DatabaseThread thread;
+    private final DBGStackFrame dbgStackFrame;
+
+    private boolean refreshVariables = true;
+
+    public DatabaseStackFrame(DatabaseThread thread, DBGStackFrame dbgStackFrame) {
         super(thread.getDatabaseDebugTarget());
         this.thread = thread;
         this.dbgStackFrame = dbgStackFrame;
-        this.sessionKey = sessionKey;
     }
 
     @Override
@@ -110,22 +113,35 @@ public class DatabaseStackFrame extends DatabaseDebugElement implements IStackFr
 
     @Override
     public IVariable[] getVariables() throws DebugException {
-        try {
-            List<? extends DBGVariable<?>> dbgVariables = getController().getVariables(sessionKey);
-            if (dbgVariables.size() == 0) {
-                return NO_VARIABLES;
+        if (refreshVariables) {
+            try {
+                List<? extends DBGVariable<?>> variables = getDatabaseDebugTarget().requestVariables();
+                rebuildVariables(variables);
+            } catch (DBGException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
             }
-            List<DatabaseVariable> variables = new ArrayList<DatabaseVariable>();
-            for (DBGVariable<?> dbgVariable : dbgVariables) {
-                DatabaseVariable e = new DatabaseVariable(getDatabaseDebugTarget(), dbgVariable);
-                variables.add(e);
-            }
-            return (DatabaseVariable[]) variables.toArray(new DatabaseVariable[variables.size()]);
-        } catch (DBGException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
         }
-        return NO_VARIABLES;
+        if (variables.isEmpty()) {
+            return NO_VARIABLES;
+        }
+        return (IVariable[]) variables.toArray(new IVariable[variables.size()]);
+    }
+    
+    protected void invalidateVariables() {
+        refreshVariables = true;
+    }
+
+    protected void rebuildVariables(List<? extends DBGVariable<?>> dbgVariables) {
+        try {
+            variables.clear();
+            for (DBGVariable<?> dbgVariable : dbgVariables) {
+                DatabaseVariable variable = new DatabaseVariable(getDatabaseDebugTarget(), dbgVariable);
+                variables.add(variable);
+            }
+        } finally {
+            refreshVariables = false;
+        }
     }
 
     @Override
