@@ -38,8 +38,9 @@ import org.jkiss.dbeaver.debug.DBGController;
 import org.jkiss.dbeaver.debug.DBGEvent;
 import org.jkiss.dbeaver.debug.DBGEventHandler;
 import org.jkiss.dbeaver.debug.DBGException;
+import org.jkiss.dbeaver.debug.DBGStackFrame;
+import org.jkiss.dbeaver.debug.DBGVariable;
 import org.jkiss.dbeaver.debug.core.DebugCore;
-import org.jkiss.dbeaver.debug.core.DebugEvents;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 
@@ -288,11 +289,6 @@ public abstract class DatabaseDebugTarget extends DatabaseDebugElement implement
     }
     
     @Override
-    public DebugEvent toDebugEvent(DBGEvent event) {
-        return new DebugEvent(event.getSource(), event.getKind(), event.getDetails());
-    }
-
-    @Override
     public boolean supportsStorageRetrieval() {
         return false;
     }
@@ -304,9 +300,67 @@ public abstract class DatabaseDebugTarget extends DatabaseDebugElement implement
     
     @Override
     public void handleDebugEvent(DBGEvent event) {
-        DebugEvent debugEvent = toDebugEvent(event);
-        DebugEvents.fireEvent(debugEvent);
-//        DebugEvents.fireEvent(new DebugEvent(this, DebugEvent.SUSPEND, DebugEvent.BREAKPOINT));
+        int kind = event.getKind();
+        if (DBGEvent.SUSPEND == kind) {
+            suspended(event.getDetails());
+        }
+    }
+
+    public boolean canStepInto() {
+        return controller.canStepInto(sessionKey);
+    }
+
+    public boolean canStepOver() {
+        return controller.canStepOver(sessionKey);
+    }
+
+    public boolean canStepReturn() {
+        return controller.canStepReturn(sessionKey);
+    }
+
+    public void stepInto() throws DebugException {
+        DBGController controller = getController();
+        try {
+            controller.stepInto(sessionKey);
+        } catch (DBGException e) {
+            String message = NLS.bind("Step into failed for session {0}", sessionKey);
+            IStatus status = DebugCore.newErrorStatus(message, e);
+            throw new DebugException(status);
+        }
+    }
+
+    public void stepOver() throws DebugException {
+        DBGController controller = getController();
+        try {
+            controller.stepOver(sessionKey);
+        } catch (DBGException e) {
+            String message = NLS.bind("Step over failed for session {0}", sessionKey);
+            IStatus status = DebugCore.newErrorStatus(message, e);
+            throw new DebugException(status);
+        }
+    }
+
+    public void stepReturn() throws DebugException {
+        DBGController controller = getController();
+        try {
+            controller.stepReturn(sessionKey);
+        } catch (DBGException e) {
+            String message = NLS.bind("Step return failed for session {0}", sessionKey);
+            IStatus status = DebugCore.newErrorStatus(message, e);
+            throw new DebugException(status);
+        }
+    }
+
+    protected List<? extends DBGStackFrame> requestStackFrames() throws DBGException {
+        DBGController controller = getController();
+        List<? extends DBGStackFrame> stack = controller.getStack(sessionKey);
+        return stack;
+    }
+
+    protected List<? extends DBGVariable<?>> requestVariables() throws DBGException {
+        DBGController controller = getController();
+        List<? extends DBGVariable<?>> variables = controller.getVariables(sessionKey);
+        return variables;
     }
 
 }

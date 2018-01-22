@@ -10,7 +10,6 @@ import org.eclipse.debug.core.model.IThread;
 import org.eclipse.debug.core.model.IVariable;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.debug.DBGException;
-import org.jkiss.dbeaver.debug.DBGSession;
 import org.jkiss.dbeaver.debug.DBGStackFrame;
 import org.jkiss.dbeaver.debug.DBGVariable;
 
@@ -18,90 +17,93 @@ public class DatabaseStackFrame extends DatabaseDebugElement implements IStackFr
     
     private static final IRegisterGroup[] NO_REGISTER_GROUPS = new IRegisterGroup[0];
     private static final IVariable[] NO_VARIABLES = new IVariable[0];
-    private final DBGStackFrame dbgStackFrame;
-    private final DatabaseThread thread;
-    private final Object sessionKey;
 
-    public DatabaseStackFrame(DatabaseThread thread, DBGStackFrame dbgStackFrame, Object sessionKey) {
+    private final List<DatabaseVariable> variables = new ArrayList<DatabaseVariable>();
+    
+    private final DatabaseThread thread;
+    private final DBGStackFrame dbgStackFrame;
+
+    private boolean refreshVariables = true;
+
+    public DatabaseStackFrame(DatabaseThread thread, DBGStackFrame dbgStackFrame) {
         super(thread.getDatabaseDebugTarget());
         this.thread = thread;
         this.dbgStackFrame = dbgStackFrame;
-        this.sessionKey = sessionKey;
     }
 
     @Override
     public boolean canStepInto() {
-        return thread.canStepInto();
+        return getThread().canStepInto();
     }
 
     @Override
     public boolean canStepOver() {
-       return thread.canStepOver();
+       return getThread().canStepOver();
     }
 
     @Override
     public boolean canStepReturn() {
-        return thread.canStepReturn();
+        return getThread().canStepReturn();
     }
 
     @Override
     public boolean isStepping() {
-        return thread.isStepping();
+        return getThread().isStepping();
     }
 
     @Override
     public void stepInto() throws DebugException {
-        thread.stepInto();
+        getThread().stepInto();
     }
 
     @Override
     public void stepOver() throws DebugException {
-        thread.stepOver();
+        getThread().stepOver();
     }
 
     @Override
     public void stepReturn() throws DebugException {
-        thread.canStepReturn();
+        getThread().canStepReturn();
     }
 
     @Override
     public boolean canResume() {
-        return thread.canResume();
+        return getThread().canResume();
     }
 
     @Override
     public boolean canSuspend() {
-        return thread.canSuspend();
+        return getThread().canSuspend();
     }
 
     @Override
     public boolean isSuspended() {
-        return thread.isSuspended();
+        return getThread().isSuspended();
     }
 
     @Override
     public void resume() throws DebugException {
-        thread.resume();
+        getThread().resume();
     }
 
     @Override
     public void suspend() throws DebugException {
-        thread.suspend();
+        getThread().suspend();
     }
 
     @Override
     public boolean canTerminate() {
-        return thread.canTerminate();
+        return getThread().canTerminate();
     }
 
     @Override
     public boolean isTerminated() {
-        return thread.isTerminated();
+        return getThread().isTerminated();
     }
 
     @Override
     public void terminate() throws DebugException {
-        thread.terminate();
+        getThread().terminate();
     }
 
     @Override
@@ -111,28 +113,40 @@ public class DatabaseStackFrame extends DatabaseDebugElement implements IStackFr
 
     @Override
     public IVariable[] getVariables() throws DebugException {
-        try {
-            DBGSession debugSession = getController().findSession(sessionKey);
-            List<? extends DBGVariable<?>> dbgVariables = debugSession.getVariables();
-            if (dbgVariables.size() == 0) {
-                return NO_VARIABLES;
+        if (refreshVariables) {
+            try {
+                List<? extends DBGVariable<?>> variables = getDatabaseDebugTarget().requestVariables();
+                rebuildVariables(variables);
+            } catch (DBGException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
             }
-            List<DatabaseVariable> variables = new ArrayList<DatabaseVariable>();
-            for (DBGVariable<?> dbgVariable : dbgVariables) {
-                DatabaseVariable e = new DatabaseVariable(getDatabaseDebugTarget(), dbgVariable);
-                variables.add(e);
-            }
-            return (DatabaseVariable[]) variables.toArray(new DatabaseVariable[variables.size()]);
-        } catch (DBGException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
         }
-        return NO_VARIABLES;
+        if (variables.isEmpty()) {
+            return NO_VARIABLES;
+        }
+        return (IVariable[]) variables.toArray(new IVariable[variables.size()]);
+    }
+    
+    protected void invalidateVariables() {
+        refreshVariables = true;
+    }
+
+    protected void rebuildVariables(List<? extends DBGVariable<?>> dbgVariables) {
+        try {
+            variables.clear();
+            for (DBGVariable<?> dbgVariable : dbgVariables) {
+                DatabaseVariable variable = new DatabaseVariable(getDatabaseDebugTarget(), dbgVariable);
+                variables.add(variable);
+            }
+        } finally {
+            refreshVariables = false;
+        }
     }
 
     @Override
     public boolean hasVariables() throws DebugException {
-        return true;
+        return isSuspended();
     }
 
     @Override

@@ -26,8 +26,8 @@ public class DatabaseDebugElement extends DebugElement {
         super(target);
     }
 
-    public IDatabaseDebugTarget getDatabaseDebugTarget() {
-        return (IDatabaseDebugTarget) getDebugTarget();
+    public DatabaseDebugTarget getDatabaseDebugTarget() {
+        return (DatabaseDebugTarget) getDebugTarget();
     }
     
     public DBGController getController() {

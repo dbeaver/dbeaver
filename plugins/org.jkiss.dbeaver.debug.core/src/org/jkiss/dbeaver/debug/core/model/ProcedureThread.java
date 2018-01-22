@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.debug.internal.core.DebugCoreMessages;
 
 public class ProcedureThread extends DatabaseThread {
 
-    public ProcedureThread(IDatabaseDebugTarget target, Object sessionKey) {
+    public ProcedureThread(DatabaseDebugTarget target, Object sessionKey) {
         super(target, sessionKey);
     }
 
