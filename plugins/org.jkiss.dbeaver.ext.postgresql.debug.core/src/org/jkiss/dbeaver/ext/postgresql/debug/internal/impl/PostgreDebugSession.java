@@ -89,7 +89,7 @@ public class PostgreDebugSession extends DBGBaseSession {
      * @param sessionDebugInfo - session (debugger client connection) description
      * @throws DBGException
      */
-    public PostgreDebugSession(DBGBaseController controller, PostgreDebugSessionInfo sessionInfo, Object targetId) throws DBGException {
+    PostgreDebugSession(DBGBaseController controller, PostgreDebugSessionInfo sessionInfo, Object targetId) throws DBGException {
         super(controller);
         this.sessionInfo = sessionInfo;
         this.targetId = targetId;
@@ -133,7 +133,10 @@ public class PostgreDebugSession extends DBGBaseSession {
             
             String sessionParam = String.valueOf(getSessionId());
             String taskName = sessionParam + " global attached to " + String.valueOf(targetId);
-            runAsync(SQL_ATTACH.replaceAll("\\?sessionid", sessionParam), taskName, new DBGEvent(this, DBGEvent.ATTACH));
+            String sql = SQL_ATTACH.replaceAll("\\?sessionid", sessionParam);
+            DBGEvent begin = new DBGEvent(this, DBGEvent.RESUME, DBGEvent.MODEL_SPECIFIC);
+            DBGEvent end = new DBGEvent(this, DBGEvent.SUSPEND, DBGEvent.BREAKPOINT);
+            runAsync(sql, taskName, begin, end);
 
             /*if (breakpoint) {
                 runAsync(SQL_ATTACH_BREAKPOINT.replaceAll("\\?sessionid", String.valueOf(sessionId)),
@@ -198,20 +201,20 @@ public class PostgreDebugSession extends DBGBaseSession {
      * Execute step SQL command  asynchronously, set debug session name to 
      * [sessionID] name [managerPID] 
      * 
-     * @param commandSQL - SQL command for execute step
-     * @param name - session 'name' part
+     * @param commandPattern - SQL command for execute step
+     * @param nameParameter - session 'name' part
      * @throws DBGException
      */
-    public void execStep(String commandSQL, String name, int eventDetail) throws DBGException {
+    public void execStep(String commandPattern, String nameParameter, int eventDetail) throws DBGException {
 
         acquireWriteLock();
 
         try {
-            DBGEvent event = new DBGEvent(this, DBGEvent.RESUME, eventDetail);
-
-            runAsync(commandSQL.replaceAll("\\?sessionid", String.valueOf(sessionId)),
-                    String.valueOf(sessionId) + name + String.valueOf(targetId), event);
-
+            String sql = commandPattern.replaceAll("\\?sessionid", String.valueOf(sessionId));
+            String taskName = String.valueOf(sessionId) + nameParameter + String.valueOf(targetId);
+            DBGEvent begin = new DBGEvent(this, DBGEvent.RESUME, eventDetail);
+            DBGEvent end = new DBGEvent(this, DBGEvent.SUSPEND, eventDetail);
+            runAsync(sql, taskName, begin, end);
         } finally {
             lock.writeLock().unlock();
         }

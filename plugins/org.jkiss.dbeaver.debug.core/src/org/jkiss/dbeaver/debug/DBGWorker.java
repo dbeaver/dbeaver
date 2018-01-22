@@ -19,31 +19,34 @@
 
 package org.jkiss.dbeaver.debug;
 
-import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.concurrent.Callable;
 
-public class DBGWorker implements Callable<DBGEvent> {
+public class DBGWorker implements Callable<Void> {
 
-    private final Connection conn;
+    private final DBGBaseSession session;
     private final String sql;
-    private final DBGEvent event;
+    private final DBGEvent before;
+    private final DBGEvent after;
 
-    public DBGWorker(Connection conn, String sqlCommand, DBGEvent event)
+    public DBGWorker(DBGBaseSession session, String sqlCommand, DBGEvent begin, DBGEvent end)
     {
-        this.conn = conn;
+        this.session = session;
         this.sql = sqlCommand;
-        this.event = event;
+        this.before = begin;
+        this.after = end;
     }
 
     @Override
-    public DBGEvent call() throws Exception
+    public Void call() throws Exception
     {
 
-        try (Statement stmt = conn.createStatement()) {
+        try (Statement stmt = session.getConnection().createStatement()) {
+            session.fireEvent(before);
             stmt.executeQuery(sql);
-            return event;
+            session.fireEvent(after);
+            return null;
         } catch (SQLException e) {
             String message = String.format("Failed to execute %s", sql);
             throw new Exception(message, e);
