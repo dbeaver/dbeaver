@@ -39,7 +39,7 @@ public abstract class DBGBaseSession implements DBGSession {
 
     private final DBGBaseController controller;
 
-    private FutureTask<DBGEvent> task;
+    private FutureTask<Void> task;
 
     private Thread workerThread = null;
 
@@ -47,7 +47,7 @@ public abstract class DBGBaseSession implements DBGSession {
 
     private final List<DBGBreakpointDescriptor> breakpoints = new ArrayList<>(1);
 
-    public DBGBaseSession(DBGBaseController controller) {
+    protected DBGBaseSession(DBGBaseController controller) {
         this.controller = controller;
     }
 
@@ -71,7 +71,7 @@ public abstract class DBGBaseSession implements DBGSession {
         this.connection = connection;
     }
 
-    public DBGBaseController getController() {
+    protected DBGBaseController getController() {
         return controller;
     }
 
@@ -105,8 +105,7 @@ public abstract class DBGBaseSession implements DBGSession {
         }
         if (task.isDone()) {
             try {
-                DBGEvent dbgEvent = task.get();
-                getController().fireEvent(dbgEvent);
+                task.get();
             } catch (InterruptedException e) {
                 log.error("DEBUG INTERRUPT ERROR ", e);
                 return false;
@@ -126,18 +125,18 @@ public abstract class DBGBaseSession implements DBGSession {
      * @param name
      * @throws DBGException
      */
-    protected void runAsync(String commandSQL, String name, DBGEvent event) throws DBGException {
+    protected void runAsync(String commandSQL, String name, DBGEvent begin, DBGEvent end) throws DBGException {
         Connection connection = getConnection();
         try (Statement stmt = connection.createStatement()) {
             connection.setAutoCommit(false);
-            DBGWorker worker = new DBGWorker(connection, commandSQL, event);
-            task = new FutureTask<DBGEvent>(worker);
-            workerThread = new Thread(task);
-            workerThread.setName(name);
-            workerThread.start();
         } catch (SQLException e) {
             throw new DBGException("SQL error", e);
         }
+        DBGWorker worker = new DBGWorker(this, commandSQL, begin, end);
+        task = new FutureTask<Void>(worker);
+        workerThread = new Thread(task);
+        workerThread.setName(name);
+        workerThread.start();
     }
 
     public void close() {
@@ -235,7 +234,7 @@ public abstract class DBGBaseSession implements DBGSession {
         }
 
     }
-
+    
     /**
      * Try to acquire exclusive lock
      * 
@@ -259,6 +258,10 @@ public abstract class DBGBaseSession implements DBGSession {
             lock.writeLock().unlock();
             throw new DBGException("Debug session in incorrect state");
         }
+    }
+
+    protected void fireEvent(DBGEvent event) {
+        controller.fireEvent(event);
     }
 
 }

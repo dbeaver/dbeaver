@@ -23,6 +23,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Scanner;
 
+import org.jkiss.dbeaver.debug.DBGBaseController;
 import org.jkiss.dbeaver.debug.DBGBreakpointDescriptor;
 import org.jkiss.dbeaver.debug.DBGController;
 import org.jkiss.dbeaver.debug.DBGException;
@@ -210,7 +211,7 @@ public class Debugger {
 
     }
 
-    public static DBGSession chooseSession(Scanner sc, DBGController controller)
+    public static DBGSession chooseSession(Scanner sc, DBGBaseController controller)
             throws DBGException {
 
         DBGSession debugSession = null;
@@ -288,7 +289,7 @@ public class Debugger {
         DBPDataSourceContainer dataSource = null;
 
         Connection conn;
-        DBGController controller;
+        DBGBaseController controller;
         try {
 
             conn = DriverManager.getConnection(url);
