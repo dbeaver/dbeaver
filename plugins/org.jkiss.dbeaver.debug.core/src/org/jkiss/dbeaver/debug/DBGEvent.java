@@ -24,16 +24,25 @@ public class DBGEvent extends EventObject {
 
     private static final long serialVersionUID = 1L;
 
-    public static final int ATTACH = 0x0001;
-    public static final int SUSPEND = 0x0002;
-    public static final int RESUME = 0x0004;
-    public static final int DETACH = 0x0008;
+    /*
+     * The event kind constants 
+     */
+    public static final int RESUME= 0x0001;
+    public static final int SUSPEND= 0x0002;
+    public static final int CREATE= 0x0004;
+    public static final int TERMINATE= 0x0008;
+    public static final int CHANGE= 0x0010;
+    public static final int MODEL_SPECIFIC= 0x0020;
 
+    /*
+     * The event detail constants 
+     */
     public static final int UNSPECIFIED = 0;
     public static final int STEP_INTO = 0x0001;
     public static final int STEP_OVER = 0x0002;
     public static final int STEP_RETURN = 0x0004;
     public static final int STEP_END = 0x0008;
+    public static final int BREAKPOINT= 0x0010;
 
     private int kind;
 
