@@ -23,7 +23,10 @@ import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.ext.mockdata.generator.SimpleStringGenerator;
+import org.jkiss.dbeaver.ext.mockdata.model.MockGeneratorDescriptor;
+import org.jkiss.dbeaver.ext.mockdata.model.MockGeneratorRegistry;
+import org.jkiss.dbeaver.ext.mockdata.model.MockValueGenerator;
 import org.jkiss.dbeaver.model.connection.DBPClientHome;
 import org.jkiss.dbeaver.model.data.DBDAttributeValue;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -32,13 +35,14 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractToolWizard;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulator, DBSDataManipulator> implements IImportWizard{
 
@@ -106,6 +110,8 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
         super.createPageControls(pageContainer);
     }
 
+    private Map<String, MockValueGenerator> generators = new HashMap<>();
+
     @Override
     public boolean executeProcess(DBRProgressMonitor monitor, DBSDataManipulator dataManipulator) {
 
@@ -117,6 +123,7 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                 logPage.appendLog("Removing old data from the '" + dataManipulator.getName() + "'.\n");
                 DBCStatistics deleteStats = new DBCStatistics();
                 try {
+                    // TODO truncate is much faster than delete
                     DBSDataManipulator.ExecuteBatch batch = dataManipulator.deleteData(session, new DBSAttributeBase[]{}, executionSource);
                     try {
                         batch.add(new Object[] {});
@@ -141,6 +148,22 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                 logPage.appendLog("\nInserting Mock Data into the '" + dataManipulator.getName() + "'.\n");
                 DBCStatistics insertStats = new DBCStatistics();
 
+                // build and init the generators
+                DBSEntity dbsEntity = (DBSEntity) dataManipulator;
+                MockGeneratorRegistry generatorRegistry = MockGeneratorRegistry.getInstance();
+                Collection<? extends DBSEntityAttribute> attributes = dbsEntity.getAttributes(monitor);
+                generators.clear();
+                for (DBSEntityAttribute attribute : attributes) {
+                    MockGeneratorDescriptor generatorDescriptor = generatorRegistry.findGenerator(dbsEntity.getDataSource(), attribute);
+                    MockValueGenerator generator = generatorDescriptor.getInstance();
+                    if (generator instanceof SimpleStringGenerator) {
+                        HashMap<String, Object> properties = new HashMap<>();
+                        properties.put("template", generatorDescriptor.getProperty("template").getDefaultValue());
+                        generator.init(dataManipulator, properties);
+                    }
+                    generators.put(attribute.getName(), generator);
+                }
+
                 long rowsNumber = mockDataSettings.getRowsNumber();
                 long quotient = rowsNumber / BATCH_SIZE;
                 long modulo = rowsNumber % BATCH_SIZE;
@@ -149,24 +172,15 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                 }
                 int counter = 0;
 
+                // generate and insert the data
                 DBSDataManipulator.ExecuteBatch batch = null;
                 for (int q = 0; q < quotient; q++) {
                     try {
                         for (int i = 0; i < BATCH_SIZE; i++) {
                             List<DBDAttributeValue> attributeValues = new ArrayList<>();
-                            Collection<? extends DBSEntityAttribute> attributes = ((DBSEntity) dataManipulator).getAttributes(monitor);
                             for (DBSEntityAttribute attribute : attributes) {
-                                Object value = attribute.getDefaultValue();
-                                DBSDataType dataType = ((DBSTypedObjectEx) attribute).getDataType();
-                                DBPDataKind dataKind = dataType.getDataKind();
-                                switch (dataKind) {
-                                    case NUMERIC:
-                                        value = MockDataGenerator.generateNumeric((int) attribute.getMaxLength(), attribute.getPrecision(), attribute.getScale()); break;
-                                    case STRING:
-                                        value = MockDataGenerator.generateTextUpTo((int) attribute.getMaxLength()); break;
-                                    case DATETIME:
-                                        value = MockDataGenerator.generateDate(); break;
-                                }
+                                MockValueGenerator generator = generators.get(attribute.getName());
+                                Object value = generator.generateValue(attribute);
                                 attributeValues.add(new DBDAttributeValue(attribute, value));
                             }
 
