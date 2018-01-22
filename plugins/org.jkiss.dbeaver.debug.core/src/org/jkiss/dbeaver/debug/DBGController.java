@@ -35,6 +35,7 @@ public interface DBGController {
     public static final String PROCESS_ID = "processID"; //$NON-NLS-1$
     public static final String PROCEDURE_NAME = "procedureName"; //$NON-NLS-1$
     public static final String PROCEDURE_CALL = "procedureCall"; //$NON-NLS-1$
+    public static final String ATTACH_KIND = "attachKind"; //$NON-NLS-1$
 
     /*
      * General lifecycle

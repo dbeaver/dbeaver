@@ -218,6 +218,7 @@ public abstract class DBGBaseController implements DBGController {
         }
     }
     
+    /*
     protected void executeProcedure(DBPDataSource dataSource, Map<String, Object> configuration, DBRProgressMonitor monitor) throws DBException {
         String procedureName = String.valueOf(configuration.get(PROCEDURE_NAME));
         String call = String.valueOf(configuration.get(PROCEDURE_CALL));
@@ -242,6 +243,6 @@ public abstract class DBGBaseController implements DBGController {
             }
         };
         job.schedule();
-    }
+    }*/
 
 }
