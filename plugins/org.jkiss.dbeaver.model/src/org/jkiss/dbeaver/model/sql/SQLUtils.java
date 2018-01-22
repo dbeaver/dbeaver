@@ -349,18 +349,21 @@ public final class SQLUtils {
             String trimmed = sql.substring(0, sql.length() - statementDelimiter.length());
             {
                 String test = trimmed.toUpperCase().trim();
-                for (String[] blocks : syntaxManager.getDialect().getBlockBoundStrings()) {
-                    int endIndex = test.indexOf(blocks[1]);
-                    if (endIndex > 0) {
-                        // This is a block query if it ends with 'END' or with 'END id'
-                        if (test.endsWith(blocks[1])) {
-                            isBlockQuery = true;
-                            break;
-                        } else {
-                            String afterEnd = test.substring(endIndex + blocks[1].length()).trim();
-                            if (CommonUtils.isJavaIdentifier(afterEnd)) {
+                String[][] blockBoundStrings = syntaxManager.getDialect().getBlockBoundStrings();
+                if (blockBoundStrings != null) {
+                    for (String[] blocks : blockBoundStrings) {
+                        int endIndex = test.indexOf(blocks[1]);
+                        if (endIndex > 0) {
+                            // This is a block query if it ends with 'END' or with 'END id'
+                            if (test.endsWith(blocks[1])) {
                                 isBlockQuery = true;
                                 break;
+                            } else {
+                                String afterEnd = test.substring(endIndex + blocks[1].length()).trim();
+                                if (CommonUtils.isJavaIdentifier(afterEnd)) {
+                                    isBlockQuery = true;
+                                    break;
+                                }
                             }
                         }
                     }
