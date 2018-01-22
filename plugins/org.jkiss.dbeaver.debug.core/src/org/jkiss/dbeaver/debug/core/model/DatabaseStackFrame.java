@@ -10,7 +10,6 @@ import org.eclipse.debug.core.model.IThread;
 import org.eclipse.debug.core.model.IVariable;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.debug.DBGException;
-import org.jkiss.dbeaver.debug.DBGSession;
 import org.jkiss.dbeaver.debug.DBGStackFrame;
 import org.jkiss.dbeaver.debug.DBGVariable;
 
@@ -31,77 +30,77 @@ public class DatabaseStackFrame extends DatabaseDebugElement implements IStackFr
 
     @Override
     public boolean canStepInto() {
-        return thread.canStepInto();
+        return getThread().canStepInto();
     }
 
     @Override
     public boolean canStepOver() {
-       return thread.canStepOver();
+       return getThread().canStepOver();
     }
 
     @Override
     public boolean canStepReturn() {
-        return thread.canStepReturn();
+        return getThread().canStepReturn();
     }
 
     @Override
     public boolean isStepping() {
-        return thread.isStepping();
+        return getThread().isStepping();
     }
 
     @Override
     public void stepInto() throws DebugException {
-        thread.stepInto();
+        getThread().stepInto();
     }
 
     @Override
     public void stepOver() throws DebugException {
-        thread.stepOver();
+        getThread().stepOver();
     }
 
     @Override
     public void stepReturn() throws DebugException {
-        thread.canStepReturn();
+        getThread().canStepReturn();
     }
 
     @Override
     public boolean canResume() {
-        return thread.canResume();
+        return getThread().canResume();
     }
 
     @Override
     public boolean canSuspend() {
-        return thread.canSuspend();
+        return getThread().canSuspend();
     }
 
     @Override
     public boolean isSuspended() {
-        return thread.isSuspended();
+        return getThread().isSuspended();
     }
 
     @Override
     public void resume() throws DebugException {
-        thread.resume();
+        getThread().resume();
     }
 
     @Override
     public void suspend() throws DebugException {
-        thread.suspend();
+        getThread().suspend();
     }
 
     @Override
     public boolean canTerminate() {
-        return thread.canTerminate();
+        return getThread().canTerminate();
     }
 
     @Override
     public boolean isTerminated() {
-        return thread.isTerminated();
+        return getThread().isTerminated();
     }
 
     @Override
     public void terminate() throws DebugException {
-        thread.terminate();
+        getThread().terminate();
     }
 
     @Override
@@ -131,7 +130,7 @@ public class DatabaseStackFrame extends DatabaseDebugElement implements IStackFr
 
     @Override
     public boolean hasVariables() throws DebugException {
-        return true;
+        return isSuspended();
     }
 
     @Override

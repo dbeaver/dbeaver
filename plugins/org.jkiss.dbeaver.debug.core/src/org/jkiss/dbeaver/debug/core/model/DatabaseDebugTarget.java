@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.debug.DBGEvent;
 import org.jkiss.dbeaver.debug.DBGEventHandler;
 import org.jkiss.dbeaver.debug.DBGException;
 import org.jkiss.dbeaver.debug.DBGStackFrame;
+import org.jkiss.dbeaver.debug.DBGVariable;
 import org.jkiss.dbeaver.debug.core.DebugCore;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -335,19 +336,37 @@ public abstract class DatabaseDebugTarget extends DatabaseDebugElement implement
     }
 
     public void stepOver() throws DebugException {
-        // TODO Auto-generated method stub
-        
+        DBGController controller = getController();
+        try {
+            controller.stepOver(sessionKey);
+        } catch (DBGException e) {
+            String message = NLS.bind("Step over failed for session {0}", sessionKey);
+            IStatus status = DebugCore.newErrorStatus(message, e);
+            throw new DebugException(status);
+        }
     }
 
     public void stepReturn() throws DebugException {
-        // TODO Auto-generated method stub
-        
+        DBGController controller = getController();
+        try {
+            controller.stepReturn(sessionKey);
+        } catch (DBGException e) {
+            String message = NLS.bind("Step return failed for session {0}", sessionKey);
+            IStatus status = DebugCore.newErrorStatus(message, e);
+            throw new DebugException(status);
+        }
     }
 
-    protected List<? extends DBGStackFrame> getStackFrames() throws DBGException {
+    protected List<? extends DBGStackFrame> requestStackFrames() throws DBGException {
         DBGController controller = getController();
         List<? extends DBGStackFrame> stack = controller.getStack(sessionKey);
         return stack;
+    }
+
+    protected List<? extends DBGVariable<?>> requestVariables() throws DBGException {
+        DBGController controller = getController();
+        List<? extends DBGVariable<?>> variables = controller.getVariables(sessionKey);
+        return variables;
     }
 
 }
