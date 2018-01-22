@@ -25,6 +25,7 @@ import org.eclipse.swt.events.TraverseListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.DateTime;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -34,7 +35,7 @@ import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 /**
  * CustomTimeEditor
  */
-public class DateTimeEditor {
+public class DateTimeEditor extends Control {
 
 	private Composite basePart;
 
@@ -45,6 +46,7 @@ public class DateTimeEditor {
 	private static final Log log = Log.getLog(ViewerColumnController.class);
 
 	public DateTimeEditor(Composite parent, int style, String formaterId) {
+		super(parent, style);
 
 		if (formaterId == null || formaterId.isEmpty()) {
 			formaterId = DBDDataFormatter.TYPE_NAME_TIMESTAMP;
@@ -145,7 +147,7 @@ public class DateTimeEditor {
 	}
 
 	public Composite getControl() {
-		return null; // return null for restrict adding listeners in the multiContolEditor
+		return basePart; // return null for restrict adding listeners in the multiContolEditor
 	}
 
 	public void selectAll() {
