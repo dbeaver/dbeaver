@@ -21,26 +21,17 @@ import org.jkiss.dbeaver.ext.mockdata.model.MockValueGenerator;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.Map;
 import java.util.Random;
 
-/**
- * Simple string generator (lorem ipsum)
- */
-public class SimpleStringGenerator implements MockValueGenerator {
+public class RandomBooleanGenerator implements MockValueGenerator {
 
-    private static Random random = new Random();
-
-    private String templateString;
+    private Random random = new Random();
 
     @Override
     public void init(DBSDataManipulator container, Map<String, Object> properties) throws DBCException {
-        templateString = CommonUtils.toString(properties.get("template")); //$NON-NLS-1$
-        if (templateString == null) {
-            throw new DBCException("Empty template string for simple string generator");
-        }
+
     }
 
     @Override
@@ -50,21 +41,7 @@ public class SimpleStringGenerator implements MockValueGenerator {
 
     @Override
     public Object generateValue(DBSAttributeBase attribute) throws DBCException {
-        int length = (int) Math.min(10000, attribute.getMaxLength());
-        int tplLength = templateString.length();
-        int start = random.nextInt(tplLength);
-        if (start + length < tplLength) {
-            return templateString.substring(start, start + length);
-        } else {
-            StringBuilder sb = new StringBuilder();
-            sb.append(templateString.substring(start));
-            int newlength = length - (tplLength - start);
-            for (int i = 0; i < newlength / tplLength; i++) {
-                sb.append(templateString);
-            }
-            sb.append(templateString.substring(0, newlength % tplLength));
-            return sb.toString();
-        }
+        return new Boolean(random.nextBoolean());
     }
 
     @Override

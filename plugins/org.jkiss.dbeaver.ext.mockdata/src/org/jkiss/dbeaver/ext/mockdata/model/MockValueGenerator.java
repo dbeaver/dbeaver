@@ -17,8 +17,8 @@
  */
 package org.jkiss.dbeaver.ext.mockdata.model;
 
-import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 
 import java.util.Map;
@@ -32,7 +32,7 @@ public interface MockValueGenerator {
 
     void nextRow();
 
-    Object generateValue(DBDAttributeBinding attribute)
+    Object generateValue(DBSAttributeBase attribute)
         throws DBCException;
 
     void dispose();
