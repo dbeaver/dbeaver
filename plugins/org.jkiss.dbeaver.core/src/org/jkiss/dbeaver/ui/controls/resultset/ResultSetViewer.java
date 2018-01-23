@@ -1993,7 +1993,7 @@ public class ResultSetViewer extends Viewer
                             settings.setCustomTransformer(descriptor.getId());
                             TransformerSettingsDialog settingsDialog = new TransformerSettingsDialog(
                                 ResultSetViewer.this, attr, settings);
-                            if (CommonUtils.isEmpty(settings.getTransformOptions()) || settingsDialog.open() == IDialogConstants.OK_ID) {
+                            if (settingsDialog.open() == IDialogConstants.OK_ID) {
                                 saveTransformerSettings();
                             } else {
                                 settings.setCustomTransformer(oldCustomTransformer);
