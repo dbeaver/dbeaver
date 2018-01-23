@@ -28,6 +28,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.debug.core.DebugCore;
@@ -41,14 +42,19 @@ import org.jkiss.dbeaver.ui.UIUtils;
 
 public class DatabaseTab extends AbstractLaunchConfigurationTab {
 
-    private Text driverText;
+    private static final int DEFAULT_WIDTH = 80;
+	private Text driverText;
     private Text datasourceText;
     private Text databaseText;
     private Text schemaText;
     private Text oidText;
     private Text nameText;
     private Text callText;
-
+    private GridData labelsGD;
+    private GridData fieldsGD;
+    
+	
+	
     /**
      * Modify listener that simply updates the owning launch configuration
      * dialog.
@@ -75,82 +81,83 @@ public class DatabaseTab extends AbstractLaunchConfigurationTab {
 
     protected void createComponents(Composite comp)
     {
-        createDriverComponent(comp);
-        createDatasourceComponent(comp);
-        createDatabaseComponent(comp);
-        createSchemaComponent(comp);
-        createOidComponent(comp);
-        createNameComponent(comp);
-        createCallComponent(comp);
+    	    createLayoutData();
+        createConnectionSettingsGroup(comp);
+        createDatabaseSettingsGroup(comp);
+        createAdditionalSettingsGroup(comp);
+       
     }
 
-    protected void createDriverComponent(Composite comp)
+	private void createLayoutData() {
+		labelsGD = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
+		labelsGD.widthHint = DEFAULT_WIDTH;
+		fieldsGD = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+
+	}
+
+	protected void createConnectionSettingsGroup(Composite comp)
     {
-        Group driverGroup = UIUtils.createControlGroup(comp, DebugUIMessages.DatabaseTab_driver_group_text, 2, GridData.FILL_HORIZONTAL,
-                SWT.DEFAULT);
+        Group connectionSettingsGroup = 
+        	UIUtils.createControlGroup(comp, DebugUIMessages.DatabaseTab_driver_group_text, 2, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
+        
+        // Driver
+		createLabel(connectionSettingsGroup, DebugUIMessages.DatabaseTab_driver_label_text, labelsGD);
+        driverText = createTextField(driverText, connectionSettingsGroup, DebugCore.ATTR_DRIVER_ID_DEFAULT, fieldsGD);
 
-        driverText = UIUtils.createLabelText(driverGroup, DebugUIMessages.DatabaseTab_driver_label_text, DebugCore.ATTR_DRIVER_ID_DEFAULT);
-        driverText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        driverText.addModifyListener(modifyListener);
-        driverText.setEditable(false);
+        // DataSource
+		createLabel(connectionSettingsGroup, DebugUIMessages.DatabaseTab_datasource_group_text, labelsGD);
+		datasourceText = createTextField(datasourceText, connectionSettingsGroup, DebugCore.ATTR_DRIVER_ID_DEFAULT, fieldsGD);
+		
     }
 
-    protected void createDatasourceComponent(Composite comp)
+	
+    protected void createDatabaseSettingsGroup(Composite comp)
     {
-        Group datasourceGroup = UIUtils.createControlGroup(comp, DebugUIMessages.DatabaseTab_datasource_group_text, 2, GridData.FILL_HORIZONTAL,
-                SWT.DEFAULT);
-
-        datasourceText = UIUtils.createLabelText(datasourceGroup, DebugUIMessages.DatabaseTab_datasource_label_text, DebugCore.ATTR_DATASOURCE_ID_DEFAULT);
-        datasourceText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        datasourceText.addModifyListener(modifyListener);
-        datasourceText.setEditable(false);
+        Group databaseSettingsGroup = UIUtils.createControlGroup(comp, DebugUIMessages.DatabaseTab_database_group_text, 2, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
+      
+        // Database
+        createLabel(databaseSettingsGroup, DebugUIMessages.DatabaseTab_database_label_text, labelsGD);
+        databaseText = createTextField(databaseText, databaseSettingsGroup, DebugCore.ATTR_DATABASE_NAME_DEFAULT, fieldsGD);
+        
+        // Schema
+        createLabel(databaseSettingsGroup, DebugUIMessages.DatabaseTab_schema_label_text, labelsGD);
+        schemaText = createTextField(schemaText, databaseSettingsGroup, DebugCore.ATTR_SCHEMA_NAME_DEFAULT, fieldsGD);
+        
+        // Oid
+        createLabel(databaseSettingsGroup, DebugUIMessages.DatabaseTab_oid_label_text, labelsGD);
+        oidText = createTextField(oidText, databaseSettingsGroup,  DebugCore.ATTR_PROCEDURE_OID_DEFAULT, fieldsGD);
+        
     }
 
-    protected void createDatabaseComponent(Composite comp)
+    protected void createAdditionalSettingsGroup(Composite comp)
     {
-        Group databaseGroup = UIUtils.createControlGroup(comp, DebugUIMessages.DatabaseTab_database_group_text, 2, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
+        Group additionalSettings = UIUtils.createControlGroup(comp, DebugUIMessages.DatabaseTab_name_group_text, 2, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
 
-        databaseText = UIUtils.createLabelText(databaseGroup, DebugUIMessages.DatabaseTab_database_label_text, DebugCore.ATTR_DATABASE_NAME_DEFAULT);
-        databaseText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        databaseText.addModifyListener(modifyListener);
+        // Name
+        createLabel(additionalSettings, DebugUIMessages.DatabaseTab_name_label_text, labelsGD);
+        nameText = createTextField(nameText, additionalSettings,  DebugCore.ATTR_PROCEDURE_NAME_DEFAULT, fieldsGD);
+        
+        // Call
+        createLabel(additionalSettings, DebugUIMessages.DatabaseTab_call_label_text, labelsGD);
+        callText = createTextField(callText, additionalSettings,  DebugCore.ATTR_PROCEDURE_CALL_DEFAULT, fieldsGD);
+      
     }
 
-    protected void createSchemaComponent(Composite comp)
-    {
-        Group databaseGroup = UIUtils.createControlGroup(comp, DebugUIMessages.DatabaseTab_schema_group_text, 2, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
+    private Text createTextField(Text textFiled, Group connectionSettingsGroup, String text, GridData layoutData) {
+		textFiled = new Text(connectionSettingsGroup, SWT.BORDER);
+		textFiled.setLayoutData(fieldsGD);
+		textFiled.setText(text);
+		textFiled.addModifyListener(modifyListener);
+		textFiled.setEditable(false);
+		return textFiled;
+	}
 
-        schemaText = UIUtils.createLabelText(databaseGroup, DebugUIMessages.DatabaseTab_schema_label_text, DebugCore.ATTR_SCHEMA_NAME_DEFAULT);
-        schemaText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        schemaText.addModifyListener(modifyListener);
-    }
-
-    protected void createOidComponent(Composite comp)
-    {
-        Group oidGroup = UIUtils.createControlGroup(comp, DebugUIMessages.DatabaseTab_oid_group_text, 2, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
-
-        oidText = UIUtils.createLabelText(oidGroup, DebugUIMessages.DatabaseTab_oid_label_text, DebugCore.ATTR_PROCEDURE_OID_DEFAULT);
-        oidText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        oidText.addModifyListener(modifyListener);
-    }
-
-    protected void createNameComponent(Composite comp)
-    {
-        Group oidGroup = UIUtils.createControlGroup(comp, DebugUIMessages.DatabaseTab_name_group_text, 2, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
-
-        nameText = UIUtils.createLabelText(oidGroup, DebugUIMessages.DatabaseTab_name_label_text, DebugCore.ATTR_PROCEDURE_NAME_DEFAULT);
-        nameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        nameText.addModifyListener(modifyListener);
-    }
-
-    protected void createCallComponent(Composite comp)
-    {
-        Group callGroup = UIUtils.createControlGroup(comp, DebugUIMessages.DatabaseTab_call_group_text, 2, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
-
-        callText = UIUtils.createLabelText(callGroup, DebugUIMessages.DatabaseTab_call_label_text, DebugCore.ATTR_PROCEDURE_CALL_DEFAULT);
-        callText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        callText.addModifyListener(modifyListener);
-    }
-
+	private void createLabel(Group connectionSettingsGroup, String text, GridData layoutData) {
+		Label lblDriverText = new Label(connectionSettingsGroup, SWT.BORDER);
+        lblDriverText.setText(text+":");
+        lblDriverText.setLayoutData(layoutData);
+	}
+	
     @Override
     public void setDefaults(ILaunchConfigurationWorkingCopy configuration)
     {
