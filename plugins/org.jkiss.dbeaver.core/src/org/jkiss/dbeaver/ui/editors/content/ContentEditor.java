@@ -472,8 +472,13 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
     @Override
     public Control getControl()
     {
+        // Return container control
+        // Don't return active page because container may be already disposed (#2805)
+        return super.getContainer();
+/*
         int activePage = getActivePage();
         return activePage < 0 ? null : getControl(activePage);
+*/
     }
 
     @Override
