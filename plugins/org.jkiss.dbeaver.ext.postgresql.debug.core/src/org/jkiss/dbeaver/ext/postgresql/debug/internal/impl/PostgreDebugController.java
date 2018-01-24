@@ -27,6 +27,7 @@ import java.util.Map;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.debug.DBGBaseController;
+import org.jkiss.dbeaver.debug.DBGBreakpointDescriptor;
 import org.jkiss.dbeaver.debug.DBGException;
 import org.jkiss.dbeaver.debug.DBGSession;
 import org.jkiss.dbeaver.debug.DBGSessionInfo;
@@ -149,6 +150,12 @@ public class PostgreDebugController extends DBGBaseController {
         pgSession.attach(sessionJdbc, oid, pid,global,call);
         //DBPDataSource dataSource = sessionContext.getDataSource();
         //executeProcedure(dataSource, configuration, monitor);
+    }
+    
+    @Override
+    public DBGBreakpointDescriptor describeBreakpoint(Map<String, Object> attributes) {
+        // FIXME: AF: create PostgreDebugObjectDescriptor here
+        return null;
     }
 
 }

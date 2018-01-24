@@ -232,7 +232,7 @@ public class PostgreDebugSession extends DBGBaseSession {
         }
     }
     
-    protected void runProc(Connection connection,String commandSQL, String name, DBGEvent event) throws DBGException {
+    protected void runProc(Connection connection,String commandSQL, String name) throws DBGException {
         
         
         Job job = new Job(name) {
@@ -246,7 +246,7 @@ public class PostgreDebugSession extends DBGBaseSession {
                         stmt.close();
                         connection.close();
                         //And Now His Watch Is Ended
-                        getController().fireEvent(new DBGEvent(this, DBGEvent.FINISHED, DBGEvent.MODEL_SPECIFIC));
+                        fireEvent(new DBGEvent(this, DBGEvent.TERMINATE, DBGEvent.MODEL_SPECIFIC));
                         
                     }
                 } catch (SQLException e) {
@@ -269,11 +269,12 @@ public class PostgreDebugSession extends DBGBaseSession {
         
         String taskName = "Local attached to " + String.valueOf(targetId);
         
-        runProc(executionTarget, call, taskName, new DBGEvent(this, DBGEvent.FINISHED));
+        runProc(executionTarget, call, taskName);
 
         waitPortNumber();
         
         sessionId =  attachToPort();
+        getController().fireEvent(new DBGEvent(this, DBGEvent.SUSPEND, DBGEvent.MODEL_SPECIFIC));
         
         try {
             getConnection().setClientInfo("ApplicationName", "Debug Mode (local) : " + String.valueOf(sessionId));
@@ -335,11 +336,11 @@ public class PostgreDebugSession extends DBGBaseSession {
             setConnection(connection);
             
             if (global) {
-                attachGlobal(OID, targetPID);
                 attachKind = PostgreDebugAttachKind.GLOBAL;
+                attachGlobal(OID, targetPID);
             } else {                
-                attachLocal(OID,call);
                 attachKind = PostgreDebugAttachKind.LOCAL;
+                attachLocal(OID,call);
             }
  
         } finally {
