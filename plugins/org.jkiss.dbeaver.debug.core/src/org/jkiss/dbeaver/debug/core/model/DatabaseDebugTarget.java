@@ -18,14 +18,19 @@
 package org.jkiss.dbeaver.debug.core.model;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.core.resources.IMarkerDelta;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.DebugException;
+import org.eclipse.debug.core.DebugPlugin;
+import org.eclipse.debug.core.IBreakpointManager;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.IBreakpoint;
@@ -34,6 +39,7 @@ import org.eclipse.debug.core.model.IMemoryBlock;
 import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.debug.core.model.IThread;
 import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.debug.DBGBreakpointDescriptor;
 import org.jkiss.dbeaver.debug.DBGController;
 import org.jkiss.dbeaver.debug.DBGEvent;
 import org.jkiss.dbeaver.debug.DBGEventHandler;
@@ -52,7 +58,7 @@ public abstract class DatabaseDebugTarget extends DatabaseDebugElement implement
     private final IProcess process;
     private final DBGController controller;
     private final List<IThread> threads;
-    private DatabaseThread thread;
+    private final DatabaseThread thread;
 
     private String name;
 
@@ -69,6 +75,14 @@ public abstract class DatabaseDebugTarget extends DatabaseDebugElement implement
         this.controller = controller;
         this.controller.registerEventHandler(this);
         this.threads = new ArrayList<IThread>();
+        this.thread = newThread(controller);
+        this.threads.add(thread);
+
+        DebugPlugin debugPlugin = DebugPlugin.getDefault();
+        IBreakpointManager breakpointManager = debugPlugin.getBreakpointManager();
+        breakpointManager.addBreakpointManagerListener(this);
+        breakpointManager.addBreakpointListener(this);
+        debugPlugin.addDebugEventListener(this);
     }
     
     @Override
@@ -76,7 +90,7 @@ public abstract class DatabaseDebugTarget extends DatabaseDebugElement implement
         return controller;
     }
     
-    protected abstract DatabaseThread newThread(DBGController controller, Object sessionKey);
+    protected abstract DatabaseThread newThread(DBGController controller);
 
     @Override
     public IDebugTarget getDebugTarget() {
@@ -147,8 +161,6 @@ public abstract class DatabaseDebugTarget extends DatabaseDebugElement implement
     public void connect(IProgressMonitor monitor) throws CoreException {
         try {
             sessionKey = this.controller.attach(new DefaultProgressMonitor(monitor));
-            this.thread = newThread(controller, sessionKey);
-            threads.add(thread);
         } catch (DBGException e) {
             String message = NLS.bind("Failed to connect {0} to the target", getName());
             IStatus error = DebugCore.newErrorStatus(message, e);
@@ -174,6 +186,7 @@ public abstract class DatabaseDebugTarget extends DatabaseDebugElement implement
 
     public synchronized void terminated() throws DebugException {
         if (!terminated) {
+            threads.clear();
             terminated = true;
             suspended = false;
             try {
@@ -185,6 +198,24 @@ public abstract class DatabaseDebugTarget extends DatabaseDebugElement implement
                 throw new DebugException(status);
             } finally {
                 controller.dispose();
+            }
+            DebugPlugin debugPlugin = DebugPlugin.getDefault();
+            if (debugPlugin != null) {
+                IBreakpointManager breakpointManager = debugPlugin.getBreakpointManager();
+                breakpointManager.removeBreakpointListener(this);
+                debugPlugin.removeDebugEventListener(this);
+                breakpointManager.removeBreakpointManagerListener(this);
+            }
+            if (!getProcess().isTerminated()) {
+                try {
+                    process.terminate();
+                }
+                catch (DebugException e) {
+                    // do nothing
+                }
+            }
+            if (debugPlugin != null) {
+                fireTerminateEvent();
             }
         }
     }
@@ -208,7 +239,7 @@ public abstract class DatabaseDebugTarget extends DatabaseDebugElement implement
     public void resume() throws DebugException {
         suspended = false;
         try {
-            controller.resume(getProgressMonitor());
+            controller.resume(sessionKey);
         } catch (DBGException e) {
             String message = NLS.bind("Error resuming {0}", getName());
             IStatus status = DebugCore.newErrorStatus(message, e);
@@ -223,7 +254,7 @@ public abstract class DatabaseDebugTarget extends DatabaseDebugElement implement
     @Override
     public void suspend() throws DebugException {
         try {
-            controller.suspend(getProgressMonitor());
+            controller.suspend(sessionKey);
         } catch (DBGException e) {
             String message = NLS.bind("Error suspending {0}", getName());
             IStatus status = DebugCore.newErrorStatus(message, e);
@@ -243,28 +274,91 @@ public abstract class DatabaseDebugTarget extends DatabaseDebugElement implement
 
     @Override
     public boolean supportsBreakpoint(IBreakpoint breakpoint) {
+        if (breakpoint.getModelIdentifier().equals(DebugCore.BREAKPOINT_DATABASE_LINE)) {
+            return true;
+        }
         return false;
     }
 
     @Override
     public void breakpointAdded(IBreakpoint breakpoint) {
-        //FIXME:AF:delegare to controller
+        if (!terminated) {
+            DBGBreakpointDescriptor descriptor = describeBreakpoint(breakpoint);
+            if (descriptor == null) {
+                String message = NLS.bind("Unable to describe breakpoint {0}", breakpoint);
+                Status error = DebugCore.newErrorStatus(message);
+                DebugCore.log(error);
+                return;
+            }
+            try {
+                controller.addBreakpoint(sessionKey, descriptor);
+            } catch (DBGException e) {
+                String message = NLS.bind("Unable to add breakpoint {0}", breakpoint);
+                Status error = DebugCore.newErrorStatus(message, e);
+                DebugCore.log(error);
+            }
+        }
     }
 
     @Override
     public void breakpointRemoved(IBreakpoint breakpoint, IMarkerDelta delta) {
-        //FIXME:AF:delegare to controller
+        if (!terminated) {
+            DBGBreakpointDescriptor descriptor = describeBreakpoint(breakpoint);
+            if (descriptor == null) {
+                String message = NLS.bind("Unable to describe breakpoint {0}", breakpoint);
+                Status error = DebugCore.newErrorStatus(message);
+                DebugCore.log(error);
+                return;
+            }
+            try {
+                controller.removeBreakpoint(sessionKey, descriptor);
+            } catch (DBGException e) {
+                String message = NLS.bind("Unable to remove breakpoint {0}", breakpoint);
+                Status error = DebugCore.newErrorStatus(message, e);
+                DebugCore.log(error);
+            }
+        }
     }
 
     @Override
     public void breakpointChanged(IBreakpoint breakpoint, IMarkerDelta delta) {
-        //FIXME:AF:delegare to controller
+        if (supportsBreakpoint(breakpoint)) {
+            try {
+                if (breakpoint.isEnabled() && DebugPlugin.getDefault().getBreakpointManager().isEnabled()) {
+                    breakpointAdded(breakpoint);
+                } else {
+                    breakpointRemoved(breakpoint, null);
+                }
+            }
+            catch (CoreException e) {
+                // do nothing
+            }
+        }
     }
 
     @Override
     public void breakpointManagerEnablementChanged(boolean enabled) {
-        // TODO Auto-generated method stub
+        IBreakpoint[] breakpoints = DebugPlugin.getDefault().getBreakpointManager().getBreakpoints(DebugCore.BREAKPOINT_DATABASE_LINE);
+        for (int i = 0; i < breakpoints.length; i++) {
+            IBreakpoint breakpoint = breakpoints[i];
+            if (enabled) {
+                breakpointAdded(breakpoint);
+            } else {
+                breakpointRemoved(breakpoint, null);
+            }
+        }
+    }
 
+    protected DBGBreakpointDescriptor describeBreakpoint(IBreakpoint breakpoint) {
+        Map<String, Object> description = new HashMap<String, Object>();
+        try {
+            description.putAll(breakpoint.getMarker().getAttributes());
+        } catch (CoreException e) {
+            DebugCore.log(e.getStatus());
+            return null;
+        }
+        DBGBreakpointDescriptor descriptor = controller.describeBreakpoint(description);
+        return descriptor;
     }
 
     @Override
@@ -303,6 +397,13 @@ public abstract class DatabaseDebugTarget extends DatabaseDebugElement implement
         int kind = event.getKind();
         if (DBGEvent.SUSPEND == kind) {
             suspended(event.getDetails());
+        }
+        if (DBGEvent.TERMINATE == kind) {
+            try {
+                process.terminate();
+            } catch (DebugException e) {
+                DebugCore.log(e.getStatus());
+            }
         }
     }
 

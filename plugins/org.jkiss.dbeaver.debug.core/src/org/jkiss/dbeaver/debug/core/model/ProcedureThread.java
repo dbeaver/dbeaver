@@ -22,8 +22,8 @@ import org.jkiss.dbeaver.debug.internal.core.DebugCoreMessages;
 
 public class ProcedureThread extends DatabaseThread {
 
-    public ProcedureThread(DatabaseDebugTarget target, Object sessionKey) {
-        super(target, sessionKey);
+    public ProcedureThread(DatabaseDebugTarget target) {
+        super(target);
     }
 
     @Override
