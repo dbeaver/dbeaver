@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
@@ -136,12 +137,12 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
         DBSDataManipulator dataManipulator = databaseObjects.iterator().next();
         DBSEntity dbsEntity = (DBSEntity) dataManipulator;
         try {
-            Collection<? extends DBSEntityAttribute> attributes = DBUtils.getRealAttributes(dbsEntity.getAttributes(new VoidProgressMonitor()));
+            Collection<? extends DBSAttributeBase> attributes = DBUtils.getRealAttributes(dbsEntity.getAttributes(new VoidProgressMonitor()));
 
             // init the generators properties
             if (firstInit) {
                 firstInit = false;
-                for (DBSEntityAttribute attribute : attributes) {
+                for (DBSAttributeBase attribute : attributes) {
                     saveGeneratorProperties(getPropertySource(attribute));
                 }
 
@@ -149,7 +150,7 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
 
             // populate columns table
             TableItem firstTableItem = null;
-            for (DBSEntityAttribute attribute : attributes) {
+            for (DBSAttributeBase attribute : attributes) {
                 TableItem item = new TableItem(columnsTable, SWT.NONE);
                 item.setData(attribute);
                 item.setImage(DBeaverIcons.getImage(DBValueFormatting.getTypeImage(attribute)));
@@ -191,7 +192,7 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
         mockDataSettings.setRowsNumber(Long.parseLong(rowsText.getText()));
     }
 
-    private NamedPropertySource getPropertySource(DBSEntityAttribute attribute) {
+    private NamedPropertySource getPropertySource(DBSAttributeBase attribute) {
         NamedPropertySource propertySource = propertySourceMap.get(attribute.getName());
         if (propertySource != null) {
             return propertySource;
