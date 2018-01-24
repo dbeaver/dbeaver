@@ -24,6 +24,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mockdata.model.MockGeneratorDescriptor;
 import org.jkiss.dbeaver.ext.mockdata.model.MockGeneratorRegistry;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -135,7 +136,7 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
         DBSDataManipulator dataManipulator = databaseObjects.iterator().next();
         DBSEntity dbsEntity = (DBSEntity) dataManipulator;
         try {
-            Collection<? extends DBSEntityAttribute> attributes = dbsEntity.getAttributes(new VoidProgressMonitor());
+            Collection<? extends DBSEntityAttribute> attributes = DBUtils.getRealAttributes(dbsEntity.getAttributes(new VoidProgressMonitor()));
 
             // init the generators properties
             if (firstInit) {
@@ -199,9 +200,13 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
             List<DBSDataManipulator> databaseObjects = getWizard().getDatabaseObjects();
             DBSDataManipulator dataManipulator = databaseObjects.iterator().next();
             MockGeneratorDescriptor generatorDescriptor = generatorRegistry.findGenerator(dataManipulator.getDataSource(), attribute);
-            propertySource = new NamedPropertySource(attribute.getName(), generatorDescriptor.getProperties(), null);
-            propertySourceMap.put(attribute.getName(), propertySource);
-            return propertySource;
+            if (generatorDescriptor != null) {
+                propertySource = new NamedPropertySource(attribute.getName(), generatorDescriptor.getProperties(), null);
+                propertySourceMap.put(attribute.getName(), propertySource);
+                return propertySource;
+            } else {
+                return null;
+            }
         }
     }
 
