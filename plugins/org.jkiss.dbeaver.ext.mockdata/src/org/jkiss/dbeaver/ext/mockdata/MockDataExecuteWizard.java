@@ -39,7 +39,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractToolWizard;
 
 import java.io.IOException;
@@ -152,9 +151,9 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                 // build and init the generators
                 DBSEntity dbsEntity = (DBSEntity) dataManipulator;
                 MockGeneratorRegistry generatorRegistry = MockGeneratorRegistry.getInstance();
-                Collection<? extends DBSEntityAttribute> attributes = DBUtils.getRealAttributes(dbsEntity.getAttributes(monitor));
+                Collection<? extends DBSAttributeBase> attributes = DBUtils.getRealAttributes(dbsEntity.getAttributes(monitor));
                 generators.clear();
-                for (DBSEntityAttribute attribute : attributes) {
+                for (DBSAttributeBase attribute : attributes) {
                     MockGeneratorDescriptor generatorDescriptor = generatorRegistry.findGenerator(dbsEntity.getDataSource(), attribute);
                     if (generatorDescriptor != null) {
                         MockValueGenerator generator = generatorDescriptor.createGenerator();
@@ -184,7 +183,7 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                     try {
                         for (int i = 0; i < BATCH_SIZE; i++) {
                             List<DBDAttributeValue> attributeValues = new ArrayList<>();
-                            for (DBSEntityAttribute attribute : attributes) {
+                            for (DBSAttributeBase attribute : attributes) {
                                 MockValueGenerator generator = generators.get(attribute.getName());
                                 if (generator != null) {
                                     Object value = generator.generateValue(attribute);
