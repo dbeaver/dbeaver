@@ -47,7 +47,6 @@ public class MockDataSettings {
     }
 
     public void setGeneratorProperties(String name, Map<Object, Object> propertiesWithDefaults) {
-        System.out.println(">>>>>>>>>>>>>>>>>>> "+name+" >>>>>>>>>>> "+propertiesWithDefaults);
         generatorProperties.put(name, propertiesWithDefaults);
     }
 }
