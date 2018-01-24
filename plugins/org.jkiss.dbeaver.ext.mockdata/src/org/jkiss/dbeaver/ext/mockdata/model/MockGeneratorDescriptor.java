@@ -30,7 +30,7 @@ import java.util.List;
 /**
  * MockGeneratorDescriptor
  */
-public class MockGeneratorDescriptor extends DataTypeAbstractDescriptor {
+public class MockGeneratorDescriptor extends DataTypeAbstractDescriptor<MockValueGenerator> {
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.mockGenerator"; //$NON-NLS-1$
 
@@ -67,4 +67,12 @@ public class MockGeneratorDescriptor extends DataTypeAbstractDescriptor {
         return properties;
     }
 
+    public DBPPropertyDescriptor getProperty(Object id) {
+        for (DBPPropertyDescriptor descriptor : getProperties()) {
+            if (id.equals(descriptor.getId())) {
+                return descriptor;
+            }
+        }
+        return null;
+    }
 }

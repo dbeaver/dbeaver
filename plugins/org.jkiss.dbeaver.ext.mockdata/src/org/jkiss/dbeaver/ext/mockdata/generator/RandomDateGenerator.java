@@ -15,25 +15,26 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.mockdata.model;
+package org.jkiss.dbeaver.ext.mockdata.generator;
 
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
-import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 
-import java.util.Map;
+import java.util.Date;
 
-/**
- * Value generator interface
- */
-public interface MockValueGenerator {
+public class RandomDateGenerator extends AbstractMockValueGenerator {
 
-    void init(DBSDataManipulator container, Map<String, Object> properties) throws DBCException;
+    @Override
+    public Object generateValue(DBSAttributeBase attribute) throws DBCException {
+        if (isGenerateNULL()) {
+            return null;
+        } else {
+            // Get an Epoch value roughly between 1940 and 2010
+            // -946771200000L = January 1, 1940
+            // Add up to 70 years to it (using modulus on the next long)
+            long ms = -946771200000L + (Math.abs(random.nextLong()) % (70L * 365 * 24 * 60 * 60 * 1000));
 
-    void nextRow();
-
-    Object generateValue(DBSAttributeBase attribute)
-        throws DBCException;
-
-    void dispose();
+            return new Date(ms);
+        }
+    }
 }

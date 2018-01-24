@@ -17,10 +17,14 @@
  */
 package org.jkiss.dbeaver.ext.mockdata;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class MockDataSettings {
 
     private boolean removeOldData;
     private long rowsNumber = 10;
+    private Map<String, Map<Object, Object>> generatorProperties = new HashMap<>();
 
     public boolean isRemoveOldData() {
         return removeOldData;
@@ -36,5 +40,13 @@ public class MockDataSettings {
 
     public void setRowsNumber(long rowsNumber) {
         this.rowsNumber = rowsNumber;
+    }
+
+    public Map<Object, Object> getGeneratorProperties(String name) {
+        return generatorProperties.get(name);
+    }
+
+    public void setGeneratorProperties(String name, Map<Object, Object> propertiesWithDefaults) {
+        generatorProperties.put(name, propertiesWithDefaults);
     }
 }
