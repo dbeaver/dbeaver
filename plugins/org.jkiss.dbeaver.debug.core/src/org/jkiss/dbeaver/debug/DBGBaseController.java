@@ -164,6 +164,12 @@ public abstract class DBGBaseController implements DBGController {
         }
         return session.getVariables();
     }
+    
+    @Override
+    public String getSource(Object sessionKey, DBGStackFrame stack) throws DBGException {
+        DBGSession session = ensureSessionAccessible(sessionKey);
+        return session.getSource(stack);
+    }
 
     public abstract DBGBaseSession createSession(DBGSessionInfo targetInfo, DBCExecutionContext connection) throws DBGException;
 

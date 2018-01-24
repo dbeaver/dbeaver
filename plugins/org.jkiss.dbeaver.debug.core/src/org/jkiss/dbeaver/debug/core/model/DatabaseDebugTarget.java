@@ -464,4 +464,10 @@ public abstract class DatabaseDebugTarget extends DatabaseDebugElement implement
         return variables;
     }
 
+    protected String requestSource(DBGStackFrame stack) throws DBGException {
+        DBGController controller = getController();
+        String source = controller.getSource(sessionKey, stack);
+        return source;
+    }
+
 }

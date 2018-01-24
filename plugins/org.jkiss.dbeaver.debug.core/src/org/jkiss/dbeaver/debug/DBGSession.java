@@ -50,4 +50,6 @@ public interface DBGSession {
     Object getSessionId();
 
     void selectFrame(int frameNumber) throws DBGException;
+
+    String getSource(DBGStackFrame stack) throws DBGException;
 }

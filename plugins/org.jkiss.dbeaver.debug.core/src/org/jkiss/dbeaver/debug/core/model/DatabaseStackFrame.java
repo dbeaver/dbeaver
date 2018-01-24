@@ -3,6 +3,7 @@ package org.jkiss.dbeaver.debug.core.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IRegisterGroup;
 import org.eclipse.debug.core.model.IStackFrame;
@@ -12,6 +13,7 @@ import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.debug.DBGException;
 import org.jkiss.dbeaver.debug.DBGStackFrame;
 import org.jkiss.dbeaver.debug.DBGVariable;
+import org.jkiss.dbeaver.debug.core.DebugCore;
 
 public class DatabaseStackFrame extends DatabaseDebugElement implements IStackFrame {
     
@@ -30,7 +32,7 @@ public class DatabaseStackFrame extends DatabaseDebugElement implements IStackFr
         this.thread = thread;
         this.dbgStackFrame = dbgStackFrame;
     }
-
+    
     @Override
     public boolean canStepInto() {
         return getThread().canStepInto();
@@ -181,6 +183,18 @@ public class DatabaseStackFrame extends DatabaseDebugElement implements IStackFr
     @Override
     public boolean hasRegisterGroups() throws DebugException {
         return false;
+    }
+    
+    public String getSource()  throws DebugException {
+        String source;
+        try {
+            source = getDatabaseDebugTarget().requestSource(dbgStackFrame);
+        } catch (DBGException e) {
+            String message = NLS.bind("Unable to retrieve sources for stack {0}", dbgStackFrame);
+            IStatus status = DebugCore.newErrorStatus(message, e);
+            throw new DebugException(status);
+        }
+        return source;
     }
 
 }
