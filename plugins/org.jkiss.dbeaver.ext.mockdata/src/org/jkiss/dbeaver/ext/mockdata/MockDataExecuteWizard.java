@@ -155,7 +155,7 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                 generators.clear();
                 for (DBSEntityAttribute attribute : attributes) {
                     MockGeneratorDescriptor generatorDescriptor = generatorRegistry.findGenerator(dbsEntity.getDataSource(), attribute);
-                    MockValueGenerator generator = generatorDescriptor.getInstance();
+                    MockValueGenerator generator = generatorDescriptor.createGenerator();
 
                     HashMap<String, Object> properties = new HashMap<>();
                     Map<Object, Object> generatorProperties = this.mockDataSettings.getGeneratorProperties(attribute.getName());
