@@ -77,6 +77,7 @@ class PostgreDialect extends JDBCSQLDialect {
                 "PERFORM",
                 "RAISE",
                 "NOTICE",
+                "CONFLICT",
 
                 // "DEBUG", "INFO", "NOTICE", "WARNING", // levels
                 // "MESSAGE", "DETAIL", "HINT", "ERRCODE", //options
