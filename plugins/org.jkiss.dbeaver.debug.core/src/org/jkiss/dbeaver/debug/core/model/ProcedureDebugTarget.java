@@ -32,8 +32,8 @@ public class ProcedureDebugTarget extends DatabaseDebugTarget {
     }
 
     @Override
-    protected DatabaseThread newThread(DBGController controller, Object sessionKey) {
-        return new ProcedureThread(this, sessionKey);
+    protected DatabaseThread newThread(DBGController controller) {
+        return new ProcedureThread(this);
     }
 
     @Override

@@ -23,23 +23,19 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 
 public abstract class DBGBaseSession implements DBGSession {
 
-    private static final Log log = Log.getLog(DBGBaseSession.class);
-
     protected final ReentrantReadWriteLock lock = new ReentrantReadWriteLock(true);
 
     private final DBGBaseController controller;
 
-    private FutureTask<Void> task;
+    protected FutureTask<Void> task;
 
     private Thread workerThread = null;
 
@@ -92,31 +88,8 @@ public abstract class DBGBaseSession implements DBGSession {
     public boolean isWaiting() {
         return (task == null ? false : !task.isDone()) && (workerThread == null ? false : workerThread.isAlive());
     }
-
-    /**
-     * Return true if session waiting target connection (on breakpoint, after
-     * step or continue) in debug thread
-     * 
-     * @return boolean
-     */
-    public boolean isDone() {
-        if (task == null) {
-            return true;
-        }
-        if (task.isDone()) {
-            try {
-                task.get();
-            } catch (InterruptedException e) {
-                log.error("DEBUG INTERRUPT ERROR ", e);
-                return false;
-            } catch (ExecutionException e) {
-                log.error("DEBUG WARNING ", e);
-                return false;
-            }
-            return true;
-        }
-        return false;
-    }
+    
+    public abstract boolean isDone();
 
     /**
      * Start thread for SQL command
