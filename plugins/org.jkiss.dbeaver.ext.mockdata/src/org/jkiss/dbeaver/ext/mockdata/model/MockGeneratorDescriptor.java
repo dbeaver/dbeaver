@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.mockdata.model;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
@@ -75,4 +76,10 @@ public class MockGeneratorDescriptor extends DataTypeAbstractDescriptor<MockValu
         }
         return null;
     }
+
+    @NotNull
+    public MockValueGenerator createGenerator() {
+        return createInstance();
+    }
+
 }

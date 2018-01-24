@@ -127,14 +127,18 @@ public abstract class DataTypeAbstractDescriptor<DESCRIPTOR> extends AbstractDes
     public DESCRIPTOR getInstance()
     {
         if (instance == null && implType != null) {
-            try {
-                this.instance = implType.createInstance(instanceType);
-            }
-            catch (Exception e) {
-                throw new IllegalStateException("Can't instantiate data type provider '" + this.id + "'", e); //$NON-NLS-1$
-            }
+            this.instance = createInstance();
         }
         return instance;
+    }
+
+    protected DESCRIPTOR createInstance() {
+        try {
+            return implType.createInstance(instanceType);
+        }
+        catch (Exception e) {
+            throw new IllegalStateException("Can't instantiate data type provider '" + this.id + "'", e); //$NON-NLS-1$
+        }
     }
 
     public boolean supportsType(@NotNull DBSTypedObject typedObject) {
