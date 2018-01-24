@@ -50,7 +50,9 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.ProxyProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.registry.editor.EntityEditorDescriptor;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
@@ -78,7 +80,7 @@ import java.util.List;
  * EntityEditor
  */
 public class EntityEditor extends MultiPageDatabaseEditor
-    implements IPropertyChangeReflector, IProgressControlProvider, ISaveablePart2, ITabbedFolderContainer, IDataSourceContainerProvider
+    implements IPropertyChangeReflector, IProgressControlProvider, ISaveablePart2, ITabbedFolderContainer, IDataSourceContainerProvider, IEntityEditorContext
 {
     private static final Log log = Log.getLog(EntityEditor.class);
 
@@ -488,7 +490,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
             EntityEditorsRegistry editorsRegistry = EntityEditorsRegistry.getInstance();
 
             // Add object editor page
-            EntityEditorDescriptor defaultEditor = editorsRegistry.getMainEntityEditor(databaseObject);
+            EntityEditorDescriptor defaultEditor = editorsRegistry.getMainEntityEditor(databaseObject, this);
             hasPropertiesEditor = false;
             if (defaultEditor != null) {
                 hasPropertiesEditor = addEditorTab(defaultEditor);
@@ -663,6 +665,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         }
         List<EntityEditorDescriptor> descriptors = editorsRegistry.getEntityEditors(
             object,
+            this,
             position);
         for (EntityEditorDescriptor descriptor : descriptors) {
             if (descriptor.getType() == EntityEditorDescriptor.Type.editor) {
@@ -958,4 +961,17 @@ public class EntityEditor extends MultiPageDatabaseEditor
             }
         }
     }
+
+    // This is used by extensions to determine whether this entity is another entity container (e.g. for ERD)
+    @Override
+    public boolean isEntityContainer(DBSObjectContainer object) {
+        try {
+            Class<? extends DBSObject> childType = object.getChildType(new VoidProgressMonitor());
+            return childType != null && DBSEntity.class.isAssignableFrom(childType);
+        } catch (DBException e) {
+            log.error(e);
+            return false;
+        }
+    }
+
 }
