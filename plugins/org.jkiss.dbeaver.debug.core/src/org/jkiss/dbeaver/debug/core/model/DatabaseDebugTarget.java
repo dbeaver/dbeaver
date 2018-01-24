@@ -458,9 +458,9 @@ public abstract class DatabaseDebugTarget extends DatabaseDebugElement implement
         return stack;
     }
 
-    protected List<? extends DBGVariable<?>> requestVariables() throws DBGException {
+    protected List<? extends DBGVariable<?>> requestVariables(DBGStackFrame stack) throws DBGException {
         DBGController controller = getController();
-        List<? extends DBGVariable<?>> variables = controller.getVariables(sessionKey);
+        List<? extends DBGVariable<?>> variables = controller.getVariables(sessionKey, stack);
         return variables;
     }
 

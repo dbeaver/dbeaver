@@ -29,7 +29,6 @@ import org.eclipse.debug.core.model.IThread;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.debug.DBGException;
 import org.jkiss.dbeaver.debug.DBGStackFrame;
-import org.jkiss.dbeaver.debug.DBGVariable;
 import org.jkiss.dbeaver.debug.core.DebugCore;
 
 /**
@@ -202,18 +201,6 @@ public abstract class DatabaseThread extends DatabaseDebugElement implements ITh
 
     public void setStepping(boolean stepping) {
         this.stepping = stepping;
-    }
-
-    protected List<? extends DBGVariable<?>> requestVariables() throws DebugException {
-        List<DBGVariable<?>> variables = new ArrayList<DBGVariable<?>>();
-        try {
-            variables.addAll(getDatabaseDebugTarget().requestVariables());
-        } catch (DBGException e) {
-            String message = NLS.bind("Error reading variables for {0}", getName());
-            IStatus status = DebugCore.newErrorStatus(message, e);
-            throw new DebugException(status);
-        }
-        return variables;
     }
 
 }
