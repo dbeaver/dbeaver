@@ -48,6 +48,7 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
     private Button syncEditorDataSourceWithNavigator;
     private Combo dsDoubleClickBehavior;
     private Combo objDoubleClickBehavior;
+    private Button showGeneralToolbarEverywhere;
 
     public PrefPageDatabaseNavigator()
     {
@@ -92,7 +93,13 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
 
         }
 
-        performDefaults();
+        {
+            Group toolbarsGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_database_general_group_toolbars, 2, SWT.NONE, 0);
+
+            showGeneralToolbarEverywhere = UIUtils.createCheckbox(toolbarsGroup, CoreMessages.pref_page_database_general_label_show_general_toolbar_everywhere, CoreMessages.pref_page_database_general_label_show_general_toolbar_everywhere_tip, false, 2);
+        }
+
+            performDefaults();
 
         return composite;
     }
@@ -112,6 +119,8 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
         objDoubleClickBehavior.select(objDCB == NavigatorViewBase.DoubleClickBehavior.EXPAND ? 1 : 0);
         dsDoubleClickBehavior.select(
             NavigatorViewBase.DoubleClickBehavior.valueOf(store.getString(DBeaverPreferences.NAVIGATOR_CONNECTION_DOUBLE_CLICK)).ordinal());
+
+        showGeneralToolbarEverywhere.setSelection(store.getBoolean(DBeaverPreferences.TOOLBARS_SHOW_GENERAL_ALWAYS));
     }
 
     @Override
@@ -132,6 +141,8 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
         store.setValue(DBeaverPreferences.NAVIGATOR_OBJECT_DOUBLE_CLICK, objDCB.name());
         store.setValue(DBeaverPreferences.NAVIGATOR_CONNECTION_DOUBLE_CLICK,
             CommonUtils.fromOrdinal(NavigatorViewBase.DoubleClickBehavior.class, dsDoubleClickBehavior.getSelectionIndex()).name());
+
+        store.setValue(DBeaverPreferences.TOOLBARS_SHOW_GENERAL_ALWAYS, showGeneralToolbarEverywhere.getSelection());
 
         PrefUtils.savePreferenceStore(store);
 

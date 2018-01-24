@@ -1141,6 +1141,11 @@ public class CoreMessages extends NLS {
 	public static String pref_page_database_general_label_double_click_connection_conn_disconn;
 	public static String pref_page_database_general_label_double_click_connection_open_sqleditor;
 	public static String pref_page_database_general_label_double_click_connection_expand_collapse;
+
+	public static String pref_page_database_general_group_toolbars;
+	public static String pref_page_database_general_label_show_general_toolbar_everywhere;
+	public static String pref_page_database_general_label_show_general_toolbar_everywhere_tip;
+
 	// ConnectionTypes
 	public static String pref_page_connection_types_label_table_column_name;
 	public static String pref_page_connection_types_label_table_column_description;
