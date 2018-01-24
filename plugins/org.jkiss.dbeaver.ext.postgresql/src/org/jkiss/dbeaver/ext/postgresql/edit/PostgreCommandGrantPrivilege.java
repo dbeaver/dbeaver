@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.edit;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
@@ -55,10 +56,10 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePerm
         String privName = privilege == null ? PostgrePrivilegeType.ALL.name() : privilege.name();
         String tableName, roleName;
         if (getObject() instanceof PostgreRole) {
-            roleName = getObject().getName();
+            roleName = DBUtils.getQuotedIdentifier(getObject());
             tableName = ((PostgreRolePermission)permission).getFullTableName();
         } else {
-            roleName = ((PostgreTablePermission)permission).getGrantee();
+            roleName = DBUtils.getQuotedIdentifier(getObject().getDataSource(), ((PostgreTablePermission) permission).getGrantee());
             tableName = ((PostgreTableBase)getObject()).getFullyQualifiedName(DBPEvaluationContext.DDL);
         }
 
