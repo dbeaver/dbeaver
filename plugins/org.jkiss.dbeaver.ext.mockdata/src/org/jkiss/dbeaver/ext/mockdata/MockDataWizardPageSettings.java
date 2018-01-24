@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.mockdata;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
@@ -47,6 +48,7 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
 {
     private MockDataSettings mockDataSettings;
 
+    private CLabel noGeneratorInfoLabel;
     private Button removeOldDataCheck;
     private Text rowsText;
 
@@ -127,6 +129,14 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
             propsEditor.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
         }
 
+        noGeneratorInfoLabel = UIUtils.createInfoLabel(composite, "Generators for the red highlighted attributes aren't found. So, no data will be generated for them.");
+        //noGeneratorInfoLabel.setForeground(columnsTable.getDisplay().getSystemColor(SWT.COLOR_RED));
+        GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+        gd.horizontalSpan = 2;
+        gd.verticalIndent = 5;
+        noGeneratorInfoLabel.setLayoutData(gd);
+        noGeneratorInfoLabel.setVisible(false);
+
         setControl(composite);
 
     }
@@ -145,7 +155,6 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
                 for (DBSAttributeBase attribute : attributes) {
                     saveGeneratorProperties(getPropertySource(attribute));
                 }
-
             }
 
             // populate columns table
@@ -155,6 +164,10 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
                 item.setData(attribute);
                 item.setImage(DBeaverIcons.getImage(DBValueFormatting.getTypeImage(attribute)));
                 item.setText(0, attribute.getName());
+                if (this.mockDataSettings.getGeneratorProperties(attribute.getName()) == null) {
+                    item.setForeground(columnsTable.getDisplay().getSystemColor(SWT.COLOR_RED));
+                    noGeneratorInfoLabel.setVisible(true);
+                }
                 item.setText(1, attribute.getDataKind().name());
                 if (firstTableItem == null) {
                     firstTableItem = item;
@@ -213,9 +226,13 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
 
     private void reloadProperties(DBSEntityAttribute attribute) {
         propertySource = getPropertySource(attribute);
-        propsEditor.loadProperties(propertySource);
-        propsEditor.setExpandMode(PropertyTreeViewer.ExpandMode.FIRST);
-        propsEditor.expandAll();
+        if (propertySource != null) {
+            propsEditor.loadProperties(propertySource);
+            propsEditor.setExpandMode(PropertyTreeViewer.ExpandMode.FIRST);
+            propsEditor.expandAll();
+        } else {
+            propsEditor.clearProperties();
+        }
     }
 
     private void saveGeneratorProperties(NamedPropertySource namedPropertySource) {
