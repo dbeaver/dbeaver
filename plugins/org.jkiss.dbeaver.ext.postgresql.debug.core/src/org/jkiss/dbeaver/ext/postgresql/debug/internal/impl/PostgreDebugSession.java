@@ -98,7 +98,7 @@ public class PostgreDebugSession extends DBGBaseSession {
 
     private static final String SQL_GET_STACK = "select * from pldbg_get_stack(?sessionid)";
     
-    private static final String SQL_SELECT_FRAME = "select * from pldbg_get_stack(?sessionid,?frameno)";
+    private static final String SQL_SELECT_FRAME = "select * from pldbg_select_frame(?sessionid,?frameno)";
 
     private static final String SQL_STEP_OVER = "select pldbg_step_over(?sessionid)";
 
@@ -570,8 +570,11 @@ public class PostgreDebugSession extends DBGBaseSession {
         
         acquireReadLock();
 
-        String sql = SQL_SELECT_FRAME.replaceAll("\\?sessionid", String.valueOf(sessionId))
+        String pattern = SQL_SELECT_FRAME;
+        pattern = "select * from pldbg_select_frame(?sessionid,?frameno)";
+        String sql = pattern.replaceAll("\\?sessionid", String.valueOf(sessionId))
                 .replaceAll("\\?frameno", String.valueOf(frameNumber));
+        
         try (Statement stmt = getConnection().createStatement(); ResultSet rs = stmt.executeQuery(sql)) {
 
            if (!rs.next()) {

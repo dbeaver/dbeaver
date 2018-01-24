@@ -115,7 +115,7 @@ public class DatabaseStackFrame extends DatabaseDebugElement implements IStackFr
     public IVariable[] getVariables() throws DebugException {
         if (refreshVariables) {
             try {
-                List<? extends DBGVariable<?>> variables = getDatabaseDebugTarget().requestVariables();
+                List<? extends DBGVariable<?>> variables = getDatabaseDebugTarget().requestVariables(dbgStackFrame);
                 rebuildVariables(variables);
             } catch (DBGException e) {
                 // TODO Auto-generated catch block

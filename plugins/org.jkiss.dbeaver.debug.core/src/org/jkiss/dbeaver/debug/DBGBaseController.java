@@ -157,8 +157,11 @@ public abstract class DBGBaseController implements DBGController {
     }
     
     @Override
-    public List<? extends DBGVariable<?>> getVariables(Object id) throws DBGException {
+    public List<? extends DBGVariable<?>> getVariables(Object id, DBGStackFrame stack) throws DBGException {
         DBGSession session = ensureSessionAccessible(id);
+        if (stack != null) {
+            session.selectFrame(stack.getLevel());
+        }
         return session.getVariables();
     }
 

@@ -75,7 +75,7 @@ public interface DBGController {
     void removeBreakpoint(Object sessionKey, DBGBreakpointDescriptor descriptor) throws DBGException;
 
     List<? extends DBGStackFrame> getStack(Object sessionKey) throws DBGException;
-    List<? extends DBGVariable<?>> getVariables(Object sessionKey) throws DBGException;
+    List<? extends DBGVariable<?>> getVariables(Object sessionKey, DBGStackFrame stack) throws DBGException;
     List<? extends DBGObjectDescriptor> getObjects(String ownerCtx, String nameCtx) throws DBGException;
 
     /*
