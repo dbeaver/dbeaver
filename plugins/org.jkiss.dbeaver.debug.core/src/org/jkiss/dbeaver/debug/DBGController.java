@@ -76,6 +76,7 @@ public interface DBGController {
 
     List<? extends DBGStackFrame> getStack(Object sessionKey) throws DBGException;
     List<? extends DBGVariable<?>> getVariables(Object sessionKey, DBGStackFrame stack) throws DBGException;
+    String getSource(Object sessionKey, DBGStackFrame stack) throws DBGException;
     List<? extends DBGObjectDescriptor> getObjects(String ownerCtx, String nameCtx) throws DBGException;
 
     /*

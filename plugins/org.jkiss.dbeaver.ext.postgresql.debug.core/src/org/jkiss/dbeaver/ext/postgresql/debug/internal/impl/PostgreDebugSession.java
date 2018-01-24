@@ -520,6 +520,16 @@ public class PostgreDebugSession extends DBGBaseSession {
         return stack;
     }
     
+    @Override
+    public String getSource(DBGStackFrame stack) throws DBGException {
+        if (stack instanceof PostgreDebugStackFrame) {
+            PostgreDebugStackFrame postgreStack = (PostgreDebugStackFrame) stack;
+            return getSource(postgreStack.getOid());
+        }
+        String message = String.format("Unable to get source for stack %s", stack);
+        throw new DBGException(message);
+    }
+    
     /**
      * Return source for func OID in  debug session  
      * 
