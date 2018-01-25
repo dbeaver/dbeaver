@@ -131,8 +131,6 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
         passwordText.setLayoutData(gd);
         passwordText.addModifyListener(textListener);
 
-        createSettingsVariablesHintLabel(addrGroup, 4, 3);
-
         {
             Composite buttonsGroup = new Composite(addrGroup, SWT.NONE);
             gd = new GridData(GridData.FILL_HORIZONTAL);

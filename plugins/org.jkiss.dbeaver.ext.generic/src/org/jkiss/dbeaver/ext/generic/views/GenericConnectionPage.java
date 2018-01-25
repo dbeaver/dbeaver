@@ -300,8 +300,6 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
             passwordText.setLayoutData(gd);
             passwordText.addModifyListener(textListener);
 
-            createSettingsVariablesHintLabel(settingsGroup, null, null);
-
             addControlToGroup(GROUP_LOGIN, userNameLabel);
             addControlToGroup(GROUP_LOGIN, userNameText);
             addControlToGroup(GROUP_LOGIN, emptyLabel);
