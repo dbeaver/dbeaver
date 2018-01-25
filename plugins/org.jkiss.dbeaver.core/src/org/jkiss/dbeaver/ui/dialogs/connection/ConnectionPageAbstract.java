@@ -94,13 +94,14 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
      * @param horizontalSpan can be null, default is 2
      * @param verticalSpan can be null, default is 10
      */
-    protected CLabel createSettingsVariablesHintLabel(Composite parent, Integer horizontalSpan, Integer verticalSpan) {
-        CLabel infoLabel = UIUtils.createInfoLabel(parent, CoreMessages.dialog_connection_edit_connection_settings_variables_hint_label);
-        GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-        gd.horizontalSpan = horizontalSpan == null ? 2 : horizontalSpan;
-        gd.verticalSpan = verticalSpan == null ? 10 : verticalSpan;
-        infoLabel.setLayoutData(gd);
-        return infoLabel;
+    protected void createSettingsVariablesHintLabel(Composite parent, Integer horizontalSpan, Integer verticalSpan) {
+        if (DBeaverCore.getGlobalPreferenceStore().getBoolean(ModelPreferences.CONNECT_USE_ENV_VARS)) {
+            CLabel infoLabel = UIUtils.createInfoLabel(parent, CoreMessages.dialog_connection_edit_connection_settings_variables_hint_label);
+            GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+            gd.horizontalSpan = horizontalSpan == null ? 2 : horizontalSpan;
+            gd.verticalSpan = verticalSpan == null ? 10 : verticalSpan;
+            infoLabel.setLayoutData(gd);
+        }
     }
 
     protected void createDriverPanel(Composite parent) {
@@ -119,9 +120,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
             gd.grabExcessVerticalSpace = true;
             placeholder.setLayoutData(gd);
 
-            if (DBeaverCore.getGlobalPreferenceStore().getBoolean(ModelPreferences.CONNECT_USE_ENV_VARS)) {
-                //createSettingsVariablesHintLabel(placeholder, null, null);
-            }
+            createSettingsVariablesHintLabel(placeholder, null, null);
 
             if (!site.isNew() && !site.getDriver().isEmbedded()) {
                 Link netConfigLink = new Link(panel, SWT.NONE);
