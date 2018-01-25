@@ -18,15 +18,18 @@
 package org.jkiss.dbeaver.ext.mockdata;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mockdata.model.MockGeneratorDescriptor;
 import org.jkiss.dbeaver.ext.mockdata.model.MockGeneratorRegistry;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
@@ -45,6 +48,7 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
 {
     private MockDataSettings mockDataSettings;
 
+    private CLabel noGeneratorInfoLabel;
     private Button removeOldDataCheck;
     private Text rowsText;
 
@@ -125,6 +129,14 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
             propsEditor.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
         }
 
+        noGeneratorInfoLabel = UIUtils.createInfoLabel(composite, "Generators for the red highlighted attributes aren't found. So, no data will be generated for them.");
+        //noGeneratorInfoLabel.setForeground(columnsTable.getDisplay().getSystemColor(SWT.COLOR_RED));
+        GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+        gd.horizontalSpan = 2;
+        gd.verticalIndent = 5;
+        noGeneratorInfoLabel.setLayoutData(gd);
+        noGeneratorInfoLabel.setVisible(false);
+
         setControl(composite);
 
     }
@@ -135,24 +147,27 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
         DBSDataManipulator dataManipulator = databaseObjects.iterator().next();
         DBSEntity dbsEntity = (DBSEntity) dataManipulator;
         try {
-            Collection<? extends DBSEntityAttribute> attributes = dbsEntity.getAttributes(new VoidProgressMonitor());
+            Collection<? extends DBSAttributeBase> attributes = DBUtils.getRealAttributes(dbsEntity.getAttributes(new VoidProgressMonitor()));
 
             // init the generators properties
             if (firstInit) {
                 firstInit = false;
-                for (DBSEntityAttribute attribute : attributes) {
+                for (DBSAttributeBase attribute : attributes) {
                     saveGeneratorProperties(getPropertySource(attribute));
                 }
-
             }
 
             // populate columns table
             TableItem firstTableItem = null;
-            for (DBSEntityAttribute attribute : attributes) {
+            for (DBSAttributeBase attribute : attributes) {
                 TableItem item = new TableItem(columnsTable, SWT.NONE);
                 item.setData(attribute);
                 item.setImage(DBeaverIcons.getImage(DBValueFormatting.getTypeImage(attribute)));
                 item.setText(0, attribute.getName());
+                if (this.mockDataSettings.getGeneratorProperties(attribute.getName()) == null) {
+                    item.setForeground(columnsTable.getDisplay().getSystemColor(SWT.COLOR_RED));
+                    noGeneratorInfoLabel.setVisible(true);
+                }
                 item.setText(1, attribute.getDataKind().name());
                 if (firstTableItem == null) {
                     firstTableItem = item;
@@ -190,7 +205,7 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
         mockDataSettings.setRowsNumber(Long.parseLong(rowsText.getText()));
     }
 
-    private NamedPropertySource getPropertySource(DBSEntityAttribute attribute) {
+    private NamedPropertySource getPropertySource(DBSAttributeBase attribute) {
         NamedPropertySource propertySource = propertySourceMap.get(attribute.getName());
         if (propertySource != null) {
             return propertySource;
@@ -199,17 +214,25 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
             List<DBSDataManipulator> databaseObjects = getWizard().getDatabaseObjects();
             DBSDataManipulator dataManipulator = databaseObjects.iterator().next();
             MockGeneratorDescriptor generatorDescriptor = generatorRegistry.findGenerator(dataManipulator.getDataSource(), attribute);
-            propertySource = new NamedPropertySource(attribute.getName(), generatorDescriptor.getProperties(), null);
-            propertySourceMap.put(attribute.getName(), propertySource);
-            return propertySource;
+            if (generatorDescriptor != null) {
+                propertySource = new NamedPropertySource(attribute.getName(), generatorDescriptor.getProperties(), null);
+                propertySourceMap.put(attribute.getName(), propertySource);
+                return propertySource;
+            } else {
+                return null;
+            }
         }
     }
 
     private void reloadProperties(DBSEntityAttribute attribute) {
         propertySource = getPropertySource(attribute);
-        propsEditor.loadProperties(propertySource);
-        propsEditor.setExpandMode(PropertyTreeViewer.ExpandMode.FIRST);
-        propsEditor.expandAll();
+        if (propertySource != null) {
+            propsEditor.loadProperties(propertySource);
+            propsEditor.setExpandMode(PropertyTreeViewer.ExpandMode.FIRST);
+            propsEditor.expandAll();
+        } else {
+            propsEditor.clearProperties();
+        }
     }
 
     private void saveGeneratorProperties(NamedPropertySource namedPropertySource) {
