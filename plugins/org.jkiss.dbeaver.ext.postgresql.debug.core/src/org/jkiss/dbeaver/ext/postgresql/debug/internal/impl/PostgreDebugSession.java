@@ -29,6 +29,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import javax.sql.rowset.spi.TransactionalWriter;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -74,7 +76,13 @@ public class PostgreDebugSession extends DBGBaseSession {
     
     private PostgreDebugAttachKind attachKind = PostgreDebugAttachKind.UNKNOWN;
     
-    private Statement localStatement; 
+    private Statement localStatement;
+    
+    private Job job;
+    
+    private Connection executionTarget;
+    
+    private PostgreDebugBreakpointDescriptor bpGlobal;
     
     private static final int LOCAL_WAIT = 500; //0.5 sec
     
@@ -235,7 +243,7 @@ public class PostgreDebugSession extends DBGBaseSession {
     protected void runProc(Connection connection,String commandSQL, String name) throws DBGException {
         
         
-        Job job = new Job(name) {
+        job = new Job(name) {
             
             @Override
             protected IStatus run(IProgressMonitor monitor) {
@@ -263,7 +271,7 @@ public class PostgreDebugSession extends DBGBaseSession {
         
     private void attachLocal(int OID,String call) throws DBGException {
         
-        Connection executionTarget = createExecutionTarget();
+        executionTarget = createExecutionTarget();
          
         createSlot(executionTarget, OID);
         
@@ -303,8 +311,8 @@ public class PostgreDebugSession extends DBGBaseSession {
 
         PostgreDebugBreakpointProperties properties = new PostgreDebugBreakpointProperties(true);
         PostgreDebugObjectDescriptor obj = new PostgreDebugObjectDescriptor(OID,"ENTRY","SESSION","THIS","PG"); 
-        PostgreDebugBreakpointDescriptor bp = new PostgreDebugBreakpointDescriptor(obj, properties);
-        addBreakpoint(bp);
+        bpGlobal = new PostgreDebugBreakpointDescriptor(obj, properties);
+        addBreakpoint(bpGlobal);
         
         String sessionParam = String.valueOf(getSessionId());
         String taskName = sessionParam + " global attached to " + String.valueOf(targetId);
@@ -349,6 +357,94 @@ public class PostgreDebugSession extends DBGBaseSession {
 
 
     }
+    
+    public void deattachLocal() throws DBGException {
+        
+        if (!isWaiting()) {
+            
+            try (Statement stmt = getConnection().createStatement()) {
+                String sqlCommand = composeAbortCommand();
+                stmt.execute(sqlCommand);                        
+                task = null;
+            } catch (SQLException e) {                       
+                log.error("Unable to abort target", e);
+            }
+            
+        }
+
+        if (job.getState() != Job.NONE) {
+            
+            try {
+                getConnection().close();
+            } catch (SQLException e) {
+                log.error("Unable to close client session", e);
+            } 
+            
+            job.cancel();
+            
+            try {
+                executionTarget.close();
+            } catch (SQLException e) {
+                log.error("Unable to close target session", e);
+            }
+           
+            
+        } else {
+            job.cancel();
+            try {
+                getConnection().close();
+            } catch (SQLException e) {
+                throw new DBGException("Error clent disconnect", e);   
+            }
+        }
+        
+    }
+    
+  public void deattachGlobal() throws DBGException {
+        
+        if (!isWaiting() && !isDone()) {
+            try (Statement stmt = getConnection().createStatement()) {
+                String sql = SQL_CONTINUE.replaceAll("\\?sessionid", String.valueOf(sessionId));
+                stmt.execute(sql);                        
+                task = null;
+            } catch (SQLException e) {                       
+                log.error("Unable to abort target", e);
+            }
+            
+        }
+        
+        removeBreakpoint(bpGlobal);
+        
+        try {
+            getConnection().close();
+        } catch (SQLException e) {
+            log.error("Unable to close client session", e);
+        } 
+        
+    }
+    
+    public void deattach() throws DBGException {
+       
+    
+        try {
+            
+            if (!isAttached()) {
+                lock.writeLock().unlock();
+                throw new DBGException("Debug session not attached");
+            }
+            
+          
+            if (attachKind == PostgreDebugAttachKind.LOCAL){
+                deattachLocal();
+            } else if (attachKind == PostgreDebugAttachKind.GLOBAL){
+                deattachGlobal();
+            }
+            
+            
+        }finally {
+            lock.writeLock().unlock();
+        }
+    }
 
     @Override
     public DBGSessionInfo getSessionInfo() {
@@ -384,7 +480,6 @@ public class PostgreDebugSession extends DBGBaseSession {
     @Override
     public void execStepInto() throws DBGException {
         execStep(SQL_STEP_INTO, " step into for ", DBGEvent.STEP_INTO);
-
     }
 
     @Override
