@@ -272,8 +272,14 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
             throw new DBException(e, dataSource);
         }
         if (result.isEmpty()) {
-            log.warn("Schema read failed: empty list returned. Try generic method.");
-            return super.loadSchemas(session, dataSource, catalog);
+            if (!showAllSchemas) {
+                // Perhaps all schemas were filtered out
+                result.add(new GenericSchema(dataSource, catalog, SQLServerConstants.DEFAULT_SCHEMA_NAME));
+            } else {
+                // Maybe something went wrong. LEt's try to use native function
+                log.warn("Schema read failed: empty list returned. Try generic method.");
+                return super.loadSchemas(session, dataSource, catalog);
+            }
         }
         return result;
     }
