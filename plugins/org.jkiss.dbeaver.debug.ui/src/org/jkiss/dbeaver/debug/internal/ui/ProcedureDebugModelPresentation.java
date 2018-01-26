@@ -35,7 +35,11 @@ public class ProcedureDebugModelPresentation extends DatabaseDebugModelPresentat
     {
         if (element instanceof DBNDatabaseNode) {
             DBNDatabaseNode dbnNode = (DBNDatabaseNode) element;
-            return new EntityEditorInput(dbnNode);
+            EntityEditorInput entityEditorInput = new EntityEditorInput(dbnNode);
+//FIXME:AF: how to retrieve it? probably org.jkiss.dbeaver.databaseor and EntityEditorsRegistry can help 
+            String folderId = "postgresql.source.view";
+//            entityEditorInput.setDefaultFolderId(folderId);
+            return entityEditorInput;
         }
         return null;
     }
@@ -43,7 +47,7 @@ public class ProcedureDebugModelPresentation extends DatabaseDebugModelPresentat
     @Override
     public String getEditorId(IEditorInput input, Object element)
     {
-        //FIXME:AF: is there a constant anywhere? 
+//FIXME:AF: is there a constant anywhere? 
         return "org.jkiss.dbeaver.ui.editors.entity.EntityEditor";
     }
 

@@ -267,7 +267,9 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                 body = this.procSrc;
             } else {
                 try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read procedure body")) {
-                    body = JDBCUtils.queryString(session, "SELECT pg_get_functiondef(" + getObjectId() + ")");
+                    body = JDBCUtils.queryString(session, "SELECT prosrc from pg_proc where oid =" + getObjectId() + "");
+//removed declaration part
+//                    body = JDBCUtils.queryString(session, "SELECT pg_get_functiondef(" + getObjectId() + ")");
                 } catch (SQLException e) {
                     if (!CommonUtils.isEmpty(this.procSrc)) {
                         log.debug("Error reading procedure body", e);
