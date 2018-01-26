@@ -322,6 +322,6 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
 
     @Override
     public boolean isSystemTable(GenericTable table) {
-        return getSystemSchema().equals(table.getSchema().getName()) && table.getName().startsWith("sys");
+        return table.getSchema() != null && getSystemSchema().equals(table.getSchema().getName()) && table.getName().startsWith("sys");
     }
 }
