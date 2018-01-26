@@ -34,6 +34,7 @@ public interface DBPScriptObject extends DBPObject {
     String OPTION_FULLY_QUALIFIED_NAMES = "useFQN";
     String OPTION_INCLUDE_OBJECT_DROP = "script.includeDrop";
     String OPTION_SCRIPT_FORMAT = "script.format";
+    String OPTION_DEBUGGER_SOURCE = "debugger.source";
 
     Map<String, Object> EMPTY_OPTIONS = Collections.unmodifiableMap(new HashMap<>());
 
