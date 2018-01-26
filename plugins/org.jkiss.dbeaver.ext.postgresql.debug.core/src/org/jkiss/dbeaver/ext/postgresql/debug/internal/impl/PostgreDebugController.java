@@ -27,10 +27,10 @@ import java.util.Map;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.debug.DBGBaseController;
+import org.jkiss.dbeaver.debug.DBGBreakpointDescriptor;
 import org.jkiss.dbeaver.debug.DBGException;
 import org.jkiss.dbeaver.debug.DBGSession;
 import org.jkiss.dbeaver.debug.DBGSessionInfo;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
@@ -142,13 +142,20 @@ public class PostgreDebugController extends DBGBaseController {
     public void attachSession(DBGSession session, DBCExecutionContext sessionContext, Map<String, Object> configuration, DBRProgressMonitor monitor) throws DBException {
         PostgreDebugSession pgSession = (PostgreDebugSession) session;
         JDBCExecutionContext sessionJdbc = (JDBCExecutionContext) sessionContext;
-        //FIXME 16749 - OID for debug proc
         //FIXME -1 - target PID (-1 for ANY PID)
         int oid = Integer.parseInt(String.valueOf(configuration.get(PROCEDURE_OID)));
         int pid = Integer.parseInt(String.valueOf(configuration.get(PROCESS_ID)));
-        pgSession.attach(sessionJdbc, oid, pid);
-        DBPDataSource dataSource = sessionContext.getDataSource();
-        executeProcedure(dataSource, configuration, monitor);
+        boolean global = configuration.get(ATTACH_KIND) == PostgreDebugAttachKind.LOCAL; //FIXME Only local now
+        String call = (String) configuration.get(PROCEDURE_CALL); 
+        pgSession.attach(sessionJdbc, oid, pid,global,call);
+        //DBPDataSource dataSource = sessionContext.getDataSource();
+        //executeProcedure(dataSource, configuration, monitor);
+    }
+    
+    @Override
+    public DBGBreakpointDescriptor describeBreakpoint(Map<String, Object> attributes) {
+        // FIXME: AF: create PostgreDebugObjectDescriptor here
+        return null;
     }
 
 }

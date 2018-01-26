@@ -76,7 +76,13 @@ class PostgreDialect extends JDBCSQLDialect {
                 "LOOP",
                 "PERFORM",
                 "RAISE",
-                "NOTICE"
+                "NOTICE",
+                "CONFLICT",
+
+                // "DEBUG", "INFO", "NOTICE", "WARNING", // levels
+                // "MESSAGE", "DETAIL", "HINT", "ERRCODE", //options
+
+                "DATATYPE"
             ));
 
         addFunctions(

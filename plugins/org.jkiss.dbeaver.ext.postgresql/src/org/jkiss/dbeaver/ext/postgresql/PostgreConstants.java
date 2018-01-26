@@ -84,8 +84,9 @@ public class PostgreConstants {
     public static final String PG_INSTALL_PROP_DATA_DIRECTORY = "Data Directory";
     public static final String BIN_FOLDER = "bin";
 
-    public static Map<String, String> SERIAL_TYPES = new HashMap<>();
-    public static Map<String, String> DATA_TYPE_ALIASES = new HashMap<>();
+    public static final Map<String, String> SERIAL_TYPES = new HashMap<>();
+    public static final Map<String, String> DATA_TYPE_ALIASES = new HashMap<>();
+    public static final Map<String, String> DATA_TYPE_CANONICAL_NAMES = new HashMap<>();
 
     public static final String TYPE_INT2 = "int2";
     public static final String TYPE_INT4 = "int4";
@@ -95,7 +96,6 @@ public class PostgreConstants {
         DATA_TYPE_ALIASES.put("integer", TYPE_INT4);
         DATA_TYPE_ALIASES.put("int", TYPE_INT4);
         DATA_TYPE_ALIASES.put("bigint", TYPE_INT8);
-        DATA_TYPE_ALIASES.put("bigserial", TYPE_INT8);
         DATA_TYPE_ALIASES.put("smallint", TYPE_INT2);
 
         DATA_TYPE_ALIASES.put("double precision", "float8");
@@ -107,5 +107,9 @@ public class PostgreConstants {
         SERIAL_TYPES.put("serial2", TYPE_INT2);
         SERIAL_TYPES.put("smallserial", TYPE_INT2);
         SERIAL_TYPES.put("bigserial", TYPE_INT8);
+
+        DATA_TYPE_CANONICAL_NAMES.put(TYPE_INT4, "integer");
+        DATA_TYPE_CANONICAL_NAMES.put(TYPE_INT8, "bigint");
+        DATA_TYPE_CANONICAL_NAMES.put(TYPE_INT2, "smallint");
     }
 }
