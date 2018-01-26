@@ -10,14 +10,10 @@ import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.debug.core.model.IThread;
 import org.eclipse.debug.core.model.IVariable;
 import org.eclipse.osgi.util.NLS;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.debug.DBGException;
 import org.jkiss.dbeaver.debug.DBGStackFrame;
 import org.jkiss.dbeaver.debug.DBGVariable;
 import org.jkiss.dbeaver.debug.core.DebugCore;
-import org.jkiss.dbeaver.model.DBPScriptObject;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 
 public class DatabaseStackFrame extends DatabaseDebugElement implements IStackFrame {
 
@@ -30,8 +26,6 @@ public class DatabaseStackFrame extends DatabaseDebugElement implements IStackFr
     private final DBGStackFrame dbgStackFrame;
 
     private boolean refreshVariables = true;
-
-    private Integer lineNumber;
 
     public DatabaseStackFrame(DatabaseThread thread, DBGStackFrame dbgStackFrame) {
         super(thread.getDatabaseDebugTarget());
@@ -159,42 +153,7 @@ public class DatabaseStackFrame extends DatabaseDebugElement implements IStackFr
 
     @Override
     public int getLineNumber() throws DebugException {
-        if (lineNumber == null) {
-            lineNumber = calculateLineNumber();
-        }
-        if (lineNumber == null) {
-//FIXME:AF:empiric constant, needs check
-            final int definitionLines = 4;
-//FIXME:AF:empiric constant, needs check
-            final int emptyLines = 1;
-            return dbgStackFrame.getLineNumber() + definitionLines - emptyLines;
-        }
-        return lineNumber.intValue();
-    }
-
-    private Integer calculateLineNumber() throws DebugException {
-        DatabaseDebugTarget debugTarget = getDatabaseDebugTarget();
-        Object oid = dbgStackFrame.getSourceIdentifier();
-        VoidProgressMonitor monitor = new VoidProgressMonitor();
-        try {
-            DBSObject databaseObject = debugTarget.findDatabaseObject(oid, monitor);
-            if (databaseObject instanceof DBPScriptObject) {
-                DBPScriptObject script = (DBPScriptObject) databaseObject;
-                String definitionText = script.getObjectDefinitionText(monitor, DBPScriptObject.EMPTY_OPTIONS);
-                String sourceText = getSource();
-                int indexOf = definitionText.indexOf(sourceText);
-                String definition = definitionText.substring(0, indexOf);
-                String[] split = definition.split("\n"); //$NON-NLS-1$
-//FIXME:AF:empiric constant, needs check
-                final int emptyLines = 1;
-                return dbgStackFrame.getLineNumber() + split.length - emptyLines;
-            }
-        } catch (DBException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        // TODO Auto-generated method stub
-        return null;
+        return dbgStackFrame.getLineNumber();
     }
 
     @Override
