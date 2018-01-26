@@ -106,13 +106,14 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
             gd.grabExcessVerticalSpace = true;
             placeholder.setLayoutData(gd);
 
+            if (DBeaverCore.getGlobalPreferenceStore().getBoolean(ModelPreferences.CONNECT_USE_ENV_VARS)) {
+                CLabel infoLabel = UIUtils.createInfoLabel(placeholder, CoreMessages.dialog_connection_edit_connection_settings_variables_hint_label);
+                gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING);
+                gd.grabExcessHorizontalSpace = true;
+                infoLabel.setLayoutData(gd);
+            }
+
             if (!site.isNew() && !site.getDriver().isEmbedded()) {
-                if (DBeaverCore.getGlobalPreferenceStore().getBoolean(ModelPreferences.CONNECT_USE_ENV_VARS)) {
-                    CLabel infoLabel = UIUtils.createInfoLabel(placeholder, CoreMessages.dialog_connection_edit_connection_settings_variables_hint_label);
-                    gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING);
-                    gd.grabExcessHorizontalSpace = true;
-                    infoLabel.setLayoutData(gd);
-                }
 
                 Link netConfigLink = new Link(placeholder, SWT.NONE);
                 netConfigLink.setText("<a>" + CoreMessages.dialog_connection_edit_wizard_conn_conf_network_link + "</a>");
