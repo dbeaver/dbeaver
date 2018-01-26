@@ -27,8 +27,48 @@
             class="org.jkiss.dbeaver.ext.mockdata.generator.SimpleStringGenerator">
             <type kind="STRING"/>
 
-            <property id="template" label="Template string" type="string"
-                defaultValue="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."/>
+            <propertyGroup label="General">
+                <property id="template" label="Template string" type="string"
+                    defaultValue="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."/>
+
+                <property id="nulls" label="NULL values" type="boolean" defaultValue="TRUE"/>
+            </propertyGroup>
+        </generator>
+
+        <generator
+            id="randomNumeric"
+            label="Random Numeric"
+            description="Random numeric value generator"
+            class="org.jkiss.dbeaver.ext.mockdata.generator.RandomNumericGenerator">
+            <type kind="NUMERIC"/>
+
+            <propertyGroup label="General">
+                <property id="nulls" label="NULL values" type="boolean" defaultValue="TRUE"/>
+            </propertyGroup>
+        </generator>
+
+        <generator
+            id="randomDate"
+            label="Random Date"
+            description="Random date value generator"
+            class="org.jkiss.dbeaver.ext.mockdata.generator.RandomDateGenerator">
+            <type kind="DATETIME"/>
+
+            <propertyGroup label="General">
+                <property id="nulls" label="NULL values" type="boolean" defaultValue="TRUE"/>
+            </propertyGroup>
+        </generator>
+
+        <generator
+            id="randomBoolean"
+            label="Random Boolean"
+            description="Random boolean value generator"
+            class="org.jkiss.dbeaver.ext.mockdata.generator.RandomBooleanGenerator">
+            <type kind="BOOLEAN"/>
+
+            <propertyGroup label="General">
+                <property id="nulls" label="NULL values" type="boolean" defaultValue="TRUE"/>
+            </propertyGroup>
         </generator>
 
     </extension>

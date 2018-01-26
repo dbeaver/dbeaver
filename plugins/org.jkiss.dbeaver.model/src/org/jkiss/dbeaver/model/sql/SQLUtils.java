@@ -198,6 +198,11 @@ public final class SQLUtils {
         }
     }
 
+    public static boolean isStringQuoted(String string)
+    {
+        return string.length() > 1 && string.startsWith("'") && string.endsWith("'");
+    }
+
     public static String quoteString(DBSObject object, String string)
     {
         return quoteString(object.getDataSource(), string);

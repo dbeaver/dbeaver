@@ -153,7 +153,7 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
                 case STRING:
                     // Escape if it is not NULL (#1913)
                     // Although I didn't reproduce that locally - perhaps depends on server config.
-                    if (!SQLConstants.NULL_VALUE.equals(defaultValue)) {
+                    if (!SQLConstants.NULL_VALUE.equals(defaultValue) && !SQLUtils.isStringQuoted(defaultValue)) {
                         defaultValue = SQLUtils.quoteString(getDataSource(), defaultValue);
                     }
                     break;
