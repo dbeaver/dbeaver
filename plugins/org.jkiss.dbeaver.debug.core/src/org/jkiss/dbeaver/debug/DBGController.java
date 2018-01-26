@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.debug;
 import java.util.List;
 import java.util.Map;
 
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -36,6 +37,10 @@ public interface DBGController {
     public static final String PROCEDURE_NAME = "procedureName"; //$NON-NLS-1$
     public static final String PROCEDURE_CALL = "procedureCall"; //$NON-NLS-1$
     public static final String ATTACH_KIND = "attachKind"; //$NON-NLS-1$
+    
+    DBPDataSourceContainer getDataSourceContainer();
+    Map<String, Object> getDebugConfiguration();
+
 
     /*
      * General lifecycle

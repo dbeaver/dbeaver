@@ -17,23 +17,30 @@
  */
 package org.jkiss.dbeaver.debug.sourcelookup;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.sourcelookup.ISourceContainer;
 import org.eclipse.debug.core.sourcelookup.ISourceContainerType;
 import org.eclipse.debug.core.sourcelookup.containers.CompositeSourceContainer;
+import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.debug.core.DebugCore;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 
 public class DatasourceSourceContainer extends CompositeSourceContainer {
     
+    private final DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
     private final DBPDataSourceContainer datasource;
-    private final DBNNode startNode;
+    private final IProject project;
 
-    public DatasourceSourceContainer(DataSourceDescriptor descriptor, DBNNode node) {
+    public DatasourceSourceContainer(DataSourceDescriptor descriptor) {
         this.datasource = descriptor;
-        this.startNode = node;
+        this.project = datasource.getRegistry().getProject();
     }
 
     @Override
@@ -43,8 +50,16 @@ public class DatasourceSourceContainer extends CompositeSourceContainer {
     
     @Override
     protected Object[] findSourceElements(String name, ISourceContainer[] containers) throws CoreException {
-        if (startNode != null) {
-            return new Object[] {startNode};
+        DBNNode node;
+        try {
+            VoidProgressMonitor monitor = new VoidProgressMonitor();
+            node = navigatorModel.getNodeByPath(monitor, project, name);
+        } catch (DBException e) {
+            String message = NLS.bind("Unable to extract node {0}", name);
+            throw new CoreException(DebugCore.newErrorStatus(message, e));
+        }
+        if (node != null) {
+            return new Object[] {node};
         }
         return super.findSourceElements(name, containers);
     }
@@ -56,7 +71,6 @@ public class DatasourceSourceContainer extends CompositeSourceContainer {
 
     @Override
     protected ISourceContainer[] createSourceContainers() throws CoreException {
-        // TODO Auto-generated method stub
         return new ISourceContainer[0];
     }
 
