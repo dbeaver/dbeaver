@@ -248,8 +248,8 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
             }
         }
 
+        List<GenericSchema> result = new ArrayList<>();
         try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
-            List<GenericSchema> result = new ArrayList<>();
 
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                 while (dbResult.next()) {
@@ -268,11 +268,14 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
                     result.add(schema);
                 }
             }
-            return result;
-
         } catch (SQLException e) {
             throw new DBException(e, dataSource);
         }
+        if (result.isEmpty()) {
+            log.warn("Schema read failed: empty list returned. Try generic method.");
+            return super.loadSchemas(session, dataSource, catalog);
+        }
+        return result;
     }
 
     @Override
