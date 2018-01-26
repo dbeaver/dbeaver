@@ -223,6 +223,11 @@ public class BasicSQLDialect implements SQLDialect {
     }
 
     @Override
+    public char getStringEscapeCharacter() {
+        return 0;
+    }
+
+    @Override
     public int getCatalogUsage()
     {
         return USAGE_NONE;
