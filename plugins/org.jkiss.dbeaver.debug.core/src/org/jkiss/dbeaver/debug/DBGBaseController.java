@@ -51,8 +51,14 @@ public abstract class DBGBaseController implements DBGController {
         this.dataSourceContainer = dataSourceContainer;
     }
 
+    @Override
     public DBPDataSourceContainer getDataSourceContainer() {
         return dataSourceContainer;
+    }
+    
+    @Override
+    public Map<String, Object> getDebugConfiguration() {
+        return new HashMap<String, Object>(configuration);
     }
     
     public DBCExecutionContext getExecutionContext() {
