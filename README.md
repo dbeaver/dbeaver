@@ -57,17 +57,16 @@ Binaries are in `product/standalone/target/products`
 - Visit https://dbeaver.jkiss.org or https://dbeaver.com for more information.
 - Thanks for using DBeaver! Star if you like it.
 
-## Help the Beaver!
+## Contribution: help the Beaver!
 
-Hooray, we have reached 3k of stars on GitGub and more than 500k of users!
+Hooray, we have reached 4k of stars on GitGub and continue to grow!
 That's really cool, we are glad that you like DBeaver.
-We receiving lots of tickets with bug reports and feature requests every day - and we going to resolve most of them.
-In order to be able to continue develop this project and do everything faster and better we decided to create <a href="https://dbeaver.com/download">DBeaver Enterprise Edition</a>.
 
-EE version includes all features of CE + NoSQL databases support + EE extensions + official online support. Also licensed users have priorities in bug fixes and new features development.
-
-If you need extra features or you want to support DBeaver - purchase EE version.  
+- We are actively looking for new source code contributors. We have added labels “Good first issue” and “Help wanted” to some tickets. If you want to be a part of our development team just be brave and take a ticket.
+- You can buy <a href="https://dbeaver.com/download">DBeaver EE</a> version. It includes all features of CE + NoSQL databases support + EE extensions + official online support. Also, licensed users have priorities in bug fixes and new features development.
 Those who read up to this point - you can use community discounts (check our <a href="https://github.com/dbeaver/dbeaver/wiki/Enterprise-Edition">WIKI</a>).
+- You can donate some money to us. This will let us to develop open-source version more actively, support production and testing environment (hosting), write better documentation, make better UIX, etc. Also, this will let us to move more EE features into CE version.  
+[![paypal](https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=KFGAGZ24YZE3C)
 
 Save wild animals :) Thank you!  
 
