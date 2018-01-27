@@ -32,7 +32,7 @@ import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.actions.common.EmptyListAction;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorActionExecuteTool;
-import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -55,11 +55,13 @@ public class DataSourceToolsContributor extends DataSourceMenuContributor
             return;
         }
         ISelection selection = selectionProvider.getSelection();
-        DBSObject selectedObject = NavigatorUtils.getSelectedObject(selection);
+        if (selection instanceof IStructuredSelection && !selection.isEmpty()) {
+            DBSObject selectedObject = RuntimeUtils.getObjectAdapter(((IStructuredSelection) selection).getFirstElement(), DBSObject.class);
 
-        if (selectedObject != null) {
-            List<ToolDescriptor> tools = ToolsRegistry.getInstance().getTools((IStructuredSelection) selection);
-            fillToolsMenu(menuItems, tools, selection);
+            if (selectedObject != null) {
+                List<ToolDescriptor> tools = ToolsRegistry.getInstance().getTools((IStructuredSelection) selection);
+                fillToolsMenu(menuItems, tools, selection);
+            }
         }
     }
 

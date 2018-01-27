@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -1315,7 +1316,7 @@ public final class DBUtils {
         } else if (object instanceof DBSObject) {
             return (DBSObject) object;
         } else {
-            return null;
+            return RuntimeUtils.getObjectAdapter(object, DBSObject.class);
         }
     }
 
