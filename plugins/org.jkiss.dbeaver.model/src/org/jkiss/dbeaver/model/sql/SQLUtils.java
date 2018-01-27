@@ -20,6 +20,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.*;
@@ -31,9 +32,9 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatter;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
-import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKeyColumn;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -862,5 +863,43 @@ public final class SQLUtils {
             }
         }
         return nameList.toArray(new String[nameList.size()]);
+    }
+
+    public static String generateTableJoin(DBRProgressMonitor monitor, DBSEntity leftTable, String leftAlias, DBSEntity rightTable, String rightAlias) throws DBException {
+        // Try to find FK in left table referencing to right table
+        Collection<? extends DBSEntityAssociation> associations = leftTable.getAssociations(monitor);
+        if (!CommonUtils.isEmpty(associations)) {
+            for (DBSEntityAssociation fk : associations) {
+                if (fk instanceof DBSTableForeignKey && fk.getAssociatedEntity() == rightTable) {
+                    return generateTablesJoin(monitor, (DBSTableForeignKey)fk, leftAlias, rightAlias);
+                }
+            }
+        }
+
+        // Now try right to left
+        associations = rightTable.getAssociations(monitor);
+        if (!CommonUtils.isEmpty(associations)) {
+            for (DBSEntityAssociation fk : associations) {
+                if (fk instanceof DBSTableForeignKey && fk.getAssociatedEntity() == leftTable) {
+                    return generateTablesJoin(monitor, (DBSTableForeignKey)fk, rightAlias, leftAlias);
+                }
+            }
+        }
+
+        // Try to find columns in left table which match unique key in right table
+        return null;
+    }
+
+    private static String generateTablesJoin(DBRProgressMonitor monitor, DBSTableForeignKey fk, String leftAlias, String rightAlias) throws DBException {
+        StringBuilder joinSQL = new StringBuilder();
+        for (DBSEntityAttributeRef ar : fk.getAttributeReferences(monitor)) {
+            if (ar instanceof DBSTableForeignKeyColumn) {
+                DBSTableForeignKeyColumn fkc = (DBSTableForeignKeyColumn)ar;
+                joinSQL
+                    .append(leftAlias).append(".").append(DBUtils.getQuotedIdentifier(fkc)).append(" = ")
+                    .append(rightAlias).append(".").append(DBUtils.getQuotedIdentifier(fkc.getReferencedColumn()));
+            }
+        }
+        return joinSQL.toString();
     }
 }

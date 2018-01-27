@@ -116,6 +116,10 @@ public class GenerateSQLContributor extends CompoundContributionItem {
         menu.add(makeAction("UPDATE ", UPDATE_GENERATOR(entities)));
         menu.add(makeAction("DELETE ", DELETE_GENERATOR(entities)));
         menu.add(makeAction("MERGE", MERGE_GENERATOR(entities)));
+        if (entities.size() > 1) {
+            menu.add(new Separator());
+            menu.add(makeAction("JOIN", JOIN_GENERATOR(entities)));
+        }
     }
 
     private void makeScriptContributions(List<IContributionItem> menu, final List<DBPScriptObject> scriptObjects)
@@ -818,6 +822,55 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                     hasAttr = true;
                 }
                 sql.append(");\n");
+            }
+        };
+    }
+
+    @NotNull
+    private static SQLGenerator<DBSEntity> JOIN_GENERATOR(final List<DBSEntity> entities) {
+        return new SQLGenerator<DBSEntity>(entities) {
+
+            @Override
+            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+            {
+                StringBuilder sql = new StringBuilder(100);
+                try {
+                    sql.append("SELECT ");
+                    for (int i = 0; i < objects.size(); i++) {
+                        if (i > 0) sql.append(", ");
+                        sql.append("t").append(i + 1).append(".*");
+                    }
+                    sql.append("\nFROM ");
+                    for (int i = 0; i < objects.size(); i++) {
+                        DBSEntity entity = objects.get(i);
+                        if (i > 0) sql.append(", ");
+                        sql.append(getEntityName(entity)).append(" t").append(i + 1);
+                    }
+                    sql.append("\nWHERE ");
+                    boolean hasCond = false;
+                    for (int i = 1; i < objects.size(); i++) {
+                        for (int k = 0; k < i; k++) {
+                            String tableJoin = SQLUtils.generateTableJoin(monitor, objects.get(k), "t" + (k + 1), objects.get(i), "t" + (i + 1));
+                            if (tableJoin != null) {
+                                sql.append("\n\t");
+                                if (hasCond) sql.append("AND ");
+                                sql.append(tableJoin);
+                                hasCond = true;
+                                break;
+                            } else {
+                                sql.append("\n-- Can't join tables ").append(DBUtils.getQuotedIdentifier(objects.get(k))).append(" and ").append(DBUtils.getQuotedIdentifier(objects.get(i)));
+                            }
+                        }
+                    }
+                } catch (Exception e) {
+                    throw new InvocationTargetException(e);
+                }
+                result = sql.toString();
+            }
+
+            @Override
+            public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, DBSEntity object) throws DBException {
+                // Do nothing for each individual table
             }
         };
     }
