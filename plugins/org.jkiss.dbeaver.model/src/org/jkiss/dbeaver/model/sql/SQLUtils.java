@@ -865,39 +865,71 @@ public final class SQLUtils {
         return nameList.toArray(new String[nameList.size()]);
     }
 
-    public static String generateTableJoin(DBRProgressMonitor monitor, DBSEntity leftTable, DBSEntity rightTable) throws DBException {
+    public static String generateTableJoin(DBRProgressMonitor monitor, DBSEntity leftTable, String leftAlias, DBSEntity rightTable, String rightAlias) throws DBException {
         // Try to find FK in left table referencing to right table
+        String sql = generateTableJoinByAssociation(monitor, leftTable, leftAlias, rightTable, rightAlias);
+        if (sql != null) return sql;
+
+        // Now try right to left
+        sql = generateTableJoinByAssociation(monitor, rightTable, rightAlias, leftTable, leftAlias);
+        if (sql != null) return sql;
+
+        // Try to find columns in left table which match unique key in right table
+        sql = generateTableJoinByColumns(monitor, leftTable, leftAlias, rightTable, rightAlias);
+        if (sql != null) return sql;
+
+        // In reverse order
+        sql = generateTableJoinByColumns(monitor, rightTable, rightAlias, leftTable, leftAlias);
+        if (sql != null) return sql;
+
+        return null;
+    }
+
+    private static String generateTableJoinByColumns(DBRProgressMonitor monitor, DBSEntity leftTable, String leftAlias, DBSEntity rightTable, String rightAlias) throws DBException {
+        List<DBSEntityAttribute> leftIdentifier = new ArrayList<>(DBUtils.getBestTableIdentifier(monitor, leftTable));
+        if (!leftIdentifier.isEmpty()) {
+            List<DBSEntityAttribute> rightAttributes = new ArrayList<>();
+            for (DBSEntityAttribute attr : leftIdentifier) {
+                DBSEntityAttribute rightAttr = rightTable.getAttribute(monitor, attr.getName());
+                if (rightAttr == null) {
+                    break;
+                }
+                rightAttributes.add(rightAttr);
+            }
+            if (leftIdentifier.size() != rightAttributes.size()) {
+                return null;
+            }
+            StringBuilder joinSQL = new StringBuilder();
+            for (int i = 0; i < leftIdentifier.size(); i++) {
+                joinSQL
+                    .append(leftAlias).append(".").append(DBUtils.getQuotedIdentifier(leftIdentifier.get(i))).append(" = ")
+                    .append(rightAlias).append(".").append(DBUtils.getQuotedIdentifier(rightAttributes.get(i)));
+            }
+            return joinSQL.toString();
+        }
+        return null;
+    }
+
+    private static String generateTableJoinByAssociation(DBRProgressMonitor monitor, DBSEntity leftTable, String leftAlias, DBSEntity rightTable, String rightAlias) throws DBException {
         Collection<? extends DBSEntityAssociation> associations = leftTable.getAssociations(monitor);
         if (!CommonUtils.isEmpty(associations)) {
             for (DBSEntityAssociation fk : associations) {
                 if (fk instanceof DBSTableForeignKey && fk.getAssociatedEntity() == rightTable) {
-                    return generateTablesJoin(monitor, (DBSTableForeignKey)fk);
+                    return generateTablesJoin(monitor, (DBSTableForeignKey)fk, leftAlias, rightAlias);
                 }
             }
         }
-
-        // Now try right to left
-        associations = rightTable.getAssociations(monitor);
-        if (!CommonUtils.isEmpty(associations)) {
-            for (DBSEntityAssociation fk : associations) {
-                if (fk instanceof DBSTableForeignKey && fk.getAssociatedEntity() == leftTable) {
-                    return generateTablesJoin(monitor, (DBSTableForeignKey)fk);
-                }
-            }
-        }
-
-        // Try to find columns in left table which match unique key in right table
         return null;
     }
 
-    private static String generateTablesJoin(DBRProgressMonitor monitor, DBSTableForeignKey fk) throws DBException {
+    private static String generateTablesJoin(DBRProgressMonitor monitor, DBSTableForeignKey fk, String leftAlias, String rightAlias) throws DBException {
         StringBuilder joinSQL = new StringBuilder();
         for (DBSEntityAttributeRef ar : fk.getAttributeReferences(monitor)) {
             if (ar instanceof DBSTableForeignKeyColumn) {
                 DBSTableForeignKeyColumn fkc = (DBSTableForeignKeyColumn)ar;
                 joinSQL
-                    .append(getTableAlias(fk.getParentObject())).append(".").append(DBUtils.getQuotedIdentifier(fkc)).append(" = ")
-                    .append(getTableAlias(fk.getAssociatedEntity())).append(".").append(DBUtils.getQuotedIdentifier(fkc.getReferencedColumn()));
+                    .append(leftAlias).append(".").append(DBUtils.getQuotedIdentifier(fkc)).append(" = ")
+                    .append(rightAlias).append(".").append(DBUtils.getQuotedIdentifier(fkc.getReferencedColumn()));
             }
         }
         return joinSQL.toString();
@@ -906,4 +938,5 @@ public final class SQLUtils {
     public static String getTableAlias(DBSEntity table) {
         return CommonUtils.escapeIdentifier(table.getName());
     }
+
 }

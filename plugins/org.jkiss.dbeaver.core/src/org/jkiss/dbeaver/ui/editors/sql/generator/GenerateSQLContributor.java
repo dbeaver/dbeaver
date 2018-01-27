@@ -851,7 +851,8 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                     for (int i = 1; i < objects.size(); i++) {
                         boolean foundJoin = false;
                         for (int k = 0; k < i; k++) {
-                            String tableJoin = SQLUtils.generateTableJoin(monitor, objects.get(k), objects.get(i));
+                            String tableJoin = SQLUtils.generateTableJoin(
+                                monitor, objects.get(k), SQLUtils.getTableAlias(objects.get(k)), objects.get(i), SQLUtils.getTableAlias(objects.get(i)));
                             if (tableJoin != null) {
                                 sql.append("\n\t");
                                 if (hasCond) sql.append("AND ");
