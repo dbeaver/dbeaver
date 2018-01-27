@@ -427,16 +427,16 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
             infoPanel.setVisible(false);
         }
 
-        Composite editotPanel = new Composite(panel, SWT.NONE);
+        Composite editorPanel = new Composite(panel, SWT.NONE);
         layout = new GridLayout(1, false);
         layout.marginHeight = 0;
         layout.marginWidth = 0;
         layout.verticalSpacing = 0;
         layout.horizontalSpacing = 0;
-        editotPanel.setLayout(layout);
-        editotPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
+        editorPanel.setLayout(layout);
+        editorPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        return editotPanel;
+        return editorPanel;
     }
 
     void toggleInfoBar()
@@ -447,7 +447,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
         gd.exclude = !visible;
         infoPanel.setLayoutData(gd);
         infoPanel.setVisible(visible);
-        infoPanel.getParent().layout();
+        infoPanel.layoutProperties();
     }
 
     @Nullable
