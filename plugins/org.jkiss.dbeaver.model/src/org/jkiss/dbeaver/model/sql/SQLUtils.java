@@ -865,13 +865,13 @@ public final class SQLUtils {
         return nameList.toArray(new String[nameList.size()]);
     }
 
-    public static String generateTableJoin(DBRProgressMonitor monitor, DBSEntity leftTable, String leftAlias, DBSEntity rightTable, String rightAlias) throws DBException {
+    public static String generateTableJoin(DBRProgressMonitor monitor, DBSEntity leftTable, DBSEntity rightTable) throws DBException {
         // Try to find FK in left table referencing to right table
         Collection<? extends DBSEntityAssociation> associations = leftTable.getAssociations(monitor);
         if (!CommonUtils.isEmpty(associations)) {
             for (DBSEntityAssociation fk : associations) {
                 if (fk instanceof DBSTableForeignKey && fk.getAssociatedEntity() == rightTable) {
-                    return generateTablesJoin(monitor, (DBSTableForeignKey)fk, leftAlias, rightAlias);
+                    return generateTablesJoin(monitor, (DBSTableForeignKey)fk);
                 }
             }
         }
@@ -881,7 +881,7 @@ public final class SQLUtils {
         if (!CommonUtils.isEmpty(associations)) {
             for (DBSEntityAssociation fk : associations) {
                 if (fk instanceof DBSTableForeignKey && fk.getAssociatedEntity() == leftTable) {
-                    return generateTablesJoin(monitor, (DBSTableForeignKey)fk, rightAlias, leftAlias);
+                    return generateTablesJoin(monitor, (DBSTableForeignKey)fk);
                 }
             }
         }
@@ -890,16 +890,20 @@ public final class SQLUtils {
         return null;
     }
 
-    private static String generateTablesJoin(DBRProgressMonitor monitor, DBSTableForeignKey fk, String leftAlias, String rightAlias) throws DBException {
+    private static String generateTablesJoin(DBRProgressMonitor monitor, DBSTableForeignKey fk) throws DBException {
         StringBuilder joinSQL = new StringBuilder();
         for (DBSEntityAttributeRef ar : fk.getAttributeReferences(monitor)) {
             if (ar instanceof DBSTableForeignKeyColumn) {
                 DBSTableForeignKeyColumn fkc = (DBSTableForeignKeyColumn)ar;
                 joinSQL
-                    .append(leftAlias).append(".").append(DBUtils.getQuotedIdentifier(fkc)).append(" = ")
-                    .append(rightAlias).append(".").append(DBUtils.getQuotedIdentifier(fkc.getReferencedColumn()));
+                    .append(getTableAlias(fk.getParentObject())).append(".").append(DBUtils.getQuotedIdentifier(fkc)).append(" = ")
+                    .append(getTableAlias(fk.getAssociatedEntity())).append(".").append(DBUtils.getQuotedIdentifier(fkc.getReferencedColumn()));
             }
         }
         return joinSQL.toString();
+    }
+
+    public static String getTableAlias(DBSEntity table) {
+        return CommonUtils.escapeIdentifier(table.getName());
     }
 }

@@ -838,28 +838,31 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                     sql.append("SELECT ");
                     for (int i = 0; i < objects.size(); i++) {
                         if (i > 0) sql.append(", ");
-                        sql.append("t").append(i + 1).append(".*");
+                        sql.append(SQLUtils.getTableAlias(objects.get(i))).append(".*");
                     }
                     sql.append("\nFROM ");
                     for (int i = 0; i < objects.size(); i++) {
                         DBSEntity entity = objects.get(i);
                         if (i > 0) sql.append(", ");
-                        sql.append(getEntityName(entity)).append(" t").append(i + 1);
+                        sql.append(getEntityName(entity)).append(" ").append(SQLUtils.getTableAlias(entity));
                     }
                     sql.append("\nWHERE ");
                     boolean hasCond = false;
                     for (int i = 1; i < objects.size(); i++) {
+                        boolean foundJoin = false;
                         for (int k = 0; k < i; k++) {
-                            String tableJoin = SQLUtils.generateTableJoin(monitor, objects.get(k), "t" + (k + 1), objects.get(i), "t" + (i + 1));
+                            String tableJoin = SQLUtils.generateTableJoin(monitor, objects.get(k), objects.get(i));
                             if (tableJoin != null) {
                                 sql.append("\n\t");
                                 if (hasCond) sql.append("AND ");
                                 sql.append(tableJoin);
                                 hasCond = true;
+                                foundJoin = true;
                                 break;
-                            } else {
-                                sql.append("\n-- Can't join tables ").append(DBUtils.getQuotedIdentifier(objects.get(k))).append(" and ").append(DBUtils.getQuotedIdentifier(objects.get(i)));
                             }
+                        }
+                        if (!foundJoin) {
+                            sql.append("\n-- Can't determine condition to join table ").append(DBUtils.getQuotedIdentifier(objects.get(i)));
                         }
                     }
                 } catch (Exception e) {
