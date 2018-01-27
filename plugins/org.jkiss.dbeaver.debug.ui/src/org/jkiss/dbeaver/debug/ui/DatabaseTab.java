@@ -23,9 +23,14 @@ import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.layout.RowLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Label;
@@ -42,7 +47,8 @@ import org.jkiss.dbeaver.ui.UIUtils;
 
 public class DatabaseTab extends AbstractLaunchConfigurationTab {
 
-	private static final int DEFAULT_WIDTH = 80;
+	private static final String GLOBAL = "Global";
+	private static final String LOCAL = "Local";
 	private Text driverText;
 	private Text datasourceText;
 	private Text databaseText;
@@ -50,9 +56,9 @@ public class DatabaseTab extends AbstractLaunchConfigurationTab {
 	private Text oidText;
 	private Text nameText;
 	private Text callText;
-	private GridData labelsGD;
-	private GridData fieldsGD;
-	private GridData multiFieldsGD;
+	// private GridData labelsGD;
+	// private GridData fieldsGD;
+	// private GridData multiFieldsGD;
 
 	/**
 	 * Modify listener that simply updates the owning launch configuration dialog.
@@ -76,21 +82,10 @@ public class DatabaseTab extends AbstractLaunchConfigurationTab {
 	}
 
 	protected void createComponents(Composite comp) {
-		createLayoutData();
+
 		createConnectionSettingsGroup(comp);
 		createDatabaseSettingsGroup(comp);
 		createAdditionalSettingsGroup(comp);
-
-	}
-
-	private void createLayoutData() {
-		labelsGD = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
-		labelsGD.widthHint = DEFAULT_WIDTH;
-
-		fieldsGD = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-		
-		multiFieldsGD = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
-		multiFieldsGD.heightHint = 60;
 
 	}
 
@@ -99,14 +94,16 @@ public class DatabaseTab extends AbstractLaunchConfigurationTab {
 				2, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
 
 		// Driver
-		createLabel(connectionSettingsGroup, DebugUIMessages.DatabaseTab_driver_label_text, labelsGD);
+		createLabel(connectionSettingsGroup, DebugUIMessages.DatabaseTab_driver_label_text,
+				GridFactory.createLayoutLabelData());
 		driverText = createTextField(driverText, SWT.BORDER, connectionSettingsGroup, DebugCore.ATTR_DRIVER_ID_DEFAULT,
-				fieldsGD, false);
+				GridFactory.createLayoutTextData(), false);
 
 		// DataSource
-		createLabel(connectionSettingsGroup, DebugUIMessages.DatabaseTab_datasource_group_text, labelsGD);
+		createLabel(connectionSettingsGroup, DebugUIMessages.DatabaseTab_datasource_group_text,
+				GridFactory.createLayoutLabelData());
 		datasourceText = createTextField(datasourceText, SWT.BORDER, connectionSettingsGroup,
-				DebugCore.ATTR_DRIVER_ID_DEFAULT, fieldsGD, false);
+				DebugCore.ATTR_DRIVER_ID_DEFAULT, GridFactory.createLayoutTextData(), false);
 
 	}
 
@@ -115,37 +112,80 @@ public class DatabaseTab extends AbstractLaunchConfigurationTab {
 				2, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
 
 		// Database
-		createLabel(databaseSettingsGroup, DebugUIMessages.DatabaseTab_database_label_text, labelsGD);
+		createLabel(databaseSettingsGroup, DebugUIMessages.DatabaseTab_database_label_text,
+				GridFactory.createLayoutLabelData());
 		databaseText = createTextField(databaseText, SWT.BORDER, databaseSettingsGroup,
-				DebugCore.ATTR_DATABASE_NAME_DEFAULT, fieldsGD, false);
+				DebugCore.ATTR_DATABASE_NAME_DEFAULT, GridFactory.createLayoutTextData(), false);
 
 		// Schema
-		createLabel(databaseSettingsGroup, DebugUIMessages.DatabaseTab_schema_label_text, labelsGD);
+		createLabel(databaseSettingsGroup, DebugUIMessages.DatabaseTab_schema_label_text,
+				GridFactory.createLayoutLabelData());
 		schemaText = createTextField(schemaText, SWT.BORDER, databaseSettingsGroup, DebugCore.ATTR_SCHEMA_NAME_DEFAULT,
-				fieldsGD, false);
+				GridFactory.createLayoutTextData(), false);
 
 		// Oid
-		createLabel(databaseSettingsGroup, DebugUIMessages.DatabaseTab_oid_label_text, labelsGD);
+		createLabel(databaseSettingsGroup, DebugUIMessages.DatabaseTab_oid_label_text,
+				GridFactory.createLayoutLabelData());
 		oidText = createTextField(oidText, SWT.BORDER, databaseSettingsGroup, DebugCore.ATTR_PROCEDURE_OID_DEFAULT,
-				fieldsGD, false);
+				GridFactory.createLayoutTextData(), false);
 
 	}
 
 	protected void createAdditionalSettingsGroup(Composite comp) {
-		Group additionalSettings = UIUtils.createControlGroup(comp, DebugUIMessages.DatabaseTab_name_group_text, 2,
-				GridData.FILL_HORIZONTAL, SWT.DEFAULT);
 
+		Group additionalSettings = new Group(comp, SWT.BORDER);
+		additionalSettings.setLayout(new GridLayout(2, false));
+		additionalSettings.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
+		additionalSettings.setText(DebugUIMessages.DatabaseTab_name_group_text);
 
-		
 		// Name
-		createLabel(additionalSettings, DebugUIMessages.DatabaseTab_name_label_text, labelsGD);
+		createLabel(additionalSettings, DebugUIMessages.DatabaseTab_name_label_text,
+				GridFactory.createLayoutLabelData());
 		nameText = createTextField(nameText, SWT.BORDER, additionalSettings, DebugCore.ATTR_PROCEDURE_NAME_DEFAULT,
-				fieldsGD, false);
+				GridFactory.createLayoutTextData(), false);
+
+		SelectionListener selectionListenerLocal = new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent event) {
+				Button button = ((Button) event.widget);
+				if (button != null && !button.isDisposed()) {
+					callText.setEnabled(false);
+				}
+			};
+		};
+
+		SelectionListener selectionListenerGlobal = new SelectionAdapter() {
+			public void widgetSelected(SelectionEvent event) {
+				Button button = ((Button) event.widget);
+				if (button != null && !button.isDisposed()) {
+					callText.setEnabled(true);
+				}
+			};
+		};
+
+		// space
+		createLabel(additionalSettings, "", GridFactory.createLayoutLabelData());
+
+		Group groupCall = new Group(additionalSettings, SWT.SHADOW_IN);
+		groupCall.setLayout(new GridLayout(2, false));
+		groupCall.setLayoutData(GridFactory.createLayoutRadioData());
+
+		Button btnLocal = new Button(groupCall, SWT.RADIO);
+		btnLocal.setText(LOCAL);
+		btnLocal.addSelectionListener(selectionListenerLocal);
+		btnLocal.setLayoutData(GridFactory.createLayoutTextData());
+
+		Button btnGlobal = new Button(groupCall, SWT.RADIO);
+		btnGlobal.setText(GLOBAL);
+		btnGlobal.addSelectionListener(selectionListenerGlobal);
+		btnGlobal.setLayoutData(GridFactory.createLayoutTextData());
 
 		// Call
-		createLabel(additionalSettings, DebugUIMessages.DatabaseTab_call_label_text, labelsGD);
+		createLabel(additionalSettings, DebugUIMessages.DatabaseTab_call_label_text,
+				GridFactory.createLayoutLabelData());
 		callText = createTextField(callText, SWT.BORDER | SWT.MULTI, additionalSettings,
-				DebugCore.ATTR_PROCEDURE_CALL_DEFAULT, multiFieldsGD, true);
+				DebugCore.ATTR_PROCEDURE_CALL_DEFAULT, GridFactory.createLayoutMultiLineData(), true);
+
+		btnGlobal.setSelection(true);
 
 	}
 
@@ -161,7 +201,7 @@ public class DatabaseTab extends AbstractLaunchConfigurationTab {
 
 	private void createLabel(Group connectionSettingsGroup, String text, GridData layoutData) {
 		Label lblDriverText = new Label(connectionSettingsGroup, SWT.BORDER);
-		lblDriverText.setText(text + ":");
+		lblDriverText.setText(text);
 		lblDriverText.setLayoutData(layoutData);
 	}
 
@@ -257,6 +297,35 @@ public class DatabaseTab extends AbstractLaunchConfigurationTab {
 	@Override
 	public String getName() {
 		return DebugUIMessages.DatabaseTab_name;
+	}
+
+	static class GridFactory {
+		private static final int DEFAULT_WIDTH = 80;
+		private static final int DEFAULT_MULTI_HEIGHT = 60;
+		private static final int DEFAULT_HEIGHT = 20;
+
+		public static GridData createLayoutLabelData() {
+			GridData layoutData = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
+			layoutData.widthHint = DEFAULT_WIDTH;
+			return layoutData;
+		}
+
+		public static GridData createLayoutTextData() {
+			GridData layoutData = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+			layoutData.minimumHeight = DEFAULT_HEIGHT;
+			return layoutData;
+		}
+
+		public static GridData createLayoutMultiLineData() {
+			GridData layoutData = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
+			return layoutData;
+		}
+
+		public static GridData createLayoutRadioData() {
+			GridData layoutData = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
+			return layoutData;
+		}
+
 	}
 
 }
