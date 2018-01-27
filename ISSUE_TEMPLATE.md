@@ -6,6 +6,8 @@ Here you can submit:
   - Question
   - Feature request
   - Bug report
+
+You can use this template (recommended) or you can just delete it and type new ticket from scratch.
 -->
 
 ### Description
