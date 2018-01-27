@@ -41,8 +41,6 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDRowIdentifier;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
@@ -61,7 +59,6 @@ import org.jkiss.dbeaver.ui.controls.resultset.IResultSetSelection;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetModel;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 import org.jkiss.dbeaver.ui.dialogs.sql.ViewSQLDialog;
-import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -93,8 +90,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
             List<DBSEntity> entities = new ArrayList<>();
             List<DBPScriptObject> scriptObjects = new ArrayList<>();
             for (Object sel : structuredSelection.toArray()) {
-                final DBSObject object =
-                    ((DBNDatabaseNode)RuntimeUtils.getObjectAdapter(sel, DBNNode.class)).getObject();
+                final DBSObject object = RuntimeUtils.getObjectAdapter(sel, DBSObject.class);
                 if (object instanceof DBSEntity) {
                     entities.add((DBSEntity) object);
                 }
@@ -358,14 +354,8 @@ public class GenerateSQLContributor extends CompoundContributionItem {
 
     public static boolean hasContributions(IStructuredSelection selection) {
         // Table
-        DBNNode node = RuntimeUtils.getObjectAdapter(selection.getFirstElement(), DBNNode.class);
-        if (node instanceof DBNDatabaseNode) {
-            DBSObject object = ((DBNDatabaseNode) node).getObject();
-            if (object instanceof DBSTable || object instanceof DBPScriptObject) {
-                return true;
-            }
-        }
-        return false;
+        DBSObject object = RuntimeUtils.getObjectAdapter(selection.getFirstElement(), DBSObject.class);
+        return object instanceof DBSTable || object instanceof DBPScriptObject;
     }
 
     public abstract static class SQLGenerator<OBJECT> extends DBRRunnableWithResult<String> {
@@ -581,9 +571,15 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                     if (dataSource == null) {
                         IWorkbenchPart activePart = activePage.getActivePart();
                         if (activePart != null) {
-                            DBNNode selectedNode = NavigatorUtils.getSelectedNode(activePart.getSite().getSelectionProvider());
-                            if (selectedNode instanceof DBNDatabaseNode) {
-                                dataSource = ((DBNDatabaseNode) selectedNode).getDataSource();
+                            ISelectionProvider selectionProvider = activePart.getSite().getSelectionProvider();
+                            if (selectionProvider != null) {
+                                ISelection selection = selectionProvider.getSelection();
+                                if (selection instanceof IStructuredSelection && !selection.isEmpty()) {
+                                    final DBSObject object = RuntimeUtils.getObjectAdapter(((IStructuredSelection) selection).getFirstElement(), DBSObject.class);
+                                    if (object != null) {
+                                        dataSource = object.getDataSource();
+                                    }
+                                }
                             }
                         }
                     }
