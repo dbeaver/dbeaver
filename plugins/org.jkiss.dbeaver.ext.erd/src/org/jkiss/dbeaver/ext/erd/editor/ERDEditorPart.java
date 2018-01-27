@@ -42,9 +42,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.printing.PrintDialog;
 import org.eclipse.swt.printing.Printer;
@@ -60,7 +58,6 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.eclipse.ui.views.properties.PropertySheetPage;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.erd.ERDActivator;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
@@ -99,8 +96,6 @@ import java.util.*;
 public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     implements DBPDataSourceUser, ISearchContextProvider, IRefreshablePart
 {
-    private static final Log log = Log.getLog(ERDEditorPart.class);
-
     protected ProgressControl progressControl;
 
     /**
@@ -430,23 +425,19 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         addAction(zoomIn);
         addAction(zoomOut);
 
-        graphicalViewer.addSelectionChangedListener(new ISelectionChangedListener() {
-            @Override
-            public void selectionChanged(SelectionChangedEvent event)
-            {
-                String status;
-                IStructuredSelection selection = (IStructuredSelection)event.getSelection();
-                if (selection.isEmpty()) {
-                    status = "";
-                } else if (selection.size() == 1) {
-                    status = CommonUtils.toString(selection.getFirstElement());
-                } else {
-                    status = String.valueOf(selection.size()) + " objects";
-                }
-                progressControl.setInfo(status);
-
-                updateActions(editPartActionIDs);
+        graphicalViewer.addSelectionChangedListener(event -> {
+            String status;
+            IStructuredSelection selection = (IStructuredSelection)event.getSelection();
+            if (selection.isEmpty()) {
+                status = "";
+            } else if (selection.size() == 1) {
+                status = CommonUtils.toString(selection.getFirstElement());
+            } else {
+                status = String.valueOf(selection.size()) + " objects";
             }
+            progressControl.setInfo(status);
+
+            updateActions(editPartActionIDs);
         });
     }
 
@@ -734,6 +725,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         menu.add(new ChangeZOrderAction(this, selection, false));
         menu.add(new SetPartColorAction(this, selection));
 
+/*
         Set<IAction> actionSet = new HashSet<>();
         for (Object actionId : getSelectionActions()) {
             IAction action = getActionRegistry().getAction(actionId);
@@ -742,6 +734,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 actionSet.add(action);
             }
         }
+*/
     }
 
     public void printDiagram()
