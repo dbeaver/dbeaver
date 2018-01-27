@@ -19,13 +19,11 @@ package org.jkiss.dbeaver.ui.editors.sql.generator;
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchPart;
-import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.registry.tools.ToolsRegistry;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetSelection;
-import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -59,7 +57,7 @@ public class SQLUtilsPropertyTester extends PropertyTester
                     return GenerateSQLContributor.hasContributions(structuredSelection);
                 }
             case PROP_HAS_TOOLS: {
-                DBSObject object = NavigatorUtils.getSelectedObject(structuredSelection);
+                DBSObject object = RuntimeUtils.getObjectAdapter(structuredSelection.getFirstElement(), DBSObject.class);
                 return object != null && !CommonUtils.isEmpty(ToolsRegistry.getInstance().getTools(structuredSelection));
             }
         }
