@@ -168,6 +168,7 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
                 public void widgetSelected(SelectionEvent e) {
                     settings.setExecuteProcessOnFinish(execProcessCheckbox.getSelection());
                     toggleExecProcessControls();
+                    updatePageCompletion();
                 }
             });
             execProcessText = new Text(resultsSettings, SWT.BORDER);
