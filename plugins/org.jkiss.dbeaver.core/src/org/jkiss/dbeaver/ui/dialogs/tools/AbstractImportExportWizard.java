@@ -99,6 +99,7 @@ public abstract class AbstractImportExportWizard<PROCESS_ARG> extends AbstractTo
     public boolean isExportWizard() {
         return true;
     }
+
     @Override
     protected void startProcessHandler(DBRProgressMonitor monitor, final PROCESS_ARG arg, ProcessBuilder processBuilder, Process process)
     {

@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.MySQLServerHome;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractScriptExecuteWizard;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -122,4 +123,20 @@ class MySQLScriptExecuteWizard extends AbstractScriptExecuteWizard<MySQLCatalog,
         cmd.add(arg.getName());
         return cmd;
     }
+
+    /**
+     * Use binary file transform job (#2863)
+     */
+    @Override
+    protected void startProcessHandler(DBRProgressMonitor monitor, final MySQLCatalog arg, ProcessBuilder processBuilder, Process process) {
+        if (isImport) {
+            logPage.startLogReader(
+                processBuilder,
+                process.getInputStream());
+            new BinaryFileTransformerJob(monitor, getInputFile(), process.getOutputStream()).start();
+        } else {
+            super.startProcessHandler(monitor, arg, processBuilder, process);
+        }
+    }
+
 }
