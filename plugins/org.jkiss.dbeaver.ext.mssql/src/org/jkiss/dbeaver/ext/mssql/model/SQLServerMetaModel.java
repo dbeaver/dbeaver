@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPErrorAssistant;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformProvider;
@@ -248,6 +249,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
             }
         }
 
+        boolean schemaReadFailed = false;
         List<GenericSchema> result = new ArrayList<>();
         try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
 
@@ -269,15 +271,19 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
                 }
             }
         } catch (SQLException e) {
-            throw new DBException(e, dataSource);
+            if (dataSource.discoverErrorType(e) == DBPErrorAssistant.ErrorType.CONNECTION_LOST) {
+                throw new DBException(e, dataSource);
+            } else {
+                log.warn("Schema read failed: empty list returned. Try generic method.", e);
+                schemaReadFailed = true;
+            }
         }
         if (result.isEmpty()) {
-            if (!showAllSchemas) {
+            if (!schemaReadFailed && !showAllSchemas) {
                 // Perhaps all schemas were filtered out
                 result.add(new GenericSchema(dataSource, catalog, SQLServerConstants.DEFAULT_SCHEMA_NAME));
             } else {
                 // Maybe something went wrong. LEt's try to use native function
-                log.warn("Schema read failed: empty list returned. Try generic method.");
                 return super.loadSchemas(session, dataSource, catalog);
             }
         }
