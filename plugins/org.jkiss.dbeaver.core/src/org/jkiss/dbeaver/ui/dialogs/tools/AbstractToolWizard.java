@@ -73,6 +73,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
     protected String task;
     protected final DatabaseWizardPageLog logPage;
     private boolean finished;
+    protected boolean transferFinished;
 
     protected AbstractToolWizard(Collection<BASE_OBJECT> databaseObjects, String task)
     {
@@ -280,7 +281,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
 
             for (;;) {
                 Thread.sleep(100);
-                if (monitor.isCanceled()) {
+                if (monitor.isCanceled() || transferFinished) {
                     process.destroy();
                 }
                 try {
@@ -445,6 +446,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
             }
             finally {
                 monitor.done();
+                transferFinished = true;
             }
         }
     }
@@ -486,6 +488,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
             }
             finally {
                 monitor.done();
+                transferFinished = true;
             }
         }
     }
