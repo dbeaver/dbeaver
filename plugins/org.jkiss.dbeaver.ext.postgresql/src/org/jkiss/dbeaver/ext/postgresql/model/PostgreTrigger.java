@@ -113,6 +113,7 @@ public class PostgreTrigger implements DBSTrigger, DBPQualifiedObject, PostgreOb
 
     @NotNull
     @Override
+    @Property(viewable = true, order = 1)
     public String getName() {
         return name;
     }
