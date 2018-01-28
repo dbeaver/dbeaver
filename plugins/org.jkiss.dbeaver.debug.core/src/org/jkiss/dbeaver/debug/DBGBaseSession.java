@@ -115,7 +115,7 @@ public abstract class DBGBaseSession implements DBGSession {
     public void close() {
         lock.writeLock().lock();
         try {
-            if (!isDone()) {
+            if (!isDone() && task != null) {
                 task.cancel(true);
             }
             connection.close();
