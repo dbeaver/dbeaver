@@ -48,7 +48,13 @@ public class MSSQLDatabase implements DBSCatalog, DBPRefreshableObject {
 
     private final MSSQLDataSource dataSource;
     private String catalogName;
+    private String remarks;
     private List<MSSQLSchema> schemas;
+
+    public MSSQLDatabase(MSSQLDataSource dataSource, JDBCResultSet dbResult) {
+        this(dataSource, JDBCUtils.safeGetString(dbResult, 1));
+        this.remarks = JDBCUtils.safeGetString(dbResult, "remarks");
+    }
 
     public MSSQLDatabase(MSSQLDataSource dataSource, String catalogName) {
         this.dataSource = dataSource;
@@ -77,7 +83,7 @@ public class MSSQLDatabase implements DBSCatalog, DBPRefreshableObject {
 
     @Override
     public String getDescription() {
-        return null;
+        return remarks;
     }
 
     @Association
