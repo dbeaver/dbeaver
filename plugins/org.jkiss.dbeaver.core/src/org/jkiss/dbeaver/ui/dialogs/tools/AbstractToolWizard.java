@@ -281,7 +281,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
 
             for (;;) {
                 Thread.sleep(100);
-                if (monitor.isCanceled() || transferFinished) {
+                if (monitor.isCanceled()) {
                     process.destroy();
                 }
                 try {
@@ -487,6 +487,11 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
                 logPage.appendLog(e.getMessage() + "\n");
             }
             finally {
+                try {
+                    output.close();
+                } catch (IOException e) {
+                    log.error(e);
+                }
                 monitor.done();
                 transferFinished = true;
             }
