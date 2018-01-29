@@ -227,13 +227,14 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
         boolean showAllSchemas = ((SQLServerDataSource) dataSource).isShowAllSchemas();
         final DBSObjectFilter schemaFilters = dataSource.getContainer().getObjectFilter(GenericSchema.class, catalog, false);
 
-        String sysSchema = DBUtils.getQuotedIdentifier(catalog) + "." + getSystemSchema();
+        String sysSchema = dataSource.isServerVersionAtLeast(SQLServerConstants.SQL_SERVER_2005_VERSION_MAJOR ,0) ?
+            DBUtils.getQuotedIdentifier(catalog) + "." + getSystemSchema() : getSystemSchema();
         String sql;
         if (showAllSchemas) {
             if (getServerType() == ServerType.SQL_SERVER && dataSource.isServerVersionAtLeast(SQLServerConstants.SQL_SERVER_2005_VERSION_MAJOR ,0)) {
-                sql = "SELECT name FROM " + DBUtils.getQuotedIdentifier(catalog) + ".sys.schemas";
+                sql = "SELECT name FROM " + sysSchema + ".schemas";
             } else {
-                sql = "SELECT name FROM " + DBUtils.getQuotedIdentifier(catalog) + ".dbo.sysusers";
+                sql = "SELECT name FROM " + sysSchema + ".sysusers";
             }
         } else {
             if (getServerType() == ServerType.SQL_SERVER) {

@@ -37,4 +37,5 @@ public class SQLServerConstants {
     public static final int SQL_SERVER_2016_VERSION_MAJOR = 13;
     public static final int SQL_SERVER_2008_VERSION_MAJOR = 10;
     public static final int SQL_SERVER_2005_VERSION_MAJOR = 9;
+    public static final int SQL_SERVER_2000_VERSION_MAJOR = 8;
 }
