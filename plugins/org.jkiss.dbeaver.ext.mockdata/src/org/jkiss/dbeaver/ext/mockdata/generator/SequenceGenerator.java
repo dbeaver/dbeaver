@@ -30,8 +30,8 @@ public class SequenceGenerator extends AbstractMockValueGenerator {
     private boolean reverse = false;
 
     @Override
-    public void init(DBSDataManipulator container, Map<String, Object> properties) throws DBCException {
-        super.init(container, properties);
+    public void init(DBSDataManipulator container, DBSAttributeBase attribute, Map<Object, Object> properties) throws DBCException {
+        super.init(container, attribute, properties);
 
         Long start = (Long) properties.get("start"); //$NON-NLS-1$
         if (start != null) {
@@ -54,12 +54,13 @@ public class SequenceGenerator extends AbstractMockValueGenerator {
         if (isGenerateNULL()) {
             return null;
         } else {
+            long value = this.start;
             if (reverse) {
                 start -= step;
             } else {
                 start += step;
             }
-            return start;
+            return value;
         }
     }
 }

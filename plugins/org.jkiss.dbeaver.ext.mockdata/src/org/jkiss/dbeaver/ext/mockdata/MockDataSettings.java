@@ -17,14 +17,58 @@
  */
 package org.jkiss.dbeaver.ext.mockdata;
 
-import java.util.HashMap;
-import java.util.Map;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.mockdata.model.MockGeneratorDescriptor;
+import org.jkiss.dbeaver.ext.mockdata.model.MockGeneratorRegistry;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.*;
 
 public class MockDataSettings {
 
     private boolean removeOldData;
     private long rowsNumber = 10;
-    private Map<String, Map<Object, Object>> generatorProperties = new HashMap<>();
+    private Map<String, MockGeneratorDescriptor> generatorDescriptors = new HashMap<>(); // generatorId -> MockGeneratorDescriptor
+    private Map<String, AttributeGeneratorProperties> attributeGenerators = new HashMap<>(); // attribute.name -> generators properties
+
+    // populate attribute generators properties map
+    public Collection<? extends DBSAttributeBase> init(MockDataExecuteWizard wizard) throws DBException {
+        List<DBSDataManipulator> databaseObjects = wizard.getDatabaseObjects();
+        DBSDataManipulator dataManipulator = databaseObjects.iterator().next();
+        DBSEntity dbsEntity = (DBSEntity) dataManipulator;
+        Collection<? extends DBSAttributeBase> attributes = DBUtils.getRealAttributes(dbsEntity.getAttributes(new VoidProgressMonitor()));
+        for (DBSAttributeBase attribute : attributes) {
+            AttributeGeneratorProperties generatorProperties = new AttributeGeneratorProperties(attribute);
+            attributeGenerators.put(attribute.getName(), generatorProperties);
+            MockGeneratorRegistry generatorRegistry = MockGeneratorRegistry.getInstance();
+            List<MockGeneratorDescriptor> generators = generatorRegistry.findAllGenerators(dataManipulator.getDataSource(), attribute);
+            for (MockGeneratorDescriptor generator : generators) {
+                generatorDescriptors.put(generator.getId(), generator);
+                generatorProperties.putGeneratorPropertySource(generator.getId(), new PropertySourceCustom(generator.getProperties(), null));
+            }
+        }
+        return attributes;
+    }
+
+    public MockGeneratorDescriptor getGeneratorDescriptor(String generatorId) {
+        return generatorDescriptors.get(generatorId);
+    }
+
+    public MockGeneratorDescriptor findGeneratorForName(String name) {
+        for (String generatorId : generatorDescriptors.keySet()) {
+            MockGeneratorDescriptor generatorDescriptor = generatorDescriptors.get(generatorId);
+            if (name.equals(generatorDescriptor.getLabel())) {
+                return generatorDescriptor;
+            }
+        }
+        return null;
+    }
 
     public boolean isRemoveOldData() {
         return removeOldData;
@@ -42,11 +86,51 @@ public class MockDataSettings {
         this.rowsNumber = rowsNumber;
     }
 
-    public Map<Object, Object> getGeneratorProperties(String name) {
-        return generatorProperties.get(name);
+    public AttributeGeneratorProperties getAttributeGeneratorProperties(DBSAttributeBase attribute) {
+        return attributeGenerators.get(attribute.getName());
     }
 
-    public void setGeneratorProperties(String name, Map<Object, Object> propertiesWithDefaults) {
-        generatorProperties.put(name, propertiesWithDefaults);
+    public static class AttributeGeneratorProperties {
+        private final DBSAttributeBase attribute;
+        private String selectedGeneratorId = null; // id
+        private Map<String, PropertySourceCustom> generators = new HashMap<>(); // generatorId -> PropertySourceCustom
+        public AttributeGeneratorProperties(DBSAttributeBase attribute) {
+            this.attribute = attribute;
+        }
+        public DBSAttributeBase getAttribute() { return attribute; }
+
+        public String getSelectedGeneratorId() {
+            if (selectedGeneratorId == null && !CommonUtils.isEmpty(getGenerators())) {
+                selectedGeneratorId = getGenerators().iterator().next();
+            }
+            return selectedGeneratorId;
+        }
+
+        public Set<String> getGenerators() {
+            return generators.keySet();
+        }
+
+        public String setSelectedGeneratorId(String selectedGeneratorId) {
+            if (selectedGeneratorId == null && !CommonUtils.isEmpty(getGenerators())) {
+                selectedGeneratorId = getGenerators().iterator().next();
+            }
+            this.selectedGeneratorId = selectedGeneratorId;
+            return selectedGeneratorId;
+        }
+
+        public void putGeneratorPropertySource(String generatorId, PropertySourceCustom propertySource) {
+            generators.put(generatorId, propertySource);
+        }
+
+        public PropertySourceCustom getGeneratorPropertySource(String generatorId) {
+            if (generatorId == null) {
+                generatorId = getSelectedGeneratorId();
+            }
+            return generators.get(generatorId);
+        }
+
+        public boolean isEmpty() {
+            return generators.isEmpty();
+        }
     }
 }

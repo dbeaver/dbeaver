@@ -23,9 +23,7 @@ import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.mockdata.generator.SimpleStringGenerator;
 import org.jkiss.dbeaver.ext.mockdata.model.MockGeneratorDescriptor;
-import org.jkiss.dbeaver.ext.mockdata.model.MockGeneratorRegistry;
 import org.jkiss.dbeaver.ext.mockdata.model.MockValueGenerator;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPClientHome;
@@ -63,7 +61,7 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         setWindowTitle(task);
         setNeedsProgressMonitor(true);
-        settingsPage = new MockDataWizardPageSettings(this, mockDataSettings);
+        settingsPage = new MockDataWizardPageSettings(mockDataSettings);
     }
 
     @Override
@@ -149,22 +147,19 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                 DBCStatistics insertStats = new DBCStatistics();
 
                 // build and init the generators
-                DBSEntity dbsEntity = (DBSEntity) dataManipulator;
-                MockGeneratorRegistry generatorRegistry = MockGeneratorRegistry.getInstance();
-                Collection<? extends DBSAttributeBase> attributes = DBUtils.getRealAttributes(dbsEntity.getAttributes(monitor));
                 generators.clear();
+                DBSEntity dbsEntity = (DBSEntity) dataManipulator;
+                Collection<? extends DBSAttributeBase> attributes = DBUtils.getRealAttributes(dbsEntity.getAttributes(monitor));
                 for (DBSAttributeBase attribute : attributes) {
-                    MockGeneratorDescriptor generatorDescriptor = generatorRegistry.findGenerator(dbsEntity.getDataSource(), attribute);
+                    MockGeneratorDescriptor generatorDescriptor = mockDataSettings.getGeneratorDescriptor(mockDataSettings.getAttributeGeneratorProperties(attribute).getSelectedGeneratorId());
                     if (generatorDescriptor != null) {
                         MockValueGenerator generator = generatorDescriptor.createGenerator();
 
-                        HashMap<String, Object> properties = new HashMap<>();
-                        Map<Object, Object> generatorProperties = this.mockDataSettings.getGeneratorProperties(attribute.getName());
-                        if (generator instanceof SimpleStringGenerator) {
-                            properties.put("template", generatorProperties.get("template")); //$NON-NLS-1$
-                        }
-                        properties.put("nulls", (!attribute.isRequired() && ((Boolean) generatorProperties.get("nulls")))); //$NON-NLS-1$
-                        generator.init(dataManipulator, properties);
+                        MockDataSettings.AttributeGeneratorProperties generatorPropertySource = this.mockDataSettings.getAttributeGeneratorProperties(attribute);
+                        String selectedGenerator = generatorPropertySource.getSelectedGeneratorId();
+                        Map<Object, Object> generatorProperties =
+                                generatorPropertySource.getGeneratorPropertySource(selectedGenerator).getPropertiesWithDefaults();
+                        generator.init(dataManipulator, attribute, generatorProperties);
                         generators.put(attribute.getName(), generator);
                     }
                 }

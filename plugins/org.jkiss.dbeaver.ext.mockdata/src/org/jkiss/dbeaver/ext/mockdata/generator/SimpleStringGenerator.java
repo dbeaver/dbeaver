@@ -32,8 +32,8 @@ public class SimpleStringGenerator extends AbstractMockValueGenerator {
     private String templateString;
 
     @Override
-    public void init(DBSDataManipulator container, Map<String, Object> properties) throws DBCException {
-        super.init(container, properties);
+    public void init(DBSDataManipulator container, DBSAttributeBase attribute, Map<Object, Object> properties) throws DBCException {
+        super.init(container, attribute, properties);
 
         templateString = CommonUtils.toString(properties.get("template")); //$NON-NLS-1$
         if (templateString == null) {
