@@ -20,52 +20,47 @@ package org.jkiss.dbeaver.ext.mockdata.generator;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.Map;
 
-/**
- * Simple string generator (lorem ipsum)
- */
-public class SimpleStringGenerator extends AbstractMockValueGenerator {
+public class SequenceGenerator extends AbstractMockValueGenerator {
 
-    private String templateString;
+    private long start = 0;
+    private long step = 0;
+    private boolean reverse = false;
 
     @Override
     public void init(DBSDataManipulator container, DBSAttributeBase attribute, Map<Object, Object> properties) throws DBCException {
         super.init(container, attribute, properties);
 
-        templateString = CommonUtils.toString(properties.get("template")); //$NON-NLS-1$
-        if (templateString == null) {
-            throw new DBCException("Empty template string for simple string generator");
+        Long start = (Long) properties.get("start"); //$NON-NLS-1$
+        if (start != null) {
+            this.start = start;
+        }
+
+        Long step = (Long) properties.get("step"); //$NON-NLS-1$
+        if (step != null) {
+            this.step = step;
+        }
+
+        Boolean reverse = (Boolean) properties.get("reverse"); //$NON-NLS-1$
+        if (reverse != null) {
+            this.reverse = reverse;
         }
     }
 
     @Override
-    public void nextRow() {
-
-    }
-
-    @Override
-    public Object generateValue(DBSAttributeBase attribute) throws DBCException {
+    public Object generateValue(DBSAttributeBase attribute) {
         if (isGenerateNULL()) {
             return null;
         } else {
-            int length = (int) Math.min(10000, attribute.getMaxLength());
-            int tplLength = templateString.length();
-            int start = random.nextInt(tplLength);
-            if (start + length < tplLength) {
-                return templateString.substring(start, start + length);
+            long value = this.start;
+            if (reverse) {
+                start -= step;
             } else {
-                StringBuilder sb = new StringBuilder();
-                sb.append(templateString.substring(start));
-                int newlength = length - (tplLength - start);
-                for (int i = 0; i < newlength / tplLength; i++) {
-                    sb.append(templateString);
-                }
-                sb.append(templateString.substring(0, newlength % tplLength));
-                return sb.toString();
+                start += step;
             }
+            return value;
         }
     }
 }
