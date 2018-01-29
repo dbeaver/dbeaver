@@ -168,7 +168,11 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
                         }
                     }
 
-                    CustomComboBoxCellEditor customComboBoxCellEditor = new CustomComboBoxCellEditor(columnsTableViewer.getTable(), generators.toArray(new String[generators.size()]), SWT.BORDER);
+                    CustomComboBoxCellEditor customComboBoxCellEditor = new CustomComboBoxCellEditor(
+                            columnsTableViewer,
+                            columnsTableViewer.getTable(),
+                            generators.toArray(new String[generators.size()]),
+                            SWT.BORDER);
                     return customComboBoxCellEditor;
                 }
 
@@ -203,7 +207,8 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
             propsEditor = new PropertyTreeViewer(generatorsGroup, SWT.BORDER);
             propsEditor.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
 
-            noGeneratorInfoLabel = UIUtils.createInfoLabel(composite, "Generators for the red highlighted attributes aren't found. So, no data will be generated for them.");
+            noGeneratorInfoLabel = UIUtils.createInfoLabel(composite,
+                    "Generators for the red highlighted attributes aren't found. So, no data will be generated for them.");
             //noGeneratorInfoLabel.setForeground(columnsTableViewer.getDisplay().getSystemColor(SWT.COLOR_RED));
             GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
             gd.horizontalSpan = 2;
