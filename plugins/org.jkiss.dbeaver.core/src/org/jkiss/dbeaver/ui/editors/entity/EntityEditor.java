@@ -644,6 +644,15 @@ public class EntityEditor extends MultiPageDatabaseEditor
 //        }
     }
 
+    public void setActiveEditor(Class<?> editorInterface) {
+        for (int i = 0; i < getPageCount(); i++) {
+            if (editorInterface.isAssignableFrom(getEditor(i).getClass())) {
+                setActiveEditor(getEditor(i));
+                break;
+            }
+        }
+    }
+
     @Override
     public void addFolderListener(ITabbedFolderListener listener)
     {

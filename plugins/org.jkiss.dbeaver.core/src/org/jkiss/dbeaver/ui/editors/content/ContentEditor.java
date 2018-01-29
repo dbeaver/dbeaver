@@ -28,6 +28,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.*;
+import org.eclipse.ui.part.MultiPageEditorSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -40,6 +41,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.IRefreshablePart;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetContainer;
 import org.jkiss.dbeaver.ui.data.IStreamValueManager;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditorStandalone;
@@ -49,6 +51,7 @@ import org.jkiss.dbeaver.ui.data.registry.ValueManagerRegistry;
 import org.jkiss.dbeaver.ui.dialogs.ColumnInfoPanel;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.editors.MultiPageAbstractEditor;
+import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.io.File;
@@ -255,6 +258,19 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
                     ContentEditorInput editorInput = getEditorInput();
                     editorInput.updateContentFromFile(monitor);
                     editorInput.getValueController().updateValue(editorInput.getValue(), true);
+
+                    // Activate owner editor and focus on cell corresponding to this content editor
+                    IWorkbenchPartSite parentEditorSite = editorInput.getValueController().getValueSite();
+                    IWorkbenchPart parentEditor;
+                    if (parentEditorSite instanceof MultiPageEditorSite) {
+                        parentEditor = ((MultiPageEditorSite) parentEditorSite).getMultiPageEditor();
+                        if (parentEditor instanceof EntityEditor) {
+                            ((EntityEditor) parentEditor).setActiveEditor(IResultSetContainer.class);
+                        }
+                    } else {
+                        parentEditor = parentEditorSite.getPart();
+                    }
+                    parentEditorSite.getWorkbenchWindow().getActivePage().activate(parentEditor);
 
                     // Close editor
                     closeValueEditor();
