@@ -377,7 +377,7 @@ class OracleSQLDialect extends JDBCSQLDialect {
     @Override
     protected String getStoredProcedureCallInitialClause(DBSProcedure proc) {
         String schemaName = proc.getParentObject().getName();
-        return "CALL " + schemaName + "." + proc.getName() + "(\n";
+        return "CALL " + schemaName + "." + proc.getName();
     }
 
     @Override
