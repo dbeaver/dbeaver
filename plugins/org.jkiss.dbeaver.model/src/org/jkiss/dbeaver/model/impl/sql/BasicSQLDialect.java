@@ -558,17 +558,17 @@ public class BasicSQLDialect implements SQLDialect {
 
     // first line of the call stored procedure SQL (to be overridden)
     protected String getStoredProcedureCallInitialClause(DBSProcedure proc) {
-        return "select " + proc.getFullyQualifiedName(DBPEvaluationContext.DML) + "(\n";
+        return "select " + proc.getFullyQualifiedName(DBPEvaluationContext.DML);
     }
 
     @Override
     public void generateStoredProcedureCall(StringBuilder sql, DBSProcedure proc, Collection<? extends DBSProcedureParameter> parameters) {
         List<DBSProcedureParameter> inParameters = new ArrayList<>();
         getMaxParameterLength(parameters, inParameters);
-        sql.append(getStoredProcedureCallInitialClause(proc));
+        sql.append(getStoredProcedureCallInitialClause(proc)).append("(\n");
         for (int i = 0; i < inParameters.size(); i++) {
             DBSProcedureParameter parameter = inParameters.get(i);
-            sql.append("\t\t\t:").append(CommonUtils.escapeIdentifier(parameter.getName()));
+            sql.append("\t:").append(CommonUtils.escapeIdentifier(parameter.getName()));
             if (i < (inParameters.size() - 1)) {
                 sql.append(",");
             } else {
