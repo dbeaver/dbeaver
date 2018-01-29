@@ -33,6 +33,7 @@ public abstract class AbstractImportExportWizard<PROCESS_ARG> extends AbstractTo
     public static final String VARIABLE_HOST = "host";
     public static final String VARIABLE_DATABASE = "database";
     public static final String VARIABLE_TABLE = "table";
+    public static final String VARIABLE_DATE = "date";
     public static final String VARIABLE_TIMESTAMP = "timestamp";
 
     protected File outputFolder = new File(DialogUtils.getCurDialogFolder());

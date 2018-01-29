@@ -19,8 +19,6 @@ package org.jkiss.dbeaver.tools.transfer.stream;
 import org.eclipse.jface.fieldassist.SimpleContentProposalProvider;
 import org.eclipse.jface.fieldassist.TextContentAdapter;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -79,12 +77,9 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
                     updatePageCompletion();
                 }
             });
-            directoryText = DialogUtils.createOutputFolderChooser(generalSettings, null, new ModifyListener() {
-                @Override
-                public void modifyText(ModifyEvent e) {
-                    settings.setOutputFolder(directoryText.getText());
-                    updatePageCompletion();
-                }
+            directoryText = DialogUtils.createOutputFolderChooser(generalSettings, null, e -> {
+                settings.setOutputFolder(directoryText.getText());
+                updatePageCompletion();
             });
             ((GridData)directoryText.getParent().getLayoutData()).horizontalSpan = 4;
 
@@ -95,14 +90,12 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
             UIUtils.setContentProposalToolTip(fileNameText, "Output file name pattern",
                 StreamTransferConsumer.VARIABLE_TABLE,
                 StreamTransferConsumer.VARIABLE_TIMESTAMP,
+                StreamTransferConsumer.VARIABLE_DATE,
                 StreamTransferConsumer.VARIABLE_PROJECT);
             fileNameText.setLayoutData(gd);
-            fileNameText.addModifyListener(new ModifyListener() {
-                @Override
-                public void modifyText(ModifyEvent e) {
-                    settings.setOutputFilePattern(fileNameText.getText());
-                    updatePageCompletion();
-                }
+            fileNameText.addModifyListener(e -> {
+                settings.setOutputFilePattern(fileNameText.getText());
+                updatePageCompletion();
             });
             UIUtils.installContentProposal(
                 fileNameText,
@@ -110,6 +103,7 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
                 new SimpleContentProposalProvider(new String[] {
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_TABLE),
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_TIMESTAMP),
+                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_DATE),
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_PROJECT)
                 }));
 
@@ -117,15 +111,12 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
                 UIUtils.createControlLabel(generalSettings, CoreMessages.data_transfer_wizard_output_label_encoding);
                 encodingCombo = UIUtils.createEncodingCombo(generalSettings, settings.getOutputEncoding());
                 //encodingCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, true, false, 1, 1));
-                encodingCombo.addModifyListener(new ModifyListener() {
-                    @Override
-                    public void modifyText(ModifyEvent e) {
-                        int index = encodingCombo.getSelectionIndex();
-                        if (index >= 0) {
-                            settings.setOutputEncoding(encodingCombo.getItem(index));
-                        }
-                        updatePageCompletion();
+                encodingCombo.addModifyListener(e -> {
+                    int index = encodingCombo.getSelectionIndex();
+                    if (index >= 0) {
+                        settings.setOutputEncoding(encodingCombo.getItem(index));
                     }
+                    updatePageCompletion();
                 });
                 encodingBOMLabel = UIUtils.createControlLabel(generalSettings, CoreMessages.data_transfer_wizard_output_label_insert_bom);
                 encodingBOMLabel.setToolTipText(CoreMessages.data_transfer_wizard_output_label_insert_bom_tooltip);
@@ -173,17 +164,15 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
             });
             execProcessText = new Text(resultsSettings, SWT.BORDER);
             execProcessText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            execProcessText.addModifyListener(new ModifyListener() {
-                @Override
-                public void modifyText(ModifyEvent e) {
-                    settings.setFinishProcessCommand(execProcessText.getText());
-                    updatePageCompletion();
-                }
+            execProcessText.addModifyListener(e -> {
+                settings.setFinishProcessCommand(execProcessText.getText());
+                updatePageCompletion();
             });
             UIUtils.setContentProposalToolTip(execProcessText, "Process command line",
                 StreamTransferConsumer.VARIABLE_FILE,
                 StreamTransferConsumer.VARIABLE_TABLE,
                 StreamTransferConsumer.VARIABLE_TIMESTAMP,
+                StreamTransferConsumer.VARIABLE_DATE,
                 StreamTransferConsumer.VARIABLE_PROJECT);
             UIUtils.installContentProposal(
                 execProcessText,
@@ -191,6 +180,7 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
                 new SimpleContentProposalProvider(new String[] {
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_TABLE),
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_TIMESTAMP),
+                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_DATE),
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_PROJECT),
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_FILE)
                 }));
