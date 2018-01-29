@@ -15,25 +15,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.mockdata.model;
+package org.jkiss.dbeaver.ext.mockdata.generator;
 
-import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
-import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 
-import java.util.Map;
+import java.util.UUID;
 
-/**
- * Value generator interface
- */
-public interface MockValueGenerator {
+public class UuidGenerator extends AbstractMockValueGenerator {
 
-    void init(DBSDataManipulator container, DBSAttributeBase attribute, Map<Object, Object> properties) throws DBCException;
-
-    void nextRow();
-
-    Object generateValue(DBSAttributeBase attribute)
-        throws DBCException;
-
-    void dispose();
+    @Override
+    public Object generateValue(DBSAttributeBase attribute) {
+        if (isGenerateNULL()) {
+            return null;
+        } else {
+            return UUID.randomUUID().toString();
+        }
+    }
 }
