@@ -36,6 +36,18 @@
         </generator>
 
         <generator
+                id="uuid"
+                label="UUID"
+                description="UUID value generator"
+                class="org.jkiss.dbeaver.ext.mockdata.generator.UuidGenerator">
+            <type kind="STRING"/>
+
+            <propertyGroup label="General">
+                <property id="nulls" label="NULL values" type="boolean" defaultValue="TRUE"/>
+            </propertyGroup>
+        </generator>
+
+        <generator
             id="randomNumeric"
             label="Random Numeric"
             description="Random numeric value generator"
@@ -43,6 +55,22 @@
             <type kind="NUMERIC"/>
 
             <propertyGroup label="General">
+                <property id="nulls" label="NULL values" type="boolean" defaultValue="TRUE"/>
+            </propertyGroup>
+        </generator>
+
+        <generator
+            id="sequence"
+            label="Sequence"
+            description="Sequence of numbers with adjustable start, step and order"
+            class="org.jkiss.dbeaver.ext.mockdata.generator.SequenceGenerator">
+            <type kind="NUMERIC"/>
+
+            <propertyGroup label="General">
+                <property id="start" label="Start value" type="long" defaultValue="0"/>
+                <property id="step" label="Increment step" type="long" defaultValue="1"/>
+                <property id="reverse" label="Reverse order" type="boolean" defaultValue="FALSE"/>
+
                 <property id="nulls" label="NULL values" type="boolean" defaultValue="TRUE"/>
             </propertyGroup>
         </generator>
