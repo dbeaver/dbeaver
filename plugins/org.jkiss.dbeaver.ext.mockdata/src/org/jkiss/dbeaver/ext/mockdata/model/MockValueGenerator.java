@@ -28,7 +28,7 @@ import java.util.Map;
  */
 public interface MockValueGenerator {
 
-    void init(DBSDataManipulator container, Map<String, Object> properties) throws DBCException;
+    void init(DBSDataManipulator container, DBSAttributeBase attribute, Map<Object, Object> properties) throws DBCException;
 
     void nextRow();
 
