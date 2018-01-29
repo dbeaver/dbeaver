@@ -271,6 +271,9 @@
             class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreTableColumnManager"
             objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn"/>
         <manager
+            class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreSequenceManager"
+            objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreSequence"/>
+        <manager
             class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreConstraintManager"
             objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableConstraint"/>
         <manager
