@@ -102,9 +102,6 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
     public List<DBSObjectReference> findObjectsByMask(DBRProgressMonitor monitor, DBSObject parentObject,
                                                       DBSObjectType[] objectTypes, String objectNameMask, boolean caseSensitive, boolean globalSearch, int maxResults) throws DBException
     {
-
-        LOG.debug(objectNameMask);
-
         List<DB2ObjectType> db2ObjectTypes = new ArrayList<>(objectTypes.length);
         for (DBSObjectType dbsObjectType : objectTypes) {
             db2ObjectTypes.add((DB2ObjectType) dbsObjectType);
