@@ -63,6 +63,7 @@ import org.jkiss.dbeaver.ui.controls.PropertyPageStandard;
 import org.jkiss.dbeaver.ui.controls.folders.ITabbedFolder;
 import org.jkiss.dbeaver.ui.controls.folders.ITabbedFolderContainer;
 import org.jkiss.dbeaver.ui.controls.folders.ITabbedFolderListener;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetContainer;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.sql.ViewSQLDialog;
 import org.jkiss.dbeaver.ui.editors.*;
@@ -226,9 +227,9 @@ public class EntityEditor extends MultiPageDatabaseEditor
             return;
         }
 
-        // Flush all nested object editors
+        // Flush all nested object editors and result containers
         for (IEditorPart editor : editorMap.values()) {
-            if (editor instanceof ObjectPropertiesEditor) {
+            if (editor instanceof ObjectPropertiesEditor || editor instanceof IResultSetContainer) {
                 editor.doSave(monitor);
             }
             if (monitor.isCanceled()) {
