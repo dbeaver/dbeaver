@@ -422,7 +422,7 @@
                 position="additions_middle"
                 contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" 
                 type="folder"
-                embeddable="true">
+                embeddable="false">
             <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2MaterializedQueryTable"/>
             <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2TableCheckConstraint"/>
             <objectType name="org.jkiss.dbeaver.ext.db2.model.DB2Trigger"/>
