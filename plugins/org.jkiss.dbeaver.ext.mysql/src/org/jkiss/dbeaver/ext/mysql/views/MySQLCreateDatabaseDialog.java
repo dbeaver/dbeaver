@@ -60,7 +60,7 @@ public class MySQLCreateDatabaseDialog extends BaseDialog
             }
         });
 
-        final Combo charsetCombo = UIUtils.createLabelCombo(group, "Charset", SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+        final Combo charsetCombo = UIUtils.createLabelCombo(group, "Charset", SWT.BORDER | SWT.DROP_DOWN);
         for (MySQLCharset cs : dataSource.getCharsets()) {
             charsetCombo.add(cs.getName());
         }
@@ -68,7 +68,7 @@ public class MySQLCreateDatabaseDialog extends BaseDialog
         charset = dataSource.getCharset(DEFAULT_CHARSET_NAME);
         assert charset != null;
 
-        final Combo collationCombo = UIUtils.createLabelCombo(group, "Collation", SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+        final Combo collationCombo = UIUtils.createLabelCombo(group, "Collation", SWT.BORDER | SWT.DROP_DOWN);
         for (MySQLCollation col : charset.getCollations()) {
             collationCombo.add(col.getName());
         }
