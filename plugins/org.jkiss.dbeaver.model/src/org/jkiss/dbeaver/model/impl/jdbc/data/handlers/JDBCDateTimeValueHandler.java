@@ -162,7 +162,7 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
     }
 
     @NotNull
-    protected String getFormatterId(DBSTypedObject column)
+    public String getFormatterId(DBSTypedObject column)
     {
         switch (column.getTypeID()) {
             case Types.TIME: return DBDDataFormatter.TYPE_NAME_TIME;

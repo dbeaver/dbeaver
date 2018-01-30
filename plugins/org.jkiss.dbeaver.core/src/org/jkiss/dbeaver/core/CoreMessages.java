@@ -798,8 +798,11 @@ public class CoreMessages extends NLS {
 	public static String pref_page_database_resultsets_label_read_metadata;
 	public static String pref_page_database_resultsets_label_read_references;
 	public static String pref_page_database_resultsets_group_string;
+	public static String pref_page_database_resultsets_group_datetime;
 	public static String pref_page_database_resultsets_checkbox_string_use_editor;
 	public static String pref_page_database_resultsets_checkbox_string_use_editor_tip;
+	public static String pref_page_database_resultsets_checkbox_datetime_use_editor;
+	public static String pref_page_database_resultsets_checkbox_datetime_use_editor_tip;
 
     public static String pref_page_query_manager_checkbox_ddl_executions;
 	public static String pref_page_query_manager_checkbox_metadata_read;

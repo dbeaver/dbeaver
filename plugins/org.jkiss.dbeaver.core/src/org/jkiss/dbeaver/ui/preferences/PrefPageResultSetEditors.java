@@ -42,6 +42,7 @@ public class PrefPageResultSetEditors extends TargetPrefPage
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.resultset.editors"; //$NON-NLS-1$
 
     private Button stringUseEditorCheck;
+    private Button dateTimeStringUseEditorCheck;
 
     private Combo binaryPresentationCombo;
     private Combo binaryEditorType;
@@ -70,7 +71,7 @@ public class PrefPageResultSetEditors extends TargetPrefPage
         DBPPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return
             store.contains(DBeaverPreferences.RESULT_SET_STRING_USE_CONTENT_EDITOR) ||
-
+            store.contains(DBeaverPreferences.RESULT_SET_DATETIME_USE_CONTENT_EDITOR) ||
             store.contains(DBeaverPreferences.MEMORY_CONTENT_MAX_SIZE) ||
             store.contains(ModelPreferences.RESULT_SET_BINARY_PRESENTATION) ||
             store.contains(DBeaverPreferences.RESULT_SET_BINARY_EDITOR_TYPE) ||
@@ -83,8 +84,7 @@ public class PrefPageResultSetEditors extends TargetPrefPage
 
             store.contains(DBeaverPreferences.RS_EDIT_MAX_TEXT_SIZE) ||
             store.contains(DBeaverPreferences.RS_COMMIT_ON_EDIT_APPLY) ||
-            store.contains(DBeaverPreferences.RS_COMMIT_ON_CONTENT_APPLY)
-            ;
+            store.contains(DBeaverPreferences.RS_COMMIT_ON_CONTENT_APPLY);
     }
 
     @Override
@@ -160,6 +160,21 @@ public class PrefPageResultSetEditors extends TargetPrefPage
             commitOnEditApplyCheck = UIUtils.createLabelCheckbox(contentGroup, CoreMessages.pref_page_content_editor_checkbox_commit_on_value_apply, false);
             commitOnContentApplyCheck = UIUtils.createLabelCheckbox(contentGroup, CoreMessages.pref_page_content_editor_checkbox_commit_on_content_apply, false);
         }
+        // DateTime Editor Settings
+         
+        {
+            Group dateTimeGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_database_resultsets_group_datetime, 2, SWT.NONE, 0);
+            GridData gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
+            gd.horizontalSpan = 2;
+            dateTimeGroup.setLayoutData(gd);
+
+            dateTimeStringUseEditorCheck = UIUtils.createLabelCheckbox(dateTimeGroup,
+                CoreMessages.pref_page_database_resultsets_checkbox_datetime_use_editor,
+                CoreMessages.pref_page_database_resultsets_checkbox_datetime_use_editor_tip,
+                true, 2);
+
+        
+        }
 
         return composite;
     }
@@ -169,7 +184,8 @@ public class PrefPageResultSetEditors extends TargetPrefPage
     {
         try {
             stringUseEditorCheck.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_STRING_USE_CONTENT_EDITOR));
-
+            dateTimeStringUseEditorCheck.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_DATETIME_USE_CONTENT_EDITOR));
+            
             memoryContentSize.setSelection(store.getInt(DBeaverPreferences.MEMORY_CONTENT_MAX_SIZE));
             binaryStringMaxLength.setSelection(store.getInt(ModelPreferences.RESULT_SET_BINARY_STRING_MAX_LEN));
 
@@ -207,7 +223,8 @@ public class PrefPageResultSetEditors extends TargetPrefPage
     {
         try {
             store.setValue(DBeaverPreferences.RESULT_SET_STRING_USE_CONTENT_EDITOR, stringUseEditorCheck.getSelection());
-
+            store.setValue(DBeaverPreferences.RESULT_SET_DATETIME_USE_CONTENT_EDITOR, dateTimeStringUseEditorCheck.getSelection());
+            
             store.setValue(DBeaverPreferences.MEMORY_CONTENT_MAX_SIZE, memoryContentSize.getSelection());
 
             String presentationTitle = binaryPresentationCombo.getItem(binaryPresentationCombo.getSelectionIndex());
@@ -241,6 +258,7 @@ public class PrefPageResultSetEditors extends TargetPrefPage
     protected void clearPreferences(DBPPreferenceStore store)
     {
         store.setToDefault(DBeaverPreferences.RESULT_SET_STRING_USE_CONTENT_EDITOR);
+        store.setToDefault(DBeaverPreferences.RESULT_SET_DATETIME_USE_CONTENT_EDITOR);
 
         store.setToDefault(ModelPreferences.MEMORY_CONTENT_MAX_SIZE);
         store.setToDefault(ModelPreferences.RESULT_SET_BINARY_PRESENTATION);
