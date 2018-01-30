@@ -22,7 +22,7 @@
 
         <generator
             id="simpleString"
-            label="Lorem ipsum"
+            label="From text"
             description="Random length substrings from the 'Lorem ipsum' text"
             class="org.jkiss.dbeaver.ext.mockdata.generator.SimpleStringGenerator">
             <type kind="STRING"/>

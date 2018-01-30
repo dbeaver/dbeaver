@@ -174,7 +174,7 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
                             columnsTableViewer,
                             columnsTableViewer.getTable(),
                             generators.toArray(new String[generators.size()]),
-                            SWT.BORDER);
+                            SWT.BORDER | SWT.READ_ONLY);
                     return customComboBoxCellEditor;
                 }
 
@@ -341,6 +341,7 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
             generatorCombo.setText(generatorDescriptor.getLabel());
             generatorCombo.setEnabled(true);
             generatorDescriptionLabel.setText(generatorDescriptor.getDescription());
+
         } else {
             generatorCombo.setItems(new String[] {"Not found"});
             generatorCombo.setText("Not found");

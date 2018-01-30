@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.mockdata;
 
 import org.eclipse.jface.wizard.IWizardPage;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
@@ -77,6 +78,11 @@ public class MockDataGenerateTool implements IExternalTool {
                     }
                 }
                 return false;
+            }
+
+            @Override
+            protected Point getInitialSize() {
+                return new Point(850, 550);
             }
         };
         dialog.open();
