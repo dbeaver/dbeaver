@@ -17,7 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.mockdata.generator;
 
-import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 
 import java.math.BigDecimal;
@@ -30,7 +30,7 @@ public class RandomNumericGenerator extends AbstractMockValueGenerator {
     private  static int BYTE_PRECISION    = String.valueOf(Byte.MAX_VALUE).length();    // 3
 
     @Override
-    public Object generateValue(DBSAttributeBase attribute) throws DBCException {
+    public Object generateValue(DBRProgressMonitor monitor, DBSAttributeBase attribute) {
         if (isGenerateNULL()) {
             return null;
         } else {
