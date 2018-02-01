@@ -962,9 +962,22 @@
                         class="cubrid.jdbc.driver.CUBRIDDriver"
                         sampleURL="jdbc:CUBRID:{host}:{port}:{server}:{database}::"
                         defaultPort="33000"
-                        description="CUBRID JDBC driver (beta)"
+                        description="CUBRID JDBC driver"
                         webURL="https://www.cubrid.org/">
                     <file type="jar" path="http://ftp.cubrid.org/CUBRID_Drivers/JDBC_Driver/JDBC-10.1.0.7663-cubrid.jar"/>
+                </driver>
+
+                <!-- SnowFlake -->
+                <driver
+                        id="snowflake_generic"
+                        label="Snowflake"
+                        class="net.snowflake.client.jdbc.SnowflakeDriver"
+                        icon="icons/snowflake_icon.png"
+                        sampleURL="jdbc:snowflake://{host}/?[warehouse={server}][&amp;db={database}]"
+                        defaultPort=""
+                        description="Snowflake JDBC driver"
+                        webURL="https://docs.snowflake.net/manuals/user-guide/jdbc-configure.html">
+                    <file type="jar" path="maven:/net.snowflake:snowflake-jdbc:RELEASE"/>
                 </driver>
 
                 <!-- Solr -->
