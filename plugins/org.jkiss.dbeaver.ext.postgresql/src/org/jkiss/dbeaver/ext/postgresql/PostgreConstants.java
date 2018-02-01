@@ -41,6 +41,7 @@ public class PostgreConstants {
     public static final String DEFAULT_DATA_TYPE = "varchar";
 
     public static final String PROP_SHOW_NON_DEFAULT_DB = DBConstants.INTERNAL_PROP_PREFIX + "show-non-default-db@";
+    public static final String PROP_SWITCH_DB_ON_EXPAND = DBConstants.INTERNAL_PROP_PREFIX + "switch-db-on-expand@";
 
     public static final String PROP_SSL_CLIENT_CERT = "clientCert";
     public static final String PROP_SSL_CLIENT_KEY = "clientKey";

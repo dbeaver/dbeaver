@@ -50,6 +50,7 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
     private Text passwordText;
     private ClientHomesSelector homesSelector;
     private Button hideNonDefault;
+    private Button switchDatabaseOnExpand;
     private boolean activated = false;
 
     private static ImageDescriptor LOGO_IMG = PostgreActivator.getImageDescriptor("icons/postgresql_logo.png");
@@ -150,7 +151,8 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
             secureGroup.setLayoutData(gd);
             secureGroup.setLayout(new GridLayout(2, false));
 
-            hideNonDefault = UIUtils.createLabelCheckbox(secureGroup, PostgreMessages.dialog_setting_connection_nondefaultDatabase, true);
+            hideNonDefault = UIUtils.createCheckbox(secureGroup, PostgreMessages.dialog_setting_connection_nondefaultDatabase, PostgreMessages.dialog_setting_connection_nondefaultDatabase_tip, true, 2);
+            switchDatabaseOnExpand = UIUtils.createCheckbox(secureGroup, PostgreMessages.dialog_setting_connection_switchDatabaseOnExpand, PostgreMessages.dialog_setting_connection_switchDatabaseOnExpand_tip, true, 2);
         }
 
         createDriverPanel(addrGroup);
@@ -207,8 +209,9 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
         }
         homesSelector.populateHomes(site.getDriver(), connectionInfo.getClientHomeId());
 
-        final boolean showNDD = CommonUtils.toBoolean(connectionInfo.getProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB));
-        hideNonDefault.setSelection(showNDD);
+        hideNonDefault.setSelection(CommonUtils.toBoolean(connectionInfo.getProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB)));
+
+        switchDatabaseOnExpand.setSelection(CommonUtils.toBoolean(connectionInfo.getProviderProperty(PostgreConstants.PROP_SWITCH_DB_ON_EXPAND)));
 
         activated = true;
     }
@@ -237,6 +240,7 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
         }
 
         connectionInfo.setProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB, String.valueOf(hideNonDefault.getSelection()));
+        connectionInfo.setProviderProperty(PostgreConstants.PROP_SWITCH_DB_ON_EXPAND, String.valueOf(switchDatabaseOnExpand.getSelection()));
         super.saveSettings(dataSource);
     }
 
