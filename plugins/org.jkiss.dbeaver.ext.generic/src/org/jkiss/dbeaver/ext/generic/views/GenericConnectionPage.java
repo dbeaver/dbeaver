@@ -571,6 +571,9 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
 
     private void saveAndUpdate()
     {
+        // Save settings to update URL
+        saveSettings(site.getActiveDataSource());
+        // Update buttons
         site.updateButtons();
     }
 
