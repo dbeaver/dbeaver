@@ -21,7 +21,18 @@
     <extension point="org.jkiss.dbeaver.mockGenerator">
 
         <generator
-            id="simpleString"
+            id="fkGenerator"
+            label="FK"
+            description="Values from associated table (FK)"
+            class="org.jkiss.dbeaver.ext.mockdata.generator.FKGenerator">
+
+            <propertyGroup label="General">
+                <property id="numberRefRecords" label="Ref Records" type="int" defaultValue="100"/>
+            </propertyGroup>
+        </generator>
+
+        <generator
+            id="simpleStringGenerator"
             label="From text"
             description="Random length substrings from the 'Lorem ipsum' text"
             class="org.jkiss.dbeaver.ext.mockdata.generator.SimpleStringGenerator">
@@ -36,7 +47,7 @@
         </generator>
 
         <generator
-                id="uuid"
+                id="uuidGenerator"
                 label="UUID"
                 description="UUID random values"
                 class="org.jkiss.dbeaver.ext.mockdata.generator.UuidGenerator">
@@ -48,7 +59,7 @@
         </generator>
 
         <generator
-            id="randomNumeric"
+            id="randomNumericGenerator"
             label="Random Numeric"
             description="Random numeric values"
             class="org.jkiss.dbeaver.ext.mockdata.generator.RandomNumericGenerator">
@@ -60,7 +71,7 @@
         </generator>
 
         <generator
-            id="sequence"
+            id="sequenceGenerator"
             label="Sequence"
             description="Sequence of numbers with adjustable start, step and order"
             class="org.jkiss.dbeaver.ext.mockdata.generator.SequenceGenerator">
@@ -76,7 +87,7 @@
         </generator>
 
         <generator
-            id="randomDate"
+            id="randomDateGenerator"
             label="Random Date"
             description="Random date values"
             class="org.jkiss.dbeaver.ext.mockdata.generator.RandomDateGenerator">
@@ -88,7 +99,7 @@
         </generator>
 
         <generator
-            id="randomBoolean"
+            id="randomBooleanGenerator"
             label="Random Boolean"
             description="Random boolean values"
             class="org.jkiss.dbeaver.ext.mockdata.generator.RandomBooleanGenerator">
