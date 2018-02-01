@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.LongKeyMap;
 
 import java.sql.SQLException;
@@ -286,11 +287,20 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
     ///////////////////////////////////////////////
     // Object container
 
+    private void checkDefaultDatabase(DBRProgressMonitor monitor) throws DBException {
+        if (this != dataSource.getDefaultInstance()) {
+            final boolean switchOnExpand = CommonUtils.toBoolean(getDataSource().getContainer().getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_SWITCH_DB_ON_EXPAND));
+            if (switchOnExpand) {
+                getDataSource().setDefaultObject(monitor, this);
+            } else {
+                throw new DBException("Can't access non-default database");
+            }
+        }
+    }
+
     @Association
     public Collection<PostgreSchema> getSchemas(DBRProgressMonitor monitor) throws DBException {
-        if (this != dataSource.getDefaultInstance()) {
-            throw new DBException("Can't access non-default database");
-        }
+        checkDefaultDatabase(monitor);
         // Get all schemas
         return schemaCache.getAllObjects(monitor, this);
     }
@@ -314,16 +324,12 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
     }
 
     public PostgreSchema getSchema(DBRProgressMonitor monitor, String name) throws DBException {
-        if (this != dataSource.getDefaultInstance()) {
-            throw new DBException("Can't access non-default database");
-        }
+        checkDefaultDatabase(monitor);
         return schemaCache.getObject(monitor, this, name);
     }
 
     public PostgreSchema getSchema(DBRProgressMonitor monitor, long oid) throws DBException {
-        if (this != dataSource.getDefaultInstance()) {
-            throw new DBException("Can't access non-default database");
-        }
+        checkDefaultDatabase(monitor);
         for (PostgreSchema schema : schemaCache.getAllObjects(monitor, this)) {
             if (schema.getObjectId() == oid) {
                 return schema;
