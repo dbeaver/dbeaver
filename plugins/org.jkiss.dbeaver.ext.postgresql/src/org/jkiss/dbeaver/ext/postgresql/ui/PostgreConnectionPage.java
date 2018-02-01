@@ -21,6 +21,8 @@ import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -49,7 +51,7 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
     private Text usernameText;
     private Text passwordText;
     private ClientHomesSelector homesSelector;
-    private Button hideNonDefault;
+    private Button showNonDefault;
     private Button switchDatabaseOnExpand;
     private boolean activated = false;
 
@@ -151,7 +153,13 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
             secureGroup.setLayoutData(gd);
             secureGroup.setLayout(new GridLayout(2, false));
 
-            hideNonDefault = UIUtils.createCheckbox(secureGroup, PostgreMessages.dialog_setting_connection_nondefaultDatabase, PostgreMessages.dialog_setting_connection_nondefaultDatabase_tip, true, 2);
+            showNonDefault = UIUtils.createCheckbox(secureGroup, PostgreMessages.dialog_setting_connection_nondefaultDatabase, PostgreMessages.dialog_setting_connection_nondefaultDatabase_tip, true, 2);
+            showNonDefault.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    switchDatabaseOnExpand.setEnabled(showNonDefault.getSelection());
+                }
+            });
             switchDatabaseOnExpand = UIUtils.createCheckbox(secureGroup, PostgreMessages.dialog_setting_connection_switchDatabaseOnExpand, PostgreMessages.dialog_setting_connection_switchDatabaseOnExpand_tip, true, 2);
         }
 
@@ -209,9 +217,10 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
         }
         homesSelector.populateHomes(site.getDriver(), connectionInfo.getClientHomeId());
 
-        hideNonDefault.setSelection(CommonUtils.toBoolean(connectionInfo.getProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB)));
+        showNonDefault.setSelection(CommonUtils.toBoolean(connectionInfo.getProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB)));
 
         switchDatabaseOnExpand.setSelection(CommonUtils.toBoolean(connectionInfo.getProviderProperty(PostgreConstants.PROP_SWITCH_DB_ON_EXPAND)));
+        switchDatabaseOnExpand.setEnabled(showNonDefault.getSelection());
 
         activated = true;
     }
@@ -239,7 +248,7 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
             connectionInfo.setClientHomeId(homesSelector.getSelectedHome());
         }
 
-        connectionInfo.setProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB, String.valueOf(hideNonDefault.getSelection()));
+        connectionInfo.setProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB, String.valueOf(showNonDefault.getSelection()));
         connectionInfo.setProviderProperty(PostgreConstants.PROP_SWITCH_DB_ON_EXPAND, String.valueOf(switchDatabaseOnExpand.getSelection()));
         super.saveSettings(dataSource);
     }
