@@ -17,7 +17,9 @@
  */
 package org.jkiss.dbeaver.ext.mockdata.generator;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.utils.CommonUtils;
@@ -32,7 +34,7 @@ public class SimpleStringGenerator extends AbstractMockValueGenerator {
     private String templateString;
 
     @Override
-    public void init(DBSDataManipulator container, DBSAttributeBase attribute, Map<Object, Object> properties) throws DBCException {
+    public void init(DBSDataManipulator container, DBSAttributeBase attribute, Map<Object, Object> properties) throws DBException {
         super.init(container, attribute, properties);
 
         templateString = CommonUtils.toString(properties.get("template")); //$NON-NLS-1$
@@ -47,7 +49,7 @@ public class SimpleStringGenerator extends AbstractMockValueGenerator {
     }
 
     @Override
-    public Object generateValue(DBSAttributeBase attribute) throws DBCException {
+    public Object generateValue(DBRProgressMonitor monitor, DBSAttributeBase attribute) {
         if (isGenerateNULL()) {
             return null;
         } else {

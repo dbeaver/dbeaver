@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.mockdata.generator;
 
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 
 import java.util.UUID;
@@ -24,7 +25,7 @@ import java.util.UUID;
 public class UuidGenerator extends AbstractMockValueGenerator {
 
     @Override
-    public Object generateValue(DBSAttributeBase attribute) {
+    public Object generateValue(DBRProgressMonitor monitor, DBSAttributeBase attribute) {
         if (isGenerateNULL()) {
             return null;
         } else {
