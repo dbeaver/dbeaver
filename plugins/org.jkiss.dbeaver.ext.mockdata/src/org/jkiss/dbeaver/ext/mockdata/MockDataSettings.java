@@ -22,15 +22,15 @@ import org.jkiss.dbeaver.ext.mockdata.model.MockGeneratorDescriptor;
 import org.jkiss.dbeaver.ext.mockdata.model.MockGeneratorRegistry;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
-import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 
 public class MockDataSettings {
+
+    public static final String FK_GENERATOR_ID = "fkGenerator"; //$NON-NLS-1$
 
     private boolean removeOldData;
     private long rowsNumber = 10;
@@ -40,20 +40,35 @@ public class MockDataSettings {
     // populate attribute generators properties map
     public Collection<? extends DBSAttributeBase> init(MockDataExecuteWizard wizard) throws DBException {
         List<DBSDataManipulator> databaseObjects = wizard.getDatabaseObjects();
-        DBSDataManipulator dataManipulator = databaseObjects.iterator().next();
+        DBSDataManipulator dataManipulator = databaseObjects.iterator().next(); // TODO only the first
         DBSEntity dbsEntity = (DBSEntity) dataManipulator;
-        Collection<? extends DBSAttributeBase> attributes = DBUtils.getRealAttributes(dbsEntity.getAttributes(new VoidProgressMonitor()));
+
+        VoidProgressMonitor monitor = new VoidProgressMonitor(); // TODO VoidProgressMonitor
+        Collection<? extends DBSAttributeBase> attributes = DBUtils.getRealAttributes(dbsEntity.getAttributes(monitor));
+
+        MockGeneratorRegistry generatorRegistry = MockGeneratorRegistry.getInstance();
         for (DBSAttributeBase attribute : attributes) {
             AttributeGeneratorProperties generatorProperties = new AttributeGeneratorProperties(attribute);
             attributeGenerators.put(attribute.getName(), generatorProperties);
-            MockGeneratorRegistry generatorRegistry = MockGeneratorRegistry.getInstance();
-            List<MockGeneratorDescriptor> generators = generatorRegistry.findAllGenerators(dataManipulator.getDataSource(), attribute);
-            for (MockGeneratorDescriptor generator : generators) {
-                generatorDescriptors.put(generator.getId(), generator);
-                generatorProperties.putGeneratorPropertySource(generator.getId(), new PropertySourceCustom(generator.getProperties(), null));
+
+            //((JDBCColumnKeyType) attribute).isInUniqueKey()
+            List<DBSEntityReferrer> attributeReferrers = DBUtils.getAttributeReferrers(monitor, (DBSEntityAttribute) attribute);
+            if (!CommonUtils.isEmpty(attributeReferrers)) {
+                MockGeneratorDescriptor generator = generatorRegistry.getGenerator(FK_GENERATOR_ID);
+                putGenerator(generatorProperties, generator);
+            } else {
+                List<MockGeneratorDescriptor> generators = generatorRegistry.findAllGenerators(dataManipulator.getDataSource(), attribute);
+                for (MockGeneratorDescriptor generator : generators) {
+                    putGenerator(generatorProperties, generator);
+                }
             }
         }
         return attributes;
+    }
+
+    private void putGenerator(AttributeGeneratorProperties generatorProperties, MockGeneratorDescriptor generator) {
+        generatorDescriptors.put(generator.getId(), generator);
+        generatorProperties.putGeneratorPropertySource(generator.getId(), new PropertySourceCustom(generator.getProperties(), null));
     }
 
     public MockGeneratorDescriptor getGeneratorDescriptor(String generatorId) {
