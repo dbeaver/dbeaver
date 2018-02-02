@@ -52,7 +52,7 @@ public class MockDataGenerateTool implements IExternalTool {
 
             @Override
             protected void finishPressed() {
-                if (doValidationConfirmation((MockDataWizardPageSettings) getCurrentPage())) {
+                if (doValidationConfirmation(getCurrentPage())) {
                     return;
                 }
                 super.finishPressed();
@@ -62,17 +62,19 @@ public class MockDataGenerateTool implements IExternalTool {
             protected void nextPressed() {
                 IWizardPage currentPage = getCurrentPage();
                 if (currentPage instanceof MockDataWizardPageSettings) {
-                    if (doValidationConfirmation((MockDataWizardPageSettings) currentPage)) {
+                    if (doValidationConfirmation(currentPage)) {
                         return;
                     }
                 }
                 super.nextPressed();
             }
 
-            private boolean doValidationConfirmation(MockDataWizardPageSettings currentPage) {
-                if (!currentPage.validateProperties()) {
-                    this.setErrorMessage("All numeric properties should be positive.");
-                    return true;
+            private boolean doValidationConfirmation(IWizardPage currentPage) {
+                if (currentPage instanceof MockDataWizardPageSettings) {
+                    if (!((MockDataWizardPageSettings) currentPage).validateProperties()) {
+                        this.setErrorMessage("All numeric properties should be positive.");
+                        return true;
+                    }
                 }
                 if (mockDataSettings.isRemoveOldData() && !removeOldDataConfirmed) {
                     if (UIUtils.confirmAction(getShell(), MockDataMessages.tools_mockdata_wizard_title, MockDataMessages.tools_mockdata_confirm_delete_old_data_message)) {
