@@ -27,7 +27,7 @@
             class="org.jkiss.dbeaver.ext.mockdata.generator.FKGenerator">
 
             <propertyGroup label="General">
-                <property id="numberRefRecords" label="Ref Records" type="int" defaultValue="100"/>
+                <property id="numberRefRecords" label="Ref Records" type="integer" defaultValue="100"/>
             </propertyGroup>
         </generator>
 
