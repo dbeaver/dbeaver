@@ -399,7 +399,7 @@ public class GenericDataSource extends JDBCDataSource
             // Cache data types
             try {
                 dataTypeCache.getAllObjects(monitor, this);
-            } catch (DBException e) {
+            } catch (Exception e) {
                 log.warn("Can't fetch database data types", e);
             }
         } else {
