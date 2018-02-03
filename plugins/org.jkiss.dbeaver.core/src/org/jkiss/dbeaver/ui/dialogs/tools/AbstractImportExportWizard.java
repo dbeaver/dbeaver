@@ -43,6 +43,11 @@ public abstract class AbstractImportExportWizard<PROCESS_ARG> extends AbstractTo
         super(objects, title);
     }
 
+    @Override
+    protected boolean isSingleTimeWizard() {
+        return false;
+    }
+
     public File getOutputFolder()
     {
         return outputFolder;
