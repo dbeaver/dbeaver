@@ -33,7 +33,7 @@ public interface MockValueGenerator {
 
     void nextRow();
 
-    Object generateValue(DBRProgressMonitor monitor, DBSAttributeBase attribute)
+    Object generateValue(DBRProgressMonitor monitor)
             throws DBException;
 
     void dispose();
