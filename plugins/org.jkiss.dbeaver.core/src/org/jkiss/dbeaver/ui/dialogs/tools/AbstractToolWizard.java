@@ -100,7 +100,21 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
     @Override
     public boolean canFinish()
     {
-        return !finished && super.canFinish();
+        if (!super.canFinish()) {
+            return false;
+        }
+        if (isSingleTimeWizard()) {
+            return !finished;
+        }
+        // [#2917] Finish button is always enabled (!finished && super.canFinish())
+        return true;
+    }
+
+    /**
+     * @return true if this wizard can be executed only once
+     */
+    protected boolean isSingleTimeWizard() {
+        return false;
     }
 
     public List<BASE_OBJECT> getDatabaseObjects()
