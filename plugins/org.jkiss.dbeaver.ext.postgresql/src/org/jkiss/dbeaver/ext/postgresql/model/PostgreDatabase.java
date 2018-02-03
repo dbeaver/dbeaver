@@ -478,10 +478,6 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
             // In some cases ResultSetMetadata returns it as []
             typeName = "_" + typeName.substring(0, typeName.length() - 2);
         }
-        String alias = PostgreConstants.DATA_TYPE_ALIASES.get(typeName);
-        if (alias != null) {
-            typeName = alias;
-        }
         {
             // First check system catalog
             final PostgreSchema schema = getCatalogSchema();

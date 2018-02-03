@@ -88,6 +88,16 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         if (dataType == null) {
             log.error("Attribute data type '" + typeId + "' not found. Use " + PostgreConstants.TYPE_VARCHAR);
             dataType = getTable().getDatabase().getDataType(PostgreConstants.TYPE_VARCHAR);
+        } else {
+            // TODO: [#2824] Perhaps we should just use type names declared in pg_catalog
+            // Replacing them with "convenient" types names migh cause some issues
+            if (false && dataType.getCanonicalName() != null && getDataSource().isServerVersionAtLeast(9, 6)) {
+                // se canonical type names. But only for PG >= 9.6 (because I can't test with earlier versions)
+                PostgreDataType canonicalType = getTable().getDatabase().getDataType(dataType.getCanonicalName());
+                if (canonicalType != null) {
+                    this.dataType = canonicalType;
+                }
+            }
         }
         setTypeName(dataType.getTypeName());
         setValueType(dataType.getTypeID());
