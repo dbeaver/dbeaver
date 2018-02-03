@@ -49,7 +49,7 @@ public class SimpleStringGenerator extends AbstractMockValueGenerator {
     }
 
     @Override
-    public Object generateValue(DBRProgressMonitor monitor, DBSAttributeBase attribute) {
+    public Object generateOneValue(DBRProgressMonitor monitor) throws DBException {
         if (isGenerateNULL()) {
             return null;
         } else {

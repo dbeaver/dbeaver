@@ -17,20 +17,15 @@
  */
 package org.jkiss.dbeaver.ext.mockdata.generator;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 
 import java.math.BigDecimal;
 
 public class RandomNumericGenerator extends AbstractMockValueGenerator {
 
-    private  static int LONG_PRECISION    = String.valueOf(Long.MAX_VALUE).length();    // 19
-    private  static int INTEGER_PRECISION = String.valueOf(Integer.MAX_VALUE).length(); // 10
-    private  static int SHORT_PRECISION   = String.valueOf(Short.MAX_VALUE).length();   // 5
-    private  static int BYTE_PRECISION    = String.valueOf(Byte.MAX_VALUE).length();    // 3
-
     @Override
-    public Object generateValue(DBRProgressMonitor monitor, DBSAttributeBase attribute) {
+    public Object generateOneValue(DBRProgressMonitor monitor) throws DBException {
         if (isGenerateNULL()) {
             return null;
         } else {

@@ -20,7 +20,6 @@ package org.jkiss.dbeaver.ext.mockdata.generator;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
-import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKeyColumn;
@@ -36,7 +35,10 @@ public class FKGenerator extends AbstractMockValueGenerator {
     private List<Object> refValues = null;
 
     @Override
-    public void init(DBSDataManipulator container, DBSAttributeBase attribute, Map<Object, Object> properties) {
+    public void init(DBSDataManipulator container, DBSAttributeBase attribute, Map<Object, Object> properties) throws DBException {
+        super.init(container, attribute, properties);
+
+        allowNulls = false;
 
         Integer numberRefRecords = (Integer) properties.get("numberRefRecords"); //$NON-NLS-1$
         if (numberRefRecords != null) {
@@ -45,16 +47,15 @@ public class FKGenerator extends AbstractMockValueGenerator {
     }
 
     @Override
-    public Object generateValue(DBRProgressMonitor monitor, DBSAttributeBase attribute) throws DBException {
+    public Object generateOneValue(DBRProgressMonitor monitor) throws DBException {
         if (refValues == null) {
             refValues = new ArrayList<>();
             List<DBSEntityReferrer> attributeReferrers = DBUtils.getAttributeReferrers(monitor, (DBSEntityAttribute) attribute);
             DBSEntityReferrer fk = attributeReferrers.get(0); // TODO only the first
-            DBCSession session = DBUtils.openUtilSession(monitor, fk.getDataSource(), "Read value enumeration");
             List<? extends DBSEntityAttributeRef> references = ((DBSEntityReferrer) fk).getAttributeReferences(monitor);
 
             DBSTableForeignKeyColumn column = (DBSTableForeignKeyColumn) references.iterator().next(); // TODO only the first !!!
-            Collection<DBDLabelValuePair> values = ((DBSAttributeEnumerable) (column.getReferencedColumn())).getValueEnumeration(session, null, numberRefRecords);
+            Collection<DBDLabelValuePair> values = readColumnValues(monitor, fk.getDataSource(), (DBSAttributeEnumerable) column.getReferencedColumn(), numberRefRecords);
             for (DBDLabelValuePair value : values) {
                 refValues.add(value.getValue());
             }
