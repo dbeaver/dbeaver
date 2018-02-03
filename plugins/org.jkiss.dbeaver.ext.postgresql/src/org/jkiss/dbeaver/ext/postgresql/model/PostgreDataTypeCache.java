@@ -18,16 +18,19 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.LongKeyMap;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * PostgreDataTypeCache
@@ -35,6 +38,33 @@ import java.util.List;
 public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, PostgreDataType>
 {
     private LongKeyMap<PostgreDataType> dataTypeMap = new LongKeyMap<>();
+
+    PostgreDataTypeCache() {
+        setListOrderComparator(DBUtils.nameComparator());
+    }
+
+    @Override
+    protected synchronized void loadObjects(DBRProgressMonitor monitor, PostgreSchema postgreSchema) throws DBException {
+        super.loadObjects(monitor, postgreSchema);
+
+        // Cache aliases
+        if (postgreSchema.isCatalogSchema()) {
+            mapDataTypeAliases(PostgreConstants.DATA_TYPE_ALIASES);
+            mapDataTypeAliases(PostgreConstants.SERIAL_TYPES);
+        }
+    }
+
+    private void mapDataTypeAliases(Map<String, String> aliases) {
+        // Add serial data types
+        for (Map.Entry<String,String> aliasMapping : aliases.entrySet()) {
+            PostgreDataType realType = getCachedObject(aliasMapping.getValue());
+            if (realType != null) {
+                PostgreDataType serialType = new PostgreDataType(realType, aliasMapping.getKey());
+                cacheObject(serialType);
+            }
+        }
+    }
+
 
     @Override
     public void clearCache() {

@@ -438,9 +438,4 @@ public class PostgreUtils {
         return createSQL + view.getViewType() + " " + view.getFullyQualifiedName(DBPEvaluationContext.DDL) + " AS\n" + definition;
     }
 
-    public static String getDataTypeCanonicalName(String typeName) {
-        String cn = PostgreConstants.DATA_TYPE_CANONICAL_NAMES.get(typeName);
-        return cn == null ? typeName : cn;
-    }
-
 }
