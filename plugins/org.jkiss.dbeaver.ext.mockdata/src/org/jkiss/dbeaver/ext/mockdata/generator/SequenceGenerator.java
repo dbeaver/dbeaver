@@ -51,7 +51,7 @@ public class SequenceGenerator extends AbstractMockValueGenerator {
     }
 
     @Override
-    public Object generateValue(DBRProgressMonitor monitor, DBSAttributeBase attribute) {
+    public Object generateOneValue(DBRProgressMonitor monitor) throws DBException {
         if (isGenerateNULL()) {
             return null;
         } else {
@@ -61,6 +61,20 @@ public class SequenceGenerator extends AbstractMockValueGenerator {
             } else {
                 start += step;
             }
+            Integer precision = attribute.getPrecision();
+            if (precision == null || precision < INTEGER_PRECISION) { // TODO ???
+                return (int)(value);
+            }
+            if (precision < BYTE_PRECISION) {
+                return (byte)(value);
+            }
+            if (precision < SHORT_PRECISION) {
+                return (short)(value);
+            }
+            if (precision < LONG_PRECISION) {
+                return new Long(value);
+            }
+
             return value;
         }
     }

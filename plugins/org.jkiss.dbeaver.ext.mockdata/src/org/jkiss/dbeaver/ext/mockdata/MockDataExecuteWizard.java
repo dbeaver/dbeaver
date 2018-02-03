@@ -179,7 +179,8 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                             for (DBSAttributeBase attribute : attributes) {
                                 MockValueGenerator generator = generators.get(attribute.getName());
                                 if (generator != null) {
-                                    Object value = generator.generateValue(monitor, attribute);
+                                    //((AbstractMockValueGenerator) generator).checkUnique(monitor);
+                                    Object value = generator.generateValue(monitor);
                                     attributeValues.add(new DBDAttributeValue(attribute, value));
                                 }
                             }
