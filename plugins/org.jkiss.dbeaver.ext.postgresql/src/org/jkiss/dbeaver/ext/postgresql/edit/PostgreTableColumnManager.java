@@ -46,82 +46,82 @@ import java.util.Map;
  */
 public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTableColumn, PostgreTableBase> implements DBEObjectRenamer<PostgreTableColumn>  {
 
-    protected final ColumnModifier<PostgreTableColumn> PostgreDataTypeModifier = new ColumnModifier<PostgreTableColumn>() {
-        @Override
-        public void appendModifier(PostgreTableColumn column, StringBuilder sql, DBECommandAbstract<PostgreTableColumn> command) {
-            sql.append(' ');
-            final PostgreDataType dataType = column.getDataType();
-            String defValue = column.getDefaultValue();
-            if (!CommonUtils.isEmpty(defValue) && defValue.contains("nextval")) {
-                // Use serial type name
-                switch (dataType.getName()) {
-                    case PostgreConstants.TYPE_INT2:
-                        sql.append("smallserial");
-                        return;
-                    case PostgreConstants.TYPE_INT4:
-                        sql.append("serial");
-                        return;
-                    case PostgreConstants.TYPE_INT8:
-                        sql.append("bigserial");
-                        return;
+    protected final ColumnModifier<PostgreTableColumn> PostgreDataTypeModifier = (column, sql, command) -> {
+        sql.append(' ');
+        final PostgreDataType dataType = column.getDataType();
+        String defValue = column.getDefaultValue();
+        if (!CommonUtils.isEmpty(defValue) && defValue.contains("nextval")) {
+            // Use serial type name
+            switch (dataType.getName()) {
+                case PostgreConstants.TYPE_INT2:
+                    sql.append("smallserial");
+                    return;
+                case PostgreConstants.TYPE_INT4:
+                    sql.append("serial");
+                    return;
+                case PostgreConstants.TYPE_INT8:
+                    sql.append("bigserial");
+                    return;
+            }
+        }
+        final PostgreDataType rawType = dataType.getElementType();
+        if (rawType != null) {
+            sql.append(rawType.getTypeName());
+        } else {
+            sql.append(dataType.getTypeName());
+        }
+        switch (dataType.getDataKind()) {
+            case STRING:
+                final long length = column.getMaxLength();
+                if (length > 0) {
+                    sql.append('(').append(length).append(')');
                 }
-            }
-            final PostgreDataType rawType = dataType.getElementType();
-            if (rawType != null) {
-                sql.append(rawType.getTypeName());
-            } else {
-                sql.append(dataType.getTypeName());
-            }
-            switch (dataType.getDataKind()) {
-                case STRING:
-                    final long length = column.getMaxLength();
-                    if (length > 0) {
-                        sql.append('(').append(length).append(')');
-                    }
-                    break;
-                case NUMERIC:
-                    if (dataType.getTypeID() == Types.NUMERIC) {
-                        final int precision = CommonUtils.toInt(column.getPrecision());
-                        final int scale = CommonUtils.toInt(column.getScale());
-                        if (scale > 0 || precision > 0) {
-                            sql.append('(');
-                            if (precision > 0) {
-                                sql.append(precision);
-                            }
-                            if (scale > 0) {
-                                if (precision > 0) {
-                                    sql.append(',');
-                                }
-                                sql.append(scale);
-                            }
-                            sql.append(')');
+                break;
+            case NUMERIC:
+                if (dataType.getTypeID() == Types.NUMERIC) {
+                    final int precision = CommonUtils.toInt(column.getPrecision());
+                    final int scale = CommonUtils.toInt(column.getScale());
+                    if (scale > 0 || precision > 0) {
+                        sql.append('(');
+                        if (precision > 0) {
+                            sql.append(precision);
                         }
+                        if (scale > 0) {
+                            if (precision > 0) {
+                                sql.append(',');
+                            }
+                            sql.append(scale);
+                        }
+                        sql.append(')');
                     }
-                    break;
-            }
-            if (rawType != null) {
-                sql.append("[]");
-            }
-        }
-    };
-
-    protected final ColumnModifier<PostgreTableColumn> PostgreDefaultModifier = new ColumnModifier<PostgreTableColumn>() {
-        @Override
-        public void appendModifier(PostgreTableColumn column, StringBuilder sql, DBECommandAbstract<PostgreTableColumn> command) {
-            String defaultValue = column.getDefaultValue();
-            if (!CommonUtils.isEmpty(defaultValue) && defaultValue.contains("nextval")) {
-                // Use serial type name
-                switch (column.getDataType().getName()) {
-                    case PostgreConstants.TYPE_INT2:
-                    case PostgreConstants.TYPE_INT4:
-                    case PostgreConstants.TYPE_INT8:
-                        return;
                 }
-            }
-            DefaultModifier.appendModifier(column, sql, command);
+                break;
+        }
+        if (rawType != null) {
+            sql.append("[]");
         }
     };
 
+    protected final ColumnModifier<PostgreTableColumn> PostgreDefaultModifier = (column, sql, command) -> {
+        String defaultValue = column.getDefaultValue();
+        if (!CommonUtils.isEmpty(defaultValue) && defaultValue.contains("nextval")) {
+            // Use serial type name
+            switch (column.getDataType().getName()) {
+                case PostgreConstants.TYPE_INT2:
+                case PostgreConstants.TYPE_INT4:
+                case PostgreConstants.TYPE_INT8:
+                    return;
+            }
+        }
+        DefaultModifier.appendModifier(column, sql, command);
+    };
+
+    protected final ColumnModifier<PostgreTableColumn> PostgreIdentityModifier = (column, sql, command) -> {
+        PostgreAttributeIdentity identity = column.getIdentity();
+        if (identity != null) {
+            sql.append(" ").append(identity.getDefinitionClause());
+        }
+    };
 
     @Nullable
     @Override
@@ -132,7 +132,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
 
     protected ColumnModifier[] getSupportedModifiers(PostgreTableColumn column)
     {
-        return new ColumnModifier[] {PostgreDataTypeModifier, NullNotNullModifier, PostgreDefaultModifier};
+        return new ColumnModifier[] {PostgreDataTypeModifier, NullNotNullModifier, PostgreDefaultModifier, PostgreIdentityModifier};
     }
 
     @Override
