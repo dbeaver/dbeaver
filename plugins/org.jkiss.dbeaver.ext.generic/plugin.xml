@@ -973,7 +973,7 @@
                         label="Snowflake"
                         class="net.snowflake.client.jdbc.SnowflakeDriver"
                         icon="icons/snowflake_icon.png"
-                        sampleURL="jdbc:snowflake://{host}/?[warehouse={server}][&amp;db={database}]"
+                        sampleURL="jdbc:snowflake://{host}/?[db={database}]"
                         defaultPort=""
                         description="Snowflake JDBC driver"
                         webURL="https://docs.snowflake.net/manuals/user-guide/jdbc-configure.html">

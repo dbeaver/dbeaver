@@ -379,7 +379,13 @@ public class SQLFormatterTokenized implements SQLFormatter {
     }
 
     private static  boolean isEmbeddedToken(FormatterToken token) {
-        return ":".equals(token.getString()) || ".".equals(token.getString());
+        switch (token.getString()) {
+            case ":":
+            case ".":
+                return true;
+            default:
+                return false;
+        }
     }
 
     private boolean isJoinStart(List<FormatterToken> argList, int index) {
