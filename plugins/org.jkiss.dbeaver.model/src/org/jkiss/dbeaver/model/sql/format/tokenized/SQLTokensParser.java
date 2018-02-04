@@ -97,6 +97,7 @@ class SQLTokensParser {
         case '`': // apos
         case '[': // bracket open
         case ']': // bracket close
+        case '#': //
             return true;
         default:
             return false;

@@ -17,14 +17,15 @@
  */
 package org.jkiss.dbeaver.ext.mockdata.generator;
 
-import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.UUID;
 
 public class UuidGenerator extends AbstractMockValueGenerator {
 
     @Override
-    public Object generateValue(DBSAttributeBase attribute) {
+    public Object generateOneValue(DBRProgressMonitor monitor) throws DBException {
         if (isGenerateNULL()) {
             return null;
         } else {

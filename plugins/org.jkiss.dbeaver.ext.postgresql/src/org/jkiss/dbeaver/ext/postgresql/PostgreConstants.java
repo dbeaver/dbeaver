@@ -41,6 +41,7 @@ public class PostgreConstants {
     public static final String DEFAULT_DATA_TYPE = "varchar";
 
     public static final String PROP_SHOW_NON_DEFAULT_DB = DBConstants.INTERNAL_PROP_PREFIX + "show-non-default-db@";
+    public static final String PROP_SWITCH_DB_ON_EXPAND = DBConstants.INTERNAL_PROP_PREFIX + "switch-db-on-expand@";
 
     public static final String PROP_SSL_CLIENT_CERT = "clientCert";
     public static final String PROP_SSL_CLIENT_KEY = "clientKey";
@@ -91,6 +92,8 @@ public class PostgreConstants {
     public static final String TYPE_INT2 = "int2";
     public static final String TYPE_INT4 = "int4";
     public static final String TYPE_INT8 = "int8";
+    public static final String TYPE_FLOAT4 = "float4";
+    public static final String TYPE_FLOAT8 = "float8";
 
     static {
         DATA_TYPE_ALIASES.put("integer", TYPE_INT4);
@@ -98,8 +101,8 @@ public class PostgreConstants {
         DATA_TYPE_ALIASES.put("bigint", TYPE_INT8);
         DATA_TYPE_ALIASES.put("smallint", TYPE_INT2);
 
-        DATA_TYPE_ALIASES.put("double precision", "float8");
-        DATA_TYPE_ALIASES.put("real", "float4");
+        DATA_TYPE_ALIASES.put("double precision", TYPE_FLOAT8);
+        DATA_TYPE_ALIASES.put("real", TYPE_FLOAT4);
         DATA_TYPE_ALIASES.put("void", "void");
 
         SERIAL_TYPES.put("serial", TYPE_INT4);
@@ -111,5 +114,7 @@ public class PostgreConstants {
         DATA_TYPE_CANONICAL_NAMES.put(TYPE_INT4, "integer");
         DATA_TYPE_CANONICAL_NAMES.put(TYPE_INT8, "bigint");
         DATA_TYPE_CANONICAL_NAMES.put(TYPE_INT2, "smallint");
+        DATA_TYPE_CANONICAL_NAMES.put(TYPE_FLOAT4, "real");
+        DATA_TYPE_CANONICAL_NAMES.put("character varying", "varchar");
     }
 }
