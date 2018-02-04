@@ -387,7 +387,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                 final PostgreSchema typeContainer = dataType.getParentObject();
                 if (typeContainer == null ||
                     typeContainer == getContainer() ||
-                    typeContainer.getName().equals(PostgreConstants.CATALOG_SCHEMA_NAME))
+                    typeContainer.isCatalogSchema())
                 {
                     paramsSignature.append(dataType.getName());
                 } else {

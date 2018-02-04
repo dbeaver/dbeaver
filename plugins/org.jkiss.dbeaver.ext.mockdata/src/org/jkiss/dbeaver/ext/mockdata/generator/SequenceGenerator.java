@@ -17,7 +17,8 @@
  */
 package org.jkiss.dbeaver.ext.mockdata.generator;
 
-import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 
@@ -30,7 +31,7 @@ public class SequenceGenerator extends AbstractMockValueGenerator {
     private boolean reverse = false;
 
     @Override
-    public void init(DBSDataManipulator container, DBSAttributeBase attribute, Map<Object, Object> properties) throws DBCException {
+    public void init(DBSDataManipulator container, DBSAttributeBase attribute, Map<Object, Object> properties) throws DBException {
         super.init(container, attribute, properties);
 
         Long start = (Long) properties.get("start"); //$NON-NLS-1$
@@ -50,7 +51,7 @@ public class SequenceGenerator extends AbstractMockValueGenerator {
     }
 
     @Override
-    public Object generateValue(DBSAttributeBase attribute) {
+    public Object generateOneValue(DBRProgressMonitor monitor) throws DBException {
         if (isGenerateNULL()) {
             return null;
         } else {
@@ -60,6 +61,20 @@ public class SequenceGenerator extends AbstractMockValueGenerator {
             } else {
                 start += step;
             }
+            Integer precision = attribute.getPrecision();
+            if (precision == null || precision < INTEGER_PRECISION) { // TODO ???
+                return (int)(value);
+            }
+            if (precision < BYTE_PRECISION) {
+                return (byte)(value);
+            }
+            if (precision < SHORT_PRECISION) {
+                return (short)(value);
+            }
+            if (precision < LONG_PRECISION) {
+                return new Long(value);
+            }
+
             return value;
         }
     }

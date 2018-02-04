@@ -174,7 +174,7 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
                             columnsTableViewer,
                             columnsTableViewer.getTable(),
                             generators.toArray(new String[generators.size()]),
-                            SWT.BORDER);
+                            SWT.BORDER | SWT.READ_ONLY);
                     return customComboBoxCellEditor;
                 }
 
@@ -303,6 +303,27 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
         return true;
     }
 
+    public boolean validateProperties() {
+        Map<String, AttributeGeneratorProperties> attributeGenerators = mockDataSettings.getAttributeGenerators();
+        for (String attr : attributeGenerators.keySet()) {
+            AttributeGeneratorProperties attributeGeneratorProperties = attributeGenerators.get(attr);
+            String selectedGeneratorId = attributeGeneratorProperties.getSelectedGeneratorId();
+            Map<Object, Object> properties =
+                    attributeGeneratorProperties.getGeneratorPropertySource(selectedGeneratorId).getPropertiesWithDefaults();
+            for (Object key : properties.keySet()) {
+                Object value = properties.get(key);
+                // all the numeric properties shouldn't be negative
+                if (value instanceof Integer && (((Integer) value) < 0)) {
+                    return false;
+                }
+                if (value instanceof Long && (((Long) value) < 0)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
     private void updateState() {
         mockDataSettings.setRemoveOldData(removeOldDataCheck.getSelection());
         mockDataSettings.setRowsNumber(Long.parseLong(rowsText.getText()));
@@ -341,6 +362,7 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
             generatorCombo.setText(generatorDescriptor.getLabel());
             generatorCombo.setEnabled(true);
             generatorDescriptionLabel.setText(generatorDescriptor.getDescription());
+
         } else {
             generatorCombo.setItems(new String[] {"Not found"});
             generatorCombo.setText("Not found");

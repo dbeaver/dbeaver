@@ -39,7 +39,6 @@ import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractToolWizard;
 
-import java.io.IOException;
 import java.util.*;
 
 public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulator, DBSDataManipulator> implements IImportWizard{
@@ -91,12 +90,11 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
         return getDatabaseObjects();
     }
 
-    protected List<String> getCommandLine(DBSDataManipulator jdbcTable) throws IOException {
+    protected List<String> getCommandLine(DBSDataManipulator jdbcTable) {
         return null;
     }
 
-    public void fillProcessParameters(List<String> cmd, DBSDataManipulator jdbcTable) throws IOException {
-
+    public void fillProcessParameters(List<String> cmd, DBSDataManipulator jdbcTable) {
     }
 
     @Override
@@ -181,7 +179,8 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                             for (DBSAttributeBase attribute : attributes) {
                                 MockValueGenerator generator = generators.get(attribute.getName());
                                 if (generator != null) {
-                                    Object value = generator.generateValue(attribute);
+                                    //((AbstractMockValueGenerator) generator).checkUnique(monitor);
+                                    Object value = generator.generateValue(monitor);
                                     attributeValues.add(new DBDAttributeValue(attribute, value));
                                 }
                             }

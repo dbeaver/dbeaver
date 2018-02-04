@@ -1,21 +1,47 @@
 package org.jkiss.dbeaver.ext.mockdata.generator;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mockdata.model.MockValueGenerator;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
-import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
+import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 public abstract class AbstractMockValueGenerator implements MockValueGenerator {
 
+    public static final int UNIQUE_VALUES_SET_SIZE = 1000000;
+
+    protected static int LONG_PRECISION    = String.valueOf(Long.MAX_VALUE).length();    // 19
+    protected static int INTEGER_PRECISION = String.valueOf(Integer.MAX_VALUE).length(); // 10
+    protected static int SHORT_PRECISION   = String.valueOf(Short.MAX_VALUE).length();   // 5
+    protected static int BYTE_PRECISION    = String.valueOf(Byte.MAX_VALUE).length();    // 3
+
+    protected DBSEntity dbsEntity;
+    protected DBSAttributeBase attribute;
+
     protected static Random random = new Random();
     protected boolean allowNulls;
+    private boolean isFirstRun = true;
+    private boolean isUnique;
+    private Set uniqueValues;
 
+    /**
+     * Should be run before the generateValue call
+     * @param container
+     * @param attribute
+     * @param properties
+     * @throws DBException
+     */
     @Override
-    public void init(DBSDataManipulator container, DBSAttributeBase attribute, Map<Object, Object> properties) throws DBCException {
+    public void init(DBSDataManipulator container, DBSAttributeBase attribute, Map<Object, Object> properties) throws DBException {
+        this.dbsEntity = (DBSEntity) container;
+        this.attribute = attribute;
+
         allowNulls = !attribute.isRequired() && Boolean.valueOf(CommonUtils.toString(properties.get("nulls")));
     }
 
@@ -27,12 +53,58 @@ public abstract class AbstractMockValueGenerator implements MockValueGenerator {
     public void dispose() {
     }
 
+    @Override
+    public Object generateValue(DBRProgressMonitor monitor) throws DBException {
+        if (isFirstRun) {
+            isFirstRun = false;
+            isUnique = checkUnique(monitor);
+            if (isUnique && (attribute instanceof DBSAttributeEnumerable)) {
+                uniqueValues = new HashSet();
+                Collection<DBDLabelValuePair> valuePairs = readColumnValues(monitor, dbsEntity.getDataSource(), (DBSAttributeEnumerable) attribute, UNIQUE_VALUES_SET_SIZE);
+                for (DBDLabelValuePair pair : valuePairs) {
+                    uniqueValues.add(pair.getValue());
+                }
+
+            }
+        }
+        if (isUnique) {
+            Object value = null;
+            while (value == null || uniqueValues.contains(value)) {
+                value = generateOneValue(monitor);
+            }
+            uniqueValues.add(value);
+            return value;
+        } else {
+            return generateOneValue(monitor);
+        }
+    }
+
+    protected abstract Object generateOneValue(DBRProgressMonitor monitor) throws DBException;
+
     protected boolean isGenerateNULL() {
-        if (allowNulls && (random.nextInt() % 10 == 1)) { // every 10th is NULL
+        if (allowNulls && (random.nextInt() % 10 == 1)) { // TODO every 10th is NULL - should be customized
             return true;
         }
         else {
             return false;
         }
+    }
+
+    protected Collection<DBDLabelValuePair> readColumnValues(DBRProgressMonitor monitor, DBPDataSource dataSource, DBSAttributeEnumerable column, int number) throws DBException {
+        DBCSession session = DBUtils.openUtilSession(monitor, dataSource, "Read value enumeration");
+        return column.getValueEnumeration(session, null, number);
+    }
+
+    private boolean checkUnique(DBRProgressMonitor monitor) throws DBException {
+        for (DBSEntityConstraint constraint : dbsEntity.getConstraints(monitor)) {
+            DBSEntityConstraintType constraintType = constraint.getConstraintType();
+            if (constraintType == DBSEntityConstraintType.PRIMARY_KEY || constraintType.isUnique()) {
+                DBSEntityAttributeRef constraintAttribute = DBUtils.getConstraintAttribute(monitor, ((DBSEntityReferrer) constraint), attribute.getName());
+                if (constraintAttribute != null && constraintAttribute.getAttribute() == attribute) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
