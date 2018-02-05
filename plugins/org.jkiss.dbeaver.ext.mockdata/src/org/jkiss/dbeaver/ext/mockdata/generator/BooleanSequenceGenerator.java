@@ -28,18 +28,23 @@ public class BooleanSequenceGenerator extends AbstractMockValueGenerator {
 
     private boolean value;
 
-    private enum VALUES {
-        TRUE, FALSE, ALTERNATELY
+    private enum ORDER {
+        ALTERNATELY, CONSTANT
     }
-    private VALUES values;
+    private ORDER order;
 
     @Override
     public void init(DBSDataManipulator container, DBSAttributeBase attribute, Map<Object, Object> properties) throws DBException {
         super.init(container, attribute, properties);
 
-        String v = (String) properties.get("values"); //$NON-NLS-1$
-        if (v != null) {
-            this.values = VALUES.valueOf(v);
+        String o = (String) properties.get("order"); //$NON-NLS-1$
+        if (o != null) {
+            this.order = ORDER.valueOf(o);
+        }
+
+        Boolean initial = (Boolean) properties.get("initial"); //$NON-NLS-1$
+        if (initial != null) {
+            this.value = !initial; // tricky
         }
     }
 
@@ -48,10 +53,14 @@ public class BooleanSequenceGenerator extends AbstractMockValueGenerator {
         if (isGenerateNULL()) {
             return null;
         } else {
-            switch (values) {
-                case TRUE:        return true;
-                case FALSE:       return false;
-                case ALTERNATELY: value = !value; return value;
+            switch (order) {
+                case CONSTANT:    {
+                    return value;
+                }
+                case ALTERNATELY: {
+                    value = !value;
+                    return value;
+                }
             }
         }
         return null;

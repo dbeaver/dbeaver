@@ -119,7 +119,8 @@
             <type kind="BOOLEAN"/>
 
             <propertyGroup label="General">
-                <property id="values" label="Values" type="string" defaultValue="TRUE" validValues="TRUE,FALSE,ALTERNATELY"/>
+                <property id="initial" label="Initial" type="boolean" defaultValue="TRUE"/>
+                <property id="order" label="Order" type="string" defaultValue="CONSTANT" validValues="ALTERNATELY,CONSTANT"/>
                 <property id="nulls" label="NULLs" type="boolean" defaultValue="TRUE" description="Allow NULL values"/>
             </propertyGroup>
         </generator>
