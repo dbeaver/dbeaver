@@ -8,11 +8,12 @@
     <extension point="org.jkiss.dbeaver.tools">
         <tools>
             <tool
-                    class="org.jkiss.dbeaver.ext.mockdata.MockDataGenerateTool"
-                    description="Mock Data"
-                    id="org.jkiss.dbeaver.ext.mockdata.MockDataGenerateTool"
-                    label="Mock Data"
-                    singleton="false">
+                class="org.jkiss.dbeaver.ext.mockdata.MockDataGenerateTool"
+                description="Mock Data"
+                id="org.jkiss.dbeaver.ext.mockdata.MockDataGenerateTool"
+                label="Mock Data"
+                singleton="false">
+
                 <objectType name="org.jkiss.dbeaver.model.struct.DBSDataManipulator" forceCheck="true"/>
             </tool>
         </tools>
@@ -32,8 +33,8 @@
         </generator>
 
         <generator
-            id="simpleStringGenerator"
-            label="From text"
+            id="stringTextGenerator"
+            label="Text"
             description="Random length substrings from the 'Lorem ipsum' text"
             class="org.jkiss.dbeaver.ext.mockdata.generator.StringTextGenerator">
             <type kind="STRING"/>
@@ -47,7 +48,7 @@
         </generator>
 
         <generator
-                id="uuidGenerator"
+                id="stringUuidGenerator"
                 label="UUID"
                 description="UUID random values"
                 class="org.jkiss.dbeaver.ext.mockdata.generator.StringUuidGenerator">
@@ -59,8 +60,8 @@
         </generator>
 
         <generator
-            id="randomNumericGenerator"
-            label="Random Numeric"
+            id="numericRandomGenerator"
+            label="Random"
             description="Random numeric values"
             class="org.jkiss.dbeaver.ext.mockdata.generator.NumericRandomGenerator">
             <type kind="NUMERIC"/>
@@ -71,7 +72,7 @@
         </generator>
 
         <generator
-            id="sequenceGenerator"
+            id="numericSequenceGenerator"
             label="Sequence"
             description="Sequence of numbers with adjustable start, step and order"
             class="org.jkiss.dbeaver.ext.mockdata.generator.NumericSequenceGenerator">
@@ -87,8 +88,8 @@
         </generator>
 
         <generator
-            id="randomDateGenerator"
-            label="Random Date"
+            id="dateRandomGenerator"
+            label="Random"
             description="Random date values"
             class="org.jkiss.dbeaver.ext.mockdata.generator.DateRandomGenerator">
             <type kind="DATETIME"/>
@@ -99,8 +100,8 @@
         </generator>
 
         <generator
-            id="randomBooleanGenerator"
-            label="Random Boolean"
+            id="booleanRandomGenerator"
+            label="Random"
             description="Random boolean values"
             class="org.jkiss.dbeaver.ext.mockdata.generator.BooleanRandomGenerator">
             <type kind="BOOLEAN"/>
