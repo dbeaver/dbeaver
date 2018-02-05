@@ -308,16 +308,18 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
         for (String attr : attributeGenerators.keySet()) {
             AttributeGeneratorProperties attributeGeneratorProperties = attributeGenerators.get(attr);
             String selectedGeneratorId = attributeGeneratorProperties.getSelectedGeneratorId();
-            Map<Object, Object> properties =
-                    attributeGeneratorProperties.getGeneratorPropertySource(selectedGeneratorId).getPropertiesWithDefaults();
-            for (Object key : properties.keySet()) {
-                Object value = properties.get(key);
-                // all the numeric properties shouldn't be negative
-                if (value instanceof Integer && (((Integer) value) < 0)) {
-                    return false;
-                }
-                if (value instanceof Long && (((Long) value) < 0)) {
-                    return false;
+            if (selectedGeneratorId != null) {
+                Map<Object, Object> properties =
+                        attributeGeneratorProperties.getGeneratorPropertySource(selectedGeneratorId).getPropertiesWithDefaults();
+                for (Object key : properties.keySet()) {
+                    Object value = properties.get(key);
+                    // all the numeric properties shouldn't be negative
+                    if (value instanceof Integer && (((Integer) value) < 0)) {
+                        return false;
+                    }
+                    if (value instanceof Long && (((Long) value) < 0)) {
+                        return false;
+                    }
                 }
             }
         }
