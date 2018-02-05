@@ -111,6 +111,19 @@
             </propertyGroup>
         </generator>
 
+        <generator
+            id="booleanSequenceGenerator"
+            label="Sequence"
+            description="Adjustable sequence of boolean values"
+            class="org.jkiss.dbeaver.ext.mockdata.generator.BooleanSequenceGenerator">
+            <type kind="BOOLEAN"/>
+
+            <propertyGroup label="General">
+                <property id="values" label="Values" type="string" defaultValue="TRUE" validValues="TRUE,FALSE,ALTERNATELY"/>
+                <property id="nulls" label="NULLs" type="boolean" defaultValue="TRUE" description="Allow NULL values"/>
+            </propertyGroup>
+        </generator>
+
     </extension>
 
 </plugin>
