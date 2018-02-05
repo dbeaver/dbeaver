@@ -18,36 +18,34 @@
 package org.jkiss.dbeaver.ext.mockdata.generator;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Map;
 
-public class SequenceGenerator extends AbstractMockValueGenerator {
+/**
+ * Simple string generator (lorem ipsum)
+ */
+public class StringTextGenerator extends AbstractMockValueGenerator {
 
-    private long start = 0;
-    private long step = 0;
-    private boolean reverse = false;
+    private String templateString;
 
     @Override
     public void init(DBSDataManipulator container, DBSAttributeBase attribute, Map<Object, Object> properties) throws DBException {
         super.init(container, attribute, properties);
 
-        Long start = (Long) properties.get("start"); //$NON-NLS-1$
-        if (start != null) {
-            this.start = start;
+        templateString = CommonUtils.toString(properties.get("template")); //$NON-NLS-1$
+        if (templateString == null) {
+            throw new DBCException("Empty template string for simple string generator");
         }
+    }
 
-        Long step = (Long) properties.get("step"); //$NON-NLS-1$
-        if (step != null) {
-            this.step = step;
-        }
+    @Override
+    public void nextRow() {
 
-        Boolean reverse = (Boolean) properties.get("reverse"); //$NON-NLS-1$
-        if (reverse != null) {
-            this.reverse = reverse;
-        }
     }
 
     @Override
@@ -55,27 +53,21 @@ public class SequenceGenerator extends AbstractMockValueGenerator {
         if (isGenerateNULL()) {
             return null;
         } else {
-            long value = this.start;
-            if (reverse) {
-                start -= step;
+            int length = (int) Math.min(10000, attribute.getMaxLength());
+            int tplLength = templateString.length();
+            int start = random.nextInt(tplLength);
+            if (start + length < tplLength) {
+                return templateString.substring(start, start + length);
             } else {
-                start += step;
+                StringBuilder sb = new StringBuilder();
+                sb.append(templateString.substring(start));
+                int newlength = length - (tplLength - start);
+                for (int i = 0; i < newlength / tplLength; i++) {
+                    sb.append(templateString);
+                }
+                sb.append(templateString.substring(0, newlength % tplLength));
+                return sb.toString();
             }
-            Integer precision = attribute.getPrecision();
-            if (precision == null || precision < INTEGER_PRECISION) { // TODO ???
-                return (int)(value);
-            }
-            if (precision < BYTE_PRECISION) {
-                return (byte)(value);
-            }
-            if (precision < SHORT_PRECISION) {
-                return (short)(value);
-            }
-            if (precision < LONG_PRECISION) {
-                return new Long(value);
-            }
-
-            return value;
         }
     }
 }

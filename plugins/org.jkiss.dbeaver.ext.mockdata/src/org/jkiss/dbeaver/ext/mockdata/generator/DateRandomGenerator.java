@@ -20,14 +20,21 @@ package org.jkiss.dbeaver.ext.mockdata.generator;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-public class RandomBooleanGenerator extends AbstractMockValueGenerator {
+import java.util.Date;
+
+public class DateRandomGenerator extends AbstractMockValueGenerator {
 
     @Override
     public Object generateOneValue(DBRProgressMonitor monitor) throws DBException {
         if (isGenerateNULL()) {
             return null;
         } else {
-            return new Boolean(random.nextBoolean());
+            // Get an Epoch value roughly between 1940 and 2010
+            // -946771200000L = January 1, 1940
+            // Add up to 70 years to it (using modulus on the next long)
+            long ms = -946771200000L + (Math.abs(random.nextLong()) % (70L * 365 * 24 * 60 * 60 * 1000));
+
+            return new Date(ms);
         }
     }
 }
