@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.UUID;
 
-public class UuidGenerator extends AbstractMockValueGenerator {
+public class StringUuidGenerator extends AbstractMockValueGenerator {
 
     @Override
     public Object generateOneValue(DBRProgressMonitor monitor) throws DBException {
