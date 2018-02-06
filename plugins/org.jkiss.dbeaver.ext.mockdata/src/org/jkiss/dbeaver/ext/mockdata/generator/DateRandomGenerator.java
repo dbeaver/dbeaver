@@ -18,23 +18,80 @@
 package org.jkiss.dbeaver.ext.mockdata.generator;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Map;
 
 public class DateRandomGenerator extends AbstractMockValueGenerator {
+
+    private static final Log log = Log.getLog(DateRandomGenerator.class);
+
+    private static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd-MM-yyyy"); //$NON-NLS-1$
+
+    public static final long DEFAULT_START_DATE = -946771200000L; // January 1, 1940
+    public static final long DAY_RANGE          = 24 * 60 * 60 * 1000; // 1 day
+    public static final long YEAR_RANGE         = 365 * DAY_RANGE; // 1 years
+    public static final long DEFAULT_RANGE      = 100L * YEAR_RANGE; // 100 years
+
+    private long startDate = Long.MAX_VALUE;
+    private long endDate = Long.MAX_VALUE;
+
+    @Override
+    public void init(DBSDataManipulator container, DBSAttributeBase attribute, Map<Object, Object> properties) throws DBException {
+        super.init(container, attribute, properties);
+
+        String fromD = (String) properties.get("startDate"); //$NON-NLS-1$
+        if (fromD != null) {
+            try {
+                this.startDate = DATE_FORMAT.parse(fromD).getTime();
+            } catch (ParseException e) {
+                log.error("Error parse From Date '" + fromD + "'.", e);
+            }
+        }
+
+        String toD = (String) properties.get("endDate"); //$NON-NLS-1$
+        if (toD != null) {
+            try {
+                this.endDate = DATE_FORMAT.parse(toD).getTime();
+            } catch (ParseException e) {
+                log.error("Error parse To Date '" + toD + "'.", e);
+            }
+        }
+
+        if (startDate != Long.MAX_VALUE && endDate != Long.MAX_VALUE && (startDate > endDate)) { // swap start & end
+            long l = startDate;
+            startDate = endDate;
+            endDate = l;
+        }
+
+        if (endDate != Long.MAX_VALUE) {
+            endDate += DAY_RANGE - 1; // include whole the day
+        }
+    }
 
     @Override
     public Object generateOneValue(DBRProgressMonitor monitor) throws DBException {
         if (isGenerateNULL()) {
             return null;
         } else {
-            // Get an Epoch value roughly between 1940 and 2010
-            // -946771200000L = January 1, 1940
-            // Add up to 70 years to it (using modulus on the next long)
-            long ms = -946771200000L + (Math.abs(random.nextLong()) % (70L * 365 * 24 * 60 * 60 * 1000));
-
-            return new Date(ms);
+            if (startDate != Long.MAX_VALUE && endDate != Long.MAX_VALUE) {
+                return new Date(
+                        startDate + (Math.abs(random.nextLong()) % (endDate - startDate)));
+            } else if (startDate != Long.MAX_VALUE) {
+                return new Date(
+                        startDate + (Math.abs(random.nextLong()) % DEFAULT_RANGE));
+            } else if (endDate != Long.MAX_VALUE) {
+                return new Date(
+                        (endDate - DEFAULT_RANGE) + (Math.abs(random.nextLong()) % DEFAULT_RANGE));
+            }
+            return new Date(
+                    DEFAULT_START_DATE + (Math.abs(random.nextLong()) % DEFAULT_RANGE));
         }
     }
 }
