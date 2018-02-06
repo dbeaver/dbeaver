@@ -95,6 +95,9 @@
             <type kind="DATETIME"/>
 
             <propertyGroup label="General">
+                <property id="startDate" label="Start date" type="string" description="Date range start (DD-MM-YYYY)"/>
+                <property id="endDate" label="End date" type="string" description="Date range end (DD-MM-YYYY)"/>
+
                 <property id="nulls" label="NULLs" type="boolean" defaultValue="TRUE"/>
             </propertyGroup>
         </generator>
