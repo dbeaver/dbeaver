@@ -22,7 +22,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.math.BigDecimal;
 
-public class RandomNumericGenerator extends AbstractMockValueGenerator {
+public class NumericRandomGenerator extends AbstractMockValueGenerator {
 
     @Override
     public Object generateOneValue(DBRProgressMonitor monitor) throws DBException {

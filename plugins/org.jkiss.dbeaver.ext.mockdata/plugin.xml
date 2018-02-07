@@ -8,11 +8,12 @@
     <extension point="org.jkiss.dbeaver.tools">
         <tools>
             <tool
-                    class="org.jkiss.dbeaver.ext.mockdata.MockDataGenerateTool"
-                    description="Mock Data"
-                    id="org.jkiss.dbeaver.ext.mockdata.MockDataGenerateTool"
-                    label="Mock Data"
-                    singleton="false">
+                class="org.jkiss.dbeaver.ext.mockdata.MockDataGenerateTool"
+                description="Mock Data"
+                id="org.jkiss.dbeaver.ext.mockdata.MockDataGenerateTool"
+                label="Mock Data"
+                singleton="false">
+
                 <objectType name="org.jkiss.dbeaver.model.struct.DBSDataManipulator" forceCheck="true"/>
             </tool>
         </tools>
@@ -32,10 +33,10 @@
         </generator>
 
         <generator
-            id="simpleStringGenerator"
-            label="From text"
+            id="stringTextGenerator"
+            label="Text"
             description="Random length substrings from the 'Lorem ipsum' text"
-            class="org.jkiss.dbeaver.ext.mockdata.generator.SimpleStringGenerator">
+            class="org.jkiss.dbeaver.ext.mockdata.generator.StringTextGenerator">
             <type kind="STRING"/>
 
             <propertyGroup label="General">
@@ -47,10 +48,10 @@
         </generator>
 
         <generator
-                id="uuidGenerator"
+                id="stringUuidGenerator"
                 label="UUID"
                 description="UUID random values"
-                class="org.jkiss.dbeaver.ext.mockdata.generator.UuidGenerator">
+                class="org.jkiss.dbeaver.ext.mockdata.generator.StringUuidGenerator">
             <type kind="STRING"/>
 
             <propertyGroup label="General">
@@ -59,10 +60,10 @@
         </generator>
 
         <generator
-            id="randomNumericGenerator"
-            label="Random Numeric"
+            id="numericRandomGenerator"
+            label="Random"
             description="Random numeric values"
-            class="org.jkiss.dbeaver.ext.mockdata.generator.RandomNumericGenerator">
+            class="org.jkiss.dbeaver.ext.mockdata.generator.NumericRandomGenerator">
             <type kind="NUMERIC"/>
 
             <propertyGroup label="General">
@@ -71,10 +72,10 @@
         </generator>
 
         <generator
-            id="sequenceGenerator"
+            id="numericSequenceGenerator"
             label="Sequence"
             description="Sequence of numbers with adjustable start, step and order"
-            class="org.jkiss.dbeaver.ext.mockdata.generator.SequenceGenerator">
+            class="org.jkiss.dbeaver.ext.mockdata.generator.NumericSequenceGenerator">
             <type kind="NUMERIC"/>
 
             <propertyGroup label="General">
@@ -87,25 +88,42 @@
         </generator>
 
         <generator
-            id="randomDateGenerator"
-            label="Random Date"
+            id="dateRandomGenerator"
+            label="Random"
             description="Random date values"
-            class="org.jkiss.dbeaver.ext.mockdata.generator.RandomDateGenerator">
+            class="org.jkiss.dbeaver.ext.mockdata.generator.DateRandomGenerator">
             <type kind="DATETIME"/>
 
             <propertyGroup label="General">
+                <property id="startDate" label="Start date" type="string" description="Date range start (DD-MM-YYYY)"/>
+                <property id="endDate" label="End date" type="string" description="Date range end (DD-MM-YYYY)"/>
+
                 <property id="nulls" label="NULLs" type="boolean" defaultValue="TRUE"/>
             </propertyGroup>
         </generator>
 
         <generator
-            id="randomBooleanGenerator"
-            label="Random Boolean"
+            id="booleanRandomGenerator"
+            label="Random"
             description="Random boolean values"
-            class="org.jkiss.dbeaver.ext.mockdata.generator.RandomBooleanGenerator">
+            class="org.jkiss.dbeaver.ext.mockdata.generator.BooleanRandomGenerator">
             <type kind="BOOLEAN"/>
 
             <propertyGroup label="General">
+                <property id="nulls" label="NULLs" type="boolean" defaultValue="TRUE" description="Allow NULL values"/>
+            </propertyGroup>
+        </generator>
+
+        <generator
+            id="booleanSequenceGenerator"
+            label="Sequence"
+            description="Adjustable sequence of boolean values"
+            class="org.jkiss.dbeaver.ext.mockdata.generator.BooleanSequenceGenerator">
+            <type kind="BOOLEAN"/>
+
+            <propertyGroup label="General">
+                <property id="initial" label="Initial" type="boolean" defaultValue="TRUE"/>
+                <property id="order" label="Order" type="string" defaultValue="CONSTANT" validValues="ALTERNATELY,CONSTANT"/>
                 <property id="nulls" label="NULLs" type="boolean" defaultValue="TRUE" description="Allow NULL values"/>
             </propertyGroup>
         </generator>
