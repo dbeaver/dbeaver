@@ -259,7 +259,7 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
     }
 
     private void selectGenerator(DBSAttributeBase attribute, String generatorName) {
-        MockGeneratorDescriptor generatorForName = mockDataSettings.findGeneratorForName(generatorName);
+        MockGeneratorDescriptor generatorForName = mockDataSettings.findGeneratorForName(attribute, generatorName);
         saveGeneratorProperties();
         reloadProperties(attribute, generatorForName.getId());
         columnsTableViewer.refresh(true, true);
