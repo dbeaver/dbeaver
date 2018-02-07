@@ -96,10 +96,11 @@ public class MockDataSettings {
         return generatorDescriptors.get(generatorId);
     }
 
-    public MockGeneratorDescriptor findGeneratorForName(String name) {
-        for (String generatorId : generatorDescriptors.keySet()) {
+    public MockGeneratorDescriptor findGeneratorForName(DBSAttributeBase attribute, String generatorName) {
+        AttributeGeneratorProperties attributeGeneratorProperties = attributeGenerators.get(attribute.getName());
+        for (String generatorId : attributeGeneratorProperties.getGenerators()) {
             MockGeneratorDescriptor generatorDescriptor = generatorDescriptors.get(generatorId);
-            if (name.equals(generatorDescriptor.getLabel())) {
+            if (generatorName.equals(generatorDescriptor.getLabel())) {
                 return generatorDescriptor;
             }
         }

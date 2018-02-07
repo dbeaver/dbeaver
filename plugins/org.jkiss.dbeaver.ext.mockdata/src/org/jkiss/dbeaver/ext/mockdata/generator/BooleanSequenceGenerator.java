@@ -18,34 +18,34 @@
 package org.jkiss.dbeaver.ext.mockdata.generator;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.Map;
 
-/**
- * Simple string generator (lorem ipsum)
- */
-public class SimpleStringGenerator extends AbstractMockValueGenerator {
+public class BooleanSequenceGenerator extends AbstractMockValueGenerator {
 
-    private String templateString;
+    private boolean value;
+
+    private enum ORDER {
+        ALTERNATELY, CONSTANT
+    }
+    private ORDER order;
 
     @Override
     public void init(DBSDataManipulator container, DBSAttributeBase attribute, Map<Object, Object> properties) throws DBException {
         super.init(container, attribute, properties);
 
-        templateString = CommonUtils.toString(properties.get("template")); //$NON-NLS-1$
-        if (templateString == null) {
-            throw new DBCException("Empty template string for simple string generator");
+        String o = (String) properties.get("order"); //$NON-NLS-1$
+        if (o != null) {
+            this.order = ORDER.valueOf(o);
         }
-    }
 
-    @Override
-    public void nextRow() {
-
+        Boolean initial = (Boolean) properties.get("initial"); //$NON-NLS-1$
+        if (initial != null) {
+            this.value = !initial; // tricky
+        }
     }
 
     @Override
@@ -53,21 +53,16 @@ public class SimpleStringGenerator extends AbstractMockValueGenerator {
         if (isGenerateNULL()) {
             return null;
         } else {
-            int length = (int) Math.min(10000, attribute.getMaxLength());
-            int tplLength = templateString.length();
-            int start = random.nextInt(tplLength);
-            if (start + length < tplLength) {
-                return templateString.substring(start, start + length);
-            } else {
-                StringBuilder sb = new StringBuilder();
-                sb.append(templateString.substring(start));
-                int newlength = length - (tplLength - start);
-                for (int i = 0; i < newlength / tplLength; i++) {
-                    sb.append(templateString);
+            switch (order) {
+                case CONSTANT:    {
+                    return value;
                 }
-                sb.append(templateString.substring(0, newlength % tplLength));
-                return sb.toString();
+                case ALTERNATELY: {
+                    value = !value;
+                    return value;
+                }
             }
         }
+        return null;
     }
 }
