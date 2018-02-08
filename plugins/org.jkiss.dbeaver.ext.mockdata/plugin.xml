@@ -103,6 +103,22 @@
         </generator>
 
         <generator
+                id="dateSequenceGenerator"
+                label="Sequence"
+                description="Random date values"
+                class="org.jkiss.dbeaver.ext.mockdata.generator.DateSequenceGenerator">
+            <type kind="DATETIME"/>
+
+            <propertyGroup label="General">
+                <property id="startDate" label="Start date" type="string" description="Date range start (DD-MM-YYYY). Default is today."/>
+                <property id="step" label="Increment step" type="integer" defaultValue="1" description="Sequence increment step in days"/>
+                <property id="reverse" label="Reverse order" type="boolean" defaultValue="FALSE" description="Reverse the sequence order"/>
+
+                <property id="nulls" label="NULLs" type="boolean" defaultValue="TRUE"/>
+            </propertyGroup>
+        </generator>
+
+        <generator
             id="booleanRandomGenerator"
             label="Random"
             description="Random boolean values"

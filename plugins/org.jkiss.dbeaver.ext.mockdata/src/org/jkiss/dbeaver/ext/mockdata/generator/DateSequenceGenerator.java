@@ -28,19 +28,17 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
 
-public class DateRandomGenerator extends AbstractMockValueGenerator {
+public class DateSequenceGenerator extends AbstractMockValueGenerator {
 
-    private static final Log log = Log.getLog(DateRandomGenerator.class);
+    private static final Log log = Log.getLog(DateSequenceGenerator.class);
 
     private static SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("dd-MM-yyyy"); //$NON-NLS-1$
 
-    public static final long DEFAULT_START_DATE = -946771200000L; // January 1, 1940
-    public static final long DAY_RANGE          = 24 * 60 * 60 * 1000; // 1 day
-    public static final long YEAR_RANGE         = 365 * DAY_RANGE; // 1 years
-    public static final long DEFAULT_RANGE      = 100L * YEAR_RANGE; // 100 years
+    public static final long DAY_RANGE = 24 * 60 * 60 * 1000; // 1 day
 
     private long startDate = Long.MAX_VALUE;
-    private long endDate = Long.MAX_VALUE;
+    private boolean reverse = false;
+    private long step = DAY_RANGE; // in ms
 
     @Override
     public void init(DBSDataManipulator container, DBSAttributeBase attribute, Map<Object, Object> properties) throws DBException {
@@ -55,23 +53,19 @@ public class DateRandomGenerator extends AbstractMockValueGenerator {
             }
         }
 
-        String toDate = (String) properties.get("endDate"); //$NON-NLS-1$
-        if (toDate != null) {
-            try {
-                this.endDate = DATE_FORMAT.parse(toDate).getTime();
-            } catch (ParseException e) {
-                log.error("Error parse End Date '" + toDate + "'.", e);
-            }
+        // default is today
+        if (startDate == Long.MAX_VALUE) {
+            startDate = new Date().getTime();
         }
 
-        if (startDate != Long.MAX_VALUE && endDate != Long.MAX_VALUE && (startDate > endDate)) { // swap start & end
-            long l = startDate;
-            startDate = endDate;
-            endDate = l;
+        Integer step = (Integer) properties.get("step"); //$NON-NLS-1$
+        if (step != null) {
+            this.step = step * DAY_RANGE;
         }
 
-        if (endDate != Long.MAX_VALUE) {
-            endDate += DAY_RANGE - 1; // include whole the day
+        Boolean reverse = (Boolean) properties.get("reverse"); //$NON-NLS-1$
+        if (reverse != null) {
+            this.reverse = reverse;
         }
     }
 
@@ -80,18 +74,14 @@ public class DateRandomGenerator extends AbstractMockValueGenerator {
         if (isGenerateNULL()) {
             return null;
         } else {
-            if (startDate != Long.MAX_VALUE && endDate != Long.MAX_VALUE) {
-                return new Date(
-                        startDate + (Math.abs(random.nextLong()) % (endDate - startDate)));
-            } else if (startDate != Long.MAX_VALUE) {
-                return new Date(
-                        startDate + (Math.abs(random.nextLong()) % DEFAULT_RANGE));
-            } else if (endDate != Long.MAX_VALUE) {
-                return new Date(
-                        (endDate - DEFAULT_RANGE) + (Math.abs(random.nextLong()) % DEFAULT_RANGE));
+            long value = this.startDate;
+            if (reverse) {
+                startDate -= step;
+            } else {
+                startDate += step;
             }
-            return new Date(
-                    DEFAULT_START_DATE + (Math.abs(random.nextLong()) % DEFAULT_RANGE));
+
+            return new Date(value);
         }
     }
 }
