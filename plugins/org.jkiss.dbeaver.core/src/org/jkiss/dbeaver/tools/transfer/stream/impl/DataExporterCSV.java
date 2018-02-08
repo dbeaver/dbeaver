@@ -18,10 +18,12 @@ package org.jkiss.dbeaver.tools.transfer.stream.impl;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
@@ -45,6 +47,8 @@ public class DataExporterCSV extends StreamExporterAbstract {
     private static final String PROP_QUOTE_CHAR = "quoteChar";
     private static final String PROP_QUOTE_ALWAYS = "quoteAlways";
     private static final String PROP_NULL_STRING = "nullString";
+    private static final String PROP_FORMAT_NUMBERS = "formatNumbers";
+
     private static final char DEF_DELIMITER = ',';
     private static final String DEF_QUOTE_CHAR = "\"";
 
@@ -102,6 +106,14 @@ public class DataExporterCSV extends StreamExporterAbstract {
     {
         out = null;
         super.dispose();
+    }
+
+    @Override
+    protected DBDDisplayFormat getValueExportFormat(DBDAttributeBinding column) {
+        if (column.getDataKind() == DBPDataKind.NUMERIC && !Boolean.TRUE.equals(getSite().getProperties().get(PROP_FORMAT_NUMBERS))) {
+            return DBDDisplayFormat.NATIVE;
+        }
+        return super.getValueExportFormat(column);
     }
 
     @Override
