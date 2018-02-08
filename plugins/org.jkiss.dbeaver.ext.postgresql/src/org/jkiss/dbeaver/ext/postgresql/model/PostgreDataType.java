@@ -556,7 +556,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         }
 
         int valueType;
-        if (ArrayUtils.contains(OID_TYPES, name) || name.equals("hstore")) {
+        if (ArrayUtils.contains(OID_TYPES, name) || name.equals(PostgreConstants.TYPE_HSTORE)) {
             valueType = Types.VARCHAR;
         } else {
             if (typeCategory == null) {
