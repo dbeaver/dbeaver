@@ -28,8 +28,8 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -97,7 +97,11 @@ public abstract class PostgreTableConstraintBase extends JDBCTableConstraint<Pos
                 throw new DBException(e, getDataSource());
             }
         }
-        return constrDDL;
+        if (CommonUtils.getOption(options, DBPScriptObject.OPTION_EMBEDDED_SOURCE)) {
+            return constrDDL;
+        } else {
+            return "ALTER TABLE " + getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " CREATE " + constrDDL;
+        }
     }
 
 }
