@@ -3499,6 +3499,7 @@
                     <property id="quoteChar" label="%dataTransfer.processor.csv.property.quoteChar.name" type="string" description="%dataTransfer.processor.csv.property.quoteChar.description" defaultValue="&quot;" required="false"/>
                     <property id="quoteAlways" label="%dataTransfer.processor.csv.property.quoteAlways.name" type="boolean" description="%dataTransfer.processor.csv.property.quoteAlways.description" defaultValue="false" required="false"/>
                     <property id="nullString" label="%dataTransfer.processor.csv.property.nullString.name" type="string" description="%dataTransfer.processor.csv.property.nullString.description" defaultValue="" required="false"/>
+                    <property id="formatNumbers" label="%dataTransfer.processor.csv.property.formatNumbers.name" type="boolean" description="%dataTransfer.processor.csv.property.formatNumbers.description" defaultValue="false" required="false"/>
                 </propertyGroup>
             </processor>
             <processor
