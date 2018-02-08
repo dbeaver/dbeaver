@@ -35,6 +35,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -490,6 +491,23 @@ public class SQLEditor extends SQLEditorBase implements
 
         // Update controls
         DBeaverUI.asyncExec(this::onDataSourceChange);
+    }
+
+    /**
+     * Sets focus in current editor.
+     * This function is called on drag-n-drop and some other operations
+     * @return
+     */
+    @Override
+    public boolean validateEditorInputState() {
+        boolean res = super.validateEditorInputState();
+        if (res) {
+            StyledText textWidget = getViewer().getTextWidget();
+            if (textWidget != null && !textWidget.isDisposed()) {
+                textWidget.setFocus();
+            }
+        }
+        return res;
     }
 
     private void createResultTabs()

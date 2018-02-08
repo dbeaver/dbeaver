@@ -174,7 +174,7 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                 DBSDataManipulator.ExecuteBatch batch = null;
                 for (int q = 0; q < quotient; q++) {
                     try {
-                        for (int i = 0; i < BATCH_SIZE; i++) {
+                        for (int i = 0; (i < BATCH_SIZE && counter < rowsNumber); i++) {
                             List<DBDAttributeValue> attributeValues = new ArrayList<>();
                             for (DBSAttributeBase attribute : attributes) {
                                 MockValueGenerator generator = generators.get(attribute.getName());
