@@ -347,6 +347,11 @@
         <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreEnumValueManager" id="org.jkiss.dbeaver.ext.postgresql.edit.PostgreEnumValueManager">
             <supports dataSource="postgresql" extension="E"/>
         </manager>
+<!--
+        <manager class="org.jkiss.dbeaver.ui.data.managers.StructValueManager" id="org.jkiss.dbeaver.ext.postgresql.edit.PostgreHStoreValueManager">
+            <supports dataSource="postgresql" typeName="hstore"/>
+        </manager>
+-->
     </extension>
 
     <extension point="org.jkiss.dbeaver.networkHandler">
