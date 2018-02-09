@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.debug.DBGSessionInfo;
 import org.jkiss.dbeaver.debug.DBGStackFrame;
 import org.jkiss.dbeaver.debug.DBGVariable;
 import org.jkiss.dbeaver.debug.core.DebugCore;
+import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -74,7 +75,13 @@ public class PostgreDebugSession extends DBGBaseSession {
     
     private PostgreDebugAttachKind attachKind = PostgreDebugAttachKind.UNKNOWN;
     
-    private Statement localStatement; 
+    private Statement localStatement;
+    
+    private Job job;
+    
+    private Connection executionTarget;
+    
+    private PostgreDebugBreakpointDescriptor bpGlobal;
     
     private static final int LOCAL_WAIT = 500; //0.5 sec
     
@@ -233,26 +240,23 @@ public class PostgreDebugSession extends DBGBaseSession {
     }
     
     protected void runProc(Connection connection,String commandSQL, String name) throws DBGException {
-        
-        
-        Job job = new Job(name) {
-            
+        job = new Job(name) {
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 try {
                     try (final Statement stmt = connection.createStatement()) {
                         localStatement = stmt;                          
                         stmt.execute(commandSQL);
-                        stmt.close();
-                        connection.close();
                         //And Now His Watch Is Ended
-                        fireEvent(new DBGEvent(this, DBGEvent.TERMINATE, DBGEvent.MODEL_SPECIFIC));
-                        
+                        fireEvent(new DBGEvent(this, DBGEvent.RESUME, DBGEvent.STEP_RETURN));
                     }
                 } catch (SQLException e) {
-                    log.error(name, e);
-                    return DebugCore.newErrorStatus(name, e);
-                    
+                    fireEvent(new DBGEvent(this, DBGEvent.TERMINATE, DBGEvent.CLIENT_REQUEST));
+                    String sqlState = e.getSQLState();
+                    if (!PostgreConstants.EC_QUERY_CANCELED.equals(sqlState)) {
+                        log.error(name, e);
+                        return DebugCore.newErrorStatus(name, e);
+                    }
                 }
                 return Status.OK_STATUS;
             }
@@ -263,7 +267,7 @@ public class PostgreDebugSession extends DBGBaseSession {
         
     private void attachLocal(int OID,String call) throws DBGException {
         
-        Connection executionTarget = createExecutionTarget();
+        executionTarget = createExecutionTarget();
          
         createSlot(executionTarget, OID);
         
@@ -303,8 +307,8 @@ public class PostgreDebugSession extends DBGBaseSession {
 
         PostgreDebugBreakpointProperties properties = new PostgreDebugBreakpointProperties(true);
         PostgreDebugObjectDescriptor obj = new PostgreDebugObjectDescriptor(OID,"ENTRY","SESSION","THIS","PG"); 
-        PostgreDebugBreakpointDescriptor bp = new PostgreDebugBreakpointDescriptor(obj, properties);
-        addBreakpoint(bp);
+        bpGlobal = new PostgreDebugBreakpointDescriptor(obj, properties);
+        addBreakpoint(bpGlobal);
         
         String sessionParam = String.valueOf(getSessionId());
         String taskName = sessionParam + " global attached to " + String.valueOf(targetId);
@@ -349,6 +353,51 @@ public class PostgreDebugSession extends DBGBaseSession {
 
 
     }
+    
+    private void detachLocal() throws DBGException {
+        if (!isWaiting()) {
+            try (Statement stmt = getConnection().createStatement()) {
+                String sqlCommand = composeAbortCommand();
+                stmt.execute(sqlCommand);                        
+            } catch (SQLException e) {                       
+                log.error("Unable to abort target", e);
+            }
+        }
+        if (job != null) {
+            job.cancel();
+            job = null;
+        }
+        if (executionTarget != null) {
+            try {
+                executionTarget.close();
+            } catch (SQLException e) {
+                log.error("Unable to close target session", e);
+            }
+        }
+    }
+    
+  private void detachGlobal() throws DBGException {
+        if (!isWaiting() && !isDone()) {
+            try (Statement stmt = getConnection().createStatement()) {
+                String sql = SQL_CONTINUE.replaceAll("\\?sessionid", String.valueOf(sessionId));
+                stmt.execute(sql);                        
+            } catch (SQLException e) {                       
+                log.error("Unable to abort target", e);
+            }
+            
+        }
+        removeBreakpoint(bpGlobal);
+    }
+    
+    protected void doDetach() throws DBGException {
+        switch (attachKind) {
+        case GLOBAL:
+            detachGlobal();
+        case LOCAL:
+            detachLocal();
+        default:
+        }
+    }
 
     @Override
     public DBGSessionInfo getSessionInfo() {
@@ -384,7 +433,6 @@ public class PostgreDebugSession extends DBGBaseSession {
     @Override
     public void execStepInto() throws DBGException {
         execStep(SQL_STEP_INTO, " step into for ", DBGEvent.STEP_INTO);
-
     }
 
     @Override
@@ -653,9 +701,10 @@ public class PostgreDebugSession extends DBGBaseSession {
                 return true;
             }
             return false;
+
         case LOCAL:
-            
             return sessionId > 0;
+
         default:
             return false;
         }    
