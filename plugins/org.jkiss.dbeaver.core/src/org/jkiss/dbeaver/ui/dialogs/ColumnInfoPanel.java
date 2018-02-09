@@ -44,6 +44,8 @@ import java.util.List;
  */
 public class ColumnInfoPanel extends Composite {
 
+    private PropertyTreeViewer propViewer;
+
     public ColumnInfoPanel(Composite parent, int style, IValueController valueController) {
         super(parent, style);
         if (valueController instanceof IAttributeController) {
@@ -68,9 +70,14 @@ public class ColumnInfoPanel extends Composite {
 
         this.setLayout(new FillLayout());
         {
-            PropertyTreeViewer propViewer = new PropertyTreeViewer(this, SWT.H_SCROLL | SWT.V_SCROLL);
+            propViewer = new PropertyTreeViewer(this, SWT.H_SCROLL | SWT.V_SCROLL);
             propViewer.loadProperties(infoItem);
         }
+    }
+
+    public void layoutProperties() {
+        getParent().layout();
+        propViewer.repackColumns();
     }
 
     public static class KeyColumnValue implements DBPNamedObject {

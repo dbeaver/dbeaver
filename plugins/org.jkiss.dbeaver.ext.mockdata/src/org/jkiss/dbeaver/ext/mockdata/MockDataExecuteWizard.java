@@ -23,10 +23,9 @@ import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.mockdata.generator.SimpleStringGenerator;
 import org.jkiss.dbeaver.ext.mockdata.model.MockGeneratorDescriptor;
-import org.jkiss.dbeaver.ext.mockdata.model.MockGeneratorRegistry;
 import org.jkiss.dbeaver.ext.mockdata.model.MockValueGenerator;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPClientHome;
 import org.jkiss.dbeaver.model.data.DBDAttributeValue;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -38,10 +37,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractToolWizard;
 
-import java.io.IOException;
 import java.util.*;
 
 public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulator, DBSDataManipulator> implements IImportWizard{
@@ -63,7 +60,7 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         setWindowTitle(task);
         setNeedsProgressMonitor(true);
-        settingsPage = new MockDataWizardPageSettings(this, mockDataSettings);
+        settingsPage = new MockDataWizardPageSettings(mockDataSettings);
     }
 
     @Override
@@ -93,12 +90,11 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
         return getDatabaseObjects();
     }
 
-    protected List<String> getCommandLine(DBSDataManipulator jdbcTable) throws IOException {
+    protected List<String> getCommandLine(DBSDataManipulator jdbcTable) {
         return null;
     }
 
-    public void fillProcessParameters(List<String> cmd, DBSDataManipulator jdbcTable) throws IOException {
-
+    public void fillProcessParameters(List<String> cmd, DBSDataManipulator jdbcTable) {
     }
 
     @Override
@@ -149,22 +145,21 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                 DBCStatistics insertStats = new DBCStatistics();
 
                 // build and init the generators
-                DBSEntity dbsEntity = (DBSEntity) dataManipulator;
-                MockGeneratorRegistry generatorRegistry = MockGeneratorRegistry.getInstance();
-                Collection<? extends DBSEntityAttribute> attributes = dbsEntity.getAttributes(monitor);
                 generators.clear();
-                for (DBSEntityAttribute attribute : attributes) {
-                    MockGeneratorDescriptor generatorDescriptor = generatorRegistry.findGenerator(dbsEntity.getDataSource(), attribute);
-                    MockValueGenerator generator = generatorDescriptor.createGenerator();
+                DBSEntity dbsEntity = (DBSEntity) dataManipulator;
+                Collection<? extends DBSAttributeBase> attributes = DBUtils.getRealAttributes(dbsEntity.getAttributes(monitor));
+                for (DBSAttributeBase attribute : attributes) {
+                    MockGeneratorDescriptor generatorDescriptor = mockDataSettings.getGeneratorDescriptor(mockDataSettings.getAttributeGeneratorProperties(attribute).getSelectedGeneratorId());
+                    if (generatorDescriptor != null) {
+                        MockValueGenerator generator = generatorDescriptor.createGenerator();
 
-                    HashMap<String, Object> properties = new HashMap<>();
-                    Map<Object, Object> generatorProperties = this.mockDataSettings.getGeneratorProperties(attribute.getName());
-                    if (generator instanceof SimpleStringGenerator) {
-                        properties.put("template", generatorProperties.get("template")); //$NON-NLS-1$
+                        MockDataSettings.AttributeGeneratorProperties generatorPropertySource = this.mockDataSettings.getAttributeGeneratorProperties(attribute);
+                        String selectedGenerator = generatorPropertySource.getSelectedGeneratorId();
+                        Map<Object, Object> generatorProperties =
+                                generatorPropertySource.getGeneratorPropertySource(selectedGenerator).getPropertiesWithDefaults();
+                        generator.init(dataManipulator, attribute, generatorProperties);
+                        generators.put(attribute.getName(), generator);
                     }
-                    properties.put("nulls", (!attribute.isRequired() && ((Boolean) generatorProperties.get("nulls")))); //$NON-NLS-1$
-                    generator.init(dataManipulator, properties);
-                    generators.put(attribute.getName(), generator);
                 }
 
                 long rowsNumber = mockDataSettings.getRowsNumber();
@@ -179,12 +174,15 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                 DBSDataManipulator.ExecuteBatch batch = null;
                 for (int q = 0; q < quotient; q++) {
                     try {
-                        for (int i = 0; i < BATCH_SIZE; i++) {
+                        for (int i = 0; (i < BATCH_SIZE && counter < rowsNumber); i++) {
                             List<DBDAttributeValue> attributeValues = new ArrayList<>();
-                            for (DBSEntityAttribute attribute : attributes) {
+                            for (DBSAttributeBase attribute : attributes) {
                                 MockValueGenerator generator = generators.get(attribute.getName());
-                                Object value = generator.generateValue(attribute);
-                                attributeValues.add(new DBDAttributeValue(attribute, value));
+                                if (generator != null) {
+                                    //((AbstractMockValueGenerator) generator).checkUnique(monitor);
+                                    Object value = generator.generateValue(monitor);
+                                    attributeValues.add(new DBDAttributeValue(attribute, value));
+                                }
                             }
 
                             if (batch == null) {

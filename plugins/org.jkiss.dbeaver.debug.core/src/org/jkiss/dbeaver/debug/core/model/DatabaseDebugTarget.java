@@ -23,6 +23,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.resources.IMarkerDelta;
+import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -39,16 +40,21 @@ import org.eclipse.debug.core.model.IMemoryBlock;
 import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.debug.core.model.IThread;
 import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.debug.DBGBreakpointDescriptor;
 import org.jkiss.dbeaver.debug.DBGController;
 import org.jkiss.dbeaver.debug.DBGEvent;
 import org.jkiss.dbeaver.debug.DBGEventHandler;
 import org.jkiss.dbeaver.debug.DBGException;
+import org.jkiss.dbeaver.debug.DBGFinder;
 import org.jkiss.dbeaver.debug.DBGStackFrame;
 import org.jkiss.dbeaver.debug.DBGVariable;
 import org.jkiss.dbeaver.debug.core.DebugCore;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 public abstract class DatabaseDebugTarget extends DatabaseDebugElement implements IDatabaseDebugTarget, DBGEventHandler {
 
@@ -468,6 +474,16 @@ public abstract class DatabaseDebugTarget extends DatabaseDebugElement implement
         DBGController controller = getController();
         String source = controller.getSource(sessionKey, stack);
         return source;
+    }
+
+    public DBSObject findDatabaseObject(Object sourceIdentifier, DBRProgressMonitor monitor) throws DBException {
+        DBPDataSourceContainer dataSourceContainer = controller.getDataSourceContainer();
+        DBGFinder finder = Adapters.adapt(dataSourceContainer, DBGFinder.class);
+        if (finder == null) {
+            return null;
+        }
+        Map<String, Object> context = controller.getDebugConfiguration();
+        return finder.findObject(context , sourceIdentifier, monitor);
     }
 
 }

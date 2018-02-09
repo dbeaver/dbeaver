@@ -249,9 +249,11 @@ public class GenericMetaModel {
                         case DatabaseMetaData.procedureResultUnknown: procedureType = DBSProcedureType.PROCEDURE; break;
                         default: procedureType = DBSProcedureType.UNKNOWN; break;
                     }
-                    if (specificName == null && procedureName.indexOf(';') != -1) {
+                    if (procedureName.indexOf(';') != -1) {
                         // [JDBC: SQL Server native driver]
-                        specificName = procedureName;
+                        if (CommonUtils.isEmpty(specificName)) {
+                            specificName = procedureName;
+                        }
                         procedureName = procedureName.substring(0, procedureName.lastIndexOf(';'));
                     }
                     // Check for packages. Oracle (and may be some other databases) uses catalog name as storage for package name

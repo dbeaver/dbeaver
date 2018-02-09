@@ -208,12 +208,12 @@ public class SQLRuleManager extends RuleBasedScanner {
 
         {
             // Add rules for delimited identifiers and string literals.
-            //char escapeChar = syntaxManager.getEscapeChar();
+            char escapeChar = syntaxManager.getEscapeChar();
             String[][] quoteStrings = syntaxManager.getQuoteStrings();
             boolean hasSingleQuoteRule = false, hasDoubleQuoteRule = false;
             if (!ArrayUtils.isEmpty(quoteStrings)) {
                 for (int i = 0; i < quoteStrings.length; i++) {
-                    rules.add(new SingleLineRule(quoteStrings[i][0], quoteStrings[i][1], quotedToken, '\\'));
+                    rules.add(new SingleLineRule(quoteStrings[i][0], quoteStrings[i][1], quotedToken, escapeChar));
                     if (quoteStrings[i][0].equals(SQLConstants.STR_QUOTE_SINGLE) && quoteStrings[i][0].equals(quoteStrings[i][1])) {
                         hasSingleQuoteRule = true;
                     } else if (quoteStrings[i][1].equals(SQLConstants.STR_QUOTE_DOUBLE) && quoteStrings[i][0].equals(quoteStrings[i][1])) {
@@ -222,10 +222,10 @@ public class SQLRuleManager extends RuleBasedScanner {
                 }
             }
             if (!hasSingleQuoteRule) {
-                rules.add(new MultiLineRule(SQLConstants.STR_QUOTE_SINGLE, SQLConstants.STR_QUOTE_SINGLE, stringToken, '\\'));
+                rules.add(new MultiLineRule(SQLConstants.STR_QUOTE_SINGLE, SQLConstants.STR_QUOTE_SINGLE, stringToken, escapeChar));
             }
             if (!hasDoubleQuoteRule) {
-                rules.add(new MultiLineRule(SQLConstants.STR_QUOTE_DOUBLE, SQLConstants.STR_QUOTE_DOUBLE, quotedToken, '\\'));
+                rules.add(new MultiLineRule(SQLConstants.STR_QUOTE_DOUBLE, SQLConstants.STR_QUOTE_DOUBLE, quotedToken, escapeChar));
             }
         }
 

@@ -19,8 +19,8 @@ package org.jkiss.dbeaver.ext.oracle.model;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
-import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleStatefulObject;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectLazy;
 
@@ -51,34 +50,41 @@ public class OracleUtils {
     public static String getDDL(
         DBRProgressMonitor monitor,
         String objectType,
-        DBSEntity object,
+        OracleTableBase object,
         OracleDDLFormat ddlFormat,
         Map<String, Object> options) throws DBException
     {
         String objectFullName = DBUtils.getObjectFullName(object, DBPEvaluationContext.DDL);
-        OracleSchema schema = null;
+
+        OracleSchema schema = object.getContainer();
+/*
         if (object instanceof OracleSchemaObject) {
             schema = ((OracleSchemaObject)object).getSchema();
         } else if (object instanceof OracleTableBase) {
             schema = ((OracleTableBase)object).getContainer();
         }
-        final OracleDataSource dataSource = (OracleDataSource) object.getDataSource();
+*/
+        final OracleDataSource dataSource = object.getDataSource();
 
         monitor.beginTask("Load sources for " + objectType + " '" + objectFullName + "'...", 1);
         try (final JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Load source code for " + objectType + " '" + objectFullName + "'")) {
             if (dataSource.isAtLeastV9()) {
-                JDBCUtils.executeProcedure(
-                    session,
-                    "begin DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'SQLTERMINATOR',true); end;");
-                JDBCUtils.executeProcedure(
-                    session,
-                    "begin DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'STORAGE'," + ddlFormat.isShowStorage() + "); end;");
-                JDBCUtils.executeProcedure(
-                    session,
-                    "begin DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'TABLESPACE'," + ddlFormat.isShowTablespace() + ");  end;");
-                JDBCUtils.executeProcedure(
-                    session,
-                    "begin DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'SEGMENT_ATTRIBUTES'," + ddlFormat.isShowSegments() + ");  end;");
+                try {
+                    JDBCUtils.executeProcedure(
+                        session,
+                        "begin DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'SQLTERMINATOR',true); end;");
+                    JDBCUtils.executeProcedure(
+                        session,
+                        "begin DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'STORAGE'," + ddlFormat.isShowStorage() + "); end;");
+                    JDBCUtils.executeProcedure(
+                        session,
+                        "begin DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'TABLESPACE'," + ddlFormat.isShowTablespace() + ");  end;");
+                    JDBCUtils.executeProcedure(
+                        session,
+                        "begin DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'SEGMENT_ATTRIBUTES'," + ddlFormat.isShowSegments() + ");  end;");
+                } catch (SQLException e) {
+                    log.error("Can't apply DDL transform parameters", e);
+                }
             }
 
             String ddl;
@@ -118,7 +124,7 @@ public class OracleUtils {
             return ddl;
 
         } catch (SQLException e) {
-            if (object instanceof OracleTableBase) {
+            if (object instanceof OracleTablePhysical) {
                 log.error("Error generating Oracle DDL. Generate default.", e);
                 return JDBCUtils.generateTableDDL(monitor, (OracleTableBase)object, options, true);
             } else {

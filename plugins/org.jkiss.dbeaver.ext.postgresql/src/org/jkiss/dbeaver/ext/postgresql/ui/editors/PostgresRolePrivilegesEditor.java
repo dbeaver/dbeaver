@@ -163,7 +163,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
             });
 
             for (PostgrePrivilegeType pt : PostgrePrivilegeType.values()) {
-                if (!pt.isValid()) {
+                if (!pt.isValid() || !pt.getTargetType().isAssignableFrom(getDatabaseObject().getClass())) {
                     continue;
                 }
                 TableItem privItem = new TableItem(permissionTable, SWT.LEFT);

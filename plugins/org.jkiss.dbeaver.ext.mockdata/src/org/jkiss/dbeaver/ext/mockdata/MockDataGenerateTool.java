@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.mockdata;
 
 import org.eclipse.jface.wizard.IWizardPage;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
@@ -51,7 +52,7 @@ public class MockDataGenerateTool implements IExternalTool {
 
             @Override
             protected void finishPressed() {
-                if (doRemoveDataConfirmation()) {
+                if (doValidationConfirmation(getCurrentPage())) {
                     return;
                 }
                 super.finishPressed();
@@ -61,14 +62,20 @@ public class MockDataGenerateTool implements IExternalTool {
             protected void nextPressed() {
                 IWizardPage currentPage = getCurrentPage();
                 if (currentPage instanceof MockDataWizardPageSettings) {
-                    if (doRemoveDataConfirmation()) {
+                    if (doValidationConfirmation(currentPage)) {
                         return;
                     }
                 }
                 super.nextPressed();
             }
 
-            private boolean doRemoveDataConfirmation() {
+            private boolean doValidationConfirmation(IWizardPage currentPage) {
+                if (currentPage instanceof MockDataWizardPageSettings) {
+                    if (!((MockDataWizardPageSettings) currentPage).validateProperties()) {
+                        this.setErrorMessage("All numeric properties should be positive.");
+                        return true;
+                    }
+                }
                 if (mockDataSettings.isRemoveOldData() && !removeOldDataConfirmed) {
                     if (UIUtils.confirmAction(getShell(), MockDataMessages.tools_mockdata_wizard_title, MockDataMessages.tools_mockdata_confirm_delete_old_data_message)) {
                         removeOldDataConfirmed = true;
@@ -77,6 +84,11 @@ public class MockDataGenerateTool implements IExternalTool {
                     }
                 }
                 return false;
+            }
+
+            @Override
+            protected Point getInitialSize() {
+                return new Point(850, 550);
             }
         };
         dialog.open();

@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditForeignKeyPage;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -96,7 +97,9 @@ public class PostgreForeignKeyManager extends SQLForeignKeyManager<PostgreTableF
         PostgreTableForeignKey fk = command.getObject();
         if (fk.isPersisted()) {
             try {
-                String constrDDL = fk.getObjectDefinitionText(new VoidProgressMonitor(), DBPScriptObject.EMPTY_OPTIONS);
+                String constrDDL = fk.getObjectDefinitionText(
+                    new VoidProgressMonitor(),
+                    Collections.singletonMap(DBPScriptObject.OPTION_EMBEDDED_SOURCE, true));
                 if (!CommonUtils.isEmpty(constrDDL)) {
                     return new StringBuilder(constrDDL);
                 }

@@ -265,6 +265,8 @@ class MySQLExportWizard extends AbstractImportExportWizard<MySQLDatabaseExportIn
                         }
                     case VARIABLE_TIMESTAMP:
                         return RuntimeUtils.getCurrentTimeStamp();
+                    case VARIABLE_DATE:
+                        return RuntimeUtils.getCurrentDate();
                     default:
                         System.getProperty(name);
                 }

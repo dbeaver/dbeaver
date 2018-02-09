@@ -17,13 +17,13 @@
  */
 package org.jkiss.dbeaver.ext.mockdata.generator;
 
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-public class RandomBooleanGenerator extends AbstractMockValueGenerator {
+public class BooleanRandomGenerator extends AbstractMockValueGenerator {
 
     @Override
-    public Object generateValue(DBSAttributeBase attribute) throws DBCException {
+    public Object generateOneValue(DBRProgressMonitor monitor) throws DBException {
         if (isGenerateNULL()) {
             return null;
         } else {

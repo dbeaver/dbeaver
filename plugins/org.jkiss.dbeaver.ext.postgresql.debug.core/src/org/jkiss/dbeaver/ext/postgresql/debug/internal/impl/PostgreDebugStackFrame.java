@@ -40,13 +40,18 @@ public class PostgreDebugStackFrame implements DBGStackFrame {
     public int getLevel() {
         return level;
     }
+    
+    @Override
+    public Object getSourceIdentifier() {
+        return getOid();
+    }
 
     public int getOid() {
         return oid;
     }
 
     @Override
-    public int getLine() {
+    public int getLineNumber() {
         return lineNo;
     }
 

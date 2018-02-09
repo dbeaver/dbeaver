@@ -25,6 +25,7 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IEditorInput;
 import org.jkiss.dbeaver.debug.core.DebugCore;
 import org.jkiss.dbeaver.debug.ui.DatabaseDebugModelPresentation;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditorInput;
 
@@ -35,7 +36,12 @@ public class ProcedureDebugModelPresentation extends DatabaseDebugModelPresentat
     {
         if (element instanceof DBNDatabaseNode) {
             DBNDatabaseNode dbnNode = (DBNDatabaseNode) element;
-            return new EntityEditorInput(dbnNode);
+            EntityEditorInput editorInput = new EntityEditorInput(dbnNode);
+            editorInput.setAttribute(DBPScriptObject.OPTION_DEBUGGER_SOURCE, Boolean.TRUE);
+//FIXME:AF: how to retrieve it? probably org.jkiss.dbeaver.databaseor and EntityEditorsRegistry can help 
+//            String folderId = "postgresql.source.view";
+//            editorInput.setDefaultFolderId(folderId);
+            return editorInput;
         }
         return null;
     }
@@ -43,7 +49,7 @@ public class ProcedureDebugModelPresentation extends DatabaseDebugModelPresentat
     @Override
     public String getEditorId(IEditorInput input, Object element)
     {
-        //FIXME:AF: is there a constant anywhere? 
+//FIXME:AF: is there a constant anywhere? 
         return "org.jkiss.dbeaver.ui.editors.entity.EntityEditor";
     }
 
