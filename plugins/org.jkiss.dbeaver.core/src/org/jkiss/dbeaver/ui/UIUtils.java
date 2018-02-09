@@ -258,14 +258,17 @@ public class UIUtils {
                     return;
                 }
             }
+            final TreeColumn[] columns = tree.getColumns();
+            for (TreeColumn column : columns) {
+                column.pack();
+            }
+
             Rectangle clientArea = tree.getClientArea();
             if (clientArea.isEmpty()) {
                 return;
             }
             int totalWidth = 0;
-            final TreeColumn[] columns = tree.getColumns();
             for (TreeColumn column : columns) {
-                column.pack();
                 int colWidth = column.getWidth();
                 if (colWidth > clientArea.width) {
                     // Too wide column - make it a bit narrower

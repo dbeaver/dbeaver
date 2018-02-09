@@ -123,6 +123,12 @@ public interface SQLDialect {
     String getSearchStringEscape();
 
     /**
+     * Strings (in single or double quotes) escape character. Zero (i.e. no scape character) by default.
+     * Back slash in many dialects
+     */
+    char getStringEscapeCharacter();
+
+    /**
      * Catalog name usage in queries
      * @return catalog usage
      */

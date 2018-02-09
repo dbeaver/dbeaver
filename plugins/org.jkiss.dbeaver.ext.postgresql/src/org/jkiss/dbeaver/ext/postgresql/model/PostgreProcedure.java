@@ -256,25 +256,36 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException
     {
-        if (body == null) {
-            if (!isPersisted()) {
-                body = "CREATE OR REPLACE FUNCTION " + getFullQualifiedSignature() + GeneralUtils.getDefaultLineSeparator() +
+        if (CommonUtils.getOption(options, OPTION_DEBUGGER_SOURCE)) {
+            if (procSrc == null) {
+                try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read procedure body")) {
+                    procSrc = JDBCUtils.queryString(session, "SELECT prosrc FROM pg_proc where oid = ?", getObjectId());
+                } catch (SQLException e) {
+                    throw new DBException("Error reading procedure body", e);
+                }
+            }
+            return procSrc;
+        } else {
+            if (body == null) {
+                if (!isPersisted()) {
+                    body = "CREATE OR REPLACE FUNCTION " + getFullQualifiedSignature() + GeneralUtils.getDefaultLineSeparator() +
                         "RETURNS INT" + GeneralUtils.getDefaultLineSeparator() +
                         "LANGUAGE sql " + GeneralUtils.getDefaultLineSeparator() +
                         "AS $function$ " + GeneralUtils.getDefaultLineSeparator() + " $function$";
-            } else if (oid == 0 || isAggregate) {
-                // No OID so let's use old (bad) way
-                body = this.procSrc;
-            } else {
-                try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read procedure body")) {
-                    body = JDBCUtils.queryString(session, "SELECT pg_get_functiondef(" + getObjectId() + ")");
-                } catch (SQLException e) {
-                    if (!CommonUtils.isEmpty(this.procSrc)) {
-                        log.debug("Error reading procedure body", e);
-                        // At least we have it
-                        body = this.procSrc;
-                    } else {
-                        throw new DBException("Error reading procedure body", e);
+                } else if (oid == 0 || isAggregate) {
+                    // No OID so let's use old (bad) way
+                    body = this.procSrc;
+                } else {
+                    try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read procedure body")) {
+                        body = JDBCUtils.queryString(session, "SELECT pg_get_functiondef(" + getObjectId() + ")");
+                    } catch (SQLException e) {
+                        if (!CommonUtils.isEmpty(this.procSrc)) {
+                            log.debug("Error reading procedure body", e);
+                            // At least we have it
+                            body = this.procSrc;
+                        } else {
+                            throw new DBException("Error reading procedure body", e);
+                        }
                     }
                 }
             }
@@ -376,7 +387,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                 final PostgreSchema typeContainer = dataType.getParentObject();
                 if (typeContainer == null ||
                     typeContainer == getContainer() ||
-                    typeContainer.getName().equals(PostgreConstants.CATALOG_SCHEMA_NAME))
+                    typeContainer.isCatalogSchema())
                 {
                     paramsSignature.append(dataType.getName());
                 } else {
@@ -409,6 +420,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
         body = null;
+        procSrc = null;
         return this;
     }
 

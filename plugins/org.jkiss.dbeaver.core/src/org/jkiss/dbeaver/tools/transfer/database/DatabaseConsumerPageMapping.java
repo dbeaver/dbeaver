@@ -450,6 +450,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                     mappingTypes.add(mapping.getMappingType().name());
                 }
                 return new CustomComboBoxCellEditor(
+                    mappingViewer,
                     mappingViewer.getTree(),
                     mappingTypes.toArray(new String[mappingTypes.size()]),
                     SWT.DROP_DOWN | SWT.READ_ONLY);
@@ -538,6 +539,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
         }
         items.add(DatabaseMappingAttribute.TARGET_NAME_SKIP);
         CustomComboBoxCellEditor editor = new CustomComboBoxCellEditor(
+            mappingViewer,
             mappingViewer.getTree(),
             items.toArray(new String[items.size()]),
             SWT.DROP_DOWN | (allowsCreate ? SWT.NONE : SWT.READ_ONLY));

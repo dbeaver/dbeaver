@@ -21,12 +21,14 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.*;
+import org.eclipse.ui.part.MultiPageEditorSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -38,6 +40,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.IRefreshablePart;
+import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetContainer;
 import org.jkiss.dbeaver.ui.data.IStreamValueManager;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditorStandalone;
@@ -47,6 +51,7 @@ import org.jkiss.dbeaver.ui.data.registry.ValueManagerRegistry;
 import org.jkiss.dbeaver.ui.dialogs.ColumnInfoPanel;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.editors.MultiPageAbstractEditor;
+import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.io.File;
@@ -254,6 +259,19 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
                     editorInput.updateContentFromFile(monitor);
                     editorInput.getValueController().updateValue(editorInput.getValue(), true);
 
+                    // Activate owner editor and focus on cell corresponding to this content editor
+                    IWorkbenchPartSite parentEditorSite = editorInput.getValueController().getValueSite();
+                    IWorkbenchPart parentEditor;
+                    if (parentEditorSite instanceof MultiPageEditorSite) {
+                        parentEditor = ((MultiPageEditorSite) parentEditorSite).getMultiPageEditor();
+                        if (parentEditor instanceof EntityEditor) {
+                            ((EntityEditor) parentEditor).setActiveEditor(IResultSetContainer.class);
+                        }
+                    } else {
+                        parentEditor = parentEditorSite.getPart();
+                    }
+                    parentEditorSite.getWorkbenchWindow().getActivePage().activate(parentEditor);
+
                     // Close editor
                     closeValueEditor();
                 } catch (Exception e) {
@@ -406,13 +424,15 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
     @Override
     protected Composite createPageContainer(Composite parent)
     {
-        Composite panel = new Composite(parent, SWT.NONE);
+        SashForm panel = UIUtils.createPartDivider(this, parent, SWT.VERTICAL);
+/*
         GridLayout layout = new GridLayout(1, false);
         layout.marginHeight = 0;
         layout.marginWidth = 0;
         layout.verticalSpacing = 0;
         layout.horizontalSpacing = 0;
         panel.setLayout(layout);
+*/
         if (parent.getLayout() instanceof GridLayout) {
             panel.setLayoutData(new GridData(GridData.FILL_BOTH));
         }
@@ -424,30 +444,32 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.exclude = true;
             infoPanel.setLayoutData(gd);
-            infoPanel.setVisible(false);
         }
 
-        Composite editotPanel = new Composite(panel, SWT.NONE);
-        layout = new GridLayout(1, false);
+        Composite editorPanel = new Composite(panel, SWT.NONE);
+        GridLayout layout = new GridLayout(1, false);
         layout.marginHeight = 0;
         layout.marginWidth = 0;
         layout.verticalSpacing = 0;
         layout.horizontalSpacing = 0;
-        editotPanel.setLayout(layout);
-        editotPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
+        editorPanel.setLayout(layout);
+        editorPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        return editotPanel;
+        panel.setMaximizedControl(editorPanel);
+
+        return editorPanel;
     }
 
     void toggleInfoBar()
     {
-        boolean visible = infoPanel.isVisible();
-        visible = !visible;
-        GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-        gd.exclude = !visible;
-        infoPanel.setLayoutData(gd);
-        infoPanel.setVisible(visible);
-        infoPanel.getParent().layout();
+        SashForm sashForm = (SashForm) infoPanel.getParent();
+        boolean visible = sashForm.getMaximizedControl() == null;
+        if (visible) {
+            sashForm.setMaximizedControl(sashForm.getChildren()[1]);
+        } else {
+            sashForm.setMaximizedControl(null);
+            infoPanel.layoutProperties();
+        }
     }
 
     @Nullable

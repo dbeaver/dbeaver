@@ -45,12 +45,15 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.Base64;
 import org.jkiss.utils.IOUtils;
 
 import java.io.*;
-import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
@@ -65,6 +68,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
     public static final String VARIABLE_TABLE = "table";
     public static final String VARIABLE_TIMESTAMP = "timestamp";
+    public static final String VARIABLE_DATE = "date";
     public static final String VARIABLE_PROJECT = "project";
     public static final String VARIABLE_FILE = "file";
 
@@ -393,27 +397,25 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
     private String translatePattern(String pattern, final IProject project, final String tableName, final File targetFile)
     {
-        final String timeStamp = new SimpleDateFormat("yyyyMMddHHmm").format(new Date());
-        pattern = GeneralUtils.replaceVariables(pattern, new GeneralUtils.IVariableResolver() {
-            @Override
-            public String get(String name) {
-                switch (name) {
-                    case VARIABLE_TABLE:
-                        return tableName;
-                    case VARIABLE_TIMESTAMP:
-                        return timeStamp;
-                    case VARIABLE_PROJECT:
-                        return project == null ? "" : project.getName();
-                    case VARIABLE_FILE:
-                        return targetFile == null ? "" : targetFile.getAbsolutePath();
-                }
-                return null;
+        pattern = GeneralUtils.replaceVariables(pattern, name -> {
+            switch (name) {
+                case VARIABLE_TABLE:
+                    return tableName;
+                case VARIABLE_TIMESTAMP:
+                    return RuntimeUtils.getCurrentTimeStamp();
+                case VARIABLE_DATE:
+                    return RuntimeUtils.getCurrentDate();
+                case VARIABLE_PROJECT:
+                    return project == null ? "" : project.getName();
+                case VARIABLE_FILE:
+                    return targetFile == null ? "" : targetFile.getAbsolutePath();
             }
+            return null;
         });
         // Replace legacy patterns (without dollar prefix)
         return pattern
             .replace("{table}", tableName)
-            .replace("{timestamp}", timeStamp);
+            .replace("{timestamp}", RuntimeUtils.getCurrentTimeStamp());
     }
 
     private static String stripObjectName(String name)

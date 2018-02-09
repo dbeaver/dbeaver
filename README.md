@@ -1,5 +1,7 @@
 [![Build Status](https://travis-ci.org/dbeaver/dbeaver.svg?branch=devel)](https://travis-ci.org/dbeaver/dbeaver)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/93fcfdba7805406298b2e60c9d56f50e)](https://www.codacy.com/app/serge/dbeaver?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=dbeaver/dbeaver&amp;utm_campaign=Badge_Grade)
+[![Apache 2.0](https://img.shields.io/github/license/cronn-de/jira-sync.svg)](http://www.apache.org/licenses/LICENSE-2.0)
+<!--[![paypal](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=KFGAGZ24YZE3C)-->
 
 <img src="https://github.com/dbeaver/dbeaver/wiki/images/dbeaver-icon-64x64.png" align="right"/>
 
@@ -56,17 +58,16 @@ Binaries are in `product/standalone/target/products`
 - Visit https://dbeaver.jkiss.org or https://dbeaver.com for more information.
 - Thanks for using DBeaver! Star if you like it.
 
-## Help the Beaver!
+## Contribution: help the Beaver!
 
-Hooray, we have reached 3k of stars on GitGub and more than 500k of users!
+Hooray, we have reached 4k of stars on GitGub and continue to grow!
 That's really cool, we are glad that you like DBeaver.
-We receiving lots of tickets with bug reports and feature requests every day - and we going to resolve most of them.
-In order to be able to continue develop this project and do everything faster and better we decided to create <a href="https://dbeaver.com/download">DBeaver Enterprise Edition</a>.
 
-EE version includes all features of CE + NoSQL databases support + EE extensions + official online support. Also licensed users have priorities in bug fixes and new features development.
-
-If you need extra features or you want to support DBeaver - purchase EE version.  
+- We are actively looking for new source code contributors. We have added labels “Good first issue” and “Help wanted” to some tickets. If you want to be a part of our development team just be brave and take a ticket.
+- You can buy <a href="https://dbeaver.com/download">DBeaver EE</a> version. It includes all features of CE + NoSQL databases support + EE extensions + official online support. Also, licensed users have priorities in bug fixes and new features development.
 Those who read up to this point - you can use community discounts (check our <a href="https://github.com/dbeaver/dbeaver/wiki/Enterprise-Edition">WIKI</a>).
+- You can donate some money to us. This will let us to develop open-source version more actively, support production and testing environment (hosting), write better documentation, make better UIX, etc. Also, this will let us to move more EE features into CE version.  
+[![paypal](https://img.shields.io/badge/Donate-PayPal-green.svg)](https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=KFGAGZ24YZE3C)
 
 Save wild animals :) Thank you!  
 

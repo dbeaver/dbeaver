@@ -20,15 +20,11 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
-import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLConstraintManager;
-import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
@@ -37,7 +33,7 @@ import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.List;
+import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -97,7 +93,9 @@ public class PostgreConstraintManager extends SQLConstraintManager<PostgreTableC
         PostgreTableConstraintBase constr = command.getObject();
         if (constr.isPersisted()) {
             try {
-                String constrDDL = constr.getObjectDefinitionText(new VoidProgressMonitor(), DBPScriptObject.EMPTY_OPTIONS);
+                String constrDDL = constr.getObjectDefinitionText(
+                    new VoidProgressMonitor(),
+                    Collections.singletonMap(DBPScriptObject.OPTION_EMBEDDED_SOURCE, true));
                 if (!CommonUtils.isEmpty(constrDDL)) {
                     return new StringBuilder(constrDDL);
                 }
@@ -128,7 +126,7 @@ public class PostgreConstraintManager extends SQLConstraintManager<PostgreTableC
     @Override
     protected String getDropConstraintPattern(PostgreTableConstraintBase constraint)
     {
-        return "ALTER TABLE " + PATTERN_ITEM_TABLE +" DROP CONSTRAINT " + PATTERN_ITEM_CONSTRAINT; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+        return "ALTER TABLE " + PATTERN_ITEM_TABLE + " DROP CONSTRAINT " + PATTERN_ITEM_CONSTRAINT; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
     }
 
 }
