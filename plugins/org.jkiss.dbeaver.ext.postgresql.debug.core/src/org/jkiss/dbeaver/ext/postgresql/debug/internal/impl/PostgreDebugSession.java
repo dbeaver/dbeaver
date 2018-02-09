@@ -29,8 +29,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
-import javax.sql.rowset.spi.TransactionalWriter;
-
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -46,6 +44,7 @@ import org.jkiss.dbeaver.debug.DBGSessionInfo;
 import org.jkiss.dbeaver.debug.DBGStackFrame;
 import org.jkiss.dbeaver.debug.DBGVariable;
 import org.jkiss.dbeaver.debug.core.DebugCore;
+import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -241,26 +240,23 @@ public class PostgreDebugSession extends DBGBaseSession {
     }
     
     protected void runProc(Connection connection,String commandSQL, String name) throws DBGException {
-        
-        
         job = new Job(name) {
-            
             @Override
             protected IStatus run(IProgressMonitor monitor) {
                 try {
                     try (final Statement stmt = connection.createStatement()) {
                         localStatement = stmt;                          
                         stmt.execute(commandSQL);
-                        stmt.close();
-                        connection.close();
                         //And Now His Watch Is Ended
-                        fireEvent(new DBGEvent(this, DBGEvent.TERMINATE, DBGEvent.MODEL_SPECIFIC));
-                        
+                        fireEvent(new DBGEvent(this, DBGEvent.RESUME, DBGEvent.STEP_RETURN));
                     }
                 } catch (SQLException e) {
-                    log.error(name, e);
-                    return DebugCore.newErrorStatus(name, e);
-                    
+                    fireEvent(new DBGEvent(this, DBGEvent.TERMINATE, DBGEvent.CLIENT_REQUEST));
+                    String sqlState = e.getSQLState();
+                    if (!PostgreConstants.EC_QUERY_CANCELED.equals(sqlState)) {
+                        log.error(name, e);
+                        return DebugCore.newErrorStatus(name, e);
+                    }
                 }
                 return Status.OK_STATUS;
             }
@@ -358,10 +354,8 @@ public class PostgreDebugSession extends DBGBaseSession {
 
     }
     
-    public void deattachLocal() throws DBGException {
-        
+    private void detachLocal() throws DBGException {
         if (!isWaiting()) {
-            
             try (Statement stmt = getConnection().createStatement()) {
                 String sqlCommand = composeAbortCommand();
                 stmt.execute(sqlCommand);                        
@@ -369,39 +363,21 @@ public class PostgreDebugSession extends DBGBaseSession {
             } catch (SQLException e) {                       
                 log.error("Unable to abort target", e);
             }
-            
         }
-
-        if (job.getState() != Job.NONE) {
-            
-            try {
-                getConnection().close();
-            } catch (SQLException e) {
-                log.error("Unable to close client session", e);
-            } 
-            
+        if (job != null) {
             job.cancel();
-            
+            job = null;
+        }
+        if (executionTarget != null) {
             try {
                 executionTarget.close();
             } catch (SQLException e) {
                 log.error("Unable to close target session", e);
             }
-           
-            
-        } else {
-            job.cancel();
-            try {
-                getConnection().close();
-            } catch (SQLException e) {
-                throw new DBGException("Error clent disconnect", e);   
-            }
         }
-        
     }
     
-  public void deattachGlobal() throws DBGException {
-        
+  private void detachGlobal() throws DBGException {
         if (!isWaiting() && !isDone()) {
             try (Statement stmt = getConnection().createStatement()) {
                 String sql = SQL_CONTINUE.replaceAll("\\?sessionid", String.valueOf(sessionId));
@@ -412,37 +388,16 @@ public class PostgreDebugSession extends DBGBaseSession {
             }
             
         }
-        
         removeBreakpoint(bpGlobal);
-        
-        try {
-            getConnection().close();
-        } catch (SQLException e) {
-            log.error("Unable to close client session", e);
-        } 
-        
     }
     
-    public void deattach() throws DBGException {
-       
-    
-        try {
-            
-            if (!isAttached()) {
-                lock.writeLock().unlock();
-                throw new DBGException("Debug session not attached");
-            }
-            
-          
-            if (attachKind == PostgreDebugAttachKind.LOCAL){
-                deattachLocal();
-            } else if (attachKind == PostgreDebugAttachKind.GLOBAL){
-                deattachGlobal();
-            }
-            
-            
-        }finally {
-            lock.writeLock().unlock();
+    protected void doDetach() throws DBGException {
+        switch (attachKind) {
+        case GLOBAL:
+            detachGlobal();
+        case LOCAL:
+            detachLocal();
+        default:
         }
     }
 
@@ -748,9 +703,10 @@ public class PostgreDebugSession extends DBGBaseSession {
                 return true;
             }
             return false;
+
         case LOCAL:
-            
             return sessionId > 0;
+
         default:
             return false;
         }    

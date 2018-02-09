@@ -22,13 +22,10 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttributeType;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
-import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * PostgreConstants
@@ -75,7 +72,11 @@ public class PostgreConstants {
 
     public static final String HANDLER_SSL = "postgre_ssl";
 
-    public static final String EC_PERMISSION_DENIED = "42501";
+    /**
+     * @see https://www.postgresql.org/docs/9.2/static/errcodes-appendix.html
+     */
+    public static final String EC_PERMISSION_DENIED = "42501"; //$NON-NLS-1$
+    public static final String EC_QUERY_CANCELED = "57014"; //$NON-NLS-1$
 
     public static final String PG_INSTALL_REG_KEY = "SOFTWARE\\PostgreSQL\\Installations";
     public static final String PG_INSTALL_PROP_BASE_DIRECTORY = "Base Directory";
@@ -108,4 +109,5 @@ public class PostgreConstants {
         SERIAL_TYPES.put("smallserial", TYPE_INT2);
         SERIAL_TYPES.put("bigserial", TYPE_INT8);
     }
+    
 }

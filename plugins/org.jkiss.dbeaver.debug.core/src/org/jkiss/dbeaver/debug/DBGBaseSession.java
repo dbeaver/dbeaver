@@ -112,9 +112,14 @@ public abstract class DBGBaseSession implements DBGSession {
         workerThread.start();
     }
 
-    public void close() {
+    public void close() throws DBGException {
         lock.writeLock().lock();
         try {
+            if (!isAttached()) {
+                lock.writeLock().unlock();
+                throw new DBGException("Debug session not attached");
+            }
+            doDetach();
             if (!isDone()) {
                 task.cancel(true);
             }
@@ -123,6 +128,8 @@ public abstract class DBGBaseSession implements DBGSession {
             lock.writeLock().unlock();
         }
     }
+
+    protected abstract void doDetach() throws DBGException;
 
     @Override
     public void abort() throws DBGException {

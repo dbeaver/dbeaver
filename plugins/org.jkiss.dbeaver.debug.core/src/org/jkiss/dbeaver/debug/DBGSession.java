@@ -39,7 +39,7 @@ public interface DBGSession {
 
     void abort() throws DBGException;
 
-    void close();
+    void close() throws DBGException;
 
     List<? extends DBGVariable<?>> getVariables() throws DBGException;
 
