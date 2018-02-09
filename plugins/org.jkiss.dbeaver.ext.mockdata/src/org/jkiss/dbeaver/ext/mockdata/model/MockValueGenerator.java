@@ -17,7 +17,8 @@
  */
 package org.jkiss.dbeaver.ext.mockdata.model;
 
-import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 
@@ -28,12 +29,12 @@ import java.util.Map;
  */
 public interface MockValueGenerator {
 
-    void init(DBSDataManipulator container, Map<String, Object> properties) throws DBCException;
+    void init(DBSDataManipulator container, DBSAttributeBase attribute, Map<Object, Object> properties) throws DBException;
 
     void nextRow();
 
-    Object generateValue(DBSAttributeBase attribute)
-        throws DBCException;
+    Object generateValue(DBRProgressMonitor monitor)
+            throws DBException;
 
     void dispose();
 }

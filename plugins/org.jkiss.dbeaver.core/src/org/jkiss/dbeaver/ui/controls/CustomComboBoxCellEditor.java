@@ -16,9 +16,12 @@
  */
 package org.jkiss.dbeaver.ui.controls;
 
+import org.eclipse.jface.viewers.ColumnViewer;
 import org.eclipse.jface.viewers.ComboBoxCellEditor;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.model.DBPNamedObject;
@@ -37,6 +40,21 @@ public class CustomComboBoxCellEditor extends ComboBoxCellEditor {
 
     public CustomComboBoxCellEditor(Composite parent, String[] items, int style) {
         super(parent, items, style);
+    }
+
+    public CustomComboBoxCellEditor(ColumnViewer columnViewer, Composite parent, String[] items, int style) {
+        super(parent, items, style);
+        init(columnViewer);
+    }
+
+    private void init(ColumnViewer columnViewer) {
+        CCombo combo = (CCombo) this.getControl();
+        combo.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                columnViewer.applyEditorValue();
+            }
+        });
     }
 
     /**

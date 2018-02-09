@@ -196,7 +196,9 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     public Collection<PostgrePermission> getPermissions(DBRProgressMonitor monitor) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read table privileges")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT * FROM information_schema.table_privileges WHERE table_catalog=? AND table_schema=? AND table_name=?"))
+                this instanceof PostgreSequence ?
+                    "SELECT * FROM information_schema.usage_privileges WHERE object_catalog=? AND object_schema=? AND object_name=? AND object_type='SEQUENCE'" :
+                    "SELECT * FROM information_schema.table_privileges WHERE table_catalog=? AND table_schema=? AND table_name=?"))
             {
                 dbStat.setString(1, getDatabase().getName());
                 dbStat.setString(2, getSchema().getName());

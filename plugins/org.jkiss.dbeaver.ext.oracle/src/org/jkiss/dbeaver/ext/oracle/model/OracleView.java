@@ -35,7 +35,6 @@ import org.jkiss.dbeaver.model.meta.PropertyGroup;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.Reader;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
@@ -116,7 +115,12 @@ public class OracleView extends OracleTableBase implements OracleSourceObject
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException
     {
         if (viewText == null) {
-            viewText = OracleUtils.getDDL(monitor, getTableTypeName(), this, OracleDDLFormat.COMPACT, options);
+            try {
+                viewText = OracleUtils.getDDL(monitor, getTableTypeName(), this, OracleDDLFormat.COMPACT, options);
+            } catch (DBException e) {
+                log.warn("Error getting view definition from system package", e);
+                getAdditionalInfo(monitor);
+            }
         }
         return viewText;
     }
@@ -170,15 +174,17 @@ public class OracleView extends OracleTableBase implements OracleSourceObject
             additionalInfo.loaded = true;
             return;
         }
+        String viewDefinitionText = null; // It is truncated definition text
         try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Load table status")) {
             boolean isOracle9 = getDataSource().isAtLeastV9();
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT TYPE_TEXT,OID_TEXT,VIEW_TYPE_OWNER,VIEW_TYPE" + (isOracle9 ? ",SUPERVIEW_NAME" : "") + "\n" +
+                "SELECT TEXT,TYPE_TEXT,OID_TEXT,VIEW_TYPE_OWNER,VIEW_TYPE" + (isOracle9 ? ",SUPERVIEW_NAME" : "") + "\n" +
                     "FROM SYS.ALL_VIEWS WHERE OWNER=? AND VIEW_NAME=?")) {
                 dbStat.setString(1, getContainer().getName());
                 dbStat.setString(2, getName());
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.next()) {
+                        viewDefinitionText = JDBCUtils.safeGetString(dbResult, "TEXT");
                         additionalInfo.setTypeText(JDBCUtils.safeGetStringTrimmed(dbResult, "TYPE_TEXT"));
                         additionalInfo.setOidText(JDBCUtils.safeGetStringTrimmed(dbResult, "OID_TEXT"));
                         additionalInfo.typeOwner = JDBCUtils.safeGetStringTrimmed(dbResult, "VIEW_TYPE_OWNER");
@@ -199,8 +205,8 @@ public class OracleView extends OracleTableBase implements OracleSourceObject
         catch (SQLException e) {
             throw new DBCException(e, getDataSource());
         }
-/*
-        if (viewText != null) {
+
+        if (viewDefinitionText != null) {
             StringBuilder paramsList = new StringBuilder();
             Collection<OracleTableColumn> attributes = getAttributes(monitor);
             if (attributes != null) {
@@ -213,9 +219,8 @@ public class OracleView extends OracleTableBase implements OracleSourceObject
                 }
                 paramsList.append(")");
             }
-            viewText = "CREATE OR REPLACE VIEW " + getFullyQualifiedName(DBPEvaluationContext.DDL) + paramsList + "\nAS\n" + viewText;
+            viewText = "CREATE OR REPLACE VIEW " + getFullyQualifiedName(DBPEvaluationContext.DDL) + paramsList + "\nAS\n" + viewDefinitionText;
         }
-*/
     }
 
     @Override

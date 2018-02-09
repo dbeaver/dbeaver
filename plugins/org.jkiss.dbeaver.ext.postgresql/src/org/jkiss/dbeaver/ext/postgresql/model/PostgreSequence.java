@@ -84,6 +84,10 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
         super(schema, dbResult);
     }
 
+    public PostgreSequence(PostgreSchema catalog) {
+        super(catalog);
+    }
+
     @PropertyGroup()
     @LazyProperty(cacheValidator = AdditionalInfoValidator.class)
     public AdditionalInfo getAdditionalInfo(DBRProgressMonitor monitor) throws DBCException

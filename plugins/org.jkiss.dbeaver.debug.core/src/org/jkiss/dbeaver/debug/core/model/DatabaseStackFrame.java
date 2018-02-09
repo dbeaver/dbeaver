@@ -16,12 +16,12 @@ import org.jkiss.dbeaver.debug.DBGVariable;
 import org.jkiss.dbeaver.debug.core.DebugCore;
 
 public class DatabaseStackFrame extends DatabaseDebugElement implements IStackFrame {
-    
+
     private static final IRegisterGroup[] NO_REGISTER_GROUPS = new IRegisterGroup[0];
     private static final IVariable[] NO_VARIABLES = new IVariable[0];
 
     private final List<DatabaseVariable> variables = new ArrayList<DatabaseVariable>();
-    
+
     private final DatabaseThread thread;
     private final DBGStackFrame dbgStackFrame;
 
@@ -32,7 +32,7 @@ public class DatabaseStackFrame extends DatabaseDebugElement implements IStackFr
         this.thread = thread;
         this.dbgStackFrame = dbgStackFrame;
     }
-    
+
     @Override
     public boolean canStepInto() {
         return getThread().canStepInto();
@@ -40,7 +40,7 @@ public class DatabaseStackFrame extends DatabaseDebugElement implements IStackFr
 
     @Override
     public boolean canStepOver() {
-       return getThread().canStepOver();
+        return getThread().canStepOver();
     }
 
     @Override
@@ -129,7 +129,7 @@ public class DatabaseStackFrame extends DatabaseDebugElement implements IStackFr
         }
         return (IVariable[]) variables.toArray(new IVariable[variables.size()]);
     }
-    
+
     protected void invalidateVariables() {
         refreshVariables = true;
     }
@@ -153,7 +153,7 @@ public class DatabaseStackFrame extends DatabaseDebugElement implements IStackFr
 
     @Override
     public int getLineNumber() throws DebugException {
-        return dbgStackFrame.getLine();
+        return dbgStackFrame.getLineNumber();
     }
 
     @Override
@@ -171,7 +171,7 @@ public class DatabaseStackFrame extends DatabaseDebugElement implements IStackFr
     @Override
     public String getName() throws DebugException {
         String pattern = "{0} line: {1}";
-        String name = NLS.bind(pattern, dbgStackFrame.getName(), dbgStackFrame.getLine());
+        String name = NLS.bind(pattern, dbgStackFrame.getName(), dbgStackFrame.getLineNumber());
         return name;
     }
 
@@ -184,8 +184,8 @@ public class DatabaseStackFrame extends DatabaseDebugElement implements IStackFr
     public boolean hasRegisterGroups() throws DebugException {
         return false;
     }
-    
-    public String getSource()  throws DebugException {
+
+    public String getSource() throws DebugException {
         String source;
         try {
             source = getDatabaseDebugTarget().requestSource(dbgStackFrame);
@@ -195,6 +195,10 @@ public class DatabaseStackFrame extends DatabaseDebugElement implements IStackFr
             throw new DebugException(status);
         }
         return source;
+    }
+
+    public Object getSourceIdentifier() {
+        return dbgStackFrame.getSourceIdentifier();
     }
 
 }
