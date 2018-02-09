@@ -16,17 +16,18 @@
  */
 package org.jkiss.dbeaver.model.impl;
 
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
+import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 /**
@@ -34,6 +35,9 @@ import java.util.List;
  */
 public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValueListProvider<Object>
 {
+
+    public static final String CURRENT_DATE_STRING_VAR_PREFIX = "${now as ";
+
     public enum PropertyType
     {
         t_string(String.class),
@@ -120,16 +124,26 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
                 type = String.class;
             }
         }
-        this.defaultValue = GeneralUtils.convertString(config.getAttribute(ATTR_DEFAULT_VALUE), type);
+        this.defaultValue = convertString(config.getAttribute(ATTR_DEFAULT_VALUE), type);
         String valueList = config.getAttribute(ATTR_VALID_VALUES);
         if (valueList != null) {
             final String[] values = valueList.split(VALUE_SPLITTER);
             validValues = new Object[values.length];
             for (int i = 0, valuesLength = values.length; i < valuesLength; i++) {
-                validValues[i] = GeneralUtils.convertString(values[i], type);
+                validValues[i] = convertString(values[i], type);
             }
         }
         this.editable = true;
+    }
+
+    public static Object convertString(String value, Class<?> valueType)
+    {
+        if (!CommonUtils.isEmpty(value) && valueType == String.class && value.startsWith(CURRENT_DATE_STRING_VAR_PREFIX)) {
+            String pattern = value.substring(9, value.length() - 1);
+            return new SimpleDateFormat(pattern).format(new Date());
+        } else {
+            return GeneralUtils.convertString(value, valueType);
+        }
     }
 
     public PropertyDescriptor(String category, Object id, String name, String description, Class<?> type, boolean required, String defaultValue, String[] validValues, boolean editable) {

@@ -110,9 +110,9 @@
             <type kind="DATETIME"/>
 
             <propertyGroup label="General">
-                <property id="startDate" label="Start date" type="string" description="Date range start (DD-MM-YYYY). Default is today."/>
-                <property id="step" label="Increment step" type="integer" defaultValue="1" description="Sequence increment step in days"/>
-                <property id="reverse" label="Reverse order" type="boolean" defaultValue="FALSE" description="Reverse the sequence order"/>
+                <property id="startDate" label="Start date" type="string" defaultValue="${now as dd-MM-yyyy}" description="Sequence start date (DD-MM-YYYY)"/>
+                <property id="step" label="Increment step" type="integer" defaultValue="1" description="Sequence increment step (days)"/>
+                <property id="reverse" label="Reverse order" type="boolean" defaultValue="FALSE" description="Reverse sequence order"/>
 
                 <property id="nulls" label="NULLs" type="boolean" defaultValue="TRUE"/>
             </propertyGroup>
