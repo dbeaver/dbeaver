@@ -164,18 +164,21 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
                     if (attributeGenerators.isEmpty()) {
                         // TODO item.setForeground(columnsTableViewer.getDisplay().getSystemColor(SWT.COLOR_RED));
                         noGeneratorInfoLabel.setVisible(true);
+                        TextCellEditor textCellEditor = new TextCellEditor(columnsTableViewer.getTable());
+                        textCellEditor.getControl().setEnabled(false);
+                        return textCellEditor;
                     } else {
                         for (String generatorId : attributeGenerators.getGenerators()) {
                             generators.add(mockDataSettings.getGeneratorDescriptor(generatorId).getLabel());
                         }
-                    }
 
-                    CustomComboBoxCellEditor customComboBoxCellEditor = new CustomComboBoxCellEditor(
-                            columnsTableViewer,
-                            columnsTableViewer.getTable(),
-                            generators.toArray(new String[generators.size()]),
-                            SWT.BORDER | SWT.READ_ONLY);
-                    return customComboBoxCellEditor;
+                        CustomComboBoxCellEditor customComboBoxCellEditor = new CustomComboBoxCellEditor(
+                                columnsTableViewer,
+                                columnsTableViewer.getTable(),
+                                generators.toArray(new String[generators.size()]),
+                                SWT.BORDER | SWT.READ_ONLY);
+                        return customComboBoxCellEditor;
+                    }
                 }
 
                 @Override
@@ -185,7 +188,11 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
                 protected Object getValue(Object element) {
                     DBSAttributeBase attribute = (DBSAttributeBase) element;
                     String selectedGenerator = mockDataSettings.getAttributeGeneratorProperties(attribute).getSelectedGeneratorId();
-                    return mockDataSettings.getGeneratorDescriptor(selectedGenerator).getLabel();
+                    if (selectedGenerator != null) {
+                        return mockDataSettings.getGeneratorDescriptor(selectedGenerator).getLabel();
+                    } else {
+                        return "";
+                    }
                 }
 
                 @Override
@@ -260,8 +267,10 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
 
     private void selectGenerator(DBSAttributeBase attribute, String generatorName) {
         MockGeneratorDescriptor generatorForName = mockDataSettings.findGeneratorForName(attribute, generatorName);
-        saveGeneratorProperties();
-        reloadProperties(attribute, generatorForName.getId());
+        if (generatorForName != null) {
+            saveGeneratorProperties();
+            reloadProperties(attribute, generatorForName.getId());
+        }
         columnsTableViewer.refresh(true, true);
     }
 
