@@ -43,6 +43,7 @@ public class DBGEvent extends EventObject {
     public static final int STEP_RETURN = 0x0004;
     public static final int STEP_END = 0x0008;
     public static final int BREAKPOINT= 0x0010;
+    public static final int CLIENT_REQUEST= 0x0020;
 
     private int kind;
 
