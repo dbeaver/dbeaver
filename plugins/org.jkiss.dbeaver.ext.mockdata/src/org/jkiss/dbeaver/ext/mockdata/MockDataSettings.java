@@ -37,7 +37,7 @@ public class MockDataSettings {
     public static final String FK_GENERATOR_ID = "fkGenerator"; //$NON-NLS-1$
 
     private boolean removeOldData;
-    private long rowsNumber = 10;
+    private long rowsNumber = 1000;
     private Map<String, MockGeneratorDescriptor> generatorDescriptors = new HashMap<>(); // generatorId -> MockGeneratorDescriptor
     private Map<String, AttributeGeneratorProperties> attributeGenerators = new HashMap<>(); // attribute.name -> generators properties
 
