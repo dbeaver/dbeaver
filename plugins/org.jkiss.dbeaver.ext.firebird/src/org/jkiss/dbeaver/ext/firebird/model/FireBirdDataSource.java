@@ -68,7 +68,7 @@ public class FireBirdDataSource extends GenericDataSource {
     public FireBirdDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, GenericMetaModel metaModel)
         throws DBException
     {
-        super(monitor, container, metaModel, new GenericSQLDialect());
+        super(monitor, container, metaModel, new FireBirdSQLDialect());
     }
 
     public String getMetaFieldValue(String name, int type) {

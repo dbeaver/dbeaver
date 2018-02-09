@@ -34,10 +34,15 @@ import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.debug.DBGController;
 import org.jkiss.dbeaver.debug.DBGException;
+import org.jkiss.dbeaver.debug.core.model.DatabaseDebugTarget;
+import org.jkiss.dbeaver.debug.core.model.DatabaseStackFrame;
 import org.jkiss.dbeaver.debug.internal.core.DebugCoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -225,6 +230,32 @@ public class DebugCore {
         String providerId = dataSourceContainer.getDriver().getProviderId();
         String message = NLS.bind("Unable to find controller for datasource \"{0}\"", providerId);
         throw new DBGException(message);
+    }
+    
+    public static String getSourceName(Object object) throws CoreException {
+        if (object instanceof DatabaseStackFrame) {
+            DatabaseStackFrame frame = (DatabaseStackFrame) object;
+            Object sourceIdentifier = frame.getSourceIdentifier();
+            DatabaseDebugTarget debugTarget = frame.getDatabaseDebugTarget();
+            DBSObject dbsObject = null;
+            try {
+                dbsObject = debugTarget.findDatabaseObject(sourceIdentifier, new VoidProgressMonitor());
+            } catch (DBException e) {
+                Status error = DebugCore.newErrorStatus(e.getMessage() , e);
+                throw new CoreException(error);
+            }
+            if (dbsObject == null) {
+                return null;
+            }
+            final DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
+            DBNDatabaseNode node = navigatorModel.getNodeByObject(dbsObject);
+            return node.getNodeItemPath();
+        }
+        if (object instanceof String) {
+            // well, let's be positive and assume it's a node path already
+            return (String) object;
+        }
+        return null;
     }
 
 }

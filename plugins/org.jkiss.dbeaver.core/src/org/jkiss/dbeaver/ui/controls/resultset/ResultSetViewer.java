@@ -1620,7 +1620,9 @@ public class ResultSetViewer extends Viewer
             return;
         }
         MenuManager menuManager = createRefTablesMenu(currentRow);
-        showContextMenuAtCursor(menuManager);
+        if (menuManager != null) {
+            showContextMenuAtCursor(menuManager);
+        }
     }
 
     private void showContextMenuAtCursor(MenuManager menuManager) {

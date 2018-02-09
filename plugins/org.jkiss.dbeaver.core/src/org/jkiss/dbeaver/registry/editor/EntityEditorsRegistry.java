@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
+import org.jkiss.dbeaver.ui.editors.entity.IEntityEditorContext;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -91,24 +92,24 @@ public class EntityEditorsRegistry implements DBERegistry {
         entityManagerMap.clear();
     }
 
-    public EntityEditorDescriptor getMainEntityEditor(DBPObject object)
+    public EntityEditorDescriptor getMainEntityEditor(DBPObject object, IEntityEditorContext context)
     {
         for (EntityEditorDescriptor descriptor : entityEditors) {
-            if (descriptor.appliesTo(object) && descriptor.isMain() && descriptor.getType() == EntityEditorDescriptor.Type.editor) {
+            if (descriptor.appliesTo(object, context) && descriptor.isMain() && descriptor.getType() == EntityEditorDescriptor.Type.editor) {
                 return descriptor;
             }
         }
         return defaultEditor;
     }
 
-    public List<EntityEditorDescriptor> getEntityEditors(DBPObject object, String position)
+    public List<EntityEditorDescriptor> getEntityEditors(DBPObject object, IEntityEditorContext context, String position)
     {
         List<EntityEditorDescriptor> editors = new ArrayList<EntityEditorDescriptor>();
         final List<EntityEditorDescriptor> positionList =
             CommonUtils.isEmpty(position) ? entityEditors : positionsMap.get(position);
         if (positionList != null) {
             for (EntityEditorDescriptor descriptor : positionList) {
-                if (descriptor.appliesTo(object)) {
+                if (descriptor.appliesTo(object, context)) {
                     editors.add(descriptor);
                 }
             }

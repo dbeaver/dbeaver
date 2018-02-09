@@ -27,10 +27,8 @@ import org.eclipse.debug.core.model.IBreakpoint;
 import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.debug.core.model.IThread;
 import org.eclipse.osgi.util.NLS;
-import org.jkiss.dbeaver.debug.DBGController;
 import org.jkiss.dbeaver.debug.DBGException;
 import org.jkiss.dbeaver.debug.DBGStackFrame;
-import org.jkiss.dbeaver.debug.DBGVariable;
 import org.jkiss.dbeaver.debug.core.DebugCore;
 
 /**
@@ -39,15 +37,12 @@ import org.jkiss.dbeaver.debug.core.DebugCore;
  */
 public abstract class DatabaseThread extends DatabaseDebugElement implements IThread {
     
-    private final Object sessionKey;
-
     private boolean stepping = false;
 
     private List<DatabaseStackFrame> frames = new ArrayList<>(1);
 
-    public DatabaseThread(DatabaseDebugTarget target, Object sessionKey) {
+    public DatabaseThread(DatabaseDebugTarget target) {
         super(target);
-        this.sessionKey = sessionKey;
     }
 
     @Override
@@ -78,20 +73,17 @@ public abstract class DatabaseThread extends DatabaseDebugElement implements ITh
 
     @Override
     public boolean canStepInto() {
-        DBGController controller = getController();
-        return controller.canStepInto(sessionKey);
+        return getDatabaseDebugTarget().canStepInto();
     }
 
     @Override
     public boolean canStepOver() {
-        DBGController controller = getController();
-        return controller.canStepOver(sessionKey);
+        return getDatabaseDebugTarget().canStepOver();
     }
 
     @Override
     public boolean canStepReturn() {
-        DBGController controller = getController();
-        return controller.canStepReturn(sessionKey);
+        return getDatabaseDebugTarget().canStepReturn();
     }
 
     @Override
@@ -169,11 +161,11 @@ public abstract class DatabaseThread extends DatabaseDebugElement implements ITh
 
     public void rebuildStack(List<? extends DBGStackFrame> stackFrames) {
         for (DBGStackFrame dbgStackFrame : stackFrames) {
-            addFrame(dbgStackFrame, sessionKey);
+            addFrame(dbgStackFrame);
         }
     }
 
-    private void addFrame(DBGStackFrame stackFrameId , Object sessionKey) {
+    private void addFrame(DBGStackFrame stackFrameId) {
         DatabaseStackFrame frame = new DatabaseStackFrame(this, stackFrameId);
         frames.add(frame);
     }
@@ -209,18 +201,6 @@ public abstract class DatabaseThread extends DatabaseDebugElement implements ITh
 
     public void setStepping(boolean stepping) {
         this.stepping = stepping;
-    }
-
-    protected List<? extends DBGVariable<?>> requestVariables() throws DebugException {
-        List<DBGVariable<?>> variables = new ArrayList<DBGVariable<?>>();
-        try {
-            variables.addAll(getDatabaseDebugTarget().requestVariables());
-        } catch (DBGException e) {
-            String message = NLS.bind("Error reading variables for {0}", getName());
-            IStatus status = DebugCore.newErrorStatus(message, e);
-            throw new DebugException(status);
-        }
-        return variables;
     }
 
 }

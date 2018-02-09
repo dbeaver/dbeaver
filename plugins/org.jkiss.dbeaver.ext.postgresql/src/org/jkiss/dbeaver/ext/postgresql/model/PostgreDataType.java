@@ -99,6 +99,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     private int arrayDim;
     private long collationId;
     private String defaultValue;
+    private String canonicalName;
 
     private final AttributeCache attributeCache;
     private Object[] enumValues;
@@ -106,6 +107,9 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     public PostgreDataType(@NotNull JDBCSession session, @NotNull PostgreSchema owner, long typeId, int valueType, String name, int length, JDBCResultSet dbResult) throws DBException {
         super(owner, valueType, name, null, false, true, length, -1, -1);
         this.alias = false;
+        if (owner.isCatalogSchema()) {
+            this.canonicalName = PostgreConstants.DATA_TYPE_CANONICAL_NAMES.get(name);
+        }
         this.typeId = typeId;
         this.typeType = PostgreTypeType.b;
         String typTypeStr = JDBCUtils.safeGetString(dbResult, "typtype");
@@ -230,6 +234,20 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         } catch (SQLException e) {
             throw new DBException("Error reading enum values", e, getDataSource());
         }
+    }
+
+    @Override
+    public String getName() {
+        return super.getName();
+    }
+
+    @Override
+    public String getFullTypeName() {
+        return super.getFullTypeName();
+    }
+
+    public String getCanonicalName() {
+        return canonicalName;
     }
 
     @NotNull
@@ -538,7 +556,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         }
 
         int valueType;
-        if (ArrayUtils.contains(OID_TYPES, name) || name.equals("hstore")) {
+        if (ArrayUtils.contains(OID_TYPES, name) || name.equals(PostgreConstants.TYPE_HSTORE)) {
             valueType = Types.VARCHAR;
         } else {
             if (typeCategory == null) {

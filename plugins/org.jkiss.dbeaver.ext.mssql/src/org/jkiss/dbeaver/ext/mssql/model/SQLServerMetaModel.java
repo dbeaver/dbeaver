@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPErrorAssistant;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCQueryTransformProvider;
@@ -76,7 +77,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     }
 
     public String getViewDDL(DBRProgressMonitor monitor, GenericTable sourceObject, Map<String, Object> options) throws DBException {
-        return extractSource(monitor, sourceObject.getDataSource(), sourceObject.getCatalog().getName(), sourceObject.getSchema().getName(), sourceObject.getName());
+        return extractSource(monitor, sourceObject.getDataSource(), sourceObject.getCatalog(), sourceObject.getSchema().getName(), sourceObject.getName());
     }
 
     @Override
@@ -98,7 +99,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
                 throw new DBException(e, sourceObject.getDataSource());
             }
         }
-        return extractSource(monitor, sourceObject.getDataSource(), sourceObject.getCatalog().getName(), sourceObject.getSchema().getName(), sourceObject.getName());
+        return extractSource(monitor, sourceObject.getDataSource(), sourceObject.getCatalog(), sourceObject.getSchema().getName(), sourceObject.getName());
     }
 
     @Override
@@ -109,11 +110,10 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     @Override
     public List<? extends GenericTrigger> loadTriggers(DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTable table) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container.getDataSource(), "Read triggers")) {
-            String schema = getSystemSchema();
-            String catalog = DBUtils.getQuotedIdentifier(container.getCatalog());
-            StringBuilder query = new StringBuilder("SELECT triggers.name FROM " + catalog + "." + schema + ".sysobjects triggers");
+            String schema = getSystemSchemaFQN(container.getDataSource(), container.getCatalog());
+            StringBuilder query = new StringBuilder("SELECT triggers.name FROM " + schema + ".sysobjects triggers");
             if (table != null) {
-                query.append(",").append(catalog).append(".").append(schema).append(".sysobjects tables");
+                query.append(",").append(schema).append(".sysobjects tables");
             }
             query.append("\nWHERE triggers.type = 'TR'\n");
             if (table != null) {
@@ -147,16 +147,11 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
         }
     }
 
-    @NotNull
-    private String getSystemSchema() {
-        return sqlServer ? "sys" : "dbo";
-    }
-
     @Override
     public String getTriggerDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericTrigger trigger) throws DBException {
         GenericTable table = trigger.getTable();
         assert table != null;
-        return extractSource(monitor, table.getDataSource(), table.getCatalog().getName(), table.getSchema().getName(), trigger.getName());
+        return extractSource(monitor, table.getDataSource(), table.getCatalog(), table.getSchema().getName(), trigger.getName());
     }
 
     @Nullable
@@ -168,17 +163,16 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
         return null;
     }
 
-    private String extractSource(DBRProgressMonitor monitor, GenericDataSource dataSource, String catalog, String schema, String name) throws DBException {
+    private String extractSource(DBRProgressMonitor monitor, GenericDataSource dataSource, GenericCatalog catalog, String schema, String name) throws DBException {
         ServerType serverType = getServerType();
-        String systemSchema = getSystemSchema();
-        catalog = DBUtils.getQuotedIdentifier(dataSource, catalog);
+        String systemSchema = getSystemSchemaFQN(dataSource, catalog);
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read source code")) {
             String mdQuery = serverType == ServerType.SQL_SERVER ?
-                catalog + "." + systemSchema + ".sp_helptext '" + DBUtils.getQuotedIdentifier(dataSource, schema) + "." + DBUtils.getQuotedIdentifier(dataSource, name) + "'"
+                systemSchema + ".sp_helptext '" + DBUtils.getQuotedIdentifier(dataSource, schema) + "." + DBUtils.getQuotedIdentifier(dataSource, name) + "'"
                 :
                 "SELECT sc.text\n" +
-                "FROM " + catalog + "." + systemSchema + ".sysobjects so\n" +
-                "INNER JOIN " + catalog + "." + systemSchema + ".syscomments sc on sc.id = so.id\n" +
+                "FROM " + systemSchema + ".sysobjects so\n" +
+                "INNER JOIN " + systemSchema + ".syscomments sc on sc.id = so.id\n" +
                 "WHERE user_name(so.uid)=? AND so.name=?";
             try (JDBCPreparedStatement dbStat = session.prepareStatement(mdQuery)) {
                 if (serverType == ServerType.SYBASE) {
@@ -226,13 +220,13 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
         boolean showAllSchemas = ((SQLServerDataSource) dataSource).isShowAllSchemas();
         final DBSObjectFilter schemaFilters = dataSource.getContainer().getObjectFilter(GenericSchema.class, catalog, false);
 
-        String sysSchema = DBUtils.getQuotedIdentifier(catalog) + "." + getSystemSchema();
+        String sysSchema = getSystemSchemaFQN(dataSource, catalog);
         String sql;
         if (showAllSchemas) {
             if (getServerType() == ServerType.SQL_SERVER && dataSource.isServerVersionAtLeast(SQLServerConstants.SQL_SERVER_2005_VERSION_MAJOR ,0)) {
-                sql = "SELECT name FROM " + DBUtils.getQuotedIdentifier(catalog) + ".sys.schemas";
+                sql = "SELECT name FROM " + sysSchema + ".schemas";
             } else {
-                sql = "SELECT name FROM " + DBUtils.getQuotedIdentifier(catalog) + ".dbo.sysusers";
+                sql = "SELECT name FROM " + sysSchema + ".sysusers";
             }
         } else {
             if (getServerType() == ServerType.SQL_SERVER) {
@@ -248,8 +242,9 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
             }
         }
 
+        boolean schemaReadFailed = false;
+        List<GenericSchema> result = new ArrayList<>();
         try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
-            List<GenericSchema> result = new ArrayList<>();
 
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                 while (dbResult.next()) {
@@ -268,11 +263,24 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
                     result.add(schema);
                 }
             }
-            return result;
-
         } catch (SQLException e) {
-            throw new DBException(e, dataSource);
+            if (dataSource.discoverErrorType(e) == DBPErrorAssistant.ErrorType.CONNECTION_LOST) {
+                throw new DBException(e, dataSource);
+            } else {
+                log.warn("Schema read failed: empty list returned. Try generic method.", e);
+                schemaReadFailed = true;
+            }
         }
+        if (result.isEmpty()) {
+            if (!schemaReadFailed && !showAllSchemas) {
+                // Perhaps all schemas were filtered out
+                result.add(new GenericSchema(dataSource, catalog, SQLServerConstants.DEFAULT_SCHEMA_NAME));
+            } else {
+                // Maybe something went wrong. LEt's try to use native function
+                return super.loadSchemas(session, dataSource, catalog);
+            }
+        }
+        return result;
     }
 
     @Override
@@ -284,7 +292,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     public List<GenericSequence> loadSequences(DBRProgressMonitor monitor, GenericStructContainer container) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container.getDataSource(), "Read system sequences")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT * FROM " + DBUtils.getQuotedIdentifier(container.getCatalog()) + "." + getSystemSchema() + ".sequences WHERE schema_name(schema_id)=?")) {
+                "SELECT * FROM " + getSystemSchemaFQN(container.getDataSource(), container.getCatalog()) + ".sequences WHERE schema_name(schema_id)=?")) {
                 dbStat.setString(1, container.getSchema().getName());
                 List<GenericSequence> result = new ArrayList<>();
 
@@ -322,6 +330,16 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
 
     @Override
     public boolean isSystemTable(GenericTable table) {
-        return getSystemSchema().equals(table.getSchema().getName()) && table.getName().startsWith("sys");
+        return table.getSchema() != null && getSystemSchema().equals(table.getSchema().getName()) && table.getName().startsWith("sys");
+    }
+
+    @NotNull
+    private String getSystemSchema() {
+        return sqlServer ? "sys" : "dbo";
+    }
+
+    private String getSystemSchemaFQN(GenericDataSource dataSource, GenericCatalog catalog) {
+        return dataSource.isServerVersionAtLeast(SQLServerConstants.SQL_SERVER_2005_VERSION_MAJOR ,0) ?
+            DBUtils.getQuotedIdentifier(catalog) + "." + getSystemSchema() : getSystemSchema();
     }
 }

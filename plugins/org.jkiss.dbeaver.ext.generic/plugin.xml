@@ -378,6 +378,10 @@
                     webURL="http://www.developers.net/ibmshowcase/focus/Informix"
                     description="IBM Informix Dynamic Server">
 
+                    <file type="jar" path="repo:/drivers/informix/ifxjdbc.jar" bundle="!drivers.informix"/>
+                    <file type="jar" path="repo:/drivers/informix/ifxlang.jar" bundle="!drivers.informix"/>
+                    <file type="license" path="repo:/drivers/informix/LICENSE.txt" bundle="!drivers.informix"/>
+
                     <file type="jar" path="drivers/informix/ifxjdbc.jar" bundle="drivers.informix"/>
                     <file type="jar" path="drivers/informix/ifxlang.jar" bundle="drivers.informix"/>
                     <file type="license" path="drivers/informix/LICENSE.txt" bundle="drivers.informix"/>
@@ -962,9 +966,22 @@
                         class="cubrid.jdbc.driver.CUBRIDDriver"
                         sampleURL="jdbc:CUBRID:{host}:{port}:{server}:{database}::"
                         defaultPort="33000"
-                        description="CUBRID JDBC driver (beta)"
+                        description="CUBRID JDBC driver"
                         webURL="https://www.cubrid.org/">
                     <file type="jar" path="http://ftp.cubrid.org/CUBRID_Drivers/JDBC_Driver/JDBC-10.1.0.7663-cubrid.jar"/>
+                </driver>
+
+                <!-- SnowFlake -->
+                <driver
+                        id="snowflake_generic"
+                        label="Snowflake"
+                        class="net.snowflake.client.jdbc.SnowflakeDriver"
+                        icon="icons/snowflake_icon.png"
+                        sampleURL="jdbc:snowflake://{host}/?[db={database}]"
+                        defaultPort=""
+                        description="Snowflake JDBC driver"
+                        webURL="https://docs.snowflake.net/manuals/user-guide/jdbc-configure.html">
+                    <file type="jar" path="maven:/net.snowflake:snowflake-jdbc:RELEASE"/>
                 </driver>
 
                 <!-- Solr -->

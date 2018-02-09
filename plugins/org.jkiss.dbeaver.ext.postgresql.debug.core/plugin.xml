@@ -41,6 +41,9 @@
          <adapter
                type="org.jkiss.dbeaver.debug.DBGController">
          </adapter>
+         <adapter
+               type="org.jkiss.dbeaver.debug.DBGFinder">
+         </adapter>
       </factory>
    </extension>
 
