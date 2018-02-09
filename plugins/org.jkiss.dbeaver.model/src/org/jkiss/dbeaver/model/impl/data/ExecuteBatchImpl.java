@@ -213,6 +213,15 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
         statistics.addExecuteTime(System.currentTimeMillis() - startTime);
         if (!ArrayUtils.isEmpty(updatedRows)) {
             for (int rows : updatedRows) {
+                if (rows < 0) {
+                    // In some cases (e.g. JDBC API) negative means "unknown".
+                    // "Statement.SUCCESS_NO_INFO — the command was processed successfully, but the number of rows affected is unknown"
+                    // But we are quite sure that it has to be 1 (because each statement inserts/deletes/updates a single row)
+                    // The only exception is bulk delete  (without WHERE condition)
+                    if (!ArrayUtils.isEmpty(attributes)) {
+                        rows = 1;
+                    }
+                }
                 statistics.addRowsUpdated(rows);
             }
         }

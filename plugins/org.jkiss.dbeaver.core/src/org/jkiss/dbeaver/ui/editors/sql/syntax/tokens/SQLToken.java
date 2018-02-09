@@ -36,6 +36,7 @@ public class SQLToken extends Token {
     public static final int T_DELIMITER = 1007;
     public static final int T_SET_DELIMITER = 1008;
     public static final int T_PARAMETER = 1009;
+    public static final int T_VARIABLE = 1010;
 
     private final int type;
     

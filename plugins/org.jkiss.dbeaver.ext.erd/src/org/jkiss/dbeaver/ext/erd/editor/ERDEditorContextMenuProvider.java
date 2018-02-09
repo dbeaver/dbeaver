@@ -21,52 +21,56 @@ package org.jkiss.dbeaver.ext.erd.editor;
 
 import org.eclipse.gef.ContextMenuProvider;
 import org.eclipse.gef.ui.actions.GEFActionConstants;
+import org.eclipse.jface.action.GroupMarker;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchActionConstants;
+import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.ext.erd.action.DiagramLayoutAction;
+import org.jkiss.dbeaver.ui.IActionConstants;
 
 /**
  * Provides a context menu for the schema diagram editor. A virtual cut and paste from the flow example
+ *
  * @author Daniel Lee
  */
-public class ERDEditorContextMenuProvider extends ContextMenuProvider
-{
+public class ERDEditorContextMenuProvider extends ContextMenuProvider {
     private ERDEditorPart editor;
 
-	/**
-	 * Creates a new FlowContextMenuProvider associated with the given viewer
-	 * and action registry.
-	 * 
-	 * @param editor the editor
-	 */
-	public ERDEditorContextMenuProvider(ERDEditorPart editor)
-	{
-		super(editor.getViewer());
+    /**
+     * Creates a new FlowContextMenuProvider associated with the given viewer
+     * and action registry.
+     *
+     * @param editor the editor
+     */
+    public ERDEditorContextMenuProvider(ERDEditorPart editor) {
+        super(editor.getViewer());
         this.editor = editor;
-	}
+    }
 
-	/**
-	 * @see ContextMenuProvider#buildContextMenu(org.eclipse.jface.action.IMenuManager)
-	 */
-	@Override
-    public void buildContextMenu(IMenuManager menu)
-	{
+    /**
+     * @see ContextMenuProvider#buildContextMenu(org.eclipse.jface.action.IMenuManager)
+     */
+    @Override
+    public void buildContextMenu(IMenuManager menu) {
         if (editor.isLoaded()) {
             GEFActionConstants.addStandardActionGroups(menu);
 
-			ISelection selection = editor.getGraphicalViewer().getSelection();
-			if (!selection.isEmpty() && selection instanceof IStructuredSelection) {
-				editor.fillPartContextMenu(menu, (IStructuredSelection)selection);
-			}
+            ISelection selection = editor.getGraphicalViewer().getSelection();
+            if (!selection.isEmpty() && selection instanceof IStructuredSelection) {
+                editor.fillPartContextMenu(menu, (IStructuredSelection) selection);
+            }
 
-			menu.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
+            menu.add(new GroupMarker(CoreCommands.GROUP_NAVIGATOR_ADDITIONS));
+            menu.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
+            menu.add(new GroupMarker(IActionConstants.MB_ADDITIONS_END));
+            menu.add(new GroupMarker(CoreCommands.GROUP_TOOLS));
 
             menu.add(new Separator());
             editor.fillAttributeVisibilityMenu(menu);
             menu.add(new DiagramLayoutAction(editor));
         }
-	}
+    }
 }

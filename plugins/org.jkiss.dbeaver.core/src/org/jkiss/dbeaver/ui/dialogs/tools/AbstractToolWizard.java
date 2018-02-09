@@ -68,10 +68,12 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
     private String toolUserName;
     private String toolUserPassword;
     private String extraCommandArgs;
+    protected boolean clientHomeRequired = true;
 
     protected String task;
     protected final DatabaseWizardPageLog logPage;
     private boolean finished;
+    protected boolean transferFinished;
 
     protected AbstractToolWizard(Collection<BASE_OBJECT> databaseObjects, String task)
     {
@@ -98,7 +100,21 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
     @Override
     public boolean canFinish()
     {
-        return !finished && super.canFinish();
+        if (!super.canFinish()) {
+            return false;
+        }
+        if (isSingleTimeWizard()) {
+            return !finished;
+        }
+        // [#2917] Finish button is always enabled (!finished && super.canFinish())
+        return true;
+    }
+
+    /**
+     * @return true if this wizard can be executed only once
+     */
+    protected boolean isSingleTimeWizard() {
+        return false;
     }
 
     public List<BASE_OBJECT> getDatabaseObjects()
@@ -161,16 +177,18 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
 
         WizardPage currentPage = (WizardPage) getStartingPage();
 
-        String clientHomeId = connectionInfo.getClientHomeId();
-        if (clientHomeId == null) {
-            currentPage.setErrorMessage(CoreMessages.tools_wizard_message_no_client_home);
-            getContainer().updateMessage();
-            return;
-        }
-        clientHome = findServerHome(clientHomeId);//MySQLDataSourceProvider.getServerHome(clientHomeId);
-        if (clientHome == null) {
-            currentPage.setErrorMessage(NLS.bind(CoreMessages.tools_wizard_message_client_home_not_found, clientHomeId));
-            getContainer().updateMessage();
+        if (clientHomeRequired) {
+            String clientHomeId = connectionInfo.getClientHomeId();
+            if (clientHomeId == null) {
+                currentPage.setErrorMessage(CoreMessages.tools_wizard_message_no_client_home);
+                getContainer().updateMessage();
+                return;
+            }
+            clientHome = findServerHome(clientHomeId);//MySQLDataSourceProvider.getServerHome(clientHomeId);
+            if (clientHome == null) {
+                currentPage.setErrorMessage(NLS.bind(CoreMessages.tools_wizard_message_client_home_not_found, clientHomeId));
+                getContainer().updateMessage();
+            }
         }
     }
 
@@ -442,6 +460,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
             }
             finally {
                 monitor.done();
+                transferFinished = true;
             }
         }
     }
@@ -482,7 +501,13 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
                 logPage.appendLog(e.getMessage() + "\n");
             }
             finally {
+                try {
+                    output.close();
+                } catch (IOException e) {
+                    log.error(e);
+                }
                 monitor.done();
+                transferFinished = true;
             }
         }
     }

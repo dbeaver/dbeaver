@@ -25,6 +25,8 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
+import org.jkiss.dbeaver.ui.dialogs.tools.AbstractImportExportWizard;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -40,7 +42,7 @@ class PostgreBackupWizardPageSettings extends PostgreWizardPageSettings<PostgreB
     private Combo encodingCombo;
     private Button useInsertsCheck;
 
-    protected PostgreBackupWizardPageSettings(PostgreBackupWizard wizard)
+    PostgreBackupWizardPageSettings(PostgreBackupWizard wizard)
     {
         super(wizard, PostgreMessages.wizard_backup_page_setting_title_setting);
         setTitle(PostgreMessages.wizard_backup_page_setting_title);
@@ -96,24 +98,25 @@ class PostgreBackupWizardPageSettings extends PostgreWizardPageSettings<PostgreB
         useInsertsCheck.addSelectionListener(changeListener);
 
         Group outputGroup = UIUtils.createControlGroup(composite, PostgreMessages.wizard_backup_page_setting_group_output, 2, GridData.FILL_HORIZONTAL, 0);
-        outputFolderText = DialogUtils.createOutputFolderChooser(outputGroup, PostgreMessages.wizard_backup_page_setting_label_output_folder, new ModifyListener() {
-            @Override
-            public void modifyText(ModifyEvent e) {
-                updateState();
-            }
-        });
+        outputFolderText = DialogUtils.createOutputFolderChooser(outputGroup, PostgreMessages.wizard_backup_page_setting_label_output_folder, e -> updateState());
         outputFileText = UIUtils.createLabelText(outputGroup, PostgreMessages.wizard_backup_page_setting_label_file_name_pattern, wizard.getOutputFilePattern());
-        UIUtils.setContentProposalToolTip(outputFileText, PostgreMessages.wizard_backup_page_setting_label_file_name_pattern_output, "host", "database", "table", "timestamp");
+        UIUtils.setContentProposalToolTip(outputFileText, PostgreMessages.wizard_backup_page_setting_label_file_name_pattern_output,
+            AbstractImportExportWizard.VARIABLE_HOST,
+            AbstractImportExportWizard.VARIABLE_DATABASE,
+            AbstractImportExportWizard.VARIABLE_TABLE,
+            AbstractImportExportWizard.VARIABLE_DATE,
+            AbstractImportExportWizard.VARIABLE_TIMESTAMP);
         UIUtils.installContentProposal(
             outputFileText,
             new TextContentAdapter(),
-            new SimpleContentProposalProvider(new String[]{"${host}", "${database}", "${table}", "${timestamp}"}));
-        outputFileText.addModifyListener(new ModifyListener() {
-            @Override
-            public void modifyText(ModifyEvent e) {
-                wizard.setOutputFilePattern(outputFileText.getText());
-            }
-        });
+            new SimpleContentProposalProvider(new String[]{
+                GeneralUtils.variablePattern(AbstractImportExportWizard.VARIABLE_HOST),
+                GeneralUtils.variablePattern(AbstractImportExportWizard.VARIABLE_DATABASE),
+                GeneralUtils.variablePattern(AbstractImportExportWizard.VARIABLE_TABLE),
+                GeneralUtils.variablePattern(AbstractImportExportWizard.VARIABLE_DATE),
+                GeneralUtils.variablePattern(AbstractImportExportWizard.VARIABLE_TIMESTAMP),
+            }));
+        outputFileText.addModifyListener(e -> wizard.setOutputFilePattern(outputFileText.getText()));
         if (wizard.getOutputFolder() != null) {
             outputFolderText.setText(wizard.getOutputFolder().getAbsolutePath());
         }

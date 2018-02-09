@@ -378,6 +378,10 @@
                     webURL="http://www.developers.net/ibmshowcase/focus/Informix"
                     description="IBM Informix Dynamic Server">
 
+                    <file type="jar" path="repo:/drivers/informix/ifxjdbc.jar" bundle="!drivers.informix"/>
+                    <file type="jar" path="repo:/drivers/informix/ifxlang.jar" bundle="!drivers.informix"/>
+                    <file type="license" path="repo:/drivers/informix/LICENSE.txt" bundle="!drivers.informix"/>
+
                     <file type="jar" path="drivers/informix/ifxjdbc.jar" bundle="drivers.informix"/>
                     <file type="jar" path="drivers/informix/ifxlang.jar" bundle="drivers.informix"/>
                     <file type="license" path="drivers/informix/LICENSE.txt" bundle="drivers.informix"/>
@@ -599,10 +603,16 @@
                     defaultPort="3050"
                     webURL=""
                     description="Firebird 3.x JayBird driver">
-                    <file type="jar" path="maven:/org.firebirdsql.jdbc:jaybird-jdk17:RELEASE[3.0.2]" bundle="!drivers.firebird"/>
+                    <file type="jar" path="maven:/org.firebirdsql.jdbc:jaybird-jdk17:RELEASE[3.0.3]" bundle="!drivers.firebird"/>
 
                     <file type="license" path="drivers/firebird3/LICENSE.txt" bundle="drivers.firebird"/>
                     <file type="jar" path="drivers/firebird3/jaybird-full.jar" bundle="drivers.firebird"/>
+                    <file type="lib" os="win32" arch="x86" path="drivers/firebird/jaybird.dll" bundle="drivers.firebird"/>
+                    <file type="lib" os="win32" arch="x86_64" path="drivers/firebird/jaybird_x64.dll" bundle="drivers.firebird"/>
+                    <file type="lib" os="linux" arch="x86" path="drivers/firebird/libjaybird.so" bundle="drivers.firebird"/>
+                    <file type="lib" os="linux" arch="x86_64" path="drivers/firebird/libjaybird_x64.so" bundle="drivers.firebird"/>
+
+                    <property name="encoding" value="UTF8"/>
 
                     <parameter name="supports-scroll" value="true"/>
                     <parameter name="ddl-drop-column-short" value="true"/>
@@ -956,9 +966,22 @@
                         class="cubrid.jdbc.driver.CUBRIDDriver"
                         sampleURL="jdbc:CUBRID:{host}:{port}:{server}:{database}::"
                         defaultPort="33000"
-                        description="CUBRID JDBC driver (beta)"
+                        description="CUBRID JDBC driver"
                         webURL="https://www.cubrid.org/">
                     <file type="jar" path="http://ftp.cubrid.org/CUBRID_Drivers/JDBC_Driver/JDBC-10.1.0.7663-cubrid.jar"/>
+                </driver>
+
+                <!-- SnowFlake -->
+                <driver
+                        id="snowflake_generic"
+                        label="Snowflake"
+                        class="net.snowflake.client.jdbc.SnowflakeDriver"
+                        icon="icons/snowflake_icon.png"
+                        sampleURL="jdbc:snowflake://{host}/?[db={database}]"
+                        defaultPort=""
+                        description="Snowflake JDBC driver"
+                        webURL="https://docs.snowflake.net/manuals/user-guide/jdbc-configure.html">
+                    <file type="jar" path="maven:/net.snowflake:snowflake-jdbc:RELEASE"/>
                 </driver>
 
                 <!-- Solr -->

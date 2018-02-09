@@ -17,128 +17,175 @@
  */
 package org.jkiss.dbeaver.debug.core.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IBreakpoint;
 import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.debug.core.model.IThread;
+import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.debug.DBGException;
+import org.jkiss.dbeaver.debug.DBGStackFrame;
+import org.jkiss.dbeaver.debug.core.DebugCore;
 
+/**
+ * Delegates mostly everything to its debug target
+ *
+ */
 public abstract class DatabaseThread extends DatabaseDebugElement implements IThread {
+    
+    private boolean stepping = false;
 
-    public DatabaseThread(IDatabaseDebugTarget target) {
+    private List<DatabaseStackFrame> frames = new ArrayList<>(1);
+
+    public DatabaseThread(DatabaseDebugTarget target) {
         super(target);
     }
 
     @Override
     public boolean canResume() {
-        // TODO Auto-generated method stub
-        return false;
+        return getDebugTarget().canResume();
     }
 
     @Override
     public boolean canSuspend() {
-        // TODO Auto-generated method stub
-        return false;
+        return getDebugTarget().canSuspend();
     }
 
     @Override
     public boolean isSuspended() {
-        // TODO Auto-generated method stub
-        return false;
+        return getDebugTarget().isSuspended();
     }
 
     @Override
     public void resume() throws DebugException {
-        // TODO Auto-generated method stub
-
+        aboutToResume(DebugEvent.CLIENT_REQUEST, false);
+        getDebugTarget().resume();
     }
 
     @Override
     public void suspend() throws DebugException {
-        // TODO Auto-generated method stub
-
+        getDebugTarget().suspend();
     }
 
     @Override
     public boolean canStepInto() {
-        // TODO Auto-generated method stub
-        return false;
+        return getDatabaseDebugTarget().canStepInto();
     }
 
     @Override
     public boolean canStepOver() {
-        // TODO Auto-generated method stub
-        return false;
+        return getDatabaseDebugTarget().canStepOver();
     }
 
     @Override
     public boolean canStepReturn() {
-        // TODO Auto-generated method stub
-        return false;
+        return getDatabaseDebugTarget().canStepReturn();
     }
 
     @Override
     public boolean isStepping() {
-        // TODO Auto-generated method stub
-        return false;
+        return stepping;
     }
 
     @Override
     public void stepInto() throws DebugException {
-        // TODO Auto-generated method stub
-
+        aboutToResume(DebugEvent.STEP_INTO, true);
+        getDatabaseDebugTarget().stepInto();
     }
 
     @Override
     public void stepOver() throws DebugException {
-        // TODO Auto-generated method stub
-
+        aboutToResume(DebugEvent.STEP_OVER, true);
+        getDatabaseDebugTarget().stepOver();
     }
 
     @Override
     public void stepReturn() throws DebugException {
-        // TODO Auto-generated method stub
+        aboutToResume(DebugEvent.STEP_RETURN, true);
+        getDatabaseDebugTarget().stepReturn();
+    }
 
+    private void aboutToResume(int detail, boolean stepping) {
+        frames.clear();
+        setStepping(stepping);
+//        setBreakpoints(null);
+        fireResumeEvent(detail);
     }
 
     @Override
     public boolean canTerminate() {
-        // TODO Auto-generated method stub
-        return false;
+        return getDebugTarget().canTerminate();
     }
 
     @Override
     public boolean isTerminated() {
-        // TODO Auto-generated method stub
-        return false;
+        return getDebugTarget().isTerminated();
     }
 
     @Override
     public void terminate() throws DebugException {
-        // TODO Auto-generated method stub
-
+        frames.clear();
+        getDebugTarget().terminate();
     }
 
     @Override
     public IStackFrame[] getStackFrames() throws DebugException {
-        // TODO Auto-generated method stub
-        return null;
+        if (isSuspended()) {
+            if (frames.size() == 0) {
+                extractStackFrames();
+            }
+        }
+        return frames.toArray(new IStackFrame[frames.size()]);
+    }
+
+    protected void extractStackFrames() throws DebugException {
+        List<? extends DBGStackFrame> stackFrames;
+        try {
+            stackFrames = getDatabaseDebugTarget().requestStackFrames();
+            rebuildStack(stackFrames);
+        } catch (DBGException e) {
+            String message = NLS.bind("Error reading stack for {0}", getName());
+            IStatus status = DebugCore.newErrorStatus(message, e);
+            throw new DebugException(status);
+        }
     }
 
     @Override
     public boolean hasStackFrames() throws DebugException {
-        // TODO Auto-generated method stub
-        return false;
+        return true;
+    }
+
+    public void rebuildStack(List<? extends DBGStackFrame> stackFrames) {
+        for (DBGStackFrame dbgStackFrame : stackFrames) {
+            addFrame(dbgStackFrame);
+        }
+    }
+
+    private void addFrame(DBGStackFrame stackFrameId) {
+        DatabaseStackFrame frame = new DatabaseStackFrame(this, stackFrameId);
+        frames.add(frame);
     }
 
     @Override
     public int getPriority() throws DebugException {
-        // TODO Auto-generated method stub
+        // no idea for now
         return 0;
     }
 
     @Override
     public IStackFrame getTopStackFrame() throws DebugException {
-        // TODO Auto-generated method stub
+        if (isSuspended()) {
+            if (frames.size() == 0) {
+                extractStackFrames();
+            }
+            if (frames.size() > 0) {
+                return frames.get(0);
+            }
+        }
         return null;
     }
 
@@ -149,13 +196,11 @@ public abstract class DatabaseThread extends DatabaseDebugElement implements ITh
     }
 
     public void resumedByTarget() {
-        // TODO Auto-generated method stub
-
+        aboutToResume(DebugEvent.CLIENT_REQUEST, false);
     }
 
-    public void setStepping(boolean b) {
-        // TODO Auto-generated method stub
-
+    public void setStepping(boolean stepping) {
+        this.stepping = stepping;
     }
 
 }

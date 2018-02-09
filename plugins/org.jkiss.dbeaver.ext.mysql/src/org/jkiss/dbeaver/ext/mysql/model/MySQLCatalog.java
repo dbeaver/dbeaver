@@ -369,12 +369,18 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
                 } else {
                     DBSObjectFilter tableFilters = owner.getDataSource().getContainer().getObjectFilter(MySQLTable.class, owner, false);
                     if (tableFilters != null && !tableFilters.isEmpty()) {
-                        sql.append(" WHERE 1=1");
+                        sql.append(" WHERE ");
+                        boolean hasCond = false;
                         for (String incName : CommonUtils.safeCollection(tableFilters.getInclude())) {
-                            sql.append(" AND ").append(tableNameCol).append(" LIKE ").append(SQLUtils.quoteString(session.getDataSource(), incName));
+                            if (hasCond) sql.append(" OR ");
+                            hasCond = true;
+                            sql.append(tableNameCol).append(" LIKE ").append(SQLUtils.quoteString(session.getDataSource(), incName));
                         }
+                        hasCond = false;
                         for (String incName : CommonUtils.safeCollection(tableFilters.getExclude())) {
-                            sql.append(" AND ").append(tableNameCol).append(" NOT LIKE ").append(SQLUtils.quoteString(session.getDataSource(), incName));
+                            if (hasCond) sql.append(" OR ");
+                            hasCond = true;
+                            sql.append(tableNameCol).append(" NOT LIKE ").append(SQLUtils.quoteString(session.getDataSource(), incName));
                         }
                     }
                 }

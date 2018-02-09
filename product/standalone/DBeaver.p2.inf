@@ -1,3 +1,9 @@
 instructions.configure=\
-  addRepository(type:0,location:https${#58}//dbeaver.jkiss.org/update/ce/latest/,name:DBeaver update site,enabled:true);\
-  addRepository(type:1,location:https${#58}//dbeaver.jkiss.org/update/ce/latest/,name:DBeaver update site,enabled:true);
+  addRepository(type:0,location:https${#58}//dbeaver.jkiss.org/update/ce/latest/,name:DBeaver CE update site,enabled:true);\
+  addRepository(type:1,location:https${#58}//dbeaver.jkiss.org/update/ce/latest/,name:DBeaver CE update site,enabled:true);\
+  addRepository(type:0,location:https${#58}//dbeaver.jkiss.org/update/office/latest/,name:DBeaver Office integration,enabled:true);\
+  addRepository(type:1,location:https${#58}//dbeaver.jkiss.org/update/office/latest/,name:DBeaver Office integration,enabled:true);\
+  addRepository(type:0,location:https${#58}//dbeaver.jkiss.org/update/svg/latest/,name:DBeaver SVG format support,enabled:true);\
+  addRepository(type:1,location:https${#58}//dbeaver.jkiss.org/update/svg/latest/,name:DBeaver SVG format support,enabled:true);\
+  addRepository(type:0,location:http${#58}//download.eclipse.org/releases/oxygen/,name:Oxygen,enabled:true);\
+  addRepository(type:1,location:http${#58}//download.eclipse.org/releases/oxygen/,name:Oxygen,enabled:true);

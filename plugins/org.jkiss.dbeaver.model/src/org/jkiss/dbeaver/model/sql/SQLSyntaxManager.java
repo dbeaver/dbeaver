@@ -48,6 +48,7 @@ public class SQLSyntaxManager {
     private char anonymousParameterMark;
     private char namedParameterPrefix;
     private String controlCommandPrefix;
+    private boolean variablesEnabled;
     @NotNull
     private String catalogSeparator = String.valueOf(SQLConstants.STRUCT_SEPARATOR);
     @NotNull
@@ -121,6 +122,10 @@ public class SQLSyntaxManager {
         return controlCommandPrefix;
     }
 
+    public boolean isVariablesEnabled() {
+        return variablesEnabled;
+    }
+
     public void init(@NotNull DBPDataSource dataSource) {
         init(SQLUtils.getDialectFromObject(dataSource), dataSource.getContainer().getPreferenceStore());
     }
@@ -133,7 +138,7 @@ public class SQLSyntaxManager {
         this.quoteStrings = sqlDialect.getIdentifierQuoteStrings();
         this.structSeparator = sqlDialect.getStructSeparator();
         this.catalogSeparator = sqlDialect.getCatalogSeparator();
-        this.escapeChar = '\\';
+        this.escapeChar = dialect.getStringEscapeCharacter();;
         if (!preferenceStore.getBoolean(ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER)) {
             this.statementDelimiters = new String[] { sqlDialect.getScriptDelimiter().toLowerCase() };
         }
@@ -150,6 +155,7 @@ public class SQLSyntaxManager {
 
         this.parametersEnabled = preferenceStore.getBoolean(ModelPreferences.SQL_PARAMETERS_ENABLED);
         this.anonymousParametersEnabled = preferenceStore.getBoolean(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_ENABLED);
+        this.variablesEnabled = preferenceStore.getBoolean(ModelPreferences.SQL_VARIABLES_ENABLED);
         String markString = preferenceStore.getString(ModelPreferences.SQL_ANONYMOUS_PARAMETERS_MARK);
         if (CommonUtils.isEmpty(markString)) {
             this.anonymousParameterMark = SQLConstants.DEFAULT_PARAMETER_MARK;

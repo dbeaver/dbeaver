@@ -30,7 +30,9 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
 import org.jkiss.dbeaver.debug.core.model.DatabaseProcess;
+import org.jkiss.dbeaver.debug.core.model.DatabaseStackFrame;
 import org.jkiss.dbeaver.debug.core.model.DatabaseThread;
+import org.jkiss.dbeaver.debug.core.model.DatabaseVariable;
 import org.jkiss.dbeaver.debug.core.model.IDatabaseDebugTarget;
 
 public class DatabaseDebugModelPresentation extends LabelProvider implements IDebugModelPresentationExtension {
@@ -71,17 +73,25 @@ public class DatabaseDebugModelPresentation extends LabelProvider implements IDe
     {
         // FIXME:AF: register adapters
         try {
-            if (element instanceof DatabaseThread) {
-                DatabaseThread thread = (DatabaseThread) element;
-                return thread.getName();
+            if (element instanceof IDatabaseDebugTarget) {
+                IDatabaseDebugTarget databaseDebugTarget = (IDatabaseDebugTarget) element;
+                return databaseDebugTarget.getName();
             }
             if (element instanceof DatabaseProcess) {
                 DatabaseProcess process = (DatabaseProcess) element;
                 return process.getLabel();
             }
-            if (element instanceof IDatabaseDebugTarget) {
-                IDatabaseDebugTarget databaseDebugTarget = (IDatabaseDebugTarget) element;
-                return databaseDebugTarget.getName();
+            if (element instanceof DatabaseThread) {
+                DatabaseThread thread = (DatabaseThread) element;
+                return thread.getName();
+            }
+            if (element instanceof DatabaseStackFrame) {
+                DatabaseStackFrame stackFrame = (DatabaseStackFrame) element;
+                return stackFrame.getName();
+            }
+            if (element instanceof DatabaseVariable) {
+                DatabaseVariable variable = (DatabaseVariable) element;
+                return variable.getName();
             }
         } catch (CoreException e) {
             return "<not responding>";

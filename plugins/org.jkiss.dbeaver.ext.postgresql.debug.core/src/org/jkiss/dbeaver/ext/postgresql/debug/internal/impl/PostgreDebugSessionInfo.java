@@ -44,11 +44,6 @@ public class PostgreDebugSessionInfo implements DBGSessionInfo {
     final String state;
     final String query;
 
-    @Override
-    public Integer getID() {
-        return pid;
-    }
-
     public PostgreDebugSessionInfo(int pid, String user, String application, String state, String query) {
         super();
         this.pid = pid;
@@ -56,6 +51,16 @@ public class PostgreDebugSessionInfo implements DBGSessionInfo {
         this.application = application;
         this.state = state;
         this.query = query;
+    }
+
+    @Override
+    public Integer getID() {
+        return pid;
+    }
+    
+    @Override
+    public String getTitle() {
+        return getApplication();
     }
 
     public int getPid() {

@@ -65,6 +65,12 @@
             properties="standalone,hasActiveProject,hasMultipleProjects"
             type="java.lang.Object"/>
         <propertyTester
+            class="org.jkiss.dbeaver.ui.actions.UIPropertyTester"
+            id="org.jkiss.dbeaver.ui.actions.UIPropertyTester"
+            namespace="org.jkiss.dbeaver.core.ui"
+            properties="toolbarVisible"
+            type="java.lang.Object"/>
+        <propertyTester
             class="org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester"
             id="org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester"
             namespace="org.jkiss.dbeaver.core.datasource"
@@ -484,6 +490,14 @@
             <with variable="activePart">
                 <!-- TODO: Should replace forcePluginActivation with some other non-active way to test property-->
                 <test property="org.jkiss.dbeaver.core.resultset.active" forcePluginActivation="true"/>
+            </with>
+        </definition>
+        <definition id="org.jkiss.dbeaver.core.ui.toolbar.general.visible">
+            <with variable="activeWorkbenchWindow.activePerspective">
+                <or>
+                    <reference definitionId="DBeaverPerspectiveActive"/>
+                    <test property="org.jkiss.dbeaver.core.ui.toolbarVisible" value="dbeaver-general"/>
+                </or>
             </with>
         </definition>
 
@@ -1742,15 +1756,29 @@
         <!-- Database toolbar -->
         <menuContribution allPopups="false" locationURI="toolbar:org.eclipse.ui.main.toolbar?before=additions">
             <toolbar id="dbeaver-general" label="%toolbar.dbeaver-general.label">
-                <command commandId="org.jkiss.dbeaver.core.new.connection" label="%command.org.jkiss.dbeaver.core.new.connection.name" tooltip="%command.org.jkiss.dbeaver.core.new.connection.description"/>
+                <command commandId="org.jkiss.dbeaver.core.new.connection" label="%command.org.jkiss.dbeaver.core.new.connection.name" tooltip="%command.org.jkiss.dbeaver.core.new.connection.description">
+                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.toolbar.general.visible"/></visibleWhen>
+                </command>
                 <separator name="sql-tools" visible="true"/>
-                <command commandId="org.jkiss.dbeaver.core.connect" label="%command.org.jkiss.dbeaver.core.connect.name"/>
-                <command commandId="org.jkiss.dbeaver.core.invalidate" label="%command.org.jkiss.dbeaver.core.invalidate.name"/>
-                <command commandId="org.jkiss.dbeaver.core.disconnect" label="%command.org.jkiss.dbeaver.core.disconnect.name"/>
+                <command commandId="org.jkiss.dbeaver.core.connect" label="%command.org.jkiss.dbeaver.core.connect.name">
+                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.toolbar.general.visible"/></visibleWhen>
+                </command>
+                <command commandId="org.jkiss.dbeaver.core.invalidate" label="%command.org.jkiss.dbeaver.core.invalidate.name">
+                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.toolbar.general.visible"/></visibleWhen>
+                </command>
+                <command commandId="org.jkiss.dbeaver.core.disconnect" label="%command.org.jkiss.dbeaver.core.disconnect.name">
+                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.toolbar.general.visible"/></visibleWhen>
+                </command>
                 <separator name="sql-tools" visible="true"/>
-                <command commandId="org.jkiss.dbeaver.core.sql.editor.open" label="%command.org.jkiss.dbeaver.core.sql.editor.open.name"/>
-                <command commandId="org.jkiss.dbeaver.core.sql.editor.recent" label="%command.org.jkiss.dbeaver.core.sql.editor.recent.name"/>
-                <command commandId="org.jkiss.dbeaver.core.sql.editor.create" label="%command.org.jkiss.dbeaver.core.sql.editor.create.name"/>
+                <command commandId="org.jkiss.dbeaver.core.sql.editor.open" label="%command.org.jkiss.dbeaver.core.sql.editor.open.name">
+                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.toolbar.general.visible"/></visibleWhen>
+                </command>
+                <command commandId="org.jkiss.dbeaver.core.sql.editor.recent" label="%command.org.jkiss.dbeaver.core.sql.editor.recent.name">
+                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.toolbar.general.visible"/></visibleWhen>
+                </command>
+                <command commandId="org.jkiss.dbeaver.core.sql.editor.create" label="%command.org.jkiss.dbeaver.core.sql.editor.create.name">
+                    <visibleWhen><reference definitionId="org.jkiss.dbeaver.core.ui.toolbar.general.visible"/></visibleWhen>
+                </command>
                 <separator name="additions" visible="false"/>
             </toolbar>
             <toolbar id="dbeaver-transactions" label="%toolbar.dbeaver-transactions.label">
@@ -2514,9 +2542,9 @@
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.show.output" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+O"/>
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.show.log" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+P"/>
 
-        <key commandId="org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="F6"/>
-        <key commandId="org.jkiss.dbeaver.ui.editors.sql.maximize.result.panel" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="SHIFT+F6"/>
-        <key commandId="org.jkiss.dbeaver.ui.editors.sql.switch.panel" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+F6"/>
+        <key commandId="org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+6"/>
+        <key commandId="org.jkiss.dbeaver.ui.editors.sql.maximize.result.panel" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+6"/>
+        <key commandId="org.jkiss.dbeaver.ui.editors.sql.switch.panel" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+6"/>
         <!--<key commandId="org.jkiss.dbeaver.ui.editors.sql.assist.templates" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+SPACE"/>-->
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.open.file" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+O"/>
 
@@ -2528,8 +2556,12 @@
 
         <key commandId="org.jkiss.dbeaver.ui.editors.text.content.format" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+F"/>
 
-        <key commandId="org.jkiss.dbeaver.core.commit" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+SHIFT+C"/>
-        <key commandId="org.jkiss.dbeaver.core.rollback" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+SHIFT+R"/>
+        <key commandId="org.jkiss.dbeaver.core.commit" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" platform="win32" sequence="CTRL+ALT+SHIFT+C"/>
+        <key commandId="org.jkiss.dbeaver.core.commit" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" platform="cocoa" sequence="CTRL+4"/>
+        <key commandId="org.jkiss.dbeaver.core.commit" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" platform="gtk" sequence="CTRL+4"/>
+        <key commandId="org.jkiss.dbeaver.core.rollback" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" platform="win32" sequence="CTRL+ALT+SHIFT+R"/>
+        <key commandId="org.jkiss.dbeaver.core.rollback" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" platform="cocoa" sequence="CTRL+8"/>
+        <key commandId="org.jkiss.dbeaver.core.rollback" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" platform="gtk" sequence="CTRL+8"/>
     </extension>
 
     <extension point="org.eclipse.ui.contexts">
@@ -3467,6 +3499,7 @@
                     <property id="quoteChar" label="%dataTransfer.processor.csv.property.quoteChar.name" type="string" description="%dataTransfer.processor.csv.property.quoteChar.description" defaultValue="&quot;" required="false"/>
                     <property id="quoteAlways" label="%dataTransfer.processor.csv.property.quoteAlways.name" type="boolean" description="%dataTransfer.processor.csv.property.quoteAlways.description" defaultValue="false" required="false"/>
                     <property id="nullString" label="%dataTransfer.processor.csv.property.nullString.name" type="string" description="%dataTransfer.processor.csv.property.nullString.description" defaultValue="" required="false"/>
+                    <property id="formatNumbers" label="%dataTransfer.processor.csv.property.formatNumbers.name" type="boolean" description="%dataTransfer.processor.csv.property.formatNumbers.description" defaultValue="false" required="false"/>
                 </propertyGroup>
             </processor>
             <processor
@@ -3477,8 +3510,9 @@
                     label="%dataTransfer.processor.sql.name">
                 <sourceType type="org.jkiss.dbeaver.model.struct.rdb.DBSTable"/>
                 <propertyGroup label="%dataTransfer.processor.sql.propertyGroup.general.label">
-                    <property id="extension" label="%dataTransfer.processor.sql.property.extension.label" defaultValue="sql"/>
-                    <property id="format" label="%dataTransfer.processor.xml.property.format.label" defaultValue="native" validValues="ui,edit,native"/>
+                    <property id="includeAutoGenerated" label="%dataTransfer.processor.sql.property.includeAutoGenerated.label" description="%dataTransfer.processor.sql.property.includeAutoGenerated.description" type="boolean" defaultValue="false"/>
+                    <property id="extension" label="%dataTransfer.processor.sql.property.extension.label" type="string" defaultValue="sql"/>
+                    <property id="format" label="%dataTransfer.processor.xml.property.format.label" type="string" defaultValue="native" validValues="ui,edit,native"/>
                     <property id="omitSchema" label="%dataTransfer.processor.sql.property.omitSchema.name" type="boolean" description="%dataTransfer.processor.sql.property.omitSchema.description" required="false" defaultValue="false"/>
                     <property id="rowsInStatement" label="%dataTransfer.processor.sql.property.rowsInStatement.name" type="integer" description="%dataTransfer.processor.sql.property.rowsInStatement.description" defaultValue="10" required="true"/>
                 </propertyGroup>

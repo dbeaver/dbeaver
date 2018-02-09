@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.mysql.model;
 
-import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -64,7 +63,7 @@ import java.util.regex.Pattern;
 /**
  * GenericDataSource
  */
-public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector, DBCQueryPlanner, IAdaptable
+public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector, DBCQueryPlanner
 {
     private static final Log log = Log.getLog(MySQLDataSource.class);
 

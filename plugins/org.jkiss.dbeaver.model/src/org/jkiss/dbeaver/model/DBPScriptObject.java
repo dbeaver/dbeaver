@@ -35,6 +35,14 @@ public interface DBPScriptObject extends DBPObject {
     String OPTION_INCLUDE_OBJECT_DROP = "script.includeDrop";
     String OPTION_SCRIPT_FORMAT = "script.format";
 
+    // Extracts object source for debugger
+    // By defautl the same as regular source but in some cases source should be transormed (e.g. for PG)
+    String OPTION_DEBUGGER_SOURCE = "debugger.source";
+
+    // Embedded source is used for obtaining source of
+    // nested objects (columns, constraints, etc) which can be embedded in parent object declaration (tables)
+    String OPTION_EMBEDDED_SOURCE = "embedded.source";
+
     Map<String, Object> EMPTY_OPTIONS = Collections.unmodifiableMap(new HashMap<>());
 
     String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options)
