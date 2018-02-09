@@ -5,4 +5,4 @@ Bundle-SymbolicName: org.jkiss.utils.nls
 Bundle-Version: 1.0.8
 Fragment-Host: org.jkiss.utils
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Bundle-Vendor: %Bundle-Vendor
+Bundle-Vendor: JKISS
