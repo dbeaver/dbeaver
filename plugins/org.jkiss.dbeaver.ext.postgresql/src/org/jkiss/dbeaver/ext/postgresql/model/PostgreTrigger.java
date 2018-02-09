@@ -55,6 +55,7 @@ public class PostgreTrigger implements DBSTrigger, DBPQualifiedObject, PostgreOb
 
     private PostgreTableBase table;
     private long objectId;
+    private String enabledState;
     private String whenExpression;
     private long functionSchemaId;
     private long functionId;
@@ -74,6 +75,7 @@ public class PostgreTrigger implements DBSTrigger, DBPQualifiedObject, PostgreOb
         this.name = JDBCUtils.safeGetString(dbResult, "tgname");
         this.table = table;
         this.objectId = JDBCUtils.safeGetLong(dbResult, "oid");
+        this.enabledState = JDBCUtils.safeGetString(dbResult, "tgenabled");
         this.whenExpression = JDBCUtils.safeGetString(dbResult, "tgqual");
 
         // Get procedure
@@ -113,6 +115,7 @@ public class PostgreTrigger implements DBSTrigger, DBPQualifiedObject, PostgreOb
 
     @NotNull
     @Override
+    @Property(viewable = true, order = 1)
     public String getName() {
         return name;
     }
@@ -133,6 +136,11 @@ public class PostgreTrigger implements DBSTrigger, DBPQualifiedObject, PostgreOb
         return type;
     }
 
+    @Property(viewable = true, order = 5)
+    public String getEnabledState() {
+        return enabledState;
+    }
+
     @Override
     public boolean isPersisted() {
         return persisted;
@@ -145,18 +153,18 @@ public class PostgreTrigger implements DBSTrigger, DBPQualifiedObject, PostgreOb
     }
 
     @Override
-    @Property(viewable = true, order = 5)
+    @Property(viewable = true, order = 10)
     public long getObjectId() {
         return objectId;
     }
 
-    @Property(viewable = true, order = 6)
+    @Property(viewable = true, order = 11)
     public String getWhenExpression()
     {
         return whenExpression;
     }
 
-    @Property(viewable = true, order = 7)
+    @Property(viewable = true, order = 12)
     public PostgreProcedure getFunction(DBRProgressMonitor monitor) throws DBException {
         if (functionId == 0) {
             return null;

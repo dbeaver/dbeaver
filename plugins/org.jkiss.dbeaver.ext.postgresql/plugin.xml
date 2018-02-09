@@ -209,7 +209,7 @@
                     webURL="http://jdbc.postgresql.org/"
                     description="%driver.postgresql.description">
                     <replace provider="generic" driver="postgresql"/>
-                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[9.4.1212.jre7]" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.0.jre7]" bundle="!drivers.postgresql"/>
                     <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
                     <file type="jar" path="drivers/postgresql/postgresql.jar" bundle="drivers.postgresql"/>
 
@@ -270,6 +270,9 @@
         <manager
             class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreTableColumnManager"
             objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn"/>
+        <manager
+            class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreSequenceManager"
+            objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreSequence"/>
         <manager
             class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreConstraintManager"
             objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableConstraint"/>
@@ -344,6 +347,11 @@
         <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreEnumValueManager" id="org.jkiss.dbeaver.ext.postgresql.edit.PostgreEnumValueManager">
             <supports dataSource="postgresql" extension="E"/>
         </manager>
+<!--
+        <manager class="org.jkiss.dbeaver.ui.data.managers.StructValueManager" id="org.jkiss.dbeaver.ext.postgresql.edit.PostgreHStoreValueManager">
+            <supports dataSource="postgresql" typeName="hstore"/>
+        </manager>
+-->
     </extension>
 
     <extension point="org.jkiss.dbeaver.networkHandler">

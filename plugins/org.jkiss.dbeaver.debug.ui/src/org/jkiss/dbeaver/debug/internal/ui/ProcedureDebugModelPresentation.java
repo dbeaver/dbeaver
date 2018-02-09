@@ -17,32 +17,54 @@
  */
 package org.jkiss.dbeaver.debug.internal.ui;
 
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IValue;
 import org.eclipse.debug.ui.IValueDetailListener;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IEditorInput;
+import org.jkiss.dbeaver.debug.core.DebugCore;
 import org.jkiss.dbeaver.debug.ui.DatabaseDebugModelPresentation;
+import org.jkiss.dbeaver.model.DBPScriptObject;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.ui.editors.entity.EntityEditorInput;
 
 public class ProcedureDebugModelPresentation extends DatabaseDebugModelPresentation {
 
     @Override
     public IEditorInput getEditorInput(Object element)
     {
-        // TODO Auto-generated method stub
+        if (element instanceof DBNDatabaseNode) {
+            DBNDatabaseNode dbnNode = (DBNDatabaseNode) element;
+            EntityEditorInput editorInput = new EntityEditorInput(dbnNode);
+            editorInput.setAttribute(DBPScriptObject.OPTION_DEBUGGER_SOURCE, Boolean.TRUE);
+//FIXME:AF: how to retrieve it? probably org.jkiss.dbeaver.databaseor and EntityEditorsRegistry can help 
+//            String folderId = "postgresql.source.view";
+//            editorInput.setDefaultFolderId(folderId);
+            return editorInput;
+        }
         return null;
     }
 
     @Override
     public String getEditorId(IEditorInput input, Object element)
     {
-        // TODO Auto-generated method stub
-        return null;
+//FIXME:AF: is there a constant anywhere? 
+        return "org.jkiss.dbeaver.ui.editors.entity.EntityEditor";
     }
 
     @Override
     public void computeDetail(IValue value, IValueDetailListener listener)
     {
-        // TODO Auto-generated method stub
-
+        try {
+            String valueString = value.getValueString();
+            listener.detailComputed(value, valueString);
+        } catch (DebugException e) {
+            String message = NLS.bind("Unable to compute valie for {0}", value);
+            IStatus status = DebugCore.newErrorStatus(message, e);
+            DebugCore.log(status);
+            listener.detailComputed(value, e.getMessage());
+        }
     }
 
 }

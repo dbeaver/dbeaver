@@ -26,6 +26,8 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
+import org.jkiss.dbeaver.ui.dialogs.tools.AbstractImportExportWizard;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -47,7 +49,7 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
     private Button binaryInHex;
     private Button noData;
 
-    protected MySQLExportWizardPageSettings(MySQLExportWizard wizard)
+    MySQLExportWizardPageSettings(MySQLExportWizard wizard)
     {
         super(wizard, MySQLMessages.tools_db_export_wizard_page_settings_page_name);
         setTitle(MySQLMessages.tools_db_export_wizard_page_settings_page_name);
@@ -102,24 +104,26 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
         noData.addSelectionListener(changeListener);
 
         Group outputGroup = UIUtils.createControlGroup(composite, MySQLMessages.tools_db_export_wizard_page_settings_group_output, 2, GridData.FILL_HORIZONTAL, 0);
-        outputFolderText = DialogUtils.createOutputFolderChooser(outputGroup, MySQLMessages.tools_db_export_wizard_page_settings_label_out_text, new ModifyListener() {
-            @Override
-            public void modifyText(ModifyEvent e) {
-                updateState();
-            }
-        });
+        outputFolderText = DialogUtils.createOutputFolderChooser(outputGroup, MySQLMessages.tools_db_export_wizard_page_settings_label_out_text, e -> updateState());
         outputFileText = UIUtils.createLabelText(outputGroup, "File name pattern", wizard.getOutputFilePattern());
-        UIUtils.setContentProposalToolTip(outputFileText, "Output file name pattern", "host", "database", "table", "timestamp");
+        UIUtils.setContentProposalToolTip(outputFileText, "Output file name pattern",
+            AbstractImportExportWizard.VARIABLE_HOST,
+            AbstractImportExportWizard.VARIABLE_DATABASE,
+            AbstractImportExportWizard.VARIABLE_TABLE,
+            AbstractImportExportWizard.VARIABLE_DATE,
+            AbstractImportExportWizard.VARIABLE_TIMESTAMP);
         UIUtils.installContentProposal(
             outputFileText,
             new TextContentAdapter(),
-            new SimpleContentProposalProvider(new String[]{"${host}", "${database}", "${table}", "${timestamp}"}));
-        outputFileText.addModifyListener(new ModifyListener() {
-            @Override
-            public void modifyText(ModifyEvent e) {
-                wizard.setOutputFilePattern(outputFileText.getText());
-            }
-        });
+            new SimpleContentProposalProvider(new String[] {
+                GeneralUtils.variablePattern(AbstractImportExportWizard.VARIABLE_HOST),
+                GeneralUtils.variablePattern(AbstractImportExportWizard.VARIABLE_DATABASE),
+                GeneralUtils.variablePattern(AbstractImportExportWizard.VARIABLE_TABLE),
+                GeneralUtils.variablePattern(AbstractImportExportWizard.VARIABLE_DATE),
+                GeneralUtils.variablePattern(AbstractImportExportWizard.VARIABLE_TIMESTAMP),
+                }
+            ));
+        outputFileText.addModifyListener(e -> wizard.setOutputFilePattern(outputFileText.getText()));
 
         createExtraArgsInput(outputGroup);
 

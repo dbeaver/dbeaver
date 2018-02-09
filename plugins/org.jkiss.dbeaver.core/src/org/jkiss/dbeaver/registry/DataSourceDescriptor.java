@@ -693,10 +693,12 @@ public class DataSourceDescriptor
                 try {
                     if (!tunnelConfiguration.isSavePassword()) {
                         DBWTunnel.AuthCredentials rc = tunnel.getRequiredCredentials(tunnelConfiguration);
-                        if (!DataSourceHandler.askForPassword(this, tunnelConfiguration, rc == DBWTunnel.AuthCredentials.PASSWORD)) {
-                            DataSourceHandler.updateDataSourceObject(this);
-                            tunnel = null;
-                            return false;
+                        if (rc != DBWTunnel.AuthCredentials.NONE) {
+                            if (!DataSourceHandler.askForPassword(this, tunnelConfiguration, rc == DBWTunnel.AuthCredentials.PASSWORD)) {
+                                DataSourceHandler.updateDataSourceObject(this);
+                                tunnel = null;
+                                return false;
+                            }
                         }
                     }
 
@@ -711,6 +713,10 @@ public class DataSourceDescriptor
                     }
 */
 
+                    if (preferenceStore.getBoolean(ModelPreferences.CONNECT_USE_ENV_VARS)) {
+                        tunnelConfiguration = new DBWHandlerConfiguration(tunnelConfiguration);
+                        tunnelConfiguration.resolveSystemEnvironmentVariables();
+                    }
                     tunnelConnectionInfo = tunnel.initializeTunnel(monitor, registry.getPlatform(), tunnelConfiguration, connectionInfo);
                 } catch (Exception e) {
                     throw new DBCException("Can't initialize tunnel", e);

@@ -19,11 +19,9 @@ package org.jkiss.dbeaver.ext.postgresql.debug.core;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.debug.core.DebugPlugin;
-import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
-import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.debug.core.DebugCore;
 import org.jkiss.dbeaver.ext.postgresql.debug.internal.PostgreDebugCoreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
@@ -31,6 +29,9 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNModel;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 public class PostgreSqlDebugCore {
@@ -52,24 +53,23 @@ public class PostgreSqlDebugCore {
         PostgreSchema schema = procedure.getContainer();
         
         String databaseName = database.getName();
-        Object[] bindings = new Object[] {dataSourceContainer.getName(), databaseName,
-                procedure.getName(), schema.getName()};
+        String schemaName = schema.getName();
+        String procedureName = procedure.getName();
+        Object[] bindings = new Object[] { dataSourceContainer.getName(), databaseName, procedureName, schemaName };
         String name = NLS.bind(PostgreDebugCoreMessages.PostgreSqlDebugCore_launch_configuration_name, bindings);
         //Let's use metadata area for storage
         IContainer container = null;
-        ILaunchConfigurationWorkingCopy workingCopy = createConfiguration(container, name);
-        workingCopy.setAttribute(DebugCore.ATTR_DRIVER, dataSourceContainer.getDriver().getId());
-        workingCopy.setAttribute(DebugCore.ATTR_DATASOURCE, dataSourceContainer.getId());
-        workingCopy.setAttribute(DebugCore.ATTR_DATABASE, databaseName);
-        workingCopy.setAttribute(DebugCore.ATTR_OID, String.valueOf(procedure.getObjectId()));
-        return workingCopy;
-    }
-
-    public static ILaunchConfigurationWorkingCopy createConfiguration(IContainer container, String name)
-            throws CoreException {
-        ILaunchManager manager = DebugPlugin.getDefault().getLaunchManager();
-        ILaunchConfigurationType type = manager.getLaunchConfigurationType(CONFIGURATION_TYPE);
-        ILaunchConfigurationWorkingCopy workingCopy = type.newInstance(container, name);
+        ILaunchConfigurationWorkingCopy workingCopy = DebugCore.createConfiguration(container, CONFIGURATION_TYPE, name);
+        workingCopy.setAttribute(DebugCore.ATTR_DRIVER_ID, dataSourceContainer.getDriver().getId());
+        workingCopy.setAttribute(DebugCore.ATTR_DATASOURCE_ID, dataSourceContainer.getId());
+        workingCopy.setAttribute(DebugCore.ATTR_DATABASE_NAME, databaseName);
+        workingCopy.setAttribute(DebugCore.ATTR_SCHEMA_NAME, schemaName);
+        workingCopy.setAttribute(DebugCore.ATTR_PROCEDURE_OID, String.valueOf(procedure.getObjectId()));
+        workingCopy.setAttribute(DebugCore.ATTR_PROCEDURE_NAME, procedureName);
+        workingCopy.setAttribute(DebugCore.ATTR_PROCEDURE_CALL, DebugCore.composeProcedureCall(procedure));
+        final DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
+        DBNDatabaseNode node = navigatorModel.getNodeByObject(procedure);
+        workingCopy.setAttribute(DebugCore.ATTR_NODE_PATH, node.getNodeItemPath());
         return workingCopy;
     }
 }

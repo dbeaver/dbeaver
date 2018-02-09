@@ -59,6 +59,7 @@ import org.jkiss.dbeaver.ui.IErrorVisualizer;
 import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleManager;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.rules.SQLVariableRule;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLControlToken;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLToken;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesPage;
@@ -72,6 +73,8 @@ import org.jkiss.utils.Pair;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * SQL Executor
@@ -516,7 +519,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         ITextSelection selection = (ITextSelection) getSelectionProvider().getSelection();
         String selText = selection.getText();
 
-        selText = SQLUtils.trimQueryStatement(getSyntaxManager(), selText, !syntaxManager.getDialect().isDelimiterAfterQuery());
+        if (getActivePreferenceStore().getBoolean(ModelPreferences.QUERY_REMOVE_TRAILING_DELIMITER)) {
+            selText = SQLUtils.trimQueryStatement(getSyntaxManager(), selText, !syntaxManager.getDialect().isDelimiterAfterQuery());
+        }
         if (!CommonUtils.isEmpty(selText)) {
             SQLScriptElement parsedElement = parseQuery(getDocument(), selection.getOffset(), selection.getOffset() + selection.getLength(), selection.getOffset(), false, false);
             if (parsedElement instanceof SQLControlCommand) {
@@ -1007,6 +1012,47 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                 }
             }
         }
+
+        if (syntaxManager.isVariablesEnabled()) {
+            try {
+                // Find variables in strings, comments, etc
+                // Use regex
+                String query = document.get(queryOffset, queryLength);
+
+                Matcher matcher = SQLVariableRule.VARIABLE_PATTERN.matcher(query);
+                int position = 0;
+                while (matcher.find(position)) {
+                    {
+                        int start = matcher.start();
+                        int orderPos = 0;
+                        SQLQueryParameter param = null;
+                        if (parameters != null) {
+                            for (SQLQueryParameter p : parameters) {
+                                if (p.getTokenOffset() == start) {
+                                    param = p;
+                                    break;
+                                } else if (p.getTokenOffset() < start) {
+                                    orderPos++;
+                                }
+                            }
+                        }
+
+                        if (param == null) {
+                            param = new SQLQueryParameter(orderPos, matcher.group(0), start, matcher.end() - matcher.start());
+                            if (parameters == null) {
+                                parameters = new ArrayList<>();
+                            }
+
+                            parameters.add(param.getOrdinalPosition(), param);
+                        }
+                    }
+                    position = matcher.end();
+                }
+            } catch (BadLocationException e) {
+                log.warn("Error parsing variables", e);
+            }
+        }
+
         return parameters;
     }
 

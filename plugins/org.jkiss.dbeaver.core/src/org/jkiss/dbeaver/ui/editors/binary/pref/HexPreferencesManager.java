@@ -370,7 +370,7 @@ public class HexPreferencesManager {
 
     private void refreshWidgets()
     {
-        if (composite.isDisposed())
+        if (composite.isDisposed() || text == null)
             return;
 
         if (fontsSorted == null || !fontsSorted.containsKey(sampleFontData.getName())) {

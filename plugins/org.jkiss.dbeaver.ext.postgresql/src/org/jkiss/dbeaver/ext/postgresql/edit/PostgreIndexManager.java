@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.edit;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -29,6 +30,7 @@ import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLIndexManager;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndexColumn;
@@ -119,6 +121,7 @@ public class PostgreIndexManager extends SQLIndexManager<PostgreIndex, PostgreTa
 
     @Override
     protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
+        boolean hasDDL = false;
         PostgreIndex index = command.getObject();
         if (index.isPersisted()) {
             try {
@@ -127,12 +130,20 @@ public class PostgreIndexManager extends SQLIndexManager<PostgreIndex, PostgreTa
                     actions.add(
                         new SQLDatabasePersistAction(ModelMessages.model_jdbc_create_new_index, indexDDL)
                     );
-                    return;
+                    hasDDL = true;
                 }
             } catch (DBException e) {
                 log.warn("Can't extract index DDL", e);
             }
         }
-        super.addObjectCreateActions(actions, command, options);
+        if (!hasDDL) {
+            super.addObjectCreateActions(actions, command, options);
+        }
+        if (!CommonUtils.isEmpty(index.getDescription())) {
+            actions.add(new SQLDatabasePersistAction(
+                "Comment index",
+                "COMMENT ON INDEX " + index.getFullyQualifiedName(DBPEvaluationContext.DDL) +
+                    " IS " + SQLUtils.quoteString(index, index.getDescription())));
+        }
     }
 }
