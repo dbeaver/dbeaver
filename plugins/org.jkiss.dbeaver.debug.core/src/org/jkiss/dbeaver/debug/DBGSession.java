@@ -37,8 +37,6 @@ public interface DBGSession {
 
     void execStepOver() throws DBGException;
 
-    void abort() throws DBGException;
-
     void close() throws DBGException;
 
     List<? extends DBGVariable<?>> getVariables() throws DBGException;
