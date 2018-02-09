@@ -120,9 +120,10 @@ public abstract class DBGBaseSession implements DBGSession {
                 throw new DBGException("Debug session not attached");
             }
             doDetach();
-            if (!isDone()) {
+            if (!isDone() && task != null) {
                 task.cancel(true);
             }
+            
             connection.close();
         } finally {
             lock.writeLock().unlock();
@@ -130,21 +131,6 @@ public abstract class DBGBaseSession implements DBGSession {
     }
 
     protected abstract void doDetach() throws DBGException;
-
-    @Override
-    public void abort() throws DBGException {
-        acquireReadLock();
-        try (Statement stmt = getConnection().createStatement()) {
-            String sqlCommand = composeAbortCommand();
-            stmt.execute(sqlCommand);
-            // FIXME: move to finally?
-            task = null;
-        } catch (SQLException e) {
-            throw new DBGException("SQL error", e);
-        } finally {
-            lock.readLock().unlock();
-        }
-    }
 
     protected abstract String composeAbortCommand();
 

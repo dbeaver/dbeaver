@@ -359,7 +359,6 @@ public class PostgreDebugSession extends DBGBaseSession {
             try (Statement stmt = getConnection().createStatement()) {
                 String sqlCommand = composeAbortCommand();
                 stmt.execute(sqlCommand);                        
-                task = null;
             } catch (SQLException e) {                       
                 log.error("Unable to abort target", e);
             }
@@ -382,7 +381,6 @@ public class PostgreDebugSession extends DBGBaseSession {
             try (Statement stmt = getConnection().createStatement()) {
                 String sql = SQL_CONTINUE.replaceAll("\\?sessionid", String.valueOf(sessionId));
                 stmt.execute(sql);                        
-                task = null;
             } catch (SQLException e) {                       
                 log.error("Unable to abort target", e);
             }

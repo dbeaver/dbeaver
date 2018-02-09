@@ -45,7 +45,6 @@ public class Debugger {
 
     public static final String PROMPT = ">";
     public static final String COMMAND_ATTACH = "A";
-    public static final String COMMAND_ABORT = "T";
     public static final String COMMAND_CLOSE = "X";
     public static final String COMMAND_STACK = "S";
     public static final String COMMAND_FRAME = "F";
@@ -347,25 +346,6 @@ public class Debugger {
                 controller.detach(debugSessionC.getSessionId(), new VoidProgressMonitor());
 
                 System.out.println("Session closed");
-
-                break;
-
-            case COMMAND_ABORT:
-
-                if (controller.getSessions().size() == 0) {
-                    System.out.println("Debug sessions not found");
-                    break;
-                }
-
-                DBGSession debugSessionAB = chooseSession(sc, controller);
-
-                if (debugSessionAB == null) {
-                    break;
-                }
-
-                debugSessionAB.abort();
-
-                System.out.println("Aborted.");
 
                 break;
 
