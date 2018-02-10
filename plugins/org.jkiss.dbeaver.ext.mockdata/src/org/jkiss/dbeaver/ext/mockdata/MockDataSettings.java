@@ -17,6 +17,8 @@
  */
 package org.jkiss.dbeaver.ext.mockdata;
 
+import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.operation.IRunnableContext;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.mockdata.model.MockGeneratorDescriptor;
@@ -129,6 +131,20 @@ public class MockDataSettings {
 
     public AttributeGeneratorProperties getAttributeGeneratorProperties(DBSAttributeBase attribute) {
         return attributeGenerators.get(attribute.getName());
+    }
+
+    public void loadFrom(IRunnableContext runnableContext, IDialogSettings dialogSettings) {
+        removeOldData = dialogSettings.getBoolean("removeOldData");
+        try {
+            rowsNumber = dialogSettings.getInt("rowsNumber");
+        } catch (NumberFormatException e) {
+            // do nothing
+        }
+    }
+
+    void saveTo(IDialogSettings dialogSettings) {
+        dialogSettings.put("removeOldData", removeOldData);
+        dialogSettings.put("rowsNumber", rowsNumber);
     }
 
     public static class AttributeGeneratorProperties {

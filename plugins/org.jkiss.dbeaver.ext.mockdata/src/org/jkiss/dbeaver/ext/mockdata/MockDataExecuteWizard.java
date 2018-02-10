@@ -17,12 +17,14 @@
  */
 package org.jkiss.dbeaver.ext.mockdata;
 
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.mockdata.model.MockGeneratorDescriptor;
 import org.jkiss.dbeaver.ext.mockdata.model.MockValueGenerator;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -37,6 +39,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractToolWizard;
 
 import java.util.*;
@@ -46,6 +49,7 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
     private static final Log log = Log.getLog(MockDataExecuteWizard.class);
 
     public static final int BATCH_SIZE = 1000;
+    private static final String RS_EXPORT_WIZARD_DIALOG_SETTINGS = "MockData"; //$NON-NLS-1$
 
     private MockDataWizardPageSettings settingsPage;
     private MockDataSettings mockDataSettings;
@@ -60,7 +64,33 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         setWindowTitle(task);
         setNeedsProgressMonitor(true);
+
+        loadSettings();
         settingsPage = new MockDataWizardPageSettings(mockDataSettings);
+
+    }
+
+    private void loadSettings() {
+        IDialogSettings section = UIUtils.getDialogSettings(RS_EXPORT_WIZARD_DIALOG_SETTINGS);
+        setDialogSettings(section);
+
+        mockDataSettings.loadFrom(DBeaverUI.getActiveWorkbenchWindow(), section);
+    }
+
+    @Override
+    public boolean performCancel() {
+        // Save settings anyway
+        mockDataSettings.saveTo(getDialogSettings());
+
+        return super.performCancel();
+    }
+
+    @Override
+    public boolean performFinish() {
+        // Save settings
+        mockDataSettings.saveTo(getDialogSettings());
+
+        return super.performFinish();
     }
 
     @Override
