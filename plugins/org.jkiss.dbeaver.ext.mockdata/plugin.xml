@@ -105,7 +105,7 @@
         <generator
                 id="dateSequenceGenerator"
                 label="Sequence"
-                description="Random date values"
+                description="Adjustable sequence of dates"
                 class="org.jkiss.dbeaver.ext.mockdata.generator.DateSequenceGenerator">
             <type kind="DATETIME"/>
 
