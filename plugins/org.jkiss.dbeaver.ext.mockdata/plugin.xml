@@ -42,6 +42,8 @@
             <propertyGroup label="General">
                 <property id="template" label="Template" type="string" description="Source of substrings"
                     defaultValue="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."/>
+                <property id="minLength" label="Min Length" type="integer" defaultValue="1" description="Minimum length"/>
+                <property id="maxLength" label="Max Length" type="integer" description="Maximum length (0 means the column length)"/>
 
                 <property id="nulls" label="NULLs" type="boolean" defaultValue="TRUE" description="Allow NULL values"/>
             </propertyGroup>

@@ -48,17 +48,13 @@ public class MockDataGenerateTool implements IExternalTool {
                 window,
                 wizard) {
 
-            private boolean removeOldDataConfirmed = false;
-
             @Override
             protected void finishPressed() {
                 if (validateProperties(getCurrentPage())) {
                     return;
                 }
-                if (mockDataSettings.isRemoveOldData() && !removeOldDataConfirmed) {
-                    if (UIUtils.confirmAction(getShell(), MockDataMessages.tools_mockdata_wizard_title, MockDataMessages.tools_mockdata_confirm_delete_old_data_message)) {
-                        removeOldDataConfirmed = true;
-                    } else {
+                if (mockDataSettings.isRemoveOldData()) {
+                    if (!UIUtils.confirmAction(getShell(), MockDataMessages.tools_mockdata_wizard_title, MockDataMessages.tools_mockdata_confirm_delete_old_data_message)) {
                         return;
                     }
                 }
