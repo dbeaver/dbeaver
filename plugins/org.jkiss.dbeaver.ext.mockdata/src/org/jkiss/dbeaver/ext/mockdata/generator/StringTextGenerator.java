@@ -32,6 +32,8 @@ import java.util.Map;
 public class StringTextGenerator extends AbstractMockValueGenerator {
 
     private String templateString;
+    private int minLength = 1;
+    private int maxLength = 0;
 
     @Override
     public void init(DBSDataManipulator container, DBSAttributeBase attribute, Map<Object, Object> properties) throws DBException {
@@ -40,6 +42,23 @@ public class StringTextGenerator extends AbstractMockValueGenerator {
         templateString = CommonUtils.toString(properties.get("template")); //$NON-NLS-1$
         if (templateString == null) {
             throw new DBCException("Empty template string for simple string generator");
+        }
+
+        Integer min = (Integer) properties.get("minLength"); //$NON-NLS-1$
+        if (min != null) {
+            this.minLength = min;
+        }
+
+        Integer max = (Integer) properties.get("maxLength"); //$NON-NLS-1$
+        if (max != null) {
+            this.maxLength = max;
+        }
+
+        if (maxLength == 0 || maxLength > attribute.getMaxLength()) {
+            maxLength = (int) attribute.getMaxLength();
+        }
+        if (maxLength > templateString.length()) {
+            maxLength = templateString.length();
         }
     }
 
@@ -53,7 +72,7 @@ public class StringTextGenerator extends AbstractMockValueGenerator {
         if (isGenerateNULL()) {
             return null;
         } else {
-            int length = (int) Math.min(10000, attribute.getMaxLength());
+            int length = minLength + random.nextInt(maxLength - minLength + 1);
             int tplLength = templateString.length();
             int start = random.nextInt(tplLength);
             if (start + length < tplLength) {
