@@ -217,18 +217,10 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
             Composite labelCombo = UIUtils.createPlaceholder(placeholder, 3);
             gd = new GridData(GridData.FILL_HORIZONTAL);
             labelCombo.setLayoutData(gd);
-            generatorDescriptionLabel = new Label(labelCombo, SWT.NONE);
-            generatorDescriptionLabel.setFont(
-                    JFaceResources.getFontRegistry().getItalic(JFaceResources.DEFAULT_FONT)
-            );
-            generatorDescriptionLabel.setText("");
-            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL);
-            gd.minimumWidth = 333;
-            generatorDescriptionLabel.setLayoutData(gd);
-            UIUtils.createLabel(labelCombo, "Generator : ");
+
             generatorCombo = new Combo(labelCombo, SWT.READ_ONLY | SWT.DROP_DOWN);
             gd = new GridData();
-            gd.widthHint = 100;
+            gd.widthHint = 80;
             generatorCombo.setLayoutData(gd);
             generatorCombo.addSelectionListener(new SelectionAdapter() {
                 @Override
@@ -236,6 +228,15 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
                     selectGenerator(selectedAttribute, generatorCombo.getText());
                 }
             });
+
+            generatorDescriptionLabel = new Label(labelCombo, SWT.NONE);
+            generatorDescriptionLabel.setFont(
+                    JFaceResources.getFontRegistry().getItalic(JFaceResources.DEFAULT_FONT)
+            );
+            generatorDescriptionLabel.setText("");
+            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL);
+            gd.horizontalIndent = 5;
+            generatorDescriptionLabel.setLayoutData(gd);
 
             propsEditor = new PropertyTreeViewer(placeholder, SWT.BORDER);
             gd = new GridData(GridData.FILL_BOTH);
