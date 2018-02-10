@@ -21,6 +21,9 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractTrigger;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -29,6 +32,7 @@ import org.jkiss.dbeaver.model.struct.DBSActionTiming;
 import org.jkiss.dbeaver.model.struct.rdb.DBSManipulationType;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Map;
 
 /**
@@ -53,7 +57,6 @@ public class MySQLTrigger extends AbstractTrigger implements MySQLSourceObject
 
         setManipulationType(DBSManipulationType.getByName(JDBCUtils.safeGetString(dbResult, "Event")));
         setActionTiming(DBSActionTiming.getByName(JDBCUtils.safeGetString(dbResult, "Timing")));
-        this.body = JDBCUtils.safeGetString(dbResult, "Statement");
         this.charsetClient = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TRIGGER_CHARACTER_SET_CLIENT);
         this.sqlMode = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_TRIGGER_SQL_MODE);
     }
@@ -126,7 +129,23 @@ public class MySQLTrigger extends AbstractTrigger implements MySQLSourceObject
     @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException
     {
-        return getBody();
+        if (body == null) {
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read trigger declaration")) {
+                try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW CREATE TRIGGER " + getFullyQualifiedName(DBPEvaluationContext.DDL))) {
+                    try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                        if (dbResult.next()) {
+                            body = JDBCUtils.safeGetString(dbResult, "SQL Original Statement");
+                        } else {
+                            body = "-- Trigger definition not found in catalog";
+                        }
+                    }
+                }
+            } catch (SQLException e) {
+                body = "-- " + e.getMessage();
+                throw new DBException(e, getDataSource());
+            }
+        }
+        return body;
     }
 
     @Override
