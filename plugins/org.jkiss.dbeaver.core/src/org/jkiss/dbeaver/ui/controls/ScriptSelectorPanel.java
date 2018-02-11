@@ -234,6 +234,13 @@ public class ScriptSelectorPanel {
             public Color getForeground(Object element) {
                 return popup.getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW);
             }
+
+            @Override
+            public String getToolTipText(Object element) {
+                final ResourceInfo ri = (ResourceInfo) element;
+                String description = ri.getDescription();
+                return description == null ? null : description.trim();
+            }
         });
         columnController.createColumns();
         columnController.sortByColumn(1, SWT.UP);
