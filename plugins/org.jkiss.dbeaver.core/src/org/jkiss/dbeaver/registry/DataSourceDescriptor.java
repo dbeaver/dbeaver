@@ -76,6 +76,23 @@ public class DataSourceDescriptor
 {
     private static final Log log = Log.getLog(DataSourceDescriptor.class);
 
+    public static final String[] CONNECT_PATTERNS = new String[] {
+        RegistryConstants.VARIABLE_HOST,
+        RegistryConstants.VARIABLE_PORT,
+        RegistryConstants.VARIABLE_SERVER,
+        RegistryConstants.VARIABLE_DATABASE,
+        RegistryConstants.VARIABLE_USER,
+        RegistryConstants.VARIABLE_PASSWORD,
+        RegistryConstants.VARIABLE_URL,
+
+        SystemVariablesResolver.VAR_WORKSPACE,
+        SystemVariablesResolver.VAR_HOME,
+        SystemVariablesResolver.VAR_DBEAVER_HOME,
+        SystemVariablesResolver.VAR_APP_NAME,
+        SystemVariablesResolver.VAR_APP_VERSION,
+        SystemVariablesResolver.VAR_LOCAL_IP
+    };
+
     public static final String[][] CONNECT_VARIABLES = new String[][]{
         {RegistryConstants.VARIABLE_HOST, "target host"},
         {RegistryConstants.VARIABLE_PORT, "target port"},
@@ -90,6 +107,7 @@ public class DataSourceDescriptor
         {SystemVariablesResolver.VAR_DBEAVER_HOME, "application install path"},
         {SystemVariablesResolver.VAR_APP_NAME, "application name"},
         {SystemVariablesResolver.VAR_APP_VERSION, "application version"},
+        {SystemVariablesResolver.VAR_LOCAL_IP, "local IP address"},
     };
 
     @NotNull
@@ -1283,25 +1301,22 @@ public class DataSourceDescriptor
 
     @Override
     public GeneralUtils.IVariableResolver getVariablesResolver() {
-        return new GeneralUtils.IVariableResolver() {
-            @Override
-            public String get(String name) {
-                String propValue = getActualConnectionConfiguration().getProperties().get(name);
-                if (propValue != null) {
-                    return propValue;
-                }
+        return name -> {
+            String propValue = getActualConnectionConfiguration().getProperties().get(name);
+            if (propValue != null) {
+                return propValue;
+            }
 
-                name = name.toLowerCase(Locale.ENGLISH);
-                switch (name) {
-                    case RegistryConstants.VARIABLE_HOST: return getActualConnectionConfiguration().getHostName();
-                    case RegistryConstants.VARIABLE_PORT: return getActualConnectionConfiguration().getHostPort();
-                    case RegistryConstants.VARIABLE_SERVER: return getActualConnectionConfiguration().getServerName();
-                    case RegistryConstants.VARIABLE_DATABASE: return getActualConnectionConfiguration().getDatabaseName();
-                    case RegistryConstants.VARIABLE_USER: return getActualConnectionConfiguration().getUserName();
-                    case RegistryConstants.VARIABLE_PASSWORD: return getActualConnectionConfiguration().getUserPassword();
-                    case RegistryConstants.VARIABLE_URL: return getActualConnectionConfiguration().getUrl();
-                    default: return SystemVariablesResolver.INSTANCE.get(name);
-                }
+            name = name.toLowerCase(Locale.ENGLISH);
+            switch (name) {
+                case RegistryConstants.VARIABLE_HOST: return getActualConnectionConfiguration().getHostName();
+                case RegistryConstants.VARIABLE_PORT: return getActualConnectionConfiguration().getHostPort();
+                case RegistryConstants.VARIABLE_SERVER: return getActualConnectionConfiguration().getServerName();
+                case RegistryConstants.VARIABLE_DATABASE: return getActualConnectionConfiguration().getDatabaseName();
+                case RegistryConstants.VARIABLE_USER: return getActualConnectionConfiguration().getUserName();
+                case RegistryConstants.VARIABLE_PASSWORD: return getActualConnectionConfiguration().getUserPassword();
+                case RegistryConstants.VARIABLE_URL: return getActualConnectionConfiguration().getUrl();
+                default: return SystemVariablesResolver.INSTANCE.get(name);
             }
         };
     }
