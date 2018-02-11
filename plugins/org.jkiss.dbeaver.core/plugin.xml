@@ -323,6 +323,7 @@
         <command id="org.jkiss.dbeaver.core.resultset.grid.copyColumnNames" name="%command.org.jkiss.dbeaver.core.resultset.grid.copyColumnNames.name" description="%command.org.jkiss.dbeaver.core.resultset.grid.copyColumnNames.description" categoryId="org.jkiss.dbeaver.core.rs"/>
         <command id="org.jkiss.dbeaver.core.resultset.grid.copyRowNames" name="%command.org.jkiss.dbeaver.core.resultset.grid.copyRowNames.name" description="%command.org.jkiss.dbeaver.core.resultset.grid.copyRowNames.description" categoryId="org.jkiss.dbeaver.core.rs"/>
         <command id="org.jkiss.dbeaver.core.resultset.filterMenu" name="%command.org.jkiss.dbeaver.core.resultset.filterMenu.name" description="%command.org.jkiss.dbeaver.core.resultset.filterMenu.description" categoryId="org.jkiss.dbeaver.core.rs"/>
+        <command id="org.jkiss.dbeaver.core.resultset.filterMenu.distinct" name="%command.org.jkiss.dbeaver.core.resultset.filterMenu.distinct.name" description="%command.org.jkiss.dbeaver.core.resultset.filterMenu.distinct.description" categoryId="org.jkiss.dbeaver.core.rs"/>
         <command id="org.jkiss.dbeaver.core.resultset.referencesMenu" name="%command.org.jkiss.dbeaver.core.resultset.referencesMenu.name" description="%command.org.jkiss.dbeaver.core.resultset.referencesMenu.description" categoryId="org.jkiss.dbeaver.core.rs"/>
         <command id="org.jkiss.dbeaver.core.resultset.toggleOrder" name="%command.org.jkiss.dbeaver.core.resultset.toggleOrder.name" description="%command.org.jkiss.dbeaver.core.resultset.toggleOrder.description" categoryId="org.jkiss.dbeaver.core.rs"/>
         <command id="org.jkiss.dbeaver.core.resultset.export" name="%command.org.jkiss.dbeaver.core.resultset.export.name" description="%command.org.jkiss.dbeaver.core.resultset.export.description" categoryId="org.jkiss.dbeaver.core.rs"/>
@@ -1366,6 +1367,9 @@
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.resultset.filterMenu" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.resultset.part"/></activeWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.core.resultset.filterMenu.distinct" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
             <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.resultset.part"/></activeWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.resultset.referencesMenu" class="org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler">
@@ -2491,6 +2495,7 @@
         <key commandId="org.jkiss.dbeaver.core.resultset.switchPresentation" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+`"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.navigateLink" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+SPACE"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.filterMenu" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="F11"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.filterMenu.distinct" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+F11"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.referencesMenu" contextId="org.jkiss.dbeaver.ui.context.resultset.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ARROW_DOWN"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.referencesMenu" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+1"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.toggleOrder" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+2"/>
