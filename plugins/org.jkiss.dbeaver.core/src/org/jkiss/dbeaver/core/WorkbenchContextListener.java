@@ -52,18 +52,38 @@ class WorkbenchContextListener implements IWindowListener, IPageListener, IPartL
     public static final String RESULTS_CONTEXT_ID = "org.jkiss.dbeaver.ui.context.resultset";
     public static final String PERSPECTIVE_CONTEXT_ID = "org.jkiss.dbeaver.ui.perspective";
 
-    //public static final String PERSPECTIVE_CONTEXT_ID = "org.jkiss.dbeaver.core.perspective";
-
     private IContextActivation activationNavigator;
     private IContextActivation activationSQL;
     private IContextActivation activationResults;
     private CommandExecutionListener commandExecutionListener;
 
     public WorkbenchContextListener() {
+        IWorkbench workbench = PlatformUI.getWorkbench();
+
         // Register in already created windows and pages
-        for (IWorkbenchWindow window : PlatformUI.getWorkbench().getWorkbenchWindows()) {
+        for (IWorkbenchWindow window : workbench.getWorkbenchWindows()) {
             listenWindowEvents(window);
         }
+
+        {
+            final ICommandService commandService = workbench.getService(ICommandService.class);
+            if (commandService != null) {
+                commandExecutionListener = new CommandExecutionListener();
+                commandService.addExecutionListener(commandExecutionListener);
+            }
+        }
+
+        workbench.addWorkbenchListener(new IWorkbenchListener() {
+            @Override
+            public boolean preShutdown(IWorkbench workbench, boolean forced) {
+                return false;
+            }
+
+            @Override
+            public void postShutdown(IWorkbench workbench) {
+
+            }
+        });
     }
 
     private void listenWindowEvents(IWorkbenchWindow window) {
@@ -95,13 +115,6 @@ class WorkbenchContextListener implements IWindowListener, IPageListener, IPartL
         window.addPageListener(this);
         for (IWorkbenchPage page : window.getPages()) {
             page.addPartListener(this);
-        }
-        if (commandExecutionListener == null) {
-            final ICommandService commandService = PlatformUI.getWorkbench().getService(ICommandService.class);
-            if (commandService != null) {
-                commandExecutionListener = new CommandExecutionListener();
-                commandService.addExecutionListener(commandExecutionListener);
-            }
         }
     }
 
