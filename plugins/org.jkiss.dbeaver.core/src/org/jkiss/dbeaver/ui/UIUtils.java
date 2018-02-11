@@ -1333,9 +1333,13 @@ public class UIUtils {
             @Override
             public void run() {
                 StringBuilder text = new StringBuilder();
+                int columnCount = table.getColumnCount();
                 for (TableItem item : table.getSelection()) {
                     if (text.length() > 0) text.append("\n");
-                    text.append(item.getText());
+                    for (int i = 0 ; i < columnCount; i++) {
+                        if (i > 0) text.append("\t");
+                        text.append(item.getText(i));
+                    }
                 }
                 UIUtils.setClipboardContents(table.getDisplay(), TextTransfer.getInstance(), text.toString());
             }
