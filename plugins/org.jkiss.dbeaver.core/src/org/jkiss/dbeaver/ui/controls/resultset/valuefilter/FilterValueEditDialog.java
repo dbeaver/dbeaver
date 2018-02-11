@@ -1,3 +1,19 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.jkiss.dbeaver.ui.controls.resultset.valuefilter;
 
 import java.util.ArrayList;
@@ -33,26 +49,8 @@ import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 
-/*
- * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
 public class FilterValueEditDialog extends BaseDialog{
 	
-	
-
 
 	private static final String DIALOG_ID = "DBeaver.FilterValueEditDialog";//$NON-NLS-1$
     private GenericFilterValueEdit handler;
@@ -62,9 +60,6 @@ public class FilterValueEditDialog extends BaseDialog{
 	public FilterValueEditDialog(ResultSetViewer viewer, DBDAttributeBinding attr, ResultSetRow[] rows, DBCLogicalOperator operator) {
 		super(viewer.getControl().getShell(), "Edit value", null);
 		handler = new GenericFilterValueEdit(viewer, attr, rows, operator);
-		
-
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override
@@ -78,8 +73,7 @@ public class FilterValueEditDialog extends BaseDialog{
     {
         Composite composite = super.createDialogArea(parent);
 
-        Label label = new Label(composite, SWT.NONE);
-        label.setText(handler.attr.getName() + " " + handler.operator.getStringValue() + " :");
+        Label label = UIUtils.createControlLabel(composite, handler.attr.getName() + " " + handler.operator.getStringValue());
         label.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         int argumentCount = handler.operator.getArgumentCount();
@@ -122,7 +116,7 @@ public class FilterValueEditDialog extends BaseDialog{
             log.error("Can't create inline value editor", e);
         }
         if (handler.editor == null) {
-        	handler.textControl = new Text(composite, SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
+        	handler.textControl = new Text(editorPlaceholder, SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
         	handler.textControl.setText("");
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.widthHint = 300;
