@@ -139,13 +139,14 @@ public class FilterValueEditPopup extends Dialog {
             Text filterTextbox = filter.addFilterTextbox(group);
             filterTextbox.setFocus();
             filterTextbox.addTraverseListener(e -> {
-                if (e.detail == SWT.TRAVERSE_ARROW_PREVIOUS) {
+                if (e.detail == SWT.TRAVERSE_ARROW_PREVIOUS || e.detail == SWT.TRAVERSE_ARROW_NEXT) {
                     if (table.getSelectionIndex() < 0 && table.getItemCount() > 0) {
                         table.setSelection(0);
                     }
                     table.setFocus();
                 }
             });
+            filterTextbox.addFocusListener(focusListener);
         } else {
             table.setFocus();
         }
