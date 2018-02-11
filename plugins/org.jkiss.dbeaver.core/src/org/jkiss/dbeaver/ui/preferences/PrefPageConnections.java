@@ -17,6 +17,8 @@
  */
 package org.jkiss.dbeaver.ui.preferences;
 
+import org.eclipse.jface.fieldassist.SimpleContentProposalProvider;
+import org.eclipse.jface.fieldassist.TextContentAdapter;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -24,7 +26,11 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.VariablesHintLabel;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.core.CoreMessages;
 
@@ -87,6 +93,12 @@ public class PrefPageConnections extends TargetPrefPage
                 }
             });
             clientApplicationNameText = UIUtils.createLabelText(clientNameGroup, CoreMessages.pref_page_database_label_client_application_name, "");
+
+            UIUtils.installContentProposal(
+                clientApplicationNameText,
+                new TextContentAdapter(),
+                new SimpleContentProposalProvider(DataSourceDescriptor.CONNECT_PATTERNS));
+            UIUtils.setContentProposalToolTip(clientApplicationNameText, "Client application name variables", DataSourceDescriptor.CONNECT_PATTERNS);
         }
 
         {

@@ -21,8 +21,10 @@ import org.eclipse.core.runtime.Platform;
 import org.jkiss.utils.StandardConstants;
 
 import java.io.File;
+import java.net.InetAddress;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.UnknownHostException;
 import java.util.Locale;
 
 /**
@@ -37,6 +39,7 @@ public class SystemVariablesResolver implements GeneralUtils.IVariableResolver {
     public static final String VAR_WORKSPACE = "workspace";
     public static final String VAR_HOME = "home";
     public static final String VAR_DBEAVER_HOME = "dbeaver_home";
+    public static final String VAR_LOCAL_IP = "local.ip";
 
     @Override
     public String get(String name) {
@@ -52,6 +55,12 @@ public class SystemVariablesResolver implements GeneralUtils.IVariableResolver {
                 return getWorkspacePath();
             case VAR_DBEAVER_HOME:
                 return getInstallPath();
+            case VAR_LOCAL_IP:
+                try {
+                    return InetAddress.getLocalHost().getHostAddress();
+                } catch (UnknownHostException e) {
+                    return "127.0.0.1";
+                }
         }
         return null;
     }
