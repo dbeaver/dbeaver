@@ -63,6 +63,7 @@ class WorkbenchContextListener implements IWindowListener, IPageListener, IPartL
         for (IWorkbenchWindow window : workbench.getWorkbenchWindows()) {
             listenWindowEvents(window);
         }
+        workbench.addWindowListener(this);
 
         {
             final ICommandService commandService = workbench.getService(ICommandService.class);
@@ -72,6 +73,7 @@ class WorkbenchContextListener implements IWindowListener, IPageListener, IPartL
             }
         }
 
+        workbench.addWindowListener(this);
         workbench.addWorkbenchListener(new IWorkbenchListener() {
             @Override
             public boolean preShutdown(IWorkbench workbench, boolean forced) {
@@ -238,17 +240,12 @@ class WorkbenchContextListener implements IWindowListener, IPageListener, IPartL
     }
 
     static void registerInWorkbench() {
-        new Job("Workbench listener") {
+        DBeaverUI.asyncExec(new Runnable() {
             @Override
-            protected IStatus run(IProgressMonitor monitor) {
-                if (!PlatformUI.isWorkbenchRunning()) {
-                    schedule(50);
-                } else {
-                    PlatformUI.getWorkbench().addWindowListener(new WorkbenchContextListener());
-                }
-                return Status.OK_STATUS;
+            public void run() {
+                new WorkbenchContextListener();
             }
-        }.schedule();
+        });
     }
 
     private static class CommandExecutionListener implements IExecutionListener {
