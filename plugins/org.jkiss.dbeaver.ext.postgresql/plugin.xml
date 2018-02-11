@@ -327,13 +327,13 @@
     <extension point="org.eclipse.ui.editors">
         <editor
                 name="%editor.session_manager.name"
-                icon="#sessions"
+                icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.png"
                 class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreSessionEditor"
                 id="org.jkiss.dbeaver.ext.postgresql.edit.PostgreSessionEditor">
         </editor>
         <editor
                 name="%editor.lock_manager.name"
-                icon="#sessions"
+                icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.png"
                 class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreLockEditor"
                 id="org.jkiss.dbeaver.ext.postgresql.edit.PostgreLockEditor">
         </editor>

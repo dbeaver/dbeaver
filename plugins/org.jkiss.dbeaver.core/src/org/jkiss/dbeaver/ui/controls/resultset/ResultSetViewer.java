@@ -82,7 +82,7 @@ import org.jkiss.dbeaver.model.virtual.*;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.resultset.valuefilter.FilterValueEditDialog;
-import org.jkiss.dbeaver.ui.controls.resultset.valuefilter.FilterValueEditMenu;
+import org.jkiss.dbeaver.ui.controls.resultset.valuefilter.FilterValueEditPopup;
 import org.jkiss.dbeaver.ui.controls.resultset.view.EmptyPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.view.StatisticsPresentation;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -1595,7 +1595,7 @@ public class ResultSetViewer extends Viewer
     	Collection<ResultSetRow> selectedRows = getSelection().getSelectedRows();
 	    ResultSetRow[] rows = selectedRows.toArray(new ResultSetRow[selectedRows.size()]);
 	      
-	    FilterValueEditMenu menu = new FilterValueEditMenu(getSite().getShell(), ResultSetViewer.this, curAttribute, rows);
+	    FilterValueEditPopup menu = new FilterValueEditPopup(getSite().getShell(), ResultSetViewer.this, curAttribute, rows);
 	    
 	    Point location =  getSite().getWorkbenchWindow().getWorkbench().getDisplay().getCursorLocation();
 
