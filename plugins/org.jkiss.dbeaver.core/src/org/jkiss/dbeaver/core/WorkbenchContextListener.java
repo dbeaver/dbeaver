@@ -28,7 +28,6 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.contexts.IContextActivation;
 import org.eclipse.ui.contexts.IContextService;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeature;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeatureRegistry;
 import org.jkiss.dbeaver.ui.DBeaverUIConstants;
@@ -45,7 +44,7 @@ import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
  */
 class WorkbenchContextListener implements IWindowListener, IPageListener, IPartListener {
 
-    private static final Log log = Log.getLog(WorkbenchContextListener.class);
+    //private static final Log log = Log.getLog(WorkbenchContextListener.class);
 
     public static final String NAVIGATOR_CONTEXT_ID = "org.jkiss.dbeaver.ui.context.navigator";
     public static final String SQL_EDITOR_CONTEXT_ID = "org.jkiss.dbeaver.ui.editors.sql";
@@ -76,7 +75,7 @@ class WorkbenchContextListener implements IWindowListener, IPageListener, IPartL
         workbench.addWorkbenchListener(new IWorkbenchListener() {
             @Override
             public boolean preShutdown(IWorkbench workbench, boolean forced) {
-                return false;
+                return true;
             }
 
             @Override
