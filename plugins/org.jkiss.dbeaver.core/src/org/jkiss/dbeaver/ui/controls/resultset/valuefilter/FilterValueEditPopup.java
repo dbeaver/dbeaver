@@ -25,6 +25,8 @@ import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusAdapter;
 import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.TraverseEvent;
+import org.eclipse.swt.events.TraverseListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -125,7 +127,7 @@ public class FilterValueEditPopup extends Dialog {
 
         filter.table.addSelectionChangedListener(event -> {
             value = event.getStructuredSelection().getFirstElement();
-            okPressed();
+            //okPressed();
         });
         filter.table.addDoubleClickListener(event -> {
             value = filter.table.getStructuredSelection().getFirstElement();
@@ -136,6 +138,14 @@ public class FilterValueEditPopup extends Dialog {
         if (filter.attr.getDataKind() == DBPDataKind.STRING) {
             Text filterTextbox = filter.addFilterTextbox(group);
             filterTextbox.setFocus();
+            filterTextbox.addTraverseListener(e -> {
+                if (e.detail == SWT.TRAVERSE_ARROW_PREVIOUS) {
+                    if (table.getSelectionIndex() < 0 && table.getItemCount() > 0) {
+                        table.setSelection(0);
+                    }
+                    table.setFocus();
+                }
+            });
         } else {
             table.setFocus();
         }
