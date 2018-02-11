@@ -18,10 +18,15 @@
 package org.jkiss.dbeaver.ext.mysql.editors;
 
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.ControlContribution;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.osgi.util.NLS;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.ISharedImages;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
@@ -38,6 +43,7 @@ import org.jkiss.dbeaver.ui.views.session.SessionManagerViewer;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collections;
+import java.util.Map;
 
 /**
  * MySQLSessionEditor
@@ -59,11 +65,28 @@ public class MySQLSessionEditor extends AbstractSessionEditor
     @Override
     protected SessionManagerViewer createSessionViewer(DBCExecutionContext executionContext, Composite parent) {
         return new SessionManagerViewer(this, parent, new MySQLSessionManager((MySQLDataSource) executionContext.getDataSource())) {
+            private boolean hideSleeping;
+
             @Override
             protected void contributeToToolbar(DBAServerSessionManager sessionManager, IContributionManager contributionManager)
             {
                 contributionManager.add(killSessionAction);
                 contributionManager.add(terminateQueryAction);
+                contributionManager.add(new Separator());
+                contributionManager.add(new ControlContribution("MySQLSessionHideSleep") {
+                    @Override
+                    protected Control createControl(Composite parent) {
+                        Button hideSleepingCheck = UIUtils.createCheckbox(parent, "Hide sleeping", "Show only active connections", hideSleeping, 0);
+                        hideSleepingCheck.addSelectionListener(new SelectionAdapter() {
+                            @Override
+                            public void widgetSelected(SelectionEvent e) {
+                                hideSleeping = hideSleepingCheck.getSelection();
+                                refreshPart(MySQLSessionEditor.this, true);
+                            }
+                        });
+                        return hideSleepingCheck;
+                    }
+                });
                 contributionManager.add(new Separator());
             }
 
@@ -73,6 +96,14 @@ public class MySQLSessionEditor extends AbstractSessionEditor
                 super.onSessionSelect(session);
                 killSessionAction.setEnabled(session != null);
                 terminateQueryAction.setEnabled(session != null && !CommonUtils.isEmpty(session.getActiveQuery()));
+            }
+
+            @Override
+            public Map<String, Object> getSessionOptions() {
+                if (hideSleeping) {
+                    return Collections.singletonMap(MySQLSessionManager.OPTION_HIDE_SLEEPING, true);
+                }
+                return super.getSessionOptions();
             }
         };
     }

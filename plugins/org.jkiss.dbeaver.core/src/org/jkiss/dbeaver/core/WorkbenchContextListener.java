@@ -28,7 +28,6 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.contexts.IContextActivation;
 import org.eclipse.ui.contexts.IContextService;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeature;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeatureRegistry;
 import org.jkiss.dbeaver.ui.DBeaverUIConstants;
@@ -45,14 +44,12 @@ import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
  */
 class WorkbenchContextListener implements IWindowListener, IPageListener, IPartListener {
 
-    private static final Log log = Log.getLog(WorkbenchContextListener.class);
+    //private static final Log log = Log.getLog(WorkbenchContextListener.class);
 
     public static final String NAVIGATOR_CONTEXT_ID = "org.jkiss.dbeaver.ui.context.navigator";
     public static final String SQL_EDITOR_CONTEXT_ID = "org.jkiss.dbeaver.ui.editors.sql";
     public static final String RESULTS_CONTEXT_ID = "org.jkiss.dbeaver.ui.context.resultset";
     public static final String PERSPECTIVE_CONTEXT_ID = "org.jkiss.dbeaver.ui.perspective";
-
-    //public static final String PERSPECTIVE_CONTEXT_ID = "org.jkiss.dbeaver.core.perspective";
 
     private IContextActivation activationNavigator;
     private IContextActivation activationSQL;
@@ -60,10 +57,34 @@ class WorkbenchContextListener implements IWindowListener, IPageListener, IPartL
     private CommandExecutionListener commandExecutionListener;
 
     public WorkbenchContextListener() {
+        IWorkbench workbench = PlatformUI.getWorkbench();
+
         // Register in already created windows and pages
-        for (IWorkbenchWindow window : PlatformUI.getWorkbench().getWorkbenchWindows()) {
+        for (IWorkbenchWindow window : workbench.getWorkbenchWindows()) {
             listenWindowEvents(window);
         }
+        workbench.addWindowListener(this);
+
+        {
+            final ICommandService commandService = workbench.getService(ICommandService.class);
+            if (commandService != null) {
+                commandExecutionListener = new CommandExecutionListener();
+                commandService.addExecutionListener(commandExecutionListener);
+            }
+        }
+
+        workbench.addWindowListener(this);
+        workbench.addWorkbenchListener(new IWorkbenchListener() {
+            @Override
+            public boolean preShutdown(IWorkbench workbench, boolean forced) {
+                return true;
+            }
+
+            @Override
+            public void postShutdown(IWorkbench workbench) {
+
+            }
+        });
     }
 
     private void listenWindowEvents(IWorkbenchWindow window) {
@@ -95,13 +116,6 @@ class WorkbenchContextListener implements IWindowListener, IPageListener, IPartL
         window.addPageListener(this);
         for (IWorkbenchPage page : window.getPages()) {
             page.addPartListener(this);
-        }
-        if (commandExecutionListener == null) {
-            final ICommandService commandService = PlatformUI.getWorkbench().getService(ICommandService.class);
-            if (commandService != null) {
-                commandExecutionListener = new CommandExecutionListener();
-                commandService.addExecutionListener(commandExecutionListener);
-            }
         }
     }
 
@@ -226,17 +240,12 @@ class WorkbenchContextListener implements IWindowListener, IPageListener, IPartL
     }
 
     static void registerInWorkbench() {
-        new Job("Workbench listener") {
+        DBeaverUI.asyncExec(new Runnable() {
             @Override
-            protected IStatus run(IProgressMonitor monitor) {
-                if (!PlatformUI.isWorkbenchRunning()) {
-                    schedule(50);
-                } else {
-                    PlatformUI.getWorkbench().addWindowListener(new WorkbenchContextListener());
-                }
-                return Status.OK_STATUS;
+            public void run() {
+                new WorkbenchContextListener();
             }
-        }.schedule();
+        });
     }
 
     private static class CommandExecutionListener implements IExecutionListener {

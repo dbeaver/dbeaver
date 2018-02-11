@@ -192,6 +192,10 @@ public class SessionManagerViewer
         return sessionTable.getControl();
     }
 
+    public Map<String, Object> getSessionOptions() {
+        return null;
+    }
+
     private class SessionListControl extends SessionTable {
 
         public SessionListControl(SashForm sash, IWorkbenchSite site, DBAServerSessionManager<DBAServerSession> sessionManager)
@@ -209,6 +213,11 @@ public class SessionManagerViewer
                     refreshSessions();
                 }
             });
+        }
+
+        @Override
+        protected final Map<String, Object> getSessionOptions() {
+            return SessionManagerViewer.this.getSessionOptions();
         }
     }
 
