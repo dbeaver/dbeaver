@@ -1473,11 +1473,11 @@ public class UIUtils {
     public static void setContentProposalToolTip(Control control, String toolTip, String ... variables) {
         StringBuilder varsTip = new StringBuilder();
         for (String var : variables) {
-            if (varsTip.length() > 0) varsTip.append(", ");
-            varsTip.append(GeneralUtils.variablePattern(var));
+            if (varsTip.length() > 0) varsTip.append(",\n");
+            varsTip.append("\t").append(GeneralUtils.variablePattern(var));
         }
         varsTip.append(".");
-        control.setToolTipText(toolTip + ".\nAllowed variables: " + varsTip);
+        control.setToolTipText(toolTip + ". Allowed variables:\n" + varsTip);
 
     }
 
