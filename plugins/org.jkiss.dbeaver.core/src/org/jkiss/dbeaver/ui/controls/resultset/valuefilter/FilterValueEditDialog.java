@@ -155,17 +155,17 @@ public class FilterValueEditDialog extends BaseDialog{
 	        new Action("Select &All") {
 	            @Override
 	            public void run() {
-	                for (DBDLabelValuePair row : handler.getMultiValues()) {
-	                	((CheckboxTableViewer) handler.table).setChecked(row, true);
-	                }
+                    for (TableItem item : handler.table.getTable().getItems()) {
+                        item.setChecked(true);
+                    }
 	            }
 	        },
 	        new Action("Select &None") {
 	            @Override
 	            public void run() {
-	                for (DBDLabelValuePair row : handler.getMultiValues()) {
-	                	((CheckboxTableViewer) handler.table).setChecked(row, false);
-	                }
+                    for (TableItem item : handler.table.getTable().getItems()) {
+                        item.setChecked(false);
+                    }
 	            }
 	        }
         };
