@@ -80,6 +80,10 @@ class SessionTable extends DatabaseObjectListControl<DBAServerSession> {
         this.sessionManager = sessionManager;
     }
 
+    protected Map<String, Object> getSessionOptions() {
+        return null;
+    }
+
     private static IStructuredContentProvider CONTENT_PROVIDER = new IStructuredContentProvider() {
         @Override
         public Object[] getElements(Object inputElement)
@@ -116,7 +120,7 @@ class SessionTable extends DatabaseObjectListControl<DBAServerSession> {
             try {
                 try (DBCExecutionContext isolatedContext = sessionManager.getDataSource().openIsolatedContext(monitor, "View sessions")) {
                     try (DBCSession session = isolatedContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Retrieve server sessions")) {
-                        return sessionManager.getSessions(session, null);
+                        return sessionManager.getSessions(session, getSessionOptions());
                     }
                 }
             } catch (Throwable ex) {
