@@ -282,8 +282,10 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
             // init the generators properties
             if (firstInit) {
                 firstInit = false;
-                Collection<? extends DBSAttributeBase> attributes = this.mockDataSettings.init(getWizard());
-                columnsTableViewer.setInput(attributes);
+                MockDataExecuteWizard wizard = getWizard();
+                mockDataSettings.init(wizard);
+                wizard.loadSettings();
+                columnsTableViewer.setInput(mockDataSettings.getAttributes());
             }
 
             // select the first item
