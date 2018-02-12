@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -38,18 +39,22 @@ public class MockDataSettings {
 
     public static final String FK_GENERATOR_ID = "fkGenerator"; //$NON-NLS-1$
 
+    private DBSEntity dbsEntity;
+    private Collection<DBSAttributeBase> attributes;
+
     private boolean removeOldData;
     private long rowsNumber = 1000;
+
     private Map<String, MockGeneratorDescriptor> generatorDescriptors = new HashMap<>(); // generatorId -> MockGeneratorDescriptor
     private Map<String, AttributeGeneratorProperties> attributeGenerators = new HashMap<>(); // attribute.name -> generators properties
 
     // populate attribute generators properties map
-    public Collection<? extends DBSAttributeBase> init(MockDataExecuteWizard wizard) throws DBException {
+    public void init(MockDataExecuteWizard wizard) throws DBException {
         List<DBSDataManipulator> databaseObjects = wizard.getDatabaseObjects();
         DBSDataManipulator dataManipulator = databaseObjects.iterator().next(); // TODO only the first
-        DBSEntity dbsEntity = (DBSEntity) dataManipulator;
+        dbsEntity = (DBSEntity) dataManipulator;
+        attributes = new ArrayList<>();
 
-        final Collection<DBSAttributeBase> attributes = new ArrayList<>();
         try {
             DBeaverUI.run(wizard.getContainer(), true, true, new DBRRunnableWithProgress() {
                 @Override
@@ -81,11 +86,12 @@ public class MockDataSettings {
             });
         } catch (InvocationTargetException e) {
             DBUserInterface.getInstance().showError("Transfer init failed", "Can't start data transfer", e.getTargetException());
-            return null;
         } catch (InterruptedException e) {
-            return null;
+            e.printStackTrace();
         }
+    }
 
+    public Collection<DBSAttributeBase> getAttributes() {
         return attributes;
     }
 
@@ -140,11 +146,28 @@ public class MockDataSettings {
         } catch (NumberFormatException e) {
             // do nothing
         }
+
+        // load selected generators
+        IDialogSettings tableSection = UIUtils.getSettingsSection(dialogSettings, dbsEntity.getName());
+        for (Map.Entry<String, AttributeGeneratorProperties> entry : attributeGenerators.entrySet()) {
+            String attributeName = entry.getKey();
+            String selectedGenerator = tableSection.get(attributeName);
+            if (selectedGenerator != null) {
+                entry.getValue().setSelectedGeneratorId(selectedGenerator);
+            }
+        }
     }
 
     void saveTo(IDialogSettings dialogSettings) {
         dialogSettings.put("removeOldData", removeOldData);
         dialogSettings.put("rowsNumber", rowsNumber);
+
+        // save selected generators
+        IDialogSettings tableSection = UIUtils.getSettingsSection(dialogSettings, dbsEntity.getName());
+        for (Map.Entry<String, AttributeGeneratorProperties> entry : attributeGenerators.entrySet()) {
+            tableSection.put(entry.getKey(), entry.getValue().getSelectedGeneratorId());
+        }
+
     }
 
     public static class AttributeGeneratorProperties {

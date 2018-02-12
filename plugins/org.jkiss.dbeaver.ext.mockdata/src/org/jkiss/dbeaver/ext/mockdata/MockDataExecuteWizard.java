@@ -65,12 +65,11 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
         setWindowTitle(task);
         setNeedsProgressMonitor(true);
 
-        loadSettings();
         settingsPage = new MockDataWizardPageSettings(mockDataSettings);
 
     }
 
-    private void loadSettings() {
+    void loadSettings() {
         IDialogSettings section = UIUtils.getDialogSettings(RS_EXPORT_WIZARD_DIALOG_SETTINGS);
         setDialogSettings(section);
 
