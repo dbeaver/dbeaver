@@ -5,12 +5,7 @@ import com.vividsolutions.jts.geom.Geometry;
 import com.vividsolutions.jts.geom.GeometryFactory;
 import com.vividsolutions.jts.geom.PrecisionModel;
 import com.vividsolutions.jts.geom.impl.CoordinateArraySequenceFactory;
-import com.vividsolutions.jts.io.ByteOrderValues;
-import com.vividsolutions.jts.io.InputStreamInStream;
-import com.vividsolutions.jts.io.OutputStreamOutStream;
-import com.vividsolutions.jts.io.ParseException;
-import com.vividsolutions.jts.io.WKBReader;
-import com.vividsolutions.jts.io.WKBWriter;
+import com.vividsolutions.jts.io.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -67,6 +62,14 @@ public class GeometryConverter {
             WKBReader wkbReader = new WKBReader(geometryFactory);
             return wkbReader.read(new InputStreamInStream(inputStream));
         } catch (IOException | ParseException e) {
+            throw new IllegalArgumentException(e);
+        }
+    }
+
+    public Geometry from(String str) {
+        try {
+            return new WKTReader().read(str);
+        } catch (ParseException e) {
             throw new IllegalArgumentException(e);
         }
     }

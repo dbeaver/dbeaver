@@ -18,9 +18,13 @@ package org.jkiss.dbeaver.ui.data.managers;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
+import org.jkiss.dbeaver.ui.data.editors.StringInlineEditor;
+import org.jkiss.dbeaver.ui.dialogs.data.TextViewDialog;
+import org.jkiss.dbeaver.ui.editors.content.ContentEditor;
 
 /**
  * Geometry value manager
@@ -32,7 +36,7 @@ public class GeometryValueManager extends BaseValueManager {
     @NotNull
     @Override
     public IValueController.EditType[] getSupportedEditTypes() {
-        return new IValueController.EditType[] {IValueController.EditType.PANEL, IValueController.EditType.EDITOR};
+        return new IValueController.EditType[] {IValueController.EditType.INLINE, IValueController.EditType.PANEL, IValueController.EditType.EDITOR};
     }
 
     @Override
@@ -40,10 +44,11 @@ public class GeometryValueManager extends BaseValueManager {
         throws DBException
     {
         switch (controller.getEditType()) {
-            case EDITOR:
-                return null;
+            case INLINE:
             case PANEL:
-                return null;
+                return new StringInlineEditor(controller);
+            case EDITOR:
+                return new TextViewDialog(controller);
             default:
                 return null;
         }
