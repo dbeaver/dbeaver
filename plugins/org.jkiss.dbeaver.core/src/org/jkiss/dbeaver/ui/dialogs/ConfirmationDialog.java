@@ -88,7 +88,7 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
             message,
             imageKind,
             getButtonLabels(kind),
-            0,
+            getDefaultIndex(kind, imageKind),
             toggleMessage,
             toggleState);
         dialog.setPrefStore(new PreferenceStoreDelegate(prefStore));
@@ -111,6 +111,29 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
         }
         default:
             throw new IllegalArgumentException(
+                    "Illegal value for kind in MessageDialog.open()"); //$NON-NLS-1$
+        }
+    }
+
+    public static int getDefaultIndex(int kind, int imageKind) {
+        switch (kind) {
+            case ERROR:
+            case INFORMATION:
+            case WARNING:
+                return 0;
+            case CONFIRM:
+                if (imageKind == WARNING) {
+                    return 1;
+                } else {
+                    return 0;
+                }
+            case QUESTION:
+                return 1;
+            case QUESTION_WITH_CANCEL: {
+                return 2;
+            }
+            default:
+                throw new IllegalArgumentException(
                     "Illegal value for kind in MessageDialog.open()"); //$NON-NLS-1$
         }
     }
