@@ -157,11 +157,11 @@ public class JDBCPreparedStatementImpl extends JDBCStatementImpl<PreparedStateme
             try {
                 DBDDataFormatterProfile formatterProfile = getSession().getDataSource().getDataFormatterProfile();
                 if (value instanceof Date) {
-                    return SQLUtils.quoteString(connection.getDataSource(), formatterProfile.createFormatter(DBDDataFormatter.TYPE_NAME_DATE).formatValue(value));
+                    return SQLUtils.quoteString(connection.getDataSource(), formatterProfile.createFormatter(DBDDataFormatter.TYPE_NAME_DATE, null).formatValue(value));
                 } else if (value instanceof Time) {
-                    return SQLUtils.quoteString(connection.getDataSource(), formatterProfile.createFormatter(DBDDataFormatter.TYPE_NAME_TIME).formatValue(value));
+                    return SQLUtils.quoteString(connection.getDataSource(), formatterProfile.createFormatter(DBDDataFormatter.TYPE_NAME_TIME, null).formatValue(value));
                 } else {
-                    return SQLUtils.quoteString(connection.getDataSource(), formatterProfile.createFormatter(DBDDataFormatter.TYPE_NAME_TIMESTAMP).formatValue(value));
+                    return SQLUtils.quoteString(connection.getDataSource(), formatterProfile.createFormatter(DBDDataFormatter.TYPE_NAME_TIMESTAMP, null).formatValue(value));
                 }
             } catch (Exception e) {
                 log.debug("Error formatting date [" + value + "]", e);
