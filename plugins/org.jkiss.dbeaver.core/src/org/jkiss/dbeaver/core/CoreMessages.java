@@ -104,43 +104,68 @@ public class CoreMessages extends NLS {
     public static String confirm_exit_title;
 	public static String confirm_exit_message;
 	public static String confirm_exit_toggleMessage;
+
 	public static String confirm_order_resultset_title;
 	public static String confirm_order_resultset_message;
 	public static String confirm_order_resultset_toggleMessage;
+
     public static String confirm_fetch_all_rows_title;
     public static String confirm_fetch_all_rows_message;
     public static String confirm_fetch_all_rows_toggleMessage;
+
 	public static String confirm_close_resultset_edit_title;
 	public static String confirm_close_resultset_edit_message;
 	public static String confirm_close_resultset_edit_toggleMessage;
+
 	public static String confirm_disconnect_txn_title;
 	public static String confirm_disconnect_txn_message;
 	public static String confirm_disconnect_txn_toggleMessage;
+
 	public static String confirm_close_entity_edit_title;
 	public static String confirm_close_entity_edit_message;
 	public static String confirm_close_entity_edit_toggleMessage;
+
 	public static String confirm_entity_delete_title;
 	public static String confirm_entity_delete_message;
+
     public static String confirm_local_folder_delete_title;
     public static String confirm_local_folder_delete_message;
+
     public static String confirm_close_editor_edit_title;
 	public static String confirm_close_editor_edit_message;
 	public static String confirm_close_editor_edit_toggleMessage;
+
 	public static String confirm_driver_download_title;
 	public static String confirm_driver_download_message;
 	public static String confirm_driver_download_toggleMessage;
+
 	public static String confirm_driver_download_manual_title;
 	public static String confirm_driver_download_manual_message;
 	public static String confirm_driver_download_manual_toggleMessage;
+
     public static String confirm_version_check_title;
     public static String confirm_version_check_message;
     public static String confirm_version_check_toggleMessage;
+
 	public static String confirm_entity_reject_title;
 	public static String confirm_entity_reject_message;
 	public static String confirm_entity_reject_toggleMessage;
+
 	public static String confirm_entity_revert_title;
 	public static String confirm_entity_revert_message;
 	public static String confirm_entity_revert_toggleMessage;
+
+	public static String confirm_keep_statement_open_title;
+	public static String confirm_keep_statement_open_message;
+	public static String confirm_keep_statement_open_toggleMessage;
+
+	public static String confirm_dangerous_sql_title;
+	public static String confirm_dangerous_sql_message;
+	public static String confirm_dangerous_sql_toggleMessage;
+
+	public static String confirm_mass_parallel_sql_title;
+	public static String confirm_mass_parallel_sql_message;
+	public static String confirm_mass_parallel_sql_toggleMessage;
 
 	public static String controls_connection_properties_action_add_property;
 	public static String controls_connection_properties_action_remove_property;
@@ -321,14 +346,6 @@ public class CoreMessages extends NLS {
 	public static String dialog_connection_wizard_title;
 
 	public static String dialog_cursor_view_monitor_rows_fetched;
-
-	public static String confirm_keep_statement_open_title;
-	public static String confirm_keep_statement_open_message;
-	public static String confirm_keep_statement_open_toggleMessage;
-
-	public static String confirm_dangerous_sql_title;
-	public static String confirm_dangerous_sql_message;
-	public static String confirm_dangerous_sql_toggleMessage;
 
 	public static String dialog_data_format_profiles_button_delete_profile;
 	public static String dialog_data_format_profiles_button_new_profile;
