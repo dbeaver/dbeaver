@@ -33,6 +33,8 @@ import java.util.Map;
 
 public class NumberDataFormatter implements DBDDataFormatter {
 
+    public static final int MAX_DEFAULT_FRACTIONS_DIGITS = 4;
+
     private DecimalFormat numberFormat;
     private StringBuffer buffer;
     private FieldPosition position;
@@ -71,7 +73,9 @@ public class NumberDataFormatter implements DBDDataFormatter {
         }
         if (type != null) {
             if (type.getScale() != null && type.getScale() > 0) {
-                numberFormat.setMinimumFractionDigits(type.getScale());
+                int fractionDigits = type.getScale();
+                if (fractionDigits > MAX_DEFAULT_FRACTIONS_DIGITS) fractionDigits = MAX_DEFAULT_FRACTIONS_DIGITS;
+                numberFormat.setMinimumFractionDigits(fractionDigits);
             }
         }
         buffer = new StringBuffer();
