@@ -50,7 +50,7 @@ public abstract class DateTimeCustomValueHandler extends DateTimeValueHandler {
         if (object == null) {
             return null;
         } else if (object instanceof Date) {
-            return (Date) (copy ? ((Date)object).clone() : object);
+            return copy ? ((Date)object).clone() : object;
         } else if (object instanceof String) {
             String strValue = (String)object;
             try {
@@ -89,10 +89,10 @@ public abstract class DateTimeCustomValueHandler extends DateTimeValueHandler {
         }
     }
 
-    protected DBDDataFormatter getFormatter(String typeId)
+    private DBDDataFormatter getFormatter(DBSTypedObject typedObject, String typeId)
     {
         try {
-            return formatterProfile.createFormatter(typeId);
+            return formatterProfile.createFormatter(typeId, typedObject);
         } catch (Exception e) {
             log.error("Can't create formatter for datetime value handler", e); //$NON-NLS-1$
             return DefaultDataFormatter.INSTANCE;
@@ -103,7 +103,7 @@ public abstract class DateTimeCustomValueHandler extends DateTimeValueHandler {
     protected DBDDataFormatter getFormatter(DBSTypedObject column)
     {
         if (formatter == null) {
-            formatter = getFormatter(getFormatterId(column));
+            formatter = getFormatter(column, getFormatterId(column));
         }
         return formatter;
     }

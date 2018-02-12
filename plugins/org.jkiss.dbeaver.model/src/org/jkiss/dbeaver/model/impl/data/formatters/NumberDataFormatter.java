@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.impl.data.formatters;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.CommonUtils;
 
 import java.math.BigDecimal;
@@ -37,7 +38,7 @@ public class NumberDataFormatter implements DBDDataFormatter {
     private FieldPosition position;
 
     @Override
-    public void init(Locale locale, Map<Object, Object> properties)
+    public void init(DBSTypedObject type, Locale locale, Map<Object, Object> properties)
     {
         numberFormat = (DecimalFormat) NumberFormat.getNumberInstance(locale);
         Object useGrouping = properties.get(NumberFormatSample.PROP_USE_GROUPING);
@@ -66,6 +67,11 @@ public class NumberDataFormatter implements DBDDataFormatter {
                 numberFormat.setRoundingMode(RoundingMode.valueOf(roundingMode));
             } catch (Exception e) {
                 // just skip it
+            }
+        }
+        if (type != null) {
+            if (type.getScale() != null && type.getScale() > 0) {
+                numberFormat.setMinimumFractionDigits(type.getScale());
             }
         }
         buffer = new StringBuffer();
