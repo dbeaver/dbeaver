@@ -63,6 +63,8 @@ public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
             return object;
         } else if (object instanceof byte[]) {
             return GeometryConverter.getInstance().from((byte[]) object);
+        } else if (object instanceof String) {
+            return GeometryConverter.getInstance().from((String)object);
         } else {
             throw new DBCException("Unsupported geometry value: " + object);
         }
