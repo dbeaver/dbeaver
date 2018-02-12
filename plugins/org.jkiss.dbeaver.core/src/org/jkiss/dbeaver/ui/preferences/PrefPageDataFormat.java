@@ -305,7 +305,7 @@ public class PrefPageDataFormat extends TargetPrefPage
             if (props != null && !props.isEmpty()) {
                 formatterProps.putAll(props);
             }
-            formatter.init(profileLocale, formatterProps);
+            formatter.init(null, profileLocale, formatterProps);
 
             String sampleValue = formatter.formatValue(formatterDescriptor.getSample().getSampleValue());
             sampleText.setText(sampleValue);

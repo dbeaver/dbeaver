@@ -79,6 +79,7 @@ public class PrefPageConfirmations extends AbstractPrefPage implements IWorkbenc
             createConfirmCheckbox(groupObjects, DBeaverPreferences.CONFIRM_ENTITY_REVERT);
             createConfirmCheckbox(groupObjects, DBeaverPreferences.CONFIRM_KEEP_STATEMENT_OPEN);
             createConfirmCheckbox(groupObjects, DBeaverPreferences.CONFIRM_DANGER_SQL);
+            createConfirmCheckbox(groupObjects, DBeaverPreferences.CONFIRM_MASS_PARALLEL_SQL);
         }
 
         performDefaults();

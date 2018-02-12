@@ -36,8 +36,8 @@ public class DB2DecFloatValueHandler extends JDBCNumberValueHandler {
 
     final static int DECFLOAT_SPECIALVALUE_ENCOUNTERED = -4231;
 
-    public DB2DecFloatValueHandler(DBDDataFormatterProfile formatterProfile) {
-        super(formatterProfile);
+    public DB2DecFloatValueHandler(DBSTypedObject type, DBDDataFormatterProfile formatterProfile) {
+        super(type, formatterProfile);
     }
 
     @Nullable

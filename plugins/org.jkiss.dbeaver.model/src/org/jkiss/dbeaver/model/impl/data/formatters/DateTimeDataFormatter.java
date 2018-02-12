@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.impl.data.formatters;
 
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.time.ExtendedDateFormat;
 
@@ -36,7 +37,7 @@ public class DateTimeDataFormatter implements DBDDataFormatter {
     private FieldPosition position;
 
     @Override
-    public void init(Locale locale, Map<Object, Object> properties)
+    public void init(DBSTypedObject type, Locale locale, Map<Object, Object> properties)
     {
         pattern = CommonUtils.toString(properties.get(PROP_PATTERN));
         dateFormat = new ExtendedDateFormat(
