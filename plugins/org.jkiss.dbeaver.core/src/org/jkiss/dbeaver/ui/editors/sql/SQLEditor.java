@@ -127,6 +127,7 @@ public class SQLEditor extends SQLEditorBase implements
     DBPPreferenceListener
 {
     private static final long SCRIPT_UI_UPDATE_PERIOD = 100;
+    private static final int MAX_PARALLEL_QUERIES_NO_WARN = 10;
 
     private static Image IMG_DATA_GRID = DBeaverActivator.getImageDescriptor("/icons/sql/page_data_grid.png").createImage(); //$NON-NLS-1$
     private static Image IMG_DATA_GRID_LOCKED = DBeaverActivator.getImageDescriptor("/icons/sql/page_data_grid_locked.png").createImage(); //$NON-NLS-1$
@@ -1095,6 +1096,16 @@ public class SQLEditor extends SQLEditorBase implements
                 {
                     return;
                 }
+            }
+        } else if (newTab && queries.size() > MAX_PARALLEL_QUERIES_NO_WARN) {
+            if (ConfirmationDialog.showConfirmDialogEx(
+                getSite().getShell(),
+                DBeaverPreferences.CONFIRM_MASS_PARALLEL_SQL,
+                ConfirmationDialog.CONFIRM,
+                ConfirmationDialog.WARNING,
+                queries.size()) != IDialogConstants.OK_ID)
+            {
+                return;
             }
         }
 
