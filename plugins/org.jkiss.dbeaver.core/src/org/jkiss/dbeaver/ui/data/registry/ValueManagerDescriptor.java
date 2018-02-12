@@ -91,7 +91,7 @@ public class ValueManagerDescriptor extends AbstractDescriptor
                     info.typeName = typeName;
                 }
                 if (!CommonUtils.isEmpty(className)) {
-                    info.valueType = new ObjectType(className);
+                    info.valueType = new ObjectType(typeElement, ATTR_TYPE);
                 }
                 if (!CommonUtils.isEmpty(ext)) {
                     info.extension = ext;
