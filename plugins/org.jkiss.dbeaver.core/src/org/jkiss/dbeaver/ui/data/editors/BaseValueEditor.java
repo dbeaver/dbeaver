@@ -170,7 +170,9 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
                 valueController.updateSelectionValue(newValue);
             }
         } catch (DBException e) {
-            ((IMultiController) valueController).closeInlineEditor();
+            if (valueController instanceof IMultiController) {
+                ((IMultiController) valueController).closeInlineEditor();
+            }
             DBUserInterface.getInstance().showError("Value save", "Can't save edited value", e);
         }
     }

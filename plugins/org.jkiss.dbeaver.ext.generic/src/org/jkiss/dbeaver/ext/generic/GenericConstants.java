@@ -43,6 +43,7 @@ public class GenericConstants {
     public static final String PARAM_SCRIPT_DELIMITER_REDEFINER = "script-delimiter-redefiner";
     public static final String PARAM_SQL_DELIMITER_AFTER_QUERY = "script-delimiter-after-query";
     public static final String PARAM_SQL_DELIMITER_AFTER_BLOCK = "script-delimiter-after-block";
+    public static final String PARAM_STRING_ESCAPE_CHAR = "string-escape-char";
     public static final String PARAM_EMBEDDED = "embedded";
     public static final String PARAM_DDL_DROP_COLUMN_SHORT = "ddl-drop-column-short";
     public static final String PARAM_LEGACY_DIALECT = "legacy-sql-dialect";

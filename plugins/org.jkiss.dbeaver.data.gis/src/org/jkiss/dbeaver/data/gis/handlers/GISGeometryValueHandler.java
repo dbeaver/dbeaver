@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.data.gis.handlers;
 
+import com.vividsolutions.jts.geom.Geometry;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -35,25 +36,37 @@ public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
 
     @Override
     protected Object fetchColumnValue(DBCSession session, JDBCResultSet resultSet, DBSTypedObject type, int index) throws DBCException, SQLException {
-        return resultSet.getString(index);
+        return getValueFromObject(session, type, resultSet.getBytes(index), false);
     }
 
     @Override
     protected void bindParameter(JDBCSession session, JDBCPreparedStatement statement, DBSTypedObject paramType, int paramIndex, Object value) throws DBCException, SQLException {
         if (value == null) {
             statement.setNull(paramIndex, paramType.getTypeID());
-        } else {
-            statement.setString(paramIndex, value.toString());
+        } else if (value instanceof byte[]) {
+            statement.setBytes(paramIndex, (byte[]) value);
+        } else if (value instanceof Geometry) {
+            statement.setBytes(paramIndex, GeometryConverter.getInstance().to((Geometry)value));
         }
     }
 
     @Override
     public Class<?> getValueObjectType(DBSTypedObject attribute) {
-        return String.class;
+        return Geometry.class;
     }
 
     @Override
     public Object getValueFromObject(DBCSession session, DBSTypedObject type, Object object, boolean copy) throws DBCException {
-        return object;
+        if (object == null) {
+            return null;
+        } else if (object instanceof Geometry) {
+            return object;
+        } else if (object instanceof byte[]) {
+            return GeometryConverter.getInstance().from((byte[]) object);
+        } else if (object instanceof String) {
+            return GeometryConverter.getInstance().from((String)object);
+        } else {
+            throw new DBCException("Unsupported geometry value: " + object);
+        }
     }
 }
