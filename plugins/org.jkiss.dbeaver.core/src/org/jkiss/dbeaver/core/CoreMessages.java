@@ -1012,8 +1012,14 @@ public class CoreMessages extends NLS {
 	public static String pref_page_database_resultsets_label_colorize_data_types;
 	public static String pref_page_database_resultsets_label_right_justify_numbers_and_date;
 	public static String pref_page_database_resultsets_label_row_batch_size;
+	public static String pref_page_database_resultsets_label_row_batch_size_tip;
 	public static String pref_page_database_resultsets_label_show_cell_icons;
+	public static String pref_page_database_resultsets_label_show_attr_icons;
+	public static String pref_page_database_resultsets_label_show_attr_icons_tip;
 	public static String pref_page_database_resultsets_label_show_attr_filters;
+	public static String pref_page_database_resultsets_label_show_attr_filters_tip;
+	public static String pref_page_database_resultsets_label_show_attr_ordering;
+	public static String pref_page_database_resultsets_label_show_attr_ordering_tip;
 	public static String pref_page_database_resultsets_label_double_click_behavior;
 	public static String pref_page_database_resultsets_group_plain_text;
 	public static String pref_page_database_resultsets_lable_value_format;

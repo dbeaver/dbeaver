@@ -1383,18 +1383,20 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         @Override
         public int getSortOrder(@Nullable Object column)
         {
-            if (column instanceof DBDAttributeBinding) {
-                DBDAttributeBinding binding = (DBDAttributeBinding) column;
-                if (!binding.hasNestedBindings()) {
-                    DBDAttributeConstraint co = controller.getModel().getDataFilter().getConstraint(binding);
-                    if (co != null && co.getOrderPosition() > 0) {
-                        return co.isOrderDescending() ? SWT.DOWN : SWT.UP;
+            if (controller.getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_SHOW_ATTR_ORDERING)) {
+                if (column instanceof DBDAttributeBinding) {
+                    DBDAttributeBinding binding = (DBDAttributeBinding) column;
+                    if (!binding.hasNestedBindings()) {
+                        DBDAttributeConstraint co = controller.getModel().getDataFilter().getConstraint(binding);
+                        if (co != null && co.getOrderPosition() > 0) {
+                            return co.isOrderDescending() ? SWT.DOWN : SWT.UP;
+                        }
+                        return SWT.DEFAULT;
                     }
-                    return SWT.DEFAULT;
+                } else if (column == null && controller.isRecordMode()) {
+                    // Columns order in record mode
+                    return columnOrder;
                 }
-            } else if (column == null && controller.isRecordMode()) {
-                // Columns order in record mode
-                return columnOrder;
             }
             return SWT.NONE;
         }
@@ -1662,7 +1664,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         public Image getImage(Object element)
         {
             if (element instanceof DBDAttributeBinding/* && (!isRecordMode() || !model.isDynamicMetadata())*/) {
-                return DBeaverIcons.getImage(DBValueFormatting.getObjectImage(((DBDAttributeBinding) element).getAttribute()));
+                if (controller.getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_SHOW_ATTR_ICONS)) {
+                    return DBeaverIcons.getImage(DBValueFormatting.getObjectImage(((DBDAttributeBinding) element).getAttribute()));
+                }
             }
             return null;
         }

@@ -51,6 +51,8 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
     private Spinner gridRowBatchSize;
     private Button gridShowCellIcons;
     private Button gridShowAttrFilters;
+    private Button gridShowAttrOrder;
+    private Button gridShowAttrIcons;
     private Combo gridDoubleClickBehavior;
 
     private Spinner textMaxColumnSize;
@@ -79,6 +81,8 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
             store.contains(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES) ||
             store.contains(DBeaverPreferences.RESULT_SET_SHOW_CELL_ICONS) ||
             store.contains(DBeaverPreferences.RESULT_SET_DOUBLE_CLICK) ||
+            store.contains(DBeaverPreferences.RESULT_SET_SHOW_ATTR_FILTERS) ||
+
             store.contains(DBeaverPreferences.RESULT_SET_ROW_BATCH_SIZE) ||
             store.contains(DBeaverPreferences.RESULT_TEXT_MAX_COLUMN_SIZE) ||
             store.contains(DBeaverPreferences.RESULT_TEXT_VALUE_FORMAT) ||
@@ -116,8 +120,11 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
             colorizeDataTypes = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_colorize_data_types, null, false, 2);
             rightJustifyNumbers = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_right_justify_numbers_and_date, null, false, 2);
             gridRowBatchSize = UIUtils.createLabelSpinner(uiGroup, CoreMessages.pref_page_database_resultsets_label_row_batch_size, 1, 1, Short.MAX_VALUE);
+            gridRowBatchSize.setToolTipText(CoreMessages.pref_page_database_resultsets_label_row_batch_size_tip);
             gridShowCellIcons = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_show_cell_icons, null, false, 2);
-            gridShowAttrFilters = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_show_attr_filters, null, false, 2);
+            gridShowAttrIcons = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_show_attr_icons, CoreMessages.pref_page_database_resultsets_label_show_attr_icons_tip, false, 2);
+            gridShowAttrFilters = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_show_attr_filters, CoreMessages.pref_page_database_resultsets_label_show_attr_filters_tip, false, 2);
+            gridShowAttrOrder = UIUtils.createCheckbox(uiGroup, CoreMessages.pref_page_database_resultsets_label_show_attr_ordering, CoreMessages.pref_page_database_resultsets_label_show_attr_ordering_tip, false, 2);
             gridDoubleClickBehavior = UIUtils.createLabelCombo(uiGroup, CoreMessages.pref_page_database_resultsets_label_double_click_behavior, SWT.READ_ONLY);
             gridDoubleClickBehavior.add("None", Spreadsheet.DoubleClickBehavior.NONE.ordinal());
             gridDoubleClickBehavior.add("Editor", Spreadsheet.DoubleClickBehavior.EDITOR.ordinal());
@@ -148,7 +155,9 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
 
             gridRowBatchSize.setSelection(store.getInt(DBeaverPreferences.RESULT_SET_ROW_BATCH_SIZE));
             gridShowCellIcons.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_SHOW_CELL_ICONS));
+            gridShowAttrIcons.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_SHOW_ATTR_ICONS));
             gridShowAttrFilters.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_SHOW_ATTR_FILTERS));
+            gridShowAttrOrder.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_SHOW_ATTR_ORDERING));
             gridDoubleClickBehavior.select(
                 Spreadsheet.DoubleClickBehavior.valueOf(store.getString(DBeaverPreferences.RESULT_SET_DOUBLE_CLICK)).ordinal());
             autoSwitchMode.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_AUTO_SWITCH_MODE));
@@ -176,7 +185,9 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
             store.setValue(ModelPreferences.RESULT_TRANSFORM_COMPLEX_TYPES, transformComplexTypes.getSelection());
             store.setValue(DBeaverPreferences.RESULT_SET_ROW_BATCH_SIZE, gridRowBatchSize.getSelection());
             store.setValue(DBeaverPreferences.RESULT_SET_SHOW_CELL_ICONS, gridShowCellIcons.getSelection());
+            store.setValue(DBeaverPreferences.RESULT_SET_SHOW_ATTR_ICONS, gridShowAttrIcons.getSelection());
             store.setValue(DBeaverPreferences.RESULT_SET_SHOW_ATTR_FILTERS, gridShowAttrFilters.getSelection());
+            store.setValue(DBeaverPreferences.RESULT_SET_SHOW_ATTR_ORDERING, gridShowAttrOrder.getSelection());
             store.setValue(DBeaverPreferences.RESULT_SET_DOUBLE_CLICK, CommonUtils.fromOrdinal(Spreadsheet.DoubleClickBehavior.class, gridDoubleClickBehavior.getSelectionIndex()).name());
             store.setValue(DBeaverPreferences.RESULT_SET_AUTO_SWITCH_MODE, autoSwitchMode.getSelection());
             store.setValue(DBeaverPreferences.RESULT_SET_SHOW_DESCRIPTION, showDescription.getSelection());
@@ -203,7 +214,9 @@ public class PrefPageResultSetPresentation extends TargetPrefPage
 
         store.setToDefault(DBeaverPreferences.RESULT_SET_ROW_BATCH_SIZE);
         store.setToDefault(DBeaverPreferences.RESULT_SET_SHOW_CELL_ICONS);
+        store.setToDefault(DBeaverPreferences.RESULT_SET_SHOW_ATTR_ICONS);
         store.setToDefault(DBeaverPreferences.RESULT_SET_SHOW_ATTR_FILTERS);
+        store.setToDefault(DBeaverPreferences.RESULT_SET_SHOW_ATTR_ORDERING);
         store.setToDefault(DBeaverPreferences.RESULT_SET_DOUBLE_CLICK);
         store.setToDefault(DBeaverPreferences.RESULT_SET_AUTO_SWITCH_MODE);
         store.setToDefault(DBeaverPreferences.RESULT_SET_SHOW_DESCRIPTION);
