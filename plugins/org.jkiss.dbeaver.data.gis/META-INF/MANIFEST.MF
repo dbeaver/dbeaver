@@ -7,5 +7,7 @@ Bundle-Version: 1.0.0
 Bundle-Release-Date: 20180204
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Require-Bundle: org.jkiss.dbeaver.model,
- org.jkiss.dbeaver.core
+ org.jkiss.dbeaver.core,
+ com.vividsolutions.jts
 Bundle-ClassPath: .
+Export-Package: org.jkiss.dbeaver.data.gis.handlers

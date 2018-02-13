@@ -34,6 +34,7 @@ public class GenericSQLDialect extends JDBCSQLDialect {
     private static String[] EXEC_KEYWORDS =  { "EXEC", "CALL" };
 
     private String scriptDelimiter;
+    private char stringEscapeCharacter = '\0';
     private String scriptDelimiterRedefiner;
     private boolean legacySQLDialect;
     private boolean suportsUpsert;
@@ -55,6 +56,10 @@ public class GenericSQLDialect extends JDBCSQLDialect {
         super.initDriverSettings(dataSource, metaData);
         DBPDriver driver = dataSource.getContainer().getDriver();
         this.scriptDelimiter = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_SCRIPT_DELIMITER));
+        String escapeStr = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_STRING_ESCAPE_CHAR));
+        if (!CommonUtils.isEmpty(escapeStr)) {
+            this.stringEscapeCharacter = escapeStr.charAt(0);
+        }
         this.scriptDelimiterRedefiner = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_SCRIPT_DELIMITER_REDEFINER));
         this.hasDelimiterAfterQuery = CommonUtils.toBoolean(driver.getDriverParameter(GenericConstants.PARAM_SQL_DELIMITER_AFTER_QUERY));
         this.hasDelimiterAfterBlock = CommonUtils.toBoolean(driver.getDriverParameter(GenericConstants.PARAM_SQL_DELIMITER_AFTER_BLOCK));
@@ -76,9 +81,13 @@ public class GenericSQLDialect extends JDBCSQLDialect {
 
     @NotNull
     @Override
-    public String getScriptDelimiter()
-    {
+    public String getScriptDelimiter() {
         return CommonUtils.isEmpty(scriptDelimiter) ? super.getScriptDelimiter() : scriptDelimiter;
+    }
+
+    @Override
+    public char getStringEscapeCharacter() {
+        return stringEscapeCharacter;
     }
 
     @Override
