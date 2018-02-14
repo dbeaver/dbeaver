@@ -210,8 +210,8 @@
                     description="%driver.postgresql.description">
                     <replace provider="generic" driver="postgresql"/>
                     <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.0.jre7]" bundle="!drivers.postgresql"/>
-                    <file type="jar" path="maven:/net.postgis:postgis-jdbc:RELEASE[2.2.1]" bundle="!drivers.postgresql"/>
-                    <file type="jar" path="maven:/net.postgis:postgis-jdbc-jtsparser:RELEASE[2.2.1]" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/net.postgis:postgis-jdbc:RELEASE[2.2.1]" ignore-dependencies="true" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/net.postgis:postgis-jdbc-jtsparser:RELEASE[2.2.1]" ignore-dependencies="true" bundle="!drivers.postgresql"/>
 
                     <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
                     <file type="jar" path="drivers/postgresql/postgresql.jar" bundle="drivers.postgresql"/>
