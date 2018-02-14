@@ -214,7 +214,7 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
             Composite placeholder = UIUtils.createPlaceholder(generatorsGroup, 1);
             placeholder.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-            Composite labelCombo = UIUtils.createPlaceholder(placeholder, 3);
+            Composite labelCombo = UIUtils.createPlaceholder(placeholder, 4);
             gd = new GridData(GridData.FILL_HORIZONTAL);
             labelCombo.setLayoutData(gd);
 
@@ -237,6 +237,18 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
             gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL);
             gd.horizontalIndent = 5;
             generatorDescriptionLabel.setLayoutData(gd);
+
+            Button createButton = new Button(labelCombo, SWT.PUSH);
+            createButton.setText("Reset");
+            createButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    for (Object key : propertySource.getProperties().keySet()) {
+                        propertySource.resetPropertyValueToDefault(key);
+                    }
+                    propsEditor.loadProperties(propertySource);
+                }
+            });
 
             propsEditor = new PropertyTreeViewer(placeholder, SWT.BORDER);
             gd = new GridData(GridData.FILL_BOTH);
