@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.ext.mockdata;
 
 import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.jface.operation.IRunnableContext;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.mockdata.model.MockGeneratorDescriptor;
@@ -26,6 +25,7 @@ import org.jkiss.dbeaver.ext.mockdata.model.MockGeneratorRegistry;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
@@ -38,6 +38,12 @@ import java.util.*;
 public class MockDataSettings {
 
     public static final String FK_GENERATOR_ID = "fkGenerator"; //$NON-NLS-1$
+
+    public static final String PROP_REMOVE_OLD_DATA = "removeOldData"; //$NON-NLS-1$
+    public static final String PROP_ROWS_NUMBER = "rowsNumber"; //$NON-NLS-1$
+
+    public static final String KEY_SELECTED_GENERATOR = "selectedGenerator"; //$NON-NLS-1$
+    public static final String KEY_GENERATOR_SECTION = "GENERATOR_SECTION"; //$NON-NLS-1$
 
     private DBSEntity dbsEntity;
     private Collection<DBSAttributeBase> attributes;
@@ -139,35 +145,57 @@ public class MockDataSettings {
         return attributeGenerators.get(attribute.getName());
     }
 
-    public void loadFrom(IRunnableContext runnableContext, IDialogSettings dialogSettings) {
-        removeOldData = dialogSettings.getBoolean("removeOldData");
+    public void loadFrom(IDialogSettings dialogSettings) {
+        removeOldData = dialogSettings.getBoolean(PROP_REMOVE_OLD_DATA);
         try {
-            rowsNumber = dialogSettings.getInt("rowsNumber");
+            rowsNumber = dialogSettings.getInt(PROP_ROWS_NUMBER);
         } catch (NumberFormatException e) {
             // do nothing
         }
 
         // load selected generators
+        VoidProgressMonitor voidProgressMonitor = new VoidProgressMonitor();
         IDialogSettings tableSection = UIUtils.getSettingsSection(dialogSettings, dbsEntity.getName());
         for (Map.Entry<String, AttributeGeneratorProperties> entry : attributeGenerators.entrySet()) {
             String attributeName = entry.getKey();
-            String selectedGenerator = tableSection.get(attributeName);
-            if (selectedGenerator != null) {
-                entry.getValue().setSelectedGeneratorId(selectedGenerator);
+            IDialogSettings attributeSection = UIUtils.getSettingsSection(tableSection, attributeName);
+            String selectedGeneratorId = attributeSection.get(KEY_SELECTED_GENERATOR);
+            if (selectedGeneratorId != null) {
+                AttributeGeneratorProperties attrGeneratorProperties = entry.getValue();
+                attrGeneratorProperties.setSelectedGeneratorId(selectedGeneratorId);
+
+                PropertySourceCustom generatorPropertySource = attrGeneratorProperties.getGeneratorPropertySource(selectedGeneratorId);
+                IDialogSettings generatorSection = UIUtils.getSettingsSection(attributeSection, KEY_GENERATOR_SECTION);
+                Map<Object, Object> properties = generatorPropertySource.getPropertiesWithDefaults();
+                for (Map.Entry<Object, Object> propEntry : properties.entrySet()) {
+                    Object savedValue = UIUtils.getSectionValueWithType(generatorSection, (String) propEntry.getKey());
+                    generatorPropertySource.setPropertyValue(voidProgressMonitor, propEntry.getKey(), savedValue);
+                }
             }
         }
     }
 
     void saveTo(IDialogSettings dialogSettings) {
-        dialogSettings.put("removeOldData", removeOldData);
-        dialogSettings.put("rowsNumber", rowsNumber);
+        dialogSettings.put(PROP_REMOVE_OLD_DATA, removeOldData);
+        dialogSettings.put(PROP_ROWS_NUMBER, rowsNumber);
 
         // save selected generators
         IDialogSettings tableSection = UIUtils.getSettingsSection(dialogSettings, dbsEntity.getName());
-        for (Map.Entry<String, AttributeGeneratorProperties> entry : attributeGenerators.entrySet()) {
-            tableSection.put(entry.getKey(), entry.getValue().getSelectedGeneratorId());
-        }
+        for (Map.Entry<String, AttributeGeneratorProperties> attrEntry : attributeGenerators.entrySet()) {
+            String attributeName = attrEntry.getKey();
 
+            AttributeGeneratorProperties attrGeneratorProperties = attrEntry.getValue();
+            IDialogSettings attributeSection = UIUtils.getSettingsSection(tableSection, attributeName);
+            String selectedGeneratorId = attrGeneratorProperties.getSelectedGeneratorId();
+            attributeSection.put(KEY_SELECTED_GENERATOR, selectedGeneratorId);
+
+            IDialogSettings generatorSection = UIUtils.getSettingsSection(attributeSection, KEY_GENERATOR_SECTION);
+            PropertySourceCustom generatorPropertySource = attrGeneratorProperties.getGeneratorPropertySource(selectedGeneratorId);
+            Map<Object, Object> properties = generatorPropertySource.getPropertiesWithDefaults();
+            for (Map.Entry<Object, Object> propEntry : properties.entrySet()) {
+                UIUtils.putSectionValueWithType(generatorSection, (String) propEntry.getKey(), propEntry.getValue());
+            }
+        }
     }
 
     public static class AttributeGeneratorProperties {

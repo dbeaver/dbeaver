@@ -285,6 +285,9 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
                 MockDataExecuteWizard wizard = getWizard();
                 mockDataSettings.init(wizard);
                 wizard.loadSettings();
+
+                removeOldDataCheck.setSelection(mockDataSettings.isRemoveOldData());
+                rowsText.setText(String.valueOf(mockDataSettings.getRowsNumber()));
                 columnsTableViewer.setInput(mockDataSettings.getAttributes());
             }
 

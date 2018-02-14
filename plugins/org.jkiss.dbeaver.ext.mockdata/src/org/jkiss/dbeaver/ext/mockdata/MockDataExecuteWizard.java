@@ -73,7 +73,7 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
         IDialogSettings section = UIUtils.getDialogSettings(RS_EXPORT_WIZARD_DIALOG_SETTINGS);
         setDialogSettings(section);
 
-        mockDataSettings.loadFrom(DBeaverUI.getActiveWorkbenchWindow(), section);
+        mockDataSettings.loadFrom(section);
     }
 
     @Override
