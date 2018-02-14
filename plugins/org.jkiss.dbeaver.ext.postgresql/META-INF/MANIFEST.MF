@@ -14,6 +14,8 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.editors,
  org.jkiss.dbeaver.ext.generic,
  org.jkiss.dbeaver.ext.ui.locks,
+ org.jkiss.dbeaver.data.gis,
+ com.vividsolutions.jts,
  net.sf.opencsv,
  org.eclipse.gef
 Bundle-ActivationPolicy: lazy

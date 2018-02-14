@@ -14,30 +14,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.data.gis.handlers;
+package org.jkiss.dbeaver.ext.postgresql.model.data;
 
 import com.vividsolutions.jts.geom.Geometry;
+import org.jkiss.dbeaver.data.gis.handlers.GISGeometryValueHandler;
+import org.jkiss.dbeaver.data.gis.handlers.GeometryConverter;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterHex;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCAbstractValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.utils.BeanUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
+import java.sql.Types;
 
 /**
- * GIS geometry handler
+ * Postgre geometry handler
  */
-public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
+public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
 
-    public static final GISGeometryValueHandler INSTANCE = new GISGeometryValueHandler();
+    public static final PostgreGeometryValueHandler INSTANCE = new PostgreGeometryValueHandler();
 
     @Override
     protected Object fetchColumnValue(DBCSession session, JDBCResultSet resultSet, DBSTypedObject type, int index) throws DBCException, SQLException {
         return getValueFromObject(session, type,
-            fetchBytes(resultSet, index),
+            resultSet.getString(index),
             false);
     }
 
@@ -45,10 +52,10 @@ public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
     protected void bindParameter(JDBCSession session, JDBCPreparedStatement statement, DBSTypedObject paramType, int paramIndex, Object value) throws DBCException, SQLException {
         if (value == null) {
             statement.setNull(paramIndex, paramType.getTypeID());
-        } else if (value instanceof byte[]) {
-            bindBytes(statement, paramIndex, (byte[]) value);
         } else if (value instanceof Geometry) {
-            bindBytes(statement, paramIndex, GeometryConverter.getInstance().to((Geometry)value));
+            statement.setObject(paramIndex, getStringFromGeometry(session, (Geometry)value), Types.OTHER);
+        } else {
+            throw new DBCException("Invalid geometry object: " + value);
         }
     }
 
@@ -63,21 +70,32 @@ public class GISGeometryValueHandler extends JDBCAbstractValueHandler {
             return null;
         } else if (object instanceof Geometry) {
             return object;
-        } else if (object instanceof byte[]) {
-            return GeometryConverter.getInstance().from((byte[]) object);
         } else if (object instanceof String) {
-            return GeometryConverter.getInstance().from((String)object);
+            if (CommonUtils.isEmpty((String) object)) {
+                return null;
+            }
+            try {
+                Class<?> jtsGeometry = DBUtils.getDriverClass(session.getDataSource(), "org.postgis.jts.JtsGeometry");
+                return BeanUtils.invokeStaticMethod(
+                    jtsGeometry, "geomFromString", new Class[] { String.class }, new Object[] { object }
+                );
+            } catch (Throwable e) {
+                throw new DBCException(e, session.getDataSource());
+            }
         } else {
             throw new DBCException("Unsupported geometry value: " + object);
         }
     }
 
-    protected byte[] fetchBytes(JDBCResultSet resultSet, int index) throws SQLException {
-        return resultSet.getBytes(index);
-    }
-
-    protected void bindBytes(JDBCPreparedStatement dbStat, int index, byte[] bytes) throws SQLException {
-        dbStat.setBytes(index, bytes);
+    private String getStringFromGeometry(JDBCSession session, Geometry geometry) throws DBCException {
+        try {
+            Class<?> jtsGeometry = DBUtils.getDriverClass(session.getDataSource(), "org.postgis.jts.JtsGeometry");
+            Object jtsg = jtsGeometry.getConstructor(Geometry.class).newInstance(geometry);
+            return (String)BeanUtils.invokeObjectMethod(
+                jtsg, "getValue", null, null);
+        } catch (Throwable e) {
+            throw new DBCException(e, session.getDataSource());
+        }
     }
 
 }

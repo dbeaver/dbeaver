@@ -26,15 +26,15 @@ public class GeometryConverter {
     /**
      * Precision model
      */
-    private PrecisionModel precisionModel = new PrecisionModel();
+    private static PrecisionModel precisionModel = new PrecisionModel();
     /**
      * Coordinate sequence factory
      */
-    private CoordinateSequenceFactory coordinateSequenceFactory = CoordinateArraySequenceFactory.instance();
+    private static CoordinateSequenceFactory coordinateSequenceFactory = CoordinateArraySequenceFactory.instance();
     /**
      * Output dimension
      */
-    private int outputDimension = 2;
+    private static int outputDimension = 2;
 
     private static final GeometryConverter INSTANCE = new GeometryConverter();
 
