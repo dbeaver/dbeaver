@@ -18,13 +18,10 @@ package org.jkiss.dbeaver.ui.data.managers;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
-import org.jkiss.dbeaver.ui.data.editors.StringInlineEditor;
 import org.jkiss.dbeaver.ui.dialogs.data.TextViewDialog;
-import org.jkiss.dbeaver.ui.editors.content.ContentEditor;
 
 /**
  * Geometry value manager
@@ -46,7 +43,7 @@ public class GeometryValueManager extends BaseValueManager {
         switch (controller.getEditType()) {
             case INLINE:
             case PANEL:
-                return new StringInlineEditor(controller);
+                return new GeometryInlineEditor(controller);
             case EDITOR:
                 return new TextViewDialog(controller);
             default:
