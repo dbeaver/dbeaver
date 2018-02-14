@@ -164,18 +164,21 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
                     if (attributeGenerators.isEmpty()) {
                         // TODO item.setForeground(columnsTableViewer.getDisplay().getSystemColor(SWT.COLOR_RED));
                         noGeneratorInfoLabel.setVisible(true);
+                        TextCellEditor textCellEditor = new TextCellEditor(columnsTableViewer.getTable());
+                        textCellEditor.getControl().setEnabled(false);
+                        return textCellEditor;
                     } else {
                         for (String generatorId : attributeGenerators.getGenerators()) {
                             generators.add(mockDataSettings.getGeneratorDescriptor(generatorId).getLabel());
                         }
-                    }
 
-                    CustomComboBoxCellEditor customComboBoxCellEditor = new CustomComboBoxCellEditor(
-                            columnsTableViewer,
-                            columnsTableViewer.getTable(),
-                            generators.toArray(new String[generators.size()]),
-                            SWT.BORDER | SWT.READ_ONLY);
-                    return customComboBoxCellEditor;
+                        CustomComboBoxCellEditor customComboBoxCellEditor = new CustomComboBoxCellEditor(
+                                columnsTableViewer,
+                                columnsTableViewer.getTable(),
+                                generators.toArray(new String[generators.size()]),
+                                SWT.BORDER | SWT.READ_ONLY);
+                        return customComboBoxCellEditor;
+                    }
                 }
 
                 @Override
@@ -185,7 +188,11 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
                 protected Object getValue(Object element) {
                     DBSAttributeBase attribute = (DBSAttributeBase) element;
                     String selectedGenerator = mockDataSettings.getAttributeGeneratorProperties(attribute).getSelectedGeneratorId();
-                    return mockDataSettings.getGeneratorDescriptor(selectedGenerator).getLabel();
+                    if (selectedGenerator != null) {
+                        return mockDataSettings.getGeneratorDescriptor(selectedGenerator).getLabel();
+                    } else {
+                        return "";
+                    }
                 }
 
                 @Override
@@ -207,26 +214,39 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
             Composite placeholder = UIUtils.createPlaceholder(generatorsGroup, 1);
             placeholder.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-            Composite labelCombo = UIUtils.createPlaceholder(placeholder, 3);
+            Composite labelCombo = UIUtils.createPlaceholder(placeholder, 4);
             gd = new GridData(GridData.FILL_HORIZONTAL);
             labelCombo.setLayoutData(gd);
+
+            generatorCombo = new Combo(labelCombo, SWT.READ_ONLY | SWT.DROP_DOWN);
+            gd = new GridData();
+            gd.widthHint = 80;
+            generatorCombo.setLayoutData(gd);
+            generatorCombo.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    selectGenerator(selectedAttribute, generatorCombo.getText());
+                }
+            });
+
             generatorDescriptionLabel = new Label(labelCombo, SWT.NONE);
             generatorDescriptionLabel.setFont(
                     JFaceResources.getFontRegistry().getItalic(JFaceResources.DEFAULT_FONT)
             );
             generatorDescriptionLabel.setText("");
             gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL);
-            gd.minimumWidth = 333;
+            gd.horizontalIndent = 5;
             generatorDescriptionLabel.setLayoutData(gd);
-            UIUtils.createLabel(labelCombo, "Generator : ");
-            generatorCombo = new Combo(labelCombo, SWT.READ_ONLY | SWT.DROP_DOWN);
-            gd = new GridData();
-            gd.widthHint = 100;
-            generatorCombo.setLayoutData(gd);
-            generatorCombo.addSelectionListener(new SelectionAdapter() {
+
+            Button createButton = new Button(labelCombo, SWT.PUSH);
+            createButton.setText("Reset");
+            createButton.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    selectGenerator(selectedAttribute, generatorCombo.getText());
+                    for (Object key : propertySource.getProperties().keySet()) {
+                        propertySource.resetPropertyValueToDefault(key);
+                    }
+                    propsEditor.loadProperties(propertySource);
                 }
             });
 
@@ -260,8 +280,10 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
 
     private void selectGenerator(DBSAttributeBase attribute, String generatorName) {
         MockGeneratorDescriptor generatorForName = mockDataSettings.findGeneratorForName(attribute, generatorName);
-        saveGeneratorProperties();
-        reloadProperties(attribute, generatorForName.getId());
+        if (generatorForName != null) {
+            saveGeneratorProperties();
+            reloadProperties(attribute, generatorForName.getId());
+        }
         columnsTableViewer.refresh(true, true);
     }
 
@@ -272,8 +294,13 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
             // init the generators properties
             if (firstInit) {
                 firstInit = false;
-                Collection<? extends DBSAttributeBase> attributes = this.mockDataSettings.init(getWizard());
-                columnsTableViewer.setInput(attributes);
+                MockDataExecuteWizard wizard = getWizard();
+                mockDataSettings.init(wizard);
+                wizard.loadSettings();
+
+                removeOldDataCheck.setSelection(mockDataSettings.isRemoveOldData());
+                rowsText.setText(String.valueOf(mockDataSettings.getRowsNumber()));
+                columnsTableViewer.setInput(mockDataSettings.getAttributes());
             }
 
             // select the first item
