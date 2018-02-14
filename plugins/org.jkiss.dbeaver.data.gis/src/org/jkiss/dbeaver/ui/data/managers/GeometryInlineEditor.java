@@ -17,24 +17,14 @@
 package org.jkiss.dbeaver.ui.data.managers;
 
 import com.vividsolutions.jts.geom.Geometry;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Text;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.data.IValueController;
-import org.jkiss.dbeaver.ui.data.editors.BaseValueEditor;
 import org.jkiss.dbeaver.ui.data.editors.StringInlineEditor;
 
 /**
-* StringInlineEditor.
- * TODO: use StyledText instead of Text? with fillDefaultStyledTextContextMenu it works better than Text
- * TODO: however Text is native and has extra features. Can't decide.
+ * GeometryInlineEditor.
+ * Edits value as string. Also manager SRID.
 */
 public class GeometryInlineEditor extends StringInlineEditor {
 
