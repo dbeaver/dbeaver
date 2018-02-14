@@ -21,7 +21,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
-import org.jkiss.dbeaver.ui.dialogs.data.TextViewDialog;
+import org.jkiss.dbeaver.ui.dialogs.data.DefaultValueViewDialog;
 
 /**
  * Geometry value manager
@@ -45,7 +45,7 @@ public class GeometryValueManager extends BaseValueManager {
             case PANEL:
                 return new GeometryInlineEditor(controller);
             case EDITOR:
-                return new TextViewDialog(controller);
+                return new DefaultValueViewDialog(controller);
             default:
                 return null;
         }
