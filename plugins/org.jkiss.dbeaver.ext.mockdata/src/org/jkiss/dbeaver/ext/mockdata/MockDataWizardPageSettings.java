@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomComboBoxCellEditor;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 import java.util.List;
@@ -335,7 +336,7 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
         for (String attr : attributeGenerators.keySet()) {
             AttributeGeneratorProperties attributeGeneratorProperties = attributeGenerators.get(attr);
             String selectedGeneratorId = attributeGeneratorProperties.getSelectedGeneratorId();
-            if (selectedGeneratorId != null) {
+            if (!CommonUtils.isEmpty(selectedGeneratorId)) {
                 Map<Object, Object> properties =
                         attributeGeneratorProperties.getGeneratorPropertySource(selectedGeneratorId).getPropertiesWithDefaults();
                 for (Object key : properties.keySet()) {

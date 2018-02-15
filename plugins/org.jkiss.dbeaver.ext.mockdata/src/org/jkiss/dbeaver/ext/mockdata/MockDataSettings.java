@@ -166,10 +166,16 @@ public class MockDataSettings {
 
                 PropertySourceCustom generatorPropertySource = attrGeneratorProperties.getGeneratorPropertySource(selectedGeneratorId);
                 IDialogSettings generatorSection = UIUtils.getSettingsSection(attributeSection, KEY_GENERATOR_SECTION);
-                Map<Object, Object> properties = generatorPropertySource.getPropertiesWithDefaults();
-                for (Map.Entry<Object, Object> propEntry : properties.entrySet()) {
-                    Object savedValue = UIUtils.getSectionValueWithType(generatorSection, (String) propEntry.getKey());
-                    generatorPropertySource.setPropertyValue(voidProgressMonitor, propEntry.getKey(), savedValue);
+                if (generatorPropertySource != null) {
+                    Map<Object, Object> properties = generatorPropertySource.getPropertiesWithDefaults();
+                    for (Map.Entry<Object, Object> propEntry : properties.entrySet()) {
+                        String key = (String) propEntry.getKey();
+                        Object savedValue = UIUtils.getSectionValueWithType(generatorSection, key);
+                        if (key.equals("nulls") && savedValue instanceof Boolean) {
+                            continue; // skip incorrect type TODO can be removed in the future
+                        }
+                        generatorPropertySource.setPropertyValue(voidProgressMonitor, propEntry.getKey(), savedValue);
+                    }
                 }
             }
         }
@@ -191,9 +197,11 @@ public class MockDataSettings {
 
             IDialogSettings generatorSection = UIUtils.getSettingsSection(attributeSection, KEY_GENERATOR_SECTION);
             PropertySourceCustom generatorPropertySource = attrGeneratorProperties.getGeneratorPropertySource(selectedGeneratorId);
-            Map<Object, Object> properties = generatorPropertySource.getPropertiesWithDefaults();
-            for (Map.Entry<Object, Object> propEntry : properties.entrySet()) {
-                UIUtils.putSectionValueWithType(generatorSection, (String) propEntry.getKey(), propEntry.getValue());
+            if (generatorPropertySource != null) {
+                Map<Object, Object> properties = generatorPropertySource.getPropertiesWithDefaults();
+                for (Map.Entry<Object, Object> propEntry : properties.entrySet()) {
+                    UIUtils.putSectionValueWithType(generatorSection, (String) propEntry.getKey(), propEntry.getValue());
+                }
             }
         }
     }
