@@ -683,7 +683,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
         for (DBPDriverLibrary library : driver.getDriverLibraries()) {
             final File localFile = library.getLocalFile();
             hasFiles = hasFiles || (!library.isDisabled() && localFile != null && localFile.exists());
-            if (!hasFiles) {
+            if (!hasFiles && !library.isDisabled()) {
                 final Collection<DriverDescriptor.DriverFileInfo> files = driver.getLibraryFiles(library);
                 if (files != null) {
                     for (DriverDescriptor.DriverFileInfo file : files) {
@@ -694,9 +694,8 @@ public class DriverEditDialog extends HelpEnabledDialog {
                 }
             }
 
-            if (library.isDownloadable()) {
+            if (!library.isDisabled() && library.isDownloadable()) {
                 hasDownloads = true;
-                break;
             }
         }
         findClassButton.setEnabled(provider.isDriversManagable() && hasFiles);
