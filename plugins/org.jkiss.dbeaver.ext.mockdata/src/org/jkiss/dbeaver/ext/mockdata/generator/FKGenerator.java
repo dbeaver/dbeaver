@@ -38,7 +38,7 @@ public class FKGenerator extends AbstractMockValueGenerator {
     public void init(DBSDataManipulator container, DBSAttributeBase attribute, Map<Object, Object> properties) throws DBException {
         super.init(container, attribute, properties);
 
-        allowNulls = false;
+        nullsPersent = 0;
 
         Integer numberRefRecords = (Integer) properties.get("numberRefRecords"); //$NON-NLS-1$
         if (numberRefRecords != null) {

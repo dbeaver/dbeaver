@@ -25,7 +25,7 @@ public abstract class AbstractMockValueGenerator implements MockValueGenerator {
     protected DBSAttributeBase attribute;
 
     protected static Random random = new Random();
-    protected boolean allowNulls;
+    protected int nullsPersent = 10;
     private boolean isFirstRun = true;
     private boolean isUnique;
     private Set uniqueValues;
@@ -42,7 +42,19 @@ public abstract class AbstractMockValueGenerator implements MockValueGenerator {
         this.dbsEntity = (DBSEntity) container;
         this.attribute = attribute;
 
-        allowNulls = !attribute.isRequired() && Boolean.valueOf(CommonUtils.toString(properties.get("nulls")));
+        if (attribute.isRequired()) {
+            nullsPersent = 0;
+        } else {
+            if (properties.get("nulls") != null) {
+                nullsPersent = (int) properties.get("nulls");
+            }
+        }
+        if (nullsPersent > 100) {
+            nullsPersent = 100;
+        } else
+        if (nullsPersent < 0) {
+            nullsPersent = 0;
+        }
     }
 
     @Override
@@ -82,7 +94,7 @@ public abstract class AbstractMockValueGenerator implements MockValueGenerator {
     protected abstract Object generateOneValue(DBRProgressMonitor monitor) throws DBException;
 
     protected boolean isGenerateNULL() {
-        if (allowNulls && (random.nextInt() % 10 == 1)) { // TODO every 10th is NULL - should be customized
+        if ((nullsPersent > 0) && ((nullsPersent == 100) || (random.nextInt(100) <= nullsPersent))) {
             return true;
         }
         else {
