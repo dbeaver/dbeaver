@@ -167,7 +167,7 @@ public class HexPreferencesManager {
             gridData21.verticalAlignment = GridData.FILL;
             gridData21.widthHint = averageCharWidth * TEXT_BOLD_ITALIC.length() * 2;
             listStyle.setLayoutData(gridData21);
-            listStyle.setItems(TEXT_REGULAR, TEXT_BOLD, TEXT_ITALIC, TEXT_BOLD_ITALIC);
+            listStyle.setItems(new String[] { TEXT_REGULAR, TEXT_BOLD, TEXT_ITALIC, TEXT_BOLD_ITALIC });
             listStyle.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e)
