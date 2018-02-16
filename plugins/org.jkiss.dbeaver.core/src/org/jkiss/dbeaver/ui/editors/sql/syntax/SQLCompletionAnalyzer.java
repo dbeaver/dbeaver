@@ -20,7 +20,6 @@ import org.eclipse.swt.graphics.Image;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -105,6 +104,13 @@ class SQLCompletionAnalyzer
                 if (rootObject != null) {
                     makeProposalsFromChildren(rootObject, null);
                 }
+                if (request.queryType == SQLCompletionProcessor.QueryType.JOIN && !request.proposals.isEmpty() && dataSource instanceof DBSObjectContainer) {
+                    // Filter out non-joinable tables
+                    DBSObject leftTable = getTableFromAlias((DBSObjectContainer) dataSource, null);
+                    if (leftTable != null) {
+                        filterNonJoinableProposals(leftTable);
+                    }
+                }
             } else {
                 DBSObject rootObject = null;
                 if (request.queryType == SQLCompletionProcessor.QueryType.COLUMN && dataSource instanceof DBSObjectContainer) {
@@ -130,6 +136,10 @@ class SQLCompletionAnalyzer
             // Get list of sub-objects (filtered by wordPart)
             makeDataSourceProposals();
         }
+    }
+
+    private void filterNonJoinableProposals(DBSObject leftTable) {
+        // Remove all table proposals which don't have FKs between them and leftTable
     }
 
     private void makeDataSourceProposals()
@@ -473,26 +483,18 @@ class SQLCompletionAnalyzer
                 } else if (!matchedObjects.isEmpty()) {
                     if (startPart != null) {
                         if (simpleMode) {
-                            Collections.sort(matchedObjects, new Comparator<DBSObject>() {
-                                @Override
-                                public int compare(DBSObject o1, DBSObject o2) {
+                            matchedObjects.sort(Comparator.comparing(DBPNamedObject::getName));
+                        } else {
+                            matchedObjects.sort((o1, o2) -> {
+                                int score1 = scoredMatches.get(o1.getName());
+                                int score2 = scoredMatches.get(o2.getName());
+                                if (score1 == score2) {
+                                    if (o1 instanceof DBSAttributeBase) {
+                                        return ((DBSAttributeBase) o1).getOrdinalPosition() - ((DBSAttributeBase) o2).getOrdinalPosition();
+                                    }
                                     return o1.getName().compareTo(o2.getName());
                                 }
-                            });
-                        } else {
-                            Collections.sort(matchedObjects, new Comparator<DBSObject>() {
-                                @Override
-                                public int compare(DBSObject o1, DBSObject o2) {
-                                    int score1 = scoredMatches.get(o1.getName());
-                                    int score2 = scoredMatches.get(o2.getName());
-                                    if (score1 == score2) {
-                                        if (o1 instanceof DBSAttributeBase) {
-                                            return ((DBSAttributeBase) o1).getOrdinalPosition() - ((DBSAttributeBase) o2).getOrdinalPosition();
-                                        }
-                                        return o1.getName().compareTo(o2.getName());
-                                    }
-                                    return score2 - score1;
-                                }
+                                return score2 - score1;
                             });
                         }
                     }
