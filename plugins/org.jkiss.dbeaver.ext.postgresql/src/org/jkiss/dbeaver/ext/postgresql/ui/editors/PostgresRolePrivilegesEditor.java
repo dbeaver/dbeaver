@@ -163,13 +163,15 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                 }
             });
 
-            for (PostgrePrivilegeType pt : PostgrePrivilegeType.values()) {
-                if (!pt.isValid() || !pt.getTargetType().isAssignableFrom(getDatabaseObject().getClass())) {
-                    continue;
+            if (!isRoleEditor()) {
+                for (PostgrePrivilegeType pt : PostgrePrivilegeType.values()) {
+                    if (!pt.isValid() || !pt.getTargetType().isAssignableFrom(getDatabaseObject().getClass())) {
+                        continue;
+                    }
+                    TableItem privItem = new TableItem(permissionTable, SWT.LEFT);
+                    privItem.setText(0, pt.name());
+                    privItem.setData(pt);
                 }
-                TableItem privItem = new TableItem(permissionTable, SWT.LEFT);
-                privItem.setText(0, pt.name());
-                privItem.setData(pt);
             }
 
             Composite buttonPanel = new Composite(permEditPanel, SWT.NONE);
@@ -284,7 +286,27 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
     }
 
     private void updateObjectPermissions(List<DBSObject> objects) {
+
         boolean hasBadObjects = CommonUtils.isEmpty(objects);
+
+        if (isRoleEditor()) {
+            // In role editor each object may have different privilege set
+            permissionTable.removeAll();
+
+            if (!CommonUtils.isEmpty(objects)) {
+                Class<?> objectType = objects.get(0).getClass();
+                for (PostgrePrivilegeType pt : PostgrePrivilegeType.values()) {
+                    if (!pt.isValid() || !pt.getTargetType().isAssignableFrom(objectType)) {
+                        continue;
+                    }
+                    TableItem privItem = new TableItem(permissionTable, SWT.LEFT);
+                    privItem.setText(0, pt.name());
+                    privItem.setData(pt);
+                }
+                permissionTable.getParent().layout(true);
+            }
+        }
+
         StringBuilder objectNames = new StringBuilder();
         if (!hasBadObjects) {
             for (DBSObject object : objects) {
