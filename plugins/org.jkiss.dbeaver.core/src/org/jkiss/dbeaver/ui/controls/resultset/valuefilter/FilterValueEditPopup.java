@@ -21,6 +21,8 @@ import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.layout.TableColumnLayout;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.jface.viewers.ColumnWeightData;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusAdapter;
@@ -126,7 +128,10 @@ public class FilterValueEditPopup extends Dialog {
         table.addFocusListener(focusListener);
 
         filter.table.addSelectionChangedListener(event -> {
-            value = event.getStructuredSelection().getFirstElement();
+            ISelection selection = event.getSelection();
+            if (selection instanceof IStructuredSelection) {
+                value = ((IStructuredSelection) selection).getFirstElement();
+            }
             //okPressed();
         });
         filter.table.addDoubleClickListener(event -> {
