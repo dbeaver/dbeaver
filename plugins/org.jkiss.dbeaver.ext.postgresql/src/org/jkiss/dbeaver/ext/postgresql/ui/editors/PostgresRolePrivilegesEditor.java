@@ -127,7 +127,8 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                 if (element instanceof DBNDatabaseFolder) {
                     try {
                         Class<?> childType = Class.forName(((DBNDatabaseFolder) element).getMeta().getType());
-                        return PostgreTableReal.class.isAssignableFrom(childType);
+                        return PostgreTableReal.class.isAssignableFrom(childType) ||
+                            PostgreSequence.class.isAssignableFrom(childType);
                     } catch (ClassNotFoundException e) {
                         return false;
                     }
