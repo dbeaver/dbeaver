@@ -16,3 +16,6 @@ Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Vendor: %Bundle-Vendor
 Bundle-ClassPath: .
+Export-Package: org.jkiss.dbeaver.ext.mockdata,
+ org.jkiss.dbeaver.ext.mockdata.generator,
+ org.jkiss.dbeaver.ext.mockdata.model

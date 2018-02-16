@@ -24,7 +24,7 @@ public abstract class AbstractMockValueGenerator implements MockValueGenerator {
     protected DBSEntity dbsEntity;
     protected DBSAttributeBase attribute;
 
-    protected static Random random = new Random();
+    protected Random random = new Random();
     protected int nullsPersent = 10;
     private boolean isFirstRun = true;
     private boolean isUnique;
