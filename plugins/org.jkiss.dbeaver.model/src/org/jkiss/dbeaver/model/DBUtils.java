@@ -272,7 +272,6 @@ public final class DBUtils {
      * @param schemaName schema name (optional)
      * @param objectName table name (optional)
      * @return found object or null
-     * @throws DBException
      */
     @Nullable
     public static DBSObject getObjectByPath(
@@ -666,7 +665,7 @@ public final class DBUtils {
                 }
             }
         }
-        return refs != null ? refs : Collections.<DBSEntityReferrer>emptyList();
+        return refs != null ? refs : Collections.emptyList();
     }
 
     @NotNull
@@ -1418,22 +1417,11 @@ public final class DBUtils {
 
     public static <TYPE extends DBPNamedObject> Comparator<TYPE> nameComparator()
     {
-        return new Comparator<TYPE>() {
-            @Override
-            public int compare(DBPNamedObject o1, DBPNamedObject o2)
-            {
-                return o1.getName().compareTo(o2.getName());
-            }
-        };
+        return Comparator.comparing(DBPNamedObject::getName);
     }
 
     public static Comparator<? super DBSAttributeBase> orderComparator() {
-        return new Comparator<DBSAttributeBase>() {
-            @Override
-            public int compare(DBSAttributeBase o1, DBSAttributeBase o2) {
-                return o1.getOrdinalPosition() - o2.getOrdinalPosition();
-            }
-        };
+        return Comparator.comparingInt(DBSAttributeBase::getOrdinalPosition);
     }
 
     public static <T extends DBPNamedObject> void orderObjects(@NotNull List<T> objects)
