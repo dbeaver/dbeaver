@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 
+import java.io.IOException;
 import java.util.Map;
 
 /**
@@ -34,7 +35,7 @@ public interface MockValueGenerator {
     void nextRow();
 
     Object generateValue(DBRProgressMonitor monitor)
-            throws DBException;
+            throws DBException, IOException;
 
     void dispose();
 }

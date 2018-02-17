@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKeyColumn;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -47,7 +48,7 @@ public class FKGenerator extends AbstractMockValueGenerator {
     }
 
     @Override
-    public Object generateOneValue(DBRProgressMonitor monitor) throws DBException {
+    public Object generateOneValue(DBRProgressMonitor monitor) throws DBException, IOException {
         if (refValues == null) {
             refValues = new ArrayList<>();
             List<DBSEntityReferrer> attributeReferrers = DBUtils.getAttributeReferrers(monitor, (DBSEntityAttribute) attribute);

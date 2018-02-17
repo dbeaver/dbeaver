@@ -24,7 +24,6 @@ import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.mockdata.model.MockGeneratorDescriptor;
 import org.jkiss.dbeaver.ext.mockdata.model.MockValueGenerator;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -42,6 +41,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractToolWizard;
 
+import java.io.IOException;
 import java.util.*;
 
 public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulator, DBSDataManipulator> implements IImportWizard{
@@ -138,7 +138,7 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
     private Map<String, MockValueGenerator> generators = new HashMap<>();
 
     @Override
-    public boolean executeProcess(DBRProgressMonitor monitor, DBSDataManipulator dataManipulator) {
+    public boolean executeProcess(DBRProgressMonitor monitor, DBSDataManipulator dataManipulator) throws IOException {
 
         DBCExecutionContext context = dataManipulator.getDataSource().getDefaultContext(true);
         DBCSession session = context.openSession(monitor, DBCExecutionPurpose.USER, MockDataMessages.tools_mockdata_generate_data_task);

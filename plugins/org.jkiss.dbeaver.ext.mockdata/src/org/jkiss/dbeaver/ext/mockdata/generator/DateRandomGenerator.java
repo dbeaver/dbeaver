@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -76,7 +77,7 @@ public class DateRandomGenerator extends AbstractMockValueGenerator {
     }
 
     @Override
-    public Object generateOneValue(DBRProgressMonitor monitor) throws DBException {
+    public Object generateOneValue(DBRProgressMonitor monitor) throws DBException, IOException {
         if (isGenerateNULL()) {
             return null;
         } else {
