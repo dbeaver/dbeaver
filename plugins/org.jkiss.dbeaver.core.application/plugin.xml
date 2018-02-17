@@ -172,7 +172,7 @@
 
         <menuContribution allPopups="false" locationURI="menu:org.eclipse.ui.main.menu?after=additions">
           <menu id="navigate" label="%menu.navigate">
-            <command commandId="org.eclipse.ui.navigate.openResource" label="%command.org.jkiss.dbeaver.core.navigator.openSource.name"/>
+            <command commandId="org.eclipse.ui.navigate.openResource" label="%command.org.jkiss.dbeaver.core.navigator.openResource.name"/>
             <separator name="nav" visible="true"/>
             <command commandId="org.eclipse.ui.navigate.backwardHistory" label="%command.org.jkiss.dbeaver.core.navigator.backwardHistory.name"/>
             <command commandId="org.eclipse.ui.navigate.forwardHistory" label="%command.org.jkiss.dbeaver.core.navigator.forwardHistory.name"/>
