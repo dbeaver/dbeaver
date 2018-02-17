@@ -732,8 +732,10 @@ public class SQLEditor extends SQLEditorBase implements
     public void toggleResultPanel() {
         if (sashForm.getMaximizedControl() == null) {
             sashForm.setMaximizedControl(editorControl);
+            switchFocus(false);
         } else {
             sashForm.setMaximizedControl(null);
+            switchFocus(true);
         }
     }
 
@@ -741,28 +743,35 @@ public class SQLEditor extends SQLEditorBase implements
     {
         if (sashForm.getMaximizedControl() == null) {
             sashForm.setMaximizedControl(resultTabs);
+            switchFocus(true);
         } else {
             sashForm.setMaximizedControl(null);
+            switchFocus(false);
+        }
+    }
+
+    private void switchFocus(boolean results) {
+        if (results) {
+            ResultSetViewer activeRS = getActiveResultSetViewer();
+            if (activeRS != null && activeRS.getActivePresentation() != null) {
+                activeRS.getActivePresentation().getControl().setFocus();
+            } else {
+                CTabItem activeTab = resultTabs.getSelection();
+                if (activeTab != null && activeTab.getControl() != null) {
+                    activeTab.getControl().setFocus();
+                }
+            }
+        } else {
+            editorControl.setFocus();
         }
     }
 
     public void toggleActivePanel() {
         if (sashForm.getMaximizedControl() == null) {
             if (UIUtils.hasFocus(resultTabs)) {
-                final Control editorControl = getEditorControl();
-                if (editorControl != null) {
-                    editorControl.setFocus();
-                }
+                switchFocus(false);
             } else {
-                CTabItem selTab = resultTabs.getSelection();
-                if (selTab != null) {
-                    ResultSetViewer viewer = getActiveResultSetViewer();
-                    if (viewer != null && viewer.getActivePresentation().getControl().isVisible()) {
-                        viewer.getActivePresentation().getControl().setFocus();
-                    } else {
-                        selTab.getControl().setFocus();
-                    }
-                }
+                switchFocus(true);
             }
         }
     }
