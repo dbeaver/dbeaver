@@ -8,8 +8,8 @@ import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.utils.CommonUtils;
 
+import java.io.IOException;
 import java.util.*;
 
 public abstract class AbstractMockValueGenerator implements MockValueGenerator {
@@ -66,7 +66,7 @@ public abstract class AbstractMockValueGenerator implements MockValueGenerator {
     }
 
     @Override
-    public Object generateValue(DBRProgressMonitor monitor) throws DBException {
+    public Object generateValue(DBRProgressMonitor monitor) throws DBException, IOException {
         if (isFirstRun) {
             isFirstRun = false;
             isUnique = checkUnique(monitor);
@@ -91,7 +91,7 @@ public abstract class AbstractMockValueGenerator implements MockValueGenerator {
         }
     }
 
-    protected abstract Object generateOneValue(DBRProgressMonitor monitor) throws DBException;
+    protected abstract Object generateOneValue(DBRProgressMonitor monitor) throws DBException, IOException;
 
     protected boolean isGenerateNULL() {
         if ((nullsPersent > 0) && ((nullsPersent == 100) || (random.nextInt(100) <= nullsPersent))) {
