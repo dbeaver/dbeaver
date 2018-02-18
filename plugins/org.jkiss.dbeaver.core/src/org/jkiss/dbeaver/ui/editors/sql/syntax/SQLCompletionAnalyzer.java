@@ -107,8 +107,8 @@ class SQLCompletionAnalyzer
                 if (request.queryType == SQLCompletionProcessor.QueryType.JOIN && !request.proposals.isEmpty() && dataSource instanceof DBSObjectContainer) {
                     // Filter out non-joinable tables
                     DBSObject leftTable = getTableFromAlias((DBSObjectContainer) dataSource, null);
-                    if (leftTable != null) {
-                        filterNonJoinableProposals(leftTable);
+                    if (leftTable instanceof DBSEntity) {
+                        filterNonJoinableProposals((DBSEntity)leftTable);
                     }
                 }
             } else {
@@ -138,8 +138,37 @@ class SQLCompletionAnalyzer
         }
     }
 
-    private void filterNonJoinableProposals(DBSObject leftTable) {
+    private void filterNonJoinableProposals(DBSEntity leftTable) {
         // Remove all table proposals which don't have FKs between them and leftTable
+        List<SQLCompletionProposal> proposals = request.proposals;
+        for (int i = 0; i < proposals.size(); ) {
+            SQLCompletionProposal proposal = proposals.get(i);
+            if (proposal.getObject() instanceof DBSEntity) {
+                DBSEntity rightTable = (DBSEntity) proposal.getObject();
+                if (tableHaveJoins(rightTable, leftTable) || tableHaveJoins(leftTable, rightTable)) {
+                    i++;
+                    continue;
+                }
+            }
+            proposals.remove(i);
+        }
+    }
+
+    private boolean tableHaveJoins(DBSEntity table1, DBSEntity table2) {
+        try {
+            Collection<? extends DBSEntityAssociation> associations = table1.getAssociations(monitor);
+            if (!CommonUtils.isEmpty(associations)) {
+                for (DBSEntityAssociation fk : associations) {
+                    if (fk.getAssociatedEntity() == table2) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        } catch (DBException e) {
+            log.error(e);
+            return false;
+        }
     }
 
     private void makeDataSourceProposals()
