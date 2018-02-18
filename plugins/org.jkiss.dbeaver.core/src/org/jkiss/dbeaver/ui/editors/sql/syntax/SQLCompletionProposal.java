@@ -166,7 +166,7 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
                     } else {
                         int docLen = document.getLength();
                         if (docLen <= replacementOffset + replacementLength + 2) {
-                            insertTrailingSpace = false;
+                            insertTrailingSpace = true;
                         } else {
                             insertTrailingSpace = document.getChar(replacementOffset + replacementLength) != ' ';
                         }
