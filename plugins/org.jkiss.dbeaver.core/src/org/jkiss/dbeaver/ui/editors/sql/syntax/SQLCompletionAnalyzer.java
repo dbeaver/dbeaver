@@ -141,17 +141,19 @@ class SQLCompletionAnalyzer
     private void filterNonJoinableProposals(DBSEntity leftTable) {
         // Remove all table proposals which don't have FKs between them and leftTable
         List<SQLCompletionProposal> proposals = request.proposals;
-        for (int i = 0; i < proposals.size(); ) {
-            SQLCompletionProposal proposal = proposals.get(i);
+        List<SQLCompletionProposal> joinableProposals = new ArrayList<>();
+        for (SQLCompletionProposal proposal : proposals) {
             if (proposal.getObject() instanceof DBSEntity) {
                 DBSEntity rightTable = (DBSEntity) proposal.getObject();
                 if (tableHaveJoins(rightTable, leftTable) || tableHaveJoins(leftTable, rightTable)) {
-                    i++;
                     proposal.setReplacementAfter(" ON ");
-                    continue;
+                    joinableProposals.add(proposal);
                 }
             }
-            proposals.remove(i);
+        }
+        if (!joinableProposals.isEmpty()) {
+            request.proposals.clear();
+            request.proposals.addAll(joinableProposals);
         }
     }
 
