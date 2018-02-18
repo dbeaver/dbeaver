@@ -147,6 +147,7 @@ class SQLCompletionAnalyzer
                 DBSEntity rightTable = (DBSEntity) proposal.getObject();
                 if (tableHaveJoins(rightTable, leftTable) || tableHaveJoins(leftTable, rightTable)) {
                     i++;
+                    proposal.setReplacementAfter(" ON ");
                     continue;
                 }
             }
