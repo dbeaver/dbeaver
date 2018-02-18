@@ -25,10 +25,7 @@ import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLDataSource;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.model.sql.SQLScriptElement;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.TextUtils;
@@ -91,6 +88,12 @@ class SQLCompletionAnalyzer
                 if (request.queryType == SQLCompletionProcessor.QueryType.COLUMN && dataSource instanceof DBSObjectContainer) {
                     // Try to detect current table
                     rootObject = getTableFromAlias((DBSObjectContainer)dataSource, null);
+                    if (rootObject instanceof DBSEntity && SQLConstants.KEYWORD_ON.equals(request.wordDetector.getPrevKeyWord())) {
+                        // Join?
+                        if (makeJoinColumnProposals((DBSObjectContainer)dataSource, (DBSEntity)rootObject)) {
+                            return;
+                        }
+                    }
                 } else if (dataSource instanceof DBSObjectContainer) {
                     // Try to get from active object
                     DBSObject selectedObject = DBUtils.getActiveInstanceObject(dataSource);
@@ -138,6 +141,37 @@ class SQLCompletionAnalyzer
         }
     }
 
+    private boolean makeJoinColumnProposals(DBSObjectContainer sc, DBSEntity leftTable) {
+        SQLWordPartDetector joinTableDetector = new SQLWordPartDetector(
+            request.editor.getDocument(),
+            request.editor.getSyntaxManager(),
+            request.wordDetector.getStartOffset(),
+            2);
+        List<String> prevWords = joinTableDetector.getPrevWords();
+
+        if (!CommonUtils.isEmpty(prevWords)) {
+            DBPDataSource dataSource = request.editor.getDataSource();
+            SQLDialect sqlDialect = SQLUtils.getDialectFromDataSource(dataSource);
+            String rightTableName = prevWords.get(0);
+            String[] allNames = SQLUtils.splitFullIdentifier(
+                rightTableName,
+                sqlDialect.getCatalogSeparator(),
+                sqlDialect.getIdentifierQuoteStrings(),
+                false);
+            DBSObject rightTable = findObjectByFQN(sc, dataSource, Arrays.asList(allNames));
+            if (rightTable instanceof DBSEntity) {
+                try {
+                    String joinCriteria = SQLUtils.generateTableJoin(monitor, leftTable, leftTable.getName(), (DBSEntity) rightTable, rightTable.getName());
+                    request.proposals.add(createCompletionProposal(request, joinCriteria, joinCriteria, DBPKeywordType.OTHER, "Join condition"));
+                    return true;
+                } catch (DBException e) {
+                    log.error("Error generating joinb condition", e);
+                }
+            }
+        }
+        return false;
+    }
+
     private void filterNonJoinableProposals(DBSEntity leftTable) {
         // Remove all table proposals which don't have FKs between them and leftTable
         List<SQLCompletionProposal> proposals = request.proposals;
@@ -146,7 +180,7 @@ class SQLCompletionAnalyzer
             if (proposal.getObject() instanceof DBSEntity) {
                 DBSEntity rightTable = (DBSEntity) proposal.getObject();
                 if (tableHaveJoins(rightTable, leftTable) || tableHaveJoins(leftTable, rightTable)) {
-                    proposal.setReplacementAfter(" ON ");
+                    proposal.setReplacementAfter(" ON");
                     joinableProposals.add(proposal);
                 }
             }
@@ -321,7 +355,7 @@ class SQLCompletionAnalyzer
         }
 
         final List<String> nameList = new ArrayList<>();
-        SQLDialect sqlDialect = ((SQLDataSource) dataSource).getSQLDialect();
+        SQLDialect sqlDialect = SQLUtils.getDialectFromDataSource(dataSource);
         {
             // Regex matching MUST be very fast.
             // Otherwise UI will freeze during SQL typing.
@@ -374,10 +408,14 @@ class SQLCompletionAnalyzer
             }
         }
 
+        return findObjectByFQN(sc, dataSource, nameList);
+    }
+
+    @Nullable
+    private DBSObject findObjectByFQN(DBSObjectContainer sc, DBPDataSource dataSource, List<String> nameList) {
         if (nameList.isEmpty()) {
             return null;
         }
-
         {
             List<String> unquotedNames = new ArrayList<>(nameList.size());
             for (String name : nameList) {
