@@ -206,7 +206,7 @@ public class MockDataSettings {
         }
     }
 
-    public static class AttributeGeneratorProperties {
+    public class AttributeGeneratorProperties {
         private final DBSAttributeBase attribute;
         private String selectedGeneratorId = null; // id
         private Map<String, PropertySourceCustom> generators = new HashMap<>(); // generatorId -> PropertySourceCustom
@@ -227,7 +227,7 @@ public class MockDataSettings {
         }
 
         public String setSelectedGeneratorId(String selectedGeneratorId) {
-            if (selectedGeneratorId == null && !CommonUtils.isEmpty(getGenerators())) {
+            if ((selectedGeneratorId == null || !generatorDescriptors.keySet().contains(selectedGeneratorId)) && !CommonUtils.isEmpty(getGenerators())) {
                 selectedGeneratorId = getGenerators().iterator().next();
             }
             this.selectedGeneratorId = selectedGeneratorId;
