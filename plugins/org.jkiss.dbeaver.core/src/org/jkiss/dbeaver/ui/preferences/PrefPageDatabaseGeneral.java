@@ -27,6 +27,7 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PreferenceLinkArea;
 import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.jkiss.code.Nullable;
@@ -214,7 +215,23 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
         if (workspaceLanguage.getSelectionIndex() >= 0) {
             PlatformLanguageDescriptor language = PlatformLanguageRegistry.getInstance().getLanguages().get(workspaceLanguage.getSelectionIndex());
             try {
-                DBeaverCore.getInstance().setPlatformLanguage(language);
+                DBPPlatformLanguage curLanguage = DBeaverCore.getInstance().getLanguage();
+                if (curLanguage != language) {
+                    DBeaverCore.getInstance().setPlatformLanguage(language);
+
+                }
+                if (UIUtils.confirmAction(
+                    getShell(),
+                    "Restart " + GeneralUtils.getProductName(),
+                    "You need to restart " + GeneralUtils.getProductName() + " to perform actual language change.\nDo you want to restart?"))
+                {
+                    DBeaverUI.asyncExec(new Runnable() {
+                        @Override
+                        public void run() {
+                            PlatformUI.getWorkbench().restart();
+                        }
+                    });
+                }
             } catch (DBException e) {
                 DBeaverUI.getInstance().showError("Change language", "Can't switch language to " + language, e);
             }
