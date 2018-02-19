@@ -51,7 +51,7 @@ public class MockDataSettings {
     private boolean removeOldData;
     private long rowsNumber = 1000;
 
-    private static Map<String, MockGeneratorDescriptor> generatorDescriptors = new HashMap<>(); // generatorId -> MockGeneratorDescriptor
+    private Map<String, MockGeneratorDescriptor> generatorDescriptors = new HashMap<>(); // generatorId -> MockGeneratorDescriptor
     private Map<String, AttributeGeneratorProperties> attributeGenerators = new HashMap<>(); // attribute.name -> generators properties
 
     // populate attribute generators properties map
@@ -206,7 +206,7 @@ public class MockDataSettings {
         }
     }
 
-    public static class AttributeGeneratorProperties {
+    public class AttributeGeneratorProperties {
         private final DBSAttributeBase attribute;
         private String selectedGeneratorId = null; // id
         private Map<String, PropertySourceCustom> generators = new HashMap<>(); // generatorId -> PropertySourceCustom
