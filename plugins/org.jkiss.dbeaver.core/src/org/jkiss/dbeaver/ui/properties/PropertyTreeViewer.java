@@ -817,7 +817,7 @@ public class PropertyTreeViewer extends TreeViewer {
             {
                 buffer.append (delim);
                 delim = "\n";
-                buffer.append (wrap (line, 60, "\n", true));
+                buffer.append (wrap (line, 100, "\n", true));
             }
 
             return buffer.toString ();
