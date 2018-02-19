@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.properties;
 
-import org.apache.commons.lang.SystemUtils;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
@@ -64,6 +63,8 @@ import java.util.List;
  * Driver properties control
  */
 public class PropertyTreeViewer extends TreeViewer {
+
+    public static final String LINE_SEPARATOR = GeneralUtils.getDefaultLineSeparator();
 
     public enum ExpandMode {
         NONE,
@@ -828,7 +829,7 @@ public class PropertyTreeViewer extends TreeViewer {
                 return null;
             } else {
                 if (newLineStr == null) {
-                    newLineStr = SystemUtils.LINE_SEPARATOR;
+                    newLineStr = LINE_SEPARATOR;
                 }
 
                 if (wrapLength < 1) {
