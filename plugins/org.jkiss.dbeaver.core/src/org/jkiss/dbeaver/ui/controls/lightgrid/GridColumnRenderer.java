@@ -128,7 +128,7 @@ class GridColumnRenderer extends AbstractRenderer
         if (sortOrder == SWT.NONE) {
             width -= RIGHT_MARGIN;
         } else {
-            width -= ARROW_MARGIN + sortBounds.width + ARROW_MARGIN;
+            width -= ARROW_MARGIN + sortBounds.width;
         }
         if (hasFilters) {
             width -= filterBounds.width;
