@@ -186,6 +186,13 @@ public class DriverEditDialog extends HelpEnabledDialog {
             Group propsGroup = UIUtils.createControlGroup(group, CoreMessages.dialog_edit_driver_setting, 4, -1, -1);
             propsGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
+            if (!newDriver) {
+                gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+                gd.horizontalSpan = 3;
+                Text idText = UIUtils.createLabelText(propsGroup, "ID", driver.getId(), SWT.BORDER | SWT.READ_ONLY, gd);
+                idText.setToolTipText("Internal driver ID.\nCan be used in connections configurations and CLI commands.");
+            }
+
             gd = new GridData(GridData.FILL_HORIZONTAL);
             driverNameText = UIUtils.createLabelText(propsGroup, CoreMessages.dialog_edit_driver_label_driver_name + "*", driver.getName(), SWT.BORDER | advStyle, gd);
             driverNameText.addModifyListener(new ModifyListener() {
@@ -334,6 +341,8 @@ public class DriverEditDialog extends HelpEnabledDialog {
                 }
             });
         }
+
+        driverNameText.setFocus();
 
         return group;
     }

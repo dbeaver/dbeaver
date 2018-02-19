@@ -195,6 +195,9 @@ public class DataSourceProviderRegistry
         for (DataSourceProviderDescriptor pd : dataSourceProviders) {
             for (DriverDescriptor driver : pd.getDrivers()) {
                 if (driver.getName().equalsIgnoreCase(driverName)) {
+                    while (driver.getReplacedBy() != null) {
+                        driver = driver.getReplacedBy();
+                    }
                     return driver;
                 }
             }
