@@ -51,7 +51,7 @@ public class MockDataSettings {
     private boolean removeOldData;
     private long rowsNumber = 1000;
 
-    private Map<String, MockGeneratorDescriptor> generatorDescriptors = new HashMap<>(); // generatorId -> MockGeneratorDescriptor
+    private static Map<String, MockGeneratorDescriptor> generatorDescriptors = new HashMap<>(); // generatorId -> MockGeneratorDescriptor
     private Map<String, AttributeGeneratorProperties> attributeGenerators = new HashMap<>(); // attribute.name -> generators properties
 
     // populate attribute generators properties map
@@ -227,7 +227,7 @@ public class MockDataSettings {
         }
 
         public String setSelectedGeneratorId(String selectedGeneratorId) {
-            if (selectedGeneratorId == null && !CommonUtils.isEmpty(getGenerators())) {
+            if ((selectedGeneratorId == null || !generatorDescriptors.keySet().contains(selectedGeneratorId)) && !CommonUtils.isEmpty(getGenerators())) {
                 selectedGeneratorId = getGenerators().iterator().next();
             }
             this.selectedGeneratorId = selectedGeneratorId;
