@@ -64,6 +64,8 @@ import java.util.List;
  */
 public class PropertyTreeViewer extends TreeViewer {
 
+    public static final String LINE_SEPARATOR = GeneralUtils.getDefaultLineSeparator();
+
     public enum ExpandMode {
         NONE,
         FIRST,
@@ -799,7 +801,75 @@ public class PropertyTreeViewer extends TreeViewer {
             if (CommonUtils.isEmpty(toolTip)) {
                 return null;
             }
+            if (toolTip.contains("\\n")) {
+                toolTip = toolTip.replace("\\n", "\n");
+                toolTip = wrap(toolTip);
+            }
             return toolTip;
+        }
+
+        // is got from https://blog.pdark.de/2009/12/26/swt-tree-and-tooltips/
+        private String wrap (String s)
+        {
+            StringBuilder buffer = new StringBuilder ();
+
+            String delim = "";
+            for (String line: s.trim ().split ("\n"))
+            {
+                buffer.append (delim);
+                delim = "\n";
+                buffer.append (wrap (line, 100, "\n", true));
+            }
+
+            return buffer.toString ();
+        }
+
+        public String wrap(String str, int wrapLength, String newLineStr, boolean wrapLongWords) {
+            if (str == null) {
+                return null;
+            } else {
+                if (newLineStr == null) {
+                    newLineStr = LINE_SEPARATOR;
+                }
+
+                if (wrapLength < 1) {
+                    wrapLength = 1;
+                }
+
+                int inputLineLength = str.length();
+                int offset = 0;
+                StringBuffer wrappedLine = new StringBuffer(inputLineLength + 32);
+
+                while(inputLineLength - offset > wrapLength) {
+                    if (str.charAt(offset) == ' ') {
+                        ++offset;
+                    } else {
+                        int spaceToWrapAt = str.lastIndexOf(32, wrapLength + offset);
+                        if (spaceToWrapAt >= offset) {
+                            wrappedLine.append(str.substring(offset, spaceToWrapAt));
+                            wrappedLine.append(newLineStr);
+                            offset = spaceToWrapAt + 1;
+                        } else if (wrapLongWords) {
+                            wrappedLine.append(str.substring(offset, wrapLength + offset));
+                            wrappedLine.append(newLineStr);
+                            offset += wrapLength;
+                        } else {
+                            spaceToWrapAt = str.indexOf(32, wrapLength + offset);
+                            if (spaceToWrapAt >= 0) {
+                                wrappedLine.append(str.substring(offset, spaceToWrapAt));
+                                wrappedLine.append(newLineStr);
+                                offset = spaceToWrapAt + 1;
+                            } else {
+                                wrappedLine.append(str.substring(offset));
+                                offset = inputLineLength;
+                            }
+                        }
+                    }
+                }
+
+                wrappedLine.append(str.substring(offset));
+                return wrappedLine.toString();
+            }
         }
 
         @Override
