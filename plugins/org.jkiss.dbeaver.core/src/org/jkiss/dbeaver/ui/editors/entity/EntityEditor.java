@@ -360,6 +360,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
             if (commandContext != null) {
                 commandContext.resetChanges();
             }
+            refreshPart(this, false);
             firePropertyChange(IEditorPart.PROP_DIRTY);
         }
     }
