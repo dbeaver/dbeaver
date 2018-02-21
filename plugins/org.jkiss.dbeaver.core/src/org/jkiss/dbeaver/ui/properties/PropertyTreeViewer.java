@@ -996,7 +996,7 @@ public class PropertyTreeViewer extends TreeViewer {
                         }
                         final TreeNode node = (TreeNode) event.item.getData();
                         if (node != null && node.property != null) {
-                            renderer.paintCell(event, node, event.item, event.index, node.isEditable(), (event.detail & SWT.SELECTED) == SWT.SELECTED);
+                            renderer.paintCell(event, node, event.item, node.property.getDataType(), event.index, node.isEditable(), (event.detail & SWT.SELECTED) == SWT.SELECTED);
                         }
                     }
                     break;
