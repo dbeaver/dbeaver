@@ -923,13 +923,18 @@ public final class SQLUtils {
     }
 
     private static String generateTablesJoin(DBRProgressMonitor monitor, DBSTableForeignKey fk, String leftAlias, String rightAlias) throws DBException {
+        boolean hasCriteria = false;
         StringBuilder joinSQL = new StringBuilder();
         for (DBSEntityAttributeRef ar : fk.getAttributeReferences(monitor)) {
             if (ar instanceof DBSTableForeignKeyColumn) {
+                if (hasCriteria) {
+                    joinSQL.append(" AND ");
+                }
                 DBSTableForeignKeyColumn fkc = (DBSTableForeignKeyColumn)ar;
                 joinSQL
                     .append(leftAlias).append(".").append(DBUtils.getQuotedIdentifier(fkc)).append(" = ")
                     .append(rightAlias).append(".").append(DBUtils.getQuotedIdentifier(fkc.getReferencedColumn()));
+                hasCriteria = true;
             }
         }
         return joinSQL.toString();

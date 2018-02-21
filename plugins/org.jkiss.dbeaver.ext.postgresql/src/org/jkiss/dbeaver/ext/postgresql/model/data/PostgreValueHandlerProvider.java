@@ -53,6 +53,8 @@ public class PostgreValueHandlerProvider implements DBDValueHandlerProvider {
                     return PostgreRefCursorValueHandler.INSTANCE;
                 case PostgreConstants.TYPE_MONEY:
                     return PostgresMoneyValueHandler.INSTANCE;
+                case PostgreConstants.TYPE_GEOMETRY:
+                    return PostgreGeometryValueHandler.INSTANCE;
                 default:
                     return null;
             }

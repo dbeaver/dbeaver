@@ -172,7 +172,7 @@
 
         <menuContribution allPopups="false" locationURI="menu:org.eclipse.ui.main.menu?after=additions">
           <menu id="navigate" label="%menu.navigate">
-            <command commandId="org.eclipse.ui.navigate.openResource" label="%command.org.jkiss.dbeaver.core.navigator.openSource.name"/>
+            <command commandId="org.eclipse.ui.navigate.openResource" label="%command.org.jkiss.dbeaver.core.navigator.openResource.name"/>
             <separator name="nav" visible="true"/>
             <command commandId="org.eclipse.ui.navigate.backwardHistory" label="%command.org.jkiss.dbeaver.core.navigator.backwardHistory.name"/>
             <command commandId="org.eclipse.ui.navigate.forwardHistory" label="%command.org.jkiss.dbeaver.core.navigator.forwardHistory.name"/>
@@ -206,8 +206,6 @@
 
         <!-- Text editors -->
         <key commandId="org.eclipse.ui.edit.text.openLocalFile" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+O"/>
-        <key commandId="org.jkiss.dbeaver.core.sql.editor.open" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="F3"/>
-        <key commandId="org.jkiss.dbeaver.core.sql.editor.create" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+F3"/>
 
         <!-- Text editors -->
         <key commandId="org.eclipse.ui.edit.text.contentAssist.proposals" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.jkiss.dbeaver.defaultKeyScheme" sequence="CTRL+SPACE"/>

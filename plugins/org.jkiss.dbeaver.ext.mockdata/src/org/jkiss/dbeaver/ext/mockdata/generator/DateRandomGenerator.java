@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 
+import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -46,21 +47,21 @@ public class DateRandomGenerator extends AbstractMockValueGenerator {
     public void init(DBSDataManipulator container, DBSAttributeBase attribute, Map<Object, Object> properties) throws DBException {
         super.init(container, attribute, properties);
 
-        String fromD = (String) properties.get("startDate"); //$NON-NLS-1$
-        if (fromD != null) {
+        String fromDate = (String) properties.get("startDate"); //$NON-NLS-1$
+        if (fromDate != null) {
             try {
-                this.startDate = DATE_FORMAT.parse(fromD).getTime();
+                this.startDate = DATE_FORMAT.parse(fromDate).getTime();
             } catch (ParseException e) {
-                log.error("Error parse From Date '" + fromD + "'.", e);
+                log.error("Error parse Start Date '" + fromDate + "'.", e);
             }
         }
 
-        String toD = (String) properties.get("endDate"); //$NON-NLS-1$
-        if (toD != null) {
+        String toDate = (String) properties.get("endDate"); //$NON-NLS-1$
+        if (toDate != null) {
             try {
-                this.endDate = DATE_FORMAT.parse(toD).getTime();
+                this.endDate = DATE_FORMAT.parse(toDate).getTime();
             } catch (ParseException e) {
-                log.error("Error parse To Date '" + toD + "'.", e);
+                log.error("Error parse End Date '" + toDate + "'.", e);
             }
         }
 
@@ -76,7 +77,7 @@ public class DateRandomGenerator extends AbstractMockValueGenerator {
     }
 
     @Override
-    public Object generateOneValue(DBRProgressMonitor monitor) throws DBException {
+    public Object generateOneValue(DBRProgressMonitor monitor) throws DBException, IOException {
         if (isGenerateNULL()) {
             return null;
         } else {

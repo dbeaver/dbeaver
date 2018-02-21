@@ -210,8 +210,14 @@
                     description="%driver.postgresql.description">
                     <replace provider="generic" driver="postgresql"/>
                     <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.0.jre7]" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/net.postgis:postgis-jdbc:RELEASE[2.2.1]" ignore-dependencies="true" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/net.postgis:postgis-jdbc-jtsparser:RELEASE[2.2.1]" ignore-dependencies="true" bundle="!drivers.postgresql"/>
+
                     <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
                     <file type="jar" path="drivers/postgresql/postgresql.jar" bundle="drivers.postgresql"/>
+                    <!-- Postgis -->
+                    <file type="jar" path="drivers/postgis/postgis-jdbc.jar" bundle="drivers.postgresql"/>
+                    <file type="jar" path="drivers/postgis/postgis-jdbc-jtsparser.jar" bundle="drivers.postgresql"/>
 
                     <property name="loginTimeout" value="20"/>
                     <property name="connectTimeout" value="20"/>
@@ -254,6 +260,7 @@
             <type name="BIT"/>
             <type name="REFCURSOR"/>
             <type name="MONEY"/>
+            <type name="GEOMETRY"/>
         </provider>
     </extension>
 
@@ -327,13 +334,13 @@
     <extension point="org.eclipse.ui.editors">
         <editor
                 name="%editor.session_manager.name"
-                icon="#sessions"
+                icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.png"
                 class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreSessionEditor"
                 id="org.jkiss.dbeaver.ext.postgresql.edit.PostgreSessionEditor">
         </editor>
         <editor
                 name="%editor.lock_manager.name"
-                icon="#sessions"
+                icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.png"
                 class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreLockEditor"
                 id="org.jkiss.dbeaver.ext.postgresql.edit.PostgreLockEditor">
         </editor>

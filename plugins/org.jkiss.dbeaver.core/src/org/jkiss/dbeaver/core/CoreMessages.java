@@ -104,43 +104,68 @@ public class CoreMessages extends NLS {
     public static String confirm_exit_title;
 	public static String confirm_exit_message;
 	public static String confirm_exit_toggleMessage;
+
 	public static String confirm_order_resultset_title;
 	public static String confirm_order_resultset_message;
 	public static String confirm_order_resultset_toggleMessage;
+
     public static String confirm_fetch_all_rows_title;
     public static String confirm_fetch_all_rows_message;
     public static String confirm_fetch_all_rows_toggleMessage;
+
 	public static String confirm_close_resultset_edit_title;
 	public static String confirm_close_resultset_edit_message;
 	public static String confirm_close_resultset_edit_toggleMessage;
+
 	public static String confirm_disconnect_txn_title;
 	public static String confirm_disconnect_txn_message;
 	public static String confirm_disconnect_txn_toggleMessage;
+
 	public static String confirm_close_entity_edit_title;
 	public static String confirm_close_entity_edit_message;
 	public static String confirm_close_entity_edit_toggleMessage;
+
 	public static String confirm_entity_delete_title;
 	public static String confirm_entity_delete_message;
+
     public static String confirm_local_folder_delete_title;
     public static String confirm_local_folder_delete_message;
+
     public static String confirm_close_editor_edit_title;
 	public static String confirm_close_editor_edit_message;
 	public static String confirm_close_editor_edit_toggleMessage;
+
 	public static String confirm_driver_download_title;
 	public static String confirm_driver_download_message;
 	public static String confirm_driver_download_toggleMessage;
+
 	public static String confirm_driver_download_manual_title;
 	public static String confirm_driver_download_manual_message;
 	public static String confirm_driver_download_manual_toggleMessage;
+
     public static String confirm_version_check_title;
     public static String confirm_version_check_message;
     public static String confirm_version_check_toggleMessage;
+
 	public static String confirm_entity_reject_title;
 	public static String confirm_entity_reject_message;
 	public static String confirm_entity_reject_toggleMessage;
+
 	public static String confirm_entity_revert_title;
 	public static String confirm_entity_revert_message;
 	public static String confirm_entity_revert_toggleMessage;
+
+	public static String confirm_keep_statement_open_title;
+	public static String confirm_keep_statement_open_message;
+	public static String confirm_keep_statement_open_toggleMessage;
+
+	public static String confirm_dangerous_sql_title;
+	public static String confirm_dangerous_sql_message;
+	public static String confirm_dangerous_sql_toggleMessage;
+
+	public static String confirm_mass_parallel_sql_title;
+	public static String confirm_mass_parallel_sql_message;
+	public static String confirm_mass_parallel_sql_toggleMessage;
 
 	public static String controls_connection_properties_action_add_property;
 	public static String controls_connection_properties_action_remove_property;
@@ -321,14 +346,6 @@ public class CoreMessages extends NLS {
 	public static String dialog_connection_wizard_title;
 
 	public static String dialog_cursor_view_monitor_rows_fetched;
-
-	public static String confirm_keep_statement_open_title;
-	public static String confirm_keep_statement_open_message;
-	public static String confirm_keep_statement_open_toggleMessage;
-
-	public static String confirm_dangerous_sql_title;
-	public static String confirm_dangerous_sql_message;
-	public static String confirm_dangerous_sql_toggleMessage;
 
 	public static String dialog_data_format_profiles_button_delete_profile;
 	public static String dialog_data_format_profiles_button_new_profile;
@@ -995,8 +1012,14 @@ public class CoreMessages extends NLS {
 	public static String pref_page_database_resultsets_label_colorize_data_types;
 	public static String pref_page_database_resultsets_label_right_justify_numbers_and_date;
 	public static String pref_page_database_resultsets_label_row_batch_size;
+	public static String pref_page_database_resultsets_label_row_batch_size_tip;
 	public static String pref_page_database_resultsets_label_show_cell_icons;
+	public static String pref_page_database_resultsets_label_show_attr_icons;
+	public static String pref_page_database_resultsets_label_show_attr_icons_tip;
 	public static String pref_page_database_resultsets_label_show_attr_filters;
+	public static String pref_page_database_resultsets_label_show_attr_filters_tip;
+	public static String pref_page_database_resultsets_label_show_attr_ordering;
+	public static String pref_page_database_resultsets_label_show_attr_ordering_tip;
 	public static String pref_page_database_resultsets_label_double_click_behavior;
 	public static String pref_page_database_resultsets_group_plain_text;
 	public static String pref_page_database_resultsets_lable_value_format;
@@ -1193,12 +1216,14 @@ public class CoreMessages extends NLS {
 	public static String dialog_connection_edit_wizard_shell_cmd_variables_hint_label;
 	public static String dialog_connection_edit_wizard_shell_cmd_variables_hint_title;
 
+	public static String dialog_connection_edit_wizard_connections;
+	public static String dialog_connection_edit_wizard_connections_description;
 	public static String dialog_connection_edit_wizard_metadata;
 	public static String dialog_connection_edit_wizard_metadata_description;
 	public static String dialog_connection_edit_wizard_resultset;
 	public static String dialog_connection_edit_wizard_resultset_description;
-	public static String dialog_connection_edit_wizard_binary;
-	public static String dialog_connection_edit_wizard_binary_description;
+	public static String dialog_connection_edit_wizard_editors;
+	public static String dialog_connection_edit_wizard_editors_description;
 	public static String dialog_connection_edit_wizard_data_format;
 	public static String dialog_connection_edit_wizard_data_format_description;
 	public static String dialog_connection_edit_wizard_presentation;

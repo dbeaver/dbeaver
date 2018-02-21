@@ -2,7 +2,7 @@
 <feature
         id="org.jkiss.dbeaver.core.feature"
         label="%featureName"
-        version="4.3.4"
+        version="4.3.5"
         provider-name="%providerName"
         plugin="org.jkiss.dbeaver.core">
 
@@ -61,5 +61,9 @@
     <plugin id="org.jkiss.dbeaver.ext.ui.locks" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.utils" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ext.mockdata" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+
+    <!-- GIS -->
+    <plugin id="com.vividsolutions.jts" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.jkiss.dbeaver.data.gis" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 
 </feature>

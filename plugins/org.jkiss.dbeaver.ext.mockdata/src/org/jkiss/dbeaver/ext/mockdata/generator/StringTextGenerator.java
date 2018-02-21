@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.IOException;
 import java.util.Map;
 
 /**
@@ -32,6 +33,8 @@ import java.util.Map;
 public class StringTextGenerator extends AbstractMockValueGenerator {
 
     private String templateString;
+    private int minLength = 1;
+    private int maxLength = 0;
 
     @Override
     public void init(DBSDataManipulator container, DBSAttributeBase attribute, Map<Object, Object> properties) throws DBException {
@@ -41,6 +44,23 @@ public class StringTextGenerator extends AbstractMockValueGenerator {
         if (templateString == null) {
             throw new DBCException("Empty template string for simple string generator");
         }
+
+        Integer min = (Integer) properties.get("minLength"); //$NON-NLS-1$
+        if (min != null) {
+            this.minLength = min;
+        }
+
+        Integer max = (Integer) properties.get("maxLength"); //$NON-NLS-1$
+        if (max != null) {
+            this.maxLength = max;
+        }
+
+        if (maxLength == 0 || maxLength > attribute.getMaxLength()) {
+            maxLength = (int) attribute.getMaxLength();
+        }
+        if (maxLength > templateString.length()) {
+            maxLength = templateString.length();
+        }
     }
 
     @Override
@@ -49,11 +69,11 @@ public class StringTextGenerator extends AbstractMockValueGenerator {
     }
 
     @Override
-    public Object generateOneValue(DBRProgressMonitor monitor) throws DBException {
+    public Object generateOneValue(DBRProgressMonitor monitor) throws DBException, IOException {
         if (isGenerateNULL()) {
             return null;
         } else {
-            int length = (int) Math.min(10000, attribute.getMaxLength());
+            int length = minLength + random.nextInt(maxLength - minLength + 1);
             int tplLength = templateString.length();
             int start = random.nextInt(tplLength);
             if (start + length < tplLength) {

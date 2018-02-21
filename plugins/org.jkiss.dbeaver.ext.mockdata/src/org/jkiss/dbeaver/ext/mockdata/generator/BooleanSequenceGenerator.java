@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 
+import java.io.IOException;
 import java.util.Map;
 
 public class BooleanSequenceGenerator extends AbstractMockValueGenerator {
@@ -49,7 +50,7 @@ public class BooleanSequenceGenerator extends AbstractMockValueGenerator {
     }
 
     @Override
-    public Object generateOneValue(DBRProgressMonitor monitor) throws DBException {
+    public Object generateOneValue(DBRProgressMonitor monitor) throws DBException, IOException {
         if (isGenerateNULL()) {
             return null;
         } else {

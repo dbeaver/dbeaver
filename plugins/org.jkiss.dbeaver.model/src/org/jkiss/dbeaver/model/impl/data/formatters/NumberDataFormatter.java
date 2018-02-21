@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.impl.data.formatters;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.CommonUtils;
 
 import java.math.BigDecimal;
@@ -32,12 +33,14 @@ import java.util.Map;
 
 public class NumberDataFormatter implements DBDDataFormatter {
 
+    public static final int MAX_DEFAULT_FRACTIONS_DIGITS = 4;
+
     private DecimalFormat numberFormat;
     private StringBuffer buffer;
     private FieldPosition position;
 
     @Override
-    public void init(Locale locale, Map<Object, Object> properties)
+    public void init(DBSTypedObject type, Locale locale, Map<Object, Object> properties)
     {
         numberFormat = (DecimalFormat) NumberFormat.getNumberInstance(locale);
         Object useGrouping = properties.get(NumberFormatSample.PROP_USE_GROUPING);
@@ -66,6 +69,14 @@ public class NumberDataFormatter implements DBDDataFormatter {
                 numberFormat.setRoundingMode(RoundingMode.valueOf(roundingMode));
             } catch (Exception e) {
                 // just skip it
+            }
+        }
+        Object useTypeScale = CommonUtils.toString(properties.get(NumberFormatSample.PROP_USE_TYPE_SCALE));
+        if (type != null && CommonUtils.toBoolean(useTypeScale)) {
+            if (type.getScale() != null && type.getScale() > 0) {
+                int fractionDigits = type.getScale();
+                if (fractionDigits > MAX_DEFAULT_FRACTIONS_DIGITS) fractionDigits = MAX_DEFAULT_FRACTIONS_DIGITS;
+                numberFormat.setMinimumFractionDigits(fractionDigits);
             }
         }
         buffer = new StringBuffer();

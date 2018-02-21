@@ -20,12 +20,13 @@ package org.jkiss.dbeaver.ext.mockdata.generator;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 
 public class NumericRandomGenerator extends AbstractMockValueGenerator {
 
     @Override
-    public Object generateOneValue(DBRProgressMonitor monitor) throws DBException {
+    public Object generateOneValue(DBRProgressMonitor monitor) throws DBException, IOException {
         if (isGenerateNULL()) {
             return null;
         } else {

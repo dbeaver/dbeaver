@@ -52,6 +52,10 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
 
     private final boolean sqlServer;
 
+    public SQLServerMetaModel() {
+        this(true);
+    }
+
     public SQLServerMetaModel(boolean sqlServer) {
         super();
         this.sqlServer = sqlServer;

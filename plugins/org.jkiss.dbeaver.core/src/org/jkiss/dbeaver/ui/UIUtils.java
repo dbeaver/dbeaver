@@ -992,6 +992,45 @@ public class UIUtils {
         return section;
     }
 
+    public static void putSectionValueWithType(IDialogSettings dialogSettings, @NotNull String key, Object value) {
+        if (value instanceof Double) {
+            dialogSettings.put(key, (Double) value);
+        } else
+        if (value instanceof Float) {
+            dialogSettings.put(key, (Float) value);
+        } else
+        if (value instanceof Integer) {
+            dialogSettings.put(key, (Integer) value);
+        } else
+        if (value instanceof Long) {
+            dialogSettings.put(key, (Long) value);
+        } else
+        if (value instanceof String) {
+            dialogSettings.put(key, (String) value);
+        } else
+        if (value instanceof Boolean) {
+            dialogSettings.put(key, (Boolean) value);
+        } else {
+            // do nothing
+        }
+        dialogSettings.put(key + "_type", value.getClass().getSimpleName());
+    }
+
+    public static Object getSectionValueWithType(IDialogSettings dialogSettings, @NotNull String key) {
+        String type = dialogSettings.get(key + "_type");
+        if (type != null) {
+            switch (type) {
+                case "Double": return dialogSettings.getDouble(key);
+                case "Float": return dialogSettings.getFloat(key);
+                case "Integer": return dialogSettings.getInt(key);
+                case "Long": return dialogSettings.getLong(key);
+                case "String": return dialogSettings.get(key);
+                case "Boolean": return dialogSettings.getBoolean(key);
+            }
+        }
+        return dialogSettings.get(key);
+    }
+
     @Nullable
     public static IWorkbenchPartSite getWorkbenchPartSite(IServiceLocator serviceLocator)
     {
@@ -1333,9 +1372,13 @@ public class UIUtils {
             @Override
             public void run() {
                 StringBuilder text = new StringBuilder();
+                int columnCount = table.getColumnCount();
                 for (TableItem item : table.getSelection()) {
                     if (text.length() > 0) text.append("\n");
-                    text.append(item.getText());
+                    for (int i = 0 ; i < columnCount; i++) {
+                        if (i > 0) text.append("\t");
+                        text.append(item.getText(i));
+                    }
                 }
                 UIUtils.setClipboardContents(table.getDisplay(), TextTransfer.getInstance(), text.toString());
             }
@@ -1473,11 +1516,11 @@ public class UIUtils {
     public static void setContentProposalToolTip(Control control, String toolTip, String ... variables) {
         StringBuilder varsTip = new StringBuilder();
         for (String var : variables) {
-            if (varsTip.length() > 0) varsTip.append(", ");
-            varsTip.append(GeneralUtils.variablePattern(var));
+            if (varsTip.length() > 0) varsTip.append(",\n");
+            varsTip.append("\t").append(GeneralUtils.variablePattern(var));
         }
         varsTip.append(".");
-        control.setToolTipText(toolTip + ".\nAllowed variables: " + varsTip);
+        control.setToolTipText(toolTip + ". Allowed variables:\n" + varsTip);
 
     }
 

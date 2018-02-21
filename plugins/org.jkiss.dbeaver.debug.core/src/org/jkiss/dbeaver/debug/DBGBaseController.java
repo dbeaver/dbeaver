@@ -129,7 +129,12 @@ public abstract class DBGBaseController implements DBGController {
         executionContext.close();
         Collection<DBGBaseSession> values = sessions.values();
         for (DBGBaseSession session : values) {
-            session.close();
+            try {
+                session.close();
+            } catch (DBGException e) {
+                String message = NLS.bind("Error while closing session {0}", session);
+                log.error(message, e);
+            }
         }
         Object[] listeners = eventHandlers.getListeners();
         for (Object listener : listeners) {

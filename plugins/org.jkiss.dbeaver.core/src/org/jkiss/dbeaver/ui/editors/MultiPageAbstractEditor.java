@@ -99,7 +99,7 @@ public abstract class MultiPageAbstractEditor extends MultiPageEditorPart
     protected void setContainerStyles()
     {
         Composite pageContainer = getContainer();
-        if (pageContainer instanceof CTabFolder) {
+        if (pageContainer instanceof CTabFolder && !pageContainer.isDisposed()) {
             CTabFolder tabFolder = (CTabFolder)pageContainer;
             tabFolder.setSimple(true);
             tabFolder.setMRUVisible(true);

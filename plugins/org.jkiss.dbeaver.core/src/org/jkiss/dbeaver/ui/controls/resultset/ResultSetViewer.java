@@ -82,7 +82,7 @@ import org.jkiss.dbeaver.model.virtual.*;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.resultset.valuefilter.FilterValueEditDialog;
-import org.jkiss.dbeaver.ui.controls.resultset.valuefilter.FilterValueEditMenu;
+import org.jkiss.dbeaver.ui.controls.resultset.valuefilter.FilterValueEditPopup;
 import org.jkiss.dbeaver.ui.controls.resultset.view.EmptyPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.view.StatisticsPresentation;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -1590,16 +1590,25 @@ public class ResultSetViewer extends Viewer
     }
     
     @Override
-    public void showDistinctFilter(DBDAttributeBinding curAttribute) { 	
-    		
-    	Collection<ResultSetRow> selectedRows = getSelection().getSelectedRows();
-	    ResultSetRow[] rows = selectedRows.toArray(new ResultSetRow[selectedRows.size()]);
-	      
-	    FilterValueEditMenu menu = new FilterValueEditMenu(getSite().getShell(), ResultSetViewer.this, curAttribute, rows);
-	    
-	    Point location =  getSite().getWorkbenchWindow().getWorkbench().getDisplay().getCursorLocation();
+    public void showDistinctFilter(DBDAttributeBinding curAttribute) {
+        showFiltersDistinctMenu(curAttribute, false);
+    }
 
-     	menu.setLocation(location);
+    void showFiltersDistinctMenu(DBDAttributeBinding curAttribute, boolean atKeyboardCursor) {
+        Collection<ResultSetRow> selectedRows = getSelection().getSelectedRows();
+        ResultSetRow[] rows = selectedRows.toArray(new ResultSetRow[selectedRows.size()]);
+
+        FilterValueEditPopup menu = new FilterValueEditPopup(getSite().getShell(), ResultSetViewer.this, curAttribute, rows);
+
+        Point location;
+        if (atKeyboardCursor) {
+            location = getKeyboardCursorLocation();
+        } else {
+            location = getSite().getWorkbenchWindow().getWorkbench().getDisplay().getCursorLocation();
+        }
+        if (location != null) {
+            menu.setLocation(location);
+        }
 
         if (menu.open() == IDialogConstants.OK_ID) {
             Object value = menu.getValue();
@@ -1626,16 +1635,22 @@ public class ResultSetViewer extends Viewer
     }
 
     private void showContextMenuAtCursor(MenuManager menuManager) {
+        Point location = getKeyboardCursorLocation();
+        if (location != null) {
+            final Menu contextMenu = menuManager.createContextMenu(getActivePresentation().getControl());
+            contextMenu.setLocation(location);
+            contextMenu.setVisible(true);
+        }
+    }
+
+    @Nullable
+    private Point getKeyboardCursorLocation() {
         Control control = getActivePresentation().getControl();
         Point cursorLocation = getActivePresentation().getCursorLocation();
         if (cursorLocation == null) {
-            return;
+            return null;
         }
-        Point location = control.getDisplay().map(control, null, cursorLocation);
-
-        final Menu contextMenu = menuManager.createContextMenu(control);
-        contextMenu.setLocation(location);
-        contextMenu.setVisible(true);
+        return control.getDisplay().map(control, null, cursorLocation);
     }
 
     @Override
@@ -2049,6 +2064,8 @@ public class ResultSetViewer extends Viewer
     private void fillFiltersMenu(@NotNull DBDAttributeBinding attribute, @NotNull IMenuManager filtersMenu)
     {
         if (supportsDataFilter()) {
+            filtersMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_FILTER_MENU_DISTINCT));
+
             //filtersMenu.add(new FilterByListAction(operator, type, attribute));
             DBCLogicalOperator[] operators = attribute.getValueHandler().getSupportedOperators(attribute);
             // Operators with multiple inputs

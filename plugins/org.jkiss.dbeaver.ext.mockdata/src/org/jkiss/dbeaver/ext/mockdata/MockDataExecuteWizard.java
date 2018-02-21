@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.mockdata;
 
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IImportWizard;
@@ -37,8 +38,10 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractToolWizard;
 
+import java.io.IOException;
 import java.util.*;
 
 public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulator, DBSDataManipulator> implements IImportWizard{
@@ -46,6 +49,7 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
     private static final Log log = Log.getLog(MockDataExecuteWizard.class);
 
     public static final int BATCH_SIZE = 1000;
+    private static final String RS_EXPORT_WIZARD_DIALOG_SETTINGS = "MockData"; //$NON-NLS-1$
 
     private MockDataWizardPageSettings settingsPage;
     private MockDataSettings mockDataSettings;
@@ -60,7 +64,32 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         setWindowTitle(task);
         setNeedsProgressMonitor(true);
+
         settingsPage = new MockDataWizardPageSettings(mockDataSettings);
+
+    }
+
+    void loadSettings() {
+        IDialogSettings section = UIUtils.getDialogSettings(RS_EXPORT_WIZARD_DIALOG_SETTINGS);
+        setDialogSettings(section);
+
+        mockDataSettings.loadFrom(section);
+    }
+
+    @Override
+    public boolean performCancel() {
+        // Save settings anyway
+        mockDataSettings.saveTo(getDialogSettings());
+
+        return super.performCancel();
+    }
+
+    @Override
+    public boolean performFinish() {
+        // Save settings
+        mockDataSettings.saveTo(getDialogSettings());
+
+        return super.performFinish();
     }
 
     @Override
@@ -109,7 +138,7 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
     private Map<String, MockValueGenerator> generators = new HashMap<>();
 
     @Override
-    public boolean executeProcess(DBRProgressMonitor monitor, DBSDataManipulator dataManipulator) {
+    public boolean executeProcess(DBRProgressMonitor monitor, DBSDataManipulator dataManipulator) throws IOException {
 
         DBCExecutionContext context = dataManipulator.getDataSource().getDefaultContext(true);
         DBCSession session = context.openSession(monitor, DBCExecutionPurpose.USER, MockDataMessages.tools_mockdata_generate_data_task);
