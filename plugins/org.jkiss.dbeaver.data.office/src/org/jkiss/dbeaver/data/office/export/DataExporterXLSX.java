@@ -17,28 +17,31 @@
  */
 package org.jkiss.dbeaver.data.office.export;
 
-import java.io.IOException;
-import java.io.Reader;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.data.DBDAttributeBindingMeta;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.dbeaver.tools.transfer.stream.impl.StreamExporterAbstract;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
+
+import java.io.IOException;
+import java.io.Reader;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Export XLSX with Apache POI
@@ -64,6 +67,7 @@ public class DataExporterXLSX extends StreamExporterAbstract {
     private static final String PROP_SPLIT_BYCOL = "splitByColNum";
 
     private static final int EXCEL2007MAXROWS = 1048575;
+    private boolean showDescription;
 
     enum FontStyleProp {NONE, BOLD, ITALIC, STRIKEOUT, UNDERLINE}
 
@@ -313,7 +317,24 @@ public class DataExporterXLSX extends StreamExporterAbstract {
     public void exportHeader(DBCSession session) throws DBException, IOException {
 
         columns = getSite().getAttributes();
+        showDescription = session.getDataSource().getContainer().getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_SHOW_DESCRIPTION);
 
+        if (showDescription) {
+            // Read bindings to extract column descriptions
+            boolean bindingsOk = true;
+            DBDAttributeBindingMeta[] bindings = new DBDAttributeBindingMeta[columns.size()];
+            for (int i = 0; i < columns.size(); i++) {
+                if (columns.get(i) instanceof DBDAttributeBindingMeta) {
+                    bindings[i] = (DBDAttributeBindingMeta) columns.get(i);
+                } else {
+                    bindingsOk = false;
+                    break;
+                }
+            }
+            if (bindingsOk) {
+                ResultSetUtils.bindAttributes(session, null, bindings, null);
+            }
+        }
 	        /*if (printHeader) { FIXME
 	            printHeader();
 	        }*/
@@ -327,9 +348,16 @@ public class DataExporterXLSX extends StreamExporterAbstract {
 
         for (int i = 0, columnsSize = columns.size(); i < columnsSize; i++) {
             DBDAttributeBinding column = columns.get(i);
+
             String colName = column.getLabel();
             if (CommonUtils.isEmpty(colName)) {
                 colName = column.getName();
+            }
+            if (showDescription) {
+                String description = column.getDescription();
+                if (!CommonUtils.isEmpty(description)) {
+                    colName += "\n" + description;
+                }
             }
             Cell cell = row.createCell(i + startCol, CellType.STRING);
             cell.setCellValue(colName);
