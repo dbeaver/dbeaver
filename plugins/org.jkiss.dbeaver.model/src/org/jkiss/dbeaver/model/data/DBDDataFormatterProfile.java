@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.io.IOException;
 import java.util.Locale;
@@ -48,6 +49,6 @@ public interface DBDDataFormatterProfile {
 
     void saveProfile() throws IOException;
 
-    DBDDataFormatter createFormatter(String typeId) throws IllegalAccessException, InstantiationException, IllegalArgumentException;
+    DBDDataFormatter createFormatter(String typeId, DBSTypedObject type) throws IllegalAccessException, InstantiationException, IllegalArgumentException;
 
 }

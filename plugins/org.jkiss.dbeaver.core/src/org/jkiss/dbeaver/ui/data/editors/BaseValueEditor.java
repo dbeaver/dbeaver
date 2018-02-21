@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.data.editors;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.events.TraverseEvent;
@@ -170,7 +171,9 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
                 valueController.updateSelectionValue(newValue);
             }
         } catch (DBException e) {
-            ((IMultiController) valueController).closeInlineEditor();
+            if (valueController instanceof IMultiController) {
+                ((IMultiController) valueController).closeInlineEditor();
+            }
             DBUserInterface.getInstance().showError("Value save", "Can't save edited value", e);
         }
     }
@@ -195,6 +198,12 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
     private class ControlModifyListener implements Listener {
         @Override
         public void handleEvent(Event event) {
+            if (event.type == SWT.Selection) {
+                if (event.widget instanceof StyledText || event.widget instanceof Text) {
+                    // Just a text selection
+                    return;
+                }
+            }
             setDirty(true);
             if (autoSaveEnabled && DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.RS_EDIT_AUTO_UPDATE_VALUE)) {
                 saveValue();

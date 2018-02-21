@@ -47,6 +47,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
     private MavenArtifactReference reference;
     protected MavenArtifactVersion localVersion;
     private String preferredVersion;
+    private boolean ignoreDependencies;
 
     public DriverLibraryMavenArtifact(DriverDescriptor driver, FileType type, String path, String preferredVersion) {
         super(driver, type, path);
@@ -55,6 +56,7 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
 
     public DriverLibraryMavenArtifact(DriverDescriptor driver, IConfigurationElement config) {
         super(driver, config);
+        ignoreDependencies = CommonUtils.toBoolean(config.getAttribute("ignore-dependencies"));
         initArtifactReference(null);
     }
 
@@ -89,6 +91,10 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
             //return !"pom".equals(localVersion.getPackaging());
         }
         return true;
+    }
+
+    public boolean isIgnoreDependencies() {
+        return ignoreDependencies;
     }
 
     @NotNull
@@ -184,6 +190,9 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
     @Override
     public Collection<? extends DBPDriverLibrary> getDependencies(@NotNull DBRProgressMonitor monitor) throws IOException {
         List<DriverLibraryMavenDependency> dependencies = new ArrayList<>();
+        if (ignoreDependencies) {
+            return dependencies;
+        }
         MavenArtifactVersion localVersion = resolveLocalVersion(monitor, false);
         if (localVersion != null) {
 

@@ -61,6 +61,9 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
     private String replacementString;
     private String replacementFull;
     private String replacementLast;
+    // Tail
+    private String replacementAfter;
+
     /** The replacement offset. */
     private int replacementOffset;
     /** The replacement length. */
@@ -151,26 +154,30 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
     @Override
     public void apply(IDocument document) {
         try {
+            String replaceOn = replacementString;
+            if (replacementAfter != null) {
+                replaceOn += replacementAfter;
+            }
             if (dataSource != null) {
                 if (dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.INSERT_SPACE_AFTER_PROPOSALS)) {
-                    boolean insertTrailingSpace = true;
+                    boolean insertTrailingSpace;
                     if (object instanceof DBSObjectContainer) {
                         // Do not append trailing space after schemas/catalogs/etc.
                     } else {
                         int docLen = document.getLength();
                         if (docLen <= replacementOffset + replacementLength + 2) {
-                            insertTrailingSpace = false;
+                            insertTrailingSpace = true;
                         } else {
                             insertTrailingSpace = document.getChar(replacementOffset + replacementLength) != ' ';
                         }
                         if (insertTrailingSpace) {
-                            replacementString += " ";
+                            replaceOn += " ";
                         }
                         cursorPosition++;
                     }
                 }
             }
-            document.replace(replacementOffset, replacementLength, replacementString);
+            document.replace(replacementOffset, replacementLength, replaceOn);
         } catch (BadLocationException e) {
             // ignore
             log.debug(e);
@@ -182,7 +189,11 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
      */
     @Override
     public Point getSelection(IDocument document) {
-        return new Point(replacementOffset + cursorPosition, 0);
+        int newOffset = replacementOffset + cursorPosition + (replacementAfter == null ? 0 : replacementAfter.length());
+        if (newOffset > document.getLength()) {
+            newOffset = document.getLength();
+        }
+        return new Point(newOffset, 0);
     }
 
     @Override
@@ -291,4 +302,7 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
     }
 
 
+    public void setReplacementAfter(String replacementAfter) {
+        this.replacementAfter = replacementAfter;
+    }
 }

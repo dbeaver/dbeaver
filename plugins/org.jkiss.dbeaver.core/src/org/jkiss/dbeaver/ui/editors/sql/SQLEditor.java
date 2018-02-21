@@ -127,6 +127,7 @@ public class SQLEditor extends SQLEditorBase implements
     DBPPreferenceListener
 {
     private static final long SCRIPT_UI_UPDATE_PERIOD = 100;
+    private static final int MAX_PARALLEL_QUERIES_NO_WARN = 10;
 
     private static Image IMG_DATA_GRID = DBeaverActivator.getImageDescriptor("/icons/sql/page_data_grid.png").createImage(); //$NON-NLS-1$
     private static Image IMG_DATA_GRID_LOCKED = DBeaverActivator.getImageDescriptor("/icons/sql/page_data_grid_locked.png").createImage(); //$NON-NLS-1$
@@ -731,8 +732,10 @@ public class SQLEditor extends SQLEditorBase implements
     public void toggleResultPanel() {
         if (sashForm.getMaximizedControl() == null) {
             sashForm.setMaximizedControl(editorControl);
+            switchFocus(false);
         } else {
             sashForm.setMaximizedControl(null);
+            switchFocus(true);
         }
     }
 
@@ -740,28 +743,35 @@ public class SQLEditor extends SQLEditorBase implements
     {
         if (sashForm.getMaximizedControl() == null) {
             sashForm.setMaximizedControl(resultTabs);
+            switchFocus(true);
         } else {
             sashForm.setMaximizedControl(null);
+            switchFocus(false);
+        }
+    }
+
+    private void switchFocus(boolean results) {
+        if (results) {
+            ResultSetViewer activeRS = getActiveResultSetViewer();
+            if (activeRS != null && activeRS.getActivePresentation() != null) {
+                activeRS.getActivePresentation().getControl().setFocus();
+            } else {
+                CTabItem activeTab = resultTabs.getSelection();
+                if (activeTab != null && activeTab.getControl() != null) {
+                    activeTab.getControl().setFocus();
+                }
+            }
+        } else {
+            editorControl.setFocus();
         }
     }
 
     public void toggleActivePanel() {
         if (sashForm.getMaximizedControl() == null) {
             if (UIUtils.hasFocus(resultTabs)) {
-                final Control editorControl = getEditorControl();
-                if (editorControl != null) {
-                    editorControl.setFocus();
-                }
+                switchFocus(false);
             } else {
-                CTabItem selTab = resultTabs.getSelection();
-                if (selTab != null) {
-                    ResultSetViewer viewer = getActiveResultSetViewer();
-                    if (viewer != null && viewer.getActivePresentation().getControl().isVisible()) {
-                        viewer.getActivePresentation().getControl().setFocus();
-                    } else {
-                        selTab.getControl().setFocus();
-                    }
-                }
+                switchFocus(true);
             }
         }
     }
@@ -1095,6 +1105,16 @@ public class SQLEditor extends SQLEditorBase implements
                 {
                     return;
                 }
+            }
+        } else if (newTab && queries.size() > MAX_PARALLEL_QUERIES_NO_WARN) {
+            if (ConfirmationDialog.showConfirmDialogEx(
+                getSite().getShell(),
+                DBeaverPreferences.CONFIRM_MASS_PARALLEL_SQL,
+                ConfirmationDialog.CONFIRM,
+                ConfirmationDialog.WARNING,
+                queries.size()) != IDialogConstants.OK_ID)
+            {
+                return;
             }
         }
 

@@ -33,18 +33,12 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset.spreadsheet;
 
-import org.eclipse.core.commands.ExecutionEvent;
-import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.commands.NotEnabledException;
-import org.eclipse.core.commands.NotHandledException;
-import org.eclipse.core.commands.common.NotDefinedException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.jface.viewers.ISelection;
@@ -61,10 +55,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.handlers.HandlerUtil;
-import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.themes.ITheme;
@@ -93,14 +83,12 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.PropertyPageStandard;
 import org.jkiss.dbeaver.ui.controls.lightgrid.*;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation.RowPosition;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.ViewValuePanel;
 import org.jkiss.dbeaver.ui.data.IMultiController;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.IValueEditorStandalone;
 import org.jkiss.dbeaver.ui.data.managers.BaseValueManager;
-import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.properties.PropertySourceDelegate;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -1395,18 +1383,20 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         @Override
         public int getSortOrder(@Nullable Object column)
         {
-            if (column instanceof DBDAttributeBinding) {
-                DBDAttributeBinding binding = (DBDAttributeBinding) column;
-                if (!binding.hasNestedBindings()) {
-                    DBDAttributeConstraint co = controller.getModel().getDataFilter().getConstraint(binding);
-                    if (co != null && co.getOrderPosition() > 0) {
-                        return co.isOrderDescending() ? SWT.DOWN : SWT.UP;
+            if (controller.getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_SHOW_ATTR_ORDERING)) {
+                if (column instanceof DBDAttributeBinding) {
+                    DBDAttributeBinding binding = (DBDAttributeBinding) column;
+                    if (!binding.hasNestedBindings()) {
+                        DBDAttributeConstraint co = controller.getModel().getDataFilter().getConstraint(binding);
+                        if (co != null && co.getOrderPosition() > 0) {
+                            return co.isOrderDescending() ? SWT.DOWN : SWT.UP;
+                        }
+                        return SWT.DEFAULT;
                     }
-                    return SWT.DEFAULT;
+                } else if (column == null && controller.isRecordMode()) {
+                    // Columns order in record mode
+                    return columnOrder;
                 }
-            } else if (column == null && controller.isRecordMode()) {
-                // Columns order in record mode
-                return columnOrder;
             }
             return SWT.NONE;
         }
@@ -1469,11 +1459,13 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 state |= STATE_LINK;
             } else {
                 String strValue = cellText != null ? cellText : attr.getValueHandler().getValueDisplayString(attr, value, DBDDisplayFormat.UI);
-                try {
-                    new URL(strValue);
-                    state |= STATE_HYPER_LINK;
-                } catch (MalformedURLException e) {
-                    // Not a hyperlink
+                if (strValue != null && strValue.contains(":")) {
+                    try {
+                        new URL(strValue);
+                        state |= STATE_HYPER_LINK;
+                    } catch (MalformedURLException e) {
+                        // Not a hyperlink
+                    }
                 }
             }
 
@@ -1672,7 +1664,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         public Image getImage(Object element)
         {
             if (element instanceof DBDAttributeBinding/* && (!isRecordMode() || !model.isDynamicMetadata())*/) {
-                return DBeaverIcons.getImage(DBValueFormatting.getObjectImage(((DBDAttributeBinding) element).getAttribute()));
+                if (controller.getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_SHOW_ATTR_ICONS)) {
+                    return DBeaverIcons.getImage(DBValueFormatting.getObjectImage(((DBDAttributeBinding) element).getAttribute()));
+                }
             }
             return null;
         }

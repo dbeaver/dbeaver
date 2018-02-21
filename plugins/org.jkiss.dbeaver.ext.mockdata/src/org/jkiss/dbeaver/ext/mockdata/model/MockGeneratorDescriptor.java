@@ -37,6 +37,8 @@ public class MockGeneratorDescriptor extends DataTypeAbstractDescriptor<MockValu
 
     private final String label;
     private final String description;
+    private final String link;
+    private final String url;
     private final DBPImage icon;
     private List<DBPPropertyDescriptor> properties = new ArrayList<>();
 
@@ -45,6 +47,8 @@ public class MockGeneratorDescriptor extends DataTypeAbstractDescriptor<MockValu
         super(config, MockValueGenerator.class);
         this.label = config.getAttribute(RegistryConstants.ATTR_LABEL);
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
+        this.link = config.getAttribute(RegistryConstants.ATTR_LINK);
+        this.url = config.getAttribute(RegistryConstants.ATTR_URL);
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
 
         for (IConfigurationElement prop : config.getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP)) {
@@ -62,6 +66,14 @@ public class MockGeneratorDescriptor extends DataTypeAbstractDescriptor<MockValu
 
     public DBPImage getIcon() {
         return icon;
+    }
+
+    public String getLink() {
+        return link;
+    }
+
+    public String getUrl() {
+        return url;
     }
 
     public List<DBPPropertyDescriptor> getProperties() {

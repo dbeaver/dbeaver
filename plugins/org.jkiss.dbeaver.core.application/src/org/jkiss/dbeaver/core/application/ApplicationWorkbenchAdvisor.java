@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.core.application;
 
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
@@ -34,7 +33,6 @@ import org.eclipse.ui.internal.ide.IDEWorkbenchPlugin;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.application.update.DBeaverVersionChecker;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
@@ -42,8 +40,6 @@ import org.jkiss.dbeaver.ui.DBeaverUIConstants;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditorInput;
-import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
 
 import java.net.URL;

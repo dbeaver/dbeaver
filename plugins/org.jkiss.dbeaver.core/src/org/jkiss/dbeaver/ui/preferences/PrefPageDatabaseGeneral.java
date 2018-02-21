@@ -27,6 +27,7 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.PreferenceLinkArea;
 import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.jkiss.code.Nullable;
@@ -85,14 +86,15 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
         Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
 
         {
-            Group groupObjects = UIUtils.createControlGroup(composite, CoreMessages.pref_page_ui_general_group_general, 2, GridData.VERTICAL_ALIGN_BEGINNING, 300);
+            Group groupObjects = UIUtils.createControlGroup(composite, CoreMessages.pref_page_ui_general_group_general, 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
             automaticUpdateCheck = UIUtils.createCheckbox(groupObjects, CoreMessages.pref_page_ui_general_checkbox_automatic_updates, null, false, 2);
             //automaticUpdateCheck.setLayoutData(new GridData(GridData.BEGINNING, GridData.BEGINNING, true, false, 2, 1));
         }
         {
-            Group groupLanguage = UIUtils.createControlGroup(composite, CoreMessages.pref_page_ui_general_group_language, 2, GridData.VERTICAL_ALIGN_BEGINNING, 300);
+            Group groupLanguage = UIUtils.createControlGroup(composite, CoreMessages.pref_page_ui_general_group_language, 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
 
             workspaceLanguage = UIUtils.createLabelCombo(groupLanguage, CoreMessages.pref_page_ui_general_combo_language, CoreMessages.pref_page_ui_general_combo_language_tip, SWT.READ_ONLY | SWT.DROP_DOWN);
+            workspaceLanguage.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
             List<PlatformLanguageDescriptor> languages = PlatformLanguageRegistry.getInstance().getLanguages();
             DBPPlatformLanguage pLanguage = DBeaverCore.getInstance().getLanguage();
             for (int i = 0; i < languages.size(); i++) {
@@ -112,7 +114,7 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
 
         // Agent settings
         {
-            Group agentGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_ui_general_group_task_bar, 2, SWT.NONE, 0);
+            Group agentGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_ui_general_group_task_bar, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
 
             longOperationsCheck = UIUtils.createCheckbox(agentGroup,
                     CoreMessages.pref_page_ui_general_label_enable_long_operations,
@@ -213,7 +215,23 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
         if (workspaceLanguage.getSelectionIndex() >= 0) {
             PlatformLanguageDescriptor language = PlatformLanguageRegistry.getInstance().getLanguages().get(workspaceLanguage.getSelectionIndex());
             try {
-                DBeaverCore.getInstance().setPlatformLanguage(language);
+                DBPPlatformLanguage curLanguage = DBeaverCore.getInstance().getLanguage();
+                if (curLanguage != language) {
+                    DBeaverCore.getInstance().setPlatformLanguage(language);
+
+                }
+                if (UIUtils.confirmAction(
+                    getShell(),
+                    "Restart " + GeneralUtils.getProductName(),
+                    "You need to restart " + GeneralUtils.getProductName() + " to perform actual language change.\nDo you want to restart?"))
+                {
+                    DBeaverUI.asyncExec(new Runnable() {
+                        @Override
+                        public void run() {
+                            PlatformUI.getWorkbench().restart();
+                        }
+                    });
+                }
             } catch (DBException e) {
                 DBeaverUI.getInstance().showError("Change language", "Can't switch language to " + language, e);
             }

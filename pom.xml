@@ -9,7 +9,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <dbeaver-version>4.3.4</dbeaver-version>
+        <dbeaver-version>4.3.5</dbeaver-version>
         <dbeaver-product>DBeaver</dbeaver-product>
         <tycho-version>1.0.0</tycho-version>
         <tycho-versions-version>0.26.0</tycho-versions-version>
@@ -63,6 +63,7 @@
         <module>plugins/org.jkiss.dbeaver.ext.ui.svg</module>
         <module>plugins/org.jkiss.dbeaver.ext.mockdata</module>
         <module>plugins/org.jkiss.dbeaver.data.office</module>
+        <module>plugins/org.jkiss.dbeaver.data.gis</module>
         <module>plugins/org.jkiss.dbeaver.model</module>
 
         <module>features/org.jkiss.dbeaver.core.feature</module>

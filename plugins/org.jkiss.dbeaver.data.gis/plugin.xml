@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.dataManager">
+        <manager class="org.jkiss.dbeaver.ui.data.managers.GeometryValueManager" id="org.jkiss.dbeaver.ui.data.managers.GeometryValueManager">
+            <supports type="com.vividsolutions.jts.geom.Geometry" forceCheck="true"/>
+        </manager>
+    </extension>
+
+</plugin>

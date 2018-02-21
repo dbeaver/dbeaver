@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.text.ParseException;
 import java.util.Locale;
@@ -33,7 +34,7 @@ public interface DBDDataFormatter {
     String TYPE_NAME_TIME = "time"; //$NON-NLS-1$
     String TYPE_NAME_TIMESTAMP = "timestamp"; //$NON-NLS-1$
 
-    void init(Locale locale, Map<Object, Object> properties);
+    void init(@Nullable DBSTypedObject type, Locale locale, Map<Object, Object> properties);
 
     @Nullable
     String getPattern();

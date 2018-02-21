@@ -272,7 +272,6 @@ public final class DBUtils {
      * @param schemaName schema name (optional)
      * @param objectName table name (optional)
      * @return found object or null
-     * @throws DBException
      */
     @Nullable
     public static DBSObject getObjectByPath(
@@ -666,7 +665,7 @@ public final class DBUtils {
                 }
             }
         }
-        return refs != null ? refs : Collections.<DBSEntityReferrer>emptyList();
+        return refs != null ? refs : Collections.emptyList();
     }
 
     @NotNull
@@ -1418,41 +1417,28 @@ public final class DBUtils {
 
     public static <TYPE extends DBPNamedObject> Comparator<TYPE> nameComparator()
     {
-        return new Comparator<TYPE>() {
-            @Override
-            public int compare(DBPNamedObject o1, DBPNamedObject o2)
-            {
-                return o1.getName().compareTo(o2.getName());
-            }
-        };
+        return Comparator.comparing(DBPNamedObject::getName);
     }
 
     public static Comparator<? super DBSAttributeBase> orderComparator() {
-        return new Comparator<DBSAttributeBase>() {
-            @Override
-            public int compare(DBSAttributeBase o1, DBSAttributeBase o2) {
-                return o1.getOrdinalPosition() - o2.getOrdinalPosition();
-            }
-        };
+        return Comparator.comparingInt(DBSAttributeBase::getOrdinalPosition);
     }
 
     public static <T extends DBPNamedObject> void orderObjects(@NotNull List<T> objects)
     {
-        Collections.sort(objects, new Comparator<T>() {
-            @Override
-            public int compare(T o1, T o2) {
-                String name1 = o1.getName();
-                String name2 = o2.getName();
-                return name1 == null && name2 == null ? 0 :
-                    (name1 == null ? -1 :
-                        (name2 == null ? 1 : name1.compareTo(name2)));
-            }
+        objects.sort((o1, o2) -> {
+            String name1 = o1.getName();
+            String name2 = o2.getName();
+            return name1 == null && name2 == null ? 0 :
+                (name1 == null ? -1 :
+                    (name2 == null ? 1 : name1.compareTo(name2)));
         });
     }
 
     public static String getClientApplicationName(DBPDataSourceContainer container, String purpose) {
         if (container.getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_OVERRIDE)) {
-            return container.getPreferenceStore().getString(ModelPreferences.META_CLIENT_NAME_VALUE);
+            String appName = container.getPreferenceStore().getString(ModelPreferences.META_CLIENT_NAME_VALUE);
+            return GeneralUtils.replaceVariables(appName, container.getVariablesResolver());
         }
         final String productTitle = GeneralUtils.getProductTitle();
         return purpose == null ? productTitle : productTitle + " - " + purpose;
