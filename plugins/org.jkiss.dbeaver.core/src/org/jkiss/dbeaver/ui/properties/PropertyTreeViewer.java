@@ -449,7 +449,9 @@ public class PropertyTreeViewer extends TreeViewer {
             curCellEditor = cellEditor;
             selectedProperty = prop.property;
 
-            cellEditor.activate();
+            if (isDef) {
+                cellEditor.activate();
+            }
             final Control editorControl = cellEditor.getControl();
             if (editorControl != null) {
                 editorControl.addTraverseListener(e -> {
