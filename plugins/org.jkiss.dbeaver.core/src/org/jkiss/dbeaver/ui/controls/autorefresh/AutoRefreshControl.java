@@ -95,7 +95,7 @@ public class AutoRefreshControl {
             autoRefreshJob.cancel();
             autoRefreshJob = null;
         }
-        if (!this.autoRefreshEnabled) {
+        if (!this.autoRefreshEnabled || parent.isDisposed()) {
             return;
         }
         RefreshSettings settings = getRefreshSettings();
