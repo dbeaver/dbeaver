@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ui.controls.autorefresh;
 
+import org.eclipse.jface.action.ContributionItem;
+import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
@@ -114,18 +116,32 @@ public class AutoRefreshControl {
     }
 
     public void populateRefreshButton(ToolBar toolbar) {
+        if (autoRefreshButton != null && !autoRefreshButton.isDisposed()) {
+            autoRefreshButton.dispose();
+        }
         autoRefreshButton = new ToolItem(toolbar, SWT.DROP_DOWN | SWT.NO_FOCUS);
         autoRefreshButton.addSelectionListener(new AutoRefreshMenuListener(autoRefreshButton));
         updateAutoRefreshToolbar();
     }
 
+    public void populateRefreshButton(IContributionManager contributionManager) {
+        contributionManager.add(new ContributionItem() {
+            @Override
+            public void fill(ToolBar parent, int index) {
+                populateRefreshButton(parent);
+            }
+        });
+    }
+
     private void updateAutoRefreshToolbar() {
-        if (isAutoRefreshEnabled()) {
-            autoRefreshButton.setImage(DBeaverIcons.getImage(UIIcon.RS_SCHED_STOP));
-            autoRefreshButton.setToolTipText(CoreMessages.sql_editor_resultset_filter_panel_btn_stop_refresh);
-        } else {
-            autoRefreshButton.setImage(DBeaverIcons.getImage(UIIcon.RS_SCHED_START));
-            autoRefreshButton.setToolTipText(CoreMessages.sql_editor_resultset_filter_panel_btn_config_refresh);
+        if (autoRefreshButton != null && !autoRefreshButton.isDisposed()) {
+            if (isAutoRefreshEnabled()) {
+                autoRefreshButton.setImage(DBeaverIcons.getImage(UIIcon.RS_SCHED_STOP));
+                autoRefreshButton.setToolTipText(CoreMessages.sql_editor_resultset_filter_panel_btn_stop_refresh);
+            } else {
+                autoRefreshButton.setImage(DBeaverIcons.getImage(UIIcon.RS_SCHED_START));
+                autoRefreshButton.setToolTipText(CoreMessages.sql_editor_resultset_filter_panel_btn_config_refresh);
+            }
         }
     }
 
