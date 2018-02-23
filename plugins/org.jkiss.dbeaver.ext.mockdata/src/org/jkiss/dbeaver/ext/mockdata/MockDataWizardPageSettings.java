@@ -27,6 +27,7 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.browser.IWorkbenchBrowserSupport;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mockdata.MockDataSettings.AttributeGeneratorProperties;
 import org.jkiss.dbeaver.ext.mockdata.model.MockGeneratorDescriptor;
 import org.jkiss.dbeaver.model.DBValueFormatting;
@@ -45,6 +46,8 @@ import java.util.List;
 
 public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecuteWizard>
 {
+    private static final Log log = Log.getLog(MockDataWizardPageSettings.class);
+
     private MockDataSettings mockDataSettings;
 
     private CLabel noGeneratorInfoLabel;
@@ -334,16 +337,21 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
 
             // select the first item
             final Table table = columnsTableViewer.getTable();
-            table.select(0);
-            // and notify the listeners
-            Event event = new Event();
-            event.widget = table;
-            event.display = table.getDisplay();
-            event.item = table.getItem(0);
-            event.type = SWT.Selection;
-            table.notifyListeners(SWT.Selection, event);
-        } catch (DBException e) {
-            e.printStackTrace();
+            if (table.getItemCount() > 0) {
+                table.select(0);
+                // and notify the listeners
+                Event event = new Event();
+                event.widget = table;
+                event.display = table.getDisplay();
+                event.item = table.getItem(0);
+                event.type = SWT.Selection;
+                table.notifyListeners(SWT.Selection, event);
+            } else {
+                noGeneratorInfoLabel.setText("No attributes in the table");
+                noGeneratorInfoLabel.setVisible(true);
+            }
+        } catch (DBException ex) {
+            log.error("Error of initializing the Mock Data settings", ex);
         }
 
         updatePageCompletion();
