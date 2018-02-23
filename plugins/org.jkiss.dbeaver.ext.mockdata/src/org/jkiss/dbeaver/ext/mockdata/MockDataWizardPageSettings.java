@@ -27,6 +27,7 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.browser.IWorkbenchBrowserSupport;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mockdata.MockDataSettings.AttributeGeneratorProperties;
 import org.jkiss.dbeaver.ext.mockdata.model.MockGeneratorDescriptor;
 import org.jkiss.dbeaver.model.DBValueFormatting;
@@ -45,6 +46,8 @@ import java.util.List;
 
 public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecuteWizard>
 {
+    private static final Log log = Log.getLog(MockDataWizardPageSettings.class);
+
     private MockDataSettings mockDataSettings;
 
     private CLabel noGeneratorInfoLabel;
@@ -347,8 +350,8 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
                 noGeneratorInfoLabel.setText("No attributes in the table");
                 noGeneratorInfoLabel.setVisible(true);
             }
-        } catch (DBException e) {
-            e.printStackTrace();
+        } catch (DBException ex) {
+            log.error("Error of initializing the Mock Data settings", ex);
         }
 
         updatePageCompletion();
