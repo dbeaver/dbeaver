@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.exec.DBCQueryTransformer;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -99,6 +100,11 @@ public class VerticaMetaModel extends GenericMetaModel implements DBCQueryTransf
         } catch (SQLException e) {
             throw new DBException(e, dataSource);
         }
+    }
+
+    @Override
+    public JDBCStatement prepareTableLoadStatement(JDBCSession session, GenericStructContainer owner, GenericTable object, String objectName) throws SQLException {
+        return super.prepareTableLoadStatement(session, owner, object, objectName);
     }
 
     @Override
