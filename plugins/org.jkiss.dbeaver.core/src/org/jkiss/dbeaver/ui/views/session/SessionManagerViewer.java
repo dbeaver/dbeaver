@@ -35,14 +35,18 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchSite;
 import org.eclipse.ui.PartInitException;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSession;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.autorefresh.AutoRefreshControl;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
@@ -50,6 +54,7 @@ import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
 /**
@@ -65,6 +70,7 @@ public class SessionManagerViewer
     private Font boldFont;
     private PropertyTreeViewer sessionProps;
     private DBAServerSession curSession;
+    private AutoRefreshControl refreshControl;
 
     public void dispose()
     {
@@ -79,6 +85,8 @@ public class SessionManagerViewer
 
         SashForm sash = UIUtils.createPartDivider(part, composite, SWT.VERTICAL | SWT.SMOOTH);
         sash.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+        refreshControl = new AutoRefreshControl(sash, sessionManager.getClass().getSimpleName(), monitor -> DBeaverUI.syncExec(this::refreshSessions));
 
         sessionTable = new SessionListControl(sash, part.getSite(), sessionManager);
         sessionTable.getItemsViewer().addSelectionChangedListener(new ISelectionChangedListener() {
@@ -169,6 +177,8 @@ public class SessionManagerViewer
     {
         sessionTable.loadData();
         onSessionSelect(null);
+
+        refreshControl.scheduleAutoRefresh(false);
     }
 
     public void alterSession(final DBAServerSession session, Map<String, Object> options) {
@@ -206,6 +216,7 @@ public class SessionManagerViewer
         @Override
         protected void fillCustomActions(IContributionManager contributionManager) {
             contributeToToolbar(getSessionManager(), contributionManager);
+            refreshControl.populateRefreshButton(contributionManager);
             contributionManager.add(new Action("Refresh sessions", DBeaverIcons.getImageDescriptor(UIIcon.REFRESH)) {
                 @Override
                 public void run()
