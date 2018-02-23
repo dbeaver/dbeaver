@@ -35,11 +35,14 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractToolWizard;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.util.*;
@@ -74,6 +77,18 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
         setDialogSettings(section);
 
         mockDataSettings.loadFrom(section);
+    }
+
+    @Override
+    public boolean canFinish() {
+        try {
+            Collection<? extends DBSEntityAttribute> attributes =
+                    mockDataSettings.getDbsEntity().getAttributes(new VoidProgressMonitor());
+            return super.canFinish() && !CommonUtils.isEmpty(DBUtils.getRealAttributes(attributes));
+        } catch (DBException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     @Override
