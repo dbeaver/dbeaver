@@ -42,17 +42,17 @@ import java.util.Map;
 /**
  * Session table
  */
-public class LockTable extends DatabaseObjectListControl<DBAServerLock<?>> {
+public class LockTable extends DatabaseObjectListControl<DBAServerLock> {
 
-    private DBAServerLockManager<DBAServerLock<?>,DBAServerLockItem> lockManager;
+    private DBAServerLockManager<DBAServerLock,DBAServerLockItem> lockManager;
 
-    public LockTable(Composite parent, int style, IWorkbenchSite site, DBAServerLockManager<DBAServerLock<?>,DBAServerLockItem> lockManager)
+    public LockTable(Composite parent, int style, IWorkbenchSite site, DBAServerLockManager<DBAServerLock,DBAServerLockItem> lockManager)
     {
         super(parent, style, site, CONTENT_PROVIDER);
         this.lockManager = lockManager;
     }
 
-    public DBAServerLockManager<DBAServerLock<?>,DBAServerLockItem> getLockManager() {
+    public DBAServerLockManager<DBAServerLock,DBAServerLockItem> getLockManager() {
         return lockManager;
     }
 
@@ -68,21 +68,21 @@ public class LockTable extends DatabaseObjectListControl<DBAServerLock<?>> {
     }
 
     @Override
-    protected LoadingJob<Collection<DBAServerLock<?>>> createLoadService()
+    protected LoadingJob<Collection<DBAServerLock>> createLoadService()
     {
         return LoadingJob.createService(
             new LoadLocksService(),
             new ObjectsLoadVisualizer());
     }
 
-    public LoadingJob<Void> createAlterService(DBAServerLock<?> lock, Map<String, Object> options)
+    public LoadingJob<Void> createAlterService(DBAServerLock lock, Map<String, Object> options)
     {
         return LoadingJob.createService(
             new KillSessionByLockService(lock, options),
             new ObjectActionVisualizer());
     }
 
-    public void init(DBAServerLockManager<DBAServerLock<?>,DBAServerLockItem> lockManager)
+    public void init(DBAServerLockManager<DBAServerLock, DBAServerLockItem> lockManager)
     {
         this.lockManager = lockManager;
     }
@@ -92,7 +92,7 @@ public class LockTable extends DatabaseObjectListControl<DBAServerLock<?>> {
         public Object[] getElements(Object inputElement)
         {
             if (inputElement instanceof Collection) {
-                return ((Collection<?>)inputElement).toArray();
+                return ((Collection)inputElement).toArray();
             }
             return null;
         }
@@ -109,7 +109,7 @@ public class LockTable extends DatabaseObjectListControl<DBAServerLock<?>> {
 
     };
 
-    private class LoadLocksService extends DatabaseLoadService<Collection<DBAServerLock<?>>> {
+    private class LoadLocksService extends DatabaseLoadService<Collection<DBAServerLock>> {
 
         protected LoadLocksService()
         {
@@ -117,7 +117,7 @@ public class LockTable extends DatabaseObjectListControl<DBAServerLock<?>> {
         }
 
         @Override
-        public Collection<DBAServerLock<?>> evaluate(DBRProgressMonitor monitor)
+        public Collection<DBAServerLock> evaluate(DBRProgressMonitor monitor)
             throws InvocationTargetException, InterruptedException
         {
             try {
@@ -133,11 +133,11 @@ public class LockTable extends DatabaseObjectListControl<DBAServerLock<?>> {
     }
 
     private class KillSessionByLockService extends DatabaseLoadService<Void> {
-        private final DBAServerLock<?> lock;
+        private final DBAServerLock lock;
         private final Map<String, Object> options;
 
 
-        protected KillSessionByLockService(DBAServerLock<?> lock, Map<String, Object> options)
+        protected KillSessionByLockService(DBAServerLock lock, Map<String, Object> options)
         {
             super("Kill session by lock", lockManager.getDataSource());
             this.lock = lock;
