@@ -81,6 +81,7 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.*;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.controls.autorefresh.AutoRefreshControl;
 import org.jkiss.dbeaver.ui.controls.resultset.valuefilter.FilterValueEditDialog;
 import org.jkiss.dbeaver.ui.controls.resultset.valuefilter.FilterValueEditPopup;
 import org.jkiss.dbeaver.ui.controls.resultset.view.EmptyPresentation;
@@ -117,7 +118,7 @@ public class ResultSetViewer extends Viewer
     implements DBPContextProvider, IResultSetController, ISaveablePart2, IAdaptable
 {
     private static final Log log = Log.getLog(ResultSetViewer.class);
-    private static final String SETTINGS_SECTION_REFRESH = "autoRefresh";
+
     private static final String SETTINGS_SECTION_PRESENTATIONS = "presentations";
 
     private static final DecimalFormat ROW_COUNT_FORMAT = new DecimalFormat("###,###,###,###,###,##0");
@@ -173,10 +174,7 @@ public class ResultSetViewer extends Viewer
     private final List<HistoryStateItem> stateHistory = new ArrayList<>();
     private int historyPosition = -1;
 
-    private AutoRefreshJob autoRefreshJob;
-    private RefreshSettings refreshSettings;
-    private volatile boolean autoRefreshEnabled = false;
-
+    private AutoRefreshControl autoRefreshControl;
     private boolean actionsDisabled;
 
     private static Action NOREFS_ACTION, REFS_TITLE_ACTION;
@@ -204,6 +202,9 @@ public class ResultSetViewer extends Viewer
         this.viewerPanel.setRedraw(false);
 
         try {
+            this.autoRefreshControl = new AutoRefreshControl(
+                this.viewerPanel, ResultSetViewer.class.getSimpleName(), monitor -> refreshData(null));
+
             this.filtersPanel = new ResultSetFilterPanel(this);
             this.findReplaceTarget = new DynamicFindReplaceTarget();
 
@@ -274,6 +275,10 @@ public class ResultSetViewer extends Viewer
     @NotNull
     public IResultSetContainer getContainer() {
         return container;
+    }
+
+    AutoRefreshControl getAutoRefresh() {
+        return autoRefreshControl;
     }
 
     ////////////////////////////////////////////////////////////
@@ -2410,45 +2415,6 @@ public class ResultSetViewer extends Viewer
         return true;
     }
 
-    public synchronized RefreshSettings getRefreshSettings() {
-        if (refreshSettings == null) {
-            refreshSettings = new RefreshSettings();
-            refreshSettings.loadSettings();
-        }
-        return refreshSettings;
-    }
-
-    public synchronized void setRefreshSettings(RefreshSettings refreshSettings) {
-        this.refreshSettings = refreshSettings;
-        this.refreshSettings.saveSettings();
-    }
-
-    public synchronized boolean isAutoRefreshEnabled() {
-        return autoRefreshEnabled;
-    }
-
-    public synchronized void enableAutoRefresh(boolean enable) {
-        this.autoRefreshEnabled = enable;
-        scheduleAutoRefresh(false);
-        filtersPanel.updateAutoRefreshToolbar();
-    }
-
-    private synchronized void scheduleAutoRefresh(boolean afterError) {
-        if (autoRefreshJob != null) {
-            autoRefreshJob.cancel();
-            autoRefreshJob = null;
-        }
-        if (!this.autoRefreshEnabled) {
-            return;
-        }
-        RefreshSettings settings = getRefreshSettings();
-        if (afterError && settings.stopOnError) {
-            return;
-        }
-        autoRefreshJob = new AutoRefreshJob(this);
-        autoRefreshJob.schedule((long)settings.refreshInterval * 1000);
-    }
-
     /**
      * Refresh is called to execute new query/browse new data. It is public API function.
      */
@@ -2459,7 +2425,7 @@ public class ResultSetViewer extends Viewer
             return;
         }
         // Disable auto-refresh
-        enableAutoRefresh(false);
+        autoRefreshControl.enableAutoRefresh(false);
 
         // Pump data
         DBSDataContainer dataContainer = getDataContainer();
@@ -2651,12 +2617,9 @@ public class ResultSetViewer extends Viewer
             UIUtils.showMessageBox(viewerPanel.getShell(), "Data read", "Data read is in progress - can't run another", SWT.ICON_WARNING);
             return false;
         }
-        // Cancel any auto-refresh activities
-        final AutoRefreshJob refreshJob = this.autoRefreshJob;
-        if (refreshJob != null) {
-            refreshJob.cancel();
-            this.autoRefreshJob = null;
-        }
+        // Cancel any refresh jobs
+        autoRefreshControl.cancelRefresh();
+
         // Read data
         final DBDDataFilter useDataFilter = dataFilter != null ? dataFilter :
             (dataContainer == getDataContainer() ? model.getDataFilter() : null);
@@ -2741,7 +2704,7 @@ public class ResultSetViewer extends Viewer
                                 fireResultSetLoad();
                             }
                             // auto-refresh
-                            scheduleAutoRefresh(error != null);
+                            autoRefreshControl.scheduleAutoRefresh(error != null);
                         } finally {
                             if (finalizer != null) {
                                 try {
@@ -3455,7 +3418,6 @@ public class ResultSetViewer extends Viewer
     }
     
     
-    
     private class FilterByValueAction extends Action {
     	private final DBCLogicalOperator operator;
         private final FilterByAttributeType type;
@@ -3815,32 +3777,7 @@ public class ResultSetViewer extends Viewer
         boolean panelsVisible;
     }
 
-    static class RefreshSettings {
-        int refreshInterval = 0;
-        boolean stopOnError = true;
-
-        RefreshSettings() {
-        }
-
-        RefreshSettings(RefreshSettings src) {
-            this.refreshInterval = src.refreshInterval;
-            this.stopOnError = src.stopOnError;
-        }
-
-        private void loadSettings() {
-            IDialogSettings viewerSettings = ResultSetUtils.getViewerSettings(SETTINGS_SECTION_REFRESH);
-            if (viewerSettings.get("interval") != null) refreshInterval = viewerSettings.getInt("interval");
-            if (viewerSettings.get("stopOnError") != null) stopOnError = viewerSettings.getBoolean("stopOnError");
-        }
-
-        private void saveSettings() {
-            IDialogSettings viewerSettings = ResultSetUtils.getViewerSettings(SETTINGS_SECTION_REFRESH);
-            viewerSettings.put("interval", refreshInterval);
-            viewerSettings.put("stopOnError", stopOnError);
-        }
-    }
-
-/*
+    /*
     public static void openNewDataEditor(DBNDatabaseNode targetNode, DBDDataFilter newFilter) {
         IEditorPart entityEditor = NavigatorHandlerObjectOpen.openEntityEditor(
             targetNode,

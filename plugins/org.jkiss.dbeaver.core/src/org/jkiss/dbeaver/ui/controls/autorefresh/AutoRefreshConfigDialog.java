@@ -14,34 +14,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.controls.resultset;
+package org.jkiss.dbeaver.ui.controls.autorefresh;
 
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Spinner;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 
-class AutoRefreshConfigDialog extends BaseDialog {
+public class AutoRefreshConfigDialog extends BaseDialog {
 
     private static final String DIALOG_ID = "DBeaver.AutoRefreshConfigDialog";//$NON-NLS-1$
 
-    private final ResultSetViewer resultSetViewer;
-    private ResultSetViewer.RefreshSettings refreshSettings;
+    private RefreshSettings refreshSettings;
 
-    AutoRefreshConfigDialog(ResultSetViewer resultSetViewer) {
-        super(resultSetViewer.getControl().getShell(), "Auto-refresh configuration", UIIcon.RS_SCHED_START);
-        this.resultSetViewer = resultSetViewer;
-        this.refreshSettings = new ResultSetViewer.RefreshSettings(resultSetViewer.getRefreshSettings());
+    AutoRefreshConfigDialog(Shell parentShell, RefreshSettings settings) {
+        super(parentShell, "Auto-refresh configuration", UIIcon.RS_SCHED_START);
+        this.refreshSettings = new RefreshSettings(settings);
     }
 
-    ResultSetViewer.RefreshSettings getRefreshSettings() {
+    public RefreshSettings getRefreshSettings() {
         return refreshSettings;
     }
 
@@ -56,18 +51,18 @@ class AutoRefreshConfigDialog extends BaseDialog {
         Composite composite = super.createDialogArea(parent);
 
         Group settingsGroup = UIUtils.createControlGroup(composite, "Settings", 2, GridData.FILL_BOTH, 0);
-        final Spinner intervalSpinner = UIUtils.createLabelSpinner(settingsGroup, "Interval (sec)", "Auto-refresh interval in seconds", refreshSettings.refreshInterval, 0, Integer.MAX_VALUE);
+        final Spinner intervalSpinner = UIUtils.createLabelSpinner(settingsGroup, "Interval (sec)", "Auto-refresh interval in seconds", refreshSettings.getRefreshInterval(), 0, Integer.MAX_VALUE);
         intervalSpinner.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                refreshSettings.refreshInterval = intervalSpinner.getSelection();
+                refreshSettings.setRefreshInterval(intervalSpinner.getSelection());
             }
         });
-        final Button stopOnErrorCheck = UIUtils.createCheckbox(settingsGroup, "Stop on error", "Stop auto-refresh if error happens", refreshSettings.stopOnError, 2);
+        final Button stopOnErrorCheck = UIUtils.createCheckbox(settingsGroup, "Stop on error", "Stop auto-refresh if error happens", refreshSettings.isStopOnError(), 2);
         stopOnErrorCheck.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                refreshSettings.stopOnError = stopOnErrorCheck.getSelection();
+                refreshSettings.setStopOnError(stopOnErrorCheck.getSelection());
             }
         });
 
