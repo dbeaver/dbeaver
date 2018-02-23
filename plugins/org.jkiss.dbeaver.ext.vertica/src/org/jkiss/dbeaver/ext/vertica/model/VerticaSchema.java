@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructLookupCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -55,6 +56,7 @@ public class VerticaSchema extends GenericSchema implements DBPSystemObject
     };
 
     final ProjectionCache projectionCache = new ProjectionCache();
+    final UDFCache udfCache = new UDFCache();
 
     public VerticaSchema(GenericDataSource dataSource, GenericCatalog catalog, String schemaName) {
         super(dataSource, catalog, schemaName);
@@ -78,6 +80,11 @@ public class VerticaSchema extends GenericSchema implements DBPSystemObject
     @Association
     public Collection<VerticaProjection> getProjections(DBRProgressMonitor monitor) throws DBException {
         return projectionCache.getAllObjects(monitor, this);
+    }
+
+    @Association
+    public Collection<VerticaUDF> getUserDefinedFunctions(DBRProgressMonitor monitor) throws DBException {
+        return udfCache.getAllObjects(monitor, this);
     }
 
     @Override
@@ -131,6 +138,35 @@ public class VerticaSchema extends GenericSchema implements DBPSystemObject
             throws SQLException, DBException
         {
             return new VerticaProjectionColumn(table, dbResult);
+        }
+
+    }
+
+    public class UDFCache extends JDBCObjectLookupCache<VerticaSchema, VerticaUDF> {
+
+        UDFCache()
+        {
+            super();
+            setListOrderComparator(DBUtils.nameComparator());
+        }
+
+        @NotNull
+        @Override
+        public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull VerticaSchema schema, @Nullable VerticaUDF object, @Nullable String objectName) throws SQLException {
+            final JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT * FROM v_catalog.user_functions WHERE schema_schema=?" +
+                    (object == null && objectName == null ? "" : " AND function_name=?")
+            );
+            dbStat.setString(1, schema.getName());
+            if (object != null || objectName != null) dbStat.setString(2, object != null ? object.getName() : objectName);
+            return dbStat;
+        }
+
+        @Override
+        protected VerticaUDF fetchObject(@NotNull JDBCSession session, @NotNull VerticaSchema owner, @NotNull JDBCResultSet dbResult)
+            throws SQLException, DBException
+        {
+            return new VerticaUDF(VerticaSchema.this, dbResult);
         }
 
     }
