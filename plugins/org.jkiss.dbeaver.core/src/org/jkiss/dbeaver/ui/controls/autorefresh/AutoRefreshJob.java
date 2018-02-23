@@ -14,26 +14,35 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.controls.resultset;
+package org.jkiss.dbeaver.ui.controls.autorefresh;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
-class AutoRefreshJob extends AbstractJob {
+import java.lang.reflect.InvocationTargetException;
 
-    private final ResultSetViewer viewer;
+public class AutoRefreshJob extends AbstractJob {
 
-    AutoRefreshJob(ResultSetViewer viewer) {
-        super("Auto-refresh job");
-        this.viewer = viewer;
+    private final AutoRefreshControl refreshControl;
+
+    AutoRefreshJob(AutoRefreshControl refreshControl) {
+        super("Auto-refresh job (" + refreshControl.getControlId() + ")");
+        this.refreshControl = refreshControl;
     }
 
     @Override
     protected IStatus run(DBRProgressMonitor monitor) {
-        if (!monitor.isCanceled() && viewer.isAutoRefreshEnabled()) {
-            viewer.refreshData(null);
+        if (!monitor.isCanceled() && refreshControl.isAutoRefreshEnabled()) {
+            try {
+                refreshControl.getRunnable().run(monitor);
+            } catch (InvocationTargetException e) {
+                return GeneralUtils.makeErrorStatus("Auto-refresh error", e.getTargetException());
+            } catch (InterruptedException e) {
+                // ignore
+            }
         }
         return Status.OK_STATUS;
     }
