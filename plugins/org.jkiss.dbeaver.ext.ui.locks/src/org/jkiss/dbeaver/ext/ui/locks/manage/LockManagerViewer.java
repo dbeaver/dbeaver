@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.model.admin.locks.DBAServerLockManager;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.autorefresh.AutoRefreshControl;
 
 /**
  * LockManagerViewer
@@ -59,18 +60,20 @@ public class LockManagerViewer {
     private LockTableDetail blockingTable;
     private Label blockedLabel;
     private Label blockingLabel;
-    private DBAServerLock<?> curLock;
-    private LockGraphManager<?, ?> graphManager;
+    private DBAServerLock curLock;
+    private LockGraphManager graphManager;
     private LockGraphicalView gv;
 
+    //private AutoRefreshControl refreshControl;
+
     @SuppressWarnings("unused")
-    private final DBAServerLockManager<DBAServerLock<?>, DBAServerLockItem> lockManager;
+    private final DBAServerLockManager<DBAServerLock, DBAServerLockItem> lockManager;
 
     private Action killAction = new Action("Kill waiting session", UIUtils.getShardImageDescriptor(ISharedImages.IMG_ELCL_STOP)) {
         @Override
         public void run() {
         	if (curLock != null) {
-                DBAServerLock<?> root = graphManager.getGraph(curLock).getLockRoot();
+                DBAServerLock root = graphManager.getGraph(curLock).getLockRoot();
                 alterSession();
                 refreshLocks(root);
                 setTableLockSelect(root);        		
@@ -79,7 +82,7 @@ public class LockManagerViewer {
     };
 
 
-    public LockGraphManager<?, ?> getGraphManager() {
+    public LockGraphManager getGraphManager() {
         return graphManager;
     }
 
@@ -88,10 +91,10 @@ public class LockManagerViewer {
         UIUtils.dispose(boldFont);
     }
 
-    protected LockManagerViewer(IWorkbenchPart part, Composite parent, final DBAServerLockManager<DBAServerLock<?>, DBAServerLockItem> lockManager) {
+    protected LockManagerViewer(IWorkbenchPart part, Composite parent, final DBAServerLockManager<DBAServerLock, DBAServerLockItem> lockManager) {
 
 
-        this.graphManager = (LockGraphManager<?, ?>) lockManager;
+        this.graphManager = (LockGraphManager) lockManager;
 
         boldFont = UIUtils.makeBoldFont(parent.getFont());
         Composite composite = UIUtils.createPlaceholder(parent, 1);
@@ -144,12 +147,12 @@ public class LockManagerViewer {
 
     }
 
-    protected void onLockSelect(DBAServerLock<?> lock) {
+    protected void onLockSelect(DBAServerLock lock) {
         curLock = lock;
         refreshGraph(curLock);
     }
 
-    public void setTableLockSelect(DBAServerLock<?> lock) {
+    public void setTableLockSelect(DBAServerLock lock) {
         ColumnViewer itemsViewer = lockTable.getItemsViewer();
         itemsViewer.getControl().setRedraw(false);
         try {
@@ -160,7 +163,7 @@ public class LockManagerViewer {
         curLock = lock;
     }
 
-    protected void contributeToToolbar(DBAServerLockManager<DBAServerLock<?>, DBAServerLockItem> sessionManager, IContributionManager contributionManager) {
+    protected void contributeToToolbar(DBAServerLockManager<DBAServerLock, DBAServerLockItem> sessionManager, IContributionManager contributionManager) {
 
     }
 
@@ -168,20 +171,20 @@ public class LockManagerViewer {
         return killAction;
     }
 
-    private DBAServerLock<?> getSelectedLock() {
+    private DBAServerLock getSelectedLock() {
         ISelection selection = lockTable.getSelectionProvider().getSelection();
         if (selection instanceof IStructuredSelection && !selection.isEmpty()) {
-            return (DBAServerLock<?>) ((IStructuredSelection) selection).getFirstElement();
+            return (DBAServerLock) ((IStructuredSelection) selection).getFirstElement();
         } else {
             return null;
         }
     }
 
-    private void refreshGraph(DBAServerLock<?> selected) {
+    private void refreshGraph(DBAServerLock selected) {
         gv.drawGraf(selected);
     }
 
-    public void refreshLocks(DBAServerLock<?> selected) {
+    public void refreshLocks(DBAServerLock selected) {
         lockTable.loadData(false);
         gv.drawGraf(selected);
 
@@ -221,16 +224,16 @@ public class LockManagerViewer {
 
     private class LockListControl extends LockTable {
 
-        private Class<DBAServerLock<?>> locksType;
+        private Class<DBAServerLock> locksType;
 
-        LockListControl(SashForm sash, IWorkbenchSite site, DBAServerLockManager<DBAServerLock<?>, DBAServerLockItem> lockManager, Class<DBAServerLock<?>> locksType) {
+        LockListControl(SashForm sash, IWorkbenchSite site, DBAServerLockManager<DBAServerLock, DBAServerLockItem> lockManager, Class<DBAServerLock> locksType) {
             super(sash, SWT.SHEET, site, lockManager);
             this.locksType = locksType;
         }
 
         @Nullable
         @Override
-        protected Class<?>[] getListBaseTypes(Collection<DBAServerLock<?>> items) {
+        protected Class[] getListBaseTypes(Collection<DBAServerLock> items) {
             return new Class[] { locksType };
         }
 

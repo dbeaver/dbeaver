@@ -31,33 +31,34 @@ import org.jkiss.dbeaver.model.admin.locks.DBAServerLockItem;
 import org.jkiss.dbeaver.model.admin.locks.DBAServerLockManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 
-public class OracleLockEditor extends AbstractLockEditor{
-	
-	   public static final String sidHold = "hsid";
-	   public static final String sidWait = "wsid"; 
+public class OracleLockEditor extends AbstractLockEditor {
 
-	@Override
-	protected LockManagerViewer createLockViewer(DBCExecutionContext executionContext, Composite parent)
-	{
-		
-	    DBAServerLockManager<DBAServerLock<?>, DBAServerLockItem> lockManager = (DBAServerLockManager) new OracleLockManager((OracleDataSource) executionContext.getDataSource());
-		
-		return new LockManagerViewer(this, parent, lockManager) {
-			   @Override
-	            protected void contributeToToolbar(DBAServerLockManager<DBAServerLock<?>, DBAServerLockItem> sessionManager, IContributionManager contributionManager)
-	            {
-	                contributionManager.add(new Separator());
-	            }
-	            @Override
-	            protected void onLockSelect(final DBAServerLock<?> lock)
-	            {
-	                super.onLockSelect(lock);
-	                if (lock != null ) {
-	                	final OracleLock pLock = (OracleLock) lock;
-	                	super.refreshDetail( new HashMap<String, Object>() {{ put(sidHold,new Integer(pLock.getHold_sid()));put(sidWait,new Integer(pLock.getWait_sid())); }});
-	                }
-	            }	
-		};
-	}
+    public static final String sidHold = "hsid";
+    public static final String sidWait = "wsid";
+
+    @Override
+    protected LockManagerViewer createLockViewer(DBCExecutionContext executionContext, Composite parent) {
+
+        DBAServerLockManager<DBAServerLock, DBAServerLockItem> lockManager = (DBAServerLockManager) new OracleLockManager((OracleDataSource) executionContext.getDataSource());
+
+        return new LockManagerViewer(this, parent, lockManager) {
+            @Override
+            protected void contributeToToolbar(DBAServerLockManager<DBAServerLock, DBAServerLockItem> sessionManager, IContributionManager contributionManager) {
+                contributionManager.add(new Separator());
+            }
+
+            @Override
+            protected void onLockSelect(final DBAServerLock lock) {
+                super.onLockSelect(lock);
+                if (lock != null) {
+                    final OracleLock pLock = (OracleLock) lock;
+                    super.refreshDetail(new HashMap<String, Object>() {{
+                        put(sidHold, pLock.getHold_sid());
+                        put(sidWait, pLock.getWait_sid());
+                    }});
+                }
+            }
+        };
+    }
 
 }
