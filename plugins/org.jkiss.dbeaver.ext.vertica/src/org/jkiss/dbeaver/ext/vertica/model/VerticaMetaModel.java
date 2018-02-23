@@ -64,6 +64,31 @@ public class VerticaMetaModel extends GenericMetaModel implements DBCQueryTransf
     }
 
     @Override
+    public JDBCStatement prepareTableLoadStatement(JDBCSession session, GenericStructContainer owner, GenericTable object, String objectName) throws SQLException {
+        if (owner.getName().startsWith("v_")) {
+            return super.prepareTableLoadStatement(session, owner, object, objectName);
+        }
+        JDBCPreparedStatement dbStat = session.prepareStatement(
+        "SELECT tv.*,c.comment FROM (\n" +
+            "SELECT NULL as TABLE_CAT, t.table_schema as TABLE_SCHEM, t.table_name as TABLE_NAME, (CASE t.is_flextable WHEN true THEN 'FLEXTABLE' ELSE 'TABLE' END) as TABLE_TYPE, NULL as TYPE_CAT,\n" +
+            "\tt.owner_name, t.table_definition as DEFINITION \n" +
+            "FROM v_catalog.tables t\n" +
+            "UNION ALL\n" +
+            "SELECT NULL as TABLE_CAT, v.table_schema as TABLE_SCHEM, v.table_name as TABLE_NAME, 'VIEW' as TABLE_TYPE, NULL as TYPE_CAT,\n" +
+            "\tv.owner_name, v.view_definition as DEFINITION \n" +
+            "FROM v_catalog.views v) tv\n" +
+            "LEFT OUTER JOIN v_catalog.comments c ON c.object_type = tv.TABLE_TYPE AND c.object_schema = tv.table_schem AND c.object_name = tv.table_name \n" +
+            "WHERE tv.table_schem=?" +
+                (object == null && objectName == null ? "" : " AND tv.table_name LIKE ?") + "\n" +
+            "ORDER BY 2, 3");
+        dbStat.setString(1, owner.getName());
+        if (object != null || objectName != null) {
+            dbStat.setString(2, object != null ? object.getName() : objectName);
+        }
+        return dbStat;
+    }
+
+    @Override
     public GenericTable createTableImpl(GenericStructContainer container, String tableName, String tableType, JDBCResultSet dbResult) {
         return new VerticaTable(container, tableName, tableType, dbResult);
     }
@@ -100,11 +125,6 @@ public class VerticaMetaModel extends GenericMetaModel implements DBCQueryTransf
         } catch (SQLException e) {
             throw new DBException(e, dataSource);
         }
-    }
-
-    @Override
-    public JDBCStatement prepareTableLoadStatement(JDBCSession session, GenericStructContainer owner, GenericTable object, String objectName) throws SQLException {
-        return super.prepareTableLoadStatement(session, owner, object, objectName);
     }
 
     @Override

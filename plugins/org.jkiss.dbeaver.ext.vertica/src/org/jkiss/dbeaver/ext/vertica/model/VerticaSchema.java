@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericCatalog;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
+import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.model.DBPSystemObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -35,7 +36,9 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.ArrayUtils;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 /**
  * VerticaSchema
@@ -55,6 +58,21 @@ public class VerticaSchema extends GenericSchema implements DBPSystemObject
 
     public VerticaSchema(GenericDataSource dataSource, GenericCatalog catalog, String schemaName) {
         super(dataSource, catalog, schemaName);
+    }
+
+    @Association
+    public Collection<GenericTable> getFlexTables(DBRProgressMonitor monitor) throws DBException {
+        Collection<GenericTable> tables = getTables(monitor);
+        if (tables != null) {
+            List<GenericTable> filtered = new ArrayList<>();
+            for (GenericTable table : tables) {
+                if (table instanceof VerticaTable && ((VerticaTable) table).isFlexTable()) {
+                    filtered.add(table);
+                }
+            }
+            return filtered;
+        }
+        return null;
     }
 
     @Association
