@@ -334,14 +334,19 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
 
             // select the first item
             final Table table = columnsTableViewer.getTable();
-            table.select(0);
-            // and notify the listeners
-            Event event = new Event();
-            event.widget = table;
-            event.display = table.getDisplay();
-            event.item = table.getItem(0);
-            event.type = SWT.Selection;
-            table.notifyListeners(SWT.Selection, event);
+            if (table.getItemCount() > 0) {
+                table.select(0);
+                // and notify the listeners
+                Event event = new Event();
+                event.widget = table;
+                event.display = table.getDisplay();
+                event.item = table.getItem(0);
+                event.type = SWT.Selection;
+                table.notifyListeners(SWT.Selection, event);
+            } else {
+                noGeneratorInfoLabel.setText("No attributes in the table");
+                noGeneratorInfoLabel.setVisible(true);
+            }
         } catch (DBException e) {
             e.printStackTrace();
         }

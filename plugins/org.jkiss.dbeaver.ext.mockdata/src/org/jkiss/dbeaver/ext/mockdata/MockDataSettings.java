@@ -97,6 +97,10 @@ public class MockDataSettings {
         }
     }
 
+    public DBSEntity getDbsEntity() {
+        return dbsEntity;
+    }
+
     public Collection<DBSAttributeBase> getAttributes() {
         return attributes;
     }
