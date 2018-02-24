@@ -142,11 +142,10 @@ public class PostgreDebugController extends DBGBaseController {
     public void attachSession(DBGSession session, DBCExecutionContext sessionContext, Map<String, Object> configuration, DBRProgressMonitor monitor) throws DBException {
         PostgreDebugSession pgSession = (PostgreDebugSession) session;
         JDBCExecutionContext sessionJdbc = (JDBCExecutionContext) sessionContext;
-        //FIXME -1 - target PID (-1 for ANY PID)
         int oid = Integer.parseInt(String.valueOf(configuration.get(PROCEDURE_OID)));
-        int pid = Integer.parseInt(String.valueOf(configuration.get(PROCESS_ID)));
+        int pid = Integer.parseInt(String.valueOf(configuration.get(ATTACH_PROCESS)));
         boolean global = configuration.get(ATTACH_KIND) == PostgreDebugAttachKind.LOCAL; //FIXME Only local now
-        String call = (String) configuration.get(PROCEDURE_CALL); 
+        String call = (String) configuration.get(SCRIPT_TEXT); 
         pgSession.attach(sessionJdbc, oid, pid,global,call);
         //DBPDataSource dataSource = sessionContext.getDataSource();
         //executeProcedure(dataSource, configuration, monitor);
