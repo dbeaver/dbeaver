@@ -134,9 +134,6 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         for (IWizardPage page : pages) {
             addPage(null, page, maxSize);
         }
-//        gd = (GridData) pageArea.getLayoutData();
-//        gd.widthHint = 500;
-//        gd.heightHint = 400;
 
         pagesTree.addSelectionListener(new SelectionAdapter() {
             @Override
