@@ -63,10 +63,11 @@ public abstract class DatabaseLaunchDelegate extends LaunchConfigurationDelegate
         attributes.put(DBGController.SCHEMA_NAME, DebugCore.extractSchemaName(configuration));
         attributes.put(DBGController.PROCEDURE_OID, DebugCore.extractProcedureOid(configuration));
         attributes.put(DBGController.PROCEDURE_NAME, DebugCore.extractProcedureName(configuration));
-        attributes.put(DBGController.PROCEDURE_CALL, DebugCore.extractProcedureCall(configuration));
-        //FIXME:AF:extract from launch configuration
-        //FIXME -1 - target PID (-1 for ANY PID)
-        attributes.put(DBGController.PROCESS_ID, -1);
+
+        attributes.put(DBGController.ATTACH_PROCESS, DebugCore.extractAttachProcess(configuration));
+        attributes.put(DBGController.ATTACH_KIND, DebugCore.extractAttachKind(configuration));
+        attributes.put(DBGController.SCRIPT_EXECUTE, DebugCore.extractScriptExecute(configuration));
+        attributes.put(DBGController.SCRIPT_TEXT, DebugCore.extractScriptText(configuration));
         //Well, put it all for now
         attributes.putAll(configuration.getAttributes());
         return attributes;
