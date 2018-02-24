@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.debug.ui;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
+import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
@@ -29,303 +30,286 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.Widget;
 import org.eclipse.ui.PlatformUI;
+import org.jkiss.dbeaver.debug.DBGController;
 import org.jkiss.dbeaver.debug.core.DebugCore;
 import org.jkiss.dbeaver.debug.internal.ui.DebugUIMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
+import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 public class DatabaseTab extends AbstractLaunchConfigurationTab {
 
-	private static final String GLOBAL = "Global";
-	private static final String LOCAL = "Local";
-	private Text driverText;
-	private Text datasourceText;
-	private Text databaseText;
-	private Text schemaText;
-	private Text oidText;
-	private Text nameText;
-	private Text callText;
-	// private GridData labelsGD;
-	// private GridData fieldsGD;
-	// private GridData multiFieldsGD;
+    private Text driverText;
+    private Text datasourceText;
+    private Text databaseText;
+    private Text schemaText;
+    private Text oidText;
+    private Text nameText;
 
-	/**
-	 * Modify listener that simply updates the owning launch configuration dialog.
-	 */
-	protected ModifyListener modifyListener = new ModifyListener() {
-		@Override
-		public void modifyText(ModifyEvent evt) {
-			scheduleUpdateJob();
-		}
-	};
+    private Button attachLocal;
+    private Button attachGlobal;
+    private Text processText;
+    private Button scriptExecute;
+    private Text scriptText;
 
-	@Override
-	public void createControl(Composite parent) {
-		Composite comp = new Composite(parent, SWT.NONE);
-		setControl(comp);
-		PlatformUI.getWorkbench().getHelpSystem().setHelp(getControl(), getHelpContextId());
-		comp.setLayout(new GridLayout(1, true));
-		comp.setFont(parent.getFont());
+    /**
+     * Modify listener that simply updates the owning launch configuration
+     * dialog.
+     */
+    protected ModifyListener modifyListener = new ModifyListener() {
+        @Override
+        public void modifyText(ModifyEvent evt) {
+            scheduleUpdateJob();
+        }
+    };
 
-		createComponents(comp);
-	}
+    @Override
+    public void createControl(Composite parent) {
+        Composite comp = new Composite(parent, SWT.NONE);
+        setControl(comp);
+        PlatformUI.getWorkbench().getHelpSystem().setHelp(getControl(), getHelpContextId());
+        comp.setLayout(new GridLayout(1, true));
+        comp.setFont(parent.getFont());
 
-	protected void createComponents(Composite comp) {
+        createComponents(comp);
+    }
 
-		createConnectionSettingsGroup(comp);
-		createDatabaseSettingsGroup(comp);
-		createAdditionalSettingsGroup(comp);
+    protected void createComponents(Composite comp) {
+        createConnectionSettingsGroup(comp);
+        createDatabaseSettingsGroup(comp);
+        createAttachSettingsGroup(comp);
+    }
 
-	}
+    protected void createConnectionSettingsGroup(Composite composite) {
+        String groupText = DebugUIMessages.DatabaseTab_connection_group_text;
+        Group group = UIUtils.createControlGroup(composite, groupText, 2, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
+        {
+            String label = DebugUIMessages.DatabaseTab_driver_label_text;
+            String value = DebugCore.ATTR_DRIVER_ID_DEFAULT;
+            driverText = UIUtils.createLabelText(group, label, value, SWT.READ_ONLY);
+        }
+        {
+            String label = DebugUIMessages.DatabaseTab_datasource_label_text;
+            String value = DebugCore.ATTR_DATASOURCE_ID_DEFAULT;
+            datasourceText = UIUtils.createLabelText(group, label, value, SWT.READ_ONLY);
+        }
+    }
 
-	protected void createConnectionSettingsGroup(Composite comp) {
-		Group connectionSettingsGroup = UIUtils.createControlGroup(comp, DebugUIMessages.DatabaseTab_driver_group_text,
-				2, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
+    protected void createDatabaseSettingsGroup(Composite composite) {
+        String groupLabel = DebugUIMessages.DatabaseTab_procedure_group_text;
+        Group group = UIUtils.createControlGroup(composite, groupLabel, 2, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
+        {
+            String label = DebugUIMessages.DatabaseTab_database_label_text;
+            String value = DebugCore.ATTR_DATABASE_NAME_DEFAULT;
+            databaseText = UIUtils.createLabelText(group, label, value, SWT.READ_ONLY);
+        }
+        {
+            String label = DebugUIMessages.DatabaseTab_schema_label_text;
+            String value = DebugCore.ATTR_SCHEMA_NAME_DEFAULT;
+            schemaText = UIUtils.createLabelText(group, label, value, SWT.READ_ONLY);
+        }
+        {
+            String label = DebugUIMessages.DatabaseTab_oid_label_text;
+            String value = DebugCore.ATTR_PROCEDURE_OID_DEFAULT;
+            oidText = UIUtils.createLabelText(group, label, value, SWT.READ_ONLY);
+        }
+        {
+            String label = DebugUIMessages.DatabaseTab_name_label_text;
+            String value = DebugCore.ATTR_PROCEDURE_NAME_DEFAULT;
+            nameText = UIUtils.createLabelText(group, label, value, SWT.READ_ONLY);
+        }
+    }
 
-		// Driver
-		createLabel(connectionSettingsGroup, DebugUIMessages.DatabaseTab_driver_label_text,
-				GridFactory.createLayoutLabelData());
-		driverText = createTextField(driverText, SWT.BORDER, connectionSettingsGroup, DebugCore.ATTR_DRIVER_ID_DEFAULT,
-				GridFactory.createLayoutTextData(), false);
+    protected void createAttachSettingsGroup(Composite composite) {
+        String groupLabel = DebugUIMessages.DatabaseTab_attach_group_text;
+        Group group = UIUtils.createControlGroup(composite, groupLabel, 2, GridData.FILL_HORIZONTAL | GridData.FILL_VERTICAL | GridData.GRAB_VERTICAL, SWT.DEFAULT);
+        group.setLayout(new GridLayout(3, false));
 
-		// DataSource
-		createLabel(connectionSettingsGroup, DebugUIMessages.DatabaseTab_datasource_group_text,
-				GridFactory.createLayoutLabelData());
-		datasourceText = createTextField(datasourceText, SWT.BORDER, connectionSettingsGroup,
-				DebugCore.ATTR_DRIVER_ID_DEFAULT, GridFactory.createLayoutTextData(), false);
+        SelectionListener attachKindListener = new SelectionAdapter() {
+            public void widgetSelected(SelectionEvent event) {
+                Object data = event.widget.getData();
+                String attachKind = String.valueOf(data);
+                handleAttachKind(attachKind);
+            };
+        };
+        
+        processText = UIUtils.createLabelText(group, "Process ID", DebugCore.ATTR_ATTACH_PROCESS_DEFAULT, SWT.READ_ONLY, GridDataFactory.swtDefaults().span(2, 1).create());
 
-	}
+        attachLocal = new Button(group, SWT.RADIO);
+        attachLocal.setData(DBGController.ATTACH_KIND_LOCAL);
+        attachLocal.setText("Local");
+        attachLocal.addSelectionListener(attachKindListener);
+        attachLocal.setLayoutData(GridDataFactory.swtDefaults().span(1, 1).create());
 
-	protected void createDatabaseSettingsGroup(Composite comp) {
-		Group databaseSettingsGroup = UIUtils.createControlGroup(comp, DebugUIMessages.DatabaseTab_database_group_text,
-				2, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
+        attachGlobal = new Button(group, SWT.RADIO);
+        attachGlobal.setData(DBGController.ATTACH_KIND_GLOBAL);
+        attachGlobal.setText("Global");
+        attachGlobal.addSelectionListener(attachKindListener);
+        attachGlobal.setLayoutData(GridDataFactory.swtDefaults().span(1, 1).create());
 
-		// Database
-		createLabel(databaseSettingsGroup, DebugUIMessages.DatabaseTab_database_label_text,
-				GridFactory.createLayoutLabelData());
-		databaseText = createTextField(databaseText, SWT.BORDER, databaseSettingsGroup,
-				DebugCore.ATTR_DATABASE_NAME_DEFAULT, GridFactory.createLayoutTextData(), false);
+        scriptExecute = new Button(group, SWT.CHECK);
+        scriptExecute.setText(DebugUIMessages.DatabaseTab_script_execute_text);
+        scriptExecute.setLayoutData(GridDataFactory.swtDefaults().span(2, 1).create());
 
-		// Schema
-		createLabel(databaseSettingsGroup, DebugUIMessages.DatabaseTab_schema_label_text,
-				GridFactory.createLayoutLabelData());
-		schemaText = createTextField(schemaText, SWT.BORDER, databaseSettingsGroup, DebugCore.ATTR_SCHEMA_NAME_DEFAULT,
-				GridFactory.createLayoutTextData(), false);
+        scriptText = new Text(group, SWT.MULTI);
+        scriptText.setLayoutData(GridDataFactory.fillDefaults().span(3, 1).grab(true, true).create());
+    }
 
-		// Oid
-		createLabel(databaseSettingsGroup, DebugUIMessages.DatabaseTab_oid_label_text,
-				GridFactory.createLayoutLabelData());
-		oidText = createTextField(oidText, SWT.BORDER, databaseSettingsGroup, DebugCore.ATTR_PROCEDURE_OID_DEFAULT,
-				GridFactory.createLayoutTextData(), false);
+    @Override
+    public void setDefaults(ILaunchConfigurationWorkingCopy configuration) {
+        configuration.setAttribute(DebugCore.ATTR_DRIVER_ID, DebugCore.ATTR_DRIVER_ID_DEFAULT);
+        configuration.setAttribute(DebugCore.ATTR_DATASOURCE_ID, DebugCore.ATTR_DATASOURCE_ID_DEFAULT);
+        configuration.setAttribute(DebugCore.ATTR_DATABASE_NAME, DebugCore.ATTR_DATABASE_NAME_DEFAULT);
+        configuration.setAttribute(DebugCore.ATTR_SCHEMA_NAME, DebugCore.ATTR_SCHEMA_NAME_DEFAULT);
+        configuration.setAttribute(DebugCore.ATTR_PROCEDURE_OID, DebugCore.ATTR_PROCEDURE_OID_DEFAULT);
+        configuration.setAttribute(DebugCore.ATTR_PROCEDURE_NAME, DebugCore.ATTR_PROCEDURE_NAME_DEFAULT);
+        configuration.setAttribute(DebugCore.ATTR_ATTACH_PROCESS, DebugCore.ATTR_ATTACH_PROCESS_DEFAULT);
+        configuration.setAttribute(DebugCore.ATTR_ATTACH_KIND, DebugCore.ATTR_ATTACH_KIND_DEFAULT);
+        configuration.setAttribute(DebugCore.ATTR_SCRIPT_EXECUTE, DebugCore.ATTR_SCRIPT_EXECUTE_DEFAULT);
+        configuration.setAttribute(DebugCore.ATTR_SCRIPT_TEXT, DebugCore.ATTR_SCRIPT_TEXT_DEFAULT);
+    }
 
-	}
+    @Override
+    public void initializeFrom(ILaunchConfiguration configuration) {
+        initializeDriver(configuration);
+        initializeDatasource(configuration);
+        initializeDatabase(configuration);
+        initializeSchema(configuration);
+        initializeOid(configuration);
+        initializeName(configuration);
+        initializeProcess(configuration);
+        initializeKind(configuration);
+        initializeExecute(configuration);
+        initializeText(configuration);
+    }
 
-	protected void createAdditionalSettingsGroup(Composite comp) {
+    protected void initializeDriver(ILaunchConfiguration configuration) {
+        String extracted = DebugCore.extractDriverId(configuration);
+        DriverDescriptor driver = DataSourceProviderRegistry.getInstance().findDriver(extracted);
+        String driverName = extracted;
+        if (driver != null) {
+            driverName = driver.getName();
+        }
+        driverText.setText(driverName);
+        driverText.setData(extracted);
+    }
 
-		Group additionalSettings = new Group(comp, SWT.BORDER);
-		additionalSettings.setLayout(new GridLayout(2, false));
-		additionalSettings.setLayoutData(new GridData(SWT.FILL, SWT.FILL, true, true));
-		additionalSettings.setText(DebugUIMessages.DatabaseTab_name_group_text);
+    protected void initializeDatasource(ILaunchConfiguration configuration) {
+        String extracted = DebugCore.extractDatasourceId(configuration);
+        String datasourceName = extracted;
+        DataSourceDescriptor dataSource = DataSourceRegistry.findDataSource(extracted);
+        if (dataSource != null) {
+            datasourceName = dataSource.getName();
+        }
+        datasourceText.setText(datasourceName);
+        datasourceText.setData(extracted);
+    }
 
-		// Name
-		createLabel(additionalSettings, DebugUIMessages.DatabaseTab_name_label_text,
-				GridFactory.createLayoutLabelData());
-		nameText = createTextField(nameText, SWT.BORDER, additionalSettings, DebugCore.ATTR_PROCEDURE_NAME_DEFAULT,
-				GridFactory.createLayoutTextData(), false);
+    protected void initializeDatabase(ILaunchConfiguration configuration) {
+        String extracted = DebugCore.extractDatabaseName(configuration);
+        databaseText.setText(extracted);
+    }
 
-		SelectionListener selectionListenerLocal = new SelectionAdapter() {
-			public void widgetSelected(SelectionEvent event) {
-				Button button = ((Button) event.widget);
-				if (button != null && !button.isDisposed()) {
-					callText.setEnabled(false);
-				}
-			};
-		};
+    protected void initializeSchema(ILaunchConfiguration configuration) {
+        String extracted = DebugCore.extractSchemaName(configuration);
+        schemaText.setText(extracted);
+    }
 
-		SelectionListener selectionListenerGlobal = new SelectionAdapter() {
-			public void widgetSelected(SelectionEvent event) {
-				Button button = ((Button) event.widget);
-				if (button != null && !button.isDisposed()) {
-					callText.setEnabled(true);
-				}
-			};
-		};
+    protected void initializeOid(ILaunchConfiguration configuration) {
+        String extracted = DebugCore.extractProcedureOid(configuration);
+        oidText.setText(extracted);
+    }
 
-		// space
-		createLabel(additionalSettings, "", GridFactory.createLayoutLabelData());
+    protected void initializeName(ILaunchConfiguration configuration) {
+        String extracted = DebugCore.extractProcedureName(configuration);
+        nameText.setText(extracted);
+    }
 
-		Group groupCall = new Group(additionalSettings, SWT.SHADOW_IN);
-		groupCall.setLayout(new GridLayout(2, false));
-		groupCall.setLayoutData(GridFactory.createLayoutRadioData());
+    protected void initializeProcess(ILaunchConfiguration configuration) {
+        String extracted = DebugCore.extractAttachProcess(configuration);
+        processText.setText(extracted);
+    }
 
-		Button btnLocal = new Button(groupCall, SWT.RADIO);
-		btnLocal.setText(LOCAL);
-		btnLocal.addSelectionListener(selectionListenerLocal);
-		btnLocal.setLayoutData(GridFactory.createLayoutTextData());
+    protected void initializeKind(ILaunchConfiguration configuration) {
+        String extracted = DebugCore.extractAttachKind(configuration);
+        if (DBGController.ATTACH_KIND_GLOBAL.equals(extracted)) {
+            attachGlobal.setSelection(true);
+        } else {
+            attachLocal.setSelection(true);
+        }
+        handleAttachKind(extracted);
+    }
 
-		Button btnGlobal = new Button(groupCall, SWT.RADIO);
-		btnGlobal.setText(GLOBAL);
-		btnGlobal.addSelectionListener(selectionListenerGlobal);
-		btnGlobal.setLayoutData(GridFactory.createLayoutTextData());
+    protected void initializeExecute(ILaunchConfiguration configuration) {
+        String extracted = DebugCore.extractScriptExecute(configuration);
+        scriptExecute.setSelection(Boolean.parseBoolean(extracted));
+    }
 
-		// Call
-		createLabel(additionalSettings, DebugUIMessages.DatabaseTab_call_label_text,
-				GridFactory.createLayoutLabelData());
-		callText = createTextField(callText, SWT.BORDER | SWT.MULTI, additionalSettings,
-				DebugCore.ATTR_PROCEDURE_CALL_DEFAULT, GridFactory.createLayoutMultiLineData(), true);
+    protected void initializeText(ILaunchConfiguration configuration) {
+        String extracted = DebugCore.extractScriptText(configuration);
+        scriptText.setText(extracted);
+    }
+    
+    void handleAttachKind(String attachKind) {
+        if (DBGController.ATTACH_KIND_GLOBAL.equals(attachKind)) {
+            scriptExecute.setEnabled(true);
+            scriptText.setEnabled(true);
+        } else {
+            scriptExecute.setEnabled(false);
+            scriptText.setEnabled(false);
+        }
+    }
 
-		btnGlobal.setSelection(true);
+    @Override
+    public Image getImage() {
+        DBPImage image = extractDriverImage();
+        if (image == null) {
+            image = DBIcon.TREE_DATABASE;
+        }
+        return DBeaverIcons.getImage(image);
+    }
 
-	}
+    protected DBPImage extractDriverImage() {
+        if (driverText == null || driverText.isDisposed()) {
+            return null;
+        }
+        String driverName = driverText.getText();
+        DriverDescriptor driver = DataSourceProviderRegistry.getInstance().findDriver(driverName);
+        if (driver == null) {
+            return null;
+        }
+        return driver.getIcon();
+    }
 
-	private Text createTextField(Text textFiled, int style, Group connectionSettingsGroup, String text,
-			GridData layoutData, boolean isEditable) {
-		textFiled = new Text(connectionSettingsGroup, style);
-		textFiled.setLayoutData(layoutData);
-		textFiled.setText(text);
-		textFiled.addModifyListener(modifyListener);
-		textFiled.setEditable(isEditable);
-		return textFiled;
-	}
+    @Override
+    public void performApply(ILaunchConfigurationWorkingCopy configuration) {
+        configuration.setAttribute(DebugCore.ATTR_DRIVER_ID, String.valueOf(driverText.getData()));
+        configuration.setAttribute(DebugCore.ATTR_DATASOURCE_ID, String.valueOf(datasourceText.getData()));
+        configuration.setAttribute(DebugCore.ATTR_DATABASE_NAME, databaseText.getText());
+        configuration.setAttribute(DebugCore.ATTR_SCHEMA_NAME, schemaText.getText());
+        configuration.setAttribute(DebugCore.ATTR_PROCEDURE_OID, oidText.getText());
+        configuration.setAttribute(DebugCore.ATTR_PROCEDURE_NAME, nameText.getText());
+        configuration.setAttribute(DebugCore.ATTR_ATTACH_PROCESS, processText.getTabs());
+        Widget kind = attachGlobal.getSelection() ? attachGlobal : attachLocal;
+        configuration.setAttribute(DebugCore.ATTR_ATTACH_KIND, String.valueOf(kind.getData()));
+        configuration.setAttribute(DebugCore.ATTR_SCRIPT_EXECUTE, String.valueOf(scriptExecute.getSelection()));
+        configuration.setAttribute(DebugCore.ATTR_SCRIPT_TEXT, scriptText.getText());
+    }
 
-	private void createLabel(Group connectionSettingsGroup, String text, GridData layoutData) {
-		Label lblDriverText = new Label(connectionSettingsGroup, SWT.BORDER);
-		lblDriverText.setText(text);
-		lblDriverText.setLayoutData(layoutData);
-	}
-
-	@Override
-	public void setDefaults(ILaunchConfigurationWorkingCopy configuration) {
-		configuration.setAttribute(DebugCore.ATTR_DRIVER_ID, DebugCore.ATTR_DRIVER_ID);
-		configuration.setAttribute(DebugCore.ATTR_DATASOURCE_ID, DebugCore.ATTR_DATASOURCE_ID_DEFAULT);
-		configuration.setAttribute(DebugCore.ATTR_DATABASE_NAME, DebugCore.ATTR_DATABASE_NAME_DEFAULT);
-		configuration.setAttribute(DebugCore.ATTR_SCHEMA_NAME, DebugCore.ATTR_SCHEMA_NAME_DEFAULT);
-		configuration.setAttribute(DebugCore.ATTR_PROCEDURE_OID, DebugCore.ATTR_PROCEDURE_OID_DEFAULT);
-		configuration.setAttribute(DebugCore.ATTR_PROCEDURE_NAME, DebugCore.ATTR_PROCEDURE_NAME_DEFAULT);
-		configuration.setAttribute(DebugCore.ATTR_PROCEDURE_CALL, DebugCore.ATTR_PROCEDURE_CALL_DEFAULT);
-	}
-
-	@Override
-	public void initializeFrom(ILaunchConfiguration configuration) {
-		initializeDriver(configuration);
-		initializeDatasource(configuration);
-		initializeDatabase(configuration);
-		initializeSchema(configuration);
-		initializeOid(configuration);
-		initializeName(configuration);
-		initializeCall(configuration);
-	}
-
-	protected void initializeDriver(ILaunchConfiguration configuration) {
-		String extracted = DebugCore.extractDriverId(configuration);
-		driverText.setText(extracted);
-	}
-
-	protected void initializeDatasource(ILaunchConfiguration configuration) {
-		String extracted = DebugCore.extractDatasourceId(configuration);
-		datasourceText.setText(extracted);
-	}
-
-	protected void initializeDatabase(ILaunchConfiguration configuration) {
-		String extracted = DebugCore.extractDatabaseName(configuration);
-		databaseText.setText(extracted);
-	}
-
-	protected void initializeSchema(ILaunchConfiguration configuration) {
-		String extracted = DebugCore.extractSchemaName(configuration);
-		schemaText.setText(extracted);
-	}
-
-	protected void initializeOid(ILaunchConfiguration configuration) {
-		String extracted = DebugCore.extractProcedureOid(configuration);
-		oidText.setText(extracted);
-	}
-
-	protected void initializeName(ILaunchConfiguration configuration) {
-		String extracted = DebugCore.extractProcedureName(configuration);
-		nameText.setText(extracted);
-	}
-
-	protected void initializeCall(ILaunchConfiguration configuration) {
-		String extracted = DebugCore.extractProcedureCall(configuration);
-		callText.setText(extracted);
-	}
-
-	@Override
-	public Image getImage() {
-		DBPImage image = extractDriverImage();
-		if (image == null) {
-			image = DBIcon.TREE_DATABASE;
-		}
-		return DBeaverIcons.getImage(image);
-	}
-
-	protected DBPImage extractDriverImage() {
-		if (driverText == null || driverText.isDisposed()) {
-			return null;
-		}
-		String driverName = driverText.getText();
-		DriverDescriptor driver = DataSourceProviderRegistry.getInstance().findDriver(driverName);
-		if (driver == null) {
-			return null;
-		}
-		return driver.getIcon();
-	}
-
-	@Override
-	public void performApply(ILaunchConfigurationWorkingCopy configuration) {
-		configuration.setAttribute(DebugCore.ATTR_DRIVER_ID, driverText.getText());
-		configuration.setAttribute(DebugCore.ATTR_DATASOURCE_ID, datasourceText.getText());
-		configuration.setAttribute(DebugCore.ATTR_DATABASE_NAME, databaseText.getText());
-		configuration.setAttribute(DebugCore.ATTR_SCHEMA_NAME, schemaText.getText());
-		configuration.setAttribute(DebugCore.ATTR_PROCEDURE_OID, oidText.getText());
-		configuration.setAttribute(DebugCore.ATTR_PROCEDURE_NAME, nameText.getText());
-		configuration.setAttribute(DebugCore.ATTR_PROCEDURE_CALL, callText.getText());
-	}
-
-	@Override
-	public String getName() {
-		return DebugUIMessages.DatabaseTab_name;
-	}
-
-	static class GridFactory {
-		private static final int DEFAULT_WIDTH = 80;
-		private static final int DEFAULT_MULTI_HEIGHT = 60;
-		private static final int DEFAULT_HEIGHT = 20;
-
-		public static GridData createLayoutLabelData() {
-			GridData layoutData = new GridData(SWT.FILL, SWT.FILL, false, false, 1, 1);
-			layoutData.widthHint = DEFAULT_WIDTH;
-			return layoutData;
-		}
-
-		public static GridData createLayoutTextData() {
-			GridData layoutData = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-			layoutData.minimumHeight = DEFAULT_HEIGHT;
-			return layoutData;
-		}
-
-		public static GridData createLayoutMultiLineData() {
-			GridData layoutData = new GridData(SWT.FILL, SWT.FILL, true, true, 1, 1);
-			return layoutData;
-		}
-
-		public static GridData createLayoutRadioData() {
-			GridData layoutData = new GridData(SWT.FILL, SWT.FILL, true, false, 1, 1);
-			return layoutData;
-		}
-
-	}
+    @Override
+    public String getName() {
+        return DebugUIMessages.DatabaseTab_name;
+    }
 
 }

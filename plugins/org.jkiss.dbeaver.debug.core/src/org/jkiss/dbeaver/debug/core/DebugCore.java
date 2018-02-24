@@ -80,8 +80,17 @@ public class DebugCore {
     public static final String ATTR_PROCEDURE_NAME = BUNDLE_SYMBOLIC_NAME + '.' + "ATTR_PROCEDURE_NAME"; //$NON-NLS-1$
     public static final String ATTR_PROCEDURE_NAME_DEFAULT = ""; //$NON-NLS-1$
 
-    public static final String ATTR_PROCEDURE_CALL = BUNDLE_SYMBOLIC_NAME + '.' + "ATTR_PROCEDURE_CALL"; //$NON-NLS-1$
-    public static final String ATTR_PROCEDURE_CALL_DEFAULT = ""; //$NON-NLS-1$
+    public static final String ATTR_ATTACH_PROCESS = BUNDLE_SYMBOLIC_NAME + '.' + "ATTACH_PROCESS"; //$NON-NLS-1$
+    public static final String ATTR_ATTACH_PROCESS_DEFAULT = DBGController.ATTACH_PROCESS_ANY;
+
+    public static final String ATTR_ATTACH_KIND = BUNDLE_SYMBOLIC_NAME + '.' + "ATTR_ATTACH_KIND"; //$NON-NLS-1$
+    public static final String ATTR_ATTACH_KIND_DEFAULT = DBGController.ATTACH_KIND_LOCAL;
+
+    public static final String ATTR_SCRIPT_EXECUTE = BUNDLE_SYMBOLIC_NAME + '.' + "ATTR_SCRIPT_EXECUTE"; //$NON-NLS-1$
+    public static final String ATTR_SCRIPT_EXECUTE_DEFAULT = Boolean.FALSE.toString();
+
+    public static final String ATTR_SCRIPT_TEXT = BUNDLE_SYMBOLIC_NAME + '.' + "ATTR_SCRIPT_TEXT"; //$NON-NLS-1$
+    public static final String ATTR_SCRIPT_TEXT_DEFAULT = ""; //$NON-NLS-1$
 
     public static final String ATTR_NODE_PATH = BUNDLE_SYMBOLIC_NAME + '.' + "ATTR_NODE_PATH"; //$NON-NLS-1$
     public static final String ATTR_NODE_PATH_DEFAULT = ""; //$NON-NLS-1$
@@ -119,13 +128,13 @@ public class DebugCore {
         return call;
     }
 
-    public static String composeProcedureCall(DBSProcedure procedure) {
+    public static String composeScriptText(DBSProcedure procedure) {
         try {
             return composeProcedureCall(procedure, new VoidProgressMonitor());
         } catch (DBException e) {
             String message = NLS.bind("Failed to compose call for {0}", procedure);
             log.error(message , e);
-            return ATTR_PROCEDURE_CALL_DEFAULT;
+            return ATTR_SCRIPT_TEXT_DEFAULT;
         }
     }
 
@@ -189,8 +198,20 @@ public class DebugCore {
         return extractStringAttribute(configuration, ATTR_PROCEDURE_NAME, ATTR_PROCEDURE_NAME_DEFAULT);
     }
 
-    public static String extractProcedureCall(ILaunchConfiguration configuration) {
-        return extractStringAttribute(configuration, ATTR_PROCEDURE_CALL, ATTR_PROCEDURE_CALL_DEFAULT);
+    public static String extractAttachProcess(ILaunchConfiguration configuration) {
+        return extractStringAttribute(configuration, ATTR_ATTACH_PROCESS, ATTR_ATTACH_PROCESS_DEFAULT);
+    }
+
+    public static String extractAttachKind(ILaunchConfiguration configuration) {
+        return extractStringAttribute(configuration, ATTR_ATTACH_KIND, ATTR_ATTACH_KIND_DEFAULT);
+    }
+
+    public static String extractScriptExecute(ILaunchConfiguration configuration) {
+        return extractStringAttribute(configuration, ATTR_SCRIPT_EXECUTE, ATTR_SCRIPT_EXECUTE_DEFAULT);
+    }
+
+    public static String extractScriptText(ILaunchConfiguration configuration) {
+        return extractStringAttribute(configuration, ATTR_SCRIPT_TEXT, ATTR_SCRIPT_TEXT_DEFAULT);
     }
 
     public static String extractNodePath(ILaunchConfiguration configuration) {
@@ -249,7 +270,9 @@ public class DebugCore {
             }
             final DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
             DBNDatabaseNode node = navigatorModel.getNodeByObject(dbsObject);
-            return node.getNodeItemPath();
+            if (node != null) {
+                return node.getNodeItemPath();
+            }
         }
         if (object instanceof String) {
             // well, let's be positive and assume it's a node path already
