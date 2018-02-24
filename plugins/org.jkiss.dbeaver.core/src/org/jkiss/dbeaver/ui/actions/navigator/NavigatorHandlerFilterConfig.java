@@ -20,10 +20,12 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
@@ -109,7 +111,7 @@ public class NavigatorHandlerFilterConfig extends NavigatorHandlerObjectCreateBa
             node = node.getParentNode();
         }
         if (node != null) {
-            element.setText("Configure " + node.getNodeType() + " filter ...");
+            element.setText(NLS.bind(CoreMessages.actions_navigator_filter_objects, node.getNodeType()));
         }
     }
 
