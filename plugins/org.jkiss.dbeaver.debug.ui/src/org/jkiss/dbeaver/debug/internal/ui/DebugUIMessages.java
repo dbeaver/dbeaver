@@ -26,20 +26,18 @@ public class DebugUIMessages extends NLS {
     public static String DatabaseStandardBreakpointPane_description;
     public static String DatabaseStandardBreakpointPane_name;
 
-    public static String DatabaseTab_driver_group_text;
+    public static String DatabaseTab_connection_group_text;
     public static String DatabaseTab_driver_label_text;
-    public static String DatabaseTab_datasource_group_text;
     public static String DatabaseTab_datasource_label_text;
-    public static String DatabaseTab_database_group_text;
+
+    public static String DatabaseTab_procedure_group_text;
     public static String DatabaseTab_database_label_text;
-    public static String DatabaseTab_schema_group_text;
     public static String DatabaseTab_schema_label_text;
-    public static String DatabaseTab_oid_group_text;
     public static String DatabaseTab_oid_label_text;
-    public static String DatabaseTab_name_group_text;
     public static String DatabaseTab_name_label_text;
-    public static String DatabaseTab_call_group_text;
-    public static String DatabaseTab_call_label_text;
+
+    public static String DatabaseTab_attach_group_text;
+    public static String DatabaseTab_script_execute_text;
     
     public static String DatabaseTab_name;
 

@@ -33,10 +33,16 @@ public interface DBGController {
     public static final String DATABASE_NAME = "databaseName"; //$NON-NLS-1$
     public static final String SCHEMA_NAME = "schemaName"; //$NON-NLS-1$
     public static final String PROCEDURE_OID = "procedureOID"; //$NON-NLS-1$
-    public static final String PROCESS_ID = "processID"; //$NON-NLS-1$
     public static final String PROCEDURE_NAME = "procedureName"; //$NON-NLS-1$
-    public static final String PROCEDURE_CALL = "procedureCall"; //$NON-NLS-1$
+
+    public static final String ATTACH_PROCESS = "attachProcess"; //$NON-NLS-1$
+    public static final String ATTACH_PROCESS_ANY = "-1"; //$NON-NLS-1$
     public static final String ATTACH_KIND = "attachKind"; //$NON-NLS-1$
+    public static final String ATTACH_KIND_LOCAL = "LOCAL"; //$NON-NLS-1$
+    public static final String ATTACH_KIND_GLOBAL = "GLOBAL"; //$NON-NLS-1$
+
+    public static final String SCRIPT_EXECUTE = "scriptExecute"; //$NON-NLS-1$
+    public static final String SCRIPT_TEXT = "scriptText"; //$NON-NLS-1$
     
     DBPDataSourceContainer getDataSourceContainer();
     Map<String, Object> getDebugConfiguration();
