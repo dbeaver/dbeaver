@@ -209,8 +209,8 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
         }
         if (dbText != null) {
             String databaseName = connectionInfo.getDatabaseName();
-            if (CommonUtils.isEmpty(databaseName) && getSite().isNew()) {
-                databaseName = SQLServerConstants.DEFAULT_DATABASE;
+            if (CommonUtils.isEmpty(databaseName)) {
+                databaseName = getSite().isNew() ? SQLServerConstants.DEFAULT_DATABASE : "";
             }
             dbText.setText(databaseName);
         }
