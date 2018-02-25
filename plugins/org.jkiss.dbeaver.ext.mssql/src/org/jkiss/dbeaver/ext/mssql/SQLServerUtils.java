@@ -18,7 +18,9 @@
 package org.jkiss.dbeaver.ext.mssql;
 
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * SQLServerUtils
@@ -34,5 +36,10 @@ public class SQLServerUtils {
 
     public static boolean isDriverJtds(DBPDriver driver) {
         return driver.getSampleURL().startsWith("jdbc:jtds");
+    }
+
+    public static boolean isWindowsAuth(DBPConnectionConfiguration connectionInfo) {
+        return CommonUtils.toBoolean(connectionInfo.getProviderProperty(SQLServerConstants.PROP_CONNECTION_WINDOWS_AUTH)) ||
+                CommonUtils.toBoolean(connectionInfo.getProperties().get(SQLServerConstants.PROP_CONNECTION_INTEGRATED_SECURITY));
     }
 }
