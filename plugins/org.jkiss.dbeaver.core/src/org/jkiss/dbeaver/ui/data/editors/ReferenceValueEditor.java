@@ -328,7 +328,20 @@ public class ReferenceValueEditor {
             if (editorSelector.isDisposed()) {
                 return Status.OK_STATUS;
             }
-            final Map<Object, String> keyValues = new TreeMap<>();
+            final Map<Object, String> keyValues = new TreeMap<>((o1, o2) -> {
+                if (o1 instanceof Comparable && o2 instanceof Comparable) {
+                    return ((Comparable) o1).compareTo(o2);
+                }
+                if (o1 == o2) {
+                    return 0;
+                } else if (o1 == null) {
+                    return -1;
+                } else if (o2 == null) {
+                    return 1;
+                } else {
+                    return o1.toString().compareTo(o2.toString());
+                }
+            });
             try {
                 IAttributeController attributeController = (IAttributeController)valueController;
                 final DBSEntityAttribute tableColumn = attributeController.getBinding().getEntityAttribute();
