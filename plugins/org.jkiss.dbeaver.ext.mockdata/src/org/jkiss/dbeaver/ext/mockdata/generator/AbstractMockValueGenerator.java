@@ -16,11 +16,6 @@ public abstract class AbstractMockValueGenerator implements MockValueGenerator {
 
     public static final int UNIQUE_VALUES_SET_SIZE = 1000000;
 
-    protected static int LONG_PRECISION    = String.valueOf(Long.MAX_VALUE).length();    // 19
-    protected static int INTEGER_PRECISION = String.valueOf(Integer.MAX_VALUE).length(); // 10
-    protected static int SHORT_PRECISION   = String.valueOf(Short.MAX_VALUE).length();   // 5
-    protected static int BYTE_PRECISION    = String.valueOf(Byte.MAX_VALUE).length();    // 3
-
     protected DBSEntity dbsEntity;
     protected DBSAttributeBase attribute;
 
