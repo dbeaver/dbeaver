@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.mssql.model;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
+import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -62,7 +63,7 @@ public class SQLServerDataSource extends GenericDataSource {
 
     @Override
     protected String getConnectionUserName(DBPConnectionConfiguration connectionInfo) {
-        if (CommonUtils.toBoolean(connectionInfo.getProviderProperty(SQLServerConstants.PROP_CONNECTION_WINDOWS_AUTH))) {
+        if (SQLServerUtils.isWindowsAuth(connectionInfo)) {
             return "";
         } else {
             return super.getConnectionUserName(connectionInfo);
@@ -71,7 +72,7 @@ public class SQLServerDataSource extends GenericDataSource {
 
     @Override
     protected String getConnectionUserPassword(DBPConnectionConfiguration connectionInfo) {
-        if (CommonUtils.toBoolean(connectionInfo.getProviderProperty(SQLServerConstants.PROP_CONNECTION_WINDOWS_AUTH))) {
+        if (SQLServerUtils.isWindowsAuth(connectionInfo)) {
             return "";
         } else {
             return super.getConnectionUserPassword(connectionInfo);
