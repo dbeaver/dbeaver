@@ -1,9 +1,8 @@
-package org.jkiss.dbeaver.debug.internal.ui.actions;
+package org.jkiss.dbeaver.debug.ui.actions;
 
 import org.eclipse.core.runtime.IAdapterFactory;
 import org.eclipse.debug.ui.actions.ILaunchable;
 import org.eclipse.debug.ui.actions.IToggleBreakpointsTarget;
-import org.jkiss.dbeaver.debug.ui.actions.ToggleProcedureBreakpointTarget;
 
 public class DebugActionAdapterFactory implements IAdapterFactory {
 
