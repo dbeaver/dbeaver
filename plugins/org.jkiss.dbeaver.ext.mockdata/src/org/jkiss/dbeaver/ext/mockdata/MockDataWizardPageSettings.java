@@ -143,12 +143,12 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
                     if (cell.getColumnIndex() == 0) {
                         cell.setImage(DBeaverIcons.getImage(DBValueFormatting.getTypeImage(attribute)));
                         cell.setText(attribute.getName());
-                        if (attributeGeneratorProperties.isEmpty()) {
+                        if (attributeGeneratorProperties != null && attributeGeneratorProperties.isEmpty()) {
                             cell.setForeground(table.getDisplay().getSystemColor(SWT.COLOR_RED));
                             noGeneratorInfoLabel.setVisible(true);
                         }
                     } else {
-                        if (!attributeGeneratorProperties.isEmpty()) {
+                        if (attributeGeneratorProperties != null && !attributeGeneratorProperties.isEmpty()) {
                             String selectedGenerator = attributeGeneratorProperties.getSelectedGeneratorId();
                             cell.setText(mockDataSettings.getGeneratorDescriptor(selectedGenerator).getLabel());
                         }
@@ -335,15 +335,24 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
                 columnsTableViewer.setInput(mockDataSettings.getAttributes());
             }
 
-            // select the first item
+            // select the attributes table item
             final Table table = columnsTableViewer.getTable();
             if (table.getItemCount() > 0) {
-                table.select(0);
+                int selectedItem = 0;
+                String selectedAttribute = mockDataSettings.getSelectedAttribute();
+                if (selectedAttribute != null) {
+                    for (int i = 0; i < table.getItemCount(); i++) {
+                        if (selectedAttribute.equals(table.getItem(i).getText())) {
+                            selectedItem = i; break;
+                        }
+                    }
+                }
+                table.select(selectedItem);
                 // and notify the listeners
                 Event event = new Event();
                 event.widget = table;
                 event.display = table.getDisplay();
-                event.item = table.getItem(0);
+                event.item = table.getItem(selectedItem);
                 event.type = SWT.Selection;
                 table.notifyListeners(SWT.Selection, event);
             } else {
@@ -408,6 +417,7 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
             }
         }
         selectedAttribute = attribute;
+        mockDataSettings.setSelectedAttribute(attribute.getName());
         generatorId = attributeGeneratorProperties.setSelectedGeneratorId(generatorId);
         propertySource = attributeGeneratorProperties.getGeneratorPropertySource(generatorId);
         if (propertySource != null) {
