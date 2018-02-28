@@ -152,8 +152,19 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
                         }
                     } else {
                         if (attributeGeneratorProperties != null && !attributeGeneratorProperties.isEmpty()) {
-                            String selectedGenerator = attributeGeneratorProperties.getSelectedGeneratorId();
-                            cell.setText(mockDataSettings.getGeneratorDescriptor(selectedGenerator).getLabel());
+                            String selectedGeneratorId = attributeGeneratorProperties.getSelectedGeneratorId();
+                            String label = mockDataSettings.getGeneratorDescriptor(selectedGeneratorId).getLabel();
+                            String presetId = attributeGeneratorProperties.getPresetId();
+                            if (presetId != null) {
+                                List<MockGeneratorDescriptor.Preset> presets = mockDataSettings.getGeneratorDescriptor(selectedGeneratorId).getPresets();
+                                for (MockGeneratorDescriptor.Preset preset : presets) {
+                                    if (presetId.equals(preset.getId())) {
+                                        label += " [" + preset.getMnemonics() + "]";
+                                        break;
+                                    }
+                                }
+                            }
+                            cell.setText(label);
                         }
                     }
                 }
@@ -291,6 +302,12 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
                         propertySource.resetPropertyValueToDefault(key);
                     }
                     propsEditor.loadProperties(propertySource);
+
+                    mockDataSettings.getAttributeGeneratorProperties(selectedAttribute).setPresetId(null);
+                    if (presetCombo.getItemCount() > 0) {
+                        presetCombo.select(0);
+                    }
+                    columnsTableViewer.refresh(true, true);
                 }
             });
             gd = new GridData();
@@ -350,9 +367,11 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
                 propsEditor.loadProperties(propertySource);
                 propsEditor.setExpandMode(PropertyTreeViewer.ExpandMode.FIRST);
                 propsEditor.expandAll();
+
+                attributeGeneratorProperties.setPresetId(preset.getId());
+                columnsTableViewer.refresh(true, true);
             }
         }
-
     }
 
     @Override
@@ -455,6 +474,8 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
         selectedAttribute = attribute;
         mockDataSettings.setSelectedAttribute(attribute.getName());
         generatorId = attributeGeneratorProperties.setSelectedGeneratorId(generatorId);
+
+        // set properties
         propertySource = attributeGeneratorProperties.getGeneratorPropertySource(generatorId);
         if (propertySource != null) {
             propsEditor.loadProperties(propertySource);
@@ -464,11 +485,12 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
             propsEditor.clearProperties();
         }
 
+        // generator combo & description
+        presetCombo.setVisible(false);
         List<String> generators = new ArrayList<>();
         for (String genId : attributeGeneratorProperties.getGenerators()) {
             generators.add(mockDataSettings.getGeneratorDescriptor(genId).getLabel());
         }
-        presetCombo.setVisible(false);
         generatorDescriptionLink.setVisible(false);
         if (!generators.isEmpty()) {
             generatorCombo.setItems(generators.toArray(new String[generators.size()]));
@@ -482,14 +504,21 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
                 generatorDescriptionLink.setVisible(true);
             }
 
+            // presets
             List<MockGeneratorDescriptor.Preset> presets = generatorDescriptor.getPresets();
             if (!presets.isEmpty()) {
                 presetCombo.removeAll();
                 presetCombo.add("Select preset...");
+                int presetIndex = 0, i = 1;
+                String presetId = attributeGeneratorProperties.getPresetId();
                 for (MockGeneratorDescriptor.Preset preset : presets) {
                     presetCombo.add(preset.getLabel());
+                    if (presetId != null && preset.getId().equals(presetId)) {
+                        presetIndex = i;
+                    }
+                    i++;
                 }
-                presetCombo.select(0);
+                presetCombo.select(presetIndex);
                 presetCombo.setVisible(true);
             }
         } else {

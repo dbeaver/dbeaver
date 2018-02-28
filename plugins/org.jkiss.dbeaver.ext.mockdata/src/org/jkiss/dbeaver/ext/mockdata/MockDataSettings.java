@@ -44,6 +44,7 @@ public class MockDataSettings {
 
     public static final String KEY_SELECTED_ATTRIBUTE = "selectedAttribute"; //$NON-NLS-1$
     public static final String KEY_SELECTED_GENERATOR = "selectedGenerator"; //$NON-NLS-1$
+    public static final String KEY_PRESET_ID = "presetId"; //$NON-NLS-1$
     public static final String KEY_GENERATOR_SECTION = "GENERATOR_SECTION"; //$NON-NLS-1$
 
     private DBSEntity dbsEntity;
@@ -178,6 +179,7 @@ public class MockDataSettings {
             if (selectedGeneratorId != null) {
                 AttributeGeneratorProperties attrGeneratorProperties = entry.getValue();
                 attrGeneratorProperties.setSelectedGeneratorId(selectedGeneratorId);
+                attrGeneratorProperties.setPresetId(attributeSection.get(KEY_PRESET_ID));
 
                 PropertySourceCustom generatorPropertySource = attrGeneratorProperties.getGeneratorPropertySource(selectedGeneratorId);
                 IDialogSettings generatorSection = UIUtils.getSettingsSection(attributeSection, KEY_GENERATOR_SECTION);
@@ -210,6 +212,7 @@ public class MockDataSettings {
             IDialogSettings attributeSection = UIUtils.getSettingsSection(tableSection, attributeName);
             String selectedGeneratorId = attrGeneratorProperties.getSelectedGeneratorId();
             attributeSection.put(KEY_SELECTED_GENERATOR, selectedGeneratorId);
+            attributeSection.put(KEY_PRESET_ID, attrGeneratorProperties.getPresetId());
 
             IDialogSettings generatorSection = UIUtils.getSettingsSection(attributeSection, KEY_GENERATOR_SECTION);
             PropertySourceCustom generatorPropertySource = attrGeneratorProperties.getGeneratorPropertySource(selectedGeneratorId);
@@ -224,12 +227,17 @@ public class MockDataSettings {
 
     public class AttributeGeneratorProperties {
         private final DBSAttributeBase attribute;
-        private String selectedGeneratorId = null; // id
+        private String selectedGeneratorId = null;
+        private String presetId = null;
         private Map<String, PropertySourceCustom> generators = new HashMap<>(); // generatorId -> PropertySourceCustom
+
         public AttributeGeneratorProperties(DBSAttributeBase attribute) {
             this.attribute = attribute;
         }
-        public DBSAttributeBase getAttribute() { return attribute; }
+
+        public DBSAttributeBase getAttribute() {
+            return attribute;
+        }
 
         public String getSelectedGeneratorId() {
             if (selectedGeneratorId == null && !CommonUtils.isEmpty(getGenerators())) {
@@ -246,7 +254,10 @@ public class MockDataSettings {
             if ((selectedGeneratorId == null || !generatorDescriptors.keySet().contains(selectedGeneratorId)) && !CommonUtils.isEmpty(getGenerators())) {
                 selectedGeneratorId = getGenerators().iterator().next();
             }
-            this.selectedGeneratorId = selectedGeneratorId;
+            if (this.selectedGeneratorId != selectedGeneratorId) {
+                this.selectedGeneratorId = selectedGeneratorId;
+                presetId = null;
+            }
             return selectedGeneratorId;
         }
 
@@ -259,6 +270,14 @@ public class MockDataSettings {
                 generatorId = getSelectedGeneratorId();
             }
             return generators.get(generatorId);
+        }
+
+        public String getPresetId() {
+            return presetId;
+        }
+
+        public void setPresetId(String presetId) {
+            this.presetId = presetId;
         }
 
         public boolean isEmpty() {
