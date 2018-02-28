@@ -254,7 +254,7 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
             } catch (DBException e) {
                 String message = "    Error inserting Mock Data: " + e.getMessage() + ".";
                 log.error(message, e);
-                logPage.appendLog(message, true);
+                logPage.appendLog(message + "\n", true);
             }
 
         } finally {
