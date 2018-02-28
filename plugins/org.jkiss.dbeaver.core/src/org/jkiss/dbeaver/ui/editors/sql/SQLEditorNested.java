@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -31,6 +32,7 @@ import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.source.IAnnotationModel;
+import org.eclipse.jface.text.source.projection.ProjectionAnnotationModel;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.FocusEvent;
@@ -46,6 +48,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.compile.DBCCompileLog;
 import org.jkiss.dbeaver.model.exec.compile.DBCSourceHost;
@@ -56,6 +59,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ObjectCompilerLogViewer;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
+import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextDocumentProvider;
@@ -283,9 +287,15 @@ public abstract class SQLEditorNested<T extends DBSObject>
 
         @Override
         protected IAnnotationModel createAnnotationModel(Object element) throws CoreException {
-            //FIXME:AF: we need a way to map remote object to IResource
-            IResource resource = DBeaverCore.getInstance().getProjectManager().getActiveProject();
-            return new ResourceMarkerAnnotationModel(resource);
+            DBPDataSourceContainer dsContainer = EditorUtils.getInputDataSource(SQLEditorNested.this.getEditorInput());
+            if (dsContainer != null) {
+                return new ResourceMarkerAnnotationModel(dsContainer.getRegistry().getProject());
+            }
+            IProject resource = DBeaverCore.getInstance().getProjectManager().getActiveProject();
+            if (resource != null) {
+                return new ResourceMarkerAnnotationModel(resource);
+            }
+            return super.createAnnotationModel(element);
         }
         
         @Override
