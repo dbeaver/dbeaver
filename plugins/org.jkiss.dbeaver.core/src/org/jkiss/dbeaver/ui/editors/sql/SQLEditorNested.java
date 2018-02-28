@@ -283,7 +283,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
 
         @Override
         protected IAnnotationModel createAnnotationModel(Object element) throws CoreException {
-            //FIXME:AF: the only resource we have for now to represent remote object
+            //FIXME:AF: we need a way to map remote object to IResource
             IResource resource = DBeaverCore.getInstance().getProjectManager().getActiveProject();
             return new ResourceMarkerAnnotationModel(resource);
         }
