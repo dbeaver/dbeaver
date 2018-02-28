@@ -993,6 +993,11 @@ public class UIUtils {
     }
 
     public static void putSectionValueWithType(IDialogSettings dialogSettings, @NotNull String key, Object value) {
+        if (value == null) {
+            dialogSettings.put(key, ((String) null));
+            return;
+        }
+
         if (value instanceof Double) {
             dialogSettings.put(key, (Double) value);
         } else
