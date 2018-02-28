@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.mockdata.generator;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.mockdata.MockDataUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
@@ -63,16 +64,16 @@ public class NumericSequenceGenerator extends AbstractMockValueGenerator {
                 start += step;
             }
             Integer precision = attribute.getPrecision();
-            if (precision == null || precision < INTEGER_PRECISION) { // TODO ???
+            if (precision == null || precision < MockDataUtils.INTEGER_PRECISION) { // TODO ???
                 return (int)(value);
             }
-            if (precision < BYTE_PRECISION) {
+            if (precision < MockDataUtils.BYTE_PRECISION) {
                 return (byte)(value);
             }
-            if (precision < SHORT_PRECISION) {
+            if (precision < MockDataUtils.SHORT_PRECISION) {
                 return (short)(value);
             }
-            if (precision < LONG_PRECISION) {
+            if (precision < MockDataUtils.LONG_PRECISION) {
                 return new Long(value);
             }
 
