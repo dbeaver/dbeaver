@@ -23,21 +23,21 @@
          point="org.eclipse.core.runtime.adapters">
       <factory
             adaptableType="org.jkiss.dbeaver.ui.editors.entity.EntityEditor"
-            class="org.jkiss.dbeaver.debug.internal.ui.actions.DebugActionAdapterFactory">
+            class="org.jkiss.dbeaver.debug.ui.actions.DebugActionAdapterFactory">
          <adapter
                type="org.eclipse.debug.ui.actions.IToggleBreakpointsTarget">
          </adapter>
       </factory>
       <factory
             adaptableType="org.jkiss.dbeaver.ui.editors.entity.EntityEditorInput"
-            class="org.jkiss.dbeaver.debug.internal.ui.actions.DebugActionAdapterFactory">
+            class="org.jkiss.dbeaver.debug.ui.actions.DebugActionAdapterFactory">
          <adapter
                type="org.eclipse.debug.ui.actions.ILaunchable">
          </adapter>
       </factory>
       <factory
             adaptableType="org.jkiss.dbeaver.model.navigator.DBNDatabaseObject"
-            class="org.jkiss.dbeaver.debug.internal.ui.actions.DebugActionAdapterFactory">
+            class="org.jkiss.dbeaver.debug.ui.actions.DebugActionAdapterFactory">
          <adapter
                type="org.eclipse.debug.ui.actions.ILaunchable">
          </adapter>
