@@ -42,6 +42,7 @@ public class MockDataSettings {
     public static final String PROP_REMOVE_OLD_DATA = "removeOldData"; //$NON-NLS-1$
     public static final String PROP_ROWS_NUMBER = "rowsNumber"; //$NON-NLS-1$
 
+    public static final String KEY_SELECTED_ATTRIBUTE = "selectedAttribute"; //$NON-NLS-1$
     public static final String KEY_SELECTED_GENERATOR = "selectedGenerator"; //$NON-NLS-1$
     public static final String KEY_GENERATOR_SECTION = "GENERATOR_SECTION"; //$NON-NLS-1$
 
@@ -51,6 +52,7 @@ public class MockDataSettings {
     private boolean removeOldData;
     private long rowsNumber = 1000;
 
+    private String selectedAttribute; // attribute.name
     private Map<String, MockGeneratorDescriptor> generatorDescriptors = new HashMap<>(); // generatorId -> MockGeneratorDescriptor
     private Map<String, AttributeGeneratorProperties> attributeGenerators = new HashMap<>(); // attribute.name -> generators properties
 
@@ -103,6 +105,14 @@ public class MockDataSettings {
 
     public Collection<DBSAttributeBase> getAttributes() {
         return attributes;
+    }
+
+    public String getSelectedAttribute() {
+        return selectedAttribute;
+    }
+
+    public void setSelectedAttribute(String selectedAttribute) {
+        this.selectedAttribute = selectedAttribute;
     }
 
     private void putGenerator(AttributeGeneratorProperties generatorProperties, MockGeneratorDescriptor generator) {
@@ -158,6 +168,7 @@ public class MockDataSettings {
         }
 
         // load selected generators
+        selectedAttribute = dialogSettings.get(KEY_SELECTED_ATTRIBUTE);
         VoidProgressMonitor voidProgressMonitor = new VoidProgressMonitor();
         IDialogSettings tableSection = UIUtils.getSettingsSection(dialogSettings, dbsEntity.getName());
         for (Map.Entry<String, AttributeGeneratorProperties> entry : attributeGenerators.entrySet()) {
@@ -190,6 +201,7 @@ public class MockDataSettings {
         dialogSettings.put(PROP_ROWS_NUMBER, rowsNumber);
 
         // save selected generators
+        dialogSettings.put(KEY_SELECTED_ATTRIBUTE, selectedAttribute);
         IDialogSettings tableSection = UIUtils.getSettingsSection(dialogSettings, dbsEntity.getName());
         for (Map.Entry<String, AttributeGeneratorProperties> attrEntry : attributeGenerators.entrySet()) {
             String attributeName = attrEntry.getKey();

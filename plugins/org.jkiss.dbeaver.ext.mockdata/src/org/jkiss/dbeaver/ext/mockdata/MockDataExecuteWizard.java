@@ -174,7 +174,7 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                 } catch (Exception e) {
                     String message = "    Error removing the data: " + e.getMessage() + ".";
                     log.error(message, e);
-                    logPage.appendLog(message, true);
+                    logPage.appendLog(message + "\n", true);
                 } finally {
                     monitor.done();
                 }
