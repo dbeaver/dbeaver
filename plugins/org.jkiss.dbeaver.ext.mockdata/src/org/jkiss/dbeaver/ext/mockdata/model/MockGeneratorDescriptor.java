@@ -59,7 +59,12 @@ public class MockGeneratorDescriptor extends DataTypeAbstractDescriptor<MockValu
         }
 
         for (IConfigurationElement preset : config.getChildren(TAG_PRESET)) {
-            presets.add(new Preset(preset.getAttribute("id"), preset.getAttribute("label"), PropertyDescriptor.extractProperties(preset)));
+            presets.add(new Preset(
+                    preset.getAttribute("id"),
+                    preset.getAttribute("label"),
+                    preset.getAttribute("mnemonics"),
+                    PropertyDescriptor.extractProperties(preset)
+            ));
         }
     }
 
@@ -108,11 +113,13 @@ public class MockGeneratorDescriptor extends DataTypeAbstractDescriptor<MockValu
     public static class Preset {
         private final String id;
         private final String label;
+        private final String mnemonics;
         private final List<DBPPropertyDescriptor> properties;
 
-        public Preset(String id, String label, List<DBPPropertyDescriptor> properties) {
+        public Preset(String id, String label, String mnemonics, List<DBPPropertyDescriptor> properties) {
             this.id = id;
             this.label = label;
+            this.mnemonics = mnemonics;
             this.properties = properties;
         }
 
@@ -122,6 +129,10 @@ public class MockGeneratorDescriptor extends DataTypeAbstractDescriptor<MockValu
 
         public String getLabel() {
             return label;
+        }
+
+        public String getMnemonics() {
+            return mnemonics;
         }
 
         public List<DBPPropertyDescriptor> getProperties() {
