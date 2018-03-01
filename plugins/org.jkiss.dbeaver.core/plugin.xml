@@ -2658,6 +2658,15 @@
     </extension>
 
     <extension point="org.eclipse.ui.propertyPages">
+        <page id="org.jkiss.dbeaver.preferences.main.errorHandle" class="org.jkiss.dbeaver.ui.preferences.PrefPageErrorHandle" name="%page.org.jkiss.dbeaver.preferences.main.errorHandle.name">
+            <enabledWhen>
+                <or>
+                    <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
+                    <instanceof value="org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer"/>
+                    <adapt type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
+                </or>
+            </enabledWhen>
+        </page>
         <page id="org.jkiss.dbeaver.preferences.main.resultset" class="org.jkiss.dbeaver.ui.preferences.PrefPageResultSetMain" name="%page.org.jkiss.dbeaver.preferences.main.resultset.name">
             <enabledWhen>
                 <or>
