@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.*;
+import org.jkiss.dbeaver.runtime.jobs.InvalidateJob;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -1469,7 +1470,8 @@ public final class DBUtils {
 
     public static boolean tryExecuteRecover(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, @NotNull DBRRunnableWithProgress runnable) throws DBException {
         int tryCount = 1;
-        if (dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.EXECUTE_RECOVER_ENABLED)) {
+        boolean recoverEnabled = dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.EXECUTE_RECOVER_ENABLED);
+        if (recoverEnabled) {
             tryCount += dataSource.getContainer().getPreferenceStore().getInt(ModelPreferences.EXECUTE_RECOVER_RETRY_COUNT);
         }
         Throwable lastError = null;
@@ -1480,7 +1482,15 @@ public final class DBUtils {
                 break;
             } catch (InvocationTargetException e) {
                 lastError = e.getTargetException();
-                log.error("Operation filed. Retry cont = " + (tryCount - i), e.getTargetException());
+                if (!recoverEnabled || discoverErrorType(dataSource, lastError) != DBPErrorAssistant.ErrorType.CONNECTION_LOST) {
+                    // Can't recover
+                    break;
+                }
+                log.debug("Invalidate datasource '" + dataSource.getContainer().getName() + "' connections...");
+                InvalidateJob.invalidateDataSource(monitor, dataSource, false);
+                if (i < tryCount - 1) {
+                    log.error("Operation failed. Retry count remains = " + (tryCount - i - 1), lastError);
+                }
             } catch (InterruptedException e) {
                 log.error("Operation interrupted");
                 return false;
