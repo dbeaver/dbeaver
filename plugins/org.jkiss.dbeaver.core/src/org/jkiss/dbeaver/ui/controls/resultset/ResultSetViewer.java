@@ -2617,6 +2617,11 @@ public class ResultSetViewer extends Viewer
             UIUtils.showMessageBox(viewerPanel.getShell(), "Data read", "Data read is in progress - can't run another", SWT.ICON_WARNING);
             return false;
         }
+        DBCExecutionContext executionContext = getExecutionContext();
+        if (executionContext == null) {
+            UIUtils.showMessageBox(viewerPanel.getShell(), "Data read", "Can't read data - no active connection", SWT.ICON_WARNING);
+            return false;
+        }
         // Cancel any refresh jobs
         autoRefreshControl.cancelRefresh();
 
@@ -2633,7 +2638,7 @@ public class ResultSetViewer extends Viewer
             dataContainer,
             useDataFilter,
             this,
-            getExecutionContext(),
+            executionContext,
             progressControl);
         dataPumpJob.addJobChangeListener(new JobChangeAdapter() {
             @Override

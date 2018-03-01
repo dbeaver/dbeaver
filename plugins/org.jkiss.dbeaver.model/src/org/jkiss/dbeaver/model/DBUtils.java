@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.*;
@@ -37,6 +38,7 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
@@ -1463,5 +1465,30 @@ public final class DBUtils {
         }
 
         return list;
+    }
+
+    public static boolean tryExecuteRecover(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, @NotNull DBRRunnableWithProgress runnable) throws DBException {
+        int tryCount = 1;
+        if (dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.EXECUTE_RECOVER_ENABLED)) {
+            tryCount += dataSource.getContainer().getPreferenceStore().getInt(ModelPreferences.EXECUTE_RECOVER_RETRY_COUNT);
+        }
+        Throwable lastError = null;
+        for (int i = 0; i < tryCount; i++) {
+            try {
+                runnable.run(monitor);
+                lastError = null;
+                break;
+            } catch (InvocationTargetException e) {
+                lastError = e.getTargetException();
+                log.error("Operation filed. Retry cont = " + (tryCount - i), e.getTargetException());
+            } catch (InterruptedException e) {
+                log.error("Operation interrupted");
+                return false;
+            }
+        }
+        if (lastError != null) {
+            throw new DBException(lastError, dataSource);
+        }
+        return true;
     }
 }
