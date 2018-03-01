@@ -62,6 +62,7 @@ import org.jkiss.dbeaver.ui.dialogs.exec.ExecutionQueueErrorResponse;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -377,98 +378,16 @@ public class SQLQueryJob extends DataSourceJob
             }
 
             startTime = System.currentTimeMillis();
-            DBCExecutionSource source = new AbstractExecutionSource(dataContainer, executionContext, partSite.getPart(), sqlQuery);
-            final DBCStatement dbcStatement = DBUtils.makeStatement(
-                source,
-                session,
-                DBCStatementType.SCRIPT,
-                sqlQuery,
-                rsOffset, rsMaxRows);
-            curStatement = dbcStatement;
 
-            int statementTimeout = getDataSourceContainer().getPreferenceStore().getInt(DBeaverPreferences.STATEMENT_TIMEOUT);
-            if (statementTimeout > 0) {
+            SQLQuery execStatement = sqlQuery;
+            long execStartTime = startTime;
+            DBUtils.tryExecuteRecover(session, session.getDataSource(), param -> {
                 try {
-                    dbcStatement.setStatementTimeout(statementTimeout);
+                    executeStatement(session, execStatement, execStartTime, curResult);
                 } catch (Throwable e) {
-                    log.debug("Can't set statement timeout:" + e.getMessage());
+                    throw new InvocationTargetException(e);
                 }
-            }
-
-            // Execute statement
-            try {
-                session.getProgressMonitor().subTask("Execute query");
-                boolean hasResultSet = dbcStatement.executeStatement();
-                curResult.setHasResultSet(hasResultSet);
-                statistics.addExecuteTime(System.currentTimeMillis() - startTime);
-                statistics.addStatementsCount();
-
-                long updateCount = -1;
-                while (hasResultSet || resultSetNumber == 0 || updateCount >= 0) {
-                    // Fetch data only if we have to fetch all results or if it is rs requested
-                    if (fetchResultSetNumber < 0 || fetchResultSetNumber == resultSetNumber) {
-                        if (hasResultSet && fetchResultSets) {
-                            DBCResultSet resultSet = dbcStatement.openResultSet();
-                            if (resultSet == null) {
-                                // Kind of bug in the driver. It says it has resultset but returns null
-                                break;
-                            } else {
-                                DBDDataReceiver dataReceiver = resultsConsumer.getDataReceiver(sqlQuery, resultSetNumber);
-                                if (dataReceiver != null) {
-                                    hasResultSet = fetchQueryData(session, resultSet, curResult, dataReceiver, true);
-                                }
-                            }
-                        }
-                    }
-                    if (!hasResultSet) {
-                        try {
-                            updateCount = dbcStatement.getUpdateRowCount();
-                            if (updateCount >= 0) {
-                                curResult.setUpdateCount(updateCount);
-                                statistics.addRowsUpdated(updateCount);
-                            }
-                        } catch (DBCException e) {
-                            // In some cases we can't read update count
-                            // This is bad but we can live with it
-                            // Just print a warning
-                            log.warn("Can't obtain update count", e);
-                        }
-                    }
-                    if (hasResultSet && fetchResultSets) {
-                        resultSetNumber++;
-                        fetchResultSetNumber = resultSetNumber;
-                    }
-                    if (!hasResultSet && updateCount < 0) {
-                        // Nothing else to fetch
-                        break;
-                    }
-
-                    if (dataSource.getInfo().supportsMultipleResults()) {
-                        try {
-                            hasResultSet = dbcStatement.nextResults();
-                        } catch (DBCException e) {
-                            log.error(e);
-                            // #2792: Check this twice. Some drivers (e.g. Sybase jConnect)
-                            // throw error on n'th result fetch - but it still can keep fetching next results
-                            hasResultSet = dbcStatement.nextResults();
-                        }
-                        updateCount = hasResultSet ? -1 : 0;
-                    } else {
-                        break;
-                    }
-                }
-            }
-            finally {
-                try {
-                    curResult.addWarnings(dbcStatement.getStatementWarnings());
-                } catch (Throwable e) {
-                    log.warn("Can't read execution warnings", e);
-                }
-                //monitor.subTask("Close query");
-                if (!keepStatementOpen()) {
-                    closeStatement();
-                }
-            }
+            });
         }
         catch (Throwable ex) {
             if (!(ex instanceof DBException)) {
@@ -496,6 +415,101 @@ public class SQLQueryJob extends DataSourceJob
         // Success
         lastGoodQuery = originalQuery;
         return true;
+    }
+
+    private void executeStatement(@NotNull DBCSession session, SQLQuery sqlQuery, long startTime, SQLQueryResult curResult) throws DBCException {
+        DBCExecutionSource source = new AbstractExecutionSource(dataContainer, session.getExecutionContext(), partSite.getPart(), sqlQuery);
+        final DBCStatement dbcStatement = DBUtils.makeStatement(
+            source,
+            session,
+            DBCStatementType.SCRIPT,
+            sqlQuery,
+            rsOffset, rsMaxRows);
+        curStatement = dbcStatement;
+
+        int statementTimeout = getDataSourceContainer().getPreferenceStore().getInt(DBeaverPreferences.STATEMENT_TIMEOUT);
+        if (statementTimeout > 0) {
+            try {
+                dbcStatement.setStatementTimeout(statementTimeout);
+            } catch (Throwable e) {
+                log.debug("Can't set statement timeout:" + e.getMessage());
+            }
+        }
+
+        // Execute statement
+        try {
+            session.getProgressMonitor().subTask("Execute query");
+            boolean hasResultSet = dbcStatement.executeStatement();
+            curResult.setHasResultSet(hasResultSet);
+            statistics.addExecuteTime(System.currentTimeMillis() - startTime);
+            statistics.addStatementsCount();
+
+            long updateCount = -1;
+            while (hasResultSet || resultSetNumber == 0 || updateCount >= 0) {
+                // Fetch data only if we have to fetch all results or if it is rs requested
+                if (fetchResultSetNumber < 0 || fetchResultSetNumber == resultSetNumber) {
+                    if (hasResultSet && fetchResultSets) {
+                        DBCResultSet resultSet = dbcStatement.openResultSet();
+                        if (resultSet == null) {
+                            // Kind of bug in the driver. It says it has resultset but returns null
+                            break;
+                        } else {
+                            DBDDataReceiver dataReceiver = resultsConsumer.getDataReceiver(sqlQuery, resultSetNumber);
+                            if (dataReceiver != null) {
+                                hasResultSet = fetchQueryData(session, resultSet, curResult, dataReceiver, true);
+                            }
+                        }
+                    }
+                }
+                if (!hasResultSet) {
+                    try {
+                        updateCount = dbcStatement.getUpdateRowCount();
+                        if (updateCount >= 0) {
+                            curResult.setUpdateCount(updateCount);
+                            statistics.addRowsUpdated(updateCount);
+                        }
+                    } catch (DBCException e) {
+                        // In some cases we can't read update count
+                        // This is bad but we can live with it
+                        // Just print a warning
+                        log.warn("Can't obtain update count", e);
+                    }
+                }
+                if (hasResultSet && fetchResultSets) {
+                    resultSetNumber++;
+                    fetchResultSetNumber = resultSetNumber;
+                }
+                if (!hasResultSet && updateCount < 0) {
+                    // Nothing else to fetch
+                    break;
+                }
+
+                if (session.getDataSource().getInfo().supportsMultipleResults()) {
+                    try {
+                        hasResultSet = dbcStatement.nextResults();
+                    } catch (DBCException e) {
+                        log.error(e);
+                        // #2792: Check this twice. Some drivers (e.g. Sybase jConnect)
+                        // throw error on n'th result fetch - but it still can keep fetching next results
+                        hasResultSet = dbcStatement.nextResults();
+                    }
+                    updateCount = hasResultSet ? -1 : 0;
+                } else {
+                    break;
+                }
+            }
+        }
+        finally {
+            try {
+                curResult.addWarnings(dbcStatement.getStatementWarnings());
+            } catch (Throwable e) {
+                log.warn("Can't read execution warnings", e);
+            }
+            //monitor.subTask("Close query");
+            if (!keepStatementOpen()) {
+                closeStatement();
+            }
+        }
     }
 
     private boolean executeControlCommand(SQLControlCommand command) throws DBException {
