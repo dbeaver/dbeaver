@@ -30,6 +30,8 @@ public class AutoRefreshJob extends AbstractJob {
 
     AutoRefreshJob(AutoRefreshControl refreshControl) {
         super("Auto-refresh job (" + refreshControl.getControlId() + ")");
+        setSystem(true);
+        setUser(false);
         this.refreshControl = refreshControl;
     }
 
