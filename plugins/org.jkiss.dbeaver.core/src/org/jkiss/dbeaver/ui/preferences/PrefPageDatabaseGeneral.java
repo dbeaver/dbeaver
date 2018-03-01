@@ -219,18 +219,18 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
                 if (curLanguage != language) {
                     DBeaverCore.getInstance().setPlatformLanguage(language);
 
-                }
-                if (UIUtils.confirmAction(
-                    getShell(),
-                    "Restart " + GeneralUtils.getProductName(),
-                    "You need to restart " + GeneralUtils.getProductName() + " to perform actual language change.\nDo you want to restart?"))
-                {
-                    DBeaverUI.asyncExec(new Runnable() {
-                        @Override
-                        public void run() {
-                            PlatformUI.getWorkbench().restart();
-                        }
-                    });
+                    if (UIUtils.confirmAction(
+                        getShell(),
+                        "Restart " + GeneralUtils.getProductName(),
+                        "You need to restart " + GeneralUtils.getProductName() + " to perform actual language change.\nDo you want to restart?"))
+                    {
+                        DBeaverUI.asyncExec(new Runnable() {
+                            @Override
+                            public void run() {
+                                PlatformUI.getWorkbench().restart();
+                            }
+                        });
+                    }
                 }
             } catch (DBException e) {
                 DBeaverUI.getInstance().showError("Change language", "Can't switch language to " + language, e);

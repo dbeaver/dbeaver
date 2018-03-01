@@ -819,6 +819,14 @@ public class CoreMessages extends NLS {
 	public static String pref_page_database_resultsets_checkbox_string_use_editor;
 	public static String pref_page_database_resultsets_checkbox_string_use_editor_tip;
 
+	public static String pref_page_error_handle_name;
+	public static String pref_page_error_handle_description;
+	public static String pref_page_error_handle_group_execute_title;
+	public static String pref_page_error_handle_recover_enabled_label;
+	public static String pref_page_error_handle_recover_enabled_tip;
+	public static String pref_page_error_handle_recover_retry_count_label;
+	public static String pref_page_error_handle_recover_retry_count_tip;
+
     public static String pref_page_query_manager_checkbox_ddl_executions;
 	public static String pref_page_query_manager_checkbox_metadata_read;
     public static String pref_page_query_manager_checkbox_metadata_write;
