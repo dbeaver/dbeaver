@@ -29,7 +29,8 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.*;
@@ -1468,7 +1469,11 @@ public final class DBUtils {
         return list;
     }
 
-    public static boolean tryExecuteRecover(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, @NotNull DBRRunnableWithProgress runnable) throws DBException {
+    /**
+     * @param param DBRProgressProgress monitor or DBCSession
+     *
+     */
+    public static <T> boolean tryExecuteRecover(@NotNull T param, @NotNull DBPDataSource dataSource, @NotNull DBRRunnableParametrized<T> runnable) throws DBException {
         int tryCount = 1;
         boolean recoverEnabled = dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.EXECUTE_RECOVER_ENABLED);
         if (recoverEnabled) {
@@ -1477,7 +1482,7 @@ public final class DBUtils {
         Throwable lastError = null;
         for (int i = 0; i < tryCount; i++) {
             try {
-                runnable.run(monitor);
+                runnable.run(param);
                 lastError = null;
                 break;
             } catch (InvocationTargetException e) {
@@ -1487,6 +1492,14 @@ public final class DBUtils {
                     break;
                 }
                 log.debug("Invalidate datasource '" + dataSource.getContainer().getName() + "' connections...");
+                DBRProgressMonitor monitor;
+                if (param instanceof DBRProgressMonitor) {
+                    monitor = (DBRProgressMonitor) param;
+                } else if (param instanceof DBCSession) {
+                    monitor = ((DBCSession) param).getProgressMonitor();
+                } else {
+                    monitor = new VoidProgressMonitor();
+                }
                 InvalidateJob.invalidateDataSource(monitor, dataSource, false);
                 if (i < tryCount - 1) {
                     log.error("Operation failed. Retry count remains = " + (tryCount - i - 1), lastError);
@@ -1501,4 +1514,5 @@ public final class DBUtils {
         }
         return true;
     }
+
 }

@@ -113,7 +113,7 @@ public final class ModelPreferences
     private static void initializeDefaultPreferences(DBPPreferenceStore store) {
         // Common
         PrefUtils.setDefaultPreferenceValue(store, QUERY_ROLLBACK_ON_ERROR, false);
-        PrefUtils.setDefaultPreferenceValue(store, EXECUTE_RECOVER_ENABLED, true);
+        PrefUtils.setDefaultPreferenceValue(store, EXECUTE_RECOVER_ENABLED, false);
         PrefUtils.setDefaultPreferenceValue(store, EXECUTE_RECOVER_RETRY_COUNT, 1);
 
         // SQL execution
