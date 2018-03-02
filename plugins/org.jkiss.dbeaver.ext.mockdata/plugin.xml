@@ -6,6 +6,8 @@
     <extension-point id="org.jkiss.dbeaver.mockGenerator" name="Mock data generator" schema="schema/org.jkiss.dbeaver.mockGenerator.exsd"/>
 
     <extension point="org.eclipse.ui.handlers">
+        <handler commandId="org.jkiss.dbeaver.ext.mockdata.button" class="org.jkiss.dbeaver.ext.mockdata.handlers.MockDataHandler" />
+
         <handler commandId="org.jkiss.dbeaver.ext.mockdata.forSelection" class="org.jkiss.dbeaver.ext.mockdata.handlers.MockDataHandler">
             <enabledWhen>
                 <with variable="selection">
@@ -19,14 +21,21 @@
     </extension>
 
     <extension point="org.eclipse.ui.commands">
+        <command id="org.jkiss.dbeaver.ext.mockdata.button" name="Generate Mock Data" description="Mock Data Generator"/>
         <command id="org.jkiss.dbeaver.ext.mockdata.forSelection" name="Generate Mock Data" description="Mock Data Generator"/>
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
+        <image commandId="org.jkiss.dbeaver.ext.mockdata.button" icon="icons/mock_data.png"/>
         <image commandId="org.jkiss.dbeaver.ext.mockdata.forSelection" icon="icons/mock_data.png"/>
     </extension>
 
     <extension point="org.eclipse.ui.menus">
+        <!-- Results viewer status bar additions -->
+        <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.ui.controls.resultset.status?after=additions">
+            <command commandId="org.jkiss.dbeaver.ext.mockdata.button"/>
+        </menuContribution>
+
         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?before=generate">
             <command
                     commandId="org.jkiss.dbeaver.ext.mockdata.forSelection"
