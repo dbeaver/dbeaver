@@ -47,7 +47,7 @@ public class MockDataSettings {
     public static final String KEY_PRESET_ID = "presetId"; //$NON-NLS-1$
     public static final String KEY_GENERATOR_SECTION = "GENERATOR_SECTION"; //$NON-NLS-1$
 
-    private DBSEntity dbsEntity;
+    private DBSEntity entity;
     private Collection<DBSAttributeBase> attributes;
 
     private boolean removeOldData;
@@ -61,7 +61,7 @@ public class MockDataSettings {
     public void init(MockDataExecuteWizard wizard) throws DBException {
         List<DBSDataManipulator> databaseObjects = wizard.getDatabaseObjects();
         DBSDataManipulator dataManipulator = databaseObjects.iterator().next(); // TODO only the first
-        dbsEntity = (DBSEntity) dataManipulator;
+        entity = (DBSEntity) dataManipulator;
         attributes = new ArrayList<>();
 
         try {
@@ -69,7 +69,7 @@ public class MockDataSettings {
                 @Override
                 public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     try {
-                        attributes.addAll(DBUtils.getRealAttributes(dbsEntity.getAttributes(monitor)));
+                        attributes.addAll(DBUtils.getRealAttributes(entity.getAttributes(monitor)));
 
                         MockGeneratorRegistry generatorRegistry = MockGeneratorRegistry.getInstance();
                         for (DBSAttributeBase attribute : attributes) {
@@ -100,8 +100,8 @@ public class MockDataSettings {
         }
     }
 
-    public DBSEntity getDbsEntity() {
-        return dbsEntity;
+    public DBSEntity getEntity() {
+        return entity;
     }
 
     public Collection<DBSAttributeBase> getAttributes() {
@@ -171,7 +171,7 @@ public class MockDataSettings {
         // load selected generators
         selectedAttribute = dialogSettings.get(KEY_SELECTED_ATTRIBUTE);
         VoidProgressMonitor voidProgressMonitor = new VoidProgressMonitor();
-        IDialogSettings tableSection = UIUtils.getSettingsSection(dialogSettings, dbsEntity.getName());
+        IDialogSettings tableSection = UIUtils.getSettingsSection(dialogSettings, entity.getName());
         for (Map.Entry<String, AttributeGeneratorProperties> entry : attributeGenerators.entrySet()) {
             String attributeName = entry.getKey();
             IDialogSettings attributeSection = UIUtils.getSettingsSection(tableSection, attributeName);
@@ -204,7 +204,7 @@ public class MockDataSettings {
 
         // save selected generators
         dialogSettings.put(KEY_SELECTED_ATTRIBUTE, selectedAttribute);
-        IDialogSettings tableSection = UIUtils.getSettingsSection(dialogSettings, dbsEntity.getName());
+        IDialogSettings tableSection = UIUtils.getSettingsSection(dialogSettings, entity.getName());
         for (Map.Entry<String, AttributeGeneratorProperties> attrEntry : attributeGenerators.entrySet()) {
             String attributeName = attrEntry.getKey();
 
