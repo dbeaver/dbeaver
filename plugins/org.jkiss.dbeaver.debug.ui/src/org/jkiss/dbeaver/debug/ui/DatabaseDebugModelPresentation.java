@@ -29,6 +29,7 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
+import org.jkiss.dbeaver.debug.core.breakpoints.DatabaseLineBreakpoint;
 import org.jkiss.dbeaver.debug.core.model.DatabaseProcess;
 import org.jkiss.dbeaver.debug.core.model.DatabaseStackFrame;
 import org.jkiss.dbeaver.debug.core.model.DatabaseThread;
@@ -92,6 +93,13 @@ public class DatabaseDebugModelPresentation extends LabelProvider implements IDe
             if (element instanceof DatabaseVariable) {
                 DatabaseVariable variable = (DatabaseVariable) element;
                 return variable.getName();
+            }
+            if (element instanceof DatabaseLineBreakpoint) {
+                DatabaseLineBreakpoint breakpoint = (DatabaseLineBreakpoint) element;
+                String databaseName = breakpoint.getDatabaseName();
+                String schemaName = breakpoint.getSchemaName();
+                String procedureName = breakpoint.getProcedureName();
+                return databaseName + '.' + schemaName + '.' + procedureName + " - [line: "+ breakpoint.getLineNumber()+ "]";
             }
         } catch (CoreException e) {
             return "<not responding>";

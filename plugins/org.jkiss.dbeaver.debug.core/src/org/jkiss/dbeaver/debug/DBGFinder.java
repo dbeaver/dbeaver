@@ -10,4 +10,6 @@ public interface DBGFinder {
     
     DBSObject findObject(Map<String, Object> context, Object identifier, DBRProgressMonitor monitor) throws DBException;
 
+    Map<String, Object> createContext(DBSObject databaseObject);
+
 }

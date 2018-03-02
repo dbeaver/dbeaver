@@ -23,6 +23,11 @@ public class IdeCore {
 	
 	public static final String BUNDLE_SYMBOLIC_NAME = "org.jkiss.dbeaver.runtime.ide.core"; //$NON-NLS-1$
 	
+    public static final String MARKER_ID_DATASOURCE = BUNDLE_SYMBOLIC_NAME + '.' + "datasourceMarker"; //$NON-NLS-1$
+
+    public static final String MARKER_ATTRIBUTE_DATASOURCE_ID = BUNDLE_SYMBOLIC_NAME + '.' + "datasourceId"; //$NON-NLS-1$
+    public static final String MARKER_ATTRIBUTE_NODE_PATH = BUNDLE_SYMBOLIC_NAME + '.' + "nodePath"; //$NON-NLS-1$
+
 	public static IStatus createError(String message) {
 		return new Status(IStatus.ERROR, BUNDLE_SYMBOLIC_NAME, message);
 	}

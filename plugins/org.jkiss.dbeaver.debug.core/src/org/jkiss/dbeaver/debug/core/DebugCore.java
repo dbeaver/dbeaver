@@ -48,6 +48,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
+import org.jkiss.dbeaver.runtime.ide.core.IdeCore;
 
 public class DebugCore {
 
@@ -57,8 +58,15 @@ public class DebugCore {
     public static final String MODEL_IDENTIFIER_DATABASE = BUNDLE_SYMBOLIC_NAME + '.' + "database"; //$NON-NLS-1$
     public static final String MODEL_IDENTIFIER_PROCEDURE = BUNDLE_SYMBOLIC_NAME + '.' + "procedure"; //$NON-NLS-1$
 
-    public static final String BREAKPOINT_DATABASE = BUNDLE_SYMBOLIC_NAME + '.' + "databaseBreakpointMarker"; //$NON-NLS-1$
-    public static final String BREAKPOINT_DATABASE_LINE = BUNDLE_SYMBOLIC_NAME + '.' + "databaseLineBreakpointMarker"; //$NON-NLS-1$
+    public static final String BREAKPOINT_ID_DATABASE = BUNDLE_SYMBOLIC_NAME + '.' + "databaseBreakpointMarker"; //$NON-NLS-1$
+    public static final String BREAKPOINT_ID_DATABASE_LINE = BUNDLE_SYMBOLIC_NAME + '.' + "databaseLineBreakpointMarker"; //$NON-NLS-1$
+
+    public static final String BREAKPOINT_ATTRIBUTE_DATASOURCE_ID = IdeCore.MARKER_ATTRIBUTE_DATASOURCE_ID;
+    public static final String BREAKPOINT_ATTRIBUTE_DATABASE_NAME = BUNDLE_SYMBOLIC_NAME + '.' + "databaseName"; //$NON-NLS-1$
+    public static final String BREAKPOINT_ATTRIBUTE_SCHEMA_NAME = BUNDLE_SYMBOLIC_NAME + '.' + "schemaName"; //$NON-NLS-1$
+    public static final String BREAKPOINT_ATTRIBUTE_PROCEDURE_NAME = BUNDLE_SYMBOLIC_NAME + '.' + "procedureName"; //$NON-NLS-1$
+    public static final String BREAKPOINT_ATTRIBUTE_PROCEDURE_OID = BUNDLE_SYMBOLIC_NAME + '.' + "procedureOid"; //$NON-NLS-1$
+    public static final String BREAKPOINT_ATTRIBUTE_NODE_PATH = IdeCore.MARKER_ATTRIBUTE_NODE_PATH;
 
     public static final String SOURCE_CONTAINER_TYPE_DATASOURCE = BUNDLE_SYMBOLIC_NAME + '.' + "datasourceSourceContainerType"; //$NON-NLS-1$
 
@@ -94,7 +102,7 @@ public class DebugCore {
 
     public static final String ATTR_NODE_PATH = BUNDLE_SYMBOLIC_NAME + '.' + "ATTR_NODE_PATH"; //$NON-NLS-1$
     public static final String ATTR_NODE_PATH_DEFAULT = ""; //$NON-NLS-1$
-
+    
     private static Log log = Log.getLog(DebugCore.class);
 
     public static void log(IStatus status) {

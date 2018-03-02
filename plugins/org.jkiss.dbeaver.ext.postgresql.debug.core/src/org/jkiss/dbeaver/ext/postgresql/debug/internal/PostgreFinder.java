@@ -1,5 +1,6 @@
 package org.jkiss.dbeaver.ext.postgresql.debug.internal;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.jkiss.dbeaver.DBException;
@@ -51,6 +52,25 @@ public class PostgreFinder implements DBGFinder {
         }
         PostgreProcedure procedure = schema.getProcedure(monitor, oid);
         return procedure;
+    }
+
+    @Override
+    public Map<String, Object> createContext(DBSObject databaseObject) {
+        HashMap<String, Object> context = new HashMap<String, Object>();
+        if (databaseObject instanceof PostgreProcedure) {
+            PostgreProcedure procedure = (PostgreProcedure) databaseObject;
+            context.put(DBGController.PROCEDURE_OID, procedure.getObjectId());
+            context.put(DBGController.PROCEDURE_NAME, procedure.getName());
+            PostgreSchema schema = procedure.getContainer();
+            if (schema != null) {
+                context.put(DBGController.SCHEMA_NAME, schema.getName());
+            }
+            PostgreDatabase database = procedure.getDatabase();
+            if (database != null) {
+                context.put(DBGController.DATABASE_NAME, database.getName());
+            }
+        }
+        return context;
     }
 
 }

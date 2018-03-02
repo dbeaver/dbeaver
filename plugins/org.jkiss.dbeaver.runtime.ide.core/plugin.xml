@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         id="datasourceMarker"
+         name="%datasourceMarker.name"
+         point="org.eclipse.core.resources.markers">
+      <attribute
+            name="org.jkiss.dbeaver.runtime.ide.core.datasourceId">
+      </attribute>
+      <attribute
+            name="org.jkiss.dbeaver.runtime.ide.core.nodePath">
+      </attribute>
+   </extension>
+
+</plugin>
