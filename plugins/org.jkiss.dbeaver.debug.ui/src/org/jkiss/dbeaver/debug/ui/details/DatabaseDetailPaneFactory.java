@@ -27,7 +27,7 @@ public class DatabaseDetailPaneFactory implements IDetailPaneFactory {
                 IBreakpoint breakpoint = (IBreakpoint) first;
                 try {
                     String type = breakpoint.getMarker().getType();
-                    if (DebugCore.BREAKPOINT_DATABASE_LINE.equals(type)) {
+                    if (DebugCore.BREAKPOINT_ID_DATABASE_LINE.equals(type)) {
                         set.add(DatabaseStandardBreakpointPane.DETAIL_PANE_STANDARD_BREAKPOINT);
                     } else {
                         set.add(DatabaseStandardBreakpointPane.DETAIL_PANE_STANDARD_BREAKPOINT);
@@ -49,7 +49,7 @@ public class DatabaseDetailPaneFactory implements IDetailPaneFactory {
                 IBreakpoint breakpoint = (IBreakpoint) first;
                 try {
                     String type = breakpoint.getMarker().getType();
-                    if (DebugCore.BREAKPOINT_DATABASE_LINE.equals(type)) {
+                    if (DebugCore.BREAKPOINT_ID_DATABASE_LINE.equals(type)) {
                         return DatabaseStandardBreakpointPane.DETAIL_PANE_STANDARD_BREAKPOINT;
                     } else {
                         return DatabaseStandardBreakpointPane.DETAIL_PANE_STANDARD_BREAKPOINT;

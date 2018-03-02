@@ -11,17 +11,18 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IBreakpoint;
 import org.jkiss.dbeaver.debug.core.DebugCore;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 public class DatabaseLineBreakpoint extends DatabaseBreakpoint implements IDatabaseLineBreakpoint {
 
-    public DatabaseLineBreakpoint(IResource resource, final int lineNumber, final int charStart, final int charEnd,
-                                  final boolean add) throws DebugException {
-        this(resource, lineNumber, charStart, charEnd, add, new HashMap<String, Object>(),
-            DebugCore.BREAKPOINT_DATABASE_LINE);
+    public DatabaseLineBreakpoint(DBSObject databaseObject, IResource resource, final int lineNumber, final int charStart,
+                                  final int charEnd, final boolean add) throws DebugException {
+        this(databaseObject, resource, lineNumber, charStart, charEnd, add,
+            new HashMap<String, Object>(), DebugCore.BREAKPOINT_ID_DATABASE_LINE);
     }
 
-    protected DatabaseLineBreakpoint(final IResource resource, final int lineNumber, final int charStart,
-                                     final int charEnd, final boolean add, final Map<String, Object> attributes, final String markerType) throws DebugException {
+    protected DatabaseLineBreakpoint(DBSObject databaseObject, final IResource resource, final int lineNumber,
+                                     final int charStart, final int charEnd, final boolean add, final Map<String, Object> attributes, final String markerType) throws DebugException {
         IWorkspaceRunnable wr = new IWorkspaceRunnable() {
             @Override
             public void run(IProgressMonitor monitor) throws CoreException {
@@ -30,12 +31,14 @@ public class DatabaseLineBreakpoint extends DatabaseBreakpoint implements IDatab
                 setMarker(resource.createMarker(markerType));
 
                 // add attributes
+                addDatabaseBreakpointAttributes(attributes, databaseObject);
                 addLineBreakpointAttributes(attributes, getModelIdentifier(), true, lineNumber, charStart, charEnd);
                 ensureMarker().setAttributes(attributes);
 
                 // add to breakpoint manager if requested
                 register(add);
             }
+
         };
         run(getMarkerRule(resource), wr);
     }

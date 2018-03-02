@@ -16,7 +16,9 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.debug.core.DebugCore;
 import org.jkiss.dbeaver.debug.core.breakpoints.DatabaseLineBreakpoint;
+import org.jkiss.dbeaver.debug.ui.DebugUI;
 import org.jkiss.dbeaver.model.app.DBPProjectManager;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 public class ToggleProcedureBreakpointTarget implements IToggleBreakpointsTargetExtension2 {
     
@@ -54,8 +56,9 @@ public class ToggleProcedureBreakpointTarget implements IToggleBreakpointsTarget
             }
         }
         int charstart = -1, charend = -1;
+        DBSObject databaseObject = DebugUI.extractDatabaseObject(editorPart);
         // create line breakpoint (doc line numbers start at 0)
-        new DatabaseLineBreakpoint(resource, lineNumber + 1, charstart, charend, true);
+        new DatabaseLineBreakpoint(databaseObject, resource, lineNumber + 1, charstart, charend, true);
     }
 
     protected IResource extractResource(IEditorPart part, ISelection selection)
