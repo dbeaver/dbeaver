@@ -22,10 +22,16 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.mockdata.MockDataGenerateTool;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
+import org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class MockDataHandler extends AbstractHandler {
@@ -38,8 +44,29 @@ public class MockDataHandler extends AbstractHandler {
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
 
-        List<DBSObject> selectedObjects = NavigatorUtils.getSelectedObjects(
-                HandlerUtil.getCurrentSelection(event));
+        List<DBSObject> selectedObjects;
+        if (event.getCommand().getId().endsWith("button")) {
+            IResultSetController resultSet = ResultSetCommandHandler.getActiveResultSet(HandlerUtil.getActivePart(event));
+            if (resultSet == null) {
+                DBeaverUI.getInstance().showError("Mock Data", "No active results viewer");
+                return null;
+            }
+
+            DBSDataContainer dataContainer = resultSet.getDataContainer();
+            if (dataContainer == null || dataContainer.getDataSource() == null) {
+                DBeaverUI.getInstance().showError("Mock Data", "Not connected to a database");
+                return null;
+            }
+            if (!(dataContainer instanceof DBSDataManipulator)) {
+                DBeaverUI.getInstance().showError("Mock Data", "Mock Data can be generated for a table only");
+                return null;
+            }
+            selectedObjects = new ArrayList<>();
+            selectedObjects.add(dataContainer);
+        } else {
+            selectedObjects = NavigatorUtils.getSelectedObjects(
+                    HandlerUtil.getCurrentSelection(event));
+        }
 
         MockDataGenerateTool mockDataGenerator = new MockDataGenerateTool();
         try {
