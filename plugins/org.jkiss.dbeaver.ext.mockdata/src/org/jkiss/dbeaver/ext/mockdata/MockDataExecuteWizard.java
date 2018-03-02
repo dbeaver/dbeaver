@@ -83,10 +83,10 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
     public boolean canFinish() {
         try {
             Collection<? extends DBSEntityAttribute> attributes =
-                    mockDataSettings.getDbsEntity().getAttributes(new VoidProgressMonitor());
+                    mockDataSettings.getEntity().getAttributes(new VoidProgressMonitor());
             return super.canFinish() && !CommonUtils.isEmpty(DBUtils.getRealAttributes(attributes));
         } catch (DBException ex) {
-            log.error("Error accessing DB entity " + mockDataSettings.getDbsEntity().getName(), ex);
+            log.error("Error accessing DB entity " + mockDataSettings.getEntity().getName(), ex);
             return false;
         }
     }

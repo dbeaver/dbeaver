@@ -30,6 +30,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mockdata.MockDataSettings.AttributeGeneratorProperties;
 import org.jkiss.dbeaver.ext.mockdata.model.MockGeneratorDescriptor;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -53,6 +55,7 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
     private MockDataSettings mockDataSettings;
 
     private CLabel noGeneratorInfoLabel;
+    private Text entityNameText;
     private Button removeOldDataCheck;
     private Text rowsText;
 
@@ -91,13 +94,17 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
             Group settingsGroup = UIUtils.createControlGroup(
                     composite, MockDataMessages.tools_mockdata_wizard_page_settings_group_settings, 4, GridData.FILL_HORIZONTAL, 0);
 
-            this.removeOldDataCheck = UIUtils.createLabelCheckbox(
+            this.entityNameText = UIUtils.createLabelText(settingsGroup, "Entity", "", SWT.BORDER | SWT.READ_ONLY);
+            GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+            gd.widthHint = 230;
+            this.entityNameText.setLayoutData(gd);
+
+            this.removeOldDataCheck = UIUtils.createCheckbox(
                     settingsGroup,
                     MockDataMessages.tools_mockdata_wizard_page_settings_checkbox_remove_old_data,
-                    mockDataSettings.isRemoveOldData());
+                    null,
+                    mockDataSettings.isRemoveOldData(), 4);
             removeOldDataCheck.addSelectionListener(changeListener);
-            removeOldDataCheck.setLayoutData(
-                    new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 3, 1));
 
             this.rowsText = UIUtils.createLabelText(
                     settingsGroup, "Rows ", String.valueOf(mockDataSettings.getRowsNumber()), SWT.BORDER,
@@ -389,6 +396,8 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
                 rowsText.setText(String.valueOf(mockDataSettings.getRowsNumber()));
                 columnsTableViewer.setInput(mockDataSettings.getAttributes());
             }
+
+            entityNameText.setText(DBUtils.getObjectFullName(mockDataSettings.getEntity(), DBPEvaluationContext.DML));
 
             // select the attributes table item
             final Table table = columnsTableViewer.getTable();
