@@ -52,6 +52,7 @@ import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.actions.CompoundContributionItem;
+import org.eclipse.ui.internal.IWorkbenchConstants;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.CommandContributionItemParameter;
 import org.eclipse.ui.menus.IMenuService;
@@ -118,6 +119,10 @@ public class ResultSetViewer extends Viewer
     implements DBPContextProvider, IResultSetController, ISaveablePart2, IAdaptable
 {
     private static final Log log = Log.getLog(ResultSetViewer.class);
+
+    private static final String TOOLBAR_GROUP_NAVIGATION = "navigation";
+    private static final String TOOLBAR_GROUP_PRESENTATIONS = "presentations";
+    private static final String TOOLBAR_GROUP_ADDITIONS = IWorkbenchActionConstants.MB_ADDITIONS;
 
     private static final String SETTINGS_SECTION_PRESENTATIONS = "presentations";
 
@@ -1070,6 +1075,7 @@ public class ResultSetViewer extends Viewer
             navToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_FETCH_PAGE));
             navToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_FETCH_ALL));
             navToolbar.createControl(statusBar);
+            navToolbar.add(new Separator(TOOLBAR_GROUP_NAVIGATION));
             toolbarList.add(navToolbar);
         }
         {
@@ -1108,7 +1114,8 @@ public class ResultSetViewer extends Viewer
 
         {
             ToolBarManager addToolbar = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
-            addToolbar.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
+            addToolbar.add(new Separator(TOOLBAR_GROUP_PRESENTATIONS));
+            addToolbar.add(new Separator(TOOLBAR_GROUP_ADDITIONS));
             final IMenuService menuService = getSite().getService(IMenuService.class);
             if (menuService != null) {
                 menuService.populateContributionManager(addToolbar, "toolbar:org.jkiss.dbeaver.ui.controls.resultset.status");
