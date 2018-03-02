@@ -174,7 +174,7 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                 } catch (Exception e) {
                     String message = "    Error removing the data: " + e.getMessage() + ".";
                     log.error(message, e);
-                    logPage.appendLog(message, true);
+                    logPage.appendLog(message + "\n", true);
                 } finally {
                     monitor.done();
                 }
@@ -242,9 +242,19 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                         }
                         insertStats.accumulate(batch.execute(session));
                     }
+                    catch (Exception e) {
+                        String message = "    Error generating Mock Data: " + e.getMessage() + ".";
+                        log.error(message, e);
+                        logPage.appendLog(message + "\n", true);
+                        if (e instanceof DBException) {
+                            throw e;
+                        }
+                    }
                     finally {
-                        batch.close();
-                        batch = null;
+                        if (batch != null) {
+                            batch.close();
+                            batch = null;
+                        }
                     }
                 }
 

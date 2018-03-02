@@ -35,12 +35,15 @@ public class MockGeneratorDescriptor extends DataTypeAbstractDescriptor<MockValu
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.mockGenerator"; //$NON-NLS-1$
 
+    public static final String TAG_PRESET = "preset"; //NON-NLS-1
+
     private final String label;
     private final String description;
     private final String link;
     private final String url;
     private final DBPImage icon;
     private List<DBPPropertyDescriptor> properties = new ArrayList<>();
+    private List<Preset> presets = new ArrayList<>();
 
     public MockGeneratorDescriptor(IConfigurationElement config)
     {
@@ -53,6 +56,15 @@ public class MockGeneratorDescriptor extends DataTypeAbstractDescriptor<MockValu
 
         for (IConfigurationElement prop : config.getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP)) {
             properties.addAll(PropertyDescriptor.extractProperties(prop));
+        }
+
+        for (IConfigurationElement preset : config.getChildren(TAG_PRESET)) {
+            presets.add(new Preset(
+                    preset.getAttribute("id"),
+                    preset.getAttribute("label"),
+                    preset.getAttribute("mnemonics"),
+                    PropertyDescriptor.extractProperties(preset)
+            ));
         }
     }
 
@@ -94,4 +106,37 @@ public class MockGeneratorDescriptor extends DataTypeAbstractDescriptor<MockValu
         return createInstance();
     }
 
+    public List<Preset> getPresets() {
+        return presets;
+    }
+
+    public static class Preset {
+        private final String id;
+        private final String label;
+        private final String mnemonics;
+        private final List<DBPPropertyDescriptor> properties;
+
+        public Preset(String id, String label, String mnemonics, List<DBPPropertyDescriptor> properties) {
+            this.id = id;
+            this.label = label;
+            this.mnemonics = mnemonics;
+            this.properties = properties;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public String getLabel() {
+            return label;
+        }
+
+        public String getMnemonics() {
+            return mnemonics;
+        }
+
+        public List<DBPPropertyDescriptor> getProperties() {
+            return properties;
+        }
+    }
 }
