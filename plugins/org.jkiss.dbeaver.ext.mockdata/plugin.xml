@@ -22,6 +22,10 @@
         <command id="org.jkiss.dbeaver.ext.mockdata.forSelection" name="Generate Mock Data" description="Mock Data Generator"/>
     </extension>
 
+    <extension point="org.eclipse.ui.commandImages">
+        <image commandId="org.jkiss.dbeaver.ext.mockdata.forSelection" icon="icons/mock_data.png"/>
+    </extension>
+
     <extension point="org.eclipse.ui.menus">
         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?before=generate">
             <command
