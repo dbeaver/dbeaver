@@ -91,13 +91,19 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
                 }
             };
 
-            Group settingsGroup = UIUtils.createControlGroup(
-                    composite, MockDataMessages.tools_mockdata_wizard_page_settings_group_settings, 4, GridData.FILL_HORIZONTAL, 0);
-
-            this.entityNameText = UIUtils.createLabelText(settingsGroup, "Entity", "", SWT.BORDER | SWT.READ_ONLY);
+            Composite entityPlaceholder = UIUtils.createPlaceholder(composite, 2);
+            this.entityNameText = UIUtils.createLabelText(entityPlaceholder, "Entity", "", SWT.NONE | SWT.READ_ONLY);
             GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
             gd.widthHint = 230;
-            this.entityNameText.setLayoutData(gd);
+            gd.verticalIndent = 5;
+            gd.horizontalIndent = 9;
+            entityPlaceholder.setLayoutData(gd);
+
+            Group settingsGroup = UIUtils.createControlGroup(
+                    composite, MockDataMessages.tools_mockdata_wizard_page_settings_group_settings, 4, GridData.FILL_HORIZONTAL, 0);
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.verticalIndent = 5;
+            settingsGroup.setLayoutData(gd);
 
             this.removeOldDataCheck = UIUtils.createCheckbox(
                     settingsGroup,
@@ -121,11 +127,14 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
 
         {
             Group generatorsGroup = UIUtils.createControlGroup(composite, "Generators", 5, GridData.FILL_BOTH, 0);
+            GridData gd = new GridData(GridData.FILL_BOTH);
+            gd.verticalIndent = 5;
+            generatorsGroup.setLayoutData(gd);
 
             columnsTableViewer = new TableViewer(generatorsGroup, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
             final Table table = columnsTableViewer.getTable();
 
-            GridData gd = new GridData(GridData.FILL_VERTICAL);
+            gd = new GridData(GridData.FILL_VERTICAL);
             gd.widthHint = 230;
             table.setLayoutData(gd);
             table.setHeaderVisible(true);
@@ -398,6 +407,7 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
             }
 
             entityNameText.setText(DBUtils.getObjectFullName(mockDataSettings.getEntity(), DBPEvaluationContext.DML));
+            propsEditor.getControl().setFocus();
 
             // select the attributes table item
             final Table table = columnsTableViewer.getTable();
