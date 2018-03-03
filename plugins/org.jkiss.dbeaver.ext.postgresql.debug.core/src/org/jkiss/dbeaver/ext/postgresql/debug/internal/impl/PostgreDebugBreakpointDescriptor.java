@@ -28,7 +28,8 @@ public class PostgreDebugBreakpointDescriptor implements DBGBreakpointDescriptor
 
     private final PostgreDebugBreakpointProperties properties;
 
-    public PostgreDebugBreakpointDescriptor(PostgreDebugObjectDescriptor obj, PostgreDebugBreakpointProperties properties) throws DBGException {
+    public PostgreDebugBreakpointDescriptor(PostgreDebugObjectDescriptor obj,
+            PostgreDebugBreakpointProperties properties) throws DBGException {
         this.obj = obj;
         this.properties = properties;
 

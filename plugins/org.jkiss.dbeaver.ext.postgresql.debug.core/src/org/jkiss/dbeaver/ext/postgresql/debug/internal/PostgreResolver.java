@@ -14,15 +14,16 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 public class PostgreResolver implements DBGResolver {
-    
+
     private final PostgreDataSource dataSource;
-    
+
     public PostgreResolver(PostgreDataSource dataSource) {
         this.dataSource = dataSource;
     }
 
     @Override
-    public DBSObject resolveObject(Map<String, Object> context, Object identifier, DBRProgressMonitor monitor) throws DBException {
+    public DBSObject resolveObject(Map<String, Object> context, Object identifier, DBRProgressMonitor monitor)
+            throws DBException {
         Long oid = null;
         final String errorIdentifier = String.format("Unknown procedure identifier %s", identifier);
         if (identifier instanceof Number) {

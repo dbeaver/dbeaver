@@ -34,13 +34,12 @@ import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 public class PostgreSqlDebugCore {
-    
+
     public static final String BUNDLE_SYMBOLIC_NAME = "org.jkiss.dbeaver.ext.postgresql.debug.core"; //$NON-NLS-1$
-    
+
     public static final String CONFIGURATION_TYPE = BUNDLE_SYMBOLIC_NAME + '.' + "pgSQL";//$NON-NLS-1$
 
-    public static ILaunchConfigurationWorkingCopy createConfiguration(DBSObject launchable)
-            throws CoreException {
+    public static ILaunchConfigurationWorkingCopy createConfiguration(DBSObject launchable) throws CoreException {
         boolean isInstance = launchable instanceof PostgreProcedure;
         if (!isInstance) {
             throw DebugCore.abort(PostgreDebugCoreMessages.PostgreSqlDebugCore_e_procedure_required);
@@ -50,22 +49,23 @@ public class PostgreSqlDebugCore {
         DBPDataSourceContainer dataSourceContainer = dataSource.getContainer();
         PostgreDatabase database = procedure.getDatabase();
         PostgreSchema schema = procedure.getContainer();
-        
+
         String databaseName = database.getName();
         String schemaName = schema.getName();
         String procedureName = procedure.getName();
         Object[] bindings = new Object[] { dataSourceContainer.getName(), databaseName, procedureName, schemaName };
         String name = NLS.bind(PostgreDebugCoreMessages.PostgreSqlDebugCore_launch_configuration_name, bindings);
-        //Let's use metadata area for storage
+        // Let's use metadata area for storage
         IContainer container = null;
-        ILaunchConfigurationWorkingCopy workingCopy = DebugCore.createConfiguration(container, CONFIGURATION_TYPE, name);
+        ILaunchConfigurationWorkingCopy workingCopy = DebugCore.createConfiguration(container, CONFIGURATION_TYPE,
+                name);
         workingCopy.setAttribute(DebugCore.ATTR_DRIVER_ID, dataSourceContainer.getDriver().getId());
         workingCopy.setAttribute(DebugCore.ATTR_DATASOURCE_ID, dataSourceContainer.getId());
         workingCopy.setAttribute(DebugCore.ATTR_DATABASE_NAME, databaseName);
         workingCopy.setAttribute(DebugCore.ATTR_SCHEMA_NAME, schemaName);
         workingCopy.setAttribute(DebugCore.ATTR_PROCEDURE_OID, String.valueOf(procedure.getObjectId()));
         workingCopy.setAttribute(DebugCore.ATTR_PROCEDURE_NAME, procedureName);
-        
+
         workingCopy.setAttribute(DebugCore.ATTR_ATTACH_PROCESS, DebugCore.ATTR_ATTACH_PROCESS_DEFAULT);
         workingCopy.setAttribute(DebugCore.ATTR_ATTACH_KIND, DebugCore.ATTR_ATTACH_KIND_DEFAULT);
         workingCopy.setAttribute(DebugCore.ATTR_SCRIPT_EXECUTE, DebugCore.ATTR_SCRIPT_EXECUTE_DEFAULT);

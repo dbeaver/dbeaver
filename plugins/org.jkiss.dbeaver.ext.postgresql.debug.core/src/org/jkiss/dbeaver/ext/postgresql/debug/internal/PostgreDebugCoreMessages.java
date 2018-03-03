@@ -32,7 +32,6 @@ public class PostgreDebugCoreMessages extends NLS {
         NLS.initializeMessages(BUNDLE_NAME, PostgreDebugCoreMessages.class);
     }
 
-    private PostgreDebugCoreMessages()
-    {
+    private PostgreDebugCoreMessages() {
     }
 }

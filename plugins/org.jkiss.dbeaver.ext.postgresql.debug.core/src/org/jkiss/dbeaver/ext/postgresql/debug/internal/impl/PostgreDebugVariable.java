@@ -58,7 +58,7 @@ public class PostgreDebugVariable implements DBGVariable<String> {
     }
 
     public PostgreDebugVariable(String name, String varclass, int linenumber, boolean unique, boolean constant,
-                                boolean notnull, int oid, String val) {
+            boolean notnull, int oid, String val) {
         super();
         this.name = name;
         this.varclass = varclass;
