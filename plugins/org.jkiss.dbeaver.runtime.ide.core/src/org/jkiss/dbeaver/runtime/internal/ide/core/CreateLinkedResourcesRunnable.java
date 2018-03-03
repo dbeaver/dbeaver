@@ -27,7 +27,7 @@ import org.eclipse.core.runtime.ICoreRunnable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.SubMonitor;
-import org.jkiss.dbeaver.runtime.ide.core.IdeCore;
+import org.jkiss.dbeaver.runtime.ide.core.DBeaverIDECore;
 
 public abstract class CreateLinkedResourcesRunnable implements ICoreRunnable {
 
@@ -49,19 +49,19 @@ public abstract class CreateLinkedResourcesRunnable implements ICoreRunnable {
     public void run(IProgressMonitor monitor) throws CoreException {
         if (container == null) {
             String message = composeErrorMessage(container, paths);
-            IStatus error = IdeCore.createError(message);
+            IStatus error = DBeaverIDECore.createError(message);
             throw new CoreException(error);
         }
         SubMonitor subMonitor = SubMonitor.convert(monitor, paths.length);
         for (Path path : paths) {
             if (subMonitor.isCanceled()) {
                 String message = composeCancelMessage(container, path);
-                IStatus cancel = IdeCore.createCancel(message);
+                IStatus cancel = DBeaverIDECore.createCancel(message);
                 throw new CoreException(cancel);
             }
             if (path == null) {
                 String message = composeErrorMessage(container, path);
-                IStatus error = IdeCore.createError(message);
+                IStatus error = DBeaverIDECore.createError(message);
                 throw new CoreException(error);
             }
             createLink(container, path, flags, monitor);

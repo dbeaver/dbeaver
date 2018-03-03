@@ -41,7 +41,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.statushandlers.IStatusAdapterConstants;
 import org.eclipse.ui.statushandlers.StatusAdapter;
 import org.eclipse.ui.statushandlers.StatusManager;
-import org.jkiss.dbeaver.runtime.ide.ui.IdeUi;
+import org.jkiss.dbeaver.runtime.ide.ui.DBeaverIDEUI;
 import org.jkiss.dbeaver.runtime.internal.ide.ui.IdeMessages;
 
 public abstract class CreateLinkHandler extends AbstractHandler {
@@ -59,7 +59,7 @@ public abstract class CreateLinkHandler extends AbstractHandler {
         IContainer container = extractContainer(resource);
         if (container == null) {
             String message = NLS.bind(IdeMessages.CreateLinkHandler_e_create_link_validation, resource);
-            IStatus error = IdeUi.createError(message);
+            IStatus error = DBeaverIDEUI.createError(message);
             StatusAdapter statusAdapter = new StatusAdapter(error);
             statusAdapter.setProperty(IStatusAdapterConstants.TITLE_PROPERTY,
                     IdeMessages.CreateLinkHandler_e_create_link_title);
@@ -92,7 +92,7 @@ public abstract class CreateLinkHandler extends AbstractHandler {
         try {
             context.run(true, true, operation);
         } catch (InvocationTargetException e) {
-            IStatus error = IdeUi.createError(IdeMessages.CreateLinkHandler_e_create_link_message,
+            IStatus error = DBeaverIDEUI.createError(IdeMessages.CreateLinkHandler_e_create_link_message,
                     e.getTargetException());
             StatusAdapter statusAdapter = new StatusAdapter(error);
             statusAdapter.setProperty(IStatusAdapterConstants.TITLE_PROPERTY,

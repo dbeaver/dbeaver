@@ -136,8 +136,9 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
                     return node.getParentNode();
                 }
             });
+        } else if (DBSObject.class.equals(adapter)) {
+            return adapter.cast(getDatabaseObject());
         }
-
         return null;
     }
 

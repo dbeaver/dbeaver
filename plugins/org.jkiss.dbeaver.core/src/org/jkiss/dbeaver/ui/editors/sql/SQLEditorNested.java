@@ -1,6 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +17,6 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -52,10 +52,13 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.compile.DBCCompileLog;
 import org.jkiss.dbeaver.model.exec.compile.DBCSourceHost;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.ide.core.DBeaverIDECore;
+import org.jkiss.dbeaver.runtime.ide.ui.texteditor.DatabaseMarkerAnnotationModel;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ObjectCompilerLogViewer;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
@@ -287,13 +290,12 @@ public abstract class SQLEditorNested<T extends DBSObject>
 
         @Override
         protected IAnnotationModel createAnnotationModel(Object element) throws CoreException {
-            DBPDataSourceContainer dsContainer = EditorUtils.getInputDataSource(SQLEditorNested.this.getEditorInput());
-            if (dsContainer != null) {
-                return new ResourceMarkerAnnotationModel(dsContainer.getRegistry().getProject());
-            }
-            IProject resource = DBeaverCore.getInstance().getProjectManager().getActiveProject();
+            IDatabaseEditorInput editorInput = SQLEditorNested.this.getEditorInput();
+            DBSObject databaseObject = editorInput.getDatabaseObject();
+            DBNDatabaseNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(databaseObject);
+            IResource resource = DBeaverIDECore.resolveWorkspaceResource(databaseObject);
             if (resource != null) {
-                return new ResourceMarkerAnnotationModel(resource);
+                return new DatabaseMarkerAnnotationModel(databaseObject, node, resource);
             }
             return super.createAnnotationModel(element);
         }

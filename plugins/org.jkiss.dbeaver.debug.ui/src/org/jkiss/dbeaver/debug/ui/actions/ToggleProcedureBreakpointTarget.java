@@ -18,7 +18,6 @@
 
 package org.jkiss.dbeaver.debug.ui.actions;
 
-import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.DebugPlugin;
@@ -34,9 +33,11 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.debug.core.DebugCore;
 import org.jkiss.dbeaver.debug.core.breakpoints.DatabaseLineBreakpoint;
+import org.jkiss.dbeaver.debug.core.breakpoints.IDatabaseBreakpoint;
 import org.jkiss.dbeaver.debug.ui.DebugUI;
-import org.jkiss.dbeaver.model.app.DBPProjectManager;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.ide.core.DBeaverIDECore;
 
 public class ToggleProcedureBreakpointTarget implements IToggleBreakpointsTargetExtension2 {
 
@@ -57,6 +58,15 @@ public class ToggleProcedureBreakpointTarget implements IToggleBreakpointsTarget
         if (resource == null) {
             return;
         }
+        DBSObject databaseObject = DebugUI.extractDatabaseObject(editorPart);
+        if (databaseObject == null) {
+            return;
+        }
+        DBNDatabaseNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(databaseObject);
+        if (node == null) {
+            return;
+        }
+        String nodeItemPath = node.getNodeItemPath();
 
         ITextSelection textSelection = (ITextSelection) selection;
         int lineNumber = textSelection.getStartLine();
@@ -64,27 +74,25 @@ public class ToggleProcedureBreakpointTarget implements IToggleBreakpointsTarget
                 .getBreakpoints(DebugCore.MODEL_IDENTIFIER_DATABASE);
         for (int i = 0; i < breakpoints.length; i++) {
             IBreakpoint breakpoint = breakpoints[i];
-            if (resource.equals(breakpoint.getMarker().getResource())) {
-                if (((ILineBreakpoint) breakpoint).getLineNumber() == (lineNumber + 1)) {
-                    DebugUITools.deleteBreakpoints(new IBreakpoint[] { breakpoint }, part.getSite().getShell(), null);
-                    return;
+            if (breakpoint instanceof IDatabaseBreakpoint) {
+                IDatabaseBreakpoint databaseBreakpoint = (IDatabaseBreakpoint) breakpoint;
+                if (nodeItemPath.equals(databaseBreakpoint.getNodePath())) {
+                    if (((ILineBreakpoint) breakpoint).getLineNumber() == (lineNumber + 1)) {
+                        DebugUITools.deleteBreakpoints(new IBreakpoint[] { breakpoint }, part.getSite().getShell(), null);
+                        return;
+                    }
                 }
             }
         }
         int charstart = -1, charend = -1;
-        DBSObject databaseObject = DebugUI.extractDatabaseObject(editorPart);
-        if (databaseObject == null) {
-            return;
-        }
         // create line breakpoint (doc line numbers start at 0)
-        new DatabaseLineBreakpoint(databaseObject, resource, lineNumber + 1, charstart, charend, true);
+        new DatabaseLineBreakpoint(databaseObject, node, resource, lineNumber + 1, charstart, charend, true);
     }
 
     protected IResource extractResource(IEditorPart part, ISelection selection) {
-        // FIXME: AF: resolve more specific resource
-        DBPProjectManager projectManager = DBeaverCore.getInstance().getProjectManager();
-        IProject activeProject = projectManager.getActiveProject();
-        return activeProject;
+        DBSObject databaseObject = DebugUI.extractDatabaseObject(part);
+        IResource resolved = DBeaverIDECore.resolveWorkspaceResource(databaseObject);
+        return resolved;
     }
 
     @Override

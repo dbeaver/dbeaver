@@ -33,6 +33,7 @@ import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.model.Breakpoint;
 import org.jkiss.dbeaver.debug.DBGController;
 import org.jkiss.dbeaver.debug.core.DebugCore;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 public class DatabaseBreakpoint extends Breakpoint implements IDatabaseBreakpoint {
@@ -107,7 +108,13 @@ public class DatabaseBreakpoint extends Breakpoint implements IDatabaseBreakpoin
         }
     }
 
-    protected void addDatabaseBreakpointAttributes(Map<String, Object> attributes, DBSObject databaseObject) {
+    protected void addDatabaseBreakpointAttributes(Map<String, Object> attributes, DBSObject databaseObject, DBNNode node) {
+        String datasourceId = databaseObject.getDataSource().getContainer().getId();
+        attributes.put(BREAKPOINT_ATTRIBUTE_DATASOURCE_ID, datasourceId);
+
+        String nodePath = node.getNodeItemPath();
+        attributes.put(BREAKPOINT_ATTRIBUTE_NODE_PATH, nodePath);
+
         Map<String, Object> context = DebugCore.resolveDatabaseContext(databaseObject);
         if (context.isEmpty()) {
             return;

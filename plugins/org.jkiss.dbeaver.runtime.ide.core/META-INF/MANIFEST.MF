@@ -8,5 +8,7 @@ Bundle-Release-Date: 20180219
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Require-Bundle: org.eclipse.core.runtime;visibility:=reexport,
  org.eclipse.core.commands,
- org.eclipse.core.resources;visibility:=reexport
-Export-Package: org.jkiss.dbeaver.runtime.ide.core
+ org.eclipse.core.resources;visibility:=reexport,
+ org.jkiss.dbeaver.model
+Export-Package: org.jkiss.dbeaver.runtime.core,
+ org.jkiss.dbeaver.runtime.ide.core
