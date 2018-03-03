@@ -2,7 +2,7 @@ package org.jkiss.dbeaver.ext.postgresql.debug.internal;
 
 import org.eclipse.core.runtime.IAdapterFactory;
 import org.jkiss.dbeaver.debug.DBGController;
-import org.jkiss.dbeaver.debug.DBGFinder;
+import org.jkiss.dbeaver.debug.DBGResolver;
 import org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider;
 import org.jkiss.dbeaver.ext.postgresql.debug.internal.impl.PostgreDebugController;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
@@ -13,7 +13,7 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 
 public class PostgreDebugAdapterFactory implements IAdapterFactory {
 
-    private static final Class<?>[] CLASSES = new Class[] { DBGController.class , DBGFinder.class};
+    private static final Class<?>[] CLASSES = new Class[] { DBGController.class , DBGResolver.class};
 
     @SuppressWarnings("unchecked")
     @Override
@@ -32,13 +32,13 @@ public class PostgreDebugAdapterFactory implements IAdapterFactory {
                 }
                 
             }
-        } else if (adapterType == DBGFinder.class) {
+        } else if (adapterType == DBGResolver.class) {
             if (adaptableObject instanceof DBPDataSourceContainer) {
                 DBPDataSourceContainer sourceContainer = (DBPDataSourceContainer) adaptableObject;
                 DBPDataSource dataSource = sourceContainer.getDataSource();
                 if (dataSource instanceof PostgreDataSource) {
                     PostgreDataSource postgeDataSource = (PostgreDataSource) dataSource;
-                    return (T) new PostgreFinder(postgeDataSource);
+                    return (T) new PostgreResolver(postgeDataSource);
                 }
             }
         }

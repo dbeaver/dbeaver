@@ -1,16 +1,20 @@
 package org.jkiss.dbeaver.debug.core.breakpoints;
 
-import static org.jkiss.dbeaver.debug.core.DebugCore.*;
+import static org.jkiss.dbeaver.debug.core.DebugCore.BREAKPOINT_ATTRIBUTE_DATABASE_NAME;
+import static org.jkiss.dbeaver.debug.core.DebugCore.BREAKPOINT_ATTRIBUTE_DATASOURCE_ID;
+import static org.jkiss.dbeaver.debug.core.DebugCore.BREAKPOINT_ATTRIBUTE_NODE_PATH;
+import static org.jkiss.dbeaver.debug.core.DebugCore.BREAKPOINT_ATTRIBUTE_PROCEDURE_NAME;
+import static org.jkiss.dbeaver.debug.core.DebugCore.BREAKPOINT_ATTRIBUTE_PROCEDURE_OID;
+import static org.jkiss.dbeaver.debug.core.DebugCore.BREAKPOINT_ATTRIBUTE_SCHEMA_NAME;
+import static org.jkiss.dbeaver.debug.core.DebugCore.MODEL_IDENTIFIER_DATABASE;
 
 import java.util.Map;
 
-import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.model.Breakpoint;
 import org.jkiss.dbeaver.debug.DBGController;
-import org.jkiss.dbeaver.debug.DBGFinder;
-import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.debug.core.DebugCore;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 public class DatabaseBreakpoint extends Breakpoint implements IDatabaseBreakpoint {
@@ -86,18 +90,10 @@ public class DatabaseBreakpoint extends Breakpoint implements IDatabaseBreakpoin
     }
 
     protected void addDatabaseBreakpointAttributes(Map<String, Object> attributes, DBSObject databaseObject) {
-        if (databaseObject == null) {
+        Map<String, Object> context = DebugCore.resolveDatabaseContext(databaseObject);
+        if (context.isEmpty()) {
             return;
         }
-        DBPDataSource dataSource = databaseObject.getDataSource();
-        if (dataSource == null) {
-            return;
-        }
-        DBGFinder finder = Adapters.adapt(dataSource.getContainer(), DBGFinder.class);
-        if (finder == null) {
-            return;
-        }
-        Map<String, Object> context = finder.createContext(databaseObject);
         attributes.put(BREAKPOINT_ATTRIBUTE_DATABASE_NAME, context.get(DBGController.DATABASE_NAME));
         attributes.put(BREAKPOINT_ATTRIBUTE_SCHEMA_NAME, context.get(DBGController.SCHEMA_NAME));
         attributes.put(BREAKPOINT_ATTRIBUTE_PROCEDURE_NAME, context.get(DBGController.PROCEDURE_NAME));

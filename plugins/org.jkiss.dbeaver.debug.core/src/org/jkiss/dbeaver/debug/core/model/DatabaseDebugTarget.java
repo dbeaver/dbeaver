@@ -23,7 +23,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.resources.IMarkerDelta;
-import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -46,7 +45,6 @@ import org.jkiss.dbeaver.debug.DBGController;
 import org.jkiss.dbeaver.debug.DBGEvent;
 import org.jkiss.dbeaver.debug.DBGEventHandler;
 import org.jkiss.dbeaver.debug.DBGException;
-import org.jkiss.dbeaver.debug.DBGFinder;
 import org.jkiss.dbeaver.debug.DBGStackFrame;
 import org.jkiss.dbeaver.debug.DBGVariable;
 import org.jkiss.dbeaver.debug.core.DebugCore;
@@ -476,14 +474,10 @@ public abstract class DatabaseDebugTarget extends DatabaseDebugElement implement
         return source;
     }
 
-    public DBSObject findDatabaseObject(Object sourceIdentifier, DBRProgressMonitor monitor) throws DBException {
-        DBPDataSourceContainer dataSourceContainer = controller.getDataSourceContainer();
-        DBGFinder finder = Adapters.adapt(dataSourceContainer, DBGFinder.class);
-        if (finder == null) {
-            return null;
-        }
+    public DBSObject findDatabaseObject(Object identifier, DBRProgressMonitor monitor) throws DBException {
+        DBPDataSourceContainer container = controller.getDataSourceContainer();
         Map<String, Object> context = controller.getDebugConfiguration();
-        return finder.findObject(context , sourceIdentifier, monitor);
+        return DebugCore.resolveDatabaseObject(container, context, identifier, monitor);
     }
 
 }
