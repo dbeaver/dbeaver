@@ -19,7 +19,9 @@ package org.jkiss.dbeaver.debug.core;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.runtime.Adapters;
@@ -37,9 +39,11 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.debug.DBGController;
 import org.jkiss.dbeaver.debug.DBGException;
+import org.jkiss.dbeaver.debug.DBGResolver;
 import org.jkiss.dbeaver.debug.core.model.DatabaseDebugTarget;
 import org.jkiss.dbeaver.debug.core.model.DatabaseStackFrame;
 import org.jkiss.dbeaver.debug.internal.core.DebugCoreMessages;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
@@ -249,6 +253,33 @@ public class DebugCore {
 
     public static Status newErrorStatus(String message) {
         return newErrorStatus(message, null);
+    }
+
+    public static DBSObject resolveDatabaseObject(DBPDataSourceContainer container, Map<String, Object> context,
+            Object identifier, DBRProgressMonitor monitor) throws DBException {
+        DBGResolver finder = Adapters.adapt(container, DBGResolver.class);
+        if (finder == null) {
+            return null;
+        }
+        return finder.resolveObject(context, identifier, monitor);
+    }
+
+    public static Map<String, Object> resolveDatabaseContext(DBSObject databaseObject) {
+        Map<String, Object> result = new HashMap<String, Object>();
+        if (databaseObject == null) {
+            return result;
+        }
+        DBPDataSource dataSource = databaseObject.getDataSource();
+        if (dataSource == null) {
+            return result;
+        }
+        DBGResolver finder = Adapters.adapt(dataSource.getContainer(), DBGResolver.class);
+        if (finder == null) {
+            return result;
+        }
+        Map<String, Object> context = finder.resolveContext(databaseObject);
+        result.putAll(context);
+        return result;
     }
 
     public static DBGController findProcedureController(DBPDataSourceContainer dataSourceContainer) throws DBGException {

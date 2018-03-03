@@ -42,7 +42,7 @@
                type="org.jkiss.dbeaver.debug.DBGController">
          </adapter>
          <adapter
-               type="org.jkiss.dbeaver.debug.DBGFinder">
+               type="org.jkiss.dbeaver.debug.DBGResolver">
          </adapter>
       </factory>
    </extension>

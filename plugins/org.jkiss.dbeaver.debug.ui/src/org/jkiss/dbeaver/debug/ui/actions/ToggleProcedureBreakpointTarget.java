@@ -57,6 +57,9 @@ public class ToggleProcedureBreakpointTarget implements IToggleBreakpointsTarget
         }
         int charstart = -1, charend = -1;
         DBSObject databaseObject = DebugUI.extractDatabaseObject(editorPart);
+        if (databaseObject == null) {
+            return;
+        }
         // create line breakpoint (doc line numbers start at 0)
         new DatabaseLineBreakpoint(databaseObject, resource, lineNumber + 1, charstart, charend, true);
     }

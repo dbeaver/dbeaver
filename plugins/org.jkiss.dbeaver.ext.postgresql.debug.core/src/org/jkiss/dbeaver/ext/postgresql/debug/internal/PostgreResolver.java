@@ -5,7 +5,7 @@ import java.util.Map;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.debug.DBGController;
-import org.jkiss.dbeaver.debug.DBGFinder;
+import org.jkiss.dbeaver.debug.DBGResolver;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
@@ -13,16 +13,16 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
-public class PostgreFinder implements DBGFinder {
+public class PostgreResolver implements DBGResolver {
     
     private final PostgreDataSource dataSource;
     
-    public PostgreFinder(PostgreDataSource dataSource) {
+    public PostgreResolver(PostgreDataSource dataSource) {
         this.dataSource = dataSource;
     }
 
     @Override
-    public DBSObject findObject(Map<String, Object> context, Object identifier, DBRProgressMonitor monitor) throws DBException {
+    public DBSObject resolveObject(Map<String, Object> context, Object identifier, DBRProgressMonitor monitor) throws DBException {
         Long oid = null;
         final String errorIdentifier = String.format("Unknown procedure identifier %s", identifier);
         if (identifier instanceof Number) {
@@ -55,7 +55,7 @@ public class PostgreFinder implements DBGFinder {
     }
 
     @Override
-    public Map<String, Object> createContext(DBSObject databaseObject) {
+    public Map<String, Object> resolveContext(DBSObject databaseObject) {
         HashMap<String, Object> context = new HashMap<String, Object>();
         if (databaseObject instanceof PostgreProcedure) {
             PostgreProcedure procedure = (PostgreProcedure) databaseObject;
