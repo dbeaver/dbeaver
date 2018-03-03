@@ -27,13 +27,15 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.LaunchConfigurationDelegate;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.debug.DBGController;
+import org.jkiss.dbeaver.debug.DBGException;
 import org.jkiss.dbeaver.debug.core.model.DatabaseDebugTarget;
 import org.jkiss.dbeaver.debug.core.model.DatabaseProcess;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
-public abstract class DatabaseLaunchDelegate extends LaunchConfigurationDelegate {
+public class DatabaseLaunchDelegate extends LaunchConfigurationDelegate {
 
     @Override
     public void launch(ILaunchConfiguration configuration, String mode, ILaunch launch, IProgressMonitor monitor)
@@ -73,10 +75,20 @@ public abstract class DatabaseLaunchDelegate extends LaunchConfigurationDelegate
         return attributes;
     }
 
-    protected abstract DBGController createController(DBPDataSourceContainer dataSourceContainer) throws CoreException;
+    protected DBGController createController(DBPDataSourceContainer dataSourceContainer) throws CoreException {
+        try {
+            return DebugCore.findProcedureController(dataSourceContainer);
+        } catch (DBGException e) {
+            throw new CoreException(GeneralUtils.makeExceptionStatus(e));
+        }
+    }
 
-    protected abstract DatabaseProcess createProcess(ILaunch launch, String name);
+    protected DatabaseProcess createProcess(ILaunch launch, String name) {
+        return new DatabaseProcess(launch, name);
+    }
 
-    protected abstract DatabaseDebugTarget createDebugTarget(ILaunch launch, DBGController controller, DatabaseProcess process);
+    protected DatabaseDebugTarget createDebugTarget(ILaunch launch, DBGController controller, DatabaseProcess process) {
+        return new DatabaseDebugTarget(DebugCore.MODEL_IDENTIFIER_DATABASE, launch, process, controller);
+    }
 
 }
