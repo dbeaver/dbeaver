@@ -146,14 +146,11 @@ public class DatabaseTab extends AbstractLaunchConfigurationTab {
             };
         };
 
-        processText = UIUtils.createLabelText(group, "Process ID", DebugCore.ATTR_ATTACH_PROCESS_DEFAULT, SWT.READ_ONLY,
-                GridDataFactory.swtDefaults().span(2, 1).create());
-
         attachLocal = new Button(group, SWT.RADIO);
         attachLocal.setData(DBGController.ATTACH_KIND_LOCAL);
         attachLocal.setText("Local");
         attachLocal.addSelectionListener(attachKindListener);
-        attachLocal.setLayoutData(GridDataFactory.swtDefaults().span(1, 1).create());
+        attachLocal.setLayoutData(GridDataFactory.swtDefaults().span(3, 1).create());
 
         attachGlobal = new Button(group, SWT.RADIO);
         attachGlobal.setData(DBGController.ATTACH_KIND_GLOBAL);
@@ -161,12 +158,23 @@ public class DatabaseTab extends AbstractLaunchConfigurationTab {
         attachGlobal.addSelectionListener(attachKindListener);
         attachGlobal.setLayoutData(GridDataFactory.swtDefaults().span(1, 1).create());
 
+        processText = UIUtils.createLabelText(group, "PID", DebugCore.ATTR_ATTACH_PROCESS_DEFAULT, SWT.READ_ONLY,
+                GridDataFactory.swtDefaults().span(1, 1).create());
+        processText.addModifyListener(modifyListener);
+
         scriptExecute = new Button(group, SWT.CHECK);
         scriptExecute.setText(DebugUIMessages.DatabaseTab_script_execute_text);
         scriptExecute.setLayoutData(GridDataFactory.swtDefaults().span(2, 1).create());
+        scriptExecute.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                updateLaunchConfigurationDialog();
+            }
+        });
 
         scriptText = new Text(group, SWT.MULTI);
         scriptText.setLayoutData(GridDataFactory.fillDefaults().span(3, 1).grab(true, true).create());
+        scriptText.addModifyListener(modifyListener);
     }
 
     @Override
@@ -248,7 +256,9 @@ public class DatabaseTab extends AbstractLaunchConfigurationTab {
         String extracted = DebugCore.extractAttachKind(configuration);
         if (DBGController.ATTACH_KIND_GLOBAL.equals(extracted)) {
             attachGlobal.setSelection(true);
+            attachLocal.setSelection(false);
         } else {
+            attachGlobal.setSelection(false);
             attachLocal.setSelection(true);
         }
         handleAttachKind(extracted);
@@ -266,12 +276,16 @@ public class DatabaseTab extends AbstractLaunchConfigurationTab {
 
     void handleAttachKind(String attachKind) {
         if (DBGController.ATTACH_KIND_GLOBAL.equals(attachKind)) {
+//FIXME:AF: I'm not sure we are ready to do that
+//            processText.setEditable(true);
             scriptExecute.setEnabled(true);
-            scriptText.setEnabled(true);
         } else {
+            processText.setText(DebugCore.ATTR_ATTACH_PROCESS_DEFAULT);
+            processText.setEditable(false);
+            scriptExecute.setSelection(true);
             scriptExecute.setEnabled(false);
-            scriptText.setEnabled(false);
         }
+        updateLaunchConfigurationDialog();
     }
 
     @Override
@@ -303,7 +317,7 @@ public class DatabaseTab extends AbstractLaunchConfigurationTab {
         configuration.setAttribute(DebugCore.ATTR_SCHEMA_NAME, schemaText.getText());
         configuration.setAttribute(DebugCore.ATTR_PROCEDURE_OID, oidText.getText());
         configuration.setAttribute(DebugCore.ATTR_PROCEDURE_NAME, nameText.getText());
-        configuration.setAttribute(DebugCore.ATTR_ATTACH_PROCESS, processText.getTabs());
+        configuration.setAttribute(DebugCore.ATTR_ATTACH_PROCESS, processText.getText());
         Widget kind = attachGlobal.getSelection() ? attachGlobal : attachLocal;
         configuration.setAttribute(DebugCore.ATTR_ATTACH_KIND, String.valueOf(kind.getData()));
         configuration.setAttribute(DebugCore.ATTR_SCRIPT_EXECUTE, String.valueOf(scriptExecute.getSelection()));
