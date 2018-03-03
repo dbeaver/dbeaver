@@ -40,8 +40,7 @@ public class LinkFileHandler extends CreateLinkHandler {
     private static final String COMMAND_PARAMETER_LINK_FILE_CONTENTTYPE = "org.jkiss.dbeaver.core.resource.link.file.contenttype"; //$NON-NLS-1$
 
     @Override
-    protected Path[] selectTargets(ExecutionEvent event)
-    {
+    protected Path[] selectTargets(ExecutionEvent event) {
         Shell shell = HandlerUtil.getActiveShell(event);
         FileDialog dialog = new FileDialog(shell, SWT.MULTI);
         String contentTypeId = event.getParameter(COMMAND_PARAMETER_LINK_FILE_CONTENTTYPE);
@@ -81,8 +80,7 @@ public class LinkFileHandler extends CreateLinkHandler {
     }
 
     @Override
-    protected IStatus createLink(IContainer container, IProgressMonitor monitor, Path... targets) 
-    {
+    protected IStatus createLink(IContainer container, IProgressMonitor monitor, Path... targets) {
         return WorkspaceResources.createLinkedFiles(container, monitor, targets);
     }
 

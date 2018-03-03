@@ -34,8 +34,7 @@ public abstract class CreateLinkedResourcesRunnable implements ICoreRunnable {
     private final Path[] paths;
     private final int flags;
 
-    public CreateLinkedResourcesRunnable(IContainer container, int flags, Path... paths)
-    {
+    public CreateLinkedResourcesRunnable(IContainer container, int flags, Path... paths) {
         this.container = container;
         this.flags = flags;
         this.paths = paths;
@@ -46,8 +45,7 @@ public abstract class CreateLinkedResourcesRunnable implements ICoreRunnable {
     public abstract String composeCancelMessage(IResource resource, Path path);
 
     @Override
-    public void run(IProgressMonitor monitor) throws CoreException
-    {
+    public void run(IProgressMonitor monitor) throws CoreException {
         if (container == null) {
             String message = composeErrorMessage(container, paths);
             IStatus error = IdeCore.createError(message);

@@ -28,27 +28,23 @@ import org.eclipse.osgi.util.NLS;
 
 public class CreateLinkedFilesRunnable extends CreateLinkedResourcesRunnable {
 
-    public CreateLinkedFilesRunnable(IContainer container, Path... paths)
-    {
+    public CreateLinkedFilesRunnable(IContainer container, Path... paths) {
         super(container, IResource.NONE, paths);
     }
 
-    public String composeErrorMessage(IResource resource, Path... paths)
-    {
+    public String composeErrorMessage(IResource resource, Path... paths) {
         String message = NLS.bind(IdeCoreMessages.CreateLinkedFileRunnable_e_unable_to_link, resource, paths);
         return message;
     }
 
-    public String composeCancelMessage(IResource resource, Path path)
-    {
+    public String composeCancelMessage(IResource resource, Path path) {
         String message = NLS.bind(IdeCoreMessages.CreateLinkedFileRunnable_e_cancelled_link, resource, path);
         return message;
     }
 
     @Override
     protected void createLink(IContainer container, Path path, int flags, IProgressMonitor monitor)
-            throws CoreException
-    {
+            throws CoreException {
         String memberName = path.getFileName().toString();
         org.eclipse.core.runtime.Path memberPath = new org.eclipse.core.runtime.Path(memberName);
         final IFile linked = container.getFile(memberPath);

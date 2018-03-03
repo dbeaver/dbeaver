@@ -12,7 +12,6 @@ public class IdeMessages extends NLS {
         NLS.initializeMessages(BUNDLE_NAME, IdeMessages.class);
     }
 
-    private IdeMessages()
-    {
+    private IdeMessages() {
     }
 }
