@@ -57,7 +57,7 @@ public class PostgreDebugSessionInfo implements DBGSessionInfo {
     public Integer getID() {
         return pid;
     }
-    
+
     @Override
     public String getTitle() {
         return getApplication();

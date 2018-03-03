@@ -40,7 +40,7 @@ public class PostgreDebugStackFrame implements DBGStackFrame {
     public int getLevel() {
         return level;
     }
-    
+
     @Override
     public Object getSourceIdentifier() {
         return getOid();
@@ -69,7 +69,5 @@ public class PostgreDebugStackFrame implements DBGStackFrame {
         return "PostgreDebugStackFrame [level=" + level + ", name=" + name + ", oid=" + oid + ", lineNo=" + lineNo
                 + ", args=" + args + "]";
     }
-
-
 
 }

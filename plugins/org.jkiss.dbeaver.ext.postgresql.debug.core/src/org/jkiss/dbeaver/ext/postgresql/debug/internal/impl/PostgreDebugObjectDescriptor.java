@@ -66,7 +66,7 @@ public class PostgreDebugObjectDescriptor implements DBGObjectDescriptor {
     public String getName() {
         return proname;
     }
-    
+
     @Override
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<String, Object>();

@@ -25,20 +25,15 @@ import org.jkiss.dbeaver.debug.ui.DatabaseTab;
 
 public class PgSqlLaunchConfigurationTabGroup extends AbstractLaunchConfigurationTabGroup {
 
-    public PgSqlLaunchConfigurationTabGroup()
-    {
+    public PgSqlLaunchConfigurationTabGroup() {
     }
 
     @Override
-    public void createTabs(ILaunchConfigurationDialog dialog, String mode)
-    {
+    public void createTabs(ILaunchConfigurationDialog dialog, String mode) {
         DatabaseTab databaseTab = new DatabaseTab();
         CommonTab commonTab = new CommonTab();
-        ILaunchConfigurationTab[] tabs = new ILaunchConfigurationTab[] {
-                databaseTab,
-                commonTab
-            };
-            setTabs(tabs);
+        ILaunchConfigurationTab[] tabs = new ILaunchConfigurationTab[] { databaseTab, commonTab };
+        setTabs(tabs);
     }
 
 }

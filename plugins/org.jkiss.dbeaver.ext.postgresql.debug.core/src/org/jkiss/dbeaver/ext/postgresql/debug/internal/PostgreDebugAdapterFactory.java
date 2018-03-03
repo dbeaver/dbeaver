@@ -13,7 +13,7 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 
 public class PostgreDebugAdapterFactory implements IAdapterFactory {
 
-    private static final Class<?>[] CLASSES = new Class[] { DBGController.class , DBGResolver.class};
+    private static final Class<?>[] CLASSES = new Class[] { DBGController.class, DBGResolver.class };
 
     @SuppressWarnings("unchecked")
     @Override
@@ -30,7 +30,7 @@ public class PostgreDebugAdapterFactory implements IAdapterFactory {
                     PostgreDebugController postgreDebugController = new PostgreDebugController(sourceContainer);
                     return (T) postgreDebugController;
                 }
-                
+
             }
         } else if (adapterType == DBGResolver.class) {
             if (adaptableObject instanceof DBPDataSourceContainer) {
