@@ -30,19 +30,31 @@ import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.debug.DBGException;
 import org.jkiss.dbeaver.debug.DBGStackFrame;
 import org.jkiss.dbeaver.debug.core.DebugCore;
+import org.jkiss.dbeaver.debug.internal.core.DebugCoreMessages;
 
 /**
  * Delegates mostly everything to its debug target
  *
  */
-public abstract class DatabaseThread extends DatabaseDebugElement implements IThread {
+public class DatabaseThread extends DatabaseDebugElement implements IThread {
     
     private boolean stepping = false;
+    
+    private String name = DebugCoreMessages.DatabaseThread_name;
 
     private List<DatabaseStackFrame> frames = new ArrayList<>(1);
 
     public DatabaseThread(DatabaseDebugTarget target) {
         super(target);
+    }
+    
+    @Override
+    public String getName() throws DebugException {
+        return name;
+    }
+    
+    public void setName(String name) {
+        this.name = name;
     }
 
     @Override
