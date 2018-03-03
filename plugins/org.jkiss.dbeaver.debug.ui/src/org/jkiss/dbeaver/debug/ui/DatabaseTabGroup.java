@@ -15,17 +15,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.postgresql.debug.ui.internal;
+package org.jkiss.dbeaver.debug.ui;
 
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTabGroup;
 import org.eclipse.debug.ui.CommonTab;
 import org.eclipse.debug.ui.ILaunchConfigurationDialog;
 import org.eclipse.debug.ui.ILaunchConfigurationTab;
-import org.jkiss.dbeaver.debug.ui.DatabaseTab;
 
-public class PgSqlLaunchConfigurationTabGroup extends AbstractLaunchConfigurationTabGroup {
+public class DatabaseTabGroup extends AbstractLaunchConfigurationTabGroup {
 
-    public PgSqlLaunchConfigurationTabGroup() {
+    public DatabaseTabGroup() {
     }
 
     @Override
