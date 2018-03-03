@@ -27,9 +27,9 @@ public class DebugCoreMessages extends NLS {
     public static String DebugCore_e_read_attribute_null;
     public static String DebugCore_e_unable_to_retrieve_modes;
 
-    public static String ProcedureThread_name;
+    public static String DatabaseThread_name;
 
-    public static String ProcedureDebugTarget_name_default;
+    public static String DatabaseDebugTarget_name_default;
 
     static {
         // initialize resource bundle

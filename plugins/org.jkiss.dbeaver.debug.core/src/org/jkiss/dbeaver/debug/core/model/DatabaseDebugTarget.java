@@ -66,6 +66,7 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
     private final DatabaseThread thread;
 
     private String name;
+    private String defaultName = DebugCoreMessages.DatabaseDebugTarget_name_default;
 
     private boolean suspended = false;
     private boolean terminated = false;
@@ -96,7 +97,7 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
     }
     
     protected DatabaseThread newThread(DBGController controller) {
-        return new ProcedureThread(this);
+        return new DatabaseThread(this);
     }
 
     @Override
@@ -151,7 +152,11 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
     }
 
     protected String getDefaultName() {
-        return DebugCoreMessages.ProcedureDebugTarget_name_default;
+        return defaultName;
+    }
+    
+    protected void setDefaultName(String defaultName) {
+        this.defaultName = defaultName;
     }
 
     @Override
