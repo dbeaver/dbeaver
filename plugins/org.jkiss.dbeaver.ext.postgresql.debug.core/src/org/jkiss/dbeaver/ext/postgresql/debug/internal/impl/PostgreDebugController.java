@@ -29,6 +29,7 @@ import java.util.Map;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.debug.DBGBaseController;
 import org.jkiss.dbeaver.debug.DBGBreakpointDescriptor;
+import org.jkiss.dbeaver.debug.DBGController;
 import org.jkiss.dbeaver.debug.DBGException;
 import org.jkiss.dbeaver.debug.DBGSession;
 import org.jkiss.dbeaver.debug.DBGSessionInfo;
@@ -150,14 +151,10 @@ public class PostgreDebugController extends DBGBaseController {
         JDBCExecutionContext sessionJdbc = (JDBCExecutionContext) sessionContext;
         int oid = Integer.parseInt(String.valueOf(configuration.get(PROCEDURE_OID)));
         int pid = Integer.parseInt(String.valueOf(configuration.get(ATTACH_PROCESS)));
-        boolean global = configuration.get(ATTACH_KIND) == PostgreDebugAttachKind.LOCAL; // FIXME
-                                                                                         // Only
-                                                                                         // local
-                                                                                         // now
+        String kind = String.valueOf(configuration.get(ATTACH_KIND));
+        boolean global = DBGController.ATTACH_KIND_GLOBAL.equals(kind);
         String call = (String) configuration.get(SCRIPT_TEXT);
         pgSession.attach(sessionJdbc, oid, pid, global, call);
-        // DBPDataSource dataSource = sessionContext.getDataSource();
-        // executeProcedure(dataSource, configuration, monitor);
     }
 
     @Override
