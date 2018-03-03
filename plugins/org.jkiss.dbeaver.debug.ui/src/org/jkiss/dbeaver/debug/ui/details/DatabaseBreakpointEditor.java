@@ -23,8 +23,7 @@ public class DatabaseBreakpointEditor extends DatabaseDebugDetailEditor {
     private IDatabaseBreakpoint fBreakpoint;
 
     @Override
-    public Control createControl(Composite parent)
-    {
+    public Control createControl(Composite parent) {
         return createStandardControls(parent);
     }
 
@@ -34,20 +33,17 @@ public class DatabaseBreakpointEditor extends DatabaseDebugDetailEditor {
     }
 
     @Override
-    public void setFocus()
-    {
+    public void setFocus() {
         // do nothing
     }
 
     @Override
-    public Object getInput()
-    {
+    public Object getInput() {
         return fBreakpoint;
     }
 
     @Override
-    public void setInput(Object input) throws CoreException
-    {
+    public void setInput(Object input) throws CoreException {
         try {
             suppressPropertyChanges(true);
             if (input instanceof IDatabaseBreakpoint) {
@@ -66,14 +62,12 @@ public class DatabaseBreakpointEditor extends DatabaseDebugDetailEditor {
     }
 
     @Override
-    public void doSave() throws CoreException
-    {
+    public void doSave() throws CoreException {
         setDirty(false);
     }
 
     @Override
-    public IStatus getStatus()
-    {
+    public IStatus getStatus() {
         return Status.OK_STATUS;
     }
 

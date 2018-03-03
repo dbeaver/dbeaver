@@ -56,8 +56,7 @@ public class LaunchContributionItem extends ContributionItem {
     // map of launch groups by (non-null) categories, for this mode
     private Map<String, ILaunchGroup> groupsByCategory = null;
 
-    protected LaunchContributionItem(String mode)
-    {
+    protected LaunchContributionItem(String mode) {
         this.mode = mode;
         ILaunchGroup[] groups = DebugUITools.getLaunchGroups();
         groupsByCategory = new HashMap<String, ILaunchGroup>(3);
@@ -74,8 +73,7 @@ public class LaunchContributionItem extends ContributionItem {
     }
 
     @Override
-    public void fill(Menu menu, int index)
-    {
+    public void fill(Menu menu, int index) {
         Object[] selected = extractSelectedObjects();
 
         int accelerator = 1;
@@ -137,21 +135,18 @@ public class LaunchContributionItem extends ContributionItem {
     }
 
     @Override
-    public void fill(CoolBar parent, int index)
-    {
-        //AF: we are using standard contribution here for now
+    public void fill(CoolBar parent, int index) {
+        // AF: we are using standard contribution here for now
         super.fill(parent, index);
     }
 
     @Override
-    public void fill(ToolBar parent, int index)
-    {
-        //AF: we are using standard contribution here for now
+    public void fill(ToolBar parent, int index) {
+        // AF: we are using standard contribution here for now
         super.fill(parent, index);
     }
 
-    protected Object[] extractSelectedObjects()
-    {
+    protected Object[] extractSelectedObjects() {
         IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
         if (window == null) {
             return NO_OBJECTS;
@@ -174,16 +169,15 @@ public class LaunchContributionItem extends ContributionItem {
                 IEditorPart activeEditor = activePage.getActiveEditor();
                 DBSObject databaseObject = DebugUI.extractDatabaseObject(activeEditor);
                 if (databaseObject != null) {
-                    return new Object[] {databaseObject};
+                    return new Object[] { databaseObject };
                 }
             }
-            
+
         }
         return NO_OBJECTS;
     }
 
-    protected List<ILaunchConfiguration> extractSharedConfigurations(Object[] selection)
-    {
+    protected List<ILaunchConfiguration> extractSharedConfigurations(Object[] selection) {
         List<ILaunchConfiguration> configurations = new ArrayList<>();
         for (Object object : selection) {
             ILaunchConfiguration config = DebugUIInternals.isSharedConfig(object);

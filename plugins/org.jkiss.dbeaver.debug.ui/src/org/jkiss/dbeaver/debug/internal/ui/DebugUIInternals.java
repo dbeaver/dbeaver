@@ -45,15 +45,13 @@ import org.jkiss.dbeaver.debug.core.DebugCore;
 @SuppressWarnings("restriction")
 public class DebugUIInternals {
 
-    public static ILaunchConfiguration isSharedConfig(Object receiver)
-    {
+    public static ILaunchConfiguration isSharedConfig(Object receiver) {
         LaunchConfigurationManager launchConfigurationManager = DebugUIPlugin.getDefault()
                 .getLaunchConfigurationManager();
         return launchConfigurationManager.isSharedConfig(receiver);
     }
 
-    public static IAction createConfigurationAction(ILaunchConfiguration config, String mode, int accelerator)
-    {
+    public static IAction createConfigurationAction(ILaunchConfiguration config, String mode, int accelerator) {
         if (DebugCore.canLaunch(config, mode)) {
             String configName = config.getName();
             ImageDescriptor imageDescriptor = DebugUITools.getDefaultImageDescriptor(config);
@@ -63,9 +61,7 @@ public class DebugUIInternals {
         return null;
     }
 
-    public static Map<IAction, String> createShortcutActions(Object[] selected, String mode,
-            int accelerator)
-    {
+    public static Map<IAction, String> createShortcutActions(Object[] selected, String mode, int accelerator) {
         Map<IAction, String> result = new LinkedHashMap<IAction, String>();
         if (selected == null) {
             return result;

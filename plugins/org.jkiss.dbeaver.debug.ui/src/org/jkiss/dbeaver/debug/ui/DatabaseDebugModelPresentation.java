@@ -42,36 +42,30 @@ public class DatabaseDebugModelPresentation extends LabelProvider implements IDe
 
     private final ILabelProvider labelProvider;
 
-    public DatabaseDebugModelPresentation()
-    {
+    public DatabaseDebugModelPresentation() {
         this(WorkbenchLabelProvider.getDecoratingWorkbenchLabelProvider());
     }
 
-    public DatabaseDebugModelPresentation(ILabelProvider labelProvider)
-    {
+    public DatabaseDebugModelPresentation(ILabelProvider labelProvider) {
         this.labelProvider = labelProvider;
     }
 
-    public Object getAttribute(String attribute)
-    {
+    public Object getAttribute(String attribute) {
         return attributes.get(attribute);
     }
 
     @Override
-    public void setAttribute(String attribute, Object value)
-    {
+    public void setAttribute(String attribute, Object value) {
         attributes.put(attribute, value);
     }
 
     @Override
-    public Image getImage(Object element)
-    {
+    public Image getImage(Object element) {
         return labelProvider.getImage(element);
     }
 
     @Override
-    public String getText(Object element)
-    {
+    public String getText(Object element) {
         // FIXME:AF: register adapters
         try {
             if (element instanceof IDatabaseDebugTarget) {
@@ -99,7 +93,8 @@ public class DatabaseDebugModelPresentation extends LabelProvider implements IDe
                 String databaseName = breakpoint.getDatabaseName();
                 String schemaName = breakpoint.getSchemaName();
                 String procedureName = breakpoint.getProcedureName();
-                return databaseName + '.' + schemaName + '.' + procedureName + " - [line: "+ breakpoint.getLineNumber()+ "]";
+                return databaseName + '.' + schemaName + '.' + procedureName + " - [line: " + breakpoint.getLineNumber()
+                        + "]";
             }
         } catch (CoreException e) {
             return "<not responding>";
@@ -108,32 +103,27 @@ public class DatabaseDebugModelPresentation extends LabelProvider implements IDe
     }
 
     @Override
-    public void dispose()
-    {
+    public void dispose() {
         attributes.clear();
         super.dispose();
     }
 
     @Override
-    public void computeDetail(IValue value, IValueDetailListener listener)
-    {
+    public void computeDetail(IValue value, IValueDetailListener listener) {
     }
 
     @Override
-    public IEditorInput getEditorInput(Object element)
-    {
+    public IEditorInput getEditorInput(Object element) {
         return null;
     }
 
     @Override
-    public String getEditorId(IEditorInput input, Object element)
-    {
+    public String getEditorId(IEditorInput input, Object element) {
         return null;
     }
 
     @Override
-    public boolean requiresUIThread(Object element)
-    {
+    public boolean requiresUIThread(Object element) {
         return false;
     }
 

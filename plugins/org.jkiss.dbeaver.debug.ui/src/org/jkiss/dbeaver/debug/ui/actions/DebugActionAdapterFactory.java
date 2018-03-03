@@ -15,8 +15,7 @@ public class DebugActionAdapterFactory implements IAdapterFactory {
 
     @Override
     @SuppressWarnings("unchecked")
-    public <T> T getAdapter(Object adaptableObject, Class<T> adapterType)
-    {
+    public <T> T getAdapter(Object adaptableObject, Class<T> adapterType) {
         if (adapterType == ILaunchable.class) {
             return (T) LAUNCHABLE;
         }
@@ -27,8 +26,7 @@ public class DebugActionAdapterFactory implements IAdapterFactory {
     }
 
     @Override
-    public Class<?>[] getAdapterList()
-    {
+    public Class<?>[] getAdapterList() {
         return CLASSES;
     }
 

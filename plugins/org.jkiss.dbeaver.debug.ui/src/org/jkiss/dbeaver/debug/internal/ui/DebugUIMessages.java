@@ -38,7 +38,7 @@ public class DebugUIMessages extends NLS {
 
     public static String DatabaseTab_attach_group_text;
     public static String DatabaseTab_script_execute_text;
-    
+
     public static String DatabaseTab_name;
 
     public static String LaunchShortcut_e_launch;
@@ -48,7 +48,6 @@ public class DebugUIMessages extends NLS {
         NLS.initializeMessages(BUNDLE_NAME, DebugUIMessages.class);
     }
 
-    private DebugUIMessages()
-    {
+    private DebugUIMessages() {
     }
 }

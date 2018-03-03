@@ -133,7 +133,8 @@ public class DatabaseTab extends AbstractLaunchConfigurationTab {
 
     protected void createAttachSettingsGroup(Composite composite) {
         String groupLabel = DebugUIMessages.DatabaseTab_attach_group_text;
-        Group group = UIUtils.createControlGroup(composite, groupLabel, 2, GridData.FILL_HORIZONTAL | GridData.FILL_VERTICAL | GridData.GRAB_VERTICAL, SWT.DEFAULT);
+        Group group = UIUtils.createControlGroup(composite, groupLabel, 2,
+                GridData.FILL_HORIZONTAL | GridData.FILL_VERTICAL | GridData.GRAB_VERTICAL, SWT.DEFAULT);
         group.setLayout(new GridLayout(3, false));
 
         SelectionListener attachKindListener = new SelectionAdapter() {
@@ -143,8 +144,9 @@ public class DatabaseTab extends AbstractLaunchConfigurationTab {
                 handleAttachKind(attachKind);
             };
         };
-        
-        processText = UIUtils.createLabelText(group, "Process ID", DebugCore.ATTR_ATTACH_PROCESS_DEFAULT, SWT.READ_ONLY, GridDataFactory.swtDefaults().span(2, 1).create());
+
+        processText = UIUtils.createLabelText(group, "Process ID", DebugCore.ATTR_ATTACH_PROCESS_DEFAULT, SWT.READ_ONLY,
+                GridDataFactory.swtDefaults().span(2, 1).create());
 
         attachLocal = new Button(group, SWT.RADIO);
         attachLocal.setData(DBGController.ATTACH_KIND_LOCAL);
@@ -260,7 +262,7 @@ public class DatabaseTab extends AbstractLaunchConfigurationTab {
         String extracted = DebugCore.extractScriptText(configuration);
         scriptText.setText(extracted);
     }
-    
+
     void handleAttachKind(String attachKind) {
         if (DBGController.ATTACH_KIND_GLOBAL.equals(attachKind)) {
             scriptExecute.setEnabled(true);
