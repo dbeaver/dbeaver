@@ -52,28 +52,23 @@ public abstract class LaunchContributionFactory extends ExtensionContributionFac
         additions.addContributionItem(menuManager, null);
     }
 
-    public String getText()
-    {
+    public String getText() {
         return text;
     }
-    
-    public void setText(String text)
-    {
+
+    public void setText(String text) {
         this.text = text;
     }
 
-    public ImageDescriptor getImageDescriptor()
-    {
+    public ImageDescriptor getImageDescriptor() {
         return imageDescriptor;
     }
 
-    public void setImageDescriptor(ImageDescriptor imageDescriptor)
-    {
+    public void setImageDescriptor(ImageDescriptor imageDescriptor) {
         this.imageDescriptor = imageDescriptor;
     }
 
-    protected String createContributionIdentifier()
-    {
+    protected String createContributionIdentifier() {
         return DebugUI.BUNDLE_SYMBOLIC_NAME + '/' + id;
     }
 

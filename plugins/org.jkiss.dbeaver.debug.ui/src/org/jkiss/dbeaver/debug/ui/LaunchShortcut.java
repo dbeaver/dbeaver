@@ -51,8 +51,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 public abstract class LaunchShortcut implements ILaunchShortcut2 {
 
     @Override
-    public void launch(ISelection selection, String mode)
-    {
+    public void launch(ISelection selection, String mode) {
         if (selection instanceof IStructuredSelection) {
             Object[] array = ((IStructuredSelection) selection).toArray();
             searchAndLaunch(array, mode, getSelectionEmptyMessage());
@@ -60,8 +59,7 @@ public abstract class LaunchShortcut implements ILaunchShortcut2 {
     }
 
     @Override
-    public void launch(IEditorPart editor, String mode)
-    {
+    public void launch(IEditorPart editor, String mode) {
         ISelection selection = editor.getEditorSite().getSelectionProvider().getSelection();
         if (selection instanceof IStructuredSelection) {
             Object[] array = ((IStructuredSelection) selection).toArray();
@@ -69,11 +67,11 @@ public abstract class LaunchShortcut implements ILaunchShortcut2 {
         } else {
             DBSObject databaseObject = DebugUI.extractDatabaseObject(editor);
             if (databaseObject != null) {
-                Object[] array = new Object[] {databaseObject};
+                Object[] array = new Object[] { databaseObject };
                 searchAndLaunch(array, mode, getEditorEmptyMessage());
             }
         }
-        
+
     }
 
     protected abstract String getSelectionEmptyMessage();
@@ -203,28 +201,25 @@ public abstract class LaunchShortcut implements ILaunchShortcut2 {
     protected abstract ILaunchConfiguration createConfiguration(DBSObject launchable) throws CoreException;
 
     @Override
-    public ILaunchConfiguration[] getLaunchConfigurations(ISelection selection)
-    {
+    public ILaunchConfiguration[] getLaunchConfigurations(ISelection selection) {
         // let the framework resolve configurations based on resource mapping
         return null;
     }
 
     @Override
-    public ILaunchConfiguration[] getLaunchConfigurations(IEditorPart editorpart)
-    {
+    public ILaunchConfiguration[] getLaunchConfigurations(IEditorPart editorpart) {
         // let the framework resolve configurations based on resource mapping
         return null;
     }
 
     @Override
-    public IResource getLaunchableResource(ISelection selection)
-    {
+    public IResource getLaunchableResource(ISelection selection) {
         if (selection instanceof IStructuredSelection) {
             IStructuredSelection ss = (IStructuredSelection) selection;
             if (ss.size() == 1) {
                 Object element = ss.getFirstElement();
                 if (element instanceof IAdaptable) {
-                    return getLaunchableResource((IAdaptable)element);
+                    return getLaunchableResource((IAdaptable) element);
                 }
             }
         }
@@ -232,8 +227,7 @@ public abstract class LaunchShortcut implements ILaunchShortcut2 {
     }
 
     @Override
-    public IResource getLaunchableResource(IEditorPart editorpart)
-    {
+    public IResource getLaunchableResource(IEditorPart editorpart) {
         return getLaunchableResource(editorpart.getEditorInput());
     }
 

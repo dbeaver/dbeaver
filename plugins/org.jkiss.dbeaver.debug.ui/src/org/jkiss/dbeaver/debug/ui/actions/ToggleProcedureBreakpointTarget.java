@@ -21,22 +21,19 @@ import org.jkiss.dbeaver.model.app.DBPProjectManager;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 public class ToggleProcedureBreakpointTarget implements IToggleBreakpointsTargetExtension2 {
-    
+
     @Override
-    public void toggleBreakpoints(IWorkbenchPart part, ISelection selection) throws CoreException
-    {
+    public void toggleBreakpoints(IWorkbenchPart part, ISelection selection) throws CoreException {
         toggleLineBreakpoints(part, selection);
     }
 
     @Override
-    public boolean canToggleBreakpoints(IWorkbenchPart part, ISelection selection)
-    {
+    public boolean canToggleBreakpoints(IWorkbenchPart part, ISelection selection) {
         return canToggleLineBreakpoints(part, selection);
     }
 
     @Override
-    public void toggleLineBreakpoints(IWorkbenchPart part, ISelection selection) throws CoreException
-    {
+    public void toggleLineBreakpoints(IWorkbenchPart part, ISelection selection) throws CoreException {
         IEditorPart editorPart = (IEditorPart) part;
         IResource resource = extractResource(editorPart, selection);
         if (resource == null) {
@@ -45,7 +42,8 @@ public class ToggleProcedureBreakpointTarget implements IToggleBreakpointsTarget
 
         ITextSelection textSelection = (ITextSelection) selection;
         int lineNumber = textSelection.getStartLine();
-        IBreakpoint[] breakpoints = DebugPlugin.getDefault().getBreakpointManager().getBreakpoints(DebugCore.MODEL_IDENTIFIER_DATABASE);
+        IBreakpoint[] breakpoints = DebugPlugin.getDefault().getBreakpointManager()
+                .getBreakpoints(DebugCore.MODEL_IDENTIFIER_DATABASE);
         for (int i = 0; i < breakpoints.length; i++) {
             IBreakpoint breakpoint = breakpoints[i];
             if (resource.equals(breakpoint.getMarker().getResource())) {
@@ -64,53 +62,46 @@ public class ToggleProcedureBreakpointTarget implements IToggleBreakpointsTarget
         new DatabaseLineBreakpoint(databaseObject, resource, lineNumber + 1, charstart, charend, true);
     }
 
-    protected IResource extractResource(IEditorPart part, ISelection selection)
-    {
-        //FIXME: AF: resolve more specific resource
+    protected IResource extractResource(IEditorPart part, ISelection selection) {
+        // FIXME: AF: resolve more specific resource
         DBPProjectManager projectManager = DBeaverCore.getInstance().getProjectManager();
         IProject activeProject = projectManager.getActiveProject();
         return activeProject;
     }
 
     @Override
-    public boolean canToggleLineBreakpoints(IWorkbenchPart part, ISelection selection)
-    {
+    public boolean canToggleLineBreakpoints(IWorkbenchPart part, ISelection selection) {
         return true;
     }
 
     @Override
-    public void toggleMethodBreakpoints(IWorkbenchPart part, ISelection selection) throws CoreException
-    {
-        //nothing by default
+    public void toggleMethodBreakpoints(IWorkbenchPart part, ISelection selection) throws CoreException {
+        // nothing by default
     }
 
     @Override
-    public boolean canToggleMethodBreakpoints(IWorkbenchPart part, ISelection selection)
-    {
+    public boolean canToggleMethodBreakpoints(IWorkbenchPart part, ISelection selection) {
         return false;
     }
 
     @Override
-    public void toggleWatchpoints(IWorkbenchPart part, ISelection selection) throws CoreException
-    {
-        //nothing by default
+    public void toggleWatchpoints(IWorkbenchPart part, ISelection selection) throws CoreException {
+        // nothing by default
     }
 
     @Override
-    public boolean canToggleWatchpoints(IWorkbenchPart part, ISelection selection)
-    {
+    public boolean canToggleWatchpoints(IWorkbenchPart part, ISelection selection) {
         return false;
     }
 
     @Override
-    public void toggleBreakpointsWithEvent(IWorkbenchPart part, ISelection selection, Event event) throws CoreException
-    {
-        //nothing by default
+    public void toggleBreakpointsWithEvent(IWorkbenchPart part, ISelection selection, Event event)
+            throws CoreException {
+        // nothing by default
     }
 
     @Override
-    public boolean canToggleBreakpointsWithEvent(IWorkbenchPart part, ISelection selection, Event event)
-    {
+    public boolean canToggleBreakpointsWithEvent(IWorkbenchPart part, ISelection selection, Event event) {
         return false;
     }
 

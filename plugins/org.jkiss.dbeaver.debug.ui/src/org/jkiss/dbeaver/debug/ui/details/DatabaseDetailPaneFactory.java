@@ -18,8 +18,7 @@ public class DatabaseDetailPaneFactory implements IDetailPaneFactory {
     private Map<String, String> descriptions;
 
     @Override
-    public Set<String> getDetailPaneTypes(IStructuredSelection selection)
-    {
+    public Set<String> getDetailPaneTypes(IStructuredSelection selection) {
         HashSet<String> set = new HashSet<>();
         if (selection.size() == 1) {
             Object first = selection.getFirstElement();
@@ -34,15 +33,14 @@ public class DatabaseDetailPaneFactory implements IDetailPaneFactory {
                     }
                 } catch (CoreException e) {
                 }
-                
+
             }
         }
         return set;
     }
 
     @Override
-    public String getDefaultDetailPane(IStructuredSelection selection)
-    {
+    public String getDefaultDetailPane(IStructuredSelection selection) {
         if (selection.size() == 1) {
             Object first = selection.getFirstElement();
             if (first instanceof IBreakpoint) {
@@ -56,15 +54,14 @@ public class DatabaseDetailPaneFactory implements IDetailPaneFactory {
                     }
                 } catch (CoreException e) {
                 }
-                
+
             }
         }
         return null;
     }
 
     @Override
-    public IDetailPane createDetailPane(String paneID)
-    {
+    public IDetailPane createDetailPane(String paneID) {
         if (DatabaseStandardBreakpointPane.DETAIL_PANE_STANDARD_BREAKPOINT.equals(paneID)) {
             return new DatabaseStandardBreakpointPane();
         }
@@ -72,13 +69,11 @@ public class DatabaseDetailPaneFactory implements IDetailPaneFactory {
     }
 
     @Override
-    public String getDetailPaneName(String paneID)
-    {
+    public String getDetailPaneName(String paneID) {
         return getNames().get(paneID);
     }
 
-    protected Map<String, String> getNames()
-    {
+    protected Map<String, String> getNames() {
         if (names == null) {
             names.put(DatabaseStandardBreakpointPane.DETAIL_PANE_STANDARD_BREAKPOINT,
                     DebugUIMessages.DatabaseStandardBreakpointPane_name);
@@ -87,13 +82,11 @@ public class DatabaseDetailPaneFactory implements IDetailPaneFactory {
     }
 
     @Override
-    public String getDetailPaneDescription(String paneID)
-    {
+    public String getDetailPaneDescription(String paneID) {
         return getDescriptions().get(paneID);
     }
 
-    protected Map<String, String> getDescriptions()
-    {
+    protected Map<String, String> getDescriptions() {
         if (descriptions == null) {
             descriptions.put(DatabaseStandardBreakpointPane.DETAIL_PANE_STANDARD_BREAKPOINT,
                     DebugUIMessages.DatabaseStandardBreakpointPane_description);

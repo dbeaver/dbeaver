@@ -32,30 +32,28 @@ import org.jkiss.dbeaver.ui.editors.entity.EntityEditorInput;
 public class ProcedureDebugModelPresentation extends DatabaseDebugModelPresentation {
 
     @Override
-    public IEditorInput getEditorInput(Object element)
-    {
+    public IEditorInput getEditorInput(Object element) {
         if (element instanceof DBNDatabaseNode) {
             DBNDatabaseNode dbnNode = (DBNDatabaseNode) element;
             EntityEditorInput editorInput = new EntityEditorInput(dbnNode);
             editorInput.setAttribute(DBPScriptObject.OPTION_DEBUGGER_SOURCE, Boolean.TRUE);
-//FIXME:AF: how to retrieve it? probably org.jkiss.dbeaver.databaseor and EntityEditorsRegistry can help 
-//            String folderId = "postgresql.source.view";
-//            editorInput.setDefaultFolderId(folderId);
+            // FIXME:AF: how to retrieve it? probably
+            // org.jkiss.dbeaver.databaseor and EntityEditorsRegistry can help
+            // String folderId = "postgresql.source.view";
+            // editorInput.setDefaultFolderId(folderId);
             return editorInput;
         }
         return null;
     }
 
     @Override
-    public String getEditorId(IEditorInput input, Object element)
-    {
-//FIXME:AF: is there a constant anywhere? 
+    public String getEditorId(IEditorInput input, Object element) {
+        // FIXME:AF: is there a constant anywhere?
         return "org.jkiss.dbeaver.ui.editors.entity.EntityEditor";
     }
 
     @Override
-    public void computeDetail(IValue value, IValueDetailListener listener)
-    {
+    public void computeDetail(IValue value, IValueDetailListener listener) {
         try {
             String valueString = value.getValueString();
             listener.detailComputed(value, valueString);
