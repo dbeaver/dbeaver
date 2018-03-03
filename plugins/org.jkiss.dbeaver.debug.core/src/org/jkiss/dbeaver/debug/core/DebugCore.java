@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
@@ -319,6 +320,13 @@ public class DebugCore {
             return (String) object;
         }
         return null;
+    }
+
+    public static Map<String, Object> toBreakpointDescriptor(Map<String, Object> attributes) {
+        HashMap<String, Object> result = new HashMap<String, Object>();
+        result.put(DBGController.BREAKPOINT_LINE_NUMBER, attributes.get(IMarker.LINE_NUMBER));
+        result.put(DBGController.PROCEDURE_OID, attributes.get(BREAKPOINT_ATTRIBUTE_PROCEDURE_OID));
+        return result;
     }
 
 }

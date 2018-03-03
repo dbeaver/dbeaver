@@ -300,7 +300,7 @@ public class PostgreDebugSession extends DBGBaseSession {
 
     }
 
-    private void attachGlobal(int OID, int targetPID) throws DBGException {
+    private void attachGlobal(int oid, int targetPID) throws DBGException {
 
         try (Statement stmt = getConnection().createStatement(); ResultSet rs = stmt.executeQuery(SQL_LISTEN)) {
 
@@ -316,8 +316,7 @@ public class PostgreDebugSession extends DBGBaseSession {
         }
 
         PostgreDebugBreakpointProperties properties = new PostgreDebugBreakpointProperties(true);
-        PostgreDebugObjectDescriptor obj = new PostgreDebugObjectDescriptor(OID, "ENTRY", "SESSION", "THIS", "PG");
-        bpGlobal = new PostgreDebugBreakpointDescriptor(obj, properties);
+        bpGlobal = new PostgreDebugBreakpointDescriptor(oid, properties);
         addBreakpoint(bpGlobal);
 
         String sessionParam = String.valueOf(getSessionId());
@@ -426,7 +425,7 @@ public class PostgreDebugSession extends DBGBaseSession {
         String sqlPattern = bpd.isGlobal() ? SQL_SET_GLOBAL_BREAKPOINT : SQL_SET_BREAKPOINT;
 
         String sqlCommand = sqlPattern.replaceAll("\\?sessionid", String.valueOf(getSessionId()))
-                .replaceAll("\\?obj", String.valueOf(descriptor.getObjectDescriptor().getID()))
+                .replaceAll("\\?obj", String.valueOf(descriptor.getObjectId()))
                 .replaceAll("\\?line", bpd.isOnStart() ? "-1" : String.valueOf(bpd.getLineNo()))
                 .replaceAll("\\?target", bpd.isAll() ? "null" : String.valueOf(bpd.getTargetId()));
         return sqlCommand;
@@ -435,7 +434,7 @@ public class PostgreDebugSession extends DBGBaseSession {
     protected String composeRemoveBreakpointCommand(DBGBreakpointDescriptor bp) {
         PostgreDebugBreakpointProperties properties = (PostgreDebugBreakpointProperties) bp.getProperties();
         String sqlCommand = SQL_DROP_BREAKPOINT.replaceAll("\\?sessionid", String.valueOf(getSessionId()))
-                .replaceAll("\\?obj", String.valueOf(bp.getObjectDescriptor().getID()))
+                .replaceAll("\\?obj", String.valueOf(bp.getObjectId()))
                 .replaceAll("\\?line", properties.isOnStart() ? "-1" : String.valueOf(properties.getLineNo()));
         return sqlCommand;
     }

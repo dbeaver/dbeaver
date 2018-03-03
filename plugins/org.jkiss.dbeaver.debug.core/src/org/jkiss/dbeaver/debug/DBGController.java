@@ -44,6 +44,8 @@ public interface DBGController {
     public static final String SCRIPT_EXECUTE = "scriptExecute"; //$NON-NLS-1$
     public static final String SCRIPT_TEXT = "scriptText"; //$NON-NLS-1$
 
+    public static final String BREAKPOINT_LINE_NUMBER = "lineNumber"; //$NON-NLS-1$
+
     DBPDataSourceContainer getDataSourceContainer();
 
     Map<String, Object> getDebugConfiguration();

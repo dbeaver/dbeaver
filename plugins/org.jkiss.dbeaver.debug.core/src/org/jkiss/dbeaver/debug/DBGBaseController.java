@@ -158,7 +158,7 @@ public abstract class DBGBaseController implements DBGController {
     @Override
     public void removeBreakpoint(Object sessionKey, DBGBreakpointDescriptor descriptor) throws DBGException {
         DBGBaseSession session = ensureSessionAccessible(sessionKey);
-        session.addBreakpoint(descriptor);
+        session.removeBreakpoint(descriptor);
     }
 
     @Override

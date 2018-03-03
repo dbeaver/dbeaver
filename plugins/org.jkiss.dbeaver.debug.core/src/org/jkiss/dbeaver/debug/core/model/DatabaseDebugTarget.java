@@ -368,7 +368,9 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
     protected DBGBreakpointDescriptor describeBreakpoint(IBreakpoint breakpoint) {
         Map<String, Object> description = new HashMap<String, Object>();
         try {
-            description.putAll(breakpoint.getMarker().getAttributes());
+            Map<String, Object> attributes = breakpoint.getMarker().getAttributes();
+            Map<String, Object> remote = DebugCore.toBreakpointDescriptor(attributes);
+            description.putAll(remote);
         } catch (CoreException e) {
             DebugCore.log(e.getStatus());
             return null;
