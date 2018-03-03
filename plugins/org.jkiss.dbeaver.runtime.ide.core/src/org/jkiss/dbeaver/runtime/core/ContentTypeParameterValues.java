@@ -29,8 +29,7 @@ public class ContentTypeParameterValues implements IParameterValues {
 
     @SuppressWarnings({ "rawtypes", "unchecked" })
     @Override
-    public Map getParameterValues()
-    {
+    public Map getParameterValues() {
         final Map values = new HashMap();
         IContentType[] allContentTypes = Platform.getContentTypeManager().getAllContentTypes();
         for (IContentType contentType : allContentTypes) {

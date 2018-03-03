@@ -34,8 +34,7 @@ import org.jkiss.dbeaver.runtime.ide.ui.handlers.CreateLinkHandler;
 public class LinkFolderHandler extends CreateLinkHandler {
 
     @Override
-    protected Path[] selectTargets(ExecutionEvent event)
-    {
+    protected Path[] selectTargets(ExecutionEvent event) {
         Shell shell = HandlerUtil.getActiveShell(event);
         DirectoryDialog dialog = new DirectoryDialog(shell, SWT.OPEN);
         String folder = dialog.open();
@@ -43,12 +42,11 @@ public class LinkFolderHandler extends CreateLinkHandler {
             return NO_TARGETS;
         }
         Path folderPath = Paths.get(folder);
-        return new Path[] {folderPath};
+        return new Path[] { folderPath };
     }
 
     @Override
-    protected IStatus createLink(IContainer container, IProgressMonitor monitor, Path... targets)
-    {
+    protected IStatus createLink(IContainer container, IProgressMonitor monitor, Path... targets) {
         return WorkspaceResources.createLinkedFolders(container, monitor, targets);
     }
 

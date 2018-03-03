@@ -33,44 +33,46 @@ public class WorkspaceResources {
 
     /**
      * Bulk operation to create several linked files
+     * 
      * @param container
      * @param monitor
      * @param paths
      * @return
      */
-	public static IStatus createLinkedFiles(IContainer container, IProgressMonitor monitor, Path... paths) {
-		IWorkspace workspace = ResourcesPlugin.getWorkspace();
-		CreateLinkedFilesRunnable action = new CreateLinkedFilesRunnable(container, paths);
-		try {
+    public static IStatus createLinkedFiles(IContainer container, IProgressMonitor monitor, Path... paths) {
+        IWorkspace workspace = ResourcesPlugin.getWorkspace();
+        CreateLinkedFilesRunnable action = new CreateLinkedFilesRunnable(container, paths);
+        try {
             workspace.run(action, monitor);
-		} catch (CoreException e) {
-			return e.getStatus();
-		} catch (Throwable e) {
-			String message = action.composeErrorMessage(container, paths);
-			return IdeCore.createError(message, e);
-		}
-		return Status.OK_STATUS;
-	}
-	
-	/**
+        } catch (CoreException e) {
+            return e.getStatus();
+        } catch (Throwable e) {
+            String message = action.composeErrorMessage(container, paths);
+            return IdeCore.createError(message, e);
+        }
+        return Status.OK_STATUS;
+    }
+
+    /**
      * Bulk operation to create several linked folders
-	 * @param container
-	 * @param monitor
-	 * @param paths
-	 * @return
-	 */
-	public static IStatus createLinkedFolders(IContainer container, IProgressMonitor monitor, Path... paths) {
-		IWorkspace workspace = ResourcesPlugin.getWorkspace();
-		CreateLinkedFoldersRunnable action = new CreateLinkedFoldersRunnable(container, paths);
-		try {
+     * 
+     * @param container
+     * @param monitor
+     * @param paths
+     * @return
+     */
+    public static IStatus createLinkedFolders(IContainer container, IProgressMonitor monitor, Path... paths) {
+        IWorkspace workspace = ResourcesPlugin.getWorkspace();
+        CreateLinkedFoldersRunnable action = new CreateLinkedFoldersRunnable(container, paths);
+        try {
             workspace.run(action, monitor);
-		} catch (CoreException e) {
-			return e.getStatus();
-		} catch (Throwable e) {
-			String message = action.composeErrorMessage(container, paths);
-			return IdeCore.createError(message, e);
-		}
-		return Status.OK_STATUS;
-	}
-	
+        } catch (CoreException e) {
+            return e.getStatus();
+        } catch (Throwable e) {
+            String message = action.composeErrorMessage(container, paths);
+            return IdeCore.createError(message, e);
+        }
+        return Status.OK_STATUS;
+    }
+
 }
