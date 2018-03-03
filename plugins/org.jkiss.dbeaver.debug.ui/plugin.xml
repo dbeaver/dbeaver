@@ -2,8 +2,8 @@
 <?eclipse version="3.4"?>
 <!--
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
- * Copyright (C) 2017 Alexander Fedorov (alexander.fedorov@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,7 +47,7 @@
    <extension
          point="org.eclipse.debug.ui.debugModelPresentations">
       <debugModelPresentation
-            class="org.jkiss.dbeaver.debug.internal.ui.ProcedureDebugModelPresentation"
+            class="org.jkiss.dbeaver.debug.ui.DatabaseDebugModelPresentation"
             id="org.jkiss.dbeaver.debug.core.database">
       </debugModelPresentation>
    </extension>
