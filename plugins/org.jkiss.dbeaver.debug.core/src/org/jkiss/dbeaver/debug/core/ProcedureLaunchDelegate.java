@@ -21,8 +21,8 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunch;
 import org.jkiss.dbeaver.debug.DBGController;
 import org.jkiss.dbeaver.debug.DBGException;
+import org.jkiss.dbeaver.debug.core.model.DatabaseDebugTarget;
 import org.jkiss.dbeaver.debug.core.model.DatabaseProcess;
-import org.jkiss.dbeaver.debug.core.model.ProcedureDebugTarget;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
@@ -44,8 +44,8 @@ public class ProcedureLaunchDelegate extends DatabaseLaunchDelegate {
     }
 
     @Override
-    protected ProcedureDebugTarget createDebugTarget(ILaunch launch, DBGController controller, DatabaseProcess process) {
-        return new ProcedureDebugTarget(launch, process, controller);
+    protected DatabaseDebugTarget createDebugTarget(ILaunch launch, DBGController controller, DatabaseProcess process) {
+        return new DatabaseDebugTarget(DebugCore.MODEL_IDENTIFIER_DATABASE, launch, process, controller);
     }
 
 }

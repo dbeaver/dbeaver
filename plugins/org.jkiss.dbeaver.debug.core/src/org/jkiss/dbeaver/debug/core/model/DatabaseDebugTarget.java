@@ -48,13 +48,14 @@ import org.jkiss.dbeaver.debug.DBGException;
 import org.jkiss.dbeaver.debug.DBGStackFrame;
 import org.jkiss.dbeaver.debug.DBGVariable;
 import org.jkiss.dbeaver.debug.core.DebugCore;
+import org.jkiss.dbeaver.debug.internal.core.DebugCoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
-public abstract class DatabaseDebugTarget extends DatabaseDebugElement implements IDatabaseDebugTarget, DBGEventHandler {
+public class DatabaseDebugTarget extends DatabaseDebugElement implements IDatabaseDebugTarget, DBGEventHandler {
 
     private final String modelIdentifier;
 
@@ -94,7 +95,9 @@ public abstract class DatabaseDebugTarget extends DatabaseDebugElement implement
         return controller;
     }
     
-    protected abstract DatabaseThread newThread(DBGController controller);
+    protected DatabaseThread newThread(DBGController controller) {
+        return new ProcedureThread(this);
+    }
 
     @Override
     public IDebugTarget getDebugTarget() {
@@ -143,9 +146,13 @@ public abstract class DatabaseDebugTarget extends DatabaseDebugElement implement
         return name;
     }
 
-    protected abstract String getConfiguredName(ILaunchConfiguration configuration) throws CoreException;
+    protected String getConfiguredName(ILaunchConfiguration configuration) throws CoreException {
+        return configuration.getName();
+    }
 
-    protected abstract String getDefaultName();
+    protected String getDefaultName() {
+        return DebugCoreMessages.ProcedureDebugTarget_name_default;
+    }
 
     @Override
     public void handleDebugEvents(DebugEvent[] events) {
