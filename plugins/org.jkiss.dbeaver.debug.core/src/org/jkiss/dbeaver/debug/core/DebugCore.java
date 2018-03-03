@@ -61,7 +61,8 @@ public class DebugCore {
     public static final String MODEL_IDENTIFIER_DATABASE = BUNDLE_SYMBOLIC_NAME + '.' + "database"; //$NON-NLS-1$
 
     public static final String BREAKPOINT_ID_DATABASE = BUNDLE_SYMBOLIC_NAME + '.' + "databaseBreakpointMarker"; //$NON-NLS-1$
-    public static final String BREAKPOINT_ID_DATABASE_LINE = BUNDLE_SYMBOLIC_NAME + '.' + "databaseLineBreakpointMarker"; //$NON-NLS-1$
+    public static final String BREAKPOINT_ID_DATABASE_LINE = BUNDLE_SYMBOLIC_NAME + '.'
+            + "databaseLineBreakpointMarker"; //$NON-NLS-1$
 
     public static final String BREAKPOINT_ATTRIBUTE_DATASOURCE_ID = IdeCore.MARKER_ATTRIBUTE_DATASOURCE_ID;
     public static final String BREAKPOINT_ATTRIBUTE_DATABASE_NAME = BUNDLE_SYMBOLIC_NAME + '.' + "databaseName"; //$NON-NLS-1$
@@ -70,7 +71,8 @@ public class DebugCore {
     public static final String BREAKPOINT_ATTRIBUTE_PROCEDURE_OID = BUNDLE_SYMBOLIC_NAME + '.' + "procedureOid"; //$NON-NLS-1$
     public static final String BREAKPOINT_ATTRIBUTE_NODE_PATH = IdeCore.MARKER_ATTRIBUTE_NODE_PATH;
 
-    public static final String SOURCE_CONTAINER_TYPE_DATASOURCE = BUNDLE_SYMBOLIC_NAME + '.' + "datasourceSourceContainerType"; //$NON-NLS-1$
+    public static final String SOURCE_CONTAINER_TYPE_DATASOURCE = BUNDLE_SYMBOLIC_NAME + '.'
+            + "datasourceSourceContainerType"; //$NON-NLS-1$
 
     public static final String ATTR_DRIVER_ID = BUNDLE_SYMBOLIC_NAME + '.' + "ATTR_DRIVER_ID"; //$NON-NLS-1$
     public static final String ATTR_DRIVER_ID_DEFAULT = ""; //$NON-NLS-1$
@@ -104,7 +106,7 @@ public class DebugCore {
 
     public static final String ATTR_NODE_PATH = BUNDLE_SYMBOLIC_NAME + '.' + "ATTR_NODE_PATH"; //$NON-NLS-1$
     public static final String ATTR_NODE_PATH_DEFAULT = ""; //$NON-NLS-1$
-    
+
     private static Log log = Log.getLog(DebugCore.class);
 
     public static void log(IStatus status) {
@@ -131,7 +133,7 @@ public class DebugCore {
                 sb.append(value);
                 sb.append(',');
             }
-            sb.deleteCharAt(sb.length()-1);
+            sb.deleteCharAt(sb.length() - 1);
         }
         sb.append(')');
         String call = sb.toString();
@@ -143,13 +145,13 @@ public class DebugCore {
             return composeProcedureCall(procedure, new VoidProgressMonitor());
         } catch (DBException e) {
             String message = NLS.bind("Failed to compose call for {0}", procedure);
-            log.error(message , e);
+            log.error(message, e);
             return ATTR_SCRIPT_TEXT_DEFAULT;
         }
     }
 
-    public static ILaunchConfigurationWorkingCopy createConfiguration(IContainer container, String typeName, String name)
-            throws CoreException {
+    public static ILaunchConfigurationWorkingCopy createConfiguration(IContainer container, String typeName,
+            String name) throws CoreException {
         ILaunchManager manager = DebugPlugin.getDefault().getLaunchManager();
         ILaunchConfigurationType type = manager.getLaunchConfigurationType(typeName);
         ILaunchConfigurationWorkingCopy workingCopy = type.newInstance(container, name);
@@ -280,7 +282,8 @@ public class DebugCore {
         return result;
     }
 
-    public static DBGController findProcedureController(DBPDataSourceContainer dataSourceContainer) throws DBGException {
+    public static DBGController findProcedureController(DBPDataSourceContainer dataSourceContainer)
+            throws DBGException {
         DBGController controller = Adapters.adapt(dataSourceContainer, DBGController.class);
         if (controller != null) {
             return controller;
@@ -289,7 +292,7 @@ public class DebugCore {
         String message = NLS.bind("Unable to find controller for datasource \"{0}\"", providerId);
         throw new DBGException(message);
     }
-    
+
     public static String getSourceName(Object object) throws CoreException {
         if (object instanceof DatabaseStackFrame) {
             DatabaseStackFrame frame = (DatabaseStackFrame) object;
@@ -299,7 +302,7 @@ public class DebugCore {
             try {
                 dbsObject = debugTarget.findDatabaseObject(sourceIdentifier, new VoidProgressMonitor());
             } catch (DBException e) {
-                Status error = DebugCore.newErrorStatus(e.getMessage() , e);
+                Status error = DebugCore.newErrorStatus(e.getMessage(), e);
                 throw new CoreException(error);
             }
             if (dbsObject == null) {

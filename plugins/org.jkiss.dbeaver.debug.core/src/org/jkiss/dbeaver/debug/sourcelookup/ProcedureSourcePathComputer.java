@@ -34,7 +34,7 @@ public class ProcedureSourcePathComputer implements ISourcePathComputerDelegate 
         String datasourceId = DebugCore.extractDatasourceId(configuration);
         DataSourceDescriptor descriptor = DataSourceRegistry.findDataSource(datasourceId);
         DatasourceSourceContainer container = new DatasourceSourceContainer(descriptor);
-        return new ISourceContainer[] {container};
+        return new ISourceContainer[] { container };
     }
 
 }

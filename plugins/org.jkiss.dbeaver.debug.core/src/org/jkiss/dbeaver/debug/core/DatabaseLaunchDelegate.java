@@ -39,7 +39,7 @@ public class DatabaseLaunchDelegate extends LaunchConfigurationDelegate {
 
     @Override
     public void launch(ILaunchConfiguration configuration, String mode, ILaunch launch, IProgressMonitor monitor)
-        throws CoreException {
+            throws CoreException {
         String datasourceId = DebugCore.extractDatasourceId(configuration);
         DataSourceDescriptor datasourceDescriptor = DataSourceRegistry.findDataSource(datasourceId);
         if (datasourceDescriptor == null) {
@@ -70,7 +70,7 @@ public class DatabaseLaunchDelegate extends LaunchConfigurationDelegate {
         attributes.put(DBGController.ATTACH_KIND, DebugCore.extractAttachKind(configuration));
         attributes.put(DBGController.SCRIPT_EXECUTE, DebugCore.extractScriptExecute(configuration));
         attributes.put(DBGController.SCRIPT_TEXT, DebugCore.extractScriptText(configuration));
-        //Well, put it all for now
+        // Well, put it all for now
         attributes.putAll(configuration.getAttributes());
         return attributes;
     }

@@ -37,9 +37,9 @@ import org.jkiss.dbeaver.debug.internal.core.DebugCoreMessages;
  *
  */
 public class DatabaseThread extends DatabaseDebugElement implements IThread {
-    
+
     private boolean stepping = false;
-    
+
     private String name = DebugCoreMessages.DatabaseThread_name;
 
     private List<DatabaseStackFrame> frames = new ArrayList<>(1);
@@ -47,12 +47,12 @@ public class DatabaseThread extends DatabaseDebugElement implements IThread {
     public DatabaseThread(DatabaseDebugTarget target) {
         super(target);
     }
-    
+
     @Override
     public String getName() throws DebugException {
         return name;
     }
-    
+
     public void setName(String name) {
         this.name = name;
     }
@@ -124,7 +124,7 @@ public class DatabaseThread extends DatabaseDebugElement implements IThread {
     private void aboutToResume(int detail, boolean stepping) {
         frames.clear();
         setStepping(stepping);
-//        setBreakpoints(null);
+        // setBreakpoints(null);
         fireResumeEvent(detail);
     }
 

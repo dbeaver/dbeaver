@@ -35,7 +35,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 public abstract class DBGBaseController implements DBGController {
-    
+
     private static final Log log = Log.getLog(DBGBaseController.class);
 
     private final DBPDataSourceContainer dataSourceContainer;
@@ -55,21 +55,21 @@ public abstract class DBGBaseController implements DBGController {
     public DBPDataSourceContainer getDataSourceContainer() {
         return dataSourceContainer;
     }
-    
+
     @Override
     public Map<String, Object> getDebugConfiguration() {
         return new HashMap<String, Object>(configuration);
     }
-    
+
     public DBCExecutionContext getExecutionContext() {
         return executionContext;
     }
-    
+
     @Override
     public void init(Map<String, Object> context) {
         this.configuration.putAll(context);
     }
-    
+
     @Override
     public Object attach(DBRProgressMonitor monitor) throws DBGException {
         DBPDataSource dataSource = dataSourceContainer.getDataSource();
@@ -87,19 +87,20 @@ public abstract class DBGBaseController implements DBGController {
             return id;
         } catch (DBException e) {
             String message = NLS.bind(DebugMessages.DatabaseDebugController_e_opening_debug_context,
-                dataSourceContainer);
+                    dataSourceContainer);
             log.error(message, e);
             throw new DBGException(message, e);
         }
     }
-    
-    public abstract void attachSession(DBGSession session, DBCExecutionContext sessionContext, Map<String, Object> configuataion, DBRProgressMonitor monitor) throws DBGException, DBException;
-    
+
+    public abstract void attachSession(DBGSession session, DBCExecutionContext sessionContext,
+            Map<String, Object> configuataion, DBRProgressMonitor monitor) throws DBGException, DBException;
+
     @Override
     public boolean canSuspend(Object sessionKey) {
         return false;
     }
-    
+
     @Override
     public boolean canResume(Object sessionKey) {
         return isSessionAccessible(sessionKey);
@@ -107,9 +108,9 @@ public abstract class DBGBaseController implements DBGController {
 
     @Override
     public void suspend(Object sessionkey) throws DBGException {
-        //not supported by default
+        // not supported by default
     }
-    
+
     @Override
     public void resume(Object sessionKey) throws DBGException {
         DBGSession session = ensureSessionAccessible(sessionKey);
@@ -141,32 +142,31 @@ public abstract class DBGBaseController implements DBGController {
             unregisterEventHandler((DBGEventHandler) listener);
         }
     }
-    
+
     @Override
     public List<? extends DBGBreakpointDescriptor> getBreakpoints(Object sessionKey) throws DBGException {
         DBGBaseSession session = ensureSessionAccessible(sessionKey);
         return session.getBreakpoints();
     }
-    
+
     @Override
     public void addBreakpoint(Object sessionKey, DBGBreakpointDescriptor descriptor) throws DBGException {
         DBGBaseSession session = ensureSessionAccessible(sessionKey);
         session.addBreakpoint(descriptor);
     }
-    
+
     @Override
     public void removeBreakpoint(Object sessionKey, DBGBreakpointDescriptor descriptor) throws DBGException {
         DBGBaseSession session = ensureSessionAccessible(sessionKey);
         session.addBreakpoint(descriptor);
     }
-    
-    
+
     @Override
     public List<? extends DBGStackFrame> getStack(Object id) throws DBGException {
         DBGSession session = ensureSessionAccessible(id);
         return session.getStack();
     }
-    
+
     @Override
     public List<? extends DBGVariable<?>> getVariables(Object id, DBGStackFrame stack) throws DBGException {
         DBGSession session = ensureSessionAccessible(id);
@@ -175,14 +175,15 @@ public abstract class DBGBaseController implements DBGController {
         }
         return session.getVariables();
     }
-    
+
     @Override
     public String getSource(Object sessionKey, DBGStackFrame stack) throws DBGException {
         DBGSession session = ensureSessionAccessible(sessionKey);
         return session.getSource(stack);
     }
 
-    public abstract DBGBaseSession createSession(DBGSessionInfo targetInfo, DBCExecutionContext connection) throws DBGException;
+    public abstract DBGBaseSession createSession(DBGSessionInfo targetInfo, DBCExecutionContext connection)
+            throws DBGException;
 
     protected DBGBaseSession findSession(Object id) {
         return sessions.get(id);
@@ -195,7 +196,7 @@ public abstract class DBGBaseController implements DBGController {
     public List<DBGSession> getSessions() throws DBGException {
         return new ArrayList<DBGSession>(sessions.values());
     }
-    
+
     @Override
     public boolean canStepInto(Object sessionKey) {
         return isSessionAccessible(sessionKey);
@@ -208,7 +209,7 @@ public abstract class DBGBaseController implements DBGController {
 
     @Override
     public boolean canStepReturn(Object sessionKey) {
-        // hmm, not sure 
+        // hmm, not sure
         return false;
     }
 
@@ -226,7 +227,7 @@ public abstract class DBGBaseController implements DBGController {
 
     @Override
     public void stepReturn(Object sessionKey) throws DBGException {
-        //throw DBGException?
+        // throw DBGException?
     }
 
     protected DBGBaseSession ensureSessionAccessible(Object sessionKey) throws DBGException {
@@ -256,43 +257,34 @@ public abstract class DBGBaseController implements DBGController {
     public void registerEventHandler(DBGEventHandler eventHandler) {
         eventHandlers.add(eventHandler);
     }
-    
+
     @Override
     public void unregisterEventHandler(DBGEventHandler eventHandler) {
         eventHandlers.remove(eventHandler);
     }
-    
+
     public void fireEvent(DBGEvent event) {
         for (DBGEventHandler eventHandler : eventHandlers) {
             eventHandler.handleDebugEvent(event);
         }
     }
-    
+
     /*
-    protected void executeProcedure(DBPDataSource dataSource, Map<String, Object> configuration, DBRProgressMonitor monitor) throws DBException {
-        String procedureName = String.valueOf(configuration.get(PROCEDURE_NAME));
-        String call = String.valueOf(configuration.get(PROCEDURE_CALL));
-        String taskName = NLS.bind("Execute procedure {0}", procedureName);
-        Job job = new Job(taskName) {
-            
-            @Override
-            protected IStatus run(IProgressMonitor monitor) {
-                try {
-                    try (final DBCSession execSession = DBUtils.openUtilSession(new VoidProgressMonitor(), dataSource, taskName)) {
-                        try (final DBCStatement dbStat = execSession.prepareStatement(DBCStatementType.EXEC, call, true, false,
-                                false)) {
-                            dbStat.executeStatement();
-                        }
-                    }
-                } catch (DBCException e) {
-                    log.error(taskName, e);
-                    return DebugCore.newErrorStatus(taskName, e);
-                    
-                }
-                return Status.OK_STATUS;
-            }
-        };
-        job.schedule();
-    }*/
+     * protected void executeProcedure(DBPDataSource dataSource, Map<String,
+     * Object> configuration, DBRProgressMonitor monitor) throws DBException {
+     * String procedureName = String.valueOf(configuration.get(PROCEDURE_NAME));
+     * String call = String.valueOf(configuration.get(PROCEDURE_CALL)); String
+     * taskName = NLS.bind("Execute procedure {0}", procedureName); Job job =
+     * new Job(taskName) {
+     * 
+     * @Override protected IStatus run(IProgressMonitor monitor) { try { try
+     * (final DBCSession execSession = DBUtils.openUtilSession(new
+     * VoidProgressMonitor(), dataSource, taskName)) { try (final DBCStatement
+     * dbStat = execSession.prepareStatement(DBCStatementType.EXEC, call, true,
+     * false, false)) { dbStat.executeStatement(); } } } catch (DBCException e)
+     * { log.error(taskName, e); return DebugCore.newErrorStatus(taskName, e);
+     * 
+     * } return Status.OK_STATUS; } }; job.schedule(); }
+     */
 
 }

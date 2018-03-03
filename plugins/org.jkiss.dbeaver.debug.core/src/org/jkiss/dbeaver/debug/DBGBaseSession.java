@@ -88,7 +88,7 @@ public abstract class DBGBaseSession implements DBGSession {
     public boolean isWaiting() {
         return (task == null ? false : !task.isDone()) && (workerThread == null ? false : workerThread.isAlive());
     }
-    
+
     public abstract boolean isDone();
 
     /**
@@ -123,7 +123,7 @@ public abstract class DBGBaseSession implements DBGSession {
             if (!isDone() && task != null) {
                 task.cancel(true);
             }
-            
+
             connection.close();
         } finally {
             lock.writeLock().unlock();
@@ -200,7 +200,7 @@ public abstract class DBGBaseSession implements DBGSession {
         }
 
     }
-    
+
     /**
      * Try to acquire exclusive lock
      * 
