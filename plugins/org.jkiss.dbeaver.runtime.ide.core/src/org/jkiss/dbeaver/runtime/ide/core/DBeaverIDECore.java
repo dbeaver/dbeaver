@@ -18,10 +18,14 @@
 
 package org.jkiss.dbeaver.runtime.ide.core;
 
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
-public class IdeCore {
+public class DBeaverIDECore {
 
     public static final String BUNDLE_SYMBOLIC_NAME = "org.jkiss.dbeaver.runtime.ide.core"; //$NON-NLS-1$
 
@@ -29,6 +33,20 @@ public class IdeCore {
 
     public static final String MARKER_ATTRIBUTE_DATASOURCE_ID = BUNDLE_SYMBOLIC_NAME + '.' + "datasourceId"; //$NON-NLS-1$
     public static final String MARKER_ATTRIBUTE_NODE_PATH = BUNDLE_SYMBOLIC_NAME + '.' + "nodePath"; //$NON-NLS-1$
+
+    private static Log log = Log.getLog(DBeaverIDECore.class);
+
+    public static void log(IStatus status) {
+        Log.log(log, status);
+    }
+    
+    public static IResource resolveWorkspaceResource(DBSObject dbsObject) {
+        WorkspaceResourceResolver resolver = Adapters.adapt(dbsObject, WorkspaceResourceResolver.class, true);
+        if (resolver != null) {
+            return resolver.resolveResource(dbsObject);
+        }
+        return null;
+    }
 
     public static IStatus createError(String message) {
         return new Status(IStatus.ERROR, BUNDLE_SYMBOLIC_NAME, message);

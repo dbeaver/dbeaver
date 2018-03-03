@@ -49,7 +49,7 @@ public class WorkspaceResources {
             return e.getStatus();
         } catch (Throwable e) {
             String message = action.composeErrorMessage(container, paths);
-            return IdeCore.createError(message, e);
+            return DBeaverIDECore.createError(message, e);
         }
         return Status.OK_STATUS;
     }
@@ -71,7 +71,7 @@ public class WorkspaceResources {
             return e.getStatus();
         } catch (Throwable e) {
             String message = action.composeErrorMessage(container, paths);
-            return IdeCore.createError(message, e);
+            return DBeaverIDECore.createError(message, e);
         }
         return Status.OK_STATUS;
     }

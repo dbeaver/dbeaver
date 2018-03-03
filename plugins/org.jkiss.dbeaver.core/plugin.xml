@@ -3730,6 +3730,16 @@
             searchResultClass="org.jkiss.dbeaver.ui.search.data.SearchDataResult">
         </viewPage>
     </extension>
+    <extension
+          point="org.eclipse.core.runtime.adapters">
+       <factory
+             adaptableType="org.jkiss.dbeaver.model.struct.DBSObject"
+             class="org.jkiss.dbeaver.core.DBeaverCoreAdapterFactory">
+          <adapter
+                type="org.jkiss.dbeaver.runtime.ide.core.WorkspaceResourceResolver">
+          </adapter>
+       </factory>
+    </extension>
 
     <!-- FIXME: Disabled because it breaks dark theme.  -->
 <!--
