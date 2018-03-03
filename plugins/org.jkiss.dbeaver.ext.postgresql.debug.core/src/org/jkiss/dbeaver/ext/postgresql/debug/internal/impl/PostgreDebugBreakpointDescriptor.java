@@ -19,25 +19,23 @@
 package org.jkiss.dbeaver.ext.postgresql.debug.internal.impl;
 
 import org.jkiss.dbeaver.debug.DBGBreakpointDescriptor;
-import org.jkiss.dbeaver.debug.DBGException;
 
 @SuppressWarnings("nls")
 public class PostgreDebugBreakpointDescriptor implements DBGBreakpointDescriptor {
 
-    private final PostgreDebugObjectDescriptor obj;
+    private final Object oid;
 
     private final PostgreDebugBreakpointProperties properties;
 
-    public PostgreDebugBreakpointDescriptor(PostgreDebugObjectDescriptor obj,
-            PostgreDebugBreakpointProperties properties) throws DBGException {
-        this.obj = obj;
+    public PostgreDebugBreakpointDescriptor(Object oid, PostgreDebugBreakpointProperties properties) {
+        this.oid = oid;
         this.properties = properties;
 
     }
-
+    
     @Override
-    public PostgreDebugObjectDescriptor getObjectDescriptor() {
-        return obj;
+    public Object getObjectId() {
+        return oid;
     }
 
     @Override
@@ -47,7 +45,7 @@ public class PostgreDebugBreakpointDescriptor implements DBGBreakpointDescriptor
 
     @Override
     public String toString() {
-        return "PostgreDebugBreakpointDescriptor [obj=" + obj + ", properties=" + properties + "]";
+        return "PostgreDebugBreakpointDescriptor [obj=" + oid + ", properties=" + properties + "]";
     }
 
 }

@@ -526,8 +526,9 @@ public class Debugger {
                         ? new PostgreDebugBreakpointProperties(lineNo, true)
                         : new PostgreDebugBreakpointProperties(true);
 
-                PostgreDebugBreakpointDescriptor descriptor = new PostgreDebugBreakpointDescriptor(
-                        (PostgreDebugObjectDescriptor) debugObject, breakpointProperties);
+                Object oid = debugObject.getID();
+                PostgreDebugBreakpointDescriptor descriptor = new PostgreDebugBreakpointDescriptor(oid,
+                        breakpointProperties);
                 debugSession.addBreakpoint(descriptor);
 
                 System.out.println("Breakpoint added");
