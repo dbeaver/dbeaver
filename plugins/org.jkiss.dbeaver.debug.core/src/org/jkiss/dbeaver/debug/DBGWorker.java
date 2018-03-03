@@ -30,8 +30,7 @@ public class DBGWorker implements Callable<Void> {
     private final DBGEvent before;
     private final DBGEvent after;
 
-    public DBGWorker(DBGBaseSession session, String sqlCommand, DBGEvent begin, DBGEvent end)
-    {
+    public DBGWorker(DBGBaseSession session, String sqlCommand, DBGEvent begin, DBGEvent end) {
         this.session = session;
         this.sql = sqlCommand;
         this.before = begin;
@@ -39,8 +38,7 @@ public class DBGWorker implements Callable<Void> {
     }
 
     @Override
-    public Void call() throws Exception
-    {
+    public Void call() throws Exception {
 
         try (Statement stmt = session.getConnection().createStatement()) {
             session.fireEvent(before);

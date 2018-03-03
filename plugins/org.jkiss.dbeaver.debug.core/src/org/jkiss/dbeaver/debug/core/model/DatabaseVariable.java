@@ -6,7 +6,7 @@ import org.eclipse.debug.core.model.IVariable;
 import org.jkiss.dbeaver.debug.DBGVariable;
 
 public class DatabaseVariable extends DatabaseDebugElement implements IVariable {
-    
+
     private final DBGVariable<?> dbgVariable;
 
     public DatabaseVariable(IDatabaseDebugTarget target, DBGVariable<?> variable) {

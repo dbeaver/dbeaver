@@ -90,12 +90,12 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
         breakpointManager.addBreakpointListener(this);
         debugPlugin.addDebugEventListener(this);
     }
-    
+
     @Override
     public DBGController getController() {
         return controller;
     }
-    
+
     protected DatabaseThread newThread(DBGController controller) {
         return new DatabaseThread(this);
     }
@@ -154,7 +154,7 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
     protected String getDefaultName() {
         return defaultName;
     }
-    
+
     protected void setDefaultName(String defaultName) {
         this.defaultName = defaultName;
     }
@@ -172,7 +172,7 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
             }
         }
     }
-    
+
     @Override
     public void connect(IProgressMonitor monitor) throws CoreException {
         try {
@@ -225,8 +225,7 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
             if (!getProcess().isTerminated()) {
                 try {
                     process.terminate();
-                }
-                catch (DebugException e) {
+                } catch (DebugException e) {
                     // do nothing
                 }
             }
@@ -345,8 +344,7 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
                 } else {
                     breakpointRemoved(breakpoint, null);
                 }
-            }
-            catch (CoreException e) {
+            } catch (CoreException e) {
                 // do nothing
             }
         }
@@ -354,7 +352,8 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
 
     @Override
     public void breakpointManagerEnablementChanged(boolean enabled) {
-        IBreakpoint[] breakpoints = DebugPlugin.getDefault().getBreakpointManager().getBreakpoints(DebugCore.BREAKPOINT_ID_DATABASE_LINE);
+        IBreakpoint[] breakpoints = DebugPlugin.getDefault().getBreakpointManager()
+                .getBreakpoints(DebugCore.BREAKPOINT_ID_DATABASE_LINE);
         for (int i = 0; i < breakpoints.length; i++) {
             IBreakpoint breakpoint = breakpoints[i];
             if (enabled) {
@@ -397,7 +396,7 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
     public boolean isDisconnected() {
         return false;
     }
-    
+
     @Override
     public boolean supportsStorageRetrieval() {
         return false;
@@ -407,7 +406,7 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
     public IMemoryBlock getMemoryBlock(long startAddress, long length) throws DebugException {
         return null;
     }
-    
+
     @Override
     public void handleDebugEvent(DBGEvent event) {
         int kind = event.getKind();

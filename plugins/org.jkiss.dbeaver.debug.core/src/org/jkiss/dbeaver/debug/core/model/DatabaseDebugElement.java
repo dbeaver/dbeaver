@@ -29,7 +29,7 @@ public class DatabaseDebugElement extends DebugElement {
     public DatabaseDebugTarget getDatabaseDebugTarget() {
         return (DatabaseDebugTarget) getDebugTarget();
     }
-    
+
     public DBGController getController() {
         return getDatabaseDebugTarget().getController();
     }

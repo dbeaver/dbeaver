@@ -25,9 +25,9 @@ import org.eclipse.debug.core.model.IDebugTarget;
 import org.jkiss.dbeaver.debug.DBGController;
 
 public interface IDatabaseDebugTarget extends IDebugTarget, IDebugEventSetListener, IBreakpointManagerListener {
-    
+
     DBGController getController();
-    
+
     void connect(IProgressMonitor monitor) throws CoreException;
 
 }

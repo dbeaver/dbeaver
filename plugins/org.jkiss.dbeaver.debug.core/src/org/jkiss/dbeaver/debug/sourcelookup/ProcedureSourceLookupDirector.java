@@ -24,7 +24,7 @@ public class ProcedureSourceLookupDirector extends AbstractSourceLookupDirector 
 
     @Override
     public void initializeParticipants() {
-        addParticipants(new ISourceLookupParticipant[] {new ProcedureSourceLookupParticipant()});
+        addParticipants(new ISourceLookupParticipant[] { new ProcedureSourceLookupParticipant() });
     }
 
 }

@@ -30,7 +30,7 @@ public class DatabaseBreakpoint extends Breakpoint implements IDatabaseBreakpoin
     }
 
     @Override
-    public String getDatabaseName() throws CoreException{
+    public String getDatabaseName() throws CoreException {
         return ensureMarker().getAttribute(BREAKPOINT_ATTRIBUTE_DATABASE_NAME, null);
     }
 

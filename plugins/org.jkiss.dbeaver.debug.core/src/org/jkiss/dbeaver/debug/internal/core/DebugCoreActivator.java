@@ -7,7 +7,7 @@ public class DebugCoreActivator implements BundleActivator {
 
     private static DebugCoreActivator activator;
     private static BundleContext bundleContext;
-    
+
     public static DebugCoreActivator getDefault() {
         return activator;
     }
