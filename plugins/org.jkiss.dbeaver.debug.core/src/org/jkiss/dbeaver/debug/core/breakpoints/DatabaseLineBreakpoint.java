@@ -14,6 +14,9 @@ import org.jkiss.dbeaver.debug.core.DebugCore;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 public class DatabaseLineBreakpoint extends DatabaseBreakpoint implements IDatabaseLineBreakpoint {
+    
+    public DatabaseLineBreakpoint() {
+    }
 
     public DatabaseLineBreakpoint(DBSObject databaseObject, IResource resource, final int lineNumber, final int charStart,
                                   final int charEnd, final boolean add) throws DebugException {
