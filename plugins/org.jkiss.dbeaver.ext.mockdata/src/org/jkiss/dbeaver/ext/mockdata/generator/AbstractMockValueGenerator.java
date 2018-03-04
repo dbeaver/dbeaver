@@ -15,6 +15,7 @@ import java.util.*;
 public abstract class AbstractMockValueGenerator implements MockValueGenerator {
 
     public static final int UNIQUE_VALUES_SET_SIZE = 1000000;
+    public static final int UNIQUE_VALUE_GEN_ATTEMPTS = 100;
 
     protected DBSEntity dbsEntity;
     protected DBSAttributeBase attribute;
@@ -71,12 +72,17 @@ public abstract class AbstractMockValueGenerator implements MockValueGenerator {
             }
         }
         if (isUnique) {
+            int attempts = 0;
             Object value = null;
             while (value == null || uniqueValues.contains(value)) {
+                if (attempts > UNIQUE_VALUE_GEN_ATTEMPTS) {
+                    return null;
+                }
                 if (monitor.isCanceled()) {
                     return null;
                 }
                 value = generateOneValue(monitor);
+                attempts++;
             }
             uniqueValues.add(value);
             return value;
