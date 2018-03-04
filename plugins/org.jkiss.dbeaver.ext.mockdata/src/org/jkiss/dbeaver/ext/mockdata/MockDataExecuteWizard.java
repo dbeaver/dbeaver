@@ -165,6 +165,7 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
             }
             AbstractExecutionSource executionSource = new AbstractExecutionSource(dataManipulator, session.getExecutionContext(), this);
 
+            boolean success = true;
             monitor.beginTask("Generate Mock Data", 3);
             if (mockDataSettings.isRemoveOldData()) {
                 logPage.appendLog("Removing old data from the '" + dataManipulator.getName() + "'.\n");
@@ -180,7 +181,8 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                         txnManager.commit(session);
                     }
                 } catch (Exception e) {
-                    String message = "    Error removing the data: " + e.getMessage() + ".";
+                    success = false;
+                    String message = "    Error removing the data: " + e.getMessage();
                     log.error(message, e);
                     logPage.appendLog(message + "\n\n", true);
                 }
@@ -190,8 +192,13 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                 logPage.appendLog("Old data isn't removed.\n\n");
             }
 
-            monitor.subTask("Insert data");
+            if (!success) {
+                return true;
+            }
+
             try {
+                monitor.subTask("Insert data");
+
                 logPage.appendLog("Inserting mock data into the '" + dataManipulator.getName() + "'.\n");
                 DBCStatistics insertStats = new DBCStatistics();
 
@@ -247,13 +254,18 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                                 break;
                             }
                             List<DBDAttributeValue> attributeValues = new ArrayList<>();
-                            for (DBSAttributeBase attribute : attributes) {
-                                MockValueGenerator generator = generators.get(attribute.getName());
-                                if (generator != null) {
-                                    //((AbstractMockValueGenerator) generator).checkUnique(monitor);
-                                    Object value = generator.generateValue(monitor);
-                                    attributeValues.add(new DBDAttributeValue(attribute, value));
+                            try {
+                                for (DBSAttributeBase attribute : attributes) {
+                                    MockValueGenerator generator = generators.get(attribute.getName());
+                                    if (generator != null) {
+                                        //((AbstractMockValueGenerator) generator).checkUnique(monitor);
+                                        Object value = generator.generateValue(monitor);
+                                        attributeValues.add(new DBDAttributeValue(attribute, value));
+                                    }
                                 }
+                            } catch (DBException e) {
+                                processGeneratorException(e);
+                                return true;
                             }
 
                             if (batch == null) {
@@ -272,9 +284,7 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                         }
                     }
                     catch (Exception e) {
-                        String message = "    Error generating mock data: " + e.getMessage() + ".";
-                        log.error(message, e);
-                        logPage.appendLog(message + "\n\n", true);
+                        processGeneratorException(e);
                         if (e instanceof DBException) {
                             throw e;
                         }
@@ -295,7 +305,7 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                 logPage.appendLog("    Duration: " + insertStats.getExecuteTime() + "ms\n\n");
 
             } catch (DBException e) {
-                String message = "    Error inserting mock data: " + e.getMessage() + ".";
+                String message = "    Error inserting mock data: " + e.getMessage();
                 log.error(message, e);
                 logPage.appendLog(message + "\n\n", true);
             }
@@ -305,5 +315,11 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
         }
 
         return true;
+    }
+
+    private void processGeneratorException(Exception e) {
+        String message = "    Error generating mock data: " + e.getMessage();
+        log.error(message, e);
+        logPage.appendLog(message + "\n\n", true);
     }
 }
