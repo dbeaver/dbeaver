@@ -1,3 +1,20 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2017 Eugene Fradkin (eugene.fradkin@gmail.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.jkiss.dbeaver.ext.mockdata.generator;
 
 import org.jkiss.dbeaver.DBException;
@@ -7,7 +24,10 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.dbeaver.model.struct.DBSAttributeEnumerable;
+import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 
 import java.io.IOException;
 import java.util.*;
@@ -61,7 +81,7 @@ public abstract class AbstractMockValueGenerator implements MockValueGenerator {
     public Object generateValue(DBRProgressMonitor monitor) throws DBException, IOException {
         if (isFirstRun) {
             isFirstRun = false;
-            isUnique = checkUnique(monitor);
+            isUnique = DBUtils.checkUnique(monitor, dbsEntity, attribute);
             if (isUnique && (attribute instanceof DBSAttributeEnumerable)) {
                 uniqueValues = new HashSet<>();
                 Collection<DBDLabelValuePair> valuePairs = readColumnValues(monitor, dbsEntity.getDataSource(), (DBSAttributeEnumerable) attribute, UNIQUE_VALUES_SET_SIZE);
@@ -76,7 +96,8 @@ public abstract class AbstractMockValueGenerator implements MockValueGenerator {
             Object value = null;
             while (value == null || uniqueValues.contains(value)) {
                 if (attempts > UNIQUE_VALUE_GEN_ATTEMPTS) {
-                    return null;
+                    throw new DBException("\n      Can't generate appropriate unique value for the '" + attribute.getName() + "' <" + attribute.getFullTypeName() + "> attribute.\n" +
+                            "      Try to change the generator or its parameters.\n");
                 }
                 if (monitor.isCanceled()) {
                     return null;
@@ -107,16 +128,4 @@ public abstract class AbstractMockValueGenerator implements MockValueGenerator {
         return column.getValueEnumeration(session, null, number);
     }
 
-    private boolean checkUnique(DBRProgressMonitor monitor) throws DBException {
-        for (DBSEntityConstraint constraint : dbsEntity.getConstraints(monitor)) {
-            DBSEntityConstraintType constraintType = constraint.getConstraintType();
-            if (constraintType == DBSEntityConstraintType.PRIMARY_KEY || constraintType.isUnique()) {
-                DBSEntityAttributeRef constraintAttribute = DBUtils.getConstraintAttribute(monitor, ((DBSEntityReferrer) constraint), attribute.getName());
-                if (constraintAttribute != null && constraintAttribute.getAttribute() == attribute) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
 }

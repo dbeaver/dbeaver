@@ -1515,4 +1515,16 @@ public final class DBUtils {
         return true;
     }
 
+    public static boolean checkUnique(DBRProgressMonitor monitor, DBSEntity dbsEntity, DBSAttributeBase attribute) throws DBException {
+        for (DBSEntityConstraint constraint : dbsEntity.getConstraints(monitor)) {
+            DBSEntityConstraintType constraintType = constraint.getConstraintType();
+            if (constraintType.isUnique()) {
+                DBSEntityAttributeRef constraintAttribute = getConstraintAttribute(monitor, ((DBSEntityReferrer) constraint), attribute.getName());
+                if (constraintAttribute != null && constraintAttribute.getAttribute() == attribute) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 }
