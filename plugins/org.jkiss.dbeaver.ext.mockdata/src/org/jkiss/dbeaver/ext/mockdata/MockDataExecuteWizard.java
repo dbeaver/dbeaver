@@ -204,6 +204,8 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                     }
                 }
 
+                monitor.done();
+
                 long rowsNumber = mockDataSettings.getRowsNumber();
                 long quotient = rowsNumber / BATCH_SIZE;
                 long modulo = rowsNumber % BATCH_SIZE;
@@ -212,12 +214,18 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                 }
                 int counter = 0;
 
+                monitor.beginTask("Insert data", (int) rowsNumber);
+
                 // generate and insert the data
                 session.enableLogging(false);
                 DBSDataManipulator.ExecuteBatch batch = null;
                 for (int q = 0; q < quotient; q++) {
                     if (monitor.isCanceled()) {
                         break;
+                    }
+                    if (counter > 0) {
+                        monitor.subTask(String.valueOf(counter) + " rows inserted");
+                        monitor.worked(BATCH_SIZE);
                     }
                     try {
                         for (int i = 0; (i < BATCH_SIZE && counter < rowsNumber); i++) {
