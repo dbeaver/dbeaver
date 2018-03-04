@@ -157,7 +157,6 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
 
         DBCExecutionContext context = dataManipulator.getDataSource().getDefaultContext(true);
         try (DBCSession session = context.openSession(monitor, DBCExecutionPurpose.USER, MockDataMessages.tools_mockdata_generate_data_task)) {
-            session.enableLogging(false);
             AbstractExecutionSource executionSource = new AbstractExecutionSource(dataManipulator, session.getExecutionContext(), this);
 
             if (mockDataSettings.isRemoveOldData()) {
