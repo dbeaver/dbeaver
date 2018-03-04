@@ -51,13 +51,13 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
 
     private static final Log log = Log.getLog(MockDataExecuteWizard.class);
 
-    public static final int BATCH_SIZE = 1000;
+    private static final int BATCH_SIZE = 1000;
     private static final String RS_EXPORT_WIZARD_DIALOG_SETTINGS = "MockData"; //$NON-NLS-1$
 
     private MockDataWizardPageSettings settingsPage;
     private MockDataSettings mockDataSettings;
 
-    public MockDataExecuteWizard(MockDataSettings mockDataSettings, Collection<DBSDataManipulator> dbObjects, String task) {
+    MockDataExecuteWizard(MockDataSettings mockDataSettings, Collection<DBSDataManipulator> dbObjects, String task) {
         super(dbObjects, task);
         this.clientHomeRequired = false;
         this.mockDataSettings = mockDataSettings;
@@ -156,20 +156,18 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
     public boolean executeProcess(DBRProgressMonitor monitor, DBSDataManipulator dataManipulator) throws IOException {
 
         DBCExecutionContext context = dataManipulator.getDataSource().getDefaultContext(true);
-        DBCSession session = context.openSession(monitor, DBCExecutionPurpose.USER, MockDataMessages.tools_mockdata_generate_data_task);
-        AbstractExecutionSource executionSource = new AbstractExecutionSource(dataManipulator, session.getExecutionContext(), this);
-        try {
+
+        try (DBCSession session = context.openSession(monitor, DBCExecutionPurpose.USER, MockDataMessages.tools_mockdata_generate_data_task)) {
+            session.enableLogging(false);
+            AbstractExecutionSource executionSource = new AbstractExecutionSource(dataManipulator, session.getExecutionContext(), this);
             if (mockDataSettings.isRemoveOldData()) {
                 logPage.appendLog("Removing old data from the '" + dataManipulator.getName() + "'.\n");
                 DBCStatistics deleteStats = new DBCStatistics();
                 try {
-                    // TODO truncate is much faster than delete
-                    DBSDataManipulator.ExecuteBatch batch = dataManipulator.deleteData(session, new DBSAttributeBase[]{}, executionSource);
-                    try {
-                        batch.add(new Object[] {});
+                    // TODO: truncate is much faster than delete
+                    try (DBSDataManipulator.ExecuteBatch batch = dataManipulator.deleteData(session, new DBSAttributeBase[]{}, executionSource)) {
+                        batch.add(new Object[]{});
                         deleteStats.accumulate(batch.execute(session));
-                    } finally {
-                        batch.close();
                     }
                 } catch (Exception e) {
                     String message = "    Error removing the data: " + e.getMessage() + ".";
@@ -240,7 +238,9 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                                 batch.add(DBDAttributeValue.getValues(attributeValues));
                             }
                         }
-                        insertStats.accumulate(batch.execute(session));
+                        if (batch != null) {
+                            insertStats.accumulate(batch.execute(session));
+                        }
                     }
                     catch (Exception e) {
                         String message = "    Error generating Mock Data: " + e.getMessage() + ".";
@@ -267,8 +267,6 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                 logPage.appendLog(message + "\n", true);
             }
 
-        } finally {
-            session.close();
         }
 
         return true;
