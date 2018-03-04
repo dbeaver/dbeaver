@@ -30,9 +30,11 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-public class FKGenerator extends AbstractMockValueGenerator {
+public class FKGenerator extends AbstractMockValueGenerator
+{
+    private static final int UNIQ_REF_RECORDS_LIMIT = 100000000;
+    private static final int REF_RECORDS_LIMIT = 100000;
 
-    private int numberRefRecords = 100;
     private List<Object> refValues = null;
 
     @Override
@@ -40,11 +42,12 @@ public class FKGenerator extends AbstractMockValueGenerator {
         super.init(container, attribute, properties);
 
         nullsPersent = 0;
-
+/*
         Integer numberRefRecords = (Integer) properties.get("numberRefRecords"); //$NON-NLS-1$
         if (numberRefRecords != null) {
             this.numberRefRecords = numberRefRecords;
         }
+*/
     }
 
     @Override
@@ -56,6 +59,7 @@ public class FKGenerator extends AbstractMockValueGenerator {
             List<? extends DBSEntityAttributeRef> references = ((DBSEntityReferrer) fk).getAttributeReferences(monitor);
 
             DBSTableForeignKeyColumn column = (DBSTableForeignKeyColumn) references.iterator().next(); // TODO only the first !!!
+            int numberRefRecords = DBUtils.checkUnique(monitor, dbsEntity, attribute) ? UNIQ_REF_RECORDS_LIMIT : REF_RECORDS_LIMIT;
             Collection<DBDLabelValuePair> values = readColumnValues(monitor, fk.getDataSource(), (DBSAttributeEnumerable) column.getReferencedColumn(), numberRefRecords);
             for (DBDLabelValuePair value : values) {
                 refValues.add(value.getValue());

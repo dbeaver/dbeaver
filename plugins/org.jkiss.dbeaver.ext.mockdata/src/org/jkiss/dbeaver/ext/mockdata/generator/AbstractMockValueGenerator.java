@@ -7,7 +7,10 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.dbeaver.model.struct.DBSAttributeEnumerable;
+import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 
 import java.io.IOException;
 import java.util.*;
@@ -61,7 +64,7 @@ public abstract class AbstractMockValueGenerator implements MockValueGenerator {
     public Object generateValue(DBRProgressMonitor monitor) throws DBException, IOException {
         if (isFirstRun) {
             isFirstRun = false;
-            isUnique = checkUnique(monitor);
+            isUnique = DBUtils.checkUnique(monitor, dbsEntity, attribute);
             if (isUnique && (attribute instanceof DBSAttributeEnumerable)) {
                 uniqueValues = new HashSet<>();
                 Collection<DBDLabelValuePair> valuePairs = readColumnValues(monitor, dbsEntity.getDataSource(), (DBSAttributeEnumerable) attribute, UNIQUE_VALUES_SET_SIZE);
@@ -107,16 +110,4 @@ public abstract class AbstractMockValueGenerator implements MockValueGenerator {
         return column.getValueEnumeration(session, null, number);
     }
 
-    private boolean checkUnique(DBRProgressMonitor monitor) throws DBException {
-        for (DBSEntityConstraint constraint : dbsEntity.getConstraints(monitor)) {
-            DBSEntityConstraintType constraintType = constraint.getConstraintType();
-            if (constraintType == DBSEntityConstraintType.PRIMARY_KEY || constraintType.isUnique()) {
-                DBSEntityAttributeRef constraintAttribute = DBUtils.getConstraintAttribute(monitor, ((DBSEntityReferrer) constraint), attribute.getName());
-                if (constraintAttribute != null && constraintAttribute.getAttribute() == attribute) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
 }
