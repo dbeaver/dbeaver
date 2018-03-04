@@ -119,6 +119,10 @@ public class ResultSetViewer extends Viewer
 {
     private static final Log log = Log.getLog(ResultSetViewer.class);
 
+    private static final String TOOLBAR_GROUP_NAVIGATION = "navigation";
+    private static final String TOOLBAR_GROUP_PRESENTATIONS = "presentations";
+    private static final String TOOLBAR_GROUP_ADDITIONS = IWorkbenchActionConstants.MB_ADDITIONS;
+
     private static final String SETTINGS_SECTION_PRESENTATIONS = "presentations";
 
     private static final DecimalFormat ROW_COUNT_FORMAT = new DecimalFormat("###,###,###,###,###,##0");
@@ -1070,6 +1074,7 @@ public class ResultSetViewer extends Viewer
             navToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_FETCH_PAGE));
             navToolbar.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_FETCH_ALL));
             navToolbar.createControl(statusBar);
+            navToolbar.add(new Separator(TOOLBAR_GROUP_NAVIGATION));
             toolbarList.add(navToolbar);
         }
         {
@@ -1108,7 +1113,8 @@ public class ResultSetViewer extends Viewer
 
         {
             ToolBarManager addToolbar = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
-            addToolbar.add(new Separator(IWorkbenchActionConstants.MB_ADDITIONS));
+            addToolbar.add(new Separator(TOOLBAR_GROUP_PRESENTATIONS));
+            addToolbar.add(new Separator(TOOLBAR_GROUP_ADDITIONS));
             final IMenuService menuService = getSite().getService(IMenuService.class);
             if (menuService != null) {
                 menuService.populateContributionManager(addToolbar, "toolbar:org.jkiss.dbeaver.ui.controls.resultset.status");
