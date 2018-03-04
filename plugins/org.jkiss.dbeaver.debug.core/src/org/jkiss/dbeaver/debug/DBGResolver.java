@@ -15,24 +15,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.postgresql.debug.ui.internal;
 
-import org.eclipse.osgi.util.NLS;
+package org.jkiss.dbeaver.debug;
 
-public class PostgreDebugUIMessages extends NLS {
+import java.util.Map;
 
-    private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.postgresql.debug.ui.internal.PostgreDebugUIMessages"; //$NON-NLS-1$
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
-    public static String PgSqlLaunchShortcut_e_editor_empty;
-    public static String PgSqlLaunchShortcut_e_selection_empty;
-    public static String PgSqlLaunchShortcut_select_procedure_message;
-    public static String PgSqlLaunchShortcut_select_procedure_title;
+public interface DBGResolver {
 
-    static {
-        // initialize resource bundle
-        NLS.initializeMessages(BUNDLE_NAME, PostgreDebugUIMessages.class);
-    }
+    DBSObject resolveObject(Map<String, Object> context, Object identifier, DBRProgressMonitor monitor)
+            throws DBException;
 
-    private PostgreDebugUIMessages() {
-    }
+    Map<String, Object> resolveContext(DBSObject databaseObject);
+
 }

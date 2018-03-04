@@ -15,6 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.jkiss.dbeaver.debug.sourcelookup;
 
 import org.eclipse.core.runtime.CoreException;
@@ -34,7 +35,7 @@ public class ProcedureSourcePathComputer implements ISourcePathComputerDelegate 
         String datasourceId = DebugCore.extractDatasourceId(configuration);
         DataSourceDescriptor descriptor = DataSourceRegistry.findDataSource(datasourceId);
         DatasourceSourceContainer container = new DatasourceSourceContainer(descriptor);
-        return new ISourceContainer[] {container};
+        return new ISourceContainer[] { container };
     }
 
 }

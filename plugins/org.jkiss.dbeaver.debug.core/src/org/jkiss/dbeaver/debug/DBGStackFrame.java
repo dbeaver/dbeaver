@@ -20,7 +20,7 @@
 package org.jkiss.dbeaver.debug;
 
 public interface DBGStackFrame {
- 
+
     String getName();
 
     int getLevel();

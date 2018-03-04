@@ -1,4 +1,6 @@
-/*
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<!--
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
@@ -14,11 +16,18 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
-package org.jkiss.dbeaver.ext.postgresql.debug.ui;
+  -->
+<plugin>
+   <extension
+         id="datasourceMarker"
+         name="%datasourceMarker.name"
+         point="org.eclipse.core.resources.markers">
+      <attribute
+            name="org.jkiss.dbeaver.runtime.ide.core.datasourceId">
+      </attribute>
+      <attribute
+            name="org.jkiss.dbeaver.runtime.ide.core.nodePath">
+      </attribute>
+   </extension>
 
-public class PostgreSqlDebugUi {
-
-    public static final String BUNDLE_SYMBOLIC_NAME = "org.jkiss.dbeaver.ext.postgresql.debug.ui"; //$NON-NLS-1$
-
-}
+</plugin>

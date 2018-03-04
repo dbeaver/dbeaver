@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
- * Copyright (C) 2017 Alexander Fedorov (alexander.fedorov@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.jkiss.dbeaver.runtime.ide.core;
 
 import java.nio.file.Path;
@@ -33,44 +34,46 @@ public class WorkspaceResources {
 
     /**
      * Bulk operation to create several linked files
+     * 
      * @param container
      * @param monitor
      * @param paths
      * @return
      */
-	public static IStatus createLinkedFiles(IContainer container, IProgressMonitor monitor, Path... paths) {
-		IWorkspace workspace = ResourcesPlugin.getWorkspace();
-		CreateLinkedFilesRunnable action = new CreateLinkedFilesRunnable(container, paths);
-		try {
+    public static IStatus createLinkedFiles(IContainer container, IProgressMonitor monitor, Path... paths) {
+        IWorkspace workspace = ResourcesPlugin.getWorkspace();
+        CreateLinkedFilesRunnable action = new CreateLinkedFilesRunnable(container, paths);
+        try {
             workspace.run(action, monitor);
-		} catch (CoreException e) {
-			return e.getStatus();
-		} catch (Throwable e) {
-			String message = action.composeErrorMessage(container, paths);
-			return IdeCore.createError(message, e);
-		}
-		return Status.OK_STATUS;
-	}
-	
-	/**
+        } catch (CoreException e) {
+            return e.getStatus();
+        } catch (Throwable e) {
+            String message = action.composeErrorMessage(container, paths);
+            return DBeaverIDECore.createError(message, e);
+        }
+        return Status.OK_STATUS;
+    }
+
+    /**
      * Bulk operation to create several linked folders
-	 * @param container
-	 * @param monitor
-	 * @param paths
-	 * @return
-	 */
-	public static IStatus createLinkedFolders(IContainer container, IProgressMonitor monitor, Path... paths) {
-		IWorkspace workspace = ResourcesPlugin.getWorkspace();
-		CreateLinkedFoldersRunnable action = new CreateLinkedFoldersRunnable(container, paths);
-		try {
+     * 
+     * @param container
+     * @param monitor
+     * @param paths
+     * @return
+     */
+    public static IStatus createLinkedFolders(IContainer container, IProgressMonitor monitor, Path... paths) {
+        IWorkspace workspace = ResourcesPlugin.getWorkspace();
+        CreateLinkedFoldersRunnable action = new CreateLinkedFoldersRunnable(container, paths);
+        try {
             workspace.run(action, monitor);
-		} catch (CoreException e) {
-			return e.getStatus();
-		} catch (Throwable e) {
-			String message = action.composeErrorMessage(container, paths);
-			return IdeCore.createError(message, e);
-		}
-		return Status.OK_STATUS;
-	}
-	
+        } catch (CoreException e) {
+            return e.getStatus();
+        } catch (Throwable e) {
+            String message = action.composeErrorMessage(container, paths);
+            return DBeaverIDECore.createError(message, e);
+        }
+        return Status.OK_STATUS;
+    }
+
 }

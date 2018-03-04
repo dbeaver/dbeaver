@@ -20,8 +20,5 @@
 package org.jkiss.dbeaver.debug;
 
 public enum DBGVariableType {
-    NUMBER,
-    TEXT,
-    DATE,
-    BLOB
+    NUMBER, TEXT, DATE, BLOB
 }

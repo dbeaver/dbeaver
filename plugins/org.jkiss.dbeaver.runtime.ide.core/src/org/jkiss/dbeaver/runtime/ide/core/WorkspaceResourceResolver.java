@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
- * Copyright (C) 2017 Alexander Fedorov (alexander.fedorov@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,21 +15,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.debug.core.model;
 
-import org.eclipse.debug.core.DebugException;
-import org.jkiss.dbeaver.debug.internal.core.DebugCoreMessages;
+package org.jkiss.dbeaver.runtime.ide.core;
 
-public class ProcedureThread extends DatabaseThread {
+import org.eclipse.core.resources.IResource;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
-    public ProcedureThread(DatabaseDebugTarget target) {
-        super(target);
-    }
-
-    @Override
-    public String getName() throws DebugException {
-        String name = DebugCoreMessages.ProcedureThread_name;
-        return name;
-    }
+public interface WorkspaceResourceResolver {
+    
+    IResource resolveResource(DBSObject databaseObject);
 
 }
