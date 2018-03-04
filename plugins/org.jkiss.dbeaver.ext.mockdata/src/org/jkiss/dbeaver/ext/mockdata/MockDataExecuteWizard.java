@@ -156,10 +156,10 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
     public boolean executeProcess(DBRProgressMonitor monitor, DBSDataManipulator dataManipulator) throws IOException {
 
         DBCExecutionContext context = dataManipulator.getDataSource().getDefaultContext(true);
-
         try (DBCSession session = context.openSession(monitor, DBCExecutionPurpose.USER, MockDataMessages.tools_mockdata_generate_data_task)) {
             session.enableLogging(false);
             AbstractExecutionSource executionSource = new AbstractExecutionSource(dataManipulator, session.getExecutionContext(), this);
+
             if (mockDataSettings.isRemoveOldData()) {
                 logPage.appendLog("Removing old data from the '" + dataManipulator.getName() + "'.\n");
                 DBCStatistics deleteStats = new DBCStatistics();
@@ -172,18 +172,18 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                 } catch (Exception e) {
                     String message = "    Error removing the data: " + e.getMessage() + ".";
                     log.error(message, e);
-                    logPage.appendLog(message + "\n", true);
+                    logPage.appendLog(message + "\n\n", true);
                 } finally {
                     monitor.done();
                 }
                 logPage.appendLog("    Rows updated: " + deleteStats.getRowsUpdated() + "\n");
-                logPage.appendLog("    Duration: " + deleteStats.getExecuteTime() + "ms\n");
+                logPage.appendLog("    Duration: " + deleteStats.getExecuteTime() + "ms\n\n");
             } else {
-                logPage.appendLog("Old data isn't removed.\n");
+                logPage.appendLog("Old data isn't removed.\n\n");
             }
 
             try {
-                logPage.appendLog("\nInserting Mock Data into the '" + dataManipulator.getName() + "'.\n");
+                logPage.appendLog("Inserting mock data into the '" + dataManipulator.getName() + "'.\n");
                 DBCStatistics insertStats = new DBCStatistics();
 
                 // build and init the generators
@@ -213,6 +213,7 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                 int counter = 0;
 
                 // generate and insert the data
+                session.enableLogging(false);
                 DBSDataManipulator.ExecuteBatch batch = null;
                 for (int q = 0; q < quotient; q++) {
                     try {
@@ -243,9 +244,9 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                         }
                     }
                     catch (Exception e) {
-                        String message = "    Error generating Mock Data: " + e.getMessage() + ".";
+                        String message = "    Error generating mock data: " + e.getMessage() + ".";
                         log.error(message, e);
-                        logPage.appendLog(message + "\n", true);
+                        logPage.appendLog(message + "\n\n", true);
                         if (e instanceof DBException) {
                             throw e;
                         }
@@ -259,12 +260,12 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                 }
 
                 logPage.appendLog("    Rows updated: " + insertStats.getRowsUpdated() + "\n");
-                logPage.appendLog("    Duration: " + insertStats.getExecuteTime() + "ms\n");
+                logPage.appendLog("    Duration: " + insertStats.getExecuteTime() + "ms\n\n");
 
             } catch (DBException e) {
-                String message = "    Error inserting Mock Data: " + e.getMessage() + ".";
+                String message = "    Error inserting mock data: " + e.getMessage() + ".";
                 log.error(message, e);
-                logPage.appendLog(message + "\n", true);
+                logPage.appendLog(message + "\n\n", true);
             }
 
         }
