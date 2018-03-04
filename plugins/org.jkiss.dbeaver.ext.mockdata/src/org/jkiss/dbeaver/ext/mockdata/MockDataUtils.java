@@ -109,7 +109,7 @@ public class MockDataUtils {
         return Math.round(min + number * dif);
     }
 
-    private static int degree(int d) {
+    public static int degree(int d) {
         Integer value = degrees.get(d);
         if (value == null) {
             int result = 10;
