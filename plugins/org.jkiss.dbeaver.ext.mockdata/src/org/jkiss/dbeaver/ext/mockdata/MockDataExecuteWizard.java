@@ -159,8 +159,10 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
         try (DBCSession session = context.openSession(monitor, DBCExecutionPurpose.USER, MockDataMessages.tools_mockdata_generate_data_task)) {
             AbstractExecutionSource executionSource = new AbstractExecutionSource(dataManipulator, session.getExecutionContext(), this);
 
+            monitor.beginTask("Generate Mock Data", 3);
             if (mockDataSettings.isRemoveOldData()) {
                 logPage.appendLog("Removing old data from the '" + dataManipulator.getName() + "'.\n");
+                monitor.subTask("Cleanup old data");
                 DBCStatistics deleteStats = new DBCStatistics();
                 try {
                     // TODO: truncate is much faster than delete
@@ -172,8 +174,6 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                     String message = "    Error removing the data: " + e.getMessage() + ".";
                     log.error(message, e);
                     logPage.appendLog(message + "\n\n", true);
-                } finally {
-                    monitor.done();
                 }
                 logPage.appendLog("    Rows updated: " + deleteStats.getRowsUpdated() + "\n");
                 logPage.appendLog("    Duration: " + deleteStats.getExecuteTime() + "ms\n\n");
@@ -181,6 +181,7 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                 logPage.appendLog("Old data isn't removed.\n\n");
             }
 
+            monitor.subTask("Insert data");
             try {
                 logPage.appendLog("Inserting mock data into the '" + dataManipulator.getName() + "'.\n");
                 DBCStatistics insertStats = new DBCStatistics();
@@ -215,8 +216,14 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                 session.enableLogging(false);
                 DBSDataManipulator.ExecuteBatch batch = null;
                 for (int q = 0; q < quotient; q++) {
+                    if (monitor.isCanceled()) {
+                        break;
+                    }
                     try {
                         for (int i = 0; (i < BATCH_SIZE && counter < rowsNumber); i++) {
+                            if (monitor.isCanceled()) {
+                                break;
+                            }
                             List<DBDAttributeValue> attributeValues = new ArrayList<>();
                             for (DBSAttributeBase attribute : attributes) {
                                 MockValueGenerator generator = generators.get(attribute.getName());
@@ -267,6 +274,8 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                 logPage.appendLog(message + "\n\n", true);
             }
 
+        } finally {
+            monitor.done();
         }
 
         return true;
