@@ -3,6 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.vertica.nls
 Bundle-Version: 1.0.9
+Bundle-Release-Date: 20180219
 Fragment-Host: org.jkiss.dbeaver.ext.vertica
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Vendor: JKISS
