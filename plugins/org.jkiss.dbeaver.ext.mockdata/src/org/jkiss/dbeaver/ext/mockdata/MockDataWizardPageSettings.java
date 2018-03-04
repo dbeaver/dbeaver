@@ -170,7 +170,7 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
                                 cell.setFont(boldFont);
                             }
                         } catch (DBException e) {
-                            log.error("Error checking the attribute '" + attribute.getName() + "' properties");
+                            log.error("Error checking the attribute '" + attribute.getName() + "' properties", e);
                         }
                         if (attributeGeneratorProperties != null && attributeGeneratorProperties.isEmpty()) {
                             cell.setForeground(table.getDisplay().getSystemColor(SWT.COLOR_RED));
