@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
- * Copyright (C) 2017 Alexander Fedorov (alexander.fedorov@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -27,17 +27,19 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.LaunchConfigurationDelegate;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.debug.DBGController;
+import org.jkiss.dbeaver.debug.DBGException;
 import org.jkiss.dbeaver.debug.core.model.DatabaseDebugTarget;
 import org.jkiss.dbeaver.debug.core.model.DatabaseProcess;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
-public abstract class DatabaseLaunchDelegate extends LaunchConfigurationDelegate {
+public class DatabaseLaunchDelegate extends LaunchConfigurationDelegate {
 
     @Override
     public void launch(ILaunchConfiguration configuration, String mode, ILaunch launch, IProgressMonitor monitor)
-        throws CoreException {
+            throws CoreException {
         String datasourceId = DebugCore.extractDatasourceId(configuration);
         DataSourceDescriptor datasourceDescriptor = DataSourceRegistry.findDataSource(datasourceId);
         if (datasourceDescriptor == null) {
@@ -68,15 +70,25 @@ public abstract class DatabaseLaunchDelegate extends LaunchConfigurationDelegate
         attributes.put(DBGController.ATTACH_KIND, DebugCore.extractAttachKind(configuration));
         attributes.put(DBGController.SCRIPT_EXECUTE, DebugCore.extractScriptExecute(configuration));
         attributes.put(DBGController.SCRIPT_TEXT, DebugCore.extractScriptText(configuration));
-        //Well, put it all for now
+        // Well, put it all for now
         attributes.putAll(configuration.getAttributes());
         return attributes;
     }
 
-    protected abstract DBGController createController(DBPDataSourceContainer dataSourceContainer) throws CoreException;
+    protected DBGController createController(DBPDataSourceContainer dataSourceContainer) throws CoreException {
+        try {
+            return DebugCore.findProcedureController(dataSourceContainer);
+        } catch (DBGException e) {
+            throw new CoreException(GeneralUtils.makeExceptionStatus(e));
+        }
+    }
 
-    protected abstract DatabaseProcess createProcess(ILaunch launch, String name);
+    protected DatabaseProcess createProcess(ILaunch launch, String name) {
+        return new DatabaseProcess(launch, name);
+    }
 
-    protected abstract DatabaseDebugTarget createDebugTarget(ILaunch launch, DBGController controller, DatabaseProcess process);
+    protected DatabaseDebugTarget createDebugTarget(ILaunch launch, DBGController controller, DatabaseProcess process) {
+        return new DatabaseDebugTarget(DebugCore.MODEL_IDENTIFIER_DATABASE, launch, process, controller);
+    }
 
 }

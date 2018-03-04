@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
- * Copyright (C) 2017 Alexander Fedorov (alexander.fedorov@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,30 +15,25 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.postgresql.debug.ui.internal;
+
+package org.jkiss.dbeaver.debug.ui;
 
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTabGroup;
 import org.eclipse.debug.ui.CommonTab;
 import org.eclipse.debug.ui.ILaunchConfigurationDialog;
 import org.eclipse.debug.ui.ILaunchConfigurationTab;
-import org.jkiss.dbeaver.debug.ui.DatabaseTab;
 
-public class PgSqlLaunchConfigurationTabGroup extends AbstractLaunchConfigurationTabGroup {
+public class DatabaseTabGroup extends AbstractLaunchConfigurationTabGroup {
 
-    public PgSqlLaunchConfigurationTabGroup()
-    {
+    public DatabaseTabGroup() {
     }
 
     @Override
-    public void createTabs(ILaunchConfigurationDialog dialog, String mode)
-    {
+    public void createTabs(ILaunchConfigurationDialog dialog, String mode) {
         DatabaseTab databaseTab = new DatabaseTab();
         CommonTab commonTab = new CommonTab();
-        ILaunchConfigurationTab[] tabs = new ILaunchConfigurationTab[] {
-                databaseTab,
-                commonTab
-            };
-            setTabs(tabs);
+        ILaunchConfigurationTab[] tabs = new ILaunchConfigurationTab[] { databaseTab, commonTab };
+        setTabs(tabs);
     }
 
 }

@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
- * Copyright (C) 2017 Alexander Fedorov (alexander.fedorov@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.jkiss.dbeaver.debug.core.model;
 
 import java.util.ArrayList;
@@ -23,7 +24,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.resources.IMarkerDelta;
-import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -46,17 +46,17 @@ import org.jkiss.dbeaver.debug.DBGController;
 import org.jkiss.dbeaver.debug.DBGEvent;
 import org.jkiss.dbeaver.debug.DBGEventHandler;
 import org.jkiss.dbeaver.debug.DBGException;
-import org.jkiss.dbeaver.debug.DBGFinder;
 import org.jkiss.dbeaver.debug.DBGStackFrame;
 import org.jkiss.dbeaver.debug.DBGVariable;
 import org.jkiss.dbeaver.debug.core.DebugCore;
+import org.jkiss.dbeaver.debug.internal.core.DebugCoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
-public abstract class DatabaseDebugTarget extends DatabaseDebugElement implements IDatabaseDebugTarget, DBGEventHandler {
+public class DatabaseDebugTarget extends DatabaseDebugElement implements IDatabaseDebugTarget, DBGEventHandler {
 
     private final String modelIdentifier;
 
@@ -67,6 +67,7 @@ public abstract class DatabaseDebugTarget extends DatabaseDebugElement implement
     private final DatabaseThread thread;
 
     private String name;
+    private String defaultName = DebugCoreMessages.DatabaseDebugTarget_name_default;
 
     private boolean suspended = false;
     private boolean terminated = false;
@@ -90,13 +91,15 @@ public abstract class DatabaseDebugTarget extends DatabaseDebugElement implement
         breakpointManager.addBreakpointListener(this);
         debugPlugin.addDebugEventListener(this);
     }
-    
+
     @Override
     public DBGController getController() {
         return controller;
     }
-    
-    protected abstract DatabaseThread newThread(DBGController controller);
+
+    protected DatabaseThread newThread(DBGController controller) {
+        return new DatabaseThread(this);
+    }
 
     @Override
     public IDebugTarget getDebugTarget() {
@@ -145,9 +148,17 @@ public abstract class DatabaseDebugTarget extends DatabaseDebugElement implement
         return name;
     }
 
-    protected abstract String getConfiguredName(ILaunchConfiguration configuration) throws CoreException;
+    protected String getConfiguredName(ILaunchConfiguration configuration) throws CoreException {
+        return configuration.getName();
+    }
 
-    protected abstract String getDefaultName();
+    protected String getDefaultName() {
+        return defaultName;
+    }
+
+    protected void setDefaultName(String defaultName) {
+        this.defaultName = defaultName;
+    }
 
     @Override
     public void handleDebugEvents(DebugEvent[] events) {
@@ -162,7 +173,7 @@ public abstract class DatabaseDebugTarget extends DatabaseDebugElement implement
             }
         }
     }
-    
+
     @Override
     public void connect(IProgressMonitor monitor) throws CoreException {
         try {
@@ -215,8 +226,7 @@ public abstract class DatabaseDebugTarget extends DatabaseDebugElement implement
             if (!getProcess().isTerminated()) {
                 try {
                     process.terminate();
-                }
-                catch (DebugException e) {
+                } catch (DebugException e) {
                     // do nothing
                 }
             }
@@ -280,7 +290,7 @@ public abstract class DatabaseDebugTarget extends DatabaseDebugElement implement
 
     @Override
     public boolean supportsBreakpoint(IBreakpoint breakpoint) {
-        if (breakpoint.getModelIdentifier().equals(DebugCore.BREAKPOINT_DATABASE_LINE)) {
+        if (breakpoint.getModelIdentifier().equals(DebugCore.BREAKPOINT_ID_DATABASE_LINE)) {
             return true;
         }
         return false;
@@ -335,8 +345,7 @@ public abstract class DatabaseDebugTarget extends DatabaseDebugElement implement
                 } else {
                     breakpointRemoved(breakpoint, null);
                 }
-            }
-            catch (CoreException e) {
+            } catch (CoreException e) {
                 // do nothing
             }
         }
@@ -344,7 +353,8 @@ public abstract class DatabaseDebugTarget extends DatabaseDebugElement implement
 
     @Override
     public void breakpointManagerEnablementChanged(boolean enabled) {
-        IBreakpoint[] breakpoints = DebugPlugin.getDefault().getBreakpointManager().getBreakpoints(DebugCore.BREAKPOINT_DATABASE_LINE);
+        IBreakpoint[] breakpoints = DebugPlugin.getDefault().getBreakpointManager()
+                .getBreakpoints(DebugCore.BREAKPOINT_ID_DATABASE_LINE);
         for (int i = 0; i < breakpoints.length; i++) {
             IBreakpoint breakpoint = breakpoints[i];
             if (enabled) {
@@ -358,7 +368,9 @@ public abstract class DatabaseDebugTarget extends DatabaseDebugElement implement
     protected DBGBreakpointDescriptor describeBreakpoint(IBreakpoint breakpoint) {
         Map<String, Object> description = new HashMap<String, Object>();
         try {
-            description.putAll(breakpoint.getMarker().getAttributes());
+            Map<String, Object> attributes = breakpoint.getMarker().getAttributes();
+            Map<String, Object> remote = DebugCore.toBreakpointDescriptor(attributes);
+            description.putAll(remote);
         } catch (CoreException e) {
             DebugCore.log(e.getStatus());
             return null;
@@ -387,7 +399,7 @@ public abstract class DatabaseDebugTarget extends DatabaseDebugElement implement
     public boolean isDisconnected() {
         return false;
     }
-    
+
     @Override
     public boolean supportsStorageRetrieval() {
         return false;
@@ -397,7 +409,7 @@ public abstract class DatabaseDebugTarget extends DatabaseDebugElement implement
     public IMemoryBlock getMemoryBlock(long startAddress, long length) throws DebugException {
         return null;
     }
-    
+
     @Override
     public void handleDebugEvent(DBGEvent event) {
         int kind = event.getKind();
@@ -476,14 +488,10 @@ public abstract class DatabaseDebugTarget extends DatabaseDebugElement implement
         return source;
     }
 
-    public DBSObject findDatabaseObject(Object sourceIdentifier, DBRProgressMonitor monitor) throws DBException {
-        DBPDataSourceContainer dataSourceContainer = controller.getDataSourceContainer();
-        DBGFinder finder = Adapters.adapt(dataSourceContainer, DBGFinder.class);
-        if (finder == null) {
-            return null;
-        }
+    public DBSObject findDatabaseObject(Object identifier, DBRProgressMonitor monitor) throws DBException {
+        DBPDataSourceContainer container = controller.getDataSourceContainer();
         Map<String, Object> context = controller.getDebugConfiguration();
-        return finder.findObject(context , sourceIdentifier, monitor);
+        return DebugCore.resolveDatabaseObject(container, context, identifier, monitor);
     }
 
 }

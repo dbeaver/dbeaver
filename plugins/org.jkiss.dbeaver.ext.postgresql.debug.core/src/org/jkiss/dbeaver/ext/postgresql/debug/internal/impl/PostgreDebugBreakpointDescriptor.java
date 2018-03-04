@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
- * Copyright (C) 2017 Andrew Khitrin (ahitrin@gmail.com)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2017-2018 Andrew Khitrin (ahitrin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,24 +19,23 @@
 package org.jkiss.dbeaver.ext.postgresql.debug.internal.impl;
 
 import org.jkiss.dbeaver.debug.DBGBreakpointDescriptor;
-import org.jkiss.dbeaver.debug.DBGException;
 
 @SuppressWarnings("nls")
 public class PostgreDebugBreakpointDescriptor implements DBGBreakpointDescriptor {
 
-    private final PostgreDebugObjectDescriptor obj;
+    private final Object oid;
 
     private final PostgreDebugBreakpointProperties properties;
 
-    public PostgreDebugBreakpointDescriptor(PostgreDebugObjectDescriptor obj, PostgreDebugBreakpointProperties properties) throws DBGException {
-        this.obj = obj;
+    public PostgreDebugBreakpointDescriptor(Object oid, PostgreDebugBreakpointProperties properties) {
+        this.oid = oid;
         this.properties = properties;
 
     }
-
+    
     @Override
-    public PostgreDebugObjectDescriptor getObjectDescriptor() {
-        return obj;
+    public Object getObjectId() {
+        return oid;
     }
 
     @Override
@@ -46,7 +45,7 @@ public class PostgreDebugBreakpointDescriptor implements DBGBreakpointDescriptor
 
     @Override
     public String toString() {
-        return "PostgreDebugBreakpointDescriptor [obj=" + obj + ", properties=" + properties + "]";
+        return "PostgreDebugBreakpointDescriptor [obj=" + oid + ", properties=" + properties + "]";
     }
 
 }

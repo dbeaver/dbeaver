@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
- * Copyright (C) 2017 Alexander Fedorov (alexander.fedorov@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+
 package org.jkiss.dbeaver.debug.ui;
 
 import java.util.ArrayList;
@@ -56,8 +58,7 @@ public class LaunchContributionItem extends ContributionItem {
     // map of launch groups by (non-null) categories, for this mode
     private Map<String, ILaunchGroup> groupsByCategory = null;
 
-    protected LaunchContributionItem(String mode)
-    {
+    protected LaunchContributionItem(String mode) {
         this.mode = mode;
         ILaunchGroup[] groups = DebugUITools.getLaunchGroups();
         groupsByCategory = new HashMap<String, ILaunchGroup>(3);
@@ -74,8 +75,7 @@ public class LaunchContributionItem extends ContributionItem {
     }
 
     @Override
-    public void fill(Menu menu, int index)
-    {
+    public void fill(Menu menu, int index) {
         Object[] selected = extractSelectedObjects();
 
         int accelerator = 1;
@@ -137,21 +137,18 @@ public class LaunchContributionItem extends ContributionItem {
     }
 
     @Override
-    public void fill(CoolBar parent, int index)
-    {
-        //AF: we are using standard contribution here for now
+    public void fill(CoolBar parent, int index) {
+        // AF: we are using standard contribution here for now
         super.fill(parent, index);
     }
 
     @Override
-    public void fill(ToolBar parent, int index)
-    {
-        //AF: we are using standard contribution here for now
+    public void fill(ToolBar parent, int index) {
+        // AF: we are using standard contribution here for now
         super.fill(parent, index);
     }
 
-    protected Object[] extractSelectedObjects()
-    {
+    protected Object[] extractSelectedObjects() {
         IWorkbenchWindow window = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
         if (window == null) {
             return NO_OBJECTS;
@@ -174,16 +171,15 @@ public class LaunchContributionItem extends ContributionItem {
                 IEditorPart activeEditor = activePage.getActiveEditor();
                 DBSObject databaseObject = DebugUI.extractDatabaseObject(activeEditor);
                 if (databaseObject != null) {
-                    return new Object[] {databaseObject};
+                    return new Object[] { databaseObject };
                 }
             }
-            
+
         }
         return NO_OBJECTS;
     }
 
-    protected List<ILaunchConfiguration> extractSharedConfigurations(Object[] selection)
-    {
+    protected List<ILaunchConfiguration> extractSharedConfigurations(Object[] selection) {
         List<ILaunchConfiguration> configurations = new ArrayList<>();
         for (Object object : selection) {
             ILaunchConfiguration config = DebugUIInternals.isSharedConfig(object);
