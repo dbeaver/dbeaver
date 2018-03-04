@@ -186,11 +186,15 @@ public class SessionManagerViewer
     }
 
     protected void updateSQL() {
-        String text = curSession == null ? "" : CommonUtils.notEmpty(curSession.getActiveQuery());
-        StringEditorInput sqlInput = new StringEditorInput(sessionTable.getShell().getText(), text, true, GeneralUtils.getDefaultFileEncoding());
-        sqlViewer.setInput(sqlInput);
-        if (sqlViewer.getTextViewer() != null) {
-            sqlViewer.reloadSyntaxRules();
+        try {
+            String text = curSession == null ? "" : CommonUtils.notEmpty(curSession.getActiveQuery());
+            StringEditorInput sqlInput = new StringEditorInput(sessionTable.getShell().getText(), text, true, GeneralUtils.getDefaultFileEncoding());
+            sqlViewer.init(subSite, sqlInput);
+            if (sqlViewer.getTextViewer() != null) {
+                sqlViewer.reloadSyntaxRules();
+            }
+        } catch (PartInitException e) {
+            DBUserInterface.getInstance().showError(sessionTable.getShell().getText(), null, e);
         }
     }
 
