@@ -22,6 +22,7 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.events.*;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.PlatformUI;
@@ -68,6 +69,7 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
     private Combo presetCombo;
     private Label generatorDescriptionLabel;
     private Link generatorDescriptionLink;
+    private Font boldFont;
 
     private String generatorLinkUrl;
 
@@ -154,6 +156,7 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
                 }
             });
 
+            VoidProgressMonitor monitor = new VoidProgressMonitor(); // TODO VoidProgressMonitor
             CellLabelProvider labelProvider = new CellLabelProvider() {
                 @Override
                 public void update(ViewerCell cell) {
@@ -162,6 +165,13 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
                     if (cell.getColumnIndex() == 0) {
                         cell.setImage(DBeaverIcons.getImage(DBValueFormatting.getTypeImage(attribute)));
                         cell.setText(attribute.getName());
+                        try {
+                            if (DBUtils.checkUnique(monitor, mockDataSettings.getEntity(), attribute)) {
+                                cell.setFont(boldFont);
+                            }
+                        } catch (DBException e) {
+                            log.error("Error checking the attribute '" + attribute.getName() + "' properties");
+                        }
                         if (attributeGeneratorProperties != null && attributeGeneratorProperties.isEmpty()) {
                             cell.setForeground(table.getDisplay().getSystemColor(SWT.COLOR_RED));
                             noGeneratorInfoLabel.setVisible(true);
@@ -356,6 +366,8 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
         }
 
         setControl(composite);
+
+        boldFont = UIUtils.makeBoldFont(columnsTableViewer.getControl().getFont());
     }
 
     private void selectGenerator(DBSAttributeBase attribute, String generatorName) {
