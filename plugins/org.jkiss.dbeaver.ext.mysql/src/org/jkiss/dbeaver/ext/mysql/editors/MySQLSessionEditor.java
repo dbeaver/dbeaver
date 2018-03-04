@@ -31,6 +31,7 @@ import org.eclipse.ui.ISharedImages;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
+import org.jkiss.dbeaver.ext.mysql.model.session.MySQLSession;
 import org.jkiss.dbeaver.ext.mysql.model.session.MySQLSessionManager;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSession;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
@@ -64,7 +65,7 @@ public class MySQLSessionEditor extends AbstractSessionEditor
 
     @Override
     protected SessionManagerViewer createSessionViewer(DBCExecutionContext executionContext, Composite parent) {
-        return new SessionManagerViewer(this, parent, new MySQLSessionManager((MySQLDataSource) executionContext.getDataSource())) {
+        return new SessionManagerViewer<MySQLSession>(this, parent, new MySQLSessionManager((MySQLDataSource) executionContext.getDataSource())) {
             private boolean hideSleeping;
 
             @Override
