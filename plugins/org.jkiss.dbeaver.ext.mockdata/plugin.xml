@@ -52,10 +52,11 @@
             label="FK"
             description="Values from associated table (FK)"
             class="org.jkiss.dbeaver.ext.mockdata.generator.FKGenerator">
-
+<!--
             <propertyGroup label="General">
-                <property id="numberRefRecords" label="Ref Records" type="integer" defaultValue="100" description="Size of referenced keys dictionary"/>
+                <property id="numberRefRecords" label="Ref Records" type="integer" defaultValue="1000000" description="Size limit of referenced keys dictionary"/>
             </propertyGroup>
+-->
         </generator>
 
         <generator
