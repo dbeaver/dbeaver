@@ -53,7 +53,7 @@ public class DB2ServerApplicationEditor extends AbstractSessionEditor {
 
     @Override
     protected SessionManagerViewer createSessionViewer(DBCExecutionContext executionContext, Composite parent) {
-        return new SessionManagerViewer(this, parent, new DB2ServerApplicationManager((DB2DataSource) executionContext.getDataSource())) {
+        return new SessionManagerViewer<DB2ServerApplication>(this, parent, new DB2ServerApplicationManager((DB2DataSource) executionContext.getDataSource())) {
 
             @Override
             @SuppressWarnings("rawtypes")

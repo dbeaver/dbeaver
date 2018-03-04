@@ -39,18 +39,18 @@ import java.util.Map;
 /**
  * Session table
  */
-class SessionTable extends DatabaseObjectListControl<DBAServerSession> {
+class SessionTable<SESSION_TYPE extends DBAServerSession> extends DatabaseObjectListControl<SESSION_TYPE> {
 
-    private DBAServerSessionManager<DBAServerSession> sessionManager;
+    private DBAServerSessionManager<SESSION_TYPE> sessionManager;
 
-    public SessionTable(Composite parent, int style, IWorkbenchSite site, DBAServerSessionManager<DBAServerSession> sessionManager)
+    SessionTable(Composite parent, int style, IWorkbenchSite site, DBAServerSessionManager<SESSION_TYPE> sessionManager)
     {
         super(parent, style, site, CONTENT_PROVIDER);
         this.sessionManager = sessionManager;
         //setFitWidth(true);
     }
 
-    public DBAServerSessionManager<DBAServerSession> getSessionManager() {
+    public DBAServerSessionManager<SESSION_TYPE> getSessionManager() {
         return sessionManager;
     }
 
@@ -61,21 +61,21 @@ class SessionTable extends DatabaseObjectListControl<DBAServerSession> {
     }
 
     @Override
-    protected LoadingJob<Collection<DBAServerSession>> createLoadService()
+    protected LoadingJob<Collection<SESSION_TYPE>> createLoadService()
     {
         return LoadingJob.createService(
             new LoadSessionsService(),
             new ObjectsLoadVisualizer());
     }
 
-    protected LoadingJob<Void> createAlterService(DBAServerSession session, Map<String, Object> options)
+    LoadingJob<Void> createAlterService(SESSION_TYPE session, Map<String, Object> options)
     {
         return LoadingJob.createService(
             new KillSessionService(session, options),
             new ObjectActionVisualizer());
     }
 
-    public void init(DBAServerSessionManager<DBAServerSession> sessionManager)
+    public void init(DBAServerSessionManager<SESSION_TYPE> sessionManager)
     {
         this.sessionManager = sessionManager;
     }
@@ -106,15 +106,15 @@ class SessionTable extends DatabaseObjectListControl<DBAServerSession> {
 
     };
 
-    private class LoadSessionsService extends DatabaseLoadService<Collection<DBAServerSession>> {
+    private class LoadSessionsService extends DatabaseLoadService<Collection<SESSION_TYPE>> {
 
-        protected LoadSessionsService()
+        LoadSessionsService()
         {
             super("Load sessions", sessionManager.getDataSource());
         }
 
         @Override
-        public Collection<DBAServerSession> evaluate(DBRProgressMonitor monitor)
+        public Collection<SESSION_TYPE> evaluate(DBRProgressMonitor monitor)
             throws InvocationTargetException, InterruptedException
         {
             try {
@@ -130,10 +130,10 @@ class SessionTable extends DatabaseObjectListControl<DBAServerSession> {
     }
 
     private class KillSessionService extends DatabaseLoadService<Void> {
-        private final DBAServerSession session;
+        private final SESSION_TYPE session;
         private final Map<String, Object> options;
 
-        protected KillSessionService(DBAServerSession session, Map<String, Object> options)
+        KillSessionService(SESSION_TYPE session, Map<String, Object> options)
         {
             super("Kill session", sessionManager.getDataSource());
             this.session = session;
