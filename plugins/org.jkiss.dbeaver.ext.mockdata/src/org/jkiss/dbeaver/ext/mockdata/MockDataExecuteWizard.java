@@ -29,10 +29,7 @@ import org.jkiss.dbeaver.ext.mockdata.model.MockValueGenerator;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPClientHome;
 import org.jkiss.dbeaver.model.data.DBDAttributeValue;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.DBCStatistics;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -52,6 +49,7 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
     private static final Log log = Log.getLog(MockDataExecuteWizard.class);
 
     private static final int BATCH_SIZE = 1000;
+
     private static final String RS_EXPORT_WIZARD_DIALOG_SETTINGS = "MockData"; //$NON-NLS-1$
 
     private MockDataWizardPageSettings settingsPage;
@@ -157,6 +155,14 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
 
         DBCExecutionContext context = dataManipulator.getDataSource().getDefaultContext(true);
         try (DBCSession session = context.openSession(monitor, DBCExecutionPurpose.USER, MockDataMessages.tools_mockdata_generate_data_task)) {
+            DBCTransactionManager txnManager = DBUtils.getTransactionManager(session.getExecutionContext());
+            boolean autoCommit;
+            try {
+                autoCommit = txnManager == null || txnManager.isAutoCommit();
+            } catch (DBCException e) {
+                log.error(e);
+                autoCommit = true;
+            }
             AbstractExecutionSource executionSource = new AbstractExecutionSource(dataManipulator, session.getExecutionContext(), this);
 
             monitor.beginTask("Generate Mock Data", 3);
@@ -169,6 +175,9 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                     try (DBSDataManipulator.ExecuteBatch batch = dataManipulator.deleteData(session, new DBSAttributeBase[]{}, executionSource)) {
                         batch.add(new Object[]{});
                         deleteStats.accumulate(batch.execute(session));
+                    }
+                    if (txnManager != null && !autoCommit) {
+                        txnManager.commit(session);
                     }
                 } catch (Exception e) {
                     String message = "    Error removing the data: " + e.getMessage() + ".";
@@ -224,9 +233,14 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                         break;
                     }
                     if (counter > 0) {
+                        if (txnManager != null && !autoCommit) {
+                            txnManager.commit(session);
+                        }
+
                         monitor.subTask(String.valueOf(counter) + " rows inserted");
                         monitor.worked(BATCH_SIZE);
                     }
+
                     try {
                         for (int i = 0; (i < BATCH_SIZE && counter < rowsNumber); i++) {
                             if (monitor.isCanceled()) {
@@ -271,6 +285,10 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                             batch = null;
                         }
                     }
+                }
+
+                if (txnManager != null && !autoCommit) {
+                    txnManager.commit(session);
                 }
 
                 logPage.appendLog("    Rows updated: " + insertStats.getRowsUpdated() + "\n");
