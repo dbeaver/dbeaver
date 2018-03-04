@@ -23,14 +23,10 @@ public abstract class AbstractMockValueGenerator implements MockValueGenerator {
     protected int nullsPersent = 10;
     private boolean isFirstRun = true;
     private boolean isUnique;
-    private Set uniqueValues;
+    private Set<Object> uniqueValues;
 
     /**
      * Should be run before the generateValue call
-     * @param container
-     * @param attribute
-     * @param properties
-     * @throws DBException
      */
     @Override
     public void init(DBSDataManipulator container, DBSAttributeBase attribute, Map<Object, Object> properties) throws DBException {
@@ -66,7 +62,7 @@ public abstract class AbstractMockValueGenerator implements MockValueGenerator {
             isFirstRun = false;
             isUnique = checkUnique(monitor);
             if (isUnique && (attribute instanceof DBSAttributeEnumerable)) {
-                uniqueValues = new HashSet();
+                uniqueValues = new HashSet<>();
                 Collection<DBDLabelValuePair> valuePairs = readColumnValues(monitor, dbsEntity.getDataSource(), (DBSAttributeEnumerable) attribute, UNIQUE_VALUES_SET_SIZE);
                 for (DBDLabelValuePair pair : valuePairs) {
                     uniqueValues.add(pair.getValue());
@@ -77,6 +73,9 @@ public abstract class AbstractMockValueGenerator implements MockValueGenerator {
         if (isUnique) {
             Object value = null;
             while (value == null || uniqueValues.contains(value)) {
+                if (monitor.isCanceled()) {
+                    return null;
+                }
                 value = generateOneValue(monitor);
             }
             uniqueValues.add(value);
