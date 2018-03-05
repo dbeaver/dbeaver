@@ -229,7 +229,7 @@ public class MockDataSettings {
         private final DBSAttributeBase attribute;
         private String selectedGeneratorId = null;
         private String presetId = null;
-        private Map<String, PropertySourceCustom> generators = new HashMap<>(); // generatorId -> PropertySourceCustom
+        private Map<String, PropertySourceCustom> generators = new TreeMap<>(); // generatorId -> PropertySourceCustom
 
         public AttributeGeneratorProperties(DBSAttributeBase attribute) {
             this.attribute = attribute;
