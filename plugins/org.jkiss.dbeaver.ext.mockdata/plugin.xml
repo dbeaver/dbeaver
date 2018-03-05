@@ -118,17 +118,6 @@
         </generator>
 
         <generator
-            id="nullGenerator"
-            label="NULL"
-            description="NULL values"
-            class="org.jkiss.dbeaver.ext.mockdata.generator.NullGenerator">
-            <type kind="BOOLEAN"/>
-            <type kind="DATETIME"/>
-            <type kind="NUMERIC"/>
-            <type kind="STRING"/>
-        </generator>
-
-        <generator
                 id="numericRandomGenerator"
                 label="Random"
                 description="Random numeric values"
@@ -183,6 +172,17 @@
             <propertyGroup label="General">
                 <property id="nulls" label="%% of NULLs" type="integer" defaultValue="0" description="NULL values (%)"/>
             </propertyGroup>
+        </generator>
+
+        <generator
+                id="zeroGenerator"
+                label="NULL"
+                description="NULL values"
+                class="org.jkiss.dbeaver.ext.mockdata.generator.NullGenerator">
+            <type kind="BOOLEAN"/>
+            <type kind="DATETIME"/>
+            <type kind="NUMERIC"/>
+            <type kind="STRING"/>
         </generator>
 
     </extension>
