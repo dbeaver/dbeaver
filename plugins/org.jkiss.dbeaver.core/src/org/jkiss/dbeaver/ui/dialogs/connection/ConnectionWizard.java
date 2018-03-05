@@ -28,7 +28,9 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.INewWizard;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
@@ -117,6 +119,7 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
 
         // Generate new ID to avoid session conflicts in QM
         testDataSource.setId(DataSourceDescriptor.generateNewId(dataSource.getDriver()));
+        testDataSource.getPreferenceStore().setValue(ModelPreferences.META_SEPARATE_CONNECTION, false);
 
         try {
 
@@ -190,7 +193,7 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
         long connectTime = -1;
         DBRProgressMonitor ownerMonitor;
 
-        public ConnectionTester(DataSourceDescriptor testDataSource)
+        ConnectionTester(DataSourceDescriptor testDataSource)
         {
             super(testDataSource);
             setSystem(true);
@@ -240,11 +243,6 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
                     }
                 } else {
                     try (DBCSession session = DBUtils.openUtilSession(monitor, dataSource, "Test connection")) {
-                        for (IWizardPage page : getPages ()) {
-                            if (page instanceof IDataSourceConnectionTester) {
-                                ((IDataSourceConnectionTester) page).testConnection(session);
-                            }
-                        }
                         if (session instanceof Connection) {
                             try {
                                 Connection connection = (Connection) session;
@@ -259,6 +257,15 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
                         }
                     }
                 }
+                monitor.subTask("Load connection info");
+                try (DBCSession session = DBUtils.openUtilSession(monitor, dataSource, "Call connection testers")) {
+                    for (IWizardPage page : getPages()) {
+                        if (page instanceof IDataSourceConnectionTester) {
+                            ((IDataSourceConnectionTester) page).testConnection(session);
+                        }
+                    }
+                }
+
                 new DisconnectJob(container).schedule();
                 monitor.subTask(CoreMessages.dialog_connection_wizard_start_connection_monitor_success);
             } catch (DBException ex) {
