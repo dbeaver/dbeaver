@@ -2623,6 +2623,9 @@ public class ResultSetViewer extends Viewer
             UIUtils.showMessageBox(viewerPanel.getShell(), "Data read", "Data read is in progress - can't run another", SWT.ICON_WARNING);
             return false;
         }
+        if (viewerPanel.isDisposed()) {
+            return false;
+        }
         DBCExecutionContext executionContext = getExecutionContext();
         if (executionContext == null) {
             UIUtils.showMessageBox(viewerPanel.getShell(), "Data read", "Can't read data - no active connection", SWT.ICON_WARNING);
