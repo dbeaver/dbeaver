@@ -44,8 +44,8 @@ import org.jkiss.utils.CommonUtils;
 import java.io.IOException;
 import java.util.*;
 
-public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulator, DBSDataManipulator> implements IImportWizard{
-
+public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulator, DBSDataManipulator> implements IImportWizard
+{
     private static final Log log = Log.getLog(MockDataExecuteWizard.class);
 
     private static final int BATCH_SIZE = 1000;
