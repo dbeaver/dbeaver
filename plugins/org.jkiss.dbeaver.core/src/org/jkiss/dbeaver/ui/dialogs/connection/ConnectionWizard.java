@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.INewWizard;
@@ -41,6 +42,7 @@ import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.jobs.ConnectJob;
 import org.jkiss.dbeaver.runtime.jobs.DisconnectJob;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.ui.IDataSourceConnectionTester;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -238,6 +240,11 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
                     }
                 } else {
                     try (DBCSession session = DBUtils.openUtilSession(monitor, dataSource, "Test connection")) {
+                        for (IWizardPage page : getPages ()) {
+                            if (page instanceof IDataSourceConnectionTester) {
+                                ((IDataSourceConnectionTester) page).testConnection(session);
+                            }
+                        }
                         if (session instanceof Connection) {
                             try {
                                 Connection connection = (Connection) session;
