@@ -48,40 +48,11 @@
     <extension point="org.jkiss.dbeaver.mockGenerator">
 
         <generator
-            id="fkGenerator"
-            label="FK"
-            description="Values from associated table (FK)"
-            class="org.jkiss.dbeaver.ext.mockdata.generator.FKGenerator">
-<!--
-            <propertyGroup label="General">
-                <property id="numberRefRecords" label="Ref Records" type="integer" defaultValue="1000000" description="Size limit of referenced keys dictionary"/>
-            </propertyGroup>
--->
-        </generator>
-
-        <generator
-            id="stringTextGenerator"
-            label="Text"
-            description="Random length substrings from the 'Lorem ipsum' text"
-            class="org.jkiss.dbeaver.ext.mockdata.generator.StringTextGenerator">
-            <type kind="STRING"/>
-
-            <propertyGroup label="General">
-                <property id="template" label="Template" type="string" description="Source of substrings"
-                    defaultValue="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."/>
-                <property id="minLength" label="Min Length" type="integer" defaultValue="1" description="Minimum length"/>
-                <property id="maxLength" label="Max Length" type="integer" defaultValue="100" description="Maximum length (0 means the column length)"/>
-
-                <property id="nulls" label="%% of NULLs" type="integer" defaultValue="0" description="NULL values (%)"/>
-            </propertyGroup>
-        </generator>
-
-        <generator
-                id="stringUuidGenerator"
-                label="UUID"
-                description="UUID random values"
-                class="org.jkiss.dbeaver.ext.mockdata.generator.StringUuidGenerator">
-            <type kind="STRING"/>
+                id="booleanRandomGenerator"
+                label="Random"
+                description="Random boolean values"
+                class="org.jkiss.dbeaver.ext.mockdata.generator.BooleanRandomGenerator">
+            <type kind="BOOLEAN"/>
 
             <propertyGroup label="General">
                 <property id="nulls" label="%% of NULLs" type="integer" defaultValue="0" description="NULL values (%)"/>
@@ -89,38 +60,25 @@
         </generator>
 
         <generator
-            id="numericRandomGenerator"
-            label="Random"
-            description="Random numeric values"
-            class="org.jkiss.dbeaver.ext.mockdata.generator.NumericRandomGenerator">
-            <type kind="NUMERIC"/>
+                id="booleanSequenceGenerator"
+                label="Sequence"
+                description="Adjustable sequence of boolean values"
+                class="org.jkiss.dbeaver.ext.mockdata.generator.BooleanSequenceGenerator">
+            <type kind="BOOLEAN"/>
 
             <propertyGroup label="General">
-                <property id="nulls" label="%% of NULLs" type="integer" defaultValue="0" description="NULL values (%)"/>
-            </propertyGroup>
-        </generator>
-
-        <generator
-            id="numericSequenceGenerator"
-            label="Sequence"
-            description="Sequence of numbers with adjustable start, step and order"
-            class="org.jkiss.dbeaver.ext.mockdata.generator.NumericSequenceGenerator">
-            <type kind="NUMERIC"/>
-
-            <propertyGroup label="General">
-                <property id="start" label="Start value" type="long" defaultValue="0" description="Initial sequence value"/>
-                <property id="step" label="Increment step" type="long" defaultValue="1" description="Sequence increment step"/>
-                <property id="reverse" label="Reverse order" type="boolean" defaultValue="FALSE" description="Reverse the sequence order"/>
+                <property id="initial" label="Initial" type="boolean" defaultValue="TRUE"/>
+                <property id="order" label="Order" type="string" defaultValue="CONSTANT" validValues="ALTERNATELY,CONSTANT"/>
 
                 <property id="nulls" label="%% of NULLs" type="integer" defaultValue="0" description="NULL values (%)"/>
             </propertyGroup>
         </generator>
 
         <generator
-            id="dateRandomGenerator"
-            label="Random"
-            description="Random date values"
-            class="org.jkiss.dbeaver.ext.mockdata.generator.DateRandomGenerator">
+                id="dateRandomGenerator"
+                label="Random"
+                description="Random date values"
+                class="org.jkiss.dbeaver.ext.mockdata.generator.DateRandomGenerator">
             <type kind="DATETIME"/>
 
             <propertyGroup label="General">
@@ -148,11 +106,34 @@
         </generator>
 
         <generator
-            id="booleanRandomGenerator"
-            label="Random"
-            description="Random boolean values"
-            class="org.jkiss.dbeaver.ext.mockdata.generator.BooleanRandomGenerator">
+            id="fkGenerator"
+            label="FK"
+            description="Values from associated table (FK)"
+            class="org.jkiss.dbeaver.ext.mockdata.generator.FKGenerator">
+<!--
+            <propertyGroup label="General">
+                <property id="numberRefRecords" label="Ref Records" type="integer" defaultValue="1000000" description="Size limit of referenced keys dictionary"/>
+            </propertyGroup>
+-->
+        </generator>
+
+        <generator
+            id="nullGenerator"
+            label="NULL"
+            description="NULL values"
+            class="org.jkiss.dbeaver.ext.mockdata.generator.NullGenerator">
             <type kind="BOOLEAN"/>
+            <type kind="DATETIME"/>
+            <type kind="NUMERIC"/>
+            <type kind="STRING"/>
+        </generator>
+
+        <generator
+                id="numericRandomGenerator"
+                label="Random"
+                description="Random numeric values"
+                class="org.jkiss.dbeaver.ext.mockdata.generator.NumericRandomGenerator">
+            <type kind="NUMERIC"/>
 
             <propertyGroup label="General">
                 <property id="nulls" label="%% of NULLs" type="integer" defaultValue="0" description="NULL values (%)"/>
@@ -160,16 +141,46 @@
         </generator>
 
         <generator
-            id="booleanSequenceGenerator"
-            label="Sequence"
-            description="Adjustable sequence of boolean values"
-            class="org.jkiss.dbeaver.ext.mockdata.generator.BooleanSequenceGenerator">
-            <type kind="BOOLEAN"/>
+                id="numericSequenceGenerator"
+                label="Sequence"
+                description="Sequence of numbers with adjustable start, step and order"
+                class="org.jkiss.dbeaver.ext.mockdata.generator.NumericSequenceGenerator">
+            <type kind="NUMERIC"/>
 
             <propertyGroup label="General">
-                <property id="initial" label="Initial" type="boolean" defaultValue="TRUE"/>
-                <property id="order" label="Order" type="string" defaultValue="CONSTANT" validValues="ALTERNATELY,CONSTANT"/>
+                <property id="start" label="Start value" type="long" defaultValue="0" description="Initial sequence value"/>
+                <property id="step" label="Increment step" type="long" defaultValue="1" description="Sequence increment step"/>
+                <property id="reverse" label="Reverse order" type="boolean" defaultValue="FALSE" description="Reverse the sequence order"/>
 
+                <property id="nulls" label="%% of NULLs" type="integer" defaultValue="0" description="NULL values (%)"/>
+            </propertyGroup>
+        </generator>
+
+        <generator
+            id="stringTextGenerator"
+            label="Text"
+            description="Random length substrings from the 'Lorem ipsum' text"
+            class="org.jkiss.dbeaver.ext.mockdata.generator.StringTextGenerator">
+            <type kind="STRING"/>
+
+            <propertyGroup label="General">
+                <property id="template" label="Template" type="string" description="Source of substrings"
+                    defaultValue="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."/>
+                <property id="minLength" label="Min Length" type="integer" defaultValue="1" description="Minimum length"/>
+                <property id="maxLength" label="Max Length" type="integer" defaultValue="100" description="Maximum length (0 means the column length)"/>
+
+                <property id="nulls" label="%% of NULLs" type="integer" defaultValue="0" description="NULL values (%)"/>
+            </propertyGroup>
+        </generator>
+
+        <generator
+                id="stringUuidGenerator"
+                label="UUID"
+                description="UUID random values"
+                class="org.jkiss.dbeaver.ext.mockdata.generator.StringUuidGenerator">
+            <type kind="STRING"/>
+
+            <propertyGroup label="General">
                 <property id="nulls" label="%% of NULLs" type="integer" defaultValue="0" description="NULL values (%)"/>
             </propertyGroup>
         </generator>
