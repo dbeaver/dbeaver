@@ -37,6 +37,7 @@ public class CoreMessages extends NLS {
 	public static String action_menu_installNewSoftware;
 	public static String action_menu_installInfo;
 	public static String action_menu_enterpriseEdition;
+	public static String action_menu_marketplace_extensions;
 	
 	public static String action_menu_sqleditor_maximizeResultsPanel;
 	public static String action_menu_sqleditor_restoreResultsPanel;
