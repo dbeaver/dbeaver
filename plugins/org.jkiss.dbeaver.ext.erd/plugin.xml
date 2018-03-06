@@ -331,6 +331,19 @@
             </command>
         </menuContribution>
 
+        <menuContribution allPopups="false" locationURI="menu:dataSourceMenu?after=tools">
+            <command commandId="org.jkiss.dbeaver.erd.diagram.create" label="%menu.create.new.diagram">
+                <visibleWhen>
+                    <with variable="selection">
+                        <count value="+"/>
+                        <iterate operator="and">
+                            <adapt type="org.jkiss.dbeaver.model.struct.DBSEntity"/>
+                        </iterate>
+                    </with>
+                </visibleWhen>
+            </command>
+        </menuContribution>
+
         <menuContribution allPopups="false" locationURI="popup:org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart.EditorContext?after=additions">
             <command commandId="org.eclipse.ui.edit.undo"/>
             <command commandId="org.eclipse.ui.edit.redo"/>
