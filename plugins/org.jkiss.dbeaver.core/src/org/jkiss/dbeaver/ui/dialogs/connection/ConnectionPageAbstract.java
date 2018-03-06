@@ -111,6 +111,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
                 gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING);
                 gd.grabExcessHorizontalSpace = true;
                 infoLabel.setLayoutData(gd);
+                infoLabel.setToolTipText("You can use OS environment variables in connection parameters.\nUse ${variable} patterns.");
             }
 
             if (!site.isNew() && !site.getDriver().isEmbedded()) {
