@@ -310,9 +310,17 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
             case Types.DECIMAL:
             case Types.DOUBLE:
             case Types.REAL:
-                return Double.class;
+                if (CommonUtils.toInt(type.getScale()) > 0) {
+                    // Workaround for Oracle #3062
+                    return Double.class;
+                }
+                return BigDecimal.class;
             case Types.FLOAT:
-                return Float.class;
+                if (CommonUtils.toInt(type.getScale()) > 0) {
+                    // Workaround for Oracle #3062
+                    return Float.class;
+                }
+                return BigDecimal.class;
             case Types.INTEGER:
                 return Integer.class;
             case Types.SMALLINT:
