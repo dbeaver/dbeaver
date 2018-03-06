@@ -306,6 +306,11 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     }
 
     @Override
+    public void testConnection() {
+        getWizard().testConnection();
+    }
+
+    @Override
     public void dispose()
     {
         if (connectionEditor != null) {
