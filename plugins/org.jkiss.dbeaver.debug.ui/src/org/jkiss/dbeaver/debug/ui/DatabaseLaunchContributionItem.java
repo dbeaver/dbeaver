@@ -47,7 +47,7 @@ import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.debug.internal.ui.DebugUIInternals;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
-public class LaunchContributionItem extends ContributionItem {
+public class DatabaseLaunchContributionItem extends ContributionItem {
 
     private static final Object[] NO_OBJECTS = new Object[0];
 
@@ -58,7 +58,7 @@ public class LaunchContributionItem extends ContributionItem {
     // map of launch groups by (non-null) categories, for this mode
     private Map<String, ILaunchGroup> groupsByCategory = null;
 
-    protected LaunchContributionItem(String mode) {
+    protected DatabaseLaunchContributionItem(String mode) {
         this.mode = mode;
         ILaunchGroup[] groups = DebugUITools.getLaunchGroups();
         groupsByCategory = new HashMap<String, ILaunchGroup>(3);

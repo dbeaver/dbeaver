@@ -28,14 +28,14 @@ import org.eclipse.ui.menus.ExtensionContributionFactory;
 import org.eclipse.ui.menus.IContributionRoot;
 import org.eclipse.ui.services.IServiceLocator;
 
-public abstract class LaunchContributionFactory extends ExtensionContributionFactory {
+public abstract class DatabaseLaunchContributionFactory extends ExtensionContributionFactory {
 
     private final String id;
 
     private String text;
     private ImageDescriptor imageDescriptor;
 
-    public LaunchContributionFactory(String id) {
+    public DatabaseLaunchContributionFactory(String id) {
         this.id = id;
     }
 
@@ -48,7 +48,7 @@ public abstract class LaunchContributionFactory extends ExtensionContributionFac
             return;
         }
         MenuManager menuManager = new MenuManager(text, imageDescriptor, id);
-        LaunchContributionItem item = createContributionItem();
+        DatabaseLaunchContributionItem item = createContributionItem();
         item.setVisible(true);
         menuManager.add(item);
         additions.addContributionItem(menuManager, null);
@@ -74,5 +74,5 @@ public abstract class LaunchContributionFactory extends ExtensionContributionFac
         return DebugUI.BUNDLE_SYMBOLIC_NAME + '/' + id;
     }
 
-    protected abstract LaunchContributionItem createContributionItem();
+    protected abstract DatabaseLaunchContributionItem createContributionItem();
 }
