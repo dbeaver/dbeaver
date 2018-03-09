@@ -17,21 +17,38 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.debug.ui.internal;
 
+import java.util.Map;
+
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.jkiss.dbeaver.debug.DBGController;
 import org.jkiss.dbeaver.debug.core.DebugCore;
+import org.jkiss.dbeaver.debug.ui.DatabaseLaunchShortcut;
 import org.jkiss.dbeaver.ext.postgresql.debug.core.PostgreSqlDebugCore;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
-public class PgSqlLocalLaunchShortcut extends PgSqlBaseLaunchShortcut {
+public class PgSqlLocalLaunchShortcut extends DatabaseLaunchShortcut {
+
+    public PgSqlLocalLaunchShortcut() {
+        super(PostgreSqlDebugCore.CONFIGURATION_TYPE, PostgreDebugUIMessages.PgSqlLaunchShortcut_name);
+    }
 
     @Override
     protected ILaunchConfiguration createConfiguration(DBSObject launchable) throws CoreException {
         ILaunchConfigurationWorkingCopy workingCopy = PostgreSqlDebugCore.createConfiguration(launchable);
         workingCopy.setAttribute(DebugCore.ATTR_ATTACH_KIND, DBGController.ATTACH_KIND_LOCAL);
         return workingCopy.doSave();
+    }
+
+    @Override
+    protected boolean isCandidate(ILaunchConfiguration config, DBSObject launchable,
+            Map<String, Object> databaseContext) {
+        String kind = DebugCore.extractAttachKind(config);
+        if (!DBGController.ATTACH_KIND_LOCAL.equals(kind)) {
+            return false;
+        }
+        return super.isCandidate(config, launchable, databaseContext);
     }
 
 }

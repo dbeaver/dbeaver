@@ -22,6 +22,7 @@ package org.jkiss.dbeaver.debug.ui;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.Adapters;
@@ -47,6 +48,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
+import org.jkiss.dbeaver.debug.DBGController;
 import org.jkiss.dbeaver.debug.core.DebugCore;
 import org.jkiss.dbeaver.debug.internal.ui.DebugUIMessages;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -133,7 +135,8 @@ public abstract class DatabaseLaunchShortcut implements ILaunchShortcut2 {
     }
 
     protected void launch(DBSObject launchable, String mode) {
-        List<ILaunchConfiguration> configs = getCandidates(launchable, getConfigurationType());
+        Map<String, Object> databaseContext = DebugCore.resolveDatabaseContext(launchable);
+        List<ILaunchConfiguration> configs = getCandidates(launchable, getConfigurationType(), databaseContext);
         if (configs != null) {
             ILaunchConfiguration config = null;
             int count = configs.size();
@@ -192,7 +195,7 @@ public abstract class DatabaseLaunchShortcut implements ILaunchShortcut2 {
         return (DBSObject) dialog.getFirstResult();
     }
 
-    protected List<ILaunchConfiguration> getCandidates(DBSObject launchable, ILaunchConfigurationType configType) {
+    protected List<ILaunchConfiguration> getCandidates(DBSObject launchable, ILaunchConfigurationType configType, Map<String, Object> databaseContext) {
         List<ILaunchConfiguration> candidateConfigs = Collections.emptyList();
         try {
             ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
@@ -200,7 +203,7 @@ public abstract class DatabaseLaunchShortcut implements ILaunchShortcut2 {
             candidateConfigs = new ArrayList<ILaunchConfiguration>(configs.length);
             for (int i = 0; i < configs.length; i++) {
                 ILaunchConfiguration config = configs[i];
-                if (isCandidate(config, launchable)) {
+                if (isCandidate(config, launchable, databaseContext)) {
                     candidateConfigs.add(config);
                 }
             }
@@ -210,7 +213,36 @@ public abstract class DatabaseLaunchShortcut implements ILaunchShortcut2 {
         return candidateConfigs;
     }
 
-    protected abstract boolean isCandidate(ILaunchConfiguration config, DBSObject launchable);
+    protected boolean isCandidate(ILaunchConfiguration config, DBSObject launchable, Map<String, Object> databaseContext) {
+        if (!config.exists()) {
+            return false;
+        }
+        
+        String datasource = DebugCore.extractDatasourceId(config);
+        String id = launchable.getDataSource().getContainer().getId();
+        if (!datasource.equals(id)) {
+            return false;
+        }
+
+        String database = DebugCore.extractDatabaseName(config);
+        String databaseName = String.valueOf(databaseContext.get(DBGController.DATABASE_NAME));
+        if (!database.equals(databaseName)) {
+            return false;
+        }
+
+        String schema = DebugCore.extractSchemaName(config);
+        String schemaName = String.valueOf(databaseContext.get(DBGController.SCHEMA_NAME));
+        if (!schema.equals(schemaName)) {
+            return false;
+        }
+
+        String oid = DebugCore.extractProcedureOid(config);
+        String procedureOid = String.valueOf(databaseContext.get(DBGController.PROCEDURE_OID));
+        if (!oid.equals(procedureOid)) {
+            return false;
+        }
+        return true;
+    }
 
     protected ILaunchConfiguration chooseConfiguration(List<ILaunchConfiguration> configList, String mode) {
         IDebugModelPresentation labelProvider = DebugUITools.newDebugModelPresentation();
