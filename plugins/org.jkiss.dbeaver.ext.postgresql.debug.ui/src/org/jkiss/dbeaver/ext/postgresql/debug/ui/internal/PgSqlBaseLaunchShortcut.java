@@ -26,29 +26,8 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 
 public abstract class PgSqlBaseLaunchShortcut extends DatabaseLaunchShortcut {
 
-    @Override
-    protected String getSelectionEmptyMessage() {
-        return PostgreDebugUIMessages.PgSqlLaunchShortcut_e_selection_empty;
-    }
-
-    @Override
-    protected String getEditorEmptyMessage() {
-        return PostgreDebugUIMessages.PgSqlLaunchShortcut_e_editor_empty;
-    }
-
-    @Override
-    protected String getLaunchableSelectionTitle(String mode) {
-        return PostgreDebugUIMessages.PgSqlLaunchShortcut_select_procedure_title;
-    }
-
-    @Override
-    protected String getLaunchableSelectionMessage(String mode) {
-        return PostgreDebugUIMessages.PgSqlLaunchShortcut_select_procedure_message;
-    }
-
-    @Override
-    protected String getConfigurationTypeId() {
-        return PostgreSqlDebugCore.CONFIGURATION_TYPE;
+    public PgSqlBaseLaunchShortcut() {
+        super(PostgreSqlDebugCore.CONFIGURATION_TYPE, PostgreDebugUIMessages.PgSqlLaunchShortcut_name);
     }
 
     @Override

@@ -42,8 +42,16 @@ public class DebugUIMessages extends NLS {
 
     public static String DatabaseTab_name;
 
-    public static String LaunchShortcut_e_launch;
-    public static String LaunchShortcut_select_cobfiguration_title;
+    public static String DatabaseLaunchShortcut_e_launch;
+    public static String DatabaseLaunchShortcut_select_configuration_title;
+    public static String DatabaseLaunchShortcut_select_configuration_message;
+    
+    public static String DatabaseLaunchShortcut_e_editor_empty;
+    public static String DatabaseLaunchShortcut_e_selection_empty;
+
+    public static String DatabaseLaunchShortcut_select_message;
+    public static String DatabaseLaunchShortcut_select_title;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, DebugUIMessages.class);
