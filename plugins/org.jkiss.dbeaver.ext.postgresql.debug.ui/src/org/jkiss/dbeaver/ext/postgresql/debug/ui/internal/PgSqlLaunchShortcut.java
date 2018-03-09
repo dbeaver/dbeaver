@@ -21,12 +21,12 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.jkiss.dbeaver.debug.core.DebugCore;
-import org.jkiss.dbeaver.debug.ui.LaunchShortcut;
+import org.jkiss.dbeaver.debug.ui.DatabaseLaunchShortcut;
 import org.jkiss.dbeaver.ext.postgresql.debug.core.PostgreSqlDebugCore;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
-public class PgSqlLaunchShortcut extends LaunchShortcut {
+public class PgSqlLaunchShortcut extends DatabaseLaunchShortcut {
 
     @Override
     protected String getSelectionEmptyMessage() {

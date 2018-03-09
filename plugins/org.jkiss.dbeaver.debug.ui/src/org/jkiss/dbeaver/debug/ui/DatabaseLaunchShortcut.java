@@ -50,7 +50,7 @@ import org.jkiss.dbeaver.debug.core.DebugCore;
 import org.jkiss.dbeaver.debug.internal.ui.DebugUIMessages;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
-public abstract class LaunchShortcut implements ILaunchShortcut2 {
+public abstract class DatabaseLaunchShortcut implements ILaunchShortcut2 {
 
     @Override
     public void launch(ISelection selection, String mode) {
