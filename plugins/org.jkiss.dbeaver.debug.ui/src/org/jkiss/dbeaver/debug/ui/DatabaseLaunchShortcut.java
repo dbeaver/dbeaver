@@ -44,6 +44,10 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.ElementListSelectionDialog;
@@ -58,6 +62,8 @@ public abstract class DatabaseLaunchShortcut implements ILaunchShortcut2 {
     private final String configurationTypeId;
     private final String launchObjectName;
     
+    private IWorkbenchPartSite workbenchPartSite;
+
     public DatabaseLaunchShortcut(String typeId, String objectName) {
         this.configurationTypeId = typeId;
         this.launchObjectName = objectName;
@@ -66,6 +72,16 @@ public abstract class DatabaseLaunchShortcut implements ILaunchShortcut2 {
     @Override
     public void launch(ISelection selection, String mode) {
         if (selection instanceof IStructuredSelection) {
+            IWorkbenchWindow activeWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+            if (activeWindow != null) {
+                IWorkbenchPage activePage = activeWindow.getActivePage();
+                if (activePage != null) {
+                    IWorkbenchPart activePart = activePage.getActivePart();
+                    if (activePart != null) {
+                        workbenchPartSite = activePart.getSite();
+                    }
+                }
+            }
             Object[] array = ((IStructuredSelection) selection).toArray();
             searchAndLaunch(array, mode, getSelectionEmptyMessage());
         }
@@ -73,7 +89,9 @@ public abstract class DatabaseLaunchShortcut implements ILaunchShortcut2 {
 
     @Override
     public void launch(IEditorPart editor, String mode) {
-        ISelection selection = editor.getEditorSite().getSelectionProvider().getSelection();
+        IEditorSite editorSite = editor.getEditorSite();
+        workbenchPartSite = editorSite;
+        ISelection selection = editorSite.getSelectionProvider().getSelection();
         if (selection instanceof IStructuredSelection) {
             Object[] array = ((IStructuredSelection) selection).toArray();
             searchAndLaunch(array, mode, getEditorEmptyMessage());
@@ -85,6 +103,10 @@ public abstract class DatabaseLaunchShortcut implements ILaunchShortcut2 {
             }
         }
 
+    }
+    
+    protected IWorkbenchPartSite getWorkbenchPartSite() {
+        return workbenchPartSite;
     }
 
     protected String getSelectionEmptyMessage() {

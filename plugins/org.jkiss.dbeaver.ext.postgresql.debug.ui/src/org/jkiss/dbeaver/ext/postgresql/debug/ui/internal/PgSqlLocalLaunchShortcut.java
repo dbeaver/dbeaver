@@ -22,9 +22,12 @@ import java.util.Map;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.dbeaver.debug.DBGController;
 import org.jkiss.dbeaver.debug.core.DebugCore;
 import org.jkiss.dbeaver.debug.ui.DatabaseLaunchShortcut;
+import org.jkiss.dbeaver.debug.ui.DatabaseScriptDialog;
 import org.jkiss.dbeaver.ext.postgresql.debug.core.PostgreSqlDebugCore;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -38,6 +41,20 @@ public class PgSqlLocalLaunchShortcut extends DatabaseLaunchShortcut {
     protected ILaunchConfiguration createConfiguration(DBSObject launchable) throws CoreException {
         ILaunchConfigurationWorkingCopy workingCopy = PostgreSqlDebugCore.createConfiguration(launchable);
         workingCopy.setAttribute(DebugCore.ATTR_ATTACH_KIND, DBGController.ATTACH_KIND_LOCAL);
+        IWorkbenchPartSite site = getWorkbenchPartSite();
+        String script = workingCopy.getAttribute(DebugCore.ATTR_SCRIPT_TEXT, DebugCore.ATTR_SCRIPT_TEXT_DEFAULT);
+        String inputName = "Script";
+        DatabaseScriptDialog dialog = new DatabaseScriptDialog(getShell(), site, inputName, script, launchable);
+        dialog.create();
+        
+        dialog.setTitle("Specify script to be executed");
+        dialog.setMessage("Specify script to be executed to start debug.");
+        int open = dialog.open();
+        if (IDialogConstants.CANCEL_ID == open) {
+            return null;
+        }
+        String modified = dialog.getScriptTextValue();
+        workingCopy.setAttribute(DebugCore.ATTR_SCRIPT_TEXT, modified);
         return workingCopy.doSave();
     }
 
