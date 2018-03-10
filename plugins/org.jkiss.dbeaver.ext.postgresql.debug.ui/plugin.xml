@@ -42,17 +42,51 @@
    <extension
          point="org.eclipse.debug.ui.launchShortcuts">
       <shortcut
-            class="org.jkiss.dbeaver.ext.postgresql.debug.ui.internal.PgSqlLaunchShortcut"
-            description="%launchShortcuts.shortcut.pgSQL.description"
+            class="org.jkiss.dbeaver.ext.postgresql.debug.ui.internal.PgSqlGlobalLaunchShortcut"
+            description="%launchShortcuts.shortcut.pgSQL.global.description"
             icon="platform:/plugin/org.jkiss.dbeaver.ext.postgresql/$nl$/icons/postgresql_icon.png"
-            id="org.jkiss.dbeaver.ext.postgresql.debug.ui.launchShortcuts.shortcut.pgSQL"
-            label="%launchShortcuts.shortcut.pgSQL.label"
+            id="org.jkiss.dbeaver.ext.postgresql.debug.ui.launchShortcuts.shortcut.pgSQL.local"
+            label="%launchShortcuts.shortcut.pgSQL.global.label"
             modes="debug">
          <configurationType
                id="org.jkiss.dbeaver.ext.postgresql.debug.core.pgSQL"></configurationType>
          <contextualLaunch>
             <contextLabel
-                  label="%launchShortcuts.shortcut.pgSQL.label"
+                  label="%launchShortcuts.shortcut.pgSQL.global.label"
+                  mode="debug">
+            </contextLabel>
+            <enablement>
+               <with
+                     variable="selection">
+                  <count
+                        value="1">
+                  </count>
+                  <iterate
+                        ifEmpty="false"
+                        operator="and">
+                     <adapt
+                           type="org.jkiss.dbeaver.model.struct.DBSObject">
+                        <instanceof
+                              value="org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure">
+                        </instanceof>
+                     </adapt>
+                  </iterate>
+               </with>
+            </enablement>
+         </contextualLaunch>
+      </shortcut>
+      <shortcut
+            class="org.jkiss.dbeaver.ext.postgresql.debug.ui.internal.PgSqlLocalLaunchShortcut"
+            description="%launchShortcuts.shortcut.pgSQL.local.description"
+            icon="platform:/plugin/org.jkiss.dbeaver.ext.postgresql/$nl$/icons/postgresql_icon.png"
+            id="org.jkiss.dbeaver.ext.postgresql.debug.ui.launchShortcuts.shortcut.pgSQL.local"
+            label="%launchShortcuts.shortcut.pgSQL.local.label"
+            modes="debug">
+         <configurationType
+               id="org.jkiss.dbeaver.ext.postgresql.debug.core.pgSQL"></configurationType>
+         <contextualLaunch>
+            <contextLabel
+                  label="%launchShortcuts.shortcut.pgSQL.local.label"
                   mode="debug">
             </contextLabel>
             <enablement>

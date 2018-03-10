@@ -23,10 +23,7 @@ public class PostgreDebugUIMessages extends NLS {
 
     private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.postgresql.debug.ui.internal.PostgreDebugUIMessages"; //$NON-NLS-1$
 
-    public static String PgSqlLaunchShortcut_e_editor_empty;
-    public static String PgSqlLaunchShortcut_e_selection_empty;
-    public static String PgSqlLaunchShortcut_select_procedure_message;
-    public static String PgSqlLaunchShortcut_select_procedure_title;
+    public static String PgSqlLaunchShortcut_name;
 
     static {
         // initialize resource bundle
