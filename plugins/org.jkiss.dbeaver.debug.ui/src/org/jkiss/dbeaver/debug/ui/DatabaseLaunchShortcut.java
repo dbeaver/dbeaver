@@ -22,6 +22,7 @@ package org.jkiss.dbeaver.debug.ui;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.Adapters;
@@ -40,21 +41,47 @@ import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.window.Window;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
+import org.jkiss.dbeaver.debug.DBGController;
 import org.jkiss.dbeaver.debug.core.DebugCore;
 import org.jkiss.dbeaver.debug.internal.ui.DebugUIMessages;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
-public abstract class LaunchShortcut implements ILaunchShortcut2 {
+public abstract class DatabaseLaunchShortcut implements ILaunchShortcut2 {
+    
+    private final String configurationTypeId;
+    private final String launchObjectName;
+    
+    private IWorkbenchPartSite workbenchPartSite;
+
+    public DatabaseLaunchShortcut(String typeId, String objectName) {
+        this.configurationTypeId = typeId;
+        this.launchObjectName = objectName;
+    }
 
     @Override
     public void launch(ISelection selection, String mode) {
         if (selection instanceof IStructuredSelection) {
+            IWorkbenchWindow activeWindow = PlatformUI.getWorkbench().getActiveWorkbenchWindow();
+            if (activeWindow != null) {
+                IWorkbenchPage activePage = activeWindow.getActivePage();
+                if (activePage != null) {
+                    IWorkbenchPart activePart = activePage.getActivePart();
+                    if (activePart != null) {
+                        workbenchPartSite = activePart.getSite();
+                    }
+                }
+            }
             Object[] array = ((IStructuredSelection) selection).toArray();
             searchAndLaunch(array, mode, getSelectionEmptyMessage());
         }
@@ -62,7 +89,9 @@ public abstract class LaunchShortcut implements ILaunchShortcut2 {
 
     @Override
     public void launch(IEditorPart editor, String mode) {
-        ISelection selection = editor.getEditorSite().getSelectionProvider().getSelection();
+        IEditorSite editorSite = editor.getEditorSite();
+        workbenchPartSite = editorSite;
+        ISelection selection = editorSite.getSelectionProvider().getSelection();
         if (selection instanceof IStructuredSelection) {
             Object[] array = ((IStructuredSelection) selection).toArray();
             searchAndLaunch(array, mode, getEditorEmptyMessage());
@@ -75,14 +104,30 @@ public abstract class LaunchShortcut implements ILaunchShortcut2 {
         }
 
     }
+    
+    protected IWorkbenchPartSite getWorkbenchPartSite() {
+        return workbenchPartSite;
+    }
 
-    protected abstract String getSelectionEmptyMessage();
+    protected String getSelectionEmptyMessage() {
+        String message = DebugUIMessages.DatabaseLaunchShortcut_e_selection_empty;
+        return NLS.bind(message, launchObjectName);
+    }
 
-    protected abstract String getEditorEmptyMessage();
+    protected String getEditorEmptyMessage() {
+        String message = DebugUIMessages.DatabaseLaunchShortcut_e_editor_empty;
+        return NLS.bind(message, launchObjectName);
+    }
 
-    protected abstract String getLaunchableSelectionTitle(String mode);
+    protected String getLaunchableSelectionTitle(String mode) {
+        String message = DebugUIMessages.DatabaseLaunchShortcut_select_title;
+        return NLS.bind(message, launchObjectName);
+    }
 
-    protected abstract String getLaunchableSelectionMessage(String mode);
+    protected String getLaunchableSelectionMessage(String mode) {
+        String message = DebugUIMessages.DatabaseLaunchShortcut_select_message;
+        return NLS.bind(message, launchObjectName);
+    }
 
     protected ILabelProvider getLaunchableSelectionRenderer() {
         return WorkbenchLabelProvider.getDecoratingWorkbenchLabelProvider();
@@ -100,7 +145,7 @@ public abstract class LaunchShortcut implements ILaunchShortcut2 {
         List<DBSObject> extracted = DebugCore.extractLaunchable(scope);
         DBSObject launchable = null;
         if (extracted.size() == 0) {
-            MessageDialog.openError(getShell(), DebugUIMessages.LaunchShortcut_e_launch, emptyMessage);
+            MessageDialog.openError(getShell(), DebugUIMessages.DatabaseLaunchShortcut_e_launch, emptyMessage);
         } else if (extracted.size() > 1) {
             launchable = selectLaunchable(getShell(), extracted, mode);
         } else {
@@ -112,7 +157,8 @@ public abstract class LaunchShortcut implements ILaunchShortcut2 {
     }
 
     protected void launch(DBSObject launchable, String mode) {
-        List<ILaunchConfiguration> configs = getCandidates(launchable, getConfigurationType());
+        Map<String, Object> databaseContext = DebugCore.resolveDatabaseContext(launchable);
+        List<ILaunchConfiguration> configs = getCandidates(launchable, getConfigurationType(), databaseContext);
         if (configs != null) {
             ILaunchConfiguration config = null;
             int count = configs.size();
@@ -130,7 +176,7 @@ public abstract class LaunchShortcut implements ILaunchShortcut2 {
                 } catch (CoreException e) {
                     IStatus status = e.getStatus();
                     DebugUI.log(status);
-                    MessageDialog.openError(getShell(), DebugUIMessages.LaunchShortcut_e_launch, status.getMessage());
+                    MessageDialog.openError(getShell(), DebugUIMessages.DatabaseLaunchShortcut_e_launch, status.getMessage());
                     return;
                 }
             }
@@ -146,7 +192,13 @@ public abstract class LaunchShortcut implements ILaunchShortcut2 {
         return lm.getLaunchConfigurationType(configurationTypeId);
     }
 
-    protected abstract String getConfigurationTypeId();
+    protected String getConfigurationTypeId() {
+        return configurationTypeId;
+    }
+    
+    protected String getLaunchObjectName() {
+        return launchObjectName;
+    }
 
     protected DBSObject selectLaunchable(Shell shell, List<DBSObject> launchables, String mode) {
         String title = getLaunchableSelectionTitle(mode);
@@ -165,7 +217,7 @@ public abstract class LaunchShortcut implements ILaunchShortcut2 {
         return (DBSObject) dialog.getFirstResult();
     }
 
-    protected List<ILaunchConfiguration> getCandidates(DBSObject launchable, ILaunchConfigurationType configType) {
+    protected List<ILaunchConfiguration> getCandidates(DBSObject launchable, ILaunchConfigurationType configType, Map<String, Object> databaseContext) {
         List<ILaunchConfiguration> candidateConfigs = Collections.emptyList();
         try {
             ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
@@ -173,7 +225,7 @@ public abstract class LaunchShortcut implements ILaunchShortcut2 {
             candidateConfigs = new ArrayList<ILaunchConfiguration>(configs.length);
             for (int i = 0; i < configs.length; i++) {
                 ILaunchConfiguration config = configs[i];
-                if (isCandidate(config, launchable)) {
+                if (isCandidate(config, launchable, databaseContext)) {
                     candidateConfigs.add(config);
                 }
             }
@@ -183,14 +235,43 @@ public abstract class LaunchShortcut implements ILaunchShortcut2 {
         return candidateConfigs;
     }
 
-    protected abstract boolean isCandidate(ILaunchConfiguration config, DBSObject launchable);
+    protected boolean isCandidate(ILaunchConfiguration config, DBSObject launchable, Map<String, Object> databaseContext) {
+        if (!config.exists()) {
+            return false;
+        }
+        
+        String datasource = DebugCore.extractDatasourceId(config);
+        String id = launchable.getDataSource().getContainer().getId();
+        if (!datasource.equals(id)) {
+            return false;
+        }
+
+        String database = DebugCore.extractDatabaseName(config);
+        String databaseName = String.valueOf(databaseContext.get(DBGController.DATABASE_NAME));
+        if (!database.equals(databaseName)) {
+            return false;
+        }
+
+        String schema = DebugCore.extractSchemaName(config);
+        String schemaName = String.valueOf(databaseContext.get(DBGController.SCHEMA_NAME));
+        if (!schema.equals(schemaName)) {
+            return false;
+        }
+
+        String oid = DebugCore.extractProcedureOid(config);
+        String procedureOid = String.valueOf(databaseContext.get(DBGController.PROCEDURE_OID));
+        if (!oid.equals(procedureOid)) {
+            return false;
+        }
+        return true;
+    }
 
     protected ILaunchConfiguration chooseConfiguration(List<ILaunchConfiguration> configList, String mode) {
         IDebugModelPresentation labelProvider = DebugUITools.newDebugModelPresentation();
         ElementListSelectionDialog dialog = new ElementListSelectionDialog(getShell(), labelProvider);
         dialog.setElements(configList.toArray());
-        dialog.setTitle(getLaunchableSelectionTitle(mode));
-        dialog.setMessage(DebugUIMessages.LaunchShortcut_select_cobfiguration_title);
+        dialog.setTitle(DebugUIMessages.DatabaseLaunchShortcut_select_configuration_title);
+        dialog.setMessage(DebugUIMessages.DatabaseLaunchShortcut_select_configuration_message);
         dialog.setMultipleSelection(false);
         int result = dialog.open();
         labelProvider.dispose();
