@@ -231,6 +231,7 @@ public class NavigatorUtils {
                 }
 
                 manager.add(new GroupMarker(CoreCommands.GROUP_TOOLS));
+                manager.add(new GroupMarker(CoreCommands.GROUP_TOOLS_END));
 
                 if (menuListener != null) {
                     menuListener.menuAboutToShow(manager);

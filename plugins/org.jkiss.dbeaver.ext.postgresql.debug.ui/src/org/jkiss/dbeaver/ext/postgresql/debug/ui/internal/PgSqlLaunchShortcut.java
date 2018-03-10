@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
- * Copyright (C) 2017 Alexander Fedorov (alexander.fedorov@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,38 +29,32 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 public class PgSqlLaunchShortcut extends LaunchShortcut {
 
     @Override
-    protected String getSelectionEmptyMessage()
-    {
+    protected String getSelectionEmptyMessage() {
         return PostgreDebugUIMessages.PgSqlLaunchShortcut_e_selection_empty;
     }
 
     @Override
-    protected String getEditorEmptyMessage()
-    {
+    protected String getEditorEmptyMessage() {
         return PostgreDebugUIMessages.PgSqlLaunchShortcut_e_editor_empty;
     }
 
     @Override
-    protected String getLaunchableSelectionTitle(String mode)
-    {
+    protected String getLaunchableSelectionTitle(String mode) {
         return PostgreDebugUIMessages.PgSqlLaunchShortcut_select_procedure_title;
     }
 
     @Override
-    protected String getLaunchableSelectionMessage(String mode)
-    {
+    protected String getLaunchableSelectionMessage(String mode) {
         return PostgreDebugUIMessages.PgSqlLaunchShortcut_select_procedure_message;
     }
 
     @Override
-    protected String getConfigurationTypeId()
-    {
+    protected String getConfigurationTypeId() {
         return PostgreSqlDebugCore.CONFIGURATION_TYPE;
     }
 
     @Override
-    protected boolean isCandidate(ILaunchConfiguration config, DBSObject launchable)
-    {
+    protected boolean isCandidate(ILaunchConfiguration config, DBSObject launchable) {
         if (!config.exists()) {
             return false;
         }
@@ -91,19 +85,18 @@ public class PgSqlLaunchShortcut extends LaunchShortcut {
         try {
             String oid = config.getAttribute(DebugCore.ATTR_PROCEDURE_OID, String.valueOf(0));
             long objectId = procedure.getObjectId();
-            if (!(Long.parseLong(oid)==objectId)) {
+            if (!(Long.parseLong(oid) == objectId)) {
                 return false;
             }
         } catch (Exception e) {
-            //ignore
+            // ignore
             return false;
         }
         return true;
     }
 
     @Override
-    protected ILaunchConfiguration createConfiguration(DBSObject launchable) throws CoreException
-    {
+    protected ILaunchConfiguration createConfiguration(DBSObject launchable) throws CoreException {
         ILaunchConfigurationWorkingCopy workingCopy = PostgreSqlDebugCore.createConfiguration(launchable);
         return workingCopy.doSave();
     }

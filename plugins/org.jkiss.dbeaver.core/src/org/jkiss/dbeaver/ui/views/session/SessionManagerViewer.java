@@ -19,14 +19,10 @@ package org.jkiss.dbeaver.ui.views.session;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.StyledText;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -35,6 +31,7 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchSite;
 import org.eclipse.ui.PartInitException;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSession;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -43,6 +40,7 @@ import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.autorefresh.AutoRefreshControl;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
@@ -55,7 +53,7 @@ import java.util.Map;
 /**
  * SessionManagerViewer
  */
-public class SessionManagerViewer
+public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
 {
     private SessionListControl sessionTable;
     //private Text sessionInfo;
@@ -65,6 +63,7 @@ public class SessionManagerViewer
     private Font boldFont;
     private PropertyTreeViewer sessionProps;
     private DBAServerSession curSession;
+    private AutoRefreshControl refreshControl;
 
     public void dispose()
     {
@@ -72,7 +71,7 @@ public class SessionManagerViewer
         UIUtils.dispose(boldFont);
     }
 
-    public SessionManagerViewer(IWorkbenchPart part, Composite parent, final DBAServerSessionManager sessionManager) {
+    protected SessionManagerViewer(IWorkbenchPart part, Composite parent, final DBAServerSessionManager<SESSION_TYPE> sessionManager) {
         this.subSite = new SubEditorSite(part.getSite());
         boldFont = UIUtils.makeBoldFont(parent.getFont());
         Composite composite = UIUtils.createPlaceholder(parent, 1);
@@ -80,14 +79,10 @@ public class SessionManagerViewer
         SashForm sash = UIUtils.createPartDivider(part, composite, SWT.VERTICAL | SWT.SMOOTH);
         sash.setLayoutData(new GridData(GridData.FILL_BOTH));
 
+        refreshControl = new AutoRefreshControl(sash, sessionManager.getClass().getSimpleName(), monitor -> DBeaverUI.syncExec(this::refreshSessions));
+
         sessionTable = new SessionListControl(sash, part.getSite(), sessionManager);
-        sessionTable.getItemsViewer().addSelectionChangedListener(new ISelectionChangedListener() {
-            @Override
-            public void selectionChanged(SelectionChangedEvent event)
-            {
-                onSessionSelect(getSelectedSession());
-            }
-        });
+        sessionTable.getItemsViewer().addSelectionChangedListener(event -> onSessionSelect(getSelectedSession()));
 
         sessionTable.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         sessionTable.createProgressPanel(composite);
@@ -120,13 +115,7 @@ public class SessionManagerViewer
 
             sqlViewer.reloadSyntaxRules();
 
-            parent.addDisposeListener(new DisposeListener() {
-                @Override
-                public void widgetDisposed(DisposeEvent e)
-                {
-                    sqlViewer.dispose();
-                }
-            });
+            parent.addDisposeListener(e -> sqlViewer.dispose());
 
 
             sessionProps = new PropertyTreeViewer(infoSash, SWT.BORDER);
@@ -139,6 +128,9 @@ public class SessionManagerViewer
 
     protected void onSessionSelect(DBAServerSession session)
     {
+        if (curSession == session) {
+            return;
+        }
         curSession = session;
         updateSQL();
         if (session == null) {
@@ -169,22 +161,28 @@ public class SessionManagerViewer
     {
         sessionTable.loadData();
         onSessionSelect(null);
+
+        refreshControl.scheduleAutoRefresh(false);
     }
 
-    public void alterSession(final DBAServerSession session, Map<String, Object> options) {
+    public void alterSession(final SESSION_TYPE session, Map<String, Object> options) {
         sessionTable.createAlterService(session, options).schedule();
     }
 
-    protected void updateSQL() {
-        try {
-            String text = curSession == null ? "" : CommonUtils.notEmpty(curSession.getActiveQuery());
-            StringEditorInput sqlInput = new StringEditorInput(sessionTable.getShell().getText(), text, true, GeneralUtils.getDefaultFileEncoding());
-            sqlViewer.init(subSite, sqlInput);
-            if (sqlViewer.getTextViewer() != null) {
-                sqlViewer.reloadSyntaxRules();
+    private void updateSQL() {
+        String text = curSession == null ? "" : CommonUtils.notEmpty(curSession.getActiveQuery());
+        StringEditorInput sqlInput = new StringEditorInput(sessionTable.getShell().getText(), text, true, GeneralUtils.getDefaultFileEncoding());
+        if (sqlViewer.getSite() == null) {
+            try {
+                sqlViewer.init(subSite, sqlInput);
+            } catch (PartInitException e) {
+                DBUserInterface.getInstance().showError(sessionTable.getShell().getText(), null, e);
             }
-        } catch (PartInitException e) {
-            DBUserInterface.getInstance().showError(sessionTable.getShell().getText(), null, e);
+        } else {
+            sqlViewer.setInput(sqlInput);
+        }
+        if (sqlViewer.getTextViewer() != null) {
+            sqlViewer.reloadSyntaxRules();
         }
     }
 
@@ -196,9 +194,9 @@ public class SessionManagerViewer
         return null;
     }
 
-    private class SessionListControl extends SessionTable {
+    private class SessionListControl extends SessionTable<SESSION_TYPE> {
 
-        public SessionListControl(SashForm sash, IWorkbenchSite site, DBAServerSessionManager<DBAServerSession> sessionManager)
+        SessionListControl(SashForm sash, IWorkbenchSite site, DBAServerSessionManager<SESSION_TYPE> sessionManager)
         {
             super(sash, SWT.SHEET, site, sessionManager);
         }
@@ -206,6 +204,7 @@ public class SessionManagerViewer
         @Override
         protected void fillCustomActions(IContributionManager contributionManager) {
             contributeToToolbar(getSessionManager(), contributionManager);
+            refreshControl.populateRefreshButton(contributionManager);
             contributionManager.add(new Action("Refresh sessions", DBeaverIcons.getImageDescriptor(UIIcon.REFRESH)) {
                 @Override
                 public void run()

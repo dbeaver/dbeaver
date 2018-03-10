@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
+import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -93,7 +94,7 @@ public class MSSQLDataSource extends JDBCDataSource implements DBSObjectSelector
 
     @Override
     protected String getConnectionUserName(DBPConnectionConfiguration connectionInfo) {
-        if (CommonUtils.toBoolean(connectionInfo.getProviderProperty(SQLServerConstants.PROP_CONNECTION_WINDOWS_AUTH))) {
+        if (SQLServerUtils.isWindowsAuth(connectionInfo)) {
             return "";
         } else {
             return super.getConnectionUserName(connectionInfo);
@@ -102,7 +103,7 @@ public class MSSQLDataSource extends JDBCDataSource implements DBSObjectSelector
 
     @Override
     protected String getConnectionUserPassword(DBPConnectionConfiguration connectionInfo) {
-        if (CommonUtils.toBoolean(connectionInfo.getProviderProperty(SQLServerConstants.PROP_CONNECTION_WINDOWS_AUTH))) {
+        if (SQLServerUtils.isWindowsAuth(connectionInfo)) {
             return "";
         } else {
             return super.getConnectionUserPassword(connectionInfo);

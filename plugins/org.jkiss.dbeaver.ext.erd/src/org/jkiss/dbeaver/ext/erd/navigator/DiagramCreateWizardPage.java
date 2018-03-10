@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.erd.navigator;
 
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
 import org.eclipse.jface.viewers.ICheckStateProvider;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
@@ -50,11 +51,13 @@ class DiagramCreateWizardPage extends WizardPage {
 
     private EntityDiagram diagram;
     private DatabaseNavigatorTree contentTree;
+    private IStructuredSelection entitySelection;
 
-    protected DiagramCreateWizardPage(EntityDiagram diagram)
+    protected DiagramCreateWizardPage(EntityDiagram diagram, IStructuredSelection entitySelection)
     {
         super(ERDMessages.wizard_page_diagram_create_name);
         this.diagram = diagram;
+        this.entitySelection = entitySelection;
 
         setTitle(ERDMessages.wizard_page_diagram_create_title);
         setDescription(ERDMessages.wizard_page_diagram_create_description);
@@ -63,10 +66,16 @@ class DiagramCreateWizardPage extends WizardPage {
     @Override
     public boolean isPageComplete()
     {
+        boolean hasName = !CommonUtils.isEmpty(diagram.getName());
+        if (!hasName) {
+            setErrorMessage("Set diagram name");
+        } else {
+            setErrorMessage(null);
+        }
     	if (getErrorMessage() != null) {
 			return false;
 		}
-        return !CommonUtils.isEmpty(diagram.getName());
+        return hasName;
     }
 
     @Override
@@ -121,6 +130,11 @@ class DiagramCreateWizardPage extends WizardPage {
                 return true;
             }
         });
+
+        if (entitySelection != null) {
+            viewer.setSelection(entitySelection, true);
+            viewer.setCheckedElements(entitySelection.toArray());
+        }
 
         setControl(placeholder);
     }

@@ -18,10 +18,10 @@
 package org.jkiss.dbeaver.ext.mockdata.generator;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.mockdata.MockDataUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.io.IOException;
-import java.math.BigDecimal;
 
 public class NumericRandomGenerator extends AbstractMockValueGenerator {
 
@@ -33,52 +33,8 @@ public class NumericRandomGenerator extends AbstractMockValueGenerator {
             long maxLength = attribute.getMaxLength();
             Integer scale = attribute.getScale();
             Integer precision = attribute.getPrecision();
-            // Integers
-            if ((scale == null || scale == 0) && (precision != null && precision != 0)) {
-                if (precision < BYTE_PRECISION) {
-                    return new Byte((byte) random.nextInt(degree(r(precision))));
-                }
-                if (precision < SHORT_PRECISION) {
-                    return new Short((short) random.nextInt(degree(r(precision))));
-                }
-                if (precision < INTEGER_PRECISION) {
-                    return new Integer(random.nextInt(degree(r(precision))));
-                }
-                if (precision < LONG_PRECISION) {
-                    return new Long(random.nextLong());
-                }
 
-                // Default integer number
-                return null; // TODO new BigInteger();
-            }
-            // Non-integers
-            else {
-                if (precision != null && precision > 0) {
-                    int scl = scale != null ? scale : 0;
-                    StringBuilder sb = new StringBuilder();
-                    for (int i = 0; i < precision; i++) {
-                        sb.append(random.nextInt(10));
-                        if (i == scale) {
-                            sb.append('.');
-                        }
-                    }
-                    return new BigDecimal(sb.reverse().toString());
-                } else {
-                    return new BigDecimal(random.nextLong()); // TODO
-                }
-            }
+            return MockDataUtils.generateNumeric(precision, scale, null, null);
         }
-    }
-
-    private static int degree(int d) {
-        int result = 10;
-        for (int i = 0; i < d - 1; i++) {
-            result *= 10;
-        }
-        return result;
-    }
-
-    private int r(int i) {
-        return random.nextInt(i);
     }
 }

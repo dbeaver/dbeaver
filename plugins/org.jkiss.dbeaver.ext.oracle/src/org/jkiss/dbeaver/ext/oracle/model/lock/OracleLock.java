@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.admin.locks.DBAServerLock;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 
-public class OracleLock implements DBAServerLock<Integer>{
+public class OracleLock implements DBAServerLock {
 	
 	 private int    wait_sid;
 	 private int    serial;
@@ -41,8 +41,8 @@ public class OracleLock implements DBAServerLock<Integer>{
      private String status;
      private String event;
      
-     DBAServerLock<Integer> hold = null;
-     List<DBAServerLock<Integer>> waiters = new ArrayList<>(0); 
+     private DBAServerLock hold = null;
+     private List<DBAServerLock> waiters = new ArrayList<>(0);
      
      public OracleLock(ResultSet dbResult) {
     	 this.wait_sid = JDBCUtils.safeGetInt(dbResult, "waiting_session");
@@ -67,12 +67,12 @@ public class OracleLock implements DBAServerLock<Integer>{
  	}
 
  	@Override
- 	public DBAServerLock<Integer> getHoldBy() {
+ 	public DBAServerLock getHoldBy() {
  		
  		return hold;
  	}
 
- 	public DBAServerLock<Integer> getHold() {
+ 	public DBAServerLock getHold() {
  		return hold;
  	}
 
@@ -83,7 +83,7 @@ public class OracleLock implements DBAServerLock<Integer>{
 
 
  	@Override
- 	public List<DBAServerLock<Integer>> waitThis() {		
+ 	public List<DBAServerLock> waitThis() {
  		return this.waiters;
  	}
 
@@ -94,8 +94,8 @@ public class OracleLock implements DBAServerLock<Integer>{
 
  	@SuppressWarnings("unchecked")
  	@Override
- 	public void setHoldBy(DBAServerLock<?> lock) {
- 		this.hold = (DBAServerLock<Integer>) lock;		
+ 	public void setHoldBy(DBAServerLock lock) {
+ 		this.hold = lock;
  	}
 
  	@Override

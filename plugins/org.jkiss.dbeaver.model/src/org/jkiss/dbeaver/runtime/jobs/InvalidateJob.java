@@ -25,13 +25,13 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
 /**
- * InvalidateJob
+ * Invalidate datasource job.
+ * Invalidates all datasource contexts (not just the one passed in constructor).
  */
 public class InvalidateJob extends DataSourceJob
 {
@@ -41,7 +41,7 @@ public class InvalidateJob extends DataSourceJob
         public final DBCExecutionContext.InvalidateResult result;
         public final Exception error;
 
-        public ContextInvalidateResult(DBCExecutionContext.InvalidateResult result, Exception error) {
+        ContextInvalidateResult(DBCExecutionContext.InvalidateResult result, Exception error) {
             this.result = result;
             this.error = error;
         }
@@ -54,14 +54,11 @@ public class InvalidateJob extends DataSourceJob
 
     private long timeSpent;
     private List<ContextInvalidateResult> invalidateResults = new ArrayList<>();
-    //private boolean reconnect;
 
     public InvalidateJob(
-        DBCExecutionContext context/*,
-        boolean reconnect*/)
+        DBPDataSource dataSource)
     {
-        super("Invalidate " + context.getDataSource().getContainer().getName(), context);
-//        this.reconnect = reconnect;
+        super("Invalidate " + dataSource.getContainer().getName(), dataSource.getDefaultContext(false));
     }
 
     public List<ContextInvalidateResult> getInvalidateResults() {

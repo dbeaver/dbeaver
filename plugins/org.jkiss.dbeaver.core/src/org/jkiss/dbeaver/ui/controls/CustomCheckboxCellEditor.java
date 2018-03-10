@@ -60,6 +60,7 @@ public class CustomCheckboxCellEditor extends CellEditor {
                 CustomCheckboxCellEditor.this.focusLost();
             }
         });
+        addMouseListener();
 
         return checkBox;
     }
@@ -116,6 +117,14 @@ public class CustomCheckboxCellEditor extends CellEditor {
 
     @Override
     public void activate() {
+        checked = !checked;
+        setCheckIcon();
+        applyEditorValue();
+        // Run in async to avoid NPE. fireApplyEditorValue disposes and nullifies editor
+        DBeaverUI.asyncExec(this::fireApplyEditorValue);
+    }
+
+    private void addMouseListener() {
         checkBox.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseDown(MouseEvent e) {
@@ -125,12 +134,6 @@ public class CustomCheckboxCellEditor extends CellEditor {
                 fireApplyEditorValue();
             }
         });
-
-        checked = !checked;
-        setCheckIcon();
-        applyEditorValue();
-        // Run in async to avoid NPE. fireApplyEditorValue disposes and nullifies editor
-        DBeaverUI.asyncExec(this::fireApplyEditorValue);
     }
 
     @Override

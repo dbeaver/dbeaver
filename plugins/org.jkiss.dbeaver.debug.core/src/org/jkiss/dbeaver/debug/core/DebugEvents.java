@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
- * Copyright (C) 2017 Alexander Fedorov (alexander.fedorov@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,12 +25,13 @@ public class DebugEvents {
     /**
      * Fires the given debug event.
      *
-     * @param event debug event to fire
+     * @param event
+     *            debug event to fire
      */
     public static void fireEvent(DebugEvent event) {
         DebugPlugin manager = DebugPlugin.getDefault();
         if (manager != null) {
-            manager.fireDebugEventSet(new DebugEvent[]{event});
+            manager.fireDebugEventSet(new DebugEvent[] { event });
         }
     }
 

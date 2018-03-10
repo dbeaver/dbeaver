@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
- * Copyright (C) 2017 Alexander Fedorov (alexander.fedorov@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.jkiss.dbeaver.debug.internal.ui;
 
 import java.util.ArrayList;
@@ -45,15 +46,13 @@ import org.jkiss.dbeaver.debug.core.DebugCore;
 @SuppressWarnings("restriction")
 public class DebugUIInternals {
 
-    public static ILaunchConfiguration isSharedConfig(Object receiver)
-    {
+    public static ILaunchConfiguration isSharedConfig(Object receiver) {
         LaunchConfigurationManager launchConfigurationManager = DebugUIPlugin.getDefault()
                 .getLaunchConfigurationManager();
         return launchConfigurationManager.isSharedConfig(receiver);
     }
 
-    public static IAction createConfigurationAction(ILaunchConfiguration config, String mode, int accelerator)
-    {
+    public static IAction createConfigurationAction(ILaunchConfiguration config, String mode, int accelerator) {
         if (DebugCore.canLaunch(config, mode)) {
             String configName = config.getName();
             ImageDescriptor imageDescriptor = DebugUITools.getDefaultImageDescriptor(config);
@@ -63,9 +62,7 @@ public class DebugUIInternals {
         return null;
     }
 
-    public static Map<IAction, String> createShortcutActions(Object[] selected, String mode,
-            int accelerator)
-    {
+    public static Map<IAction, String> createShortcutActions(Object[] selected, String mode, int accelerator) {
         Map<IAction, String> result = new LinkedHashMap<IAction, String>();
         if (selected == null) {
             return result;

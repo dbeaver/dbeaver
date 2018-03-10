@@ -15,6 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.jkiss.dbeaver.debug.sourcelookup;
 
 import org.eclipse.debug.core.sourcelookup.AbstractSourceLookupDirector;
@@ -24,7 +25,7 @@ public class ProcedureSourceLookupDirector extends AbstractSourceLookupDirector 
 
     @Override
     public void initializeParticipants() {
-        addParticipants(new ISourceLookupParticipant[] {new ProcedureSourceLookupParticipant()});
+        addParticipants(new ISourceLookupParticipant[] { new ProcedureSourceLookupParticipant() });
     }
 
 }

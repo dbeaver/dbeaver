@@ -32,10 +32,7 @@ import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
-import org.jkiss.dbeaver.model.struct.DBSDataContainer;
-import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSWrapper;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.properties.PropertySourceDelegate;
@@ -50,6 +47,7 @@ public class NavigatorAdapterFactory implements IAdapterFactory
         DBPQualifiedObject.class,
         DBPObject.class,
         DBSObject.class,
+        DBSEntity.class,
         DBSDataContainer.class,
         DBSDataManipulator.class,
         DBPDataSourceContainer.class,

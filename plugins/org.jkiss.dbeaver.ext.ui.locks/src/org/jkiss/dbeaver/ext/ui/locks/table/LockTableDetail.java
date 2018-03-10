@@ -45,20 +45,20 @@ import java.util.Map;
  */
 public class LockTableDetail extends DatabaseObjectListControl<DBAServerLockItem> {
 
-    private DBAServerLockManager<DBAServerLock<?>,DBAServerLockItem> lockManager;
+    private DBAServerLockManager<DBAServerLock,DBAServerLockItem> lockManager;
     Map<String, Object> options = new HashMap<String, Object>(1); 
     
     public Map<String, Object> getOptions() {
 		return options;
 	}
 
-	public LockTableDetail(Composite parent, int style, IWorkbenchSite site, DBAServerLockManager<DBAServerLock<?>,DBAServerLockItem> lockManager)
+	public LockTableDetail(Composite parent, int style, IWorkbenchSite site, DBAServerLockManager<DBAServerLock,DBAServerLockItem> lockManager)
     {
         super(parent, style, site, CONTENT_PROVIDER);
         this.lockManager = lockManager;
     }
 
-    public DBAServerLockManager<DBAServerLock<?>,DBAServerLockItem> getLockManager() {
+    public DBAServerLockManager<DBAServerLock,DBAServerLockItem> getLockManager() {
         return lockManager;
     }
 
@@ -76,7 +76,7 @@ public class LockTableDetail extends DatabaseObjectListControl<DBAServerLockItem
             new ObjectsLoadVisualizer());
     }
 
-      public void init(DBAServerLockManager<DBAServerLock<?>,DBAServerLockItem> lockManager)
+      public void init(DBAServerLockManager<DBAServerLock,DBAServerLockItem> lockManager)
     {
         this.lockManager = lockManager;
     }
@@ -86,7 +86,7 @@ public class LockTableDetail extends DatabaseObjectListControl<DBAServerLockItem
         public Object[] getElements(Object inputElement)
         {
             if (inputElement instanceof Collection) {
-                return ((Collection<?>)inputElement).toArray();
+                return ((Collection)inputElement).toArray();
             }
             return null;
         }

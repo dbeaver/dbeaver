@@ -67,6 +67,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -1583,7 +1584,15 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         public Color getCellBackground(Object colElement, Object rowElement, boolean selected)
         {
             if (selected) {
-                return backgroundSelected;
+                Color normalColor = getCellBackground(colElement, rowElement, false);
+                if (normalColor == backgroundNormal) {
+                    return backgroundSelected;
+                }
+                RGB mixRGB = UIUtils.blend(
+                    normalColor.getRGB(),
+                    backgroundSelected.getRGB(),
+                    50);
+                return DBeaverUI.getSharedTextColors().getColor(mixRGB);
             }
             boolean recordMode = controller.isRecordMode();
             ResultSetRow row = (ResultSetRow) (!recordMode ?  rowElement : colElement);

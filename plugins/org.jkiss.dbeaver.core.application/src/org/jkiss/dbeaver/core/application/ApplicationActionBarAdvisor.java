@@ -220,9 +220,11 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
                 helpMenu.add(new Separator());
                 helpMenu.add(ActionUtils.makeCommandContribution(getActionBarConfigurer().getWindowConfigurer().getWindow(), "org.eclipse.equinox.p2.ui.sdk.install", CoreMessages.action_menu_installNewSoftware, null));
                 helpMenu.add(ActionUtils.makeCommandContribution(getActionBarConfigurer().getWindowConfigurer().getWindow(), "org.eclipse.ui.help.installationDialog", CoreMessages.action_menu_installInfo, null));
-                
-                
+
+                helpMenu.add(new Separator());
                 helpMenu.add(checkUpdatesAction);
+
+                helpMenu.add(new ExternalPageAction(CoreMessages.action_menu_marketplace_extensions, UIIcon.DBEAVER_MARKETPLACE, "https://marketplace.eclipse.org/search/site/dbeaver"));
                 helpMenu.add(new ExternalPageAction(CoreMessages.action_menu_enterpriseEdition, UIIcon.DBEAVER_LOGO_SMALL, "https://dbeaver.com"));
             } else {
                 helpMenu.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));

@@ -34,6 +34,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceViewDescriptor;
@@ -50,7 +51,7 @@ import java.util.*;
 /**
  * Settings connection page. Hosts particular drivers' connection pages
  */
-class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implements IDataSourceConnectionEditorSite, ICompositeDialogPage
+class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implements IDataSourceConnectionEditorSite, ICompositeDialogPage, IDataSourceConnectionTester
 {
     private static final Log log = Log.getLog(DriverDescriptor.class);
 
@@ -305,6 +306,11 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     }
 
     @Override
+    public void testConnection() {
+        getWizard().testConnection();
+    }
+
+    @Override
     public void dispose()
     {
         if (connectionEditor != null) {
@@ -349,6 +355,13 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
             extraPages = new IDialogPage[] { page };
         } else {
             extraPages = ArrayUtils.concatArrays(extraPages, new IDialogPage[] { page });
+        }
+    }
+
+    @Override
+    public void testConnection(DBCSession session) {
+        if (connectionEditor instanceof IDataSourceConnectionTester) {
+            ((IDataSourceConnectionTester) connectionEditor).testConnection(session);
         }
     }
 }

@@ -37,6 +37,7 @@ public class CoreMessages extends NLS {
 	public static String action_menu_installNewSoftware;
 	public static String action_menu_installInfo;
 	public static String action_menu_enterpriseEdition;
+	public static String action_menu_marketplace_extensions;
 	
 	public static String action_menu_sqleditor_maximizeResultsPanel;
 	public static String action_menu_sqleditor_restoreResultsPanel;
@@ -97,6 +98,7 @@ public class CoreMessages extends NLS {
 	public static String actions_navigator_open;
 	public static String actions_navigator_view;
 	public static String actions_navigator_view_script_button;
+	public static String actions_navigator_filter_objects;
     public static String actions_spreadsheet_copy_special;
 	
     public static String common_error_sql;
@@ -818,6 +820,14 @@ public class CoreMessages extends NLS {
 	public static String pref_page_database_resultsets_checkbox_string_use_editor;
 	public static String pref_page_database_resultsets_checkbox_string_use_editor_tip;
 
+	public static String pref_page_error_handle_name;
+	public static String pref_page_error_handle_description;
+	public static String pref_page_error_handle_group_execute_title;
+	public static String pref_page_error_handle_recover_enabled_label;
+	public static String pref_page_error_handle_recover_enabled_tip;
+	public static String pref_page_error_handle_recover_retry_count_label;
+	public static String pref_page_error_handle_recover_retry_count_tip;
+
     public static String pref_page_query_manager_checkbox_ddl_executions;
 	public static String pref_page_query_manager_checkbox_metadata_read;
     public static String pref_page_query_manager_checkbox_metadata_write;
@@ -1323,6 +1333,7 @@ public class CoreMessages extends NLS {
 	public static String sql_editor_resultset_filter_panel_label;
 	public static String sql_editor_resultset_filter_panel_btn_open_console;
 	public static String sql_editor_resultset_filter_panel_menu_refresh_interval;
+	public static String sql_editor_resultset_filter_panel_menu_refresh_interval_1;
 	public static String sql_editor_resultset_filter_panel_menu_stop;
 	public static String sql_editor_resultset_filter_panel_menu_customize;
 	public static String sql_editor_resultset_filter_panel_control_no_data;

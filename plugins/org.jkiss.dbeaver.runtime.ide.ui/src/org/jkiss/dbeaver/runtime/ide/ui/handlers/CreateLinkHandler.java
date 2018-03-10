@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
- * Copyright (C) 2017 Alexander Fedorov (alexander.fedorov@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.jkiss.dbeaver.runtime.ide.ui.handlers;
 
 import java.lang.reflect.InvocationTargetException;
@@ -40,16 +41,15 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.statushandlers.IStatusAdapterConstants;
 import org.eclipse.ui.statushandlers.StatusAdapter;
 import org.eclipse.ui.statushandlers.StatusManager;
-import org.jkiss.dbeaver.runtime.ide.ui.IdeUi;
+import org.jkiss.dbeaver.runtime.ide.ui.DBeaverIDEUI;
 import org.jkiss.dbeaver.runtime.internal.ide.ui.IdeMessages;
 
 public abstract class CreateLinkHandler extends AbstractHandler {
-    
+
     protected static final Path[] NO_TARGETS = new Path[0];
 
     @Override
-    public Object execute(ExecutionEvent event) throws ExecutionException
-    {
+    public Object execute(ExecutionEvent event) throws ExecutionException {
         IStructuredSelection structured = HandlerUtil.getCurrentStructuredSelection(event);
         if (structured.isEmpty()) {
             return null;
@@ -59,9 +59,10 @@ public abstract class CreateLinkHandler extends AbstractHandler {
         IContainer container = extractContainer(resource);
         if (container == null) {
             String message = NLS.bind(IdeMessages.CreateLinkHandler_e_create_link_validation, resource);
-            IStatus error = IdeUi.createError(message);
+            IStatus error = DBeaverIDEUI.createError(message);
             StatusAdapter statusAdapter = new StatusAdapter(error);
-            statusAdapter.setProperty(IStatusAdapterConstants.TITLE_PROPERTY, IdeMessages.CreateLinkHandler_e_create_link_title);
+            statusAdapter.setProperty(IStatusAdapterConstants.TITLE_PROPERTY,
+                    IdeMessages.CreateLinkHandler_e_create_link_title);
             StatusManager.getManager().handle(statusAdapter, StatusManager.SHOW);
             return null;
         }
@@ -74,8 +75,7 @@ public abstract class CreateLinkHandler extends AbstractHandler {
 
             @Override
             protected void execute(IProgressMonitor monitor)
-                    throws CoreException, InvocationTargetException, InterruptedException
-            {
+                    throws CoreException, InvocationTargetException, InterruptedException {
                 IStatus linked = createLink(container, monitor, locations);
                 int severity = linked.getSeverity();
                 switch (severity) {
@@ -92,9 +92,11 @@ public abstract class CreateLinkHandler extends AbstractHandler {
         try {
             context.run(true, true, operation);
         } catch (InvocationTargetException e) {
-            IStatus error = IdeUi.createError(IdeMessages.CreateLinkHandler_e_create_link_message, e.getTargetException());
+            IStatus error = DBeaverIDEUI.createError(IdeMessages.CreateLinkHandler_e_create_link_message,
+                    e.getTargetException());
             StatusAdapter statusAdapter = new StatusAdapter(error);
-            statusAdapter.setProperty(IStatusAdapterConstants.TITLE_PROPERTY, IdeMessages.CreateLinkHandler_e_create_link_title);
+            statusAdapter.setProperty(IStatusAdapterConstants.TITLE_PROPERTY,
+                    IdeMessages.CreateLinkHandler_e_create_link_title);
             StatusManager.getManager().handle(statusAdapter, StatusManager.LOG | StatusManager.SHOW);
         } catch (InterruptedException e) {
             // skip
@@ -102,8 +104,7 @@ public abstract class CreateLinkHandler extends AbstractHandler {
         return null;
     }
 
-    protected IContainer extractContainer(IResource resource)
-    {
+    protected IContainer extractContainer(IResource resource) {
         if (resource instanceof IContainer) {
             IContainer container = (IContainer) resource;
             return container;
@@ -113,8 +114,7 @@ public abstract class CreateLinkHandler extends AbstractHandler {
 
     protected abstract Path[] selectTargets(ExecutionEvent event);
 
-    protected IRunnableContext getRunnableContext(ExecutionEvent event)
-    {
+    protected IRunnableContext getRunnableContext(ExecutionEvent event) {
         final IWorkbenchWindow activeWindow = HandlerUtil.getActiveWorkbenchWindow(event);
         if (activeWindow != null) {
             return activeWindow;
@@ -122,6 +122,6 @@ public abstract class CreateLinkHandler extends AbstractHandler {
         return PlatformUI.getWorkbench().getProgressService();
     }
 
-    protected abstract IStatus createLink(IContainer container, IProgressMonitor monitor, Path...targets);
+    protected abstract IStatus createLink(IContainer container, IProgressMonitor monitor, Path... targets);
 
 }

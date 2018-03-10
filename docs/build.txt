@@ -4,7 +4,7 @@ DBeaver build
 Prerequisites
 =================================
 
-Java SDK 1.7 or later (must be default JDK with binaries in PATH)
+Java SDK 1.8 or later (must be default JDK with binaries in PATH)
 Apache Maven 2 or later (must be in PATH)
 
 Prepare build

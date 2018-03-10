@@ -54,10 +54,22 @@ public class ExecutionQueueErrorJob extends AbstractUIJob {
             queue);
         int result = dialog.open();
         switch (result) {
-            case IDialogConstants.STOP_ID: response = ExecutionQueueErrorResponse.STOP; break;
-            case IDialogConstants.SKIP_ID: response = ExecutionQueueErrorResponse.IGNORE; break;
-            case IDialogConstants.RETRY_ID: response = ExecutionQueueErrorResponse.RETRY; break;
-            default: response = ExecutionQueueErrorResponse.IGNORE_ALL; break;
+            case IDialogConstants.CANCEL_ID:
+            case IDialogConstants.STOP_ID:
+                response = ExecutionQueueErrorResponse.STOP;
+                break;
+            case IDialogConstants.SKIP_ID:
+                response = ExecutionQueueErrorResponse.IGNORE;
+                break;
+            case IDialogConstants.RETRY_ID:
+                response = ExecutionQueueErrorResponse.RETRY;
+                break;
+            case IDialogConstants.IGNORE_ID:
+                response = ExecutionQueueErrorResponse.IGNORE_ALL;
+                break;
+            default:
+                response = ExecutionQueueErrorResponse.STOP;
+                break;
         }
 
         return Status.OK_STATUS;

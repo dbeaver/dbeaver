@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2017 Andrew Khitrin (ahitrin@gmail.com)
+ * Copyright (C) 2017-2018 Andrew Khitrin (ahitrin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,10 +64,9 @@ public class Debugger {
     public static final String COMMAND_HELP = "?";
 
     public static final String ANY_ARG = "*";
-    
-    
-    public static DBGVariable<?> chooseVariable(Scanner sc, DBGController controller,
-            DBGSession session) throws DBGException {
+
+    public static DBGVariable<?> chooseVariable(Scanner sc, DBGController controller, DBGSession session)
+            throws DBGException {
 
         DBGVariable<?> v = null;
 
@@ -210,8 +209,7 @@ public class Debugger {
 
     }
 
-    public static DBGSession chooseSession(Scanner sc, DBGBaseController controller)
-            throws DBGException {
+    public static DBGSession chooseSession(Scanner sc, DBGBaseController controller) throws DBGException {
 
         DBGSession debugSession = null;
 
@@ -404,7 +402,7 @@ public class Debugger {
                 break;
 
             case COMMAND_VARIABLE_SET:
-                
+
                 String strVal = "";
 
                 String argcV = sc.nextLine();
@@ -421,7 +419,7 @@ public class Debugger {
                     scArg.close();
 
                 }
-                
+
                 if (controller.getSessions().size() == 0) {
                     System.out.println("Debug sessions not found");
                     break;
@@ -433,16 +431,15 @@ public class Debugger {
                     break;
                 }
 
-                
-                DBGVariable<?> var = chooseVariable(sc, controller,debugSessionVS);
-                
+                DBGVariable<?> var = chooseVariable(sc, controller, debugSessionVS);
+
                 if (var == null) {
                     break;
                 }
 
                 debugSessionVS.setVariableVal(var, strVal);
-                
-                System.out.println(String.format("Variable Set %s",strVal));
+
+                System.out.println(String.format("Variable Set %s", strVal));
                 break;
 
             case COMMAND_BREAKPOINT:
@@ -529,7 +526,9 @@ public class Debugger {
                         ? new PostgreDebugBreakpointProperties(lineNo, true)
                         : new PostgreDebugBreakpointProperties(true);
 
-                PostgreDebugBreakpointDescriptor descriptor = new PostgreDebugBreakpointDescriptor((PostgreDebugObjectDescriptor)debugObject, breakpointProperties);
+                Object oid = debugObject.getID();
+                PostgreDebugBreakpointDescriptor descriptor = new PostgreDebugBreakpointDescriptor(oid,
+                        breakpointProperties);
                 debugSession.addBreakpoint(descriptor);
 
                 System.out.println("Breakpoint added");
@@ -721,8 +720,10 @@ public class Debugger {
 
                 System.out.println("Waiting for target session ...");
 
-//FIXME:AF: Andrew, please migrate to attach(JDBCExecutionContext connection,int OID,int targetPID) API
-//                debugSessionA.attach(false);
+                // FIXME:AF: Andrew, please migrate to
+                // attach(JDBCExecutionContext connection,int OID,int targetPID)
+                // API
+                // debugSessionA.attach(false);
 
                 break;
 

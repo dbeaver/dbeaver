@@ -40,14 +40,21 @@ import java.io.File;
 public class ERDExportSVG implements ERDExportFormatHandler {
     private static final Log log = Log.getLog(ERDExportSVG.class);
 
-    static {
-        // For some reason image writers aren't registered in Batik registry automatically
-        // Probably because of cut dependencies (which are fucking huge for Batic codec)
-        ImageWriterRegistry.getInstance().register(new PNGImageWriter());
+    private static boolean pngWriterRegistered;
+
+    private static synchronized void checkWriterRegister() {
+        if (!pngWriterRegistered) {
+            // For some reason image writers aren't registered in Batik registry automatically
+            // Probably because of cut dependencies (which are fucking huge for Batic codec)
+            ImageWriterRegistry.getInstance().register(new PNGImageWriter());
+            pngWriterRegistered = true;
+        }
     }
 
     @Override
     public void exportDiagram(EntityDiagram diagram, IFigure diagramFigure, DiagramPart diagramPart, File targetFile) throws DBException {
+        checkWriterRegister();
+
         try {
             IFigure figure = diagramPart.getFigure();
             Rectangle contentBounds = figure instanceof FreeformLayeredPane ? ((FreeformLayeredPane) figure).getFreeformExtent() : figure.getBounds();

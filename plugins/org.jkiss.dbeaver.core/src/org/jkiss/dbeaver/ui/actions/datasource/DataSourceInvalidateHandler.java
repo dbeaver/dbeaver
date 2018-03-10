@@ -26,13 +26,11 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.IDataSourceContainerProviderEx;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.runtime.jobs.DisconnectJob;
@@ -52,7 +50,7 @@ public class DataSourceInvalidateHandler extends AbstractDataSourceHandler
     {
         DBCExecutionContext context = getExecutionContext(event, false);
         if (context != null) {
-            execute(HandlerUtil.getActiveShell(event), context);
+            invalidateDataSource(context.getDataSource());
         } else {
             IEditorPart editor = HandlerUtil.getActiveEditor(event);
             if (editor instanceof IDataSourceContainerProviderEx) {
@@ -68,14 +66,14 @@ public class DataSourceInvalidateHandler extends AbstractDataSourceHandler
         return null;
     }
 
-    public static void execute(final Shell shell, final DBCExecutionContext context) {
-        if (context != null) {
+    public static void invalidateDataSource(final DBPDataSource dataSource) {
+        if (dataSource != null) {
             //final DataSourceDescriptor dataSourceDescriptor = (DataSourceDescriptor) context;
-            if (!ArrayUtils.isEmpty(Job.getJobManager().find(context.getDataSource().getContainer()))) {
+            if (!ArrayUtils.isEmpty(Job.getJobManager().find(dataSource.getContainer()))) {
                 // Already connecting/disconnecting - just return
                 return;
             }
-            final InvalidateJob invalidateJob = new InvalidateJob(context);
+            final InvalidateJob invalidateJob = new InvalidateJob(dataSource);
             invalidateJob.addJobChangeListener(new JobChangeAdapter() {
                 @Override
                 public void done(IJobChangeEvent event) {
@@ -116,12 +114,12 @@ public class DataSourceInvalidateHandler extends AbstractDataSourceHandler
 
                             }
                         });
-                        final DBPDataSourceContainer container = context.getDataSource().getContainer();
+                        final DBPDataSourceContainer container = dataSource.getContainer();
                         final Throwable dialogError = error;
                         final Integer result = new UITask<Integer>() {
                             @Override
                             protected Integer runTask() {
-                                ConnectionLostDialog clDialog = new ConnectionLostDialog(shell, container, dialogError, "Disconnect");
+                                ConnectionLostDialog clDialog = new ConnectionLostDialog(null, container, dialogError, "Disconnect");
                                 return clDialog.open();
                             }
                         }.execute();
@@ -129,7 +127,7 @@ public class DataSourceInvalidateHandler extends AbstractDataSourceHandler
                             // Disconnect - to notify UI and reflect model changes
                             new DisconnectJob(container).schedule();
                         } else if (result == IDialogConstants.RETRY_ID) {
-                            execute(shell, context);
+                            invalidateDataSource(dataSource);
                         }
                     } else {
                         log.info(message);
@@ -143,19 +141,15 @@ public class DataSourceInvalidateHandler extends AbstractDataSourceHandler
     public static void showConnectionLostDialog(final Shell shell, final String message, final DBException error)
     {
         //log.debug(message);
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run()
-            {
-                // Display the dialog
-                DBPDataSource dataSource = error.getDataSource();
-                if (dataSource == null) {
-                    throw new IllegalStateException("No data source in error");
-                }
-                String title = "Connection with [" + dataSource.getContainer().getName() + "] lost";
-                ConnectionRecoverDialog dialog = new ConnectionRecoverDialog(shell, title, message == null ? title : message, error);
-                dialog.open();
+        Runnable runnable = () -> {
+            // Display the dialog
+            DBPDataSource dataSource = error.getDataSource();
+            if (dataSource == null) {
+                throw new IllegalStateException("No data source in error");
             }
+            String title = "Connection with [" + dataSource.getContainer().getName() + "] lost";
+            ConnectionRecoverDialog dialog = new ConnectionRecoverDialog(shell, title, message == null ? title : message, error);
+            dialog.open();
         };
         DBeaverUI.syncExec(runnable);
     }
@@ -164,7 +158,7 @@ public class DataSourceInvalidateHandler extends AbstractDataSourceHandler
 
         private final DBPDataSource dataSource;
 
-        public ConnectionRecoverDialog(Shell shell, String title, String message, DBException error)
+        ConnectionRecoverDialog(Shell shell, String title, String message, DBException error)
         {
             super(
                 shell == null ? DBeaverUI.getActiveWorkbenchShell() : shell,
@@ -187,9 +181,7 @@ public class DataSourceInvalidateHandler extends AbstractDataSourceHandler
         protected void buttonPressed(int id)
         {
             if (id == IDialogConstants.RETRY_ID) {
-                execute(
-                    PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell(),
-                    dataSource.getDefaultContext(false));
+                invalidateDataSource(dataSource);
                 super.buttonPressed(IDialogConstants.OK_ID);
             }
             super.buttonPressed(id);
