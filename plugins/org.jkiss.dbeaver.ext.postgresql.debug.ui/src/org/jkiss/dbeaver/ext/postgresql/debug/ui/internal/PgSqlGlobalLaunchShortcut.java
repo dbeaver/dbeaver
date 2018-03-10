@@ -22,6 +22,9 @@ import java.util.Map;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.IInputValidator;
+import org.eclipse.jface.dialogs.InputDialog;
 import org.jkiss.dbeaver.debug.DBGController;
 import org.jkiss.dbeaver.debug.core.DebugCore;
 import org.jkiss.dbeaver.debug.ui.DatabaseLaunchShortcut;
@@ -38,6 +41,33 @@ public class PgSqlGlobalLaunchShortcut extends DatabaseLaunchShortcut {
     protected ILaunchConfiguration createConfiguration(DBSObject launchable) throws CoreException {
         ILaunchConfigurationWorkingCopy workingCopy = PostgreSqlDebugCore.createConfiguration(launchable);
         workingCopy.setAttribute(DebugCore.ATTR_ATTACH_KIND, DBGController.ATTACH_KIND_GLOBAL);
+        String pid = workingCopy.getAttribute(DebugCore.ATTR_ATTACH_PROCESS, DebugCore.ATTR_ATTACH_PROCESS_DEFAULT);
+        String dialogTitle = "Specify PID";
+        String dialogMessage = "Specify PID to attach. Use '-1' to allow any PID";
+        InputDialog dialog = new InputDialog(getShell(), dialogTitle, dialogMessage, pid, new IInputValidator() {
+            
+            @Override
+            public String isValid(String newText) {
+                String error = "PID should be positive number or '-1' for any PID";
+                try {
+                    Integer integer = Integer.parseInt(newText);
+                    if (integer < -1) {
+                        return error;
+                    }
+                } catch (Exception e) {
+                    return error;
+                }
+                // TODO Auto-generated method stub
+                return null;
+            }
+        });
+        dialog.create();
+        int open = dialog.open();
+        if (IDialogConstants.CANCEL_ID == open) {
+            return null;
+        }
+        String modified = dialog.getValue();
+        workingCopy.setAttribute(DebugCore.ATTR_ATTACH_PROCESS, modified);
         return workingCopy.doSave();
     }
     
