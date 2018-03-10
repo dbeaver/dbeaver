@@ -23,9 +23,9 @@ public enum PostgrePrivilegeType {
     // ALL privs
     ALL(Object.class, false),
     // TABLE privs
-    SELECT(PostgreTableReal.class, true),
+    SELECT(PostgreTableBase.class, true),
     INSERT(PostgreTableReal.class, true),
-    UPDATE(PostgreTableReal.class,true),
+    UPDATE(PostgreTableBase.class,true),
     DELETE(PostgreTableReal.class,true),
     TRUNCATE(PostgreTableReal.class,true),
     REFERENCES(PostgreTableReal.class,true),

@@ -29,14 +29,18 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.*;
+import org.jkiss.dbeaver.runtime.jobs.InvalidateJob;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
@@ -1463,5 +1467,64 @@ public final class DBUtils {
         }
 
         return list;
+    }
+
+    /**
+     * @param param DBRProgressProgress monitor or DBCSession
+     *
+     */
+    public static <T> boolean tryExecuteRecover(@NotNull T param, @NotNull DBPDataSource dataSource, @NotNull DBRRunnableParametrized<T> runnable) throws DBException {
+        int tryCount = 1;
+        boolean recoverEnabled = dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.EXECUTE_RECOVER_ENABLED);
+        if (recoverEnabled) {
+            tryCount += dataSource.getContainer().getPreferenceStore().getInt(ModelPreferences.EXECUTE_RECOVER_RETRY_COUNT);
+        }
+        Throwable lastError = null;
+        for (int i = 0; i < tryCount; i++) {
+            try {
+                runnable.run(param);
+                lastError = null;
+                break;
+            } catch (InvocationTargetException e) {
+                lastError = e.getTargetException();
+                if (!recoverEnabled || discoverErrorType(dataSource, lastError) != DBPErrorAssistant.ErrorType.CONNECTION_LOST) {
+                    // Can't recover
+                    break;
+                }
+                log.debug("Invalidate datasource '" + dataSource.getContainer().getName() + "' connections...");
+                DBRProgressMonitor monitor;
+                if (param instanceof DBRProgressMonitor) {
+                    monitor = (DBRProgressMonitor) param;
+                } else if (param instanceof DBCSession) {
+                    monitor = ((DBCSession) param).getProgressMonitor();
+                } else {
+                    monitor = new VoidProgressMonitor();
+                }
+                InvalidateJob.invalidateDataSource(monitor, dataSource, false);
+                if (i < tryCount - 1) {
+                    log.error("Operation failed. Retry count remains = " + (tryCount - i - 1), lastError);
+                }
+            } catch (InterruptedException e) {
+                log.error("Operation interrupted");
+                return false;
+            }
+        }
+        if (lastError != null) {
+            throw new DBException(lastError, dataSource);
+        }
+        return true;
+    }
+
+    public static boolean checkUnique(DBRProgressMonitor monitor, DBSEntity dbsEntity, DBSAttributeBase attribute) throws DBException {
+        for (DBSEntityConstraint constraint : dbsEntity.getConstraints(monitor)) {
+            DBSEntityConstraintType constraintType = constraint.getConstraintType();
+            if (constraintType.isUnique()) {
+                DBSEntityAttributeRef constraintAttribute = getConstraintAttribute(monitor, ((DBSEntityReferrer) constraint), attribute.getName());
+                if (constraintAttribute != null && constraintAttribute.getAttribute() == attribute) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

@@ -100,7 +100,7 @@ public abstract class PostgreTableConstraintBase extends JDBCTableConstraint<Pos
         if (CommonUtils.getOption(options, DBPScriptObject.OPTION_EMBEDDED_SOURCE)) {
             return constrDDL;
         } else {
-            return "ALTER TABLE " + getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " CREATE " + constrDDL;
+            return "ALTER TABLE " + getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " ADD " + constrDDL;
         }
     }
 

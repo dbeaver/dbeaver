@@ -2,8 +2,8 @@
 <?eclipse version="3.4"?>
 <!--
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
- * Copyright (C) 2017 Alexander Fedorov (alexander.fedorov@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,7 +29,7 @@
    <extension
          point="org.eclipse.debug.ui.launchConfigurationTabGroups">
       <launchConfigurationTabGroup
-            class="org.jkiss.dbeaver.ext.postgresql.debug.ui.internal.PgSqlLaunchConfigurationTabGroup"
+            class="org.jkiss.dbeaver.debug.ui.DatabaseTabGroup"
             description="%launchConfigurationTabGroups.launchConfigurationTabGroup.pgSQL.description"
             id="org.jkiss.dbeaver.ext.postgresql.debug.ui.launchConfigurationTabGroups.launchConfigurationTabGroup.pgSQL"
             type="org.jkiss.dbeaver.ext.postgresql.debug.core.pgSQL">
@@ -75,6 +75,33 @@
             </enablement>
          </contextualLaunch>
       </shortcut>
+   </extension>
+
+   <extension
+         point="org.eclipse.core.runtime.adapters">
+      <factory
+            adaptableType="org.jkiss.dbeaver.ext.postgresql.ui.editors.PostgreSourceViewEditor"
+            class="org.jkiss.dbeaver.debug.ui.actions.DebugActionAdapterFactory">
+         <adapter
+               type="org.eclipse.debug.ui.actions.IToggleBreakpointsTarget">
+         </adapter>
+      </factory>
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.editorActions">
+      <editorContribution
+            id="org.jkiss.dbeaver.debug.ui.editorContribution"
+            targetID="postgresql.source.view">
+         <action
+               actionID="RulerDoubleClick"
+               class="org.eclipse.debug.ui.actions.RulerToggleBreakpointActionDelegate"
+               icon="platform:/plugin/org.eclipse.debug.ui/$nl$/icons/full/obj16/brkp_obj.png"
+               id="org.jkiss.dbeaver.debug.ui.actions.ManageBreakpointRulerAction"
+               label="Toggle &amp;Breakpoint"
+               style="push">
+         </action>
+      </editorContribution>
    </extension>
 
 </plugin>

@@ -1,5 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  * Copyright (C) 2017 Andrew Khitrin (ahitrin@gmail.com) 
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,24 +17,22 @@
  */
 package org.jkiss.dbeaver.ext.ui.locks.manage;
 
-import java.util.Collection;
-import java.util.Map;
-
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchSite;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.ui.locks.graph.LockGraphicalView;
 import org.jkiss.dbeaver.ext.ui.locks.table.LockTable;
 import org.jkiss.dbeaver.ext.ui.locks.table.LockTableDetail;
@@ -43,6 +42,10 @@ import org.jkiss.dbeaver.model.admin.locks.DBAServerLockManager;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.autorefresh.AutoRefreshControl;
+
+import java.util.Collection;
+import java.util.Map;
 
 /**
  * LockManagerViewer
@@ -59,18 +62,17 @@ public class LockManagerViewer {
     private LockTableDetail blockingTable;
     private Label blockedLabel;
     private Label blockingLabel;
-    private DBAServerLock<?> curLock;
-    private LockGraphManager<?, ?> graphManager;
+    private DBAServerLock curLock;
+    private LockGraphManager graphManager;
     private LockGraphicalView gv;
 
-    @SuppressWarnings("unused")
-    private final DBAServerLockManager<DBAServerLock<?>, DBAServerLockItem> lockManager;
+    private AutoRefreshControl refreshControl;
 
     private Action killAction = new Action("Kill waiting session", UIUtils.getShardImageDescriptor(ISharedImages.IMG_ELCL_STOP)) {
         @Override
         public void run() {
         	if (curLock != null) {
-                DBAServerLock<?> root = graphManager.getGraph(curLock).getLockRoot();
+                DBAServerLock root = graphManager.getGraph(curLock).getLockRoot();
                 alterSession();
                 refreshLocks(root);
                 setTableLockSelect(root);        		
@@ -79,7 +81,7 @@ public class LockManagerViewer {
     };
 
 
-    public LockGraphManager<?, ?> getGraphManager() {
+    public LockGraphManager getGraphManager() {
         return graphManager;
     }
 
@@ -88,10 +90,11 @@ public class LockManagerViewer {
         UIUtils.dispose(boldFont);
     }
 
-    protected LockManagerViewer(IWorkbenchPart part, Composite parent, final DBAServerLockManager<DBAServerLock<?>, DBAServerLockItem> lockManager) {
+    protected LockManagerViewer(IWorkbenchPart part, Composite parent, final DBAServerLockManager<DBAServerLock, DBAServerLockItem> lockManager) {
 
 
-        this.graphManager = (LockGraphManager<?, ?>) lockManager;
+        refreshControl = new AutoRefreshControl(parent, lockManager.getClass().getSimpleName(), monitor -> DBeaverUI.syncExec(() -> refreshLocks(null)));
+        this.graphManager = (LockGraphManager) lockManager;
 
         boldFont = UIUtils.makeBoldFont(parent.getFont());
         Composite composite = UIUtils.createPlaceholder(parent, 1);
@@ -102,16 +105,10 @@ public class LockManagerViewer {
         SashForm sash = UIUtils.createPartDivider(part, sashMain, SWT.VERTICAL | SWT.SMOOTH);
         sash.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        this.lockManager = lockManager;
         lockTable = new LockListControl(sash, part.getSite(), lockManager, lockManager.getLocksType());
         lockTable.createProgressPanel(composite);
 
-        lockTable.getItemsViewer().addSelectionChangedListener(new ISelectionChangedListener() {
-            @Override
-            public void selectionChanged(SelectionChangedEvent event) {
-                onLockSelect(getSelectedLock());
-            }
-        });
+        lockTable.getItemsViewer().addSelectionChangedListener(event -> onLockSelect(getSelectedLock()));
 
         lockTable.loadData();
 
@@ -144,12 +141,12 @@ public class LockManagerViewer {
 
     }
 
-    protected void onLockSelect(DBAServerLock<?> lock) {
+    protected void onLockSelect(DBAServerLock lock) {
         curLock = lock;
         refreshGraph(curLock);
     }
 
-    public void setTableLockSelect(DBAServerLock<?> lock) {
+    public void setTableLockSelect(DBAServerLock lock) {
         ColumnViewer itemsViewer = lockTable.getItemsViewer();
         itemsViewer.getControl().setRedraw(false);
         try {
@@ -160,7 +157,7 @@ public class LockManagerViewer {
         curLock = lock;
     }
 
-    protected void contributeToToolbar(DBAServerLockManager<DBAServerLock<?>, DBAServerLockItem> sessionManager, IContributionManager contributionManager) {
+    protected void contributeToToolbar(DBAServerLockManager<DBAServerLock, DBAServerLockItem> sessionManager, IContributionManager contributionManager) {
 
     }
 
@@ -168,26 +165,26 @@ public class LockManagerViewer {
         return killAction;
     }
 
-    private DBAServerLock<?> getSelectedLock() {
+    private DBAServerLock getSelectedLock() {
         ISelection selection = lockTable.getSelectionProvider().getSelection();
         if (selection instanceof IStructuredSelection && !selection.isEmpty()) {
-            return (DBAServerLock<?>) ((IStructuredSelection) selection).getFirstElement();
+            return (DBAServerLock) ((IStructuredSelection) selection).getFirstElement();
         } else {
             return null;
         }
     }
 
-    private void refreshGraph(DBAServerLock<?> selected) {
+    private void refreshGraph(DBAServerLock selected) {
         gv.drawGraf(selected);
     }
 
-    public void refreshLocks(DBAServerLock<?> selected) {
+    public void refreshLocks(DBAServerLock selected) {
         lockTable.loadData(false);
         gv.drawGraf(selected);
-
+        refreshControl.scheduleAutoRefresh(false);
     }
 
-    public void refreshDetail(Map<String, Object> options) {
+    protected void refreshDetail(Map<String, Object> options) {
         StringBuilder sb = new StringBuilder("Wait - ");
         sb.append(curLock.getTitle());
         blockedLabel.setText(sb.toString());
@@ -209,7 +206,7 @@ public class LockManagerViewer {
     public void alterSession() {
         if (UIUtils.confirmAction(
                 "Terminate",
-                NLS.bind("Teminate session?", "Terminate"))) {
+                NLS.bind("Terminate session?", "Terminate"))) {
 
             lockTable.createAlterService(curLock, null).schedule();
         }
@@ -221,29 +218,31 @@ public class LockManagerViewer {
 
     private class LockListControl extends LockTable {
 
-        private Class<DBAServerLock<?>> locksType;
+        private Class<DBAServerLock> locksType;
 
-        LockListControl(SashForm sash, IWorkbenchSite site, DBAServerLockManager<DBAServerLock<?>, DBAServerLockItem> lockManager, Class<DBAServerLock<?>> locksType) {
+        LockListControl(SashForm sash, IWorkbenchSite site, DBAServerLockManager<DBAServerLock, DBAServerLockItem> lockManager, Class<DBAServerLock> locksType) {
             super(sash, SWT.SHEET, site, lockManager);
             this.locksType = locksType;
         }
 
         @Nullable
         @Override
-        protected Class<?>[] getListBaseTypes(Collection<DBAServerLock<?>> items) {
+        protected Class[] getListBaseTypes(Collection<DBAServerLock> items) {
             return new Class[] { locksType };
         }
 
         @Override
         protected void fillCustomActions(IContributionManager contributionManager) {
             contributeToToolbar(getLockManager(), contributionManager);
+            contributionManager.add(killAction);
+            contributionManager.add(new Separator());
+            refreshControl.populateRefreshButton(contributionManager);
             contributionManager.add(new Action("Refresh locks", DBeaverIcons.getImageDescriptor(UIIcon.REFRESH)) {
                 @Override
                 public void run() {
                     refreshLocks(curLock);
                 }
             });
-            contributionManager.add(killAction);
         }
 
     }

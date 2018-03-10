@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
- * Copyright (C) 2017 Alexander Fedorov (alexander.fedorov@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.jkiss.dbeaver.runtime.internal.ide.core;
 
 import java.nio.file.Path;
@@ -28,28 +29,24 @@ import org.eclipse.osgi.util.NLS;
 
 public class CreateLinkedFoldersRunnable extends CreateLinkedResourcesRunnable {
 
-    public CreateLinkedFoldersRunnable(IContainer container, Path... path)
-    {
+    public CreateLinkedFoldersRunnable(IContainer container, Path... path) {
         super(container, IResource.NONE, path);
     }
 
-    public String composeErrorMessage(IResource resource, Path... paths)
-    {
+    public String composeErrorMessage(IResource resource, Path... paths) {
         String message = NLS.bind(IdeCoreMessages.CreateLinkedFolderRunnable_e_unable_to_link, resource, paths);
         return message;
     }
 
     @Override
-    public String composeCancelMessage(IResource resource, Path path)
-    {
+    public String composeCancelMessage(IResource resource, Path path) {
         String message = NLS.bind(IdeCoreMessages.CreateLinkedFolderRunnable_e_cancelled_link, resource, path);
         return message;
     }
 
     @Override
     protected void createLink(IContainer container, Path path, int flags, IProgressMonitor monitor)
-            throws CoreException
-    {
+            throws CoreException {
         String memberName = path.getFileName().toString();
         org.eclipse.core.runtime.Path memberPath = new org.eclipse.core.runtime.Path(memberName);
         final IFolder linked = container.getFolder(memberPath);

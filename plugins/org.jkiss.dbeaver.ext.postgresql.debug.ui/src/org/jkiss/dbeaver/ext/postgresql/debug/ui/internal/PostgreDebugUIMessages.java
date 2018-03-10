@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
- * Copyright (C) 2017 Alexander Fedorov (alexander.fedorov@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,7 +22,7 @@ import org.eclipse.osgi.util.NLS;
 public class PostgreDebugUIMessages extends NLS {
 
     private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.postgresql.debug.ui.internal.PostgreDebugUIMessages"; //$NON-NLS-1$
-    
+
     public static String PgSqlLaunchShortcut_e_editor_empty;
     public static String PgSqlLaunchShortcut_e_selection_empty;
     public static String PgSqlLaunchShortcut_select_procedure_message;
@@ -33,7 +33,6 @@ public class PostgreDebugUIMessages extends NLS {
         NLS.initializeMessages(BUNDLE_NAME, PostgreDebugUIMessages.class);
     }
 
-    private PostgreDebugUIMessages()
-    {
+    private PostgreDebugUIMessages() {
     }
 }

@@ -34,7 +34,7 @@ public class StringTextGenerator extends AbstractMockValueGenerator {
 
     private String templateString;
     private int minLength = 1;
-    private int maxLength = 0;
+    private int maxLength = 100;
 
     @Override
     public void init(DBSDataManipulator container, DBSAttributeBase attribute, Map<Object, Object> properties) throws DBException {
@@ -55,10 +55,10 @@ public class StringTextGenerator extends AbstractMockValueGenerator {
             this.maxLength = max;
         }
 
-        if (maxLength == 0 || maxLength > attribute.getMaxLength()) {
+        if (maxLength == 0 || (attribute.getMaxLength() > 0 && maxLength > attribute.getMaxLength())) {
             maxLength = (int) attribute.getMaxLength();
         }
-        if (maxLength > templateString.length()) {
+        if (maxLength > templateString.length()) { // TODO check templateString shouldn't be empty
             maxLength = templateString.length();
         }
     }

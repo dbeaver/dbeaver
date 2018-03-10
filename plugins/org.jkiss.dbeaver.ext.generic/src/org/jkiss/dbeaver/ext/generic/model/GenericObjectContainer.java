@@ -118,7 +118,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
         if (tables != null) {
             List<GenericTable> filtered = new ArrayList<>();
             for (GenericTable table : tables) {
-                if (!table.isView()) {
+                if (table.isPhysicalTable()) {
                     filtered.add(table);
                 }
             }

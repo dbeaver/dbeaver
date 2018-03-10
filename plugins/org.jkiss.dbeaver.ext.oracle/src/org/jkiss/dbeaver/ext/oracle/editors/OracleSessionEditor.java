@@ -25,6 +25,7 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.ext.oracle.OracleMessages;
+import org.jkiss.dbeaver.ext.oracle.model.session.OracleServerSession;
 import org.jkiss.dbeaver.ext.oracle.model.session.OracleServerSessionManager;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSession;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
@@ -55,7 +56,7 @@ public class OracleSessionEditor extends AbstractSessionEditor
 
     @Override
     protected SessionManagerViewer createSessionViewer(DBCExecutionContext executionContext, Composite parent) {
-        return new SessionManagerViewer(this, parent, new OracleServerSessionManager(getExecutionContext())) {
+        return new SessionManagerViewer<OracleServerSession>(this, parent, new OracleServerSessionManager(getExecutionContext())) {
             @Override
             protected void contributeToToolbar(DBAServerSessionManager sessionManager, IContributionManager contributionManager)
             {
@@ -76,7 +77,7 @@ public class OracleSessionEditor extends AbstractSessionEditor
 
     private class DisconnectSessionAction extends Action {
         private final boolean kill;
-        public DisconnectSessionAction(boolean kill)
+        DisconnectSessionAction(boolean kill)
         {
             super(
                 kill ? OracleMessages.editors_oracle_session_editor_title_kill_session : OracleMessages.editors_oracle_session_editor_title_disconnect_session,

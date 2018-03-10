@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.data;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
@@ -29,6 +30,9 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  * Type attribute value binding info
  */
 public class DBDAttributeBindingType extends DBDAttributeBindingNested implements DBPImageProvider {
+
+    private static final Log log = Log.getLog(DBDAttributeBindingType.class);
+
     @NotNull
     private final DBSAttributeBase attribute;
 
@@ -138,7 +142,8 @@ public class DBDAttributeBindingType extends DBDAttributeBindingNested implement
         if (ownerValue instanceof DBDComposite) {
             return ((DBDComposite) ownerValue).getAttributeValue(attribute);
         }
-        throw new DBCException("Unsupported value type: " + (ownerValue == null ? null : ownerValue.getClass().getName()));
+        log.debug("Can't extract nested value of '" + attribute.getName() + "': unsupported owner value type " + (ownerValue == null ? null : ownerValue.getClass().getName()));
+        return null;
     }
 
     @Nullable

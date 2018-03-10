@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
- * Copyright (C) 2017 Alexander Fedorov (alexander.fedorov@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.jkiss.dbeaver.debug.internal.core;
 
 import org.eclipse.osgi.util.NLS;
@@ -27,9 +28,9 @@ public class DebugCoreMessages extends NLS {
     public static String DebugCore_e_read_attribute_null;
     public static String DebugCore_e_unable_to_retrieve_modes;
 
-    public static String ProcedureThread_name;
+    public static String DatabaseThread_name;
 
-    public static String ProcedureDebugTarget_name_default;
+    public static String DatabaseDebugTarget_name_default;
 
     static {
         // initialize resource bundle

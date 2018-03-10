@@ -23,8 +23,9 @@ import org.jkiss.dbeaver.model.DBIcon;
  */
 public class UIIcon {
 
-    public static final DBIcon DBEAVER_LOGO = new DBIcon("dbeaver_logo", "dbeaver48.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon DBEAVER_LOGO_SMALL = new DBIcon("dbeaver_logo_small", "dbeaver16.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon DBEAVER_LOGO = new DBIcon("dbeaver_logo", "dbeaver_logo_medium.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon DBEAVER_LOGO_SMALL = new DBIcon("dbeaver_logo_small", "dbeaver_logo_small.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon DBEAVER_MARKETPLACE = new DBIcon("dbeaver_marketplace", "actions/marketplace.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon DRAG_HANDLE = new DBIcon("dragHandle", "platform:/plugin/org.eclipse.platform/images/dragHandle.png");
 

@@ -22,6 +22,7 @@ package org.jkiss.dbeaver.core;
 public interface CoreCommands
 {
     String GROUP_TOOLS = "tools";
+    String GROUP_TOOLS_END = "tools_end";
     String GROUP_NAVIGATOR_ADDITIONS = "navigator_additions";
 
 

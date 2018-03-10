@@ -55,6 +55,14 @@
                                 </folder>
                             </items>
                         </folder>
+                        <folder type="org.jkiss.dbeaver.ext.vertica.model.VerticaTable" label="%tree.flexTables.node.name" icon="#folder_table" description="Flex tables">
+                            <items label="%tree.flexTable.node.name" path="flexTable" property="flexTables" icon="#table_link">
+                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableColumn" label="%tree.columns.node.name" icon="#columns" description="Flex table columns">
+                                    <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
+                                    </items>
+                                </folder>
+                            </items>
+                        </folder>
                         <folder type="org.jkiss.dbeaver.ext.vertica.model.VerticaTable" label="%tree.tviews.node.name" icon="#folder_view" description="Views">
                             <items label="%tree.tview.node.name" path="view" property="views" icon="#view">
                                 <folder type="org.jkiss.dbeaver.ext.generic.model.GenericTableColumn" label="%tree.columns.node.name" icon="#columns" description="View columns">
@@ -72,22 +80,14 @@
                             </items>
                         </folder>
 
-                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericScriptObject" label="%tree.procedures.node.name" icon="#procedures" description="Procedures">
-                            <items label="%tree.package.node.name" path="package" property="packages" icon="#package">
-                                <items label="%tree.procedures.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="procedures" icon="#procedure">
-                                    <items label="%tree.procedure_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false" inline="true"/>
-                                </items>
-                            </items>
-                            <items label="%tree.procedures.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="procedures" icon="#procedure">
-                                <items label="%tree.procedure_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false"/>
+                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericScriptObject" label="%tree.functions.node.name" icon="#procedures" description="Functions/UDFs">
+                            <items label="%tree.functions.node.name" itemLabel="%tree.function.node.name" path="procedure" property="procedures" icon="#function">
+                                <items label="%tree.function_columns.node.name" itemLabel="%tree.function_column.node.name" path="column" property="parameters" navigable="false"/>
                             </items>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.generic.model.GenericSequence" label="%tree.sequences.node.name" icon="#sequences" description="Sequences" >
                             <items label="%tree.sequence.node.name" path="sequence" property="sequences" icon="#sequence"/>
                         </folder>
-                        <!--<folder type="org.jkiss.dbeaver.ext.generic.model.GenericTrigger" label="%tree.triggers.node.name" icon="#triggers" description="Global triggers" visibleIf="object.dataSource.metaModel.supportsDatabaseTriggers(object.dataSource)">
-                            <items label="%tree.trigger.node.name" path="trigger" property="triggers" icon="#trigger"/>
-                        </folder>-->
                     </items>
                 </folder>
                 <folder label="%tree.admin.node.name" icon="#folder_admin" description="%tree.admin.node.description">

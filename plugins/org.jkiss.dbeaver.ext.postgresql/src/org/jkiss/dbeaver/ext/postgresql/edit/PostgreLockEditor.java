@@ -32,35 +32,37 @@ import org.jkiss.dbeaver.model.admin.locks.DBAServerLockItem;
 import org.jkiss.dbeaver.model.admin.locks.DBAServerLockManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 
-public class PostgreLockEditor extends AbstractLockEditor{
-	
-   public static final String pidHold = "hpid";
-   public static final String pidWait = "wpid";
+public class PostgreLockEditor extends AbstractLockEditor {
 
-	
-	@SuppressWarnings("unchecked")
-	@Override
-	protected LockManagerViewer createLockViewer(DBCExecutionContext executionContext, Composite parent) {
-		
-		DBAServerLockManager<DBAServerLock<?>, DBAServerLockItem> lockManager = (DBAServerLockManager) new PostgreLockManager((PostgreDataSource) executionContext.getDataSource());
-		
-		return new LockManagerViewer(this, parent, lockManager) {
-			   @Override
-	            protected void contributeToToolbar(DBAServerLockManager<DBAServerLock<?>, DBAServerLockItem> sessionManager, IContributionManager contributionManager)
-	            {
-	                contributionManager.add(new Separator());
-	            }
-	            @Override
-	            protected void onLockSelect(final DBAServerLock<?> lock)
-	            {
-	                super.onLockSelect(lock);
-	                if (lock != null ) {
-	                	final PostgreLock pLock = (PostgreLock) lock;
-	                	super.refreshDetail( new HashMap<String, Object>() {{ put(pidHold,new Integer(pLock.getHold_pid()));put(pidWait,new Integer(pLock.getWait_pid())); }});
-	                }
-	            }	
-		};
-	}
-	
+    public static final String pidHold = "hpid";
+    public static final String pidWait = "wpid";
+
+
+    @SuppressWarnings("unchecked")
+    @Override
+    protected LockManagerViewer createLockViewer(DBCExecutionContext executionContext, Composite parent) {
+
+        DBAServerLockManager<DBAServerLock, DBAServerLockItem> lockManager = (DBAServerLockManager) new PostgreLockManager((PostgreDataSource) executionContext.getDataSource());
+
+        return new LockManagerViewer(this, parent, lockManager) {
+            @Override
+            protected void contributeToToolbar(DBAServerLockManager<DBAServerLock, DBAServerLockItem> sessionManager, IContributionManager contributionManager) {
+                contributionManager.add(new Separator());
+            }
+
+            @Override
+            protected void onLockSelect(final DBAServerLock lock) {
+                super.onLockSelect(lock);
+                if (lock != null) {
+                    final PostgreLock pLock = (PostgreLock) lock;
+                    super.refreshDetail(new HashMap<String, Object>() {{
+                        put(pidHold, pLock.getHold_pid());
+                        put(pidWait, pLock.getWait_pid());
+                    }});
+                }
+            }
+        };
+    }
+
 }
 

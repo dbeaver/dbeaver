@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
- * Copyright (C) 2017 Alexander Fedorov (alexander.fedorov@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,8 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
+
 package org.jkiss.dbeaver.debug.ui;
 
 import org.eclipse.jface.action.MenuManager;
@@ -52,28 +54,23 @@ public abstract class LaunchContributionFactory extends ExtensionContributionFac
         additions.addContributionItem(menuManager, null);
     }
 
-    public String getText()
-    {
+    public String getText() {
         return text;
     }
-    
-    public void setText(String text)
-    {
+
+    public void setText(String text) {
         this.text = text;
     }
 
-    public ImageDescriptor getImageDescriptor()
-    {
+    public ImageDescriptor getImageDescriptor() {
         return imageDescriptor;
     }
 
-    public void setImageDescriptor(ImageDescriptor imageDescriptor)
-    {
+    public void setImageDescriptor(ImageDescriptor imageDescriptor) {
         this.imageDescriptor = imageDescriptor;
     }
 
-    protected String createContributionIdentifier()
-    {
+    protected String createContributionIdentifier() {
         return DebugUI.BUNDLE_SYMBOLIC_NAME + '/' + id;
     }
 

@@ -45,4 +45,6 @@ public interface IDataSourceConnectionEditorSite
 
     boolean openSettingsPage(String pageId);
 
+    void testConnection();
+
 }

@@ -15,6 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.jkiss.dbeaver.debug.sourcelookup;
 
 import org.eclipse.core.resources.IProject;
@@ -33,7 +34,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 
 public class DatasourceSourceContainer extends CompositeSourceContainer {
-    
+
     private final DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
     private final DBPDataSourceContainer datasource;
     private final IProject project;
@@ -47,7 +48,7 @@ public class DatasourceSourceContainer extends CompositeSourceContainer {
     public String getName() {
         return datasource.getName();
     }
-    
+
     @Override
     protected Object[] findSourceElements(String name, ISourceContainer[] containers) throws CoreException {
         DBNNode node;
@@ -59,11 +60,11 @@ public class DatasourceSourceContainer extends CompositeSourceContainer {
             throw new CoreException(DebugCore.newErrorStatus(message, e));
         }
         if (node != null) {
-            return new Object[] {node};
+            return new Object[] { node };
         }
         return super.findSourceElements(name, containers);
     }
-    
+
     @Override
     public ISourceContainerType getType() {
         return getSourceContainerType(DebugCore.SOURCE_CONTAINER_TYPE_DATASOURCE);

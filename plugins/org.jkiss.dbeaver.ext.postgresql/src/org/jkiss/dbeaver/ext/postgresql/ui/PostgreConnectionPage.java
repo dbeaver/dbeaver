@@ -204,8 +204,8 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
         }
         if (dbText != null) {
             String databaseName = connectionInfo.getDatabaseName();
-            if (CommonUtils.isEmpty(databaseName) && getSite().isNew()) {
-                databaseName = PostgreConstants.DEFAULT_DATABASE;
+            if (CommonUtils.isEmpty(databaseName)) {
+                databaseName = getSite().isNew() ? PostgreConstants.DEFAULT_DATABASE : "";
             }
             dbText.setText(databaseName);
         }

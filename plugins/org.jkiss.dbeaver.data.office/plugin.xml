@@ -53,8 +53,8 @@
     <extension point="org.eclipse.ui.menus">
 
         <!-- Results viewer status bar additions -->
-        <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.ui.controls.resultset.status?after=additions">
-            <command commandId="org.jkiss.dbeaver.ext.data.office.results.openSpreadsheet"/>
+        <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.ui.controls.resultset.status?after=presentations">
+            <command commandId="org.jkiss.dbeaver.ext.data.office.results.openSpreadsheet" style="push" mode="FORCE_TEXT" label="%command.org.jkiss.dbeaver.ext.data.office.results.openSpreadsheet.toolbar.label"/>
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=results_export">

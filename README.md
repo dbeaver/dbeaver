@@ -14,6 +14,8 @@ Supports any database which has JDBC driver (which basically means - ANY databas
 * Based on <a href="http://www.eclipse.org/">Eclipse</a> platform.
 * Uses plugins architecture and provides additional functionality for the following databases: MySQL/MariaDB, PostgreSQL, Oracle, DB2 LUW, Exasol, SQL Server, Sybase/SAP ASE, SQLite, Firebird, H2, HSQLDB, Derby, Teradata, Vertica, Netezza, Informix, etc.
 
+<a href="https://dbeaver.jkiss.org/product/dbeaver-ss-mock.png"><img src="https://dbeaver.jkiss.org/product/dbeaver-ss-mock.png" width="400"/></a>
+<a href="https://dbeaver.jkiss.org/product/dbeaver-ss-erd.png"><img src="https://dbeaver.jkiss.org/product/dbeaver-ss-erd.png" width="400"/></a>
 <a href="https://dbeaver.jkiss.org/product/dbeaver-ss-classic.png"><img src="https://dbeaver.jkiss.org/product/dbeaver-ss-classic.png" width="400"/></a>
 <a href="https://dbeaver.jkiss.org/product/dbeaver-ss-dark.png"><img src="https://dbeaver.jkiss.org/product/dbeaver-ss-dark.png" width="400"/></a>
 

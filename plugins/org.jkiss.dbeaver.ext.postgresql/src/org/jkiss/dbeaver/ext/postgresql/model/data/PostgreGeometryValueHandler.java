@@ -71,19 +71,23 @@ public class PostgreGeometryValueHandler extends JDBCAbstractValueHandler {
         } else if (object instanceof Geometry) {
             return object;
         } else if (object instanceof String) {
-            if (CommonUtils.isEmpty((String) object)) {
-                return null;
-            }
-            try {
-                Class<?> jtsGeometry = DBUtils.getDriverClass(session.getDataSource(), "org.postgis.jts.JtsGeometry");
-                return BeanUtils.invokeStaticMethod(
-                    jtsGeometry, "geomFromString", new Class[] { String.class }, new Object[] { object }
-                );
-            } catch (Throwable e) {
-                throw new DBCException(e, session.getDataSource());
-            }
+            return makeGeometryFromString(session, (String) object);
         } else {
-            throw new DBCException("Unsupported geometry value: " + object);
+            return makeGeometryFromString(session, object.toString());
+        }
+    }
+
+    private Object makeGeometryFromString(DBCSession session, String object) throws DBCException {
+        if (CommonUtils.isEmpty(object)) {
+            return null;
+        }
+        try {
+            Class<?> jtsGeometry = DBUtils.getDriverClass(session.getDataSource(), "org.postgis.jts.JtsGeometry");
+            return BeanUtils.invokeStaticMethod(
+                jtsGeometry, "geomFromString", new Class[] { String.class }, new Object[] { object }
+            );
+        } catch (Throwable e) {
+            throw new DBCException(e, session.getDataSource());
         }
     }
 
