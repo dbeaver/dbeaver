@@ -142,7 +142,12 @@ public class DBDAttributeBindingType extends DBDAttributeBindingNested implement
         if (ownerValue instanceof DBDComposite) {
             return ((DBDComposite) ownerValue).getAttributeValue(attribute);
         }
-        log.debug("Can't extract nested value of '" + attribute.getName() + "': unsupported owner value type " + (ownerValue == null ? null : ownerValue.getClass().getName()));
+        //log.debug("Can't extract nested value of '" + attribute.getName() + "': unsupported owner value type " + (ownerValue == null ? null : ownerValue.getClass().getName()));
+        // Can't extract nested value of attribute
+        // This may happen in case of dynamic records structure.
+        // If different records have different structure (see #3108) then we just can't use structured view
+        // T avoid error log spamming just ignore this and return null
+        // TODO: somehow visualize this error in results
         return null;
     }
 
