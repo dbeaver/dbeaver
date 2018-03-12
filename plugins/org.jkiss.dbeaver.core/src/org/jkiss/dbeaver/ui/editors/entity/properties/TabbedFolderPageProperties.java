@@ -27,6 +27,8 @@ import org.eclipse.jface.viewers.IFontProvider;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.graphics.Font;
@@ -108,6 +110,7 @@ public class TabbedFolderPageProperties extends TabbedFolderPage implements IRef
                 progressControl.activate(false);
             }
         });
+        progressControl.addDisposeListener(e -> dispose());
 	}
 
     @Override
@@ -117,8 +120,9 @@ public class TabbedFolderPageProperties extends TabbedFolderPage implements IRef
 
     @Override
     public void dispose() {
-        if (curPropertySource.getEditableValue() instanceof DBSObject) {
+        if (curPropertySource != null && curPropertySource.getEditableValue() instanceof DBSObject) {
             DBUtils.getObjectRegistry((DBSObject) curPropertySource.getEditableValue()).removeDataSourceListener(this);
+            curPropertySource = null;
         }
         UIUtils.dispose(boldFont);
 		super.dispose();
