@@ -237,6 +237,12 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
     public Point computeSize(int wHint, int hHint, boolean changed)
     {
         checkWidget();
+
+        int borderWidth = getBorderWidth ();
+        Point arrowSize = arrow.computeSize (SWT.DEFAULT, SWT.DEFAULT, changed);
+        arrowSize.x += 2 * borderWidth;
+        arrowSize.y += 2 * borderWidth;
+
         Point textSize = super.computeSize(SWT.DEFAULT, SWT.DEFAULT, changed);
         Point listSize = new Point(0, 0);
         GC gc = new GC(getDisplay());
@@ -248,7 +254,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         }
         gc.dispose();
         listSize.x += imageLabel.computeSize(SWT.DEFAULT, SWT.DEFAULT, changed).x;
-        listSize.x += arrow.computeSize(SWT.DEFAULT, SWT.DEFAULT, changed).x;
+        listSize.x += arrowSize.x;
         listSize.x += 20;
 
         int height = Math.max(hHint, textSize.y);
@@ -256,7 +262,10 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         if (widthHint != SWT.DEFAULT) {
             width = widthHint;
         }
-        return new Point(width + 10, height);
+
+        height = Math.max (height, arrowSize.y);
+
+        return new Point (width, height);
     }
 
     public String getItemText(int index)
