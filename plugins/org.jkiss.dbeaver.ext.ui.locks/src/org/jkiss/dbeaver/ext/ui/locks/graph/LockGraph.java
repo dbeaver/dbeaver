@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.admin.locks.DBAServerLock;
 
 public class LockGraph {
 
-	private List<LockGraphNode> nodes = new ArrayList<LockGraphNode>();
+	private List<LockGraphNode> nodes = new ArrayList<>();
 	
 	private int maxWidth = 0;
 	
@@ -33,9 +33,9 @@ public class LockGraph {
 	
 	private LockManagerViewer lockManagerViewer;
 	
-	private final DBAServerLock<?> lockRoot;
+	private final DBAServerLock lockRoot;
 	
-	public DBAServerLock<?> getLockRoot() {
+	public DBAServerLock getLockRoot() {
 		return lockRoot;
 	}
 
@@ -47,7 +47,7 @@ public class LockGraph {
 		this.lockManagerViewer = lockManagerViewer;
 	}
 
-	public LockGraph(DBAServerLock<?> lockRoot) {
+	public LockGraph(DBAServerLock lockRoot) {
 		this.selection = null;
 		this.lockRoot = lockRoot;
 	}

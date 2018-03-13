@@ -138,7 +138,7 @@ public class SQLSyntaxManager {
         this.quoteStrings = sqlDialect.getIdentifierQuoteStrings();
         this.structSeparator = sqlDialect.getStructSeparator();
         this.catalogSeparator = sqlDialect.getCatalogSeparator();
-        this.escapeChar = '\\';
+        this.escapeChar = dialect.getStringEscapeCharacter();;
         if (!preferenceStore.getBoolean(ModelPreferences.SCRIPT_IGNORE_NATIVE_DELIMITER)) {
             this.statementDelimiters = new String[] { sqlDialect.getScriptDelimiter().toLowerCase() };
         }

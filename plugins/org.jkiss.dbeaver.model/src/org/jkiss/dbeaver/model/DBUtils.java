@@ -29,13 +29,18 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.*;
+import org.jkiss.dbeaver.runtime.jobs.InvalidateJob;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 /**
@@ -271,7 +276,6 @@ public final class DBUtils {
      * @param schemaName schema name (optional)
      * @param objectName table name (optional)
      * @return found object or null
-     * @throws DBException
      */
     @Nullable
     public static DBSObject getObjectByPath(
@@ -665,7 +669,7 @@ public final class DBUtils {
                 }
             }
         }
-        return refs != null ? refs : Collections.<DBSEntityReferrer>emptyList();
+        return refs != null ? refs : Collections.emptyList();
     }
 
     @NotNull
@@ -930,7 +934,7 @@ public final class DBUtils {
         // or some DML. For DML statements we mustn't set limits
         // because it sets update rows limit [SQL Server]
         boolean selectQuery = sqlQuery.getType() == SQLQueryType.SELECT && sqlQuery.isPlainSelect();
-        final boolean hasLimits = offset > 0 || (selectQuery && maxRows > 0);
+        final boolean hasLimits = (offset > 0 || selectQuery) && maxRows > 0;
         // This is a flag for any potential SELECT query
         boolean possiblySelect = sqlQuery.getType() == SQLQueryType.SELECT || sqlQuery.getType() == SQLQueryType.UNKNOWN;
         boolean limitAffectsDML = Boolean.TRUE.equals(session.getDataSource().getDataSourceFeature(DBConstants.FEATURE_LIMIT_AFFECTS_DML));
@@ -943,7 +947,7 @@ public final class DBUtils {
                     if (session.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL)) {
                         limitTransformer = transformProvider.createQueryTransformer(DBCQueryTransformType.RESULT_SET_LIMIT);
                     }
-                } else if (maxRows <= 0) {
+                } else {
                     fetchAllTransformer = transformProvider.createQueryTransformer(DBCQueryTransformType.FETCH_ALL_TABLE);
                 }
             }
@@ -1315,7 +1319,7 @@ public final class DBUtils {
         } else if (object instanceof DBSObject) {
             return (DBSObject) object;
         } else {
-            return null;
+            return RuntimeUtils.getObjectAdapter(object, DBSObject.class);
         }
     }
 
@@ -1417,41 +1421,28 @@ public final class DBUtils {
 
     public static <TYPE extends DBPNamedObject> Comparator<TYPE> nameComparator()
     {
-        return new Comparator<TYPE>() {
-            @Override
-            public int compare(DBPNamedObject o1, DBPNamedObject o2)
-            {
-                return o1.getName().compareTo(o2.getName());
-            }
-        };
+        return Comparator.comparing(DBPNamedObject::getName);
     }
 
     public static Comparator<? super DBSAttributeBase> orderComparator() {
-        return new Comparator<DBSAttributeBase>() {
-            @Override
-            public int compare(DBSAttributeBase o1, DBSAttributeBase o2) {
-                return o1.getOrdinalPosition() - o2.getOrdinalPosition();
-            }
-        };
+        return Comparator.comparingInt(DBSAttributeBase::getOrdinalPosition);
     }
 
     public static <T extends DBPNamedObject> void orderObjects(@NotNull List<T> objects)
     {
-        Collections.sort(objects, new Comparator<T>() {
-            @Override
-            public int compare(T o1, T o2) {
-                String name1 = o1.getName();
-                String name2 = o2.getName();
-                return name1 == null && name2 == null ? 0 :
-                    (name1 == null ? -1 :
-                        (name2 == null ? 1 : name1.compareTo(name2)));
-            }
+        objects.sort((o1, o2) -> {
+            String name1 = o1.getName();
+            String name2 = o2.getName();
+            return name1 == null && name2 == null ? 0 :
+                (name1 == null ? -1 :
+                    (name2 == null ? 1 : name1.compareTo(name2)));
         });
     }
 
     public static String getClientApplicationName(DBPDataSourceContainer container, String purpose) {
         if (container.getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_OVERRIDE)) {
-            return container.getPreferenceStore().getString(ModelPreferences.META_CLIENT_NAME_VALUE);
+            String appName = container.getPreferenceStore().getString(ModelPreferences.META_CLIENT_NAME_VALUE);
+            return GeneralUtils.replaceVariables(appName, container.getVariablesResolver());
         }
         final String productTitle = GeneralUtils.getProductTitle();
         return purpose == null ? productTitle : productTitle + " - " + purpose;
@@ -1465,5 +1456,75 @@ public final class DBUtils {
         }
 
         return DBPErrorAssistant.ErrorType.NORMAL;
+    }
+
+    public static Collection<? extends DBSAttributeBase> getRealAttributes(Collection<? extends DBSAttributeBase> attributes) {
+        List<DBSAttributeBase> list = new ArrayList<>();
+        for (DBSAttributeBase attr : attributes) {
+            if (!DBUtils.isPseudoAttribute(attr) && !DBUtils.isHiddenObject(attr) && !attr.isAutoGenerated()) {
+                list.add(attr);
+            }
+        }
+
+        return list;
+    }
+
+    /**
+     * @param param DBRProgressProgress monitor or DBCSession
+     *
+     */
+    public static <T> boolean tryExecuteRecover(@NotNull T param, @NotNull DBPDataSource dataSource, @NotNull DBRRunnableParametrized<T> runnable) throws DBException {
+        int tryCount = 1;
+        boolean recoverEnabled = dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.EXECUTE_RECOVER_ENABLED);
+        if (recoverEnabled) {
+            tryCount += dataSource.getContainer().getPreferenceStore().getInt(ModelPreferences.EXECUTE_RECOVER_RETRY_COUNT);
+        }
+        Throwable lastError = null;
+        for (int i = 0; i < tryCount; i++) {
+            try {
+                runnable.run(param);
+                lastError = null;
+                break;
+            } catch (InvocationTargetException e) {
+                lastError = e.getTargetException();
+                if (!recoverEnabled || discoverErrorType(dataSource, lastError) != DBPErrorAssistant.ErrorType.CONNECTION_LOST) {
+                    // Can't recover
+                    break;
+                }
+                log.debug("Invalidate datasource '" + dataSource.getContainer().getName() + "' connections...");
+                DBRProgressMonitor monitor;
+                if (param instanceof DBRProgressMonitor) {
+                    monitor = (DBRProgressMonitor) param;
+                } else if (param instanceof DBCSession) {
+                    monitor = ((DBCSession) param).getProgressMonitor();
+                } else {
+                    monitor = new VoidProgressMonitor();
+                }
+                InvalidateJob.invalidateDataSource(monitor, dataSource, false);
+                if (i < tryCount - 1) {
+                    log.error("Operation failed. Retry count remains = " + (tryCount - i - 1), lastError);
+                }
+            } catch (InterruptedException e) {
+                log.error("Operation interrupted");
+                return false;
+            }
+        }
+        if (lastError != null) {
+            throw new DBException(lastError, dataSource);
+        }
+        return true;
+    }
+
+    public static boolean checkUnique(DBRProgressMonitor monitor, DBSEntity dbsEntity, DBSAttributeBase attribute) throws DBException {
+        for (DBSEntityConstraint constraint : dbsEntity.getConstraints(monitor)) {
+            DBSEntityConstraintType constraintType = constraint.getConstraintType();
+            if (constraintType.isUnique()) {
+                DBSEntityAttributeRef constraintAttribute = getConstraintAttribute(monitor, ((DBSEntityReferrer) constraint), attribute.getName());
+                if (constraintAttribute != null && constraintAttribute.getAttribute() == attribute) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

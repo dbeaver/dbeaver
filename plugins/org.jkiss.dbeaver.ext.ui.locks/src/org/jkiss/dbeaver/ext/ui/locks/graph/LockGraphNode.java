@@ -30,7 +30,7 @@ public class LockGraphNode  {
 	
 	private String title;
 	
-	private DBAServerLock<?> lock;
+	private DBAServerLock lock;
 	
 	public enum LevelPosition { LEFT, CENTER, RIGHT};	
 	
@@ -52,14 +52,14 @@ public class LockGraphNode  {
 
 	private List<LockGraphEdge> targetEdges;
 	
-	public LockGraphNode(DBAServerLock<?> lock){
+	public LockGraphNode(DBAServerLock lock){
 		
 		this.lock = lock;
 		this.level = 0;
 		this.span = 0;
 		this.title = lock.getTitle();
-		this.sourceEdges = new ArrayList<LockGraphEdge>();
-		this.targetEdges = new ArrayList<LockGraphEdge>();
+		this.sourceEdges = new ArrayList<>();
+		this.targetEdges = new ArrayList<>();
 		
 		this.levelPosition = LevelPosition.CENTER;
 		
@@ -69,8 +69,8 @@ public class LockGraphNode  {
 		this.level = level;
 		this.span = span;
 		this.title = title;
-		this.sourceEdges = new ArrayList<LockGraphEdge>();
-		this.targetEdges = new ArrayList<LockGraphEdge>();
+		this.sourceEdges = new ArrayList<>();
+		this.targetEdges = new ArrayList<>();
 	}
 
 	public void addSourceEdge(LockGraphEdge sourceEdge) {
@@ -113,7 +113,7 @@ public class LockGraphNode  {
 		this.span = span;
 	}
 
-	public DBAServerLock<?> getLock() {
+	public DBAServerLock getLock() {
 		return lock;
 	}
 	

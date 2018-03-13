@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
- * Copyright (C) 2017 Alexander Fedorov (alexander.fedorov@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,9 +19,12 @@ package org.jkiss.dbeaver.debug.core;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.core.resources.IContainer;
+import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
@@ -34,28 +37,43 @@ import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.debug.DBGController;
 import org.jkiss.dbeaver.debug.DBGException;
+import org.jkiss.dbeaver.debug.DBGResolver;
+import org.jkiss.dbeaver.debug.core.model.DatabaseDebugTarget;
+import org.jkiss.dbeaver.debug.core.model.DatabaseStackFrame;
 import org.jkiss.dbeaver.debug.internal.core.DebugCoreMessages;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
+import org.jkiss.dbeaver.runtime.ide.core.DBeaverIDECore;
 
 public class DebugCore {
 
     public static final String BUNDLE_SYMBOLIC_NAME = "org.jkiss.dbeaver.debug.core"; //$NON-NLS-1$
 
-    // FIXME: AF: revisit, looks like we can live without it
     public static final String MODEL_IDENTIFIER_DATABASE = BUNDLE_SYMBOLIC_NAME + '.' + "database"; //$NON-NLS-1$
-    public static final String MODEL_IDENTIFIER_PROCEDURE = BUNDLE_SYMBOLIC_NAME + '.' + "procedure"; //$NON-NLS-1$
 
-    public static final String BREAKPOINT_DATABASE = BUNDLE_SYMBOLIC_NAME + '.' + "databaseBreakpointMarker"; //$NON-NLS-1$
-    public static final String BREAKPOINT_DATABASE_LINE = BUNDLE_SYMBOLIC_NAME + '.' + "databaseLineBreakpointMarker"; //$NON-NLS-1$
+    public static final String BREAKPOINT_ID_DATABASE = BUNDLE_SYMBOLIC_NAME + '.' + "databaseBreakpointMarker"; //$NON-NLS-1$
+    public static final String BREAKPOINT_ID_DATABASE_LINE = BUNDLE_SYMBOLIC_NAME + '.'
+            + "databaseLineBreakpointMarker"; //$NON-NLS-1$
 
-    public static final String SOURCE_CONTAINER_TYPE_DATASOURCE = BUNDLE_SYMBOLIC_NAME + '.' + "datasourceSourceContainerType"; //$NON-NLS-1$
+    public static final String BREAKPOINT_ATTRIBUTE_DATASOURCE_ID = DBeaverIDECore.MARKER_ATTRIBUTE_DATASOURCE_ID;
+    public static final String BREAKPOINT_ATTRIBUTE_DATABASE_NAME = BUNDLE_SYMBOLIC_NAME + '.' + "databaseName"; //$NON-NLS-1$
+    public static final String BREAKPOINT_ATTRIBUTE_SCHEMA_NAME = BUNDLE_SYMBOLIC_NAME + '.' + "schemaName"; //$NON-NLS-1$
+    public static final String BREAKPOINT_ATTRIBUTE_PROCEDURE_NAME = BUNDLE_SYMBOLIC_NAME + '.' + "procedureName"; //$NON-NLS-1$
+    public static final String BREAKPOINT_ATTRIBUTE_PROCEDURE_OID = BUNDLE_SYMBOLIC_NAME + '.' + "procedureOid"; //$NON-NLS-1$
+    public static final String BREAKPOINT_ATTRIBUTE_NODE_PATH = DBeaverIDECore.MARKER_ATTRIBUTE_NODE_PATH;
+
+    public static final String SOURCE_CONTAINER_TYPE_DATASOURCE = BUNDLE_SYMBOLIC_NAME + '.'
+            + "datasourceSourceContainerType"; //$NON-NLS-1$
 
     public static final String ATTR_DRIVER_ID = BUNDLE_SYMBOLIC_NAME + '.' + "ATTR_DRIVER_ID"; //$NON-NLS-1$
     public static final String ATTR_DRIVER_ID_DEFAULT = ""; //$NON-NLS-1$
@@ -75,8 +93,17 @@ public class DebugCore {
     public static final String ATTR_PROCEDURE_NAME = BUNDLE_SYMBOLIC_NAME + '.' + "ATTR_PROCEDURE_NAME"; //$NON-NLS-1$
     public static final String ATTR_PROCEDURE_NAME_DEFAULT = ""; //$NON-NLS-1$
 
-    public static final String ATTR_PROCEDURE_CALL = BUNDLE_SYMBOLIC_NAME + '.' + "ATTR_PROCEDURE_CALL"; //$NON-NLS-1$
-    public static final String ATTR_PROCEDURE_CALL_DEFAULT = ""; //$NON-NLS-1$
+    public static final String ATTR_ATTACH_PROCESS = BUNDLE_SYMBOLIC_NAME + '.' + "ATTACH_PROCESS"; //$NON-NLS-1$
+    public static final String ATTR_ATTACH_PROCESS_DEFAULT = DBGController.ATTACH_PROCESS_ANY;
+
+    public static final String ATTR_ATTACH_KIND = BUNDLE_SYMBOLIC_NAME + '.' + "ATTR_ATTACH_KIND"; //$NON-NLS-1$
+    public static final String ATTR_ATTACH_KIND_DEFAULT = DBGController.ATTACH_KIND_LOCAL;
+
+    public static final String ATTR_SCRIPT_EXECUTE = BUNDLE_SYMBOLIC_NAME + '.' + "ATTR_SCRIPT_EXECUTE"; //$NON-NLS-1$
+    public static final String ATTR_SCRIPT_EXECUTE_DEFAULT = Boolean.FALSE.toString();
+
+    public static final String ATTR_SCRIPT_TEXT = BUNDLE_SYMBOLIC_NAME + '.' + "ATTR_SCRIPT_TEXT"; //$NON-NLS-1$
+    public static final String ATTR_SCRIPT_TEXT_DEFAULT = ""; //$NON-NLS-1$
 
     public static final String ATTR_NODE_PATH = BUNDLE_SYMBOLIC_NAME + '.' + "ATTR_NODE_PATH"; //$NON-NLS-1$
     public static final String ATTR_NODE_PATH_DEFAULT = ""; //$NON-NLS-1$
@@ -107,25 +134,25 @@ public class DebugCore {
                 sb.append(value);
                 sb.append(',');
             }
-            sb.deleteCharAt(sb.length()-1);
+            sb.deleteCharAt(sb.length() - 1);
         }
         sb.append(')');
         String call = sb.toString();
         return call;
     }
 
-    public static String composeProcedureCall(DBSProcedure procedure) {
+    public static String composeScriptText(DBSProcedure procedure) {
         try {
             return composeProcedureCall(procedure, new VoidProgressMonitor());
         } catch (DBException e) {
             String message = NLS.bind("Failed to compose call for {0}", procedure);
-            log.error(message , e);
-            return ATTR_PROCEDURE_CALL_DEFAULT;
+            log.error(message, e);
+            return ATTR_SCRIPT_TEXT_DEFAULT;
         }
     }
 
-    public static ILaunchConfigurationWorkingCopy createConfiguration(IContainer container, String typeName, String name)
-            throws CoreException {
+    public static ILaunchConfigurationWorkingCopy createConfiguration(IContainer container, String typeName,
+            String name) throws CoreException {
         ILaunchManager manager = DebugPlugin.getDefault().getLaunchManager();
         ILaunchConfigurationType type = manager.getLaunchConfigurationType(typeName);
         ILaunchConfigurationWorkingCopy workingCopy = type.newInstance(container, name);
@@ -184,8 +211,20 @@ public class DebugCore {
         return extractStringAttribute(configuration, ATTR_PROCEDURE_NAME, ATTR_PROCEDURE_NAME_DEFAULT);
     }
 
-    public static String extractProcedureCall(ILaunchConfiguration configuration) {
-        return extractStringAttribute(configuration, ATTR_PROCEDURE_CALL, ATTR_PROCEDURE_CALL_DEFAULT);
+    public static String extractAttachProcess(ILaunchConfiguration configuration) {
+        return extractStringAttribute(configuration, ATTR_ATTACH_PROCESS, ATTR_ATTACH_PROCESS_DEFAULT);
+    }
+
+    public static String extractAttachKind(ILaunchConfiguration configuration) {
+        return extractStringAttribute(configuration, ATTR_ATTACH_KIND, ATTR_ATTACH_KIND_DEFAULT);
+    }
+
+    public static String extractScriptExecute(ILaunchConfiguration configuration) {
+        return extractStringAttribute(configuration, ATTR_SCRIPT_EXECUTE, ATTR_SCRIPT_EXECUTE_DEFAULT);
+    }
+
+    public static String extractScriptText(ILaunchConfiguration configuration) {
+        return extractStringAttribute(configuration, ATTR_SCRIPT_TEXT, ATTR_SCRIPT_TEXT_DEFAULT);
     }
 
     public static String extractNodePath(ILaunchConfiguration configuration) {
@@ -217,7 +256,35 @@ public class DebugCore {
         return newErrorStatus(message, null);
     }
 
-    public static DBGController findProcedureController(DBPDataSourceContainer dataSourceContainer) throws DBGException {
+    public static DBSObject resolveDatabaseObject(DBPDataSourceContainer container, Map<String, Object> context,
+            Object identifier, DBRProgressMonitor monitor) throws DBException {
+        DBGResolver finder = Adapters.adapt(container, DBGResolver.class);
+        if (finder == null) {
+            return null;
+        }
+        return finder.resolveObject(context, identifier, monitor);
+    }
+
+    public static Map<String, Object> resolveDatabaseContext(DBSObject databaseObject) {
+        Map<String, Object> result = new HashMap<String, Object>();
+        if (databaseObject == null) {
+            return result;
+        }
+        DBPDataSource dataSource = databaseObject.getDataSource();
+        if (dataSource == null) {
+            return result;
+        }
+        DBGResolver finder = Adapters.adapt(dataSource.getContainer(), DBGResolver.class);
+        if (finder == null) {
+            return result;
+        }
+        Map<String, Object> context = finder.resolveContext(databaseObject);
+        result.putAll(context);
+        return result;
+    }
+
+    public static DBGController findProcedureController(DBPDataSourceContainer dataSourceContainer)
+            throws DBGException {
         DBGController controller = Adapters.adapt(dataSourceContainer, DBGController.class);
         if (controller != null) {
             return controller;
@@ -225,6 +292,41 @@ public class DebugCore {
         String providerId = dataSourceContainer.getDriver().getProviderId();
         String message = NLS.bind("Unable to find controller for datasource \"{0}\"", providerId);
         throw new DBGException(message);
+    }
+
+    public static String getSourceName(Object object) throws CoreException {
+        if (object instanceof DatabaseStackFrame) {
+            DatabaseStackFrame frame = (DatabaseStackFrame) object;
+            Object sourceIdentifier = frame.getSourceIdentifier();
+            DatabaseDebugTarget debugTarget = frame.getDatabaseDebugTarget();
+            DBSObject dbsObject = null;
+            try {
+                dbsObject = debugTarget.findDatabaseObject(sourceIdentifier, new VoidProgressMonitor());
+            } catch (DBException e) {
+                Status error = DebugCore.newErrorStatus(e.getMessage(), e);
+                throw new CoreException(error);
+            }
+            if (dbsObject == null) {
+                return null;
+            }
+            final DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
+            DBNDatabaseNode node = navigatorModel.getNodeByObject(dbsObject);
+            if (node != null) {
+                return node.getNodeItemPath();
+            }
+        }
+        if (object instanceof String) {
+            // well, let's be positive and assume it's a node path already
+            return (String) object;
+        }
+        return null;
+    }
+
+    public static Map<String, Object> toBreakpointDescriptor(Map<String, Object> attributes) {
+        HashMap<String, Object> result = new HashMap<String, Object>();
+        result.put(DBGController.BREAKPOINT_LINE_NUMBER, attributes.get(IMarker.LINE_NUMBER));
+        result.put(DBGController.PROCEDURE_OID, attributes.get(BREAKPOINT_ATTRIBUTE_PROCEDURE_OID));
+        return result;
     }
 
 }

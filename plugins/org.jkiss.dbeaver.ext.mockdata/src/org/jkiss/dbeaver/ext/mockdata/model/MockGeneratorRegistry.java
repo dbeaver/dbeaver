@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.mockdata.model;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -73,6 +74,7 @@ public class MockGeneratorRegistry
     /**
      * Find generator by data source and some typed object (e.g. attribute)
      */
+    @Nullable
     public MockGeneratorDescriptor findGenerator(DBPDataSource dataSource, DBSTypedObject typedObject) {
         for (MockGeneratorDescriptor descriptor : generators) {
 

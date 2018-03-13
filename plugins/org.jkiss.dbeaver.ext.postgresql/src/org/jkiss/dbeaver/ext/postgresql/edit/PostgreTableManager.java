@@ -86,7 +86,7 @@ public class PostgreTableManager extends SQLTableManager<PostgreTableBase, Postg
     @Override
     protected void addObjectExtraActions(List<DBEPersistAction> actions, NestedObjectCommand<PostgreTableBase, PropertyHandler> command, Map<String, Object> options) {
         // Add comments
-        if (command.getProperty("description") != null) {
+        if (!CommonUtils.isEmpty(command.getObject().getDescription())) {
             actions.add(new SQLDatabasePersistAction(
                 "Comment table",
                 "COMMENT ON TABLE " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL) +

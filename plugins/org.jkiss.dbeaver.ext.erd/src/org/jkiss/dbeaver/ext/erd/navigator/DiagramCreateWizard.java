@@ -52,6 +52,7 @@ public class DiagramCreateWizard extends Wizard implements INewWizard {
     private EntityDiagram diagram = new EntityDiagram(null, "");
     private DiagramCreateWizardPage pageContent;
 	private String errorMessage;
+    private IStructuredSelection entitySelection;
 
     public DiagramCreateWizard() {
 	}
@@ -78,6 +79,13 @@ public class DiagramCreateWizard extends Wizard implements INewWizard {
 					errorMessage = e.getMessage();
 				}
 			}
+
+			// Check for entity selection
+            if (selection != null && !selection.isEmpty()) {
+        	    if (Platform.getAdapterManager().getAdapter(selection.getFirstElement(), DBSEntity.class) != null) {
+        	        entitySelection = selection;
+                }
+            }
         }
         this.folder = diagramFolder;
     }
@@ -85,7 +93,7 @@ public class DiagramCreateWizard extends Wizard implements INewWizard {
     @Override
     public void addPages() {
         super.addPages();
-        pageContent = new DiagramCreateWizardPage(diagram);
+        pageContent = new DiagramCreateWizardPage(diagram, entitySelection);
         addPage(pageContent);
         if (getContainer() != null) {
             //WizardDialog call

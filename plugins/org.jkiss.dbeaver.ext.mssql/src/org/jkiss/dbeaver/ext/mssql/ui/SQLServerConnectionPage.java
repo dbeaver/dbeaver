@@ -209,8 +209,8 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
         }
         if (dbText != null) {
             String databaseName = connectionInfo.getDatabaseName();
-            if (CommonUtils.isEmpty(databaseName) && getSite().isNew()) {
-                databaseName = SQLServerConstants.DEFAULT_DATABASE;
+            if (CommonUtils.isEmpty(databaseName)) {
+                databaseName = getSite().isNew() ? SQLServerConstants.DEFAULT_DATABASE : "";
             }
             dbText.setText(databaseName);
         }
@@ -221,10 +221,7 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
             passwordText.setText(CommonUtils.notEmpty(connectionInfo.getUserPassword()));
         }
         if (windowsAuthenticationButton != null) {
-            String winAuthProperty = connectionInfo.getProviderProperty(SQLServerConstants.PROP_CONNECTION_WINDOWS_AUTH);
-            if (winAuthProperty != null) {
-                windowsAuthenticationButton.setSelection(Boolean.parseBoolean(winAuthProperty));
-            }
+            windowsAuthenticationButton.setSelection(SQLServerUtils.isWindowsAuth(connectionInfo));
             enableTexts();
         }
         showAllSchemas.setSelection(CommonUtils.toBoolean(connectionInfo.getProviderProperty(SQLServerConstants.PROP_SHOW_ALL_SCHEMAS)));
@@ -252,7 +249,7 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
             connectionInfo.setUserPassword(passwordText.getText());
         }
         if (windowsAuthenticationButton != null) {
-            connectionInfo.setProviderProperty(SQLServerConstants.PROP_CONNECTION_WINDOWS_AUTH,
+            connectionInfo.getProperties().put(SQLServerConstants.PROP_CONNECTION_INTEGRATED_SECURITY,
                     String.valueOf(windowsAuthenticationButton.getSelection()));
         }
         if (showAllSchemas != null) {

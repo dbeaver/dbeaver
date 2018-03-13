@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.mockdata.model;
 
 import org.eclipse.core.runtime.IConfigurationElement;
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
@@ -30,24 +31,40 @@ import java.util.List;
 /**
  * MockGeneratorDescriptor
  */
-public class MockGeneratorDescriptor extends DataTypeAbstractDescriptor {
+public class MockGeneratorDescriptor extends DataTypeAbstractDescriptor<MockValueGenerator> {
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.mockGenerator"; //$NON-NLS-1$
 
+    public static final String TAG_PRESET = "preset"; //NON-NLS-1
+
     private final String label;
     private final String description;
+    private final String link;
+    private final String url;
     private final DBPImage icon;
     private List<DBPPropertyDescriptor> properties = new ArrayList<>();
+    private List<Preset> presets = new ArrayList<>();
 
     public MockGeneratorDescriptor(IConfigurationElement config)
     {
         super(config, MockValueGenerator.class);
         this.label = config.getAttribute(RegistryConstants.ATTR_LABEL);
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
+        this.link = config.getAttribute(RegistryConstants.ATTR_LINK);
+        this.url = config.getAttribute(RegistryConstants.ATTR_URL);
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
 
         for (IConfigurationElement prop : config.getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP)) {
             properties.addAll(PropertyDescriptor.extractProperties(prop));
+        }
+
+        for (IConfigurationElement preset : config.getChildren(TAG_PRESET)) {
+            presets.add(new Preset(
+                    preset.getAttribute("id"),
+                    preset.getAttribute("label"),
+                    preset.getAttribute("mnemonics"),
+                    PropertyDescriptor.extractProperties(preset)
+            ));
         }
     }
 
@@ -63,8 +80,63 @@ public class MockGeneratorDescriptor extends DataTypeAbstractDescriptor {
         return icon;
     }
 
+    public String getLink() {
+        return link;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
     public List<DBPPropertyDescriptor> getProperties() {
         return properties;
     }
 
+    public DBPPropertyDescriptor getProperty(Object id) {
+        for (DBPPropertyDescriptor descriptor : getProperties()) {
+            if (id.equals(descriptor.getId())) {
+                return descriptor;
+            }
+        }
+        return null;
+    }
+
+    @NotNull
+    public MockValueGenerator createGenerator() {
+        return createInstance();
+    }
+
+    public List<Preset> getPresets() {
+        return presets;
+    }
+
+    public static class Preset {
+        private final String id;
+        private final String label;
+        private final String mnemonics;
+        private final List<DBPPropertyDescriptor> properties;
+
+        public Preset(String id, String label, String mnemonics, List<DBPPropertyDescriptor> properties) {
+            this.id = id;
+            this.label = label;
+            this.mnemonics = mnemonics;
+            this.properties = properties;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public String getLabel() {
+            return label;
+        }
+
+        public String getMnemonics() {
+            return mnemonics;
+        }
+
+        public List<DBPPropertyDescriptor> getProperties() {
+            return properties;
+        }
+    }
 }

@@ -295,6 +295,10 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         return ddl;
     }
 
+    public boolean isPhysicalTable() {
+        return !isView();
+    }
+
     private static class ForeignKeyInfo {
         String pkColumnName;
         String fkTableCatalog;

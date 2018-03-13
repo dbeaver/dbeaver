@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCCompositeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructLookupCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
@@ -369,12 +370,18 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
                 } else {
                     DBSObjectFilter tableFilters = owner.getDataSource().getContainer().getObjectFilter(MySQLTable.class, owner, false);
                     if (tableFilters != null && !tableFilters.isEmpty()) {
-                        sql.append(" WHERE 1=1");
+                        sql.append(" WHERE ");
+                        boolean hasCond = false;
                         for (String incName : CommonUtils.safeCollection(tableFilters.getInclude())) {
-                            sql.append(" AND ").append(tableNameCol).append(" LIKE ").append(SQLUtils.quoteString(session.getDataSource(), incName));
+                            if (hasCond) sql.append(" OR ");
+                            hasCond = true;
+                            sql.append(tableNameCol).append(" LIKE ").append(SQLUtils.quoteString(session.getDataSource(), incName));
                         }
+                        hasCond = false;
                         for (String incName : CommonUtils.safeCollection(tableFilters.getExclude())) {
-                            sql.append(" AND ").append(tableNameCol).append(" NOT LIKE ").append(SQLUtils.quoteString(session.getDataSource(), incName));
+                            if (hasCond) sql.append(" OR ");
+                            hasCond = true;
+                            sql.append(tableNameCol).append(" NOT LIKE ").append(SQLUtils.quoteString(session.getDataSource(), incName));
                         }
                     }
                 }
@@ -677,24 +684,30 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         }
     }
 
-    static class TriggerCache extends JDBCObjectCache<MySQLCatalog, MySQLTrigger> {
-        @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull MySQLCatalog owner)
-            throws SQLException
-        {
-            return session.prepareStatement(
-                "SHOW FULL TRIGGERS FROM " + DBUtils.getQuotedIdentifier(owner));
-        }
+    static class TriggerCache extends JDBCObjectLookupCache<MySQLCatalog, MySQLTrigger> {
 
         @Override
         protected MySQLTrigger fetchObject(@NotNull JDBCSession session, @NotNull MySQLCatalog owner, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
-            String tableName = JDBCUtils.safeGetString(dbResult, "TABLE");
+            String tableName = JDBCUtils.safeGetString(dbResult, "EVENT_OBJECT_TABLE");
             MySQLTable triggerTable = CommonUtils.isEmpty(tableName) ? null : owner.getTable(session.getProgressMonitor(), tableName);
             return new MySQLTrigger(owner, triggerTable, dbResult);
         }
 
+        @Override
+        public JDBCStatement prepareLookupStatement(JDBCSession session, MySQLCatalog owner, MySQLTrigger object, String objectName) throws SQLException {
+            JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT * FROM INFORMATION_SCHEMA.TRIGGERS\n" +
+                    "WHERE TRIGGER_SCHEMA = ?" +
+                    (object == null && objectName == null ? "" : " \nAND TRIGGER_NAME = ?")
+            );
+            dbStat.setString(1, owner.getName());
+            if (object != null || objectName != null) {
+                dbStat.setString(2, object != null ? object.getName() : objectName);
+            }
+            return dbStat;
+        }
     }
 
     static class EventCache extends JDBCObjectCache<MySQLCatalog, MySQLEvent> {

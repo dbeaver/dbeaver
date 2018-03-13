@@ -35,6 +35,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -126,6 +127,7 @@ public class SQLEditor extends SQLEditorBase implements
     DBPPreferenceListener
 {
     private static final long SCRIPT_UI_UPDATE_PERIOD = 100;
+    private static final int MAX_PARALLEL_QUERIES_NO_WARN = 10;
 
     private static Image IMG_DATA_GRID = DBeaverActivator.getImageDescriptor("/icons/sql/page_data_grid.png").createImage(); //$NON-NLS-1$
     private static Image IMG_DATA_GRID_LOCKED = DBeaverActivator.getImageDescriptor("/icons/sql/page_data_grid_locked.png").createImage(); //$NON-NLS-1$
@@ -256,7 +258,7 @@ public class SQLEditor extends SQLEditorBase implements
         return true;
     }
 
-    private void updateExecutionContext() {
+    private void updateExecutionContext(Runnable onSuccess) {
         if (dataSourceContainer == null) {
             releaseExecutionContext();
         } else {
@@ -276,36 +278,19 @@ public class SQLEditor extends SQLEditorBase implements
                                 releaseExecutionContext();
                                 DBUserInterface.getInstance().showError("Open context", "Can't open editor connection", job.error);
                             } else {
+                                if (onSuccess != null) {
+                                    onSuccess.run();
+                                }
                                 fireDataSourceChange();
                             }
                         }
                     });
                     job.schedule();
-/*
-                    try {
-                        DBeaverUI.runInProgressDialog(new DBRRunnableWithProgress() {
-                            @Override
-                            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                                monitor.beginTask("Open SQLEditor isolated connection", 1);
-                                try {
-                                    String title = "SQLEditor <" + getEditorInput().getPath().removeFileExtension().lastSegment() + ">";
-                                    monitor.subTask("Open context " + title);
-                                    executionContext = dataSource.openIsolatedContext(monitor, title);
-                                } catch (DBException e) {
-                                    throw new InvocationTargetException(e);
-                                } finally {
-                                    monitor.done();
-                                }
-                                ownContext = true;
-                            }
-                        });
-                    } catch (InvocationTargetException e) {
-                        releaseExecutionContext();
-                        UIUtils.showErrorDialog(getSite().getShell(), "Open context", "Can't open editor connection", e);
-                    }
-*/
                 } else {
                     executionContext = dataSource.getDefaultContext(false);
+                    if (onSuccess != null) {
+                        onSuccess.run();
+                    }
                 }
             }
         }
@@ -503,8 +488,27 @@ public class SQLEditor extends SQLEditorBase implements
         // Start output reader
         new ServerOutputReader().schedule();
 
+        updateExecutionContext(null);
+
         // Update controls
         DBeaverUI.asyncExec(this::onDataSourceChange);
+    }
+
+    /**
+     * Sets focus in current editor.
+     * This function is called on drag-n-drop and some other operations
+     * @return
+     */
+    @Override
+    public boolean validateEditorInputState() {
+        boolean res = super.validateEditorInputState();
+        if (res) {
+            StyledText textWidget = getViewer().getTextWidget();
+            if (textWidget != null && !textWidget.isDisposed()) {
+                textWidget.setFocus();
+            }
+        }
+        return res;
     }
 
     private void createResultTabs()
@@ -728,8 +732,10 @@ public class SQLEditor extends SQLEditorBase implements
     public void toggleResultPanel() {
         if (sashForm.getMaximizedControl() == null) {
             sashForm.setMaximizedControl(editorControl);
+            switchFocus(false);
         } else {
             sashForm.setMaximizedControl(null);
+            switchFocus(true);
         }
     }
 
@@ -737,28 +743,35 @@ public class SQLEditor extends SQLEditorBase implements
     {
         if (sashForm.getMaximizedControl() == null) {
             sashForm.setMaximizedControl(resultTabs);
+            switchFocus(true);
         } else {
             sashForm.setMaximizedControl(null);
+            switchFocus(false);
+        }
+    }
+
+    private void switchFocus(boolean results) {
+        if (results) {
+            ResultSetViewer activeRS = getActiveResultSetViewer();
+            if (activeRS != null && activeRS.getActivePresentation() != null) {
+                activeRS.getActivePresentation().getControl().setFocus();
+            } else {
+                CTabItem activeTab = resultTabs.getSelection();
+                if (activeTab != null && activeTab.getControl() != null) {
+                    activeTab.getControl().setFocus();
+                }
+            }
+        } else {
+            editorControl.setFocus();
         }
     }
 
     public void toggleActivePanel() {
         if (sashForm.getMaximizedControl() == null) {
             if (UIUtils.hasFocus(resultTabs)) {
-                final Control editorControl = getEditorControl();
-                if (editorControl != null) {
-                    editorControl.setFocus();
-                }
+                switchFocus(false);
             } else {
-                CTabItem selTab = resultTabs.getSelection();
-                if (selTab != null) {
-                    ResultSetViewer viewer = getActiveResultSetViewer();
-                    if (viewer != null && viewer.getActivePresentation().getControl().isVisible()) {
-                        viewer.getActivePresentation().getControl().setFocus();
-                    } else {
-                        selTab.getControl().setFocus();
-                    }
-                }
+                switchFocus(true);
             }
         }
     }
@@ -1049,13 +1062,12 @@ public class SQLEditor extends SQLEditorBase implements
                             status);
                         return;
                     }
-                    // Make a small pause to let all UI connection listeners to finish
-                    try {
-                        Thread.sleep(500);
-                    } catch (InterruptedException e) {
-                        // it's ok
-                    }
-                    DBeaverUI.syncExec(() -> processQueries(queries, newTab, export, false, queryListener));
+                    updateExecutionContext(new Runnable() {
+                        @Override
+                        public void run() {
+                            DBeaverUI.syncExec(() -> processQueries(queries, newTab, export, false, queryListener));
+                        }
+                    });
                 };
                 if (!checkSession(connectListener)) {
                     return;
@@ -1093,6 +1105,16 @@ public class SQLEditor extends SQLEditorBase implements
                 {
                     return;
                 }
+            }
+        } else if (newTab && queries.size() > MAX_PARALLEL_QUERIES_NO_WARN) {
+            if (ConfirmationDialog.showConfirmDialogEx(
+                getSite().getShell(),
+                DBeaverPreferences.CONFIRM_MASS_PARALLEL_SQL,
+                ConfirmationDialog.CONFIRM,
+                ConfirmationDialog.WARNING,
+                queries.size()) != IDialogConstants.OK_ID)
+            {
+                return;
             }
         }
 
@@ -1191,13 +1213,12 @@ public class SQLEditor extends SQLEditorBase implements
      */
     private void fireDataSourceChange()
     {
+        updateExecutionContext(null);
         DBeaverUI.syncExec(this::onDataSourceChange);
     }
 
     private void onDataSourceChange()
     {
-        updateExecutionContext();
-
         if (sashForm == null || sashForm.isDisposed()) {
             reloadSyntaxRules();
             return;
@@ -1345,6 +1366,7 @@ public class SQLEditor extends SQLEditorBase implements
                         default:
                             break;
                     }
+                    updateExecutionContext(null);
                     onDataSourceChange();
                 }
             );

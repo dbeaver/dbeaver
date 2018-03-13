@@ -38,7 +38,7 @@
             description="%editor.erd.description"
             position="additions_end"
             icon="icons/erd.png">
-            <objectType name="org.jkiss.dbeaver.model.struct.DBSObjectContainer" forceCheck="true"/>
+            <objectType name="org.jkiss.dbeaver.model.struct.DBSObjectContainer" forceCheck="true" if="context.isEntityContainer(object)"/>
             <objectType name="org.jkiss.dbeaver.model.struct.DBSEntity" forceCheck="true"/>
         </editor>
     </extension>
@@ -312,6 +312,32 @@
                             <adapt type="org.eclipse.core.resources.IFolder">
                                 <test property="org.jkiss.dbeaver.core.resource.type" value="diagram folder"/>
                             </adapt>
+                        </iterate>
+                    </with>
+                </visibleWhen>
+            </command>
+        </menuContribution>
+
+        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?before=generate">
+            <command commandId="org.jkiss.dbeaver.erd.diagram.create" label="%menu.create.new.diagram">
+                <visibleWhen>
+                    <with variable="selection">
+                        <count value="(1-"/>
+                        <iterate operator="and">
+                            <adapt type="org.jkiss.dbeaver.model.struct.DBSEntity"/>
+                        </iterate>
+                    </with>
+                </visibleWhen>
+            </command>
+        </menuContribution>
+
+        <menuContribution allPopups="false" locationURI="menu:dataSourceMenu?after=tools">
+            <command commandId="org.jkiss.dbeaver.erd.diagram.create" label="%menu.create.new.diagram">
+                <visibleWhen>
+                    <with variable="selection">
+                        <count value="+"/>
+                        <iterate operator="and">
+                            <adapt type="org.jkiss.dbeaver.model.struct.DBSEntity"/>
                         </iterate>
                     </with>
                 </visibleWhen>

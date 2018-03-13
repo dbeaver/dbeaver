@@ -22,12 +22,15 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.INewWizard;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
@@ -41,6 +44,7 @@ import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.jobs.ConnectJob;
 import org.jkiss.dbeaver.runtime.jobs.DisconnectJob;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.ui.IDataSourceConnectionTester;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -115,6 +119,7 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
 
         // Generate new ID to avoid session conflicts in QM
         testDataSource.setId(DataSourceDescriptor.generateNewId(dataSource.getDriver()));
+        testDataSource.getPreferenceStore().setValue(ModelPreferences.META_SEPARATE_CONNECTION, false);
 
         try {
 
@@ -188,7 +193,7 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
         long connectTime = -1;
         DBRProgressMonitor ownerMonitor;
 
-        public ConnectionTester(DataSourceDescriptor testDataSource)
+        ConnectionTester(DataSourceDescriptor testDataSource)
         {
             super(testDataSource);
             setSystem(true);
@@ -203,12 +208,10 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
             if (ownerMonitor != null) {
                 monitor = ownerMonitor;
             }
-            monitor.beginTask(CoreMessages.dialog_connection_wizard_start_connection_monitor_start, 4);
             Thread.currentThread().setName(CoreMessages.dialog_connection_wizard_start_connection_monitor_thread);
 
             try {
                 container.setName(container.getConnectionConfiguration().getUrl());
-                monitor.worked(1);
                 long startTime = System.currentTimeMillis();
                 super.run(monitor);
                 connectTime = (System.currentTimeMillis() - startTime);
@@ -219,7 +222,9 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
                     return Status.CANCEL_STATUS;
                 }
 
-                monitor.worked(1);
+                // Start monitor task here becaue actual connection makes its own begin/end sequence
+                monitor.beginTask(CoreMessages.dialog_connection_wizard_start_connection_monitor_start, 3);
+
                 DBPDataSource dataSource = container.getDataSource();
                 if (dataSource == null) {
                     throw new DBException(CoreMessages.editors_sql_status_not_connected_to_database);
@@ -252,7 +257,19 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
                         }
                     }
                 }
+                monitor.worked(1);
+                monitor.subTask("Load connection info");
+                try (DBCSession session = DBUtils.openUtilSession(monitor, dataSource, "Call connection testers")) {
+                    for (IWizardPage page : getPages()) {
+                        if (page instanceof IDataSourceConnectionTester) {
+                            ((IDataSourceConnectionTester) page).testConnection(session);
+                        }
+                    }
+                }
+                monitor.worked(1);
+
                 new DisconnectJob(container).schedule();
+                monitor.worked(1);
                 monitor.subTask(CoreMessages.dialog_connection_wizard_start_connection_monitor_success);
             } catch (DBException ex) {
                 connectError = ex;

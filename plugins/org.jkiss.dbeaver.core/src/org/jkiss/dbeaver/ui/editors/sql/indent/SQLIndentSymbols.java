@@ -31,7 +31,10 @@ public interface SQLIndentSymbols
 
     String BEGIN = "BEGIN";
     String begin = "begin";
-    String end = "end ";
-    String END = "END ";
+    String end = "end";
+    String END = "END";
+//    String end2 = "end ";
+//    String END2 = "END ";
+
 }
 

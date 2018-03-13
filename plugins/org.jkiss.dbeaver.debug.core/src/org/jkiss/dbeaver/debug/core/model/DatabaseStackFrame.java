@@ -1,8 +1,27 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.jkiss.dbeaver.debug.core.model;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IRegisterGroup;
 import org.eclipse.debug.core.model.IStackFrame;
@@ -10,98 +29,101 @@ import org.eclipse.debug.core.model.IThread;
 import org.eclipse.debug.core.model.IVariable;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.debug.DBGException;
-import org.jkiss.dbeaver.debug.DBGSession;
 import org.jkiss.dbeaver.debug.DBGStackFrame;
 import org.jkiss.dbeaver.debug.DBGVariable;
+import org.jkiss.dbeaver.debug.core.DebugCore;
 
 public class DatabaseStackFrame extends DatabaseDebugElement implements IStackFrame {
-    
+
     private static final IRegisterGroup[] NO_REGISTER_GROUPS = new IRegisterGroup[0];
     private static final IVariable[] NO_VARIABLES = new IVariable[0];
-    private final DBGStackFrame dbgStackFrame;
-    private final DatabaseThread thread;
-    private final Object sessionKey;
 
-    public DatabaseStackFrame(DatabaseThread thread, DBGStackFrame dbgStackFrame, Object sessionKey) {
+    private final List<DatabaseVariable> variables = new ArrayList<DatabaseVariable>();
+
+    private final DatabaseThread thread;
+    private final DBGStackFrame dbgStackFrame;
+
+    private boolean refreshVariables = true;
+
+    public DatabaseStackFrame(DatabaseThread thread, DBGStackFrame dbgStackFrame) {
         super(thread.getDatabaseDebugTarget());
         this.thread = thread;
         this.dbgStackFrame = dbgStackFrame;
-        this.sessionKey = sessionKey;
     }
 
     @Override
     public boolean canStepInto() {
-        return thread.canStepInto();
+        return getThread().canStepInto();
     }
 
     @Override
     public boolean canStepOver() {
-       return thread.canStepOver();
+        return getThread().canStepOver();
     }
 
     @Override
     public boolean canStepReturn() {
-        return thread.canStepReturn();
+        return getThread().canStepReturn();
     }
 
     @Override
     public boolean isStepping() {
-        return thread.isStepping();
+        return getThread().isStepping();
     }
 
     @Override
     public void stepInto() throws DebugException {
-        thread.stepInto();
+        getThread().stepInto();
     }
 
     @Override
     public void stepOver() throws DebugException {
-        thread.stepOver();
+        getThread().stepOver();
     }
 
     @Override
     public void stepReturn() throws DebugException {
-        thread.canStepReturn();
+        getThread().canStepReturn();
     }
 
     @Override
     public boolean canResume() {
-        return thread.canResume();
+        return getThread().canResume();
     }
 
     @Override
     public boolean canSuspend() {
-        return thread.canSuspend();
+        return getThread().canSuspend();
     }
 
     @Override
     public boolean isSuspended() {
-        return thread.isSuspended();
+        return getThread().isSuspended();
     }
 
     @Override
     public void resume() throws DebugException {
-        thread.resume();
+        getThread().resume();
     }
 
     @Override
     public void suspend() throws DebugException {
-        thread.suspend();
+        getThread().suspend();
     }
 
     @Override
     public boolean canTerminate() {
-        return thread.canTerminate();
+        return getThread().canTerminate();
     }
 
     @Override
     public boolean isTerminated() {
-        return thread.isTerminated();
+        return getThread().isTerminated();
     }
 
     @Override
     public void terminate() throws DebugException {
-        thread.terminate();
+        getThread().terminate();
     }
 
     @Override
@@ -111,33 +133,45 @@ public class DatabaseStackFrame extends DatabaseDebugElement implements IStackFr
 
     @Override
     public IVariable[] getVariables() throws DebugException {
-        try {
-            DBGSession debugSession = getController().findSession(sessionKey);
-            List<? extends DBGVariable<?>> dbgVariables = debugSession.getVariables();
-            if (dbgVariables.size() == 0) {
-                return NO_VARIABLES;
+        if (refreshVariables) {
+            try {
+                List<? extends DBGVariable<?>> variables = getDatabaseDebugTarget().requestVariables(dbgStackFrame);
+                rebuildVariables(variables);
+            } catch (DBGException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
             }
-            List<DatabaseVariable> variables = new ArrayList<DatabaseVariable>();
-            for (DBGVariable<?> dbgVariable : dbgVariables) {
-                DatabaseVariable e = new DatabaseVariable(getDatabaseDebugTarget(), dbgVariable);
-                variables.add(e);
-            }
-            return (DatabaseVariable[]) variables.toArray(new DatabaseVariable[variables.size()]);
-        } catch (DBGException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
         }
-        return NO_VARIABLES;
+        if (variables.isEmpty()) {
+            return NO_VARIABLES;
+        }
+        return (IVariable[]) variables.toArray(new IVariable[variables.size()]);
+    }
+
+    protected void invalidateVariables() {
+        refreshVariables = true;
+    }
+
+    protected void rebuildVariables(List<? extends DBGVariable<?>> dbgVariables) {
+        try {
+            variables.clear();
+            for (DBGVariable<?> dbgVariable : dbgVariables) {
+                DatabaseVariable variable = new DatabaseVariable(getDatabaseDebugTarget(), dbgVariable);
+                variables.add(variable);
+            }
+        } finally {
+            refreshVariables = false;
+        }
     }
 
     @Override
     public boolean hasVariables() throws DebugException {
-        return true;
+        return isSuspended();
     }
 
     @Override
     public int getLineNumber() throws DebugException {
-        return dbgStackFrame.getLine();
+        return dbgStackFrame.getLineNumber();
     }
 
     @Override
@@ -155,7 +189,7 @@ public class DatabaseStackFrame extends DatabaseDebugElement implements IStackFr
     @Override
     public String getName() throws DebugException {
         String pattern = "{0} line: {1}";
-        String name = NLS.bind(pattern, dbgStackFrame.getName(), dbgStackFrame.getLine());
+        String name = NLS.bind(pattern, dbgStackFrame.getName(), dbgStackFrame.getLineNumber());
         return name;
     }
 
@@ -167,6 +201,22 @@ public class DatabaseStackFrame extends DatabaseDebugElement implements IStackFr
     @Override
     public boolean hasRegisterGroups() throws DebugException {
         return false;
+    }
+
+    public String getSource() throws DebugException {
+        String source;
+        try {
+            source = getDatabaseDebugTarget().requestSource(dbgStackFrame);
+        } catch (DBGException e) {
+            String message = NLS.bind("Unable to retrieve sources for stack {0}", dbgStackFrame);
+            IStatus status = DebugCore.newErrorStatus(message, e);
+            throw new DebugException(status);
+        }
+        return source;
+    }
+
+    public Object getSourceIdentifier() {
+        return dbgStackFrame.getSourceIdentifier();
     }
 
 }

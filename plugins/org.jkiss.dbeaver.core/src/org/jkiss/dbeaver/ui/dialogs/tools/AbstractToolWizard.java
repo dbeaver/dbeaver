@@ -73,6 +73,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
     protected String task;
     protected final DatabaseWizardPageLog logPage;
     private boolean finished;
+    protected boolean transferFinished;
 
     protected AbstractToolWizard(Collection<BASE_OBJECT> databaseObjects, String task)
     {
@@ -99,7 +100,21 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
     @Override
     public boolean canFinish()
     {
-        return !finished && super.canFinish();
+        if (!super.canFinish()) {
+            return false;
+        }
+        if (isSingleTimeWizard()) {
+            return !finished;
+        }
+        // [#2917] Finish button is always enabled (!finished && super.canFinish())
+        return true;
+    }
+
+    /**
+     * @return true if this wizard can be executed only once
+     */
+    protected boolean isSingleTimeWizard() {
+        return false;
     }
 
     public List<BASE_OBJECT> getDatabaseObjects()
@@ -445,6 +460,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
             }
             finally {
                 monitor.done();
+                transferFinished = true;
             }
         }
     }
@@ -485,7 +501,13 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
                 logPage.appendLog(e.getMessage() + "\n");
             }
             finally {
+                try {
+                    output.close();
+                } catch (IOException e) {
+                    log.error(e);
+                }
                 monitor.done();
+                transferFinished = true;
             }
         }
     }

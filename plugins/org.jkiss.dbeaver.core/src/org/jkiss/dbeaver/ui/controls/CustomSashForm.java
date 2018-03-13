@@ -31,6 +31,7 @@ package org.jkiss.dbeaver.ui.controls;
  */
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.SWTError;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Color;
@@ -642,13 +643,21 @@ public class CustomSashForm extends SashForm {
 		weights[0] = 1000-sashinfo.restoreWeight;	// Assume weights are always in units of 1000.
 		weights[1] = sashinfo.restoreWeight;
 		sashinfo.restoreWeight = NO_WEIGHT;
-		
-		setWeights(weights);	
+
+		try {
+			setWeights(weights);
+		} catch (SWTError e) {
+			// Sometimes it happens if sash controls aren't yet created
+			// Just ignore
+		}
 		fireDividerMoved();
 	}
 	
 	protected void upHideClicked(SashInfo sashinfo) {
 		int[] weights = getWeights();
+		if (weights.length != 2) {
+			return;
+		}
 
 		// Up hide, so save the current restoreWeight of 1 into the sash info, and move to the top.
 		if (currentSashInfo.restoreWeight == NO_WEIGHT){
@@ -662,6 +671,11 @@ public class CustomSashForm extends SashForm {
 		// If the upper panel has focus, flip focus to the lower panel because the upper panel is now hidden.
 		Control[] children = getChildren();
 		boolean upperFocus = isFocusAncestorA(children[0]);
+		try {
+			setWeights(weights);
+		} catch (SWTError e) {
+
+		}
 		setWeights(weights);
 		if (upperFocus)
 			children[1].setFocus();	

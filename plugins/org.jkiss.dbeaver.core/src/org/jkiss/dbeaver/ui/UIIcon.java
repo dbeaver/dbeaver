@@ -23,8 +23,9 @@ import org.jkiss.dbeaver.model.DBIcon;
  */
 public class UIIcon {
 
-    public static final DBIcon DBEAVER_LOGO = new DBIcon("dbeaver_logo", "dbeaver48.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon DBEAVER_LOGO_SMALL = new DBIcon("dbeaver_logo_small", "dbeaver16.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon DBEAVER_LOGO = new DBIcon("dbeaver_logo", "dbeaver_logo_medium.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon DBEAVER_LOGO_SMALL = new DBIcon("dbeaver_logo_small", "dbeaver_logo_small.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon DBEAVER_MARKETPLACE = new DBIcon("dbeaver_marketplace", "actions/marketplace.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon DRAG_HANDLE = new DBIcon("dragHandle", "platform:/plugin/org.eclipse.platform/images/dragHandle.png");
 
@@ -92,7 +93,6 @@ public class UIIcon {
     public static final DBIcon SORT_INCREASE = new DBIcon("sort_increase", "misc/sort_increase.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SORT_DECREASE = new DBIcon("sort_decrease", "misc/sort_decrease.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SORT_UNKNOWN = new DBIcon("sort_unknown", "misc/sort_unknown.png"); //$NON-NLS-1$ //$NON-NLS-2$
-    public static final DBIcon FRAME_QUERY = new DBIcon("frame_query", "misc/frame_query.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon SORT = new DBIcon("sort", "misc/sort.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon FILTER = new DBIcon("filter", "misc/filter.png"); //$NON-NLS-1$ //$NON-NLS-2$

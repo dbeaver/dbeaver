@@ -127,6 +127,9 @@ public class PostgreMessages extends NLS {
 	public static String dialog_setting_connection_settings;
 	public static String dialog_setting_connection_localClient;
 	public static String dialog_setting_connection_nondefaultDatabase;
+	public static String dialog_setting_connection_nondefaultDatabase_tip;
+	public static String dialog_setting_connection_switchDatabaseOnExpand;
+	public static String dialog_setting_connection_switchDatabaseOnExpand_tip;
 
 	/* PostgreCreateRoleDialog */
 	public static String dialog_create_role_title;

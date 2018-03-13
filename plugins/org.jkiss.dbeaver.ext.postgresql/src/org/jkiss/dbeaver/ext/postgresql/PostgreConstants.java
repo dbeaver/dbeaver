@@ -22,13 +22,10 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttributeType;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
-import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * PostgreConstants
@@ -41,6 +38,7 @@ public class PostgreConstants {
     public static final String DEFAULT_DATA_TYPE = "varchar";
 
     public static final String PROP_SHOW_NON_DEFAULT_DB = DBConstants.INTERNAL_PROP_PREFIX + "show-non-default-db@";
+    public static final String PROP_SWITCH_DB_ON_EXPAND = DBConstants.INTERNAL_PROP_PREFIX + "switch-db-on-expand@";
 
     public static final String PROP_SSL_CLIENT_CERT = "clientCert";
     public static final String PROP_SSL_CLIENT_KEY = "clientKey";
@@ -72,10 +70,15 @@ public class PostgreConstants {
     public static final String TYPE_BIT = "bit";
     public static final String TYPE_REFCURSOR = "refcursor";
     public static final String TYPE_MONEY = "money";
+    public static final String TYPE_GEOMETRY = "geometry";
 
     public static final String HANDLER_SSL = "postgre_ssl";
 
-    public static final String EC_PERMISSION_DENIED = "42501";
+    /**
+     * @see https://www.postgresql.org/docs/9.2/static/errcodes-appendix.html
+     */
+    public static final String EC_PERMISSION_DENIED = "42501"; //$NON-NLS-1$
+    public static final String EC_QUERY_CANCELED = "57014"; //$NON-NLS-1$
 
     public static final String PG_INSTALL_REG_KEY = "SOFTWARE\\PostgreSQL\\Installations";
     public static final String PG_INSTALL_PROP_BASE_DIRECTORY = "Base Directory";
@@ -84,22 +87,24 @@ public class PostgreConstants {
     public static final String PG_INSTALL_PROP_DATA_DIRECTORY = "Data Directory";
     public static final String BIN_FOLDER = "bin";
 
-    public static Map<String, String> SERIAL_TYPES = new HashMap<>();
-    public static Map<String, String> DATA_TYPE_ALIASES = new HashMap<>();
+    public static final Map<String, String> SERIAL_TYPES = new HashMap<>();
+    public static final Map<String, String> DATA_TYPE_ALIASES = new HashMap<>();
+    public static final Map<String, String> DATA_TYPE_CANONICAL_NAMES = new HashMap<>();
 
     public static final String TYPE_INT2 = "int2";
     public static final String TYPE_INT4 = "int4";
     public static final String TYPE_INT8 = "int8";
+    public static final String TYPE_FLOAT4 = "float4";
+    public static final String TYPE_FLOAT8 = "float8";
 
     static {
         DATA_TYPE_ALIASES.put("integer", TYPE_INT4);
         DATA_TYPE_ALIASES.put("int", TYPE_INT4);
         DATA_TYPE_ALIASES.put("bigint", TYPE_INT8);
-        DATA_TYPE_ALIASES.put("bigserial", TYPE_INT8);
         DATA_TYPE_ALIASES.put("smallint", TYPE_INT2);
 
-        DATA_TYPE_ALIASES.put("double precision", "float8");
-        DATA_TYPE_ALIASES.put("real", "float4");
+        DATA_TYPE_ALIASES.put("double precision", TYPE_FLOAT8);
+        DATA_TYPE_ALIASES.put("real", TYPE_FLOAT4);
         DATA_TYPE_ALIASES.put("void", "void");
 
         SERIAL_TYPES.put("serial", TYPE_INT4);
@@ -107,5 +112,12 @@ public class PostgreConstants {
         SERIAL_TYPES.put("serial2", TYPE_INT2);
         SERIAL_TYPES.put("smallserial", TYPE_INT2);
         SERIAL_TYPES.put("bigserial", TYPE_INT8);
+
+        DATA_TYPE_CANONICAL_NAMES.put(TYPE_INT4, "integer");
+        DATA_TYPE_CANONICAL_NAMES.put(TYPE_INT8, "bigint");
+        DATA_TYPE_CANONICAL_NAMES.put(TYPE_INT2, "smallint");
+        DATA_TYPE_CANONICAL_NAMES.put(TYPE_FLOAT4, "real");
+        DATA_TYPE_CANONICAL_NAMES.put("character varying", "varchar");
     }
+    
 }

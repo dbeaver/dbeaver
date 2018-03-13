@@ -41,8 +41,6 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDRowIdentifier;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
@@ -61,7 +59,6 @@ import org.jkiss.dbeaver.ui.controls.resultset.IResultSetSelection;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetModel;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 import org.jkiss.dbeaver.ui.dialogs.sql.ViewSQLDialog;
-import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -93,8 +90,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
             List<DBSEntity> entities = new ArrayList<>();
             List<DBPScriptObject> scriptObjects = new ArrayList<>();
             for (Object sel : structuredSelection.toArray()) {
-                final DBSObject object =
-                    ((DBNDatabaseNode)RuntimeUtils.getObjectAdapter(sel, DBNNode.class)).getObject();
+                final DBSObject object = RuntimeUtils.getObjectAdapter(sel, DBSObject.class);
                 if (object instanceof DBSEntity) {
                     entities.add((DBSEntity) object);
                 }
@@ -120,6 +116,10 @@ public class GenerateSQLContributor extends CompoundContributionItem {
         menu.add(makeAction("UPDATE ", UPDATE_GENERATOR(entities)));
         menu.add(makeAction("DELETE ", DELETE_GENERATOR(entities)));
         menu.add(makeAction("MERGE", MERGE_GENERATOR(entities)));
+        if (entities.size() > 1) {
+            menu.add(new Separator());
+            menu.add(makeAction("JOIN", JOIN_GENERATOR(entities)));
+        }
     }
 
     private void makeScriptContributions(List<IContributionItem> menu, final List<DBPScriptObject> scriptObjects)
@@ -358,14 +358,8 @@ public class GenerateSQLContributor extends CompoundContributionItem {
 
     public static boolean hasContributions(IStructuredSelection selection) {
         // Table
-        DBNNode node = RuntimeUtils.getObjectAdapter(selection.getFirstElement(), DBNNode.class);
-        if (node instanceof DBNDatabaseNode) {
-            DBSObject object = ((DBNDatabaseNode) node).getObject();
-            if (object instanceof DBSTable || object instanceof DBPScriptObject) {
-                return true;
-            }
-        }
-        return false;
+        DBSObject object = RuntimeUtils.getObjectAdapter(selection.getFirstElement(), DBSObject.class);
+        return object instanceof DBSTable || object instanceof DBPScriptObject;
     }
 
     public abstract static class SQLGenerator<OBJECT> extends DBRRunnableWithResult<String> {
@@ -581,9 +575,15 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                     if (dataSource == null) {
                         IWorkbenchPart activePart = activePage.getActivePart();
                         if (activePart != null) {
-                            DBNNode selectedNode = NavigatorUtils.getSelectedNode(activePart.getSite().getSelectionProvider());
-                            if (selectedNode instanceof DBNDatabaseNode) {
-                                dataSource = ((DBNDatabaseNode) selectedNode).getDataSource();
+                            ISelectionProvider selectionProvider = activePart.getSite().getSelectionProvider();
+                            if (selectionProvider != null) {
+                                ISelection selection = selectionProvider.getSelection();
+                                if (selection instanceof IStructuredSelection && !selection.isEmpty()) {
+                                    final DBSObject object = RuntimeUtils.getObjectAdapter(((IStructuredSelection) selection).getFirstElement(), DBSObject.class);
+                                    if (object != null) {
+                                        dataSource = object.getDataSource();
+                                    }
+                                }
                             }
                         }
                     }
@@ -822,6 +822,59 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                     hasAttr = true;
                 }
                 sql.append(");\n");
+            }
+        };
+    }
+
+    @NotNull
+    private static SQLGenerator<DBSEntity> JOIN_GENERATOR(final List<DBSEntity> entities) {
+        return new SQLGenerator<DBSEntity>(entities) {
+
+            @Override
+            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
+            {
+                StringBuilder sql = new StringBuilder(100);
+                try {
+                    sql.append("SELECT ");
+                    for (int i = 0; i < objects.size(); i++) {
+                        if (i > 0) sql.append(", ");
+                        sql.append(SQLUtils.getTableAlias(objects.get(i))).append(".*");
+                    }
+                    sql.append("\nFROM ");
+                    for (int i = 0; i < objects.size(); i++) {
+                        DBSEntity entity = objects.get(i);
+                        if (i > 0) sql.append(", ");
+                        sql.append(getEntityName(entity)).append(" ").append(SQLUtils.getTableAlias(entity));
+                    }
+                    sql.append("\nWHERE ");
+                    boolean hasCond = false;
+                    for (int i = 1; i < objects.size(); i++) {
+                        boolean foundJoin = false;
+                        for (int k = 0; k < i; k++) {
+                            String tableJoin = SQLUtils.generateTableJoin(
+                                monitor, objects.get(k), SQLUtils.getTableAlias(objects.get(k)), objects.get(i), SQLUtils.getTableAlias(objects.get(i)));
+                            if (tableJoin != null) {
+                                sql.append("\n\t");
+                                if (hasCond) sql.append("AND ");
+                                sql.append(tableJoin);
+                                hasCond = true;
+                                foundJoin = true;
+                                break;
+                            }
+                        }
+                        if (!foundJoin) {
+                            sql.append("\n-- Can't determine condition to join table ").append(DBUtils.getQuotedIdentifier(objects.get(i)));
+                        }
+                    }
+                } catch (Exception e) {
+                    throw new InvocationTargetException(e);
+                }
+                result = sql.toString();
+            }
+
+            @Override
+            public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, DBSEntity object) throws DBException {
+                // Do nothing for each individual table
             }
         };
     }

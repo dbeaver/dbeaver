@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.DBPNamedValueObject;
 import org.jkiss.dbeaver.ui.ImageUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * ObjectListControl
@@ -159,14 +160,15 @@ public abstract class ObjectViewerRenderer {
     //////////////////////////////////////////////////////
     // List sorter
 
-    public void paintCell(Event event, Object element, Widget item, int columnIndex, boolean editable, boolean selected) {
+    public void paintCell(Event event, Object element, Widget item, Class<?> propDataType, int columnIndex, boolean editable, boolean selected) {
         Object cellValue = getCellValue(element, columnIndex);
-        if (cellValue != null ) {
+        {
             GC gc = event.gc;
-            if (cellValue instanceof Boolean) {
+            if (Boolean.class == propDataType || Boolean.TYPE == propDataType) {
+                boolean boolValue = CommonUtils.getBoolean(cellValue, false);
                 Image image = editable ?
-                    ((Boolean)cellValue ? ImageUtils.getImageCheckboxEnabledOn() : ImageUtils.getImageCheckboxEnabledOff()) :
-                    ((Boolean)cellValue ? ImageUtils.getImageCheckboxDisabledOn() : ImageUtils.getImageCheckboxDisabledOff());
+                    (boolValue ? ImageUtils.getImageCheckboxEnabledOn() : ImageUtils.getImageCheckboxEnabledOff()) :
+                    (boolValue ? ImageUtils.getImageCheckboxDisabledOn() : ImageUtils.getImageCheckboxDisabledOff());
                 final Rectangle imageBounds = image.getBounds();
 
                 Rectangle columnBounds = isTree ? ((TreeItem)item).getBounds(columnIndex) : ((TableItem)item).getBounds(columnIndex);
@@ -179,7 +181,7 @@ public abstract class ObjectViewerRenderer {
 
                 event.doit = false;
 
-            } else if (isHyperlink(cellValue)) {
+            } else if (cellValue != null && isHyperlink(cellValue)) {
                 // Print link
                 prepareLinkStyle(cellValue, selected ? gc.getForeground() : JFaceColors.getHyperlinkText(event.item.getDisplay()));
                 Rectangle textBounds;

@@ -9,7 +9,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <dbeaver-version>4.3.3</dbeaver-version>
+        <dbeaver-version>5.0.1</dbeaver-version>
         <dbeaver-product>DBeaver</dbeaver-product>
         <tycho-version>1.0.0</tycho-version>
         <tycho-versions-version>0.26.0</tycho-versions-version>
@@ -39,7 +39,7 @@
         <module>plugins/org.jkiss.dbeaver.ext.ui.locks</module>
         <module>plugins/org.jkiss.dbeaver.ext.firebird</module>
         <module>plugins/org.jkiss.dbeaver.ext.generic</module>
-        <module>plugins/org.jkiss.dbeaver.ext.import-config</module>
+        <module>plugins/org.jkiss.dbeaver.ext.import_config</module>
         <module>plugins/org.jkiss.dbeaver.ext.h2</module>
         <module>plugins/org.jkiss.dbeaver.ext.hana</module>
         <module>plugins/org.jkiss.dbeaver.ext.hsqldb</module>
@@ -63,6 +63,7 @@
         <module>plugins/org.jkiss.dbeaver.ext.ui.svg</module>
         <module>plugins/org.jkiss.dbeaver.ext.mockdata</module>
         <module>plugins/org.jkiss.dbeaver.data.office</module>
+        <module>plugins/org.jkiss.dbeaver.data.gis</module>
         <module>plugins/org.jkiss.dbeaver.model</module>
 
         <module>features/org.jkiss.dbeaver.core.feature</module>

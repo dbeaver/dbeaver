@@ -134,9 +134,6 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
         for (IWizardPage page : pages) {
             addPage(null, page, maxSize);
         }
-        gd = (GridData) pageArea.getLayoutData();
-        gd.widthHint = 500;
-        gd.heightHint = 400;
 
         pagesTree.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -223,6 +220,9 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
                 gd = (GridData) prevPage.getControl().getLayoutData();
                 gd.exclude = true;
                 prevPage.setVisible(false);
+                if (prevPage instanceof ActiveWizardPage) {
+                    ((ActiveWizardPage) prevPage).deactivatePage();
+                }
             }
 
             boolean pageCreated = false;
@@ -246,6 +246,10 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
             gd = (GridData) pageControl.getLayoutData();
             gd.exclude = false;
             page.setVisible(true);
+            if (page instanceof ActiveWizardPage) {
+                ((ActiveWizardPage) page).activatePage();
+            }
+
             setTitle(page.getTitle());
             setMessage(page.getDescription());
 

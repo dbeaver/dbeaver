@@ -54,13 +54,13 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
     // TODO DF: Work in progess
 
     private static final DBSObjectType[] SUPP_OBJ_TYPES = { DB2ObjectType.ALIAS, DB2ObjectType.TABLE, DB2ObjectType.VIEW,
-        DB2ObjectType.MQT, DB2ObjectType.NICKNAME, DB2ObjectType.COLUMN, };
+        DB2ObjectType.MQT, DB2ObjectType.NICKNAME, DB2ObjectType.COLUMN, DB2ObjectType.ROUTINE };
 
     private static final DBSObjectType[] HYPER_LINKS_TYPES = { DB2ObjectType.ALIAS, DB2ObjectType.TABLE, DB2ObjectType.VIEW,
-        DB2ObjectType.MQT, DB2ObjectType.NICKNAME, };
+        DB2ObjectType.MQT, DB2ObjectType.NICKNAME, DB2ObjectType.ROUTINE, };
 
     private static final DBSObjectType[] AUTOC_OBJ_TYPES = { DB2ObjectType.ALIAS, DB2ObjectType.TABLE, DB2ObjectType.VIEW,
-        DB2ObjectType.MQT, DB2ObjectType.NICKNAME, };
+        DB2ObjectType.MQT, DB2ObjectType.NICKNAME, DB2ObjectType.ROUTINE, };
 
     private static final String SQL_COLS_ALL;
     private static final String SQL_COLS_SCHEMA;
@@ -102,9 +102,6 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
     public List<DBSObjectReference> findObjectsByMask(DBRProgressMonitor monitor, DBSObject parentObject,
                                                       DBSObjectType[] objectTypes, String objectNameMask, boolean caseSensitive, boolean globalSearch, int maxResults) throws DBException
     {
-
-        LOG.debug(objectNameMask);
-
         List<DB2ObjectType> db2ObjectTypes = new ArrayList<>(objectTypes.length);
         for (DBSObjectType dbsObjectType : objectTypes) {
             db2ObjectTypes.add((DB2ObjectType) dbsObjectType);
@@ -153,6 +150,11 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
         // Columns
         if (db2ObjectTypes.contains(DB2ObjectType.COLUMN)) {
             searchColumns(session, schema, searchObjectNameMask, db2ObjectTypes, maxResults, objects, nbResults);
+        }
+
+        // Routines
+        if (db2ObjectTypes.contains(DB2ObjectType.ROUTINE)) {
+            searchRoutines(session, schema, searchObjectNameMask, db2ObjectTypes, maxResults, objects, nbResults);
         }
 
         return objects;
@@ -219,6 +221,55 @@ public class DB2StructureAssistant implements DBSStructureAssistant {
 
                     objectType = tableType.getDb2ObjectType();
                     objects.add(new DB2ObjectReference(objectName, db2Schema, objectType));
+                }
+            }
+        }
+    }
+
+    private void searchRoutines(JDBCSession session, DB2Schema schema, String searchObjectNameMask,
+                              List<DB2ObjectType> db2ObjectTypes, int maxResults, List<DBSObjectReference> objects, int nbResults) throws SQLException,
+        DBException
+    {
+        String baseSQL =
+                "SELECT ROUTINESCHEMA,ROUTINENAME FROM SYSCAT.ROUTINES\n" +
+                    "WHERE " + (schema != null ? "ROUTINESCHEMA = ? AND " : "") + "ROUTINENAME LIKE ?\n" +
+                    "WITH UR";
+
+        String sql = buildTableSQL(baseSQL, db2ObjectTypes);
+
+        int n = 1;
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(sql)) {
+            if (schema != null) {
+                dbStat.setString(n++, schema.getName());
+            }
+            dbStat.setString(n++, searchObjectNameMask);
+
+            dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
+
+            String schemaName;
+            String objectName;
+            DB2Schema db2Schema;
+
+            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                while (dbResult.next()) {
+                    if (session.getProgressMonitor().isCanceled()) {
+                        break;
+                    }
+
+                    if (nbResults++ >= maxResults) {
+                        break;
+                    }
+
+                    schemaName = JDBCUtils.safeGetStringTrimmed(dbResult, "ROUTINESCHEMA");
+                    objectName = JDBCUtils.safeGetString(dbResult, "ROUTINENAME");
+
+                    db2Schema = dataSource.getSchema(session.getProgressMonitor(), schemaName);
+                    if (db2Schema == null) {
+                        LOG.debug("Schema '" + schemaName + "' not found. Probably was filtered");
+                        continue;
+                    }
+
+                    objects.add(new DB2ObjectReference(objectName, db2Schema, DB2ObjectType.ROUTINE));
                 }
             }
         }

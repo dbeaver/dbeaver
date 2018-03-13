@@ -70,8 +70,6 @@ import java.util.*;
  */
 public class NavigatorUtils {
 
-    private static final String MB_NAVIGATOR_ADDITIONS = "navigator_additions";
-
     private static final Log log = Log.getLog(NavigatorUtils.class);
 
     public static DBNNode getSelectedNode(ISelectionProvider selectionProvider)
@@ -195,7 +193,7 @@ public class NavigatorUtils {
                     return;
                 }
 
-                manager.add(new GroupMarker(MB_NAVIGATOR_ADDITIONS));
+                manager.add(new GroupMarker(CoreCommands.GROUP_NAVIGATOR_ADDITIONS));
 
                 final IStructuredSelection selection = (IStructuredSelection)viewer.getSelection();
                 final DBNNode selectedNode = getSelectedNode(viewer);
@@ -233,6 +231,7 @@ public class NavigatorUtils {
                 }
 
                 manager.add(new GroupMarker(CoreCommands.GROUP_TOOLS));
+                manager.add(new GroupMarker(CoreCommands.GROUP_TOOLS_END));
 
                 if (menuListener != null) {
                     menuListener.menuAboutToShow(manager);

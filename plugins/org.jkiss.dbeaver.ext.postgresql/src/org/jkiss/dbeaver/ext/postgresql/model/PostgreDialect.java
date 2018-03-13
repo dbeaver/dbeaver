@@ -68,7 +68,7 @@ class PostgreDialect extends JDBCSQLDialect {
                 "LANGUAGE",
                 "MODULE",
                 "OFFSET",
-                "PUBLIC",
+                //"PUBLIC",
                 "RETURNING",
                 "VARIADIC",
                 "PERFORM",
@@ -76,7 +76,14 @@ class PostgreDialect extends JDBCSQLDialect {
                 "LOOP",
                 "PERFORM",
                 "RAISE",
-                "NOTICE"
+                "NOTICE",
+                "CONFLICT",
+                "EXTENSION",
+
+                // "DEBUG", "INFO", "NOTICE", "WARNING", // levels
+                // "MESSAGE", "DETAIL", "HINT", "ERRCODE", //options
+
+                "DATATYPE"
             ));
 
         addFunctions(

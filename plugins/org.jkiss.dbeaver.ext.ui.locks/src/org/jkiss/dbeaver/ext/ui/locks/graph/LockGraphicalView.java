@@ -38,7 +38,7 @@ public class LockGraphicalView extends ViewPart {
 	private GraphicalViewer graphicalViewer;
 
 	
-	private final LockGraphManager<?, ?> graphManager;
+	private final LockGraphManager graphManager;
 	
 	private final LockManagerViewer viewer;	
 	
@@ -67,7 +67,7 @@ public class LockGraphicalView extends ViewPart {
 		});
 	}		
 
-	public void drawGraf(DBAServerLock<?> selection)
+	public void drawGraf(DBAServerLock selection)
 	{
 		if (selection == null) return;
 		
