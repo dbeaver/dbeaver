@@ -251,7 +251,7 @@ public class DiagramLoader
                     for (String conName : path) {
                         final DBSObject child = container.getChild(monitor, conName);
                         if (child == null) {
-                            diagram.addErrorMessage("Object '" + conName + "' not found within '" + container.getName() + "'");
+                            diagram.addErrorMessage("Container '" + conName + "' not found within '" + container.getName() + "'. Skip table '" + tableName + "'.");
                             container = null;
                             break;
                         }
