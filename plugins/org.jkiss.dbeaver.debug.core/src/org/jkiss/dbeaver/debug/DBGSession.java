@@ -37,9 +37,7 @@ public interface DBGSession {
 
     void execStepOver() throws DBGException;
 
-    void abort() throws DBGException;
-
-    void close();
+    void close() throws DBGException;
 
     List<? extends DBGVariable<?>> getVariables() throws DBGException;
 
@@ -49,5 +47,7 @@ public interface DBGSession {
 
     Object getSessionId();
 
-    // move Stack
+    void selectFrame(int frameNumber) throws DBGException;
+
+    String getSource(DBGStackFrame stack) throws DBGException;
 }

@@ -128,7 +128,7 @@ class GridColumn {
         int filterEnd = bounds.width - (sortBounds == null ? GridColumnRenderer.ARROW_MARGIN : sortBounds.width + GridColumnRenderer.IMAGE_SPACING);
         int filterBegin = filterEnd - filterBounds.width;
 
-        return x >= filterBegin && x <= filterEnd && y < bounds.y + (sortBounds == null ? 0 : sortBounds.height);
+        return x >= filterBegin && x <= filterEnd && y < bounds.y + (filterBounds == null ? 0 : filterBounds.height);
     }
 
     public boolean isOverSortArrow(int x, int y)

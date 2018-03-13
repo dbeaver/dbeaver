@@ -20,6 +20,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.*;
@@ -31,9 +32,9 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatter;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
-import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKeyColumn;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -198,6 +199,11 @@ public final class SQLUtils {
         }
     }
 
+    public static boolean isStringQuoted(String string)
+    {
+        return string.length() > 1 && string.startsWith("'") && string.endsWith("'");
+    }
+
     public static String quoteString(DBSObject object, String string)
     {
         return quoteString(object.getDataSource(), string);
@@ -349,18 +355,21 @@ public final class SQLUtils {
             String trimmed = sql.substring(0, sql.length() - statementDelimiter.length());
             {
                 String test = trimmed.toUpperCase().trim();
-                for (String[] blocks : syntaxManager.getDialect().getBlockBoundStrings()) {
-                    int endIndex = test.indexOf(blocks[1]);
-                    if (endIndex > 0) {
-                        // This is a block query if it ends with 'END' or with 'END id'
-                        if (test.endsWith(blocks[1])) {
-                            isBlockQuery = true;
-                            break;
-                        } else {
-                            String afterEnd = test.substring(endIndex + blocks[1].length()).trim();
-                            if (CommonUtils.isJavaIdentifier(afterEnd)) {
+                String[][] blockBoundStrings = syntaxManager.getDialect().getBlockBoundStrings();
+                if (blockBoundStrings != null) {
+                    for (String[] blocks : blockBoundStrings) {
+                        int endIndex = test.indexOf(blocks[1]);
+                        if (endIndex > 0) {
+                            // This is a block query if it ends with 'END' or with 'END id'
+                            if (test.endsWith(blocks[1])) {
                                 isBlockQuery = true;
                                 break;
+                            } else {
+                                String afterEnd = test.substring(endIndex + blocks[1].length()).trim();
+                                if (CommonUtils.isJavaIdentifier(afterEnd)) {
+                                    isBlockQuery = true;
+                                    break;
+                                }
                             }
                         }
                     }
@@ -855,4 +864,84 @@ public final class SQLUtils {
         }
         return nameList.toArray(new String[nameList.size()]);
     }
+
+    public static String generateTableJoin(DBRProgressMonitor monitor, DBSEntity leftTable, String leftAlias, DBSEntity rightTable, String rightAlias) throws DBException {
+        // Try to find FK in left table referencing to right table
+        String sql = generateTableJoinByAssociation(monitor, leftTable, leftAlias, rightTable, rightAlias);
+        if (sql != null) return sql;
+
+        // Now try right to left
+        sql = generateTableJoinByAssociation(monitor, rightTable, rightAlias, leftTable, leftAlias);
+        if (sql != null) return sql;
+
+        // Try to find columns in left table which match unique key in right table
+        sql = generateTableJoinByColumns(monitor, leftTable, leftAlias, rightTable, rightAlias);
+        if (sql != null) return sql;
+
+        // In reverse order
+        sql = generateTableJoinByColumns(monitor, rightTable, rightAlias, leftTable, leftAlias);
+        if (sql != null) return sql;
+
+        return null;
+    }
+
+    private static String generateTableJoinByColumns(DBRProgressMonitor monitor, DBSEntity leftTable, String leftAlias, DBSEntity rightTable, String rightAlias) throws DBException {
+        List<DBSEntityAttribute> leftIdentifier = new ArrayList<>(DBUtils.getBestTableIdentifier(monitor, leftTable));
+        if (!leftIdentifier.isEmpty()) {
+            List<DBSEntityAttribute> rightAttributes = new ArrayList<>();
+            for (DBSEntityAttribute attr : leftIdentifier) {
+                DBSEntityAttribute rightAttr = rightTable.getAttribute(monitor, attr.getName());
+                if (rightAttr == null) {
+                    break;
+                }
+                rightAttributes.add(rightAttr);
+            }
+            if (leftIdentifier.size() != rightAttributes.size()) {
+                return null;
+            }
+            StringBuilder joinSQL = new StringBuilder();
+            for (int i = 0; i < leftIdentifier.size(); i++) {
+                joinSQL
+                    .append(leftAlias).append(".").append(DBUtils.getQuotedIdentifier(leftIdentifier.get(i))).append(" = ")
+                    .append(rightAlias).append(".").append(DBUtils.getQuotedIdentifier(rightAttributes.get(i)));
+            }
+            return joinSQL.toString();
+        }
+        return null;
+    }
+
+    private static String generateTableJoinByAssociation(DBRProgressMonitor monitor, DBSEntity leftTable, String leftAlias, DBSEntity rightTable, String rightAlias) throws DBException {
+        Collection<? extends DBSEntityAssociation> associations = leftTable.getAssociations(monitor);
+        if (!CommonUtils.isEmpty(associations)) {
+            for (DBSEntityAssociation fk : associations) {
+                if (fk instanceof DBSTableForeignKey && fk.getAssociatedEntity() == rightTable) {
+                    return generateTablesJoin(monitor, (DBSTableForeignKey)fk, leftAlias, rightAlias);
+                }
+            }
+        }
+        return null;
+    }
+
+    private static String generateTablesJoin(DBRProgressMonitor monitor, DBSTableForeignKey fk, String leftAlias, String rightAlias) throws DBException {
+        boolean hasCriteria = false;
+        StringBuilder joinSQL = new StringBuilder();
+        for (DBSEntityAttributeRef ar : fk.getAttributeReferences(monitor)) {
+            if (ar instanceof DBSTableForeignKeyColumn) {
+                if (hasCriteria) {
+                    joinSQL.append(" AND ");
+                }
+                DBSTableForeignKeyColumn fkc = (DBSTableForeignKeyColumn)ar;
+                joinSQL
+                    .append(leftAlias).append(".").append(DBUtils.getQuotedIdentifier(fkc)).append(" = ")
+                    .append(rightAlias).append(".").append(DBUtils.getQuotedIdentifier(fkc.getReferencedColumn()));
+                hasCriteria = true;
+            }
+        }
+        return joinSQL.toString();
+    }
+
+    public static String getTableAlias(DBSEntity table) {
+        return CommonUtils.escapeIdentifier(table.getName());
+    }
+
 }

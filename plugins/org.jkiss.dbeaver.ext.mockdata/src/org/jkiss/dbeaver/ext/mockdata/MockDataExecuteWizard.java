@@ -17,39 +17,45 @@
  */
 package org.jkiss.dbeaver.ext.mockdata;
 
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.ext.mockdata.model.MockGeneratorDescriptor;
+import org.jkiss.dbeaver.ext.mockdata.model.MockValueGenerator;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPClientHome;
 import org.jkiss.dbeaver.model.data.DBDAttributeValue;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.DBCStatistics;
+import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractToolWizard;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
-public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulator, DBSDataManipulator> implements IImportWizard{
-
+public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulator, DBSDataManipulator> implements IImportWizard
+{
     private static final Log log = Log.getLog(MockDataExecuteWizard.class);
 
-    public static final int BATCH_SIZE = 1000;
+    private static final int BATCH_SIZE = 1000;
+
+    private static final String RS_EXPORT_WIZARD_DIALOG_SETTINGS = "MockData"; //$NON-NLS-1$
 
     private MockDataWizardPageSettings settingsPage;
     private MockDataSettings mockDataSettings;
 
-    public MockDataExecuteWizard(MockDataSettings mockDataSettings, Collection<DBSDataManipulator> dbObjects, String task) {
+    MockDataExecuteWizard(MockDataSettings mockDataSettings, Collection<DBSDataManipulator> dbObjects, String task) {
         super(dbObjects, task);
         this.clientHomeRequired = false;
         this.mockDataSettings = mockDataSettings;
@@ -59,7 +65,44 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
     public void init(IWorkbench workbench, IStructuredSelection selection) {
         setWindowTitle(task);
         setNeedsProgressMonitor(true);
-        settingsPage = new MockDataWizardPageSettings(this, mockDataSettings);
+
+        settingsPage = new MockDataWizardPageSettings(mockDataSettings);
+
+    }
+
+    void loadSettings() {
+        IDialogSettings section = UIUtils.getDialogSettings(RS_EXPORT_WIZARD_DIALOG_SETTINGS);
+        setDialogSettings(section);
+
+        mockDataSettings.loadFrom(section);
+    }
+
+    @Override
+    public boolean canFinish() {
+        try {
+            Collection<? extends DBSEntityAttribute> attributes =
+                    mockDataSettings.getEntity().getAttributes(new VoidProgressMonitor());
+            return super.canFinish() && !CommonUtils.isEmpty(DBUtils.getRealAttributes(attributes));
+        } catch (DBException ex) {
+            log.error("Error accessing DB entity " + mockDataSettings.getEntity().getName(), ex);
+            return false;
+        }
+    }
+
+    @Override
+    public boolean performCancel() {
+        // Save settings anyway
+        mockDataSettings.saveTo(getDialogSettings());
+
+        return super.performCancel();
+    }
+
+    @Override
+    public boolean performFinish() {
+        // Save settings
+        mockDataSettings.saveTo(getDialogSettings());
+
+        return super.performFinish();
     }
 
     @Override
@@ -89,12 +132,11 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
         return getDatabaseObjects();
     }
 
-    protected List<String> getCommandLine(DBSDataManipulator jdbcTable) throws IOException {
+    protected List<String> getCommandLine(DBSDataManipulator jdbcTable) {
         return null;
     }
 
-    public void fillProcessParameters(List<String> cmd, DBSDataManipulator jdbcTable) throws IOException {
-
+    public void fillProcessParameters(List<String> cmd, DBSDataManipulator jdbcTable) {
     }
 
     @Override
@@ -106,40 +148,79 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
         super.createPageControls(pageContainer);
     }
 
+    private Map<String, MockValueGenerator> generators = new HashMap<>();
+
     @Override
-    public boolean executeProcess(DBRProgressMonitor monitor, DBSDataManipulator dataManipulator) {
+    public boolean executeProcess(DBRProgressMonitor monitor, DBSDataManipulator dataManipulator) throws IOException {
 
         DBCExecutionContext context = dataManipulator.getDataSource().getDefaultContext(true);
-        DBCSession session = context.openSession(monitor, DBCExecutionPurpose.USER, MockDataMessages.tools_mockdata_generate_data_task);
-        AbstractExecutionSource executionSource = new AbstractExecutionSource(dataManipulator, session.getExecutionContext(), this);
-        try {
+        try (DBCSession session = context.openSession(monitor, DBCExecutionPurpose.USER, MockDataMessages.tools_mockdata_generate_data_task)) {
+            DBCTransactionManager txnManager = DBUtils.getTransactionManager(session.getExecutionContext());
+            boolean autoCommit;
+            try {
+                autoCommit = txnManager == null || txnManager.isAutoCommit();
+            } catch (DBCException e) {
+                log.error(e);
+                autoCommit = true;
+            }
+            AbstractExecutionSource executionSource = new AbstractExecutionSource(dataManipulator, session.getExecutionContext(), this);
+
+            boolean success = true;
+            monitor.beginTask("Generate Mock Data", 3);
             if (mockDataSettings.isRemoveOldData()) {
                 logPage.appendLog("Removing old data from the '" + dataManipulator.getName() + "'.\n");
+                monitor.subTask("Cleanup old data");
                 DBCStatistics deleteStats = new DBCStatistics();
                 try {
-                    DBSDataManipulator.ExecuteBatch batch = dataManipulator.deleteData(session, new DBSAttributeBase[]{}, executionSource);
-                    try {
-                        batch.add(new Object[] {});
+                    // TODO: truncate is much faster than delete
+                    try (DBSDataManipulator.ExecuteBatch batch = dataManipulator.deleteData(session, new DBSAttributeBase[]{}, executionSource)) {
+                        batch.add(new Object[]{});
                         deleteStats.accumulate(batch.execute(session));
-                    } finally {
-                        batch.close();
+                    }
+                    if (txnManager != null && !autoCommit) {
+                        txnManager.commit(session);
                     }
                 } catch (Exception e) {
-                    String message = "    Error removing the data: " + e.getMessage() + ".";
+                    success = false;
+                    String message = "    Error removing the data: " + e.getMessage();
                     log.error(message, e);
-                    logPage.appendLog(message, true);
-                } finally {
-                    monitor.done();
+                    logPage.appendLog(message + "\n\n", true);
                 }
                 logPage.appendLog("    Rows updated: " + deleteStats.getRowsUpdated() + "\n");
-                logPage.appendLog("    Duration: " + deleteStats.getExecuteTime() + "ms\n");
+                logPage.appendLog("    Duration: " + deleteStats.getExecuteTime() + "ms\n\n");
             } else {
-                logPage.appendLog("Old data isn't removed.\n");
+                logPage.appendLog("Old data isn't removed.\n\n");
+            }
+
+            if (!success) {
+                return true;
             }
 
             try {
-                logPage.appendLog("\nInserting Mock Data into the '" + dataManipulator.getName() + "'.\n");
+                monitor.subTask("Insert data");
+
+                logPage.appendLog("Inserting mock data into the '" + dataManipulator.getName() + "'.\n");
                 DBCStatistics insertStats = new DBCStatistics();
+
+                // build and init the generators
+                generators.clear();
+                DBSEntity dbsEntity = (DBSEntity) dataManipulator;
+                Collection<? extends DBSAttributeBase> attributes = DBUtils.getRealAttributes(dbsEntity.getAttributes(monitor));
+                for (DBSAttributeBase attribute : attributes) {
+                    MockGeneratorDescriptor generatorDescriptor = mockDataSettings.getGeneratorDescriptor(mockDataSettings.getAttributeGeneratorProperties(attribute).getSelectedGeneratorId());
+                    if (generatorDescriptor != null) {
+                        MockValueGenerator generator = generatorDescriptor.createGenerator();
+
+                        MockDataSettings.AttributeGeneratorProperties generatorPropertySource = this.mockDataSettings.getAttributeGeneratorProperties(attribute);
+                        String selectedGenerator = generatorPropertySource.getSelectedGeneratorId();
+                        Map<Object, Object> generatorProperties =
+                                generatorPropertySource.getGeneratorPropertySource(selectedGenerator).getPropertiesWithDefaults();
+                        generator.init(dataManipulator, attribute, generatorProperties);
+                        generators.put(attribute.getName(), generator);
+                    }
+                }
+
+                monitor.done();
 
                 long rowsNumber = mockDataSettings.getRowsNumber();
                 long quotient = rowsNumber / BATCH_SIZE;
@@ -149,25 +230,42 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                 }
                 int counter = 0;
 
+                monitor.beginTask("Insert data", (int) rowsNumber);
+
+                // generate and insert the data
+                session.enableLogging(false);
                 DBSDataManipulator.ExecuteBatch batch = null;
                 for (int q = 0; q < quotient; q++) {
+                    if (monitor.isCanceled()) {
+                        break;
+                    }
+                    if (counter > 0) {
+                        if (txnManager != null && !autoCommit) {
+                            txnManager.commit(session);
+                        }
+
+                        monitor.subTask(String.valueOf(counter) + " rows inserted");
+                        monitor.worked(BATCH_SIZE);
+                    }
+
                     try {
-                        for (int i = 0; i < BATCH_SIZE; i++) {
+                        for (int i = 0; (i < BATCH_SIZE && counter < rowsNumber); i++) {
+                            if (monitor.isCanceled()) {
+                                break;
+                            }
                             List<DBDAttributeValue> attributeValues = new ArrayList<>();
-                            Collection<? extends DBSEntityAttribute> attributes = ((DBSEntity) dataManipulator).getAttributes(monitor);
-                            for (DBSEntityAttribute attribute : attributes) {
-                                Object value = attribute.getDefaultValue();
-                                DBSDataType dataType = ((DBSTypedObjectEx) attribute).getDataType();
-                                DBPDataKind dataKind = dataType.getDataKind();
-                                switch (dataKind) {
-                                    case NUMERIC:
-                                        value = MockDataGenerator.generateNumeric((int) attribute.getMaxLength(), attribute.getPrecision(), attribute.getScale()); break;
-                                    case STRING:
-                                        value = MockDataGenerator.generateTextUpTo((int) attribute.getMaxLength()); break;
-                                    case DATETIME:
-                                        value = MockDataGenerator.generateDate(); break;
+                            try {
+                                for (DBSAttributeBase attribute : attributes) {
+                                    MockValueGenerator generator = generators.get(attribute.getName());
+                                    if (generator != null) {
+                                        //((AbstractMockValueGenerator) generator).checkUnique(monitor);
+                                        Object value = generator.generateValue(monitor);
+                                        attributeValues.add(new DBDAttributeValue(attribute, value));
+                                    }
                                 }
-                                attributeValues.add(new DBDAttributeValue(attribute, value));
+                            } catch (DBException e) {
+                                processGeneratorException(e);
+                                return true;
                             }
 
                             if (batch == null) {
@@ -181,27 +279,47 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                                 batch.add(DBDAttributeValue.getValues(attributeValues));
                             }
                         }
-                        insertStats.accumulate(batch.execute(session));
+                        if (batch != null) {
+                            insertStats.accumulate(batch.execute(session));
+                        }
+                    }
+                    catch (Exception e) {
+                        processGeneratorException(e);
+                        if (e instanceof DBException) {
+                            throw e;
+                        }
                     }
                     finally {
-                        batch.close();
-                        batch = null;
+                        if (batch != null) {
+                            batch.close();
+                            batch = null;
+                        }
                     }
                 }
 
+                if (txnManager != null && !autoCommit) {
+                    txnManager.commit(session);
+                }
+
                 logPage.appendLog("    Rows updated: " + insertStats.getRowsUpdated() + "\n");
-                logPage.appendLog("    Duration: " + insertStats.getExecuteTime() + "ms\n");
+                logPage.appendLog("    Duration: " + insertStats.getExecuteTime() + "ms\n\n");
 
             } catch (DBException e) {
-                String message = "    Error inserting Mock Data: " + e.getMessage() + ".";
+                String message = "    Error inserting mock data: " + e.getMessage();
                 log.error(message, e);
-                logPage.appendLog(message, true);
+                logPage.appendLog(message + "\n\n", true);
             }
 
         } finally {
-            session.close();
+            monitor.done();
         }
 
         return true;
+    }
+
+    private void processGeneratorException(Exception e) {
+        String message = "    Error generating mock data: " + e.getMessage();
+        log.error(message, e);
+        logPage.appendLog(message + "\n\n", true);
     }
 }

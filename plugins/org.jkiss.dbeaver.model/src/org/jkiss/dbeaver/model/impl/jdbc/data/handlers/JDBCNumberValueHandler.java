@@ -43,12 +43,14 @@ import java.sql.Types;
 public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
 
     private static final Log log = Log.getLog(JDBCNumberValueHandler.class);
+    private DBSTypedObject type;
     private DBDDataFormatter formatter;
 
-    public JDBCNumberValueHandler(DBDDataFormatterProfile formatterProfile)
+    public JDBCNumberValueHandler(DBSTypedObject type, DBDDataFormatterProfile formatterProfile)
     {
+        this.type = type;
         try {
-            formatter = formatterProfile.createFormatter(DBDDataFormatter.TYPE_NAME_NUMBER);
+            formatter = formatterProfile.createFormatter(DBDDataFormatter.TYPE_NAME_NUMBER, type);
         } catch (Exception e) {
             log.error("Can't create formatter for number value handler", e); //$NON-NLS-1$
             formatter = DefaultDataFormatter.INSTANCE;
@@ -308,9 +310,17 @@ public class JDBCNumberValueHandler extends JDBCAbstractValueHandler {
             case Types.DECIMAL:
             case Types.DOUBLE:
             case Types.REAL:
-                return Double.class;
+                if (CommonUtils.toInt(type.getScale()) > 0) {
+                    // Workaround for Oracle #3062
+                    return Double.class;
+                }
+                return BigDecimal.class;
             case Types.FLOAT:
-                return Float.class;
+                if (CommonUtils.toInt(type.getScale()) > 0) {
+                    // Workaround for Oracle #3062
+                    return Float.class;
+                }
+                return BigDecimal.class;
             case Types.INTEGER:
                 return Integer.class;
             case Types.SMALLINT:

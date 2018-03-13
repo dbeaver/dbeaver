@@ -28,8 +28,8 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableConstraint;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.List;
@@ -90,12 +90,18 @@ public abstract class PostgreTableConstraintBase extends JDBCTableConstraint<Pos
     {
         if (constrDDL == null && isPersisted()) {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read constraint definition")) {
-                constrDDL = JDBCUtils.queryString(session, "SELECT pg_catalog.pg_get_constraintdef(?)", getObjectId());
+                constrDDL =
+                    "CONSTRAINT " + DBUtils.getQuotedIdentifier(this) + " " +
+                    JDBCUtils.queryString(session, "SELECT pg_catalog.pg_get_constraintdef(?)", getObjectId());
             } catch (SQLException e) {
                 throw new DBException(e, getDataSource());
             }
         }
-        return constrDDL;
+        if (CommonUtils.getOption(options, DBPScriptObject.OPTION_EMBEDDED_SOURCE)) {
+            return constrDDL;
+        } else {
+            return "ALTER TABLE " + getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " ADD " + constrDDL;
+        }
     }
 
 }

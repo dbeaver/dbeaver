@@ -1,3 +1,21 @@
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package org.jkiss.dbeaver.debug.ui.details;
 
 import java.util.HashSet;
@@ -22,7 +40,8 @@ import org.jkiss.dbeaver.debug.ui.DebugUI;
 import org.jkiss.dbeaver.ui.ActionBars;
 import org.jkiss.dbeaver.ui.Widgets;
 
-public abstract class DatabaseDebugDetailPane<EDITOR extends DatabaseDebugDetailEditor> implements IDetailPane2, IDetailPane3 {
+public abstract class DatabaseDebugDetailPane<EDITOR extends DatabaseDebugDetailEditor>
+        implements IDetailPane2, IDetailPane3 {
 
     private String name;
     private String description;
@@ -37,48 +56,41 @@ public abstract class DatabaseDebugDetailPane<EDITOR extends DatabaseDebugDetail
     private ListenerList<IPropertyListener> propertyListeners = new ListenerList<>();
     private Composite editorParent;
 
-    public DatabaseDebugDetailPane(String name, String description, String id)
-    {
+    public DatabaseDebugDetailPane(String name, String description, String id) {
         this.name = name;
         this.description = description;
         this.id = id;
     }
 
     @Override
-    public String getID()
-    {
+    public String getID() {
         return id;
     }
 
     @Override
-    public String getName()
-    {
+    public String getName() {
         return name;
     }
 
     @Override
-    public String getDescription()
-    {
+    public String getDescription() {
         return description;
     }
 
     @Override
-    public void init(IWorkbenchPartSite partSite)
-    {
+    public void init(IWorkbenchPartSite partSite) {
         this.partSite = partSite;
     }
 
     @Override
-    public Control createControl(Composite parent)
-    {
+    public Control createControl(Composite parent) {
         editorParent = Widgets.createComposite(parent, 1, 1, GridData.FILL_BOTH);
         editorParent.setBackground(parent.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
         editor = createEditor(editorParent);
         editor.setMnemonics(false);
         editor.addPropertyListener(new IPropertyListener() {
             @Override
-            public void propertyChanged(Object source, int propId)
-            {
+            public void propertyChanged(Object source, int propId) {
                 if (autoSaveProperties.contains(new Integer(propId))) {
                     try {
                         editor.doSave();
@@ -107,20 +119,17 @@ public abstract class DatabaseDebugDetailPane<EDITOR extends DatabaseDebugDetail
     }
 
     @Override
-    public ISelectionProvider getSelectionProvider()
-    {
+    public ISelectionProvider getSelectionProvider() {
         return null;
     }
 
     @Override
-    public boolean setFocus()
-    {
+    public boolean setFocus() {
         return false;
     }
 
     @Override
-    public void display(IStructuredSelection selection)
-    {
+    public void display(IStructuredSelection selection) {
         // clear status line
         IStatusLineManager statusLine = ActionBars.extractStatusLineManager(partSite);
         if (statusLine != null) {
@@ -144,14 +153,12 @@ public abstract class DatabaseDebugDetailPane<EDITOR extends DatabaseDebugDetail
     }
 
     @Override
-    public boolean isDirty()
-    {
+    public boolean isDirty() {
         return editor != null && editor.isDirty();
     }
 
     @Override
-    public void doSave(IProgressMonitor monitor)
-    {
+    public void doSave(IProgressMonitor monitor) {
         IStatusLineManager statusLine = ActionBars.extractStatusLineManager(partSite);
         if (statusLine != null) {
             statusLine.setErrorMessage(null);
@@ -168,45 +175,38 @@ public abstract class DatabaseDebugDetailPane<EDITOR extends DatabaseDebugDetail
     }
 
     @Override
-    public void doSaveAs()
-    {
+    public void doSaveAs() {
         // do nothing
     }
 
     @Override
-    public boolean isSaveAsAllowed()
-    {
+    public boolean isSaveAsAllowed() {
         return false;
     }
 
     @Override
-    public boolean isSaveOnCloseNeeded()
-    {
+    public boolean isSaveOnCloseNeeded() {
         return isDirty() && editor.getStatus().isOK();
     }
 
     @Override
-    public void addPropertyListener(IPropertyListener listener)
-    {
+    public void addPropertyListener(IPropertyListener listener) {
         propertyListeners.add(listener);
     }
 
     @Override
-    public void removePropertyListener(IPropertyListener listener)
-    {
+    public void removePropertyListener(IPropertyListener listener) {
         propertyListeners.remove(listener);
     }
 
-    protected void firePropertyChange(int property)
-    {
+    protected void firePropertyChange(int property) {
         for (IPropertyListener listener : propertyListeners) {
             listener.propertyChanged(this, property);
         }
     }
 
     @Override
-    public void dispose()
-    {
+    public void dispose() {
         editor = null;
         partSite = null;
         propertyListeners.clear();

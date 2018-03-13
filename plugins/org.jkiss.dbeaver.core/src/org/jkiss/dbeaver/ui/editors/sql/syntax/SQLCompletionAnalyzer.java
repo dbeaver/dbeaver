@@ -20,16 +20,12 @@ import org.eclipse.swt.graphics.Image;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLDataSource;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
-import org.jkiss.dbeaver.model.sql.SQLScriptElement;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.TextUtils;
@@ -92,6 +88,12 @@ class SQLCompletionAnalyzer
                 if (request.queryType == SQLCompletionProcessor.QueryType.COLUMN && dataSource instanceof DBSObjectContainer) {
                     // Try to detect current table
                     rootObject = getTableFromAlias((DBSObjectContainer)dataSource, null);
+                    if (rootObject instanceof DBSEntity && SQLConstants.KEYWORD_ON.equals(request.wordDetector.getPrevKeyWord())) {
+                        // Join?
+                        if (makeJoinColumnProposals((DBSObjectContainer)dataSource, (DBSEntity)rootObject)) {
+                            return;
+                        }
+                    }
                 } else if (dataSource instanceof DBSObjectContainer) {
                     // Try to get from active object
                     DBSObject selectedObject = DBUtils.getActiveInstanceObject(dataSource);
@@ -104,6 +106,13 @@ class SQLCompletionAnalyzer
                 }
                 if (rootObject != null) {
                     makeProposalsFromChildren(rootObject, null);
+                }
+                if (request.queryType == SQLCompletionProcessor.QueryType.JOIN && !request.proposals.isEmpty() && dataSource instanceof DBSObjectContainer) {
+                    // Filter out non-joinable tables
+                    DBSObject leftTable = getTableFromAlias((DBSObjectContainer) dataSource, null);
+                    if (leftTable instanceof DBSEntity) {
+                        filterNonJoinableProposals((DBSEntity)leftTable);
+                    }
                 }
             } else {
                 DBSObject rootObject = null;
@@ -129,6 +138,73 @@ class SQLCompletionAnalyzer
         } else {
             // Get list of sub-objects (filtered by wordPart)
             makeDataSourceProposals();
+        }
+    }
+
+    private boolean makeJoinColumnProposals(DBSObjectContainer sc, DBSEntity leftTable) {
+        SQLWordPartDetector joinTableDetector = new SQLWordPartDetector(
+            request.editor.getDocument(),
+            request.editor.getSyntaxManager(),
+            request.wordDetector.getStartOffset(),
+            2);
+        List<String> prevWords = joinTableDetector.getPrevWords();
+
+        if (!CommonUtils.isEmpty(prevWords)) {
+            DBPDataSource dataSource = request.editor.getDataSource();
+            SQLDialect sqlDialect = SQLUtils.getDialectFromDataSource(dataSource);
+            String rightTableName = prevWords.get(0);
+            String[] allNames = SQLUtils.splitFullIdentifier(
+                rightTableName,
+                sqlDialect.getCatalogSeparator(),
+                sqlDialect.getIdentifierQuoteStrings(),
+                false);
+            DBSObject rightTable = findObjectByFQN(sc, dataSource, Arrays.asList(allNames));
+            if (rightTable instanceof DBSEntity) {
+                try {
+                    String joinCriteria = SQLUtils.generateTableJoin(monitor, leftTable, leftTable.getName(), (DBSEntity) rightTable, rightTable.getName());
+                    request.proposals.add(createCompletionProposal(request, joinCriteria, joinCriteria, DBPKeywordType.OTHER, "Join condition"));
+                    return true;
+                } catch (DBException e) {
+                    log.error("Error generating joinb condition", e);
+                }
+            }
+        }
+        return false;
+    }
+
+    private void filterNonJoinableProposals(DBSEntity leftTable) {
+        // Remove all table proposals which don't have FKs between them and leftTable
+        List<SQLCompletionProposal> proposals = request.proposals;
+        List<SQLCompletionProposal> joinableProposals = new ArrayList<>();
+        for (SQLCompletionProposal proposal : proposals) {
+            if (proposal.getObject() instanceof DBSEntity) {
+                DBSEntity rightTable = (DBSEntity) proposal.getObject();
+                if (tableHaveJoins(rightTable, leftTable) || tableHaveJoins(leftTable, rightTable)) {
+                    proposal.setReplacementAfter(" ON");
+                    joinableProposals.add(proposal);
+                }
+            }
+        }
+        if (!joinableProposals.isEmpty()) {
+            request.proposals.clear();
+            request.proposals.addAll(joinableProposals);
+        }
+    }
+
+    private boolean tableHaveJoins(DBSEntity table1, DBSEntity table2) {
+        try {
+            Collection<? extends DBSEntityAssociation> associations = table1.getAssociations(monitor);
+            if (!CommonUtils.isEmpty(associations)) {
+                for (DBSEntityAssociation fk : associations) {
+                    if (fk.getAssociatedEntity() == table2) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        } catch (DBException e) {
+            log.error(e);
+            return false;
         }
     }
 
@@ -279,7 +355,7 @@ class SQLCompletionAnalyzer
         }
 
         final List<String> nameList = new ArrayList<>();
-        SQLDialect sqlDialect = ((SQLDataSource) dataSource).getSQLDialect();
+        SQLDialect sqlDialect = SQLUtils.getDialectFromDataSource(dataSource);
         {
             // Regex matching MUST be very fast.
             // Otherwise UI will freeze during SQL typing.
@@ -332,10 +408,14 @@ class SQLCompletionAnalyzer
             }
         }
 
+        return findObjectByFQN(sc, dataSource, nameList);
+    }
+
+    @Nullable
+    private DBSObject findObjectByFQN(DBSObjectContainer sc, DBPDataSource dataSource, List<String> nameList) {
         if (nameList.isEmpty()) {
             return null;
         }
-
         {
             List<String> unquotedNames = new ArrayList<>(nameList.size());
             for (String name : nameList) {
@@ -473,26 +553,18 @@ class SQLCompletionAnalyzer
                 } else if (!matchedObjects.isEmpty()) {
                     if (startPart != null) {
                         if (simpleMode) {
-                            Collections.sort(matchedObjects, new Comparator<DBSObject>() {
-                                @Override
-                                public int compare(DBSObject o1, DBSObject o2) {
+                            matchedObjects.sort(Comparator.comparing(DBPNamedObject::getName));
+                        } else {
+                            matchedObjects.sort((o1, o2) -> {
+                                int score1 = scoredMatches.get(o1.getName());
+                                int score2 = scoredMatches.get(o2.getName());
+                                if (score1 == score2) {
+                                    if (o1 instanceof DBSAttributeBase) {
+                                        return ((DBSAttributeBase) o1).getOrdinalPosition() - ((DBSAttributeBase) o2).getOrdinalPosition();
+                                    }
                                     return o1.getName().compareTo(o2.getName());
                                 }
-                            });
-                        } else {
-                            Collections.sort(matchedObjects, new Comparator<DBSObject>() {
-                                @Override
-                                public int compare(DBSObject o1, DBSObject o2) {
-                                    int score1 = scoredMatches.get(o1.getName());
-                                    int score2 = scoredMatches.get(o2.getName());
-                                    if (score1 == score2) {
-                                        if (o1 instanceof DBSAttributeBase) {
-                                            return ((DBSAttributeBase) o1).getOrdinalPosition() - ((DBSAttributeBase) o2).getOrdinalPosition();
-                                        }
-                                        return o1.getName().compareTo(o2.getName());
-                                    }
-                                    return score2 - score1;
-                                }
+                                return score2 - score1;
                             });
                         }
                     }

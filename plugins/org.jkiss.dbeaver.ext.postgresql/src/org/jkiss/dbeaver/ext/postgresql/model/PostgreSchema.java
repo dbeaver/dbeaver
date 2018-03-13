@@ -300,8 +300,8 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
     public boolean isSystem()
     {
         return
+            isCatalogSchema() ||
             PostgreConstants.INFO_SCHEMA_NAME.equalsIgnoreCase(name) ||
-            PostgreConstants.CATALOG_SCHEMA_NAME.equalsIgnoreCase(name) ||
             name.startsWith(PostgreConstants.TOAST_SCHEMA_PREFIX) ||
             name.startsWith(PostgreConstants.TEMP_SCHEMA_PREFIX);
     }
@@ -325,16 +325,6 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
                 types.add(dt);
             }
         }
-        if (PostgreConstants.CATALOG_SCHEMA_NAME.equals(this.getName())) {
-            // Add serial data types
-            for (Map.Entry<String,String> serialMapping : PostgreConstants.SERIAL_TYPES.entrySet()) {
-                PostgreDataType realType = dataTypeCache.getCachedObject(serialMapping.getValue());
-                if (realType != null) {
-                    PostgreDataType serialType = new PostgreDataType(realType, serialMapping.getKey());
-                    dataTypeCache.cacheObject(serialType);
-                }
-            }
-        }
         DBUtils.orderObjects(types);
         return types;
     }
@@ -342,6 +332,10 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
     @Override
     public String toString() {
         return name;
+    }
+
+    public boolean isCatalogSchema() {
+        return PostgreConstants.CATALOG_SCHEMA_NAME.equals(name);
     }
 
     class CollationCache extends JDBCObjectCache<PostgreSchema, PostgreCollation> {

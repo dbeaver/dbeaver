@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: DBeaver MySQL Support
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.mysql;singleton:=true
-Bundle-Version: 2.1.59
-Bundle-Release-Date: 20180122
+Bundle-Version: 2.1.64
+Bundle-Release-Date: 20180319
 Bundle-Activator: org.jkiss.dbeaver.ext.mysql.Activator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
@@ -13,7 +13,8 @@ Require-Bundle: org.eclipse.ui,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.core,
  org.eclipse.ui.workbench.texteditor,
- org.eclipse.ui.editors
+ org.eclipse.ui.editors,
+ org.jkiss.dbeaver.data.gis
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Vendor: JKISS

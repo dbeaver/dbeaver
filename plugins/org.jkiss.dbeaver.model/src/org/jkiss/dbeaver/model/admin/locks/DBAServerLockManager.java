@@ -27,7 +27,7 @@ import java.util.Map;
 /**
  * Lock manager
  */
-public interface DBAServerLockManager<LOCK_TYPE extends DBAServerLock<?>,LOCK_TYPE_ITEM extends DBAServerLockItem> {
+public interface DBAServerLockManager<LOCK_TYPE extends DBAServerLock, LOCK_TYPE_ITEM extends DBAServerLockItem> {
 
     DBPDataSource getDataSource();
     

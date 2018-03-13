@@ -65,10 +65,11 @@ public class ResultSetUtils
     }
 
     public static void bindAttributes(
-        DBCSession session,
-        DBCResultSet resultSet,
-        DBDAttributeBindingMeta[] bindings,
-        List<Object[]> rows) throws DBException {
+        @NotNull DBCSession session,
+        @Nullable DBCResultSet resultSet,
+        @NotNull DBDAttributeBindingMeta[] bindings,
+        @Nullable List<Object[]> rows) throws DBException
+    {
         final DBRProgressMonitor monitor = session.getProgressMonitor();
         final DBPDataSource dataSource = session.getDataSource();
         boolean readMetaData = dataSource.getContainer().getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_READ_METADATA);
@@ -83,27 +84,29 @@ public class ResultSetUtils
         try {
             SQLQuery sqlQuery = null;
             DBSEntity entity = null;
-            DBCStatement sourceStatement = resultSet.getSourceStatement();
-            if (sourceStatement != null && sourceStatement.getStatementSource() != null) {
-                DBCExecutionSource executionSource = sourceStatement.getStatementSource();
+            if (resultSet != null) {
+                DBCStatement sourceStatement = resultSet.getSourceStatement();
+                if (sourceStatement != null && sourceStatement.getStatementSource() != null) {
+                    DBCExecutionSource executionSource = sourceStatement.getStatementSource();
 
-                monitor.subTask("Discover owner entity");
-                DBSDataContainer dataContainer = executionSource.getDataContainer();
-                if (dataContainer instanceof DBSEntity) {
-                    entity = (DBSEntity)dataContainer;
-                }
-                DBCEntityMetaData entityMeta = null;
-                if (entity == null) {
-                    // Discover from entity metadata
-                    Object sourceDescriptor = executionSource.getSourceDescriptor();
-                    if (sourceDescriptor instanceof SQLQuery) {
-                        sqlQuery = (SQLQuery) sourceDescriptor;
-                        entityMeta = sqlQuery.getSingleSource();
+                    monitor.subTask("Discover owner entity");
+                    DBSDataContainer dataContainer = executionSource.getDataContainer();
+                    if (dataContainer instanceof DBSEntity) {
+                        entity = (DBSEntity) dataContainer;
                     }
-                    if (entityMeta != null) {
-                        entity = getEntityFromMetaData(monitor, dataSource, entityMeta);
-                        if (entity != null) {
-                            entityBindingMap.put(entityMeta, entity);
+                    DBCEntityMetaData entityMeta = null;
+                    if (entity == null) {
+                        // Discover from entity metadata
+                        Object sourceDescriptor = executionSource.getSourceDescriptor();
+                        if (sourceDescriptor instanceof SQLQuery) {
+                            sqlQuery = (SQLQuery) sourceDescriptor;
+                            entityMeta = sqlQuery.getSingleSource();
+                        }
+                        if (entityMeta != null) {
+                            entity = getEntityFromMetaData(monitor, dataSource, entityMeta);
+                            if (entity != null) {
+                                entityBindingMap.put(entityMeta, entity);
+                            }
                         }
                     }
                 }
@@ -174,7 +177,7 @@ public class ResultSetUtils
 */
                     }
 
-                    if (tableColumn != null && binding.setEntityAttribute(tableColumn, true)) {
+                    if (tableColumn != null && binding.setEntityAttribute(tableColumn, true) && rows != null) {
                         // We have new type and new value handler.
                         // We have to fix already fetched values.
                         // E.g. we fetched strings and found out that we should handle them as LOBs or enums.
@@ -216,7 +219,7 @@ public class ResultSetUtils
             }
             monitor.worked(1);
 
-            if (readReferences) {
+            if (readReferences && rows != null) {
                 monitor.subTask("Late bindings");
                 // Read nested bindings
                 for (DBDAttributeBinding binding : bindings) {

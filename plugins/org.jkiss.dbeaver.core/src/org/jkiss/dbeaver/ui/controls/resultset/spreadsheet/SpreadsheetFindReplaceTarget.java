@@ -23,6 +23,7 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
@@ -128,7 +129,10 @@ class SpreadsheetFindReplaceTarget implements IFindReplaceTarget, IFindReplaceTa
     {
         this.sessionActive = false;
         this.searchPattern = null;
-        this.owner.getControl().redraw();
+        Control control = this.owner.getControl();
+        if (control != null && !control.isDisposed()) {
+            control.redraw();
+        }
     }
 
     @Override

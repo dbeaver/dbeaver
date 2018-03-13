@@ -39,6 +39,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 
 class PostgreBackupWizard extends PostgreBackupRestoreWizard<PostgreDatabaseBackupInfo> implements IExportWizard {
@@ -164,21 +165,27 @@ class PostgreBackupWizard extends PostgreBackupRestoreWizard<PostgreDatabaseBack
     {
         super.startProcessHandler(monitor, arg, processBuilder, process);
 
-        String outFileName = GeneralUtils.replaceVariables(outputFilePattern, new GeneralUtils.IVariableResolver() {
-            @Override
-            public String get(String name) {
-                switch (name) {
-                    case VARIABLE_DATABASE:
-                        return arg.getDatabase().getName();
-                    case VARIABLE_HOST:
-                        return arg.getDatabase().getDataSource().getContainer().getConnectionConfiguration().getHostName();
-                    case VARIABLE_TIMESTAMP:
-                        return RuntimeUtils.getCurrentTimeStamp();
-                    default:
-                        System.getProperty(name);
-                }
-                return null;
+        String outFileName = GeneralUtils.replaceVariables(outputFilePattern, name -> {
+            switch (name) {
+                case VARIABLE_DATABASE:
+                    return arg.getDatabase().getName();
+                case VARIABLE_HOST:
+                    return arg.getDatabase().getDataSource().getContainer().getConnectionConfiguration().getHostName();
+                case VARIABLE_TABLE:
+                    final Iterator<PostgreTableBase> iterator = arg.getTables() == null ? null : arg.getTables().iterator();
+                    if (iterator != null && iterator.hasNext()) {
+                        return iterator.next().getName();
+                    } else {
+                        return "null";
+                    }
+                case VARIABLE_TIMESTAMP:
+                    return RuntimeUtils.getCurrentTimeStamp();
+                case VARIABLE_DATE:
+                    return RuntimeUtils.getCurrentDate();
+                default:
+                    System.getProperty(name);
             }
+            return null;
         });
 
         File outFile = new File(outputFolder, outFileName);

@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
- * Copyright (C) 2017 Alexander Fedorov (alexander.fedorov@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,33 +15,47 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.jkiss.dbeaver.debug.core.model;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.debug.core.DebugEvent;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IBreakpoint;
 import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.debug.core.model.IThread;
 import org.eclipse.osgi.util.NLS;
-import org.jkiss.dbeaver.debug.DBGController;
 import org.jkiss.dbeaver.debug.DBGException;
 import org.jkiss.dbeaver.debug.DBGStackFrame;
 import org.jkiss.dbeaver.debug.core.DebugCore;
+import org.jkiss.dbeaver.debug.internal.core.DebugCoreMessages;
 
 /**
  * Delegates mostly everything to its debug target
  *
  */
-public abstract class DatabaseThread extends DatabaseDebugElement implements IThread {
-    
-    private final Object sessionKey;
+public class DatabaseThread extends DatabaseDebugElement implements IThread {
 
-    public DatabaseThread(IDatabaseDebugTarget target, Object sessionKey) {
+    private boolean stepping = false;
+
+    private String name = DebugCoreMessages.DatabaseThread_name;
+
+    private List<DatabaseStackFrame> frames = new ArrayList<>(1);
+
+    public DatabaseThread(DatabaseDebugTarget target) {
         super(target);
-        this.sessionKey = sessionKey;
+    }
+
+    @Override
+    public String getName() throws DebugException {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
     }
 
     @Override
@@ -61,74 +75,58 @@ public abstract class DatabaseThread extends DatabaseDebugElement implements ITh
 
     @Override
     public void resume() throws DebugException {
-        // TODO Auto-generated method stub
-
+        aboutToResume(DebugEvent.CLIENT_REQUEST, false);
+        getDebugTarget().resume();
     }
 
     @Override
     public void suspend() throws DebugException {
-        // TODO Auto-generated method stub
-
+        getDebugTarget().suspend();
     }
 
     @Override
     public boolean canStepInto() {
-        DBGController controller = getController();
-        return controller.canStepInto(sessionKey);
+        return getDatabaseDebugTarget().canStepInto();
     }
 
     @Override
     public boolean canStepOver() {
-        DBGController controller = getController();
-        return controller.canStepOver(sessionKey);
+        return getDatabaseDebugTarget().canStepOver();
     }
 
     @Override
     public boolean canStepReturn() {
-        DBGController controller = getController();
-        return controller.canStepReturn(sessionKey);
+        return getDatabaseDebugTarget().canStepReturn();
     }
 
     @Override
     public boolean isStepping() {
-        // TODO Auto-generated method stub
-        return false;
+        return stepping;
     }
 
     @Override
     public void stepInto() throws DebugException {
-        DBGController controller = getController();
-        try {
-            controller.stepInto(sessionKey);
-        } catch (DBGException e) {
-            String message = NLS.bind("Step into failed for session {0}", sessionKey);
-            IStatus status = DebugCore.newErrorStatus(message, e);
-            throw new DebugException(status);
-        }
+        aboutToResume(DebugEvent.STEP_INTO, true);
+        getDatabaseDebugTarget().stepInto();
     }
 
     @Override
     public void stepOver() throws DebugException {
-        DBGController controller = getController();
-        try {
-            controller.stepOver(sessionKey);
-        } catch (DBGException e) {
-            String message = NLS.bind("Step over failed for session {0}", sessionKey);
-            IStatus status = DebugCore.newErrorStatus(message, e);
-            throw new DebugException(status);
-        }
+        aboutToResume(DebugEvent.STEP_OVER, true);
+        getDatabaseDebugTarget().stepOver();
     }
 
     @Override
     public void stepReturn() throws DebugException {
-        DBGController controller = getController();
-        try {
-            controller.stepReturn(sessionKey);
-        } catch (DBGException e) {
-            String message = NLS.bind("Step return failed for session {0}", sessionKey);
-            IStatus status = DebugCore.newErrorStatus(message, e);
-            throw new DebugException(status);
-        }
+        aboutToResume(DebugEvent.STEP_RETURN, true);
+        getDatabaseDebugTarget().stepReturn();
+    }
+
+    private void aboutToResume(int detail, boolean stepping) {
+        frames.clear();
+        setStepping(stepping);
+        // setBreakpoints(null);
+        fireResumeEvent(detail);
     }
 
     @Override
@@ -143,29 +141,46 @@ public abstract class DatabaseThread extends DatabaseDebugElement implements ITh
 
     @Override
     public void terminate() throws DebugException {
+        frames.clear();
         getDebugTarget().terminate();
     }
 
     @Override
     public IStackFrame[] getStackFrames() throws DebugException {
-        List<DatabaseStackFrame> frames = new ArrayList<DatabaseStackFrame>();
-        DBGController controller = getController();
-        try {
-            List<? extends DBGStackFrame> stack = controller.getStack(sessionKey);
-            for (DBGStackFrame dbgStackFrame : stack) {
-                DatabaseStackFrame frame = new DatabaseStackFrame(this, dbgStackFrame, sessionKey);
-                frames.add(frame);
+        if (isSuspended()) {
+            if (frames.size() == 0) {
+                extractStackFrames();
             }
-        } catch (DBGException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
         }
-        return (IStackFrame[]) frames.toArray(new IStackFrame[frames.size()]);
+        return frames.toArray(new IStackFrame[frames.size()]);
+    }
+
+    protected void extractStackFrames() throws DebugException {
+        List<? extends DBGStackFrame> stackFrames;
+        try {
+            stackFrames = getDatabaseDebugTarget().requestStackFrames();
+            rebuildStack(stackFrames);
+        } catch (DBGException e) {
+            String message = NLS.bind("Error reading stack for {0}", getName());
+            IStatus status = DebugCore.newErrorStatus(message, e);
+            throw new DebugException(status);
+        }
     }
 
     @Override
     public boolean hasStackFrames() throws DebugException {
         return true;
+    }
+
+    public void rebuildStack(List<? extends DBGStackFrame> stackFrames) {
+        for (DBGStackFrame dbgStackFrame : stackFrames) {
+            addFrame(dbgStackFrame);
+        }
+    }
+
+    private void addFrame(DBGStackFrame stackFrameId) {
+        DatabaseStackFrame frame = new DatabaseStackFrame(this, stackFrameId);
+        frames.add(frame);
     }
 
     @Override
@@ -176,7 +191,14 @@ public abstract class DatabaseThread extends DatabaseDebugElement implements ITh
 
     @Override
     public IStackFrame getTopStackFrame() throws DebugException {
-        // TODO Auto-generated method stub
+        if (isSuspended()) {
+            if (frames.size() == 0) {
+                extractStackFrames();
+            }
+            if (frames.size() > 0) {
+                return frames.get(0);
+            }
+        }
         return null;
     }
 
@@ -187,13 +209,11 @@ public abstract class DatabaseThread extends DatabaseDebugElement implements ITh
     }
 
     public void resumedByTarget() {
-        // TODO Auto-generated method stub
-
+        aboutToResume(DebugEvent.CLIENT_REQUEST, false);
     }
 
-    public void setStepping(boolean b) {
-        // TODO Auto-generated method stub
-
+    public void setStepping(boolean stepping) {
+        this.stepping = stepping;
     }
 
 }

@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
- * Copyright (C) 2017 Alexander Fedorov (alexander.fedorov@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.jkiss.dbeaver.runtime.internal.ide.ui.handlers;
 
 import java.nio.file.Path;
@@ -40,8 +41,7 @@ public class LinkFileHandler extends CreateLinkHandler {
     private static final String COMMAND_PARAMETER_LINK_FILE_CONTENTTYPE = "org.jkiss.dbeaver.core.resource.link.file.contenttype"; //$NON-NLS-1$
 
     @Override
-    protected Path[] selectTargets(ExecutionEvent event)
-    {
+    protected Path[] selectTargets(ExecutionEvent event) {
         Shell shell = HandlerUtil.getActiveShell(event);
         FileDialog dialog = new FileDialog(shell, SWT.MULTI);
         String contentTypeId = event.getParameter(COMMAND_PARAMETER_LINK_FILE_CONTENTTYPE);
@@ -81,8 +81,7 @@ public class LinkFileHandler extends CreateLinkHandler {
     }
 
     @Override
-    protected IStatus createLink(IContainer container, IProgressMonitor monitor, Path... targets) 
-    {
+    protected IStatus createLink(IContainer container, IProgressMonitor monitor, Path... targets) {
         return WorkspaceResources.createLinkedFiles(container, monitor, targets);
     }
 

@@ -63,6 +63,7 @@ public class EditConnectionWizard extends ConnectionWizard
     private ConnectionPageNetwork pageNetwork;
     private EditShellCommandsDialogPage pageEvents;
     private List<WizardPrefPage> prefPages = new ArrayList<>();
+    private PrefPageConnections pageClientSettings;
 
     /**
      * Constructor for SampleNewWizard.
@@ -136,9 +137,16 @@ public class EditConnectionWizard extends ConnectionWizard
             pageSettings.addSubPage(pageEvents);
         }
 
+        if (!embedded && pageSettings != null) {
+            pageClientSettings = new PrefPageConnections();
+            pageSettings.addSubPage(
+                createPreferencePage(pageClientSettings, CoreMessages.dialog_connection_edit_wizard_connections, CoreMessages.dialog_connection_edit_wizard_connections_description));
+        }
+
         addPreferencePage(new PrefPageMetaData(), CoreMessages.dialog_connection_edit_wizard_metadata,  CoreMessages.dialog_connection_edit_wizard_metadata_description);
+        addPreferencePage(new PrefPageErrorHandle(), CoreMessages.pref_page_error_handle_name,  CoreMessages.pref_page_error_handle_description);
         WizardPrefPage rsPage = addPreferencePage(new PrefPageResultSetMain(), CoreMessages.dialog_connection_edit_wizard_resultset,  CoreMessages.dialog_connection_edit_wizard_resultset_description);
-        rsPage.addSubPage(new PrefPageResultSetEditors(), CoreMessages.dialog_connection_edit_wizard_binary, CoreMessages.dialog_connection_edit_wizard_binary_description);
+        rsPage.addSubPage(new PrefPageResultSetEditors(), CoreMessages.dialog_connection_edit_wizard_editors, CoreMessages.dialog_connection_edit_wizard_editors_description);
         rsPage.addSubPage(new PrefPageDataFormat(), CoreMessages.dialog_connection_edit_wizard_data_format, CoreMessages.dialog_connection_edit_wizard_data_format_description);
         rsPage.addSubPage(new PrefPageResultSetPresentation(), CoreMessages.dialog_connection_edit_wizard_presentation, CoreMessages.dialog_connection_edit_wizard_presentation_description);
         WizardPrefPage sqlPage = addPreferencePage(new PrefPageSQLEditor(), CoreMessages.dialog_connection_edit_wizard_sql_editor, CoreMessages.dialog_connection_edit_wizard_sql_editor_description);
@@ -147,12 +155,17 @@ public class EditConnectionWizard extends ConnectionWizard
 
     private WizardPrefPage addPreferencePage(PreferencePage prefPage, String title, String description)
     {
+        WizardPrefPage wizardPage = createPreferencePage(prefPage, title, description);
+        addPage(wizardPage);
+        return wizardPage;
+    }
+
+    private WizardPrefPage createPreferencePage(PreferencePage prefPage, String title, String description) {
         WizardPrefPage wizardPage = new WizardPrefPage(prefPage, title, description);
         prefPages.add(wizardPage);
         if (prefPage instanceof IWorkbenchPropertyPage) {
             ((IWorkbenchPropertyPage) prefPage).setElement(originalDataSource);
         }
-        addPage(wizardPage);
         return wizardPage;
     }
 

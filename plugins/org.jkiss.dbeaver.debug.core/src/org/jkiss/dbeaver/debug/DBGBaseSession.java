@@ -23,23 +23,19 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 
 public abstract class DBGBaseSession implements DBGSession {
 
-    private static final Log log = Log.getLog(DBGBaseSession.class);
-
     protected final ReentrantReadWriteLock lock = new ReentrantReadWriteLock(true);
 
     private final DBGBaseController controller;
 
-    private FutureTask<DBGEvent> task;
+    protected FutureTask<Void> task;
 
     private Thread workerThread = null;
 
@@ -47,7 +43,7 @@ public abstract class DBGBaseSession implements DBGSession {
 
     private final List<DBGBreakpointDescriptor> breakpoints = new ArrayList<>(1);
 
-    public DBGBaseSession(DBGBaseController controller) {
+    protected DBGBaseSession(DBGBaseController controller) {
         this.controller = controller;
     }
 
@@ -71,7 +67,7 @@ public abstract class DBGBaseSession implements DBGSession {
         this.connection = connection;
     }
 
-    public DBGBaseController getController() {
+    protected DBGBaseController getController() {
         return controller;
     }
 
@@ -93,31 +89,7 @@ public abstract class DBGBaseSession implements DBGSession {
         return (task == null ? false : !task.isDone()) && (workerThread == null ? false : workerThread.isAlive());
     }
 
-    /**
-     * Return true if session waiting target connection (on breakpoint, after
-     * step or continue) in debug thread
-     * 
-     * @return boolean
-     */
-    public boolean isDone() {
-        if (task == null) {
-            return true;
-        }
-        if (task.isDone()) {
-            try {
-                DBGEvent dbgEvent = task.get();
-                getController().fireEvent(dbgEvent);
-            } catch (InterruptedException e) {
-                log.error("DEBUG INTERRUPT ERROR ", e);
-                return false;
-            } catch (ExecutionException e) {
-                log.error("DEBUG WARNING ", e);
-                return false;
-            }
-            return true;
-        }
-        return false;
-    }
+    public abstract boolean isDone();
 
     /**
      * Start thread for SQL command
@@ -126,46 +98,39 @@ public abstract class DBGBaseSession implements DBGSession {
      * @param name
      * @throws DBGException
      */
-    protected void runAsync(String commandSQL, String name, DBGEvent event) throws DBGException {
+    protected void runAsync(String commandSQL, String name, DBGEvent begin, DBGEvent end) throws DBGException {
         Connection connection = getConnection();
         try (Statement stmt = connection.createStatement()) {
             connection.setAutoCommit(false);
-            DBGWorker worker = new DBGWorker(connection, commandSQL, event);
-            task = new FutureTask<DBGEvent>(worker);
-            workerThread = new Thread(task);
-            workerThread.setName(name);
-            workerThread.start();
         } catch (SQLException e) {
             throw new DBGException("SQL error", e);
         }
+        DBGWorker worker = new DBGWorker(this, commandSQL, begin, end);
+        task = new FutureTask<Void>(worker);
+        workerThread = new Thread(task);
+        workerThread.setName(name);
+        workerThread.start();
     }
 
-    public void close() {
+    public void close() throws DBGException {
         lock.writeLock().lock();
         try {
-            if (!isDone()) {
+            if (!isAttached()) {
+                lock.writeLock().unlock();
+                throw new DBGException("Debug session not attached");
+            }
+            doDetach();
+            if (!isDone() && task != null) {
                 task.cancel(true);
             }
+
             connection.close();
         } finally {
             lock.writeLock().unlock();
         }
     }
 
-    @Override
-    public void abort() throws DBGException {
-        acquireReadLock();
-        try (Statement stmt = getConnection().createStatement()) {
-            String sqlCommand = composeAbortCommand();
-            stmt.execute(sqlCommand);
-            // FIXME: move to finally?
-            task = null;
-        } catch (SQLException e) {
-            throw new DBGException("SQL error", e);
-        } finally {
-            lock.readLock().unlock();
-        }
-    }
+    protected abstract void doDetach() throws DBGException;
 
     protected abstract String composeAbortCommand();
 
@@ -259,6 +224,10 @@ public abstract class DBGBaseSession implements DBGSession {
             lock.writeLock().unlock();
             throw new DBGException("Debug session in incorrect state");
         }
+    }
+
+    protected void fireEvent(DBGEvent event) {
+        controller.fireEvent(event);
     }
 
 }

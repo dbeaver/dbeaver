@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.ArrayUtils;
@@ -476,12 +477,14 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
             return false;
         }
         // Read property using reflection
-        Object valueObject = getValueObject();
+        final Object valueObject = getValueObject();
         if (valueObject == null) {
             return false;
         }
-        String propertyName = meta.getPropertyName();
-        Object propertyValue = extractPropertyValue(monitor, valueObject, propertyName);
+        final String propertyName = meta.getPropertyName();
+        final PropertyValueReader valueReader = new PropertyValueReader(monitor, propertyName, valueObject);
+        DBUtils.tryExecuteRecover(monitor, getDataSource(), valueReader);
+        final Object propertyValue = valueReader.propertyValue;
         if (propertyValue == null) {
             return false;
         }
@@ -490,10 +493,10 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
             return false;
         }
 
-        DBSObjectFilter filter = getNodeFilter(meta, false);
+        final DBSObjectFilter filter = getNodeFilter(meta, false);
         this.filtered = filter != null && !filter.isNotApplicable();
 
-        Collection<?> itemList = (Collection<?>) propertyValue;
+        final Collection<?> itemList = (Collection<?>) propertyValue;
         if (itemList.isEmpty()) {
             return false;
         }
@@ -503,8 +506,8 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
             return false;
         }
 
-        DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
-        boolean showSystem = dataSourceContainer == null || dataSourceContainer.isShowSystemObjects();
+        final DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
+        final boolean showSystem = dataSourceContainer == null || dataSourceContainer.isShowSystemObjects();
         for (Object childItem : itemList) {
             if (childItem == null) {
                 continue;
@@ -776,7 +779,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
     ////////////////////////////////////////////////////////////////////////////////////
     // Reflection utils
 
-    public static Object extractPropertyValue(DBRProgressMonitor monitor, Object object, String propertyName)
+    private static Object extractPropertyValue(DBRProgressMonitor monitor, Object object, String propertyName)
         throws DBException
     {
         // Read property using reflection
@@ -841,4 +844,25 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
         return clazz == Object.class ? null : findPropertyGetter(clazz.getSuperclass(), getName, isName);
     }
 
+    private static class PropertyValueReader implements DBRRunnableWithProgress {
+        private final DBRProgressMonitor monitor;
+        private final String propertyName;
+        private final Object valueObject;
+        private Object propertyValue;
+
+        PropertyValueReader(DBRProgressMonitor monitor, String propertyName, Object valueObject) {
+            this.monitor = monitor;
+            this.propertyName = propertyName;
+            this.valueObject = valueObject;
+        }
+
+        @Override
+        public void run(DBRProgressMonitor param) throws InvocationTargetException, InterruptedException {
+            try {
+                propertyValue = extractPropertyValue(monitor, valueObject, propertyName);
+            } catch (DBException e) {
+                throw new InvocationTargetException(e);
+            }
+        }
+    }
 }

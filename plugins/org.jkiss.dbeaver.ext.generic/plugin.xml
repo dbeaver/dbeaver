@@ -118,6 +118,7 @@
                     <property id="script-delimiter-redefiner" label="Script delimiter redefiner" description="SQL clause which redefines script delimiter value" type="string" required="false" defaultValue=";"/>
                     <property id="script-delimiter-after-query" label="Use script delimiter after query" description="Keep SQL script delimiter after each SQL query" type="boolean" required="false" defaultValue="false"/>
                     <property id="script-delimiter-after-block" label="Use script delimiter after SQL block" description="Keep SQL script delimiter after SQL script blocks (BEGIN/END)" type="boolean" required="false" defaultValue="false"/>
+                    <property id="string-escape-char" label="String escape character" description="Character used to escape special symbols in strings" type="string" required="false" defaultValue=""/>
                     <property id="meta-model" label="Meta model type" description="Type of metadata reading model - standard or indexed" type="string" required="false" defaultValue="" validValues="standard,indexed"/>
                     <property id="all-objects-pattern" label="All Objects Pattern" description="SQL pattern for all metadata objects" type="string" required="false" defaultValue="null" validValues="null,%"/>
                     <property id="omit-catalog" label="Omit catalog(s)" description="Do not read and use catalog (aka database) information" type="boolean" required="false" defaultValue="false"/>
@@ -377,6 +378,10 @@
                     defaultPort="1533"
                     webURL="http://www.developers.net/ibmshowcase/focus/Informix"
                     description="IBM Informix Dynamic Server">
+
+                    <file type="jar" path="repo:/drivers/informix/ifxjdbc.jar" bundle="!drivers.informix"/>
+                    <file type="jar" path="repo:/drivers/informix/ifxlang.jar" bundle="!drivers.informix"/>
+                    <file type="license" path="repo:/drivers/informix/LICENSE.txt" bundle="!drivers.informix"/>
 
                     <file type="jar" path="drivers/informix/ifxjdbc.jar" bundle="drivers.informix"/>
                     <file type="jar" path="drivers/informix/ifxlang.jar" bundle="drivers.informix"/>
@@ -867,6 +872,7 @@
 
                     <parameter name="query-get-active-db" value="select current_database()"/>
                     <parameter name="query-set-active-db" value="use [?]"/>
+                    <parameter name="string-escape-char" value="\"/>
                 </driver>
 
                 <!-- AWS -->
@@ -962,9 +968,22 @@
                         class="cubrid.jdbc.driver.CUBRIDDriver"
                         sampleURL="jdbc:CUBRID:{host}:{port}:{server}:{database}::"
                         defaultPort="33000"
-                        description="CUBRID JDBC driver (beta)"
+                        description="CUBRID JDBC driver"
                         webURL="https://www.cubrid.org/">
                     <file type="jar" path="http://ftp.cubrid.org/CUBRID_Drivers/JDBC_Driver/JDBC-10.1.0.7663-cubrid.jar"/>
+                </driver>
+
+                <!-- SnowFlake -->
+                <driver
+                        id="snowflake_generic"
+                        label="Snowflake"
+                        class="net.snowflake.client.jdbc.SnowflakeDriver"
+                        icon="icons/snowflake_icon.png"
+                        sampleURL="jdbc:snowflake://{host}/?[db={database}]"
+                        defaultPort=""
+                        description="Snowflake JDBC driver"
+                        webURL="https://docs.snowflake.net/manuals/user-guide/jdbc-configure.html">
+                    <file type="jar" path="maven:/net.snowflake:snowflake-jdbc:RELEASE"/>
                 </driver>
 
                 <!-- Solr -->

@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.DBPErrorAssistant;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -59,41 +60,15 @@ public class GenericMetaModel {
         return descriptor == null ? null : descriptor.getObject(id);
     }
 
-    public String getViewDDL(DBRProgressMonitor monitor, GenericTable sourceObject, Map<String, Object> options) throws DBException {
-        return "-- View definition not available";
+    //////////////////////////////////////////////////////
+    // Datasource
+
+    public GenericDataSource createDataSourceImpl(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
+        return new GenericDataSource(monitor, container, this, new GenericSQLDialect());
     }
 
-    public String getTableDDL(DBRProgressMonitor monitor, GenericTable sourceObject, Map<String, Object> options) throws DBException {
-        return JDBCUtils.generateTableDDL(monitor, sourceObject, options, false);
-    }
-
-    public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
-        return "-- Source code not available";
-    }
-
-    public boolean supportsSequences(@NotNull GenericDataSource dataSource) {
-        return false;
-    }
-
-    public List<GenericSequence> loadSequences(@NotNull DBRProgressMonitor monitor, @NotNull GenericStructContainer container) throws DBException {
-        return new ArrayList<>();
-    }
-
-    public boolean supportsTriggers(@NotNull GenericDataSource dataSource) {
-        return false;
-    }
-
-    public boolean supportsDatabaseTriggers(@NotNull GenericDataSource dataSource) {
-        return false;
-    }
-
-    public List<? extends GenericTrigger> loadTriggers(DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTable table) throws DBException {
-        return new ArrayList<>();
-    }
-
-    public String getTriggerDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericTrigger trigger) throws DBException {
-        return "-- Source code not available";
-    }
+    //////////////////////////////////////////////////////
+    // Misc
 
     public JDBCBasicDataTypeCache<GenericStructContainer, ? extends JDBCDataType> createDataTypeCache(@NotNull GenericStructContainer container) {
         return new GenericDataTypeCache(container);
@@ -123,17 +98,8 @@ public class GenericMetaModel {
         return true;
     }
 
-    public boolean isSystemTable(GenericTable table) {
-        final String tableType = table.getTableType().toUpperCase(Locale.ENGLISH);
-        return tableType.contains("SYSTEM");
-    }
-
-    public boolean isView(GenericTable table) {
-        return table.getTableType().toUpperCase(Locale.ENGLISH).contains("VIEW");
-    }
-
     //////////////////////////////////////////////////////
-    // Implementations
+    // Schema load
 
     public List<GenericSchema> loadSchemas(JDBCSession session, GenericDataSource dataSource, GenericCatalog catalog)
         throws DBException
@@ -219,6 +185,13 @@ public class GenericMetaModel {
         }
     }
 
+    public GenericSchema createSchemaImpl(@NotNull GenericDataSource dataSource, @Nullable GenericCatalog catalog, @NotNull String schemaName) throws DBException {
+        return new GenericSchema(dataSource, catalog, schemaName);
+    }
+
+    //////////////////////////////////////////////////////
+    // Procedure load
+
     public void loadProcedures(DBRProgressMonitor monitor, @NotNull GenericObjectContainer container)
         throws DBException
     {
@@ -249,9 +222,11 @@ public class GenericMetaModel {
                         case DatabaseMetaData.procedureResultUnknown: procedureType = DBSProcedureType.PROCEDURE; break;
                         default: procedureType = DBSProcedureType.UNKNOWN; break;
                     }
-                    if (specificName == null && procedureName.indexOf(';') != -1) {
+                    if (procedureName.indexOf(';') != -1) {
                         // [JDBC: SQL Server native driver]
-                        specificName = procedureName;
+                        if (CommonUtils.isEmpty(specificName)) {
+                            specificName = procedureName;
+                        }
                         procedureName = procedureName.substring(0, procedureName.lastIndexOf(';'));
                     }
                     // Check for packages. Oracle (and may be some other databases) uses catalog name as storage for package name
@@ -353,18 +328,6 @@ public class GenericMetaModel {
         }
     }
 
-    public GenericDataSource createDataSourceImpl(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException {
-        return new GenericDataSource(monitor, container, this, new GenericSQLDialect());
-    }
-
-    public GenericCatalog createCatalogImpl(@NotNull GenericDataSource dataSource, @NotNull String catalogName) {
-        return new GenericCatalog(dataSource, catalogName);
-    }
-
-    public GenericSchema createSchemaImpl(@NotNull GenericDataSource dataSource, @Nullable GenericCatalog catalog, @NotNull String schemaName) throws DBException {
-        return new GenericSchema(dataSource, catalog, schemaName);
-    }
-
     public GenericProcedure createProcedureImpl(
         GenericStructContainer container,
         String procedureName,
@@ -382,6 +345,51 @@ public class GenericMetaModel {
             functionResultType);
     }
 
+    public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
+        return "-- Source code not available";
+    }
+
+    //////////////////////////////////////////////////////
+    // Catalog load
+
+    public GenericCatalog createCatalogImpl(@NotNull GenericDataSource dataSource, @NotNull String catalogName) {
+        return new GenericCatalog(dataSource, catalogName);
+    }
+
+    //////////////////////////////////////////////////////
+    // Tables
+
+    /**
+     * Prepares statement which returns results with following columns (the same as in JDBC spec).
+     * May also contain any other db-specific columns
+     *  <OL>
+     *  <LI><B>TABLE_CAT</B> String {@code =>} table catalog (may be <code>null</code>)
+     *  <LI><B>TABLE_SCHEM</B> String {@code =>} table schema (may be <code>null</code>)
+     *  <LI><B>TABLE_NAME</B> String {@code =>} table name
+     *  <LI><B>TABLE_TYPE</B> String {@code =>} table type.  Typical types are "TABLE",
+     *                  "VIEW", "SYSTEM TABLE", "GLOBAL TEMPORARY",
+     *                  "LOCAL TEMPORARY", "ALIAS", "SYNONYM".
+     *  <LI><B>REMARKS</B> String {@code =>} explanatory comment on the table
+     *  <LI><B>TYPE_CAT</B> String {@code =>} the types catalog (may be <code>null</code>)
+     *  <LI><B>TYPE_SCHEM</B> String {@code =>} the types schema (may be <code>null</code>)
+     *  <LI><B>TYPE_NAME</B> String {@code =>} type name (may be <code>null</code>)
+     *  <LI><B>SELF_REFERENCING_COL_NAME</B> String {@code =>} name of the designated
+     *                  "identifier" column of a typed table (may be <code>null</code>)
+     *  <LI><B>REF_GENERATION</B> String {@code =>} specifies how values in
+     *                  SELF_REFERENCING_COL_NAME are created. Values are
+     *                  "SYSTEM", "USER", "DERIVED". (may be <code>null</code>)
+     *  </OL>
+     */
+    public JDBCStatement prepareTableLoadStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @Nullable GenericTable object, @Nullable String objectName)
+        throws SQLException
+    {
+        return session.getMetaData().getTables(
+            owner.getCatalog() == null ? null : owner.getCatalog().getName(),
+            owner.getSchema() == null ? null : owner.getSchema().getName(),
+            object == null && objectName == null ? owner.getDataSource().getAllObjectsPattern() : (object != null ? object.getName() : objectName),
+            null).getSourceStatement();
+    }
+
     public GenericTable createTableImpl(
         GenericStructContainer container,
         @Nullable String tableName,
@@ -394,6 +402,39 @@ public class GenericMetaModel {
             tableType,
             dbResult);
     }
+
+    public String getViewDDL(DBRProgressMonitor monitor, GenericTable sourceObject, Map<String, Object> options) throws DBException {
+        return "-- View definition not available";
+    }
+
+    public String getTableDDL(DBRProgressMonitor monitor, GenericTable sourceObject, Map<String, Object> options) throws DBException {
+        return JDBCUtils.generateTableDDL(monitor, sourceObject, options, false);
+    }
+
+    public boolean isSystemTable(GenericTable table) {
+        final String tableType = table.getTableType().toUpperCase(Locale.ENGLISH);
+        return tableType.contains("SYSTEM");
+    }
+
+    public boolean isView(GenericTable table) {
+        return table.getTableType().toUpperCase(Locale.ENGLISH).contains("VIEW");
+    }
+
+    //////////////////////////////////////////////////////
+    // Table columns
+
+    public GenericTableColumn createTableColumnImpl(JDBCSession session, JDBCResultSet dbResult, GenericTable table, String columnName, String typeName, int valueType, int sourceType, int ordinalPos, long columnSize, long charLength, Integer scale, Integer precision, int radix, boolean notNull, String remarks, String defaultValue, boolean autoIncrement, boolean autoGenerated) throws DBException {
+        return new GenericTableColumn(table,
+            columnName,
+            typeName, valueType, sourceType, ordinalPos,
+            columnSize,
+            charLength, scale, precision, radix, notNull,
+            remarks, defaultValue, autoIncrement, autoGenerated
+        );
+    }
+
+    //////////////////////////////////////////////////////
+    // Indexes
 
     public GenericTableIndex createIndexImpl(
         GenericTable table,
@@ -414,13 +455,35 @@ public class GenericMetaModel {
             persisted);
     }
 
-    public GenericTableColumn createTableColumnImpl(JDBCSession session, JDBCResultSet dbResult, GenericTable table, String columnName, String typeName, int valueType, int sourceType, int ordinalPos, long columnSize, long charLength, Integer scale, Integer precision, int radix, boolean notNull, String remarks, String defaultValue, boolean autoIncrement, boolean autoGenerated) throws DBException {
-        return new GenericTableColumn(table,
-            columnName,
-            typeName, valueType, sourceType, ordinalPos,
-            columnSize,
-            charLength, scale, precision, radix, notNull,
-            remarks, defaultValue, autoIncrement, autoGenerated
-        );
+    //////////////////////////////////////////////////////
+    // Sequences
+
+    public boolean supportsSequences(@NotNull GenericDataSource dataSource) {
+        return false;
     }
+
+    public List<GenericSequence> loadSequences(@NotNull DBRProgressMonitor monitor, @NotNull GenericStructContainer container) throws DBException {
+        return new ArrayList<>();
+    }
+
+    //////////////////////////////////////////////////////
+    // Triggers
+
+    public boolean supportsTriggers(@NotNull GenericDataSource dataSource) {
+        return false;
+    }
+
+    public boolean supportsDatabaseTriggers(@NotNull GenericDataSource dataSource) {
+        return false;
+    }
+
+    public List<? extends GenericTrigger> loadTriggers(DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTable table) throws DBException {
+        return new ArrayList<>();
+    }
+
+    public String getTriggerDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericTrigger trigger) throws DBException {
+        return "-- Source code not available";
+    }
+
+
 }

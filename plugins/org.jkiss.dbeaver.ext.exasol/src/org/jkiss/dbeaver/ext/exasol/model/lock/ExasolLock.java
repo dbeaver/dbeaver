@@ -28,7 +28,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 
-public class ExasolLock implements DBAServerLock<BigInteger> {
+public class ExasolLock implements DBAServerLock {
 	
 	 private long    waitSessionId;
 	 private String waitUserName;
@@ -42,8 +42,8 @@ public class ExasolLock implements DBAServerLock<BigInteger> {
 	 private String status;
 	 private Timestamp waitLoginTime;
     
-    DBAServerLock<BigInteger> hold = null;
-    List<DBAServerLock<BigInteger>> waiters = new ArrayList<>(0); 
+    private DBAServerLock hold = null;
+    private List<DBAServerLock> waiters = new ArrayList<>(0);
     
     public ExasolLock(ResultSet dbResult) {
    	 this.waitSessionId = JDBCUtils.safeGetLong(dbResult, "W_SESSION_ID");
@@ -67,11 +67,11 @@ public class ExasolLock implements DBAServerLock<BigInteger> {
  	}
 
  	@Override
- 	public DBAServerLock<BigInteger> getHoldBy() {
+ 	public DBAServerLock getHoldBy() {
  		return hold;
  	}
 
- 	public DBAServerLock<BigInteger> getHold() {
+ 	public DBAServerLock getHold() {
  		return hold;
  	}
 
@@ -82,7 +82,7 @@ public class ExasolLock implements DBAServerLock<BigInteger> {
 
 
  	@Override
- 	public List<DBAServerLock<BigInteger>> waitThis() {		
+ 	public List<DBAServerLock> waitThis() {
  		return this.waiters;
  	}
 
@@ -93,8 +93,8 @@ public class ExasolLock implements DBAServerLock<BigInteger> {
 
  	@SuppressWarnings("unchecked")
  	@Override
- 	public void setHoldBy(DBAServerLock<?> lock) {
- 		this.hold = (DBAServerLock<BigInteger>) lock;		
+ 	public void setHoldBy(DBAServerLock lock) {
+ 		this.hold = lock;
  	}
 
  	@Override

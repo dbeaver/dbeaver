@@ -21,6 +21,11 @@ package org.jkiss.dbeaver.core;
  */
 public interface CoreCommands
 {
+    String GROUP_TOOLS = "tools";
+    String GROUP_TOOLS_END = "tools_end";
+    String GROUP_NAVIGATOR_ADDITIONS = "navigator_additions";
+
+
     String CMD_COPY_SPECIAL = "org.jkiss.dbeaver.core.edit.copy.special"; //$NON-NLS-1$
     String CMD_PASTE_SPECIAL = "org.jkiss.dbeaver.core.edit.paste.special"; //$NON-NLS-1$
 
@@ -29,8 +34,6 @@ public interface CoreCommands
     String CMD_OBJECT_DELETE = "org.jkiss.dbeaver.core.object.delete"; //$NON-NLS-1$
     String CMD_OBJECT_MOVE_UP = "org.jkiss.dbeaver.core.object.move.up"; //$NON-NLS-1$
     String CMD_OBJECT_MOVE_DOWN = "org.jkiss.dbeaver.core.object.move.down"; //$NON-NLS-1$
-
-    String GROUP_TOOLS = "tools";
 
     String CMD_CONNECT = "org.jkiss.dbeaver.core.connect";
     String CMD_DISCONNECT = "org.jkiss.dbeaver.core.disconnect";

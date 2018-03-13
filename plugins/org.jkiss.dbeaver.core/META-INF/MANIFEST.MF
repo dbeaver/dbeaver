@@ -3,8 +3,8 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: %Bundle-Vendor
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.dbeaver.core;singleton:=true
-Bundle-Version: 4.3.3
-Bundle-Release-Date: 20180122
+Bundle-Version: 5.0.1
+Bundle-Release-Date: 20180319
 Bundle-Activator: org.jkiss.dbeaver.core.DBeaverActivator
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
@@ -41,6 +41,7 @@ Export-Package: org.jkiss.dbeaver,
  org.jkiss.dbeaver.ui.actions.datasource,
  org.jkiss.dbeaver.ui.actions.navigator,
  org.jkiss.dbeaver.ui.controls,
+ org.jkiss.dbeaver.ui.controls.autorefresh,
  org.jkiss.dbeaver.ui.controls.folders,
  org.jkiss.dbeaver.ui.controls.imageview,
  org.jkiss.dbeaver.ui.controls.itemlist,

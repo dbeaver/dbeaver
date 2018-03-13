@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
+import org.jkiss.dbeaver.model.data.json.JSONUtils;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
@@ -51,7 +52,6 @@ public class DataExporterJSON extends StreamExporterAbstract {
     private List<DBDAttributeBinding> columns;
     private String tableName;
     private int rowNum = 0;
-    private DateFormat dateFormat;
 
     private boolean printTableName = true;
     private boolean formatDateISO = true;
@@ -63,10 +63,6 @@ public class DataExporterJSON extends StreamExporterAbstract {
         out = site.getWriter();
         formatDateISO = CommonUtils.getBoolean(site.getProperties().get(PROP_FORMAT_DATE_ISO), true);
         printTableName = CommonUtils.getBoolean(site.getProperties().get(PROP_PRINT_TABLE_NAME), true);
-
-        TimeZone tz = TimeZone.getTimeZone("UTC");
-        dateFormat = new SimpleDateFormat(DBConstants.DEFAULT_ISO_TIMESTAMP_FORMAT);
-        dateFormat.setTimeZone(tz);
     }
 
     @Override
@@ -88,7 +84,7 @@ public class DataExporterJSON extends StreamExporterAbstract {
     {
         if (printTableName) {
             out.write("{\n");
-            out.write("\"" + escapeJsonString(tableName) + "\": ");
+            out.write("\"" + JSONUtils.escapeJsonString(tableName) + "\": ");
         }
         out.write("[\n");
     }
@@ -107,7 +103,7 @@ public class DataExporterJSON extends StreamExporterAbstract {
             if (CommonUtils.isEmpty(columnName)) {
                 columnName = column.getName();
             }
-            out.write("\t\t\"" + escapeJsonString(columnName) + "\" : ");
+            out.write("\t\t\"" + JSONUtils.escapeJsonString(columnName) + "\" : ");
             Object cellValue = row[i];
             if (DBUtils.isNullValue(cellValue)) {
                 writeTextCell(null);
@@ -136,7 +132,7 @@ public class DataExporterJSON extends StreamExporterAbstract {
                 if (cellValue instanceof Number || cellValue instanceof Boolean) {
                     out.write(cellValue.toString());
                 } else if (cellValue instanceof Date && formatDateISO) {
-                    writeTextCell(dateFormat.format(cellValue));
+                    writeTextCell(JSONUtils.formatDate((Date) cellValue));
                 } else {
                     writeTextCell(super.getValueDisplayString(column, cellValue));
                 }
@@ -162,7 +158,7 @@ public class DataExporterJSON extends StreamExporterAbstract {
     private void writeTextCell(@Nullable String value)
     {
         if (value != null) {
-            out.write("\"" + escapeJsonString(value) + "\"");
+            out.write("\"" + JSONUtils.escapeJsonString(value) + "\"");
         } else {
             out.write("null");
         }
@@ -177,44 +173,8 @@ public class DataExporterJSON extends StreamExporterAbstract {
             if (count <= 0) {
                 break;
             }
-            out.write(escapeJsonString(new String(buffer, 0, count)));
+            out.write(JSONUtils.escapeJsonString(new String(buffer, 0, count)));
         }
-    }
-
-    private static String escapeJsonString(String str) {
-        if (str == null) {
-            return null;
-        }
-        StringBuilder result = new StringBuilder(str.length());
-        for (int i = 0; i < str.length(); i++) {
-            char c = str.charAt(i);
-            switch (c) {
-                case '\n':
-                    result.append("\\n");
-                    break;
-                case '\r':
-                    result.append("\\r");
-                    break;
-                case '\t':
-                    result.append("\\t");
-                    break;
-                case '\f':
-                    result.append("\\f");
-                    break;
-                case '\b':
-                    result.append("\\b");
-                    break;
-                case '"':
-                case '\\':
-                case '/':
-                    result.append("\\").append(c);
-                    break;
-                default:
-                    result.append(c);
-                    break;
-            }
-        }
-        return result.toString();
     }
 
 }

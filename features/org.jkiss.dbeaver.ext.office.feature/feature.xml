@@ -2,7 +2,7 @@
 <feature
       id="org.jkiss.dbeaver.ext.office.feature"
       label="%featureName"
-      version="1.1.11"
+      version="1.1.16"
       provider-name="%providerName"
       plugin="org.jkiss.dbeaver.data.office">
 
@@ -18,17 +18,7 @@
       %license
    </license>
 
-   <plugin
-         id="org.jkiss.dbeaver.data.office"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-        id="org.jkiss.bundle.apache.poi"
-        download-size="0"
-        install-size="0"
-        version="0.0.0"/>
+   <plugin id="org.jkiss.dbeaver.data.office" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+   <plugin id="org.jkiss.bundle.apache.poi" download-size="0" install-size="0" version="0.0.0"/>
 
 </feature>

@@ -238,21 +238,15 @@ public class TabbedFolderComposite extends Composite implements ITabbedFolderCon
         compositePane.setLayout(gl);
         compositePane.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        addTraverseListener(new TraverseListener() {
-            @Override
-            public void keyTraversed(TraverseEvent e) {
-                FolderPane pane = getActiveFolderPane();
-                if (pane != null) {
-                    pane.folderList.handleTraverse(e);
-                }
+        addTraverseListener(e -> {
+            FolderPane pane = getActiveFolderPane();
+            if (pane != null) {
+                pane.folderList.handleTraverse(e);
             }
         });
-        addDisposeListener(new DisposeListener() {
-            @Override
-            public void widgetDisposed(DisposeEvent e) {
-                for (TabbedFolderInfo folderDescription : contentsMap.keySet()) {
-                    folderDescription.getContents().dispose();
-                }
+        addDisposeListener(e -> {
+            for (TabbedFolderInfo folderDescription : contentsMap.keySet()) {
+                folderDescription.getContents().dispose();
             }
         });
     }

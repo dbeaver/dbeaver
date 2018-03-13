@@ -34,36 +34,37 @@ import java.util.HashMap;
 
 
 public class ExasolLockEditor extends AbstractLockEditor {
-	
-	   public static final String sidHold = "hsid";
-	   public static final String sidWait = "wsid"; 
-	
 
-	@SuppressWarnings("unchecked")
-	@Override
-	protected LockManagerViewer createLockViewer(
-			DBCExecutionContext executionContext, Composite parent)
-	{
-	    @SuppressWarnings("rawtypes")
-		DBAServerLockManager<DBAServerLock<?>, DBAServerLockItem> lockManager = (DBAServerLockManager) new ExasolLockManager((ExasolDataSource) executionContext.getDataSource());
-		
-		return new LockManagerViewer(this, parent, lockManager) {
-			   @Override
-	            protected void contributeToToolbar(DBAServerLockManager<DBAServerLock<?>, DBAServerLockItem> sessionManager, IContributionManager contributionManager)
-	            {
-	                contributionManager.add(new Separator());
-	            }
-	            @SuppressWarnings("serial")
-				@Override
-	            protected void onLockSelect(final DBAServerLock<?> lock)
-	            {
-	                super.onLockSelect(lock);
-	                if (lock != null ) {
-	                	final ExasolLock pLock = (ExasolLock) lock;
-	                	super.refreshDetail( new HashMap<String, Object>() {{ put(sidHold,BigInteger.valueOf(pLock.getHold_sid()));put(sidWait,BigInteger.valueOf(pLock.getWait_sid().longValue())); }});
-	                }
-	            }	
-		};
-	}
+    public static final String sidHold = "hsid";
+    public static final String sidWait = "wsid";
+
+
+    @SuppressWarnings("unchecked")
+    @Override
+    protected LockManagerViewer createLockViewer(
+        DBCExecutionContext executionContext, Composite parent) {
+        @SuppressWarnings("rawtypes")
+        DBAServerLockManager<DBAServerLock, DBAServerLockItem> lockManager = (DBAServerLockManager) new ExasolLockManager((ExasolDataSource) executionContext.getDataSource());
+
+        return new LockManagerViewer(this, parent, lockManager) {
+            @Override
+            protected void contributeToToolbar(DBAServerLockManager<DBAServerLock, DBAServerLockItem> sessionManager, IContributionManager contributionManager) {
+                contributionManager.add(new Separator());
+            }
+
+            @SuppressWarnings("serial")
+            @Override
+            protected void onLockSelect(final DBAServerLock lock) {
+                super.onLockSelect(lock);
+                if (lock != null) {
+                    final ExasolLock pLock = (ExasolLock) lock;
+                    super.refreshDetail(new HashMap<String, Object>() {{
+                        put(sidHold, BigInteger.valueOf(pLock.getHold_sid()));
+                        put(sidWait, BigInteger.valueOf(pLock.getWait_sid().longValue()));
+                    }});
+                }
+            }
+        };
+    }
 
 }

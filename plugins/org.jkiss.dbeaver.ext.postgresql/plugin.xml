@@ -209,9 +209,15 @@
                     webURL="http://jdbc.postgresql.org/"
                     description="%driver.postgresql.description">
                     <replace provider="generic" driver="postgresql"/>
-                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[9.4.1212.jre7]" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.0.jre7]" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/net.postgis:postgis-jdbc:RELEASE[2.2.1]" ignore-dependencies="true" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/net.postgis:postgis-jdbc-jtsparser:RELEASE[2.2.1]" ignore-dependencies="true" bundle="!drivers.postgresql"/>
+
                     <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
                     <file type="jar" path="drivers/postgresql/postgresql.jar" bundle="drivers.postgresql"/>
+                    <!-- Postgis -->
+                    <file type="jar" path="drivers/postgis/postgis-jdbc.jar" bundle="drivers.postgresql"/>
+                    <file type="jar" path="drivers/postgis/postgis-jdbc-jtsparser.jar" bundle="drivers.postgresql"/>
 
                     <property name="loginTimeout" value="20"/>
                     <property name="connectTimeout" value="20"/>
@@ -254,6 +260,7 @@
             <type name="BIT"/>
             <type name="REFCURSOR"/>
             <type name="MONEY"/>
+            <type name="GEOMETRY"/>
         </provider>
     </extension>
 
@@ -270,6 +277,9 @@
         <manager
             class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreTableColumnManager"
             objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn"/>
+        <manager
+            class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreSequenceManager"
+            objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreSequence"/>
         <manager
             class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreConstraintManager"
             objectType="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableConstraint"/>
@@ -324,13 +334,13 @@
     <extension point="org.eclipse.ui.editors">
         <editor
                 name="%editor.session_manager.name"
-                icon="#sessions"
+                icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.png"
                 class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreSessionEditor"
                 id="org.jkiss.dbeaver.ext.postgresql.edit.PostgreSessionEditor">
         </editor>
         <editor
                 name="%editor.lock_manager.name"
-                icon="#sessions"
+                icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.png"
                 class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreLockEditor"
                 id="org.jkiss.dbeaver.ext.postgresql.edit.PostgreLockEditor">
         </editor>
@@ -344,6 +354,11 @@
         <manager class="org.jkiss.dbeaver.ext.postgresql.edit.PostgreEnumValueManager" id="org.jkiss.dbeaver.ext.postgresql.edit.PostgreEnumValueManager">
             <supports dataSource="postgresql" extension="E"/>
         </manager>
+<!--
+        <manager class="org.jkiss.dbeaver.ui.data.managers.StructValueManager" id="org.jkiss.dbeaver.ext.postgresql.edit.PostgreHStoreValueManager">
+            <supports dataSource="postgresql" typeName="hstore"/>
+        </manager>
+-->
     </extension>
 
     <extension point="org.jkiss.dbeaver.networkHandler">

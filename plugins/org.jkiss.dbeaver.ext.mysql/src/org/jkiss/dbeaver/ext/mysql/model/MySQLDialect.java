@@ -81,6 +81,11 @@ class MySQLDialect extends JDBCSQLDialect implements SQLRuleProvider {
         return MYSQL_QUOTE_STRINGS;
     }
 
+    @Override
+    public char getStringEscapeCharacter() {
+        return '\\';
+    }
+
     @Nullable
     @Override
     public String getScriptDelimiterRedefiner() {

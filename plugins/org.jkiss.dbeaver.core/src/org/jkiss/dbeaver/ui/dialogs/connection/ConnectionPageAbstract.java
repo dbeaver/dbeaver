@@ -90,19 +90,6 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
         }
     }
 
-    /**
-     * @param horizontalSpan can be null, default is 2
-     * @param verticalSpan can be null, default is 10
-     */
-    protected CLabel createSettingsVariablesHintLabel(Composite parent, Integer horizontalSpan, Integer verticalSpan) {
-        CLabel infoLabel = UIUtils.createInfoLabel(parent, CoreMessages.dialog_connection_edit_connection_settings_variables_hint_label);
-        GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-        gd.horizontalSpan = horizontalSpan == null ? 2 : horizontalSpan;
-        gd.verticalSpan = verticalSpan == null ? 10 : verticalSpan;
-        infoLabel.setLayoutData(gd);
-        return infoLabel;
-    }
-
     protected void createDriverPanel(Composite parent) {
         int numColumns = ((GridLayout) parent.getLayout()).numColumns;
 
@@ -112,19 +99,24 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
         panel.setLayoutData(gd);
 
         {
-            Composite placeholder = UIUtils.createPlaceholder(panel, 1);
-            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_END);
+            Composite placeholder = UIUtils.createPlaceholder(panel, 2);
+            gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_END);
             gd.horizontalSpan = 4;
             gd.grabExcessHorizontalSpace = true;
             gd.grabExcessVerticalSpace = true;
             placeholder.setLayoutData(gd);
 
             if (DBeaverCore.getGlobalPreferenceStore().getBoolean(ModelPreferences.CONNECT_USE_ENV_VARS)) {
-                //createSettingsVariablesHintLabel(placeholder, null, null);
+                CLabel infoLabel = UIUtils.createInfoLabel(placeholder, CoreMessages.dialog_connection_edit_connection_settings_variables_hint_label);
+                gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING);
+                gd.grabExcessHorizontalSpace = true;
+                infoLabel.setLayoutData(gd);
+                infoLabel.setToolTipText("You can use OS environment variables in connection parameters.\nUse ${variable} patterns.");
             }
 
             if (!site.isNew() && !site.getDriver().isEmbedded()) {
-                Link netConfigLink = new Link(panel, SWT.NONE);
+
+                Link netConfigLink = new Link(placeholder, SWT.NONE);
                 netConfigLink.setText("<a>" + CoreMessages.dialog_connection_edit_wizard_conn_conf_network_link + "</a>");
                 netConfigLink.addSelectionListener(new SelectionAdapter() {
                     @Override
@@ -132,9 +124,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
                         site.openSettingsPage(ConnectionPageNetwork.PAGE_NAME);
                     }
                 });
-                gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
-                gd.horizontalSpan = 4;
-                netConfigLink.setLayoutData(gd);
+                netConfigLink.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
             }
         }
 
