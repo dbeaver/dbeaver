@@ -108,7 +108,7 @@ public abstract class AbstractPopupPanel extends Dialog {
                 @Override
                 public void focusLost(FocusEvent e) {
                     DBeaverUI.asyncExec(() -> {
-                        if (!UIUtils.isParent(getShell(), getShell().getDisplay().getFocusControl())) {
+                        if (getShell() != null && !UIUtils.isParent(getShell(), getShell().getDisplay().getFocusControl())) {
                             cancelPressed();
                         }
                     });
