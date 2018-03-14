@@ -18,21 +18,19 @@ package org.jkiss.dbeaver.ui.dialogs;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
-import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.jface.viewers.*;
+import org.eclipse.jface.viewers.CellLabelProvider;
+import org.eclipse.jface.viewers.IFontProvider;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.FocusAdapter;
-import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -54,22 +52,19 @@ import java.util.List;
  *
  * @author Serge Rider
  */
-public class SelectObjectDialog<T extends DBPObject> extends Dialog {
+public class SelectObjectDialog<T extends DBPObject> extends AbstractPopupPanel {
 
     private static final String DIALOG_ID = "DBeaver.SelectObjectDialog";//$NON-NLS-1$
 
-    private String title;
     private String listId;
     private Collection<T> objects;
     private List<T> selectedObjects = new ArrayList<>();
     private boolean singleSelection;
     private Font boldFont;
-    private boolean modeless;
 
     public SelectObjectDialog(Shell parentShell, String title, boolean singleSelection, String listId, Collection<T> objects, Collection<T> selected)
     {
-        super(parentShell);
-        this.title = title;
+        super(parentShell, title);
         this.singleSelection = singleSelection;
         this.listId = listId;
         this.objects = new ArrayList<>(objects);
@@ -86,25 +81,8 @@ public class SelectObjectDialog<T extends DBPObject> extends Dialog {
     }
 
     @Override
-    protected boolean isResizable()
-    {
-        return true;
-    }
-
-    public void setModeless(boolean modeless) {
-        this.modeless = modeless;
-        if (modeless) {
-            setShellStyle(SWT.SHELL_TRIM);
-        } else {
-            setShellStyle(SWT.DIALOG_TRIM | SWT.APPLICATION_MODAL | SWT.MAX | SWT.RESIZE);
-        }
-    }
-
-    @Override
     protected Control createDialogArea(Composite parent)
     {
-        getShell().setText(title);
-
         Composite group = (Composite) super.createDialogArea(parent);
         GridData gd = new GridData(GridData.FILL_BOTH);
         group.setLayoutData(gd);
@@ -145,23 +123,7 @@ public class SelectObjectDialog<T extends DBPObject> extends Dialog {
                             performSearch(ISearchContextProvider.SearchType.NONE);
                             getItemsViewer().getControl().setFocus();
 
-                            if (modeless) {
-                                FocusAdapter focusListener = new FocusAdapter() {
-                                    @Override
-                                    public void focusLost(FocusEvent e) {
-                                        DBeaverUI.asyncExec(() -> {
-                                            if (!UIUtils.isParent(getShell(), getShell().getDisplay().getFocusControl())) {
-                                                cancelPressed();
-                                            }
-                                        });
-                                    }
-                                };
-                                getItemsViewer().getControl().addFocusListener(focusListener);
-                                Text searchControl = getSearchTextControl();
-                                if (searchControl != null) {
-                                    searchControl.addFocusListener(focusListener);
-                                }
-                            }
+                            closeOnFocusLost(getItemsViewer().getControl(), getSearchTextControl());
                         }
                     });
             }
@@ -238,12 +200,12 @@ public class SelectObjectDialog<T extends DBPObject> extends Dialog {
             IStructuredSelection selection = (IStructuredSelection) event.getSelection();
             selectedObjects.clear();
             selectedObjects.addAll(selection.toList());
-            if (!modeless) {
+            if (!isModeless()) {
                 getButton(IDialogConstants.OK_ID).setEnabled(!selectedObjects.isEmpty());
             }
         });
         objectList.setDoubleClickHandler(event -> {
-            if (modeless || getButton(IDialogConstants.OK_ID).isEnabled()) {
+            if (isModeless() || getButton(IDialogConstants.OK_ID).isEnabled()) {
                 okPressed();
             }
         });
@@ -251,14 +213,6 @@ public class SelectObjectDialog<T extends DBPObject> extends Dialog {
         objectList.loadData();
 
         return group;
-    }
-
-    @Override
-    protected Control createButtonBar(Composite parent) {
-        if (this.modeless) {
-            return UIUtils.createPlaceholder(parent, 1);
-        }
-        return super.createButtonBar(parent);
     }
 
     @Override
@@ -274,7 +228,7 @@ public class SelectObjectDialog<T extends DBPObject> extends Dialog {
     protected Control createContents(Composite parent)
     {
         Control ctl = super.createContents(parent);
-        if (!modeless) {
+        if (!isModeless()) {
             getButton(IDialogConstants.OK_ID).setEnabled(false);
         }
         return ctl;
