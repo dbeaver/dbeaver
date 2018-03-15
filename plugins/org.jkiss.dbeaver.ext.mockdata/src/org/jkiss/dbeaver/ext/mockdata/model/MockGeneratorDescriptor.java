@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.registry.datatype.DataTypeAbstractDescriptor;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,8 +38,8 @@ public class MockGeneratorDescriptor extends DataTypeAbstractDescriptor<MockValu
 
     public static final String TAG_PRESET = "preset"; //NON-NLS-1
 
-    private final String label;
-    private final String description;
+    private String label;
+    private String description;
     private final String link;
     private final String url;
     private final DBPImage icon;
@@ -63,9 +64,33 @@ public class MockGeneratorDescriptor extends DataTypeAbstractDescriptor<MockValu
                     preset.getAttribute("id"),
                     preset.getAttribute("label"),
                     preset.getAttribute("mnemonics"),
+                    preset.getAttribute("description"),
                     PropertyDescriptor.extractProperties(preset)
             ));
         }
+    }
+
+    public MockGeneratorDescriptor(IConfigurationElement config, Preset preset) {
+        this(config);
+
+        this.id += "_" + preset.id;
+        this.label = "   " + preset.label;
+        if (!CommonUtils.isEmpty(preset.description)) {
+            this.description = preset.description;
+        }
+        for (DBPPropertyDescriptor prop : preset.getProperties()) {
+            setDefaultProperty(prop.getId(), prop.getDefaultValue());
+        }
+        this.presets.clear();
+    }
+
+    private void setDefaultProperty(Object id, Object defaultValue) {
+        for (DBPPropertyDescriptor property : properties) {
+            if (property.getId().equals(id)) {
+                ((PropertyDescriptor) property).setDefaultValue(defaultValue); break;
+            }
+        }
+
     }
 
     public String getLabel() {
@@ -114,12 +139,14 @@ public class MockGeneratorDescriptor extends DataTypeAbstractDescriptor<MockValu
         private final String id;
         private final String label;
         private final String mnemonics;
+        private final String description;
         private final List<DBPPropertyDescriptor> properties;
 
-        public Preset(String id, String label, String mnemonics, List<DBPPropertyDescriptor> properties) {
+        public Preset(String id, String label, String mnemonics, String description, List<DBPPropertyDescriptor> properties) {
             this.id = id;
             this.label = label;
             this.mnemonics = mnemonics;
+            this.description = description;
             this.properties = properties;
         }
 
@@ -133,6 +160,10 @@ public class MockGeneratorDescriptor extends DataTypeAbstractDescriptor<MockValu
 
         public String getMnemonics() {
             return mnemonics;
+        }
+
+        public String getDescription() {
+            return description;
         }
 
         public List<DBPPropertyDescriptor> getProperties() {
