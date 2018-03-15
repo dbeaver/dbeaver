@@ -66,7 +66,6 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
     private DBSAttributeBase selectedAttribute;
     private boolean firstInit = true;
     private Combo generatorCombo;
-    private Combo presetCombo;
     private Label generatorDescriptionLabel;
     private Link generatorDescriptionLink;
     private Font boldFont;
@@ -180,17 +179,7 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
                         if (attributeGeneratorProperties != null && !attributeGeneratorProperties.isEmpty()) {
                             String selectedGeneratorId = attributeGeneratorProperties.getSelectedGeneratorId();
                             String label = mockDataSettings.getGeneratorDescriptor(selectedGeneratorId).getLabel();
-                            String presetId = attributeGeneratorProperties.getPresetId();
-                            if (presetId != null) {
-                                List<MockGeneratorDescriptor.Preset> presets = mockDataSettings.getGeneratorDescriptor(selectedGeneratorId).getPresets();
-                                for (MockGeneratorDescriptor.Preset preset : presets) {
-                                    if (presetId.equals(preset.getId())) {
-                                        label += " [" + preset.getMnemonics() + "]";
-                                        break;
-                                    }
-                                }
-                            }
-                            cell.setText(label);
+                            cell.setText(label.trim());
                         }
                     }
                 }
@@ -307,18 +296,6 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
             gd.horizontalIndent = 5;
             generatorDescriptionLink.setLayoutData(gd);
 
-            presetCombo = new Combo(labelCombo, SWT.READ_ONLY | SWT.DROP_DOWN);
-            gd = new GridData();
-            gd.horizontalIndent = 5;
-            presetCombo.setLayoutData(gd);
-            presetCombo.setVisible(false);
-            presetCombo.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    selectPreset(presetCombo.getText());
-                }
-            });
-
             Button resetButton = new Button(labelCombo, SWT.PUSH);
             resetButton.setText("Reset");
             resetButton.addSelectionListener(new SelectionAdapter() {
@@ -328,11 +305,6 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
                         propertySource.resetPropertyValueToDefault(key);
                     }
                     propsEditor.loadProperties(propertySource);
-
-                    mockDataSettings.getAttributeGeneratorProperties(selectedAttribute).setPresetId(null);
-                    if (presetCombo.getItemCount() > 0) {
-                        presetCombo.select(0);
-                    }
                     columnsTableViewer.refresh(true, true);
                 }
             });
@@ -517,7 +489,6 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
         }
 
         // generator combo & description
-        presetCombo.setVisible(false);
         List<String> generators = new ArrayList<>();
         for (String genId : attributeGeneratorProperties.getGenerators()) {
             generators.add(mockDataSettings.getGeneratorDescriptor(genId).getLabel());
@@ -533,24 +504,6 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
                 generatorDescriptionLink.setText("<a>" + generatorDescriptor.getLink() + "</a>");
                 generatorLinkUrl = generatorDescriptor.getUrl();
                 generatorDescriptionLink.setVisible(true);
-            }
-
-            // presets
-            List<MockGeneratorDescriptor.Preset> presets = generatorDescriptor.getPresets();
-            if (!presets.isEmpty()) {
-                presetCombo.removeAll();
-                presetCombo.add("Select preset...");
-                int presetIndex = 0, i = 1;
-                String presetId = attributeGeneratorProperties.getPresetId();
-                for (MockGeneratorDescriptor.Preset preset : presets) {
-                    presetCombo.add(preset.getLabel());
-                    if (presetId != null && preset.getId().equals(presetId)) {
-                        presetIndex = i;
-                    }
-                    i++;
-                }
-                presetCombo.select(presetIndex);
-                presetCombo.setVisible(true);
             }
         } else {
             generatorCombo.setItems(new String[] {"Not found"});
