@@ -191,6 +191,10 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
         return defaultValue;
     }
 
+    public void setDefaultValue(Object defaultValue) {
+        this.defaultValue = defaultValue;
+    }
+
     @Override
     public boolean isEditable(Object object)
     {
