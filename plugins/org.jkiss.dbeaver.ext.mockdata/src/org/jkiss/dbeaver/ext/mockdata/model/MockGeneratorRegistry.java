@@ -22,14 +22,11 @@ import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class MockGeneratorRegistry
 {
@@ -62,6 +59,12 @@ public class MockGeneratorRegistry
             if (TAG_GENERATOR.equals(ext.getName())) {
                 MockGeneratorDescriptor generatorDescriptor = new MockGeneratorDescriptor(ext);
                 this.generators.add(generatorDescriptor);
+
+                if (!CommonUtils.isEmpty(generatorDescriptor.getPresets())) {
+                    for (MockGeneratorDescriptor.Preset preset : generatorDescriptor.getPresets()) {
+                        this.generators.add(new MockGeneratorDescriptor(ext, preset));
+                    }
+                }
             }
         }
     }

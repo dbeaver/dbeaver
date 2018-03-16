@@ -186,13 +186,6 @@ public class DriverEditDialog extends HelpEnabledDialog {
             Group propsGroup = UIUtils.createControlGroup(group, CoreMessages.dialog_edit_driver_setting, 4, -1, -1);
             propsGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            if (!newDriver) {
-                gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-                gd.horizontalSpan = 3;
-                Text idText = UIUtils.createLabelText(propsGroup, "ID", driver.getId(), SWT.BORDER | SWT.READ_ONLY, gd);
-                idText.setToolTipText("Internal driver ID.\nCan be used in connections configurations and CLI commands.");
-            }
-
             gd = new GridData(GridData.FILL_HORIZONTAL);
             driverNameText = UIUtils.createLabelText(propsGroup, CoreMessages.dialog_edit_driver_label_driver_name + "*", driver.getName(), SWT.BORDER | advStyle, gd);
             driverNameText.addModifyListener(new ModifyListener() {
@@ -269,7 +262,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
         }
 
         {
-            Group infoGroup = UIUtils.createControlGroup(group, CoreMessages.dialog_edit_driver_description, 2, -1, -1);
+            Group infoGroup = UIUtils.createControlGroup(group, CoreMessages.dialog_edit_driver_description, 4, -1, -1);
             infoGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             driverCategoryCombo = UIUtils.createLabelCombo(infoGroup, CoreMessages.dialog_edit_driver_label_category, SWT.BORDER | SWT.DROP_DOWN | advStyle);
@@ -295,7 +288,16 @@ public class DriverEditDialog extends HelpEnabledDialog {
                 driverCategoryCombo.setText(defaultCategory);
             }
 
+            {
+                gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING);
+                Text idText = UIUtils.createLabelText(infoGroup, "ID", driver.getId(), SWT.BORDER | SWT.READ_ONLY, gd);
+                idText.setToolTipText("Internal driver ID.\nCan be used in connections configurations and CLI commands.");
+            }
+
             driverDescText = UIUtils.createLabelText(infoGroup, CoreMessages.dialog_edit_driver_label_description, CommonUtils.notEmpty(driver.getDescription()), SWT.BORDER | advStyle);
+            gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.horizontalSpan = 3;
+            driverDescText.setLayoutData(gd);
 
             if (!CommonUtils.isEmpty(driver.getWebURL())) {
                 UIUtils.createControlLabel(infoGroup, CoreMessages.dialog_edit_driver_label_website);
@@ -305,7 +307,10 @@ public class DriverEditDialog extends HelpEnabledDialog {
                         UIUtils.launchProgram(driver.getWebURL());
                     }
                 });
-                urlLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+                gd = new GridData(GridData.FILL_HORIZONTAL);
+                gd.horizontalSpan = 3;
+                driverDescText.setLayoutData(gd);
+                urlLabel.setLayoutData(gd);
             }
         }
 

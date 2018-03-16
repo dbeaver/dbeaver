@@ -154,22 +154,7 @@ public class DriverTreeViewer extends TreeViewer implements ISelectionChangedLis
         Collection<Object> drivers = collectDrivers();
         this.setInput(drivers);
         this.expandAll();
-        getTree().addListener(SWT.Resize, new Listener() {
-            volatile boolean resizing = false;
-
-            @Override
-            public void handleEvent(Event event) {
-                if (resizing) {
-                    return;
-                }
-                resizing = true;
-                try {
-                    UIUtils.packColumns(getTree(), true, new float[] {0.9f, 0.1f});
-                } finally {
-                    resizing = false;
-                }
-            }
-        });
+        UIUtils.packColumns(getTree(), true, new float[] {0.9f, 0.1f});
 
         if (expandRecent) {
             // Expand used driver categories
@@ -188,7 +173,9 @@ public class DriverTreeViewer extends TreeViewer implements ISelectionChangedLis
     @Override
     public void refresh()
     {
-        collectDrivers();
+        if (providers != null) {
+            collectDrivers();
+        }
         super.refresh();
     }
 

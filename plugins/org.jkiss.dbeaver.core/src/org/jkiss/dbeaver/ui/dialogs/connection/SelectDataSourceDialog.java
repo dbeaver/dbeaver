@@ -27,6 +27,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.dialogs.FilteredTree;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -35,6 +36,7 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dialogs.AbstractPopupPanel;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 
 /**
@@ -42,7 +44,7 @@ import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
  *
  * @author Serge Rider
  */
-public class SelectDataSourceDialog extends Dialog {
+public class SelectDataSourceDialog extends AbstractPopupPanel {
 
     private static final String PARAM_SHOW_CONNECTED = "showConnected";
     private static final String PARAM_SHOW_ALL_PROJECTS = "showAllProjects";
@@ -59,7 +61,7 @@ public class SelectDataSourceDialog extends Dialog {
 
     public SelectDataSourceDialog(@NotNull Shell parentShell, @Nullable IProject project, DBPDataSourceContainer selection)
     {
-        super(parentShell);
+        super(parentShell, CoreMessages.dialog_select_datasource_title);
         this.project = project;
         this.dataSource = selection;
     }
@@ -71,16 +73,8 @@ public class SelectDataSourceDialog extends Dialog {
     }
 
     @Override
-    protected boolean isResizable()
-    {
-        return true;
-    }
-
-    @Override
     protected Control createDialogArea(Composite parent)
     {
-        getShell().setText(CoreMessages.dialog_select_datasource_title);
-
         showConnected = getDialogBoundsSettings().getBoolean(PARAM_SHOW_CONNECTED);
         showAllProjects = getDialogBoundsSettings().getBoolean(PARAM_SHOW_ALL_PROJECTS);
 
@@ -106,43 +100,45 @@ public class SelectDataSourceDialog extends Dialog {
         gd.minimumWidth = 100;
         dataSourceTree.setLayoutData(gd);
 
+        final TreeViewer treeViewer = dataSourceTree.getViewer();
+
         final Text descriptionText = new Text(group, SWT.READ_ONLY);
         descriptionText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         final Button showConnectedCheck = new Button(group, SWT.CHECK);
-        showConnectedCheck.setText("Show connected databases only");
+        showConnectedCheck.setText("Show &connected databases only");
         showConnectedCheck.setSelection(showConnected);
         showConnectedCheck.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 showConnected = showConnectedCheck.getSelection();
-                dataSourceTree.getViewer().getControl().setRedraw(false);
+                treeViewer.getControl().setRedraw(false);
                 try {
-                    dataSourceTree.getViewer().refresh();
+                    treeViewer.refresh();
                     if (showConnected) {
-                        dataSourceTree.getViewer().expandAll();
+                        treeViewer.expandAll();
                     }
                 } finally {
-                    dataSourceTree.getViewer().getControl().setRedraw(true);
+                    treeViewer.getControl().setRedraw(true);
                 }
                 getDialogBoundsSettings().put(PARAM_SHOW_CONNECTED, showConnected);
             }
         });
         final Button showAllProjectsCheck = new Button(group, SWT.CHECK);
-        showAllProjectsCheck.setText("Show all projects");
+        showAllProjectsCheck.setText("Show &all projects");
         showAllProjectsCheck.setSelection(showAllProjects);
         showAllProjectsCheck.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 showAllProjects = showAllProjectsCheck.getSelection();
-                dataSourceTree.getViewer().getControl().setRedraw(false);
+                treeViewer.getControl().setRedraw(false);
                 try {
                     dataSourceTree.reloadTree(getTreeRootNode());
                     if (showAllProjects) {
-                        dataSourceTree.getViewer().expandToLevel(3);
+                        treeViewer.expandToLevel(3);
                     }
                 } finally {
-                    dataSourceTree.getViewer().getControl().setRedraw(true);
+                    treeViewer.getControl().setRedraw(true);
                 }
                 getDialogBoundsSettings().put(PARAM_SHOW_ALL_PROJECTS, showAllProjects);
             }
@@ -151,11 +147,11 @@ public class SelectDataSourceDialog extends Dialog {
         if (this.dataSource != null) {
             DBNDatabaseNode dsNode = core.getNavigatorModel().getNodeByObject(this.dataSource);
             if (dsNode != null) {
-                dataSourceTree.getViewer().setSelection(new StructuredSelection(dsNode), true);
+                treeViewer.setSelection(new StructuredSelection(dsNode), true);
             }
         }
 
-        dataSourceTree.getViewer().addFilter(new ViewerFilter() {
+        treeViewer.addFilter(new ViewerFilter() {
             @Override
             public boolean select(Viewer viewer, Object parentElement, Object element)
             {
@@ -170,7 +166,7 @@ public class SelectDataSourceDialog extends Dialog {
                 return element instanceof DBNProject || element instanceof DBNProjectDatabases || element instanceof DBNLocalFolder || element instanceof DBNDataSource;
             }
         });
-        dataSourceTree.getViewer().addSelectionChangedListener(
+        treeViewer.addSelectionChangedListener(
             event -> {
                 IStructuredSelection structSel = (IStructuredSelection) event.getSelection();
                 Object selNode = structSel.isEmpty() ? null : structSel.getFirstElement();
@@ -188,17 +184,24 @@ public class SelectDataSourceDialog extends Dialog {
                 }
             }
         );
-        dataSourceTree.getViewer().addDoubleClickListener(event -> {
+        treeViewer.addDoubleClickListener(event -> {
             if (getButton(IDialogConstants.OK_ID).isEnabled()) {
                 okPressed();
             }
         });
         DBeaverUI.asyncExec(() -> {
-            dataSourceTree.getViewer().getControl().setFocus();
+            treeViewer.getControl().setFocus();
             if (showConnected) {
-                dataSourceTree.getViewer().expandAll();
+                treeViewer.expandAll();
             }
         });
+
+        closeOnFocusLost(
+            treeViewer.getControl(),
+            dataSourceTree.getFilterControl(),
+            descriptionText,
+            showConnectedCheck,
+            showAllProjectsCheck);
 
         return group;
     }
@@ -230,9 +233,11 @@ public class SelectDataSourceDialog extends Dialog {
         composite.setFont(parent.getFont());
 
         // Add the buttons to the button bar.
-        createButton(composite, IDialogConstants.OK_ID, "Select", true);
-        createButton(composite, IDialogConstants.IGNORE_ID, "None", false);
-        createButton(composite, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
+        createButton(composite, IDialogConstants.OK_ID, "&Select", true);
+        createButton(composite, IDialogConstants.IGNORE_ID, "&None", false);
+        if (!isModeless()) {
+            createButton(composite, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
+        }
 
         return composite;
     }

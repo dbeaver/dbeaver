@@ -59,12 +59,17 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
     private Listener listener, filter;
     private Font font;
     private Point sizeHint;
+    // Size of Text with border. Needed for calc of height in computeSize
+    // On MacOS edit with border is much higher
+    private final Point borderTextSize;
 
     public CSmartCombo(Composite parent, int style, ILabelProvider labelProvider)
     {
         super(parent, style = checkStyle(style));
         this.labelProvider = labelProvider;
-        this.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_CENTER));
+        if (parent.getLayout() instanceof GridLayout) {
+            this.setLayoutData(new GridData(GridData.FILL_VERTICAL));
+        }
 
         GridLayout gridLayout = new GridLayout(3, false);
         gridLayout.marginHeight = 0;
@@ -72,11 +77,17 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         gridLayout.horizontalSpacing = 3;
         this.setLayout(gridLayout);
 
+        {
+            Text sampleText = new Text(this, SWT.BORDER);
+            borderTextSize = sampleText.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+            sampleText.dispose();
+        }
+
         this.imageLabel = new Label(this, SWT.NONE);
-        this.imageLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_CENTER));
+        this.imageLabel.setLayoutData(new GridData(GridData.FILL_VERTICAL | GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_CENTER));
 
         this.text = new Text(this, SWT.NONE);
-        this.text.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_CENTER));
+        this.text.setLayoutData(new GridData(GridData.FILL_BOTH | GridData.VERTICAL_ALIGN_CENTER));
 
         this.setCursor(getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
 
@@ -85,50 +96,42 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
             arrowStyle |= SWT.FLAT;
         }
         this.arrow = new Button(this, arrowStyle);
-        this.arrow.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END | GridData.VERTICAL_ALIGN_CENTER));
+        this.arrow.setLayoutData(new GridData(GridData.FILL_VERTICAL | GridData.HORIZONTAL_ALIGN_END | GridData.VERTICAL_ALIGN_CENTER));
 
         setEnabled(true, true);
 
-        this.listener = new Listener() {
-            @Override
-            public void handleEvent(Event event)
-            {
-                if (isDisposed()) {
-                    return;
-                }
-                if (CSmartCombo.this.popup == event.widget) {
-                    popupEvent(event);
-                    return;
-                }
-                if (CSmartCombo.this.text == event.widget) {
-                    textEvent(event);
-                    return;
-                }
-                if (CSmartCombo.this.dropDownControl == event.widget) {
-                    listEvent(event);
-                    return;
-                }
-                if (CSmartCombo.this.arrow == event.widget) {
-                    arrowEvent(event);
-                    return;
-                }
-                if (CSmartCombo.this == event.widget) {
-                    comboEvent(event);
-                    return;
-                }
-                if (getShell() == event.widget) {
-                    handleFocus(SWT.FocusOut);
-                }
+        this.listener = event -> {
+            if (isDisposed()) {
+                return;
+            }
+            if (CSmartCombo.this.popup == event.widget) {
+                popupEvent(event);
+                return;
+            }
+            if (CSmartCombo.this.text == event.widget) {
+                textEvent(event);
+                return;
+            }
+            if (CSmartCombo.this.dropDownControl == event.widget) {
+                listEvent(event);
+                return;
+            }
+            if (CSmartCombo.this.arrow == event.widget) {
+                arrowEvent(event);
+                return;
+            }
+            if (CSmartCombo.this == event.widget) {
+                comboEvent(event);
+                return;
+            }
+            if (getShell() == event.widget) {
+                handleFocus(SWT.FocusOut);
             }
         };
-        this.filter = new Listener() {
-            @Override
-            public void handleEvent(Event event)
-            {
-                Shell shell = ((Control) event.widget).getShell();
-                if (shell == CSmartCombo.this.getShell()) {
-                    handleFocus(SWT.FocusOut);
-                }
+        this.filter = event -> {
+            Shell shell = ((Control) event.widget).getShell();
+            if (shell == CSmartCombo.this.getShell()) {
+                handleFocus(SWT.FocusOut);
             }
         };
 
@@ -148,14 +151,11 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         }
 
         // Update default bg color in async mode to let Eclipse set appropriate styles
-        DBeaverUI.asyncExec(new Runnable() {
-            @Override
-            public void run() {
-                if (isDisposed()) {
-                    return;
-                }
-                text.setEditable(false);
+        DBeaverUI.asyncExec(() -> {
+            if (isDisposed()) {
+                return;
             }
+            text.setEditable(false);
         });
     }
 
@@ -220,46 +220,23 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
     public void addModifyListener(final ModifyListener listener)
     {
         checkWidget();
-        addListener(SWT.Modify, new Listener() {
-            @Override
-            public void handleEvent(Event event)
-            {
-                listener.modifyText(new ModifyEvent(event));
-            }
-        });
+        addListener(SWT.Modify, event -> listener.modifyText(new ModifyEvent(event)));
     }
 
     public void addSelectionListener(final SelectionListener listener)
     {
         checkWidget();
-        addListener(SWT.Selection, new Listener() {
-            @Override
-            public void handleEvent(Event event) {
-                listener.widgetSelected(new SelectionEvent(event));
-            }
-        });
-        addListener(SWT.DefaultSelection, new Listener() {
-            @Override
-            public void handleEvent(Event event)
-            {
-                listener.widgetDefaultSelected(new SelectionEvent(event));
-            }
-        });
+        addListener(SWT.Selection, event -> listener.widgetSelected(new SelectionEvent(event)));
+        addListener(SWT.DefaultSelection, event -> listener.widgetDefaultSelected(new SelectionEvent(event)));
     }
 
     public void addVerifyListener(final VerifyListener listener)
     {
         checkWidget();
-        addListener(SWT.Verify, new Listener() {
-            @Override
-            public void handleEvent(Event event)
-            {
-                listener.verifyText(new VerifyEvent(event));
-            }
-        });
+        addListener(SWT.Verify, event -> listener.verifyText(new VerifyEvent(event)));
     }
 
-    static int checkStyle(int style)
+    private static int checkStyle(int style)
     {
         int mask = SWT.BORDER | SWT.READ_ONLY | SWT.FLAT | SWT.LEFT_TO_RIGHT | SWT.RIGHT_TO_LEFT;
         return style & mask;
@@ -269,6 +246,12 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
     public Point computeSize(int wHint, int hHint, boolean changed)
     {
         checkWidget();
+
+        int borderWidth = getBorderWidth ();
+        Point arrowSize = arrow.computeSize (SWT.DEFAULT, SWT.DEFAULT, changed);
+        arrowSize.x += 2 * borderWidth;
+        arrowSize.y += 2 * borderWidth;
+
         Point textSize = super.computeSize(SWT.DEFAULT, SWT.DEFAULT, changed);
         Point listSize = new Point(0, 0);
         GC gc = new GC(getDisplay());
@@ -280,7 +263,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         }
         gc.dispose();
         listSize.x += imageLabel.computeSize(SWT.DEFAULT, SWT.DEFAULT, changed).x;
-        listSize.x += arrow.computeSize(SWT.DEFAULT, SWT.DEFAULT, changed).x;
+        listSize.x += arrowSize.x;
         listSize.x += 20;
 
         int height = Math.max(hHint, textSize.y);
@@ -288,7 +271,11 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         if (widthHint != SWT.DEFAULT) {
             width = widthHint;
         }
-        return new Point(width + 10, height);
+
+        height = Math.max (height, arrowSize.y);
+        height = Math.max (height, borderTextSize.y);
+
+        return new Point (width, height);
     }
 
     public String getItemText(int index)
@@ -426,7 +413,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         this.visibleItemCount = count;
     }
 
-    void handleFocus(int type)
+    private void handleFocus(int type)
     {
         if (isDisposed()) {
             return;
@@ -467,7 +454,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         }
     }
 
-    void createPopup()
+    private void createPopup()
     {
         Shell oldPopup = this.popup;
         if (oldPopup != null) {
@@ -560,7 +547,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         }
     }
 
-    boolean isDropped()
+    private boolean isDropped()
     {
         return this.popup != null && this.popup.getVisible();
     }
@@ -576,12 +563,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
                 this.popup = null;
                 this.dropDownControl = null;
                 disposeTime = System.currentTimeMillis();
-                DBeaverUI.asyncExec(new Runnable() {
-                    @Override
-                    public void run() {
-                        toDispose.dispose();
-                    }
-                });
+                DBeaverUI.asyncExec(toDispose::dispose);
             }
             return;
         }
@@ -642,19 +624,14 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         this.popup.layout();
 
         if (this.popup.getData("resizeListener") == null) {
-            this.popup.addListener(SWT.Resize, new Listener() {
-                @Override
-                public void handleEvent(Event event) {
-                    CSmartCombo.this.sizeHint = popup.getSize();
-                }
-            });
+            this.popup.addListener(SWT.Resize, event -> CSmartCombo.this.sizeHint = popup.getSize());
             this.popup.setData("resizeListener", Boolean.TRUE);
         }
         this.popup.setVisible(true);
         this.dropDownControl.setFocus();
     }
 
-    void listEvent(Event event)
+    private void listEvent(Event event)
     {
         switch (event.type) {
             case SWT.Dispose:
@@ -761,7 +738,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         }
     }
 
-    void arrowEvent(Event event)
+    private void arrowEvent(Event event)
     {
         switch (event.type) {
             case SWT.FocusIn: {
@@ -777,7 +754,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         }
     }
 
-    void comboEvent(Event event)
+    private void comboEvent(Event event)
     {
         switch (event.type) {
             case SWT.Dispose:
@@ -803,7 +780,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         }
     }
 
-    void popupEvent(Event event)
+    private void popupEvent(Event event)
     {
         switch (event.type) {
             case SWT.Paint:
@@ -823,7 +800,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         }
     }
 
-    void textEvent(Event event)
+    private void textEvent(Event event)
     {
         switch (event.type) {
             case SWT.FocusIn: {
