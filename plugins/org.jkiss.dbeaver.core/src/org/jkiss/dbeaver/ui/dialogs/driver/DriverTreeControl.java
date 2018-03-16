@@ -24,6 +24,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.dialogs.PatternFilter;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 
 import java.util.List;
@@ -56,7 +57,8 @@ public class DriverTreeControl extends FilteredTree {
         Object[] initData = (Object[]) getParent().getData(DRIVER_INIT_DATA);
         parent.setData(DRIVER_INIT_DATA, null);
         DriverTreeViewer viewer = new DriverTreeViewer(parent, style);
-        viewer.initDrivers(initData[0], (List<DataSourceProviderDescriptor>) initData[1], (Boolean) initData[2]);
+        DBeaverUI.asyncExec(() ->
+            viewer.initDrivers(initData[0], (List<DataSourceProviderDescriptor>) initData[1], (Boolean) initData[2]));
         return viewer;
     }
 

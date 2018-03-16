@@ -120,7 +120,7 @@
                     <property id="script-delimiter-after-block" label="Use script delimiter after SQL block" description="Keep SQL script delimiter after SQL script blocks (BEGIN/END)" type="boolean" required="false" defaultValue="false"/>
                     <property id="string-escape-char" label="String escape character" description="Character used to escape special symbols in strings" type="string" required="false" defaultValue=""/>
                     <property id="meta-model" label="Meta model type" description="Type of metadata reading model - standard or indexed" type="string" required="false" defaultValue="" validValues="standard,indexed"/>
-                    <property id="all-objects-pattern" label="All Objects Pattern" description="SQL pattern for all metadata objects" type="string" required="false" defaultValue="null" validValues="null,%"/>
+                    <property id="all-objects-pattern" label="All Objects Pattern" description="SQL pattern for all metadata objects" type="string" required="false" defaultValue="%" validValues="null,%"/>
                     <property id="omit-catalog" label="Omit catalog(s)" description="Do not read and use catalog (aka database) information" type="boolean" required="false" defaultValue="false"/>
                     <property id="omit-type-cache" label="Omit type cache" description="Do not use data types provided by driver" type="boolean" required="false" defaultValue="false"/>
                     <property id="shutdown-url-param" label="Shutdown parameter" description="Database shutdown URL parameter" type="string" required="false" defaultValue=""/>

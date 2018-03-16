@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.app.DBPRegistryDescriptor;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 
 import java.lang.reflect.Field;
@@ -40,7 +39,7 @@ public abstract class DataTypeAbstractDescriptor<DESCRIPTOR> extends AbstractDes
     public static final String ALL_TYPES_PATTERN = "*";
 
     private final Class<DESCRIPTOR> instanceType;
-    private final String id;
+    protected String id;
     private ObjectType implType;
     private Set<Object> supportedTypes = new HashSet<>();
     private List<String> supportedDataSources = new ArrayList<>();
