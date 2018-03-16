@@ -23,14 +23,14 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import java.io.IOException;
 import java.util.UUID;
 
-public class StringUuidGenerator extends AbstractMockValueGenerator {
+public class StringUuidGenerator extends AbstractStringValueGenerator {
 
     @Override
     public Object generateOneValue(DBRProgressMonitor monitor) throws DBException, IOException {
         if (isGenerateNULL()) {
             return null;
         } else {
-            return UUID.randomUUID().toString();
+            return tune(UUID.randomUUID().toString());
         }
     }
 }

@@ -53,10 +53,6 @@
                 description="Random boolean values"
                 class="org.jkiss.dbeaver.ext.mockdata.generator.BooleanRandomGenerator">
             <type kind="BOOLEAN"/>
-
-            <propertyGroup label="General">
-                <property id="nulls" label="%% of NULLs" type="integer" defaultValue="0" description="NULL values (%)"/>
-            </propertyGroup>
         </generator>
 
         <generator
@@ -69,8 +65,6 @@
             <propertyGroup label="General">
                 <property id="initial" label="Initial" type="boolean" defaultValue="TRUE"/>
                 <property id="order" label="Order" type="string" defaultValue="CONSTANT" validValues="ALTERNATELY,CONSTANT"/>
-
-                <property id="nulls" label="%% of NULLs" type="integer" defaultValue="0" description="NULL values (%)"/>
             </propertyGroup>
         </generator>
 
@@ -84,8 +78,6 @@
             <propertyGroup label="General">
                 <property id="startDate" label="Start date" type="string" description="Date range start (DD-MM-YYYY)"/>
                 <property id="endDate" label="End date" type="string" description="Date range end (DD-MM-YYYY)"/>
-
-                <property id="nulls" label="%% of NULLs" type="integer" defaultValue="0" description="NULL values (%)"/>
             </propertyGroup>
         </generator>
 
@@ -100,8 +92,6 @@
                 <property id="startDate" label="Start date" type="string" defaultValue="${now as dd-MM-yyyy}" description="Sequence start date (DD-MM-YYYY)"/>
                 <property id="step" label="Increment step" type="integer" defaultValue="1" description="Sequence increment step (days)"/>
                 <property id="reverse" label="Reverse order" type="boolean" defaultValue="FALSE" description="Reverse sequence order"/>
-
-                <property id="nulls" label="%% of NULLs" type="integer" defaultValue="0" description="NULL values (%)"/>
             </propertyGroup>
         </generator>
 
@@ -123,10 +113,6 @@
                 description="Random numeric values"
                 class="org.jkiss.dbeaver.ext.mockdata.generator.NumericRandomGenerator">
             <type kind="NUMERIC"/>
-
-            <propertyGroup label="General">
-                <property id="nulls" label="%% of NULLs" type="integer" defaultValue="0" description="NULL values (%)"/>
-            </propertyGroup>
         </generator>
 
         <generator
@@ -140,8 +126,6 @@
                 <property id="start" label="Start value" type="long" defaultValue="0" description="Initial sequence value"/>
                 <property id="step" label="Increment step" type="long" defaultValue="1" description="Sequence increment step"/>
                 <property id="reverse" label="Reverse order" type="boolean" defaultValue="FALSE" description="Reverse the sequence order"/>
-
-                <property id="nulls" label="%% of NULLs" type="integer" defaultValue="0" description="NULL values (%)"/>
             </propertyGroup>
         </generator>
 
@@ -157,8 +141,6 @@
                     defaultValue="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."/>
                 <property id="minLength" label="Min Length" type="integer" defaultValue="1" description="Minimum length"/>
                 <property id="maxLength" label="Max Length" type="integer" defaultValue="100" description="Maximum length (0 means the column length)"/>
-
-                <property id="nulls" label="%% of NULLs" type="integer" defaultValue="0" description="NULL values (%)"/>
             </propertyGroup>
         </generator>
 
@@ -168,10 +150,6 @@
                 description="UUID random values"
                 class="org.jkiss.dbeaver.ext.mockdata.generator.StringUuidGenerator">
             <type kind="STRING"/>
-
-            <propertyGroup label="General">
-                <property id="nulls" label="%% of NULLs" type="integer" defaultValue="0" description="NULL values (%)"/>
-            </propertyGroup>
         </generator>
 
         <generator
