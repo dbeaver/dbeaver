@@ -39,7 +39,7 @@ public abstract class DataTypeAbstractDescriptor<DESCRIPTOR> extends AbstractDes
     public static final String ALL_TYPES_PATTERN = "*";
 
     private final Class<DESCRIPTOR> instanceType;
-    protected String id;
+    private final String id;
     private ObjectType implType;
     private Set<Object> supportedTypes = new HashSet<>();
     private List<String> supportedDataSources = new ArrayList<>();
@@ -136,7 +136,7 @@ public abstract class DataTypeAbstractDescriptor<DESCRIPTOR> extends AbstractDes
             return implType.createInstance(instanceType);
         }
         catch (Exception e) {
-            throw new IllegalStateException("Can't instantiate data type provider '" + this.id + "'", e); //$NON-NLS-1$
+            throw new IllegalStateException("Can't instantiate data type provider '" + this.getId() + "'", e); //$NON-NLS-1$
         }
     }
 
