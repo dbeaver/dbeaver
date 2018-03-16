@@ -41,6 +41,8 @@ class PostgreBackupWizardPageSettings extends PostgreWizardPageSettings<PostgreB
     private Combo compressCombo;
     private Combo encodingCombo;
     private Button useInsertsCheck;
+    private Button noPrivilegesCheck;
+    private Button noOwnerCheck;
 
     PostgreBackupWizardPageSettings(PostgreBackupWizard wizard)
     {
@@ -97,6 +99,22 @@ class PostgreBackupWizardPageSettings extends PostgreWizardPageSettings<PostgreB
         );
         useInsertsCheck.addSelectionListener(changeListener);
 
+        noPrivilegesCheck = UIUtils.createCheckbox(formatGroup,
+            PostgreMessages.wizard_backup_page_setting_checkbox_no_privileges,
+            null,
+            false,
+            2
+        );
+        noPrivilegesCheck.addSelectionListener(changeListener);
+
+        noOwnerCheck = UIUtils.createCheckbox(formatGroup,
+            PostgreMessages.wizard_backup_page_setting_checkbox_no_owner,
+            null,
+            false,
+            2
+        );
+        noOwnerCheck.addSelectionListener(changeListener);
+
         Group outputGroup = UIUtils.createControlGroup(composite, PostgreMessages.wizard_backup_page_setting_group_output, 2, GridData.FILL_HORIZONTAL, 0);
         outputFolderText = DialogUtils.createOutputFolderChooser(outputGroup, PostgreMessages.wizard_backup_page_setting_label_output_folder, e -> updateState());
         outputFileText = UIUtils.createLabelText(outputGroup, PostgreMessages.wizard_backup_page_setting_label_file_name_pattern, wizard.getOutputFilePattern());
@@ -137,6 +155,8 @@ class PostgreBackupWizardPageSettings extends PostgreWizardPageSettings<PostgreB
         wizard.compression = compressCombo.getText();
         wizard.encoding = encodingCombo.getText();
         wizard.useInserts = useInsertsCheck.getSelection();
+        wizard.noPrivileges = noPrivilegesCheck.getSelection();
+        wizard.noOwner = noOwnerCheck.getSelection();
 
         getContainer().updateButtons();
     }
