@@ -38,6 +38,7 @@ public class MockGeneratorDescriptor extends DataTypeAbstractDescriptor<MockValu
 
     public static final String TAG_PRESET = "preset"; //NON-NLS-1
 
+    private Preset preset;
     private String label;
     private String description;
     private final String link;
@@ -73,7 +74,7 @@ public class MockGeneratorDescriptor extends DataTypeAbstractDescriptor<MockValu
     public MockGeneratorDescriptor(IConfigurationElement config, Preset preset) {
         this(config);
 
-        this.id += "_" + preset.id;
+        this.preset = preset;
         this.label = "   " + preset.label;
         if (!CommonUtils.isEmpty(preset.description)) {
             this.description = preset.description;
@@ -91,6 +92,15 @@ public class MockGeneratorDescriptor extends DataTypeAbstractDescriptor<MockValu
             }
         }
 
+    }
+
+    @Override
+    public String getId() {
+        if (preset != null) {
+            return super.getId() + "_" + preset.id;
+        } else {
+            return super.getId();
+        }
     }
 
     public String getLabel() {
