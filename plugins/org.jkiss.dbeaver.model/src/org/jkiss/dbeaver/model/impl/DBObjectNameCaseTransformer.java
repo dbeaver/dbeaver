@@ -58,7 +58,7 @@ public class DBObjectNameCaseTransformer implements IPropertyValueTransformer<DB
                 return value;
             }
         }
-        if (dialect.supportsUnquotedMixedCase()) {
+        if (dialect.supportsUnquotedMixedCase() || dialect.storesUnquotedCase() == null) {
             return value;
         }
         String xName = dialect.storesUnquotedCase().transform(value);
