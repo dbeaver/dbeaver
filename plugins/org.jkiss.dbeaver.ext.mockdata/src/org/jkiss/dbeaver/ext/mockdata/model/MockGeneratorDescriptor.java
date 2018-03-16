@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.mockdata.model;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
@@ -56,6 +57,10 @@ public class MockGeneratorDescriptor extends DataTypeAbstractDescriptor<MockValu
         this.url = config.getAttribute(RegistryConstants.ATTR_URL);
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
 
+        properties.add(new PropertyDescriptor(
+                "General", "nulls", "% of NULLs", "NULL values (%)", false,
+                PropertyDescriptor.PropertyType.t_integer.getValueType(), 0, null));
+
         for (IConfigurationElement prop : config.getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP)) {
             properties.addAll(PropertyDescriptor.extractProperties(prop));
         }
@@ -68,6 +73,15 @@ public class MockGeneratorDescriptor extends DataTypeAbstractDescriptor<MockValu
                     preset.getAttribute("description"),
                     PropertyDescriptor.extractProperties(preset)
             ));
+        }
+
+        if (getSupportedTypes().contains(DBPDataKind.STRING)) {
+            properties.add(new PropertyDescriptor(
+                    "General", "lowercase", "Lower Case", null, false,
+                    PropertyDescriptor.PropertyType.t_boolean.getValueType(), false, null));
+            properties.add(new PropertyDescriptor(
+                    "General", "uppercase", "Upper Case", null, false,
+                    PropertyDescriptor.PropertyType.t_boolean.getValueType(), false, null));
         }
     }
 
