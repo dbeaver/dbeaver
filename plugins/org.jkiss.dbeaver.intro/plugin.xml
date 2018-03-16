@@ -26,7 +26,7 @@
       </introProductBinding>
        <introProductBinding
                introId="org.eclipse.ui.intro.universal"
-               productId="com.dbeaver.ent.application.enterprise">
+               productId="com.dbeaver.ee.application.enterprise">
        </introProductBinding>
    </extension>
    <extension
