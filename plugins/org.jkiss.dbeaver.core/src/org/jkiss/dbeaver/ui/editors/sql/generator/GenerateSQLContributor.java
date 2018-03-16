@@ -195,8 +195,8 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                                 sql.append(DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML));
                                 hasAttr = true;
                             }
-                            sql.append("\nFROM ").append(getEntityName(entity));
-                            sql.append("\nWHERE ");
+                            sql.append(getLineSeparator()).append("FROM ").append(getEntityName(entity));
+                            sql.append(getLineSeparator()).append("WHERE ");
                             hasAttr = false;
                             for (DBDAttributeBinding binding : keyAttributes) {
                                 if (hasAttr) sql.append(" AND ");
@@ -221,8 +221,8 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                                 sql.append(DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML));
                                 hasAttr = true;
                             }
-                            sql.append("\nFROM ").append(getEntityName(entity));
-                            sql.append("\nWHERE ");
+                            sql.append(getLineSeparator()).append("FROM ").append(getEntityName(entity));
+                            sql.append(getLineSeparator()).append("WHERE ");
                             boolean multiKey = keyAttributes.size() > 1;
                             if (multiKey) sql.append("(");
                             hasAttr = false;
@@ -258,7 +258,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
 
                             Collection<? extends DBSAttributeBase> allAttributes = getAllAttributes(monitor, object);
                             sql.append("INSERT INTO ").append(getEntityName(entity));
-                            sql.append("\n(");
+                            sql.append(getLineSeparator()).append("(");
                             boolean hasAttr = false;
                             for (DBSAttributeBase attr : allAttributes) {
                                 if (DBUtils.isPseudoAttribute(attr) || DBUtils.isHiddenObject(attr)) {
@@ -268,7 +268,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                                 sql.append(DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML));
                                 hasAttr = true;
                             }
-                            sql.append(")\nVALUES(");
+                            sql.append(")").append(getLineSeparator()).append("VALUES(");
                             hasAttr = false;
                             for (DBSAttributeBase attr : allAttributes) {
                                 if (DBUtils.isPseudoAttribute(attr) || DBUtils.isHiddenObject(attr)) {
@@ -296,7 +296,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                             Collection<DBDAttributeBinding> keyAttributes = getKeyAttributes(monitor, object);
                             Collection<? extends DBSAttributeBase> valueAttributes = getValueAttributes(monitor, object, keyAttributes);
                             sql.append("UPDATE ").append(getEntityName(entity));
-                            sql.append("\nSET ");
+                            sql.append(getLineSeparator()).append("SET ");
                             boolean hasAttr = false;
                             for (DBSAttributeBase attr : valueAttributes) {
                                 if (DBUtils.isPseudoAttribute(attr) || DBUtils.isHiddenObject(attr)) {
@@ -313,7 +313,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
 
                                 hasAttr = true;
                             }
-                            sql.append("\nWHERE ");
+                            sql.append(getLineSeparator()).append("WHERE ");
                             hasAttr = false;
                             for (DBDAttributeBinding attr : keyAttributes) {
                                 if (hasAttr) sql.append(" AND ");
@@ -333,7 +333,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
 
                             Collection<DBDAttributeBinding> keyAttributes = getKeyAttributes(monitor, object);
                             sql.append("DELETE FROM ").append(getEntityName(entity));
-                            sql.append("\nWHERE ");
+                            sql.append(getLineSeparator()).append("WHERE ");
                             boolean hasAttr = false;
                             for (DBDAttributeBinding binding : keyAttributes) {
                                 if (hasAttr) sql.append(" AND ");
@@ -365,6 +365,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
     public abstract static class SQLGenerator<OBJECT> extends DBRRunnableWithResult<String> {
         final protected List<OBJECT> objects;
         private boolean fullyQualifiedNames = true;
+        private boolean compactSQL = false;
 
         SQLGenerator(List<OBJECT> objects)
         {
@@ -379,6 +380,18 @@ public class GenerateSQLContributor extends CompoundContributionItem {
             this.fullyQualifiedNames = fullyQualifiedNames;
         }
 
+        public boolean isCompactSQL() {
+            return compactSQL;
+        }
+
+        public void setCompactSQL(boolean compactSQL) {
+            this.compactSQL = compactSQL;
+        }
+
+        protected String getLineSeparator() {
+            return compactSQL ? " " : "\n";
+        }
+
         protected String getEntityName(DBSEntity entity) {
             if (fullyQualifiedNames) {
                 return DBUtils.getObjectFullName(entity, DBPEvaluationContext.DML);
@@ -389,6 +402,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
 
         protected void addOptions(Map<String, Object> options) {
             options.put(DBPScriptObject.OPTION_FULLY_QUALIFIED_NAMES, isFullyQualifiedNames());
+            options.put(DBPScriptObject.OPTION_SCRIPT_FORMAT_COMPACT, isCompactSQL());
         }
 
         @Override
@@ -602,6 +616,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
     private static class GenerateSQLDialog extends ViewSQLDialog {
 
         private static final String PROP_USE_FQ_NAMES = "GenerateSQL.useFQNames";
+        private static final String PROP_USE_COMPACT_SQL = "GenerateSQL.compactSQL";
         private final SQLGenerator<?> sqlGenerator;
 
         public GenerateSQLDialog(IWorkbenchPartSite parentSite, DBCExecutionContext context, SQLGenerator<?> sqlGenerator) {
@@ -616,6 +631,9 @@ public class GenerateSQLContributor extends CompoundContributionItem {
             sqlGenerator.setFullyQualifiedNames(
                 getDialogBoundsSettings().get(PROP_USE_FQ_NAMES) == null ||
                     getDialogBoundsSettings().getBoolean(PROP_USE_FQ_NAMES));
+            sqlGenerator.setCompactSQL(
+                getDialogBoundsSettings().get(PROP_USE_COMPACT_SQL) != null &&
+                getDialogBoundsSettings().getBoolean(PROP_USE_COMPACT_SQL));
             DBeaverUI.runInUI(sqlGenerator);
             Object sql = sqlGenerator.getResult();
             if (sql != null) {
@@ -624,13 +642,28 @@ public class GenerateSQLContributor extends CompoundContributionItem {
 
             Composite composite = super.createDialogArea(parent);
 
-            Group settings = UIUtils.createControlGroup(composite, "Settings", 1, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
+            Group settings = UIUtils.createControlGroup(composite, "Settings", 2, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
             Button useFQNames = UIUtils.createCheckbox(settings, "Use fully qualified names", sqlGenerator.isFullyQualifiedNames());
             useFQNames.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     sqlGenerator.setFullyQualifiedNames(useFQNames.getSelection());
                     getDialogBoundsSettings().put(PROP_USE_FQ_NAMES, useFQNames.getSelection());
+
+                    DBeaverUI.runInUI(sqlGenerator);
+                    Object sql = sqlGenerator.getResult();
+                    if (sql != null) {
+                        setSQLText(CommonUtils.toString(sql));
+                        updateSQL();
+                    }
+                }
+            });
+            Button useCompactSQL = UIUtils.createCheckbox(settings, "Compact SQL", sqlGenerator.isCompactSQL());
+            useCompactSQL.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    sqlGenerator.setCompactSQL(useCompactSQL.getSelection());
+                    getDialogBoundsSettings().put(PROP_USE_COMPACT_SQL, useCompactSQL.getSelection());
 
                     DBeaverUI.runInUI(sqlGenerator);
                     Object sql = sqlGenerator.getResult();
@@ -684,7 +717,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                         sql.append(DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML));
                         hasAttr = true;
                     }
-                    sql.append("\n");
+                    sql.append(getLineSeparator());
                 }
                 sql.append("FROM ").append(getEntityName(object));
                 sql.append(";\n");
@@ -697,8 +730,8 @@ public class GenerateSQLContributor extends CompoundContributionItem {
         return new TableAnalysisRunner(entities) {
             @Override
             public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, DBSEntity object) throws DBException {
-                sql.append("DELETE FROM  ").append(getEntityName(object))
-                    .append("\nWHERE ");
+                sql.append("DELETE FROM ").append(getEntityName(object))
+                    .append(getLineSeparator()).append("WHERE ");
                 Collection<? extends DBSEntityAttribute> keyAttributes = getKeyAttributes(monitor, object);
                 if (CommonUtils.isEmpty(keyAttributes)) {
                     keyAttributes = getAllAttributes(monitor, object);
@@ -720,7 +753,8 @@ public class GenerateSQLContributor extends CompoundContributionItem {
         return new TableAnalysisRunner(entities) {
             @Override
             public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, DBSEntity object) throws DBException {
-                sql.append("INSERT INTO ").append(getEntityName(object)).append("\n(");
+
+                sql.append("INSERT INTO ").append(getEntityName(object)).append("").append(getLineSeparator()).append("(");
                 boolean hasAttr = false;
                 for (DBSEntityAttribute attr : getAllAttributes(monitor, object)) {
                     if (DBUtils.isPseudoAttribute(attr) || DBUtils.isHiddenObject(attr) || attr.isAutoGenerated()) {
@@ -730,7 +764,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                     sql.append(DBUtils.getObjectFullName(attr, DBPEvaluationContext.DML));
                     hasAttr = true;
                 }
-                sql.append(")\nVALUES(");
+                sql.append(")").append(getLineSeparator()).append("VALUES(");
                 hasAttr = false;
                 for (DBSEntityAttribute attr : getAllAttributes(monitor, object)) {
                     if (DBUtils.isPseudoAttribute(attr) || DBUtils.isHiddenObject(attr) || attr.isAutoGenerated()) {
@@ -753,7 +787,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
             public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, DBSEntity object) throws DBException {
                 Collection<? extends DBSEntityAttribute> keyAttributes = getKeyAttributes(monitor, object);
                 sql.append("UPDATE ").append(getEntityName(object))
-                    .append("\nSET ");
+                    .append(getLineSeparator()).append("SET ");
                 boolean hasAttr = false;
                 for (DBSAttributeBase attr : getValueAttributes(monitor, object, keyAttributes)) {
                     if (DBUtils.isPseudoAttribute(attr) || DBUtils.isHiddenObject(attr)) {
@@ -765,7 +799,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                     hasAttr = true;
                 }
                 if (!CommonUtils.isEmpty(keyAttributes)) {
-                    sql.append("\nWHERE ");
+                    sql.append(getLineSeparator()).append("WHERE ");
                     hasAttr = false;
                     for (DBSEntityAttribute attr : keyAttributes) {
                         if (hasAttr) sql.append(" AND ");
@@ -786,8 +820,8 @@ public class GenerateSQLContributor extends CompoundContributionItem {
             public void generateSQL(DBRProgressMonitor monitor, StringBuilder sql, DBSEntity object) throws DBException {
                 boolean hasAttr = false;
 
-                sql.append("MERGE INTO ").append(getEntityName(object)).append(" AS tgt\n");
-                sql.append("USING SOURCE_TABLE AS src\n");
+                sql.append("MERGE INTO ").append(getEntityName(object)).append(" AS tgt").append(getLineSeparator());
+                sql.append("USING SOURCE_TABLE AS src").append(getLineSeparator());
                 Collection<? extends DBSEntityAttribute> keyAttributes = getKeyAttributes(monitor, object);
                 if (!CommonUtils.isEmpty(keyAttributes)) {
                     sql.append("ON (");
@@ -799,7 +833,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                     }
                     sql.append(")\n");
                 }
-                sql.append("WHEN MATCHED\nTHEN UPDATE SET\n");
+                sql.append("WHEN MATCHED\nTHEN UPDATE SET").append(getLineSeparator());
                 hasAttr = false;
                 for (DBSAttributeBase attr : getValueAttributes(monitor, object, keyAttributes)) {
                     if (hasAttr) sql.append(", ");
@@ -807,14 +841,14 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                         .append("=src.").append(DBUtils.getQuotedIdentifier(object.getDataSource(), attr.getName()));
                     hasAttr = true;
                 }
-                sql.append("\nWHEN NOT MATCHED\nTHEN INSERT (");
+                sql.append(getLineSeparator()).append("WHEN NOT MATCHED").append(getLineSeparator()).append("THEN INSERT (");
                 hasAttr = false;
                 for (DBSEntityAttribute attr : getAllAttributes(monitor, object)) {
                     if (hasAttr) sql.append(", ");
                     sql.append(DBUtils.getQuotedIdentifier(attr));
                     hasAttr = true;
                 }
-                sql.append(")\nVALUES (");
+                sql.append(")").append(getLineSeparator()).append("VALUES (");
                 hasAttr = false;
                 for (DBSEntityAttribute attr : getAllAttributes(monitor, object)) {
                     if (hasAttr) sql.append(", ");
@@ -840,13 +874,13 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                         if (i > 0) sql.append(", ");
                         sql.append(SQLUtils.getTableAlias(objects.get(i))).append(".*");
                     }
-                    sql.append("\nFROM ");
+                    sql.append(getLineSeparator()).append("FROM ");
                     for (int i = 0; i < objects.size(); i++) {
                         DBSEntity entity = objects.get(i);
                         if (i > 0) sql.append(", ");
                         sql.append(getEntityName(entity)).append(" ").append(SQLUtils.getTableAlias(entity));
                     }
-                    sql.append("\nWHERE ");
+                    sql.append(getLineSeparator()).append("WHERE ");
                     boolean hasCond = false;
                     for (int i = 1; i < objects.size(); i++) {
                         boolean foundJoin = false;
@@ -854,7 +888,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                             String tableJoin = SQLUtils.generateTableJoin(
                                 monitor, objects.get(k), SQLUtils.getTableAlias(objects.get(k)), objects.get(i), SQLUtils.getTableAlias(objects.get(i)));
                             if (tableJoin != null) {
-                                sql.append("\n\t");
+                                sql.append(getLineSeparator()).append("\t");
                                 if (hasCond) sql.append("AND ");
                                 sql.append(tableJoin);
                                 hasCond = true;
