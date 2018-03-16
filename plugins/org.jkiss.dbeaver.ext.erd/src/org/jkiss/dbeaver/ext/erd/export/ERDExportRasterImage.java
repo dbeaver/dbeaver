@@ -65,10 +65,10 @@ public class ERDExportRasterImage implements ERDExportFormatHandler
                 GC gc = null;
                 Graphics graphics = null;
                 try {
-                    Image image = new Image(null, contentBounds.width + MARGIN_X * 2, contentBounds.height + MARGIN_Y * 2);
+                    Image image = new Image(null, contentBounds.width + MARGIN_X * 4, contentBounds.height + MARGIN_Y * 4);
                     try {
                         gc = new GC(image);
-                        gc.setClipping(0, 0, contentBounds.width + MARGIN_X * 2, contentBounds.height + MARGIN_Y * 2);
+                        //gc.setClipping(0, 0, contentBounds.width + MARGIN_X * 2, contentBounds.height + MARGIN_Y * 2);
                         graphics = new SWTGraphics(gc);
                         graphics.translate(r.x * -1 + MARGIN_X, r.y * -1 + MARGIN_Y);
                         figure.paint(graphics);
