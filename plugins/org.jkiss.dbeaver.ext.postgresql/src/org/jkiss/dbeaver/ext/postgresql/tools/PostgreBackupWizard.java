@@ -48,6 +48,8 @@ class PostgreBackupWizard extends PostgreBackupRestoreWizard<PostgreDatabaseBack
     String encoding;
     boolean showViews;
     boolean useInserts;
+    boolean noPrivileges;
+    boolean noOwner;
     public List<PostgreDatabaseBackupInfo> objects = new ArrayList<>();
 
     private PostgreBackupWizardPageObjects objectsPage;
@@ -118,6 +120,12 @@ class PostgreBackupWizard extends PostgreBackupRestoreWizard<PostgreDatabaseBack
         }
         if (useInserts) {
             cmd.add("--inserts");
+        }
+        if (noPrivileges) {
+            cmd.add("--no-privileges");
+        }
+        if (noOwner) {
+            cmd.add("--no-owner");
         }
 
         // Objects
