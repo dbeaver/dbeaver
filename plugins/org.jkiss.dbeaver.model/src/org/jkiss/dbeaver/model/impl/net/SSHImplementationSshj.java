@@ -16,7 +16,13 @@
  */
 package org.jkiss.dbeaver.model.impl.net;
 
-import com.jcraft.jsch.*;
+import net.schmizz.sshj.Config;
+import net.schmizz.sshj.DefaultConfig;
+import net.schmizz.sshj.SSHClient;
+import net.schmizz.sshj.common.LoggerFactory;
+import net.schmizz.sshj.connection.channel.direct.LocalPortForwarder;
+import net.schmizz.sshj.transport.verification.PromiscuousVerifier;
+import net.schmizz.sshj.userauth.keyprovider.KeyProvider;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
@@ -27,6 +33,8 @@ import org.jkiss.utils.CommonUtils;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
+import java.net.InetSocketAddress;
+import java.net.ServerSocket;
 
 /**
  * SSHJ tunnel
@@ -35,69 +43,75 @@ public class SSHImplementationSshj extends SSHImplementationAbstract {
 
     private static final Log log = Log.getLog(SSHImplementationSshj.class);
 
-    private static transient JSch jsch;
-    private transient Session session;
+    private transient SSHClient sshClient;
+    private transient LocalPortListener portListener;
 
     @Override
-    protected void setupTunnel(DBRProgressMonitor monitor, DBWHandlerConfiguration configuration, String dbHost, String sshHost, String sshUser, String aliveInterval, int sshPortNum, File privKeyFile, int connectTimeout, int dbPort, int localPort) throws DBException, IOException {
-        UserInfo ui = new UIUserInfo(configuration);
+    protected void setupTunnel(DBRProgressMonitor monitor, DBWHandlerConfiguration configuration, String dbHost, String sshHost, String aliveInterval, int sshPortNum, File privKeyFile, int connectTimeout, int dbPort, int localPort) throws DBException, IOException {
         try {
-            if (jsch == null) {
-                jsch = new JSch();
-                JSch.setLogger(new LoggerProxy());
+            Config clientConfig = new DefaultConfig();
+            clientConfig.setLoggerFactory(LoggerFactory.DEFAULT);
+            sshClient = new SSHClient(clientConfig);
+            // TODO: make real host verifier
+            sshClient.addHostKeyVerifier(new PromiscuousVerifier());
+
+            String sshUser = configuration.getUserName();
+            String sshPassword = configuration.getPassword();
+
+            try {
+                sshClient.loadKnownHosts();
+            } catch (IOException e) {
+                log.warn("Error loading known hosts", e);
             }
+
+            sshClient.connect(sshHost);
+
             if (privKeyFile != null) {
-                if (!CommonUtils.isEmpty(ui.getPassphrase())) {
-                    jsch.addIdentity(privKeyFile.getAbsolutePath(), ui.getPassphrase());
+                if (!CommonUtils.isEmpty(sshPassword)) {
+                    KeyProvider keyProvider = sshClient.loadKeys(privKeyFile.getAbsolutePath(), sshPassword.toCharArray());
+                    sshClient.authPublickey(sshUser, keyProvider);
                 } else {
-                    jsch.addIdentity(privKeyFile.getAbsolutePath());
+                    sshClient.authPublickey(sshUser, privKeyFile.getAbsolutePath());
                 }
+            } else {
+                sshClient.authPassword(sshUser, sshPassword);
             }
 
             log.debug("Instantiate SSH tunnel");
-            session = jsch.getSession(sshUser, sshHost, sshPortNum);
-            session.setConfig("StrictHostKeyChecking", "no");
-            //session.setConfig("PreferredAuthentications", "password,publickey,keyboard-interactive");
-            session.setConfig("PreferredAuthentications",
-                privKeyFile != null ? "publickey" : "password");
-            session.setConfig("ConnectTimeout", String.valueOf(connectTimeout));
-            session.setUserInfo(ui);
-            if (!CommonUtils.isEmpty(aliveInterval)) {
-                session.setServerAliveInterval(Integer.parseInt(aliveInterval));
-            }
-            log.debug("Connect to tunnel host");
-            session.connect(connectTimeout);
-            try {
-                session.setPortForwardingL(localPort, dbHost, dbPort);
-            } catch (JSchException e) {
-                closeTunnel(monitor);
-                throw e;
-            }
-        } catch (JSchException e) {
+
+            final LocalPortForwarder.Parameters params
+                = new LocalPortForwarder.Parameters(SSHConstants.LOCALHOST_NAME, localPort, dbHost, dbPort);
+            portListener = new LocalPortListener(params);
+            portListener.start();
+            RuntimeUtils.pause(100);
+        } catch (Exception e) {
             throw new DBException("Cannot establish tunnel", e);
         }
     }
 
     @Override
     public void closeTunnel(DBRProgressMonitor monitor) throws DBException, IOException {
-        if (session != null) {
+        if (portListener != null) {
+            portListener.stopServer();
+        }
+        if (sshClient != null) {
             RuntimeUtils.runTask(monitor1 -> {
                 try {
-                    session.disconnect();
+                    sshClient.disconnect();
                 } catch (Exception e) {
                     throw new InvocationTargetException(e);
                 }
-            }, "Close SSH session", 1000);
-            session = null;
+            }, "Close SSH client", 1000);
+            sshClient = null;
         }
     }
 
     @Override
     public void invalidateTunnel(DBRProgressMonitor monitor) throws DBException, IOException {
-        boolean isAlive = session != null && session.isConnected();
+        boolean isAlive = sshClient != null && sshClient.isConnected();
         if (isAlive) {
             try {
-                session.sendKeepAliveMsg();
+                sshClient.isConnected();
             } catch (Exception e) {
                 isAlive = false;
             }
@@ -108,71 +122,42 @@ public class SSHImplementationSshj extends SSHImplementationAbstract {
         }
     }
 
-    private class UIUserInfo implements UserInfo {
-        DBWHandlerConfiguration configuration;
-        private UIUserInfo(DBWHandlerConfiguration configuration)
-        {
-            this.configuration = configuration;
+    private class LocalPortListener extends Thread {
+        private LocalPortForwarder.Parameters params;
+        private LocalPortForwarder portForwarder;
+
+        LocalPortListener(LocalPortForwarder.Parameters params) {
+            this.params = params;
         }
 
-        @Override
-        public String getPassphrase()
-        {
-            return configuration.getPassword();
-        }
+        public void run() {
+            setName("Local port forwarder " + params.getRemoteHost() + ":" + params.getRemotePort() + " socket listener");
+            final LocalPortForwarder.Parameters params
+                = new LocalPortForwarder.Parameters(
+                    this.params.getLocalHost(), this.params.getLocalPort(), this.params.getRemoteHost(), this.params.getRemotePort());
 
-        @Override
-        public String getPassword()
-        {
-            return configuration.getPassword();
-        }
-
-        @Override
-        public boolean promptPassword(String message)
-        {
-            return true;
-        }
-
-        @Override
-        public boolean promptPassphrase(String message)
-        {
-            return true;
-        }
-
-        @Override
-        public boolean promptYesNo(String message)
-        {
-            return false;
-        }
-
-        @Override
-        public void showMessage(String message)
-        {
-            log.info(message);
-        }
-    }
-
-    private class LoggerProxy implements Logger {
-        @Override
-        public boolean isEnabled(int level) {
-            return true;
-        }
-
-        @Override
-        public void log(int level, String message) {
-            String levelStr;
-            switch (level) {
-                case INFO: levelStr = "INFO"; break;
-                case WARN: levelStr = "WARN"; break;
-                case ERROR: levelStr = "ERROR"; break;
-                case FATAL: levelStr = "FATAL"; break;
-                case DEBUG:
-                default:
-                    levelStr = "DEBUG";
-                    break;
+            try {
+                ServerSocket serverSocket = new ServerSocket();
+                serverSocket.setReuseAddress(true);
+                serverSocket.bind(new InetSocketAddress(params.getLocalHost(), params.getLocalPort()));
+                portForwarder = sshClient.newLocalPortForwarder(params, serverSocket);
+                portForwarder.listen();
+            } catch (IOException e) {
+                log.error(e);
             }
-            log.debug("SSH " + levelStr + ": " + message);
+            log.debug("Server socket closed. Tunnel is terminated");
+        }
 
+        void stopServer() {
+            if (portForwarder != null) {
+                try {
+                    portForwarder.close();
+                } catch (IOException e) {
+                    log.error("Error closing port forwarder", e);
+                }
+                portForwarder = null;
+            }
         }
     }
+
 }

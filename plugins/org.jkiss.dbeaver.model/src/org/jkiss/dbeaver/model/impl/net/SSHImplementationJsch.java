@@ -39,7 +39,7 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
     private transient Session session;
 
     @Override
-    protected void setupTunnel(DBRProgressMonitor monitor, DBWHandlerConfiguration configuration, String dbHost, String sshHost, String sshUser, String aliveInterval, int sshPortNum, File privKeyFile, int connectTimeout, int dbPort, int localPort) throws DBException, IOException {
+    protected void setupTunnel(DBRProgressMonitor monitor, DBWHandlerConfiguration configuration, String dbHost, String sshHost, String aliveInterval, int sshPortNum, File privKeyFile, int connectTimeout, int dbPort, int localPort) throws DBException, IOException {
         UserInfo ui = new UIUserInfo(configuration);
         try {
             if (jsch == null) {
@@ -55,7 +55,7 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
             }
 
             log.debug("Instantiate SSH tunnel");
-            session = jsch.getSession(sshUser, sshHost, sshPortNum);
+            session = jsch.getSession(configuration.getUserName(), sshHost, sshPortNum);
             session.setConfig("StrictHostKeyChecking", "no");
             //session.setConfig("PreferredAuthentications", "password,publickey,keyboard-interactive");
             session.setConfig("PreferredAuthentications",

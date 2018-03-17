@@ -58,7 +58,6 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
         String sshHost = properties.get(SSHConstants.PROP_HOST);
         String sshPort = properties.get(SSHConstants.PROP_PORT);
         String sshLocalPort = properties.get(SSHConstants.PROP_LOCAL_PORT);
-        String sshUser = configuration.getUserName();
         String aliveInterval = properties.get(SSHConstants.PROP_ALIVE_INTERVAL);
         String connectTimeoutString = properties.get(SSHConstants.PROP_CONNECT_TIMEOUT);
         //String aliveCount = properties.get(SSHConstants.PROP_ALIVE_COUNT);
@@ -68,7 +67,7 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
         if (CommonUtils.isEmpty(sshPort)) {
             throw new DBException("SSH port not specified");
         }
-        if (CommonUtils.isEmpty(sshUser)) {
+        if (CommonUtils.isEmpty(configuration.getUserName())) {
             throw new DBException("SSH user not specified");
         }
         int sshPortNum;
@@ -123,7 +122,7 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
             }
         }
 
-        setupTunnel(monitor, configuration, dbHost, sshHost, sshUser, aliveInterval, sshPortNum, privKeyFile, connectTimeout, dbPort, localPort);
+        setupTunnel(monitor, configuration, dbHost, sshHost, aliveInterval, sshPortNum, privKeyFile, connectTimeout, dbPort, localPort);
         savedLocalPort = localPort;
         savedConfiguration = configuration;
         savedConnectionInfo = connectionInfo;
@@ -140,6 +139,6 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
         return connectionInfo;
     }
 
-    protected abstract void setupTunnel(DBRProgressMonitor monitor, DBWHandlerConfiguration configuration, String dbHost, String sshHost, String sshUser, String aliveInterval, int sshPortNum, File privKeyFile, int connectTimeout, int dbPort, int localPort) throws DBException, IOException;
+    protected abstract void setupTunnel(DBRProgressMonitor monitor, DBWHandlerConfiguration configuration, String dbHost, String sshHost, String aliveInterval, int sshPortNum, File privKeyFile, int connectTimeout, int dbPort, int localPort) throws DBException, IOException;
 
 }
