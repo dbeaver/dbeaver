@@ -18,23 +18,18 @@ package org.jkiss.dbeaver.model.impl.net;
 
 import com.jcraft.jsch.*;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWTunnel;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
-import org.jkiss.utils.IOUtils;
 
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
-import java.util.List;
 import java.util.Map;
 
 /**
@@ -44,8 +39,6 @@ public class SSHTunnelImpl implements DBWTunnel {
 
     private static final Log log = Log.getLog(SSHTunnelImpl.class);
 
-    //private static final int CONNECT_TIMEOUT = 10000;
-    public static final String LOCALHOST_NAME = "127.0.0.1";
     private static transient JSch jsch;
     private transient Session session;
 
@@ -125,7 +118,7 @@ public class SSHTunnelImpl implements DBWTunnel {
         }
         int localPort = savedLocalPort;
         if (platform != null) {
-            localPort = findFreePort(platform);
+            localPort = SSHUtils.findFreePort(platform);
         }
         if (!CommonUtils.isEmpty(sshLocalPort)) {
             try {
@@ -179,7 +172,7 @@ public class SSHTunnelImpl implements DBWTunnel {
         connectionInfo = new DBPConnectionConfiguration(connectionInfo);
         String newPortValue = String.valueOf(localPort);
         // Replace database host/port and URL - let's use localhost
-        connectionInfo.setHostName(LOCALHOST_NAME);
+        connectionInfo.setHostName(SSHConstants.LOCALHOST_NAME);
         connectionInfo.setHostPort(newPortValue);
         String newURL = configuration.getDriver().getDataSourceProvider().getConnectionURL(
             configuration.getDriver(),
@@ -188,26 +181,15 @@ public class SSHTunnelImpl implements DBWTunnel {
         return connectionInfo;
     }
 
-    private int findFreePort(DBPPlatform platform)
-    {
-        DBPPreferenceStore store = platform.getPreferenceStore();
-        int minPort = store.getInt(ModelPreferences.NET_TUNNEL_PORT_MIN);
-        int maxPort = store.getInt(ModelPreferences.NET_TUNNEL_PORT_MAX);
-        return IOUtils.findFreePort(minPort, maxPort);
-    }
-
     @Override
     public void closeTunnel(DBRProgressMonitor monitor) throws DBException, IOException
     {
         if (session != null) {
-            RuntimeUtils.runTask(new DBRRunnableWithProgress() {
-                @Override
-                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                    try {
-                        session.disconnect();
-                    } catch (Exception e) {
-                        throw new InvocationTargetException(e);
-                    }
+            RuntimeUtils.runTask(monitor1 -> {
+                try {
+                    session.disconnect();
+                } catch (Exception e) {
+                    throw new InvocationTargetException(e);
                 }
             }, "Close SSH session", 1000);
             session = null;
@@ -231,22 +213,8 @@ public class SSHTunnelImpl implements DBWTunnel {
         if (authType == SSHConstants.AuthType.PUBLIC_KEY) {
             // Check whether this key is encrypted
             String privKeyPath = configuration.getProperties().get(SSHConstants.PROP_KEY_PATH);
-            if (privKeyPath != null) {
-                // Determine whether public key is encrypted
-                try {
-                    JSch testSch = new JSch();
-                    testSch.addIdentity(privKeyPath);
-                    IdentityRepository ir = testSch.getIdentityRepository();
-                    List<Identity> identities = ir.getIdentities();
-                    for (Identity identity : identities) {
-                        if (identity.isEncrypted()) {
-                            return AuthCredentials.PASSWORD;
-                        }
-                    }
-                } catch (JSchException e) {
-                    // Something went wrong
-                    log.debug("Can't check private key encryption: " + e.getMessage());
-                }
+            if (privKeyPath != null && SSHUtils.isKeyEncrypted(privKeyPath)) {
+                return AuthCredentials.PASSWORD;
             }
 
             return AuthCredentials.NONE;
