@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.impl.net;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
@@ -43,6 +44,7 @@ public class SSHTunnelImpl implements DBWTunnel {
     {
         Map<String,String> properties = configuration.getProperties();
         String implId = properties.get(SSHConstants.PROP_IMPLEMENTATION);
+
         SSHImplType implType = SSHImplType.JSCH;
         if (!CommonUtils.isEmpty(implId)) {
             try {
