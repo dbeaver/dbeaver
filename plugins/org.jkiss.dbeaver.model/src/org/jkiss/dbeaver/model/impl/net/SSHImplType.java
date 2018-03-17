@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.model.impl.net;
 
+import org.jkiss.code.NotNull;
+
 /**
  * SSH implementation enum
  */
@@ -28,24 +30,28 @@ public enum SSHImplType  {
     private String label;
     private Class<? extends SSHImplementation> implClass;
 
-    SSHImplType(String id, String label, Class<? extends SSHImplementation> implClass) {
+    SSHImplType(@NotNull String id, @NotNull String label, @NotNull Class<? extends SSHImplementation> implClass) {
         this.id = id;
         this.label = label;
         this.implClass = implClass;
     }
 
+    @NotNull
     public String getId() {
         return id;
     }
 
+    @NotNull
     public String getLabel() {
         return label;
     }
 
+    @NotNull
     public Class<? extends SSHImplementation> getImplClass() {
         return implClass;
     }
 
+    @NotNull
     public static SSHImplType getById(String id) throws IllegalArgumentException {
         for (SSHImplType  it : values()) {
             if (it.getId().equals(id)) {
