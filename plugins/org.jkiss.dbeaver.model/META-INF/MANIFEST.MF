@@ -79,5 +79,7 @@ Require-Bundle: org.eclipse.equinox.security,
  org.apache.commons.jexl,
  com.github.jsqlparser;visibility:=reexport,
  com.jcraft.jsch,
+ com.jcraft.jzlib,
+ com.hierynomus.sshj,
  org.jkiss.utils;visibility:=reexport
 Bundle-Localization: OSGI-INF/l10n/bundle
