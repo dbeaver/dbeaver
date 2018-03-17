@@ -25,6 +25,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.impl.net.SSHConstants;
+import org.jkiss.dbeaver.model.impl.net.SSHImplType;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -48,6 +49,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
     private Text passwordText;
     private Button savePasswordCheckbox;
     private Label privateKeyLabel;
+    private Combo tunnelImplCombo;
     private Spinner localPortSpinner;
     private Spinner keepAliveText;
     private Spinner tunnelTimeout;
@@ -94,6 +96,11 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
         {
             Group advancedGroup = UIUtils.createControlGroup(composite, CoreMessages.model_ssh_configurator_group_advanced, 2, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
 
+            tunnelImplCombo = UIUtils.createLabelCombo(advancedGroup, CoreMessages.model_ssh_configurator_label_implementation, SWT.DROP_DOWN | SWT.READ_ONLY);
+            tunnelImplCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+            for (SSHImplType it : SSHImplType.values()) {
+                tunnelImplCombo.add(it.getLabel());
+            }
             localPortSpinner = UIUtils.createLabelSpinner(advancedGroup, CoreMessages.model_ssh_configurator_label_local_port, 0, Integer.MIN_VALUE, Integer.MAX_VALUE);
             localPortSpinner.setToolTipText(CoreMessages.model_ssh_configurator_label_local_port_description);
             keepAliveText = UIUtils.createLabelSpinner(advancedGroup, CoreMessages.model_ssh_configurator_label_keep_alive, 0, 0, Integer.MAX_VALUE);
@@ -129,6 +136,18 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
         passwordText.setText(CommonUtils.notEmpty(configuration.getPassword()));
         savePasswordCheckbox.setSelection(configuration.isSavePassword());
 
+        String implType = configuration.getProperties().get(SSHConstants.PROP_IMPLEMENTATION);
+        if (CommonUtils.isEmpty(implType)) {
+            tunnelImplCombo.select(0);
+        } else {
+            try {
+                SSHImplType it = SSHImplType.getById(implType);
+                tunnelImplCombo.setText(it.getLabel());
+            } catch (IllegalArgumentException e) {
+                tunnelImplCombo.select(0);
+            }
+        }
+
         String lpString = configuration.getProperties().get(SSHConstants.PROP_LOCAL_PORT);
         if (!CommonUtils.isEmpty(lpString)) {
             localPortSpinner.setSelection(Integer.parseInt(lpString));
@@ -162,6 +181,13 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
         configuration.setPassword(passwordText.getText());
         configuration.setSavePassword(savePasswordCheckbox.getSelection());
 
+        String implLabel = tunnelImplCombo.getText();
+        for (SSHImplType it : SSHImplType.values()) {
+            if (it.getLabel().equals(implLabel)) {
+                properties.put(SSHConstants.PROP_IMPLEMENTATION, it.getId());
+                break;
+            }
+        }
         int localPort = localPortSpinner.getSelection();
         if (localPort <= 0) {
             properties.remove(SSHConstants.PROP_LOCAL_PORT);
@@ -197,12 +223,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
 //        }
         pwdLabel.setText(isPassword ? CoreMessages.model_ssh_configurator_label_password : CoreMessages.model_ssh_configurator_label_passphrase);
 
-        DBeaverUI.asyncExec(new Runnable() {
-            @Override
-            public void run() {
-                hostText.getParent().getParent().layout(true, true);
-            }
-        });
+        DBeaverUI.asyncExec(() -> hostText.getParent().getParent().layout(true, true));
     }
 
     @Override
