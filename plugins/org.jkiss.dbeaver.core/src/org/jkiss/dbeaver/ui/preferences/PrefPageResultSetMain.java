@@ -44,6 +44,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
     private Button readQueryMetadata;
     private Button readQueryReferences;
     private Spinner queryCancelTimeout;
+    private Button filterForceSubselect;
 
     private Button keepStatementOpenCheck;
     private Button alwaysUseAllColumns;
@@ -67,6 +68,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             store.contains(ModelPreferences.RESULT_SET_MAX_ROWS_USE_SQL) ||
             store.contains(DBeaverPreferences.RESULT_SET_READ_METADATA) ||
             store.contains(DBeaverPreferences.RESULT_SET_CANCEL_TIMEOUT) ||
+            store.contains(ModelPreferences.SQL_FILTER_FORCE_SUBSELECT) ||
             store.contains(DBeaverPreferences.RS_EDIT_USE_ALL_COLUMNS) ||
             store.contains(DBeaverPreferences.RS_EDIT_NEW_ROWS_AFTER) ||
             store.contains(DBeaverPreferences.RS_EDIT_REFRESH_AFTER_UPDATE) ||
@@ -101,6 +103,9 @@ public class PrefPageResultSetMain extends TargetPrefPage
                 CoreMessages.pref_page_database_resultsets_label_read_references_tip, false, 2);
             queryCancelTimeout = UIUtils.createLabelSpinner(queriesGroup, CoreMessages.pref_page_database_general_label_result_set_cancel_timeout, CoreMessages.pref_page_database_general_label_result_set_cancel_timeout_tip, 0, 0, Integer.MAX_VALUE);
             queryCancelTimeout.setEnabled(false);
+
+            filterForceSubselect = UIUtils.createCheckbox(queriesGroup, CoreMessages.pref_page_database_resultsets_label_filter_force_subselect,
+                CoreMessages.pref_page_database_resultsets_label_filter_force_subselect_tip, false, 2);
 
             readQueryMetadata.addSelectionListener(new SelectionAdapter() {
                 @Override
@@ -144,6 +149,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             readQueryMetadata.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_READ_METADATA));
             readQueryReferences.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_READ_REFERENCES));
             queryCancelTimeout.setSelection(store.getInt(DBeaverPreferences.RESULT_SET_CANCEL_TIMEOUT));
+            filterForceSubselect.setSelection(store.getBoolean(ModelPreferences.SQL_FILTER_FORCE_SUBSELECT));
 
             keepStatementOpenCheck.setSelection(store.getBoolean(DBeaverPreferences.KEEP_STATEMENT_OPEN));
             alwaysUseAllColumns.setSelection(store.getBoolean(DBeaverPreferences.RS_EDIT_USE_ALL_COLUMNS));
@@ -169,6 +175,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             store.setValue(DBeaverPreferences.RESULT_SET_READ_METADATA, readQueryMetadata.getSelection());
             store.setValue(DBeaverPreferences.RESULT_SET_READ_REFERENCES, readQueryReferences.getSelection());
             store.setValue(DBeaverPreferences.RESULT_SET_CANCEL_TIMEOUT, queryCancelTimeout.getSelection());
+            store.setValue(ModelPreferences.SQL_FILTER_FORCE_SUBSELECT, filterForceSubselect.getSelection());
 
             store.setValue(DBeaverPreferences.KEEP_STATEMENT_OPEN, keepStatementOpenCheck.getSelection());
             store.setValue(DBeaverPreferences.RS_EDIT_USE_ALL_COLUMNS, alwaysUseAllColumns.getSelection());
@@ -192,6 +199,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
         store.setToDefault(DBeaverPreferences.RESULT_SET_READ_METADATA);
         store.setToDefault(DBeaverPreferences.RESULT_SET_READ_REFERENCES);
         store.setToDefault(DBeaverPreferences.RESULT_SET_CANCEL_TIMEOUT);
+        store.setToDefault(ModelPreferences.SQL_FILTER_FORCE_SUBSELECT);
 
         store.setToDefault(DBeaverPreferences.KEEP_STATEMENT_OPEN);
         store.setToDefault(DBeaverPreferences.RS_EDIT_USE_ALL_COLUMNS);

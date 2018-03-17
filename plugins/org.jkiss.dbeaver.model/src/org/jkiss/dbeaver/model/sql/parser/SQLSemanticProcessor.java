@@ -28,6 +28,7 @@ import net.sf.jsqlparser.statement.Statement;
 import net.sf.jsqlparser.statement.select.*;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
@@ -65,20 +66,23 @@ public class SQLSemanticProcessor {
         }
     }
 
-    // FIXME: Applying filters changes query formatting (thus it changes column names in expressions)
-    // FIXME: Solution - always wrap query in subselect + add patched WHERE and ORDER
+    // Applying filters changes query formatting (thus it changes column names in expressions)
+    // Solution - always wrap query in subselect + add patched WHERE and ORDER
+    // It is configurable
     public static String addFiltersToQuery(final DBPDataSource dataSource, String sqlQuery, final DBDDataFilter dataFilter) {
         boolean supportSubqueries = dataSource instanceof SQLDataSource && ((SQLDataSource) dataSource).getSQLDialect().supportsSubqueries();
-        try {
-            Statement statement = CCJSqlParserUtil.parse(sqlQuery);
-            if (statement instanceof Select && ((Select) statement).getSelectBody() instanceof PlainSelect) {
-                PlainSelect select = (PlainSelect) ((Select) statement).getSelectBody();
-                if (patchSelectQuery(dataSource, select, dataFilter)) {
-                    return statement.toString();
+        if (!dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.SQL_FILTER_FORCE_SUBSELECT)) {
+            try {
+                Statement statement = CCJSqlParserUtil.parse(sqlQuery);
+                if (statement instanceof Select && ((Select) statement).getSelectBody() instanceof PlainSelect) {
+                    PlainSelect select = (PlainSelect) ((Select) statement).getSelectBody();
+                    if (patchSelectQuery(dataSource, select, dataFilter)) {
+                        return statement.toString();
+                    }
                 }
+            } catch (Throwable e) {
+                log.debug("SQL parse error", e);
             }
-        } catch (Throwable e) {
-            log.debug("SQL parse error", e);
         }
         return wrapQuery(dataSource, sqlQuery, dataFilter);
     }
