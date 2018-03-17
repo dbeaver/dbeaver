@@ -17,9 +17,14 @@
  */
 package org.jkiss.dbeaver.data.office.export;
 
+import com.microsoft.schemas.vml.CTShape;
+import com.microsoft.schemas.vml.impl.CTShapeImpl;
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.model.CommentsTable;
+import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
+import org.apache.poi.xssf.usermodel.XSSFComment;
 import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
@@ -36,6 +41,8 @@ import org.jkiss.dbeaver.tools.transfer.stream.impl.StreamExporterAbstract;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTComment;
+import org.openxmlformats.schemas.spreadsheetml.x2006.main.impl.CTCommentImpl;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -342,27 +349,47 @@ public class DataExporterXLSX extends StreamExporterAbstract {
     }
 
     private void printHeader(Worksheet wsh) {
-        Row row = wsh.getSh().createRow(wsh.getCurrentRow());
+        SXSSFSheet  sh = (SXSSFSheet)wsh.getSh();
+        Row row = sh.createRow(wsh.getCurrentRow());
 
         int startCol = rowNumber ? 1 : 0;
 
         for (int i = 0, columnsSize = columns.size(); i < columnsSize; i++) {
+            sh.trackColumnForAutoSizing(i);
             DBDAttributeBinding column = columns.get(i);
 
             String colName = column.getLabel();
             if (CommonUtils.isEmpty(colName)) {
                 colName = column.getName();
             }
+            Cell cell = row.createCell(i + startCol, CellType.STRING);
             if (showDescription) {
                 String description = column.getDescription();
                 if (!CommonUtils.isEmpty(description)) {
                     colName += "\n" + description;
+/*
+                    // When the comment box is visible, have it show in a 1x3 space
+                    ClientAnchor anchor = wb.getCreationHelper().createClientAnchor();
+                    anchor.setCol1(cell.getColumnIndex());
+                    anchor.setCol2(cell.getColumnIndex()+1);
+                    anchor.setRow1(row.getRowNum());
+                    anchor.setRow2(row.getRowNum()+3);
+
+                    Comment comment = drawing.createCellComment(anchor);
+                    RichTextString str = wb.getCreationHelper().createRichTextString("Hello, World!");
+                    comment.setString(str);
+                    comment.setAuthor("Apache POI");
+*/
                 }
             }
-            Cell cell = row.createCell(i + startCol, CellType.STRING);
             cell.setCellValue(colName);
             cell.setCellStyle(styleHeader);
         }
+
+        for (int i = 0, columnsSize = columns.size(); i < columnsSize; i++) {
+            sh.autoSizeColumn(i);
+        }
+
         wsh.incRow();
     }
 
