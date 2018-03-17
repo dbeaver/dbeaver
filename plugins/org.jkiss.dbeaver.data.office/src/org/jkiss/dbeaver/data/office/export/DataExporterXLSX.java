@@ -17,17 +17,14 @@
  */
 package org.jkiss.dbeaver.data.office.export;
 
-import com.microsoft.schemas.vml.CTShape;
-import com.microsoft.schemas.vml.impl.CTShapeImpl;
 import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.xssf.model.CommentsTable;
 import org.apache.poi.xssf.streaming.SXSSFSheet;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
-import org.apache.poi.xssf.usermodel.XSSFComment;
 import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
@@ -41,8 +38,6 @@ import org.jkiss.dbeaver.tools.transfer.stream.impl.StreamExporterAbstract;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
-import org.openxmlformats.schemas.spreadsheetml.x2006.main.CTComment;
-import org.openxmlformats.schemas.spreadsheetml.x2006.main.impl.CTCommentImpl;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -54,6 +49,8 @@ import java.util.Map;
  * Export XLSX with Apache POI
  */
 public class DataExporterXLSX extends StreamExporterAbstract {
+
+    private static final Log log = Log.getLog(DataExporterXLSX.class);
 
     private static final String PROP_HEADER = "header";
     private static final String PROP_NULL_STRING = "nullString";
@@ -304,14 +301,14 @@ public class DataExporterXLSX extends StreamExporterAbstract {
                     }
                     sh = null;
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    log.error("Dispose error", e);
                 }
             }
             wb.write(getSite().getOutputStream());
             wb.dispose();
 
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("Dispose error", e);
         }
         wb = null;
         for (Worksheet w : worksheets.values()) {
