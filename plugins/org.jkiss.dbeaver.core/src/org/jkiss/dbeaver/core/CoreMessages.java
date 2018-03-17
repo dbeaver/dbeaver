@@ -758,6 +758,7 @@ public class CoreMessages extends NLS {
 	public static String model_ssh_configurator_label_port;
 	public static String model_ssh_configurator_label_private_key;
 	public static String model_ssh_configurator_label_user_name;
+	public static String model_ssh_configurator_label_implementation;
 	public static String model_ssh_configurator_label_local_port;
 	public static String model_ssh_configurator_label_local_port_description;
     public static String model_ssh_configurator_label_keep_alive;

@@ -29,10 +29,13 @@ import java.io.IOException;
  */
 public interface SSHImplementation {
 
-    DBPConnectionConfiguration startPortForward(DBRProgressMonitor monitor, DBPPlatform platform, DBWHandlerConfiguration configuration, DBPConnectionConfiguration connectionInfo)
+    DBPConnectionConfiguration initTunnel(DBRProgressMonitor monitor, DBPPlatform platform, DBWHandlerConfiguration configuration, DBPConnectionConfiguration connectionInfo)
         throws DBException, IOException;
 
-    void stopPortForward(DBRProgressMonitor monitor)
+    void invalidateTunnel(DBRProgressMonitor monitor)
+        throws DBException, IOException;
+
+    void closeTunnel(DBRProgressMonitor monitor)
         throws DBException, IOException;
 
 }
