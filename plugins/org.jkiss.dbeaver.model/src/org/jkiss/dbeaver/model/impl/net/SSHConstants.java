@@ -20,10 +20,12 @@ package org.jkiss.dbeaver.model.impl.net;
  * Constants for SSH tunnel
  */
 public class SSHConstants {
-    
+
+    public static final String LOCALHOST_NAME = "127.0.0.1";
     public static final int DEFAULT_SSH_PORT = 22;
     public static final int DEFAULT_CONNECT_TIMEOUT = 10000;
 
+    public static final String PROP_IMPLEMENTATION = "implementation";
     public static final String PROP_HOST = "host";
     public static final String PROP_PORT = "port";
     public static final String PROP_AUTH_TYPE = "authType";
@@ -33,6 +35,7 @@ public class SSHConstants {
     public static final String PROP_CONNECT_TIMEOUT = "sshConnectTimeout";
 
     public static final String PROP_LOCAL_PORT = "localPort";
+    //private static final int CONNECT_TIMEOUT = 10000;
 
     public enum AuthType {
         PASSWORD,
