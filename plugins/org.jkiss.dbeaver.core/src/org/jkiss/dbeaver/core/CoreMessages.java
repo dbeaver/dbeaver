@@ -806,6 +806,8 @@ public class CoreMessages extends NLS {
 	public static String pref_page_database_general_label_result_set_max_size;
 	public static String pref_page_database_general_label_result_set_cancel_timeout;
 	public static String pref_page_database_general_label_result_set_cancel_timeout_tip;
+	public static String pref_page_database_resultsets_label_filter_force_subselect;
+	public static String pref_page_database_resultsets_label_filter_force_subselect_tip;
     public static String pref_page_database_resultsets_group_binary;
     public static String pref_page_database_resultsets_label_binary_use_strings;
     public static String pref_page_database_resultsets_label_binary_presentation;

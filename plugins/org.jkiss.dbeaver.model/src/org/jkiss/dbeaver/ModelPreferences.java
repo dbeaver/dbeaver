@@ -84,6 +84,7 @@ public final class ModelPreferences
     public static final String SQL_NAMED_PARAMETERS_PREFIX = "sql.parameter.prefix"; //$NON-NLS-1$
     public static final String SQL_CONTROL_COMMAND_PREFIX = "sql.command.prefix"; //$NON-NLS-1$
     public static final String SQL_VARIABLES_ENABLED = "sql.variables.enabled"; //$NON-NLS-1$
+    public static final String SQL_FILTER_FORCE_SUBSELECT = "sql.query.filter.force.subselect"; //$NON-NLS-1$
 
     public final static String SQL_FORMAT_FORMATTER = "sql.format.formatter";
     public final static String SQL_FORMAT_KEYWORD_CASE = "sql.format.keywordCase";
@@ -168,6 +169,7 @@ public final class ModelPreferences
         PrefUtils.setDefaultPreferenceValue(store, SQL_NAMED_PARAMETERS_PREFIX, String.valueOf(SQLConstants.DEFAULT_PARAMETER_PREFIX));
         PrefUtils.setDefaultPreferenceValue(store, SQL_CONTROL_COMMAND_PREFIX, String.valueOf(SQLConstants.DEFAULT_CONTROL_COMMAND_PREFIX));
         PrefUtils.setDefaultPreferenceValue(store, SQL_VARIABLES_ENABLED, false);
+        PrefUtils.setDefaultPreferenceValue(store, SQL_FILTER_FORCE_SUBSELECT, false);
 
         PrefUtils.setDefaultPreferenceValue(store, SQL_FORMAT_FORMATTER, SQLFormatterTokenized.FORMATTER_ID);
         PrefUtils.setDefaultPreferenceValue(store, SQL_FORMAT_KEYWORD_CASE, "");
