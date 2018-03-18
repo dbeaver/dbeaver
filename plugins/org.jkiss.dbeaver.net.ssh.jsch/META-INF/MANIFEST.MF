@@ -9,5 +9,6 @@ Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .
 Require-Bundle: org.jkiss.dbeaver.model,
+ org.jkiss.dbeaver.net.ssh,
  com.jcraft.jsch
 Bundle-Localization: OSGI-INF/l10n/bundle

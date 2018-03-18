@@ -375,6 +375,7 @@
                 label="SSL"
                 description="Secure socket layer"
                 secured="false"
+                order="100"
                 handlerClass="org.jkiss.dbeaver.ext.mysql.model.net.MySQLSSLHandlerImpl">
             <objectType name="org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider"/>
         </handler>

@@ -42,8 +42,9 @@ public class NetworkHandlerDescriptor extends AbstractContextDescriptor implemen
     private DBWHandlerType type;
     private final boolean secured;
     private final ObjectType handlerType;
+    private final int order;
 
-    public NetworkHandlerDescriptor(
+    NetworkHandlerDescriptor(
         IConfigurationElement config)
     {
         super(config);
@@ -54,6 +55,7 @@ public class NetworkHandlerDescriptor extends AbstractContextDescriptor implemen
         this.type = DBWHandlerType.valueOf(config.getAttribute(RegistryConstants.ATTR_TYPE).toUpperCase(Locale.ENGLISH));
         this.secured = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_SECURED), false);
         this.handlerType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_HANDLER_CLASS));
+        this.order = CommonUtils.toInt(config.getAttribute(RegistryConstants.ATTR_ORDER), 1);
     }
 
     @NotNull
@@ -80,6 +82,10 @@ public class NetworkHandlerDescriptor extends AbstractContextDescriptor implemen
     public boolean isSecured()
     {
         return secured;
+    }
+
+    public int getOrder() {
+        return order;
     }
 
     public boolean matches(DBPDataSourceProvider provider)

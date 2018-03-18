@@ -368,6 +368,7 @@
                 label="%handler.ssl.name"
                 description="%handler.ssl.description"
                 secured="false"
+                order="100"
                 handlerClass="org.jkiss.dbeaver.ext.postgresql.model.net.PostgreSSLHandlerImpl">
             <objectType name="org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider"/>
         </handler>
