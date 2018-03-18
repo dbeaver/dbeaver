@@ -65,6 +65,10 @@
         <module>plugins/org.jkiss.dbeaver.data.office</module>
         <module>plugins/org.jkiss.dbeaver.data.gis</module>
         <module>plugins/org.jkiss.dbeaver.model</module>
+        <module>plugins/org.jkiss.dbeaver.net.ssh</module>
+        <module>plugins/org.jkiss.dbeaver.net.ssh.jsch</module>
+        <module>plugins/org.jkiss.dbeaver.net.ssh.sshj</module>
+        <module>plugins/org.jkiss.dbeaver.net.ssh.ui</module>
 
         <module>features/org.jkiss.dbeaver.core.feature</module>
         <module>features/org.jkiss.dbeaver.debug.feature</module>
@@ -76,6 +80,7 @@
         <module>features/org.jkiss.dbeaver.ext.exasol.feature</module>
         <module>features/org.jkiss.dbeaver.ext.office.feature</module>
         <module>features/org.jkiss.dbeaver.ext.ui.svg.feature</module>
+        <module>features/org.jkiss.dbeaver.net.sshj.feature</module>
         <module>features/org.jkiss.dbeaver.rcp.feature</module>
         <module>features/org.jkiss.dbeaver.runtime.feature</module>
         <module>features/org.jkiss.dbeaver.standalone.feature</module>

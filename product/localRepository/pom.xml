@@ -48,7 +48,13 @@
 								<artifact><id>org.apache.xmlbeans:xmlbeans:2.6.0</id></artifact>
 
 								<!-- SSH -->
-								<artifact><id>com.hierynomus:sshj:0.23.0</id></artifact>
+								<artifact><id>org.bouncycastle:bcprov-jdk15on:1.59</id></artifact>
+								<artifact><id>org.bouncycastle:bcpkix-jdk15on:1.59</id></artifact>
+								<artifact><id>com.hierynomus:sshj:0.23.0</id>
+									<excludes>
+										<exclude>org.bouncycastle:*</exclude>
+									</excludes>
+								</artifact>
 
 								<!-- Batik -->
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.apache.batik:1.9.1</id></artifact>
