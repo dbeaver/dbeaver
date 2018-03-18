@@ -25,7 +25,8 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.SSHConstants;
-import org.jkiss.dbeaver.model.net.ssh.SSHImplType;
+import org.jkiss.dbeaver.model.net.ssh.registry.SSHImplementationDescriptor;
+import org.jkiss.dbeaver.model.net.ssh.registry.SSHImplementationRegistry;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TextWithOpen;
@@ -97,7 +98,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
 
             tunnelImplCombo = UIUtils.createLabelCombo(advancedGroup, SSHUIMessages.model_ssh_configurator_label_implementation, SWT.DROP_DOWN | SWT.READ_ONLY);
             tunnelImplCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-            for (SSHImplType it : SSHImplType.values()) {
+            for (SSHImplementationDescriptor it : SSHImplementationRegistry.getInstance().getDescriptors()) {
                 tunnelImplCombo.add(it.getLabel());
             }
             localPortSpinner = UIUtils.createLabelSpinner(advancedGroup, SSHUIMessages.model_ssh_configurator_label_local_port, 0, Integer.MIN_VALUE, Integer.MAX_VALUE);
@@ -139,10 +140,10 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
         if (CommonUtils.isEmpty(implType)) {
             tunnelImplCombo.select(0);
         } else {
-            try {
-                SSHImplType it = SSHImplType.getById(implType);
-                tunnelImplCombo.setText(it.getLabel());
-            } catch (IllegalArgumentException e) {
+            SSHImplementationDescriptor desc = SSHImplementationRegistry.getInstance().getDescriptor(implType);
+            if (desc != null) {
+                tunnelImplCombo.setText(desc.getLabel());
+            } else {
                 tunnelImplCombo.select(0);
             }
         }
@@ -181,7 +182,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
         configuration.setSavePassword(savePasswordCheckbox.getSelection());
 
         String implLabel = tunnelImplCombo.getText();
-        for (SSHImplType it : SSHImplType.values()) {
+        for (SSHImplementationDescriptor it : SSHImplementationRegistry.getInstance().getDescriptors()) {
             if (it.getLabel().equals(implLabel)) {
                 properties.put(SSHConstants.PROP_IMPLEMENTATION, it.getId());
                 break;

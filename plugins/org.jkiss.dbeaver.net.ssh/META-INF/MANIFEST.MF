@@ -7,14 +7,15 @@ Bundle-Version: 1.0.0
 Bundle-Release-Date: 20180319
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
-Export-Package: org.jkiss.dbeaver.model.net.ssh
+Export-Package: org.jkiss.dbeaver.model.net.ssh,
+ org.jkiss.dbeaver.model.net.ssh.registry
 Bundle-ClassPath: .
 Require-Bundle: org.eclipse.equinox.security,
  org.eclipse.core.runtime,
  org.eclipse.core.expressions,
  org.eclipse.core.commands,
  org.eclipse.core.resources,
+ org.jkiss.dbeaver.core,
  org.jkiss.dbeaver.model;visibility:=reexport,
- com.jcraft.jsch,
- com.hierynomus.sshj
+ com.jcraft.jsch
 Bundle-Localization: OSGI-INF/l10n/bundle

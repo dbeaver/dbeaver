@@ -3,5 +3,8 @@
 
 <plugin>
 
+    <extension point="org.jkiss.dbeaver.net.ssh">
+        <implementation id="jsch" label="JSch" class="org.jkiss.dbeaver.model.net.ssh.SSHImplementationJsch"/>
+    </extension>
 
 </plugin>
