@@ -3533,6 +3533,19 @@
                 </propertyGroup>
             </processor>
             <processor
+                    id="stream.markdown.table"
+                    class="org.jkiss.dbeaver.tools.transfer.stream.impl.DataExporterMarkdownTable"
+                    description="%dataTransfer.processor.markdownTable.description"
+                    icon="icons/misc/markdown.png"
+                    label="%dataTransfer.processor.markdownTable.name">
+                <propertyGroup label="%dataTransfer.processor.markdownTable.propertyGroup.general.label">
+                    <property id="extension" label="%dataTransfer.processor.markdownTable.property.extension.label" defaultValue="md"/>
+                    <property id="nullString" label="%dataTransfer.processor.markdownTable.property.nullString.name" type="string" description="%dataTransfer.processor.markdownTable.property.nullString.description" defaultValue="" required="false"/>
+                    <property id="formatNumbers" label="%dataTransfer.processor.markdownTable.property.formatNumbers.name" type="boolean" description="%dataTransfer.processor.markdownTable.property.formatNumbers.description" defaultValue="false" required="false"/>
+                    <property id="showHeaderSeparator" label="%dataTransfer.processor.markdownTable.property.showHeaderSeparator.name" type="boolean" description="%dataTransfer.processor.markdownTable.property.showHeaderSeparator.description" defaultValue="true" required="false"/>
+                </propertyGroup>
+            </processor>
+            <processor
                     id="stream.sql"
                     class="org.jkiss.dbeaver.tools.transfer.stream.impl.DataExporterSQL"
                     description="%dataTransfer.processor.sql.description"
