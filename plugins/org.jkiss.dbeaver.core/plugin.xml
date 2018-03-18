@@ -3543,6 +3543,7 @@
                     <property id="nullString" label="%dataTransfer.processor.markdownTable.property.nullString.name" type="string" description="%dataTransfer.processor.markdownTable.property.nullString.description" defaultValue="" required="false"/>
                     <property id="formatNumbers" label="%dataTransfer.processor.markdownTable.property.formatNumbers.name" type="boolean" description="%dataTransfer.processor.markdownTable.property.formatNumbers.description" defaultValue="false" required="false"/>
                     <property id="showHeaderSeparator" label="%dataTransfer.processor.markdownTable.property.showHeaderSeparator.name" type="boolean" description="%dataTransfer.processor.markdownTable.property.showHeaderSeparator.description" defaultValue="true" required="false"/>
+                    <property id="confluenceFormat" label="%dataTransfer.processor.markdownTable.property.confluenceFormat.name" type="boolean" description="%dataTransfer.processor.markdownTable.property.confluenceFormat.description" defaultValue="false" required="false"/>
                 </propertyGroup>
             </processor>
             <processor

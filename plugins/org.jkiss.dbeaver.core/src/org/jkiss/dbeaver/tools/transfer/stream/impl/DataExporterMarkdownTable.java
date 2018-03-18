@@ -44,12 +44,14 @@ public class DataExporterMarkdownTable extends StreamExporterAbstract {
     private static final String PROP_NULL_STRING = "nullString";
     private static final String PROP_FORMAT_NUMBERS = "formatNumbers";
     private static final String PROP_SHOW_HEADER_SEPARATOR = "showHeaderSeparator";
+    private static final String PROP_CONFLUENCE_FORMAT = "confluenceFormat";
 
     private static final String PIPE_ESCAPE = "&#124;";
 
     private String rowDelimiter;
     private String nullString;
     private boolean showHeaderSeparator;
+    private boolean confluenceFormat;
     private PrintWriter out;
     private List<DBDAttributeBinding> columns;
 
@@ -64,8 +66,8 @@ public class DataExporterMarkdownTable extends StreamExporterAbstract {
         nullString = nullStringProp == null ? null : nullStringProp.toString();
         out = site.getWriter();
         rowDelimiter = GeneralUtils.getDefaultLineSeparator();
-        Object showHeaderSeparatorProp = site.getProperties().get(PROP_SHOW_HEADER_SEPARATOR);
-        showHeaderSeparator = CommonUtils.getBoolean(showHeaderSeparatorProp, true);
+        showHeaderSeparator = CommonUtils.getBoolean(site.getProperties().get(PROP_SHOW_HEADER_SEPARATOR), true);
+        confluenceFormat = CommonUtils.getBoolean(site.getProperties().get(PROP_CONFLUENCE_FORMAT), false);
     }
 
     @Override
@@ -89,13 +91,14 @@ public class DataExporterMarkdownTable extends StreamExporterAbstract {
         columns = getSite().getAttributes();
         // Print separator line
         printHeader(false);
-        if (showHeaderSeparator) {
+        if (showHeaderSeparator && !confluenceFormat) {
             printHeader(true);
         }
     }
 
     private void printHeader(boolean separator)
     {
+        if (confluenceFormat) writeDelimiter();
         writeDelimiter();
         for (int i = 0, columnsSize = columns.size(); i < columnsSize; i++) {
             DBDAttributeBinding column = columns.get(i);
@@ -111,6 +114,7 @@ public class DataExporterMarkdownTable extends StreamExporterAbstract {
                 }
             }
             writeDelimiter();
+            if (confluenceFormat) writeDelimiter();
         }
         writeRowLimit();
     }
