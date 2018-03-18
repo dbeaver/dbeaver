@@ -29,7 +29,7 @@
    <plugin id="net.i2p.crypto.eddsa" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 
    <!--Bounce Castle bundles-->
-   <plugin id="bcprov" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-   <plugin id="bcpkix" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+   <plugin id="bcprov" download-size="0" install-size="0" version="1.59" unpack="false"/>
+   <plugin id="bcpkix" download-size="0" install-size="0" version="1.59" unpack="false"/>
 
 </feature>
