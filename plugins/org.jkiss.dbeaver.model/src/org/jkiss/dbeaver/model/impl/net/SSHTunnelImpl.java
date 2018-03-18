@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.model.impl.net;
 
-import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPPlatform;

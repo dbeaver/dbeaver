@@ -368,10 +368,13 @@
                 label="%handler.ssl.name"
                 description="%handler.ssl.description"
                 secured="false"
-                uiClass="org.jkiss.dbeaver.ext.postgresql.ui.PostgreSSLConfigurator"
-                handlerClass="org.jkiss.dbeaver.model.impl.net.SSLHandlerImpl">
+                handlerClass="org.jkiss.dbeaver.ext.postgresql.model.net.PostgreSSLHandlerImpl">
             <objectType name="org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider"/>
         </handler>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
+        <propertyConfigurator class="org.jkiss.dbeaver.ext.postgresql.model.net.PostgreSSLHandlerImpl" uiClass="org.jkiss.dbeaver.ext.postgresql.ui.PostgreSSLConfigurator"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.tools">
