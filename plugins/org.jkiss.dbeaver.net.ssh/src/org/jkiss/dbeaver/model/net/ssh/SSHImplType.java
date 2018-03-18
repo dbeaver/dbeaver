@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.impl.net;
+package org.jkiss.dbeaver.model.net.ssh;
 
 import org.jkiss.code.NotNull;
 

@@ -745,25 +745,6 @@ public class CoreMessages extends NLS {
 	public static String model_project_Script;
 	public static String model_project_Scripts;
 
-	public static String model_ssh_configurator_group_settings;
-	public static String model_ssh_configurator_group_advanced;
-	public static String model_ssh_configurator_checkbox_save_pass;
-	public static String model_ssh_configurator_combo_auth_method;
-	public static String model_ssh_configurator_combo_password;
-	public static String model_ssh_configurator_combo_pub_key;
-	public static String model_ssh_configurator_dialog_choose_private_key;
-	public static String model_ssh_configurator_label_host_ip;
-	public static String model_ssh_configurator_label_password;
-	public static String model_ssh_configurator_label_passphrase;
-	public static String model_ssh_configurator_label_port;
-	public static String model_ssh_configurator_label_private_key;
-	public static String model_ssh_configurator_label_user_name;
-	public static String model_ssh_configurator_label_implementation;
-	public static String model_ssh_configurator_label_local_port;
-	public static String model_ssh_configurator_label_local_port_description;
-    public static String model_ssh_configurator_label_keep_alive;
-	public static String model_ssh_configurator_label_tunnel_timeout;
-
 	public static String pref_page_confirmations_combo_always;
 	public static String pref_page_confirmations_combo_never;
 	public static String pref_page_confirmations_combo_prompt;

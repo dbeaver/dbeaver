@@ -3578,13 +3578,6 @@
 
     <extension point="org.jkiss.dbeaver.networkHandler">
         <handler
-                type="tunnel"
-                id="ssh_tunnel"
-                label="%handler.ssh_tunnel.label"
-                description="%handler.ssh_tunnel.description"
-                secured="true"
-                handlerClass="org.jkiss.dbeaver.model.impl.net.SSHTunnelImpl"/>
-        <handler
                 type="proxy"
                 id="socks_proxy"
                 label="%handler.socks_proxy.label"
@@ -3594,7 +3587,6 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
-        <propertyConfigurator class="org.jkiss.dbeaver.model.impl.net.SSHTunnelImpl" uiClass="org.jkiss.dbeaver.ui.dialogs.net.SSHTunnelConfiguratorUI"/>
         <propertyConfigurator class="org.jkiss.dbeaver.model.impl.net.SocksProxyImpl" uiClass="org.jkiss.dbeaver.ui.dialogs.net.SocksProxyConfiguratorUI"/>
     </extension>
 
