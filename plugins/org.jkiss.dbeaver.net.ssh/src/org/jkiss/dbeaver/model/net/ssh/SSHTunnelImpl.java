@@ -17,11 +17,12 @@
 package org.jkiss.dbeaver.model.net.ssh;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWTunnel;
+import org.jkiss.dbeaver.model.net.ssh.registry.SSHImplementationDescriptor;
+import org.jkiss.dbeaver.model.net.ssh.registry.SSHImplementationRegistry;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
@@ -33,7 +34,7 @@ import java.util.Map;
  */
 public class SSHTunnelImpl implements DBWTunnel {
 
-    private static final Log log = Log.getLog(SSHTunnelImpl.class);
+    private static final String DEF_IMPLEMENTATION = "jsch";
 
     private SSHImplementation implementation;
 
@@ -43,17 +44,17 @@ public class SSHTunnelImpl implements DBWTunnel {
     {
         Map<String,String> properties = configuration.getProperties();
         String implId = properties.get(SSHConstants.PROP_IMPLEMENTATION);
-
-        SSHImplType implType = SSHImplType.JSCH;
-        if (!CommonUtils.isEmpty(implId)) {
-            try {
-                implType = SSHImplType.getById(implId);
-            } catch (IllegalArgumentException e) {
-                log.error(e);
-            }
+        if (CommonUtils.isEmpty(implId)) {
+            // Backward compatibility
+            implId = DEF_IMPLEMENTATION;
         }
+
         try {
-            implementation = implType.getImplClass().newInstance();
+            SSHImplementationDescriptor implDesc = SSHImplementationRegistry.getInstance().getDescriptor(implId);
+            if (implDesc == null) {
+                implDesc = SSHImplementationRegistry.getInstance().getDescriptor(DEF_IMPLEMENTATION);
+            }
+            implementation = implDesc.getImplClass().createInstance(SSHImplementation.class);
         } catch (Throwable e) {
             throw new DBException("Can't create SSH tunnel implementation", e);
         }
