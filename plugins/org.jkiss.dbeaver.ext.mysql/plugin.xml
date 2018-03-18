@@ -375,10 +375,13 @@
                 label="SSL"
                 description="Secure socket layer"
                 secured="false"
-                uiClass="org.jkiss.dbeaver.ext.mysql.views.MySQLSSLConfigurator"
-                handlerClass="org.jkiss.dbeaver.model.impl.net.SSLHandlerImpl">
+                handlerClass="org.jkiss.dbeaver.ext.mysql.model.net.MySQLSSLHandlerImpl">
             <objectType name="org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider"/>
         </handler>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
+        <propertyConfigurator class="org.jkiss.dbeaver.ext.mysql.model.net.MySQLSSLHandlerImpl" uiClass="org.jkiss.dbeaver.ext.mysql.views.MySQLSSLConfigurator"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlCommand">

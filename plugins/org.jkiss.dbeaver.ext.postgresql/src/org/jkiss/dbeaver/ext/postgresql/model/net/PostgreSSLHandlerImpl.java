@@ -14,21 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.impl.net;
+package org.jkiss.dbeaver.ext.postgresql.model.net;
 
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.net.DBWConfigProvider;
-import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-
-import java.io.IOException;
+import org.jkiss.dbeaver.model.impl.net.SSLHandlerImpl;
 
 /**
  * SSL Handler
  */
-public class SSLHandlerImpl implements DBWNetworkHandler, DBWConfigProvider {
-    @Override
-    public void invalidateHandler(DBRProgressMonitor monitor) throws DBException, IOException {
+public class PostgreSSLHandlerImpl extends SSLHandlerImpl {
 
-    }
 }
