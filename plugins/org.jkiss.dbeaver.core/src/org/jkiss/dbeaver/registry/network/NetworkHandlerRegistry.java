@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 
 public class NetworkHandlerRegistry
@@ -47,6 +48,7 @@ public class NetworkHandlerRegistry
                 NetworkHandlerDescriptor formatterDescriptor = new NetworkHandlerDescriptor(ext);
                 descriptors.add(formatterDescriptor);
             }
+            descriptors.sort(Comparator.comparingInt(NetworkHandlerDescriptor::getOrder));
         }
     }
 
