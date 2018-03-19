@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
+import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPStatefulObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -57,7 +58,7 @@ import java.util.concurrent.ConcurrentHashMap;
 /**
  * PostgreDatabase
  */
-public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableObject, DBPStatefulObject, PostgreObject, DBSObjectSelector {
+public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableObject, DBPStatefulObject, DBPNamedObject2, PostgreObject, DBSObjectSelector {
 
     private static final Log log = Log.getLog(PostgreDatabase.class);
 
@@ -136,6 +137,11 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
     public String getName()
     {
         return name;
+    }
+
+    @Override
+    public void setName(String newName) {
+        this.name = newName;
     }
 
     @Nullable
