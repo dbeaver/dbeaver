@@ -23,5 +23,6 @@ package org.jkiss.dbeaver.model.runtime;
  */
 public interface DBRRunnableWithProgress extends DBRRunnableParametrized<DBRProgressMonitor> {
 
+    void run(DBRProgressMonitor monitor);
 
 }
