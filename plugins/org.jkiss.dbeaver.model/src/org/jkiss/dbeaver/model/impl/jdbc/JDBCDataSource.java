@@ -126,12 +126,14 @@ public abstract class JDBCDataSource
             throw new DBCConnectException("Can't create driver instance", e, this);
         }
 
+        DBPConnectionConfiguration connectionInfo = container.getActualConnectionConfiguration();
+
         // Set properties
         Properties connectProps = new Properties();
 
         {
             // Use properties defined by datasource itself
-            Map<String,String> internalProps = getInternalConnectionProperties(monitor, purpose);
+            Map<String,String> internalProps = getInternalConnectionProperties(monitor, purpose, connectionInfo);
             if (internalProps != null) {
                 connectProps.putAll(internalProps);
             }
@@ -145,7 +147,6 @@ public abstract class JDBCDataSource
             }
         }
 
-        DBPConnectionConfiguration connectionInfo = container.getActualConnectionConfiguration();
         for (Map.Entry<String, String> prop : connectionInfo.getProperties().entrySet()) {
             connectProps.setProperty(CommonUtils.toString(prop.getKey()), CommonUtils.toString(prop.getValue()));
         }
@@ -599,7 +600,7 @@ public abstract class JDBCDataSource
      * @return predefined connection properties
      */
     @Nullable
-    protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor, String purpose)
+    protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor, String purpose, DBPConnectionConfiguration connectionInfo)
         throws DBCException
     {
         return null;

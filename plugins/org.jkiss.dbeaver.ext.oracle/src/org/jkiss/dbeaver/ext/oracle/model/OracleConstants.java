@@ -78,7 +78,7 @@ public class OracleConstants {
     public static final String PROP_ALWAYS_SHOW_DBA = DBConstants.INTERNAL_PROP_PREFIX + "always-show-dba@";
     public static final String PROP_USE_RULE_HINT = DBConstants.INTERNAL_PROP_PREFIX + "use-rule-hint@";
 
-    public static final String OS_AUTH_USER_NAME = "@OS_AUTH@";
+    public static final String OS_AUTH_PROP = DBConstants.INTERNAL_PROP_PREFIX + "os-authentication@";
 
     public static final String DRIVER_TYPE_THIN = "THIN";
     public static final String DRIVER_TYPE_OCI = "OCI";

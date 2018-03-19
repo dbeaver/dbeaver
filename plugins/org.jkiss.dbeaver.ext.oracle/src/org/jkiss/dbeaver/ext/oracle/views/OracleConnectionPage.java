@@ -414,7 +414,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
                 break;
         }
 
-        if (OracleConstants.OS_AUTH_USER_NAME.equals(connectionInfo.getUserName())) {
+        if (CommonUtils.toBoolean(connectionInfo.getProviderProperty(OracleConstants.OS_AUTH_PROP))) {
             userNameText.setEnabled(false);
             passwordText.setEnabled(false);
             osAuthCheck.setSelection(true);
@@ -454,11 +454,13 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
                 break;
         }
         if (osAuthCheck.getSelection()) {
-            connectionInfo.setUserName(OracleConstants.OS_AUTH_USER_NAME);
+            connectionInfo.setUserName("");
             connectionInfo.setUserPassword(""); //$NON-NLS-1$
+            connectionInfo.setProviderProperty(OracleConstants.OS_AUTH_PROP, String.valueOf(true));
         } else {
             connectionInfo.setUserName(userNameText.getText());
             connectionInfo.setUserPassword(passwordText.getText());
+            connectionInfo.removeProviderProperty(OracleConstants.OS_AUTH_PROP);
         }
 
         connectionInfo.setProviderProperty(OracleConstants.PROP_SID_SERVICE, OracleConnectionType.getTypeForTitle(sidServiceCombo.getText()).name());

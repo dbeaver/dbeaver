@@ -201,9 +201,12 @@ public class DBPConnectionConfiguration implements DBPObject
         return providerProperties.get(name);
     }
 
-    public void setProviderProperty(String name, String value)
-    {
+    public void setProviderProperty(String name, String value) {
         providerProperties.put(name, value);
+    }
+
+    public void removeProviderProperty(String name) {
+        providerProperties.remove(name);
     }
 
     @NotNull
