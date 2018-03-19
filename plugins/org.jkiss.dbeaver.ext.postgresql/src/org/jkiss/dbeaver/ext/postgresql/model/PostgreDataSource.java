@@ -488,7 +488,9 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
             StringBuilder catalogQuery = new StringBuilder(
                 "SELECT db.oid,db.*" +
                     "\nFROM pg_catalog.pg_database db WHERE NOT datistemplate AND datallowconn");
-            if (object != null || objectName != null || !showNDD) {
+            if (object != null) {
+                catalogQuery.append("\nAND db.oid=?");
+            } else if (objectName != null || !showNDD) {
                 catalogQuery.append("\nAND db.datname=?");
             }
             DBSObjectFilter catalogFilters = owner.getContainer().getObjectFilter(PostgreDatabase.class, null, false);
@@ -499,7 +501,9 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
                 catalogQuery.append("\nORDER BY db.datname");
             }
             JDBCPreparedStatement dbStat = session.prepareStatement(catalogQuery.toString());
-            if (object != null || objectName != null || !showNDD) {
+            if (object != null) {
+                dbStat.setLong(1, object.getObjectId());
+            } else if (objectName != null || !showNDD) {
                 dbStat.setString(1, object != null ? object.getName() : (objectName != null ? objectName : activeDatabaseName));
             } else if (catalogFilters != null) {
                 JDBCUtils.setFilterParameters(dbStat, 1, catalogFilters);
