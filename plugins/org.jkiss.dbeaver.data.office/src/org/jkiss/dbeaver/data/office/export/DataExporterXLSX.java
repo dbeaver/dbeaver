@@ -346,6 +346,16 @@ public class DataExporterXLSX extends StreamExporterAbstract {
     }
 
     private void printHeader(Worksheet wsh) {
+        boolean hasDescription = false;
+        if (showDescription) {
+            for (DBDAttributeBinding column : columns) {
+                if (!CommonUtils.isEmpty(column.getDescription())) {
+                    hasDescription = true;
+                    break;
+                }
+            }
+        }
+
         SXSSFSheet  sh = (SXSSFSheet)wsh.getSh();
         Row row = sh.createRow(wsh.getCurrentRow());
 
@@ -360,27 +370,22 @@ public class DataExporterXLSX extends StreamExporterAbstract {
                 colName = column.getName();
             }
             Cell cell = row.createCell(i + startCol, CellType.STRING);
-            if (showDescription) {
-                String description = column.getDescription();
-                if (!CommonUtils.isEmpty(description)) {
-                    colName += "\n" + description;
-/*
-                    // When the comment box is visible, have it show in a 1x3 space
-                    ClientAnchor anchor = wb.getCreationHelper().createClientAnchor();
-                    anchor.setCol1(cell.getColumnIndex());
-                    anchor.setCol2(cell.getColumnIndex()+1);
-                    anchor.setRow1(row.getRowNum());
-                    anchor.setRow2(row.getRowNum()+3);
-
-                    Comment comment = drawing.createCellComment(anchor);
-                    RichTextString str = wb.getCreationHelper().createRichTextString("Hello, World!");
-                    comment.setString(str);
-                    comment.setAuthor("Apache POI");
-*/
-                }
-            }
             cell.setCellValue(colName);
             cell.setCellStyle(styleHeader);
+        }
+
+        if (hasDescription) {
+            wsh.incRow();
+            Row descRow = sh.createRow(wsh.getCurrentRow());
+            for (int i = 0, columnsSize = columns.size(); i < columnsSize; i++) {
+                Cell descCell = descRow.createCell(i + startCol, CellType.STRING);
+                String description = columns.get(i).getDescription();
+                if (CommonUtils.isEmpty(description)) {
+                    description = "";
+                }
+                descCell.setCellValue(description);
+                descCell.setCellStyle(styleHeader);
+            }
         }
 
         for (int i = 0, columnsSize = columns.size(); i < columnsSize; i++) {
