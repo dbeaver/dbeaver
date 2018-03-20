@@ -402,9 +402,9 @@ public class DataExporterXLSX extends StreamExporterAbstract {
                 }
                 sb.append(buffer, 0, count);
             }
-            if (sb.length() > 0) {
-                cell.setCellValue(sb.toString());
-            }
+
+            cell.setCellValue(sb.toString());
+
         } finally {
             ContentUtils.close(reader);
         }
@@ -460,6 +460,8 @@ public class DataExporterXLSX extends StreamExporterAbstract {
             if (DBUtils.isNullValue(row[i])) {
                 if (!CommonUtils.isEmpty(nullString)) {
                     cell.setCellValue(nullString);
+                } else {
+                    cell.setCellValue("");
                 }
             } else if (row[i] instanceof DBDContent) {
                 DBDContent content = (DBDContent) row[i];
