@@ -463,12 +463,13 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
         		return prepareChildrenStatement(session,owner);
         	}
         	
-            JDBCPreparedStatement dbStat = session.prepareStatement("SELECT c.relname,a.*,pg_catalog.pg_get_expr(ad.adbin, ad.adrelid, true) as def_value,dsc.description" +
+            JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT c.relname,a.*,pg_catalog.pg_get_expr(ad.adbin, ad.adrelid, true) as def_value,dsc.description" +
                 "\nFROM pg_catalog.pg_attribute a" +
-                "\nINNER JOIN pg_catalog.pg_class c ON (a.attrelid=c.oid)" +
-                "\nLEFT OUTER JOIN pg_catalog.pg_attrdef ad ON (a.attrelid=ad.adrelid AND a.attnum = ad.adnum)" +
-                "\nLEFT OUTER JOIN pg_catalog.pg_description dsc ON (c.oid=dsc.objoid AND a.attnum = dsc.objsubid)" +
-                "\nWHERE NOT a.attisdropped AND c.oid=? ORDER BY a.attnum");
+                    "\nINNER JOIN pg_catalog.pg_class c ON (a.attrelid=c.oid)" +
+                    "\nLEFT OUTER JOIN pg_catalog.pg_attrdef ad ON (a.attrelid=ad.adrelid AND a.attnum = ad.adnum)" +
+                    "\nLEFT OUTER JOIN pg_catalog.pg_description dsc ON (c.oid=dsc.objoid AND a.attnum = dsc.objsubid)" +
+                    "\nWHERE NOT a.attisdropped AND c.oid=? ORDER BY a.attnum");
         	dbStat.setLong(1, forTable.getObjectId());
             return dbStat;
         }

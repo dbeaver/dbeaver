@@ -22,10 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
-import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBPHiddenObject;
-import org.jkiss.dbeaver.model.DBPNamedObject2;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.DBPositiveNumberTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -44,7 +41,7 @@ import java.util.TreeSet;
 /**
  * PostgreAttribute
  */
-public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> extends JDBCTableColumn<OWNER> implements DBSTypedObjectEx, DBPNamedObject2, DBPHiddenObject
+public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> extends JDBCTableColumn<OWNER> implements DBSTypedObjectEx, DBPNamedObject2, DBPHiddenObject, DBPInheritedObject
 {
     private static final Log log = Log.getLog(PostgreAttribute.class);
 
@@ -57,6 +54,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     private String description;
     @Nullable
     private PostgreAttributeIdentity identity;
+    private boolean isLocal;
 
     protected PostgreAttribute(
         OWNER table)
@@ -124,6 +122,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         this.description = JDBCUtils.safeGetString(dbResult, "description");
         this.arrayDim = JDBCUtils.safeGetInt(dbResult, "attndims");
         this.inheritorsCount = JDBCUtils.safeGetInt(dbResult, "attinhcount");
+        this.isLocal = JDBCUtils.safeGetBoolean(dbResult, "attislocal");
 
         if (getDataSource().isServerVersionAtLeast(10, 0)) {
             String identityStr = JDBCUtils.safeGetString(dbResult, "attidentity");
@@ -197,6 +196,11 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         this.identity = identity;
     }
 
+    @Property(viewable = false, order = 25)
+    public boolean isLocal() {
+        return isLocal;
+    }
+
     @Override
     @Property(viewable = true, editable = true, updatable = true, order = 50)
     public boolean isRequired()
@@ -236,6 +240,11 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     @Override
     public boolean isHidden() {
         return isPersisted() && getOrdinalPosition() < 0;
+    }
+
+    @Override
+    public boolean isInherited() {
+        return !isLocal;
     }
 
     public String getFullTypeName() {

@@ -1379,6 +1379,10 @@ public final class DBUtils {
         return object instanceof DBPHiddenObject && ((DBPHiddenObject) object).isHidden();
     }
 
+    public static boolean isInheritedObject(Object object) {
+        return object instanceof DBPInheritedObject && ((DBPInheritedObject) object).isInherited();
+    }
+
     public static DBDPseudoAttribute getRowIdAttribute(DBSEntity entity) {
         if (entity instanceof DBDPseudoAttributeContainer) {
             try {

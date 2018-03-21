@@ -170,7 +170,8 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
         if (tcm != null) {
             // Aggregate nested column, constraint and index commands
             for (DBSEntityAttribute column : CommonUtils.safeCollection(table.getAttributes(monitor))) {
-                if (DBUtils.isHiddenObject(column)) {
+                if (DBUtils.isHiddenObject(column) || DBUtils.isInheritedObject(column)) {
+                    // Do not include hidden (pseudo?) and inherited columns in DDL
                     continue;
                 }
                 command.aggregateCommand(tcm.makeCreateCommand(column));
@@ -179,7 +180,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
         if (pkm != null) {
             try {
                 for (DBSTableConstraint constraint : CommonUtils.safeCollection(table.getConstraints(monitor))) {
-                    if (DBUtils.isHiddenObject(constraint)) {
+                    if (DBUtils.isHiddenObject(constraint) || DBUtils.isInheritedObject(constraint)) {
                         continue;
                     }
                     command.aggregateCommand(pkm.makeCreateCommand(constraint));
@@ -192,7 +193,10 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
         if (fkm != null) {
             try {
                 for (DBSEntityAssociation foreignKey : CommonUtils.safeCollection(table.getAssociations(monitor))) {
-                    if (!(foreignKey instanceof DBSTableForeignKey) || DBUtils.isHiddenObject(foreignKey)) {
+                    if (!(foreignKey instanceof DBSTableForeignKey) ||
+                        DBUtils.isHiddenObject(foreignKey) ||
+                        DBUtils.isInheritedObject(foreignKey))
+                    {
                         continue;
                     }
                     command.aggregateCommand(fkm.makeCreateCommand((DBSTableForeignKey) foreignKey));
@@ -205,7 +209,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
         if (im != null) {
             try {
                 for (DBSTableIndex index : CommonUtils.safeCollection(table.getIndexes(monitor))) {
-                    if (DBUtils.isHiddenObject(index)) {
+                    if (DBUtils.isHiddenObject(index) || DBUtils.isInheritedObject(index)) {
                         continue;
                     }
                     command.aggregateCommand(im.makeCreateCommand(index));
