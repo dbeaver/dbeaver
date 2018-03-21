@@ -669,8 +669,9 @@ class SQLCompletionAnalyzer
         boolean isObject,
         @Nullable DBPNamedObject object)
     {
-        DBPPreferenceStore store = request.editor.getActivePreferenceStore();
-        DBPDataSource dataSource = request.editor.getDataSource();
+        SQLEditorBase editor = request.editor;
+        DBPPreferenceStore store = editor.getActivePreferenceStore();
+        DBPDataSource dataSource = editor.getDataSource();
         if (dataSource != null) {
             if (isObject) {
                 // Escape replace string if required
@@ -693,13 +694,12 @@ class SQLCompletionAnalyzer
                 default:
                     // Do not convert case if we got it directly from object
                     if (!isObject) {
-                        DBPKeywordType keywordType = request.editor.getSyntaxManager().getDialect().getKeywordType(replaceString);
+                        SQLDialect dialect = editor.getSyntaxManager().getDialect();
+                        DBPKeywordType keywordType = dialect.getKeywordType(replaceString);
                         if (keywordType == DBPKeywordType.KEYWORD) {
-                            replaceString = request.editor.getSyntaxManager().getKeywordCase().transform(replaceString);
+                            replaceString = editor.getSyntaxManager().getKeywordCase().transform(replaceString);
                         } else {
-                            DBPIdentifierCase convertCase = dataSource instanceof SQLDataSource ?
-                                ((SQLDataSource) dataSource).getSQLDialect().storesUnquotedCase() : DBPIdentifierCase.MIXED;
-                            replaceString = convertCase.transform(replaceString);
+                            replaceString = dialect.storesUnquotedCase().transform(replaceString);
                         }
                     }
                     break;

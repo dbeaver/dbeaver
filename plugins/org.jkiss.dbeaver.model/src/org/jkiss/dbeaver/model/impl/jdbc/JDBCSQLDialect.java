@@ -53,9 +53,9 @@ public class JDBCSQLDialect extends BasicSQLDialect {
     private boolean supportsUnquotedMixedCase;
     private boolean supportsQuotedMixedCase;
     @NotNull
-    private DBPIdentifierCase unquotedIdentCase;
+    private DBPIdentifierCase unquotedIdentCase = DBPIdentifierCase.MIXED;
     @NotNull
-    private DBPIdentifierCase quotedIdentCase;
+    private DBPIdentifierCase quotedIdentCase = DBPIdentifierCase.MIXED;
     private boolean supportsSubqueries = false;
 
     private transient boolean typesLoaded = false;

@@ -175,6 +175,7 @@ public class SQLSyntaxManager {
         }
     }
 
+    @NotNull
     public DBPIdentifierCase getKeywordCase() {
         final String caseName = preferenceStore.getString(ModelPreferences.SQL_FORMAT_KEYWORD_CASE);
         if (CommonUtils.isEmpty(caseName)) {
