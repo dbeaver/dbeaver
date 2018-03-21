@@ -300,8 +300,8 @@ public class OracleTablespace extends OracleGlobalObject implements DBPRefreshab
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleTablespace owner) throws SQLException
         {
             final JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT * FROM " + OracleUtils.getAdminViewPrefix(owner.getDataSource()) +
-                "SEGMENTS WHERE TABLESPACE_NAME=? ORDER BY SEGMENT_NAME");
+                "SELECT * FROM " + OracleUtils.getSysUserViewName(session.getProgressMonitor(), owner.getDataSource(), "SEGMENTS") +
+                " WHERE TABLESPACE_NAME=? ORDER BY SEGMENT_NAME");
             dbStat.setString(1, owner.getName());
             return dbStat;
         }

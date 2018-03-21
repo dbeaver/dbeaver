@@ -897,7 +897,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         {
             JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT *\n" +
-                "FROM " + OracleUtils.getAdminAllViewPrefix(schema.getDataSource()) + "TRIGGERS WHERE OWNER=? AND TRIM(BASE_OBJECT_TYPE) IN ('DATABASE','SCHEMA')\n" +
+                "FROM " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), schema.getDataSource(), "TRIGGERS") + " WHERE OWNER=? AND TRIM(BASE_OBJECT_TYPE) IN ('DATABASE','SCHEMA')\n" +
                 "ORDER BY TRIGGER_NAME");
             dbStat.setString(1, schema.getName());
             return dbStat;

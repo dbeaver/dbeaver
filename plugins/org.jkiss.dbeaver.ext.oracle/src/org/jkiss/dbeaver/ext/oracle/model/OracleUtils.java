@@ -248,14 +248,24 @@ public class OracleUtils {
         }
     }
 
-    public static String getAdminViewPrefix(OracleDataSource dataSource)
+    public static String getSysUserViewName(DBRProgressMonitor monitor, OracleDataSource dataSource, String viewName)
     {
-        return dataSource.isAdmin() ? "SYS.DBA_" : "SYS.USER_";
+        String dbaView = "DBA_" + viewName;
+        if (dataSource.isViewAvailable(monitor, OracleConstants.SCHEMA_SYS, dbaView)) {
+            return OracleConstants.SCHEMA_SYS + "." + dbaView;
+        } else {
+            return OracleConstants.SCHEMA_SYS + ".USER_" + viewName;
+        }
     }
 
-    public static String getAdminAllViewPrefix(OracleDataSource dataSource)
+    public static String getAdminAllViewPrefix(DBRProgressMonitor monitor, OracleDataSource dataSource, String viewName)
     {
-        return dataSource.isAdmin() ? "SYS.DBA_" : "SYS.ALL_";
+        String dbaView = "DBA_" + viewName;
+        if (dataSource.isViewAvailable(monitor, OracleConstants.SCHEMA_SYS, dbaView)) {
+            return OracleConstants.SCHEMA_SYS + "." + dbaView;
+        } else {
+            return OracleConstants.SCHEMA_SYS + ".ALL_" + viewName;
+        }
     }
 
     public static String getSysCatalogHint(OracleDataSource dataSource)
