@@ -98,7 +98,7 @@ public abstract class PostgrePermission implements DBSObject, Comparable<Postgre
 
     @Nullable
     @Override
-    public DBSObject getParentObject() {
+    public PostgrePermissionsOwner getParentObject() {
         return owner;
     }
 
@@ -106,6 +106,10 @@ public abstract class PostgrePermission implements DBSObject, Comparable<Postgre
     @Override
     public DBPDataSource getDataSource() {
         return owner.getDataSource();
+    }
+
+    public PostgrePermissionsOwner getOwner() {
+        return owner;
     }
 
     public abstract PostgreObject getTargetObject(DBRProgressMonitor monitor) throws DBException;
@@ -179,9 +183,9 @@ public abstract class PostgrePermission implements DBSObject, Comparable<Postgre
     /**
      * Checks all privileges
      */
-    public boolean hasAllPrivileges() {
+    public boolean hasAllPrivileges(Object object) {
         for (PostgrePrivilegeType pt : PostgrePrivilegeType.values()) {
-            if (pt.isValid() && getPermission(pt) == 0) {
+            if (pt.isValid() && pt.getTargetType().isInstance(object) && getPermission(pt) == 0) {
                 return false;
             }
         }

@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -92,12 +93,29 @@ public class PostgreTableManager extends SQLTableManager<PostgreTableBase, Postg
                 "COMMENT ON TABLE " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL) +
                     " IS " + SQLUtils.quoteString(command.getObject(), command.getObject().getDescription())));
         }
-        for (PostgreTableColumn column : command.getObject().getCachedAttributes()) {
-            if (!CommonUtils.isEmpty(column.getDescription())) {
-                actions.add(new SQLDatabasePersistAction("Set column comment", "COMMENT ON COLUMN " +
-                    DBUtils.getObjectFullName(command.getObject(), DBPEvaluationContext.DDL) + "." + DBUtils.getQuotedIdentifier(column) +
-                    " IS " + SQLUtils.quoteString(column, column.getDescription())));
+        DBRProgressMonitor monitor = new VoidProgressMonitor();
+        try {
+            for (PostgreTableColumn column : command.getObject().getAttributes(monitor)) {
+                if (!CommonUtils.isEmpty(column.getDescription())) {
+                    actions.add(new SQLDatabasePersistAction("Set column comment", "COMMENT ON COLUMN " +
+                        DBUtils.getObjectFullName(command.getObject(), DBPEvaluationContext.DDL) + "." + DBUtils.getQuotedIdentifier(column) +
+                        " IS " + SQLUtils.quoteString(column, column.getDescription())));
+                }
             }
+            for (PostgrePermission permission : command.getObject().getPermissions(monitor)) {
+                if (permission.hasAllPrivileges(command.getObject())) {
+                    Collections.addAll(actions,
+                        new PostgreCommandGrantPrivilege(permission.getOwner(), true, permission, PostgrePrivilegeType.ALL)
+                            .getPersistActions(options));
+                } else {
+                    for (PostgrePermission.ObjectPermission op : permission.getPermissions()) {
+                        PostgreCommandGrantPrivilege grant = new PostgreCommandGrantPrivilege(permission.getOwner(), true, permission, op.getPrivilegeType());
+                        Collections.addAll(actions, grant.getPersistActions(options));
+                    }
+                }
+            }
+        } catch (DBException e) {
+            log.error(e);
         }
     }
 
