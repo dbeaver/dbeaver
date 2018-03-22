@@ -21,7 +21,9 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.ExasolConstants;
+import org.jkiss.dbeaver.ext.exasol.ExasolMessages;
 import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPScriptObject;
@@ -57,6 +59,7 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
     private float deletePercentage;
     private Timestamp createTime;
     private Boolean hasRead;
+    private long tablecount;
     private static String readAdditionalInfo =         "select * from ("
 									            + "select" +
 									            "	table_schema," +
@@ -101,8 +104,11 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
 									            + ") as o"
 									            + "	order by table_schema,o.table_name";
     
-	
-
+    
+    private static String count = "select count(*) as COUNTER from %s";
+    
+    
+    
     public ExasolTable(DBRProgressMonitor monitor, ExasolSchema schema, ResultSet dbResult) {
         super(monitor, schema, dbResult);
         hasRead=false;
@@ -116,7 +122,7 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
 
     private void read(DBRProgressMonitor monitor) throws DBCException
     {
-    	JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read Table Details");
+    	JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), ExasolMessages.read_table_details );
     	try (JDBCStatement stmt = session.createStatement())
     	{
     		String sql = String.format(readAdditionalInfo,
@@ -137,12 +143,28 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
     	        this.sizeCompressed = JDBCUtils.safeGetLong(dbResult, "MEM_OBJECT_SIZE");
     	        this.deletePercentage = JDBCUtils.safeGetFloat(dbResult, "DELETE_PERCENTAGE");
     	        this.createTime = JDBCUtils.safeGetTimestamp(dbResult, "CREATED"); 
-    	        this.hasRead = true;
     		}
     		
     	} catch (SQLException e) {
     		throw new DBCException(e,getDataSource());
 		}
+    	
+    	try (JDBCStatement stmt = session.createStatement())
+    	{
+    		String sql = String.format(count, this.getFullyQualifiedName(DBPEvaluationContext.DML));
+    		
+    		try (JDBCResultSet dbResult = stmt.executeQuery(sql))
+    		{
+    			dbResult.next();
+    			this.tablecount = JDBCUtils.safeGetLong(dbResult, "COUNTER");
+    		}
+    		
+		} catch (SQLException e) {
+			throw new DBCException(e,getDataSource());
+		}
+    	
+        this.hasRead = true;
+    	
     }
     
     @Override
@@ -197,6 +219,15 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
     		read(monitor);
         return this.deletePercentage;
     }    
+    
+    @Property(viewable = false, expensive = true, editable = false, order = 300, category = ExasolConstants.CAT_STATS)
+    public long getTableCount(DBRProgressMonitor monitor) throws DBCException {
+    	if (! hasRead)
+    		read(monitor);
+    	return this.tablecount;
+    }
+
+    
     
     // -----------------
     // Associations
@@ -256,6 +287,6 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
         // table can only be in state normal
         return DBSObjectState.NORMAL;
     }
-
+    
     
 }
