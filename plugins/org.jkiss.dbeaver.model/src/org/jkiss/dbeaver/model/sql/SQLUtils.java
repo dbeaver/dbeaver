@@ -781,29 +781,41 @@ public final class SQLUtils {
     @NotNull
     public static String generateScript(DBPDataSource dataSource, DBEPersistAction[] persistActions, boolean addComments)
     {
-        SQLDialect sqlDialect = dataSource instanceof SQLDataSource ? ((SQLDataSource) dataSource).getSQLDialect() : null;
-        String lineSeparator = GeneralUtils.getDefaultLineSeparator();
+        final SQLDialect sqlDialect = SQLUtils.getDialectFromDataSource(dataSource);
+        final String lineSeparator = GeneralUtils.getDefaultLineSeparator();
+
         StringBuilder script = new StringBuilder(64);
         if (addComments) {
             script.append(DBEAVER_DDL_COMMENT).append(Platform.getProduct().getName()).append(lineSeparator)
                 .append(DBEAVER_DDL_WARNING).append(lineSeparator);
         }
         if (persistActions != null) {
-            String redefiner = null;
-            if (sqlDialect != null) {
-                redefiner = sqlDialect.getScriptDelimiterRedefiner();
-            }
+            String redefiner = sqlDialect.getScriptDelimiterRedefiner();
             for (DBEPersistAction action : persistActions) {
                 String scriptLine = action.getScript();
                 if (CommonUtils.isEmpty(scriptLine)) {
                     continue;
                 }
 
-                String delimiter = sqlDialect == null ? SQLConstants.DEFAULT_STATEMENT_DELIMITER : sqlDialect.getScriptDelimiter();
+                String delimiter = sqlDialect.getScriptDelimiter();
                 if (action.isComplex() && redefiner != null) {
                     script.append(lineSeparator).append(redefiner).append(" ").append(DBEAVER_SCRIPT_DELIMITER).append(lineSeparator);
                     delimiter = DBEAVER_SCRIPT_DELIMITER;
                     script.append(delimiter).append(lineSeparator);
+                } else if (action.getType() == DBEPersistAction.ActionType.COMMENT) {
+                    if (script.length() > 2) {
+                        int lfCount = 0;
+                        for (int i = script.length() - 1; i >= 0; i--) {
+                            if (!Character.isWhitespace(script.charAt(i))) {
+                                break;
+                            }
+                            if (script.charAt(i) == '\n') lfCount++;
+                        }
+                        if (lfCount < 2) {
+                            // Add line feed if we do not have empty line before
+                            script.append(lineSeparator);
+                        }
+                    }
                 }
                 script.append(scriptLine);
                 if (action.getType() != DBEPersistAction.ActionType.COMMENT) {
@@ -812,6 +824,8 @@ public final class SQLUtils {
                         script.append(" ");
                     }
                     script.append(delimiter);
+                } else {
+                    script.append(lineSeparator);
                 }
                 script.append(lineSeparator);
 

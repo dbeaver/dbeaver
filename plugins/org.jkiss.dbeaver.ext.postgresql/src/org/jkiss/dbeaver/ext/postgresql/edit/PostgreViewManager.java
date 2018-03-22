@@ -84,6 +84,7 @@ public class PostgreViewManager extends SQLTableManager<PostgreTableBase, Postgr
     protected void addStructObjectCreateActions(List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options)
     {
         createOrReplaceViewQuery(actions, (PostgreViewBase) command.getObject());
+        addObjectExtraActions(actions, command, options);
     }
 
     @Override
@@ -99,6 +100,11 @@ public class PostgreViewManager extends SQLTableManager<PostgreTableBase, Postgr
         actions.add(
             new SQLDatabasePersistAction("Drop view", "DROP " + view.getViewType() + " " + view.getFullyQualifiedName(DBPEvaluationContext.DDL)) //$NON-NLS-2$
         );
+    }
+
+    @Override
+    protected void addObjectExtraActions(List<DBEPersistAction> actions, NestedObjectCommand<PostgreTableBase, PropertyHandler> command, Map<String, Object> options) {
+        PostgreDDLUtils.addObjectExtraActions(actions, command.getObject(), options);
     }
 
     protected void createOrReplaceViewQuery(List<DBEPersistAction> actions, PostgreViewBase view)

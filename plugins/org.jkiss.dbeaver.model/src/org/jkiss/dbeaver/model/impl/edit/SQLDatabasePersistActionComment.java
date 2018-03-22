@@ -16,16 +16,17 @@
  */
 package org.jkiss.dbeaver.model.impl.edit;
 
-import org.jkiss.dbeaver.model.sql.SQLDataSource;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 
 /**
  * Comment action
  */
 public class SQLDatabasePersistActionComment extends SQLDatabasePersistAction {
 
-    public SQLDatabasePersistActionComment(SQLDataSource dataSource, String comment) {
+    public SQLDatabasePersistActionComment(DBPDataSource dataSource, String comment) {
         super("Comment",
-            "\n" + dataSource.getSQLDialect().getSingleLineComments()[0] + " " + comment + "\n",
+            SQLUtils.getDialectFromDataSource(dataSource).getSingleLineComments()[0] + " " + comment,
             ActionType.COMMENT,
             false);
     }
