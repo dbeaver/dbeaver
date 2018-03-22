@@ -27,16 +27,12 @@ import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionComment;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -88,68 +84,7 @@ public class PostgreTableManager extends SQLTableManager<PostgreTableBase, Postg
 
     @Override
     protected void addObjectExtraActions(List<DBEPersistAction> actions, NestedObjectCommand<PostgreTableBase, PropertyHandler> command, Map<String, Object> options) {
-        PostgreTableBase table = command.getObject();
-
-        // Add comments
-        if (!CommonUtils.isEmpty(table.getDescription())) {
-            actions.add(new SQLDatabasePersistAction(
-                "Comment table",
-                "COMMENT ON TABLE " + table.getFullyQualifiedName(DBPEvaluationContext.DDL) +
-                    " IS " + SQLUtils.quoteString(table, table.getDescription())));
-        }
-        DBRProgressMonitor monitor = new VoidProgressMonitor();
-        try {
-            {
-                // Column comments
-                boolean hasComments = false;
-                for (PostgreTableColumn column : table.getAttributes(monitor)) {
-                    if (!CommonUtils.isEmpty(column.getDescription())) {
-                        if (!hasComments) {
-                            actions.add(new SQLDatabasePersistActionComment(table.getDataSource(), "Column comments"));
-                        }
-                        actions.add(new SQLDatabasePersistAction("Set column comment", "COMMENT ON COLUMN " +
-                            DBUtils.getObjectFullName(table, DBPEvaluationContext.DDL) + "." + DBUtils.getQuotedIdentifier(column) +
-                            " IS " + SQLUtils.quoteString(column, column.getDescription())));
-                        hasComments = true;
-                    }
-                }
-            }
-
-            // Triggers
-            if (table instanceof PostgreTableReal) {
-                Collection<PostgreTrigger> triggers = ((PostgreTableReal) table).getTriggers(monitor);
-                if (!CommonUtils.isEmpty(triggers)) {
-                    actions.add(new SQLDatabasePersistActionComment(table.getDataSource(), "Table Triggers"));
-
-                    for (PostgreTrigger trigger : triggers) {
-                        actions.add(new SQLDatabasePersistAction("Create trigger", trigger.getObjectDefinitionText(monitor, options)));
-                    }
-                }
-            }
-
-
-            {
-                // Permissions
-                Collection<PostgrePermission> permissions = table.getPermissions(monitor);
-                if (!CommonUtils.isEmpty(permissions)) {
-                    actions.add(new SQLDatabasePersistActionComment(table.getDataSource(), "Permissions"));
-                    for (PostgrePermission permission : permissions) {
-                        if (permission.hasAllPrivileges(table)) {
-                            Collections.addAll(actions,
-                                new PostgreCommandGrantPrivilege(permission.getOwner(), true, permission, PostgrePrivilegeType.ALL)
-                                    .getPersistActions(options));
-                        } else {
-                            for (PostgrePermission.ObjectPermission op : permission.getPermissions()) {
-                                PostgreCommandGrantPrivilege grant = new PostgreCommandGrantPrivilege(permission.getOwner(), true, permission, op.getPrivilegeType());
-                                Collections.addAll(actions, grant.getPersistActions(options));
-                            }
-                        }
-                    }
-                }
-            }
-        } catch (DBException e) {
-            log.error(e);
-        }
+        PostgreDDLUtils.addObjectExtraActions(actions, command.getObject(), options);
     }
 
     @Override
