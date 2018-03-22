@@ -806,7 +806,14 @@ public final class SQLUtils {
                     script.append(delimiter).append(lineSeparator);
                 }
                 script.append(scriptLine);
-                script.append(" ").append(delimiter).append(lineSeparator);
+                if (action.getType() != DBEPersistAction.ActionType.COMMENT) {
+                    char lastChar = scriptLine.charAt(scriptLine.length() - 1);
+                    if (!Character.isWhitespace(lastChar) && !Character.isLetterOrDigit(lastChar)) {
+                        script.append(" ");
+                    }
+                    script.append(delimiter);
+                }
+                script.append(lineSeparator);
 
                 if (action.isComplex() && redefiner != null) {
                     script.append(redefiner).append(" ").append(sqlDialect.getScriptDelimiter()).append(lineSeparator);
