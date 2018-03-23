@@ -118,6 +118,14 @@ public abstract class PostgrePermission implements DBSObject, Comparable<Postgre
         return permissions;
     }
 
+    public PostgrePrivilegeType[] getPrivileges() {
+        PostgrePrivilegeType[] ppt = new PostgrePrivilegeType[permissions.length];
+        for (int i = 0; i < permissions.length; i++) {
+            ppt[i] = permissions[i].getPrivilegeType();
+        }
+        return ppt;
+    }
+
     public short getPermission(PostgrePrivilegeType privilegeType) {
         for (int i = 0; i < permissions.length; i++) {
             if (permissions[i].privilegeType == privilegeType) {
