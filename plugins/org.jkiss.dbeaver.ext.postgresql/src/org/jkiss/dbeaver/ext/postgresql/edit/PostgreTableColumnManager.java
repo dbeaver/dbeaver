@@ -20,7 +20,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
-import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -33,8 +32,10 @@ import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableColumnManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.AttributeEditPage;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.Types;
@@ -123,6 +124,13 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
         }
     };
 
+    protected final ColumnModifier<PostgreTableColumn> PostgreCommentModifier = (column, sql, command) -> {
+        String comment = column.getDescription();
+        if (!CommonUtils.isEmpty(comment)) {
+            sql.append(" -- ").append(TextUtils.getSingleLineString(comment));
+        }
+    };
+
     @Nullable
     @Override
     public DBSObjectCache<? extends DBSObject, PostgreTableColumn> getObjectsCache(PostgreTableColumn object)
@@ -130,9 +138,13 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
         return object.getParentObject().getContainer().tableCache.getChildrenCache(object.getParentObject());
     }
 
-    protected ColumnModifier[] getSupportedModifiers(PostgreTableColumn column)
+    protected ColumnModifier[] getSupportedModifiers(PostgreTableColumn column, Map<String, Object> options)
     {
-        return new ColumnModifier[] {PostgreDataTypeModifier, NullNotNullModifier, PostgreDefaultModifier, PostgreIdentityModifier};
+        ColumnModifier[] modifiers = {PostgreDataTypeModifier, NullNotNullModifier, PostgreDefaultModifier, PostgreIdentityModifier};
+        if (CommonUtils.getOption(options, PostgreConstants.OPTION_DDL_SHOW_COLUMN_COMMENTS)) {
+            modifiers = ArrayUtils.add(ColumnModifier.class, modifiers, PostgreCommentModifier);
+        }
+        return modifiers;
     }
 
     @Override

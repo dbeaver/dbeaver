@@ -85,7 +85,7 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
         return object.getParentObject().getContainer().getTableCache().getChildrenCache(object.getParentObject());
     }
 
-    protected ColumnModifier[] getSupportedModifiers(MySQLTableColumn column)
+    protected ColumnModifier[] getSupportedModifiers(MySQLTableColumn column, Map<String, Object> options)
     {
         return new ColumnModifier[] {MySQLDataTypeModifier, CharsetModifier, CollationModifier, DefaultModifier, NullNotNullModifier};
     }

@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.postgresql.edit;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -80,7 +81,7 @@ public class PostgreDDLUtils {
             }
 
 
-            {
+            if (CommonUtils.getOption(options, PostgreConstants.OPTION_DDL_SHOW_PERMISSIONS)) {
                 // Permissions
                 Collection<PostgrePermission> permissions = table.getPermissions(monitor);
                 if (!CommonUtils.isEmpty(permissions)) {
