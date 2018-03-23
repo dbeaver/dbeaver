@@ -85,7 +85,7 @@ class OracleSQLDialect extends JDBCSQLDialect {
         addFunctions(
             Arrays.asList(
                 "SUBSTR", "APPROX_COUNT_DISTINCT",
-                "REGEXP_SUBSTR", "REGEXP_INSTR", "REGEXP_REPLACE", "REGEXP_LIKE",
+                "REGEXP_SUBSTR", "REGEXP_INSTR", "REGEXP_REPLACE", "REGEXP_LIKE", "REGEXP_COUNT",
                 // Additions from #323
                 //Number Functions:
                 "BITAND",
