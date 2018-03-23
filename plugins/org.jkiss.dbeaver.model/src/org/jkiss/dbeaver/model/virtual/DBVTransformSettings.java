@@ -85,6 +85,10 @@ public class DBVTransformSettings {
         this.transformOptions = transformOptions;
     }
 
+    public boolean hasTransformOptions() {
+        return transformOptions != null && !transformOptions.isEmpty();
+    }
+
     public boolean hasValuableData() {
         return !CommonUtils.isEmpty(excludedTransformers) ||
             !CommonUtils.isEmpty(includedTransformers) ||

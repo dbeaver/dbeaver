@@ -2022,6 +2022,7 @@ public class ResultSetViewer extends Viewer
                             TransformerSettingsDialog settingsDialog = new TransformerSettingsDialog(
                                 ResultSetViewer.this, attr, settings);
                             if (settingsDialog.open() == IDialogConstants.OK_ID) {
+                                // If there are no options - save settings without opening dialog
                                 saveTransformerSettings();
                             } else {
                                 settings.setCustomTransformer(oldCustomTransformer);
