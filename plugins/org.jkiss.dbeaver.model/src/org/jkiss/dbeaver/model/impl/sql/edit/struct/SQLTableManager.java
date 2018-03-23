@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.impl.sql.edit.SQLStructEditor;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -83,6 +84,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
         final String tableName = CommonUtils.getOption(options, DBPScriptObject.OPTION_FULLY_QUALIFIED_NAMES, true) ?
             table.getFullyQualifiedName(DBPEvaluationContext.DDL) : DBUtils.getQuotedIdentifier(table);
 
+        final String slComment = SQLUtils.getDialectFromObject(table).getSingleLineComments()[0];
         final String lineSeparator = GeneralUtils.getDefaultLineSeparator();
         StringBuilder createQuery = new StringBuilder(100);
         createQuery.append("CREATE TABLE ").append(tableName).append(" (").append(lineSeparator); //$NON-NLS-1$ //$NON-NLS-2$
@@ -99,7 +101,20 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
             if (!CommonUtils.isEmpty(nestedDeclaration)) {
                 // Insert nested declaration
                 if (hasNestedDeclarations) {
-                    createQuery.append(",").append(lineSeparator); //$NON-NLS-1$
+                    // Check for embedded comment
+                    int lastLFPos = createQuery.lastIndexOf(lineSeparator);
+                    int lastCommentPos = createQuery.lastIndexOf(slComment);
+                    if (lastCommentPos != -1) {
+                        while (lastCommentPos > 0 && Character.isWhitespace(createQuery.charAt(lastCommentPos - 1))) {
+                            lastCommentPos--;
+                        }
+                    }
+                    if (lastCommentPos < 0 || lastCommentPos < lastLFPos) {
+                        createQuery.append(","); //$NON-NLS-1$
+                    } else {
+                        createQuery.insert(lastCommentPos, ","); //$NON-NLS-1$
+                    }
+                    createQuery.append(lineSeparator); //$NON-NLS-1$
                 }
                 createQuery.append("\t").append(nestedDeclaration); //$NON-NLS-1$
                 hasNestedDeclarations = true;
