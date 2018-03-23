@@ -34,9 +34,9 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePerm
 
     private boolean grant;
     private PostgrePermission permission;
-    private PostgrePrivilegeType privilege;
+    private PostgrePrivilegeType[] privilege;
 
-    public PostgreCommandGrantPrivilege(PostgrePermissionsOwner user, boolean grant, PostgrePermission permission, PostgrePrivilegeType privilege)
+    public PostgreCommandGrantPrivilege(PostgrePermissionsOwner user, boolean grant, PostgrePermission permission, PostgrePrivilegeType ... privilege)
     {
         super(user, grant ? PostgreMessages.edit_command_grant_privilege_action_grant_privilege : PostgreMessages.edit_command_grant_privilege_action_revoke_privilege);
         this.grant = grant;
@@ -53,7 +53,15 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePerm
     @Override
     public DBEPersistAction[] getPersistActions(Map<String, Object> options)
     {
-        String privName = privilege == null ? PostgrePrivilegeType.ALL.name() : privilege.name();
+        StringBuilder privName = new StringBuilder();
+        if (privilege == null) {
+            privName = new StringBuilder(PostgrePrivilegeType.ALL.name());
+        } else {
+            for (PostgrePrivilegeType pn : privilege) {
+                if (privName.length() > 0) privName.append(", ");
+                privName.append(pn.name());
+            }
+        }
         String tableName, roleName;
         if (getObject() instanceof PostgreRole) {
             roleName = DBUtils.getQuotedIdentifier(getObject());

@@ -92,10 +92,8 @@ public class PostgreDDLUtils {
                                 new PostgreCommandGrantPrivilege(permission.getOwner(), true, permission, PostgrePrivilegeType.ALL)
                                     .getPersistActions(options));
                         } else {
-                            for (PostgrePermission.ObjectPermission op : permission.getPermissions()) {
-                                PostgreCommandGrantPrivilege grant = new PostgreCommandGrantPrivilege(permission.getOwner(), true, permission, op.getPrivilegeType());
-                                Collections.addAll(actions, grant.getPersistActions(options));
-                            }
+                            PostgreCommandGrantPrivilege grant = new PostgreCommandGrantPrivilege(permission.getOwner(), true, permission, permission.getPrivileges());
+                            Collections.addAll(actions, grant.getPersistActions(options));
                         }
                     }
                 }
