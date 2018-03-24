@@ -17,14 +17,16 @@
 package org.jkiss.dbeaver.ext.postgresql.edit;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionComment;
+import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -38,13 +40,13 @@ import java.util.Map;
 /**
  * Postgre table manager
  */
-public class PostgreDDLUtils {
+public abstract class PostgreTableManagerBase extends SQLTableManager<PostgreTableBase, PostgreSchema> {
 
-    protected static final Log log = Log.getLog(PostgreDDLUtils.class);
-
-    static void addObjectExtraActions(List<DBEPersistAction> actions, PostgreTableBase table, Map<String, Object> options) {
+    protected void addObjectExtraActions(List<DBEPersistAction> actions, NestedObjectCommand<PostgreTableBase, PropertyHandler> command, Map<String, Object> options) {
+        boolean isDDL = CommonUtils.getOption(options, DBPScriptObject.OPTION_DDL_SOURCE);
+        PostgreTableBase table = command.getObject();
         // Add comments
-        if (!CommonUtils.isEmpty(table.getDescription())) {
+        if ((!table.isPersisted() || command.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) && table.getDescription() != null) {
             actions.add(new SQLDatabasePersistAction(
                 "Comment table",
                 "COMMENT ON " + (table.isView() ? "VIEW": "TABLE") + " " + table.getFullyQualifiedName(DBPEvaluationContext.DDL) +
@@ -52,7 +54,7 @@ public class PostgreDDLUtils {
         }
         DBRProgressMonitor monitor = new VoidProgressMonitor();
         try {
-            {
+            if (isDDL) {
                 // Column comments
                 boolean hasComments = false;
                 for (PostgreTableColumn column : table.getAttributes(monitor)) {
@@ -69,7 +71,7 @@ public class PostgreDDLUtils {
             }
 
             // Triggers
-            if (table instanceof PostgreTableReal) {
+            if (isDDL && table instanceof PostgreTableReal) {
                 Collection<PostgreTrigger> triggers = ((PostgreTableReal) table).getTriggers(monitor);
                 if (!CommonUtils.isEmpty(triggers)) {
                     actions.add(new SQLDatabasePersistActionComment(table.getDataSource(), "Table Triggers"));
@@ -80,8 +82,7 @@ public class PostgreDDLUtils {
                 }
             }
 
-
-            if (CommonUtils.getOption(options, PostgreConstants.OPTION_DDL_SHOW_PERMISSIONS)) {
+            if (isDDL && CommonUtils.getOption(options, PostgreConstants.OPTION_DDL_SHOW_PERMISSIONS)) {
                 // Permissions
                 Collection<PostgrePermission> permissions = table.getPermissions(monitor);
                 if (!CommonUtils.isEmpty(permissions)) {
@@ -102,5 +103,4 @@ public class PostgreDDLUtils {
             log.error(e);
         }
     }
-
 }

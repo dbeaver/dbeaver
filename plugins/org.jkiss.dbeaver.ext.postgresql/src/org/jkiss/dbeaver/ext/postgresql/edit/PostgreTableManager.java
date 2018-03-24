@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -39,7 +38,7 @@ import java.util.Map;
 /**
  * Postgre table manager
  */
-public class PostgreTableManager extends SQLTableManager<PostgreTableBase, PostgreSchema> implements DBEObjectRenamer<PostgreTableBase> {
+public class PostgreTableManager extends PostgreTableManagerBase implements DBEObjectRenamer<PostgreTableBase> {
 
     private static final Class<?>[] CHILD_TYPES = {
         PostgreTableColumn.class,
@@ -80,11 +79,6 @@ public class PostgreTableManager extends SQLTableManager<PostgreTableBase, Postg
 
             actionList.add(new SQLDatabasePersistAction(query.toString()));
         }
-    }
-
-    @Override
-    protected void addObjectExtraActions(List<DBEPersistAction> actions, NestedObjectCommand<PostgreTableBase, PropertyHandler> command, Map<String, Object> options) {
-        PostgreDDLUtils.addObjectExtraActions(actions, command.getObject(), options);
     }
 
     @Override
