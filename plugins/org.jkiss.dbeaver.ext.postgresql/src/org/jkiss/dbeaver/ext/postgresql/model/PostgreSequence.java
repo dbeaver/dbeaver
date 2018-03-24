@@ -54,23 +54,23 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
         private Number incrementBy;
         private boolean isCycled;
 
-        @Property(viewable = true, editable = true, updatable = true, order = 10)
+        @Property(viewable = true, editable = true, updatable = false, order = 10)
         public Number getLastValue() {
             return lastValue;
         }
-        @Property(viewable = true, editable = true, updatable = true, order = 11)
+        @Property(viewable = true, editable = true, updatable = false, order = 11)
         public Number getMinValue() {
             return minValue;
         }
-        @Property(viewable = true, editable = true, updatable = true, order = 12)
+        @Property(viewable = true, editable = true, updatable = false, order = 12)
         public Number getMaxValue() {
             return maxValue;
         }
-        @Property(viewable = true, editable = true, updatable = true, order = 13)
+        @Property(viewable = true, editable = true, updatable = false, order = 13)
         public Number getIncrementBy() {
             return incrementBy;
         }
-        @Property(viewable = true, editable = true, updatable = true, order = 14)
+        @Property(viewable = true, editable = true, updatable = false, order = 14)
         public boolean isCycled() {
             return isCycled;
         }
