@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
@@ -78,6 +79,15 @@ public abstract class PostgreTableManagerBase extends SQLTableManager<PostgreTab
                                 actions.add(new SQLDatabasePersistActionComment(table.getDataSource(), "Constraint comments"));
                             }
                             PostgreConstraintManager.addConstraintCommentAction(actions, constr);
+                            hasComments = true;
+                        }
+                    }
+                    for (DBSEntityAssociation fk : table.getAssociations(monitor)) {
+                        if (fk instanceof PostgreTableForeignKey && !CommonUtils.isEmpty(fk.getDescription())) {
+                            if (!hasComments) {
+                                actions.add(new SQLDatabasePersistActionComment(table.getDataSource(), "Foreign key comments"));
+                            }
+                            PostgreConstraintManager.addConstraintCommentAction(actions, (PostgreTableForeignKey)fk);
                             hasComments = true;
                         }
                     }
