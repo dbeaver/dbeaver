@@ -36,6 +36,8 @@ public interface DBPScriptObject extends DBPObject {
     String OPTION_SCRIPT_FORMAT = "script.format";
     String OPTION_SCRIPT_FORMAT_COMPACT = "script.format.compact";
 
+    String OPTION_DDL_SOURCE = "ddl.source";
+
     // Extracts object source for debugger
     // By defautl the same as regular source but in some cases source should be transormed (e.g. for PG)
     String OPTION_DEBUGGER_SOURCE = "debugger.source";
