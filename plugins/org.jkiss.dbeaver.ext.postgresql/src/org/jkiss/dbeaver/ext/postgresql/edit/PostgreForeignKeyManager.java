@@ -19,8 +19,10 @@ package org.jkiss.dbeaver.ext.postgresql.edit;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
@@ -34,6 +36,7 @@ import org.jkiss.dbeaver.ui.editors.object.struct.EditForeignKeyPage;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -108,6 +111,14 @@ public class PostgreForeignKeyManager extends SQLForeignKeyManager<PostgreTableF
             }
         }
         return super.getNestedDeclaration(owner, command, options);
+    }
+
+    @Override
+    protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
+    {
+        if (command.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) {
+            PostgreConstraintManager.addConstraintCommentAction(actionList, command.getObject());
+        }
     }
 
     @Override
