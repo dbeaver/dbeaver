@@ -96,7 +96,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
         return this.oid;
     }
 
-    @Property(viewable = true, editable = true, updatable = true, order = 11)
+    @Property(viewable = true, editable = true, updatable = true, order = 100)
     @Nullable
     @Override
     public String getDescription()

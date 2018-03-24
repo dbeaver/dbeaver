@@ -52,6 +52,7 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
         private Number minValue;
         private Number maxValue;
         private Number incrementBy;
+        private boolean isCycled;
 
         @Property(viewable = true, editable = true, updatable = true, order = 10)
         public Number getLastValue() {
@@ -68,6 +69,10 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
         @Property(viewable = true, editable = true, updatable = true, order = 13)
         public Number getIncrementBy() {
             return incrementBy;
+        }
+        @Property(viewable = true, editable = true, updatable = true, order = 14)
+        public boolean isCycled() {
+            return isCycled;
         }
     }
     public static class AdditionalInfoValidator implements IPropertyCacheValidator<PostgreSequence> {
@@ -102,14 +107,32 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
 
     private void loadAdditionalInfo(DBRProgressMonitor monitor) {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Load sequence additional info")) {
-            try (JDBCPreparedStatement dbSeqStat = session.prepareStatement(
-                "SELECT last_value,min_value,max_value,increment_by from " + getFullyQualifiedName(DBPEvaluationContext.DML))) {
-                try (JDBCResultSet seqResults = dbSeqStat.executeQuery()) {
-                    if (seqResults.next()) {
-                        additionalInfo.lastValue = JDBCUtils.safeGetLong(seqResults, 1);
-                        additionalInfo.minValue = JDBCUtils.safeGetLong(seqResults, 2);
-                        additionalInfo.maxValue = JDBCUtils.safeGetLong(seqResults, 3);
-                        additionalInfo.incrementBy = JDBCUtils.safeGetLong(seqResults, 4);
+            if (getDataSource().isServerVersionAtLeast(10, 0)) {
+                try (JDBCPreparedStatement dbSeqStat = session.prepareStatement(
+                    "SELECT * from pg_catalog.pg_sequences WHERE schemaname=? AND sequencename=?")) {
+                    dbSeqStat.setString(1, getSchema().getName());
+                    dbSeqStat.setString(2, getName());
+                    try (JDBCResultSet seqResults = dbSeqStat.executeQuery()) {
+                        if (seqResults.next()) {
+                            additionalInfo.lastValue = JDBCUtils.safeGetLong(seqResults, "last_value");
+                            additionalInfo.minValue = JDBCUtils.safeGetLong(seqResults, "min_value");
+                            additionalInfo.maxValue = JDBCUtils.safeGetLong(seqResults, "max_value");
+                            additionalInfo.incrementBy = JDBCUtils.safeGetLong(seqResults, "increment_by");
+                            additionalInfo.isCycled = JDBCUtils.safeGetBoolean(seqResults, "cycle");
+                        }
+                    }
+                }
+            } else {
+                try (JDBCPreparedStatement dbSeqStat = session.prepareStatement(
+                    "SELECT * from " + getFullyQualifiedName(DBPEvaluationContext.DML))) {
+                    try (JDBCResultSet seqResults = dbSeqStat.executeQuery()) {
+                        if (seqResults.next()) {
+                            additionalInfo.lastValue = JDBCUtils.safeGetLong(seqResults, "last_value");
+                            additionalInfo.minValue = JDBCUtils.safeGetLong(seqResults, "min_value");
+                            additionalInfo.maxValue = JDBCUtils.safeGetLong(seqResults, "max_value");
+                            additionalInfo.incrementBy = JDBCUtils.safeGetLong(seqResults, "increment_by");
+                            additionalInfo.isCycled = JDBCUtils.safeGetBoolean(seqResults, "is_cycled");
+                        }
                     }
                 }
             }
