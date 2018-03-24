@@ -500,10 +500,11 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
         @Override
         protected JDBCStatement prepareObjectsStatement(JDBCSession session, PostgreSchema schema, PostgreTableBase forParent) throws SQLException {
             StringBuilder sql = new StringBuilder(
-                "SELECT c.oid,c.*,t.relname as tabrelname,rt.relnamespace as refnamespace" +
+                "SELECT c.oid,c.*,t.relname as tabrelname,rt.relnamespace as refnamespace,d.description" +
                 "\nFROM pg_catalog.pg_constraint c" +
                 "\nINNER JOIN pg_catalog.pg_class t ON t.oid=c.conrelid" +
                 "\nLEFT OUTER JOIN pg_catalog.pg_class rt ON rt.oid=c.confrelid" +
+                "\nLEFT OUTER JOIN pg_catalog.pg_description d ON d.objoid=c.oid AND d.objsubid=0" +
                 "\nWHERE ");
             if (forParent == null) {
                 sql.append("t.relnamespace=?");

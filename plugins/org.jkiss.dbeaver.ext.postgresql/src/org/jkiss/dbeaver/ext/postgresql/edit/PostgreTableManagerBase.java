@@ -53,54 +53,68 @@ public abstract class PostgreTableManagerBase extends SQLTableManager<PostgreTab
                     " IS " + SQLUtils.quoteString(table, table.getDescription())));
         }
         DBRProgressMonitor monitor = new VoidProgressMonitor();
-        try {
-            if (isDDL) {
-                // Column comments
-                boolean hasComments = false;
-                for (PostgreTableColumn column : table.getAttributes(monitor)) {
-                    if (!CommonUtils.isEmpty(column.getDescription())) {
-                        if (!hasComments) {
-                            actions.add(new SQLDatabasePersistActionComment(table.getDataSource(), "Column comments"));
-                        }
-                        actions.add(new SQLDatabasePersistAction("Set column comment", "COMMENT ON COLUMN " +
-                            DBUtils.getObjectFullName(table, DBPEvaluationContext.DDL) + "." + DBUtils.getQuotedIdentifier(column) +
-                            " IS " + SQLUtils.quoteString(column, column.getDescription())));
-                        hasComments = true;
-                    }
-                }
-            }
-
-            // Triggers
-            if (isDDL && table instanceof PostgreTableReal) {
-                Collection<PostgreTrigger> triggers = ((PostgreTableReal) table).getTriggers(monitor);
-                if (!CommonUtils.isEmpty(triggers)) {
-                    actions.add(new SQLDatabasePersistActionComment(table.getDataSource(), "Table Triggers"));
-
-                    for (PostgreTrigger trigger : triggers) {
-                        actions.add(new SQLDatabasePersistAction("Create trigger", trigger.getObjectDefinitionText(monitor, options)));
-                    }
-                }
-            }
-
-            if (isDDL && CommonUtils.getOption(options, PostgreConstants.OPTION_DDL_SHOW_PERMISSIONS)) {
-                // Permissions
-                Collection<PostgrePermission> permissions = table.getPermissions(monitor);
-                if (!CommonUtils.isEmpty(permissions)) {
-                    actions.add(new SQLDatabasePersistActionComment(table.getDataSource(), "Permissions"));
-                    for (PostgrePermission permission : permissions) {
-                        if (permission.hasAllPrivileges(table)) {
-                            Collections.addAll(actions,
-                                new PostgreCommandGrantPrivilege(permission.getOwner(), true, permission, PostgrePrivilegeType.ALL)
-                                    .getPersistActions(options));
-                        } else {
-                            PostgreCommandGrantPrivilege grant = new PostgreCommandGrantPrivilege(permission.getOwner(), true, permission, permission.getPrivileges());
-                            Collections.addAll(actions, grant.getPersistActions(options));
+        if (isDDL) {
+            try {
+                {
+                    // Column comments
+                    boolean hasComments = false;
+                    for (PostgreTableColumn column : table.getAttributes(monitor)) {
+                        if (!CommonUtils.isEmpty(column.getDescription())) {
+                            if (!hasComments) {
+                                actions.add(new SQLDatabasePersistActionComment(table.getDataSource(), "Column comments"));
+                            }
+                            PostgreTableColumnManager.addColumnCommentAction(actions, column);
+                            hasComments = true;
                         }
                     }
                 }
+
+                {
+                    // Constraint comments
+                    boolean hasComments = false;
+                    for (PostgreTableConstraintBase constr : table.getConstraints(monitor)) {
+                        if (!CommonUtils.isEmpty(constr.getDescription())) {
+                            if (!hasComments) {
+                                actions.add(new SQLDatabasePersistActionComment(table.getDataSource(), "Constraint comments"));
+                            }
+                            PostgreConstraintManager.addConstraintCommentAction(actions, constr);
+                            hasComments = true;
+                        }
+                    }
+                }
+
+                // Triggers
+                if (table instanceof PostgreTableReal) {
+                    Collection<PostgreTrigger> triggers = ((PostgreTableReal) table).getTriggers(monitor);
+                    if (!CommonUtils.isEmpty(triggers)) {
+                        actions.add(new SQLDatabasePersistActionComment(table.getDataSource(), "Table Triggers"));
+
+                        for (PostgreTrigger trigger : triggers) {
+                            actions.add(new SQLDatabasePersistAction("Create trigger", trigger.getObjectDefinitionText(monitor, options)));
+                        }
+                    }
+                }
+
+                if (CommonUtils.getOption(options, PostgreConstants.OPTION_DDL_SHOW_PERMISSIONS)) {
+                    // Permissions
+                    Collection<PostgrePermission> permissions = table.getPermissions(monitor);
+                    if (!CommonUtils.isEmpty(permissions)) {
+                        actions.add(new SQLDatabasePersistActionComment(table.getDataSource(), "Permissions"));
+                        for (PostgrePermission permission : permissions) {
+                            if (permission.hasAllPrivileges(table)) {
+                                Collections.addAll(actions,
+                                    new PostgreCommandGrantPrivilege(permission.getOwner(), true, permission, PostgrePrivilegeType.ALL)
+                                        .getPersistActions(options));
+                            } else {
+                                PostgreCommandGrantPrivilege grant = new PostgreCommandGrantPrivilege(permission.getOwner(), true, permission, permission.getPrivileges());
+                                Collections.addAll(actions, grant.getPersistActions(options));
+                            }
+                        }
+                    }
+                }
+            } catch (DBException e) {
+                log.error(e);
             }
-        } catch (DBException e) {
-            log.error(e);
         }
     }
 }
