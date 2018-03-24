@@ -140,10 +140,14 @@ public class PostgreIndexManager extends SQLIndexManager<PostgreIndex, PostgreTa
             super.addObjectCreateActions(actions, command, options);
         }
         if (!CommonUtils.isEmpty(index.getDescription())) {
-            actions.add(new SQLDatabasePersistAction(
-                "Comment index",
-                "COMMENT ON INDEX " + index.getFullyQualifiedName(DBPEvaluationContext.DDL) +
-                    " IS " + SQLUtils.quoteString(index, index.getDescription())));
+            addIndexCommentAction(actions, index);
         }
+    }
+
+    static void addIndexCommentAction(List<DBEPersistAction> actions, PostgreIndex index) {
+        actions.add(new SQLDatabasePersistAction(
+            "Comment index",
+            "COMMENT ON INDEX " + index.getFullyQualifiedName(DBPEvaluationContext.DDL) +
+                " IS " + SQLUtils.quoteString(index, index.getDescription())));
     }
 }

@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -48,6 +49,7 @@ public abstract class PostgreTableConstraintBase extends JDBCTableConstraint<Pos
         super(table, name, null, constraintType, true);
 
         this.oid = JDBCUtils.safeGetLong(resultSet, "oid");
+        this.description = JDBCUtils.safeGetString(resultSet, "description");
     }
 
     public PostgreTableConstraintBase(PostgreTableBase table, String constraintName, DBSEntityConstraintType constraintType) {
@@ -80,6 +82,14 @@ public abstract class PostgreTableConstraintBase extends JDBCTableConstraint<Pos
     @Override
     public long getObjectId() {
         return oid;
+    }
+
+    @Property(viewable = true, editable = true, updatable = true, order = 100)
+    @Nullable
+    @Override
+    public String getDescription()
+    {
+        return super.getDescription();
     }
 
     abstract void cacheAttributes(DBRProgressMonitor monitor, List<? extends PostgreTableConstraintColumn> children, boolean secondPass);

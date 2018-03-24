@@ -20,6 +20,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -213,11 +214,15 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
                 actionList.add(new SQLDatabasePersistAction("Set column default", prefix + "SET DEFAULT " + column.getDefaultValue()));
             }
         }
-        if (command.getProperty("description") != null) {
-            actionList.add(new SQLDatabasePersistAction("Set column comment", "COMMENT ON COLUMN " +
-                DBUtils.getObjectFullName(column.getTable(), DBPEvaluationContext.DDL) + "." + DBUtils.getQuotedIdentifier(column) +
-                " IS " + SQLUtils.quoteString(column, CommonUtils.notEmpty(column.getDescription()))));
+        if (command.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) {
+            addColumnCommentAction(actionList, column);
         }
+    }
+
+    static void addColumnCommentAction(List<DBEPersistAction> actionList, PostgreAttribute column) {
+        actionList.add(new SQLDatabasePersistAction("Set column comment", "COMMENT ON COLUMN " +
+            DBUtils.getObjectFullName(column.getTable(), DBPEvaluationContext.DDL) + "." + DBUtils.getQuotedIdentifier(column) +
+            " IS " + SQLUtils.quoteString(column, CommonUtils.notEmpty(column.getDescription()))));
     }
 
     @Override
