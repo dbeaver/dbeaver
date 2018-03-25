@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -36,6 +37,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 import java.io.StringReader;
@@ -436,6 +438,11 @@ public class PostgreUtils {
     public static String getViewDDL(PostgreViewBase view, String definition) {
         String createSQL = (view instanceof PostgreView ? "CREATE OR REPLACE " : "CREATE ");
         return createSQL + view.getViewType() + " " + view.getFullyQualifiedName(DBPEvaluationContext.DDL) + " AS\n" + definition;
+    }
+
+    public static boolean isGreenplumDriver(DBPDriver driver) {
+        return driver != null && CommonUtils.toBoolean(
+            driver.getDriverParameter(PostgreConstants.PROP_GREENPLUM_DRIVER));
     }
 
 }
