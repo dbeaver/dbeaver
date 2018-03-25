@@ -2481,9 +2481,9 @@ public class SQLEditor extends SQLEditorBase implements
 
         @Override
         protected IStatus run(DBRProgressMonitor monitor) {
-            dumpOutput(monitor);
+            if (!DBeaverCore.isClosing() && sashForm != null && !sashForm.isDisposed()) {
+                dumpOutput(monitor);
 
-            if (!DBeaverCore.isClosing()) {
                 schedule(200);
             }
 
@@ -2503,21 +2503,18 @@ public class SQLEditor extends SQLEditorBase implements
                     info.outputReader.readServerOutput(monitor, info.executionContext, new PrintWriter(dump, true));
                     final String dumpString = dump.toString();
                     if (!dumpString.isEmpty()) {
-                        DBeaverUI.asyncExec(new Runnable() {
-                            @Override
-                            public void run() {
-                                if (outputViewer.isDisposed()) {
-                                    return;
-                                }
-                                try {
-                                    IOUtils.copyText(new StringReader(dumpString), outputViewer.getOutputWriter());
-                                } catch (IOException e) {
-                                    log.error(e);
-                                }
-                                if (outputViewer.isHasNewOutput()) {
-                                    outputViewer.scrollToEnd();
-                                    updateOutputViewerIcon(true);
-                                }
+                        DBeaverUI.asyncExec(() -> {
+                            if (outputViewer.isDisposed()) {
+                                return;
+                            }
+                            try {
+                                IOUtils.copyText(new StringReader(dumpString), outputViewer.getOutputWriter());
+                            } catch (IOException e) {
+                                log.error(e);
+                            }
+                            if (outputViewer.isHasNewOutput()) {
+                                outputViewer.scrollToEnd();
+                                updateOutputViewerIcon(true);
                             }
                         });
                     }
