@@ -215,11 +215,13 @@ public class MockDataSettings {
             attributeSection.put(KEY_PRESET_ID, attrGeneratorProperties.getPresetId());
 
             IDialogSettings generatorSection = UIUtils.getSettingsSection(attributeSection, KEY_GENERATOR_SECTION);
-            PropertySourceCustom generatorPropertySource = attrGeneratorProperties.getGeneratorPropertySource(selectedGeneratorId);
-            if (generatorPropertySource != null) {
-                Map<Object, Object> properties = generatorPropertySource.getPropertiesWithDefaults();
-                for (Map.Entry<Object, Object> propEntry : properties.entrySet()) {
-                    UIUtils.putSectionValueWithType(generatorSection, (String) propEntry.getKey(), propEntry.getValue());
+            if (selectedGeneratorId != null) {
+                PropertySourceCustom generatorPropertySource = attrGeneratorProperties.getGeneratorPropertySource(selectedGeneratorId);
+                if (generatorPropertySource != null) {
+                    Map<Object, Object> properties = generatorPropertySource.getPropertiesWithDefaults();
+                    for (Map.Entry<Object, Object> propEntry : properties.entrySet()) {
+                        UIUtils.putSectionValueWithType(generatorSection, (String) propEntry.getKey(), propEntry.getValue());
+                    }
                 }
             }
         }
