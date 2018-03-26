@@ -366,8 +366,10 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
         for (int i = 0; i < attrs.size(); i++) {
             DBDAttributeBinding attr = attrs.get(i);
             nameWidth = Math.max(nameWidth, getAttributeName(attr).length());
-            values[i] = attr.getValueHandler().getValueDisplayString(attr, model.getCellValue(attr, currentRow), displayFormat);
-            valueWidth = Math.max(valueWidth, values[i].length());
+            if (currentRow != null) {
+                values[i] = attr.getValueHandler().getValueDisplayString(attr, model.getCellValue(attr, currentRow), displayFormat);
+                valueWidth = Math.max(valueWidth, values[i].length());
+            }
         }
 
         // Header
@@ -388,23 +390,25 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
         if (delimTrailing) grid.append("|");
         grid.append("\n");
 
-        // Values
-        for (int i = 0; i < attrs.size(); i++) {
-            DBDAttributeBinding attr = attrs.get(i);
-            String name = getAttributeName(attr);
-            if (delimLeading) grid.append("|");
-            grid.append(name);
-            for (int j = nameWidth - name.length(); j > 0; j--) {
-                grid.append(" ");
-            }
-            grid.append("|");
-            grid.append(values[i]);
-            for (int j = valueWidth - values[i].length(); j > 0; j--) {
-                grid.append(" ");
-            }
+        if (currentRow != null) {
+            // Values
+            for (int i = 0; i < attrs.size(); i++) {
+                DBDAttributeBinding attr = attrs.get(i);
+                String name = getAttributeName(attr);
+                if (delimLeading) grid.append("|");
+                grid.append(name);
+                for (int j = nameWidth - name.length(); j > 0; j--) {
+                    grid.append(" ");
+                }
+                grid.append("|");
+                grid.append(values[i]);
+                for (int j = valueWidth - values[i].length(); j > 0; j--) {
+                    grid.append(" ");
+                }
 
-            if (delimTrailing) grid.append("|");
-            grid.append("\n");
+                if (delimTrailing) grid.append("|");
+                grid.append("\n");
+            }
         }
         grid.setLength(grid.length() - 1); // cut last line feed
         text.setText(grid.toString());
