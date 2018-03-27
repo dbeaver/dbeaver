@@ -33,6 +33,8 @@ public enum PostgrePrivilegeType {
     // SEQUENCE privs
     USAGE(PostgreSequence.class, true),
 
+    EXECUTE(PostgreProcedure.class, true),
+
     UNKNOWN(Object.class, false);
 
     private final Class<?> targetType;

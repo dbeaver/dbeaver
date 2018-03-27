@@ -62,20 +62,34 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePerm
                 privName.append(pn.name());
             }
         }
-        String tableName, roleName;
-        if (getObject() instanceof PostgreRole) {
-            roleName = DBUtils.getQuotedIdentifier(getObject());
-            tableName = ((PostgreRolePermission)permission).getFullTableName();
+
+        PostgrePermissionsOwner object = getObject();
+        String objectName, roleName;
+        if (object instanceof PostgreRole) {
+            roleName = DBUtils.getQuotedIdentifier(object);
+            objectName = ((PostgreRolePermission)permission).getFullObjectName();
         } else {
-            roleName = DBUtils.getQuotedIdentifier(getObject().getDataSource(), ((PostgreTablePermission) permission).getGrantee());
-            tableName = ((PostgreTableBase)getObject()).getFullyQualifiedName(DBPEvaluationContext.DDL);
+            roleName = DBUtils.getQuotedIdentifier(object.getDataSource(), ((PostgreTablePermission) permission).getGrantee());
+            if (object instanceof PostgreProcedure) {
+                objectName = ((PostgreProcedure) object).getUniqueName();
+            } else {
+                objectName = DBUtils.getObjectFullName(object, DBPEvaluationContext.DDL);
+            }
         }
 
+        String objectType;
+        if (object instanceof PostgreSequence) {
+            objectType = "SEQUENCE";
+        } else if (object instanceof PostgreProcedure) {
+            objectType = "FUNCTION";
+        } else {
+            objectType = "TABLE";
+        }
         String grantScript = "GRANT " + privName + //$NON-NLS-1$
-            " ON " + tableName + //$NON-NLS-1$
+            " ON " + objectType + " " + objectName + //$NON-NLS-1$
             " TO " + roleName + ""; //$NON-NLS-1$ //$NON-NLS-2$
         String revokeScript = "REVOKE " + privName + //$NON-NLS-1$
-            " ON " + tableName + //$NON-NLS-1$
+            " ON " + objectType + " " + objectName + //$NON-NLS-1$
             " FROM " + roleName + ""; //$NON-NLS-1$ //$NON-NLS-2$
         return new DBEPersistAction[] {
             new SQLDatabasePersistAction(

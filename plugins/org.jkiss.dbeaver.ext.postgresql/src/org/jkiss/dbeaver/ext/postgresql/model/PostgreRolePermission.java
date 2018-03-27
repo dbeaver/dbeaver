@@ -33,18 +33,18 @@ public class PostgreRolePermission extends PostgrePermission {
     private static final Log log = Log.getLog(PostgreRolePermission.class);
 
     private String schemaName;
-    private String tableName;
+    private String objectName;
 
-    public PostgreRolePermission(PostgrePermissionsOwner owner, String schemaName, String tableName, List<PostgrePrivilege> privileges) {
+    public PostgreRolePermission(PostgrePermissionsOwner owner, String schemaName, String objectName, List<PostgrePrivilege> privileges) {
         super(owner, privileges);
         this.schemaName = schemaName;
-        this.tableName = tableName;
+        this.objectName = objectName;
     }
 
     @Property(viewable = true, order = 1)
     @NotNull
     public String getName() {
-        return getFullTableName();
+        return getFullObjectName();
     }
 
     @Override
@@ -52,7 +52,7 @@ public class PostgreRolePermission extends PostgrePermission {
     {
         final PostgreSchema schema = owner.getDatabase().getSchema(monitor, schemaName);
         if (schema != null) {
-            return schema.getChild(monitor, tableName);
+            return schema.getChild(monitor, objectName);
         }
         return null;
     }
@@ -61,25 +61,25 @@ public class PostgreRolePermission extends PostgrePermission {
         return schemaName;
     }
 
-    public String getTableName() {
-        return tableName;
+    public String getObjectName() {
+        return objectName;
     }
 
-    public String getFullTableName() {
+    public String getFullObjectName() {
         return DBUtils.getQuotedIdentifier(getDataSource(), schemaName) + "." +
-            DBUtils.getQuotedIdentifier(getDataSource(), tableName);
+            DBUtils.getQuotedIdentifier(getDataSource(), objectName);
     }
 
     @Override
     public String toString() {
-        return getFullTableName();
+        return getFullObjectName();
     }
 
     @Override
     public int compareTo(@NotNull PostgrePermission o) {
         if (o instanceof PostgreRolePermission) {
             final int res = schemaName.compareTo(((PostgreRolePermission)o).schemaName);
-            return res != 0 ? res : tableName.compareTo(((PostgreRolePermission)o).tableName);
+            return res != 0 ? res : objectName.compareTo(((PostgreRolePermission)o).objectName);
         }
         return 0;
     }

@@ -287,19 +287,15 @@ public class PostgreRole implements PostgreObject, PostgrePermissionsOwner, DBPP
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     Map<String, List<PostgrePrivilege>> privs = new LinkedHashMap<>();
                     while (dbResult.next()) {
-                        PostgrePrivilege privilege = new PostgrePrivilege(dbResult);
-                        String tableId = privilege.getTableSchema() + "." + privilege.getTableName();
-                        List<PostgrePrivilege> privList = privs.get(tableId);
-                        if (privList == null) {
-                            privList = new ArrayList<>();
-                            privs.put(tableId, privList);
-                        }
+                        PostgrePrivilege privilege = new PostgrePrivilege(PostgrePrivilege.Kind.TABLE, dbResult);
+                        String tableId = privilege.getObjectSchema() + "." + privilege.getObjectName();
+                        List<PostgrePrivilege> privList = privs.computeIfAbsent(tableId, k -> new ArrayList<>());
                         privList.add(privilege);
                     }
                     // Pack to permission list
                     List<PostgrePermission> result = new ArrayList<>(privs.size());
                     for (List<PostgrePrivilege> priv : privs.values()) {
-                        result.add(new PostgreRolePermission(this, priv.get(0).getTableSchema(), priv.get(0).getTableName(), priv));
+                        result.add(new PostgreRolePermission(this, priv.get(0).getObjectSchema(), priv.get(0).getObjectName(), priv));
                     }
                     Collections.sort(result);
                     return result;

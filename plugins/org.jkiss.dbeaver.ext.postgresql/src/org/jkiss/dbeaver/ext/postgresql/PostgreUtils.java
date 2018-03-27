@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.AbstractObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -45,8 +46,7 @@ import java.io.StringWriter;
 import java.lang.reflect.Method;
 import java.sql.SQLException;
 import java.sql.Types;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * postgresql utils
@@ -443,6 +443,24 @@ public class PostgreUtils {
     public static boolean isGreenplumDriver(DBPDriver driver) {
         return driver != null && CommonUtils.toBoolean(
             driver.getDriverParameter(PostgreConstants.PROP_GREENPLUM_DRIVER));
+    }
+
+    public static Collection<PostgrePermission> fetchObjectPrivileges(PostgrePermissionsOwner owner, PostgrePrivilege.Kind kind, JDBCPreparedStatement dbStat) throws SQLException {
+        try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+            Map<String, List<PostgrePrivilege>> privs = new LinkedHashMap<>();
+            while (dbResult.next()) {
+                PostgrePrivilege privilege = new PostgrePrivilege(kind, dbResult);
+                List<PostgrePrivilege> privList = privs.computeIfAbsent(privilege.getGrantee(), k -> new ArrayList<>());
+                privList.add(privilege);
+            }
+            // Pack to permission list
+            List<PostgrePermission> result = new ArrayList<>(privs.size());
+            for (List<PostgrePrivilege> priv : privs.values()) {
+                result.add(new PostgreTablePermission(owner, priv.get(0).getGrantee(), priv));
+            }
+            Collections.sort(result);
+            return result;
+        }
     }
 
 }

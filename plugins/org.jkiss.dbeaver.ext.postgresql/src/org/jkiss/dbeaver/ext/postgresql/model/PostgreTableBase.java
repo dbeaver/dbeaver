@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -203,25 +202,9 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
                 dbStat.setString(1, getDatabase().getName());
                 dbStat.setString(2, getSchema().getName());
                 dbStat.setString(3, getName());
-                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    Map<String, List<PostgrePrivilege>> privs = new LinkedHashMap<>();
-                    while (dbResult.next()) {
-                        PostgrePrivilege privilege = new PostgrePrivilege(dbResult);
-                        List<PostgrePrivilege> privList = privs.get(privilege.getGrantee());
-                        if (privList == null) {
-                            privList = new ArrayList<>();
-                            privs.put(privilege.getGrantee(), privList);
-                        }
-                        privList.add(privilege);
-                    }
-                    // Pack to permission list
-                    List<PostgrePermission> result = new ArrayList<>(privs.size());
-                    for (List<PostgrePrivilege> priv : privs.values()) {
-                        result.add(new PostgreTablePermission(this, priv.get(0).getGrantee(), priv));
-                    }
-                    Collections.sort(result);
-                    return result;
-                }
+                return PostgreUtils.fetchObjectPrivileges(this,
+                    this instanceof PostgreSequence ? PostgrePrivilege.Kind.SEQUENCE : PostgrePrivilege.Kind.TABLE,
+                    dbStat);
             } catch (SQLException e) {
                 throw new DBException(e, getDataSource());
             }
