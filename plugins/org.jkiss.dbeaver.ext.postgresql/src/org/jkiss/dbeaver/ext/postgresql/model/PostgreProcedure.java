@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractProcedure;
@@ -44,7 +45,7 @@ import java.util.Map;
 /**
  * PostgreProcedure
  */
-public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, PostgreSchema> implements PostgreObject, PostgreScriptObject, DBPUniqueObject, DBPOverloadedObject, DBPRefreshableObject
+public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, PostgreSchema> implements PostgreObject, PostgreScriptObject, PostgrePermissionsOwner, DBPUniqueObject, DBPOverloadedObject, DBPRefreshableObject
 {
     private static final Log log = Log.getLog(PostgreProcedure.class);
     private static final String CAT_FLAGS = "Flags";
@@ -251,6 +252,10 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         return overloadedName;
     }
 
+    public String getSpecificName() {
+        return name + "_" + getObjectId();
+    }
+
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException
@@ -414,6 +419,23 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
 
     public String getProcedureTypeName() {
         return isAggregate ? "AGGREGATE" : "FUNCTION";
+    }
+
+    @Override
+    public Collection<PostgrePermission> getPermissions(DBRProgressMonitor monitor) throws DBException {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read table privileges")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                    "SELECT * FROM information_schema.routine_privileges " +
+                        "WHERE specific_catalog=? AND specific_schema=? AND specific_name=?"))
+            {
+                dbStat.setString(1, getDatabase().getName());
+                dbStat.setString(2, getContainer().getName());
+                dbStat.setString(3, getSpecificName());
+                return PostgreUtils.fetchObjectPrivileges(this, PostgrePrivilege.Kind.ROUTINE, dbStat);
+            } catch (SQLException e) {
+                throw new DBException(e, getDataSource());
+            }
+        }
     }
 
     @Override

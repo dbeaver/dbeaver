@@ -26,37 +26,64 @@ import java.sql.SQLException;
  */
 public class PostgrePrivilege {
 
+    public enum Kind {
+        TABLE,
+        SEQUENCE,
+        ROUTINE
+    }
+
+    private Kind kind;
     private String grantor;
     private String grantee;
-    private String tableCatalog;
-    private String tableSchema;
-    private String tableName;
+    private String objectCatalog;
+    private String objectSchema;
+    private String objectName;
     private PostgrePrivilegeType privilegeType;
     private boolean isGrantable;
     private boolean withHierarchy;
 
-    public PostgrePrivilege(ResultSet dbResult)
+    public PostgrePrivilege(Kind kind, ResultSet dbResult)
         throws SQLException
     {
+        this.kind = kind;
         this.grantor = JDBCUtils.safeGetString(dbResult, "grantor");
         this.grantee = JDBCUtils.safeGetString(dbResult, "grantee");
-        this.tableCatalog = JDBCUtils.safeGetString(dbResult, "table_catalog");
-        this.tableSchema = JDBCUtils.safeGetString(dbResult, "table_schema");
-        this.tableName = JDBCUtils.safeGetString(dbResult, "table_name");
         this.privilegeType = PostgrePrivilegeType.fromString(JDBCUtils.safeGetString(dbResult, "privilege_type"));
         this.isGrantable = JDBCUtils.safeGetBoolean(dbResult, "is_grantable");
-        this.withHierarchy = JDBCUtils.safeGetBoolean(dbResult, "with_hierarchy");
+
+        switch (kind) {
+            case ROUTINE:
+                this.objectCatalog = JDBCUtils.safeGetString(dbResult, "specific_catalog");
+                this.objectSchema = JDBCUtils.safeGetString(dbResult, "specific_schema");
+                this.objectName = JDBCUtils.safeGetString(dbResult, "specific_name");
+                break;
+            case SEQUENCE:
+                this.objectCatalog = JDBCUtils.safeGetString(dbResult, "object_catalog");
+                this.objectSchema = JDBCUtils.safeGetString(dbResult, "object_schema");
+                this.objectName = JDBCUtils.safeGetString(dbResult, "object_name");
+                break;
+            default:
+                this.objectCatalog = JDBCUtils.safeGetString(dbResult, "table_catalog");
+                this.objectSchema = JDBCUtils.safeGetString(dbResult, "table_schema");
+                this.objectName = JDBCUtils.safeGetString(dbResult, "table_name");
+                this.withHierarchy = JDBCUtils.safeGetBoolean(dbResult, "with_hierarchy");
+                break;
+        }
     }
 
-    public PostgrePrivilege(String grantor, String grantee, String tableCatalog, String tableSchema, String tableName, PostgrePrivilegeType privilegeType, boolean isGrantable, boolean withHierarchy) {
+    public PostgrePrivilege(String grantor, String grantee, String objectCatalog, String objectSchema, String objectName, PostgrePrivilegeType privilegeType, boolean isGrantable, boolean withHierarchy) {
         this.grantor = grantor;
         this.grantee = grantee;
-        this.tableCatalog = tableCatalog;
-        this.tableSchema = tableSchema;
-        this.tableName = tableName;
+        this.objectCatalog = objectCatalog;
+        this.objectSchema = objectSchema;
+        this.objectName = objectName;
         this.privilegeType = privilegeType;
         this.isGrantable = isGrantable;
         this.withHierarchy = withHierarchy;
+    }
+
+    public Kind getKind() {
+        return kind;
     }
 
     public String getGrantor() {
@@ -67,16 +94,16 @@ public class PostgrePrivilege {
         return grantee;
     }
 
-    public String getTableCatalog() {
-        return tableCatalog;
+    public String getObjectCatalog() {
+        return objectCatalog;
     }
 
-    public String getTableSchema() {
-        return tableSchema;
+    public String getObjectSchema() {
+        return objectSchema;
     }
 
-    public String getTableName() {
-        return tableName;
+    public String getObjectName() {
+        return objectName;
     }
 
     public PostgrePrivilegeType getPrivilegeType() {
@@ -95,5 +122,5 @@ public class PostgrePrivilege {
     public String toString() {
         return privilegeType.toString();
     }
-}
 
+}
