@@ -2150,8 +2150,6 @@
                 <visibleWhen checkEnabled="true"/>
             </command>
 
-            <separator name="generate" visible="false"/>
-
             <menu label="%menu.database.sql.generate" icon="icons/misc/sql.png">
                 <visibleWhen>
                     <with variable="activePart">
