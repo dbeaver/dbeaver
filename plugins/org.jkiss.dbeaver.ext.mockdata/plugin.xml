@@ -5,19 +5,18 @@
 
     <extension-point id="org.jkiss.dbeaver.mockGenerator" name="Mock data generator" schema="schema/org.jkiss.dbeaver.mockGenerator.exsd"/>
 
-    <extension point="org.eclipse.ui.handlers">
-        <handler commandId="org.jkiss.dbeaver.ext.mockdata.button" class="org.jkiss.dbeaver.ext.mockdata.handlers.MockDataHandler" />
+    <extension point="org.jkiss.dbeaver.tools">
+        <tools>
+            <tool
+                    class="org.jkiss.dbeaver.ext.mockdata.MockDataGenerateTool"
+                    description="Mock Data"
+                    id="org.jkiss.dbeaver.ext.mockdata.MockDataGenerateTool"
+                    label="Generate Mock Data"
+                    singleton="false">
 
-        <handler commandId="org.jkiss.dbeaver.ext.mockdata.forSelection" class="org.jkiss.dbeaver.ext.mockdata.handlers.MockDataHandler">
-            <enabledWhen>
-                <with variable="selection">
-                    <count value="+"/>
-                    <iterate operator="and">
-                        <adapt type="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
-                    </iterate>
-                </with>
-            </enabledWhen>
-        </handler>
+                <objectType name="org.jkiss.dbeaver.model.struct.DBSDataManipulator" forceCheck="true"/>
+            </tool>
+        </tools>
     </extension>
 
     <extension point="org.eclipse.ui.commands">
