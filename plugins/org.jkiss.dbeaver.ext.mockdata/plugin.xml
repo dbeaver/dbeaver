@@ -5,6 +5,10 @@
 
     <extension-point id="org.jkiss.dbeaver.mockGenerator" name="Mock data generator" schema="schema/org.jkiss.dbeaver.mockGenerator.exsd"/>
 
+    <extension point="org.eclipse.ui.handlers">
+        <handler commandId="org.jkiss.dbeaver.ext.mockdata.button" class="org.jkiss.dbeaver.ext.mockdata.handlers.MockDataHandler" />
+    </extension>
+
     <extension point="org.jkiss.dbeaver.tools">
         <tools>
             <tool
