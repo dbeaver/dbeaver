@@ -422,6 +422,11 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     }
 
     @Override
+    public PostgreSchema getSchema() {
+        return container;
+    }
+
+    @Override
     public Collection<PostgrePermission> getPermissions(DBRProgressMonitor monitor) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read table privileges")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
@@ -431,7 +436,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                 dbStat.setString(1, getDatabase().getName());
                 dbStat.setString(2, getContainer().getName());
                 dbStat.setString(3, getSpecificName());
-                return PostgreUtils.fetchObjectPrivileges(this, PostgrePrivilege.Kind.ROUTINE, dbStat);
+                return PostgreUtils.fetchObjectPrivileges(this, PostgrePrivilege.Kind.FUNCTION, dbStat);
             } catch (SQLException e) {
                 throw new DBException(e, getDataSource());
             }

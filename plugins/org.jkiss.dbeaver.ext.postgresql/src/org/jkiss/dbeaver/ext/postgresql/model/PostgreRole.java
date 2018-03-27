@@ -277,6 +277,11 @@ public class PostgreRole implements PostgreObject, PostgrePermissionsOwner, DBPP
     }
 
     @Override
+    public PostgreSchema getSchema() {
+        return null;
+    }
+
+    @Override
     public Collection<PostgrePermission> getPermissions(DBRProgressMonitor monitor) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read role privileges")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
@@ -295,7 +300,7 @@ public class PostgreRole implements PostgreObject, PostgrePermissionsOwner, DBPP
                     // Pack to permission list
                     List<PostgrePermission> result = new ArrayList<>(privs.size());
                     for (List<PostgrePrivilege> priv : privs.values()) {
-                        result.add(new PostgreRolePermission(this, priv.get(0).getObjectSchema(), priv.get(0).getObjectName(), priv));
+                        result.add(new PostgreRolePermission(this, PostgrePrivilege.Kind.TABLE, priv.get(0).getObjectSchema(), priv.get(0).getObjectName(), priv));
                     }
                     Collections.sort(result);
                     return result;

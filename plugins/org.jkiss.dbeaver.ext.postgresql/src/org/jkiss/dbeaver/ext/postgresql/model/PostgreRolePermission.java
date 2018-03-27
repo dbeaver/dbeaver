@@ -32,11 +32,13 @@ public class PostgreRolePermission extends PostgrePermission {
 
     private static final Log log = Log.getLog(PostgreRolePermission.class);
 
+    private PostgrePrivilege.Kind kind;
     private String schemaName;
     private String objectName;
 
-    public PostgreRolePermission(PostgrePermissionsOwner owner, String schemaName, String objectName, List<PostgrePrivilege> privileges) {
+    public PostgreRolePermission(PostgrePermissionsOwner owner, PostgrePrivilege.Kind kind, String schemaName, String objectName, List<PostgrePrivilege> privileges) {
         super(owner, privileges);
+        this.kind = kind;
         this.schemaName = schemaName;
         this.objectName = objectName;
     }
@@ -48,13 +50,17 @@ public class PostgreRolePermission extends PostgrePermission {
     }
 
     @Override
-    public PostgreTableBase getTargetObject(DBRProgressMonitor monitor) throws DBException
+    public PostgreObject getTargetObject(DBRProgressMonitor monitor) throws DBException
     {
         final PostgreSchema schema = owner.getDatabase().getSchema(monitor, schemaName);
         if (schema != null) {
             return schema.getChild(monitor, objectName);
         }
         return null;
+    }
+
+    public PostgrePrivilege.Kind getKind() {
+        return kind;
     }
 
     public String getSchemaName() {
@@ -67,7 +73,7 @@ public class PostgreRolePermission extends PostgrePermission {
 
     public String getFullObjectName() {
         return DBUtils.getQuotedIdentifier(getDataSource(), schemaName) + "." +
-            DBUtils.getQuotedIdentifier(getDataSource(), objectName);
+            (kind == PostgrePrivilege.Kind.FUNCTION ? objectName : DBUtils.getQuotedIdentifier(getDataSource(), objectName));
     }
 
     @Override

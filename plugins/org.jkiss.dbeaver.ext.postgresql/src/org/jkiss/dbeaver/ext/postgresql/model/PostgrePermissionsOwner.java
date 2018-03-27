@@ -28,6 +28,8 @@ import java.util.List;
  */
 public interface PostgrePermissionsOwner extends PostgreObject {
 
+    PostgreSchema getSchema();
+
     Collection<PostgrePermission> getPermissions(DBRProgressMonitor monitor) throws DBException;
 
 }
