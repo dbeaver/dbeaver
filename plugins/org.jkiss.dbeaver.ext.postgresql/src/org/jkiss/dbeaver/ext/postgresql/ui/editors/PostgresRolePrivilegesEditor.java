@@ -128,7 +128,8 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                     try {
                         Class<?> childType = Class.forName(((DBNDatabaseFolder) element).getMeta().getType());
                         return PostgreTableReal.class.isAssignableFrom(childType) ||
-                            PostgreSequence.class.isAssignableFrom(childType);
+                            PostgreSequence.class.isAssignableFrom(childType) ||
+                            PostgreProcedure.class.isAssignableFrom(childType);
                     } catch (ClassNotFoundException e) {
                         return false;
                     }
@@ -241,10 +242,31 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                     continue;
                 }
                 if (isRoleEditor()) {
-                    PostgreTableBase table = (PostgreTableBase) currentObject;
-                    permission = new PostgreRolePermission(getDatabaseObject(), table.getSchema().getName(), table.getName(), Collections.emptyList());
+                    PostgrePermissionsOwner permissionsOwner = (PostgrePermissionsOwner) currentObject;
+                    PostgrePrivilege.Kind kind;
+                    String objectName;
+                    if (permissionsOwner instanceof PostgreProcedure) {
+                        kind = PostgrePrivilege.Kind.FUNCTION;
+                        objectName = ((PostgreProcedure) permissionsOwner).getUniqueName();
+                    } else {
+                        if (permissionsOwner instanceof PostgreSequence) {
+                            kind = PostgrePrivilege.Kind.SEQUENCE;
+                        } else {
+                            kind = PostgrePrivilege.Kind.TABLE;
+                        }
+                        objectName = permissionsOwner.getName();
+                    }
+                    permission = new PostgreRolePermission(
+                        getDatabaseObject(),
+                        kind,
+                        permissionsOwner.getSchema().getName(),
+                        objectName,
+                        Collections.emptyList());
                 } else {
-                    permission = new PostgreTablePermission(getDatabaseObject(), currentObject.getName(), Collections.emptyList());
+                    permission = new PostgreObjectPermission(
+                        getDatabaseObject(),
+                        currentObject.getName(),
+                        Collections.emptyList());
                 }
                 // Add to map
                 permissionMap.put(permission.getName(), permission);
@@ -310,7 +332,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
         StringBuilder objectNames = new StringBuilder();
         if (!hasBadObjects) {
             for (DBSObject object : objects) {
-                if (!(object instanceof PostgreTableBase) && !(object instanceof PostgreRole)) {
+                if (!(object instanceof PostgrePermissionsOwner)) {
                     hasBadObjects = true;
                     break;
                 }

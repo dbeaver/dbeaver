@@ -69,7 +69,7 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePerm
             roleName = DBUtils.getQuotedIdentifier(object);
             objectName = ((PostgreRolePermission)permission).getFullObjectName();
         } else {
-            roleName = DBUtils.getQuotedIdentifier(object.getDataSource(), ((PostgreTablePermission) permission).getGrantee());
+            roleName = DBUtils.getQuotedIdentifier(object.getDataSource(), ((PostgreObjectPermission) permission).getGrantee());
             if (object instanceof PostgreProcedure) {
                 objectName = ((PostgreProcedure) object).getUniqueName();
             } else {
@@ -78,7 +78,9 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePerm
         }
 
         String objectType;
-        if (object instanceof PostgreSequence) {
+        if (permission instanceof PostgreRolePermission) {
+            objectType = ((PostgreRolePermission) permission).getKind().name();
+        } else if (object instanceof PostgreSequence) {
             objectType = "SEQUENCE";
         } else if (object instanceof PostgreProcedure) {
             objectType = "FUNCTION";

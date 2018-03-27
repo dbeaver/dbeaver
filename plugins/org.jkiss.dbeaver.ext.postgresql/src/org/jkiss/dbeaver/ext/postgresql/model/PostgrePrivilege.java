@@ -29,7 +29,7 @@ public class PostgrePrivilege {
     public enum Kind {
         TABLE,
         SEQUENCE,
-        ROUTINE
+        FUNCTION
     }
 
     private Kind kind;
@@ -52,7 +52,7 @@ public class PostgrePrivilege {
         this.isGrantable = JDBCUtils.safeGetBoolean(dbResult, "is_grantable");
 
         switch (kind) {
-            case ROUTINE:
+            case FUNCTION:
                 this.objectCatalog = JDBCUtils.safeGetString(dbResult, "specific_catalog");
                 this.objectSchema = JDBCUtils.safeGetString(dbResult, "specific_schema");
                 this.objectName = JDBCUtils.safeGetString(dbResult, "specific_name");

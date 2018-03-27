@@ -456,7 +456,7 @@ public class PostgreUtils {
             // Pack to permission list
             List<PostgrePermission> result = new ArrayList<>(privs.size());
             for (List<PostgrePrivilege> priv : privs.values()) {
-                result.add(new PostgreTablePermission(owner, priv.get(0).getGrantee(), priv));
+                result.add(new PostgreObjectPermission(owner, priv.get(0).getGrantee(), priv));
             }
             Collections.sort(result);
             return result;

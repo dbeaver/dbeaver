@@ -26,15 +26,15 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import java.util.List;
 
 /**
- * PostgreTablePermission
+ * PostgreObjectPermission
  */
-public class PostgreTablePermission extends PostgrePermission {
+public class PostgreObjectPermission extends PostgrePermission {
 
-    private static final Log log = Log.getLog(PostgreTablePermission.class);
+    private static final Log log = Log.getLog(PostgreObjectPermission.class);
 
     private String grantee;
 
-    public PostgreTablePermission(PostgrePermissionsOwner owner, String grantee, List<PostgrePrivilege> privileges) {
+    public PostgreObjectPermission(PostgrePermissionsOwner owner, String grantee, List<PostgrePrivilege> privileges) {
         super(owner, privileges);
         this.grantee = grantee;
     }
@@ -62,8 +62,8 @@ public class PostgreTablePermission extends PostgrePermission {
 
     @Override
     public int compareTo(@NotNull PostgrePermission o) {
-        if (o instanceof PostgreTablePermission) {
-            return grantee.compareTo(((PostgreTablePermission)o).grantee);
+        if (o instanceof PostgreObjectPermission) {
+            return grantee.compareTo(((PostgreObjectPermission)o).grantee);
         }
         return 0;
     }
