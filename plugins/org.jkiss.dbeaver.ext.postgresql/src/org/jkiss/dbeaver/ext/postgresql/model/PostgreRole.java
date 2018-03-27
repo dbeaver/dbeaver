@@ -284,30 +284,43 @@ public class PostgreRole implements PostgreObject, PostgrePermissionsOwner, DBPP
     @Override
     public Collection<PostgrePermission> getPermissions(DBRProgressMonitor monitor) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read role privileges")) {
+            List<PostgrePermission> permissions = new ArrayList<>();
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT * FROM information_schema.table_privileges WHERE table_catalog=? AND grantee=?"))
             {
                 dbStat.setString(1, getDatabase().getName());
                 dbStat.setString(2, getName());
-                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    Map<String, List<PostgrePrivilege>> privs = new LinkedHashMap<>();
-                    while (dbResult.next()) {
-                        PostgrePrivilege privilege = new PostgrePrivilege(PostgrePrivilege.Kind.TABLE, dbResult);
-                        String tableId = privilege.getObjectSchema() + "." + privilege.getObjectName();
-                        List<PostgrePrivilege> privList = privs.computeIfAbsent(tableId, k -> new ArrayList<>());
-                        privList.add(privilege);
-                    }
-                    // Pack to permission list
-                    List<PostgrePermission> result = new ArrayList<>(privs.size());
-                    for (List<PostgrePrivilege> priv : privs.values()) {
-                        result.add(new PostgreRolePermission(this, PostgrePrivilege.Kind.TABLE, priv.get(0).getObjectSchema(), priv.get(0).getObjectName(), priv));
-                    }
-                    Collections.sort(result);
-                    return result;
-                }
-            } catch (SQLException e) {
-                throw new DBException(e, getDataSource());
+                permissions.addAll(getRolePermissions(this, PostgrePrivilege.Kind.TABLE, dbStat));
             }
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT * FROM information_schema.routine_privileges WHERE specific_catalog=? AND grantee=?"))
+            {
+                dbStat.setString(1, getDatabase().getName());
+                dbStat.setString(2, getName());
+                permissions.addAll(getRolePermissions(this, PostgrePrivilege.Kind.FUNCTION, dbStat));
+            }
+            Collections.sort(permissions);
+            return permissions;
+        } catch (SQLException e) {
+            throw new DBException(e, getDataSource());
+        }
+    }
+
+    private static Collection<PostgrePermission> getRolePermissions(PostgreRole role, PostgrePrivilege.Kind kind, JDBCPreparedStatement dbStat) throws SQLException {
+        try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+            Map<String, List<PostgrePrivilege>> privs = new LinkedHashMap<>();
+            while (dbResult.next()) {
+                PostgrePrivilege privilege = new PostgrePrivilege(kind, dbResult);
+                String tableId = privilege.getObjectSchema() + "." + privilege.getObjectName();
+                List<PostgrePrivilege> privList = privs.computeIfAbsent(tableId, k -> new ArrayList<>());
+                privList.add(privilege);
+            }
+            // Pack to permission list
+            List<PostgrePermission> result = new ArrayList<>(privs.size());
+            for (List<PostgrePrivilege> priv : privs.values()) {
+                result.add(new PostgreRolePermission(role, kind, priv.get(0).getObjectSchema(), priv.get(0).getObjectName(), priv));
+            }
+            return result;
         }
     }
 
