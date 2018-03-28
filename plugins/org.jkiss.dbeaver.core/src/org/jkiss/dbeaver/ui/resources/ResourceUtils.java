@@ -23,7 +23,6 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.*;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -32,6 +31,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
+import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -263,7 +263,7 @@ public class ResourceUtils {
         if (CommonUtils.equalObjects(scriptsRootFolder, scriptsFolder)) {
             // We are in the root folder
             if (dataSourceContainer != null) {
-                if (dataSourceContainer.getPreferenceStore().getBoolean(DBeaverPreferences.SCRIPT_CREATE_CONNECTION_FOLDERS)) {
+                if (dataSourceContainer.getPreferenceStore().getBoolean(SQLPreferenceConstants.SCRIPT_CREATE_CONNECTION_FOLDERS)) {
                     // Create script folders according to connection folders
                     DBPDataSourceFolder conFolder = dataSourceContainer.getFolder();
                     if (conFolder != null) {
@@ -282,7 +282,7 @@ public class ResourceUtils {
                         }
                     }
                 }
-                if (dataSourceContainer.getPreferenceStore().getBoolean(DBeaverPreferences.SCRIPT_AUTO_FOLDERS)) {
+                if (dataSourceContainer.getPreferenceStore().getBoolean(SQLPreferenceConstants.SCRIPT_AUTO_FOLDERS)) {
                     // Create special folder for connection
                     IFolder dbFolder = scriptsFolder.getFolder(CommonUtils.escapeFileName(dataSourceContainer.getName()));
                     if (dbFolder != null) {

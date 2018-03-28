@@ -19,6 +19,46 @@ package org.jkiss.dbeaver.ui.editors.sql;
 public class SQLPreferenceConstants
 {
 
+    public enum EmptyScriptCloseBehavior {
+        NOTHING("Do not delete"),
+        DELETE_NEW("Delete only new scripts"),
+        DELETE_ALWAYS("Delete always");
+
+        private final String title;
+
+        EmptyScriptCloseBehavior(String title) {
+            this.title = title;
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+        public static EmptyScriptCloseBehavior getByTitle(String title) {
+            for (EmptyScriptCloseBehavior escb : values()) {
+                if (escb.getTitle().equals(title)) {
+                    return escb;
+                }
+            }
+            return NOTHING;
+        }
+        public static EmptyScriptCloseBehavior getByName(String name) {
+            switch (name) {
+                case "true":
+                    return SQLPreferenceConstants.EmptyScriptCloseBehavior.DELETE_NEW;
+                case "false":
+                    return SQLPreferenceConstants.EmptyScriptCloseBehavior.NOTHING;
+                default:
+                    try {
+                        return SQLPreferenceConstants.EmptyScriptCloseBehavior.valueOf(name);
+                    } catch (IllegalArgumentException e) {
+                        return NOTHING;
+                    }
+            }
+        }
+
+    }
+
     public static final String INSERT_SINGLE_PROPOSALS_AUTO            = "SQLEditor.ContentAssistant.insert.single.proposal";
     public static final String ENABLE_AUTO_ACTIVATION                  = "SQLEditor.ContentAssistant.auto.activation.enable";
     public static final String ENABLE_KEYSTROKE_ACTIVATION             = "SQLEditor.ContentAssistant.auto.keystrokes.activation";
@@ -64,4 +104,8 @@ public class SQLPreferenceConstants
     public final static String RESULT_SET_ORIENTATION                   = "SQLEditor.resultSet.orientation";
     public static final String RESULTS_PANEL_RATIO                      = "SQLEditor.resultSet.ratio";
 
+    public static final String SCRIPT_DELETE_EMPTY = "script.delete.empty"; //$NON-NLS-1$
+    public static final String SCRIPT_AUTO_FOLDERS = "script.auto.folders"; //$NON-NLS-1$
+    public static final String SCRIPT_CREATE_CONNECTION_FOLDERS = "script.auto.connection.folders"; //$NON-NLS-1$
+    public static final String SCRIPT_TITLE_PATTERN = "script.title.pattern"; //$NON-NLS-1$
 }
