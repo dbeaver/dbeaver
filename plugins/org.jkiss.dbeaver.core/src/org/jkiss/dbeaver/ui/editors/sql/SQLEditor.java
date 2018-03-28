@@ -879,7 +879,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         DBPDataSourceContainer dataSourceContainer = getDataSourceContainer();
         DBPPreferenceStore preferenceStore = getActivePreferenceStore();
-        String pattern = preferenceStore.getString(DBeaverPreferences.SCRIPT_TITLE_PATTERN);
+        String pattern = preferenceStore.getString(SQLPreferenceConstants.SCRIPT_TITLE_PATTERN);
         Map<String, Object> vars = new HashMap<>();
         vars.put(VAR_CONNECTION_NAME, dataSourceContainer == null ? "none" : dataSourceContainer.getName());
         vars.put(VAR_FILE_NAME, scriptName);
@@ -1297,7 +1297,9 @@ public class SQLEditor extends SQLEditorBase implements
         if (sqlFile == null || !sqlFile.exists()) {
             return;
         }
-        if (!getActivePreferenceStore().getBoolean(DBeaverPreferences.SCRIPT_DELETE_EMPTY)) {
+        SQLPreferenceConstants.EmptyScriptCloseBehavior emptyScriptCloseBehavior = SQLPreferenceConstants.EmptyScriptCloseBehavior.getByName(
+            getActivePreferenceStore().getString(SQLPreferenceConstants.SCRIPT_DELETE_EMPTY));
+        if (emptyScriptCloseBehavior == SQLPreferenceConstants.EmptyScriptCloseBehavior.NOTHING) {
             return;
         }
         File osFile = sqlFile.getLocation().toFile();
@@ -1307,14 +1309,16 @@ public class SQLEditor extends SQLEditorBase implements
         }
         try {
             IProgressMonitor monitor = new NullProgressMonitor();
-            IFileState[] fileHistory = sqlFile.getHistory(monitor);
-            if (!ArrayUtils.isEmpty(fileHistory)) {
-                for (IFileState historyItem : fileHistory) {
-                    try (InputStream contents = historyItem.getContents()) {
-                        int cValue = contents.read();
-                        if (cValue != -1) {
-                            // At least once there was some content saved
-                            return;
+            if (emptyScriptCloseBehavior == SQLPreferenceConstants.EmptyScriptCloseBehavior.DELETE_NEW) {
+                IFileState[] fileHistory = sqlFile.getHistory(monitor);
+                if (!ArrayUtils.isEmpty(fileHistory)) {
+                    for (IFileState historyItem : fileHistory) {
+                        try (InputStream contents = historyItem.getContents()) {
+                            int cValue = contents.read();
+                            if (cValue != -1) {
+                                // At least once there was some content saved
+                                return;
+                            }
                         }
                     }
                 }
