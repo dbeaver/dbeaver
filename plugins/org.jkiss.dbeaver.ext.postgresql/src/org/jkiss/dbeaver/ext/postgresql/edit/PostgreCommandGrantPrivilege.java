@@ -36,7 +36,7 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePerm
     private PostgrePermission permission;
     private PostgrePrivilegeType[] privilege;
 
-    public PostgreCommandGrantPrivilege(PostgrePermissionsOwner user, boolean grant, PostgrePermission permission, PostgrePrivilegeType ... privilege)
+    public PostgreCommandGrantPrivilege(PostgrePermissionsOwner user, boolean grant, PostgrePermission permission, PostgrePrivilegeType[] privilege)
     {
         super(user, grant ? PostgreMessages.edit_command_grant_privilege_action_grant_privilege : PostgreMessages.edit_command_grant_privilege_action_revoke_privilege);
         this.grant = grant;

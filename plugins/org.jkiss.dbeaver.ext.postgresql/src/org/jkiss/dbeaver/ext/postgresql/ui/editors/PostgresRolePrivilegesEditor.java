@@ -44,7 +44,6 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.postgresql.edit.PostgreCommandGrantPrivilege;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBPUniqueObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandReflector;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
@@ -290,7 +289,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                     getDatabaseObject(),
                     grant,
                     permission,
-                    privilegeType),
+                    privilegeType == null ? null : new PostgrePrivilegeType[] { privilegeType }),
                 new DBECommandReflector<PostgrePermissionsOwner, PostgreCommandGrantPrivilege>() {
                     @Override
                     public void redoCommand(PostgreCommandGrantPrivilege cmd)
