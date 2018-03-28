@@ -25,11 +25,12 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Map;
 
 /**
  * PostgreForeignDataWrapper
  */
-public class PostgreForeignDataWrapper extends PostgreInformation {
+public class PostgreForeignDataWrapper extends PostgreInformation implements PostgreScriptObject {
 
     private long oid;
     private String name;
@@ -90,5 +91,24 @@ public class PostgreForeignDataWrapper extends PostgreInformation {
     public PostgreProcedure getValidator(DBRProgressMonitor monitor) throws DBException {
         return getDatabase().getProcedure(monitor, handlerSchemaId, validatorProcId);
     }
+
+    @Override
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+        PostgreProcedure handler = getHandler(monitor);
+        PostgreProcedure validator = getValidator(monitor);
+        return
+            "-- Foreign data wrapper: " + getName() + "\n\n" +
+                "-- DROP FOREIGN DATA WRAPPER " + getName() + ";\n\n" +
+                "CREATE FOREIGN DATA WRAPPER " + getName() + "\n\t" +
+                (handler == null ? "" : "HANDLER " + handler.getName() + "\n\t") +
+                (validator == null ? "" : "VALIDATOR " + validator.getName() + "\n\t") +
+                "OPTIONS " + PostgreUtils.getOptionsString(this.options);
+    }
+
+    @Override
+    public void setObjectDefinitionText(String sourceText) throws DBException {
+
+    }
+
 
 }
