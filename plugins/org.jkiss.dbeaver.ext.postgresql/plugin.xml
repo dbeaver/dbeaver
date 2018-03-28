@@ -346,6 +346,8 @@
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreIndex"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableConstraintBase"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreExtension"/>
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreForeignServer"/>
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreForeignDataWrapper"/>
         </editor>
         <editor id="postgresql.source.ddl" class="org.jkiss.dbeaver.ext.postgresql.ui.editors.PostgreSourceViewEditor"
                 label="%db.editor.ddl.name" description="%db.editor.ddl.description" icon="#sql_text" position="additions_middle"

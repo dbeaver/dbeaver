@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
@@ -463,4 +464,22 @@ public class PostgreUtils {
         }
     }
 
+    public static String getOptionsString(String[] options) {
+        StringBuilder opt = new StringBuilder();
+        opt.append("(");
+        if (!ArrayUtils.isEmpty(options)) {
+            for (int i = 0; i < options.length; i++) {
+                String option = options[i];
+                if (i > 0) opt.append(", ");
+                int divPos = option.indexOf('=');
+                if (divPos < 0) {
+                    opt.append(option);
+                } else {
+                    opt.append(option.substring(0, divPos)).append(" '").append(option.substring(divPos + 1)).append("'");
+                }
+            }
+        }
+        opt.append(")");
+        return opt.toString();
+    }
 }

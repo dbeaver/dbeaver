@@ -33,7 +33,7 @@ import java.util.Map;
 /**
  * PostgreExtension
  */
-public class PostgreExtension implements PostgreObject, DBPScriptObject {
+public class PostgreExtension implements PostgreObject, PostgreScriptObject {
 
     private PostgreSchema schema;
     private long oid;
@@ -117,5 +117,10 @@ public class PostgreExtension implements PostgreObject, DBPScriptObject {
             "CREATE EXTENSION " + getName() + "\n\t" +
             "SCHEMA " + DBUtils.getQuotedIdentifier(getSchema()) + "\n\t" +
             "VERSION " + version;
+    }
+
+    @Override
+    public void setObjectDefinitionText(String sourceText) throws DBException {
+
     }
 }
