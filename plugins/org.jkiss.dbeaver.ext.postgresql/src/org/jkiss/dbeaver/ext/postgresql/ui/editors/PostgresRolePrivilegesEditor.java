@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.postgresql.edit.PostgreCommandGrantPrivilege;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPUniqueObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandReflector;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
@@ -223,7 +224,12 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
     }
 
     private PostgrePermission getObjectPermissions(DBSObject object) {
-        return permissionMap.get(DBUtils.getObjectFullName(object, DBPEvaluationContext.DDL));
+        if (object instanceof PostgreProcedure) {
+            String fqProcName = DBUtils.getQuotedIdentifier(((PostgreProcedure) object).getSchema()) + "." + ((PostgreProcedure) object).getSpecificName();
+            return permissionMap.get(fqProcName);
+        } else {
+            return permissionMap.get(DBUtils.getObjectFullName(object, DBPEvaluationContext.DDL));
+        }
     }
 
     private void updateCurrentPrivileges(boolean grant, PostgrePrivilegeType privilegeType) {
