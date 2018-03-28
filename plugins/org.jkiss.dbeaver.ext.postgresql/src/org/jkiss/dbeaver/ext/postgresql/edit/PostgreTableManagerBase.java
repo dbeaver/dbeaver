@@ -105,25 +105,29 @@ public abstract class PostgreTableManagerBase extends SQLTableManager<PostgreTab
                     }
                 }
 
-                if (CommonUtils.getOption(options, PostgreConstants.OPTION_DDL_SHOW_PERMISSIONS)) {
-                    // Permissions
-                    Collection<PostgrePermission> permissions = table.getPermissions(monitor);
-                    if (!CommonUtils.isEmpty(permissions)) {
-                        actions.add(new SQLDatabasePersistActionComment(table.getDataSource(), "Permissions"));
-                        for (PostgrePermission permission : permissions) {
-                            if (permission.hasAllPrivileges(table)) {
-                                Collections.addAll(actions,
-                                    new PostgreCommandGrantPrivilege(permission.getOwner(), true, permission, PostgrePrivilegeType.ALL)
-                                        .getPersistActions(options));
-                            } else {
-                                PostgreCommandGrantPrivilege grant = new PostgreCommandGrantPrivilege(permission.getOwner(), true, permission, permission.getPrivileges());
-                                Collections.addAll(actions, grant.getPersistActions(options));
-                            }
-                        }
-                    }
-                }
+                getTableGrantPermissionActions(monitor, table, actions, options);
             } catch (DBException e) {
                 log.error(e);
+            }
+        }
+    }
+
+    public static void getTableGrantPermissionActions(DBRProgressMonitor monitor, PostgreTableBase table, List<DBEPersistAction> actions, Map<String, Object> options) throws DBException {
+        if (CommonUtils.getOption(options, PostgreConstants.OPTION_DDL_SHOW_PERMISSIONS)) {
+            // Permissions
+            Collection<PostgrePermission> permissions = table.getPermissions(monitor);
+            if (!CommonUtils.isEmpty(permissions)) {
+                actions.add(new SQLDatabasePersistActionComment(table.getDataSource(), "Permissions"));
+                for (PostgrePermission permission : permissions) {
+                    if (permission.hasAllPrivileges(table)) {
+                        Collections.addAll(actions,
+                            new PostgreCommandGrantPrivilege(permission.getOwner(), true, permission, PostgrePrivilegeType.ALL)
+                                .getPersistActions(options));
+                    } else {
+                        PostgreCommandGrantPrivilege grant = new PostgreCommandGrantPrivilege(permission.getOwner(), true, permission, permission.getPrivileges());
+                        Collections.addAll(actions, grant.getPersistActions(options));
+                    }
+                }
             }
         }
     }
