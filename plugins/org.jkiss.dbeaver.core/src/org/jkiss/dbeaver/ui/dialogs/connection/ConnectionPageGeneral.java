@@ -77,7 +77,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
     private DataSourceDescriptor dataSourceDescriptor;
     private Text connectionNameText;
     private CSmartCombo<DBPConnectionType> connectionTypeCombo;
-    private CSmartCombo<DBPDataSourceFolder> connectionFolderCombo;
+    private Combo connectionFolderCombo;
     private Button savePasswordCheck;
     private Button autocommit;
     private Combo isolationLevel;
@@ -99,6 +99,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
     private boolean ignoreBootstrapErrors;
     private Text descriptionText;
     private DBPDataSourceFolder dataSourceFolder;
+    private List<DBPDataSourceFolder> connectionFolders = new ArrayList<>();
 
     private static class FilterInfo {
         final Class<?> type;
@@ -196,7 +197,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
                 if (dataSourceDescriptor.getFolder() == null) {
                     connectionFolderCombo.select(0);
                 } else {
-                    connectionFolderCombo.select(dataSourceFolder);
+                    connectionFolderCombo.select(connectionFolders.indexOf(dataSourceFolder));
                 }
                 savePasswordCheck.setSelection(dataSourceDescriptor.isSavePassword());
                 autocommit.setSelection(dataSourceDescriptor.isDefaultAutoCommit());
@@ -249,7 +250,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
             connectionTypeCombo.select(0);
             autocommit.setSelection((connectionTypeCombo.getItem(0)).isAutocommit());
             if (dataSourceFolder != null) {
-                connectionFolderCombo.select(dataSourceFolder);
+                connectionFolderCombo.select(connectionFolders.indexOf(dataSourceFolder));
             } else {
                 connectionFolderCombo.select(0);
             }
@@ -360,13 +361,13 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
         {
             UIUtils.createControlLabel(group, CoreMessages.dialog_connection_wizard_final_label_connection_folder);
 
-            connectionFolderCombo = new CSmartCombo<>(group, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY, new ConnectionFolderLabelProvider());
+            connectionFolderCombo = new Combo(group, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
             //connectionFolderCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             loadConnectionFolders();
             connectionFolderCombo.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    dataSourceFolder = connectionFolderCombo.getItem(connectionFolderCombo.getSelectionIndex());
+                    dataSourceFolder = connectionFolders.get(connectionFolderCombo.getSelectionIndex());
                 }
             });
         }
@@ -540,14 +541,22 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
     private void loadConnectionFolders()
     {
         connectionFolderCombo.removeAll();
-        connectionFolderCombo.addItem(null);
+        connectionFolderCombo.add(CoreMessages.toolbar_datasource_selector_empty);
+        connectionFolders.clear();
+        connectionFolders.add(null);
         for (DBPDataSourceFolder folder : getWizard().getDataSourceRegistry().getRootFolders()) {
             loadConnectionFolder(0, folder);
         }
     }
 
     private void loadConnectionFolder(int level, DBPDataSourceFolder folder) {
-        connectionFolderCombo.addItem(folder);
+        String prefix = "";
+        for (int i = 0; i < level; i++) {
+            prefix += "   ";
+        }
+
+        connectionFolders.add(folder);
+        connectionFolderCombo.add(prefix + folder.getName());
         for (DBPDataSourceFolder child : folder.getChildren()) {
             loadConnectionFolder(level + 1, child);
         }
