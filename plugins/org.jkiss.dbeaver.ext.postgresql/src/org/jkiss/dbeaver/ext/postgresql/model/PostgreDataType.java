@@ -121,13 +121,16 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
             log.debug("Invalid type type [" + typTypeStr + "] - " + e.getMessage());
         }
         this.typeCategory = PostgreTypeCategory.X;
-        String typCategoryStr = JDBCUtils.safeGetString(dbResult, "typcategory");
-        try {
-            if (typCategoryStr != null && !typCategoryStr.isEmpty()) {
-                this.typeCategory = PostgreTypeCategory.valueOf(typCategoryStr.toUpperCase(Locale.ENGLISH));
+        boolean supportsCategory = session.getDataSource().isServerVersionAtLeast(8, 4);
+        if (supportsCategory) {
+            String typCategoryStr = JDBCUtils.safeGetString(dbResult, "typcategory");
+            try {
+                if (typCategoryStr != null && !typCategoryStr.isEmpty()) {
+                    this.typeCategory = PostgreTypeCategory.valueOf(typCategoryStr.toUpperCase(Locale.ENGLISH));
+                }
+            } catch (Throwable e) {
+                log.debug("Invalid type category [" + typCategoryStr + "] - " + e.getMessage());
             }
-        } catch (Throwable e) {
-            log.debug("Invalid type category [" + typCategoryStr + "] - " + e.getMessage());
         }
 
         this.dataKind = JDBCDataSource.getDataKind(getName(), valueType);
