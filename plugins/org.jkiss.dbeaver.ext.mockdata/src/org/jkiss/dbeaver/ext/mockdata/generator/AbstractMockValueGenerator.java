@@ -91,7 +91,7 @@ public abstract class AbstractMockValueGenerator implements MockValueGenerator {
 
             }
         }
-        if (isUnique) {
+        if (isUnique && uniqueValues != null) {
             int attempts = 0;
             Object value = null;
             while (value == null || uniqueValues.contains(value)) {
