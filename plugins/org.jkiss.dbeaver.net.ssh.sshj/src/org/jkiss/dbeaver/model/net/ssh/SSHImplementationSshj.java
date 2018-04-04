@@ -61,7 +61,7 @@ public class SSHImplementationSshj extends SSHImplementationAbstract {
             try {
                 sshClient.loadKnownHosts();
             } catch (IOException e) {
-                log.warn("Error loading known hosts", e);
+                log.debug("Error loading known hosts", e);
             }
 
             sshClient.connect(sshHost);
