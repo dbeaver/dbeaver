@@ -56,7 +56,17 @@
 									</excludes>
 								</artifact>
 								<artifact><id>com.jcraft:jzlib:1.1.3</id></artifact>
-								<artifact><id>net.i2p.crypto:eddsa:0.2.0</id></artifact>
+								<artifact><id>net.i2p.crypto:eddsa:0.2.0</id>
+									<override>true</override>
+									<instructions>
+										<Bundle-Name>EdDSA-Java</Bundle-Name>
+										<Bundle-Description>Implementation of EdDSA in Java</Bundle-Description>
+										<Bundle-License>https://creativecommons.org/publicdomain/zero/1.0/</Bundle-License>
+
+										<Created-By>Apache Maven Bundle Plugin</Created-By>
+										<Export-Package>*</Export-Package>
+									</instructions>
+								</artifact>
 
 								<!-- Batik -->
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.apache.batik:1.9.1</id></artifact>
