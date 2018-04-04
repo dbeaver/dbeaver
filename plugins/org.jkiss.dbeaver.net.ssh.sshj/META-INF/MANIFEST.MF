@@ -10,5 +10,5 @@ Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .
 Require-Bundle: org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.net.ssh,
- com.hierynomus.sshj
+ org.jkiss.bundle.sshj
 Bundle-Localization: OSGI-INF/l10n/bundle
