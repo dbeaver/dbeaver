@@ -9,6 +9,6 @@
     <relativePath>../../../</relativePath>
   </parent>
   <artifactId>org.jkiss.dbeaver.core.eclipse.nls</artifactId>
-  <version>5.0.2</version>
+  <version>5.0.3</version>
   <packaging>eclipse-plugin</packaging>
 </project>
