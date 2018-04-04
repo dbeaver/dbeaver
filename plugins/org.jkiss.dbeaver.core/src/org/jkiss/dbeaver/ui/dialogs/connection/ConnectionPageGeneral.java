@@ -544,7 +544,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
         connectionFolderCombo.add(CoreMessages.toolbar_datasource_selector_empty);
         connectionFolders.clear();
         connectionFolders.add(null);
-        for (DBPDataSourceFolder folder : getWizard().getDataSourceRegistry().getRootFolders()) {
+        for (DBPDataSourceFolder folder : DBUtils.makeOrderedObjectList(getWizard().getDataSourceRegistry().getRootFolders())) {
             loadConnectionFolder(0, folder);
         }
     }
@@ -557,7 +557,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
 
         connectionFolders.add(folder);
         connectionFolderCombo.add(prefix + folder.getName());
-        for (DBPDataSourceFolder child : folder.getChildren()) {
+        for (DBPDataSourceFolder child : DBUtils.makeOrderedObjectList(folder.getChildren())) {
             loadConnectionFolder(level + 1, child);
         }
     }

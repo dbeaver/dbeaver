@@ -1432,8 +1432,20 @@ public final class DBUtils {
         return Comparator.comparingInt(DBSAttributeBase::getOrdinalPosition);
     }
 
-    public static <T extends DBPNamedObject> void orderObjects(@NotNull List<T> objects)
-    {
+    public static <T extends DBPNamedObject> List<T> makeOrderedObjectList(@NotNull Collection<T> objects) {
+        List<T> ordered = new ArrayList<>(objects);
+        orderObjects(ordered);
+        return ordered;
+    }
+
+    public static <T extends DBPNamedObject> List<T> makeOrderedObjectList(@NotNull T[] objects) {
+        List<T> ordered = new ArrayList<>();
+        Collections.addAll(ordered, objects);
+        orderObjects(ordered);
+        return ordered;
+    }
+
+    public static <T extends DBPNamedObject> void orderObjects(@NotNull List<T> objects) {
         objects.sort((o1, o2) -> {
             String name1 = o1.getName();
             String name2 = o2.getName();
