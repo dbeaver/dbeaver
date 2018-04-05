@@ -29,6 +29,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.browser.IWorkbenchBrowserSupport;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.mockdata.MockDataSettings.AttributeGeneratorProperties;
 import org.jkiss.dbeaver.ext.mockdata.model.MockGeneratorDescriptor;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -51,6 +52,7 @@ import java.util.List;
 public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecuteWizard>
 {
     private static final Log log = Log.getLog(MockDataWizardPageSettings.class);
+    public static final int DEFAULT_NAME_COLUMN_WIDTH = 110;
 
     private MockDataSettings mockDataSettings;
 
@@ -468,6 +470,13 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
         } else {
             propsEditor.clearProperties();
         }
+
+        // set the properties table columns width
+        DBeaverUI.asyncExec(() -> {
+            ((Tree) propsEditor.getControl()).getColumn(0).setWidth(DEFAULT_NAME_COLUMN_WIDTH);
+            ((Tree) propsEditor.getControl()).getColumn(1).setWidth(
+                    propsEditor.getControl().getSize().x - DEFAULT_NAME_COLUMN_WIDTH - 30);
+        });
 
         // generator combo & description
         List<String> generators = new ArrayList<>();
