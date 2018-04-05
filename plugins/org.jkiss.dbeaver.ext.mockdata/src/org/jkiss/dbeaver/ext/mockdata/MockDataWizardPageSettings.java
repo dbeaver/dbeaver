@@ -34,7 +34,6 @@ import org.jkiss.dbeaver.ext.mockdata.model.MockGeneratorDescriptor;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.DBValueFormatting;
-import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
@@ -201,7 +200,6 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
                     AttributeGeneratorProperties attributeGenerators = mockDataSettings.getAttributeGeneratorProperties(attribute);
                     Set<String> generators = new LinkedHashSet<>();
                     if (attributeGenerators.isEmpty()) {
-                        // TODO item.setForeground(columnsTableViewer.getDisplay().getSystemColor(SWT.COLOR_RED));
                         noGeneratorInfoLabel.setVisible(true);
                         TextCellEditor textCellEditor = new TextCellEditor(columnsTableViewer.getTable());
                         textCellEditor.getControl().setEnabled(false);
@@ -351,29 +349,6 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
         columnsTableViewer.refresh(true, true);
     }
 
-    private void selectPreset(String presetName) {
-        AttributeGeneratorProperties attributeGeneratorProperties = mockDataSettings.getAttributeGeneratorProperties(selectedAttribute);
-        String generatorId = attributeGeneratorProperties.getSelectedGeneratorId();
-        List<MockGeneratorDescriptor.Preset> presets = mockDataSettings.getGeneratorDescriptor(generatorId).getPresets();
-        for (MockGeneratorDescriptor.Preset preset : presets) {
-
-            // Apply the preset
-            if (preset.getLabel().equals(presetName)) {
-                propertySource = attributeGeneratorProperties.getGeneratorPropertySource(generatorId);
-                VoidProgressMonitor monitor = new VoidProgressMonitor();
-                for (DBPPropertyDescriptor prop : preset.getProperties()) {
-                    propertySource.setPropertyValue(monitor, prop.getId(), prop.getDefaultValue());
-                }
-                propsEditor.loadProperties(propertySource);
-                propsEditor.setExpandMode(PropertyTreeViewer.ExpandMode.FIRST);
-                propsEditor.expandAll();
-
-                attributeGeneratorProperties.setPresetId(preset.getId());
-                columnsTableViewer.refresh(true, true);
-            }
-        }
-    }
-
     @Override
     public void activatePage() {
 
@@ -396,21 +371,27 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
             // select the attributes table item
             final Table table = columnsTableViewer.getTable();
             if (table.getItemCount() > 0) {
-                int selectedItem = 0;
+                int selectedItemIndex = 0;
+                TableItem selectedItem = null;
                 String selectedAttribute = mockDataSettings.getSelectedAttribute();
                 if (selectedAttribute != null) {
                     for (int i = 0; i < table.getItemCount(); i++) {
                         if (selectedAttribute.equals(table.getItem(i).getText())) {
-                            selectedItem = i; break;
+                            selectedItemIndex = i;
+                            selectedItem = table.getItem(i);
+                            break;
                         }
                     }
                 }
-                table.select(selectedItem);
+                table.select(selectedItemIndex);
+                if (selectedItem != null) {
+                    table.showItem(selectedItem);
+                }
                 // and notify the listeners
                 Event event = new Event();
                 event.widget = table;
                 event.display = table.getDisplay();
-                event.item = table.getItem(selectedItem);
+                event.item = table.getItem(selectedItemIndex);
                 event.type = SWT.Selection;
                 table.notifyListeners(SWT.Selection, event);
             } else {
