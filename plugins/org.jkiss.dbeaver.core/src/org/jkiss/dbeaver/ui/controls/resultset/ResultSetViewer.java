@@ -491,7 +491,7 @@ public class ResultSetViewer extends Viewer
         } finally {
             if (changed) {
                 // Update combo
-                statusBar.setRedraw(false);
+                viewerPanel.setRedraw(false);
                 try {
                     boolean pVisible = activePresentationDescriptor != null;
                     ((RowData)presentationSwitchToolbar.getLayoutData()).exclude = !pVisible;
@@ -520,10 +520,10 @@ public class ResultSetViewer extends Viewer
                             });
                         }
                     }
-                    statusBar.layout();
+                    viewerPanel.layout();
                 } finally {
                     // Enable redraw
-                    statusBar.setRedraw(true);
+                    viewerPanel.setRedraw(true);
                 }
             }
         }

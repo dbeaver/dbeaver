@@ -31,8 +31,10 @@ import org.eclipse.ui.themes.ITheme;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPMessageType;
@@ -439,6 +441,9 @@ public class ComplexObjectEditor extends TreeViewer {
             }
             this.item.value = value;
             this.item.modified = true;
+            if (DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.RS_EDIT_AUTO_UPDATE_VALUE)) {
+                parentController.updateValue(extractValue(), false);
+            }
             refresh(this.item);
         }
 

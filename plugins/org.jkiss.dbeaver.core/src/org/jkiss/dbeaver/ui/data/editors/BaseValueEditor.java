@@ -199,7 +199,7 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
         @Override
         public void handleEvent(Event event) {
             if (event.type == SWT.Selection) {
-                if (event.widget instanceof StyledText || event.widget instanceof Text) {
+                if (!isListControl(event.widget)) {
                     // Just a text selection
                     return;
                 }
@@ -208,6 +208,10 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
             if (autoSaveEnabled && DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.RS_EDIT_AUTO_UPDATE_VALUE)) {
                 saveValue();
             }
+        }
+
+        private boolean isListControl(Widget control) {
+            return !(control instanceof StyledText || control instanceof Text || control instanceof Table || control instanceof Tree);
         }
     }
 }

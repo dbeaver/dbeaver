@@ -47,14 +47,9 @@
 								<artifact><id>org.apache.commons:commons-collections4:4.1</id></artifact>
 								<artifact><id>org.apache.xmlbeans:xmlbeans:2.6.0</id></artifact>
 
-								<!-- SSH -->
-								<artifact><id>org.bouncycastle:bcprov-jdk15on:1.59</id></artifact>
-								<artifact><id>org.bouncycastle:bcpkix-jdk15on:1.59</id></artifact>
-								<artifact><id>com.hierynomus:sshj:0.23.0</id>
-									<excludes>
-										<exclude>org.bouncycastle:*</exclude>
-									</excludes>
-								</artifact>
+								<!-- SSH and BouncyCastle -->
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.sshj:0.23.0</id></artifact>
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.bouncycastle:1.59.0</id></artifact>
 
 								<!-- Batik -->
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.apache.batik:1.9.1</id></artifact>
