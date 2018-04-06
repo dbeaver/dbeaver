@@ -829,7 +829,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
             JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT s.*,O.OBJECT_TYPE \n" +
                 "FROM ALL_SYNONYMS S, ALL_OBJECTS O\n" +
-                "WHERE S.OWNER=?" +
+                "WHERE S.OWNER=? " +
                     (session.getDataSource().getContainer().getPreferenceStore().getBoolean(OracleConstants.PREF_DBMS_READ_ALL_SYNONYMS) ?
                         "" :
                         "AND O.OBJECT_TYPE NOT IN ('JAVA CLASS','PACKAGE BODY')") + "\n" +
