@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+         xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>org.jkiss.dbeaver</groupId>
+        <artifactId>dbeaver</artifactId>
+        <version>1.0.0</version>
+        <relativePath>../</relativePath>
+    </parent>
+    <artifactId>org.jkiss.dbeaver.features</artifactId>
+    <version>1.0.0</version>
+    <packaging>pom</packaging>
+
+    <modules>
+        <module>org.jkiss.dbeaver.core.feature</module>
+        <module>org.jkiss.dbeaver.debug.feature</module>
+        <module>org.jkiss.dbeaver.ext.db2.feature</module>
+        <module>org.jkiss.dbeaver.ext.generic.feature</module>
+        <module>org.jkiss.dbeaver.ext.mysql.feature</module>
+        <module>org.jkiss.dbeaver.ext.oracle.feature</module>
+        <module>org.jkiss.dbeaver.ext.wmi.feature</module>
+        <module>org.jkiss.dbeaver.ext.exasol.feature</module>
+        <module>org.jkiss.dbeaver.ext.office.feature</module>
+        <module>org.jkiss.dbeaver.ext.ui.svg.feature</module>
+        <module>org.jkiss.dbeaver.net.sshj.feature</module>
+        <module>org.jkiss.dbeaver.rcp.feature</module>
+        <module>org.jkiss.dbeaver.runtime.feature</module>
+        <module>org.jkiss.dbeaver.standalone.feature</module>
+        <module>org.jkiss.dbeaver.ce.feature</module>
+    </modules>
+
+</project>
