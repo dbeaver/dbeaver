@@ -1,6 +1,8 @@
 package org.jkiss.dbeaver.ui.notifications;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
@@ -13,17 +15,14 @@ public class NotificationPopupMessage extends NotificationPopup {
 
     private final DBPDataSource dataSource;
     private String messageText;
+    private int iconType;
 
-    public NotificationPopupMessage(String text) {
-        this(null, text);
-    }
-
-    public NotificationPopupMessage(DBPDataSource dataSource, String text) {
+    public NotificationPopupMessage(DBPDataSource dataSource, String text, int iconType) {
         super(PlatformUI.getWorkbench().getDisplay());
 
         this.dataSource = dataSource;
         this.messageText = text;
-        setDelayClose(3000);
+        this.iconType = iconType;
     }
 
     @Override
@@ -32,16 +31,27 @@ public class NotificationPopupMessage extends NotificationPopup {
     }
 
     @Override
-    protected void createContentArea(Composite composite)
-    {
-        composite.setLayout(new GridLayout(1, true));
-        Label linkGoogleNews = new Label(composite, SWT.NONE);
-        linkGoogleNews.setText(messageText);
-        //linkGoogleNews.setSize(400, 100);
+    protected Image getPopupShellImage(int maximumHeight) {
+        boolean hasIcon = iconType == SWT.ICON_ERROR || iconType == SWT.ICON_WARNING || iconType == SWT.ICON_QUESTION;
+        return hasIcon ? getShell().getDisplay().getSystemImage(iconType) : null;
     }
 
-    public static void showMessage(DBPDataSource dataSource, String text) {
-        Display.getDefault().syncExec(() -> new NotificationPopupMessage(dataSource, text).open());
+    @Override
+    protected void createContentArea(Composite composite)
+    {
+        Label textLabel = new Label(composite, SWT.NONE);
+        textLabel.setText(messageText);
+    }
+
+    public static void showMessage(DBPDataSource dataSource, String text, long delayClose, int iconType) {
+        Display.getDefault().syncExec(() -> {
+            NotificationPopupMessage popup = new NotificationPopupMessage(dataSource, text, iconType);
+            if (delayClose > 0) {
+                popup.setDelayClose(delayClose);
+            }
+
+            popup.open();
+        });
     }
 
 }
