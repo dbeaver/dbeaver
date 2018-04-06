@@ -3748,6 +3748,16 @@
        </factory>
     </extension>
 
+    <!-- Perspective -->
+    <extension point="org.eclipse.ui.perspectives">
+        <perspective
+                class="org.jkiss.dbeaver.ui.perspective.DBeaverPerspective"
+                icon="icons/dbeaver_perspective.png"
+                id="org.jkiss.dbeaver.core.perspective"
+                name="%perspective.name">
+        </perspective>
+    </extension>
+
     <!-- FIXME: Disabled because it breaks dark theme.  -->
 <!--
     <extension point="org.eclipse.e4.ui.css.core.propertyHandler">
