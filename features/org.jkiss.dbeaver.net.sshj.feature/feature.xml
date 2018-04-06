@@ -2,7 +2,7 @@
 <feature
       id="org.jkiss.dbeaver.net.sshj.feature"
       label="%featureName"
-      version="1.0.1"
+      version="1.0.2"
       provider-name="%providerName">
 
    <description>
@@ -22,14 +22,7 @@
    </requires>
 
    <plugin id="org.jkiss.dbeaver.net.ssh.sshj" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-
-   <!-- SSHJ and dependencies -->
-   <plugin id="com.hierynomus.sshj" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-   <plugin id="com.jcraft.jzlib" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-   <plugin id="net.i2p.crypto.eddsa" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-
-   <!--Bounce Castle bundles-->
-   <plugin id="bcprov" download-size="0" install-size="0" version="1.59" unpack="false"/>
-   <plugin id="bcpkix" download-size="0" install-size="0" version="1.59" unpack="false"/>
+   <plugin id="org.jkiss.bundle.bouncycastle" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+   <plugin id="org.jkiss.bundle.sshj" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 
 </feature>

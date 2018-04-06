@@ -289,7 +289,7 @@
                         <file name="orai18n.jar" optional="true" description="NLS classes"/>
                         <file name="xdb6.jar" optional="true" description="SQLXML support"/>
                     </fileSource>
-                    <fileSource url="http://www.oracle.com/technetwork/database/features/jdbc/default-2280470.html" name="Oracle 12g drivers">
+                    <fileSource url="http://www.oracle.com/technetwork/database/features/jdbc/default-2280470.html" name="Oracle 12c drivers">
                         <file name="ojdbc7.jar" description="JDBC driver"/>
                         <file name="orai18n.jar" optional="true" description="NLS classes"/>
                         <file name="xdb6.jar" optional="true" description="SQLXML support"/>

@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -82,6 +83,11 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
 
     public String getViewDDL(DBRProgressMonitor monitor, GenericTable sourceObject, Map<String, Object> options) throws DBException {
         return extractSource(monitor, sourceObject.getDataSource(), sourceObject.getCatalog(), sourceObject.getSchema().getName(), sourceObject.getName());
+    }
+
+    @Override
+    public SQLServerProcedure createProcedureImpl(GenericStructContainer container, String procedureName, String specificName, String remarks, DBSProcedureType procedureType, GenericFunctionResultType functionResultType) {
+        return new SQLServerProcedure(container, procedureName, specificName, remarks, procedureType, functionResultType);
     }
 
     @Override
