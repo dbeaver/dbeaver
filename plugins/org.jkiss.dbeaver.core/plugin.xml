@@ -3758,6 +3758,24 @@
         </perspective>
     </extension>
 
+    <!-- Notifications -->
+
+    <extension point="org.eclipse.mylyn.commons.notifications.ui.notifications">
+        <category id="org.jkiss.dbeaver.notifications.database.category" label="Database"/>
+        <event categoryId="org.jkiss.dbeaver.notifications.database.category" id="org.jkiss.dbeaver.notifications.event.commit" label="Commit">
+            <defaultHandler sinkId="org.eclipse.mylyn.commons.notifications.sink.Popup"/>
+            <description>
+                This event is triggered when transaction was committed.
+            </description>
+        </event>
+        <event categoryId="org.jkiss.dbeaver.notifications.database.category" id="org.jkiss.dbeaver.notifications.event.rollback" label="Rollback">
+            <defaultHandler sinkId="org.eclipse.mylyn.commons.notifications.sink.Popup"/>
+            <description>
+                This event is triggered when transaction was rolled back.
+            </description>
+        </event>
+    </extension>
+
     <!-- FIXME: Disabled because it breaks dark theme.  -->
 <!--
     <extension point="org.eclipse.e4.ui.css.core.propertyHandler">
