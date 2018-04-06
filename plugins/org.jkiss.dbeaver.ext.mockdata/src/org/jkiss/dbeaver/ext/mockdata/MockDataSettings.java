@@ -175,13 +175,13 @@ public class MockDataSettings {
         for (Map.Entry<String, AttributeGeneratorProperties> entry : attributeGenerators.entrySet()) {
             String attributeName = entry.getKey();
             IDialogSettings attributeSection = UIUtils.getSettingsSection(tableSection, attributeName);
-            String selectedGeneratorId = attributeSection.get(KEY_SELECTED_GENERATOR);
-            if (selectedGeneratorId != null) {
-                AttributeGeneratorProperties attrGeneratorProperties = entry.getValue();
-                attrGeneratorProperties.setSelectedGeneratorId(selectedGeneratorId);
+            String savedGeneratorId = attributeSection.get(KEY_SELECTED_GENERATOR);
+            AttributeGeneratorProperties attrGeneratorProperties = entry.getValue();
+            if (savedGeneratorId != null) {
+                attrGeneratorProperties.setSelectedGeneratorId(savedGeneratorId);
                 attrGeneratorProperties.setPresetId(attributeSection.get(KEY_PRESET_ID));
 
-                PropertySourceCustom generatorPropertySource = attrGeneratorProperties.getGeneratorPropertySource(selectedGeneratorId);
+                PropertySourceCustom generatorPropertySource = attrGeneratorProperties.getGeneratorPropertySource(savedGeneratorId);
                 IDialogSettings generatorSection = UIUtils.getSettingsSection(attributeSection, KEY_GENERATOR_SECTION);
                 if (generatorPropertySource != null) {
                     Map<Object, Object> properties = generatorPropertySource.getPropertiesWithDefaults();
@@ -194,6 +194,44 @@ public class MockDataSettings {
                         generatorPropertySource.setPropertyValue(voidProgressMonitor, propEntry.getKey(), savedValue);
                     }
                 }
+            } else {
+                autoAssignGenerator(attrGeneratorProperties); // set the default generator
+            }
+        }
+    }
+
+    public void autoAssignGenerator(AttributeGeneratorProperties attrGeneratorProperties) {
+        DBSAttributeBase attribute = attrGeneratorProperties.getAttribute();
+        String attributeName = attribute.getName().toLowerCase();
+        Set<String> attrGeneratorIds = attrGeneratorProperties.getGenerators();
+        boolean found = false;
+        for (String generatorId : attrGeneratorIds) {
+            MockGeneratorDescriptor generatorDescriptor = getGeneratorDescriptor(generatorId);
+            for (String tag : generatorDescriptor.getTags()) {
+                // find & set the appropriate generator
+                if (attributeName.contains(tag)) {
+                    attrGeneratorProperties.setSelectedGeneratorId(generatorId);
+                    found = true;
+                    break;
+                }
+            }
+            if (found) break;
+        }
+        if (!found) {
+            // set the default generator
+            switch (attribute.getDataKind()) {
+                case BOOLEAN:
+                    attrGeneratorProperties.setSelectedGeneratorId(MockGeneratorDescriptor.BOOLEAN_RANDOM_GENERATOR_ID);
+                    break;
+                case DATETIME:
+                    attrGeneratorProperties.setSelectedGeneratorId(MockGeneratorDescriptor.DATETIME_RANDOM_GENERATOR_ID);
+                    break;
+                case NUMERIC:
+                    attrGeneratorProperties.setSelectedGeneratorId(MockGeneratorDescriptor.NUMERIC_RANDOM_GENERATOR_ID);
+                    break;
+                case STRING:
+                    attrGeneratorProperties.setSelectedGeneratorId(MockGeneratorDescriptor.STRING_TEXT_GENERATOR_ID);
+                    break;
             }
         }
     }
