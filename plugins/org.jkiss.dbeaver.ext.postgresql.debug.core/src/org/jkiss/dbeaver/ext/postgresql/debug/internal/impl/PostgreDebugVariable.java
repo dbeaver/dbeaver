@@ -28,7 +28,7 @@ public class PostgreDebugVariable implements DBGVariable<String> {
 
     private final String varclass;
 
-    private final int linenumber;
+    private final int lineNumber;
 
     private final boolean unique;
 
@@ -63,7 +63,7 @@ public class PostgreDebugVariable implements DBGVariable<String> {
         super();
         this.name = name;
         this.varclass = varclass;
-        this.linenumber = linenumber;
+        this.lineNumber = linenumber;
         this.unique = unique;
         this.constant = constant;
         this.notnull = notnull;
@@ -75,8 +75,9 @@ public class PostgreDebugVariable implements DBGVariable<String> {
         return varclass;
     }
 
-    public int getLinenumber() {
-        return linenumber;
+    @Override
+    public int getLineNumber() {
+        return lineNumber;
     }
 
     public boolean isUnique() {
@@ -95,10 +96,11 @@ public class PostgreDebugVariable implements DBGVariable<String> {
         return oid;
     }
 
+    @SuppressWarnings("nls")
     @Override
     public String toString() {
-        return "PostgreDebugVariable [name=" + name + ", val=" + val + ", varclass=" + varclass + ", linenumber="
-                + linenumber + ", unique=" + unique + ", constant=" + constant + ", notnull=" + notnull + ", oid=" + oid
+        return "PostgreDebugVariable [name=" + name + ", val=" + val + ", varclass=" + varclass + ", lineNumber="
+                + lineNumber + ", unique=" + unique + ", constant=" + constant + ", notnull=" + notnull + ", oid=" + oid
                 + "]";
     }
 
