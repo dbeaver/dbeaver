@@ -27,4 +27,6 @@ public interface DBGVariable<T> {
 
     DBGVariableType getType();
 
+    int getLineNumber();
+
 }
