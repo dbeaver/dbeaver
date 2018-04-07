@@ -534,7 +534,7 @@ public class PostgreDebugSession extends DBGBaseSession {
 
                     stmt.setInt(1, sessionId);
                     stmt.setString(2, var.getName());
-                    stmt.setInt(3, var.getLinenumber());
+                    stmt.setInt(3, var.getLineNumber());
                     stmt.setString(4, (String) value);
 
                     stmt.execute();
