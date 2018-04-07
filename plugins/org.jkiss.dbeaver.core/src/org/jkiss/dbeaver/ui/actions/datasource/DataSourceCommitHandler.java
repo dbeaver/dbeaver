@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.qm.QMTransactionState;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.runtime.TasksJob;
-import org.jkiss.dbeaver.ui.DBeaverNotifications;
+import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 import org.jkiss.dbeaver.ui.controls.txn.TransactionLogDialog;
 import org.jkiss.dbeaver.utils.RuntimeUtils;

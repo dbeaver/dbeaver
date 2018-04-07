@@ -21,10 +21,13 @@ import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -86,7 +89,7 @@ public class InvalidateJob extends DataSourceJob
         DBPDataSourceContainer container = dataSource.getContainer();
         DBWNetworkHandler[] activeHandlers = container.getActiveNetworkHandlers();
         boolean networkOK = true;
-        boolean hasGoodContexts = false;
+        int goodContextsNumber = 0;
         if (activeHandlers != null && activeHandlers.length > 0) {
             for (DBWNetworkHandler nh : activeHandlers) {
                 monitor.subTask("Invalidate network [" + container.getName() + "]");
@@ -108,7 +111,7 @@ public class InvalidateJob extends DataSourceJob
                 try {
                     final DBCExecutionContext.InvalidateResult result = context.invalidateContext(monitor, disconnectOnFailure);
                     if (result != DBCExecutionContext.InvalidateResult.ERROR) {
-                        hasGoodContexts = true;
+                        goodContextsNumber++;
                     }
                     invalidateResults.add(new ContextInvalidateResult(result, null));
                 } catch (Exception e) {
@@ -118,7 +121,7 @@ public class InvalidateJob extends DataSourceJob
                 }
             }
         }
-        if (!hasGoodContexts && disconnectOnFailure) {
+        if (goodContextsNumber == 0 && disconnectOnFailure) {
             // Close whole datasource. Target host seems to be unavailable
             try {
                 container.disconnect(monitor);
@@ -133,6 +136,21 @@ public class InvalidateJob extends DataSourceJob
                 }
             }
             DBUserInterface.getInstance().showError("Forced disconnect", "Datasource '" + container.getName() + "' was disconnected: destination database unreachable.\n" + msg);
+        }
+
+        if (goodContextsNumber == 0) {
+            DBeaverNotifications.showNotification(
+                dataSource,
+                DBeaverNotifications.NT_RECONNECT,
+                "Datasource invalidate failed",
+                DBPMessageType.ERROR);
+        } else {
+            DBeaverNotifications.showNotification(
+                dataSource,
+                DBeaverNotifications.NT_RECONNECT,
+                "Datasource was invalidated\n\n" +
+                    "Live connection count: " + goodContextsNumber + "/" + dataSource.getAllContexts().length,
+                DBPMessageType.INFORMATION);
         }
 
         return invalidateResults;
