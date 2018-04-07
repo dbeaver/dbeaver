@@ -22,25 +22,26 @@ import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.ui.notifications.NotificationPopupMessage;
+import org.jkiss.dbeaver.ui.notifications.NotificationUtils;
 
 /**
  * DBeaverIcons
  */
 public class DBeaverNotifications
 {
-    public static void showInformation(DBPDataSource dataSource, String text) {
-/*
-        Display.getDefault().syncExec(() -> {
-            int delayClose = DBeaverCore.getGlobalPreferenceStore().getLong(DBeaverPreferences.AGENT_LONG_OPERATION_NOTIFY)
-            NotificationPopupMessage popup = new NotificationPopupMessage(dataSource, text, SWT.ICON_INFORMATION);
-            if (delayClose > 0) {
-                popup.setDelayClose(delayClose);
-            }
 
-            popup.open();
-        });
-*/
+    public static void showNotification(DBPDataSource dataSource, String id, String text) {
+        NotificationUtils.sendNotification(dataSource, id, text, null, null);
+    }
+
+    public static void showNotification(DBPDataSource dataSource, String id, String text, DBPMessageType messageType) {
+        NotificationUtils.sendNotification(dataSource, id, text, messageType, null);
+    }
+
+    public static void showInformation(DBPDataSource dataSource, String id, String text, DBPMessageType messageType, Runnable feedback) {
+        NotificationUtils.sendNotification(dataSource, id, text, messageType, feedback);
     }
 
 }
