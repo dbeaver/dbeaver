@@ -38,6 +38,9 @@ import java.util.Arrays;
  */
 public final class ModelPreferences
 {
+    public static final String NOTIFICATIONS_ENABLED = "notifications.enabled"; //$NON-NLS-1$
+    public static final String NOTIFICATIONS_CLOSE_DELAY_TIMEOUT = "notifications.closeDelay"; //$NON-NLS-1$
+
     public static final String QUERY_ROLLBACK_ON_ERROR = "query.rollback-on-error"; //$NON-NLS-1$
 
     public static final String EXECUTE_RECOVER_ENABLED = "execute.recover.enabled"; //$NON-NLS-1$
@@ -112,6 +115,10 @@ public final class ModelPreferences
     }
 
     private static void initializeDefaultPreferences(DBPPreferenceStore store) {
+        // Notifications
+        PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.NOTIFICATIONS_ENABLED, true);
+        PrefUtils.setDefaultPreferenceValue(store, ModelPreferences.NOTIFICATIONS_CLOSE_DELAY_TIMEOUT, 3000L);
+
         // Common
         PrefUtils.setDefaultPreferenceValue(store, QUERY_ROLLBACK_ON_ERROR, false);
         PrefUtils.setDefaultPreferenceValue(store, EXECUTE_RECOVER_ENABLED, true);

@@ -13,6 +13,7 @@ import org.eclipse.mylyn.commons.notifications.core.NotificationSinkEvent;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPreferenceConstants;
 import org.eclipse.ui.PlatformUI;
+import org.jkiss.dbeaver.ModelPreferences;
 
 import java.util.*;
 
@@ -121,6 +122,9 @@ public class DatabaseNotificationSink extends NotificationSink {
         Shell shell = new Shell(PlatformUI.getWorkbench().getDisplay());
         popup = new DatabaseNotificationPopup(shell);
         popup.setFadingEnabled(isAnimationsEnabled());
+
+        popup.setDelayClose(ModelPreferences.getPreferences().getInt(ModelPreferences.NOTIFICATIONS_CLOSE_DELAY_TIMEOUT));
+
         List<AbstractNotification> toDisplay = new ArrayList<>(currentlyNotifying);
         Collections.sort(toDisplay);
         popup.setContents(toDisplay);
