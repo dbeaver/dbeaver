@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.registry.datatype.DataTypeAbstractDescriptor;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -36,6 +37,11 @@ import java.util.List;
 public class MockGeneratorDescriptor extends DataTypeAbstractDescriptor<MockValueGenerator> {
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.mockGenerator"; //$NON-NLS-1$
+
+    public static final String BOOLEAN_RANDOM_GENERATOR_ID = "booleanRandomGenerator"; //NON-NLS-1
+    public static final String DATETIME_RANDOM_GENERATOR_ID = "dateRandomGenerator"; //NON-NLS-1
+    public static final String NUMERIC_RANDOM_GENERATOR_ID = "numericRandomGenerator"; //NON-NLS-1
+    public static final String STRING_TEXT_GENERATOR_ID = "stringTextGenerator"; //NON-NLS-1
 
     public static final String TAG_PRESET = "preset"; //NON-NLS-1
 
@@ -47,6 +53,7 @@ public class MockGeneratorDescriptor extends DataTypeAbstractDescriptor<MockValu
     private final DBPImage icon;
     private List<DBPPropertyDescriptor> properties = new ArrayList<>();
     private List<Preset> presets = new ArrayList<>();
+    private List<String> tags = new ArrayList<>();
 
     public MockGeneratorDescriptor(IConfigurationElement config)
     {
@@ -71,7 +78,8 @@ public class MockGeneratorDescriptor extends DataTypeAbstractDescriptor<MockValu
                     preset.getAttribute("label"),
                     preset.getAttribute("mnemonics"),
                     preset.getAttribute("description"),
-                    PropertyDescriptor.extractProperties(preset)
+                    PropertyDescriptor.extractProperties(preset),
+                    extractTags(preset)
             ));
         }
 
@@ -82,6 +90,11 @@ public class MockGeneratorDescriptor extends DataTypeAbstractDescriptor<MockValu
             properties.add(new PropertyDescriptor(
                     "General", "uppercase", "Upper Case", null, false,
                     PropertyDescriptor.PropertyType.t_boolean.getValueType(), false, null));
+        }
+
+        List<String> tags = extractTags(config);
+        if (tags != null) {
+            this.tags = tags;
         }
     }
 
@@ -96,7 +109,18 @@ public class MockGeneratorDescriptor extends DataTypeAbstractDescriptor<MockValu
         for (DBPPropertyDescriptor prop : preset.getProperties()) {
             setDefaultProperty(prop.getId(), prop.getDefaultValue());
         }
+        if (preset.getTags() != null) {
+            this.tags.addAll(preset.getTags());
+        }
         this.presets.clear();
+    }
+
+    private List<String> extractTags(IConfigurationElement config) {
+        String tagsAttr = config.getAttribute("tags");
+        if (!CommonUtils.isEmpty(tagsAttr)) {
+            return Arrays.asList(tagsAttr.split(",").clone());
+        }
+        return null;
     }
 
     private void setDefaultProperty(Object id, Object defaultValue) {
@@ -141,6 +165,10 @@ public class MockGeneratorDescriptor extends DataTypeAbstractDescriptor<MockValu
         return properties;
     }
 
+    public List<String> getTags() {
+        return tags;
+    }
+
     public DBPPropertyDescriptor getProperty(Object id) {
         for (DBPPropertyDescriptor descriptor : getProperties()) {
             if (id.equals(descriptor.getId())) {
@@ -165,13 +193,15 @@ public class MockGeneratorDescriptor extends DataTypeAbstractDescriptor<MockValu
         private final String mnemonics;
         private final String description;
         private final List<DBPPropertyDescriptor> properties;
+        private List<String> tags = new ArrayList<>();
 
-        public Preset(String id, String label, String mnemonics, String description, List<DBPPropertyDescriptor> properties) {
+        public Preset(String id, String label, String mnemonics, String description, List<DBPPropertyDescriptor> properties, List<String> tags) {
             this.id = id;
             this.label = label;
             this.mnemonics = mnemonics;
             this.description = description;
             this.properties = properties;
+            this.tags = tags;
         }
 
         public String getId() {
@@ -192,6 +222,10 @@ public class MockGeneratorDescriptor extends DataTypeAbstractDescriptor<MockValu
 
         public List<DBPPropertyDescriptor> getProperties() {
             return properties;
+        }
+
+        public List<String> getTags() {
+            return tags;
         }
     }
 }
