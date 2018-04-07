@@ -2,8 +2,6 @@ package org.jkiss.dbeaver.ui.notifications;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Label;
@@ -11,14 +9,14 @@ import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
-public class NotificationPopupMessage extends NotificationPopup {
+public class NotificationPopupMessage extends DatabaseNotificationPopup {
 
     private final DBPDataSource dataSource;
     private String messageText;
     private int iconType;
 
     public NotificationPopupMessage(DBPDataSource dataSource, String text, int iconType) {
-        super(PlatformUI.getWorkbench().getDisplay());
+        super(PlatformUI.getWorkbench().getDisplay().getActiveShell());
 
         this.dataSource = dataSource;
         this.messageText = text;
