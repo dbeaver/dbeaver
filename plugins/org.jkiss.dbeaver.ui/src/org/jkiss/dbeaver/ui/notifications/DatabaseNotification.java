@@ -1,11 +1,11 @@
 package org.jkiss.dbeaver.ui.notifications;
 
-import org.eclipse.jgit.annotations.Nullable;
 import org.eclipse.mylyn.commons.notifications.ui.AbstractUiNotification;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Display;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPMessageType;
 
