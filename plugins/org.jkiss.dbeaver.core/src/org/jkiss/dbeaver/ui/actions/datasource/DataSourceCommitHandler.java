@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.runtime.TasksJob;
 import org.jkiss.dbeaver.ui.DBeaverNotifications;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
+import org.jkiss.dbeaver.ui.controls.txn.TransactionLogDialog;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -58,7 +59,9 @@ public class DataSourceCommitHandler extends AbstractDataSourceHandler
                     "commit",
                     "Transaction has been committed\n\n" +
                         "Query count: " + txnInfo.getUpdateCount() + "\n" +
-                        "Duration: " + RuntimeUtils.formatExecutionTime(System.currentTimeMillis() - txnInfo.getTransactionStartTime()) + "\n");
+                        "Duration: " + RuntimeUtils.formatExecutionTime(System.currentTimeMillis() - txnInfo.getTransactionStartTime()) + "\n",
+                    null,
+                    () -> TransactionLogDialog.showDialog(null, context, true));
             }
         });
     }

@@ -40,7 +40,7 @@ public class DBeaverNotifications
         NotificationUtils.sendNotification(dataSource, id, text, messageType, null);
     }
 
-    public static void showInformation(DBPDataSource dataSource, String id, String text, DBPMessageType messageType, Runnable feedback) {
+    public static void showNotification(DBPDataSource dataSource, String id, String text, DBPMessageType messageType, Runnable feedback) {
         NotificationUtils.sendNotification(dataSource, id, text, messageType, feedback);
     }
 

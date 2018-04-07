@@ -32,11 +32,13 @@ public class TransactionLogDialog extends TransactionInfoDialog {
     private static final String DIALOG_ID = "DBeaver.TransactionLogDialog";//$NON-NLS-1$
 
     private final DBCExecutionContext context;
+    private final boolean showPreviousTxn;
 
-    public TransactionLogDialog(Shell parentShell, DBCExecutionContext context, IWorkbenchPart activeEditor)
+    public TransactionLogDialog(Shell parentShell, DBCExecutionContext context, IWorkbenchPart activeEditor, boolean showPreviousTxn)
     {
         super(parentShell, activeEditor);
         this.context = context;
+        this.showPreviousTxn = showPreviousTxn;
     }
 
     @Override
@@ -63,10 +65,17 @@ public class TransactionLogDialog extends TransactionInfoDialog {
 
         super.createTransactionLogPanel(composite);
 
+        showPreviousCheck.setSelection(showPreviousTxn);
+        updateTransactionFilter();
+
         return parent;
     }
 
     public static void showDialog(Shell shell, DBCExecutionContext executionContext) {
+        showDialog(shell, executionContext, false);
+    }
+
+    public static void showDialog(Shell shell, DBCExecutionContext executionContext, boolean showPreviousTxn) {
         IEditorPart activeEditor = DBeaverUI.getActiveWorkbenchWindow().getActivePage().getActiveEditor();
         if (activeEditor == null) {
             DBUserInterface.getInstance().showError(
@@ -77,7 +86,7 @@ public class TransactionLogDialog extends TransactionInfoDialog {
                     "Not connected",
                 "Transaction log is not available.\nConnect to a database.");
         } else {
-            final TransactionLogDialog dialog = new TransactionLogDialog(shell, executionContext, activeEditor);
+            final TransactionLogDialog dialog = new TransactionLogDialog(shell, executionContext, activeEditor, showPreviousTxn);
             dialog.open();
         }
     }
