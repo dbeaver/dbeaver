@@ -26,6 +26,9 @@ public final class DBeaverPreferences
     public static final String AGENT_LONG_OPERATION_NOTIFY = "agent.long.operation.notify"; //$NON-NLS-1$
     public static final String AGENT_LONG_OPERATION_TIMEOUT = "agent.long.operation.timeout"; //$NON-NLS-1$
 
+    public static final String NOTIFICATIONS_ENABLED = "notifications.enabled"; //$NON-NLS-1$
+    public static final String NOTIFICATIONS_CLOSE_DELAY_TIMEOUT = "notifications.closeDelay"; //$NON-NLS-1$
+
     public static final String PLATFORM_LANGUAGE = "platform.language"; //$NON-NLS-1$
 
     public static final String NAVIGATOR_EXPAND_ON_CONNECT = "navigator.expand.on.connect"; //$NON-NLS-1$
