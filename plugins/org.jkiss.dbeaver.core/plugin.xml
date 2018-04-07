@@ -3762,14 +3762,16 @@
 
     <extension point="org.eclipse.mylyn.commons.notifications.ui.notifications">
         <category id="org.jkiss.dbeaver.notifications.database.category" label="Database"/>
+        <sink id="org.jkiss.dbeaver.notifications.sink.Popup" class="org.jkiss.dbeaver.ui.notifications.DatabaseNotificationSink" label="Desktop Popup"/>
+
         <event categoryId="org.jkiss.dbeaver.notifications.database.category" id="org.jkiss.dbeaver.notifications.event.commit" label="Commit">
-            <defaultHandler sinkId="org.eclipse.mylyn.commons.notifications.sink.Popup"/>
+            <defaultHandler sinkId="org.jkiss.dbeaver.notifications.sink.Popup"/>
             <description>
                 This event is triggered when transaction was committed.
             </description>
         </event>
         <event categoryId="org.jkiss.dbeaver.notifications.database.category" id="org.jkiss.dbeaver.notifications.event.rollback" label="Rollback">
-            <defaultHandler sinkId="org.eclipse.mylyn.commons.notifications.sink.Popup"/>
+            <defaultHandler sinkId="org.jkiss.dbeaver.notifications.sink.Popup"/>
             <description>
                 This event is triggered when transaction was rolled back.
             </description>

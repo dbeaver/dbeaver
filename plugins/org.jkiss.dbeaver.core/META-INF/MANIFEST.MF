@@ -136,8 +136,6 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.e4.ui.workbench.renderers.swt,
  org.eclipse.e4.ui.css.core,
  org.eclipse.e4.ui.css.swt,
- org.eclipse.mylyn.commons.notifications.core,
- org.eclipse.mylyn.commons.notifications.ui,
  org.jkiss.dbeaver.runtime.ide.core,
  org.jkiss.dbeaver.runtime.ide.ui
 Bundle-Localization: OSGI-INF/l10n/bundle

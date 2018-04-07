@@ -18,21 +18,17 @@ package org.jkiss.dbeaver.ui.actions.datasource;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.mylyn.commons.notifications.core.AbstractNotification;
-import org.eclipse.mylyn.commons.notifications.ui.NotificationsUi;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.qm.QMTransactionState;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.runtime.TasksJob;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
-import org.jkiss.dbeaver.ui.notifications.DatabaseNotification;
+import org.jkiss.dbeaver.ui.notifications.NotificationUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Collections;
 
 public class DataSourceCommitHandler extends AbstractDataSourceHandler
 {
@@ -57,16 +53,12 @@ public class DataSourceCommitHandler extends AbstractDataSourceHandler
                     throw new InvocationTargetException(e);
                 }
 
-                AbstractNotification notification = new DatabaseNotification(
+                NotificationUtils.sendNotification(
                     context.getDataSource(),
                     "commit",
                     "Transaction has been committed\n\n" +
                         "Query count: " + txnInfo.getUpdateCount() + "\n" +
-                        "Duration: " + RuntimeUtils.formatExecutionTime(System.currentTimeMillis() - txnInfo.getTransactionStartTime()) + "\n",
-                    DBPMessageType.WARNING, null);
-                NotificationsUi.getService().notify(
-                    Collections.singletonList(notification));
-
+                        "Duration: " + RuntimeUtils.formatExecutionTime(System.currentTimeMillis() - txnInfo.getTransactionStartTime()) + "\n");
 /*
                 NotificationPopupMessage.showMessage(
                     context.getDataSource(),
