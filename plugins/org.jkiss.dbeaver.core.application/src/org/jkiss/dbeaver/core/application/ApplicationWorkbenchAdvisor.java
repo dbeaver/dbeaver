@@ -56,6 +56,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 
     private static final String WORKBENCH_PREF_PAGE_ID = "org.eclipse.ui.preferencePages.Workbench";
     private static final String APPEARANCE_PREF_PAGE_ID = "org.eclipse.ui.preferencePages.Views";
+    protected static final String MYLYN_PREF_PAGE_ID = "org.eclipse.mylyn.preferencePages.Mylyn";
 
     private static final String[] EXCLUDE_PREF_PAGES = {
         WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Globalization",
@@ -65,6 +66,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
         //WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Workspace",
         WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.ContentTypes",
         WORKBENCH_PREF_PAGE_ID + "/org.eclipse.ui.preferencePages.Startup",
+        MYLYN_PREF_PAGE_ID,
 
         // Disable Install/Update
         "org.eclipse.equinox.internal.p2.ui.sdk.ProvisioningPreferencePage",
