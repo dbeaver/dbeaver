@@ -3762,7 +3762,7 @@
 
     <extension point="org.eclipse.mylyn.commons.notifications.ui.notifications">
         <category id="org.jkiss.dbeaver.notifications.database.category" label="Database"/>
-        <sink id="org.jkiss.dbeaver.notifications.sink.Popup" class="org.jkiss.dbeaver.ui.notifications.DatabaseNotificationSink" label="Desktop Popup"/>
+        <sink id="org.jkiss.dbeaver.notifications.sink.Popup" class="org.jkiss.dbeaver.ui.notifications.DatabaseNotificationSink" label="Notify Popup"/>
 
         <event categoryId="org.jkiss.dbeaver.notifications.database.category" id="org.jkiss.dbeaver.notifications.event.commit" label="Commit">
             <defaultHandler sinkId="org.jkiss.dbeaver.notifications.sink.Popup"/>

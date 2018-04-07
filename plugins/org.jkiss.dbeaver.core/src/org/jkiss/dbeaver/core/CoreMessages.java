@@ -1130,6 +1130,10 @@ public class CoreMessages extends NLS {
 	public static String pref_page_ui_general_label_enable_long_operations;
 	public static String pref_page_ui_general_label_enable_long_operations_tip;
 	public static String pref_page_ui_general_label_long_operation_timeout;
+	public static String pref_page_ui_general_group_notifications;
+	public static String pref_page_ui_general_label_enable_notifications;
+	public static String pref_page_ui_general_label_enable_notifications_tip;
+	public static String pref_page_ui_general_label_notifications_close_delay;
 	public static String pref_page_ui_general_group_resources;
 	public static String pref_page_ui_general_label_default_resource_encoding;
 	public static String pref_page_ui_general_label_set_default_resource_encoding_tip;
