@@ -57,7 +57,7 @@ public class DataSourceRollbackHandler extends AbstractDataSourceHandler
                 }
                 DBeaverNotifications.showNotification(
                     context.getDataSource(),
-                    "rollback",
+                    DBeaverNotifications.NT_ROLLBACK,
                     "Transaction has been rolled back\n\n" +
                         "Query count: " + txnInfo.getUpdateCount() + "\n" +
                         "Duration: " + RuntimeUtils.formatExecutionTime(System.currentTimeMillis() - txnInfo.getTransactionStartTime()) + "\n",

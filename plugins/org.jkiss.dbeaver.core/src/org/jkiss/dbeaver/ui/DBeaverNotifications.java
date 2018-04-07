@@ -17,20 +17,19 @@
 
 package org.jkiss.dbeaver.ui;
 
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Display;
-import org.jkiss.dbeaver.DBeaverPreferences;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPMessageType;
-import org.jkiss.dbeaver.ui.notifications.NotificationPopupMessage;
 import org.jkiss.dbeaver.ui.notifications.NotificationUtils;
 
 /**
- * DBeaverIcons
+ * Notifications utilities
  */
 public class DBeaverNotifications
 {
+
+    public static final String NT_COMMIT = "commit";
+    public static final String NT_ROLLBACK = "rollback";
+    public static final String NT_RECONNECT = "reconnect";
 
     public static void showNotification(DBPDataSource dataSource, String id, String text) {
         NotificationUtils.sendNotification(dataSource, id, text, null, null);

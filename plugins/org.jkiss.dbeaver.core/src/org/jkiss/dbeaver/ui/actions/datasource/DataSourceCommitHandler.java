@@ -56,7 +56,7 @@ public class DataSourceCommitHandler extends AbstractDataSourceHandler
 
                 DBeaverNotifications.showNotification(
                     context.getDataSource(),
-                    "commit",
+                    DBeaverNotifications.NT_COMMIT,
                     "Transaction has been committed\n\n" +
                         "Query count: " + txnInfo.getUpdateCount() + "\n" +
                         "Duration: " + RuntimeUtils.formatExecutionTime(System.currentTimeMillis() - txnInfo.getTransactionStartTime()) + "\n",
