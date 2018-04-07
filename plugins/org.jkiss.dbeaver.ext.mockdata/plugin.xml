@@ -158,7 +158,8 @@
                 id="numericSequenceGenerator"
                 label="Sequence"
                 description="Sequence of numbers with adjustable start, step and order"
-                class="org.jkiss.dbeaver.ext.mockdata.generator.NumericSequenceGenerator">
+                class="org.jkiss.dbeaver.ext.mockdata.generator.NumericSequenceGenerator"
+                tags="id,number,order">
             <type kind="NUMERIC"/>
 
             <propertyGroup label="General">
@@ -184,7 +185,8 @@
             id="stringTextGenerator"
             label="Text"
             description="Random length substrings from the 'Lorem ipsum' text"
-            class="org.jkiss.dbeaver.ext.mockdata.generator.StringTextGenerator">
+            class="org.jkiss.dbeaver.ext.mockdata.generator.StringTextGenerator"
+            tags="text,paragraph,chapter">
             <type kind="STRING"/>
 
             <propertyGroup label="General">
@@ -199,7 +201,8 @@
                 id="stringUuidGenerator"
                 label="UUID"
                 description="UUID random values"
-                class="org.jkiss.dbeaver.ext.mockdata.generator.StringUuidGenerator">
+                class="org.jkiss.dbeaver.ext.mockdata.generator.StringUuidGenerator"
+                tags="uuid">
             <type kind="STRING"/>
         </generator>
 
