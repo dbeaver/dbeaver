@@ -129,7 +129,6 @@ public class MockGeneratorDescriptor extends DataTypeAbstractDescriptor<MockValu
                 ((PropertyDescriptor) property).setDefaultValue(defaultValue); break;
             }
         }
-
     }
 
     @Override
