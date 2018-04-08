@@ -17,7 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.edit;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -104,30 +103,11 @@ public abstract class PostgreTableManagerBase extends SQLTableManager<PostgreTab
                     }
                 }
 
-                getTableGrantPermissionActions(monitor, table, actions, options);
+                PostgreUtils.getObjectGrantPermissionActions(monitor, table, actions, options);
             } catch (DBException e) {
                 log.error(e);
             }
         }
     }
 
-    public static void getTableGrantPermissionActions(DBRProgressMonitor monitor, PostgreTableBase table, List<DBEPersistAction> actions, Map<String, Object> options) throws DBException {
-        if (CommonUtils.getOption(options, PostgreConstants.OPTION_DDL_SHOW_PERMISSIONS)) {
-            // Permissions
-            Collection<PostgrePermission> permissions = table.getPermissions(monitor);
-            if (!CommonUtils.isEmpty(permissions)) {
-                actions.add(new SQLDatabasePersistActionComment(table.getDataSource(), "Permissions"));
-                for (PostgrePermission permission : permissions) {
-                    if (permission.hasAllPrivileges(table)) {
-                        Collections.addAll(actions,
-                            new PostgreCommandGrantPrivilege(permission.getOwner(), true, permission, new PostgrePrivilegeType[] { PostgrePrivilegeType.ALL })
-                                .getPersistActions(options));
-                    } else {
-                        PostgreCommandGrantPrivilege grant = new PostgreCommandGrantPrivilege(permission.getOwner(), true, permission, permission.getPrivileges());
-                        Collections.addAll(actions, grant.getPersistActions(options));
-                    }
-                }
-            }
-        }
-    }
 }

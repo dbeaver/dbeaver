@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.postgresql.edit.PostgreTableManagerBase;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -215,7 +215,7 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
         }
 
         List<DBEPersistAction> actions = new ArrayList<>();
-        PostgreTableManagerBase.getTableGrantPermissionActions(monitor, this, actions, options);
+        PostgreUtils.getObjectGrantPermissionActions(monitor, this, actions, options);
         if (!actions.isEmpty()) {
             sql.append("\n\n");
             sql.append(SQLUtils.generateScript(getDataSource(), actions.toArray(new DBEPersistAction[actions.size()]), false));
