@@ -2833,27 +2833,14 @@
     </extension>
 
     <extension point="org.eclipse.ui.themes">
-        <themeElementCategory label="%themeElementCategory.org.jkiss.dbeaver.ui.presentation.sql.label" id="org.jkiss.dbeaver.ui.presentation.sql">
-            <description>%themeElementCategory.org.jkiss.dbeaver.ui.presentation.sql.description</description>
-        </themeElementCategory>
         <themeElementCategory label="%themeElementCategory.org.jkiss.dbeaver.ui.presentation.results.label" id="org.jkiss.dbeaver.ui.presentation.results">
             <description>%themeElementCategory.org.jkiss.dbeaver.ui.presentation.results.description</description>
         </themeElementCategory>
-        <themeElementCategory label="%themeElementCategory.org.jkiss.dbeaver.ui.presentation.datatypes.label" id="org.jkiss.dbeaver.ui.presentation.results.datatypes" parentId="org.jkiss.dbeaver.ui.presentation.results">
-            <description>%themeElementCategory.org.jkiss.dbeaver.ui.presentation.datatypes.description</description>
-        </themeElementCategory>
+
         <fontDefinition id="org.jkiss.dbeaver.sql.resultset.font" categoryId="org.jkiss.dbeaver.ui.presentation.results" label="%fontDefinition.org.jkiss.dbeaver.sql.resultset.font.label">
             <description>%fontDefinition.org.jkiss.dbeaver.sql.resultset.font.description</description>
         </fontDefinition>
-        <fontDefinition
-                id="org.jkiss.dbeaver.sql.editor.font.output"
-                categoryId="org.jkiss.dbeaver.ui.presentation.sql"
-                label="%fontDefinition.org.jkiss.dbeaver.sql.editor.font.output.label"
-                value="Courier New-regular-10">
-            <description>%fontDefinition.org.jkiss.dbeaver.sql.editor.font.output.description</description>
-            <fontValue os="linux" value="Monospace-regular-10"/>
-            <fontValue os="macosx" value="Courier-regular-11"/>
-        </fontDefinition>
+
         <colorDefinition
                 label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.selection.background.label"
                 categoryId="org.jkiss.dbeaver.ui.presentation.results"
@@ -2961,6 +2948,10 @@
         </colorDefinition>
 
         <!-- Colors for data types -->
+        <themeElementCategory label="%themeElementCategory.org.jkiss.dbeaver.ui.presentation.datatypes.label" id="org.jkiss.dbeaver.ui.presentation.results.datatypes" parentId="org.jkiss.dbeaver.ui.presentation.results">
+            <description>%themeElementCategory.org.jkiss.dbeaver.ui.presentation.datatypes.description</description>
+        </themeElementCategory>
+
         <colorDefinition
                 label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.binary.foreground.label"
                 categoryId="org.jkiss.dbeaver.ui.presentation.results.datatypes"
@@ -2998,6 +2989,20 @@
         </colorDefinition>
 
         <!-- Colors for SQL editor -->
+        <themeElementCategory label="%themeElementCategory.org.jkiss.dbeaver.ui.presentation.sql.label" id="org.jkiss.dbeaver.ui.presentation.sql">
+            <description>%themeElementCategory.org.jkiss.dbeaver.ui.presentation.sql.description</description>
+        </themeElementCategory>
+
+        <fontDefinition
+                id="org.jkiss.dbeaver.sql.editor.font.output"
+                categoryId="org.jkiss.dbeaver.ui.presentation.sql"
+                label="%fontDefinition.org.jkiss.dbeaver.sql.editor.font.output.label"
+                value="Courier New-regular-10">
+            <description>%fontDefinition.org.jkiss.dbeaver.sql.editor.font.output.description</description>
+            <fontValue os="linux" value="Monospace-regular-10"/>
+            <fontValue os="macosx" value="Courier-regular-11"/>
+        </fontDefinition>
+
         <colorDefinition
                 label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.keyword.foreground.label"
                 categoryId="org.jkiss.dbeaver.ui.presentation.sql"
@@ -3074,6 +3079,33 @@
                 id="org.jkiss.dbeaver.sql.editor.color.disabled.background"
                 value="COLOR_WIDGET_BACKGROUND">
             <description>%colorDefinition.org.jkiss.dbeaver.sql.editor.color.disabled.background.description</description>
+        </colorDefinition>
+
+        <!-- Colors for transactions -->
+        <themeElementCategory label="%themeElementCategory.org.jkiss.dbeaver.ui.presentation.txn.label" id="org.jkiss.dbeaver.ui.presentation.qm">
+            <description>%themeElementCategory.org.jkiss.dbeaver.ui.presentation.txn.description</description>
+        </themeElementCategory>
+
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.txn.color.committed.background.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.qm"
+                id="org.jkiss.dbeaver.txn.color.committed.background"
+                value="189, 254, 191">
+            <description>%colorDefinition.org.jkiss.dbeaver.txn.color.committed.background.description</description>
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.txn.color.reverted.background.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.qm"
+                id="org.jkiss.dbeaver.txn.color.reverted.background"
+                value="255, 99, 71">
+            <description>%colorDefinition.org.jkiss.dbeaver.txn.color.reverted.background.description</description>
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.txn.color.transaction.background.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.qm"
+                id="org.jkiss.dbeaver.txn.color.transaction.background"
+                value="255, 228, 181">
+            <description>%colorDefinition.org.jkiss.dbeaver.txn.color.transaction.background.description</description>
         </colorDefinition>
 
     </extension>
