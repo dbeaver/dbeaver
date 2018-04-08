@@ -173,10 +173,14 @@ public class MockDataSettings {
         VoidProgressMonitor voidProgressMonitor = new VoidProgressMonitor();
         IDialogSettings tableSection = UIUtils.getSettingsSection(dialogSettings, entity.getName());
         for (Map.Entry<String, AttributeGeneratorProperties> entry : attributeGenerators.entrySet()) {
+
+            // search the saved generator
             String attributeName = entry.getKey();
             IDialogSettings attributeSection = UIUtils.getSettingsSection(tableSection, attributeName);
             String savedGeneratorId = attributeSection.get(KEY_SELECTED_GENERATOR);
             AttributeGeneratorProperties attrGeneratorProperties = entry.getValue();
+
+            // set the saved generator
             if (savedGeneratorId != null) {
                 attrGeneratorProperties.setSelectedGeneratorId(savedGeneratorId);
                 attrGeneratorProperties.setPresetId(attributeSection.get(KEY_PRESET_ID));
@@ -195,7 +199,8 @@ public class MockDataSettings {
                     }
                 }
             } else {
-                autoAssignGenerator(attrGeneratorProperties); // set the default generator
+                // set the default generator
+                autoAssignGenerator(attrGeneratorProperties);
             }
         }
     }
@@ -221,18 +226,25 @@ public class MockDataSettings {
             // set the default generator
             switch (attribute.getDataKind()) {
                 case BOOLEAN:
-                    attrGeneratorProperties.setSelectedGeneratorId(MockGeneratorDescriptor.BOOLEAN_RANDOM_GENERATOR_ID);
+                    setSelectedGenerator(attrGeneratorProperties, MockGeneratorDescriptor.BOOLEAN_RANDOM_GENERATOR_ID);
                     break;
                 case DATETIME:
-                    attrGeneratorProperties.setSelectedGeneratorId(MockGeneratorDescriptor.DATETIME_RANDOM_GENERATOR_ID);
+                    setSelectedGenerator(attrGeneratorProperties, MockGeneratorDescriptor.DATETIME_RANDOM_GENERATOR_ID);
                     break;
                 case NUMERIC:
-                    attrGeneratorProperties.setSelectedGeneratorId(MockGeneratorDescriptor.NUMERIC_RANDOM_GENERATOR_ID);
+                    setSelectedGenerator(attrGeneratorProperties, MockGeneratorDescriptor.NUMERIC_RANDOM_GENERATOR_ID);
                     break;
                 case STRING:
-                    attrGeneratorProperties.setSelectedGeneratorId(MockGeneratorDescriptor.STRING_TEXT_GENERATOR_ID);
+                    setSelectedGenerator(attrGeneratorProperties, MockGeneratorDescriptor.STRING_TEXT_GENERATOR_ID);
                     break;
             }
+        }
+    }
+
+    // prevents set non-acceptable generator
+    private void setSelectedGenerator(AttributeGeneratorProperties attrGeneratorProperties, String generatorId) {
+        if (attrGeneratorProperties.getGenerators().contains(generatorId)) {
+            attrGeneratorProperties.setSelectedGeneratorId(generatorId);
         }
     }
 
