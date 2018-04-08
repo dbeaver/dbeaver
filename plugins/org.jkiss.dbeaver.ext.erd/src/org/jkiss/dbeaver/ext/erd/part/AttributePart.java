@@ -34,7 +34,7 @@ import org.jkiss.dbeaver.ext.erd.directedit.ColumnNameTypeCellEditorValidator;
 import org.jkiss.dbeaver.ext.erd.directedit.ExtendedDirectEditManager;
 import org.jkiss.dbeaver.ext.erd.directedit.LabelCellEditorLocator;
 import org.jkiss.dbeaver.ext.erd.directedit.ValidationMessageHandler;
-import org.jkiss.dbeaver.ext.erd.editor.ERDAttributeStyle;
+import org.jkiss.dbeaver.ext.erd.editor.ERDViewStyle;
 import org.jkiss.dbeaver.ext.erd.editor.ERDGraphicalViewer;
 import org.jkiss.dbeaver.ext.erd.figures.AttributeItemFigure;
 import org.jkiss.dbeaver.ext.erd.figures.EditableLabel;
@@ -66,7 +66,7 @@ public class AttributePart extends PropertyAwarePart
         AttributeItemFigure attributeFigure = new AttributeItemFigure(column);
 
         DiagramPart diagramPart = (DiagramPart) getParent().getParent();
-		boolean showNullability = diagramPart.getDiagram().hasAttributeStyle(ERDAttributeStyle.NULLABILITY);
+		boolean showNullability = diagramPart.getDiagram().hasAttributeStyle(ERDViewStyle.NULLABILITY);
         Font columnFont = diagramPart.getNormalFont();
         Color columnColor = diagramPart.getContentPane().getForegroundColor();
         if (column.isInPrimaryKey()) {

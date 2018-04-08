@@ -25,12 +25,13 @@ import org.jkiss.utils.CommonUtils;
 /**
  * Entity attribute presentation
  */
-public enum ERDAttributeStyle
+public enum ERDViewStyle
 {
     ICONS(1, "Icons"),
     TYPES(2, "Data Types"),
     NULLABILITY(4, "Nullability"),
-    COMMENTS(8, "Comments")
+    COMMENTS(8, "Comments"),
+    ENTITY_FQN(16, "Fully qualified names")
     ;
 
     private final int value;
@@ -38,7 +39,7 @@ public enum ERDAttributeStyle
 
     private static final Log log = Log.getLog(ERDAttributeVisibility.class);
 
-    ERDAttributeStyle(int value, String title) {
+    ERDViewStyle(int value, String title) {
         this.value = value;
         this.title = title;
     }
@@ -51,28 +52,28 @@ public enum ERDAttributeStyle
         return title;
     }
 
-    public static ERDAttributeStyle[] getDefaultStyles(IPreferenceStore store)
+    public static ERDViewStyle[] getDefaultStyles(IPreferenceStore store)
     {
         String attrString = store.getString(ERDConstants.PREF_ATTR_STYLES);
         if (!CommonUtils.isEmpty(attrString)) {
             String[] psList = attrString.split(",");
-            ERDAttributeStyle[] pList = new ERDAttributeStyle[psList.length];
+            ERDViewStyle[] pList = new ERDViewStyle[psList.length];
             for (int i = 0; i < psList.length; i++) {
                 try {
-                    pList[i] = ERDAttributeStyle.valueOf(psList[i]);
+                    pList[i] = ERDViewStyle.valueOf(psList[i]);
                 } catch (IllegalArgumentException e) {
                     log.warn(e);
                 }
             }
             return pList;
         }
-        return new ERDAttributeStyle[] { ICONS };
+        return new ERDViewStyle[] { ICONS };
     }
 
-    public static void setDefaultStyles(DBPPreferenceStore store, ERDAttributeStyle[] styles)
+    public static void setDefaultStyles(DBPPreferenceStore store, ERDViewStyle[] styles)
     {
         String stylesString = "";
-        for (ERDAttributeStyle style : styles) {
+        for (ERDViewStyle style : styles) {
             if (!stylesString.isEmpty()) stylesString += ",";
             stylesString += style.name();
         }
