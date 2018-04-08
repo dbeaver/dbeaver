@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.mssql.model;
 import org.jkiss.dbeaver.ext.generic.model.GenericFunctionResultType;
 import org.jkiss.dbeaver.ext.generic.model.GenericProcedure;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 
 /**
@@ -28,5 +29,10 @@ public class SQLServerProcedure extends GenericProcedure {
 
     public SQLServerProcedure(GenericStructContainer container, String procedureName, String specificName, String description, DBSProcedureType procedureType, GenericFunctionResultType functionResultType) {
         super(container, procedureName, specificName, description, procedureType, functionResultType);
+    }
+
+    @Override
+    public String getFullyQualifiedName(DBPEvaluationContext context) {
+        return super.getFullyQualifiedName(context);
     }
 }
