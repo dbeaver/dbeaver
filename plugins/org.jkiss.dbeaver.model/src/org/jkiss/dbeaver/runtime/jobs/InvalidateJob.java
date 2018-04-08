@@ -77,7 +77,9 @@ public class InvalidateJob extends DataSourceJob
     {
         DBPDataSource dataSource = getExecutionContext().getDataSource();
 
-        this.invalidateResults = invalidateDataSource(monitor, dataSource, true);
+        // Disable disconnect on failure. It is the worst case anyway.
+        // Not sure that we should force disconnect even here.
+        this.invalidateResults = invalidateDataSource(monitor, dataSource, false);
 
         return Status.OK_STATUS;
     }
