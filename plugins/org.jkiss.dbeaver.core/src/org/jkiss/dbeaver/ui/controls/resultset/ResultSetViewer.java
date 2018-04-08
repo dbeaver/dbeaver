@@ -364,7 +364,8 @@ public class ResultSetViewer extends Viewer
 
     public void setDataFilter(final DBDDataFilter dataFilter, boolean refreshData)
     {
-        if (!model.getDataFilter().equals(dataFilter)) {
+        //if (!model.getDataFilter().equals(dataFilter))
+        {
             //model.setDataFilter(dataFilter);
             if (refreshData) {
                 refreshWithFilter(dataFilter);
