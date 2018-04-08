@@ -615,5 +615,13 @@ public class GeneralUtils {
     public static URI makeURIFromFilePath(@NotNull String path) throws URISyntaxException {
         return new URI(path.replace(" ", "%20"));
     }
+    
+    public static String encodeTopic(@NotNull String topic) {
+        return topic.replace(".", "__dot__");
+    }
+
+    public static String decodeTopic(@NotNull String topic) {
+        return topic.replace("__dot__", ".");
+    }
 
 }

@@ -83,6 +83,8 @@ import java.util.List;
 public class EntityEditor extends MultiPageDatabaseEditor
     implements IPropertyChangeReflector, IProgressControlProvider, ISaveablePart2, ITabbedFolderContainer, IDataSourceContainerProvider, IEntityEditorContext
 {
+    public static final String ID = "org.jkiss.dbeaver.ui.editors.entity.EntityEditor"; //$NON-NLS-1$
+    
     private static final Log log = Log.getLog(EntityEditor.class);
 
     private static class EditorDefaults {

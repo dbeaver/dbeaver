@@ -47,8 +47,8 @@ import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.DBNRoot;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditorInput;
 
 public class DatabaseDebugModelPresentation extends LabelProvider implements IDebugModelPresentationExtension {
@@ -170,15 +170,37 @@ public class DatabaseDebugModelPresentation extends LabelProvider implements IDe
         EntityEditorInput editorInput = new EntityEditorInput(dbnNode);
         editorInput.setAttribute(DBPScriptObject.OPTION_DEBUGGER_SOURCE, Boolean.TRUE);
       // FIXME:AF: how to retrieve it? probably org.jkiss.dbeaver.databaseor and EntityEditorsRegistry can help
-        // String folderId = "postgresql.source.view";
-        // editorInput.setDefaultFolderId(folderId);
+        String folderId = "postgresql.source.view";
+        editorInput.setDefaultFolderId(folderId);
+        DebugCore.postDebuggerSourceEvent(dbnNode.getNodeItemPath());
         return editorInput;
     }
 
     @Override
     public String getEditorId(IEditorInput input, Object element) {
-        // FIXME:AF: is there a constant anywhere?
-        return "org.jkiss.dbeaver.ui.editors.entity.EntityEditor";
+        String nodePath = null;
+        if (element instanceof IDatabaseBreakpoint) {
+            IDatabaseBreakpoint breakpoint = (IDatabaseBreakpoint) element;
+            nodePath = extractNodePath(breakpoint);
+        }
+        if (element instanceof DBNDatabaseNode) {
+            DBNDatabaseNode databaseNode = (DBNDatabaseNode) element;
+            nodePath = databaseNode.getNodeItemPath();
+        }
+        if (nodePath != null) {
+            DebugCore.postDebuggerSourceEvent(nodePath);
+        }
+        return EntityEditor.ID;
+    }
+
+    private String extractNodePath(IDatabaseBreakpoint breakpoint) {
+        try {
+            return breakpoint.getNodePath();
+        } catch (CoreException e) {
+            String message = NLS.bind("Unable to resolve nodePath for breakpoint {0}", breakpoint);
+            log.error(message, e);
+            return null;
+        }
     }
 
     @Override
