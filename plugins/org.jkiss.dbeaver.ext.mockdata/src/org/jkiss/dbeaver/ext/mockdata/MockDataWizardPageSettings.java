@@ -134,11 +134,31 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
             gd.verticalIndent = 5;
             generatorsGroup.setLayoutData(gd);
 
-            generatorsTableViewer = new TableViewer(generatorsGroup, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
-            final Table table = generatorsTableViewer.getTable();
-
+            Composite placeholder = UIUtils.createPlaceholder(generatorsGroup, 1);
             gd = new GridData(GridData.FILL_VERTICAL);
             gd.widthHint = 250;
+            placeholder.setLayoutData(gd);
+
+            Button autoAssignButton = new Button(placeholder, SWT.PUSH);
+            autoAssignButton.setText("Auto assign generators");
+            autoAssignButton.setImage(DBeaverIcons.getImage(UIIcon.OBJ_REFRESH));
+            autoAssignButton.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    if (UIUtils.confirmAction(getShell(), MockDataMessages.tools_mockdata_wizard_title, "The generators will be assigned automatically. Proceed?")) {
+                        autoAssignGenerators();
+                    }
+                }
+            });
+            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+//            gd.horizontalIndent = 5;
+            autoAssignButton.setLayoutData(gd);
+
+            generatorsTableViewer = new TableViewer(placeholder, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
+            final Table table = generatorsTableViewer.getTable();
+
+            gd = new GridData(GridData.FILL_BOTH);
+            gd.verticalIndent = 5;
             table.setLayoutData(gd);
             table.setHeaderVisible(true);
             table.setLinesVisible(true);
@@ -195,25 +215,6 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
             generatorColumn.setLabelProvider(labelProvider);
             TableColumn column = generatorColumn.getColumn();
             column.setText("Generator");
-            column.setImage(DBeaverIcons.getImage(UIIcon.OBJ_REFRESH));
-            column.setToolTipText("Automatically assign the generators");
-            column.addListener(SWT.Selection, new Listener() {
-                @Override
-                public void handleEvent(Event event) {
-                    if (UIUtils.confirmAction(getShell(), MockDataMessages.tools_mockdata_wizard_title, "The generators will be assigned automatically. Proceed?")) {
-                        autoAssignGenerators();
-                    }
-                }
-            });
-/* TODO for some reason it doesn't work over the header
-            generatorsTableViewer.getTable().addListener(SWT.MouseMove, new Listener() {
-                @Override
-                public void handleEvent(Event event) {
-                    log.debug(">>>>>>>>>>>>>>>>>>> "+event.x+" <<>> "+event.y);
-                    // SET THE HAND CURSOR
-                }
-            });
-*/
 
             generatorColumn.setEditingSupport(new EditingSupport(generatorsTableViewer) {
                 @Override
@@ -271,7 +272,7 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
             });
 
             // generator properties
-            Composite placeholder = UIUtils.createPlaceholder(generatorsGroup, 1);
+            placeholder = UIUtils.createPlaceholder(generatorsGroup, 1);
             placeholder.setLayoutData(new GridData(GridData.FILL_BOTH));
 
             Composite labelCombo = UIUtils.createPlaceholder(placeholder, 5);
