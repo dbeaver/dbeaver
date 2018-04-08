@@ -25,7 +25,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.graphics.Color;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.erd.ERDActivator;
-import org.jkiss.dbeaver.ext.erd.editor.ERDAttributeStyle;
+import org.jkiss.dbeaver.ext.erd.editor.ERDViewStyle;
 import org.jkiss.dbeaver.ext.erd.editor.ERDAttributeVisibility;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -57,7 +57,7 @@ public class EntityDiagram extends ERDObject<DBSObject>
     private List<ERDNote> notes = new ArrayList<>();
     private boolean needsAutoLayout;
     private ERDAttributeVisibility attributeVisibility = ERDAttributeVisibility.PRIMARY;
-    private ERDAttributeStyle[] attributeStyles = new ERDAttributeStyle[] { ERDAttributeStyle.ICONS };
+    private ERDViewStyle[] attributeStyles = new ERDViewStyle[] { ERDViewStyle.ICONS };
 
     private List<String> errorMessages = new ArrayList<>();
 
@@ -69,21 +69,21 @@ public class EntityDiagram extends ERDObject<DBSObject>
 		this.name = name;
         IPreferenceStore store = ERDActivator.getDefault().getPreferenceStore();
         this.attributeVisibility = ERDAttributeVisibility.getDefaultVisibility(store);
-        this.attributeStyles = ERDAttributeStyle.getDefaultStyles(store);
+        this.attributeStyles = ERDViewStyle.getDefaultStyles(store);
 	}
 
-    public boolean hasAttributeStyle(ERDAttributeStyle style) {
+    public boolean hasAttributeStyle(ERDViewStyle style) {
         return ArrayUtils.contains(attributeStyles, style);
     }
 
-    public void setAttributeStyle(ERDAttributeStyle style, boolean enable)
+    public void setAttributeStyle(ERDViewStyle style, boolean enable)
     {
         if (enable) {
-            attributeStyles = ArrayUtils.add(ERDAttributeStyle.class, attributeStyles, style);
+            attributeStyles = ArrayUtils.add(ERDViewStyle.class, attributeStyles, style);
         } else {
-            attributeStyles = ArrayUtils.remove(ERDAttributeStyle.class, attributeStyles, style);
+            attributeStyles = ArrayUtils.remove(ERDViewStyle.class, attributeStyles, style);
         }
-        ERDAttributeStyle.setDefaultStyles(ERDActivator.getDefault().getPreferences(), attributeStyles);
+        ERDViewStyle.setDefaultStyles(ERDActivator.getDefault().getPreferences(), attributeStyles);
     }
 
     public ERDAttributeVisibility getAttributeVisibility()

@@ -42,7 +42,7 @@ public class EntityFigure extends Figure {
     private AttributeListFigure attributeFigure;
     private EditableLabel nameLabel;
 
-    public EntityFigure(ERDEntity entity)
+    public EntityFigure(ERDEntity entity, boolean useFQN)
     {
         this.entity = entity;
 
@@ -50,7 +50,10 @@ public class EntityFigure extends Figure {
 
         keyFigure = new AttributeListFigure(entity, true);
         attributeFigure = new AttributeListFigure(entity, false);
-        nameLabel = new EditableLabel(entity.getObject().getName());
+        nameLabel = new EditableLabel(
+            useFQN ?
+                DBUtils.getObjectFullName(entity.getObject(), DBPEvaluationContext.DDL) :
+                entity.getObject().getName());
         if (tableImage != null) {
             nameLabel.setIcon(tableImage);
         }
