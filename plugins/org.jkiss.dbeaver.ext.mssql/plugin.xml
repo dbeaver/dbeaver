@@ -222,4 +222,10 @@
         </datasource>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.databaseEditor">
+        <manager
+                class="org.jkiss.dbeaver.ext.mssql.edit.SQLServerProcedureManager"
+                objectType="org.jkiss.dbeaver.ext.mssql.model.SQLServerProcedure"/>
+    </extension>
+
 </plugin>
