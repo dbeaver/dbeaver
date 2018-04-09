@@ -46,7 +46,7 @@ import org.osgi.service.event.EventHandler;
 /**
  * PostgreSourceViewEditor
  */
-public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject> implements EventHandler {
+public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject> {
     
     private static final String TOPIC_DEBUGGER_SOURCE = GeneralUtils.encodeTopic(DBPScriptObject.OPTION_DEBUGGER_SOURCE);
     private Button omitHeaderCheck;
@@ -54,34 +54,40 @@ public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject
     private boolean showColumnComments = true;
 
     private IEventBroker eventBroker;
+    private TopicEventHandler topicEventHandler = new TopicEventHandler();
 
     public PostgreSourceViewEditor()
     {
     }
-    
-    @Override
-    public void handleEvent(Event event) {
-        String topic = event.getTopic();
-        if (TOPIC_DEBUGGER_SOURCE.equals(topic)) {
-            Object data = event.getProperty(IEventBroker.DATA);
-            if (data instanceof String) {
-                String nodePath = (String) data;
-                IDatabaseEditorInput editorInput = getEditorInput();
-                if (nodePath.equals(editorInput.getNavigatorNode().getNodeItemPath())) {
-                    Object omitValue = editorInput.getAttribute(DBPScriptObject.OPTION_DEBUGGER_SOURCE);
-                    boolean omitHeader = Boolean.parseBoolean(String.valueOf(omitValue));
-                    if (!omitHeader) {
-                        setOmitHeader(true);
+
+    private class TopicEventHandler implements EventHandler {
+
+        @Override
+        public void handleEvent(Event event) {
+            String topic = event.getTopic();
+            if (TOPIC_DEBUGGER_SOURCE.equals(topic)) {
+                Object data = event.getProperty(IEventBroker.DATA);
+                if (data instanceof String) {
+                    String nodePath = (String) data;
+                    IDatabaseEditorInput editorInput = getEditorInput();
+                    if (nodePath.equals(editorInput.getNavigatorNode().getNodeItemPath())) {
+                        Object omitValue = editorInput.getAttribute(DBPScriptObject.OPTION_DEBUGGER_SOURCE);
+                        boolean omitHeader = Boolean.parseBoolean(String.valueOf(omitValue));
+                        if (!omitHeader) {
+                            setOmitHeader(true);
+                        }
                     }
                 }
             }
         }
+
     }
-    
+
     @Override
     public void dispose() {
         if (eventBroker != null) {
-            eventBroker.unsubscribe(this);
+            eventBroker.unsubscribe(topicEventHandler);
+            eventBroker = null;
         }
         super.dispose();
     }
@@ -104,7 +110,7 @@ public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject
         super.contributeEditorCommands(contributionManager);
         if (eventBroker == null) {
             eventBroker = PostgreActivator.getDefault().getEventBroker();
-            eventBroker.subscribe(TOPIC_DEBUGGER_SOURCE, this);
+            eventBroker.subscribe(TOPIC_DEBUGGER_SOURCE, topicEventHandler);
         }
         PostgreScriptObject sourceObject = getSourceObject();
         if (sourceObject instanceof PostgreProcedure) {
@@ -160,7 +166,7 @@ public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject
         }
     }
 
-    public void setOmitHeader(boolean omitHeader) {
+    private void setOmitHeader(boolean omitHeader) {
         Display.getDefault().syncExec(new Runnable() {
             
             @Override
