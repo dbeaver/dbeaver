@@ -43,9 +43,11 @@ import org.jkiss.dbeaver.debug.DBGException;
 import org.jkiss.dbeaver.debug.DBGResolver;
 import org.jkiss.dbeaver.debug.core.model.DatabaseDebugTarget;
 import org.jkiss.dbeaver.debug.core.model.DatabaseStackFrame;
+import org.jkiss.dbeaver.debug.internal.core.DebugCoreActivator;
 import org.jkiss.dbeaver.debug.internal.core.DebugCoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -54,6 +56,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
 import org.jkiss.dbeaver.runtime.ide.core.DBeaverIDECore;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 public class DebugCore {
 
@@ -312,12 +315,16 @@ public class DebugCore {
             final DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
             DBNDatabaseNode node = navigatorModel.getNodeByObject(dbsObject);
             if (node != null) {
-                return node.getNodeItemPath();
+                String nodePath = node.getNodeItemPath();
+                DebugCore.postDebuggerSourceEvent(nodePath);
+                return nodePath;
             }
         }
         if (object instanceof String) {
             // well, let's be positive and assume it's a node path already
-            return (String) object;
+            String nodePath = (String) object;
+            DebugCore.postDebuggerSourceEvent(nodePath);
+            return nodePath;
         }
         return null;
     }
@@ -327,6 +334,11 @@ public class DebugCore {
         result.put(DBGController.BREAKPOINT_LINE_NUMBER, attributes.get(IMarker.LINE_NUMBER));
         result.put(DBGController.PROCEDURE_OID, attributes.get(BREAKPOINT_ATTRIBUTE_PROCEDURE_OID));
         return result;
+    }
+    
+    public static void postDebuggerSourceEvent(String nodePath) {
+        String encoded = GeneralUtils.encodeTopic(DBPScriptObject.OPTION_DEBUGGER_SOURCE);
+        DebugCoreActivator.getDefault().postEvent(encoded, nodePath);
     }
 
 }

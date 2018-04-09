@@ -4,8 +4,11 @@ Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.postgresql;singleton:=true
 Bundle-Version: 2.1.54
 Bundle-Release-Date: 20180416
-Require-Bundle: org.eclipse.ui,
+Require-Bundle: org.eclipse.osgi.services,
+ org.eclipse.e4.core.services,
+ org.eclipse.e4.core.contexts,
  org.eclipse.core.runtime,
+ org.eclipse.ui,
  org.eclipse.ui.views,
  org.eclipse.jface,
  org.eclipse.jface.text,

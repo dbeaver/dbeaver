@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.ext.postgresql;
 
+import org.eclipse.e4.core.contexts.EclipseContextFactory;
+import org.eclipse.e4.core.contexts.IEclipseContext;
+import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
@@ -33,19 +36,22 @@ public class PostgreActivator extends AbstractUIPlugin {
 
 	// The shared instance
 	private static PostgreActivator plugin;
+    private static BundleContext bundleContext;
 
-	public PostgreActivator() {
+    public PostgreActivator() {
 	}
 
 	@Override
     public void start(BundleContext context) throws Exception {
 		super.start(context);
+		bundleContext = context;
 		plugin = this;
 	}
 
 	@Override
     public void stop(BundleContext context) throws Exception {
 		plugin = null;
+		bundleContext = context;
 		super.stop(context);
 	}
 
@@ -63,4 +69,9 @@ public class PostgreActivator extends AbstractUIPlugin {
 	    super.initializeImageRegistry(reg);
 	    reg.put(IMG_PG_SQL, getImageDescriptor("$nl$/icons/postgresql_icon.png")); //$NON-NLS-1$
 	}
+	
+	public IEventBroker getEventBroker() {
+        IEclipseContext serviceContext = EclipseContextFactory.getServiceContext(bundleContext);
+        return serviceContext.get(IEventBroker.class);
+    }
 }
