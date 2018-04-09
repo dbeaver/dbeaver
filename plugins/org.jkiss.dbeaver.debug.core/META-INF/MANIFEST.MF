@@ -6,7 +6,10 @@ Bundle-Version: 1.0.10
 Bundle-Release-Date: 20180416
 Bundle-Vendor: %Bundle-Vendor
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Require-Bundle: org.eclipse.core.runtime,
+Require-Bundle: org.eclipse.osgi.services,
+ org.eclipse.e4.core.services,
+ org.eclipse.e4.core.contexts,
+ org.eclipse.core.runtime,
  org.eclipse.debug.core;visibility:=reexport,
  org.jkiss.dbeaver.model;visibility:=reexport,
  org.jkiss.dbeaver.runtime.ide.core,

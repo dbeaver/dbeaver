@@ -181,6 +181,7 @@ public abstract class DatabaseLaunchShortcut implements ILaunchShortcut2 {
                 }
             }
             if (config != null) {
+                DebugCore.postDebuggerSourceEvent(DebugCore.extractNodePath(config));
                 DebugUITools.launch(config, mode);
             }
         }

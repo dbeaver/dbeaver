@@ -47,8 +47,8 @@ import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.DBNRoot;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditorInput;
 
 public class DatabaseDebugModelPresentation extends LabelProvider implements IDebugModelPresentationExtension {
@@ -169,16 +169,18 @@ public class DatabaseDebugModelPresentation extends LabelProvider implements IDe
     protected IEditorInput createEditorInput(DBNDatabaseNode dbnNode) {
         EntityEditorInput editorInput = new EntityEditorInput(dbnNode);
         editorInput.setAttribute(DBPScriptObject.OPTION_DEBUGGER_SOURCE, Boolean.TRUE);
-      // FIXME:AF: how to retrieve it? probably org.jkiss.dbeaver.databaseor and EntityEditorsRegistry can help
-        // String folderId = "postgresql.source.view";
-        // editorInput.setDefaultFolderId(folderId);
+        DebugEditorAdvisor editorAdvisor = DebugUI.findEditorAdvisor(dbnNode.getDataSourceContainer());
+        if (editorAdvisor != null) {
+            String sourceFolderId = editorAdvisor.getSourceFolderId();
+            editorInput.setDefaultFolderId(sourceFolderId);
+        }
+        DebugCore.postDebuggerSourceEvent(dbnNode.getNodeItemPath());
         return editorInput;
     }
 
     @Override
     public String getEditorId(IEditorInput input, Object element) {
-        // FIXME:AF: is there a constant anywhere?
-        return "org.jkiss.dbeaver.ui.editors.entity.EntityEditor";
+        return EntityEditor.ID;
     }
 
     @Override

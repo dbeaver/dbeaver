@@ -18,6 +18,11 @@
 
 package org.jkiss.dbeaver.debug.internal.core;
 
+import javax.inject.Inject;
+
+import org.eclipse.e4.core.contexts.EclipseContextFactory;
+import org.eclipse.e4.core.contexts.IEclipseContext;
+import org.eclipse.e4.core.services.events.IEventBroker;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
@@ -26,6 +31,8 @@ public class DebugCoreActivator implements BundleActivator {
     private static DebugCoreActivator activator;
     private static BundleContext bundleContext;
 
+    private IEventBroker eventBroker;
+    
     public static DebugCoreActivator getDefault() {
         return activator;
     }
@@ -38,13 +45,18 @@ public class DebugCoreActivator implements BundleActivator {
     public void start(BundleContext context) throws Exception {
         bundleContext = context;
         activator = this;
+        IEclipseContext serviceContext = EclipseContextFactory.getServiceContext(bundleContext);
+        eventBroker = serviceContext.get(IEventBroker.class);
     }
 
     @Override
     public void stop(BundleContext context) throws Exception {
-
         activator = null;
         bundleContext = null;
+    }
+
+    public void postEvent(String topic, Object data) {
+        eventBroker.post(topic, data);
     }
 
 }
