@@ -120,6 +120,13 @@
                type="org.eclipse.debug.ui.actions.IToggleBreakpointsTarget">
          </adapter>
       </factory>
+      <factory
+            adaptableType="org.jkiss.dbeaver.model.DBPDataSourceContainer"
+            class="org.jkiss.dbeaver.ext.postgresql.debug.ui.internal.PostgreDebugUIAdapterFactory">
+         <adapter
+               type="org.jkiss.dbeaver.debug.ui.DebugEditorAdvisor">
+         </adapter>
+      </factory>
    </extension>
 
    <extension
