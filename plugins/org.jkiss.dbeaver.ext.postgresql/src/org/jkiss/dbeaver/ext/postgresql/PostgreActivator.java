@@ -36,8 +36,7 @@ public class PostgreActivator extends AbstractUIPlugin {
 
 	// The shared instance
 	private static PostgreActivator plugin;
-
-    private IEventBroker eventBroker;
+    private static BundleContext bundleContext;
 
     public PostgreActivator() {
 	}
@@ -45,15 +44,14 @@ public class PostgreActivator extends AbstractUIPlugin {
 	@Override
     public void start(BundleContext context) throws Exception {
 		super.start(context);
+		bundleContext = context;
 		plugin = this;
-        IEclipseContext serviceContext = EclipseContextFactory.getServiceContext(context);
-        eventBroker = serviceContext.get(IEventBroker.class);
 	}
 
 	@Override
     public void stop(BundleContext context) throws Exception {
-	    eventBroker = null;
 		plugin = null;
+		bundleContext = context;
 		super.stop(context);
 	}
 
@@ -73,6 +71,7 @@ public class PostgreActivator extends AbstractUIPlugin {
 	}
 	
 	public IEventBroker getEventBroker() {
-        return eventBroker;
+        IEclipseContext serviceContext = EclipseContextFactory.getServiceContext(bundleContext);
+        return serviceContext.get(IEventBroker.class);
     }
 }
