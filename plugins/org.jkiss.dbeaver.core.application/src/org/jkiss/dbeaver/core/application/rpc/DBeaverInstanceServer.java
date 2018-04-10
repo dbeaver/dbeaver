@@ -161,21 +161,31 @@ public class DBeaverInstanceServer implements IInstanceController {
             connConfig.getBootstrap().setDefaultAutoCommit(autoCommit);
         }
 
-        final DataSourceDescriptor ds = new DataSourceDescriptor(dsRegistry, DataSourceDescriptor.generateNewId(driver), driver, connConfig);
-        ds.setName(dsName);
-        ds.setTemporary(true);
-        if (savePassword) {
-            ds.setSavePassword(true);
+        DataSourceDescriptor ds = dsRegistry.findDataSourceByName(dsName);
+        if (ds != null) {
+            if (!ds.isTemporary()) {
+                // Different one
+                ds = null;
+            }
         }
-        if (folder != null) {
-            ds.setFolder(folder);
+        if (ds == null) {
+            ds = new DataSourceDescriptor(dsRegistry, DataSourceDescriptor.generateNewId(driver), driver, connConfig);
+            ds.setName(dsName);
+            ds.setTemporary(true);
+            if (savePassword) {
+                ds.setSavePassword(true);
+            }
+            if (folder != null) {
+                ds.setFolder(folder);
+            }
+            //ds.set
+            dsRegistry.addDataSource(ds);
         }
-        //ds.set
-        dsRegistry.addDataSource(ds);
 
         if (openConsole) {
+            DataSourceDescriptor finalDs = ds;
             DBeaverUI.syncExec(() -> {
-                OpenHandler.openSQLConsole(workbenchWindow, ds, ds.getName(), "");
+                OpenHandler.openSQLConsole(workbenchWindow, finalDs, finalDs.getName(), "");
                 workbenchWindow.getShell().forceActive();
             });
         } else if (makeConnect) {
