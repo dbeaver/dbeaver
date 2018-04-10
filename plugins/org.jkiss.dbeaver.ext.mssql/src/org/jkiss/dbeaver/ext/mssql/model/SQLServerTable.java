@@ -16,9 +16,20 @@
  */
 package org.jkiss.dbeaver.ext.mssql.model;
 
-import org.jkiss.dbeaver.ext.generic.model.*;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
+import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
+import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.model.DBPOverloadedObject;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+
+import java.sql.SQLException;
 
 /**
 * SQL Server table
@@ -34,4 +45,54 @@ public class SQLServerTable extends GenericTable implements DBPOverloadedObject 
         //return getSchema().getName() + "." + getName();
         return getName();
     }
+
+    @Override
+    public String getDescription() {
+        return super.getDescription();
+    }
+
+    @Property(viewable = true, order = 100)
+    public String getDescription(DBRProgressMonitor monitor) throws DBException {
+        String description = getDescription();
+        if (description != null || !isSqlServer()) {
+            return description;
+        }
+        // Query row count
+        try (JDBCSession session = DBUtils.openUtilSession(monitor, getDataSource(), "Read table description")) {
+            DBSObject defaultDatabase = getDataSource().getDefaultObject();
+            boolean switchSchema = defaultDatabase != null && defaultDatabase != getCatalog();
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                (switchSchema ? "USE " + DBUtils.getQuotedIdentifier(getCatalog()) + ";\n" : "") +
+                "SELECT cast(value as varchar(8000)) as value " +
+                    "FROM fn_listextendedproperty ('MS_DESCRIPTION', 'schema', ?, 'table', ?, default, default);\n" +
+                    (switchSchema ? "USE "+ DBUtils.getQuotedIdentifier(defaultDatabase) + ";\n" : "")))
+            {
+                dbStat.setString(1, getSchema().getName());
+                dbStat.setString(2, getName());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    if (dbResult.next()) {
+                        description = dbResult.getString(1);
+                    } else {
+                        description = "";
+                    }
+                }
+
+            } catch (SQLException e) {
+                throw new DBException(e, getDataSource());
+            }
+        }
+
+        setDescription(description);
+        return description;
+    }
+
+    @Override
+    public SQLServerDataSource getDataSource() {
+        return (SQLServerDataSource)super.getDataSource();
+    }
+
+    private boolean isSqlServer() {
+        return ((SQLServerMetaModel)getDataSource().getMetaModel()).isSqlServer();
+    }
+
 }

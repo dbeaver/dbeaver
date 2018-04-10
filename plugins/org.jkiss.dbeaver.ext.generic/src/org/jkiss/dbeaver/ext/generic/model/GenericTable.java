@@ -209,6 +209,10 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         return description;
     }
 
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     @Override
     public synchronized DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException
     {
