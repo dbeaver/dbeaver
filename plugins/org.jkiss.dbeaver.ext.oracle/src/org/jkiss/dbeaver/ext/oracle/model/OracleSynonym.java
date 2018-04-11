@@ -73,6 +73,9 @@ public class OracleSynonym extends OracleSchemaObject {
     @Property(viewable = true, order = 4)
     public Object getObject(DBRProgressMonitor monitor) throws DBException
     {
+        if (objectTypeName == null) {
+            return null;
+        }
         return OracleObjectType.resolveObject(
             monitor,
             getDataSource(),
