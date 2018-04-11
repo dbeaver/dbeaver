@@ -831,7 +831,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
                 "AND O.OBJECT_TYPE NOT IN ('JAVA CLASS','PACKAGE BODY')\n");
 
             JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT OWNER, SYNONYM_NAME, MAX(TABLE_OWNER), MAX(TABLE_NAME), MAX(DB_LINK), MAX(OBJECT_TYPE) FROM (\n" +
+                "SELECT OWNER, SYNONYM_NAME, MAX(TABLE_OWNER) as TABLE_OWNER, MAX(TABLE_NAME) as TABLE_NAME, MAX(DB_LINK) as DB_LINK, MAX(OBJECT_TYPE) as OBJECT_TYPE FROM (\n" +
                     "SELECT S.*, NULL OBJECT_TYPE FROM ALL_SYNONYMS S WHERE S.OWNER = ?\n" +
                     "UNION ALL\n" +
                     "SELECT S.*,O.OBJECT_TYPE FROM ALL_SYNONYMS S, ALL_OBJECTS O\n" +
