@@ -3364,7 +3364,7 @@
             <type kind="BINARY"/>
             <type kind="CONTENT"/>
         </transformer>
-		<transformer
+	<transformer
                 class="org.jkiss.dbeaver.model.impl.data.transformers.UUIDOrderedAttributeTransformer"
                 id="org.jkiss.dbeaver.core.UUIDOrderedAttributeTransformer"
                 name="UUID (Ordered)"
