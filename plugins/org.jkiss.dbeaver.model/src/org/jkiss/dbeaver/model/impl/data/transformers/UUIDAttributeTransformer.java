@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,6 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.jkiss.dbeaver.model.impl.data.transformers;
 
 import org.jkiss.code.NotNull;
@@ -35,7 +36,7 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Transforms binary attribute value into UUID
+ * Transforms binary attribute value into UUID.
  */
 public class UUIDAttributeTransformer implements DBDAttributeTransformer {
 
