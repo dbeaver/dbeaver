@@ -3364,6 +3364,16 @@
             <type kind="BINARY"/>
             <type kind="CONTENT"/>
         </transformer>
+	<transformer
+                class="org.jkiss.dbeaver.model.impl.data.transformers.UUIDOrderedAttributeTransformer"
+                id="org.jkiss.dbeaver.core.UUIDOrderedAttributeTransformer"
+                name="UUID (Ordered)"
+                description="Represents binary(16) value as UUID if optimized storage is used."
+                applyByDefault="false"
+                custom="true">
+            <type kind="BINARY"/>
+            <type kind="CONTENT"/>
+        </transformer>
         <transformer
                 class="org.jkiss.dbeaver.model.impl.data.transformers.BinaryAttributeTransformer"
                 id="org.jkiss.dbeaver.core.BinaryAttributeTransformer"

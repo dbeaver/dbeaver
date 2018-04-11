@@ -30,27 +30,31 @@ import org.jkiss.dbeaver.model.impl.data.ProxyValueHandler;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCContentBytes;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
-import java.nio.ByteBuffer;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
 /**
- * Transforms binary attribute value into UUID.
+ * Transforms binary(16) attribute value into UUID.
+ * <p>
+ * This specific UUID storage format saves space and improves INSERT performance as described in the linked article.
+ * </p>
+ * 
+ * @see <a href="https://www.percona.com/blog/2014/12/19/store-uuid-optimized-way/">Store UUID in an optimized way</a>
  */
-public class UUIDAttributeTransformer implements DBDAttributeTransformer {
+public class UUIDOrderedAttributeTransformer implements DBDAttributeTransformer {
 
     @Override
     public void transformAttribute(@NotNull DBCSession session, @NotNull DBDAttributeBinding attribute, @NotNull List<Object[]> rows, @NotNull Map<String, String> options) throws DBException {
         attribute.setPresentationAttribute(
-            new TransformerPresentationAttribute(attribute, "UUID", -1, DBPDataKind.BINARY));
+            new TransformerPresentationAttribute(attribute, "UUID (Ordered)", 16, DBPDataKind.BINARY));
 
         attribute.setTransformHandler(new UUIDValueHandler(attribute.getValueHandler()));
     }
 
     private class UUIDValueHandler extends ProxyValueHandler {
         public UUIDValueHandler(DBDValueHandler target) {
-            super(target);
+        	super(target);
         }
 
         @NotNull
@@ -63,8 +67,24 @@ public class UUIDAttributeTransformer implements DBDAttributeTransformer {
                 bytes = ((JDBCContentBytes) value).getRawValue();
             }
             if (bytes != null) {
-                ByteBuffer bb = ByteBuffer.wrap(bytes);
-                return new UUID(bb.getLong(), bb.getLong()).toString();
+            	// byte shift operations from Ebean ORM project pull request #1308 
+            	long mostSigBits = ((long)bytes[4] << 56) // XXXXXXXX-____-____-...
+        			+ ((long)(bytes[5] & 255) << 48)
+        			+ ((long)(bytes[6] & 255) << 40)
+        			+ ((long)(bytes[7] & 255) << 32)
+        			+ ((long)(bytes[2] & 255) << 24)      // ________-XXXX-____-...
+        			+ ((bytes[3] & 255) << 16)
+        			+ ((bytes[0] & 255) <<  8)            // ________-____-XXXX-...
+        			+ ((bytes[1] & 255) <<  0);
+            	long leastSigBits = ((long)bytes[8] << 56)// ________-____-____-XXXX-...
+        			+ ((long)(bytes[9] & 255) << 48)
+        			+ ((long)(bytes[10] & 255) << 40)     // ________-____-____-____-XXXXXXXXXXXX
+        			+ ((long)(bytes[11] & 255) << 32)
+        			+ ((long)(bytes[12] & 255) << 24)
+        			+ ((bytes[13] & 255) << 16)
+        			+ ((bytes[14] & 255) <<  8)
+        			+ ((bytes[15] & 255) <<  0);
+            	return new UUID(mostSigBits, leastSigBits).toString();
             }
             return super.getValueDisplayString(column, value, format);
         }
