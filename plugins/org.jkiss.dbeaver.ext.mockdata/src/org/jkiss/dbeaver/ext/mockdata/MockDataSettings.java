@@ -19,20 +19,16 @@ package org.jkiss.dbeaver.ext.mockdata;
 
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.mockdata.model.MockGeneratorDescriptor;
 import org.jkiss.dbeaver.ext.mockdata.model.MockGeneratorRegistry;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
-import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 
 public class MockDataSettings {
@@ -49,6 +45,7 @@ public class MockDataSettings {
 
     private DBSEntity entity;
     private Collection<DBSAttributeBase> attributes;
+    private DBRProgressMonitor monitor;
 
     private boolean removeOldData;
     private long rowsNumber = 1000;
@@ -58,45 +55,32 @@ public class MockDataSettings {
     private Map<String, AttributeGeneratorProperties> attributeGenerators = new HashMap<>(); // attribute.name -> generators properties
 
     // populate attribute generators properties map
-    public void init(MockDataExecuteWizard wizard) throws DBException {
+    public void init(DBRProgressMonitor monitor, MockDataExecuteWizard wizard) throws DBException {
+        this.monitor = monitor;
+
         List<DBSDataManipulator> databaseObjects = wizard.getDatabaseObjects();
         DBSDataManipulator dataManipulator = databaseObjects.iterator().next(); // TODO only the first
         entity = (DBSEntity) dataManipulator;
         attributes = new ArrayList<>();
 
-        try {
-            DBeaverUI.run(wizard.getContainer(), true, true, new DBRRunnableWithProgress() {
-                @Override
-                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                    try {
-                        attributes.addAll(DBUtils.getRealAttributes(entity.getAttributes(monitor)));
+        attributes.addAll(DBUtils.getRealAttributes(entity.getAttributes(monitor)));
 
-                        MockGeneratorRegistry generatorRegistry = MockGeneratorRegistry.getInstance();
-                        for (DBSAttributeBase attribute : attributes) {
-                            AttributeGeneratorProperties generatorProperties = new AttributeGeneratorProperties(attribute);
-                            attributeGenerators.put(attribute.getName(), generatorProperties);
+        MockGeneratorRegistry generatorRegistry = MockGeneratorRegistry.getInstance();
+        for (DBSAttributeBase attribute : attributes) {
+            AttributeGeneratorProperties generatorProperties = new AttributeGeneratorProperties(attribute);
+            attributeGenerators.put(attribute.getName(), generatorProperties);
 
-                            //((JDBCColumnKeyType) attribute).isInUniqueKey()
-                            List<DBSEntityReferrer> attributeReferrers = DBUtils.getAttributeReferrers(monitor, (DBSEntityAttribute) attribute);
-                            if (!CommonUtils.isEmpty(attributeReferrers)) {
-                                MockGeneratorDescriptor generator = generatorRegistry.getGenerator(FK_GENERATOR_ID);
-                                putGenerator(generatorProperties, generator);
-                            } else {
-                                List<MockGeneratorDescriptor> generators = generatorRegistry.findAllGenerators(dataManipulator.getDataSource(), attribute);
-                                for (MockGeneratorDescriptor generator : generators) {
-                                    putGenerator(generatorProperties, generator);
-                                }
-                            }
-                        }
-                    } catch (DBException e) {
-                        throw new InvocationTargetException(e);
-                    }
+            //((JDBCColumnKeyType) attribute).isInUniqueKey()
+            List<DBSEntityReferrer> attributeReferrers = DBUtils.getAttributeReferrers(monitor, (DBSEntityAttribute) attribute);
+            if (!CommonUtils.isEmpty(attributeReferrers)) {
+                MockGeneratorDescriptor generator = generatorRegistry.getGenerator(FK_GENERATOR_ID);
+                putGenerator(generatorProperties, generator);
+            } else {
+                List<MockGeneratorDescriptor> generators = generatorRegistry.findAllGenerators(dataManipulator.getDataSource(), attribute);
+                for (MockGeneratorDescriptor generator : generators) {
+                    putGenerator(generatorProperties, generator);
                 }
-            });
-        } catch (InvocationTargetException e) {
-            DBUserInterface.getInstance().showError("Transfer init failed", "Can't start data transfer", e.getTargetException());
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+            }
         }
     }
 
@@ -158,6 +142,10 @@ public class MockDataSettings {
 
     public AttributeGeneratorProperties getAttributeGeneratorProperties(DBSAttributeBase attribute) {
         return attributeGenerators.get(attribute.getName());
+    }
+
+    public DBRProgressMonitor getMonitor() {
+        return monitor;
     }
 
     public void loadFrom(IDialogSettings dialogSettings) {
