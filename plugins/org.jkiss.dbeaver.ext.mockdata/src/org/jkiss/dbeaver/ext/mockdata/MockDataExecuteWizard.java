@@ -29,10 +29,12 @@ import org.jkiss.dbeaver.ext.mockdata.model.MockValueGenerator;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPClientHome;
 import org.jkiss.dbeaver.model.data.DBDAttributeValue;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -49,6 +51,7 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
     private static final Log log = Log.getLog(MockDataExecuteWizard.class);
 
     private static final int BATCH_SIZE = 1000;
+    public static final boolean JUST_GENERATE_SCRIPT = false;
 
     private static final String RS_EXPORT_WIZARD_DIALOG_SETTINGS = "MockData"; //$NON-NLS-1$
 
@@ -167,6 +170,7 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
 
             boolean success = true;
             monitor.beginTask("Generate Mock Data", 3);
+            ArrayList<DBEPersistAction> persistActions = new ArrayList<>();
             if (mockDataSettings.isRemoveOldData()) {
                 logPage.appendLog("Removing old data from the '" + dataManipulator.getName() + "'.\n");
                 monitor.subTask("Cleanup old data");
@@ -175,7 +179,11 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                     // TODO: truncate is much faster than delete
                     try (DBSDataManipulator.ExecuteBatch batch = dataManipulator.deleteData(session, new DBSAttributeBase[]{}, executionSource)) {
                         batch.add(new Object[]{});
-                        deleteStats.accumulate(batch.execute(session));
+                        if (JUST_GENERATE_SCRIPT) {
+                            batch.generatePersistActions(session, persistActions);
+                        } else {
+                            deleteStats.accumulate(batch.execute(session));
+                        }
                     }
                     if (txnManager != null && !autoCommit) {
                         txnManager.commit(session);
@@ -185,6 +193,13 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                     String message = "    Error removing the data: " + e.getMessage();
                     log.error(message, e);
                     logPage.appendLog(message + "\n\n", true);
+                }
+                if (JUST_GENERATE_SCRIPT) {
+                    String scriptText = SQLUtils.generateScript(
+                            dataManipulator.getDataSource(),
+                            persistActions.toArray(new DBEPersistAction[persistActions.size()]),
+                            false);
+                    logPage.appendLog("    The insert data script:\n " + scriptText + "\n\n");
                 }
                 logPage.appendLog("    Rows updated: " + deleteStats.getRowsUpdated() + "\n");
                 logPage.appendLog("    Duration: " + deleteStats.getExecuteTime() + "ms\n\n");
@@ -201,6 +216,7 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
 
                 logPage.appendLog("Inserting mock data into the '" + dataManipulator.getName() + "'.\n");
                 DBCStatistics insertStats = new DBCStatistics();
+                persistActions = new ArrayList<>();
 
                 // build and init the generators
                 generators.clear();
@@ -280,7 +296,11 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                             }
                         }
                         if (batch != null) {
-                            insertStats.accumulate(batch.execute(session));
+                            if (JUST_GENERATE_SCRIPT) {
+                                batch.generatePersistActions(session, persistActions);
+                            } else {
+                                insertStats.accumulate(batch.execute(session));
+                            }
                         }
                     }
                     catch (Exception e) {
@@ -301,6 +321,13 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                     txnManager.commit(session);
                 }
 
+                if (JUST_GENERATE_SCRIPT) {
+                    String scriptText = SQLUtils.generateScript(
+                            dataManipulator.getDataSource(),
+                            persistActions.toArray(new DBEPersistAction[persistActions.size()]),
+                            false);
+                    logPage.appendLog("    The insert data script:\n " + scriptText + "\n\n");
+                }
                 logPage.appendLog("    Rows updated: " + insertStats.getRowsUpdated() + "\n");
                 logPage.appendLog("    Duration: " + insertStats.getExecuteTime() + "ms\n\n");
 
