@@ -142,6 +142,9 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
                 }
                 if (statement == null || !reuse) {
                     statement = prepareStatement(session, rowValues);
+                    if (actions != null && statement instanceof DBCParameterizedStatement) {
+                        ((DBCParameterizedStatement) statement).forceParametersSave(true);
+                    }
                     statistics.setQueryText(statement.getQueryString());
                     statistics.addStatementsCount();
                 }
