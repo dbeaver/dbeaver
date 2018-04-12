@@ -52,7 +52,6 @@ public class JDBCPreparedStatementImpl extends JDBCStatementImpl<PreparedStateme
     private static final Object NULL_VALUE = new Object();
 
     private Map<Object, Object> paramMap;
-    private boolean forceParametersSave;
 
     protected static class ContentParameter {
         String displayString;
@@ -73,7 +72,7 @@ public class JDBCPreparedStatementImpl extends JDBCStatementImpl<PreparedStateme
         }
     }
 
-    public JDBCPreparedStatementImpl(
+    JDBCPreparedStatementImpl(
         @NotNull JDBCSession connection,
         @NotNull PreparedStatement original,
         String query,
@@ -148,11 +147,6 @@ public class JDBCPreparedStatementImpl extends JDBCStatementImpl<PreparedStateme
         }
     }
 
-    @Override
-    public void forceParametersSave(boolean force) {
-        this.forceParametersSave = force;
-    }
-
     @NotNull
     private String formatParameterValue(Object value) {
         if (value instanceof CharSequence) {
@@ -180,7 +174,7 @@ public class JDBCPreparedStatementImpl extends JDBCStatementImpl<PreparedStateme
 
     protected void handleStatementBind(Object parameter, @Nullable Object o)
     {
-        if (forceParametersSave || isQMLoggingEnabled()) {
+        if (isQMLoggingEnabled()) {
             // Save parameters
             if (o == null) {
                 o = NULL_VALUE;
@@ -192,8 +186,7 @@ public class JDBCPreparedStatementImpl extends JDBCStatementImpl<PreparedStateme
                 paramMap = new LinkedHashMap<>();
             }
             paramMap.put(parameter, o);
-        }
-        if (isQMLoggingEnabled()) {
+
             QMUtils.getDefaultHandler().handleStatementBind(this, parameter, o);
         }
     }
