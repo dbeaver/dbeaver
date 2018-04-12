@@ -34,19 +34,19 @@ import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import java.util.ArrayList;
 import java.util.List;
 
-public class MockDataHandler extends AbstractHandler {
+public class ResultSetMockDataHandler extends AbstractHandler {
 
-    private static final Log log = Log.getLog(MockDataHandler.class);
+    private static final Log log = Log.getLog(ResultSetMockDataHandler.class);
 
-    public MockDataHandler() {
+    public ResultSetMockDataHandler() {
     }
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
 
         List<DBSObject> selectedObjects;
-        if (event.getCommand().getId().endsWith("button")) {
-            IResultSetController resultSet = ResultSetCommandHandler.getActiveResultSet(HandlerUtil.getActivePart(event));
+        IResultSetController resultSet = ResultSetCommandHandler.getActiveResultSet(HandlerUtil.getActivePart(event));
+        if (resultSet != null) {
             if (resultSet == null) {
                 DBeaverUI.getInstance().showError("Mock Data", "No active results viewer");
                 return null;
