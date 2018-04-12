@@ -25,10 +25,4 @@ public interface DBCParameterizedStatement extends DBCStatement
 
     String getFormattedQuery();
 
-    /**
-     * Forces parameters save (for script generation).
-     * Parameters save can be disabled due to performance reasons
-     */
-    void forceParametersSave(boolean force);
-
 }

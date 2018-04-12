@@ -560,10 +560,15 @@ public final class SQLUtils {
     }
 
     public static String convertValueToSQL(@NotNull DBPDataSource dataSource, @NotNull DBSAttributeBase attribute, @Nullable Object value) {
+        DBDValueHandler valueHandler = DBUtils.findValueHandler(dataSource, attribute);
+
+        return convertValueToSQL(dataSource, attribute, valueHandler, value);
+    }
+
+    public static String convertValueToSQL(@NotNull DBPDataSource dataSource, @NotNull DBSAttributeBase attribute, @NotNull DBDValueHandler valueHandler, @Nullable Object value) {
         if (DBUtils.isNullValue(value)) {
             return SQLConstants.NULL_VALUE;
         }
-        DBDValueHandler valueHandler = DBUtils.findValueHandler(dataSource, attribute);
 
         String strValue;
 
