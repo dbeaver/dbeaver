@@ -35,7 +35,6 @@ import org.jkiss.dbeaver.ext.mockdata.model.MockGeneratorDescriptor;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.DBValueFormatting;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -46,6 +45,7 @@ import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.net.URL;
 import java.util.*;
 import java.util.List;
@@ -177,7 +177,6 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
                 }
             });
 
-            VoidProgressMonitor monitor = new VoidProgressMonitor(); // TODO VoidProgressMonitor
             CellLabelProvider labelProvider = new CellLabelProvider() {
                 @Override
                 public void update(ViewerCell cell) {
@@ -187,7 +186,7 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
                         cell.setImage(DBeaverIcons.getImage(DBValueFormatting.getTypeImage(attribute)));
                         cell.setText(attribute.getName());
                         try {
-                            if (DBUtils.checkUnique(monitor, mockDataSettings.getEntity(), attribute)) {
+                            if (DBUtils.checkUnique(mockDataSettings.getMonitor(), mockDataSettings.getEntity(), attribute)) {
                                 cell.setFont(boldFont);
                             }
                         } catch (DBException e) {
@@ -384,54 +383,63 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
     @Override
     public void activatePage() {
 
-        try {
-            // init the generators properties
-            if (firstInit) {
-                firstInit = false;
-                MockDataExecuteWizard wizard = getWizard();
-                mockDataSettings.init(wizard);
-                wizard.loadSettings();
-
-                removeOldDataCheck.setSelection(mockDataSettings.isRemoveOldData());
-                rowsText.setText(String.valueOf(mockDataSettings.getRowsNumber()));
-                generatorsTableViewer.setInput(mockDataSettings.getAttributes());
+        // init the generators properties
+        if (firstInit) {
+            try {
+                DBeaverUI.run(this.getContainer(), true, true, monitor -> {
+                    try {
+                        firstInit = false;
+                        MockDataExecuteWizard wizard = getWizard();
+                        mockDataSettings.init(monitor, wizard);
+                        wizard.loadSettings();
+                    } catch (DBException ex) {
+                        throw new InvocationTargetException(ex);
+                    }
+                });
+            } catch (InvocationTargetException ex) {
+                log.error("Error Mock Data Settings initialization", ex.getTargetException());
+            }
+            catch (InterruptedException e) {
+                log.error("Mock Data Settings initialization interrupted", e);
             }
 
-            entityNameText.setText(DBUtils.getObjectFullName(mockDataSettings.getEntity(), DBPEvaluationContext.DML));
-            propsEditor.getControl().setFocus();
+            removeOldDataCheck.setSelection(mockDataSettings.isRemoveOldData());
+            rowsText.setText(String.valueOf(mockDataSettings.getRowsNumber()));
+            generatorsTableViewer.setInput(mockDataSettings.getAttributes());
+        }
 
-            // select the attributes table item
-            final Table table = generatorsTableViewer.getTable();
-            if (table.getItemCount() > 0) {
-                int selectedItemIndex = 0;
-                TableItem selectedItem = null;
-                String selectedAttribute = mockDataSettings.getSelectedAttribute();
-                if (selectedAttribute != null) {
-                    for (int i = 0; i < table.getItemCount(); i++) {
-                        if (selectedAttribute.equals(table.getItem(i).getText())) {
-                            selectedItemIndex = i;
-                            selectedItem = table.getItem(i);
-                            break;
-                        }
+        entityNameText.setText(DBUtils.getObjectFullName(mockDataSettings.getEntity(), DBPEvaluationContext.DML));
+        propsEditor.getControl().setFocus();
+
+        // select the attributes table item
+        final Table table = generatorsTableViewer.getTable();
+        if (table.getItemCount() > 0) {
+            int selectedItemIndex = 0;
+            TableItem selectedItem = null;
+            String selectedAttribute = mockDataSettings.getSelectedAttribute();
+            if (selectedAttribute != null) {
+                for (int i = 0; i < table.getItemCount(); i++) {
+                    if (selectedAttribute.equals(table.getItem(i).getText())) {
+                        selectedItemIndex = i;
+                        selectedItem = table.getItem(i);
+                        break;
                     }
                 }
-                table.select(selectedItemIndex);
-                if (selectedItem != null) {
-                    table.showItem(selectedItem);
-                }
-                // and notify the listeners
-                Event event = new Event();
-                event.widget = table;
-                event.display = table.getDisplay();
-                event.item = table.getItem(selectedItemIndex);
-                event.type = SWT.Selection;
-                table.notifyListeners(SWT.Selection, event);
-            } else {
-                noGeneratorInfoLabel.setText("No attributes in the table");
-                noGeneratorInfoLabel.setVisible(true);
             }
-        } catch (DBException ex) {
-            log.error("Error of initializing the Mock Data settings", ex);
+            table.select(selectedItemIndex);
+            if (selectedItem != null) {
+                table.showItem(selectedItem);
+            }
+            // and notify the listeners
+            Event event = new Event();
+            event.widget = table;
+            event.display = table.getDisplay();
+            event.item = table.getItem(selectedItemIndex);
+            event.type = SWT.Selection;
+            table.notifyListeners(SWT.Selection, event);
+        } else {
+            noGeneratorInfoLabel.setText("No attributes in the table");
+            noGeneratorInfoLabel.setVisible(true);
         }
 
         updatePageCompletion();

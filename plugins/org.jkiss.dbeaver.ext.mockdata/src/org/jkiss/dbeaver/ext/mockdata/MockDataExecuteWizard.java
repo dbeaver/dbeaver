@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
@@ -84,7 +83,7 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
     public boolean canFinish() {
         try {
             Collection<? extends DBSEntityAttribute> attributes =
-                    mockDataSettings.getEntity().getAttributes(new VoidProgressMonitor());
+                    mockDataSettings.getEntity().getAttributes(mockDataSettings.getMonitor());
             return super.canFinish() && !CommonUtils.isEmpty(DBUtils.getRealAttributes(attributes));
         } catch (DBException ex) {
             log.error("Error accessing DB entity " + mockDataSettings.getEntity().getName(), ex);
