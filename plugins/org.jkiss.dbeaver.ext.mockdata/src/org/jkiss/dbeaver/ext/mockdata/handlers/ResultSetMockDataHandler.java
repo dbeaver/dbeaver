@@ -45,8 +45,8 @@ public class ResultSetMockDataHandler extends AbstractHandler {
     public Object execute(ExecutionEvent event) throws ExecutionException {
 
         List<DBSObject> selectedObjects;
-        if (event.getCommand().getId().contains("resultset")) {
-            IResultSetController resultSet = ResultSetCommandHandler.getActiveResultSet(HandlerUtil.getActivePart(event));
+        IResultSetController resultSet = ResultSetCommandHandler.getActiveResultSet(HandlerUtil.getActivePart(event));
+        if (resultSet != null) {
             if (resultSet == null) {
                 DBeaverUI.getInstance().showError("Mock Data", "No active results viewer");
                 return null;
