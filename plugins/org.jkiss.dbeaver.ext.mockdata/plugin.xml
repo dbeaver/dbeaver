@@ -6,18 +6,19 @@
     <extension-point id="org.jkiss.dbeaver.mockGenerator" name="Mock data generator" schema="schema/org.jkiss.dbeaver.mockGenerator.exsd"/>
 
     <extension point="org.eclipse.ui.handlers">
-        <handler commandId="org.jkiss.dbeaver.ext.mockdata.resultset.button" class="org.jkiss.dbeaver.ext.mockdata.handlers.ResultSetMockDataHandler" />
-
-        <handler commandId="org.jkiss.dbeaver.ext.mockdata.resultset.mockdata" class="org.jkiss.dbeaver.ext.mockdata.handlers.ResultSetMockDataHandler" />
-
-        <handler commandId="org.jkiss.dbeaver.ext.mockdata.forSelection" class="org.jkiss.dbeaver.ext.mockdata.handlers.ResultSetMockDataHandler">
+        <handler commandId="org.jkiss.dbeaver.ext.mockdata.resultset.mockdata" class="org.jkiss.dbeaver.ext.mockdata.handlers.ResultSetMockDataHandler">
             <enabledWhen>
-                <with variable="selection">
-                    <count value="+"/>
-                    <iterate operator="and">
-                        <adapt type="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
-                    </iterate>
-                </with>
+                <or>
+                    <with variable="activeEditor">
+                        <adapt type="org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer"/>
+                    </with>
+                    <with variable="selection">
+                        <count value="+"/>
+                        <iterate operator="and">
+                            <adapt type="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
+                        </iterate>
+                    </with>
+                </or>
             </enabledWhen>
         </handler>
     </extension>
@@ -37,25 +38,22 @@
     </extension>
 
     <extension point="org.eclipse.ui.commands">
-        <command id="org.jkiss.dbeaver.ext.mockdata.resultset.button" name="Generate Mock Data" description="Mock Data Generator"/>
-        <command id="org.jkiss.dbeaver.ext.mockdata.forSelection" name="Generate Mock Data" description="Mock Data Generator"/>
         <command id="org.jkiss.dbeaver.ext.mockdata.resultset.mockdata" name="Generate Mock Data" description="Mock Data Generator" categoryId="org.jkiss.dbeaver.core.rs"/>
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
-        <image commandId="org.jkiss.dbeaver.ext.mockdata.resultset.button" icon="icons/mock_data.png"/>
-        <image commandId="org.jkiss.dbeaver.ext.mockdata.forSelection" icon="icons/mock_data.png"/>
+        <image commandId="org.jkiss.dbeaver.ext.mockdata.resultset.mockdata" icon="icons/mock_data.png"/>
     </extension>
 
     <extension point="org.eclipse.ui.menus">
         <!-- Results viewer status bar additions -->
         <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.ui.controls.resultset.status?after=additions">
-            <command commandId="org.jkiss.dbeaver.ext.mockdata.resultset.button"/>
+            <command commandId="org.jkiss.dbeaver.ext.mockdata.resultset.mockdata"/>
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?before=generate">
             <command
-                    commandId="org.jkiss.dbeaver.ext.mockdata.forSelection"
+                    commandId="org.jkiss.dbeaver.ext.mockdata.resultset.mockdata"
                     label="Generate Mock Data">
                 <visibleWhen checkEnabled="true"/>
             </command>
