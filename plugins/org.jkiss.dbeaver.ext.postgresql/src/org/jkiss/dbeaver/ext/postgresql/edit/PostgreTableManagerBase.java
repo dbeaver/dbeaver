@@ -45,11 +45,18 @@ public abstract class PostgreTableManagerBase extends SQLTableManager<PostgreTab
         boolean isDDL = CommonUtils.getOption(options, DBPScriptObject.OPTION_DDL_SOURCE);
         PostgreTableBase table = command.getObject();
         // Add comments
-        if ((!table.isPersisted() || command.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) && table.getDescription() != null) {
+        String comment;
+        if (!table.isPersisted()) {
+            Object descProp = command.getProperty(DBConstants.PROP_ID_DESCRIPTION);
+            comment = descProp != null ? descProp.toString() : null;
+        } else {
+            comment = table.getDescription();
+        }
+        if (comment != null) {
             actions.add(new SQLDatabasePersistAction(
                 "Comment table",
                 "COMMENT ON " + (table.isView() ? "VIEW": "TABLE") + " " + table.getFullyQualifiedName(DBPEvaluationContext.DDL) +
-                    " IS " + SQLUtils.quoteString(table, table.getDescription())));
+                    " IS " + SQLUtils.quoteString(table, comment)));
         }
         DBRProgressMonitor monitor = new VoidProgressMonitor();
         if (isDDL) {
