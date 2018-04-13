@@ -66,6 +66,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     private String activeDatabaseName;
     private String activeSchemaName;
     private final List<String> searchPath = new ArrayList<>();
+    private final List<String> defaultSearchPath = new ArrayList<>();
     private String activeUser;
 
     public PostgreDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
@@ -174,6 +175,8 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         } catch (Exception e) {
             log.debug(e);
         }
+        defaultSearchPath.clear();
+        defaultSearchPath.addAll(searchPath);
 
         // Read databases
         databaseCache.getAllObjects(monitor, this);
@@ -286,6 +289,12 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         conConfig.setUrl(getContainer().getDriver().getDataSourceProvider().getConnectionURL(getContainer().getDriver(), conConfig));
         getContainer().getRegistry().flushConfig();
 
+        try (JDBCSession session = getDefaultContext(false).openSession(monitor, DBCExecutionPurpose.UTIL, "Update object state")) {
+            determineDefaultObjects(session);
+        } catch (SQLException e) {
+            throw new DBException(e, this);
+        }
+
         // Notify UI
         if (oldDatabase != null) {
             DBUtils.fireObjectSelect(oldDatabase, false);
@@ -332,6 +341,10 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
 
     public List<String> getSearchPath() {
         return searchPath;
+    }
+
+    List<String> getDefaultSearchPath() {
+        return defaultSearchPath;
     }
 
     public void setSearchPath(String path) {
