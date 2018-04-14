@@ -40,6 +40,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -66,6 +68,9 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
     private static final String LOB_DIRECTORY_NAME = "files"; //$NON-NLS-1$
 
+    public static final String VARIABLE_DATASOURCE = "datasource";
+    public static final String VARIABLE_CATALOG = "catalog";
+    public static final String VARIABLE_SCHEMA = "schema";
     public static final String VARIABLE_TABLE = "table";
     public static final String VARIABLE_TIMESTAMP = "timestamp";
     public static final String VARIABLE_DATE = "date";
@@ -350,8 +355,6 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     private void executeFinishCommand() {
         String commandLine = translatePattern(
             settings.getFinishProcessCommand(),
-            DBUtils.getObjectOwnerProject(sourceObject),
-            stripObjectName(sourceObject.getName()),
             outputFile);
         DBRShellCommand command = new DBRShellCommand(commandLine);
         DBRProcessDescriptor processDescriptor = new DBRProcessDescriptor(command);
@@ -373,8 +376,6 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         Object extension = processorProperties.get(StreamConsumerSettings.PROP_FILE_EXTENSION);
         String fileName = translatePattern(
             settings.getOutputFilePattern(),
-            DBUtils.getObjectOwnerProject(sourceObject),
-            stripObjectName(sourceObject.getName()),
             null);
         if (extension != null) {
             return fileName + "." + extension;
@@ -396,27 +397,36 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         return new File(dir, fileName);
     }
 
-    private String translatePattern(String pattern, final IProject project, final String tableName, final File targetFile)
+    private String translatePattern(String pattern, final File targetFile)
     {
-        pattern = GeneralUtils.replaceVariables(pattern, name -> {
+        return GeneralUtils.replaceVariables(pattern, name -> {
             switch (name) {
+                case VARIABLE_DATASOURCE: {
+                    return stripObjectName(sourceObject.getDataSource().getContainer().getName());
+                }
+                case VARIABLE_CATALOG: {
+                    DBSCatalog catalog = DBUtils.getParentOfType(DBSCatalog.class, sourceObject);
+                    return catalog == null ? "" : stripObjectName(catalog.getName());
+                }
+                case VARIABLE_SCHEMA: {
+                    DBSSchema schema = DBUtils.getParentOfType(DBSSchema.class, sourceObject);
+                    return schema == null ? "" : stripObjectName(schema.getName());
+                }
                 case VARIABLE_TABLE:
-                    return tableName;
+                    return stripObjectName(sourceObject.getName());
                 case VARIABLE_TIMESTAMP:
                     return RuntimeUtils.getCurrentTimeStamp();
                 case VARIABLE_DATE:
                     return RuntimeUtils.getCurrentDate();
-                case VARIABLE_PROJECT:
+                case VARIABLE_PROJECT: {
+                    IProject project = DBUtils.getObjectOwnerProject(sourceObject);
                     return project == null ? "" : project.getName();
+                }
                 case VARIABLE_FILE:
                     return targetFile == null ? "" : targetFile.getAbsolutePath();
             }
             return null;
         });
-        // Replace legacy patterns (without dollar prefix)
-        return pattern
-            .replace("{table}", tableName)
-            .replace("{timestamp}", RuntimeUtils.getCurrentTimeStamp());
     }
 
     private static String stripObjectName(String name)

@@ -88,6 +88,9 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 4;
             UIUtils.setContentProposalToolTip(fileNameText, "Output file name pattern",
+                StreamTransferConsumer.VARIABLE_DATASOURCE,
+                StreamTransferConsumer.VARIABLE_CATALOG,
+                StreamTransferConsumer.VARIABLE_SCHEMA,
                 StreamTransferConsumer.VARIABLE_TABLE,
                 StreamTransferConsumer.VARIABLE_TIMESTAMP,
                 StreamTransferConsumer.VARIABLE_DATE,
@@ -101,6 +104,9 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
                 fileNameText,
                 new TextContentAdapter(),
                 new SimpleContentProposalProvider(new String[] {
+                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_DATASOURCE),
+                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_CATALOG),
+                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_SCHEMA),
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_TABLE),
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_TIMESTAMP),
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_DATE),
@@ -194,6 +200,7 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
         boolean isBinary = getWizard().getSettings().getProcessor().isBinaryFormat();
         boolean clipboard = !isBinary && clipboardCheck.getSelection();
 
+        clipboardCheck.setEnabled(!isBinary);
         directoryText.setEnabled(!clipboard);
         fileNameText.setEnabled(!clipboard);
         compressCheckbox.setEnabled(!clipboard);
