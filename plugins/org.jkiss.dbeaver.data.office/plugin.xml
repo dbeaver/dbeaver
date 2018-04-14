@@ -3,21 +3,14 @@
 <plugin>
 
     <extension point="org.jkiss.dbeaver.dataTransfer">
-         <node type="consumer"
-              id="poi_consumer"
-              class="org.jkiss.dbeaver.data.office.export.StreamPOITransferConsumer"
-              icon="icons/file/file.png"
-              label="%dataTransfer.consumer.stream.name"
-              description="%dataTransfer.consumer.stream.description"
-              settings="org.jkiss.dbeaver.data.office.export.StreamPOIConsumerSettings">
-             <page class="org.jkiss.dbeaver.data.office.export.StreamPOIConsumerPageSettings"/>
-             <page class="org.jkiss.dbeaver.data.office.export.StreamPOIConsumerPageOutput"/>
-             <processor
-                        id="stream.xlsx"
-                        class="org.jkiss.dbeaver.data.office.export.DataExporterXLSX"
-                        description="%dataTransfer.processor.xlsx.description"
-                        icon="icons/excel.png"
-                        label="%dataTransfer.processor.xlsx.name">
+        <node ref="stream_consumer">
+            <processor
+                id="stream.xlsx"
+                class="org.jkiss.dbeaver.data.office.export.DataExporterXLSX"
+                description="%dataTransfer.processor.xlsx.description"
+                icon="icons/excel.png"
+                label="%dataTransfer.processor.xlsx.name"
+                binary="true">
                     <propertyGroup label="%dataTransfer.processor.xlsx.propertyGroup.general.label">
                         <property id="rownumber" label="%dataTransfer.processor.xlsx.property.rowNumber.name" type="boolean" description="%dataTransfer.processor.xlsx.property.rowNumber.description" defaultValue="yes" required="false"/>
                         <property id="border" label="%dataTransfer.processor.xlsx.property.border.name" type="string" description="%dataTransfer.processor.xlsx.property.border.description" defaultValue="THIN" required="false" validValues="NONE,THIN,THICK"/>
@@ -30,9 +23,9 @@
                         <property id="exportSql" label="%dataTransfer.processor.xlsx.property.exportSql.name" type="boolean" description="%dataTransfer.processor.xlsx.property.exportSql.description" defaultValue="false" required="false"/>
                         <property id="splitSqlText" label="%dataTransfer.processor.xlsx.property.splitSqlText.name" type="boolean" description="%dataTransfer.processor.xlsx.property.splitSqlText.description" defaultValue="false" required="false"/>
                         <property id="splitByRowCount" label="%dataTransfer.processor.xlsx.property.splitByRowCount.name" type="integer" description="%dataTransfer.processor.xlsx.property.splitByRowCount.description" defaultValue="1048575" required="false"/>
-                        <property id="splitByColNum" label="%dataTransfer.processor.xlsx.property.splitByColNum.name" type="integer" description="%dataTransfer.processor.xlsx.property.splitByColNum.description" defaultValue="" required="false"/>
+                        <property id="splitByColNum" label="%dataTransfer.processor.xlsx.property.splitByColNum.name" type="integer" description="%dataTransfer.processor.xlsx.property.splitByColNum.description" defaultValue="0" required="false"/>
                     </propertyGroup>
-             </processor>
+            </processor>
          </node>
     </extension>
 

@@ -110,7 +110,7 @@ public class DataExporterXLSX extends StreamExporterAbstract {
         properties.put(DataExporterXLSX.PROP_EXPORT_SQL, false);
         properties.put(DataExporterXLSX.PROP_SPLIT_SQLTEXT, false);
         properties.put(DataExporterXLSX.PROP_SPLIT_BYROWCOUNT, EXCEL2007MAXROWS);
-        properties.put(DataExporterXLSX.PROP_SPLIT_BYCOL, -1);
+        properties.put(DataExporterXLSX.PROP_SPLIT_BYCOL, 0);
         return properties;
     }
 
@@ -318,6 +318,11 @@ public class DataExporterXLSX extends StreamExporterAbstract {
     }
 
     @Override
+    public boolean isTextExporter() {
+        return false;
+    }
+
+    @Override
     public void exportHeader(DBCSession session) throws DBException, IOException {
 
         columns = getSite().getAttributes();
@@ -425,7 +430,7 @@ public class DataExporterXLSX extends StreamExporterAbstract {
     }
 
     private Worksheet getWsh(Object[] row) {
-        Object colValue = ((splitByCol < 0) || (splitByCol >= columns.size())) ? "" : row[splitByCol];
+        Object colValue = ((splitByCol <= 0) || (splitByCol >= columns.size())) ? "" : row[splitByCol];
         Worksheet w = worksheets.get(colValue);
         if (w == null) {
             w = createSheet(colValue);

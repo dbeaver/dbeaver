@@ -191,13 +191,15 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
     }
 
     private void toggleClipboardOutput() {
-        boolean clipboard = clipboardCheck.getSelection();
+        boolean isBinary = getWizard().getSettings().getProcessor().isBinaryFormat();
+        boolean clipboard = !isBinary && clipboardCheck.getSelection();
+
         directoryText.setEnabled(!clipboard);
         fileNameText.setEnabled(!clipboard);
         compressCheckbox.setEnabled(!clipboard);
-        encodingCombo.setEnabled(!clipboard);
-        encodingBOMLabel.setEnabled(!clipboard);
-        encodingBOMCheckbox.setEnabled(!clipboard);
+        encodingCombo.setEnabled(!isBinary && !clipboard);
+        encodingBOMLabel.setEnabled(!isBinary && !clipboard);
+        encodingBOMCheckbox.setEnabled(!isBinary && !clipboard);
         showFolderCheckbox.setEnabled(!clipboard);
         execProcessCheckbox.setEnabled(!clipboard);
         execProcessText.setEnabled(!clipboard);
@@ -212,6 +214,8 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
     @Override
     public void activatePage()
     {
+        boolean isBinary = getWizard().getSettings().getProcessor().isBinaryFormat();
+
         final StreamConsumerSettings settings = getWizard().getPageSettings(this, StreamConsumerSettings.class);
 
         clipboardCheck.setSelection(settings.isOutputClipboard());
@@ -223,6 +227,11 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
         showFolderCheckbox.setSelection(settings.isOpenFolderOnFinish());
         execProcessCheckbox.setSelection(settings.isExecuteProcessOnFinish());
         execProcessText.setText(CommonUtils.toString(settings.getFinishProcessCommand()));
+
+        if (isBinary) {
+            clipboardCheck.setSelection(false);
+            encodingBOMCheckbox.setSelection(false);
+        }
 
         updatePageCompletion();
         toggleClipboardOutput();
