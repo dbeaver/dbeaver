@@ -39,7 +39,6 @@ import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorSite;
-import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.part.MultiPageEditorSite;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.jkiss.dbeaver.DBException;
@@ -157,12 +156,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
 
     @Override
     public void doSave(final IProgressMonitor progressMonitor) {
-        DBeaverUI.syncExec(new Runnable() {
-            @Override
-            public void run() {
-                SQLEditorNested.super.doSave(progressMonitor);
-            }
-        });
+        DBeaverUI.syncExec(() -> SQLEditorNested.super.doSave(progressMonitor));
     }
 
     @Override
@@ -194,12 +188,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
             ((SQLEditorNested.ObjectDocumentProvider) documentProvider).sourceText = null;
         }
         if (force) {
-            try {
-                super.init(editorSite, getEditorInput());
-                //setFocus();
-            } catch (PartInitException e) {
-                log.error(e);
-            }
+            super.setInput(getEditorInput());
         }
         reloadSyntaxRules();
     }
@@ -261,16 +250,9 @@ public abstract class SQLEditorNested<T extends DBSObject>
                 job.addJobChangeListener(new JobChangeAdapter() {
                     @Override
                     public void done(IJobChangeEvent event) {
-                        DBeaverUI.asyncExec(new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    SQLEditorNested.this.init(getEditorSite(), getEditorInput());
-                                    SQLEditorNested.this.reloadSyntaxRules();
-                                } catch (PartInitException e) {
-                                    log.error(e);
-                                }
-                            }
+                        DBeaverUI.asyncExec(() -> {
+                            SQLEditorNested.this.setInput(getEditorInput());
+                            SQLEditorNested.this.reloadSyntaxRules();
                         });
                         super.done(event);
                     }
@@ -359,7 +341,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
 
     private class EditorPageControl extends ProgressPageControl {
 
-        public EditorPageControl(Composite parent, int style)
+        EditorPageControl(Composite parent, int style)
         {
             super(parent, style);
         }
@@ -372,7 +354,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
 
     public class ViewLogAction extends Action
     {
-        public ViewLogAction()
+        ViewLogAction()
         {
             super("View compile log", DBeaverIcons.getImageDescriptor(UIIcon.COMPILE_LOG)); //$NON-NLS-2$
         }

@@ -460,7 +460,12 @@ public class PostgreUtils {
             // Pack to permission list
             List<PostgrePermission> result = new ArrayList<>(privs.size());
             for (List<PostgrePrivilege> priv : privs.values()) {
-                result.add(new PostgreObjectPermission(owner, priv.get(0).getGrantee(), priv));
+                String grantee = priv.get(0).getGrantee();
+                // Bug in PG? Always return proc owner as separate grant but owner is in upper case (e.g. PUBLIC). Weird.
+                if (owner instanceof PostgreProcedure && "PUBLIC".equals(grantee)) {
+                    grantee = "public";
+                }
+                result.add(new PostgreObjectPermission(owner, grantee, priv));
             }
             Collections.sort(result);
             return result;

@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.ui.editors;
 
 import java.util.Map;
 
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.jface.action.ControlContribution;
 import org.eclipse.jface.action.IContributionManager;
@@ -29,8 +30,10 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IEditorInput;
 import org.jkiss.dbeaver.ext.postgresql.PostgreActivator;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgrePermissionsOwner;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreScriptObject;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
@@ -50,7 +53,7 @@ public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject
     
     private static final String TOPIC_DEBUGGER_SOURCE = GeneralUtils.encodeTopic(DBPScriptObject.OPTION_DEBUGGER_SOURCE);
     private Button omitHeaderCheck;
-    private boolean showPermissions = true;
+    private Boolean showPermissions;
     private boolean showColumnComments = true;
 
     private IEventBroker eventBroker;
@@ -98,6 +101,11 @@ public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject
         return false;
     }
 
+    public boolean getShowPermissions() {
+        // By default permissions enabled only for tables
+        return showPermissions != null ? showPermissions : getSourceObject() instanceof PostgreTableBase;
+    }
+
     @Override
     protected void setSourceText(DBRProgressMonitor monitor, String sourceText)
     {
@@ -133,12 +141,13 @@ public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject
                     return omitHeaderCheck;
                 }
             });
-        } else if (sourceObject instanceof PostgreTableBase) {
+        }
+        if (sourceObject instanceof PostgrePermissionsOwner) {
             contributionManager.add(new Separator());
             contributionManager.add(new ControlContribution("PGDDLShowPermissions") {
                 @Override
                 protected Control createControl(Composite parent) {
-                    Button showPermissionsCheck = UIUtils.createCheckbox(parent, "Show permissions", "Show permission grants", true, 0);
+                    Button showPermissionsCheck = UIUtils.createCheckbox(parent, "Show permissions", "Show permission grants", getShowPermissions(), 0);
                     showPermissionsCheck.addSelectionListener(new SelectionAdapter() {
                         @Override
                         public void widgetSelected(SelectionEvent e) {
@@ -149,6 +158,8 @@ public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject
                     return showPermissionsCheck;
                 }
             });
+        }
+        if (sourceObject instanceof PostgreTableBase) {
             contributionManager.add(new ControlContribution("PGDDLShowColumnComments") {
                 @Override
                 protected Control createControl(Composite parent) {
@@ -184,7 +195,7 @@ public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject
         Object omitValue = getEditorInput().getAttribute(DBPScriptObject.OPTION_DEBUGGER_SOURCE);
         boolean omitHeader = Boolean.parseBoolean(String.valueOf(omitValue));
         options.put(DBPScriptObject.OPTION_DEBUGGER_SOURCE, omitHeader);
-        options.put(PostgreConstants.OPTION_DDL_SHOW_PERMISSIONS, showPermissions);
+        options.put(PostgreConstants.OPTION_DDL_SHOW_PERMISSIONS, getShowPermissions());
         options.put(PostgreConstants.OPTION_DDL_SHOW_COLUMN_COMMENTS, showColumnComments);
         return options;
     }

@@ -20,14 +20,17 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractProcedure;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
@@ -260,6 +263,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException
     {
+        String procDDL;
         if (getDataSource().isGreenplum() || CommonUtils.getOption(options, OPTION_DEBUGGER_SOURCE)) {
             if (procSrc == null) {
                 try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read procedure body")) {
@@ -268,7 +272,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                     throw new DBException("Error reading procedure body", e);
                 }
             }
-            return procSrc;
+            procDDL = procSrc;
         } else {
             if (body == null) {
                 if (!isPersisted()) {
@@ -293,14 +297,33 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                     }
                 }
             }
+            procDDL = body;
         }
-        return body;
+        if (CommonUtils.getOption(options, PostgreConstants.OPTION_DDL_SHOW_PERMISSIONS)) {
+
+            //
+            // ALTER FUNCTION public.__st_countagg_transfn(agg_count, raster, integer, boolean, double precision) OWNER TO postgres;
+            PostgreRole owner = getOwner(monitor);
+            if (owner != null) {
+                procDDL += "\n" +
+                    "ALTER FUNCTION " + getFullQualifiedSignature() + " OWNER TO " + DBUtils.getQuotedIdentifier(owner) + "\n";
+            }
+
+            List<DBEPersistAction> actions = new ArrayList<>();
+            PostgreUtils.getObjectGrantPermissionActions(monitor, this, actions, options);
+            procDDL += "\n" + SQLUtils.generateScript(getDataSource(), actions.toArray(new DBEPersistAction[actions.size()]), false);
+        }
+        return procDDL;
     }
 
     @Override
     public void setObjectDefinitionText(String sourceText) throws DBException
     {
         body = sourceText;
+    }
+
+    public long getOwnerId() {
+        return ownerId;
     }
 
     @Property(category = CAT_PROPS, order = 10)
@@ -374,7 +397,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     }
 
     private String makeOverloadedName(boolean quote) {
-        String selfName = quote ? DBUtils.getQuotedIdentifier(this) : name;
+        String selfName = (quote ? DBUtils.getQuotedIdentifier(this) : name);
         if (!CommonUtils.isEmpty(params)) {
             StringBuilder paramsSignature = new StringBuilder(64);
             paramsSignature.append("(");
