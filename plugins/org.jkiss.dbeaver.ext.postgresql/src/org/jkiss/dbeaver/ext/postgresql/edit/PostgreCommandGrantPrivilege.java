@@ -17,13 +17,13 @@
 package org.jkiss.dbeaver.ext.postgresql.edit;
 
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.edit.DBECommand;
-import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 
 import java.util.Map;
 
@@ -70,22 +70,14 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePerm
             objectName = ((PostgreRolePermission)permission).getFullObjectName();
         } else {
             roleName = DBUtils.getQuotedIdentifier(object.getDataSource(), ((PostgreObjectPermission) permission).getGrantee());
-            if (object instanceof PostgreProcedure) {
-                objectName = ((PostgreProcedure) object).getFullQualifiedSignature();
-            } else {
-                objectName = DBUtils.getObjectFullName(object, DBPEvaluationContext.DDL);
-            }
+            objectName = PostgreUtils.getObjectUniqueName(object);
         }
 
         String objectType;
         if (permission instanceof PostgreRolePermission) {
             objectType = ((PostgreRolePermission) permission).getKind().name();
-        } else if (object instanceof PostgreSequence) {
-            objectType = "SEQUENCE";
-        } else if (object instanceof PostgreProcedure) {
-            objectType = "FUNCTION";
         } else {
-            objectType = "TABLE";
+            objectType = PostgreUtils.getObjectTypeName(object);
         }
         String grantScript = "GRANT " + privName + //$NON-NLS-1$
             " ON " + objectType + " " + objectName + //$NON-NLS-1$

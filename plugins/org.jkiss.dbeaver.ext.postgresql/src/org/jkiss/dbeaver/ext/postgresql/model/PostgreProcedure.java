@@ -300,15 +300,6 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
             procDDL = body;
         }
         if (CommonUtils.getOption(options, PostgreConstants.OPTION_DDL_SHOW_PERMISSIONS)) {
-
-            //
-            // ALTER FUNCTION public.__st_countagg_transfn(agg_count, raster, integer, boolean, double precision) OWNER TO postgres;
-            PostgreRole owner = getOwner(monitor);
-            if (owner != null) {
-                procDDL += "\n" +
-                    "ALTER FUNCTION " + getFullQualifiedSignature() + " OWNER TO " + DBUtils.getQuotedIdentifier(owner) + "\n";
-            }
-
             List<DBEPersistAction> actions = new ArrayList<>();
             PostgreUtils.getObjectGrantPermissionActions(monitor, this, actions, options);
             procDDL += "\n" + SQLUtils.generateScript(getDataSource(), actions.toArray(new DBEPersistAction[actions.size()]), false);
