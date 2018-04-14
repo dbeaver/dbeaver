@@ -30,7 +30,7 @@ public interface IDataTransferConsumer<SETTINGS extends IDataTransferSettings, P
     extends IDataTransferNode<SETTINGS>, DBDDataReceiver
 {
 
-    void initTransfer(DBSObject sourceObject, SETTINGS settings, PROCESSOR processor, Map<Object, Object> processorProperties);
+    void initTransfer(DBSObject sourceObject, SETTINGS settings, boolean isBinary, PROCESSOR processor, Map<Object, Object> processorProperties);
 
     void startTransfer(DBRProgressMonitor monitor) throws DBException;
 

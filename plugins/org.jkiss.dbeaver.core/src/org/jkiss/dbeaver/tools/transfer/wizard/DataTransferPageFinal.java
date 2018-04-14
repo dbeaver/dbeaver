@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.registry.transfer.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -85,11 +86,12 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
         List<DataTransferPipe> dataPipes = settings.getDataPipes();
         for (DataTransferPipe pipe : dataPipes) {
             IDataTransferSettings consumerSettings = settings.getNodeSettings(pipe.getConsumer());
+            DataTransferProcessorDescriptor processorDescriptor = settings.getProcessor();
             IDataTransferProcessor processor = null;
-            if (settings.getProcessor() != null) {
+            if (processorDescriptor != null) {
                 // Processor is optional
                 try {
-                    processor = settings.getProcessor().getInstance();
+                    processor = processorDescriptor.getInstance();
                 } catch (Throwable e) {
                     log.error("Can't create processor", e);
                     continue;
@@ -98,6 +100,7 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
             pipe.getConsumer().initTransfer(
                 pipe.getProducer().getSourceObject(),
                 consumerSettings,
+                processorDescriptor != null && processorDescriptor.isBinaryFormat(),
                 processor,
                 processor == null ?
                     null :
@@ -108,8 +111,8 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
                 item.setImage(0, DBeaverIcons.getImage(settings.getProducer().getIcon()));
             }
             item.setText(1, pipe.getConsumer().getTargetName());
-            if (settings.getProcessor() != null && settings.getProcessor().getIcon() != null) {
-                item.setImage(1, DBeaverIcons.getImage(settings.getProcessor().getIcon()));
+            if (processorDescriptor != null && processorDescriptor.getIcon() != null) {
+                item.setImage(1, DBeaverIcons.getImage(processorDescriptor.getIcon()));
             } else if (settings.getConsumer() != null && settings.getConsumer().getIcon() != null) {
                 item.setImage(1, DBeaverIcons.getImage(settings.getConsumer().getIcon()));
             }

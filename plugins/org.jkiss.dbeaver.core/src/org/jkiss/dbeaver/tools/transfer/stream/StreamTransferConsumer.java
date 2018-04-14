@@ -86,6 +86,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     private StreamExportSite exportSite;
     private Map<Object, Object> processorProperties;
     private StringWriter outputBuffer;
+    private boolean isBinary;
     private boolean initialized = false;
 
     public StreamTransferConsumer()
@@ -208,7 +209,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
         // Open output streams
         boolean outputClipboard = settings.isOutputClipboard();
-        outputFile = outputClipboard ? null : makeOutputFile();
+        outputFile = !isBinary && outputClipboard ? null : makeOutputFile();
         try {
             if (outputClipboard) {
                 this.outputBuffer = new StringWriter(2048);
@@ -222,11 +223,13 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                     zipStream.putNextEntry(new ZipEntry(getOutputFileName()));
                     StreamTransferConsumer.this.outputStream = zipStream;
                 }
-                this.writer = new PrintWriter(new OutputStreamWriter(this.outputStream, settings.getOutputEncoding()), true);
+                if (!isBinary) {
+                    this.writer = new PrintWriter(new OutputStreamWriter(this.outputStream, settings.getOutputEncoding()), true);
+                }
             }
 
             // Check for BOM
-            if (!outputClipboard && settings.isOutputEncodingBOM()) {
+            if (!isBinary && !outputClipboard && settings.isOutputEncodingBOM()) {
                 byte[] bom = GeneralUtils.getCharsetBOM(settings.getOutputEncoding());
                 if (bom != null) {
                     outputStream.write(bom);
@@ -287,9 +290,10 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     }
 
     @Override
-    public void initTransfer(DBSObject sourceObject, StreamConsumerSettings settings, IStreamDataExporter processor, Map<Object, Object> processorProperties)
+    public void initTransfer(DBSObject sourceObject, StreamConsumerSettings settings, boolean isBinary, IStreamDataExporter processor, Map<Object, Object> processorProperties)
     {
         this.sourceObject = sourceObject;
+        this.isBinary = isBinary;
         this.processor = processor;
         this.settings = settings;
         this.processorProperties = processorProperties;
@@ -320,16 +324,13 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             return;
         }
 
-        if (settings.isOutputClipboard()) {
+        if (!isBinary && settings.isOutputClipboard()) {
             if (outputBuffer != null) {
-                DBeaverUI.syncExec(new Runnable() {
-                    @Override
-                    public void run() {
-                        TextTransfer textTransfer = TextTransfer.getInstance();
-                        new Clipboard(DBeaverUI.getDisplay()).setContents(
-                            new Object[]{outputBuffer.toString()},
-                            new Transfer[]{textTransfer});
-                    }
+                DBeaverUI.syncExec(() -> {
+                    TextTransfer textTransfer = TextTransfer.getInstance();
+                    new Clipboard(DBeaverUI.getDisplay()).setContents(
+                        new Object[]{outputBuffer.toString()},
+                        new Transfer[]{textTransfer});
                 });
                 outputBuffer = null;
             }
@@ -494,40 +495,46 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         @Override
         public void writeBinaryData(@NotNull DBDContentStorage cs) throws IOException
         {
-            try (final InputStream stream = cs.getContentStream()) {
-                exportSite.flush();
-                final DBPDataSource dataSource = sourceObject.getDataSource();
-                if (dataSource instanceof SQLDataSource) {
-                    ByteArrayOutputStream buffer = new ByteArrayOutputStream((int) cs.getContentLength());
-                    IOUtils.copyStream(stream, buffer);
+            if (isBinary) {
+                try (final InputStream stream = cs.getContentStream()) {
+                    IOUtils.copyStream(stream, exportSite.getOutputStream());
+                }
+            } else {
+                try (final InputStream stream = cs.getContentStream()) {
+                    exportSite.flush();
+                    final DBPDataSource dataSource = sourceObject.getDataSource();
+                    if (dataSource instanceof SQLDataSource) {
+                        ByteArrayOutputStream buffer = new ByteArrayOutputStream((int) cs.getContentLength());
+                        IOUtils.copyStream(stream, buffer);
 
-                    final byte[] bytes = buffer.toByteArray();
-                    final String binaryString = ((SQLDataSource) dataSource).getSQLDialect().getNativeBinaryFormatter().toString(bytes, 0, bytes.length);
-                    writer.write(binaryString);
-                } else {
-                    switch (settings.getLobEncoding()) {
-                        case BASE64: {
-                            Base64.encode(stream, cs.getContentLength(), writer);
-                            break;
-                        }
-                        case HEX: {
-                            writer.write("0x"); //$NON-NLS-1$
-                            byte[] buffer = new byte[5000];
-                            for (; ; ) {
-                                int count = stream.read(buffer);
-                                if (count <= 0) {
-                                    break;
+                        final byte[] bytes = buffer.toByteArray();
+                        final String binaryString = ((SQLDataSource) dataSource).getSQLDialect().getNativeBinaryFormatter().toString(bytes, 0, bytes.length);
+                        writer.write(binaryString);
+                    } else {
+                        switch (settings.getLobEncoding()) {
+                            case BASE64: {
+                                Base64.encode(stream, cs.getContentLength(), writer);
+                                break;
+                            }
+                            case HEX: {
+                                writer.write("0x"); //$NON-NLS-1$
+                                byte[] buffer = new byte[5000];
+                                for (; ; ) {
+                                    int count = stream.read(buffer);
+                                    if (count <= 0) {
+                                        break;
+                                    }
+                                    GeneralUtils.writeBytesAsHex(writer, buffer, 0, count);
                                 }
-                                GeneralUtils.writeBytesAsHex(writer, buffer, 0, count);
+                                break;
                             }
-                            break;
+                            default:
+                                // Binary stream
+                                try (Reader reader = new InputStreamReader(stream, cs.getCharset())) {
+                                    IOUtils.copyText(reader, writer);
+                                }
+                                break;
                         }
-                        default:
-                            // Binary stream
-                            try (Reader reader = new InputStreamReader(stream, cs.getCharset())) {
-                                IOUtils.copyText(reader, writer);
-                            }
-                            break;
                     }
                 }
             }

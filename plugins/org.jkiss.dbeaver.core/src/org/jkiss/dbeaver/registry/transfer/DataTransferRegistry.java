@@ -20,11 +20,14 @@ package org.jkiss.dbeaver.registry.transfer;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 
 /**
@@ -35,6 +38,8 @@ public class DataTransferRegistry {
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.dataTransfer"; //$NON-NLS-1$
 
     private static DataTransferRegistry instance = null;
+
+    private static final Log log = Log.getLog(DataTransferRegistry.class);
 
     public synchronized static DataTransferRegistry getInstance()
     {
@@ -51,10 +56,30 @@ public class DataTransferRegistry {
         // Load datasource providers from external plugins
         IConfigurationElement[] extElements = registry.getConfigurationElementsFor(EXTENSION_ID);
         for (IConfigurationElement ext : extElements) {
+            // Load main nodes
             if (RegistryConstants.TAG_NODE.equals(ext.getName())) {
+                if (!CommonUtils.isEmpty(ext.getAttribute(RegistryConstants.ATTR_REF))) {
+                    continue;
+                }
                 nodes.add(new DataTransferNodeDescriptor(ext));
             }
         }
+        // Load references
+        for (IConfigurationElement ext : extElements) {
+            if (RegistryConstants.TAG_NODE.equals(ext.getName())) {
+                String nodeReference = ext.getAttribute(RegistryConstants.ATTR_REF);
+                if (CommonUtils.isEmpty(nodeReference)) {
+                    continue;
+                }
+                DataTransferNodeDescriptor refNode = getNodeById(nodeReference);
+                if (refNode == null) {
+                    log.error("Referenced data transfer node '" + nodeReference + "' not found");
+                } else {
+                    refNode.loadNodeConfigurations(ext);
+                }
+            }
+        }
+        nodes.sort(Comparator.comparing(DataTransferNodeDescriptor::getName));
     }
 
     public List<DataTransferNodeDescriptor> getAvailableProducers(Collection<Class<?>> objectTypes)

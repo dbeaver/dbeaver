@@ -30,10 +30,7 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 import org.jkiss.utils.ArrayUtils;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 /**
  * DataTransferNodeDescriptor
@@ -72,6 +69,11 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
         this.nodeType = NodeType.valueOf(config.getAttribute(RegistryConstants.ATTR_TYPE).toUpperCase(Locale.ENGLISH));
         this.implType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
         this.settingsType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_SETTINGS));
+
+        loadNodeConfigurations(config);
+    }
+
+    void loadNodeConfigurations(IConfigurationElement config) {
         for (IConfigurationElement typeCfg : ArrayUtils.safeArray(config.getChildren(RegistryConstants.ATTR_SOURCE_TYPE))) {
             sourceTypes.add(new ObjectType(typeCfg.getAttribute(RegistryConstants.ATTR_TYPE)));
         }
@@ -81,6 +83,7 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
         for (IConfigurationElement processorConfig : ArrayUtils.safeArray(config.getChildren(RegistryConstants.TAG_PROCESSOR))) {
             processors.add(new DataTransferProcessorDescriptor(this, processorConfig));
         }
+        processors.sort(Comparator.comparing(DataTransferProcessorDescriptor::getName));
     }
 
     public String getId()
