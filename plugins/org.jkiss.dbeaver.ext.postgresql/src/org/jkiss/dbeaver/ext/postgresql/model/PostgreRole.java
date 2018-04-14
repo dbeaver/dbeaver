@@ -282,6 +282,12 @@ public class PostgreRole implements PostgreObject, PostgrePermissionsOwner, DBPP
     }
 
     @Override
+    public PostgreRole getOwner(DBRProgressMonitor monitor) throws DBException {
+        // Dummy implementation
+        return this;
+    }
+
+    @Override
     public Collection<PostgrePermission> getPermissions(DBRProgressMonitor monitor) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read role privileges")) {
             List<PostgrePermission> permissions = new ArrayList<>();

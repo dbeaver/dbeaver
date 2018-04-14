@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.AbstractObjectCache;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionComment;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -491,14 +492,42 @@ public class PostgreUtils {
         return opt.toString();
     }
 
-    public static void getObjectGrantPermissionActions(DBRProgressMonitor monitor, PostgrePermissionsOwner table, List<DBEPersistAction> actions, Map<String, Object> options) throws DBException {
+    public static String getObjectTypeName(PostgrePermissionsOwner object) {
+        if (object instanceof PostgreSequence) {
+            return "SEQUENCE";
+        } else if (object instanceof PostgreProcedure) {
+            return ((PostgreProcedure) object).getProcedureTypeName();
+        } else {
+            return "TABLE";
+        }
+    }
+
+    public static String getObjectUniqueName(PostgrePermissionsOwner object) {
+        if (object instanceof PostgreProcedure) {
+            return ((PostgreProcedure) object).getFullQualifiedSignature();
+        } else {
+            return DBUtils.getObjectFullName(object, DBPEvaluationContext.DDL);
+        }
+    }
+
+    public static void getObjectGrantPermissionActions(DBRProgressMonitor monitor, PostgrePermissionsOwner object, List<DBEPersistAction> actions, Map<String, Object> options) throws DBException {
         if (CommonUtils.getOption(options, PostgreConstants.OPTION_DDL_SHOW_PERMISSIONS)) {
             // Permissions
-            Collection<PostgrePermission> permissions = table.getPermissions(monitor);
+            Collection<PostgrePermission> permissions = object.getPermissions(monitor);
             if (!CommonUtils.isEmpty(permissions)) {
-                actions.add(new SQLDatabasePersistActionComment(table.getDataSource(), "Permissions"));
+                actions.add(new SQLDatabasePersistActionComment(object.getDataSource(), "Permissions"));
+
+                // Owner
+                PostgreRole owner = object.getOwner(monitor);
+                if (owner != null) {
+                    actions.add(new SQLDatabasePersistAction(
+                        "Owner change",
+                        "ALTER " + getObjectTypeName(object) + " " + getObjectUniqueName(object) + " OWNER TO " + DBUtils.getQuotedIdentifier(owner)
+                    ));
+                }
+
                 for (PostgrePermission permission : permissions) {
-                    if (permission.hasAllPrivileges(table)) {
+                    if (permission.hasAllPrivileges(object)) {
                         Collections.addAll(actions,
                             new PostgreCommandGrantPrivilege(permission.getOwner(), true, permission, new PostgrePrivilegeType[] { PostgrePrivilegeType.ALL })
                                 .getPersistActions(options));

@@ -30,6 +30,8 @@ public interface PostgrePermissionsOwner extends PostgreObject {
 
     PostgreSchema getSchema();
 
+    PostgreRole getOwner(DBRProgressMonitor monitor) throws DBException;
+
     Collection<PostgrePermission> getPermissions(DBRProgressMonitor monitor) throws DBException;
 
 }
