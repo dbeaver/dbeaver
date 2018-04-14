@@ -81,7 +81,6 @@ public class PrefPageSQLFormat extends TargetPrefPage
     private Spinner externalTimeout;
 
     private SQLEditorBase sqlViewer;
-    private Composite defaultGroup;
     private Composite externalGroup;
     private List<SQLFormatterDescriptor> formatters;
 
@@ -147,7 +146,7 @@ public class PrefPageSQLFormat extends TargetPrefPage
         ((GridData)formatterGroup.getLayoutData()).horizontalSpan = 2;
 
         {
-            Composite formatterPanel = UIUtils.createPlaceholder(formatterGroup, 2);
+            Composite formatterPanel = UIUtils.createPlaceholder(formatterGroup, 4, 5);
             formatterPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             formatterSelector = UIUtils.createLabelCombo(formatterPanel, CoreMessages.pref_page_sql_format_label_formatter, SWT.DROP_DOWN | SWT.READ_ONLY);
@@ -163,13 +162,8 @@ public class PrefPageSQLFormat extends TargetPrefPage
                 }
             });
             formatterSelector.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-        }
 
-        // Default formatter settings
-        {
-            defaultGroup = UIUtils.createPlaceholder(formatterGroup, 2, 0);
-            defaultGroup.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-            keywordCaseCombo = UIUtils.createLabelCombo(defaultGroup, CoreMessages.pref_page_sql_format_label_keyword_case, SWT.DROP_DOWN | SWT.READ_ONLY);
+            keywordCaseCombo = UIUtils.createLabelCombo(formatterPanel, CoreMessages.pref_page_sql_format_label_keyword_case, SWT.DROP_DOWN | SWT.READ_ONLY);
             keywordCaseCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
             keywordCaseCombo.add("Database");
             for (DBPIdentifierCase c :DBPIdentifierCase.values()) {
@@ -346,11 +340,9 @@ public class PrefPageSQLFormat extends TargetPrefPage
     private void showFormatterSettings() {
         SQLFormatterDescriptor selFormatter = formatters.get(formatterSelector.getSelectionIndex());
         boolean isExternal = selFormatter.getId().equalsIgnoreCase(SQLFormatterExternal.FORMATTER_ID);
-        defaultGroup.setVisible(!isExternal);
         externalGroup.setVisible(isExternal);
-        ((GridData)defaultGroup.getLayoutData()).exclude = isExternal;
         ((GridData)externalGroup.getLayoutData()).exclude = !isExternal;
-        defaultGroup.getParent().layout();
+        externalGroup.getParent().layout();
     }
 
     private void formatSQL() {
