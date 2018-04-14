@@ -246,7 +246,7 @@ public class SQLEditor extends SQLEditorBase implements
             EditorUtils.setInputDataSource(input, container, true);
         }
 
-        checkConnected(false, null);
+        checkConnected(false, status -> DBeaverUI.syncExec(this::setFocus));
         setPartName(getEditorName());
 
         fireDataSourceChange();
