@@ -263,11 +263,17 @@ public final class SQLUtils {
      * Removes \\r characters from query.
      * Actually this is done specially for Oracle due to some bug in it's driver
      *
+     *
+     * @param dataSource
      * @param query query
      * @return normalized query
      */
-    public static String makeUnifiedLineFeeds(String query)
+    public static String makeUnifiedLineFeeds(DBPDataSource dataSource, String query)
     {
+        SQLDialect dialect = SQLUtils.getDialectFromDataSource(dataSource);
+        if (!dialect.isCRLFBroken()) {
+            return query;
+        }
         if (query.indexOf('\r') == -1) {
             return query;
         }
