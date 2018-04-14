@@ -460,6 +460,22 @@ public final class DBUtils {
         return adapter == object ? null : adapter;
     }
 
+    @Nullable
+    public static <T> T getParentOfType(@NotNull Class<T> type, DBSObject object)
+    {
+        if (object == null) {
+            return null;
+        }
+        for (DBSObject parent = object.getParentObject(); parent != null; parent = parent.getParentObject()) {
+            if (type.isInstance(parent)) {
+                return type.cast(parent);
+            } else if (parent instanceof DBPDataSource || parent instanceof DBPDataSourceContainer) {
+                break;
+            }
+        }
+        return null;
+    }
+
     /**
      * Search for virtual entity descriptor
      * @param object object
