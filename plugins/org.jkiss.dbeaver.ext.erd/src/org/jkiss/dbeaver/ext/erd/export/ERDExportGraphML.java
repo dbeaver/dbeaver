@@ -180,7 +180,7 @@ public class ERDExportGraphML implements ERDExportFormatHandler
                                     if (attrsString.length() > 0) {
                                         attrsString.append("\n");
                                     }
-                                    attrsString.append(attr.getName());
+                                    attrsString.append(attr.getLabelText());
                                 }
 
                                 xml.addText(attrsString.toString());
