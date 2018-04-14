@@ -342,19 +342,19 @@ public abstract class JDBCDataSource
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, ModelMessages.model_jdbc_read_database_meta_data)) {
             JDBCDatabaseMetaData metaData = session.getMetaData();
 
+            try {
+                databaseMajorVersion = metaData.getDatabaseMajorVersion();
+                databaseMinorVersion = metaData.getDatabaseMinorVersion();
+            } catch (Throwable e) {
+                log.error("Error determining server version", e);
+            }
+
             if (this.sqlDialect instanceof JDBCSQLDialect) {
                 try {
                     ((JDBCSQLDialect) this.sqlDialect).initDriverSettings(this, metaData);
                 } catch (Throwable e) {
                     log.error("Error initializing dialect driver settings", e);
                 }
-            }
-
-            try {
-                databaseMajorVersion = metaData.getDatabaseMajorVersion();
-                databaseMinorVersion = metaData.getDatabaseMinorVersion();
-            } catch (Throwable e) {
-                log.error("Error determining server version", e);
             }
 
             try {

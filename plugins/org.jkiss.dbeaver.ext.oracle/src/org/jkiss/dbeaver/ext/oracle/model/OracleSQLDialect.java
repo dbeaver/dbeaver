@@ -74,6 +74,7 @@ class OracleSQLDialect extends JDBCSQLDialect {
         "ELSIF",
         "EXIT",
     };
+    private boolean crlfBroken;
 
     public OracleSQLDialect() {
         super("Oracle");
@@ -81,6 +82,7 @@ class OracleSQLDialect extends JDBCSQLDialect {
 
     public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(dataSource, metaData);
+        crlfBroken = !dataSource.isServerVersionAtLeast(11, 0);
 
         addFunctions(
             Arrays.asList(
@@ -383,5 +385,10 @@ class OracleSQLDialect extends JDBCSQLDialect {
     @Override
     public String getScriptDelimiter() {
         return super.getScriptDelimiter();
+    }
+
+    @Override
+    public boolean isCRLFBroken() {
+        return crlfBroken;
     }
 }
