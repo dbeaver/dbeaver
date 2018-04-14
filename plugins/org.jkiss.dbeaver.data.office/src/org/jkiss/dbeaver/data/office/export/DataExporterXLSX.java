@@ -85,8 +85,9 @@ public class DataExporterXLSX extends StreamExporterAbstract {
 
     private boolean printHeader = false;
     private boolean rowNumber = false;
-    private String boolTrue = "YES";
-    private String boolFalse = "NO";
+    private String boolTrue = "true";
+    private String boolFalse = "false";
+    private boolean booleRedefined;
     private boolean exportSql = false;
     private boolean splitSqlText = false;
 
@@ -105,8 +106,8 @@ public class DataExporterXLSX extends StreamExporterAbstract {
         properties.put(DataExporterXLSX.PROP_HEADER, true);
         properties.put(DataExporterXLSX.PROP_NULL_STRING, null);
         properties.put(DataExporterXLSX.PROP_HEADER_FONT, "BOLD");
-        properties.put(DataExporterXLSX.PROP_TRUESTRING, "+");
-        properties.put(DataExporterXLSX.PROP_FALSESTRING, "-");
+        properties.put(DataExporterXLSX.PROP_TRUESTRING, "true");
+        properties.put(DataExporterXLSX.PROP_FALSESTRING, "false");
         properties.put(DataExporterXLSX.PROP_EXPORT_SQL, false);
         properties.put(DataExporterXLSX.PROP_SPLIT_SQLTEXT, false);
         properties.put(DataExporterXLSX.PROP_SPLIT_BYROWCOUNT, EXCEL2007MAXROWS);
@@ -120,84 +121,53 @@ public class DataExporterXLSX extends StreamExporterAbstract {
         nullString = nullStringProp == null ? null : nullStringProp.toString();
 
         try {
-
             printHeader = (Boolean) site.getProperties().get(PROP_HEADER);
-
         } catch (Exception e) {
-
             printHeader = false;
-
         }
 
-
         try {
-
             rowNumber = (Boolean) site.getProperties().get(PROP_ROWNUMBER);
-
         } catch (Exception e) {
-
             rowNumber = false;
-
         }
 
         try {
-
             boolTrue = (String) site.getProperties().get(PROP_TRUESTRING);
-
         } catch (Exception e) {
-
-            boolTrue = "YES";
-
+            boolTrue = "true";
         }
-
         try {
-
             boolFalse = (String) site.getProperties().get(PROP_FALSESTRING);
-
         } catch (Exception e) {
-
-            boolTrue = "NO";
-
+            boolFalse = "false";
+        }
+        if (!"true".equals(boolTrue) || !"false".equals(boolFalse)) {
+            booleRedefined = true;
         }
 
         try {
-
             exportSql = (Boolean) site.getProperties().get(PROP_EXPORT_SQL);
-
         } catch (Exception e) {
-
             exportSql = false;
-
         }
 
         try {
-
             splitSqlText = (Boolean) site.getProperties().get(PROP_SPLIT_SQLTEXT);
-
         } catch (Exception e) {
-
             splitSqlText = false;
-
         }
 
         try {
-
             splitByRowCount = (Integer) site.getProperties().get(PROP_SPLIT_BYROWCOUNT);
-
         } catch (Exception e) {
-
             splitByRowCount = EXCEL2007MAXROWS;
-
         }
 
         try {
-
             splitByCol = (Integer) site.getProperties().get(PROP_SPLIT_BYCOL);
-
         } catch (Exception e) {
-
             splitByCol = -1;
-
         }
 
 
@@ -315,11 +285,6 @@ public class DataExporterXLSX extends StreamExporterAbstract {
             w.dispose();
         }
         super.dispose();
-    }
-
-    @Override
-    public boolean isTextExporter() {
-        return false;
     }
 
     @Override
@@ -489,7 +454,11 @@ public class DataExporterXLSX extends StreamExporterAbstract {
                 }
             } else if (row[i] instanceof Boolean) {
 
-                cell.setCellValue((Boolean) row[i]);
+                if (booleRedefined) {
+                    cell.setCellValue((Boolean) row[i] ? boolTrue : boolFalse);
+                } else {
+                    cell.setCellValue((Boolean) row[i]);
+                }
 
             } else if (row[i] instanceof Number) {
 
