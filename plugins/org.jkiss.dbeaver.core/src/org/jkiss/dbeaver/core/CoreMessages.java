@@ -330,6 +330,7 @@ public class CoreMessages extends NLS {
 	public static String dialog_connection_wizard_final_filter_catalogs;
 	public static String dialog_connection_wizard_final_filter_schemas_users;
 	public static String dialog_connection_wizard_final_filter_tables;
+	public static String dialog_connection_wizard_final_filter_attributes;
 	public static String dialog_connection_wizard_final_filter_link_tooltip;
 	public static String dialog_connection_wizard_final_filter_link_not_supported_text;
 	public static String dialog_connection_wizard_final_filter_link_not_supported_tooltip;

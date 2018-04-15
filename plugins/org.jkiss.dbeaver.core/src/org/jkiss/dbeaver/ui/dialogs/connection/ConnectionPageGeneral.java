@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionEventType;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
@@ -124,6 +125,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
         filters.add(new FilterInfo(DBSCatalog.class, CoreMessages.dialog_connection_wizard_final_filter_catalogs));
         filters.add(new FilterInfo(DBSSchema.class, CoreMessages.dialog_connection_wizard_final_filter_schemas_users));
         filters.add(new FilterInfo(DBSTable.class, CoreMessages.dialog_connection_wizard_final_filter_tables));
+        filters.add(new FilterInfo(DBSEntityAttribute.class, CoreMessages.dialog_connection_wizard_final_filter_attributes));
 
         bootstrapQueries = new ArrayList<>();
     }
@@ -487,10 +489,10 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
             {
                 // Filters
                 filtersGroup = UIUtils.createControlGroup(
-                    leftSide,
+                    group,
                     CoreMessages.dialog_connection_wizard_final_group_filters,
-                    1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
-
+                    2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+                ((GridData) filtersGroup.getLayoutData()).horizontalSpan = 2;
                 for (int i = 0; i < filters.size(); i++) {
                     final FilterInfo filterInfo = filters.get(i);
                     filterInfo.link = UIUtils.createLink(filtersGroup, "<a>" + filterInfo.title + "</a>", new SelectionAdapter() {
