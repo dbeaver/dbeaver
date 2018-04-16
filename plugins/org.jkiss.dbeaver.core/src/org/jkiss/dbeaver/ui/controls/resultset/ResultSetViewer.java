@@ -521,6 +521,7 @@ public class ResultSetViewer extends Viewer
                             });
                         }
                     }
+                    statusBar.layout();
                     viewerPanel.layout();
                 } finally {
                     // Enable redraw
