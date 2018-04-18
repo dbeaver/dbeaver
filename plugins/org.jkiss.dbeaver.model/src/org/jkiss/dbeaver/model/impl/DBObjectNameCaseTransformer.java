@@ -54,7 +54,7 @@ public class DBObjectNameCaseTransformer implements IPropertyValueTransformer<DB
         }
         final SQLDialect dialect = ((SQLDataSource)dataSource).getSQLDialect();
         if (DBUtils.isQuotedIdentifier(dataSource, value)) {
-            if (dialect.supportsQuotedMixedCase()) {
+            if (dialect.supportsQuotedMixedCase() || dialect.supportsUnquotedMixedCase()) {
                 return value;
             }
         }
