@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
 import org.jkiss.utils.CommonUtils;
@@ -82,23 +83,23 @@ public class DataTransferRegistry {
         nodes.sort(Comparator.comparing(DataTransferNodeDescriptor::getName));
     }
 
-    public List<DataTransferNodeDescriptor> getAvailableProducers(Collection<Class<?>> objectTypes)
+    public List<DataTransferNodeDescriptor> getAvailableProducers(Collection<DBSObject> sourceObjects)
     {
-        return getAvailableNodes(DataTransferNodeDescriptor.NodeType.PRODUCER, objectTypes);
+        return getAvailableNodes(DataTransferNodeDescriptor.NodeType.PRODUCER, sourceObjects);
     }
 
-    public List<DataTransferNodeDescriptor> getAvailableConsumers(Collection<Class<?>> objectTypes)
+    public List<DataTransferNodeDescriptor> getAvailableConsumers(Collection<DBSObject> sourceObjects)
     {
-        return getAvailableNodes(DataTransferNodeDescriptor.NodeType.CONSUMER, objectTypes);
+        return getAvailableNodes(DataTransferNodeDescriptor.NodeType.CONSUMER, sourceObjects);
     }
 
-    List<DataTransferNodeDescriptor> getAvailableNodes(DataTransferNodeDescriptor.NodeType nodeType, Collection<Class<?>> objectTypes)
+    List<DataTransferNodeDescriptor> getAvailableNodes(DataTransferNodeDescriptor.NodeType nodeType, Collection<DBSObject> sourceObjects)
     {
         List<DataTransferNodeDescriptor> result = new ArrayList<>();
         for (DataTransferNodeDescriptor node : nodes) {
             if (node.getNodeType() == nodeType) {
-                for (Class objectType : objectTypes) {
-                    if (node.appliesToType(objectType)) {
+                for (DBSObject sourceObject : sourceObjects) {
+                    if (node.appliesToType(sourceObject.getClass())) {
                         result.add(node);
                         break;
                     }

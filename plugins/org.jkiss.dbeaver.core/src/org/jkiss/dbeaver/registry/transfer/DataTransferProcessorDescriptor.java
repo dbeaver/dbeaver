@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.registry.transfer;
 
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -107,6 +108,18 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor implemen
         return false;
     }
 
+    public boolean adaptsToType(IAdaptable adaptable) {
+        if (sourceTypes.isEmpty()) {
+            return true;
+        }
+        for (ObjectType sourceType : sourceTypes) {
+            if (adaptable.getAdapter(sourceType.getObjectClass()) != null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public IDataTransferProcessor getInstance()
     {
         try {
@@ -126,4 +139,5 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor implemen
     public boolean isBinaryFormat() {
         return isBinary;
     }
+
 }
