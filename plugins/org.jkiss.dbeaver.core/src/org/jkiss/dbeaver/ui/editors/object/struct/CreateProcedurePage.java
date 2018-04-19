@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.ArrayUtils;
 
 public class CreateProcedurePage extends BaseObjectEditPage {
 
@@ -52,34 +53,39 @@ public class CreateProcedurePage extends BaseObjectEditPage {
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         propsGroup.setLayoutData(gd);
 
-        UIUtils.createLabelText(propsGroup, "Container", DBUtils.getObjectFullName(container, DBPEvaluationContext.UI)).setEditable(false);
+        final Text containerText = UIUtils.createLabelText(propsGroup, "Container", DBUtils.getObjectFullName(this.container, DBPEvaluationContext.UI));
+        containerText.setEditable(false);
         final Text nameText = UIUtils.createLabelText(propsGroup, CoreMessages.dialog_struct_create_procedure_label_name, null);
-        nameText.addModifyListener(new ModifyListener() {
-            @Override
-            public void modifyText(ModifyEvent e)
-            {
-                name = nameText.getText();
-            }
-        });
-        final Combo typeCombo = UIUtils.createLabelCombo(propsGroup, CoreMessages.dialog_struct_create_procedure_combo_type, SWT.DROP_DOWN | SWT.READ_ONLY);
-        typeCombo.add(DBSProcedureType.PROCEDURE.name());
-        typeCombo.add(DBSProcedureType.FUNCTION.name());
-        typeCombo.addModifyListener(new ModifyListener() {
-            @Override
-            public void modifyText(ModifyEvent e)
-            {
+        nameText.addModifyListener(e -> name = nameText.getText());
+        if (getPredefinedProcedureType() == null) {
+            final Combo typeCombo = UIUtils.createLabelCombo(propsGroup, CoreMessages.dialog_struct_create_procedure_combo_type, SWT.DROP_DOWN | SWT.READ_ONLY);
+            typeCombo.add(DBSProcedureType.PROCEDURE.name());
+            typeCombo.add(DBSProcedureType.FUNCTION.name());
+            typeCombo.addModifyListener(e -> {
                 type = typeCombo.getSelectionIndex() == 0 ? DBSProcedureType.PROCEDURE : DBSProcedureType.FUNCTION;
-                nameText.setText(type == DBSProcedureType.PROCEDURE ? "NewProcedure" : "NewFunction"); //$NON-NLS-1$ //$NON-NLS-2$
-            }
-        });
-        typeCombo.select(0);
-        propsGroup.setTabList(new Control[] { nameText, typeCombo} );
+            });
+            typeCombo.select(0);
+        }
+        propsGroup.setTabList(ArrayUtils.remove(Control.class, propsGroup.getTabList(), containerText));
+
+        createExtraControls(propsGroup);
+
         return propsGroup;
+    }
+
+    protected void createExtraControls(Composite group) {
+
     }
 
     public DBSProcedureType getProcedureType()
     {
-        return type;
+        DBSProcedureType procedureType = getPredefinedProcedureType();
+        return procedureType == null ? type : procedureType;
+    }
+
+    public DBSProcedureType getPredefinedProcedureType()
+    {
+        return null;
     }
 
     public String getProcedureName()

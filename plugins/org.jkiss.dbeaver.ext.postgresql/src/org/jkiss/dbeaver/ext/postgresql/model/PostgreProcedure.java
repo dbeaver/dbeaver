@@ -278,7 +278,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                 if (!isPersisted()) {
                     body = "CREATE OR REPLACE FUNCTION " + getFullQualifiedSignature() + GeneralUtils.getDefaultLineSeparator() +
                         "RETURNS INT" + GeneralUtils.getDefaultLineSeparator() +
-                        "LANGUAGE sql " + GeneralUtils.getDefaultLineSeparator() +
+                        "LANGUAGE " + getLanguage(monitor).getName() + GeneralUtils.getDefaultLineSeparator() +
                         "AS $function$ " + GeneralUtils.getDefaultLineSeparator() + " $function$";
                 } else if (oid == 0 || isAggregate) {
                     // No OID so let's use old (bad) way
@@ -325,6 +325,10 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     @Property(category = CAT_PROPS, viewable = true, order = 11)
     public PostgreLanguage getLanguage(DBRProgressMonitor monitor) throws DBException {
         return PostgreUtils.getObjectById(monitor, container.getDatabase().languageCache, container.getDatabase(), languageId);
+    }
+
+    public void setLanguage(PostgreLanguage language) {
+        this.languageId = language.getObjectId();
     }
 
     @Property(category = CAT_PROPS, viewable = true, order = 12)
