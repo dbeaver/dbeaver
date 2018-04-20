@@ -43,6 +43,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage
     private Button csShortName;
     private Button csLongName;
     private Button csInsertSpace;
+    private Button csMatchContains;
     private Button csUseGlobalSearch;
 
     private Button csFoldingEnabled;
@@ -66,6 +67,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage
             store.contains(SQLPreferenceConstants.PROPOSAL_SHORT_NAME) ||
             store.contains(SQLPreferenceConstants.PROPOSAL_ALWAYS_FQ) ||
             store.contains(SQLPreferenceConstants.INSERT_SPACE_AFTER_PROPOSALS) ||
+            store.contains(SQLPreferenceConstants.PROPOSALS_MATCH_CONTAINS) ||
             store.contains(SQLPreferenceConstants.USE_GLOBAL_ASSISTANT) ||
 
             store.contains(SQLPreferenceConstants.FOLDING_ENABLED)
@@ -119,6 +121,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage
             csShortName = UIUtils.createCheckbox(assistGroup, CoreMessages.pref_page_sql_completion_label_use_short_names, null, false, 2);
             csLongName = UIUtils.createCheckbox(assistGroup, CoreMessages.pref_page_sql_completion_label_use_long_names, null, false, 2);
             csInsertSpace = UIUtils.createCheckbox(assistGroup, CoreMessages.pref_page_sql_completion_label_insert_space, null, false, 2);
+            csMatchContains = UIUtils.createCheckbox(assistGroup, CoreMessages.pref_page_sql_completion_label_match_contains, CoreMessages.pref_page_sql_completion_label_match_contains_tip, false, 2);
             csUseGlobalSearch = UIUtils.createCheckbox(assistGroup, CoreMessages.pref_page_sql_completion_label_use_global_search, CoreMessages.pref_page_sql_completion_label_use_global_search_tip, false, 2);
         }
 
@@ -145,7 +148,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage
             csShortName.setSelection(store.getBoolean(SQLPreferenceConstants.PROPOSAL_SHORT_NAME));
             csLongName.setSelection(store.getBoolean(SQLPreferenceConstants.PROPOSAL_ALWAYS_FQ));
             csInsertSpace.setSelection(store.getBoolean(SQLPreferenceConstants.INSERT_SPACE_AFTER_PROPOSALS));
-
+            csMatchContains.setSelection(store.getBoolean(SQLPreferenceConstants.PROPOSALS_MATCH_CONTAINS));
             csUseGlobalSearch.setSelection(store.getBoolean(SQLPreferenceConstants.USE_GLOBAL_ASSISTANT));
 
             csFoldingEnabled.setSelection(store.getBoolean(SQLPreferenceConstants.FOLDING_ENABLED));
@@ -167,6 +170,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage
             store.setValue(SQLPreferenceConstants.PROPOSAL_SHORT_NAME, csShortName.getSelection());
             store.setValue(SQLPreferenceConstants.PROPOSAL_ALWAYS_FQ, csLongName.getSelection());
             store.setValue(SQLPreferenceConstants.INSERT_SPACE_AFTER_PROPOSALS, csInsertSpace.getSelection());
+            store.setValue(SQLPreferenceConstants.PROPOSALS_MATCH_CONTAINS, csMatchContains.getSelection());
             store.setValue(SQLPreferenceConstants.USE_GLOBAL_ASSISTANT, csUseGlobalSearch.getSelection());
 
             store.setValue(SQLPreferenceConstants.FOLDING_ENABLED, csFoldingEnabled.getSelection());
@@ -188,6 +192,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage
         store.setToDefault(SQLPreferenceConstants.PROPOSAL_SHORT_NAME);
         store.setToDefault(SQLPreferenceConstants.PROPOSAL_ALWAYS_FQ);
         store.setToDefault(SQLPreferenceConstants.INSERT_SPACE_AFTER_PROPOSALS);
+        store.setToDefault(SQLPreferenceConstants.PROPOSALS_MATCH_CONTAINS);
         store.setToDefault(SQLPreferenceConstants.USE_GLOBAL_ASSISTANT);
 
         store.setToDefault(SQLPreferenceConstants.FOLDING_ENABLED);
