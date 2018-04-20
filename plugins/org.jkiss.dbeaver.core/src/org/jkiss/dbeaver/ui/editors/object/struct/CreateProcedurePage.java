@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 
 public class CreateProcedurePage extends BaseObjectEditPage {
 
@@ -56,7 +57,10 @@ public class CreateProcedurePage extends BaseObjectEditPage {
         final Text containerText = UIUtils.createLabelText(propsGroup, "Container", DBUtils.getObjectFullName(this.container, DBPEvaluationContext.UI));
         containerText.setEditable(false);
         final Text nameText = UIUtils.createLabelText(propsGroup, CoreMessages.dialog_struct_create_procedure_label_name, null);
-        nameText.addModifyListener(e -> name = nameText.getText());
+        nameText.addModifyListener(e -> {
+            name = nameText.getText();
+            updatePageState();
+        });
         if (getPredefinedProcedureType() == null) {
             final Combo typeCombo = UIUtils.createLabelCombo(propsGroup, CoreMessages.dialog_struct_create_procedure_combo_type, SWT.DROP_DOWN | SWT.READ_ONLY);
             typeCombo.add(DBSProcedureType.PROCEDURE.name());
@@ -91,5 +95,10 @@ public class CreateProcedurePage extends BaseObjectEditPage {
     public String getProcedureName()
     {
         return DBObjectNameCaseTransformer.transformName(container.getDataSource(), name);
+    }
+
+    @Override
+    public boolean isPageComplete() {
+        return !CommonUtils.isEmpty(name);
     }
 }
