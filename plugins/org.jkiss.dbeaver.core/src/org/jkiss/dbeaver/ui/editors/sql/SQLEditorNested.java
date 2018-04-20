@@ -188,7 +188,10 @@ public abstract class SQLEditorNested<T extends DBSObject>
             ((SQLEditorNested.ObjectDocumentProvider) documentProvider).sourceText = null;
         }
         if (force) {
+            int caretOffset = getEditorControl().getCaretOffset();
             super.setInput(getEditorInput());
+            // Try to keep cursor position
+            getEditorControl().setCaretOffset(caretOffset);
         }
         reloadSyntaxRules();
     }
