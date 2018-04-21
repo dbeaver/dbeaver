@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.access.DBAAuthInfo;
+import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 
 /**
@@ -63,6 +64,11 @@ public class DBUserInterface {
 
         @Override
         public DBAAuthInfo promptUserCredentials(String prompt, String userName, String userPassword, boolean passwordOnly) {
+            return null;
+        }
+
+        @Override
+        public DBAPasswordChangeInfo promptUserPasswordChange(String prompt, String userName, String oldPassword) {
             return null;
         }
 

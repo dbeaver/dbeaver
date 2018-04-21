@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -127,35 +127,8 @@ public abstract class JDBCDataSource
         }
 
         DBPConnectionConfiguration connectionInfo = container.getActualConnectionConfiguration();
+        Properties connectProps = getAllConnectionProperties(monitor, connectionInfo);
 
-        // Set properties
-        Properties connectProps = new Properties();
-
-        {
-            // Use properties defined by datasource itself
-            Map<String,String> internalProps = getInternalConnectionProperties(monitor, purpose, connectionInfo);
-            if (internalProps != null) {
-                connectProps.putAll(internalProps);
-            }
-        }
-
-        {
-            // Use driver properties
-            final Map<Object, Object> driverProperties = container.getDriver().getConnectionProperties();
-            for (Map.Entry<Object,Object> prop : driverProperties.entrySet()) {
-                connectProps.setProperty(CommonUtils.toString(prop.getKey()), CommonUtils.toString(prop.getValue()));
-            }
-        }
-
-        for (Map.Entry<String, String> prop : connectionInfo.getProperties().entrySet()) {
-            connectProps.setProperty(CommonUtils.toString(prop.getKey()), CommonUtils.toString(prop.getValue()));
-        }
-        if (!CommonUtils.isEmpty(connectionInfo.getUserName())) {
-            connectProps.put(DBConstants.DATA_SOURCE_PROPERTY_USER, getConnectionUserName(connectionInfo));
-        }
-        if (!CommonUtils.isEmpty(connectionInfo.getUserPassword())) {
-            connectProps.put(DBConstants.DATA_SOURCE_PROPERTY_PASSWORD, getConnectionUserPassword(connectionInfo));
-        }
         // Obtain connection
         try {
             final String url = getConnectionURL(connectionInfo);
@@ -196,6 +169,38 @@ public abstract class JDBCDataSource
         catch (Throwable e) {
             throw new DBCConnectException("Unexpected driver error occurred while connecting to database", e);
         }
+    }
+
+    protected Properties getAllConnectionProperties(@NotNull DBRProgressMonitor monitor, DBPConnectionConfiguration connectionInfo) throws DBCException {
+        // Set properties
+        Properties connectProps = new Properties();
+
+        {
+            // Use properties defined by datasource itself
+            Map<String,String> internalProps = getInternalConnectionProperties(monitor, "Get connection prop[erties", connectionInfo);
+            if (internalProps != null) {
+                connectProps.putAll(internalProps);
+            }
+        }
+
+        {
+            // Use driver properties
+            final Map<Object, Object> driverProperties = container.getDriver().getConnectionProperties();
+            for (Map.Entry<Object,Object> prop : driverProperties.entrySet()) {
+                connectProps.setProperty(CommonUtils.toString(prop.getKey()), CommonUtils.toString(prop.getValue()));
+            }
+        }
+
+        for (Map.Entry<String, String> prop : connectionInfo.getProperties().entrySet()) {
+            connectProps.setProperty(CommonUtils.toString(prop.getKey()), CommonUtils.toString(prop.getValue()));
+        }
+        if (!CommonUtils.isEmpty(connectionInfo.getUserName())) {
+            connectProps.put(DBConstants.DATA_SOURCE_PROPERTY_USER, getConnectionUserName(connectionInfo));
+        }
+        if (!CommonUtils.isEmpty(connectionInfo.getUserPassword())) {
+            connectProps.put(DBConstants.DATA_SOURCE_PROPERTY_PASSWORD, getConnectionUserPassword(connectionInfo));
+        }
+        return connectProps;
     }
 
     protected String getConnectionURL(DBPConnectionConfiguration connectionInfo) {

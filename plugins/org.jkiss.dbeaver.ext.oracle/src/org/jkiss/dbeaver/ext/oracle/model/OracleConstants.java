@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -144,6 +144,7 @@ public class OracleConstants {
      * Oracle error codes
      */
     public static final int EC_FEATURE_NOT_SUPPORTED = 17023;
+    public static final int EC_PASSWORD_EXPIRED = 28001;
 
     /**
      * Connection type
