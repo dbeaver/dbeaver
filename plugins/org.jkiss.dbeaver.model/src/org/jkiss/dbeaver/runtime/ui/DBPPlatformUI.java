@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.access.DBAAuthInfo;
+import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 
 /**
@@ -40,7 +41,15 @@ public interface DBPPlatformUI {
     UserResponse showError(@NotNull final String title, @Nullable final String message, @NotNull final Throwable e);
     UserResponse showError(@NotNull final String title, @Nullable final String message);
 
+    /**
+     * Asks for user credentials. Returns null if user canceled this action.
+     */
     DBAAuthInfo promptUserCredentials(String prompt, String userName, String userPassword, boolean passwordOnly);
+
+    /**
+     * Asks for password change. Returns null if user canceled this action.
+     */
+    DBAPasswordChangeInfo promptUserPasswordChange(String prompt, @Nullable String userName, @Nullable String oldPassword);
 
     void executeProcess(DBRProcessDescriptor processDescriptor);
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.oracle.model.plan.OraclePlanAnalyser;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
@@ -41,16 +42,14 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLState;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
 
 import java.io.PrintWriter;
-import java.sql.CallableStatement;
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.sql.Types;
+import java.sql.*;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -130,19 +129,69 @@ public class OracleDataSource extends JDBCDataSource
         }
 */
 
-        Connection connection = super.openConnection(monitor, purpose);
-/*
-        OracleConnection oracleConnection = (OracleConnection)connection.getConnection();
-
         try {
-            oracleConnection.setClientInfo("ApplicationName", DBeaverCore.getProductTitle() + " - " + purpose);
-        } catch (Throwable e) {
-            // just ignore
-            log.debug(e);
-        }
+            Connection connection = super.openConnection(monitor, purpose);
+
+            // Client name is set in connection properties
+/*
+            if (!getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {
+                // Provide client info
+                try {
+                    connection.setClientInfo("ApplicationName", DBUtils.getClientApplicationName(getContainer(), purpose));
+                } catch (Throwable e) {
+                    // just ignore
+                    log.debug(e);
+                }
+            }
 */
 
-        return connection;
+            return connection;
+        } catch (DBCException e) {
+            if (e.getErrorCode() == OracleConstants.EC_PASSWORD_EXPIRED) {
+                // Here we could try to ask for expired password change
+                // This is supported  for thin driver since Oracle 12.2
+                if (changeExpiredPassword(monitor)) {
+                    // Retry
+                    return openConnection(monitor, purpose);
+                }
+            }
+            throw e;
+        }
+    }
+
+    private boolean changeExpiredPassword(DBRProgressMonitor monitor) {
+        DBPConnectionConfiguration connectionInfo = getContainer().getActualConnectionConfiguration();
+        DBAPasswordChangeInfo passwordInfo = DBUserInterface.getInstance().promptUserPasswordChange("Password has expired. Set new password.", connectionInfo.getUserName(), connectionInfo.getUserPassword());
+        if (passwordInfo == null) {
+            return false;
+        }
+
+        // Obtain connection
+        try {
+            if (passwordInfo.getNewPassword() == null) {
+                throw new DBException("You can't set empty password");
+            }
+            Properties connectProps = getAllConnectionProperties(monitor, connectionInfo);
+            connectProps.setProperty("oracle.jdbc.newPassword", passwordInfo.getNewPassword());
+
+            final String url = getConnectionURL(connectionInfo);
+            monitor.subTask("Connecting for expired password change");
+            Driver driverInstance = getDriverInstance(monitor);
+            try (Connection connection = driverInstance.connect(url, connectProps)) {
+                if (connection == null) {
+                    throw new DBCException("Null connection returned");
+                }
+            }
+
+            connectionInfo.setUserPassword(passwordInfo.getNewPassword());
+            getContainer().getConnectionConfiguration().setUserPassword(passwordInfo.getNewPassword());
+            getContainer().getRegistry().flushConfig();
+            return true;
+        }
+        catch (Exception e) {
+            DBUserInterface.getInstance().showError("Error changing password", "Error changing expired password", e);
+            return false;
+        }
     }
 
     protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, boolean setActiveObject) throws DBCException {
@@ -756,7 +805,7 @@ public class OracleDataSource extends JDBCDataSource
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleDataSource owner) throws SQLException {
             return session.prepareStatement(
-                "SELECT * FROM SYS.ALL_TYPES WHERE OWNER IS NULL ORDER BY TYPE_NAME");
+                "SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) + " * FROM SYS.ALL_TYPES WHERE OWNER IS NULL ORDER BY TYPE_NAME");
         }
 
         @Override
