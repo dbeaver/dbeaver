@@ -160,6 +160,8 @@ public class OracleDataSource extends JDBCDataSource
     }
 
     private boolean changeExpiredPassword(DBRProgressMonitor monitor) {
+        // Ref: https://stackoverflow.com/questions/21733300/oracle-password-expiry-and-grace-period-handling-using-java-oracle-jdbc
+
         DBPConnectionConfiguration connectionInfo = getContainer().getActualConnectionConfiguration();
         DBAPasswordChangeInfo passwordInfo = DBUserInterface.getInstance().promptUserPasswordChange("Password has expired. Set new password.", connectionInfo.getUserName(), connectionInfo.getUserPassword());
         if (passwordInfo == null) {
