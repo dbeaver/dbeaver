@@ -47,7 +47,7 @@ import org.jkiss.utils.ArrayUtils;
  */
 public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER extends DBSObjectContainer>
     extends AbstractTable<DATASOURCE, CONTAINER>
-    implements DBSDataManipulator, DBPSaveableObject
+    implements DBSDataManipulator, DBSDataCleaner, DBPSaveableObject
 {
     private static final Log log = Log.getLog(JDBCTable.class);
     public static final String DEFAULT_TABLE_ALIAS = "x";
@@ -101,6 +101,9 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     {
         return DATA_COUNT | DATA_FILTER | DATA_SEARCH | DATA_INSERT | DATA_UPDATE | DATA_DELETE;
     }
+
+    ////////////////////////////////////////////////////////////////////
+    // Select
 
     @NotNull
     @Override
@@ -240,6 +243,9 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         }
     }
 
+    ////////////////////////////////////////////////////////////////////
+    // Count
+
     @Override
     public long countData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @Nullable DBDDataFilter dataFilter) throws DBCException
     {
@@ -280,6 +286,9 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             }
         }
     }
+
+    ////////////////////////////////////////////////////////////////////
+    // Insert
 
     /**
      * Inserts data row.
@@ -355,6 +364,9 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             }
         };
     }
+
+    ////////////////////////////////////////////////////////////////////
+    // Update
 
     @NotNull
     @Override
@@ -435,6 +447,9 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         };
     }
 
+    ////////////////////////////////////////////////////////////////////
+    // Delete
+
     @NotNull
     @Override
     public ExecuteBatch deleteData(@NotNull DBCSession session, @NotNull final DBSAttributeBase[] keyAttributes, @NotNull final DBCExecutionSource source)
@@ -488,6 +503,40 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
             }
         };
     }
+
+    ////////////////////////////////////////////////////////////////////
+    // Truncate
+
+    @Override
+    public boolean canTruncateData() {
+        return false;
+    }
+
+    @Override
+    public DBCStatistics truncateData(DBCSession session, DBCExecutionSource source) throws DBCException {
+        DBCStatistics statistics = new DBCStatistics();
+        DBRProgressMonitor monitor = session.getProgressMonitor();
+
+        monitor.subTask("Truncate data");
+        long startTime = System.currentTimeMillis();
+        try (DBCStatement dbStat = session.prepareStatement(
+            DBCStatementType.QUERY,
+            getTruncateTableQuery(),
+            false, false, false))
+        {
+            dbStat.setStatementSource(source);
+            dbStat.executeStatement();
+        }
+        statistics.addExecuteTime(System.currentTimeMillis() - startTime);
+        return statistics;
+    }
+
+    protected String getTruncateTableQuery() {
+        return "TRUNCATE TABLE " + getFullyQualifiedName(DBPEvaluationContext.DML);
+    }
+
+    ////////////////////////////////////////////////////////////////////
+    // Utils
 
     private boolean useUpsert(@NotNull DBCSession session) {
         SQLDialect dialect = session.getDataSource() instanceof SQLDataSource ?
