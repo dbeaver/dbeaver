@@ -45,12 +45,12 @@ public class DBeaverIcons
         Image image;
         ImageDescriptor imageDescriptor;
 
-        public IconDescriptor(String id, ImageDescriptor imageDescriptor) {
+        IconDescriptor(String id, ImageDescriptor imageDescriptor) {
             this.id = id;
             this.image = imageDescriptor.createImage(false);
             this.imageDescriptor = imageDescriptor;
         }
-        public IconDescriptor(String id, Image image) {
+        IconDescriptor(String id, Image image) {
             this.id = id;
             this.image = image;
             this.imageDescriptor = ImageDescriptor.createFromImage(image);
@@ -112,7 +112,7 @@ public class DBeaverIcons
             (image.getBottomRight() == null ? "" : image.getBottomRight().getLocation());
         IconDescriptor icon = compositeMap.get(compositeId);
         if (icon == null) {
-            OverlayImageDescriptor ovrImage = new OverlayImageDescriptor(mainIcon.image.getImageData());
+            OverlayImageDescriptor ovrImage = new OverlayImageDescriptor(mainIcon.imageDescriptor);
             if (image.getTopLeft() != null) ovrImage.setTopLeft(new ImageDescriptor[] { getImageDescriptor(image.getTopLeft())} );
             if (image.getTopRight() != null) ovrImage.setTopRight(new ImageDescriptor[]{ getImageDescriptor(image.getTopRight()) });
             if (image.getBottomLeft() != null) ovrImage.setBottomLeft(new ImageDescriptor[]{getImageDescriptor(image.getBottomLeft())});
