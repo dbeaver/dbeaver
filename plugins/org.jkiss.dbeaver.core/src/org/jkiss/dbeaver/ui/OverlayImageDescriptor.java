@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ui;
 
 import org.eclipse.jface.resource.CompositeImageDescriptor;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.swt.graphics.ImageData;
 import org.eclipse.swt.graphics.Point;
 
 /**
@@ -26,17 +25,14 @@ import org.eclipse.swt.graphics.Point;
  */
 public class OverlayImageDescriptor extends CompositeImageDescriptor {
 
-	static final int DEFAULT_WIDTH = 16;
-	static final int DEFAULT_HEIGHT = 16;
-
 	private Point imageSize = null;
 
-    private ImageData baseImageData;
+    private CachedImageDataProvider baseImageData;
 	private ImageDescriptor[] topLeft, topRight, bottomLeft, bottomRight;
 
-    public OverlayImageDescriptor(ImageData baseImageData) {
-        this.baseImageData = baseImageData;
-        this.imageSize = new Point(baseImageData.width, baseImageData.height);
+    public OverlayImageDescriptor(ImageDescriptor baseImage) {
+        this.baseImageData = createCachedImageDataProvider(baseImage);
+        this.imageSize = new Point(baseImageData.getWidth(), baseImageData.getHeight());
 	}
 
     public void setTopLeft(ImageDescriptor[] topLeft)
@@ -61,7 +57,7 @@ public class OverlayImageDescriptor extends CompositeImageDescriptor {
 
 	@Override
     protected void drawCompositeImage(int width, int height) {
-		ImageData base = baseImageData;
+        CachedImageDataProvider base = baseImageData;
 		drawImage(base, 0, 0);
         if (topRight != null)
             drawTopRight(topRight);
@@ -81,56 +77,56 @@ public class OverlayImageDescriptor extends CompositeImageDescriptor {
 		return imageSize;
 	}
 
-    protected void drawTopLeft(ImageDescriptor[] overlays) {
+    private void drawTopLeft(ImageDescriptor[] overlays) {
         if (overlays == null)
             return;
         int length = overlays.length;
         int x = 0;
         for (int i = 0; i < 3; i++) {
             if (i < length && overlays[i] != null) {
-                ImageData id = overlays[i].getImageData();
-                drawImage(id, x, 0);
-                x += id.width;
+                CachedImageDataProvider idp = createCachedImageDataProvider(overlays[i]);
+                drawImage(idp, x, 0);
+                x += idp.getWidth();
             }
         }
     }
-    protected void drawTopRight(ImageDescriptor[] overlays) {
+    private void drawTopRight(ImageDescriptor[] overlays) {
         if (overlays == null)
             return;
         int length = overlays.length;
         int x = getSize().x;
         for (int i = 2; i >= 0; i--) {
             if (i < length && overlays[i] != null) {
-                ImageData id = overlays[i].getImageData();
-                x -= id.width;
-                drawImage(id, x, 0);
+                CachedImageDataProvider idp = createCachedImageDataProvider(overlays[i]);
+                x -= idp.getWidth();
+                drawImage(idp, x, 0);
             }
         }
     }
 
-	protected void drawBottomLeft(ImageDescriptor[] overlays) {
+	private void drawBottomLeft(ImageDescriptor[] overlays) {
 		if (overlays == null)
 			return;
 		int length = overlays.length;
 		int x = 0;
 		for (int i = 0; i < 3; i++) {
 			if (i < length && overlays[i] != null) {
-				ImageData id = overlays[i].getImageData();
-				drawImage(id, x, getSize().y - id.height);
-				x += id.width;
+                CachedImageDataProvider idp = createCachedImageDataProvider(overlays[i]);
+				drawImage(idp, x, getSize().y - idp.getHeight());
+				x += idp.getWidth();
 			}
 		}
 	}
-	protected void drawBottomRight(ImageDescriptor[] overlays) {
+	private void drawBottomRight(ImageDescriptor[] overlays) {
 		if (overlays == null)
 			return;
 		int length = overlays.length;
 		int x = getSize().x;
 		for (int i = 2; i >= 0; i--) {
 			if (i < length && overlays[i] != null) {
-				ImageData id = overlays[i].getImageData();
-				x -= id.width;
-				drawImage(id, x, getSize().y - id.height);
+                CachedImageDataProvider idp = createCachedImageDataProvider(overlays[i]);
+				x -= idp.getWidth();
+				drawImage(idp, x, getSize().y - idp.getHeight());
 			}
 		}
 	}
