@@ -22,13 +22,15 @@ import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSAlias;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.ResultSet;
 
 /**
  * Oracle synonym
  */
-public class OracleSynonym extends OracleSchemaObject {
+public class OracleSynonym extends OracleSchemaObject implements DBSAlias {
 
     private String objectOwner;
     private String objectTypeName;
@@ -91,4 +93,12 @@ public class OracleSynonym extends OracleSchemaObject {
         return OracleDBLink.resolveObject(monitor, getSchema(), dbLink);
     }
 
+    @Override
+    public DBSObject getTargetObject(DBRProgressMonitor monitor) throws DBException {
+        Object object = getObject(monitor);
+        if (object instanceof DBSObject) {
+            return (DBSObject) object;
+        }
+        return null;
+    }
 }
