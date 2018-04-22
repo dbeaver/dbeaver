@@ -21,7 +21,6 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
@@ -30,7 +29,6 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.*;
-import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
@@ -122,23 +120,14 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
             if (dsNode == null) {
                 throw new DBException("Can't find datasource node for '" + dataSourceContainer.getName() + "'"); //$NON-NLS-2$
             }
-            dsNode.initializeNode(null, new DBRProgressListener() {
-                @Override
-                public void onTaskFinished(IStatus status)
-                {
-                    if (status.isOK()) {
-                        DBeaverUI.syncExec(new Runnable() {
-                            @Override
-                            public void run() {
-                                openNodeByPath(dsNode, (IFile) resource, storage);
-                            }
-                        });
-                    } else {
-                        DBUserInterface.getInstance().showError(
-                            "Open bookmark",
-                            "Can't open bookmark",
-                            status);
-                    }
+            dsNode.initializeNode(null, status -> {
+                if (status.isOK()) {
+                    DBeaverUI.syncExec(() -> openNodeByPath(dsNode, (IFile) resource, storage));
+                } else {
+                    DBUserInterface.getInstance().showError(
+                        "Open bookmark",
+                        "Can't open bookmark",
+                        status);
                 }
             });
         }
@@ -147,60 +136,50 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
         }
     }
 
-    private void openNodeByPath(final DBNDataSource dsNode, final IFile file, final BookmarkStorage storage)
+    private static void openNodeByPath(final DBNDataSource dsNode, final IFile file, final BookmarkStorage storage)
     {
         try {
-            DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
-                @Override
-                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-                {
-                    try {
-                        DBNNode currentNode = dsNode;
-                        final Collection<String> dataSourcePath = storage.getDataSourcePath();
-                        for (String path : dataSourcePath) {
-                            DBNNode nextChild = null;
-                            final DBNNode[] children = currentNode.getChildren(monitor);
-                            if (!ArrayUtils.isEmpty(children)) {
-                                for (DBNNode node : children) {
-                                    if (path.equals(node.getNodeName())) {
-                                        nextChild = node;
-                                        break;
-                                    }
-                                }
-                            }
-                            if (nextChild == null) {
-                                throw new DBException("Can't find node '" + path + "' in '" + currentNode.getNodeFullName() + "'"); //$NON-NLS-2$ //$NON-NLS-3$
-                            }
-                            currentNode = nextChild;
-                        }
-                        if (currentNode instanceof DBNDatabaseNode) {
-                            // Update bookmark image
-                            storage.setImage(currentNode.getNodeIconDefault());
-                            file.setContents(storage.serialize(), true, false, RuntimeUtils.getNestedMonitor(monitor));
-
-                            // Open entity editor
-                            final DBNDatabaseNode databaseNode = (DBNDatabaseNode) currentNode;
-                            DBeaverUI.syncExec(new Runnable() {
-                                @Override
-                                public void run() {
-                                    NavigatorHandlerObjectOpen.openEntityEditor(databaseNode, null, DBeaverUI.getActiveWorkbenchWindow());
-                                }
-                            });
-                        } else if (currentNode != null) {
-                            throw new DBException("Node '" + currentNode.getNodeFullName() + "' is not a database object");
-                        } else {
-                            throw new DBException("Can't find database node by path");
-                        }
-                    } catch (Exception e) {
-                        throw new InvocationTargetException(e);
-                    }
-                }
-            });
+            BookmarkNodeLoader nodeLoader = new BookmarkNodeLoader(dsNode, storage, file);
+            DBeaverUI.runInProgressService(nodeLoader);
+            if (nodeLoader.databaseNode != null) {
+                DBeaverUI.syncExec(() -> NavigatorHandlerObjectOpen.openEntityEditor(
+                    nodeLoader.databaseNode, null, DBeaverUI.getActiveWorkbenchWindow()));
+            }
         } catch (InvocationTargetException e) {
-            DBUserInterface.getInstance().showError(CoreMessages.model_project_open_bookmark, CoreMessages.model_project_cant_open_bookmark, e.getTargetException());
+            DBUserInterface.getInstance().showError(
+                CoreMessages.model_project_open_bookmark, CoreMessages.model_project_cant_open_bookmark, e.getTargetException());
         } catch (InterruptedException e) {
             // do nothing
         }
+    }
+
+    static DBNDatabaseNode getTargetBookmarkNode(DBRProgressMonitor monitor, DBNBookmark bookmark)
+    {
+        IFile resource = (IFile) bookmark.getResource();
+        final DBNProject projectNode = DBeaverCore.getInstance().getNavigatorModel().getRoot().getProject(resource.getProject());
+        if (projectNode != null) {
+            BookmarkStorage storage = bookmark.getStorage();
+            final DBPDataSourceContainer dataSourceContainer = projectNode.getDatabases().getDataSourceRegistry().getDataSource(storage.getDataSourceId());
+            if (dataSourceContainer != null) {
+                final DBNDataSource dsNode = (DBNDataSource) NavigatorUtils.getNodeByObject(dataSourceContainer);
+                if (dsNode != null) {
+                    DBNDatabaseNode[] result = new DBNDatabaseNode[1];
+                    dsNode.initializeNode(monitor, status -> {
+                        if (status.isOK()) {
+                            try {
+                                BookmarkNodeLoader nodeLoader = new BookmarkNodeLoader(dsNode, storage, resource);
+                                nodeLoader.run(monitor);
+                                result[0] = nodeLoader.databaseNode;
+                            } catch (Exception e) {
+                                // Doesn't matter
+                            }
+                        }
+                    });
+                    return result[0];
+                }
+            }
+        }
+        return null;
     }
 
     public static void createBookmark(final DBNDatabaseNode node, String title, IFolder folder) throws DBException
@@ -254,4 +233,54 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
         }
     }
 
+    private static class BookmarkNodeLoader implements DBRRunnableWithProgress {
+        private final DBNDataSource dsNode;
+        private final BookmarkStorage storage;
+        private final IFile file;
+        private DBNDatabaseNode databaseNode;
+
+        BookmarkNodeLoader(DBNDataSource dsNode, BookmarkStorage storage, IFile file) {
+            this.dsNode = dsNode;
+            this.storage = storage;
+            this.file = file;
+        }
+
+        @Override
+        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+            try {
+                DBNNode currentNode = dsNode;
+                final Collection<String> dataSourcePath = storage.getDataSourcePath();
+                for (String path : dataSourcePath) {
+                    DBNNode nextChild = null;
+                    final DBNNode[] children = currentNode.getChildren(monitor);
+                    if (!ArrayUtils.isEmpty(children)) {
+                        for (DBNNode node : children) {
+                            if (path.equals(node.getNodeName())) {
+                                nextChild = node;
+                                break;
+                            }
+                        }
+                    }
+                    if (nextChild == null) {
+                        throw new DBException("Can't find node '" + path + "' in '" + currentNode.getNodeFullName() + "'"); //$NON-NLS-2$ //$NON-NLS-3$
+                    }
+                    currentNode = nextChild;
+                }
+                if (currentNode instanceof DBNDatabaseNode) {
+                    // Update bookmark image
+                    storage.setImage(currentNode.getNodeIconDefault());
+                    file.setContents(storage.serialize(), true, false, RuntimeUtils.getNestedMonitor(monitor));
+
+                    // Open entity editor
+                    databaseNode = (DBNDatabaseNode) currentNode;
+                } else if (currentNode != null) {
+                    throw new DBException("Node '" + currentNode.getNodeFullName() + "' is not a database object");
+                } else {
+                    throw new DBException("Can't find database node by path");
+                }
+            } catch (Exception e) {
+                throw new InvocationTargetException(e);
+            }
+        }
+    }
 }
