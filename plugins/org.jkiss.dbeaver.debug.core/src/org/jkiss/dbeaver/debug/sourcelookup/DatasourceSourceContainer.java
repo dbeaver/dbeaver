@@ -27,6 +27,7 @@ import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.debug.core.DebugCore;
+import org.jkiss.dbeaver.debug.internal.core.DebugCoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -56,7 +57,7 @@ public class DatasourceSourceContainer extends CompositeSourceContainer {
             VoidProgressMonitor monitor = new VoidProgressMonitor();
             node = navigatorModel.getNodeByPath(monitor, project, name);
         } catch (DBException e) {
-            String message = NLS.bind("Unable to extract node {0}", name);
+            String message = NLS.bind(DebugCoreMessages.DatasourceSourceContainer_e_extract_node, name);
             throw new CoreException(DebugCore.newErrorStatus(message, e));
         }
         if (node != null) {
