@@ -353,9 +353,9 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
         if (owner != null) {
             sql.append(" AUTHORIZATION ").append(DBUtils.getQuotedIdentifier(owner));
         }
-        sql.append(";\n\n");
+        sql.append(";\n");
         if (!CommonUtils.isEmpty(getDescription())) {
-            sql.append("COMMENT ON SCHEMA ").append(DBUtils.getQuotedIdentifier(this))
+            sql.append("\nCOMMENT ON SCHEMA ").append(DBUtils.getQuotedIdentifier(this))
                 .append(" IS ").append(SQLUtils.quoteString(this, getDescription()));
         }
         return sql.toString();
