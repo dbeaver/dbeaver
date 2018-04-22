@@ -25,6 +25,7 @@ import java.util.*;
  */
 public class DBCStatistics {
 
+    private final long startTime;
     private long rowsUpdated;
     private long rowsFetched;
     private long executeTime;
@@ -34,8 +35,8 @@ public class DBCStatistics {
     private Map<String, Object> infoMap;
     private List<String> messages;
 
-    public DBCStatistics()
-    {
+    public DBCStatistics() {
+        this.startTime = System.currentTimeMillis();
     }
 
     public long getRowsUpdated()
@@ -76,6 +77,11 @@ public class DBCStatistics {
     public void addExecuteTime(long executeTime)
     {
         this.executeTime += executeTime;
+    }
+
+    public void addExecuteTime()
+    {
+        this.executeTime += (System.currentTimeMillis() - startTime);
     }
 
     public long getFetchTime()

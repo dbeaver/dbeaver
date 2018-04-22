@@ -47,10 +47,11 @@ import org.jkiss.utils.ArrayUtils;
  */
 public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER extends DBSObjectContainer>
     extends AbstractTable<DATASOURCE, CONTAINER>
-    implements DBSDataManipulator, DBSDataCleaner, DBPSaveableObject
+    implements DBSDataManipulator, DBPSaveableObject
 {
     private static final Log log = Log.getLog(JDBCTable.class);
-    public static final String DEFAULT_TABLE_ALIAS = "x";
+
+    private static final String DEFAULT_TABLE_ALIAS = "x";
     public static final int DEFAULT_READ_FETCH_SIZE = 10000;
 
     private boolean persisted;
@@ -508,27 +509,32 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     // Truncate
 
     @Override
-    public boolean canTruncateData() {
-        return false;
+    public DBCStatistics truncateData(DBCSession session, DBCExecutionSource source) throws DBCException {
+        if (!isTruncateSupported()) {
+            try (ExecuteBatch batch = deleteData(session, new DBSAttributeBase[0], source)) {
+                batch.add(new Object[0]);
+                return batch.execute(session);
+            }
+        } else {
+            DBCStatistics statistics = new DBCStatistics();
+            DBRProgressMonitor monitor = session.getProgressMonitor();
+
+            monitor.subTask("Truncate data");
+            try (DBCStatement dbStat = session.prepareStatement(
+                DBCStatementType.QUERY,
+                getTruncateTableQuery(),
+                false, false, false)) {
+                dbStat.setStatementSource(source);
+                dbStat.executeStatement();
+            }
+            statistics.addStatementsCount();
+            statistics.addExecuteTime();
+            return statistics;
+        }
     }
 
-    @Override
-    public DBCStatistics truncateData(DBCSession session, DBCExecutionSource source) throws DBCException {
-        DBCStatistics statistics = new DBCStatistics();
-        DBRProgressMonitor monitor = session.getProgressMonitor();
-
-        monitor.subTask("Truncate data");
-        long startTime = System.currentTimeMillis();
-        try (DBCStatement dbStat = session.prepareStatement(
-            DBCStatementType.QUERY,
-            getTruncateTableQuery(),
-            false, false, false))
-        {
-            dbStat.setStatementSource(source);
-            dbStat.executeStatement();
-        }
-        statistics.addExecuteTime(System.currentTimeMillis() - startTime);
-        return statistics;
+    protected boolean isTruncateSupported() {
+        return false;
     }
 
     protected String getTruncateTableQuery() {
