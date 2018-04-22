@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.debug.core.breakpoints.DatabaseLineBreakpoint;
 import org.jkiss.dbeaver.debug.core.breakpoints.IDatabaseBreakpoint;
 import org.jkiss.dbeaver.debug.ui.DebugUI;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.ide.core.DBeaverIDECore;
 
@@ -62,7 +63,7 @@ public class ToggleProcedureBreakpointTarget implements IToggleBreakpointsTarget
         if (databaseObject == null) {
             return;
         }
-        DBNDatabaseNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(databaseObject);
+        DBNDatabaseNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(new VoidProgressMonitor(), databaseObject, false);
         if (node == null) {
             return;
         }

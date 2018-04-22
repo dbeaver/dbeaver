@@ -18,8 +18,6 @@
 
 package org.jkiss.dbeaver.debug.internal.core;
 
-import javax.inject.Inject;
-
 import org.eclipse.e4.core.contexts.EclipseContextFactory;
 import org.eclipse.e4.core.contexts.IEclipseContext;
 import org.eclipse.e4.core.services.events.IEventBroker;
