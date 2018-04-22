@@ -59,16 +59,12 @@
             <command commandId="org.jkiss.dbeaver.ext.mockdata.resultset.mockdata"/>
         </menuContribution>
 
-        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?before=generate">
+        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=results_export">
             <command
                     commandId="org.jkiss.dbeaver.ext.mockdata.resultset.mockdata"
                     label="Generate Mock Data">
                 <visibleWhen checkEnabled="true"/>
             </command>
-        </menuContribution>
-
-        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=results_export">
-            <command commandId="org.jkiss.dbeaver.ext.mockdata.resultset.mockdata"/>
         </menuContribution>
     </extension>
 

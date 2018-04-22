@@ -1733,13 +1733,13 @@ public class ResultSetViewer extends Viewer
                         editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_ADD));
                         editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_COPY));
                         editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_DELETE));
-                        editMenu.add(new GroupMarker(MENU_GROUP_EDIT));
 
                         manager.add(editMenu);
                     }
                 }
             }
         }
+        manager.add(new GroupMarker(MENU_GROUP_EDIT));
 
         if (dataSource != null && attr != null && model.getVisibleAttributeCount() > 0 && !model.isUpdateInProgress()) {
             // Filters and View
