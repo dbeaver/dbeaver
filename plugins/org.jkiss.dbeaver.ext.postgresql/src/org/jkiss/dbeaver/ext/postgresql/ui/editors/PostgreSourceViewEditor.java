@@ -17,9 +17,6 @@
 
 package org.jkiss.dbeaver.ext.postgresql.ui.editors;
 
-import java.util.Map;
-
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.e4.core.services.events.IEventBroker;
 import org.eclipse.jface.action.ControlContribution;
 import org.eclipse.jface.action.IContributionManager;
@@ -30,13 +27,9 @@ import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
-import org.eclipse.ui.IEditorInput;
 import org.jkiss.dbeaver.ext.postgresql.PostgreActivator;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgrePermissionsOwner;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreScriptObject;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
+import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -45,6 +38,8 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.osgi.service.event.Event;
 import org.osgi.service.event.EventHandler;
+
+import java.util.Map;
 
 /**
  * PostgreSourceViewEditor
@@ -98,7 +93,11 @@ public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject
     @Override
     protected boolean isReadOnly()
     {
-        return false;
+        PostgreScriptObject sourceObject = getSourceObject();
+        if (sourceObject instanceof PostgreProcedure || sourceObject instanceof PostgreTrigger) {
+            return false;
+        }
+        return true;
     }
 
     public boolean getShowPermissions() {
