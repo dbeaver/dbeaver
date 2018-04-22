@@ -57,7 +57,6 @@ public class PgSqlGlobalLaunchShortcut extends DatabaseLaunchShortcut {
                 } catch (Exception e) {
                     return error;
                 }
-                // TODO Auto-generated method stub
                 return null;
             }
         });

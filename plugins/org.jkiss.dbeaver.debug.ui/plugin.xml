@@ -97,5 +97,13 @@
          </command>
       </menuContribution>
    </extension>
+   <extension
+         point="org.eclipse.ui.commands">
+      <category
+            description="Debug Procedure commands"
+            id="org.jkiss.dbeaver.debug.ui.commands.category.procedure"
+            name="Debug Procedure">
+      </category>
+   </extension>
 
 </plugin>
