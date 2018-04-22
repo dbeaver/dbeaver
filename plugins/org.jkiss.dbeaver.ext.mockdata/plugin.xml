@@ -13,12 +13,6 @@
                         <with variable="activeEditor">
                             <adapt type="org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer"/>
                         </with>
-                        <with variable="selection">
-                            <count value="0"/>
-                            <iterate operator="and">
-                                <adapt type="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
-                            </iterate>
-                        </with>
                     </and>
                     <with variable="selection">
                         <count value="+"/>
