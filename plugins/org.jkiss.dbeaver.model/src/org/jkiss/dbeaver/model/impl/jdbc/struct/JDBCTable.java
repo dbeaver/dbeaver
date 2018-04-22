@@ -100,7 +100,11 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     @Override
     public int getSupportedFeatures()
     {
-        return DATA_COUNT | DATA_FILTER | DATA_SEARCH | DATA_INSERT | DATA_UPDATE | DATA_DELETE;
+        int features = DATA_COUNT | DATA_FILTER | DATA_SEARCH | DATA_INSERT | DATA_UPDATE | DATA_DELETE;
+        if (isTruncateSupported()) {
+            features |= DATA_TRUNCATE;
+        }
+        return features;
     }
 
     ////////////////////////////////////////////////////////////////////
@@ -534,7 +538,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     }
 
     protected boolean isTruncateSupported() {
-        return false;
+        return true;
     }
 
     protected String getTruncateTableQuery() {

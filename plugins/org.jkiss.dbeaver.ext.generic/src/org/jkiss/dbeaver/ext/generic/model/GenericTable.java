@@ -88,6 +88,13 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
     }
 
     @Override
+    protected boolean isTruncateSupported() {
+        return CommonUtils.getBoolean(
+            getDataSource().getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_SUPPORTS_TRUNCATE),
+            false);
+    }
+
+    @Override
     public DBSObject getParentObject()
     {
         return getContainer().getObject();

@@ -95,4 +95,8 @@ public class SQLServerTable extends GenericTable implements DBPOverloadedObject 
         return ((SQLServerMetaModel)getDataSource().getMetaModel()).isSqlServer();
     }
 
+    @Override
+    protected boolean isTruncateSupported() {
+        return true;
+    }
 }
