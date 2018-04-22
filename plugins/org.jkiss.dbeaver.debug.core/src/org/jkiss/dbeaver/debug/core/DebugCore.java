@@ -313,7 +313,7 @@ public class DebugCore {
                 return null;
             }
             final DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
-            DBNDatabaseNode node = navigatorModel.getNodeByObject(dbsObject);
+            DBNDatabaseNode node = navigatorModel.getNodeByObject(new VoidProgressMonitor(), dbsObject, false);
             if (node != null) {
                 String nodePath = node.getNodeItemPath();
                 DebugCore.postDebuggerSourceEvent(nodePath);

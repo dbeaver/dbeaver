@@ -72,10 +72,17 @@ public abstract class DBGBaseController implements DBGController {
 
     @Override
     public Object attach(DBRProgressMonitor monitor) throws DBGException {
-        DBPDataSource dataSource = dataSourceContainer.getDataSource();
+        if (!dataSourceContainer.isConnected()) {
+            try {
+                dataSourceContainer.connect(monitor, true, true);
+            } catch (DBException e) {
+                throw new DBGException(e, dataSourceContainer.getDataSource());
+            }
+        }
         if (!dataSourceContainer.isConnected()) {
             throw new DBGException("Not connected to database");
         }
+        DBPDataSource dataSource = dataSourceContainer.getDataSource();
         try {
             this.executionContext = dataSource.openIsolatedContext(monitor, "Debug controller");
             DBGSessionInfo targetInfo = getSessionDescriptor(getExecutionContext());
@@ -127,7 +134,9 @@ public abstract class DBGBaseController implements DBGController {
 
     @Override
     public void dispose() {
-        executionContext.close();
+        if (executionContext != null) {
+            executionContext.close();
+        }
         Collection<DBGBaseSession> values = sessions.values();
         for (DBGBaseSession session : values) {
             try {
