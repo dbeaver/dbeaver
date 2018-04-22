@@ -151,6 +151,14 @@ public abstract class DBNNode implements DBPNamedObject, DBPPersistedObject, IAd
         return pathName.toString();
     }
 
+    /**
+     * Used to copy target name in clipboard and in DND operations.
+     * Equals to regular node name by default.
+     */
+    public String getNodeTargetName() {
+        return getNodeName();
+    }
+
     public boolean hasChildren(boolean navigableOnly) {
         return navigableOnly ? allowsNavigableChildren() : allowsChildren();
     }
