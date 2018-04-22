@@ -43,6 +43,9 @@ import java.util.List;
  */
 public interface IResultSetController extends DBPContextProvider {
 
+    String MENU_ID_EDIT = "edit";
+    String MENU_ID_VIEW = "view";
+    String MENU_ID_FILTERS = "filters";
     String MENU_GROUP_EDIT = "edit";
 
     @NotNull
