@@ -32,6 +32,8 @@ public class DebugCoreMessages extends NLS {
 
     public static String DatabaseDebugTarget_name_default;
 
+    public static String DatasourceSourceContainer_e_extract_node;
+
     static {
         // initialize resource bundle
         NLS.initializeMessages(BUNDLE_NAME, DebugCoreMessages.class);
