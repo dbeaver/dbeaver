@@ -175,15 +175,7 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                 monitor.subTask("Cleanup old data");
                 DBCStatistics deleteStats = new DBCStatistics();
                 try {
-                    // TODO: truncate is much faster than delete
-                    try (DBSDataManipulator.ExecuteBatch batch = dataManipulator.deleteData(session, new DBSAttributeBase[]{}, executionSource)) {
-                        batch.add(new Object[]{});
-                        if (JUST_GENERATE_SCRIPT) {
-                            batch.generatePersistActions(session, persistActions);
-                        } else {
-                            deleteStats.accumulate(batch.execute(session));
-                        }
-                    }
+                    dataManipulator.truncateData(session, executionSource);
                     if (txnManager != null && !autoCommit) {
                         txnManager.commit(session);
                     }
