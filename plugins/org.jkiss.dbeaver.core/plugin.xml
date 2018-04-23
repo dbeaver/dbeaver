@@ -363,10 +363,10 @@
         <image commandId="org.jkiss.dbeaver.core.rollback" icon="icons/sql/rollback.png"/>
         <image commandId="org.jkiss.dbeaver.core.txn.log" icon="icons/sql/txn_log.png"/>
 
-        <image commandId="org.jkiss.dbeaver.core.project.create" icon="IMG_TOOL_NEW_WIZARD"/>
+        <image commandId="org.jkiss.dbeaver.core.project.create" icon="icons/create.png"/>
         <image commandId="org.jkiss.dbeaver.core.project.refresh" icon="icons/refresh.png"/>
         <image commandId="org.jkiss.dbeaver.core.project.select" icon="icons/project.png"/>
-        <image commandId="org.jkiss.dbeaver.core.resource.create.folder" icon="IMG_TOOL_NEW_WIZARD"/>
+        <image commandId="org.jkiss.dbeaver.core.resource.create.folder" icon="icons/file/folder_add.png"/>
         <image commandId="org.jkiss.dbeaver.core.resource.link.file" icon="icons/file/link.png"/>
         <image commandId="org.jkiss.dbeaver.core.resource.link.folder" icon="icons/file/link.png"/>
 
@@ -375,8 +375,8 @@
         <image commandId="org.jkiss.dbeaver.core.sql.editor.create" icon="icons/sql/sql_script_create.png"/>
         <image commandId="org.jkiss.dbeaver.core.sql.editor.forSelection" icon="icons/sql/sql_console.png"/>
         <image commandId="org.jkiss.dbeaver.core.object.open" icon="icons/edit.png"/>
-        <image commandId="org.jkiss.dbeaver.core.object.create" icon="IMG_TOOL_NEW_WIZARD"/>
-        <image commandId="org.jkiss.dbeaver.core.object.delete" icon="IMG_ETOOL_DELETE"/>
+        <image commandId="org.jkiss.dbeaver.core.object.create" icon="icons/create.png"/>
+        <image commandId="org.jkiss.dbeaver.core.object.delete" icon="icons/delete.png"/>
         <image commandId="org.jkiss.dbeaver.core.object.move.up" icon="icons/misc/arrow_up.png"/>
         <image commandId="org.jkiss.dbeaver.core.object.move.down" icon="icons/misc/arrow_down.png"/>
 
