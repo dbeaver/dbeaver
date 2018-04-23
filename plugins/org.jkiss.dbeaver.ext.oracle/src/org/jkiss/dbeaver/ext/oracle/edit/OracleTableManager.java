@@ -75,7 +75,7 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
         if (command.getProperties().size() > 1 || command.getProperty("comment") == null) {
             StringBuilder query = new StringBuilder("ALTER TABLE "); //$NON-NLS-1$
             query.append(command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" "); //$NON-NLS-1$
-            appendTableModifiers(command.getObject(), command, query);
+            appendTableModifiers(command.getObject(), command, query, true);
             actionList.add(new SQLDatabasePersistAction(query.toString()));
         }
     }
@@ -91,7 +91,7 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
     }
 
     @Override
-    protected void appendTableModifiers(OracleTable table, NestedObjectCommand tableProps, StringBuilder ddl)
+    protected void appendTableModifiers(OracleTable table, NestedObjectCommand tableProps, StringBuilder ddl, boolean alter)
     {
         // ALTER
         if (tableProps.getProperty("tablespace") != null) { //$NON-NLS-1$
