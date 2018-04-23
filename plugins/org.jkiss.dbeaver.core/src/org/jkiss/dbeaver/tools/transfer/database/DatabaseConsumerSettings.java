@@ -16,10 +16,8 @@
  */
 package org.jkiss.dbeaver.tools.transfer.database;
 
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.operation.IRunnableContext;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -61,51 +59,44 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
     private boolean openNewConnections = true;
     private boolean useTransactions = true;
     private int commitAfterRows = 10000;
+    private boolean truncateBeforeLoad = false;
     private boolean openTableOnFinish = true;
 
-    public DatabaseConsumerSettings()
-    {
+    public DatabaseConsumerSettings() {
     }
 
     @Nullable
-    public DBSObjectContainer getContainer()
-    {
+    public DBSObjectContainer getContainer() {
         if (containerNode == null) {
             return null;
         }
         return DBUtils.getAdapter(DBSObjectContainer.class, containerNode.getObject());
     }
 
-    public DBNDatabaseNode getContainerNode()
-    {
+    public DBNDatabaseNode getContainerNode() {
         return containerNode;
     }
 
-    public void setContainerNode(DBNDatabaseNode containerNode)
-    {
+    public void setContainerNode(DBNDatabaseNode containerNode) {
         this.containerNode = containerNode;
     }
 
-    public Map<DBSDataContainer, DatabaseMappingContainer> getDataMappings()
-    {
+    public Map<DBSDataContainer, DatabaseMappingContainer> getDataMappings() {
         return dataMappings;
     }
 
-    public DatabaseMappingContainer getDataMapping(DBSDataContainer dataContainer)
-    {
+    public DatabaseMappingContainer getDataMapping(DBSDataContainer dataContainer) {
         return dataMappings.get(dataContainer);
     }
 
-    public boolean isCompleted(Collection<DataTransferPipe> pipes)
-    {
+    public boolean isCompleted(Collection<DataTransferPipe> pipes) {
         for (DataTransferPipe pipe : pipes) {
             if (pipe.getProducer() != null) {
-                DBSDataContainer sourceObject = (DBSDataContainer)pipe.getProducer().getSourceObject();
+                DBSDataContainer sourceObject = (DBSDataContainer) pipe.getProducer().getSourceObject();
                 DatabaseMappingContainer containerMapping = dataMappings.get(sourceObject);
                 if (containerMapping == null ||
                     containerMapping.getMappingType() == DatabaseMappingType.unspecified ||
-                    !containerMapping.isCompleted())
-                {
+                    !containerMapping.isCompleted()) {
                     return false;
                 }
             }
@@ -113,49 +104,48 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
         return true;
     }
 
-    public boolean isOpenTableOnFinish()
-    {
+    public boolean isTruncateBeforeLoad() {
+        return truncateBeforeLoad;
+    }
+
+    public void setTruncateBeforeLoad(boolean truncateBeforeLoad) {
+        this.truncateBeforeLoad = truncateBeforeLoad;
+    }
+
+    public boolean isOpenTableOnFinish() {
         return openTableOnFinish;
     }
 
-    public void setOpenTableOnFinish(boolean openTableOnFinish)
-    {
+    public void setOpenTableOnFinish(boolean openTableOnFinish) {
         this.openTableOnFinish = openTableOnFinish;
     }
 
-    public boolean isOpenNewConnections()
-    {
+    public boolean isOpenNewConnections() {
         return openNewConnections;
     }
 
-    public void setOpenNewConnections(boolean openNewConnections)
-    {
+    public void setOpenNewConnections(boolean openNewConnections) {
         this.openNewConnections = openNewConnections;
     }
 
-    public boolean isUseTransactions()
-    {
+    public boolean isUseTransactions() {
         return useTransactions;
     }
 
-    public void setUseTransactions(boolean useTransactions)
-    {
+    public void setUseTransactions(boolean useTransactions) {
         this.useTransactions = useTransactions;
     }
 
-    public int getCommitAfterRows()
-    {
+    public int getCommitAfterRows() {
         return commitAfterRows;
     }
 
-    public void setCommitAfterRows(int commitAfterRows)
-    {
+    public void setCommitAfterRows(int commitAfterRows) {
         this.commitAfterRows = commitAfterRows;
     }
 
     @Nullable
-    DBPDataSource getTargetDataSource(DatabaseMappingObject attrMapping)
-    {
+    DBPDataSource getTargetDataSource(DatabaseMappingObject attrMapping) {
         DBSObjectContainer container = getContainer();
         if (container != null) {
             return container.getDataSource();
@@ -167,8 +157,7 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
     }
 
     @Override
-    public void loadSettings(IRunnableContext runnableContext, DataTransferSettings dataTransferSettings, IDialogSettings dialogSettings)
-    {
+    public void loadSettings(IRunnableContext runnableContext, DataTransferSettings dataTransferSettings, IDialogSettings dialogSettings) {
         containerNodePath = dialogSettings.get("container");
         if (dialogSettings.get("openNewConnections") != null) {
             openNewConnections = dialogSettings.getBoolean("openNewConnections");
@@ -178,6 +167,9 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
         }
         if (dialogSettings.get("commitAfterRows") != null) {
             commitAfterRows = dialogSettings.getInt("commitAfterRows");
+        }
+        if (dialogSettings.get("truncateBeforeLoad") != null) {
+            truncateBeforeLoad = dialogSettings.getBoolean("truncateBeforeLoad");
         }
         if (dialogSettings.get("openTableOnFinish") != null) {
             openTableOnFinish = dialogSettings.getBoolean("openTableOnFinish");
@@ -204,12 +196,8 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
         // then we need to check connection
         if (containerNode instanceof DBNDataSource && containerNode.getDataSource() == null) {
             try {
-                runnableContext.run(true, true, new IRunnableWithProgress() {
-                    @Override
-                    public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                        containerNode.initializeNode(new DefaultProgressMonitor(monitor), null);
-                    }
-                });
+                runnableContext.run(true, true,
+                    monitor -> containerNode.initializeNode(new DefaultProgressMonitor(monitor), null));
             } catch (InvocationTargetException e) {
                 DBUserInterface.getInstance().showError("Init connection", "Error connecting to datasource", e.getTargetException());
             } catch (InterruptedException e) {
@@ -219,20 +207,19 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
     }
 
     @Override
-    public void saveSettings(IDialogSettings dialogSettings)
-    {
+    public void saveSettings(IDialogSettings dialogSettings) {
         if (containerNode != null) {
             dialogSettings.put("container", containerNode.getNodeItemPath());
         }
         dialogSettings.put("openNewConnections", openNewConnections);
         dialogSettings.put("useTransactions", useTransactions);
         dialogSettings.put("commitAfterRows", commitAfterRows);
+        dialogSettings.put("truncateBeforeLoad", truncateBeforeLoad);
         dialogSettings.put("openTableOnFinish", openTableOnFinish);
     }
 
     @NotNull
-    public String getContainerFullName()
-    {
+    public String getContainerFullName() {
         DBSObjectContainer container = getContainer();
         return container == null ? "" :
             container instanceof DBPDataSource ?
@@ -244,19 +231,16 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
         if (containerNode == null && !CommonUtils.isEmpty(containerNodePath)) {
             if (!CommonUtils.isEmpty(containerNodePath)) {
                 try {
-                    runnableContext.run(true, true, new IRunnableWithProgress() {
-                        @Override
-                        public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                            try {
-                                DBNNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByPath(
-                                    new DefaultProgressMonitor(monitor),
-                                    containerNodePath);
-                                if (node instanceof DBNDatabaseNode) {
-                                    containerNode = (DBNDatabaseNode) node;
-                                }
-                            } catch (DBException e) {
-                                throw new InvocationTargetException(e);
+                    runnableContext.run(true, true, monitor -> {
+                        try {
+                            DBNNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByPath(
+                                new DefaultProgressMonitor(monitor),
+                                containerNodePath);
+                            if (node instanceof DBNDatabaseNode) {
+                                containerNode = (DBNDatabaseNode) node;
                             }
+                        } catch (DBException e) {
+                            throw new InvocationTargetException(e);
                         }
                     });
                     checkContainerConnection(runnableContext);
