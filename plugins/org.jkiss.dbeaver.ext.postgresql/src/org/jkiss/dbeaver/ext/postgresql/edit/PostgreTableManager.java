@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -71,41 +72,58 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
     @Override
     protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
     {
-        final PostgreTableBase table = command.getObject();
-        if (command.getProperties().size() > 1 || command.getProperty("description") == null) {
-            StringBuilder query = new StringBuilder("ALTER TABLE "); //$NON-NLS-1$
-            query.append(table.getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" "); //$NON-NLS-1$
-            appendTableModifiers(table, command, query);
+        if (command.getProperties().size() > 1 || command.getProperty(DBConstants.PROP_ID_DESCRIPTION) == null) {
+            if (command.getObject() instanceof PostgreTableRegular) {
+                try {
+                    generateAlterActions(actionList, command);
+                } catch (DBException e) {
+                    log.error(e);
+                }
+            }
+        }
+    }
 
-            actionList.add(new SQLDatabasePersistAction(query.toString()));
+    private void generateAlterActions(List<DBEPersistAction> actionList, ObjectChangeCommand command) throws DBException {
+        final PostgreTableRegular table = (PostgreTableRegular) command.getObject();
+        final String alterPrefix = "ALTER TABLE " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL) + " ";
+        final VoidProgressMonitor monitor = new VoidProgressMonitor();
+        if (command.getProperty("hasOids") != null) {
+            actionList.add(new SQLDatabasePersistAction(alterPrefix + (table.isHasOids() ? "SET WITH OIDS" : "SET WITHOUT OIDS")));
+        }
+        if (command.getProperty("tablespace") != null) {
+            actionList.add(new SQLDatabasePersistAction(alterPrefix + "SET TABLESPACE " + table.getTablespace(monitor).getName()));
         }
     }
 
     @Override
-    protected void appendTableModifiers(PostgreTableBase tableBase, NestedObjectCommand tableProps, StringBuilder ddl)
+    protected void appendTableModifiers(PostgreTableBase tableBase, NestedObjectCommand tableProps, StringBuilder ddl, boolean alter)
     {
         if (tableBase instanceof PostgreTableRegular) {
             final VoidProgressMonitor monitor = new VoidProgressMonitor();
             PostgreTableRegular table =(PostgreTableRegular)tableBase;
             try {
-                final List<PostgreTableInheritance> superTables = table.getSuperInheritance(monitor);
-                if (!CommonUtils.isEmpty(superTables)) {
-                    ddl.append("\nINHERITS (");
-                    for (int i = 0; i < superTables.size(); i++) {
-                        if (i > 0) ddl.append(",");
-                        ddl.append(superTables.get(i).getAssociatedEntity().getFullyQualifiedName(DBPEvaluationContext.DDL));
+                if (!alter) {
+                    final List<PostgreTableInheritance> superTables = table.getSuperInheritance(monitor);
+                    if (!CommonUtils.isEmpty(superTables)) {
+                        ddl.append("\nINHERITS (");
+                        for (int i = 0; i < superTables.size(); i++) {
+                            if (i > 0) ddl.append(",");
+                            ddl.append(superTables.get(i).getAssociatedEntity().getFullyQualifiedName(DBPEvaluationContext.DDL));
+                        }
+                        ddl.append(")");
                     }
-                    ddl.append(")");
+                    ddl.append("\nWITH (\n\tOIDS=").append(table.isHasOids() ? "TRUE" : "FALSE");
+                    ddl.append("\n)");
                 }
-                ddl.append("\nWITH (\n\tOIDS=").append(table.isHasOids() ? "TRUE" : "FALSE");
-                ddl.append("\n)");
                 boolean hasOtherSpecs = false;
                 PostgreTablespace tablespace = table.getTablespace(monitor);
                 if (tablespace != null && table.isTablespaceSpecified()) {
-                    ddl.append("\nTABLESPACE ").append(tablespace.getName());
+                    if (!alter) {
+                        ddl.append("\nTABLESPACE ").append(tablespace.getName());
+                    }
                     hasOtherSpecs = true;
                 }
-                if (hasOtherSpecs) {
+                if (!alter && hasOtherSpecs) {
                     ddl.append("\n");
                 }
             } catch (DBException e) {
