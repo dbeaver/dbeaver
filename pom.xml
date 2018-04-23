@@ -9,7 +9,7 @@
     <packaging>pom</packaging>
 
     <properties>
-        <dbeaver-version>5.0.3</dbeaver-version>
+        <dbeaver-version>5.0.4</dbeaver-version>
         <dbeaver-product>DBeaver</dbeaver-product>
         <tycho-version>1.0.0</tycho-version>
         <tycho-versions-version>0.26.0</tycho-versions-version>
@@ -101,14 +101,12 @@
                 <extensions>true</extensions>
             </plugin>
 
-<!--
             <plugin>
                 <groupId>org.eclipse.tycho</groupId>
                 <artifactId>tycho-versions-plugin</artifactId>
                 <version>${tycho-versions-version}</version>
                 <extensions>true</extensions>
             </plugin>
--->
 
             <plugin>
                 <groupId>org.eclipse.tycho</groupId>
