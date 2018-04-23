@@ -86,6 +86,18 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     public void fetchStart(DBCSession session, DBCResultSet resultSet, long offset, long maxRows) throws DBCException
     {
         initExporter(session.getProgressMonitor());
+
+        if (settings.isTruncateBeforeLoad()) {
+            // Truncate target tables
+            if ((containerMapping.getTarget().getSupportedFeatures() & DBSDataManipulator.DATA_TRUNCATE) != 0) {
+                containerMapping.getTarget().truncateData(
+                    targetSession,
+                    new AbstractExecutionSource(sourceObject, targetContext, this));
+            } else {
+                log.error("Table '" + targetObject.getName() + "' doesn't support truncate operation");
+            }
+        }
+
         DBCResultSetMetaData metaData = resultSet.getMeta();
         List<DBCAttributeMetaData> rsAttributes = metaData.getAttributes();
         columnMappings = new ColumnMapping[rsAttributes.size()];
