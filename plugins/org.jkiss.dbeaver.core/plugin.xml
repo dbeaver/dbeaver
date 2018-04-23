@@ -391,8 +391,8 @@
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain" icon="icons/sql/sql_plan.png"/>
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.sync.connection" icon="icons/sync_connection.png"/>
 
-        <image commandId="org.jkiss.dbeaver.ui.editors.sql.open.file" icon="IMG_OBJ_FOLDER"/>
-        <image commandId="org.jkiss.dbeaver.ui.editors.sql.save.file" icon="IMG_ETOOL_SAVEAS_EDIT"/>
+        <image commandId="org.jkiss.dbeaver.ui.editors.sql.open.file" icon="icons/file/load.png"/>
+        <image commandId="org.jkiss.dbeaver.ui.editors.sql.save.file" icon="icons/file/save_as.png"/>
 
         <image commandId="org.jkiss.dbeaver.core.resultset.row.first" icon="icons/sql/resultset_first.png"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.row.previous" icon="icons/sql/resultset_previous.png"/>
@@ -417,7 +417,7 @@
         <image commandId="org.jkiss.dbeaver.core.qm.filter" icon="icons/misc/filter.png"/>
         <image commandId="org.jkiss.dbeaver.core.qm.clear" icon="IMG_ETOOL_CLEAR"/>
 
-        <image commandId="org.jkiss.dbeaver.core.process.stop" icon="IMG_ELCL_STOP"/>
+        <image commandId="org.jkiss.dbeaver.core.process.stop" icon="icons/misc/cancel.png"/>
     </extension>
 
     <extension point="org.eclipse.core.expressions.definitions">
