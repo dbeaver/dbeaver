@@ -21,37 +21,37 @@ package org.jkiss.dbeaver.ext.postgresql.model;
  */
 public enum PostgrePrivilegeType {
     // ALL privs
-    ALL(Object.class, ' ', false),
+    ALL(' ', false, Object.class),
     // TABLE privs
-    SELECT(PostgreTableBase.class, 'r', true),
-    INSERT(PostgreTableReal.class, 'a', true),
-    UPDATE(PostgreTableBase.class, 'w', true),
-    DELETE(PostgreTableReal.class, 'd', true),
-    TRUNCATE(PostgreTableReal.class, 't', true),
-    REFERENCES(PostgreTableReal.class, 'x', true),
-    TRIGGER(PostgreTableReal.class, 'D', true),
+    SELECT('r', true, PostgreTableBase.class, PostgreTableColumn.class),
+    INSERT('a', true, PostgreTableReal.class, PostgreTableColumn.class),
+    UPDATE('w', true, PostgreTableBase.class, PostgreTableColumn.class),
+    DELETE('d', true, PostgreTableReal.class, PostgreTableColumn.class),
+    TRUNCATE('t', true, PostgreTableReal.class),
+    REFERENCES('x', true, PostgreTableReal.class, PostgreTableColumn.class),
+    TRIGGER('D', true, PostgreTableReal.class),
     // SEQUENCE privs
-    USAGE(PostgreSequence.class, 'U', true),
+    USAGE('U', true, PostgreSequence.class),
 
-    EXECUTE(PostgreProcedure.class, 'X', true),
+    EXECUTE('X', true, PostgreProcedure.class),
 
-    UNKNOWN(Object.class, (char)0, false);
+    UNKNOWN((char)0, false, Object.class);
 
-    private final Class<?> targetType;
+    private final Class<?>[] targetType;
     private final char code;
     private final boolean valid;
 
-    PostgrePrivilegeType(Class<?> targetType, char code, boolean valid) {
-        this.targetType = targetType;
+    PostgrePrivilegeType(char code, boolean valid, Class<?> ... targetType) {
         this.code = code;
         this.valid = valid;
+        this.targetType = targetType;
     }
 
     public char getCode() {
         return code;
     }
 
-    public Class<?> getTargetType() {
+    public Class<?>[] getTargetType() {
         return targetType;
     }
 
@@ -74,6 +74,15 @@ public enum PostgrePrivilegeType {
             }
         }
         return UNKNOWN;
+    }
+
+    public boolean supportsType(Class<?> objectType) {
+        for (int i = 0; i < targetType.length; i++) {
+            if (targetType[i].isAssignableFrom(objectType)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
 
