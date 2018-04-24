@@ -23,8 +23,6 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
@@ -37,7 +35,6 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.*;
 
 /**
@@ -194,8 +191,16 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     }
 
     @Override
-    public Collection<PostgrePermission> getPermissions(DBRProgressMonitor monitor) throws DBException {
-        return PostgreUtils.extractPermissionsFromACL(this, acl);
+    public Collection<PostgrePermission> getPermissions(DBRProgressMonitor monitor, boolean includeNestedObjects) throws DBException {
+        List<PostgrePermission> tablePermissions = PostgreUtils.extractPermissionsFromACL(this, acl);
+        if (!includeNestedObjects) {
+            return tablePermissions;
+        }
+        tablePermissions = new ArrayList<>(tablePermissions);
+        for (PostgreTableColumn column : getAttributes(monitor)) {
+            tablePermissions.addAll(column.getPermissions(monitor, true));
+        }
+        return tablePermissions;
     }
 
 	public boolean isPartition() {

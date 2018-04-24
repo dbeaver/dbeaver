@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.AbstractObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
@@ -560,7 +559,7 @@ public class PostgreUtils {
             }
 
             // Permissions
-            Collection<PostgrePermission> permissions = object.getPermissions(monitor);
+            Collection<PostgrePermission> permissions = object.getPermissions(monitor, true);
             if (!CommonUtils.isEmpty(permissions)) {
 
                 for (PostgrePermission permission : permissions) {

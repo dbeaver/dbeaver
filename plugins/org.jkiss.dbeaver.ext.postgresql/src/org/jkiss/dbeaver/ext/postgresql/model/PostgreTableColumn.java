@@ -22,7 +22,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.Collection;
-import java.util.Collections;
 
 /**
  * PostgreTableColumn
@@ -48,7 +47,7 @@ public class PostgreTableColumn extends PostgreAttribute<PostgreTableBase> imple
     }
 
     @Override
-    public Collection<PostgrePermission> getPermissions(DBRProgressMonitor monitor) throws DBException {
+    public Collection<PostgrePermission> getPermissions(DBRProgressMonitor monitor, boolean includeNestedObjects) throws DBException {
         return PostgreUtils.extractPermissionsFromACL(this, getAcl());
     }
 

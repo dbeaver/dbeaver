@@ -435,7 +435,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                     monitor.beginTask("Load privileges from database..", 1);
                     try {
                         monitor.subTask("Load " + getDatabaseObject().getName() + " privileges");
-                        return getDatabaseObject().getPermissions(monitor);
+                        return getDatabaseObject().getPermissions(monitor, false);
                     } catch (DBException e) {
                         throw new InvocationTargetException(e);
                     } finally {
