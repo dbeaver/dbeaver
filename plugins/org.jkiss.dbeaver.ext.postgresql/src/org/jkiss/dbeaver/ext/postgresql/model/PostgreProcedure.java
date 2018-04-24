@@ -40,10 +40,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * PostgreProcedure
@@ -99,6 +96,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     private Object[] argDefaults;
     private int[] transformTypes;
     private String[] config;
+    private Object acl;
 
     private String overloadedName;
     private List<PostgreProcedureParameter> params = new ArrayList<>();
@@ -201,6 +199,8 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         }
         this.procSrc = JDBCUtils.safeGetString(dbResult, "prosrc");
         this.description = JDBCUtils.safeGetString(dbResult, "description");
+
+        this.acl = JDBCUtils.safeGetObject(dbResult, "proacl");
     }
 
     @NotNull
@@ -446,19 +446,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
 
     @Override
     public Collection<PostgrePermission> getPermissions(DBRProgressMonitor monitor) throws DBException {
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read table privileges")) {
-            try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                    "SELECT * FROM information_schema.routine_privileges " +
-                        "WHERE specific_catalog=? AND specific_schema=? AND specific_name=?"))
-            {
-                dbStat.setString(1, getDatabase().getName());
-                dbStat.setString(2, getContainer().getName());
-                dbStat.setString(3, getSpecificName());
-                return PostgreUtils.fetchObjectPrivileges(this, PostgrePrivilege.Kind.FUNCTION, dbStat);
-            } catch (SQLException e) {
-                throw new DBException(e, getDataSource());
-            }
-        }
+        return PostgreUtils.extractPermissionsFromACL(this, acl);
     }
 
     @Override

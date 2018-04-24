@@ -41,7 +41,8 @@ import java.util.TreeSet;
 /**
  * PostgreAttribute
  */
-public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> extends JDBCTableColumn<OWNER> implements DBSTypedObjectEx, DBPNamedObject2, DBPHiddenObject, DBPInheritedObject
+public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> extends JDBCTableColumn<OWNER>
+    implements PostgreObject, DBSTypedObjectEx, DBPNamedObject2, DBPHiddenObject, DBPInheritedObject
 {
     private static final Log log = Log.getLog(PostgreAttribute.class);
 
@@ -55,6 +56,8 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     @Nullable
     private PostgreAttributeIdentity identity;
     private boolean isLocal;
+    private long objectId;
+    private Object acl;
 
     protected PostgreAttribute(
         OWNER table)
@@ -71,8 +74,15 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         loadInfo(dbResult);
     }
 
+    @Override
     public PostgreDatabase getDatabase() {
         return getTable().getDatabase();
+    }
+
+    @Property(viewable = false, order = 26)
+    @Override
+    public long getObjectId() {
+        return objectId;
     }
 
     private void loadInfo(JDBCResultSet dbResult)
@@ -81,6 +91,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         setName(JDBCUtils.safeGetString(dbResult, "attname"));
         setOrdinalPosition(JDBCUtils.safeGetInt(dbResult, "attnum"));
         setRequired(JDBCUtils.safeGetBoolean(dbResult, "attnotnull"));
+        objectId = JDBCUtils.safeGetLong(dbResult, "attr_id");
         final long typeId = JDBCUtils.safeGetLong(dbResult, "atttypid");
         dataType = getTable().getDatabase().getDataType(typeId);
         if (dataType == null) {
@@ -131,6 +142,8 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
             }
         }
 
+        this.acl = JDBCUtils.safeGetObject(dbResult, "attacl");
+
         setPersisted(true);
     }
 
@@ -139,6 +152,10 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     public PostgreDataSource getDataSource()
     {
         return getTable().getDataSource();
+    }
+
+    public Object getAcl() {
+        return acl;
     }
 
     @NotNull

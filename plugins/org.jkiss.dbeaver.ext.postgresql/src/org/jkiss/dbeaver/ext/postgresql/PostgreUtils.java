@@ -48,6 +48,7 @@ import org.jkiss.utils.CommonUtils;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.sql.SQLException;
 import java.sql.Types;
@@ -450,27 +451,62 @@ public class PostgreUtils {
             driver.getDriverParameter(PostgreConstants.PROP_GREENPLUM_DRIVER));
     }
 
-    public static Collection<PostgrePermission> fetchObjectPrivileges(PostgrePermissionsOwner owner, PostgrePrivilege.Kind kind, JDBCPreparedStatement dbStat) throws SQLException {
-        try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-            Map<String, List<PostgrePrivilege>> privs = new LinkedHashMap<>();
-            while (dbResult.next()) {
-                PostgrePrivilege privilege = new PostgrePrivilege(kind, dbResult);
-                List<PostgrePrivilege> privList = privs.computeIfAbsent(privilege.getGrantee(), k -> new ArrayList<>());
-                privList.add(privilege);
-            }
-            // Pack to permission list
-            List<PostgrePermission> result = new ArrayList<>(privs.size());
-            for (List<PostgrePrivilege> priv : privs.values()) {
-                String grantee = priv.get(0).getGrantee();
-                // Bug in PG? Always return proc owner as separate grant but owner is in upper case (e.g. PUBLIC). Weird.
-                if (owner instanceof PostgreProcedure && "PUBLIC".equals(grantee)) {
-                    grantee = "public";
-                }
-                result.add(new PostgreObjectPermission(owner, grantee, priv));
-            }
-            Collections.sort(result);
-            return result;
+    public static List<PostgrePermission> extractPermissionsFromACL(@NotNull  PostgrePermissionsOwner owner, @Nullable Object acl) {
+        if (!(acl instanceof java.sql.Array)) {
+            return Collections.emptyList();
         }
+        Object itemArray;
+        try {
+            itemArray = ((java.sql.Array) acl).getArray();
+        } catch (SQLException e) {
+            log.error(e);
+            return Collections.emptyList();
+        }
+        List<PostgrePermission> permissions = new ArrayList<>();
+        int itemCount = Array.getLength(itemArray);
+        for (int i = 0; i < itemCount; i++) {
+            Object aclItem = Array.get(itemArray, i);
+            String aclValue = extractPGObjectValue(aclItem);
+            int divPos = aclValue.indexOf('=');
+            if (divPos == -1) {
+                log.warn("Bad ACL item: " + aclValue);
+                continue;
+            }
+            String grantee = aclValue.substring(0, divPos);
+            if (grantee.isEmpty()) {
+                grantee = "public";
+            }
+            String permString = aclValue.substring(divPos + 1);
+            int divPos2 = permString.indexOf('/');
+            if (divPos2 == -1) {
+                log.warn("Bad permissions string: " + permString);
+                continue;
+            }
+            String privString = permString.substring(0, divPos2);
+            String grantor = permString.substring(divPos2 + 1);
+
+            List<PostgrePrivilege> privileges = new ArrayList<>();
+            for (int k = 0; k < privString.length(); k++) {
+                char pCode = privString.charAt(k);
+                boolean withGrantOption = false;
+                if (k < privString.length() - 1 && privString.charAt(k + 1) == '*') {
+                    withGrantOption = true;
+                    k++;
+                }
+                privileges.add(new PostgrePrivilege(
+                    grantor, grantee,
+                    owner.getDatabase().getName(),
+                    owner.getSchema().getName(),
+                    owner.getName(),
+                    PostgrePrivilegeType.getByCode(pCode),
+                    withGrantOption,
+                    false
+                ));
+            }
+            permissions.add(new PostgreObjectPermission(owner, grantee, privileges));
+        }
+
+        return permissions;
     }
 
     public static String getOptionsString(String[] options) {
@@ -512,19 +548,20 @@ public class PostgreUtils {
 
     public static void getObjectGrantPermissionActions(DBRProgressMonitor monitor, PostgrePermissionsOwner object, List<DBEPersistAction> actions, Map<String, Object> options) throws DBException {
         if (CommonUtils.getOption(options, PostgreConstants.OPTION_DDL_SHOW_PERMISSIONS)) {
+            actions.add(new SQLDatabasePersistActionComment(object.getDataSource(), "Permissions"));
+
+            // Owner
+            PostgreRole owner = object.getOwner(monitor);
+            if (owner != null) {
+                actions.add(new SQLDatabasePersistAction(
+                    "Owner change",
+                    "ALTER " + getObjectTypeName(object) + " " + getObjectUniqueName(object) + " OWNER TO " + DBUtils.getQuotedIdentifier(owner)
+                ));
+            }
+
             // Permissions
             Collection<PostgrePermission> permissions = object.getPermissions(monitor);
             if (!CommonUtils.isEmpty(permissions)) {
-                actions.add(new SQLDatabasePersistActionComment(object.getDataSource(), "Permissions"));
-
-                // Owner
-                PostgreRole owner = object.getOwner(monitor);
-                if (owner != null) {
-                    actions.add(new SQLDatabasePersistAction(
-                        "Owner change",
-                        "ALTER " + getObjectTypeName(object) + " " + getObjectUniqueName(object) + " OWNER TO " + DBUtils.getQuotedIdentifier(owner)
-                    ));
-                }
 
                 for (PostgrePermission permission : permissions) {
                     if (permission.hasAllPrivileges(object)) {

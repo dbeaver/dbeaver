@@ -29,7 +29,8 @@ public class PostgrePrivilege {
     public enum Kind {
         TABLE,
         SEQUENCE,
-        FUNCTION
+        FUNCTION,
+        COLUMN
     }
 
     private Kind kind;
