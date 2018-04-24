@@ -49,6 +49,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     private long ownerId;
     private String description;
 	private boolean isPartition;
+    private Object acl;
 
     protected PostgreTableBase(PostgreSchema catalog)
     {
@@ -66,6 +67,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
         this.isPartition =
             getDataSource().isServerVersionAtLeast(10, 0) &&
             JDBCUtils.safeGetBoolean(dbResult, "relispartition");
+        this.acl = JDBCUtils.safeGetObject(dbResult, "relacl");
     }
 
     // Copy constructor
@@ -193,22 +195,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
 
     @Override
     public Collection<PostgrePermission> getPermissions(DBRProgressMonitor monitor) throws DBException {
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read table privileges")) {
-            try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                this instanceof PostgreSequence ?
-                    "SELECT * FROM information_schema.usage_privileges WHERE object_catalog=? AND object_schema=? AND object_name=? AND object_type='SEQUENCE'" :
-                    "SELECT * FROM information_schema.table_privileges WHERE table_catalog=? AND table_schema=? AND table_name=?"))
-            {
-                dbStat.setString(1, getDatabase().getName());
-                dbStat.setString(2, getSchema().getName());
-                dbStat.setString(3, getName());
-                return PostgreUtils.fetchObjectPrivileges(this,
-                    this instanceof PostgreSequence ? PostgrePrivilege.Kind.SEQUENCE : PostgrePrivilege.Kind.TABLE,
-                    dbStat);
-            } catch (SQLException e) {
-                throw new DBException(e, getDataSource());
-            }
-        }
+        return PostgreUtils.extractPermissionsFromACL(this, acl);
     }
 
 	public boolean isPartition() {

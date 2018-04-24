@@ -21,28 +21,34 @@ package org.jkiss.dbeaver.ext.postgresql.model;
  */
 public enum PostgrePrivilegeType {
     // ALL privs
-    ALL(Object.class, false),
+    ALL(Object.class, ' ', false),
     // TABLE privs
-    SELECT(PostgreTableBase.class, true),
-    INSERT(PostgreTableReal.class, true),
-    UPDATE(PostgreTableBase.class,true),
-    DELETE(PostgreTableReal.class,true),
-    TRUNCATE(PostgreTableReal.class,true),
-    REFERENCES(PostgreTableReal.class,true),
-    TRIGGER(PostgreTableReal.class,true),
+    SELECT(PostgreTableBase.class, 'r', true),
+    INSERT(PostgreTableReal.class, 'a', true),
+    UPDATE(PostgreTableBase.class, 'w', true),
+    DELETE(PostgreTableReal.class, 'd', true),
+    TRUNCATE(PostgreTableReal.class, 't', true),
+    REFERENCES(PostgreTableReal.class, 'x', true),
+    TRIGGER(PostgreTableReal.class, 'D', true),
     // SEQUENCE privs
-    USAGE(PostgreSequence.class, true),
+    USAGE(PostgreSequence.class, 'U', true),
 
-    EXECUTE(PostgreProcedure.class, true),
+    EXECUTE(PostgreProcedure.class, 'X', true),
 
-    UNKNOWN(Object.class, false);
+    UNKNOWN(Object.class, (char)0, false);
 
     private final Class<?> targetType;
+    private final char code;
     private final boolean valid;
 
-    PostgrePrivilegeType(Class<?> targetType, boolean valid) {
+    PostgrePrivilegeType(Class<?> targetType, char code, boolean valid) {
         this.targetType = targetType;
+        this.code = code;
         this.valid = valid;
+    }
+
+    public char getCode() {
+        return code;
     }
 
     public Class<?> getTargetType() {
@@ -59,6 +65,15 @@ public enum PostgrePrivilegeType {
         } catch (IllegalArgumentException e) {
             return UNKNOWN;
         }
+    }
+
+    public static PostgrePrivilegeType getByCode(char pCode) {
+        for (PostgrePrivilegeType pt : values()) {
+            if (pt.getCode() == pCode) {
+                return pt;
+            }
+        }
+        return UNKNOWN;
     }
 }
 
