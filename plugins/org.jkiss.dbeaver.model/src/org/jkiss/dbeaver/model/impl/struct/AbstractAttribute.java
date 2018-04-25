@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPToolTipObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBPositiveNumberTransformer;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
@@ -81,7 +82,7 @@ public abstract class AbstractAttribute implements DBSAttributeBase, DBPToolTipO
 
     @NotNull
     @Override
-    @Property(viewable = true, order = 10)
+    @Property(viewable = true, order = 10, valueTransformer = DBObjectNameCaseTransformer.class)
     public String getName()
     {
         return name;
