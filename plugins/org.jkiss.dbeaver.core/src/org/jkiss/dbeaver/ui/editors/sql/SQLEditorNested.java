@@ -191,7 +191,9 @@ public abstract class SQLEditorNested<T extends DBSObject>
             int caretOffset = getEditorControl().getCaretOffset();
             super.setInput(getEditorInput());
             // Try to keep cursor position
-            getEditorControl().setCaretOffset(caretOffset);
+            if (caretOffset < getEditorControl().getCharCount()) {
+                getEditorControl().setCaretOffset(caretOffset);
+            }
         }
         reloadSyntaxRules();
     }
