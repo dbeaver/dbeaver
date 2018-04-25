@@ -64,7 +64,7 @@ public abstract class PostgreTableManagerBase extends SQLTableManager<PostgreTab
                 {
                     // Column comments
                     boolean hasComments = false;
-                    for (PostgreTableColumn column : table.getAttributes(monitor)) {
+                    for (PostgreTableColumn column : CommonUtils.safeCollection(table.getAttributes(monitor))) {
                         if (!CommonUtils.isEmpty(column.getDescription())) {
                             if (!hasComments) {
                                 actions.add(new SQLDatabasePersistActionComment(table.getDataSource(), "Column comments"));
@@ -78,7 +78,7 @@ public abstract class PostgreTableManagerBase extends SQLTableManager<PostgreTab
                 {
                     // Constraint comments
                     boolean hasComments = false;
-                    for (PostgreTableConstraintBase constr : table.getConstraints(monitor)) {
+                    for (PostgreTableConstraintBase constr : CommonUtils.safeCollection(table.getConstraints(monitor))) {
                         if (!CommonUtils.isEmpty(constr.getDescription())) {
                             if (!hasComments) {
                                 actions.add(new SQLDatabasePersistActionComment(table.getDataSource(), "Constraint comments"));
@@ -87,7 +87,7 @@ public abstract class PostgreTableManagerBase extends SQLTableManager<PostgreTab
                             hasComments = true;
                         }
                     }
-                    for (DBSEntityAssociation fk : table.getAssociations(monitor)) {
+                    for (DBSEntityAssociation fk : CommonUtils.safeCollection(table.getAssociations(monitor))) {
                         if (fk instanceof PostgreTableForeignKey && !CommonUtils.isEmpty(fk.getDescription())) {
                             if (!hasComments) {
                                 actions.add(new SQLDatabasePersistActionComment(table.getDataSource(), "Foreign key comments"));

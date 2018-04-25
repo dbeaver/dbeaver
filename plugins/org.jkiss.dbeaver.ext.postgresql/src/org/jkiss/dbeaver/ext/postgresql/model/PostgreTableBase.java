@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.util.*;
@@ -197,7 +198,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
             return tablePermissions;
         }
         tablePermissions = new ArrayList<>(tablePermissions);
-        for (PostgreTableColumn column : getAttributes(monitor)) {
+        for (PostgreTableColumn column : CommonUtils.safeCollection(getAttributes(monitor))) {
             tablePermissions.addAll(column.getPermissions(monitor, true));
         }
         return tablePermissions;
