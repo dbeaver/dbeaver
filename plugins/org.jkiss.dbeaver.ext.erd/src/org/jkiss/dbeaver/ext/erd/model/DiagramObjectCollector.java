@@ -69,6 +69,9 @@ public class DiagramObjectCollector {
             if (monitor.isCanceled()) {
                 break;
             }
+            if (root instanceof DBSAlias) {
+                root = ((DBSAlias) root).getTargetObject(monitor);
+            }
             if (root instanceof DBSFolder) {
                 collectTables(monitor, ((DBSFolder) root).getChildrenObjects(monitor), tables);
             } else if (root instanceof DBSEntity) {
