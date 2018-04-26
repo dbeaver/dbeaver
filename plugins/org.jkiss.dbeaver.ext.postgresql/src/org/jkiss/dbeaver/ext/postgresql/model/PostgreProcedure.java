@@ -298,6 +298,12 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
             }
             procDDL = body;
         }
+        
+        if (!CommonUtils.isEmpty(getDescription())) {
+        	 procDDL += "\nCOMMENT ON FUNCTION  " + DBUtils.getQuotedIdentifier(this) + " IS "
+					+ SQLUtils.quoteString(this, getDescription()) + ";";
+		}
+        
         if (CommonUtils.getOption(options, PostgreConstants.OPTION_DDL_SHOW_PERMISSIONS)) {
             List<DBEPersistAction> actions = new ArrayList<>();
             PostgreUtils.getObjectGrantPermissionActions(monitor, this, actions, options);

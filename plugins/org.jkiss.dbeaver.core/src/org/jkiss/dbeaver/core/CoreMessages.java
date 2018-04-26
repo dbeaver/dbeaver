@@ -627,6 +627,10 @@ public class CoreMessages extends NLS {
 	public static String dialog_struct_create_procedure_combo_type;
 	public static String dialog_struct_create_procedure_label_name;
 	public static String dialog_struct_create_procedure_title;
+	public static String dialog_struct_create_procedure_container;
+	public static String dialog_struct_create_sequence_title;
+	public static String dialog_struct_create_sequence_name;
+	public static String dialog_struct_create_sequence_container;	
 	public static String dialog_struct_edit_constrain_label_type;
 	public static String dialog_struct_edit_fk_column_col_type;
 	public static String dialog_struct_edit_fk_column_column;
@@ -1337,7 +1341,10 @@ public class CoreMessages extends NLS {
 	public static String obj_editor_properties_control_action_configure_columns_description;
 	//object properties editor
 	
-	
+	//toolbar editor menu item
+	public static String toolbar_cmd_undo_name;
+	public static String toolbar_cmd_redo_name;
+	//toolbar editor menu item
 	
 	static {
 		// initialize resource bundle
