@@ -17,8 +17,6 @@
 package org.jkiss.dbeaver.ui.editors.object.struct;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
@@ -54,7 +52,7 @@ public class CreateProcedurePage extends BaseObjectEditPage {
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         propsGroup.setLayoutData(gd);
 
-        final Text containerText = UIUtils.createLabelText(propsGroup, "Container", DBUtils.getObjectFullName(this.container, DBPEvaluationContext.UI));
+        final Text containerText = UIUtils.createLabelText(propsGroup, CoreMessages.dialog_struct_create_procedure_container, DBUtils.getObjectFullName(this.container, DBPEvaluationContext.UI));
         containerText.setEditable(false);
         final Text nameText = UIUtils.createLabelText(propsGroup, CoreMessages.dialog_struct_create_procedure_label_name, null);
         nameText.addModifyListener(e -> {
