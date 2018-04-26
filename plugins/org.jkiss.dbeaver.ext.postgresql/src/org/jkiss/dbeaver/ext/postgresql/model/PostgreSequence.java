@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSequence;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -214,6 +215,11 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
             sql.append("\n\tSTART ").append(info.getLastValue());
         }
 
+        if (!CommonUtils.isEmpty(getDescription())) {
+            sql.append("\nCOMMENT ON SEQUENCE ").append(DBUtils.getQuotedIdentifier(this))
+                .append(" IS ").append(SQLUtils.quoteString(this, getDescription())).append(";");
+        }
+        
         List<DBEPersistAction> actions = new ArrayList<>();
         PostgreUtils.getObjectGrantPermissionActions(monitor, this, actions, options);
         if (!actions.isEmpty()) {

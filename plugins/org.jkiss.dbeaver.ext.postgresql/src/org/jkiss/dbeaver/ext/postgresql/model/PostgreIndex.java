@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -217,6 +218,11 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
             } catch (SQLException e) {
                 throw new DBException(e, getDataSource());
             }
+            
+            if (!CommonUtils.isEmpty(getDescription())) {
+            	indexDDL += "\nCOMMENT ON INDEX " + DBUtils.getQuotedIdentifier(this) + " IS "
+						+ SQLUtils.quoteString(this, getDescription()) + ";";
+			}
         }
         return indexDDL;
     }
