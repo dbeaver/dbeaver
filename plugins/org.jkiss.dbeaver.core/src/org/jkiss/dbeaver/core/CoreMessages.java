@@ -1337,7 +1337,10 @@ public class CoreMessages extends NLS {
 	public static String obj_editor_properties_control_action_configure_columns_description;
 	//object properties editor
 	
-	
+	//toolbar editor menu item
+	public static String toolbar_cmd_undo_name;
+	public static String toolbar_cmd_redo_name;
+	//toolbar editor menu item
 	
 	static {
 		// initialize resource bundle
