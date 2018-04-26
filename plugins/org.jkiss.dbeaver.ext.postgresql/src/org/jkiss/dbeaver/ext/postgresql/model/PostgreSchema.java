@@ -184,6 +184,15 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
         return indexCache.getObjects(monitor, this, null);
     }
 
+    public PostgreIndex getIndex(DBRProgressMonitor monitor, long indexId) throws DBException {
+        for (PostgreIndex index : indexCache.getAllObjects(monitor, this)) {
+            if (index.getObjectId() == indexId) {
+                return index;
+            }
+        }
+        return null;
+    }
+
     public PostgreTableBase getTable(DBRProgressMonitor monitor, long tableId)
         throws DBException
     {
@@ -227,6 +236,7 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
         return tableCache.getTypedObjects(monitor, this, PostgreSequence.class);
     }
 
+    @Association
     public PostgreSequence getSequence(DBRProgressMonitor monitor, String name)
         throws DBException
     {
@@ -324,6 +334,7 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
     }
 
     //@Property
+    @Association
     public Collection<? extends DBSDataType> getDataTypes(DBRProgressMonitor monitor) throws DBException {
         List<PostgreDataType> types = new ArrayList<>();
         for (PostgreDataType dt : dataTypeCache.getAllObjects(monitor, this)) {
@@ -417,7 +428,7 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
         protected TableCache()
         {
             super("relname");
-            setListOrderComparator(DBUtils.<PostgreTableBase>nameComparator());
+            setListOrderComparator(DBUtils.nameComparator());
         }
 
         @NotNull
@@ -733,7 +744,7 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
                 if (attr == null) {
                     if (colNumber == 0 && expr != null) {
                         // It's ok, function index or something
-                        attrExpression = JDBCUtils.queryString(session, "select pg_catalog.pg_get_indexdef(?, ?, true)", object.getIndexId(), i + 1);
+                        attrExpression = JDBCUtils.queryString(session, "select pg_catalog.pg_get_indexdef(?, ?, true)", object.getObjectId(), i + 1);
                     } else {
                         log.warn("Bad index attribute index: " + colNumber);
                     }
