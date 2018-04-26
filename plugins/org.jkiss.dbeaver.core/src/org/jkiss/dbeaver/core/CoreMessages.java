@@ -330,6 +330,7 @@ public class CoreMessages extends NLS {
 	public static String dialog_connection_wizard_final_filter_catalogs;
 	public static String dialog_connection_wizard_final_filter_schemas_users;
 	public static String dialog_connection_wizard_final_filter_tables;
+	public static String dialog_connection_wizard_final_filter_attributes;
 	public static String dialog_connection_wizard_final_filter_link_tooltip;
 	public static String dialog_connection_wizard_final_filter_link_not_supported_text;
 	public static String dialog_connection_wizard_final_filter_link_not_supported_tooltip;
@@ -745,24 +746,6 @@ public class CoreMessages extends NLS {
 	public static String model_project_Script;
 	public static String model_project_Scripts;
 
-	public static String model_ssh_configurator_group_settings;
-	public static String model_ssh_configurator_group_advanced;
-	public static String model_ssh_configurator_checkbox_save_pass;
-	public static String model_ssh_configurator_combo_auth_method;
-	public static String model_ssh_configurator_combo_password;
-	public static String model_ssh_configurator_combo_pub_key;
-	public static String model_ssh_configurator_dialog_choose_private_key;
-	public static String model_ssh_configurator_label_host_ip;
-	public static String model_ssh_configurator_label_password;
-	public static String model_ssh_configurator_label_passphrase;
-	public static String model_ssh_configurator_label_port;
-	public static String model_ssh_configurator_label_private_key;
-	public static String model_ssh_configurator_label_user_name;
-	public static String model_ssh_configurator_label_local_port;
-	public static String model_ssh_configurator_label_local_port_description;
-    public static String model_ssh_configurator_label_keep_alive;
-	public static String model_ssh_configurator_label_tunnel_timeout;
-
 	public static String pref_page_confirmations_combo_always;
 	public static String pref_page_confirmations_combo_never;
 	public static String pref_page_confirmations_combo_prompt;
@@ -805,6 +788,8 @@ public class CoreMessages extends NLS {
 	public static String pref_page_database_general_label_result_set_max_size;
 	public static String pref_page_database_general_label_result_set_cancel_timeout;
 	public static String pref_page_database_general_label_result_set_cancel_timeout_tip;
+	public static String pref_page_database_resultsets_label_filter_force_subselect;
+	public static String pref_page_database_resultsets_label_filter_force_subselect_tip;
     public static String pref_page_database_resultsets_group_binary;
     public static String pref_page_database_resultsets_label_binary_use_strings;
     public static String pref_page_database_resultsets_label_binary_presentation;
@@ -1096,6 +1081,8 @@ public class CoreMessages extends NLS {
 	public static String pref_page_sql_completion_label_use_short_names;
 	public static String pref_page_sql_completion_label_use_long_names;
 	public static String pref_page_sql_completion_label_insert_space;
+	public static String pref_page_sql_completion_label_match_contains;
+	public static String pref_page_sql_completion_label_match_contains_tip;
 	public static String pref_page_sql_completion_label_use_global_search;
 	public static String pref_page_sql_completion_label_use_global_search_tip;
 	public static String pref_page_sql_completion_group_folding;
@@ -1146,6 +1133,10 @@ public class CoreMessages extends NLS {
 	public static String pref_page_ui_general_label_enable_long_operations;
 	public static String pref_page_ui_general_label_enable_long_operations_tip;
 	public static String pref_page_ui_general_label_long_operation_timeout;
+	public static String pref_page_ui_general_group_notifications;
+	public static String pref_page_ui_general_label_enable_notifications;
+	public static String pref_page_ui_general_label_enable_notifications_tip;
+	public static String pref_page_ui_general_label_notifications_close_delay;
 	public static String pref_page_ui_general_group_resources;
 	public static String pref_page_ui_general_label_default_resource_encoding;
 	public static String pref_page_ui_general_label_set_default_resource_encoding_tip;

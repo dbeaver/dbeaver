@@ -6,39 +6,56 @@
     <extension-point id="org.jkiss.dbeaver.mockGenerator" name="Mock data generator" schema="schema/org.jkiss.dbeaver.mockGenerator.exsd"/>
 
     <extension point="org.eclipse.ui.handlers">
-        <handler commandId="org.jkiss.dbeaver.ext.mockdata.button" class="org.jkiss.dbeaver.ext.mockdata.handlers.MockDataHandler" />
-
-        <handler commandId="org.jkiss.dbeaver.ext.mockdata.forSelection" class="org.jkiss.dbeaver.ext.mockdata.handlers.MockDataHandler">
+        <handler commandId="org.jkiss.dbeaver.ext.mockdata.resultset.mockdata" class="org.jkiss.dbeaver.ext.mockdata.handlers.ResultSetMockDataHandler">
             <enabledWhen>
-                <with variable="selection">
-                    <count value="+"/>
-                    <iterate operator="and">
-                        <adapt type="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
-                    </iterate>
-                </with>
+                <or>
+                    <and>
+                        <with variable="activeEditor">
+                            <adapt type="org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer"/>
+                        </with>
+                    </and>
+                    <with variable="selection">
+                        <count value="+"/>
+                        <iterate operator="and">
+                            <adapt type="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
+                        </iterate>
+                    </with>
+                </or>
             </enabledWhen>
         </handler>
     </extension>
 
+    <extension point="org.jkiss.dbeaver.tools">
+        <tools>
+            <tool
+                    class="org.jkiss.dbeaver.ext.mockdata.MockDataGenerateTool"
+                    description="Mock Data"
+                    id="org.jkiss.dbeaver.ext.mockdata.MockDataGenerateTool"
+                    label="Generate Mock Data"
+                    singleton="false">
+
+                <objectType name="org.jkiss.dbeaver.model.struct.DBSDataManipulator" forceCheck="true"/>
+            </tool>
+        </tools>
+    </extension>
+
     <extension point="org.eclipse.ui.commands">
-        <command id="org.jkiss.dbeaver.ext.mockdata.button" name="Generate Mock Data" description="Mock Data Generator"/>
-        <command id="org.jkiss.dbeaver.ext.mockdata.forSelection" name="Generate Mock Data" description="Mock Data Generator"/>
+        <command id="org.jkiss.dbeaver.ext.mockdata.resultset.mockdata" name="Generate Mock Data" description="Mock Data Generator" categoryId="org.jkiss.dbeaver.core.rs"/>
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
-        <image commandId="org.jkiss.dbeaver.ext.mockdata.button" icon="icons/mock_data.png"/>
-        <image commandId="org.jkiss.dbeaver.ext.mockdata.forSelection" icon="icons/mock_data.png"/>
+        <image commandId="org.jkiss.dbeaver.ext.mockdata.resultset.mockdata" icon="icons/mock_data.png"/>
     </extension>
 
     <extension point="org.eclipse.ui.menus">
         <!-- Results viewer status bar additions -->
         <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.ui.controls.resultset.status?after=additions">
-            <command commandId="org.jkiss.dbeaver.ext.mockdata.button"/>
+            <command commandId="org.jkiss.dbeaver.ext.mockdata.resultset.mockdata"/>
         </menuContribution>
 
-        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?before=generate">
+        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=results_export">
             <command
-                    commandId="org.jkiss.dbeaver.ext.mockdata.forSelection"
+                    commandId="org.jkiss.dbeaver.ext.mockdata.resultset.mockdata"
                     label="Generate Mock Data">
                 <visibleWhen checkEnabled="true"/>
             </command>
@@ -48,15 +65,23 @@
     <extension point="org.jkiss.dbeaver.mockGenerator">
 
         <generator
+                id="booleanConstantGenerator"
+                label="Constant"
+                description="Constant boolean value"
+                class="org.jkiss.dbeaver.ext.mockdata.generator.ConstantGenerator">
+            <type kind="BOOLEAN"/>
+
+            <propertyGroup label="General">
+                <property id="value" label="Value" type="boolean" defaultValue="TRUE"/>
+            </propertyGroup>
+        </generator>
+
+        <generator
                 id="booleanRandomGenerator"
                 label="Random"
                 description="Random boolean values"
                 class="org.jkiss.dbeaver.ext.mockdata.generator.BooleanRandomGenerator">
             <type kind="BOOLEAN"/>
-
-            <propertyGroup label="General">
-                <property id="nulls" label="%% of NULLs" type="integer" defaultValue="0" description="NULL values (%)"/>
-            </propertyGroup>
         </generator>
 
         <generator
@@ -69,8 +94,18 @@
             <propertyGroup label="General">
                 <property id="initial" label="Initial" type="boolean" defaultValue="TRUE"/>
                 <property id="order" label="Order" type="string" defaultValue="CONSTANT" validValues="ALTERNATELY,CONSTANT"/>
+            </propertyGroup>
+        </generator>
 
-                <property id="nulls" label="%% of NULLs" type="integer" defaultValue="0" description="NULL values (%)"/>
+        <generator
+                id="dateConstantGenerator"
+                label="Constant"
+                description="Constant date value"
+                class="org.jkiss.dbeaver.ext.mockdata.generator.ConstantGenerator">
+            <type kind="DATETIME"/>
+
+            <propertyGroup label="General">
+                <property id="value" label="Value" type="string"  description="Date format: DD-MM-YYYY"/>
             </propertyGroup>
         </generator>
 
@@ -84,8 +119,6 @@
             <propertyGroup label="General">
                 <property id="startDate" label="Start date" type="string" description="Date range start (DD-MM-YYYY)"/>
                 <property id="endDate" label="End date" type="string" description="Date range end (DD-MM-YYYY)"/>
-
-                <property id="nulls" label="%% of NULLs" type="integer" defaultValue="0" description="NULL values (%)"/>
             </propertyGroup>
         </generator>
 
@@ -100,8 +133,6 @@
                 <property id="startDate" label="Start date" type="string" defaultValue="${now as dd-MM-yyyy}" description="Sequence start date (DD-MM-YYYY)"/>
                 <property id="step" label="Increment step" type="integer" defaultValue="1" description="Sequence increment step (days)"/>
                 <property id="reverse" label="Reverse order" type="boolean" defaultValue="FALSE" description="Reverse sequence order"/>
-
-                <property id="nulls" label="%% of NULLs" type="integer" defaultValue="0" description="NULL values (%)"/>
             </propertyGroup>
         </generator>
 
@@ -118,30 +149,49 @@
         </generator>
 
         <generator
+                id="numericConstantGenerator"
+                label="Constant"
+                description="Constant numeric value"
+                class="org.jkiss.dbeaver.ext.mockdata.generator.ConstantGenerator">
+            <type kind="NUMERIC"/>
+
+            <propertyGroup label="General">
+                <property id="value" label="Value" type="numeric" defaultValue="0"/>
+            </propertyGroup>
+        </generator>
+
+        <generator
                 id="numericRandomGenerator"
                 label="Random"
                 description="Random numeric values"
                 class="org.jkiss.dbeaver.ext.mockdata.generator.NumericRandomGenerator">
             <type kind="NUMERIC"/>
-
-            <propertyGroup label="General">
-                <property id="nulls" label="%% of NULLs" type="integer" defaultValue="0" description="NULL values (%)"/>
-            </propertyGroup>
         </generator>
 
         <generator
                 id="numericSequenceGenerator"
                 label="Sequence"
                 description="Sequence of numbers with adjustable start, step and order"
-                class="org.jkiss.dbeaver.ext.mockdata.generator.NumericSequenceGenerator">
+                class="org.jkiss.dbeaver.ext.mockdata.generator.NumericSequenceGenerator"
+                tags="id,number,order">
             <type kind="NUMERIC"/>
 
             <propertyGroup label="General">
                 <property id="start" label="Start value" type="long" defaultValue="0" description="Initial sequence value"/>
                 <property id="step" label="Increment step" type="long" defaultValue="1" description="Sequence increment step"/>
                 <property id="reverse" label="Reverse order" type="boolean" defaultValue="FALSE" description="Reverse the sequence order"/>
+            </propertyGroup>
+        </generator>
 
-                <property id="nulls" label="%% of NULLs" type="integer" defaultValue="0" description="NULL values (%)"/>
+        <generator
+                id="stringConstantGenerator"
+                label="Constant"
+                description="Constant string"
+                class="org.jkiss.dbeaver.ext.mockdata.generator.ConstantGenerator">
+            <type kind="STRING"/>
+
+            <propertyGroup label="General">
+                <property id="value" label="Value" type="string"/>
             </propertyGroup>
         </generator>
 
@@ -149,7 +199,8 @@
             id="stringTextGenerator"
             label="Text"
             description="Random length substrings from the 'Lorem ipsum' text"
-            class="org.jkiss.dbeaver.ext.mockdata.generator.StringTextGenerator">
+            class="org.jkiss.dbeaver.ext.mockdata.generator.StringTextGenerator"
+            tags="text,paragraph,chapter">
             <type kind="STRING"/>
 
             <propertyGroup label="General">
@@ -157,8 +208,6 @@
                     defaultValue="Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum."/>
                 <property id="minLength" label="Min Length" type="integer" defaultValue="1" description="Minimum length"/>
                 <property id="maxLength" label="Max Length" type="integer" defaultValue="100" description="Maximum length (0 means the column length)"/>
-
-                <property id="nulls" label="%% of NULLs" type="integer" defaultValue="0" description="NULL values (%)"/>
             </propertyGroup>
         </generator>
 
@@ -166,12 +215,9 @@
                 id="stringUuidGenerator"
                 label="UUID"
                 description="UUID random values"
-                class="org.jkiss.dbeaver.ext.mockdata.generator.StringUuidGenerator">
+                class="org.jkiss.dbeaver.ext.mockdata.generator.StringUuidGenerator"
+                tags="uuid">
             <type kind="STRING"/>
-
-            <propertyGroup label="General">
-                <property id="nulls" label="%% of NULLs" type="integer" defaultValue="0" description="NULL values (%)"/>
-            </propertyGroup>
         </generator>
 
         <generator

@@ -456,6 +456,11 @@ public class BasicSQLDialect implements SQLDialect {
         return true;
     }
 
+    @Override
+    public boolean isCRLFBroken() {
+        return false;
+    }
+
     protected boolean isStandardSQL() {
         return true;
     }

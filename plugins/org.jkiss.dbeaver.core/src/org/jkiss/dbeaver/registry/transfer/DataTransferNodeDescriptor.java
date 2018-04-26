@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.registry.transfer;
 
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.jkiss.code.NotNull;
@@ -25,15 +26,13 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 import org.jkiss.utils.ArrayUtils;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Locale;
+import java.util.*;
 
 /**
  * DataTransferNodeDescriptor
@@ -72,6 +71,11 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
         this.nodeType = NodeType.valueOf(config.getAttribute(RegistryConstants.ATTR_TYPE).toUpperCase(Locale.ENGLISH));
         this.implType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
         this.settingsType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_SETTINGS));
+
+        loadNodeConfigurations(config);
+    }
+
+    void loadNodeConfigurations(IConfigurationElement config) {
         for (IConfigurationElement typeCfg : ArrayUtils.safeArray(config.getChildren(RegistryConstants.ATTR_SOURCE_TYPE))) {
             sourceTypes.add(new ObjectType(typeCfg.getAttribute(RegistryConstants.ATTR_TYPE)));
         }
@@ -81,6 +85,7 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
         for (IConfigurationElement processorConfig : ArrayUtils.safeArray(config.getChildren(RegistryConstants.TAG_PROCESSOR))) {
             processors.add(new DataTransferProcessorDescriptor(this, processorConfig));
         }
+        processors.sort(Comparator.comparing(DataTransferProcessorDescriptor::getName));
     }
 
     public String getId()
@@ -167,18 +172,26 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
 
     /**
      * Returns data exporter which supports ALL specified object types
-     * @param objectTypes object types
+     * @param surceObjects object types
      * @return list of editors
      */
-    public Collection<DataTransferProcessorDescriptor> getAvailableProcessors(Collection<Class<?>> objectTypes)
+    public Collection<DataTransferProcessorDescriptor> getAvailableProcessors(Collection<DBSObject> surceObjects)
     {
         List<DataTransferProcessorDescriptor> editors = new ArrayList<>();
         for (DataTransferProcessorDescriptor descriptor : processors) {
             boolean supports = true;
-            for (Class objectType : objectTypes) {
-                if (!descriptor.appliesToType(objectType)) {
-                    supports = false;
-                    break;
+            for (DBSObject sourceObject : surceObjects) {
+                if (!descriptor.appliesToType(sourceObject.getClass())) {
+                    boolean adapts = false;
+                    if (sourceObject instanceof IAdaptable) {
+                        if (descriptor.adaptsToType((IAdaptable)sourceObject)) {
+                            adapts = true;
+                        }
+                    }
+                    if (!adapts) {
+                        supports = false;
+                        break;
+                    }
                 }
             }
             if (supports) {

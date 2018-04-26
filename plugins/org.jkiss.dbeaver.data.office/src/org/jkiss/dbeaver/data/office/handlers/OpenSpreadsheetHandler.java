@@ -22,17 +22,16 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.data.office.export.DataExporterXLSX;
-import org.jkiss.dbeaver.data.office.export.StreamPOIConsumerSettings;
-import org.jkiss.dbeaver.data.office.export.StreamPOITransferConsumer;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferConsumer;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetCommandHandler;
@@ -44,8 +43,6 @@ import java.util.Map;
 
 public class OpenSpreadsheetHandler extends AbstractHandler
 {
-    private static final Log log = Log.getLog(OpenSpreadsheetHandler.class);
-
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
@@ -79,8 +76,8 @@ public class OpenSpreadsheetHandler extends AbstractHandler
 
                     DataExporterXLSX exporter = new DataExporterXLSX();
 
-                    StreamPOITransferConsumer consumer = new StreamPOITransferConsumer();
-                    StreamPOIConsumerSettings settings = new StreamPOIConsumerSettings();
+                    StreamTransferConsumer consumer = new StreamTransferConsumer();
+                    StreamConsumerSettings settings = new StreamConsumerSettings();
 
                     settings.setOutputEncodingBOM(false);
                     settings.setOpenFolderOnFinish(false);
@@ -88,7 +85,7 @@ public class OpenSpreadsheetHandler extends AbstractHandler
                     settings.setOutputFilePattern(tempFile.getName());
 
                     Map<Object, Object> properties = DataExporterXLSX.getDefaultProperties();
-                    consumer.initTransfer(dataContainer, settings, exporter, properties);
+                    consumer.initTransfer(dataContainer, settings, true, exporter, properties);
 
                     DatabaseTransferProducer producer = new DatabaseTransferProducer(dataContainer);
                     DatabaseProducerSettings producerSettings = new DatabaseProducerSettings();
@@ -99,12 +96,9 @@ public class OpenSpreadsheetHandler extends AbstractHandler
 
                     consumer.finishTransfer(monitor, false);
 
-                    DBeaverUI.asyncExec(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (!UIUtils.launchProgram(tempFile.getAbsolutePath())) {
-                                DBeaverUI.getInstance().showError("Open XLSX", "Can't open XLSX file '" + tempFile.getAbsolutePath() + "'");
-                            }
+                    DBeaverUI.asyncExec(() -> {
+                        if (!UIUtils.launchProgram(tempFile.getAbsolutePath())) {
+                            DBeaverUI.getInstance().showError("Open XLSX", "Can't open XLSX file '" + tempFile.getAbsolutePath() + "'");
                         }
                     });
                 } catch (Exception e) {

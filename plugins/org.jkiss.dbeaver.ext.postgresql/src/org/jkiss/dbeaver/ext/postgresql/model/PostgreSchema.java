@@ -35,12 +35,14 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructLookupCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.Array;
 import java.sql.ResultSet;
@@ -54,7 +56,7 @@ import java.util.stream.Collectors;
 /**
  * PostgreSchema
  */
-public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObject, DBPRefreshableObject, DBPSystemObject, DBSProcedureContainer, PostgreObject {
+public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObject, DBPRefreshableObject, DBPSystemObject, DBSProcedureContainer, PostgreObject, PostgreScriptObject {
 
     private static final Log log = Log.getLog(PostgreSchema.class);
     
@@ -127,11 +129,15 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
         return PostgreUtils.getObjectById(monitor, database.roleCache, database, ownerId);
     }
 
-    @Property(viewable = true, order = 100)
+    @Property(viewable = true, editable = true, updatable = true, order = 100)
     @Nullable
     @Override
     public String getDescription() {
         return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
     }
 
     @Override
@@ -338,6 +344,28 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
         return PostgreConstants.CATALOG_SCHEMA_NAME.equals(name);
     }
 
+    @Override
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+        StringBuilder sql = new StringBuilder();
+        sql.append("-- DROP SCHEMA ").append(DBUtils.getQuotedIdentifier(this)).append(";\n\n");
+        sql.append("CREATE SCHEMA ").append(DBUtils.getQuotedIdentifier(this));
+        PostgreRole owner = getOwner(monitor);
+        if (owner != null) {
+            sql.append(" AUTHORIZATION ").append(DBUtils.getQuotedIdentifier(owner));
+        }
+        sql.append(";\n");
+        if (!CommonUtils.isEmpty(getDescription())) {
+            sql.append("\nCOMMENT ON SCHEMA ").append(DBUtils.getQuotedIdentifier(this))
+                .append(" IS ").append(SQLUtils.quoteString(this, getDescription()));
+        }
+        return sql.toString();
+    }
+
+    @Override
+    public void setObjectDefinitionText(String sourceText) throws DBException {
+        throw new DBException("Schema DDL is read-only");
+    }
+
     class CollationCache extends JDBCObjectCache<PostgreSchema, PostgreCollation> {
 
         @Override
@@ -463,12 +491,13 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
         		return prepareChildrenStatement(session,owner);
         	}
         	
-            JDBCPreparedStatement dbStat = session.prepareStatement("SELECT c.relname,a.*,pg_catalog.pg_get_expr(ad.adbin, ad.adrelid, true) as def_value,dsc.description" +
+            JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT c.relname,a.*,ad.oid as attr_id,pg_catalog.pg_get_expr(ad.adbin, ad.adrelid, true) as def_value,dsc.description" +
                 "\nFROM pg_catalog.pg_attribute a" +
-                "\nINNER JOIN pg_catalog.pg_class c ON (a.attrelid=c.oid)" +
-                "\nLEFT OUTER JOIN pg_catalog.pg_attrdef ad ON (a.attrelid=ad.adrelid AND a.attnum = ad.adnum)" +
-                "\nLEFT OUTER JOIN pg_catalog.pg_description dsc ON (c.oid=dsc.objoid AND a.attnum = dsc.objsubid)" +
-                "\nWHERE NOT a.attisdropped AND c.oid=? ORDER BY a.attnum");
+                    "\nINNER JOIN pg_catalog.pg_class c ON (a.attrelid=c.oid)" +
+                    "\nLEFT OUTER JOIN pg_catalog.pg_attrdef ad ON (a.attrelid=ad.adrelid AND a.attnum = ad.adnum)" +
+                    "\nLEFT OUTER JOIN pg_catalog.pg_description dsc ON (c.oid=dsc.objoid AND a.attnum = dsc.objsubid)" +
+                    "\nWHERE NOT a.attisdropped AND c.oid=? ORDER BY a.attnum");
         	dbStat.setLong(1, forTable.getObjectId());
             return dbStat;
         }
@@ -499,10 +528,11 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
         @Override
         protected JDBCStatement prepareObjectsStatement(JDBCSession session, PostgreSchema schema, PostgreTableBase forParent) throws SQLException {
             StringBuilder sql = new StringBuilder(
-                "SELECT c.oid,c.*,t.relname as tabrelname,rt.relnamespace as refnamespace" +
+                "SELECT c.oid,c.*,t.relname as tabrelname,rt.relnamespace as refnamespace,d.description" +
                 "\nFROM pg_catalog.pg_constraint c" +
                 "\nINNER JOIN pg_catalog.pg_class t ON t.oid=c.conrelid" +
                 "\nLEFT OUTER JOIN pg_catalog.pg_class rt ON rt.oid=c.confrelid" +
+                "\nLEFT OUTER JOIN pg_catalog.pg_description d ON d.objoid=c.oid AND d.objsubid=0" +
                 "\nWHERE ");
             if (forParent == null) {
                 sql.append("t.relnamespace=?");

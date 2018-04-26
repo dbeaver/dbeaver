@@ -17,13 +17,14 @@
 package org.jkiss.dbeaver.ext.postgresql.edit;
 
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.edit.DBECommand;
-import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 
 import java.util.Map;
 
@@ -34,9 +35,9 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePerm
 
     private boolean grant;
     private PostgrePermission permission;
-    private PostgrePrivilegeType privilege;
+    private PostgrePrivilegeType[] privilege;
 
-    public PostgreCommandGrantPrivilege(PostgrePermissionsOwner user, boolean grant, PostgrePermission permission, PostgrePrivilegeType privilege)
+    public PostgreCommandGrantPrivilege(PostgrePermissionsOwner user, boolean grant, PostgrePermission permission, PostgrePrivilegeType[] privilege)
     {
         super(user, grant ? PostgreMessages.edit_command_grant_privilege_action_grant_privilege : PostgreMessages.edit_command_grant_privilege_action_revoke_privilege);
         this.grant = grant;
@@ -53,26 +54,52 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePerm
     @Override
     public DBEPersistAction[] getPersistActions(Map<String, Object> options)
     {
-        String privName = privilege == null ? PostgrePrivilegeType.ALL.name() : privilege.name();
-        String tableName, roleName;
-        if (getObject() instanceof PostgreRole) {
-            roleName = DBUtils.getQuotedIdentifier(getObject());
-            tableName = ((PostgreRolePermission)permission).getFullTableName();
+        boolean withGrantOption = false;
+        StringBuilder privName = new StringBuilder();
+        if (privilege == null) {
+            privName = new StringBuilder(PostgrePrivilegeType.ALL.name());
         } else {
-            roleName = DBUtils.getQuotedIdentifier(getObject().getDataSource(), ((PostgreTablePermission) permission).getGrantee());
-            tableName = ((PostgreTableBase)getObject()).getFullyQualifiedName(DBPEvaluationContext.DDL);
+            for (PostgrePrivilegeType pn : privilege) {
+                if (privName.length() > 0) privName.append(", ");
+                privName.append(pn.name());
+                if ((permission.getPermission(pn) & PostgrePermission.WITH_GRANT_OPTION) != 0) {
+                    withGrantOption = true;
+                }
+
+            }
         }
 
-        String grantScript = "GRANT " + privName + //$NON-NLS-1$
-            " ON " + tableName + //$NON-NLS-1$
-            " TO " + roleName + ""; //$NON-NLS-1$ //$NON-NLS-2$
-        String revokeScript = "REVOKE " + privName + //$NON-NLS-1$
-            " ON " + tableName + //$NON-NLS-1$
-            " FROM " + roleName + ""; //$NON-NLS-1$ //$NON-NLS-2$
+        PostgrePermissionsOwner object = getObject();
+        String objectName, roleName;
+        if (object instanceof PostgreRole) {
+            roleName = DBUtils.getQuotedIdentifier(object);
+            objectName = ((PostgreRolePermission)permission).getFullObjectName();
+        } else {
+            roleName = DBUtils.getQuotedIdentifier(object.getDataSource(), ((PostgreObjectPermission) permission).getGrantee());
+            objectName = PostgreUtils.getObjectUniqueName(object);
+        }
+
+        String objectType;
+        if (permission instanceof PostgreRolePermission) {
+            objectType = ((PostgreRolePermission) permission).getKind().name();
+        } else {
+            objectType = PostgreUtils.getObjectTypeName(object);
+        }
+        String grantScript =
+            grant ?
+                (object instanceof PostgreTableColumn ?
+                    "GRANT " + privName + "(" + DBUtils.getQuotedIdentifier(object) + ") ON " + ((PostgreTableColumn) object).getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " TO " + roleName :
+                    "GRANT " + privName + " ON " + objectType + " " + objectName + " TO " + roleName) :
+                (object instanceof PostgreTableColumn ?
+                    "REVOKE " + privName + "(" + DBUtils.getQuotedIdentifier(object) + ") ON " + ((PostgreTableColumn) object).getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) + " FROM " + roleName :
+                    "REVOKE " + privName + " ON " + objectType + " " + objectName + " FROM " + roleName);
+        if (grant && withGrantOption) {
+            grantScript += " WITH GRANT OPTION";
+        }
         return new DBEPersistAction[] {
             new SQLDatabasePersistAction(
                 PostgreMessages.edit_command_grant_privilege_action_grant_privilege,
-                grant ? grantScript : revokeScript)
+                grantScript)
         };
     }
 

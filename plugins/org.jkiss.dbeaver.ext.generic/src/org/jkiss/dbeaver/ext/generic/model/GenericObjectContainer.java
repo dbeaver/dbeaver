@@ -273,6 +273,10 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
         return DBUtils.findObject(getPackages(monitor), name);
     }
 
+    public List<GenericProcedure> getProcedureCache() {
+        return procedures;
+    }
+
     @Override
     public synchronized Collection<GenericProcedure> getProcedures(DBRProgressMonitor monitor)
         throws DBException

@@ -69,6 +69,17 @@ public abstract class ObjectViewerRenderer {
         itemsViewer.getControl().setCursor(arrowCursor);
 
         final CellTrackListener actionsListener = new CellTrackListener();
+        SelectionAdapter selectionAdapter = new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                selectedItem = lastClickItem = (Item) e.item;
+            }
+        };
+        if (isTree) {
+            getTree().addSelectionListener(selectionAdapter);
+        } else {
+            getTable().addSelectionListener(selectionAdapter);
+        }
         itemsViewer.getControl().addMouseListener(new MouseListener());
         itemsViewer.getControl().addMouseTrackListener(actionsListener);
         itemsViewer.getControl().addMouseMoveListener(actionsListener);
@@ -263,6 +274,9 @@ public abstract class ObjectViewerRenderer {
                 Point mousePoint = itemsViewer.getControl().getDisplay().getCursorLocation();
                 mousePoint = itemsViewer.getControl().getDisplay().map(null, itemsViewer.getControl(), mousePoint);
                 updateCursor(mousePoint.x, mousePoint.y, e.keyCode);
+            } else {
+                // Reset selected column to the first one (seems to be cursor navigation)
+                selectedColumn = 0;
             }
         }
 

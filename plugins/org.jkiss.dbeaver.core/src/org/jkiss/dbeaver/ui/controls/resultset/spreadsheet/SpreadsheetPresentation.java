@@ -39,6 +39,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
+import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.jface.viewers.ISelection;
@@ -179,11 +180,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 fireSelectionChanged(new SpreadsheetSelectionImpl());
             }
         });
-        this.spreadsheet.addMouseWheelListener(new MouseWheelListener() {
-            @Override
-            public void mouseScrolled(MouseEvent e) {
+        this.spreadsheet.addMouseWheelListener(e -> {
 
-            }
         });
         spreadsheet.addControlListener(new ControlAdapter() {
             @Override
@@ -734,28 +732,31 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         if (attr != null && row != null) {
             final List<Object> selectedColumns = spreadsheet.getColumnSelection();
             if (!controller.isRecordMode() && !selectedColumns.isEmpty()) {
-                String hideTitle;
-                if (selectedColumns.size() == 1) {
-                    DBDAttributeBinding columnToHide = (DBDAttributeBinding) selectedColumns.get(0);
-                    hideTitle = "Hide column '" + columnToHide.getName() + "'";
-                } else {
-                    hideTitle = "Hide selected columns (" + selectedColumns.size() + ")";
-                }
-                manager.insertAfter(IResultSetController.MENU_GROUP_EDIT, new Action(hideTitle) {
-                    @Override
-                    public void run()
-                    {
-                        ResultSetModel model = controller.getModel();
-                        if (selectedColumns.size() >= model.getVisibleAttributeCount()) {
-                            UIUtils.showMessageBox(getControl().getShell(), "Hide columns", "Can't hide all result columns, at least one column must be visible", SWT.ERROR);
-                        } else {
-                            for (int i = 0, selectedColumnsSize = selectedColumns.size(); i < selectedColumnsSize; i++) {
-                                model.setAttributeVisibility((DBDAttributeBinding) selectedColumns.get(i), false);
-                            }
-                            refreshData(true, false, true);
-                        }
+                IMenuManager viewMenu = (IMenuManager) manager.find(ResultSetViewer.MENU_ID_VIEW);
+                if (viewMenu != null) {
+                    String hideTitle;
+                    if (selectedColumns.size() == 1) {
+                        DBDAttributeBinding columnToHide = (DBDAttributeBinding) selectedColumns.get(0);
+                        hideTitle = "Hide column '" + columnToHide.getName() + "'";
+                    } else {
+                        hideTitle = "Hide selected columns (" + selectedColumns.size() + ")";
                     }
-                });
+                    viewMenu.add(new Separator());
+                    viewMenu.add(new Action(hideTitle) {
+                        @Override
+                        public void run() {
+                            ResultSetModel model = controller.getModel();
+                            if (selectedColumns.size() >= model.getVisibleAttributeCount()) {
+                                UIUtils.showMessageBox(getControl().getShell(), "Hide columns", "Can't hide all result columns, at least one column must be visible", SWT.ERROR);
+                            } else {
+                                for (int i = 0, selectedColumnsSize = selectedColumns.size(); i < selectedColumnsSize; i++) {
+                                    model.setAttributeVisibility((DBDAttributeBinding) selectedColumns.get(i), false);
+                                }
+                                refreshData(true, false, true);
+                            }
+                        }
+                    });
+                }
             }
         }
     }

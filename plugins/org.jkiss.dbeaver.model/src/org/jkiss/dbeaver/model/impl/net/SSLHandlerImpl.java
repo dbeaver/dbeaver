@@ -31,17 +31,4 @@ public class SSLHandlerImpl implements DBWNetworkHandler, DBWConfigProvider {
     public void invalidateHandler(DBRProgressMonitor monitor) throws DBException, IOException {
 
     }
-
-/*
-    @Override
-    public boolean isApplicable(DBPDataSourceContainer dataSource) {
-        try {
-            final DBPDataSourceProvider dsProvider = dataSource.getDriver().getDataSourceProvider();
-
-            return dsProvider instanceof DBPDataSourceConfigurator && ((DBPDataSourceConfigurator) dsProvider).supportsExtraConnectionProperties();
-        } catch (DBException e) {
-            return false;
-        }
-    }
-*/
 }

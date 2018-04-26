@@ -73,7 +73,7 @@ public class NavigateObjectHandler extends AbstractHandler {
         }
         String lastKeyword = hyperlinkDetector.getLastKeyword();
         if (!CommonUtils.isEmpty(lastKeyword)) {
-            IEditorStatusLine statusLine = (IEditorStatusLine)editor.getAdapter(IEditorStatusLine.class);
+            IEditorStatusLine statusLine = editor.getAdapter(IEditorStatusLine.class);
             if (statusLine != null) {
                 statusLine.setMessage(true, "Can't find metadata object for name '" + lastKeyword + "'", (Image)null);
             }

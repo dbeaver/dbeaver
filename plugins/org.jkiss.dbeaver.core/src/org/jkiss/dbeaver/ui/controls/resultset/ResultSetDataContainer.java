@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
+import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -35,7 +36,7 @@ import java.util.List;
  * Client-side data container.
  * Wraps RSV model and original data container.
  */
-public class ResultSetDataContainer implements DBSDataContainer {
+public class ResultSetDataContainer implements DBSDataContainer, IAdaptable {
 
     private static final Log log = Log.getLog(ResultSetDataContainer.class);
 
@@ -136,6 +137,14 @@ public class ResultSetDataContainer implements DBSDataContainer {
     @Override
     public boolean isPersisted() {
         return dataContainer.isPersisted();
+    }
+
+    @Override
+    public <T> T getAdapter(Class<T> adapter) {
+        if (adapter.isInstance(dataContainer)) {
+            return adapter.cast(dataContainer);
+        }
+        return null;
     }
 
     private class ModelResultSet implements DBCResultSet {

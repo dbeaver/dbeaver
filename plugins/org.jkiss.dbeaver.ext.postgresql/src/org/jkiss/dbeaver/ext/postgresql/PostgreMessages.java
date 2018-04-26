@@ -39,6 +39,8 @@ public class PostgreMessages extends NLS {
 	public static String wizard_backup_page_setting_label_compression;
 	public static String wizard_backup_page_setting_label_encoding;
 	public static String wizard_backup_page_setting_checkbox_use_insert;
+	public static String wizard_backup_page_setting_checkbox_no_privileges;
+	public static String wizard_backup_page_setting_checkbox_no_owner;
 	public static String wizard_backup_page_setting_group_output;
 	public static String wizard_backup_page_setting_label_output_folder;
 	public static String wizard_backup_page_setting_label_file_name_pattern;

@@ -89,7 +89,7 @@ public class ExasolTableManager extends SQLTableManager<ExasolTable, ExasolSchem
 
     @Override
     @SuppressWarnings("rawtypes")
-    public void appendTableModifiers(ExasolTable exasolTable, NestedObjectCommand tableProps, StringBuilder ddl) {
+    public void appendTableModifiers(ExasolTable exasolTable, NestedObjectCommand tableProps, StringBuilder ddl, boolean alter) {
 
     }
 
@@ -117,7 +117,7 @@ public class ExasolTableManager extends SQLTableManager<ExasolTable, ExasolSchem
             sb.append(exasolTable.getFullyQualifiedName(DBPEvaluationContext.DDL));
             sb.append(" ");
 
-            appendTableModifiers(command.getObject(), command, sb);
+            appendTableModifiers(command.getObject(), command, sb, true);
 
             actionList.add(new SQLDatabasePersistAction(CMD_ALTER, sb.toString()));
         }

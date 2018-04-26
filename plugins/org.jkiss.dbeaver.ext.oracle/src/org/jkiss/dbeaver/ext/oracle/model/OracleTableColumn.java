@@ -134,14 +134,14 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
     }
 
     @Override
-    @Property(viewable = true, order = 41)
+    @Property(viewable = true, editable = true, updatable = true, order = 41)
     public Integer getPrecision()
     {
         return super.getPrecision();
     }
 
     @Override
-    @Property(viewable = true, order = 42)
+    @Property(viewable = true, editable = true, updatable = true, order = 42)
     public Integer getScale()
     {
         return super.getScale();

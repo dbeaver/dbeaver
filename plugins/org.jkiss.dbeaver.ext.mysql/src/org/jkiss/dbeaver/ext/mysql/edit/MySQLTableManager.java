@@ -90,7 +90,7 @@ public class MySQLTableManager extends SQLTableManager<MySQLTableBase, MySQLCata
     {
         StringBuilder query = new StringBuilder("ALTER TABLE "); //$NON-NLS-1$
         query.append(command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL)).append(" "); //$NON-NLS-1$
-        appendTableModifiers(command.getObject(), command, query);
+        appendTableModifiers(command.getObject(), command, query, true);
 
         actionList.add(
             new SQLDatabasePersistAction(query.toString())
@@ -111,7 +111,7 @@ public class MySQLTableManager extends SQLTableManager<MySQLTableBase, MySQLCata
     }
 
     @Override
-    protected void appendTableModifiers(MySQLTableBase tableBase, NestedObjectCommand tableProps, StringBuilder ddl)
+    protected void appendTableModifiers(MySQLTableBase tableBase, NestedObjectCommand tableProps, StringBuilder ddl, boolean alter)
     {
         if (tableBase instanceof MySQLTable) {
             MySQLTable table =(MySQLTable)tableBase;

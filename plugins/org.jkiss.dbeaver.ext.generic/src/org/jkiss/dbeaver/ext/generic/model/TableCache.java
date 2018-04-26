@@ -139,12 +139,22 @@ public class TableCache extends JDBCStructLookupCache<GenericStructContainer, Ge
         String typeName = GenericUtils.safeGetStringTrimmed(columnObject, dbResult, JDBCConstants.TYPE_NAME);
         long columnSize = GenericUtils.safeGetLong(columnObject, dbResult, JDBCConstants.COLUMN_SIZE);
         boolean isNotNull = GenericUtils.safeGetInt(columnObject, dbResult, JDBCConstants.NULLABLE) == DatabaseMetaData.columnNoNulls;
-        Integer scale = GenericUtils.safeGetInteger(columnObject, dbResult, JDBCConstants.DECIMAL_DIGITS);
+        Integer scale = null;
+        try {
+            scale = GenericUtils.safeGetInteger(columnObject, dbResult, JDBCConstants.DECIMAL_DIGITS);
+        } catch (Throwable e) {
+            log.warn("Error getting column scale", e);
+        }
         Integer precision = null;
         if (valueType == Types.NUMERIC || valueType == Types.DECIMAL) {
             precision = (int) columnSize;
         }
-        int radix = GenericUtils.safeGetInt(columnObject, dbResult, JDBCConstants.NUM_PREC_RADIX);
+        int radix = 10;
+        try {
+            radix = GenericUtils.safeGetInt(columnObject, dbResult, JDBCConstants.NUM_PREC_RADIX);
+        } catch (Exception e) {
+            log.warn("Error getting column radix", e);
+        }
         String defaultValue = GenericUtils.safeGetString(columnObject, dbResult, JDBCConstants.COLUMN_DEF);
         String remarks = GenericUtils.safeGetString(columnObject, dbResult, JDBCConstants.REMARKS);
         long charLength = GenericUtils.safeGetLong(columnObject, dbResult, JDBCConstants.CHAR_OCTET_LENGTH);

@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
+import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBPStatefulObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -47,17 +48,15 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.LongKeyMap;
 
 import java.sql.SQLException;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 /**
  * PostgreDatabase
  */
-public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableObject, DBPStatefulObject, PostgreObject, DBSObjectSelector {
+public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableObject, DBPStatefulObject, DBPNamedObject2, PostgreObject, DBSObjectSelector {
 
     private static final Log log = Log.getLog(PostgreDatabase.class);
 
@@ -136,6 +135,11 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
     public String getName()
     {
         return name;
+    }
+
+    @Override
+    public void setName(String newName) {
+        this.name = newName;
     }
 
     @Nullable
@@ -437,8 +441,25 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
     }
 
     void setSearchPath(DBRProgressMonitor monitor, PostgreSchema schema, JDBCExecutionContext context) throws DBCException {
+        // Construct search path from current search path but put default schema first
+        List<String> newSearchPath = new ArrayList<>(dataSource.getDefaultSearchPath());
+        {
+            String defSchemaName = DBUtils.getQuotedIdentifier(schema);
+            int schemaIndex = newSearchPath.indexOf(defSchemaName);
+            if (schemaIndex == 0) {
+                // Already default schema
+            } else {
+                if (schemaIndex > 0) {
+                    // Remove from previous position
+                    newSearchPath.remove(schemaIndex);
+                }
+                // Add it first
+                newSearchPath.add(0, defSchemaName);
+            }
+        }
         try (JDBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, "Change search path")) {
-            JDBCUtils.executeSQL(session, "SET search_path = \"$user\"," + DBUtils.getQuotedIdentifier(schema));
+            String sp = newSearchPath.stream().collect(Collectors.joining(","));
+            JDBCUtils.executeSQL(session, "SET search_path = " + sp);
         } catch (SQLException e) {
             throw new DBCException("Error setting search path", e, dataSource);
         }

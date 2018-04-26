@@ -53,28 +53,18 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
     implements DBEObjectRenamer<MySQLTableColumn>, DBEObjectReorderer<MySQLTableColumn>
 {
 
-    protected final ColumnModifier<MySQLTableColumn> MySQLDataTypeModifier = new ColumnModifier<MySQLTableColumn>() {
-        @Override
-        public void appendModifier(MySQLTableColumn column, StringBuilder sql, DBECommandAbstract<MySQLTableColumn> command) {
-            sql.append(' ').append(column.getFullTypeName());
+    private final ColumnModifier<MySQLTableColumn> MySQLDataTypeModifier = (column, sql, command) ->
+        sql.append(' ').append(column.getFullTypeName());
+
+    private final ColumnModifier<MySQLTableColumn> CharsetModifier = (column, sql, command) -> {
+        if (column.getDataKind() == DBPDataKind.STRING && column.getCharset() != null) {
+            sql.append(" CHARACTER SET ").append(column.getCharset().getName());
         }
     };
 
-    protected final ColumnModifier<MySQLTableColumn> CharsetModifier = new ColumnModifier<MySQLTableColumn>() {
-        @Override
-        public void appendModifier(MySQLTableColumn column, StringBuilder sql, DBECommandAbstract<MySQLTableColumn> command) {
-            if (column.getCharset() != null) {
-                sql.append(" CHARACTER SET ").append(column.getCharset().getName());
-            }
-        }
-    };
-
-    protected final ColumnModifier<MySQLTableColumn> CollationModifier = new ColumnModifier<MySQLTableColumn>() {
-        @Override
-        public void appendModifier(MySQLTableColumn column, StringBuilder sql, DBECommandAbstract<MySQLTableColumn> command) {
-            if (column.getCollation() != null) {
-                sql.append(" COLLATE ").append(column.getCollation().getName());
-            }
+    private final ColumnModifier<MySQLTableColumn> CollationModifier = (column, sql, command) -> {
+        if (column.getDataKind() == DBPDataKind.STRING && column.getCollation() != null) {
+            sql.append(" COLLATE ").append(column.getCollation().getName());
         }
     };
 
@@ -85,7 +75,7 @@ public class MySQLTableColumnManager extends SQLTableColumnManager<MySQLTableCol
         return object.getParentObject().getContainer().getTableCache().getChildrenCache(object.getParentObject());
     }
 
-    protected ColumnModifier[] getSupportedModifiers(MySQLTableColumn column)
+    protected ColumnModifier[] getSupportedModifiers(MySQLTableColumn column, Map<String, Object> options)
     {
         return new ColumnModifier[] {MySQLDataTypeModifier, CharsetModifier, CollationModifier, DefaultModifier, NullNotNullModifier};
     }

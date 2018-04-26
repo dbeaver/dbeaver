@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.app.DBPRegistryDescriptor;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 
 import java.lang.reflect.Field;
@@ -137,7 +136,7 @@ public abstract class DataTypeAbstractDescriptor<DESCRIPTOR> extends AbstractDes
             return implType.createInstance(instanceType);
         }
         catch (Exception e) {
-            throw new IllegalStateException("Can't instantiate data type provider '" + this.id + "'", e); //$NON-NLS-1$
+            throw new IllegalStateException("Can't instantiate data type provider '" + this.getId() + "'", e); //$NON-NLS-1$
         }
     }
 

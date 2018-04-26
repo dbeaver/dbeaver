@@ -50,7 +50,7 @@ public abstract class TransactionInfoDialog extends Dialog {
     private final IWorkbenchPart activeEditor;
     protected QueryLogViewer logViewer;
     private Button showAllCheck;
-    private Button showPreviousCheck;
+    protected Button showPreviousCheck;
 
     public TransactionInfoDialog(Shell parentShell, IWorkbenchPart activeEditor)
     {
@@ -93,7 +93,7 @@ public abstract class TransactionInfoDialog extends Dialog {
 
     }
 
-    private void updateTransactionFilter() {
+    protected void updateTransactionFilter() {
         DBCExecutionContext context = getCurrentContext();
         QMEventFilter filter = context == null ? VOID_FILTER : createContextFilter(context);
         logViewer.setFilter(filter);

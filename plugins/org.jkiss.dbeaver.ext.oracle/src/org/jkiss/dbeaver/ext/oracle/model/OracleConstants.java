@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -78,7 +78,7 @@ public class OracleConstants {
     public static final String PROP_ALWAYS_SHOW_DBA = DBConstants.INTERNAL_PROP_PREFIX + "always-show-dba@";
     public static final String PROP_USE_RULE_HINT = DBConstants.INTERNAL_PROP_PREFIX + "use-rule-hint@";
 
-    public static final String OS_AUTH_USER_NAME = "@OS_AUTH@";
+    public static final String OS_AUTH_PROP = DBConstants.INTERNAL_PROP_PREFIX + "os-authentication@";
 
     public static final String DRIVER_TYPE_THIN = "THIN";
     public static final String DRIVER_TYPE_OCI = "OCI";
@@ -144,6 +144,7 @@ public class OracleConstants {
      * Oracle error codes
      */
     public static final int EC_FEATURE_NOT_SUPPORTED = 17023;
+    public static final int EC_PASSWORD_EXPIRED = 28001;
 
     /**
      * Connection type

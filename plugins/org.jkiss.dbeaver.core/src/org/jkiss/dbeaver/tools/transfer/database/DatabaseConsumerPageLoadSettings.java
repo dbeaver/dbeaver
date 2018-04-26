@@ -53,21 +53,33 @@ public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTrans
         final DatabaseConsumerSettings settings = getWizard().getPageSettings(this, DatabaseConsumerSettings.class);
 
         {
+            Group loadSettings = UIUtils.createControlGroup(composite, "Data load", 1, GridData.FILL_HORIZONTAL, 0);
+            final Button truncateTargetTable = UIUtils.createCheckbox(loadSettings, "Truncate target table before load", settings.isTruncateBeforeLoad());
+            truncateTargetTable.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    settings.setTruncateBeforeLoad(truncateTargetTable.getSelection());
+                }
+            });
+        }
+
+        {
             Group performanceSettings = UIUtils.createControlGroup(composite, "Performance", 4, GridData.FILL_HORIZONTAL, 0);
 
-            final Button newConnectionCheckbox = UIUtils.createLabelCheckbox(
+            final Button newConnectionCheckbox = UIUtils.createCheckbox(
                 performanceSettings,
                 CoreMessages.data_transfer_wizard_output_checkbox_new_connection,
-                settings.isOpenNewConnections());
+                null,
+                settings.isOpenNewConnections(),
+                4);
             newConnectionCheckbox.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     settings.setOpenNewConnections(newConnectionCheckbox.getSelection());
                 }
             });
-            newConnectionCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 3, 1));
 
-            final Button useTransactionsCheck = UIUtils.createLabelCheckbox(performanceSettings, "Use transactions", settings.isUseTransactions());
+            final Button useTransactionsCheck = UIUtils.createCheckbox(performanceSettings, "Use transactions", null, settings.isUseTransactions(), 4);
             useTransactionsCheck.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e)
@@ -75,7 +87,6 @@ public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTrans
                     settings.setUseTransactions(useTransactionsCheck.getSelection());
                 }
             });
-            useTransactionsCheck.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 3, 1));
 
             final Spinner commitAfterEdit = UIUtils.createLabelSpinner(performanceSettings, "Commit after insert of ", settings.getCommitAfterRows(), 1, Integer.MAX_VALUE);
             commitAfterEdit.addSelectionListener(new SelectionAdapter() {
@@ -90,14 +101,13 @@ public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTrans
 
         {
             Group generalSettings = UIUtils.createControlGroup(composite, "General", 4, GridData.FILL_HORIZONTAL, 0);
-            final Button showTableCheckbox = UIUtils.createLabelCheckbox(generalSettings, "Open table editor on finish", settings.isOpenTableOnFinish());
+            final Button showTableCheckbox = UIUtils.createCheckbox(generalSettings, "Open table editor on finish", null, settings.isOpenTableOnFinish(), 4);
             showTableCheckbox.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     settings.setOpenTableOnFinish(showTableCheckbox.getSelection());
                 }
             });
-            showTableCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false, 3, 1));
         }
 
         setControl(composite);

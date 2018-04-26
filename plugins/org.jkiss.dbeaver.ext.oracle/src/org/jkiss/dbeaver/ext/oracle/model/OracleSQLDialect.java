@@ -74,6 +74,7 @@ class OracleSQLDialect extends JDBCSQLDialect {
         "ELSIF",
         "EXIT",
     };
+    private boolean crlfBroken;
 
     public OracleSQLDialect() {
         super("Oracle");
@@ -81,11 +82,12 @@ class OracleSQLDialect extends JDBCSQLDialect {
 
     public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(dataSource, metaData);
+        crlfBroken = !dataSource.isServerVersionAtLeast(11, 0);
 
         addFunctions(
             Arrays.asList(
                 "SUBSTR", "APPROX_COUNT_DISTINCT",
-                "REGEXP_SUBSTR", "REGEXP_INSTR", "REGEXP_REPLACE", "REGEXP_LIKE",
+                "REGEXP_SUBSTR", "REGEXP_INSTR", "REGEXP_REPLACE", "REGEXP_LIKE", "REGEXP_COUNT",
                 // Additions from #323
                 //Number Functions:
                 "BITAND",
@@ -383,5 +385,10 @@ class OracleSQLDialect extends JDBCSQLDialect {
     @Override
     public String getScriptDelimiter() {
         return super.getScriptDelimiter();
+    }
+
+    @Override
+    public boolean isCRLFBroken() {
+        return crlfBroken;
     }
 }

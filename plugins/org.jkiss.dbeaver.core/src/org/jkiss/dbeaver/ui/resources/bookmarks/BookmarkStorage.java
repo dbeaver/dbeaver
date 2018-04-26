@@ -137,7 +137,7 @@ public class BookmarkStorage {
         return dataSourceId;
     }
 
-    public Collection<String> getDataSourcePath()
+    public List<String> getDataSourcePath()
     {
         return dataSourcePath;
     }

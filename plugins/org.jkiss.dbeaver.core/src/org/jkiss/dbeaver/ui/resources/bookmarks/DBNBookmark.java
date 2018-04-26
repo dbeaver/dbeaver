@@ -24,9 +24,12 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSAlias;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -34,6 +37,7 @@ import org.jkiss.utils.CommonUtils;
 import java.io.InputStream;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * DBNBookmark
@@ -42,7 +46,7 @@ public class DBNBookmark extends DBNResource
 {
     private BookmarkStorage storage;
 
-    public DBNBookmark(DBNNode parentNode, IResource resource, DBPResourceHandler handler) throws DBException, CoreException
+    DBNBookmark(DBNNode parentNode, IResource resource, DBPResourceHandler handler) throws DBException, CoreException
     {
         super(parentNode, resource, handler);
         storage = new BookmarkStorage((IFile)resource, true);
@@ -53,6 +57,10 @@ public class DBNBookmark extends DBNResource
     {
         storage.dispose();
         super.dispose(reflect);
+    }
+
+    public BookmarkStorage getStorage() {
+        return storage;
     }
 
     @Override
@@ -77,6 +85,12 @@ public class DBNBookmark extends DBNResource
     public DBPImage getNodeIcon()
     {
         return storage.getImage();
+    }
+
+    @Override
+    public String getNodeTargetName() {
+        List<String> dsPath = storage.getDataSourcePath();
+        return CommonUtils.isEmpty(dsPath) ? super.getNodeName() : dsPath.get(dsPath.size() - 1);
     }
 
     @Override

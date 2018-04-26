@@ -32,7 +32,6 @@ public class PostgreDebugAdapterFactory implements IAdapterFactory {
 
     private static final Class<?>[] CLASSES = new Class[] { DBGController.class, DBGResolver.class };
 
-    @SuppressWarnings("unchecked")
     @Override
     public <T> T getAdapter(Object adaptableObject, Class<T> adapterType) {
         if (adapterType == DBGController.class) {
@@ -45,7 +44,7 @@ public class PostgreDebugAdapterFactory implements IAdapterFactory {
                 DBPDataSourceProvider dataSourceProvider = driver.getDataSourceProvider();
                 if (dataSourceProvider instanceof PostgreDataSourceProvider) {
                     PostgreDebugController postgreDebugController = new PostgreDebugController(sourceContainer);
-                    return (T) postgreDebugController;
+                    return adapterType.cast(postgreDebugController);
                 }
 
             }
@@ -55,7 +54,7 @@ public class PostgreDebugAdapterFactory implements IAdapterFactory {
                 DBPDataSource dataSource = sourceContainer.getDataSource();
                 if (dataSource instanceof PostgreDataSource) {
                     PostgreDataSource postgeDataSource = (PostgreDataSource) dataSource;
-                    return (T) new PostgreResolver(postgeDataSource);
+                    return adapterType.cast(new PostgreResolver(postgeDataSource));
                 }
             }
         }

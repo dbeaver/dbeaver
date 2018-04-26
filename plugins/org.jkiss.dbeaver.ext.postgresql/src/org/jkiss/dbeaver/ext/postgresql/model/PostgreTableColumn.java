@@ -17,12 +17,16 @@
 package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
+import java.util.Collection;
 
 /**
  * PostgreTableColumn
  */
-public class PostgreTableColumn extends PostgreAttribute<PostgreTableBase>
+public class PostgreTableColumn extends PostgreAttribute<PostgreTableBase> implements PostgrePermissionsOwner
 {
     public PostgreTableColumn(PostgreTableBase table) {
         super(table);
@@ -31,4 +35,20 @@ public class PostgreTableColumn extends PostgreAttribute<PostgreTableBase>
     public PostgreTableColumn(PostgreTableBase table, JDBCResultSet dbResult) throws DBException {
         super(table, dbResult);
     }
+
+    @Override
+    public PostgreSchema getSchema() {
+        return getTable().getSchema();
+    }
+
+    @Override
+    public PostgreRole getOwner(DBRProgressMonitor monitor) throws DBException {
+        return getTable().getOwner(monitor);
+    }
+
+    @Override
+    public Collection<PostgrePermission> getPermissions(DBRProgressMonitor monitor, boolean includeNestedObjects) throws DBException {
+        return PostgreUtils.extractPermissionsFromACL(this, getAcl());
+    }
+
 }

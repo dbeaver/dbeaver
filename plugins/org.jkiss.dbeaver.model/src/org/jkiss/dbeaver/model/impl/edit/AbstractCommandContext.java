@@ -163,6 +163,10 @@ public abstract class AbstractCommandContext implements DBECommandContext {
                                 DBException error = null;
                                 for (PersistInfo persistInfo : cmd.persistActions) {
                                     DBEPersistAction.ActionType actionType = persistInfo.action.getType();
+                                    if (actionType == DBEPersistAction.ActionType.COMMENT) {
+                                        // Skip pure comments
+                                        continue;
+                                    }
                                     if (persistInfo.executed && actionType == DBEPersistAction.ActionType.NORMAL) {
                                         continue;
                                     }

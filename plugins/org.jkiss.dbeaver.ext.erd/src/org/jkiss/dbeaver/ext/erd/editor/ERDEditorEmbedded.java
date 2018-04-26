@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
@@ -202,7 +201,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
             monitor.beginTask("Load '" + root.getName() + "' content", 3);
             DBSObjectContainer objectContainer = (DBSObjectContainer) root;
             try {
-                DBUtils.tryExecuteRecover(monitor, objectContainer.getDataSource(), (DBRRunnableWithProgress) param -> {
+                DBUtils.tryExecuteRecover(monitor, objectContainer.getDataSource(), param -> {
                     try {
                         objectContainer.cacheStructure(monitor, DBSObjectContainer.STRUCT_ENTITIES | DBSObjectContainer.STRUCT_ASSOCIATIONS | DBSObjectContainer.STRUCT_ATTRIBUTES);
                     } catch (DBException e) {
@@ -248,7 +247,10 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
                 Collection<? extends DBSEntityAssociation> fks = rootTable.getAssociations(monitor);
                 if (fks != null) {
                     for (DBSEntityAssociation fk : fks) {
-                        result.add(fk.getAssociatedEntity());
+                        DBSEntity associatedEntity = fk.getAssociatedEntity();
+                        if (associatedEntity != null) {
+                            result.add(associatedEntity);
+                        }
                     }
                 }
                 monitor.worked(1);

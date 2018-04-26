@@ -22,17 +22,19 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * Execute batch.
@@ -172,12 +174,7 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
                             }
                         }
                     } else {
-                        String queryString;
-                        if (statement instanceof DBCParameterizedStatement) {
-                            queryString = ((DBCParameterizedStatement)statement).getFormattedQuery();
-                        } else {
-                            queryString = statement.getQueryString();
-                        }
+                        String queryString = formatQueryParameters(session, statement.getQueryString(), handlers, rowValues);
                         actions.add(
                             new SQLDatabasePersistAction(
                                 "Execute statement",
@@ -205,6 +202,59 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
         }
 
         return statistics;
+    }
+
+    private String formatQueryParameters(DBCSession session, String queryString, DBDValueHandler[] handlers, Object[] rowValues) {
+        if (handlers.length == 0) {
+            return queryString;
+        }
+        if (CommonUtils.isEmpty(queryString)) {
+            return queryString;
+        }
+        int length = queryString.length();
+        StringBuilder formatted = new StringBuilder(length * 2);
+        int paramIndex = 0;
+        for (int i = 0; i < length; i++) {
+            char c = queryString.charAt(i);
+            switch (c) {
+                case '?': {
+                    if (paramIndex >= handlers.length) {
+                        log.error("Parameter index out of range (" + paramIndex + " > " + handlers.length + ")");
+                        continue;
+                    }
+                    Object paramValue = SQLUtils.convertValueToSQL(
+                        session.getDataSource(),
+                        attributes[paramIndex],
+                        handlers[paramIndex],
+                        rowValues[paramIndex]);
+                    formatted.append(paramValue);
+                    paramIndex++;
+                    continue;
+                }
+                case ':': {
+                    // FIXME: process named parameters
+                    break;
+                }
+                case '\'':
+                case '"': {
+                    formatted.append(c);
+                    for (int k = i + 1; k < length; k++) {
+                        char c2 = queryString.charAt(k);
+                        if (c2 == c && queryString.charAt(k - 1) != '\\') {
+                            i = k;
+                            c = c2;
+                            break;
+                        } else {
+                            formatted.append(c2);
+                        }
+                    }
+                    break;
+                }
+            }
+            formatted.append(c);
+        }
+
+        return formatted.toString();
     }
 
     private void flushBatch(DBCStatistics statistics, DBCStatement statement) throws DBCException {

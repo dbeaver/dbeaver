@@ -104,10 +104,10 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
 
     private void createStyleGroup(IPreferenceStore store, Composite composite)
     {
-        ERDAttributeStyle[] enabledStyles = ERDAttributeStyle.getDefaultStyles(store);
+        ERDViewStyle[] enabledStyles = ERDViewStyle.getDefaultStyles(store);
 
         Group elemsGroup = UIUtils.createControlGroup(composite, "Attribute styles", 1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
-        for (ERDAttributeStyle style : ERDAttributeStyle.values()) {
+        for (ERDViewStyle style : ERDViewStyle.values()) {
             Button check = new Button(elemsGroup, SWT.CHECK);
             check.setData(style);
             check.setText(style.getTitle());
@@ -192,13 +192,13 @@ public class ERDPreferencePage extends AbstractPrefPage implements IWorkbenchPre
                 ERDAttributeVisibility.setDefaultVisibility(store, (ERDAttributeVisibility) radio.getData());
             }
         }
-        List<ERDAttributeStyle> enabledStyles = new ArrayList<>();
+        List<ERDViewStyle> enabledStyles = new ArrayList<>();
         for (Button check : styleButtons) {
             if (check.getSelection()) {
-                enabledStyles.add((ERDAttributeStyle) check.getData());
+                enabledStyles.add((ERDViewStyle) check.getData());
             }
         }
-        ERDAttributeStyle.setDefaultStyles(store, enabledStyles.toArray(new ERDAttributeStyle[enabledStyles.size()]));
+        ERDViewStyle.setDefaultStyles(store, enabledStyles.toArray(new ERDViewStyle[enabledStyles.size()]));
 
         PrefUtils.savePreferenceStore(store);
 

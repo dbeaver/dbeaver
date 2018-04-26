@@ -46,6 +46,7 @@ public class DataExporterCSV extends StreamExporterAbstract {
     private static final String PROP_HEADER = "header";
     private static final String PROP_QUOTE_CHAR = "quoteChar";
     private static final String PROP_QUOTE_ALWAYS = "quoteAlways";
+    private static final String PROP_QUOTE_NEVER = "quoteNever";
     private static final String PROP_NULL_STRING = "nullString";
     private static final String PROP_FORMAT_NUMBERS = "formatNumbers";
 
@@ -88,6 +89,10 @@ public class DataExporterCSV extends StreamExporterAbstract {
         if (!CommonUtils.isEmpty(quoteStr)) {
             quoteChar = quoteStr.charAt(0);
         }
+        if (CommonUtils.toBoolean(site.getProperties().get(PROP_QUOTE_NEVER))) {
+            quoteChar = ' ';
+        }
+
         Object nullStringProp = site.getProperties().get(PROP_NULL_STRING);
         nullString = nullStringProp == null ? null : nullStringProp.toString();
         useQuotes = quoteChar != ' ';

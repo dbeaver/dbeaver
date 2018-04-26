@@ -47,8 +47,12 @@
 								<artifact><id>org.apache.commons:commons-collections4:4.1</id></artifact>
 								<artifact><id>org.apache.xmlbeans:xmlbeans:2.6.0</id></artifact>
 
+								<!-- SSH and BouncyCastle -->
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.sshj:0.23.0</id></artifact>
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.bouncycastle:1.59.0</id></artifact>
+
 								<!-- Batik -->
-								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.apache.batik:1.9.0</id></artifact>
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.apache.batik:1.9.1</id></artifact>
 							</artifacts>
 							<additionalArgs>-metadataRepositoryName "${repo-name}" -artifactRepositoryName "${repo-name}"</additionalArgs>
 

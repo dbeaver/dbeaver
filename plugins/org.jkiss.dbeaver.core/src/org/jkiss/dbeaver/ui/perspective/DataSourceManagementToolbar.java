@@ -810,6 +810,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
 
     void showConnectionSelector() {
         SelectDataSourceDialog dialog = new SelectDataSourceDialog(connectionCombo.getShell(), getActiveProject(), connectionCombo.getSelectedItem());
+        dialog.setModeless(true);
         if (dialog.open() == IDialogConstants.CANCEL_ID) {
             return;
         }

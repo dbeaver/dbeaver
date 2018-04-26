@@ -27,4 +27,9 @@ public class SQLiteTable extends GenericTable implements DBPNamedObject2 {
     public SQLiteTable(GenericStructContainer container, @Nullable String tableName, @Nullable String tableType, @Nullable JDBCResultSet dbResult) {
         super(container, tableName, tableType, dbResult);
     }
+
+    @Override
+    protected boolean isTruncateSupported() {
+        return false;
+    }
 }

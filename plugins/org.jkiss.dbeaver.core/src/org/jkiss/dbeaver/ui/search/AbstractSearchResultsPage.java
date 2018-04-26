@@ -55,28 +55,19 @@ public abstract class AbstractSearchResultsPage <OBJECT_TYPE> extends Page imple
     private SearchResultsControl itemList;
 
     public AbstractSearchResultsPage() {
-        this.resultListener = new ISearchResultListener() {
-            @Override
-            public void searchResultChanged(SearchResultEvent e)
-            {
-                List objects = null;
-                if (e instanceof AbstractSearchResult.DatabaseSearchResultEvent) {
-                    objects = ((AbstractSearchResult.DatabaseSearchResultEvent) e).getObjects();
-                } else if (e.getSearchResult() instanceof AbstractSearchResult) {
-                    final AbstractSearchResult result = (AbstractSearchResult) e.getSearchResult();
-                    objects = result.getObjects();
-                }
-                if (objects != null) {
-                    final List newObjects = objects;
-                    DBeaverUI.syncExec(new Runnable() {
-                        @Override
-                        public void run() {
-                            populateObjects(new VoidProgressMonitor(), newObjects);
-                        }
-                    });
-                }
-
+        this.resultListener = e -> {
+            List objects = null;
+            if (e instanceof AbstractSearchResult.DatabaseSearchResultEvent) {
+                objects = ((AbstractSearchResult.DatabaseSearchResultEvent) e).getObjects();
+            } else if (e.getSearchResult() instanceof AbstractSearchResult) {
+                final AbstractSearchResult result = (AbstractSearchResult) e.getSearchResult();
+                objects = result.getObjects();
             }
+            if (objects != null) {
+                final List newObjects = objects;
+                DBeaverUI.syncExec(() -> populateObjects(new VoidProgressMonitor(), newObjects));
+            }
+
         };
     }
 
@@ -164,6 +155,8 @@ public abstract class AbstractSearchResultsPage <OBJECT_TYPE> extends Page imple
     @Override
     public void setInput(ISearchResult search, Object uiState)
     {
+        itemList.setInfo(search == null ? "Start searching" : "Searching");
+
         if (this.searchResult != null) {
             this.searchResult.removeListener(this.resultListener);
         }
@@ -245,7 +238,7 @@ public abstract class AbstractSearchResultsPage <OBJECT_TYPE> extends Page imple
         ResultsNode parent;
         final List<ResultsNode> children = new ArrayList<>();
 
-        public ResultsNode(DBNNode node, ResultsNode parent)
+        ResultsNode(DBNNode node, ResultsNode parent)
         {
             this.node = node;
             this.parent = parent;

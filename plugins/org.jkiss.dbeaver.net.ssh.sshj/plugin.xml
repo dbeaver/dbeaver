@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.net.ssh">
+        <implementation id="sshj" label="SSHJ" class="org.jkiss.dbeaver.model.net.ssh.SSHImplementationSshj"/>
+    </extension>
+
+</plugin>

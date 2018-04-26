@@ -105,6 +105,20 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
         return properties;
     }
 
+    public PropertyDescriptor(String category, Object id, String name, String description,
+                              boolean required, Class<?> type, Object defaultValue, Object[] validValues)
+    {
+        this.category = category;
+        this.id = id;
+        this.name = name;
+        this.description = description;
+        this.required = required;
+        this.type = type;
+        this.defaultValue = defaultValue;
+        this.validValues = validValues;
+        this.editable = true;
+    }
+
     public PropertyDescriptor(String category, IConfigurationElement config)
     {
         this.category = category;
@@ -189,6 +203,10 @@ public class PropertyDescriptor implements DBPPropertyDescriptor, IPropertyValue
     public Object getDefaultValue()
     {
         return defaultValue;
+    }
+
+    public void setDefaultValue(Object defaultValue) {
+        this.defaultValue = defaultValue;
     }
 
     @Override

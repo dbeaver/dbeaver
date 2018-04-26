@@ -222,6 +222,28 @@
                     <property name="loginTimeout" value="20"/>
                     <property name="connectTimeout" value="20"/>
                 </driver>
+
+                <driver
+                        id="postgres-greenplum-jdbc"
+                        label="Greenplum"
+                        icon="icons/greenplum_icon.png"
+                        class="org.postgresql.Driver"
+                        sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
+                        defaultPort="5432"
+                        webURL="http://jdbc.postgresql.org/"
+                        description="%driver.postgresql.description">
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.0.jre7]" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/net.postgis:postgis-jdbc:RELEASE[2.2.1]" ignore-dependencies="true" bundle="!drivers.postgresql"/>
+                    <file type="jar" path="maven:/net.postgis:postgis-jdbc-jtsparser:RELEASE[2.2.1]" ignore-dependencies="true" bundle="!drivers.postgresql"/>
+
+                    <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
+                    <file type="jar" path="drivers/postgresql/postgresql.jar" bundle="drivers.postgresql"/>
+                    <file type="jar" path="drivers/postgis/postgis-jdbc.jar" bundle="drivers.postgresql"/>
+                    <file type="jar" path="drivers/postgis/postgis-jdbc-jtsparser.jar" bundle="drivers.postgresql"/>
+                    <parameter name="greenplum" value="true"/>
+                    <property name="loginTimeout" value="20"/>
+                    <property name="connectTimeout" value="20"/>
+                </driver>
             </drivers>
 
             <views>
@@ -312,6 +334,8 @@
         <editor id="postgresql.table.permissions" class="org.jkiss.dbeaver.ext.postgresql.ui.editors.PostgresRolePrivilegesEditor"
                 label="%db.editor.table.permission.name" description="%db.editor.table.permission.description" icon="#permissions" position="additions_middle" type="folder">
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase"/>
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableColumn"/>
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure"/>
         </editor>
         <editor id="postgresql.source.view" class="org.jkiss.dbeaver.ext.postgresql.ui.editors.PostgreSourceViewEditor"
                 label="%db.editor.source.name" description="%db.editor.source.description" icon="#sql_text" position="additions_middle"
@@ -322,11 +346,16 @@
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreIndex"/>
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableConstraintBase"/>
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreExtension"/>
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreForeignServer"/>
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreForeignDataWrapper"/>
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema"/>
         </editor>
-        <editor id="postgresql.source.ddl" class="org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer"
+        <editor id="postgresql.source.ddl" class="org.jkiss.dbeaver.ext.postgresql.ui.editors.PostgreSourceViewEditor"
                 label="%db.editor.ddl.name" description="%db.editor.ddl.description" icon="#sql_text" position="additions_middle"
                 contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="folder">
             <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTable"/>
+            <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreSequence"/>
         </editor>
 
     </extension>
@@ -368,10 +397,14 @@
                 label="%handler.ssl.name"
                 description="%handler.ssl.description"
                 secured="false"
-                uiClass="org.jkiss.dbeaver.ext.postgresql.ui.PostgreSSLConfigurator"
-                handlerClass="org.jkiss.dbeaver.model.impl.net.SSLHandlerImpl">
+                order="100"
+                handlerClass="org.jkiss.dbeaver.ext.postgresql.model.net.PostgreSSLHandlerImpl">
             <objectType name="org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider"/>
         </handler>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
+        <propertyConfigurator class="org.jkiss.dbeaver.ext.postgresql.model.net.PostgreSSLHandlerImpl" uiClass="org.jkiss.dbeaver.ext.postgresql.ui.PostgreSSLConfigurator"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.tools">

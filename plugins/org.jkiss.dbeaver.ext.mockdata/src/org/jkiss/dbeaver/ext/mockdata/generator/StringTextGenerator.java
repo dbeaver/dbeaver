@@ -30,7 +30,7 @@ import java.util.Map;
 /**
  * Simple string generator (lorem ipsum)
  */
-public class StringTextGenerator extends AbstractMockValueGenerator {
+public class StringTextGenerator extends AbstractStringValueGenerator {
 
     private String templateString;
     private int minLength = 1;
@@ -77,7 +77,7 @@ public class StringTextGenerator extends AbstractMockValueGenerator {
             int tplLength = templateString.length();
             int start = random.nextInt(tplLength);
             if (start + length < tplLength) {
-                return templateString.substring(start, start + length);
+                return tune(templateString.substring(start, start + length));
             } else {
                 StringBuilder sb = new StringBuilder();
                 sb.append(templateString.substring(start));
@@ -86,7 +86,7 @@ public class StringTextGenerator extends AbstractMockValueGenerator {
                     sb.append(templateString);
                 }
                 sb.append(templateString.substring(0, newlength % tplLength));
-                return sb.toString();
+                return tune(sb.toString());
             }
         }
     }

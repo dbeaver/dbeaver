@@ -37,7 +37,6 @@ import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
@@ -67,6 +66,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     private String activeDatabaseName;
     private String activeSchemaName;
     private final List<String> searchPath = new ArrayList<>();
+    private final List<String> defaultSearchPath = new ArrayList<>();
     private String activeUser;
 
     public PostgreDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
@@ -76,7 +76,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     }
 
     @Override
-    protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor, String purpose) throws DBCException
+    protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException
     {
         Map<String, String> props = new LinkedHashMap<>(PostgreDataSourceProvider.getConnectionsProps());
         final DBWHandlerConfiguration sslConfig = getContainer().getActualConnectionConfiguration().getDeclaredHandler(PostgreConstants.HANDLER_SSL);
@@ -175,6 +175,8 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         } catch (Exception e) {
             log.debug(e);
         }
+        defaultSearchPath.clear();
+        defaultSearchPath.addAll(searchPath);
 
         // Read databases
         databaseCache.getAllObjects(monitor, this);
@@ -287,6 +289,12 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         conConfig.setUrl(getContainer().getDriver().getDataSourceProvider().getConnectionURL(getContainer().getDriver(), conConfig));
         getContainer().getRegistry().flushConfig();
 
+        try (JDBCSession session = getDefaultContext(false).openSession(monitor, DBCExecutionPurpose.UTIL, "Update object state")) {
+            determineDefaultObjects(session);
+        } catch (SQLException e) {
+            throw new DBException(e, this);
+        }
+
         // Notify UI
         if (oldDatabase != null) {
             DBUtils.fireObjectSelect(oldDatabase, false);
@@ -333,6 +341,10 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
 
     public List<String> getSearchPath() {
         return searchPath;
+    }
+
+    List<String> getDefaultSearchPath() {
+        return defaultSearchPath;
     }
 
     public void setSearchPath(String path) {
@@ -475,6 +487,10 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         }
     }
 
+    boolean isGreenplum() {
+        return PostgreUtils.isGreenplumDriver(getContainer().getDriver());
+    }
+
     class DatabaseCache extends JDBCObjectLookupCache<PostgreDataSource, PostgreDatabase>
     {
         @Override
@@ -489,7 +505,9 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
             StringBuilder catalogQuery = new StringBuilder(
                 "SELECT db.oid,db.*" +
                     "\nFROM pg_catalog.pg_database db WHERE NOT datistemplate AND datallowconn");
-            if (object != null || objectName != null || !showNDD) {
+            if (object != null) {
+                catalogQuery.append("\nAND db.oid=?");
+            } else if (objectName != null || !showNDD) {
                 catalogQuery.append("\nAND db.datname=?");
             }
             DBSObjectFilter catalogFilters = owner.getContainer().getObjectFilter(PostgreDatabase.class, null, false);
@@ -500,7 +518,9 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
                 catalogQuery.append("\nORDER BY db.datname");
             }
             JDBCPreparedStatement dbStat = session.prepareStatement(catalogQuery.toString());
-            if (object != null || objectName != null || !showNDD) {
+            if (object != null) {
+                dbStat.setLong(1, object.getObjectId());
+            } else if (objectName != null || !showNDD) {
                 dbStat.setString(1, object != null ? object.getName() : (objectName != null ? objectName : activeDatabaseName));
             } else if (catalogFilters != null) {
                 JDBCUtils.setFilterParameters(dbStat, 1, catalogFilters);

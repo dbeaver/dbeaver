@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.ext.erd.directedit.ExtendedDirectEditManager;
 import org.jkiss.dbeaver.ext.erd.directedit.LabelCellEditorLocator;
 import org.jkiss.dbeaver.ext.erd.directedit.TableNameCellEditorValidator;
 import org.jkiss.dbeaver.ext.erd.directedit.ValidationMessageHandler;
+import org.jkiss.dbeaver.ext.erd.editor.ERDViewStyle;
 import org.jkiss.dbeaver.ext.erd.editor.ERDGraphicalViewer;
 import org.jkiss.dbeaver.ext.erd.figures.EditableLabel;
 import org.jkiss.dbeaver.ext.erd.figures.EntityFigure;
@@ -187,8 +188,11 @@ public class EntityPart extends NodePart {
      */
     @Override
     protected EntityFigure createFigure() {
-        final EntityFigure figure = new EntityFigure(getTable());
         final EntityDiagram diagram = ((DiagramPart) getParent()).getDiagram();
+        boolean useFQN = diagram.hasAttributeStyle(ERDViewStyle.ENTITY_FQN);
+
+        final EntityFigure figure = new EntityFigure(getTable(), useFQN);
+
         EntityDiagram.NodeVisualInfo visualInfo = diagram.getVisualInfo(getTable());
         if (visualInfo != null) {
             if (visualInfo.initBounds != null) {

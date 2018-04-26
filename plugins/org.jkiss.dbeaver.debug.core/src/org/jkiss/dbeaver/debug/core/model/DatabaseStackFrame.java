@@ -19,7 +19,9 @@
 package org.jkiss.dbeaver.debug.core.model;
 
 import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.debug.core.DebugException;
@@ -28,6 +30,7 @@ import org.eclipse.debug.core.model.IStackFrame;
 import org.eclipse.debug.core.model.IThread;
 import org.eclipse.debug.core.model.IVariable;
 import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.debug.DBGException;
 import org.jkiss.dbeaver.debug.DBGStackFrame;
 import org.jkiss.dbeaver.debug.DBGVariable;
@@ -37,6 +40,8 @@ public class DatabaseStackFrame extends DatabaseDebugElement implements IStackFr
 
     private static final IRegisterGroup[] NO_REGISTER_GROUPS = new IRegisterGroup[0];
     private static final IVariable[] NO_VARIABLES = new IVariable[0];
+
+    private static Log log = Log.getLog(DatabaseStackFrame.class);
 
     private final List<DatabaseVariable> variables = new ArrayList<DatabaseVariable>();
 
@@ -154,8 +159,29 @@ public class DatabaseStackFrame extends DatabaseDebugElement implements IStackFr
 
     protected void rebuildVariables(List<? extends DBGVariable<?>> dbgVariables) {
         try {
+            int frameLN = dbgStackFrame.getLineNumber();
             variables.clear();
+            Map<String, DBGVariable<?>> filtered = new LinkedHashMap<String, DBGVariable<?>>();
             for (DBGVariable<?> dbgVariable : dbgVariables) {
+                String name = dbgVariable.getName();
+                DBGVariable<?> existing = filtered.get(name);
+                if (existing == null) {
+                    filtered.put(name, dbgVariable);
+                } else {
+                    int existingLN = existing.getLineNumber();
+                    int currentLN = dbgVariable.getLineNumber();
+                    int delta = currentLN - existingLN;
+                    if (delta >= 0) {
+                        filtered.put(name, dbgVariable);
+                    } else {
+                        String pattern = "Already have {0} and ignored {1} for frame at {2}";
+                        String message = NLS.bind(pattern, new Object[]{existing, dbgVariable, frameLN});
+                        log.error(message);;
+                    }
+                }
+            }
+            
+            for (DBGVariable<?> dbgVariable : filtered.values()) {
                 DatabaseVariable variable = new DatabaseVariable(getDatabaseDebugTarget(), dbgVariable);
                 variables.add(variable);
             }

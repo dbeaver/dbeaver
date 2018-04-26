@@ -25,11 +25,12 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Map;
 
 /**
  * PostgreForeignServer
  */
-public class PostgreForeignServer extends PostgreInformation {
+public class PostgreForeignServer extends PostgreInformation implements PostgreScriptObject {
 
     private long oid;
     private String name;
@@ -94,6 +95,21 @@ public class PostgreForeignServer extends PostgreInformation {
     @Property(viewable = true, order = 10)
     public PostgreForeignDataWrapper getForeignDataWrapper(DBRProgressMonitor monitor) throws DBException {
         return PostgreUtils.getObjectById(monitor, getDatabase().foreignDataWrapperCache, getDatabase(), dataWrapperId);
+    }
+
+    @Override
+    public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+        return
+            "-- Foreign server: " + getName() + "\n\n" +
+                "-- DROP SERVER " + getName() + ";\n\n" +
+                "CREATE SERVER " + getName() + "\n\t" +
+                "FOREIGN DATA WRAPPER " + getForeignDataWrapper(monitor).getName() + "\n\t" +
+                "OPTIONS " + PostgreUtils.getOptionsString(this.options);
+    }
+
+    @Override
+    public void setObjectDefinitionText(String sourceText) throws DBException {
+
     }
 
 }

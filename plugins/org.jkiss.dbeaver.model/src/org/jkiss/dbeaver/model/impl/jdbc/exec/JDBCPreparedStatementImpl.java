@@ -72,7 +72,7 @@ public class JDBCPreparedStatementImpl extends JDBCStatementImpl<PreparedStateme
         }
     }
 
-    public JDBCPreparedStatementImpl(
+    JDBCPreparedStatementImpl(
         @NotNull JDBCSession connection,
         @NotNull PreparedStatement original,
         String query,
@@ -186,8 +186,9 @@ public class JDBCPreparedStatementImpl extends JDBCStatementImpl<PreparedStateme
                 paramMap = new LinkedHashMap<>();
             }
             paramMap.put(parameter, o);
+
+            QMUtils.getDefaultHandler().handleStatementBind(this, parameter, o);
         }
-        QMUtils.getDefaultHandler().handleStatementBind(this, parameter, o);
     }
 
     ////////////////////////////////////////////////////////////////////

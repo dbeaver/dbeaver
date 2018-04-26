@@ -123,7 +123,11 @@ public class LoadingJob<RESULT>  extends AbstractJob {
         @Override
         public void run()
         {
-            visualizer.completeLoading(innerResult);
+            try {
+                visualizer.completeLoading(innerResult);
+            } catch (Throwable e) {
+                log.debug(e);
+            }
 
             if (innerError != null) {
                 log.debug(innerError);

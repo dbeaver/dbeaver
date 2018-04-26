@@ -19,9 +19,11 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -32,11 +34,14 @@ import org.jkiss.dbeaver.model.meta.LazyProperty;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.meta.PropertyGroup;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSequence;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -52,22 +57,27 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
         private Number minValue;
         private Number maxValue;
         private Number incrementBy;
+        private boolean isCycled;
 
-        @Property(viewable = true, editable = true, updatable = true, order = 10)
+        @Property(viewable = true, editable = true, updatable = false, order = 10)
         public Number getLastValue() {
             return lastValue;
         }
-        @Property(viewable = true, editable = true, updatable = true, order = 11)
+        @Property(viewable = true, editable = true, updatable = false, order = 11)
         public Number getMinValue() {
             return minValue;
         }
-        @Property(viewable = true, editable = true, updatable = true, order = 12)
+        @Property(viewable = true, editable = true, updatable = false, order = 12)
         public Number getMaxValue() {
             return maxValue;
         }
-        @Property(viewable = true, editable = true, updatable = true, order = 13)
+        @Property(viewable = true, editable = true, updatable = false, order = 13)
         public Number getIncrementBy() {
             return incrementBy;
+        }
+        @Property(viewable = true, editable = true, updatable = false, order = 14)
+        public boolean isCycled() {
+            return isCycled;
         }
     }
     public static class AdditionalInfoValidator implements IPropertyCacheValidator<PostgreSequence> {
@@ -102,14 +112,32 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
 
     private void loadAdditionalInfo(DBRProgressMonitor monitor) {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Load sequence additional info")) {
-            try (JDBCPreparedStatement dbSeqStat = session.prepareStatement(
-                "SELECT last_value,min_value,max_value,increment_by from " + getFullyQualifiedName(DBPEvaluationContext.DML))) {
-                try (JDBCResultSet seqResults = dbSeqStat.executeQuery()) {
-                    if (seqResults.next()) {
-                        additionalInfo.lastValue = JDBCUtils.safeGetLong(seqResults, 1);
-                        additionalInfo.minValue = JDBCUtils.safeGetLong(seqResults, 2);
-                        additionalInfo.maxValue = JDBCUtils.safeGetLong(seqResults, 3);
-                        additionalInfo.incrementBy = JDBCUtils.safeGetLong(seqResults, 4);
+            if (getDataSource().isServerVersionAtLeast(10, 0)) {
+                try (JDBCPreparedStatement dbSeqStat = session.prepareStatement(
+                    "SELECT * from pg_catalog.pg_sequences WHERE schemaname=? AND sequencename=?")) {
+                    dbSeqStat.setString(1, getSchema().getName());
+                    dbSeqStat.setString(2, getName());
+                    try (JDBCResultSet seqResults = dbSeqStat.executeQuery()) {
+                        if (seqResults.next()) {
+                            additionalInfo.lastValue = JDBCUtils.safeGetLong(seqResults, "last_value");
+                            additionalInfo.minValue = JDBCUtils.safeGetLong(seqResults, "min_value");
+                            additionalInfo.maxValue = JDBCUtils.safeGetLong(seqResults, "max_value");
+                            additionalInfo.incrementBy = JDBCUtils.safeGetLong(seqResults, "increment_by");
+                            additionalInfo.isCycled = JDBCUtils.safeGetBoolean(seqResults, "cycle");
+                        }
+                    }
+                }
+            } else {
+                try (JDBCPreparedStatement dbSeqStat = session.prepareStatement(
+                    "SELECT * from " + getFullyQualifiedName(DBPEvaluationContext.DML))) {
+                    try (JDBCResultSet seqResults = dbSeqStat.executeQuery()) {
+                        if (seqResults.next()) {
+                            additionalInfo.lastValue = JDBCUtils.safeGetLong(seqResults, "last_value");
+                            additionalInfo.minValue = JDBCUtils.safeGetLong(seqResults, "min_value");
+                            additionalInfo.maxValue = JDBCUtils.safeGetLong(seqResults, "max_value");
+                            additionalInfo.incrementBy = JDBCUtils.safeGetLong(seqResults, "increment_by");
+                            additionalInfo.isCycled = JDBCUtils.safeGetBoolean(seqResults, "is_cycled");
+                        }
                     }
                 }
             }
@@ -170,22 +198,28 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
         sql.append("-- DROP SEQUENCE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL)).append(";\n\n");
         sql.append("CREATE SEQUENCE ").append(getFullyQualifiedName(DBPEvaluationContext.DDL));
         if (info.getIncrementBy() != null && info.getIncrementBy().longValue() > 0) {
-            sql.append("\nINCREMENT BY ").append(info.getIncrementBy());
+            sql.append("\n\tINCREMENT BY ").append(info.getIncrementBy());
         }
         if (info.getMinValue() != null && info.getMinValue().longValue() > 0) {
-            sql.append("\nMINVALUE ").append(info.getMinValue());
+            sql.append("\n\tMINVALUE ").append(info.getMinValue());
         } else {
-            sql.append("\nNO MINVALUE");
+            sql.append("\n\tNO MINVALUE");
         }
         if (info.getMaxValue() != null && info.getMaxValue().longValue() > 0) {
-            sql.append("\nMAXVALUE ").append(info.getMaxValue());
+            sql.append("\n\tMAXVALUE ").append(info.getMaxValue());
         } else {
-            sql.append("\nNO MAXVALUE");
+            sql.append("\n\tNO MAXVALUE");
         }
         if (info.getLastValue() != null && info.getLastValue().longValue() > 0) {
-            sql.append("\nSTART ").append(info.getLastValue());
+            sql.append("\n\tSTART ").append(info.getLastValue());
         }
 
+        List<DBEPersistAction> actions = new ArrayList<>();
+        PostgreUtils.getObjectGrantPermissionActions(monitor, this, actions, options);
+        if (!actions.isEmpty()) {
+            sql.append("\n\n");
+            sql.append(SQLUtils.generateScript(getDataSource(), actions.toArray(new DBEPersistAction[actions.size()]), false));
+        }
 
         return sql.toString();
     }

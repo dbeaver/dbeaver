@@ -33,8 +33,11 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.debug.core.DebugCore;
 import org.jkiss.dbeaver.debug.core.breakpoints.DatabaseLineBreakpoint;
+import org.jkiss.dbeaver.debug.core.breakpoints.IDatabaseBreakpoint;
 import org.jkiss.dbeaver.debug.core.model.DatabaseProcess;
 import org.jkiss.dbeaver.debug.core.model.DatabaseStackFrame;
 import org.jkiss.dbeaver.debug.core.model.DatabaseThread;
@@ -42,9 +45,15 @@ import org.jkiss.dbeaver.debug.core.model.DatabaseVariable;
 import org.jkiss.dbeaver.debug.core.model.IDatabaseDebugTarget;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNModel;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditorInput;
 
 public class DatabaseDebugModelPresentation extends LabelProvider implements IDebugModelPresentationExtension {
+
+    private static Log log = Log.getLog(DatabaseDebugModelPresentation.class);
 
     private final Map<String, Object> attributes = new HashMap<>();
 
@@ -134,21 +143,44 @@ public class DatabaseDebugModelPresentation extends LabelProvider implements IDe
     @Override
     public IEditorInput getEditorInput(Object element) {
         if (element instanceof DBNDatabaseNode) {
-            DBNDatabaseNode dbnNode = (DBNDatabaseNode) element;
-            EntityEditorInput editorInput = new EntityEditorInput(dbnNode);
-            editorInput.setAttribute(DBPScriptObject.OPTION_DEBUGGER_SOURCE, Boolean.TRUE);
-// FIXME:AF: how to retrieve it? probably org.jkiss.dbeaver.databaseor and EntityEditorsRegistry can help
-            // String folderId = "postgresql.source.view";
-            // editorInput.setDefaultFolderId(folderId);
-            return editorInput;
+            DBNDatabaseNode databaseNode = (DBNDatabaseNode) element;
+            return createEditorInput(databaseNode);
         }
+        if (element instanceof IDatabaseBreakpoint) {
+            IDatabaseBreakpoint breakpoint = (IDatabaseBreakpoint) element;
+            try {
+                String nodePath = breakpoint.getNodePath();
+                DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
+                DBNNode node = navigatorModel.getNodeByPath(new VoidProgressMonitor(), nodePath);
+                if (node instanceof DBNDatabaseNode) {
+                    DBNDatabaseNode databaseNode = (DBNDatabaseNode) node;
+                    return createEditorInput(databaseNode);
+                }
+            } catch (Exception e) {
+                String message = NLS.bind("Unable to resolve editor input for breakpoint {0}", breakpoint);
+                log.error(message, e);
+            }
+            
+        }
+        
         return null;
+    }
+
+    protected IEditorInput createEditorInput(DBNDatabaseNode dbnNode) {
+        EntityEditorInput editorInput = new EntityEditorInput(dbnNode);
+        editorInput.setAttribute(DBPScriptObject.OPTION_DEBUGGER_SOURCE, Boolean.TRUE);
+        DebugEditorAdvisor editorAdvisor = DebugUI.findEditorAdvisor(dbnNode.getDataSourceContainer());
+        if (editorAdvisor != null) {
+            String sourceFolderId = editorAdvisor.getSourceFolderId();
+            editorInput.setDefaultFolderId(sourceFolderId);
+        }
+        DebugCore.postDebuggerSourceEvent(dbnNode.getNodeItemPath());
+        return editorInput;
     }
 
     @Override
     public String getEditorId(IEditorInput input, Object element) {
-        // FIXME:AF: is there a constant anywhere?
-        return "org.jkiss.dbeaver.ui.editors.entity.EntityEditor";
+        return EntityEditor.ID;
     }
 
     @Override

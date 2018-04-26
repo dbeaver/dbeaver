@@ -20,13 +20,11 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceProvider;
-import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWHandlerDescriptor;
 import org.jkiss.dbeaver.model.net.DBWHandlerType;
 import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
 import org.jkiss.dbeaver.registry.AbstractContextDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
-import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Locale;
@@ -44,9 +42,9 @@ public class NetworkHandlerDescriptor extends AbstractContextDescriptor implemen
     private DBWHandlerType type;
     private final boolean secured;
     private final ObjectType handlerType;
-    private final ObjectType uiConfigType;
+    private final int order;
 
-    public NetworkHandlerDescriptor(
+    NetworkHandlerDescriptor(
         IConfigurationElement config)
     {
         super(config);
@@ -57,7 +55,7 @@ public class NetworkHandlerDescriptor extends AbstractContextDescriptor implemen
         this.type = DBWHandlerType.valueOf(config.getAttribute(RegistryConstants.ATTR_TYPE).toUpperCase(Locale.ENGLISH));
         this.secured = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_SECURED), false);
         this.handlerType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_HANDLER_CLASS));
-        this.uiConfigType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_UI_CLASS));
+        this.order = CommonUtils.toInt(config.getAttribute(RegistryConstants.ATTR_ORDER), 1);
     }
 
     @NotNull
@@ -86,22 +84,23 @@ public class NetworkHandlerDescriptor extends AbstractContextDescriptor implemen
         return secured;
     }
 
+    public int getOrder() {
+        return order;
+    }
+
     public boolean matches(DBPDataSourceProvider provider)
     {
         return appliesTo(provider);
+    }
+
+    public ObjectType getHandlerType() {
+        return handlerType;
     }
 
     public <T extends DBWNetworkHandler> T createHandler(Class<T> impl)
         throws DBException
     {
         return handlerType.createInstance(impl);
-    }
-
-    @SuppressWarnings("unchecked")
-    public IObjectPropertyConfigurator<DBWHandlerConfiguration> createConfigurator()
-        throws DBException
-    {
-        return uiConfigType.createInstance(IObjectPropertyConfigurator.class);
     }
 
 }

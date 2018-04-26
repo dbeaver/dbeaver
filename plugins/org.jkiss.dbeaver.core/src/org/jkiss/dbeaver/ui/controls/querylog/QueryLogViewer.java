@@ -27,7 +27,7 @@ import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.jface.text.source.ISharedTextColors;
+import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
@@ -39,7 +39,6 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -88,11 +87,9 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     private static final String VIEWER_ID = "DBeaver.QM.LogViewer";
     private static final int MIN_ENTRIES_PER_PAGE = 1;
 
-    public static final RGB COLOR_LIGHT_GREEN = new RGB(0xBD, 0xFE, 0xBF);
-    //189, 254, 191 #bdfebf
-    public static final RGB COLOR_LIGHT_RED = new RGB(0xFF, 0x63, 0x47);
-    public static final RGB COLOR_LIGHT_YELLOW = new RGB(0xFF, 0xE4, 0xB5);
-    public static final RGB COLOR_BLACK = new RGB(0x00, 0x00, 0x00);
+    public static final String COLOR_COMMITTED = "org.jkiss.dbeaver.txn.color.committed.background";  //= new RGB(0xBD, 0xFE, 0xBF);
+    public static final String COLOR_REVERTED = "org.jkiss.dbeaver.txn.color.reverted.background";  // = new RGB(0xFF, 0x63, 0x47);
+    public static final String COLOR_TRANSACTION = "org.jkiss.dbeaver.txn.color.transaction.background";  // = new RGB(0xFF, 0xE4, 0xB5);
 
     private static abstract class LogColumn {
         private final String id;
@@ -320,7 +317,6 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     private final Color colorLightGreen;
     private final Color colorLightRed;
     private final Color colorLightYellow;
-    private final Color colorGray;
     private final Font boldFont;
     private DragSource dndSource;
 
@@ -334,12 +330,12 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         this.site = site;
 
         // Prepare colors
-        ISharedTextColors sharedColors = DBeaverUI.getSharedTextColors();
 
-        colorLightGreen = sharedColors.getColor(COLOR_LIGHT_GREEN);
-        colorLightRed = sharedColors.getColor(COLOR_LIGHT_RED);
-        colorLightYellow = sharedColors.getColor(COLOR_LIGHT_YELLOW);
-        colorGray = sharedColors.getColor(COLOR_BLACK);
+        ColorRegistry colorRegistry = site.getWorkbenchWindow().getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry();
+
+        colorLightGreen = colorRegistry.get(COLOR_COMMITTED);
+        colorLightRed = colorRegistry.get(COLOR_REVERTED);
+        colorLightYellow = colorRegistry.get(COLOR_TRANSACTION);
         boldFont = UIUtils.makeBoldFont(parent.getFont());
 
         boolean inDialog = UIUtils.isInDialog(parent);
@@ -532,9 +528,11 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
 
     private Color getObjectForeground(QMMetaEvent event)
     {
+/*
         if (getObjectBackground(event) != null) {
             return colorGray;
         }
+*/
 /*
         if (event.getObject() instanceof QMMStatementExecuteInfo) {
             QMMStatementExecuteInfo exec = (QMMStatementExecuteInfo) event.getObject();

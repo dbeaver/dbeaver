@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 public class PostgreSqlDebugCore {
@@ -71,7 +72,7 @@ public class PostgreSqlDebugCore {
         workingCopy.setAttribute(DebugCore.ATTR_SCRIPT_EXECUTE, DebugCore.ATTR_SCRIPT_EXECUTE_DEFAULT);
         workingCopy.setAttribute(DebugCore.ATTR_SCRIPT_TEXT, DebugCore.composeScriptText(procedure));
         final DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
-        DBNDatabaseNode node = navigatorModel.getNodeByObject(procedure);
+        DBNDatabaseNode node = navigatorModel.getNodeByObject(new VoidProgressMonitor(), procedure, false);
         workingCopy.setAttribute(DebugCore.ATTR_NODE_PATH, node.getNodeItemPath());
         return workingCopy;
     }

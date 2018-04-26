@@ -41,7 +41,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
 {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.sqleditor"; //$NON-NLS-1$
 
-    public static final String TEXT_EDITOR_PAGE_ID = "org.eclipse.ui.preferencePages.GeneralTextEditor"; //$NON-NLS-1$
+    private static final String TEXT_EDITOR_PAGE_ID = "org.eclipse.ui.preferencePages.GeneralTextEditor"; //$NON-NLS-1$
 
     private Button editorSeparateConnectionCheck;
     private Button connectOnActivationCheck;
@@ -50,7 +50,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
     private Button saveOnQueryExecution;
     private Button autoSaveOnClose;
 
-    private Button deleteEmptyCheck;
+    private Combo deleteEmptyCombo;
     private Button autoFoldersCheck;
     private Button connectionFoldersCheck;
     private Text scriptTitlePattern;
@@ -75,8 +75,8 @@ public class PrefPageSQLEditor extends TargetPrefPage
             store.contains(SQLPreferenceConstants.AUTO_SAVE_ON_CLOSE) ||
             store.contains(SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE) ||
 
-            store.contains(DBeaverPreferences.SCRIPT_DELETE_EMPTY) ||
-            store.contains(DBeaverPreferences.SCRIPT_AUTO_FOLDERS) ||
+            store.contains(SQLPreferenceConstants.SCRIPT_DELETE_EMPTY) ||
+            store.contains(SQLPreferenceConstants.SCRIPT_AUTO_FOLDERS) ||
 
             store.contains(SQLPreferenceConstants.RESULT_SET_CLOSE_ON_ERROR) ||
             store.contains(SQLPreferenceConstants.RESULT_SET_ORIENTATION)
@@ -113,7 +113,12 @@ public class PrefPageSQLEditor extends TargetPrefPage
             Composite scriptsGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_editor_group_resources, 2, GridData.FILL_HORIZONTAL, 0);
             ((GridData)scriptsGroup.getLayoutData()).horizontalSpan = 2;
 
-            deleteEmptyCheck = UIUtils.createCheckbox(scriptsGroup, CoreMessages.pref_page_sql_editor_checkbox_delete_empty_scripts, null, false, 2);
+            deleteEmptyCombo = UIUtils.createLabelCombo(scriptsGroup, CoreMessages.pref_page_sql_editor_checkbox_delete_empty_scripts, SWT.DROP_DOWN | SWT.READ_ONLY);
+            for (SQLPreferenceConstants.EmptyScriptCloseBehavior escb : SQLPreferenceConstants.EmptyScriptCloseBehavior.values()) {
+                deleteEmptyCombo.add(escb.getTitle());
+            }
+            deleteEmptyCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+            deleteEmptyCombo.select(0);
             autoFoldersCheck = UIUtils.createCheckbox(scriptsGroup, CoreMessages.pref_page_sql_editor_checkbox_put_new_scripts, null, false, 2);
             connectionFoldersCheck = UIUtils.createCheckbox(scriptsGroup, CoreMessages.pref_page_sql_editor_checkbox_create_script_folders, null, false, 2);
             scriptTitlePattern = UIUtils.createLabelText(scriptsGroup, CoreMessages.pref_page_sql_editor_title_pattern, "");
@@ -166,10 +171,11 @@ public class PrefPageSQLEditor extends TargetPrefPage
             autoSaveOnClose.setSelection(store.getBoolean(SQLPreferenceConstants.AUTO_SAVE_ON_CLOSE));
             saveOnQueryExecution.setSelection(store.getBoolean(SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE));
 
-            deleteEmptyCheck.setSelection(store.getBoolean(DBeaverPreferences.SCRIPT_DELETE_EMPTY));
-            autoFoldersCheck.setSelection(store.getBoolean(DBeaverPreferences.SCRIPT_AUTO_FOLDERS));
-            connectionFoldersCheck.setSelection(store.getBoolean(DBeaverPreferences.SCRIPT_CREATE_CONNECTION_FOLDERS));
-            scriptTitlePattern.setText(store.getString(DBeaverPreferences.SCRIPT_TITLE_PATTERN));
+            deleteEmptyCombo.setText(SQLPreferenceConstants.EmptyScriptCloseBehavior.getByName(
+                store.getString(SQLPreferenceConstants.SCRIPT_DELETE_EMPTY)).getTitle());
+            autoFoldersCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SCRIPT_AUTO_FOLDERS));
+            connectionFoldersCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SCRIPT_CREATE_CONNECTION_FOLDERS));
+            scriptTitlePattern.setText(store.getString(SQLPreferenceConstants.SCRIPT_TITLE_PATTERN));
 
             closeTabOnErrorCheck.setSelection(store.getBoolean(SQLPreferenceConstants.RESULT_SET_CLOSE_ON_ERROR));
             SQLEditor.ResultSetOrientation orientation = SQLEditor.ResultSetOrientation.valueOf(store.getString(SQLPreferenceConstants.RESULT_SET_ORIENTATION));
@@ -190,10 +196,11 @@ public class PrefPageSQLEditor extends TargetPrefPage
             store.setValue(SQLPreferenceConstants.AUTO_SAVE_ON_CLOSE, autoSaveOnClose.getSelection());
             store.setValue(SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE, saveOnQueryExecution.getSelection());
 
-            store.setValue(DBeaverPreferences.SCRIPT_DELETE_EMPTY, deleteEmptyCheck.getSelection());
-            store.setValue(DBeaverPreferences.SCRIPT_AUTO_FOLDERS, autoFoldersCheck.getSelection());
-            store.setValue(DBeaverPreferences.SCRIPT_CREATE_CONNECTION_FOLDERS, connectionFoldersCheck.getSelection());
-            store.setValue(DBeaverPreferences.SCRIPT_TITLE_PATTERN, scriptTitlePattern.getText());
+            store.setValue(SQLPreferenceConstants.SCRIPT_DELETE_EMPTY,
+                SQLPreferenceConstants.EmptyScriptCloseBehavior.getByTitle(deleteEmptyCombo.getText()).name());
+            store.setValue(SQLPreferenceConstants.SCRIPT_AUTO_FOLDERS, autoFoldersCheck.getSelection());
+            store.setValue(SQLPreferenceConstants.SCRIPT_CREATE_CONNECTION_FOLDERS, connectionFoldersCheck.getSelection());
+            store.setValue(SQLPreferenceConstants.SCRIPT_TITLE_PATTERN, scriptTitlePattern.getText());
 
             store.setValue(SQLPreferenceConstants.RESULT_SET_CLOSE_ON_ERROR, closeTabOnErrorCheck.getSelection());
             String orientationLabel = resultsOrientationCombo.getText();
@@ -219,10 +226,10 @@ public class PrefPageSQLEditor extends TargetPrefPage
         store.setToDefault(SQLPreferenceConstants.AUTO_SAVE_ON_CLOSE);
         store.setToDefault(SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE);
 
-        store.setToDefault(DBeaverPreferences.SCRIPT_DELETE_EMPTY);
-        store.setToDefault(DBeaverPreferences.SCRIPT_AUTO_FOLDERS);
-        store.setToDefault(DBeaverPreferences.SCRIPT_CREATE_CONNECTION_FOLDERS);
-        store.setToDefault(DBeaverPreferences.SCRIPT_TITLE_PATTERN);
+        store.setToDefault(SQLPreferenceConstants.SCRIPT_DELETE_EMPTY);
+        store.setToDefault(SQLPreferenceConstants.SCRIPT_AUTO_FOLDERS);
+        store.setToDefault(SQLPreferenceConstants.SCRIPT_CREATE_CONNECTION_FOLDERS);
+        store.setToDefault(SQLPreferenceConstants.SCRIPT_TITLE_PATTERN);
 
         store.setToDefault(SQLPreferenceConstants.RESULT_SET_CLOSE_ON_ERROR);
         store.setToDefault(SQLPreferenceConstants.RESULT_SET_ORIENTATION);

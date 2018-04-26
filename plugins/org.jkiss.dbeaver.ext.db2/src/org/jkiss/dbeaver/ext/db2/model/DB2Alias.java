@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.ext.db2.model.dict.DB2AliasType;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSAlias;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
@@ -33,7 +34,7 @@ import java.sql.ResultSet;
  * 
  * @author Denis Forveille
  */
-public class DB2Alias extends DB2SchemaObject {
+public class DB2Alias extends DB2SchemaObject implements DBSAlias {
 
     private DB2AliasType type;
     private DBSObject targetObject;
@@ -93,6 +94,11 @@ public class DB2Alias extends DB2SchemaObject {
     public DBSObject getTargetObject()
     {
         return targetObject;
+    }
+
+    @Override
+    public DBSObject getTargetObject(DBRProgressMonitor monitor) throws DBException {
+        return getTargetObject();
     }
 
 }

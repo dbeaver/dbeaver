@@ -69,7 +69,7 @@ public class SQLServerDataSourceProvider extends JDBCDataSourceProvider implemen
                 url.append("jdbc:sqlserver://");
             }
             url.append(connectionInfo.getHostName());
-            if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
+            if (!CommonUtils.isEmpty(connectionInfo.getHostPort()) && !connectionInfo.getHostPort().equals(driver.getDefaultPort())) {
                 url.append(":").append(connectionInfo.getHostPort());
             }
             if (isJtds) {

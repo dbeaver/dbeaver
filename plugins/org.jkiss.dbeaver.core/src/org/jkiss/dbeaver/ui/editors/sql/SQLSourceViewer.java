@@ -62,13 +62,13 @@ public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLE
     protected Map<String, Object> getSourceOptions() {
         IDatabaseEditorInput editorInput = getEditorInput();
         Collection<String> attributeNames = editorInput.getAttributeNames();
-        if (attributeNames.isEmpty()) {
-            return DBPScriptObject.EMPTY_OPTIONS;
-        }
-        Map<String, Object> options = new HashMap<String, Object>();
-        for (String name : attributeNames) {
-            Object attribute = editorInput.getAttribute(name);
-            options.put(name, attribute);
+        Map<String, Object> options = new HashMap<>();
+        options.put(DBPScriptObject.OPTION_DDL_SOURCE, true);
+        if (!attributeNames.isEmpty()) {
+            for (String name : attributeNames) {
+                Object attribute = editorInput.getAttribute(name);
+                options.put(name, attribute);
+            }
         }
         return options;
     }

@@ -143,7 +143,7 @@ public class ConfigImportWizardPageSqlDeveloper extends ConfigImportWizardPage {
                     connectionInfo.setProviderProperty(OracleConstants.PROP_SID_SERVICE, OracleConnectionType.SERVICE.name());
                 }
                 if (CommonUtils.toBoolean(osAuth)) {
-                    connectionInfo.setUser(OracleConstants.OS_AUTH_USER_NAME);
+                    connectionInfo.setUser(OracleConstants.OS_AUTH_PROP);
                 }
                 if (!CommonUtils.isEmpty(role)) {
                     connectionInfo.setProviderProperty(OracleConstants.PROP_INTERNAL_LOGON, role);

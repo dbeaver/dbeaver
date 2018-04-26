@@ -56,7 +56,7 @@ public class MySQLPrivilege implements DBAPrivilege
         this.context = JDBCUtils.safeGetString(resultSet, "context");
         this.comment = JDBCUtils.safeGetString(resultSet, "comment");
 
-        if (context.contains("Admin")) {
+        if (context.contains("Admin") || context.contains("server")) {
             kind = Kind.ADMIN;
         } else if (context.contains("Databases")) {
             kind = Kind.DDL;

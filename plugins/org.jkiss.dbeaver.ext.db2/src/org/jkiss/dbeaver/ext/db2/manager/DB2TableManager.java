@@ -101,7 +101,7 @@ public class DB2TableManager extends SQLTableManager<DB2Table, DB2Schema> implem
 
     @Override
     @SuppressWarnings("rawtypes")
-    public void appendTableModifiers(DB2Table db2Table, NestedObjectCommand tableProps, StringBuilder ddl)
+    public void appendTableModifiers(DB2Table db2Table, NestedObjectCommand tableProps, StringBuilder ddl, boolean alter)
     {
 
         try {
@@ -164,7 +164,7 @@ public class DB2TableManager extends SQLTableManager<DB2Table, DB2Schema> implem
             sb.append(db2Table.getFullyQualifiedName(DBPEvaluationContext.DDL));
             sb.append(" ");
 
-            appendTableModifiers(command.getObject(), command, sb);
+            appendTableModifiers(command.getObject(), command, sb, true);
 
             actionList.add(new SQLDatabasePersistAction(CMD_ALTER, sb.toString()));
         }
