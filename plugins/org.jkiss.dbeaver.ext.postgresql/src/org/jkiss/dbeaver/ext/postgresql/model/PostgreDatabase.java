@@ -178,11 +178,6 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
         return PostgreUtils.getObjectById(monitor, roleCache, this, ownerId);
     }
 
-    @Property(viewable = false, order = 4)
-    public PostgreTablespace getDefaultTablespace(DBRProgressMonitor monitor) throws DBException {
-        return PostgreUtils.getObjectById(monitor, tablespaceCache, this, tablespaceId);
-    }
-
     @Property(viewable = false, order = 5)
     public PostgreCharset getDefaultEncoding(DBRProgressMonitor monitor) throws DBException {
         return PostgreUtils.getObjectById(monitor, encodingCache, this, encodingId);
@@ -212,7 +207,8 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
     public int getConnectionLimit() {
         return connectionLimit;
     }
-///////////////////////////////////////////////////
+
+    ///////////////////////////////////////////////////
     // Instance methods
 
     @NotNull
@@ -283,9 +279,26 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
         return encodingCache.getAllObjects(monitor, this);
     }
 
+    ///////////////////////////////////////////////
+    // Tablespaces
+
     @Association
     public Collection<PostgreTablespace> getTablespaces(DBRProgressMonitor monitor) throws DBException {
         return tablespaceCache.getAllObjects(monitor, this);
+    }
+
+    @Property(viewable = false, order = 4)
+    public PostgreTablespace getDefaultTablespace(DBRProgressMonitor monitor) throws DBException {
+        return PostgreUtils.getObjectById(monitor, tablespaceCache, this, tablespaceId);
+    }
+
+    public PostgreTablespace getTablespace(DBRProgressMonitor monitor, long tablespaceId) throws DBException {
+        for (PostgreTablespace ts : tablespaceCache.getAllObjects(monitor, this)) {
+            if (ts.getObjectId() == tablespaceId) {
+                return ts;
+            }
+        }
+        return null;
     }
 
     ///////////////////////////////////////////////
