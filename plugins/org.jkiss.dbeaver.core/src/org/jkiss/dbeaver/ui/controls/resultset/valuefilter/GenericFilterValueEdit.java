@@ -80,8 +80,8 @@ class GenericFilterValueEdit {
 
     private boolean isCheckedTable;
 
-    public static final int MAX_MULTI_VALUES = 1000;
-    public static final String MULTI_KEY_LABEL = "...";
+    private static final int MAX_MULTI_VALUES = 1000;
+    private static final String MULTI_KEY_LABEL = "...";
 
 
     GenericFilterValueEdit(@NotNull ResultSetViewer viewer, @NotNull DBDAttributeBinding attr, @NotNull ResultSetRow[] rows, @NotNull DBCLogicalOperator operator) {
@@ -126,15 +126,12 @@ class GenericFilterValueEdit {
         // Create filter text
         final Text valueFilterText = new Text(composite, SWT.BORDER);
         valueFilterText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        valueFilterText.addModifyListener(new ModifyListener() {
-            @Override
-            public void modifyText(ModifyEvent e) {
-                filterPattern = valueFilterText.getText();
-                if (filterPattern.isEmpty()) {
-                    filterPattern = null;
-                }
-                loadValues();
+        valueFilterText.addModifyListener(e -> {
+            filterPattern = valueFilterText.getText();
+            if (filterPattern.isEmpty()) {
+                filterPattern = null;
             }
+            loadValues();
         });
         return valueFilterText;
     }
@@ -155,7 +152,7 @@ class GenericFilterValueEdit {
         } else if (attr.getEntityAttribute() instanceof DBSAttributeEnumerable) {
             loadAttributeEnum((DBSAttributeEnumerable) attr.getEntityAttribute());
         } else {
-            loadMultiValueList(Collections.<DBDLabelValuePair>emptyList());
+            loadMultiValueList(Collections.emptyList());
         }
     }
 
@@ -259,7 +256,9 @@ class GenericFilterValueEdit {
         }
         Collections.sort(sortedList);
         if (hasNulls) {
-            sortedList.add(0, new DBDLabelValuePair(DBValueFormatting.getDefaultValueDisplayString(null, DBDDisplayFormat.UI), null));
+            if (!rowData.containsKey(null)) {
+                sortedList.add(0, new DBDLabelValuePair(DBValueFormatting.getDefaultValueDisplayString(null, DBDDisplayFormat.UI), null));
+            }
         }
 
         Set<Object> checkedValues = new HashSet<>();

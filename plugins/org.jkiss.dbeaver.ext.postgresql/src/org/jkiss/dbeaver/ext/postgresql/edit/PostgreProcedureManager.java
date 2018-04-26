@@ -16,22 +16,34 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.edit;
 
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Combo;
+import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreLanguage;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.dbeaver.ui.UITask;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.object.struct.CreateProcedurePage;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -58,7 +70,7 @@ public class PostgreProcedureManager extends SQLObjectEditor<PostgreProcedure, P
         throws DBException
     {
         if (CommonUtils.isEmpty(command.getObject().getName())) {
-            throw new DBException("Procedure name cannot be empty");
+            throw new DBException("Function name cannot be empty");
         }
     }
 
@@ -68,12 +80,13 @@ public class PostgreProcedureManager extends SQLObjectEditor<PostgreProcedure, P
         return new UITask<PostgreProcedure>() {
             @Override
             protected PostgreProcedure runTask() {
-                CreateProcedurePage editPage = new CreateProcedurePage(parent);
+                CreateFunctionPage editPage = new CreateFunctionPage(parent, monitor);
                 if (!editPage.edit()) {
                     return null;
                 }
                 PostgreProcedure newProcedure = new PostgreProcedure(parent);
                 newProcedure.setName(editPage.getProcedureName());
+                newProcedure.setLanguage(editPage.getLanguage());
                 return newProcedure;
             }
         }.execute();
@@ -98,25 +111,74 @@ public class PostgreProcedureManager extends SQLObjectEditor<PostgreProcedure, P
     {
         String objectType = command.getObject().getProcedureTypeName();
         actions.add(
-            new SQLDatabasePersistAction("Drop procedure", "DROP " + objectType + " " + command.getObject().getFullQualifiedSignature()) //$NON-NLS-2$
+            new SQLDatabasePersistAction("Drop function", "DROP " + objectType + " " + command.getObject().getFullQualifiedSignature()) //$NON-NLS-2$
         );
     }
 
     private void createOrReplaceProcedureQuery(List<DBEPersistAction> actions, PostgreProcedure procedure)
     {
         actions.add(
-            new SQLDatabasePersistAction("Create procedure", procedure.getBody(), true));
+            new SQLDatabasePersistAction("Create function", procedure.getBody(), true));
     }
 
     @Override
     protected void addObjectExtraActions(List<DBEPersistAction> actions, NestedObjectCommand<PostgreProcedure, PropertyHandler> command, Map<String, Object> options) {
         if (command.getProperty("description") != null) {
             actions.add(new SQLDatabasePersistAction(
-                "Comment procedure",
+                "Comment function",
                 "COMMENT ON " + command.getObject().getProcedureTypeName() + " " + command.getObject().getFullQualifiedSignature() +
                     " IS " + SQLUtils.quoteString(command.getObject(), command.getObject().getDescription())));
         }
+        boolean isDDL = CommonUtils.getOption(options, DBPScriptObject.OPTION_DDL_SOURCE);
+        if (isDDL) {
+            DBRProgressMonitor monitor = new VoidProgressMonitor();
+            try {
+                PostgreUtils.getObjectGrantPermissionActions(monitor, command.getObject(), actions, options);
+            } catch (DBException e) {
+                log.error(e);
+            }
+        }
+
     }
 
+    private static class CreateFunctionPage extends CreateProcedurePage {
+        private final PostgreSchema parent;
+        private final DBRProgressMonitor monitor;
+        PostgreLanguage language;
+
+        public CreateFunctionPage(PostgreSchema parent, DBRProgressMonitor monitor) {
+            super(parent);
+            this.parent = parent;
+            this.monitor = monitor;
+        }
+
+        @Override
+        public DBSProcedureType getPredefinedProcedureType() {
+            return DBSProcedureType.FUNCTION;
+        }
+
+        @Override
+        protected void createExtraControls(Composite group) {
+            List<PostgreLanguage> languages = new ArrayList<>();
+            try {
+                languages.addAll(parent.getDatabase().getLanguages(monitor));
+            } catch (DBException e) {
+                log.error(e);
+            }
+            final Combo languageCombo = UIUtils.createLabelCombo(group, "Language", SWT.DROP_DOWN | SWT.READ_ONLY);
+            for (PostgreLanguage lang : languages) {
+                languageCombo.add(lang.getName());
+            }
+
+            languageCombo.addModifyListener(e -> {
+                language = languages.get(languageCombo.getSelectionIndex());
+            });
+            languageCombo.setText("sql");
+        }
+
+        public PostgreLanguage getLanguage() {
+            return language;
+        }
+    }
 }
 

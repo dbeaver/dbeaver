@@ -1,2 +1,2 @@
-call mvn p2:site
+call mvn clean p2:site
 REM start mvn jetty:start

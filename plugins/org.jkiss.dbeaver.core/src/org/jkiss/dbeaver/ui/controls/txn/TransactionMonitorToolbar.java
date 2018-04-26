@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.text.source.ISharedTextColors;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.*;
@@ -55,9 +56,6 @@ public class TransactionMonitorToolbar {
 
     private static final int MONITOR_UPDATE_DELAY = 250;
 
-    private static final RGB COLOR_FULL = QueryLogViewer.COLOR_LIGHT_RED;
-    private static final RGB COLOR_EMPTY = QueryLogViewer.COLOR_LIGHT_GREEN;
-
     private IWorkbenchWindow workbenchWindow;
 
     TransactionMonitorToolbar(IWorkbenchWindow workbenchWindow) {
@@ -81,12 +79,7 @@ public class TransactionMonitorToolbar {
         final IWorkbenchPage activePage = this.workbenchWindow.getActivePage();
         if (activePage != null) {
             activePage.addPartListener(partListener);
-            monitorPanel.addDisposeListener(new DisposeListener() {
-                @Override
-                public void widgetDisposed(DisposeEvent e) {
-                    activePage.removePartListener(partListener);
-                }
-            });
+            monitorPanel.addDisposeListener(e -> activePage.removePartListener(partListener));
         }
 
         return monitorPanel;
@@ -118,12 +111,7 @@ public class TransactionMonitorToolbar {
         MonitorPanel(Composite parent) {
             super(parent, SWT.BORDER);
             setCursor(parent.getDisplay().getSystemCursor(SWT.CURSOR_HAND));
-            addPaintListener(new PaintListener() {
-                @Override
-                public void paintControl(PaintEvent e) {
-                    paint(e);
-                }
-            });
+            addPaintListener(this::paint);
 
             setBackground(parent.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
             setToolTipText("Transactions monitor");
@@ -133,12 +121,9 @@ public class TransactionMonitorToolbar {
             qmHandler = new QMEventsHandler(this);
             QMUtils.registerHandler(qmHandler);
 
-            addDisposeListener(new DisposeListener() {
-                @Override
-                public void widgetDisposed(DisposeEvent e) {
-                    QMUtils.unregisterHandler(qmHandler);
-                    qmHandler = null;
-                }
+            addDisposeListener(e -> {
+                QMUtils.unregisterHandler(qmHandler);
+                qmHandler = null;
             });
 
             addMouseListener(new MouseAdapter() {
@@ -167,6 +152,14 @@ public class TransactionMonitorToolbar {
 
         private void paint(PaintEvent e) {
             Color bg;
+
+            ColorRegistry colorRegistry = workbenchWindow.getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry();
+
+            Color colorReverted = colorRegistry.get(QueryLogViewer.COLOR_REVERTED);
+            Color colorCommitted = colorRegistry.get(QueryLogViewer.COLOR_COMMITTED);
+            final RGB COLOR_FULL = colorReverted.getRGB();
+            final RGB COLOR_EMPTY = colorCommitted.getRGB();
+
             final int updateCount = txnState == null ? 0 : txnState.getUpdateCount();
 
             if (txnState == null || !txnState.isTransactionMode()) {
@@ -216,15 +209,12 @@ public class TransactionMonitorToolbar {
             monitor.done();
 
             // Update UI
-            DBeaverUI.asyncExec(new Runnable() {
-                @Override
-                public void run() {
-                    if (isDisposed()) {
-                        return;
-                    }
-                    redraw();
-                    updateToolTipText();
+            DBeaverUI.asyncExec(() -> {
+                if (isDisposed()) {
+                    return;
                 }
+                redraw();
+                updateToolTipText();
             });
         }
 

@@ -39,6 +39,9 @@ import java.io.FileOutputStream;
 public class ERDExportRasterImage implements ERDExportFormatHandler
 {
 
+    private static final int MARGIN_X = 10;
+    private static final int MARGIN_Y = 10;
+
     @Override
     public void exportDiagram(EntityDiagram diagram, IFigure figure, DiagramPart diagramPart, File targetFile) throws DBException
     {
@@ -60,15 +63,15 @@ public class ERDExportRasterImage implements ERDExportFormatHandler
             try (FileOutputStream fos = new FileOutputStream(targetFile)) {
                 Rectangle r = figure.getBounds();
                 GC gc = null;
-                Graphics g = null;
+                Graphics graphics = null;
                 try {
-                    Image image = new Image(null, contentBounds.x * 2 + contentBounds.width, contentBounds.y * 2 + contentBounds.height);
+                    Image image = new Image(null, contentBounds.width + MARGIN_X * 4, contentBounds.height + MARGIN_Y * 4);
                     try {
                         gc = new GC(image);
-                        gc.setClipping(contentBounds.x, contentBounds.y, contentBounds.width, contentBounds.height);
-                        g = new SWTGraphics(gc);
-                        g.translate(r.x * -1, r.y * -1);
-                        figure.paint(g);
+                        //gc.setClipping(0, 0, contentBounds.width + MARGIN_X * 2, contentBounds.height + MARGIN_Y * 2);
+                        graphics = new SWTGraphics(gc);
+                        graphics.translate(r.x * -1 + MARGIN_X, r.y * -1 + MARGIN_Y);
+                        figure.paint(graphics);
                         ImageLoader imageLoader = new ImageLoader();
                         imageLoader.data = new ImageData[1];
                         if (imageType != SWT.IMAGE_JPEG) {
@@ -83,8 +86,8 @@ public class ERDExportRasterImage implements ERDExportFormatHandler
                         UIUtils.dispose(image);
                     }
                 } finally {
-                    if (g != null) {
-                        g.dispose();
+                    if (graphics != null) {
+                        graphics.dispose();
                     }
                     UIUtils.dispose(gc);
                 }

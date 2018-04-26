@@ -20,7 +20,7 @@
 package org.jkiss.dbeaver.ext.erd.model;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.ext.erd.editor.ERDAttributeStyle;
+import org.jkiss.dbeaver.ext.erd.editor.ERDViewStyle;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
@@ -45,12 +45,12 @@ public class ERDEntityAttribute extends ERDObject<DBSEntityAttribute>
 	public String getLabelText()
 	{
         String text;
-        if (diagram.hasAttributeStyle(ERDAttributeStyle.TYPES)) {
+        if (diagram.hasAttributeStyle(ERDViewStyle.TYPES)) {
             text = object.getName() + ": " + object.getFullTypeName();
         } else {
             text = object.getName();
         }
-        if (diagram.hasAttributeStyle(ERDAttributeStyle.COMMENTS)) {
+        if (diagram.hasAttributeStyle(ERDViewStyle.COMMENTS)) {
             String comment = object.getDescription();
             if (!CommonUtils.isEmpty(comment)) {
                 text += " - " + comment;
@@ -61,7 +61,7 @@ public class ERDEntityAttribute extends ERDObject<DBSEntityAttribute>
 
     public DBPImage getLabelImage()
     {
-        if (!diagram.hasAttributeStyle(ERDAttributeStyle.ICONS)) {
+        if (!diagram.hasAttributeStyle(ERDViewStyle.ICONS)) {
             return null;
         }
         return DBValueFormatting.getObjectImage(object);

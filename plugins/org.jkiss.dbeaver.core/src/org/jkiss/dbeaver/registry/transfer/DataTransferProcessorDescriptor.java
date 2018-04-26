@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.registry.transfer;
 
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -28,6 +29,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -46,6 +48,7 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor implemen
     @NotNull
     private final DBPImage icon;
     private final List<DBPPropertyDescriptor> properties = new ArrayList<>();
+    private boolean isBinary;
 
     DataTransferProcessorDescriptor(DataTransferNodeDescriptor node, IConfigurationElement config)
     {
@@ -56,6 +59,7 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor implemen
         this.name = config.getAttribute(RegistryConstants.ATTR_LABEL);
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON), DBIcon.TYPE_UNKNOWN);
+        this.isBinary = CommonUtils.getBoolean(config.getAttribute("binary"), false);
 
         for (IConfigurationElement typeCfg : ArrayUtils.safeArray(config.getChildren(RegistryConstants.ATTR_SOURCE_TYPE))) {
             sourceTypes.add(new ObjectType(typeCfg.getAttribute(RegistryConstants.ATTR_TYPE)));
@@ -104,6 +108,18 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor implemen
         return false;
     }
 
+    public boolean adaptsToType(IAdaptable adaptable) {
+        if (sourceTypes.isEmpty()) {
+            return true;
+        }
+        for (ObjectType sourceType : sourceTypes) {
+            if (adaptable.getAdapter(sourceType.getObjectClass()) != null) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public IDataTransferProcessor getInstance()
     {
         try {
@@ -119,4 +135,9 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor implemen
     {
         return node;
     }
+
+    public boolean isBinaryFormat() {
+        return isBinary;
+    }
+
 }

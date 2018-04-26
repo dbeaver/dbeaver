@@ -24,6 +24,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.transfer.DataTransferNodeDescriptor;
 import org.jkiss.dbeaver.registry.transfer.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.registry.transfer.DataTransferRegistry;
@@ -119,7 +120,7 @@ public class DataTransferSettings {
             throw new IllegalArgumentException("Producers or consumers must be specified");
         }
 
-        Collection<Class<?>> objectTypes = getObjectTypes();
+        Collection<DBSObject> objectTypes = getSourceObjects();
         List<DataTransferNodeDescriptor> nodes = new ArrayList<>();
         DataTransferRegistry registry = DataTransferRegistry.getInstance();
         if (ArrayUtils.isEmpty(producers)) {
@@ -191,16 +192,16 @@ public class DataTransferSettings {
         return nodeSettings != null && ArrayUtils.contains(nodeSettings.pages, page);
     }
 
-    public Collection<Class<?>> getObjectTypes()
+    public Collection<DBSObject> getSourceObjects()
     {
         List<DataTransferPipe> dataPipes = getDataPipes();
-        Set<Class<?>> objectTypes = new HashSet<>();
+        Set<DBSObject> objects = new HashSet<>();
         for (DataTransferPipe transferPipe : dataPipes) {
             if (transferPipe.getProducer() != null) {
-                objectTypes.add(transferPipe.getProducer().getSourceObject().getClass());
+                objects.add(transferPipe.getProducer().getSourceObject());
             }
         }
-        return objectTypes;
+        return objects;
     }
 
     public IDataTransferSettings getNodeSettings(IWizardPage page)

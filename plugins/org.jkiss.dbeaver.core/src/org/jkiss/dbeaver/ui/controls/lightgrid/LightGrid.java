@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dnd.LocalObjectTransfer;
+import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IntKeyMap;
@@ -4330,7 +4331,7 @@ public abstract class LightGrid extends Canvas {
         final int operations = DND.DROP_MOVE;//DND.DROP_COPY | DND.DROP_MOVE | DND.DROP_LINK | DND.DROP_DEFAULT;
 
         final DragSource source = new DragSource(this, operations);
-        source.setTransfer(new Transfer[] { GridColumnTransfer.INSTANCE });
+        source.setTransfer(GridColumnTransfer.INSTANCE, TextTransfer.getInstance());
         source.addDragListener (new DragSourceListener() {
 
             private Image dragImage;
@@ -4358,6 +4359,13 @@ public abstract class LightGrid extends Canvas {
 
             @Override
             public void dragSetData (DragSourceEvent event) {
+                if (draggingColumn != null) {
+                    if (GridColumnTransfer.INSTANCE.isSupportedType(event.dataType)) {
+                        event.data = draggingColumn.getElement();
+                    } else if (TextTransfer.getInstance().isSupportedType(event.dataType)) {
+                        event.data = getLabelProvider().getText(draggingColumn.getElement());
+                    }
+                }
             }
             @Override
             public void dragFinished(DragSourceEvent event) {
@@ -4371,7 +4379,7 @@ public abstract class LightGrid extends Canvas {
         });
 
         DropTarget dropTarget = new DropTarget(this, operations);
-        dropTarget.setTransfer(new Transfer[] {GridColumnTransfer.INSTANCE});
+        dropTarget.setTransfer(GridColumnTransfer.INSTANCE, TextTransfer.getInstance());
         dropTarget.addDropListener(new DropTargetListener() {
             @Override
             public void dragEnter(DropTargetEvent event)

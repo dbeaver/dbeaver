@@ -327,7 +327,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
     }
 
     protected class ObjectDeleteCommand extends DBECommandDeleteObject<OBJECT_TYPE> {
-        protected ObjectDeleteCommand(OBJECT_TYPE table, String title)
+        public ObjectDeleteCommand(OBJECT_TYPE table, String title)
         {
             super(table, title);
         }

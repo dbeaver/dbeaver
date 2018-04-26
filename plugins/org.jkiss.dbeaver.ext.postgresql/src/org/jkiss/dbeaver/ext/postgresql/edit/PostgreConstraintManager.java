@@ -20,13 +20,19 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
+import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPScriptObject;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLConstraintManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.ui.UITask;
@@ -34,6 +40,7 @@ import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -121,6 +128,21 @@ public class PostgreConstraintManager extends SQLConstraintManager<PostgreTableC
         } else {
             super.appendConstraintDefinition(decl, command);
         }
+    }
+
+    @Override
+    protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
+    {
+        if (command.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) {
+            addConstraintCommentAction(actionList, command.getObject());
+        }
+    }
+
+    static void addConstraintCommentAction(List<DBEPersistAction> actionList, PostgreTableConstraintBase constr) {
+        actionList.add(new SQLDatabasePersistAction(
+            "Comment sequence",
+            "COMMENT ON CONSTRAINT " + DBUtils.getQuotedIdentifier(constr) + " ON " + constr.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL) +
+                " IS " + SQLUtils.quoteString(constr, constr.getDescription())));
     }
 
     @Override

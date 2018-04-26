@@ -21,10 +21,13 @@ import org.eclipse.core.commands.ExecutionException;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.*;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.qm.QMTransactionState;
+import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.runtime.TasksJob;
+import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
+import org.jkiss.dbeaver.ui.controls.txn.TransactionLogDialog;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -41,18 +44,24 @@ public class DataSourceCommitHandler extends AbstractDataSourceHandler
     }
 
     public static void execute(@NotNull final DBCExecutionContext context) {
-        TasksJob.runTask("Commit transaction", new DBRRunnableWithProgress() {
-            @Override
-            public void run(DBRProgressMonitor monitor)
-                throws InvocationTargetException, InterruptedException {
-                DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
-                if (txnManager != null) {
-                    try (DBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, "Commit transaction")) {
-                        txnManager.commit(session);
-                    } catch (DBCException e) {
-                        throw new InvocationTargetException(e);
-                    }
+        TasksJob.runTask("Commit transaction", monitor -> {
+            DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
+            if (txnManager != null) {
+                QMTransactionState txnInfo = QMUtils.getTransactionState(context);
+                try (DBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, "Commit transaction")) {
+                    txnManager.commit(session);
+                } catch (DBCException e) {
+                    throw new InvocationTargetException(e);
                 }
+
+                DBeaverNotifications.showNotification(
+                    context.getDataSource(),
+                    DBeaverNotifications.NT_COMMIT,
+                    "Transaction has been committed\n\n" +
+                        "Query count: " + txnInfo.getUpdateCount() + "\n" +
+                        "Duration: " + RuntimeUtils.formatExecutionTime(System.currentTimeMillis() - txnInfo.getTransactionStartTime()) + "\n",
+                    null,
+                    () -> TransactionLogDialog.showDialog(null, context, true));
             }
         });
     }

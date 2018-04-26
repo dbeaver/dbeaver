@@ -130,7 +130,7 @@ public class DataSourceInvalidateHandler extends AbstractDataSourceHandler
                             invalidateDataSource(dataSource);
                         }
                     } else {
-                        log.info(message);
+                        log.debug(message);
                     }
                 }
             });

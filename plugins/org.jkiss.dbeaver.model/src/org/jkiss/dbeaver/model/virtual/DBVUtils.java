@@ -57,7 +57,7 @@ public abstract class DBVUtils {
     }
 
     @Nullable
-    public static DBVTransformSettings getTransformSettings(@NotNull DBVEntityAttribute attribute, boolean create) {
+    private static DBVTransformSettings getTransformSettings(@NotNull DBVEntityAttribute attribute, boolean create) {
         if (attribute.getTransformSettings() != null) {
             return attribute.getTransformSettings();
         } else if (create) {
@@ -161,6 +161,7 @@ public abstract class DBVUtils {
         for (DBCAttributeMetaData col : metaColumns) {
             colHandlers.add(DBUtils.findValueHandler(session, col));
         }
+        boolean hasNulls = false;
         // Extract enumeration values and (optionally) their descriptions
         while (dbResult.nextRow()) {
             // Check monitor
@@ -169,19 +170,25 @@ public abstract class DBVUtils {
             }
             // Get value and description
             Object keyValue = valueHandler.fetchValueObject(session, dbResult, valueAttribute, 0);
-            if (keyValue == null) {
-                continue;
+            if (DBUtils.isNullValue(keyValue)) {
+                if (hasNulls) {
+                    continue;
+                }
+                hasNulls = true;
             }
-            String keyLabel = valueHandler.getValueDisplayString(valueAttribute, keyValue, DBDDisplayFormat.NATIVE);
+            String keyLabel;
             if (metaColumns.size() > 1) {
-                keyLabel = "";
+                StringBuilder keyLabel2 = new StringBuilder();
                 for (int i = 1; i < colHandlers.size(); i++) {
                     Object descValue = colHandlers.get(i).fetchValueObject(session, dbResult, metaColumns.get(i), i);
-                    if (!keyLabel.isEmpty()) {
-                        keyLabel += " ";
+                    if (keyLabel2.length() > 0) {
+                        keyLabel2.append(" ");
                     }
-                    keyLabel += colHandlers.get(i).getValueDisplayString(metaColumns.get(i), descValue, DBDDisplayFormat.NATIVE);
+                    keyLabel2.append(colHandlers.get(i).getValueDisplayString(metaColumns.get(i), descValue, DBDDisplayFormat.NATIVE));
                 }
+                keyLabel = keyLabel2.toString();
+            } else {
+                keyLabel = valueHandler.getValueDisplayString(valueAttribute, keyValue, DBDDisplayFormat.NATIVE);
             }
             values.add(new DBDLabelValuePair(keyLabel, keyValue));
         }

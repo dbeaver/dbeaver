@@ -10,17 +10,30 @@
       </definition>
    </extension>
 
-   <extension
-         point="org.eclipse.ui.perspectives">
-<!-- 	
-//FIXME:AF: better id is "org.jkiss.dbeaver.ui.perspective.dbeaver", but perspectiveId change may affect user workbench layout
--->
-      <perspective
-            class="org.jkiss.dbeaver.internal.ui.DBeaverPerspective"
-            icon="icons/dbeaver_perspective.png"
-            id="org.jkiss.dbeaver.core.perspective"
-            name="%perspective.name">
-      </perspective>
-   </extension>
+    <!-- Notifications -->
+
+    <extension point="org.eclipse.mylyn.commons.notifications.ui.notifications">
+        <category id="org.jkiss.dbeaver.notifications.database.category" label="Database"/>
+        <sink id="org.jkiss.dbeaver.notifications.sink.Popup" class="org.jkiss.dbeaver.ui.notifications.DatabaseNotificationSink" label="Notify Popup"/>
+
+        <event categoryId="org.jkiss.dbeaver.notifications.database.category" id="org.jkiss.dbeaver.notifications.event.commit" label="Commit">
+            <defaultHandler sinkId="org.jkiss.dbeaver.notifications.sink.Popup"/>
+            <description>
+                This event is triggered when transaction was committed.
+            </description>
+        </event>
+        <event categoryId="org.jkiss.dbeaver.notifications.database.category" id="org.jkiss.dbeaver.notifications.event.rollback" label="Rollback">
+            <defaultHandler sinkId="org.jkiss.dbeaver.notifications.sink.Popup"/>
+            <description>
+                This event is triggered when transaction was rolled back.
+            </description>
+        </event>
+        <event categoryId="org.jkiss.dbeaver.notifications.database.category" id="org.jkiss.dbeaver.notifications.event.reconnect" label="Reconnect">
+            <defaultHandler sinkId="org.jkiss.dbeaver.notifications.sink.Popup"/>
+            <description>
+                This event is triggered when connection was automatically reconnected.
+            </description>
+        </event>
+    </extension>
 
 </plugin>

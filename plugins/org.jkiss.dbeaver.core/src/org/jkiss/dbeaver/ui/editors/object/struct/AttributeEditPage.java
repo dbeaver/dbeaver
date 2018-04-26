@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
@@ -62,13 +63,9 @@ public class AttributeEditPage extends BaseObjectEditPage {
         propsGroup.setLayoutData(gd);
 
         final Text nameText = UIUtils.createLabelText(propsGroup, "Name", attribute.getName()); //$NON-NLS-2$
-        nameText.addModifyListener(new ModifyListener() {
-            @Override
-            public void modifyText(ModifyEvent e)
-            {
-                if (attribute instanceof DBPNamedObject2) {
-                    ((DBPNamedObject2) attribute).setName(nameText.getText());
-                }
+        nameText.addModifyListener(e -> {
+            if (attribute instanceof DBPNamedObject2) {
+                ((DBPNamedObject2) attribute).setName(DBObjectNameCaseTransformer.transformName(attribute.getDataSource(), nameText.getText()));
             }
         });
 

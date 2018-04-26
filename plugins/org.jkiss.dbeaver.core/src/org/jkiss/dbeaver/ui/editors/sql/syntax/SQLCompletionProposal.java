@@ -148,7 +148,12 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
             }
         }
         replacementOffset = startOffset;
-        replacementLength = endOffset - startOffset;
+        if (curOffset < fullWord.length() && Character.isLetterOrDigit(fullWord.charAt(curOffset))) {
+            // Do not replace full word if we are in the middle of word
+            replacementLength = curOffset;
+        } else {
+            replacementLength = endOffset - startOffset;
+        }
     }
 
     @Override

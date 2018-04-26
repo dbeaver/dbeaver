@@ -263,11 +263,17 @@ public final class SQLUtils {
      * Removes \\r characters from query.
      * Actually this is done specially for Oracle due to some bug in it's driver
      *
+     *
+     * @param dataSource
      * @param query query
      * @return normalized query
      */
-    public static String makeUnifiedLineFeeds(String query)
+    public static String makeUnifiedLineFeeds(DBPDataSource dataSource, String query)
     {
+        SQLDialect dialect = SQLUtils.getDialectFromDataSource(dataSource);
+        if (!dialect.isCRLFBroken()) {
+            return query;
+        }
         if (query.indexOf('\r') == -1) {
             return query;
         }
@@ -560,10 +566,15 @@ public final class SQLUtils {
     }
 
     public static String convertValueToSQL(@NotNull DBPDataSource dataSource, @NotNull DBSAttributeBase attribute, @Nullable Object value) {
+        DBDValueHandler valueHandler = DBUtils.findValueHandler(dataSource, attribute);
+
+        return convertValueToSQL(dataSource, attribute, valueHandler, value);
+    }
+
+    public static String convertValueToSQL(@NotNull DBPDataSource dataSource, @NotNull DBSAttributeBase attribute, @NotNull DBDValueHandler valueHandler, @Nullable Object value) {
         if (DBUtils.isNullValue(value)) {
             return SQLConstants.NULL_VALUE;
         }
-        DBDValueHandler valueHandler = DBUtils.findValueHandler(dataSource, attribute);
 
         String strValue;
 
@@ -781,32 +792,53 @@ public final class SQLUtils {
     @NotNull
     public static String generateScript(DBPDataSource dataSource, DBEPersistAction[] persistActions, boolean addComments)
     {
-        SQLDialect sqlDialect = dataSource instanceof SQLDataSource ? ((SQLDataSource) dataSource).getSQLDialect() : null;
-        String lineSeparator = GeneralUtils.getDefaultLineSeparator();
+        final SQLDialect sqlDialect = SQLUtils.getDialectFromDataSource(dataSource);
+        final String lineSeparator = GeneralUtils.getDefaultLineSeparator();
+
         StringBuilder script = new StringBuilder(64);
         if (addComments) {
             script.append(DBEAVER_DDL_COMMENT).append(Platform.getProduct().getName()).append(lineSeparator)
                 .append(DBEAVER_DDL_WARNING).append(lineSeparator);
         }
         if (persistActions != null) {
-            String redefiner = null;
-            if (sqlDialect != null) {
-                redefiner = sqlDialect.getScriptDelimiterRedefiner();
-            }
+            String redefiner = sqlDialect.getScriptDelimiterRedefiner();
             for (DBEPersistAction action : persistActions) {
                 String scriptLine = action.getScript();
                 if (CommonUtils.isEmpty(scriptLine)) {
                     continue;
                 }
 
-                String delimiter = sqlDialect == null ? SQLConstants.DEFAULT_STATEMENT_DELIMITER : sqlDialect.getScriptDelimiter();
+                String delimiter = sqlDialect.getScriptDelimiter();
                 if (action.isComplex() && redefiner != null) {
                     script.append(lineSeparator).append(redefiner).append(" ").append(DBEAVER_SCRIPT_DELIMITER).append(lineSeparator);
                     delimiter = DBEAVER_SCRIPT_DELIMITER;
                     script.append(delimiter).append(lineSeparator);
+                } else if (action.getType() == DBEPersistAction.ActionType.COMMENT) {
+                    if (script.length() > 2) {
+                        int lfCount = 0;
+                        for (int i = script.length() - 1; i >= 0; i--) {
+                            if (!Character.isWhitespace(script.charAt(i))) {
+                                break;
+                            }
+                            if (script.charAt(i) == '\n') lfCount++;
+                        }
+                        if (lfCount < 2) {
+                            // Add line feed if we do not have empty line before
+                            script.append(lineSeparator);
+                        }
+                    }
                 }
                 script.append(scriptLine);
-                script.append(" ").append(delimiter).append(lineSeparator);
+                if (action.getType() != DBEPersistAction.ActionType.COMMENT) {
+                    char lastChar = scriptLine.charAt(scriptLine.length() - 1);
+                    if (!Character.isWhitespace(lastChar) && !Character.isLetterOrDigit(lastChar)) {
+                        script.append(" ");
+                    }
+                    script.append(delimiter);
+                } else {
+                    script.append(lineSeparator);
+                }
+                script.append(lineSeparator);
 
                 if (action.isComplex() && redefiner != null) {
                     script.append(redefiner).append(" ").append(sqlDialect.getScriptDelimiter()).append(lineSeparator);

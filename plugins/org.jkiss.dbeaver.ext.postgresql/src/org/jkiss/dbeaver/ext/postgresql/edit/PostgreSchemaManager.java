@@ -20,8 +20,8 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreRole;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreRole;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.ui.PostgreCreateSchemaDialog;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.ui.UITask;
 
 import java.util.List;
@@ -114,6 +115,19 @@ public class PostgreSchemaManager extends SQLObjectEditor<PostgreSchema, Postgre
     public void renameObject(DBECommandContext commandContext, PostgreSchema schema, String newName) throws DBException
     {
         processObjectRename(commandContext, schema, newName);
+    }
+
+    protected void addObjectExtraActions(List<DBEPersistAction> actions, NestedObjectCommand<PostgreSchema, PropertyHandler> command, Map<String, Object> options)
+    {
+        PostgreSchema schema = command.getObject();
+        String comment = schema.getDescription();
+
+        if (comment != null) {
+            actions.add(new SQLDatabasePersistAction(
+                "Comment schema",
+                "COMMENT ON SCHEMA " + DBUtils.getQuotedIdentifier(schema) +
+                    " IS " + SQLUtils.quoteString(schema, comment)));
+        }
     }
 
 }

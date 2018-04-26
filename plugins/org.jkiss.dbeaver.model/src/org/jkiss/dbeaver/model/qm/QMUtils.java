@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.qm;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -113,6 +114,7 @@ public class QMUtils {
         return null;
     }
 
+    @NotNull
     public static QMTransactionState getTransactionState(DBCExecutionContext executionContext) {
         int execCount = 0, updateCount = 0;
         final boolean txnMode;

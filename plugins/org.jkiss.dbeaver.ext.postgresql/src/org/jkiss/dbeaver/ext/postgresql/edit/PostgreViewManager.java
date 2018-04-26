@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
@@ -36,7 +35,7 @@ import java.util.Map;
 /**
  * PostgreViewManager
  */
-public class PostgreViewManager extends SQLTableManager<PostgreTableBase, PostgreSchema> {
+public class PostgreViewManager extends PostgreTableManagerBase {
 
     private static final Class<?>[] CHILD_TYPES = {
         PostgreTableColumn.class,
@@ -84,6 +83,7 @@ public class PostgreViewManager extends SQLTableManager<PostgreTableBase, Postgr
     protected void addStructObjectCreateActions(List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options)
     {
         createOrReplaceViewQuery(actions, (PostgreViewBase) command.getObject());
+        addObjectExtraActions(actions, command, options);
     }
 
     @Override

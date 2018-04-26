@@ -22,10 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
-import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBPHiddenObject;
-import org.jkiss.dbeaver.model.DBPNamedObject2;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.DBPositiveNumberTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -44,7 +41,8 @@ import java.util.TreeSet;
 /**
  * PostgreAttribute
  */
-public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> extends JDBCTableColumn<OWNER> implements DBSTypedObjectEx, DBPNamedObject2, DBPHiddenObject
+public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> extends JDBCTableColumn<OWNER>
+    implements PostgreObject, DBSTypedObjectEx, DBPNamedObject2, DBPHiddenObject, DBPInheritedObject
 {
     private static final Log log = Log.getLog(PostgreAttribute.class);
 
@@ -57,6 +55,9 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     private String description;
     @Nullable
     private PostgreAttributeIdentity identity;
+    private boolean isLocal;
+    private long objectId;
+    private Object acl;
 
     protected PostgreAttribute(
         OWNER table)
@@ -73,8 +74,15 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         loadInfo(dbResult);
     }
 
+    @Override
     public PostgreDatabase getDatabase() {
         return getTable().getDatabase();
+    }
+
+    @Property(viewable = false, order = 26)
+    @Override
+    public long getObjectId() {
+        return objectId;
     }
 
     private void loadInfo(JDBCResultSet dbResult)
@@ -83,6 +91,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         setName(JDBCUtils.safeGetString(dbResult, "attname"));
         setOrdinalPosition(JDBCUtils.safeGetInt(dbResult, "attnum"));
         setRequired(JDBCUtils.safeGetBoolean(dbResult, "attnotnull"));
+        objectId = JDBCUtils.safeGetLong(dbResult, "attr_id");
         final long typeId = JDBCUtils.safeGetLong(dbResult, "atttypid");
         dataType = getTable().getDatabase().getDataType(typeId);
         if (dataType == null) {
@@ -124,6 +133,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         this.description = JDBCUtils.safeGetString(dbResult, "description");
         this.arrayDim = JDBCUtils.safeGetInt(dbResult, "attndims");
         this.inheritorsCount = JDBCUtils.safeGetInt(dbResult, "attinhcount");
+        this.isLocal = JDBCUtils.safeGetBoolean(dbResult, "attislocal");
 
         if (getDataSource().isServerVersionAtLeast(10, 0)) {
             String identityStr = JDBCUtils.safeGetString(dbResult, "attidentity");
@@ -131,6 +141,8 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
                 identity = PostgreAttributeIdentity.getByCode(identityStr);
             }
         }
+
+        this.acl = JDBCUtils.safeGetObject(dbResult, "attacl");
 
         setPersisted(true);
     }
@@ -140,6 +152,10 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     public PostgreDataSource getDataSource()
     {
         return getTable().getDataSource();
+    }
+
+    public Object getAcl() {
+        return acl;
     }
 
     @NotNull
@@ -197,6 +213,11 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         this.identity = identity;
     }
 
+    @Property(viewable = false, order = 25)
+    public boolean isLocal() {
+        return isLocal;
+    }
+
     @Override
     @Property(viewable = true, editable = true, updatable = true, order = 50)
     public boolean isRequired()
@@ -236,6 +257,11 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     @Override
     public boolean isHidden() {
         return isPersisted() && getOrdinalPosition() < 0;
+    }
+
+    @Override
+    public boolean isInherited() {
+        return !isLocal;
     }
 
     public String getFullTypeName() {

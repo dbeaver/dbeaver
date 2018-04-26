@@ -702,11 +702,12 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
     public void fillAttributeVisibilityMenu(IMenuManager menu)
     {
-        MenuManager asMenu = new MenuManager("Attribute Styles");
-        asMenu.add(new ChangeAttributePresentationAction(ERDAttributeStyle.ICONS));
-        asMenu.add(new ChangeAttributePresentationAction(ERDAttributeStyle.TYPES));
-        asMenu.add(new ChangeAttributePresentationAction(ERDAttributeStyle.NULLABILITY));
-        asMenu.add(new ChangeAttributePresentationAction(ERDAttributeStyle.COMMENTS));
+        MenuManager asMenu = new MenuManager("View Styles");
+        asMenu.add(new ChangeAttributePresentationAction(ERDViewStyle.ICONS));
+        asMenu.add(new ChangeAttributePresentationAction(ERDViewStyle.TYPES));
+        asMenu.add(new ChangeAttributePresentationAction(ERDViewStyle.NULLABILITY));
+        asMenu.add(new ChangeAttributePresentationAction(ERDViewStyle.COMMENTS));
+        asMenu.add(new ChangeAttributePresentationAction(ERDViewStyle.ENTITY_FQN));
         menu.add(asMenu);
 
         MenuManager avMenu = new MenuManager("Show Attributes");
@@ -787,8 +788,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     protected abstract void loadDiagram(boolean refreshMetadata);
 
     private class ChangeAttributePresentationAction extends Action {
-        private final ERDAttributeStyle style;
-        public ChangeAttributePresentationAction(ERDAttributeStyle style) {
+        private final ERDViewStyle style;
+        public ChangeAttributePresentationAction(ERDViewStyle style) {
             super("Show " + style.getTitle(), AS_CHECK_BOX);
             this.style = style;
         }
@@ -796,7 +797,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         public boolean isChecked()
         {
             return ArrayUtils.contains(
-                ERDAttributeStyle.getDefaultStyles(ERDActivator.getDefault().getPreferenceStore()),
+                ERDViewStyle.getDefaultStyles(ERDActivator.getDefault().getPreferenceStore()),
                 style);
         }
 

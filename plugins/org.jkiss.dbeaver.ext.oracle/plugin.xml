@@ -289,8 +289,8 @@
                         <file name="orai18n.jar" optional="true" description="NLS classes"/>
                         <file name="xdb6.jar" optional="true" description="SQLXML support"/>
                     </fileSource>
-                    <fileSource url="http://www.oracle.com/technetwork/database/features/jdbc/default-2280470.html" name="Oracle 12g drivers">
-                        <file name="ojdbc7.jar" description="JDBC driver"/>
+                    <fileSource url="http://www.oracle.com/technetwork/database/features/jdbc/default-2280470.html" name="Oracle 12c drivers">
+                        <file name="ojdbc8.jar" description="JDBC driver"/>
                         <file name="orai18n.jar" optional="true" description="NLS classes"/>
                         <file name="xdb6.jar" optional="true" description="SQLXML support"/>
                     </fileSource>
@@ -299,9 +299,9 @@
                     </fileSource>
 
                     <file type="license" path="drivers/oracle/LICENSE.txt" bundle="drivers.oracle"/>
-                    <file type="jar" path="drivers/oracle/ojdbc6.jar" bundle="drivers.oracle"/>
+                    <file type="jar" path="drivers/oracle/ojdbc8.jar" bundle="drivers.oracle"/>
                     <file type="jar" path="drivers/oracle/orai18n.jar" bundle="drivers.oracle"/>
-                    <file type="jar" path="drivers/oracle/xdb.jar" bundle="drivers.oracle"/>
+                    <file type="jar" path="drivers/oracle/xdb6.jar" bundle="drivers.oracle"/>
                     <file type="jar" path="drivers/oracle/xmlparserv2.jar" bundle="drivers.oracle"/>
 
                 </driver>

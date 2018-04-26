@@ -22,6 +22,7 @@
    <extension
          point="org.eclipse.debug.core.launchConfigurationTypes">
       <launchConfigurationType
+            category="org.jkiss.dbeaver.ext.postgresql.debug.ui.pgSQL"
             delegate="org.jkiss.dbeaver.debug.core.DatabaseLaunchDelegate"
             delegateDescription="%launchConfigurationTypes.launchConfigurationType.pgSQL.delegateDescription"
             delegateName="%launchConfigurationTypes.launchConfigurationType.pgSQL.delegateName"

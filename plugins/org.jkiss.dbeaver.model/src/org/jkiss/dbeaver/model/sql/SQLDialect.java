@@ -288,6 +288,12 @@ public interface SQLDialect {
      */
     boolean isQuoteReservedWords();
 
+    /**
+     * Reports about broken CRLF. Queries mustn't contain CRLF line feeds, only LF.
+     * This actually seems to be Oracle 9 and earlier JDBC driver issue.
+     */
+    boolean isCRLFBroken();
+
     @NotNull
     DBDBinaryFormatter getNativeBinaryFormatter();
 

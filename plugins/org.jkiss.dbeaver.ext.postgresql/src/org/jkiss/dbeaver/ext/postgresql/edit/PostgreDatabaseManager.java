@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionAtomic;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -109,9 +110,20 @@ public class PostgreDatabaseManager extends SQLObjectEditor<PostgreDatabase, Pos
     }
 
     @Override
-    public void renameObject(DBECommandContext commandContext, PostgreDatabase catalog, String newName) throws DBException
+    public void renameObject(DBECommandContext commandContext, PostgreDatabase database, String newName) throws DBException
     {
-        throw new DBException("Direct database rename is not yet implemented in PostgreSQL. You should use export/import functions for that.");
+        processObjectRename(commandContext, database, newName);
+    }
+
+    @Override
+    protected void addObjectRenameActions(List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
+    {
+        actions.add(
+            new SQLDatabasePersistAction(
+                "Rename database",
+                "ALTER DATABASE " + DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getOldName()) + //$NON-NLS-1$
+                    " RENAME TO " + DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getNewName())) //$NON-NLS-1$
+        );
     }
 
 }

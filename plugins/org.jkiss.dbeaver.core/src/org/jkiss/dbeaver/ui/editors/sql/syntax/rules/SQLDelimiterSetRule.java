@@ -61,6 +61,7 @@ public class SQLDelimiterSetRule implements IRule {
             }
         }
         StringBuilder delimBuffer = new StringBuilder();
+        int delimLength = 0;
 
         int next = scanner.read();
         if (next == ICharacterScanner.EOF || next == '\n' || next == '\r') {
@@ -78,13 +79,16 @@ public class SQLDelimiterSetRule implements IRule {
                 next = scanner.read();
                 if (next == ICharacterScanner.EOF || next == '\n' || next == '\r') {
                     break;
+                } else if (delimLength == 0 && delimBuffer.length() > 0 && Character.isWhitespace(next)) {
+                    delimLength = delimBuffer.length();
                 }
                 delimBuffer.append((char) next);
             }
             scanner.unread();
         }
         if (scanner instanceof SQLRuleManager && ((SQLRuleManager) scanner).isEvalMode()) {
-            final String newDelimiter = delimBuffer.toString().trim();
+            final String newDelimiter = delimLength <= 0 ?
+                delimBuffer.toString().trim() : delimBuffer.substring(0, delimLength).trim();
             delimiterRule.changeDelimiter(newDelimiter);
         }
 

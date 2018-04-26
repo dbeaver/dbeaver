@@ -41,7 +41,7 @@ import java.util.Map;
 /**
  * PostgreIndex
  */
-public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase> implements DBPScriptObject, DBPHiddenObject
+public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase> implements PostgreScriptObject, DBPHiddenObject
 {
     private long indexId;
     private boolean isUnique;
@@ -222,7 +222,13 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
     }
 
     @Override
+    public void setObjectDefinitionText(String sourceText) throws DBException {
+
+    }
+
+    @Override
     public String toString() {
         return getName() + "(" + columns +")";
     }
+
 }

@@ -16,14 +16,11 @@
  */
 package org.jkiss.dbeaver.ui.search.data;
 
-import org.eclipse.jface.viewers.DoubleClickEvent;
-import org.eclipse.jface.viewers.IDoubleClickListener;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.editors.data.AbstractDataEditor;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.search.AbstractSearchResultsPage;
@@ -57,22 +54,18 @@ public class SearchDataResultsPage extends AbstractSearchResultsPage<SearchDataO
         {
             super(resultsGroup);
 
-            setDoubleClickHandler(new IDoubleClickListener() {
-                @Override
-                public void doubleClick(DoubleClickEvent event)
-                {
-                    // Run default node action
-                    DBNNode node = NavigatorUtils.getSelectedNode(getItemsViewer());
-                    if (!(node instanceof DBNDatabaseNode) || !node.allowsOpen()) {
-                        return;
-                    }
-                    Object objectValue = getObjectValue(node);
-                    if (!(objectValue instanceof SearchDataObject)) {
-                        return;
-                    }
-                    SearchDataObject object = (SearchDataObject) objectValue;
-                    AbstractDataEditor.openNewDataEditor((DBNDatabaseNode) node, object.getFilter());
+            setDoubleClickHandler(event -> {
+                // Run default node action
+                DBNNode node = NavigatorUtils.getSelectedNode(getItemsViewer());
+                if (!(node instanceof DBNDatabaseNode) || !node.allowsOpen()) {
+                    return;
                 }
+                Object objectValue = getObjectValue(node);
+                if (!(objectValue instanceof SearchDataObject)) {
+                    return;
+                }
+                SearchDataObject object = (SearchDataObject) objectValue;
+                AbstractDataEditor.openNewDataEditor((DBNDatabaseNode) node, object.getFilter());
             });
         }
 

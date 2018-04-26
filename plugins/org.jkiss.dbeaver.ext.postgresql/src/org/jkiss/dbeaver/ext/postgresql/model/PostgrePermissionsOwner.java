@@ -21,13 +21,20 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.Collection;
-import java.util.List;
 
 /**
  * PostgrePermissionsOwner
  */
 public interface PostgrePermissionsOwner extends PostgreObject {
 
-    Collection<PostgrePermission> getPermissions(DBRProgressMonitor monitor) throws DBException;
+    PostgreSchema getSchema();
+
+    PostgreRole getOwner(DBRProgressMonitor monitor) throws DBException;
+
+    /**
+     * Get object permissions.
+     * @param includeNestedObjects - include permissions for all nested objects. For exmaple for table columns.
+     */
+    Collection<PostgrePermission> getPermissions(DBRProgressMonitor monitor, boolean includeNestedObjects) throws DBException;
 
 }

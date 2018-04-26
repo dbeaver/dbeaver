@@ -31,8 +31,10 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.SimpleObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Association;
+import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.utils.CommonUtils;
@@ -89,12 +91,16 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
         return tablespaceId != 0;
     }
 
-    @Property(viewable = true, order = 20)
+    @Property(viewable = true, editable = true, updatable = true, order = 20, listProvider = TablespaceListProvider.class)
     public PostgreTablespace getTablespace(DBRProgressMonitor monitor) throws DBException {
         if (tablespaceId == 0) {
             return getDatabase().getDefaultTablespace(monitor);
         }
         return PostgreUtils.getObjectById(monitor, getDatabase().tablespaceCache, getDatabase(), tablespaceId);
+    }
+
+    public void setTablespace(PostgreTablespace tablespace) {
+        this.tablespaceId = tablespace.getObjectId();
     }
 
     @Override
@@ -103,9 +109,13 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
         return false;
     }
 
-    @Property(viewable = false, order = 40)
+    @Property(viewable = false, editable = true, updatable = true, order = 40)
     public boolean isHasOids() {
         return hasOids;
+    }
+
+    public void setHasOids(boolean hasOids) {
+        this.hasOids = hasOids;
     }
 
     @Override
@@ -306,6 +316,25 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
             }
         }
         return result;
+    }
+
+    public static class TablespaceListProvider implements IPropertyValueListProvider<PostgreTable> {
+        @Override
+        public boolean allowCustomValue()
+        {
+            return false;
+        }
+        @Override
+        public Object[] getPossibleValues(PostgreTable object)
+        {
+            try {
+                Collection<PostgreTablespace> tablespaces = object.getDatabase().getTablespaces(new VoidProgressMonitor());
+                return tablespaces.toArray(new Object[tablespaces.size()]);
+            } catch (DBException e) {
+                log.error(e);
+                return new Object[0];
+            }
+        }
     }
 
 }

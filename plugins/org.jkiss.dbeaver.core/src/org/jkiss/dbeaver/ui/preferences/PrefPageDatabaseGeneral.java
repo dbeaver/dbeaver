@@ -19,8 +19,6 @@ package org.jkiss.dbeaver.ui.preferences;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.dialogs.ControlEnableState;
-import org.eclipse.jface.fieldassist.SimpleContentProposalProvider;
-import org.eclipse.jface.fieldassist.TextContentAdapter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
@@ -33,6 +31,7 @@ import org.eclipse.ui.preferences.IWorkbenchPreferenceContainer;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
@@ -41,11 +40,9 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.registry.language.PlatformLanguageDescriptor;
 import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.TextWithOpenFile;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
-import org.jkiss.dbeaver.utils.SystemVariablesResolver;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
@@ -56,6 +53,7 @@ import java.util.List;
 public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage
 {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.common"; //$NON-NLS-1$
+    private static final String NOTIFICATIONS_PAGE_ID = "org.eclipse.mylyn.commons.notifications.preferencePages.Notifications";
 
     private Button automaticUpdateCheck;
     private Combo workspaceLanguage;
@@ -63,10 +61,8 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
     private Button longOperationsCheck;
     private Spinner longOperationsTimeout;
 
-    //private Combo defaultResourceEncoding;
-
-    private Button logsDebugEnabled;
-    private TextWithOpenFile logsDebugLocation;
+    private Button notificationsEnabled;
+    private Spinner notificationsCloseDelay;
 
     public PrefPageDatabaseGeneral()
     {
@@ -112,6 +108,23 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
             tipLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false , 2, 1));
         }
 
+        // Notifications settings
+        {
+            Group notificationsGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_ui_general_group_notifications, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+
+            notificationsEnabled = UIUtils.createCheckbox(notificationsGroup,
+                CoreMessages.pref_page_ui_general_label_enable_notifications,
+                CoreMessages.pref_page_ui_general_label_enable_notifications_tip, false, 2);
+
+            notificationsCloseDelay = UIUtils.createLabelSpinner(notificationsGroup, CoreMessages.pref_page_ui_general_label_notifications_close_delay, 0, 0, Integer.MAX_VALUE);
+
+            // Link to notifications config
+            new PreferenceLinkArea(notificationsGroup, SWT.NONE,
+                NOTIFICATIONS_PAGE_ID,
+                "<a>''{0}''</a> " + CoreMessages.pref_page_ui_general_label_settings,
+                (IWorkbenchPreferenceContainer) getContainer(), null); //$NON-NLS-1$
+        }
+
         // Agent settings
         {
             Group agentGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_ui_general_group_task_bar, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
@@ -127,50 +140,16 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
             }
         }
 
-/*
-        {
-            // Resources
-            Group groupResources = UIUtils.createControlGroup(composite, CoreMessages.pref_page_ui_general_group_resources, 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
-
-            UIUtils.createControlLabel(groupResources, CoreMessages.pref_page_ui_general_label_default_resource_encoding);
-            defaultResourceEncoding = UIUtils.createEncodingCombo(groupResources, GeneralUtils.DEFAULT_ENCODING);
-            defaultResourceEncoding.setToolTipText(CoreMessages.pref_page_ui_general_label_set_default_resource_encoding_tip);
-
-        }
-*/
-
-        {
-            // Logs
-            Group groupLogs = UIUtils.createControlGroup(composite, CoreMessages.pref_page_ui_general_group_debug_logs, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
-
-            logsDebugEnabled = UIUtils.createCheckbox(groupLogs,
-                   CoreMessages.pref_page_ui_general_label_enable_debug_logs,
-                    CoreMessages.pref_page_ui_general_label_enable_debug_logs_tip, false, 2);
-            UIUtils.createControlLabel(groupLogs, CoreMessages.pref_page_ui_general_label_log_file_location);
-            logsDebugLocation = new TextWithOpenFile(groupLogs, CoreMessages.pref_page_ui_general_label_open_file_text, new String[] { "*.log", "*.txt" } );
-            UIUtils.installContentProposal(
-                    logsDebugLocation.getTextControl(),
-                    new TextContentAdapter(),
-                    new SimpleContentProposalProvider(new String[] {
-                            GeneralUtils.variablePattern(SystemVariablesResolver.VAR_WORKSPACE),
-                            GeneralUtils.variablePattern(SystemVariablesResolver.VAR_HOME)
-                    }));
-            logsDebugLocation.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-            Label tipLabel = UIUtils.createLabel(groupLogs, CoreMessages.pref_page_ui_general_label_options_take_effect_after_restart);
-            tipLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, false, false , 2, 1));
-        }
-
         {
             // Link to secure storage config
             new PreferenceLinkArea(composite, SWT.NONE,
                 PrefPageEntityEditor.PAGE_ID,
-                "<a>''{0}''</a> "+CoreMessages.pref_page_ui_general_label_settings,
+                "<a>''{0}''</a> " + CoreMessages.pref_page_ui_general_label_settings,
                 (IWorkbenchPreferenceContainer) getContainer(), null); //$NON-NLS-1$
 
             new PreferenceLinkArea(composite, SWT.NONE,
                 PrefPageSQLEditor.PAGE_ID,
-                "<a>''{0}''</a>"+CoreMessages.pref_page_ui_general_label_settings,
+                "<a>''{0}''</a>" + CoreMessages.pref_page_ui_general_label_settings,
                 (IWorkbenchPreferenceContainer) getContainer(), null); //$NON-NLS-1$
 
         }
@@ -186,13 +165,12 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
         DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
 
         automaticUpdateCheck.setSelection(store.getBoolean(DBeaverPreferences.UI_AUTO_UPDATE_CHECK));
+
+        notificationsEnabled.setSelection(store.getBoolean(ModelPreferences.NOTIFICATIONS_ENABLED));
+        notificationsCloseDelay.setSelection(store.getInt(ModelPreferences.NOTIFICATIONS_CLOSE_DELAY_TIMEOUT));
+
         longOperationsCheck.setSelection(store.getBoolean(DBeaverPreferences.AGENT_LONG_OPERATION_NOTIFY));
         longOperationsTimeout.setSelection(store.getInt(DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT));
-
-        //defaultResourceEncoding.setText(store.getString(DBeaverPreferences.DEFAULT_RESOURCE_ENCODING));
-
-        logsDebugEnabled.setSelection(store.getBoolean(DBeaverPreferences.LOGS_DEBUG_ENABLED));
-        logsDebugLocation.setText(store.getString(DBeaverPreferences.LOGS_DEBUG_LOCATION));
     }
 
     @Override
@@ -201,14 +179,12 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
         DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
 
         store.setValue(DBeaverPreferences.UI_AUTO_UPDATE_CHECK, automaticUpdateCheck.getSelection());
-        //store.setValue(DBeaverPreferences.AGENT_ENABLED, agentEnabledCheck.getSelection());
+
+        store.setValue(ModelPreferences.NOTIFICATIONS_ENABLED, notificationsEnabled.getSelection());
+        store.setValue(ModelPreferences.NOTIFICATIONS_CLOSE_DELAY_TIMEOUT, notificationsCloseDelay.getSelection());
+
         store.setValue(DBeaverPreferences.AGENT_LONG_OPERATION_NOTIFY, longOperationsCheck.getSelection());
         store.setValue(DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT, longOperationsTimeout.getSelection());
-
-        //store.setValue(DBeaverPreferences.DEFAULT_RESOURCE_ENCODING, defaultResourceEncoding.getText());
-
-        store.setValue(DBeaverPreferences.LOGS_DEBUG_ENABLED, logsDebugEnabled.getSelection());
-        store.setValue(DBeaverPreferences.LOGS_DEBUG_LOCATION, logsDebugLocation.getText());
 
         PrefUtils.savePreferenceStore(store);
 

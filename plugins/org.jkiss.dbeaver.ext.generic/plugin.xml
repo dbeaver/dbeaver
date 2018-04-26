@@ -120,7 +120,7 @@
                     <property id="script-delimiter-after-block" label="Use script delimiter after SQL block" description="Keep SQL script delimiter after SQL script blocks (BEGIN/END)" type="boolean" required="false" defaultValue="false"/>
                     <property id="string-escape-char" label="String escape character" description="Character used to escape special symbols in strings" type="string" required="false" defaultValue=""/>
                     <property id="meta-model" label="Meta model type" description="Type of metadata reading model - standard or indexed" type="string" required="false" defaultValue="" validValues="standard,indexed"/>
-                    <property id="all-objects-pattern" label="All Objects Pattern" description="SQL pattern for all metadata objects" type="string" required="false" defaultValue="null" validValues="null,%"/>
+                    <property id="all-objects-pattern" label="All Objects Pattern" description="SQL pattern for all metadata objects" type="string" required="false" defaultValue="%" validValues="null,%"/>
                     <property id="omit-catalog" label="Omit catalog(s)" description="Do not read and use catalog (aka database) information" type="boolean" required="false" defaultValue="false"/>
                     <property id="omit-type-cache" label="Omit type cache" description="Do not use data types provided by driver" type="boolean" required="false" defaultValue="false"/>
                     <property id="shutdown-url-param" label="Shutdown parameter" description="Database shutdown URL parameter" type="string" required="false" defaultValue=""/>
@@ -128,6 +128,7 @@
                     <property id="supports-multiple-results" label="Driver supports multiple results" description="Driver supports multiple results for a single query." type="boolean" required="false" defaultValue="false"/>
                     <property id="supports-limits" label="Driver supports result set limit" description="Driver supports multiple result set limit (max rows)." type="boolean" required="false" defaultValue="true"/>
                     <property id="supports-struct-cache" label="Driver supports structure cache" description="Driver supports structure cache reading. Enables schema columns, keys, etc." type="boolean" required="false" defaultValue="true"/>
+                    <property id="supports-truncate" label="Driver supports TRUNCATE operation" description="Driver supports TRUNCATE command. It is much faster than DELETE without criteria." type="boolean" required="false" defaultValue="true"/>
                 </propertyGroup>
                 <propertyGroup label="Queries" description="Custom driver queries">
                     <property id="query-get-active-db" label="Get active database" description="Query to obtain active database name" type="string" required="false" defaultValue=""/>
@@ -563,6 +564,7 @@
                     webURL="http://www.ingres.com/products/ingres-database/"
                     description="Ingres Database">
                     <file type="jar" path="maven:/com.ingres.jdbc:iijdbc:RELEASE"/>
+                    <parameter name="supports-truncate" value="false"/>
                 </driver>
                 <driver
                     id="linter"
@@ -594,6 +596,7 @@
                     <parameter name="supports-scroll" value="true"/>
                     <parameter name="ddl-drop-column-short" value="true"/>
                     <parameter name="script-delimiter-redefiner" value="SET TERM"/>
+                    <parameter name="supports-truncate" value="false"/>
                 </driver>
                 <driver
                     id="firebird_jaybird3"
@@ -618,6 +621,7 @@
                     <parameter name="supports-scroll" value="true"/>
                     <parameter name="ddl-drop-column-short" value="true"/>
                     <parameter name="script-delimiter-redefiner" value="SET TERM"/>
+                    <parameter name="supports-truncate" value="false"/>
                 </driver>
                 <driver
                     id="sqlite_jdbc"
@@ -641,6 +645,7 @@
                     <parameter name="supports-struct-cache" value="false"/>
                     <parameter name="supports-indexes" value="true"/>
                     <parameter name="supports-stored-code" value="false"/>
+                    <parameter name="supports-truncate" value="false"/>
                 </driver>
 
                 <driver
@@ -659,6 +664,8 @@
                     <file type="jar" path="drivers/teradata/terajdbc4.jar" bundle="drivers.teradata"/>
                     <file type="jar" path="drivers/teradata/tdgssconfig.jar" bundle="drivers.teradata"/>
                     <file type="license" path="drivers/teradata/LICENSE.txt" bundle="drivers.teradata"/>
+
+                    <parameter name="supports-truncate" value="false"/>
                 </driver>
                 <driver
                     id="mysql3"
@@ -703,13 +710,16 @@
                     webURL="http://csvjdbc.sourceforge.net/"
                     embedded="true"
                     description="CsvJdbc driver for CSV and DBF files">
-                    <parameter name="supports-select-count" value="false"/>
+
                     <property name="separator" value=","/>
                     <property name="quotechar" value="&quot;"/>
                     <property name="fileExtension" value=".csv"/>
                     <property name="suppressHeaders" value="false"/>
                     <property name="charset" value="UTF-8"/>
+
+                    <parameter name="supports-select-count" value="false"/>
                     <parameter name="supports-stored-code" value="false"/>
+                    <parameter name="supports-truncate" value="false"/>
 
                     <file type="jar" path="maven:/net.sourceforge.csvjdbc:csvjdbc:RELEASE" bundle="!drivers.csvjdbc"/>
 
@@ -847,6 +857,8 @@
                     category="Hadoop">
                     <file type="jar" path="maven:/org.spark-project.hive:hive-jdbc:RELEASE"/>
                     <file type="jar" path="maven:/org.apache.hadoop:hadoop-core:RELEASE"/>
+
+                    <parameter name="supports-truncate" value="false"/>
                 </driver>
                 <driver
                     id="apache_drill"
@@ -857,6 +869,8 @@
                     webURL="http://drill.apache.org/docs/using-the-jdbc-driver/"
                     category="Hadoop">
                     <file type="jar" path="maven:/org.apache.drill.exec:drill-jdbc-all:RELEASE"/>
+
+                    <parameter name="supports-truncate" value="false"/>
                 </driver>
 
                 <!-- Cloudera -->
@@ -909,6 +923,7 @@
                     description="MACHBASE standard driver"
                     webURL="http://www.machbase.com">
                     <file type="jar" path="http://www.machbase.com/dist/machbase.jar"/>
+                    <parameter name="supports-truncate" value="false"/>
                 </driver>
 
                 <!-- Yandex ClickHouse -->
@@ -921,6 +936,8 @@
                     description="Yandex ClickHouse"
                     webURL="https://github.com/yandex/clickhouse-jdbc">
                     <file type="jar" path="maven:/ru.yandex.clickhouse:clickhouse-jdbc:RELEASE"/>
+
+                    <parameter name="supports-truncate" value="false"/>
                 </driver>
 
                 <!-- OrientDB -->
@@ -934,6 +951,8 @@
                     description="OrientDB JDBC driver"
                     webURL="https://github.com/orientechnologies/orientdb-jdbc">
                     <file type="jar" path="maven:/com.orientechnologies:orientdb-jdbc:RELEASE[1.7]"/>
+
+                    <parameter name="supports-truncate" value="false"/>
                 </driver>
 
                 <!-- Neo4j -->
@@ -947,6 +966,7 @@
                     description="Neo4j JDBC driver"
                     webURL="https://github.com/neo4j-contrib/neo4j-jdbc">
                     <file type="jar" path="maven:/org.neo4j:neo4j-jdbc-driver:RELEASE"/>
+                    <parameter name="supports-truncate" value="false"/>
                 </driver>
 
                 <!-- PrestoDB -->
@@ -997,6 +1017,7 @@
                         description="Apache SolrJ JDBC driver"
                         webURL="https://lucene.apache.org/solr/">
                     <file type="jar" path="maven:/org.apache.solr:solr-solrj:RELEASE"/>
+                    <parameter name="supports-truncate" value="false"/>
                 </driver>
 
             </drivers>
@@ -1076,6 +1097,9 @@
         <manager
             class="org.jkiss.dbeaver.ext.generic.edit.GenericIndexManager"
             objectType="org.jkiss.dbeaver.ext.generic.model.GenericTableIndex"/>
+        <manager
+            class="org.jkiss.dbeaver.ext.generic.edit.GenericProcedureManager"
+            objectType="org.jkiss.dbeaver.ext.generic.model.GenericProcedure"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.generic.meta">

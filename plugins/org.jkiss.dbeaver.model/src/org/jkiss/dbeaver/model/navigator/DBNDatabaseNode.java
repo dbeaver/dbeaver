@@ -28,10 +28,7 @@ import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeObject;
-import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.BeanUtils;
@@ -844,7 +841,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
         return clazz == Object.class ? null : findPropertyGetter(clazz.getSuperclass(), getName, isName);
     }
 
-    private static class PropertyValueReader implements DBRRunnableWithProgress {
+    private static class PropertyValueReader implements DBRRunnableParametrized<DBRProgressMonitor> {
         private final DBRProgressMonitor monitor;
         private final String propertyName;
         private final Object valueObject;

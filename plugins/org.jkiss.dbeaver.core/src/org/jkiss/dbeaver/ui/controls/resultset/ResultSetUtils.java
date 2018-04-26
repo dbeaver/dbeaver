@@ -260,6 +260,9 @@ public class ResultSetUtils
             entityName = DBObjectNameCaseTransformer.transformName(dataSource, entityName);
         }
         DBSObject entityObject = DBUtils.getObjectByPath(monitor, objectContainer, catalogName, schemaName, entityName);
+        if (entityObject instanceof DBSAlias && !(entityObject instanceof DBSEntity)) {
+            entityObject = ((DBSAlias) entityObject).getTargetObject(monitor);
+        }
         if (entityObject == null) {
             return null;
         } else if (entityObject instanceof DBSEntity) {

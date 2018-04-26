@@ -364,7 +364,8 @@ public class ResultSetViewer extends Viewer
 
     public void setDataFilter(final DBDDataFilter dataFilter, boolean refreshData)
     {
-        if (!model.getDataFilter().equals(dataFilter)) {
+        //if (!model.getDataFilter().equals(dataFilter))
+        {
             //model.setDataFilter(dataFilter);
             if (refreshData) {
                 refreshWithFilter(dataFilter);
@@ -491,7 +492,7 @@ public class ResultSetViewer extends Viewer
         } finally {
             if (changed) {
                 // Update combo
-                statusBar.setRedraw(false);
+                viewerPanel.setRedraw(false);
                 try {
                     boolean pVisible = activePresentationDescriptor != null;
                     ((RowData)presentationSwitchToolbar.getLayoutData()).exclude = !pVisible;
@@ -521,9 +522,10 @@ public class ResultSetViewer extends Viewer
                         }
                     }
                     statusBar.layout();
+                    viewerPanel.layout();
                 } finally {
                     // Enable redraw
-                    statusBar.setRedraw(true);
+                    viewerPanel.setRedraw(true);
                 }
             }
         }
@@ -1702,41 +1704,50 @@ public class ResultSetViewer extends Viewer
                 if (valueController != null) {
                     manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_PASTE));
                     manager.add(ActionUtils.makeCommandContribution(site, CoreCommands.CMD_PASTE_SPECIAL));
-                    manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.EDIT_DELETE));
-                    // Edit items
-                    manager.add(new Separator());
-                    manager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_EDIT));
-                    manager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_EDIT_INLINE));
-                    if (!valueController.isReadOnly() && !DBUtils.isNullValue(value)/* && !attr.isRequired()*/) {
-                        manager.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_CELL_SET_NULL));
+
+                    {
+                        manager.add(new Separator());
+                        MenuManager editMenu = new MenuManager(
+                            CoreMessages.actions_menu_edit,
+                            DBeaverIcons.getImageDescriptor(UIIcon.ROW_EDIT),
+                            MENU_ID_EDIT); //$NON-NLS-1$
+
+                        // Edit items
+                        editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_EDIT));
+                        editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_EDIT_INLINE));
+                        if (!valueController.isReadOnly() && !DBUtils.isNullValue(value)/* && !attr.isRequired()*/) {
+                            editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_CELL_SET_NULL));
+                        }
+                        if (row.getState() == ResultSetRow.STATE_REMOVED || (row.changes != null && row.changes.containsKey(attr))) {
+                            editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_CELL_RESET));
+                        }
+
+                        // Menus from value handler
+                        try {
+                            valueController.getValueManager().contributeActions(editMenu, valueController, null);
+                        } catch (Exception e) {
+                            log.error(e);
+                        }
+
+                        editMenu.add(new Separator());
+                        editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_ADD));
+                        editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_COPY));
+                        editMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_ROW_DELETE));
+
+                        manager.add(editMenu);
                     }
-                }
-                manager.add(new GroupMarker(MENU_GROUP_EDIT));
-            }
-
-            if (valueController != null) {
-                // Menus from value handler
-                try {
-                    manager.add(new Separator());
-                    valueController.getValueManager().contributeActions(manager, valueController, null);
-                } catch (Exception e) {
-                    log.error(e);
-                }
-
-                if (row.getState() == ResultSetRow.STATE_REMOVED || (row.changes != null && row.changes.containsKey(attr))) {
-                    manager.insertAfter(IResultSetController.MENU_GROUP_EDIT, ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_CELL_RESET));
                 }
             }
         }
+        manager.add(new GroupMarker(MENU_GROUP_EDIT));
 
         if (dataSource != null && attr != null && model.getVisibleAttributeCount() > 0 && !model.isUpdateInProgress()) {
             // Filters and View
-            manager.add(new Separator());
             {
                 MenuManager filtersMenu = new MenuManager(
                     CoreMessages.controls_resultset_viewer_action_order_filter,
                     DBeaverIcons.getImageDescriptor(UIIcon.FILTER),
-                    "filters"); //$NON-NLS-1$
+                    MENU_ID_FILTERS); //$NON-NLS-1$
                 filtersMenu.setActionDefinitionId(ResultSetCommandHandler.CMD_FILTER_MENU);
                 filtersMenu.setRemoveAllWhenShown(true);
                 filtersMenu.addMenuListener(manager1 -> fillFiltersMenu(attr, manager1));
@@ -1746,7 +1757,7 @@ public class ResultSetViewer extends Viewer
                 MenuManager viewMenu = new MenuManager(
                     "View/Format",
                     null,
-                    "view"); //$NON-NLS-1$
+                    MENU_ID_VIEW); //$NON-NLS-1$
 
                 List<? extends DBDAttributeTransformerDescriptor> transformers =
                     dataSource.getContainer().getPlatform().getValueHandlerRegistry().findTransformers(
@@ -2022,6 +2033,7 @@ public class ResultSetViewer extends Viewer
                             TransformerSettingsDialog settingsDialog = new TransformerSettingsDialog(
                                 ResultSetViewer.this, attr, settings);
                             if (settingsDialog.open() == IDialogConstants.OK_ID) {
+                                // If there are no options - save settings without opening dialog
                                 saveTransformerSettings();
                             } else {
                                 settings.setCustomTransformer(oldCustomTransformer);

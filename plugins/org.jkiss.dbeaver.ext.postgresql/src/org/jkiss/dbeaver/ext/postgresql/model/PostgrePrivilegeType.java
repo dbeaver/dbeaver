@@ -21,29 +21,37 @@ package org.jkiss.dbeaver.ext.postgresql.model;
  */
 public enum PostgrePrivilegeType {
     // ALL privs
-    ALL(Object.class, false),
+    ALL(' ', false, Object.class),
     // TABLE privs
-    SELECT(PostgreTableBase.class, true),
-    INSERT(PostgreTableReal.class, true),
-    UPDATE(PostgreTableBase.class,true),
-    DELETE(PostgreTableReal.class,true),
-    TRUNCATE(PostgreTableReal.class,true),
-    REFERENCES(PostgreTableReal.class,true),
-    TRIGGER(PostgreTableReal.class,true),
+    SELECT('r', true, PostgreTableBase.class, PostgreTableColumn.class),
+    INSERT('a', true, PostgreTableReal.class, PostgreTableColumn.class),
+    UPDATE('w', true, PostgreTableBase.class, PostgreTableColumn.class),
+    DELETE('d', true, PostgreTableReal.class, PostgreTableColumn.class),
+    TRUNCATE('t', true, PostgreTableReal.class),
+    REFERENCES('x', true, PostgreTableReal.class, PostgreTableColumn.class),
+    TRIGGER('D', true, PostgreTableReal.class),
     // SEQUENCE privs
-    USAGE(PostgreSequence.class, true),
+    USAGE('U', true, PostgreSequence.class),
 
-    UNKNOWN(Object.class, false);
+    EXECUTE('X', true, PostgreProcedure.class),
 
-    private final Class<?> targetType;
+    UNKNOWN((char)0, false, Object.class);
+
+    private final Class<?>[] targetType;
+    private final char code;
     private final boolean valid;
 
-    PostgrePrivilegeType(Class<?> targetType, boolean valid) {
-        this.targetType = targetType;
+    PostgrePrivilegeType(char code, boolean valid, Class<?> ... targetType) {
+        this.code = code;
         this.valid = valid;
+        this.targetType = targetType;
     }
 
-    public Class<?> getTargetType() {
+    public char getCode() {
+        return code;
+    }
+
+    public Class<?>[] getTargetType() {
         return targetType;
     }
 
@@ -57,6 +65,24 @@ public enum PostgrePrivilegeType {
         } catch (IllegalArgumentException e) {
             return UNKNOWN;
         }
+    }
+
+    public static PostgrePrivilegeType getByCode(char pCode) {
+        for (PostgrePrivilegeType pt : values()) {
+            if (pt.getCode() == pCode) {
+                return pt;
+            }
+        }
+        return UNKNOWN;
+    }
+
+    public boolean supportsType(Class<?> objectType) {
+        for (int i = 0; i < targetType.length; i++) {
+            if (targetType[i].isAssignableFrom(objectType)) {
+                return true;
+            }
+        }
+        return false;
     }
 }
 

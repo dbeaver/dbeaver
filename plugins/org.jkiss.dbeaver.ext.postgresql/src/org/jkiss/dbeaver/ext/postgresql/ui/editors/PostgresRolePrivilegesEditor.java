@@ -128,7 +128,8 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                     try {
                         Class<?> childType = Class.forName(((DBNDatabaseFolder) element).getMeta().getType());
                         return PostgreTableReal.class.isAssignableFrom(childType) ||
-                            PostgreSequence.class.isAssignableFrom(childType);
+                            PostgreSequence.class.isAssignableFrom(childType) ||
+                            PostgreProcedure.class.isAssignableFrom(childType);
                     } catch (ClassNotFoundException e) {
                         return false;
                     }
@@ -165,7 +166,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
 
             if (!isRoleEditor()) {
                 for (PostgrePrivilegeType pt : PostgrePrivilegeType.values()) {
-                    if (!pt.isValid() || !pt.getTargetType().isAssignableFrom(getDatabaseObject().getClass())) {
+                    if (!pt.isValid() || !pt.supportsType(getDatabaseObject().getClass())) {
                         continue;
                     }
                     TableItem privItem = new TableItem(permissionTable, SWT.LEFT);
@@ -222,7 +223,12 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
     }
 
     private PostgrePermission getObjectPermissions(DBSObject object) {
-        return permissionMap.get(DBUtils.getObjectFullName(object, DBPEvaluationContext.DDL));
+        if (object instanceof PostgreProcedure) {
+            String fqProcName = DBUtils.getQuotedIdentifier(((PostgreProcedure) object).getSchema()) + "." + ((PostgreProcedure) object).getSpecificName();
+            return permissionMap.get(fqProcName);
+        } else {
+            return permissionMap.get(DBUtils.getObjectFullName(object, DBPEvaluationContext.DDL));
+        }
     }
 
     private void updateCurrentPrivileges(boolean grant, PostgrePrivilegeType privilegeType) {
@@ -241,10 +247,31 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                     continue;
                 }
                 if (isRoleEditor()) {
-                    PostgreTableBase table = (PostgreTableBase) currentObject;
-                    permission = new PostgreRolePermission(getDatabaseObject(), table.getSchema().getName(), table.getName(), Collections.emptyList());
+                    PostgrePermissionsOwner permissionsOwner = (PostgrePermissionsOwner) currentObject;
+                    PostgrePrivilege.Kind kind;
+                    String objectName;
+                    if (permissionsOwner instanceof PostgreProcedure) {
+                        kind = PostgrePrivilege.Kind.FUNCTION;
+                        objectName = ((PostgreProcedure) permissionsOwner).getUniqueName();
+                    } else {
+                        if (permissionsOwner instanceof PostgreSequence) {
+                            kind = PostgrePrivilege.Kind.SEQUENCE;
+                        } else {
+                            kind = PostgrePrivilege.Kind.TABLE;
+                        }
+                        objectName = permissionsOwner.getName();
+                    }
+                    permission = new PostgreRolePermission(
+                        getDatabaseObject(),
+                        kind,
+                        permissionsOwner.getSchema().getName(),
+                        objectName,
+                        Collections.emptyList());
                 } else {
-                    permission = new PostgreTablePermission(getDatabaseObject(), currentObject.getName(), Collections.emptyList());
+                    permission = new PostgreObjectPermission(
+                        getDatabaseObject(),
+                        currentObject.getName(),
+                        Collections.emptyList());
                 }
                 // Add to map
                 permissionMap.put(permission.getName(), permission);
@@ -262,7 +289,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                     getDatabaseObject(),
                     grant,
                     permission,
-                    privilegeType),
+                    privilegeType == null ? null : new PostgrePrivilegeType[] { privilegeType }),
                 new DBECommandReflector<PostgrePermissionsOwner, PostgreCommandGrantPrivilege>() {
                     @Override
                     public void redoCommand(PostgreCommandGrantPrivilege cmd)
@@ -296,7 +323,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
             if (!CommonUtils.isEmpty(objects)) {
                 Class<?> objectType = objects.get(0).getClass();
                 for (PostgrePrivilegeType pt : PostgrePrivilegeType.values()) {
-                    if (!pt.isValid() || !pt.getTargetType().isAssignableFrom(objectType)) {
+                    if (!pt.isValid() || !pt.supportsType(objectType)) {
                         continue;
                     }
                     TableItem privItem = new TableItem(permissionTable, SWT.LEFT);
@@ -310,7 +337,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
         StringBuilder objectNames = new StringBuilder();
         if (!hasBadObjects) {
             for (DBSObject object : objects) {
-                if (!(object instanceof PostgreTableBase) && !(object instanceof PostgreRole)) {
+                if (!(object instanceof PostgrePermissionsOwner)) {
                     hasBadObjects = true;
                     break;
                 }
@@ -408,7 +435,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                     monitor.beginTask("Load privileges from database..", 1);
                     try {
                         monitor.subTask("Load " + getDatabaseObject().getName() + " privileges");
-                        return getDatabaseObject().getPermissions(monitor);
+                        return getDatabaseObject().getPermissions(monitor, false);
                     } catch (DBException e) {
                         throw new InvocationTargetException(e);
                     } finally {

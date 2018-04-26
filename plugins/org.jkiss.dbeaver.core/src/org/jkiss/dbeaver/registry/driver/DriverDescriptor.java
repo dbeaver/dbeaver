@@ -796,7 +796,14 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     @Override
     public Object getDriverParameter(String name)
     {
-        return customParameters.get(name);
+        Object value = customParameters.get(name);
+        if (value == null) {
+            DBPPropertyDescriptor defProperty = providerDescriptor.getDriverProperty(name);
+            if (defProperty != null) {
+                return defProperty.getDefaultValue();
+            }
+        }
+        return value;
     }
 
     public void setDriverParameter(String name, String value, boolean setDefault)

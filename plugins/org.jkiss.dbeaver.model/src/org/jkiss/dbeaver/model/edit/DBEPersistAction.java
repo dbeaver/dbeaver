@@ -29,7 +29,8 @@ public interface DBEPersistAction {
         INITIALIZER,
         NORMAL,
         OPTIONAL,
-        FINALIZER
+        FINALIZER,
+        COMMENT
     }
 
     String getTitle();

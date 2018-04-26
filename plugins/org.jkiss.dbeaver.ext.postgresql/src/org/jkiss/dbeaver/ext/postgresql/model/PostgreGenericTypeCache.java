@@ -56,35 +56,43 @@ public class PostgreGenericTypeCache extends JDBCBasicDataTypeCache<GenericStruc
         super(owner);
     }
 
+    private boolean supportsTypeCategory() {
+        return owner.getDataSource().isServerVersionAtLeast(8, 4);
+    }
+
     @Override
     protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner) throws SQLException
     {
+        boolean supportsCategory = supportsTypeCategory();
         return session.prepareStatement(
             "SELECT t.oid as typid,tn.nspname typnsname,t.* \n" +
-            "FROM pg_catalog.pg_type t , pg_catalog.pg_namespace tn\n" +
-            "WHERE tn.oid=t.typnamespace \n" +
-            "AND t.typtype<>'c' AND t.typcategory not in ('A','P')\n" +
-            "ORDER by t.oid");
+                "FROM pg_catalog.pg_type t , pg_catalog.pg_namespace tn\n" +
+                "WHERE tn.oid=t.typnamespace \n" +
+                "AND t.typtype<>'c'" + (supportsCategory ? " AND t.typcategory not in ('A','P')" : "") +
+                "\nORDER by t.oid");
     }
 
     @Override
     protected JDBCDataType fetchObject(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @NotNull JDBCResultSet dbResult) throws SQLException, DBException
     {
+        boolean supportsTypeCategory = supportsTypeCategory();
         String name = JDBCUtils.safeGetString(dbResult, "typname");
         if (CommonUtils.isEmpty(name)) {
             return null;
         }
         int typeLength = JDBCUtils.safeGetInt(dbResult, "typlen");
         PostgreTypeCategory typeCategory = PostgreTypeCategory.X;
-        try {
-            typeCategory = PostgreTypeCategory.valueOf(JDBCUtils.safeGetString(dbResult, "typcategory"));
-        } catch (IllegalArgumentException e) {
-            log.debug(e);
+        if (supportsTypeCategory) {
+            try {
+                typeCategory = PostgreTypeCategory.valueOf(JDBCUtils.safeGetString(dbResult, "typcategory"));
+            } catch (IllegalArgumentException e) {
+                log.debug(e);
+            }
         }
         int valueType;
         if (ArrayUtils.contains(OID_TYPES, name) || name.equals(PostgreConstants.TYPE_HSTORE)) {
             valueType = Types.VARCHAR;
-        } else {
+        } else if (supportsTypeCategory) {
             switch (typeCategory) {
                 case A:
                 case P:
@@ -152,6 +160,22 @@ public class PostgreGenericTypeCache extends JDBCBasicDataTypeCache<GenericStruc
                 default:
                     valueType = Types.OTHER;
                     break;
+            }
+        } else {
+            String typType = null;
+            try {
+                typType = JDBCUtils.safeGetString(dbResult, "typtype");
+            } catch (IllegalArgumentException e) {
+                log.debug(e);
+            }
+            if ("c".equals(typType)) {
+                valueType = Types.STRUCT;
+            } else if ("d".equals(typType)) {
+                valueType = Types.DISTINCT;
+            } else if ("e".equals(typType)) {
+                valueType = Types.VARCHAR;
+            } else {
+                valueType = Types.OTHER;
             }
         }
 

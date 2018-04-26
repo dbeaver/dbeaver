@@ -23,9 +23,6 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
@@ -36,9 +33,9 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.util.*;
 
 /**
@@ -50,6 +47,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     private long ownerId;
     private String description;
 	private boolean isPartition;
+    private Object acl;
 
     protected PostgreTableBase(PostgreSchema catalog)
     {
@@ -67,6 +65,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
         this.isPartition =
             getDataSource().isServerVersionAtLeast(10, 0) &&
             JDBCUtils.safeGetBoolean(dbResult, "relispartition");
+        this.acl = JDBCUtils.safeGetObject(dbResult, "relacl");
     }
 
     // Copy constructor
@@ -96,7 +95,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
         return this.oid;
     }
 
-    @Property(viewable = true, editable = true, updatable = true, order = 11)
+    @Property(viewable = true, editable = true, updatable = true, order = 100)
     @Nullable
     @Override
     public String getDescription()
@@ -193,39 +192,16 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     }
 
     @Override
-    public Collection<PostgrePermission> getPermissions(DBRProgressMonitor monitor) throws DBException {
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read table privileges")) {
-            try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                this instanceof PostgreSequence ?
-                    "SELECT * FROM information_schema.usage_privileges WHERE object_catalog=? AND object_schema=? AND object_name=? AND object_type='SEQUENCE'" :
-                    "SELECT * FROM information_schema.table_privileges WHERE table_catalog=? AND table_schema=? AND table_name=?"))
-            {
-                dbStat.setString(1, getDatabase().getName());
-                dbStat.setString(2, getSchema().getName());
-                dbStat.setString(3, getName());
-                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    Map<String, List<PostgrePrivilege>> privs = new LinkedHashMap<>();
-                    while (dbResult.next()) {
-                        PostgrePrivilege privilege = new PostgrePrivilege(dbResult);
-                        List<PostgrePrivilege> privList = privs.get(privilege.getGrantee());
-                        if (privList == null) {
-                            privList = new ArrayList<>();
-                            privs.put(privilege.getGrantee(), privList);
-                        }
-                        privList.add(privilege);
-                    }
-                    // Pack to permission list
-                    List<PostgrePermission> result = new ArrayList<>(privs.size());
-                    for (List<PostgrePrivilege> priv : privs.values()) {
-                        result.add(new PostgreTablePermission(this, priv.get(0).getGrantee(), priv));
-                    }
-                    Collections.sort(result);
-                    return result;
-                }
-            } catch (SQLException e) {
-                throw new DBException(e, getDataSource());
-            }
+    public Collection<PostgrePermission> getPermissions(DBRProgressMonitor monitor, boolean includeNestedObjects) throws DBException {
+        List<PostgrePermission> tablePermissions = PostgreUtils.extractPermissionsFromACL(this, acl);
+        if (!includeNestedObjects) {
+            return tablePermissions;
         }
+        tablePermissions = new ArrayList<>(tablePermissions);
+        for (PostgreTableColumn column : CommonUtils.safeCollection(getAttributes(monitor))) {
+            tablePermissions.addAll(column.getPermissions(monitor, true));
+        }
+        return tablePermissions;
     }
 
 	public boolean isPartition() {

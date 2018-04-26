@@ -826,16 +826,23 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleSchema owner) throws SQLException
         {
+            String synonymTypeFilter = (session.getDataSource().getContainer().getPreferenceStore().getBoolean(OracleConstants.PREF_DBMS_READ_ALL_SYNONYMS) ?
+                "" :
+                "AND O.OBJECT_TYPE NOT IN ('JAVA CLASS','PACKAGE BODY')\n");
+
             JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT s.*,O.OBJECT_TYPE \n" +
-                "FROM ALL_SYNONYMS S, ALL_OBJECTS O\n" +
-                "WHERE S.OWNER=?" +
-                    (session.getDataSource().getContainer().getPreferenceStore().getBoolean(OracleConstants.PREF_DBMS_READ_ALL_SYNONYMS) ?
-                        "" :
-                        "AND O.OBJECT_TYPE NOT IN ('JAVA CLASS','PACKAGE BODY')") + "\n" +
-                "AND O.OWNER=S.TABLE_OWNER AND O.OBJECT_NAME=S.TABLE_NAME\n" +
-                "ORDER BY S.SYNONYM_NAME");
+                "SELECT OWNER, SYNONYM_NAME, MAX(TABLE_OWNER) as TABLE_OWNER, MAX(TABLE_NAME) as TABLE_NAME, MAX(DB_LINK) as DB_LINK, MAX(OBJECT_TYPE) as OBJECT_TYPE FROM (\n" +
+                    "SELECT S.*, NULL OBJECT_TYPE FROM ALL_SYNONYMS S WHERE S.OWNER = ?\n" +
+                    "UNION ALL\n" +
+                    "SELECT S.*,O.OBJECT_TYPE FROM ALL_SYNONYMS S, ALL_OBJECTS O\n" +
+                    "WHERE S.OWNER = ?\n" +
+                    synonymTypeFilter +
+                    "AND O.OWNER=S.TABLE_OWNER AND O.OBJECT_NAME=S.TABLE_NAME\n" +
+                    ")\n" +
+                    "GROUP BY OWNER, SYNONYM_NAME\n" +
+                    "ORDER BY SYNONYM_NAME");
             dbStat.setString(1, owner.getName());
+            dbStat.setString(2, owner.getName());
             return dbStat;
         }
 
@@ -897,7 +904,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         {
             JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT *\n" +
-                "FROM " + OracleUtils.getAdminAllViewPrefix(schema.getDataSource()) + "TRIGGERS WHERE OWNER=? AND TRIM(BASE_OBJECT_TYPE) IN ('DATABASE','SCHEMA')\n" +
+                "FROM " + OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), schema.getDataSource(), "TRIGGERS") + " WHERE OWNER=? AND TRIM(BASE_OBJECT_TYPE) IN ('DATABASE','SCHEMA')\n" +
                 "ORDER BY TRIGGER_NAME");
             dbStat.setString(1, schema.getName());
             return dbStat;

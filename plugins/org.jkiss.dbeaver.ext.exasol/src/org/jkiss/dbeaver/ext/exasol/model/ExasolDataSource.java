@@ -357,7 +357,7 @@ public class ExasolDataSource extends JDBCDataSource
 
 	@Override
 	protected Map<String, String> getInternalConnectionProperties(
-		DBRProgressMonitor monitor, String purpose) throws DBCException
+        DBRProgressMonitor monitor, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException
 	{
 		Map<String, String> props = new HashMap<>();
 		props.putAll(ExasolDataSourceProvider.getConnectionsProps());

@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.impl;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.meta.IPropertyValueTransformer;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
@@ -48,19 +49,27 @@ public class DBObjectNameCaseTransformer implements IPropertyValueTransformer<DB
         if (value == null) {
             return null;
         }
-        final boolean isNameCaseSensitive = dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CASE_SENSITIVE);
-        if (isNameCaseSensitive || !(dataSource instanceof SQLDataSource)) {
+        if (!(dataSource instanceof SQLDataSource)) {
             return value;
         }
+
         final SQLDialect dialect = ((SQLDataSource)dataSource).getSQLDialect();
+        final boolean isNameCaseSensitive = dataSource.getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CASE_SENSITIVE) ||
+            dialect.storesUnquotedCase() == DBPIdentifierCase.MIXED;
+        if (isNameCaseSensitive) {
+            return value;
+        }
         if (DBUtils.isQuotedIdentifier(dataSource, value)) {
-            if (dialect.supportsQuotedMixedCase()) {
+            value = DBUtils.getUnQuotedIdentifier(dataSource, value);
+            if (dialect.supportsQuotedMixedCase() || dialect.supportsUnquotedMixedCase()) {
+                return value;
+            }
+        } else {
+            if (dialect.supportsUnquotedMixedCase() || dialect.storesUnquotedCase() == null) {
                 return value;
             }
         }
-        if (dialect.supportsUnquotedMixedCase()) {
-            return value;
-        }
+
         String xName = dialect.storesUnquotedCase().transform(value);
         if (!DBUtils.getQuotedIdentifier(dataSource, xName).equals(xName)) {
             // Name contains special characters and has to be quoted - leave it as is

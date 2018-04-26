@@ -40,6 +40,7 @@
     <extension-point id="org.jkiss.dbeaver.product.bundles" name="%extension-point.org.jkiss.dbeaver.product.bundles.name" schema="schema/org.jkiss.dbeaver.product.bundles.exsd"/>
     <extension-point id="org.jkiss.dbeaver.workbenchHandler" name="%extension-point.org.jkiss.dbeaver.workbenchHandler.name" schema="schema/org.jkiss.dbeaver.workbenchHandler.exsd"/>
     <extension-point id="org.jkiss.dbeaver.language" name="%extension-point.org.jkiss.dbeaver.language.name" schema="schema/org.jkiss.dbeaver.language.exsd"/>
+    <extension-point id="org.jkiss.dbeaver.ui.propertyConfigurator" name="%extension-point.org.jkiss.dbeaver.ui.propertyConfigurator.name" schema="schema/org.jkiss.dbeaver.ui.propertyConfigurator.exsd"/>
 
     <extension point="org.eclipse.core.contenttype.contentTypes">
         <content-type
@@ -362,10 +363,10 @@
         <image commandId="org.jkiss.dbeaver.core.rollback" icon="icons/sql/rollback.png"/>
         <image commandId="org.jkiss.dbeaver.core.txn.log" icon="icons/sql/txn_log.png"/>
 
-        <image commandId="org.jkiss.dbeaver.core.project.create" icon="IMG_TOOL_NEW_WIZARD"/>
+        <image commandId="org.jkiss.dbeaver.core.project.create" icon="icons/create.png"/>
         <image commandId="org.jkiss.dbeaver.core.project.refresh" icon="icons/refresh.png"/>
         <image commandId="org.jkiss.dbeaver.core.project.select" icon="icons/project.png"/>
-        <image commandId="org.jkiss.dbeaver.core.resource.create.folder" icon="IMG_TOOL_NEW_WIZARD"/>
+        <image commandId="org.jkiss.dbeaver.core.resource.create.folder" icon="icons/file/folder_add.png"/>
         <image commandId="org.jkiss.dbeaver.core.resource.link.file" icon="icons/file/link.png"/>
         <image commandId="org.jkiss.dbeaver.core.resource.link.folder" icon="icons/file/link.png"/>
 
@@ -374,8 +375,8 @@
         <image commandId="org.jkiss.dbeaver.core.sql.editor.create" icon="icons/sql/sql_script_create.png"/>
         <image commandId="org.jkiss.dbeaver.core.sql.editor.forSelection" icon="icons/sql/sql_console.png"/>
         <image commandId="org.jkiss.dbeaver.core.object.open" icon="icons/edit.png"/>
-        <image commandId="org.jkiss.dbeaver.core.object.create" icon="IMG_TOOL_NEW_WIZARD"/>
-        <image commandId="org.jkiss.dbeaver.core.object.delete" icon="IMG_ETOOL_DELETE"/>
+        <image commandId="org.jkiss.dbeaver.core.object.create" icon="icons/create.png"/>
+        <image commandId="org.jkiss.dbeaver.core.object.delete" icon="icons/delete.png"/>
         <image commandId="org.jkiss.dbeaver.core.object.move.up" icon="icons/misc/arrow_up.png"/>
         <image commandId="org.jkiss.dbeaver.core.object.move.down" icon="icons/misc/arrow_down.png"/>
 
@@ -390,8 +391,8 @@
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain" icon="icons/sql/sql_plan.png"/>
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.sync.connection" icon="icons/sync_connection.png"/>
 
-        <image commandId="org.jkiss.dbeaver.ui.editors.sql.open.file" icon="IMG_OBJ_FOLDER"/>
-        <image commandId="org.jkiss.dbeaver.ui.editors.sql.save.file" icon="IMG_ETOOL_SAVEAS_EDIT"/>
+        <image commandId="org.jkiss.dbeaver.ui.editors.sql.open.file" icon="icons/file/load.png"/>
+        <image commandId="org.jkiss.dbeaver.ui.editors.sql.save.file" icon="icons/file/save_as.png"/>
 
         <image commandId="org.jkiss.dbeaver.core.resultset.row.first" icon="icons/sql/resultset_first.png"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.row.previous" icon="icons/sql/resultset_previous.png"/>
@@ -416,7 +417,7 @@
         <image commandId="org.jkiss.dbeaver.core.qm.filter" icon="icons/misc/filter.png"/>
         <image commandId="org.jkiss.dbeaver.core.qm.clear" icon="IMG_ETOOL_CLEAR"/>
 
-        <image commandId="org.jkiss.dbeaver.core.process.stop" icon="IMG_ELCL_STOP"/>
+        <image commandId="org.jkiss.dbeaver.core.process.stop" icon="icons/misc/cancel.png"/>
     </extension>
 
     <extension point="org.eclipse.core.expressions.definitions">
@@ -2501,10 +2502,10 @@
         <key commandId="org.jkiss.dbeaver.core.resultset.referencesMenu" contextId="org.jkiss.dbeaver.ui.context.resultset.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ARROW_DOWN"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.referencesMenu" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+1"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.toggleOrder" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+2"/>
-        <key commandId="org.jkiss.dbeaver.core.resultset.row.first" contextId="org.jkiss.dbeaver.ui.context.resultset.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+ARROW_LEFT"/>
-        <key commandId="org.jkiss.dbeaver.core.resultset.row.previous" contextId="org.jkiss.dbeaver.ui.context.resultset.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ARROW_LEFT"/>
-        <key commandId="org.jkiss.dbeaver.core.resultset.row.next" contextId="org.jkiss.dbeaver.ui.context.resultset.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ARROW_RIGHT"/>
-        <key commandId="org.jkiss.dbeaver.core.resultset.row.last" contextId="org.jkiss.dbeaver.ui.context.resultset.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+ARROW_RIGHT"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.row.first" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+SHIFT+ARROW_LEFT"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.row.previous" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+ARROW_LEFT"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.row.next" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+ARROW_RIGHT"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.row.last" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+SHIFT+ARROW_RIGHT"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.fetch.page" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+PAGE_DOWN"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.fetch.all" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+END"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.row.edit" contextId="org.jkiss.dbeaver.ui.context.resultset.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="SHIFT+ENTER"/>
@@ -2832,27 +2833,14 @@
     </extension>
 
     <extension point="org.eclipse.ui.themes">
-        <themeElementCategory label="%themeElementCategory.org.jkiss.dbeaver.ui.presentation.sql.label" id="org.jkiss.dbeaver.ui.presentation.sql">
-            <description>%themeElementCategory.org.jkiss.dbeaver.ui.presentation.sql.description</description>
-        </themeElementCategory>
         <themeElementCategory label="%themeElementCategory.org.jkiss.dbeaver.ui.presentation.results.label" id="org.jkiss.dbeaver.ui.presentation.results">
             <description>%themeElementCategory.org.jkiss.dbeaver.ui.presentation.results.description</description>
         </themeElementCategory>
-        <themeElementCategory label="%themeElementCategory.org.jkiss.dbeaver.ui.presentation.datatypes.label" id="org.jkiss.dbeaver.ui.presentation.results.datatypes" parentId="org.jkiss.dbeaver.ui.presentation.results">
-            <description>%themeElementCategory.org.jkiss.dbeaver.ui.presentation.datatypes.description</description>
-        </themeElementCategory>
+
         <fontDefinition id="org.jkiss.dbeaver.sql.resultset.font" categoryId="org.jkiss.dbeaver.ui.presentation.results" label="%fontDefinition.org.jkiss.dbeaver.sql.resultset.font.label">
             <description>%fontDefinition.org.jkiss.dbeaver.sql.resultset.font.description</description>
         </fontDefinition>
-        <fontDefinition
-                id="org.jkiss.dbeaver.sql.editor.font.output"
-                categoryId="org.jkiss.dbeaver.ui.presentation.sql"
-                label="%fontDefinition.org.jkiss.dbeaver.sql.editor.font.output.label"
-                value="Courier New-regular-10">
-            <description>%fontDefinition.org.jkiss.dbeaver.sql.editor.font.output.description</description>
-            <fontValue os="linux" value="Monospace-regular-10"/>
-            <fontValue os="macosx" value="Courier-regular-11"/>
-        </fontDefinition>
+
         <colorDefinition
                 label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.selection.background.label"
                 categoryId="org.jkiss.dbeaver.ui.presentation.results"
@@ -2960,6 +2948,10 @@
         </colorDefinition>
 
         <!-- Colors for data types -->
+        <themeElementCategory label="%themeElementCategory.org.jkiss.dbeaver.ui.presentation.datatypes.label" id="org.jkiss.dbeaver.ui.presentation.results.datatypes" parentId="org.jkiss.dbeaver.ui.presentation.results">
+            <description>%themeElementCategory.org.jkiss.dbeaver.ui.presentation.datatypes.description</description>
+        </themeElementCategory>
+
         <colorDefinition
                 label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.binary.foreground.label"
                 categoryId="org.jkiss.dbeaver.ui.presentation.results.datatypes"
@@ -2997,6 +2989,20 @@
         </colorDefinition>
 
         <!-- Colors for SQL editor -->
+        <themeElementCategory label="%themeElementCategory.org.jkiss.dbeaver.ui.presentation.sql.label" id="org.jkiss.dbeaver.ui.presentation.sql">
+            <description>%themeElementCategory.org.jkiss.dbeaver.ui.presentation.sql.description</description>
+        </themeElementCategory>
+
+        <fontDefinition
+                id="org.jkiss.dbeaver.sql.editor.font.output"
+                categoryId="org.jkiss.dbeaver.ui.presentation.sql"
+                label="%fontDefinition.org.jkiss.dbeaver.sql.editor.font.output.label"
+                value="Courier New-regular-10">
+            <description>%fontDefinition.org.jkiss.dbeaver.sql.editor.font.output.description</description>
+            <fontValue os="linux" value="Monospace-regular-10"/>
+            <fontValue os="macosx" value="Courier-regular-11"/>
+        </fontDefinition>
+
         <colorDefinition
                 label="%colorDefinition.org.jkiss.dbeaver.sql.editor.color.keyword.foreground.label"
                 categoryId="org.jkiss.dbeaver.ui.presentation.sql"
@@ -3073,6 +3079,33 @@
                 id="org.jkiss.dbeaver.sql.editor.color.disabled.background"
                 value="COLOR_WIDGET_BACKGROUND">
             <description>%colorDefinition.org.jkiss.dbeaver.sql.editor.color.disabled.background.description</description>
+        </colorDefinition>
+
+        <!-- Colors for transactions -->
+        <themeElementCategory label="%themeElementCategory.org.jkiss.dbeaver.ui.presentation.txn.label" id="org.jkiss.dbeaver.ui.presentation.qm">
+            <description>%themeElementCategory.org.jkiss.dbeaver.ui.presentation.txn.description</description>
+        </themeElementCategory>
+
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.txn.color.committed.background.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.qm"
+                id="org.jkiss.dbeaver.txn.color.committed.background"
+                value="189, 254, 191">
+            <description>%colorDefinition.org.jkiss.dbeaver.txn.color.committed.background.description</description>
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.txn.color.reverted.background.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.qm"
+                id="org.jkiss.dbeaver.txn.color.reverted.background"
+                value="255, 99, 71">
+            <description>%colorDefinition.org.jkiss.dbeaver.txn.color.reverted.background.description</description>
+        </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.txn.color.transaction.background.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.qm"
+                id="org.jkiss.dbeaver.txn.color.transaction.background"
+                value="255, 228, 181">
+            <description>%colorDefinition.org.jkiss.dbeaver.txn.color.transaction.background.description</description>
         </colorDefinition>
 
     </extension>
@@ -3331,6 +3364,16 @@
             <type kind="BINARY"/>
             <type kind="CONTENT"/>
         </transformer>
+	<transformer
+                class="org.jkiss.dbeaver.model.impl.data.transformers.UUIDOrderedAttributeTransformer"
+                id="org.jkiss.dbeaver.core.UUIDOrderedAttributeTransformer"
+                name="UUID (Ordered)"
+                description="Represents binary(16) value as UUID if optimized storage is used."
+                applyByDefault="false"
+                custom="true">
+            <type kind="BINARY"/>
+            <type kind="CONTENT"/>
+        </transformer>
         <transformer
                 class="org.jkiss.dbeaver.model.impl.data.transformers.BinaryAttributeTransformer"
                 id="org.jkiss.dbeaver.core.BinaryAttributeTransformer"
@@ -3526,8 +3569,23 @@
                     <property id="escape" label="%dataTransfer.processor.csv.property.escape.name" type="string" description="%dataTransfer.processor.csv.property.escape.description" defaultValue="quotes" required="true" validValues="quotes,escape"/>
                     <property id="quoteChar" label="%dataTransfer.processor.csv.property.quoteChar.name" type="string" description="%dataTransfer.processor.csv.property.quoteChar.description" defaultValue="&quot;" required="false"/>
                     <property id="quoteAlways" label="%dataTransfer.processor.csv.property.quoteAlways.name" type="boolean" description="%dataTransfer.processor.csv.property.quoteAlways.description" defaultValue="false" required="false"/>
+                    <property id="quoteNever" label="%dataTransfer.processor.csv.property.quoteNever.name" type="boolean" description="%dataTransfer.processor.csv.property.quoteNever.description" defaultValue="false" required="false"/>
                     <property id="nullString" label="%dataTransfer.processor.csv.property.nullString.name" type="string" description="%dataTransfer.processor.csv.property.nullString.description" defaultValue="" required="false"/>
                     <property id="formatNumbers" label="%dataTransfer.processor.csv.property.formatNumbers.name" type="boolean" description="%dataTransfer.processor.csv.property.formatNumbers.description" defaultValue="false" required="false"/>
+                </propertyGroup>
+            </processor>
+            <processor
+                    id="stream.markdown.table"
+                    class="org.jkiss.dbeaver.tools.transfer.stream.impl.DataExporterMarkdownTable"
+                    description="%dataTransfer.processor.markdownTable.description"
+                    icon="icons/misc/markdown.png"
+                    label="%dataTransfer.processor.markdownTable.name">
+                <propertyGroup label="%dataTransfer.processor.markdownTable.propertyGroup.general.label">
+                    <property id="extension" label="%dataTransfer.processor.markdownTable.property.extension.label" defaultValue="md"/>
+                    <property id="nullString" label="%dataTransfer.processor.markdownTable.property.nullString.name" type="string" description="%dataTransfer.processor.markdownTable.property.nullString.description" defaultValue="" required="false"/>
+                    <property id="formatNumbers" label="%dataTransfer.processor.markdownTable.property.formatNumbers.name" type="boolean" description="%dataTransfer.processor.markdownTable.property.formatNumbers.description" defaultValue="false" required="false"/>
+                    <property id="showHeaderSeparator" label="%dataTransfer.processor.markdownTable.property.showHeaderSeparator.name" type="boolean" description="%dataTransfer.processor.markdownTable.property.showHeaderSeparator.description" defaultValue="true" required="false"/>
+                    <property id="confluenceFormat" label="%dataTransfer.processor.markdownTable.property.confluenceFormat.name" type="boolean" description="%dataTransfer.processor.markdownTable.property.confluenceFormat.description" defaultValue="false" required="false"/>
                 </propertyGroup>
             </processor>
             <processor
@@ -3576,29 +3634,17 @@
 
     <extension point="org.jkiss.dbeaver.networkHandler">
         <handler
-                type="tunnel"
-                id="ssh_tunnel"
-                label="%handler.ssh_tunnel.label"
-                description="%handler.ssh_tunnel.description"
-                secured="true"
-                uiClass="org.jkiss.dbeaver.ui.dialogs.net.SSHTunnelConfiguratorUI"
-                handlerClass="org.jkiss.dbeaver.model.impl.net.SSHTunnelImpl"/>
-        <!--handler
-                type="tunnel"
-                id="http_tunnel"
-                label="HTTP Tunnel"
-                description="HTTP(S) tunnel"
-                secured="true"
-                uiClass="org.jkiss.dbeaver.ui.dialogs.net.HTTPTunnelConfiguratorUI"
-                handlerClass="org.jkiss.dbeaver.model.impl.net.HTTPTunnelImpl"/-->
-        <handler
                 type="proxy"
                 id="socks_proxy"
                 label="%handler.socks_proxy.label"
                 description="%handler.socks_proxy.description"
                 secured="true"
-                uiClass="org.jkiss.dbeaver.ui.dialogs.net.SocksProxyConfiguratorUI"
+                order="10"
                 handlerClass="org.jkiss.dbeaver.model.impl.net.SocksProxyImpl"/>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.ui.propertyConfigurator">
+        <propertyConfigurator class="org.jkiss.dbeaver.model.impl.net.SocksProxyImpl" uiClass="org.jkiss.dbeaver.ui.dialogs.net.SocksProxyConfiguratorUI"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.resultset.presentation">
@@ -3744,6 +3790,16 @@
                 type="org.jkiss.dbeaver.runtime.ide.core.WorkspaceResourceResolver">
           </adapter>
        </factory>
+    </extension>
+
+    <!-- Perspective -->
+    <extension point="org.eclipse.ui.perspectives">
+        <perspective
+                class="org.jkiss.dbeaver.ui.perspective.DBeaverPerspective"
+                icon="icons/dbeaver_perspective.png"
+                id="org.jkiss.dbeaver.core.perspective"
+                name="%perspective.name">
+        </perspective>
     </extension>
 
     <!-- FIXME: Disabled because it breaks dark theme.  -->

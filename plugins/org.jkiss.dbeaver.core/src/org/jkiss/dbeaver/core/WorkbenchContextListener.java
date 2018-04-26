@@ -31,6 +31,7 @@ import org.eclipse.ui.contexts.IContextService;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeature;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeatureRegistry;
 import org.jkiss.dbeaver.ui.DBeaverUIConstants;
+import org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
@@ -190,6 +191,8 @@ class WorkbenchContextListener implements IWindowListener, IPageListener, IPartL
                 }
                 activationResults = contextService.activateContext(RESULTS_CONTEXT_ID);
             }
+            // Refresh auto-commit element state (#3315)
+            DataSourcePropertyTester.fireCommandRefresh(CoreCommands.CMD_TOGGLE_AUTOCOMMIT);
         }
         finally {
             contextService.deferUpdates(false);

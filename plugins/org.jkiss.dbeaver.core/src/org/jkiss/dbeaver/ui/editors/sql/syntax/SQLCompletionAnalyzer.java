@@ -46,6 +46,8 @@ class SQLCompletionAnalyzer
 {
     private static final Log log = Log.getLog(SQLCompletionAnalyzer.class);
 
+    private static final String MATCH_ANY_PATTERN = "%";
+
     static class CompletionRequest {
         final SQLEditorBase editor;
         final boolean simpleMode;
@@ -495,6 +497,8 @@ class SQLCompletionAnalyzer
             }
         }
         try {
+            DBPDataSource dataSource = request.editor.getDataSource();
+            boolean matchContains = dataSource != null && dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.PROPOSALS_MATCH_CONTAINS);
             Collection<? extends DBSObject> children = null;
             if (parent instanceof DBSObjectContainer) {
                 children = ((DBSObjectContainer)parent).getChildren(monitor);
@@ -530,7 +534,7 @@ class SQLCompletionAnalyzer
                         }
                         combinedMatch.append(DBUtils.getQuotedIdentifier(child));
                     } else if (simpleMode) {
-                        if (startPart == null || child.getName().toUpperCase(Locale.ENGLISH).startsWith(startPart)) {
+                        if (startPart == null || objectNameMatches(startPart, child, matchContains)) {
                             matchedObjects.add(child);
                         }
                     } else {
@@ -578,6 +582,11 @@ class SQLCompletionAnalyzer
         }
     }
 
+    private boolean objectNameMatches(@Nullable String startPart, DBSObject child, boolean matchContains) {
+        String nameCI = child.getName().toUpperCase(Locale.ENGLISH);
+        return matchContains ? nameCI.contains(startPart) : nameCI.startsWith(startPart);
+    }
+
     private void makeProposalsFromAssistant(
             DBPDataSource dataSource,
             DBSStructureAssistant assistant,
@@ -589,7 +598,7 @@ class SQLCompletionAnalyzer
                 monitor,
                 rootSC,
                 assistant.getAutoCompleteObjectTypes(),
-                request.wordDetector.removeQuotes(objectName) + "%",
+                makeObjectNameMask(dataSource, request.wordDetector.removeQuotes(objectName)),
                 request.wordDetector.isQuoted(objectName),
                 dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.USE_GLOBAL_ASSISTANT),
                 100);
@@ -598,6 +607,14 @@ class SQLCompletionAnalyzer
             }
         } catch (DBException e) {
             log.error(e);
+        }
+    }
+
+    private String makeObjectNameMask(DBPDataSource dataSource, String objectName) {
+        if (dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.PROPOSALS_MATCH_CONTAINS)) {
+            return MATCH_ANY_PATTERN + objectName + MATCH_ANY_PATTERN;
+        } else {
+            return objectName + MATCH_ANY_PATTERN;
         }
     }
 
@@ -669,8 +686,9 @@ class SQLCompletionAnalyzer
         boolean isObject,
         @Nullable DBPNamedObject object)
     {
-        DBPPreferenceStore store = request.editor.getActivePreferenceStore();
-        DBPDataSource dataSource = request.editor.getDataSource();
+        SQLEditorBase editor = request.editor;
+        DBPPreferenceStore store = editor.getActivePreferenceStore();
+        DBPDataSource dataSource = editor.getDataSource();
         if (dataSource != null) {
             if (isObject) {
                 // Escape replace string if required
@@ -693,13 +711,12 @@ class SQLCompletionAnalyzer
                 default:
                     // Do not convert case if we got it directly from object
                     if (!isObject) {
-                        DBPKeywordType keywordType = request.editor.getSyntaxManager().getDialect().getKeywordType(replaceString);
+                        SQLDialect dialect = editor.getSyntaxManager().getDialect();
+                        DBPKeywordType keywordType = dialect.getKeywordType(replaceString);
                         if (keywordType == DBPKeywordType.KEYWORD) {
-                            replaceString = request.editor.getSyntaxManager().getKeywordCase().transform(replaceString);
+                            replaceString = editor.getSyntaxManager().getKeywordCase().transform(replaceString);
                         } else {
-                            DBPIdentifierCase convertCase = dataSource instanceof SQLDataSource ?
-                                ((SQLDataSource) dataSource).getSQLDialect().storesUnquotedCase() : DBPIdentifierCase.MIXED;
-                            replaceString = convertCase.transform(replaceString);
+                            replaceString = dialect.storesUnquotedCase().transform(replaceString);
                         }
                     }
                     break;

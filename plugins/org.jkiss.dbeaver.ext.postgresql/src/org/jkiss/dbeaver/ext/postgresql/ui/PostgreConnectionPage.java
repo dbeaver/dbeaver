@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ext.postgresql.PostgreActivator;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.ui.ICompositeDialogPage;
@@ -55,7 +56,8 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
     private Button switchDatabaseOnExpand;
     private boolean activated = false;
 
-    private static ImageDescriptor LOGO_IMG = PostgreActivator.getImageDescriptor("icons/postgresql_logo.png");
+    private static ImageDescriptor PG_LOGO_IMG = PostgreActivator.getImageDescriptor("icons/postgresql_logo.png");
+    private static ImageDescriptor GP_LOGO_IMG = PostgreActivator.getImageDescriptor("icons/greenplum_logo.png");
 
 
     @Override
@@ -181,7 +183,8 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
         super.loadSettings();
 
         if (!activated) {
-            setImageDescriptor(LOGO_IMG);
+            setImageDescriptor(
+                PostgreUtils.isGreenplumDriver(getSite().getDriver()) ? GP_LOGO_IMG : PG_LOGO_IMG);
         }
 
         // Load values from new connection info

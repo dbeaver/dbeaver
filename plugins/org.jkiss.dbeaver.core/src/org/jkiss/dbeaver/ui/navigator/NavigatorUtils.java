@@ -313,7 +313,7 @@ public class NavigatorUtils {
                             nodeName = DBUtils.getObjectFullName(object, DBPEvaluationContext.UI);
                             objects.add(object);
                         } else {
-                            nodeName = ((DBNNode)nextSelected).getNodeName();
+                            nodeName = ((DBNNode)nextSelected).getNodeTargetName();
                         }
                         if (buf.length() > 0) {
                             buf.append(lineSeparator);

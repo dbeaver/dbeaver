@@ -258,6 +258,7 @@ public class ERDEntity extends ERDObject<DBSEntity>
             }
             try {
 
+                DBSObjectFilter columnFilter = entity.getDataSource().getContainer().getObjectFilter(DBSEntityAttribute.class, entity, false);
                 Collection<? extends DBSEntityAttribute> attributes = entity.getAttributes(monitor);
                 if (!CommonUtils.isEmpty(attributes)) {
                     for (DBSEntityAttribute attribute : attributes) {
@@ -270,6 +271,10 @@ public class ERDEntity extends ERDObject<DBSEntity>
                             // Skip hidden attributes
                             continue;
                         }
+                        if (columnFilter != null && !columnFilter.matches(attribute.getName())) {
+                            continue;
+                        }
+
                         switch (attributeVisibility) {
                             case PRIMARY:
                                 if (idColumns == null || !idColumns.contains(attribute)) {

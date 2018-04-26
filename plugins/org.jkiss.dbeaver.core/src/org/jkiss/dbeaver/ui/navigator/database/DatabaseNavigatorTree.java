@@ -35,6 +35,7 @@ import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.dialogs.PatternFilter;
 import org.eclipse.ui.progress.WorkbenchJob;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
@@ -64,6 +65,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
     private boolean checkEnabled;
     private ISelection defaultSelection;
     private IFilter navigatorFilter;
+    private Text filterControl;
 
     public DatabaseNavigatorTree(Composite parent, DBNNode rootNode, int style)
     {
@@ -115,6 +117,11 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         treeViewer.setInput(new DatabaseNavigatorContent(rootNode));
     }
 
+    @Nullable
+    public Text getFilterControl() {
+        return filterControl;
+    }
+
     private TreeViewer doCreateTreeViewer(Composite parent, int style) {
         checkEnabled = (style & SWT.CHECK) != 0;
 
@@ -125,6 +132,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         } else {
             if (navigatorFilter != null) {
                 CustomFilteredTree filteredTree = new CustomFilteredTree(this, treeStyle);
+                filterControl = filteredTree.getFilterControl();
                 return filteredTree.getViewer();
             } else {
                 return doCreateNavigatorTreeViewer(parent, style);

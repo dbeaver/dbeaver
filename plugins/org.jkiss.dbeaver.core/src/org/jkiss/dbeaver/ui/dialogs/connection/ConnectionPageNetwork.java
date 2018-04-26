@@ -32,6 +32,8 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
+import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorDescriptor;
+import org.jkiss.dbeaver.registry.configurator.UIPropertyConfiguratorRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
@@ -95,7 +97,12 @@ public class ConnectionPageNetwork extends ActiveWizardPage<ConnectionWizard> {
     {
         IObjectPropertyConfigurator<DBWHandlerConfiguration> configurator;
         try {
-            configurator = descriptor.createConfigurator();
+            String implName = descriptor.getHandlerType().getImplName();
+            UIPropertyConfiguratorDescriptor configDescriptor = UIPropertyConfiguratorRegistry.getInstance().getDescriptor(implName);
+            if (configDescriptor == null) {
+                return;
+            }
+            configurator = configDescriptor.createConfigurator();
         } catch (DBException e) {
             log.error("Can't create network configurator '" + descriptor.getId() + "'", e);
             return;
