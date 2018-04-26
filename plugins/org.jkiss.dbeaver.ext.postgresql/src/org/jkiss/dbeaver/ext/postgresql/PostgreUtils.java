@@ -17,14 +17,39 @@
 
 package org.jkiss.dbeaver.ext.postgresql;
 
-import au.com.bytecode.opencsv.CSVReader;
-import au.com.bytecode.opencsv.CSVWriter;
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.lang.reflect.Array;
+import java.lang.reflect.Method;
+import java.sql.SQLException;
+import java.sql.Types;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.edit.PostgreCommandGrantPrivilege;
-import org.jkiss.dbeaver.ext.postgresql.model.*;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreAttribute;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreObject;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreObjectPermission;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreOid;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgrePermission;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgrePermissionsOwner;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgrePrivilege;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgrePrivilegeType;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreRole;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreSequence;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreView;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreViewBase;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -44,14 +69,8 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.lang.reflect.Array;
-import java.lang.reflect.Method;
-import java.sql.SQLException;
-import java.sql.Types;
-import java.util.*;
+import au.com.bytecode.opencsv.CSVReader;
+import au.com.bytecode.opencsv.CSVWriter;
 
 /**
  * postgresql utils
@@ -445,6 +464,13 @@ public class PostgreUtils {
         return createSQL + view.getViewType() + " " + view.getFullyQualifiedName(DBPEvaluationContext.DDL) + " AS\n" + definition;
     }
 
+    public static String getViewComment(PostgreViewBase rel, String comment)
+	{
+		return comment == null ? null
+				: "COMMENT ON " + rel.getViewType() + " " + rel.getFullyQualifiedName(DBPEvaluationContext.DDL)
+						+ " IS '" + comment + "';";
+    }
+    
     public static boolean isGreenplumDriver(DBPDriver driver) {
         return driver != null && CommonUtils.toBoolean(
             driver.getDriverParameter(PostgreConstants.PROP_GREENPLUM_DRIVER));
