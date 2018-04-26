@@ -70,4 +70,5 @@ public class PostgreTableConstraint extends PostgreTableConstraintBase {
     public void setSource(String source) {
         this.source = source;
     }
+
 }
