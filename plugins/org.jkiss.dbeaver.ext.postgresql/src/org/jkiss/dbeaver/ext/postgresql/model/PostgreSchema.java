@@ -681,7 +681,7 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
             boolean supportsExprIndex = getDataSource().isServerVersionAtLeast(7, 4);
             StringBuilder sql = new StringBuilder();
             sql.append(
-                "SELECT i.*,i.indkey as keys,c.relname,c.relnamespace,c.relam,tc.relname as tabrelname,dsc.description");
+                "SELECT i.*,i.indkey as keys,c.relname,c.relnamespace,c.relam,c.reltablespace,tc.relname as tabrelname,dsc.description");
             if (supportsExprIndex) {
                 sql.append(",pg_catalog.pg_get_expr(i.indexprs, i.indrelid, true) as expr");
             }
