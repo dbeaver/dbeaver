@@ -60,12 +60,8 @@ public abstract class NavigatorHandlerCopyAbstract extends AbstractHandler imple
         final IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
         final IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
 
-        DBeaverUI.syncExec(new Runnable() {
-            @Override
-            public void run() {
-                copySelection(workbenchWindow, activePart, selection);
-            }
-        });
+        DBeaverUI.syncExec(() ->
+            copySelection(workbenchWindow, activePart, selection));
 
         return null;
     }
