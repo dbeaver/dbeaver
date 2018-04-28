@@ -19,11 +19,14 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.meta.IPropertyValueTransformer;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -43,6 +46,7 @@ import java.util.Map;
  */
 public class PostgreTrigger implements DBSTrigger, DBPQualifiedObject, PostgreObject, PostgreScriptObject
 {
+    private static final Log log = Log.getLog(PostgreTrigger.class);
 
     /* Bits within tgtype */
     public static final int TRIGGER_TYPE_ROW        = (1 << 0);
@@ -66,11 +70,12 @@ public class PostgreTrigger implements DBSTrigger, DBPQualifiedObject, PostgreOb
     private DBSManipulationType[] manipulationTypes;
     private PostgreTriggerType type;
     private boolean persisted;
+    private PostgreTableColumn[] columnRefs;
 
     public PostgreTrigger(
+        DBRProgressMonitor monitor,
         PostgreTableBase table,
-        ResultSet dbResult)
-    {
+        ResultSet dbResult) throws DBException {
         this.persisted = true;
         this.name = JDBCUtils.safeGetString(dbResult, "tgname");
         this.table = table;
@@ -111,6 +116,25 @@ public class PostgreTrigger implements DBSTrigger, DBPQualifiedObject, PostgreOb
         } else {
             type = PostgreTriggerType.STATEMENT;
         }
+
+        Object attrNumbersObject = JDBCUtils.safeGetObject(dbResult, "tgattr");
+        if (attrNumbersObject != null) {
+            int[] attrNumbers = PostgreUtils.getIntVector(attrNumbersObject);
+            if (attrNumbers != null) {
+                int attrCount = attrNumbers.length;
+                columnRefs = new PostgreTableColumn[attrCount];
+                for (int i = 0; i < attrCount; i++) {
+                    int colNumber = attrNumbers[i];
+                    final PostgreTableColumn attr = PostgreUtils.getAttributeByNum(getTable().getAttributes(monitor), colNumber);
+                    if (attr == null) {
+                        log.warn("Bad trigger attribute ref index: " + colNumber);
+                        continue;
+                    }
+                    columnRefs[i] = attr;
+                }
+            }
+        }
+
     }
 
     @NotNull
@@ -136,7 +160,12 @@ public class PostgreTrigger implements DBSTrigger, DBPQualifiedObject, PostgreOb
         return type;
     }
 
-    @Property(viewable = true, order = 5)
+    @Property(viewable = true, order = 5, valueRenderer = ColumnNameTransformer.class)
+    public PostgreTableColumn[] getColumnRefs() {
+        return columnRefs;
+    }
+
+    @Property(viewable = true, order = 6)
     public String getEnabledState() {
         return enabledState;
     }
@@ -225,4 +254,18 @@ public class PostgreTrigger implements DBSTrigger, DBPQualifiedObject, PostgreOb
             this);
     }
 
+    public static class ColumnNameTransformer implements IPropertyValueTransformer {
+        @Override
+        public Object transform(Object object, Object value) throws IllegalArgumentException {
+            if (value instanceof PostgreTableColumn[]) {
+                StringBuilder sb = new StringBuilder();
+                for (PostgreTableColumn col : (PostgreTableColumn[])value) {
+                    if (sb.length() > 0) sb.append(", ");
+                    sb.append(col.getName());
+                }
+                return sb.toString();
+            }
+            return value;
+        }
+    }
 }
