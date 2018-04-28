@@ -72,6 +72,8 @@ public class PrefPageSQLFormat extends TargetPrefPage
     private Button afKeywordCase;
     private Button afExtractFromSource;
 
+    private Button styleBoldKeywords;
+
     // Formatter
     private Combo formatterSelector;
     private Combo keywordCaseCombo;
@@ -99,6 +101,7 @@ public class PrefPageSQLFormat extends TargetPrefPage
             store.contains(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS) ||
             store.contains(SQLPreferenceConstants.SQL_FORMAT_KEYWORD_CASE_AUTO) ||
             store.contains(SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE) ||
+            store.contains(SQLPreferenceConstants.SQL_FORMAT_BOLD_KEYWORDS) ||
 
             store.contains(ModelPreferences.SQL_FORMAT_FORMATTER) ||
             store.contains(ModelPreferences.SQL_FORMAT_KEYWORD_CASE) ||
@@ -140,6 +143,24 @@ public class PrefPageSQLFormat extends TargetPrefPage
                 afGroup,
                 CoreMessages.pref_page_sql_format_label_extract_sql_from_source_code,
                CoreMessages.pref_page_sql_format_label_extract_sql_from_source_code_tip, false, 1);
+        }
+
+        {
+            // Styles
+            Composite afGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_format_group_style, 1, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            ((GridData)afGroup.getLayoutData()).horizontalSpan = 2;
+            styleBoldKeywords = UIUtils.createCheckbox(
+                afGroup,
+                CoreMessages.pref_page_sql_format_label_bold_keywords,
+                CoreMessages.pref_page_sql_format_label_bold_keywords_tip,
+                false, 1);
+            styleBoldKeywords.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    performApply();
+                }
+            });
+
         }
 
         Composite formatterGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_format_group_formatter, 1, GridData.FILL_BOTH, 0);
@@ -258,6 +279,7 @@ public class PrefPageSQLFormat extends TargetPrefPage
         acBracketsCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS));
         afKeywordCase.setSelection(store.getBoolean(SQLPreferenceConstants.SQL_FORMAT_KEYWORD_CASE_AUTO));
         afExtractFromSource.setSelection(store.getBoolean(SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE));
+        styleBoldKeywords.setSelection(store.getBoolean(SQLPreferenceConstants.SQL_FORMAT_BOLD_KEYWORDS));
 
         String formatterId = store.getString(ModelPreferences.SQL_FORMAT_FORMATTER);
         for (int i = 0; i < formatters.size(); i++) {
@@ -292,6 +314,7 @@ public class PrefPageSQLFormat extends TargetPrefPage
 
         store.setValue(SQLPreferenceConstants.SQL_FORMAT_KEYWORD_CASE_AUTO, afKeywordCase.getSelection());
         store.setValue(SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE, afExtractFromSource.getSelection());
+        store.setValue(SQLPreferenceConstants.SQL_FORMAT_BOLD_KEYWORDS, styleBoldKeywords.getSelection());
 
         store.setValue(ModelPreferences.SQL_FORMAT_FORMATTER,
             formatters.get(formatterSelector.getSelectionIndex()).getId().toUpperCase(Locale.ENGLISH));
@@ -319,6 +342,7 @@ public class PrefPageSQLFormat extends TargetPrefPage
         store.setToDefault(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS);
         store.setToDefault(SQLPreferenceConstants.SQL_FORMAT_KEYWORD_CASE_AUTO);
         store.setToDefault(SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE);
+        store.setToDefault(SQLPreferenceConstants.SQL_FORMAT_BOLD_KEYWORDS);
 
         store.setToDefault(ModelPreferences.SQL_FORMAT_FORMATTER);
         store.setToDefault(ModelPreferences.SQL_FORMAT_KEYWORD_CASE);
