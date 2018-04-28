@@ -22,8 +22,6 @@ import org.eclipse.jface.action.IContributionItem;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Point;
@@ -56,7 +54,6 @@ import org.jkiss.dbeaver.ui.data.registry.StreamValueManagerDescriptor;
 import org.jkiss.dbeaver.ui.data.registry.ValueManagerRegistry;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.List;
 
@@ -100,15 +97,12 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
             valueController.showMessage("NULL content editor.", DBPMessageType.ERROR);
             return;
         }
-        DBeaverUI.runInUI(valueController.getValueSite().getWorkbenchWindow(), new DBRRunnableWithProgress() {
-            @Override
-            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                try {
-                    streamEditor.primeEditorValue(monitor, control, content);
-                } catch (Throwable e) {
-                    log.debug(e);
-                    valueController.showMessage(e.getMessage(), DBPMessageType.ERROR);
-                }
+        DBeaverUI.runInUI(valueController.getValueSite().getWorkbenchWindow(), monitor -> {
+            try {
+                streamEditor.primeEditorValue(monitor, control, content);
+            } catch (Throwable e) {
+                log.debug(e);
+                valueController.showMessage(e.getMessage(), DBPMessageType.ERROR);
             }
         });
     }
@@ -235,12 +229,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
                 ToolBar toolBar = toolItem.getParent();
                 menu = new Menu(toolBar);
                 List<StreamValueManagerDescriptor> managers = new ArrayList<>(streamManagers.keySet());
-                Collections.sort(managers, new Comparator<StreamValueManagerDescriptor>() {
-                    @Override
-                    public int compare(StreamValueManagerDescriptor o1, StreamValueManagerDescriptor o2) {
-                        return o1.getLabel().compareTo(o2.getLabel());
-                    }
-                });
+                managers.sort(Comparator.comparing(StreamValueManagerDescriptor::getLabel));
                 for (StreamValueManagerDescriptor manager : managers) {
                     MenuItem item = new MenuItem(menu, SWT.RADIO);
                     item.setText(manager.getLabel());
@@ -256,12 +245,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
                 } catch (DBCException e) {
                     log.error(e);
                 }
-                toolBar.addDisposeListener(new DisposeListener() {
-                    @Override
-                    public void widgetDisposed(DisposeEvent e) {
-                        menu.dispose();
-                    }
-                });
+                toolBar.addDisposeListener(e -> menu.dispose());
             }
             for (MenuItem item : menu.getItems()) {
                 if (item.getData() instanceof StreamValueManagerDescriptor) {
