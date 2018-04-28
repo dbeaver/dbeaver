@@ -457,7 +457,7 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
         // Construct search path from current search path but put default schema first
         List<String> newSearchPath = new ArrayList<>(dataSource.getDefaultSearchPath());
         {
-            String defSchemaName = DBUtils.getQuotedIdentifier(schema);
+            String defSchemaName = schema.getName();
             int schemaIndex = newSearchPath.indexOf(defSchemaName);
             if (schemaIndex == 0) {
                 // Already default schema
@@ -470,9 +470,16 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
                 newSearchPath.add(0, defSchemaName);
             }
         }
+        StringBuilder spString = new StringBuilder();
+        for (String sp : newSearchPath) {
+            if (spString.length() > 0) spString.append(",");
+            if (sp.startsWith("$"))
+                spString.append(sp);
+            else
+                spString.append(DBUtils.getQuotedIdentifier(getDataSource(), sp));
+        }
         try (JDBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, "Change search path")) {
-            String sp = newSearchPath.stream().collect(Collectors.joining(","));
-            JDBCUtils.executeSQL(session, "SET search_path = " + sp);
+            JDBCUtils.executeSQL(session, "SET search_path = " + spString);
         } catch (SQLException e) {
             throw new DBCException("Error setting search path", e, dataSource);
         }
