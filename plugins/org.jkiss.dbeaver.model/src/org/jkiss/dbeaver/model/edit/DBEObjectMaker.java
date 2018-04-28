@@ -80,6 +80,6 @@ public interface DBEObjectMaker<OBJECT_TYPE extends DBSObject, CONTAINER_TYPE> e
      * @param object object
      * @param options delete options. Options are set by delete wizard.
      */
-    void deleteObject(DBECommandContext commandContext, OBJECT_TYPE object, Map<String, Object> options);
+    void deleteObject(DBECommandContext commandContext, OBJECT_TYPE object, Map<String, Object> options) throws DBException;
 
 }
