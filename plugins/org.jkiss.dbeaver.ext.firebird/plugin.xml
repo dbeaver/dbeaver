@@ -36,6 +36,30 @@
 
                     <file type="license" path="drivers/firebird3/LICENSE.txt" bundle="drivers.firebird"/>
                     <file type="jar" path="drivers/firebird3/jaybird-full.jar" bundle="drivers.firebird"/>
+
+                    <property name="encoding" value="UTF8"/>
+
+                    <parameter name="supports-scroll" value="true"/>
+                    <parameter name="ddl-drop-column-short" value="true"/>
+                    <parameter name="script-delimiter-redefiner" value="SET TERM"/>
+                    <parameter name="supports-truncate" value="false"/>
+                </driver>
+
+<!--
+                <driver
+                        id="jaybird_embedded"
+                        label="Firebird Embedded"
+                        icon="icons/firebird_icon.png"
+                        class="org.firebirdsql.jdbc.FBDriver"
+                        sampleURL="jdbc:firebirdsql:embedded://{file}"
+                        embedded="true"
+                        webURL=""
+                        description="Firebird JayBird embedded driver">
+
+                    <file type="jar" path="maven:/org.firebirdsql.jdbc:jaybird-jdk18:RELEASE[3.0.3]" bundle="!drivers.firebird"/>
+
+                    <file type="license" path="drivers/firebird3/LICENSE.txt" bundle="drivers.firebird"/>
+                    <file type="jar" path="drivers/firebird3/jaybird-full.jar" bundle="drivers.firebird"/>
                     <file type="jar" path="drivers/firebird3/jna.jar" bundle="drivers.firebird"/>
 
                     <property name="encoding" value="UTF8"/>
@@ -45,6 +69,7 @@
                     <parameter name="script-delimiter-redefiner" value="SET TERM"/>
                     <parameter name="supports-truncate" value="false"/>
                 </driver>
+-->
 
             </drivers>
 
