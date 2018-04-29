@@ -168,6 +168,10 @@ public class GenericTableColumn extends JDBCTableColumn<GenericTable> implements
         return remarks;
     }
 
+    public void setDescription(String remarks) {
+        this.remarks = remarks;
+    }
+
     @Override
     public String toString()
     {
