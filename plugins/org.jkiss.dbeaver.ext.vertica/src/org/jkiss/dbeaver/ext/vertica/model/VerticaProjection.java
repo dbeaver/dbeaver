@@ -57,6 +57,7 @@ public class VerticaProjection extends JDBCTable<VerticaDataSource, VerticaSchem
     private final boolean hasExpressions;
     private final boolean isAggregateProjection;
     private final String aggregateType;
+    private final String description;
 
     public VerticaProjection(VerticaSchema schema, JDBCResultSet dbResult) {
         super(schema, JDBCUtils.safeGetString(dbResult, "projection_name"), true);
@@ -74,6 +75,8 @@ public class VerticaProjection extends JDBCTable<VerticaDataSource, VerticaSchem
         this.hasExpressions = JDBCUtils.safeGetBoolean(dbResult, "has_expressions");
         this.isAggregateProjection = JDBCUtils.safeGetBoolean(dbResult, "is_aggregate_projection");
         this.aggregateType = JDBCUtils.safeGetString(dbResult, "aggregate_type");
+        this.description = JDBCUtils.safeGetString(dbResult, "comment");
+
     }
 
     @Property(viewable = true, order = 10)
@@ -191,7 +194,7 @@ public class VerticaProjection extends JDBCTable<VerticaDataSource, VerticaSchem
 
     @Override
     public String getDescription() {
-        return null;
+        return description;
     }
 
     @Override
@@ -202,4 +205,5 @@ public class VerticaProjection extends JDBCTable<VerticaDataSource, VerticaSchem
             return null;
         }
     }
+
 }
