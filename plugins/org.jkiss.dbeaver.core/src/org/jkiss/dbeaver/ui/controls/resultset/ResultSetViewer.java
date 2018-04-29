@@ -666,7 +666,8 @@ public class ResultSetViewer extends Viewer
         if (settings == null) {
             settings = new PresentationSettings();
             // By default panels are visible for column presentations
-            settings.panelsVisible = (activePresentationDescriptor.getPresentationType() == IResultSetPresentation.PresentationType.COLUMNS);
+            settings.panelsVisible = activePresentationDescriptor != null &&
+                (activePresentationDescriptor.getPresentationType() == IResultSetPresentation.PresentationType.COLUMNS);
             this.presentationSettings.put(activePresentationDescriptor, settings);
         }
         return settings;
