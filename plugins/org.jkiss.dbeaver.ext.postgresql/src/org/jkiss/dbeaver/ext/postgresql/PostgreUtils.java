@@ -68,9 +68,9 @@ public class PostgreUtils {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Load PostgreSQL description")) {
             return JDBCUtils.queryString(
                 session,
-                "select description from pg_description\n" +
-                "join pg_class on pg_description.objoid = pg_class.oid\n" +
-                "join pg_namespace on pg_class.relnamespace = pg_namespace.oid\n" +
+                "select description from pg_catalog.pg_description\n" +
+                "join pg_catalog.pg_class on pg_description.objoid = pg_class.oid\n" +
+                "join pg_catalog.pg_namespace on pg_class.relnamespace = pg_namespace.oid\n" +
                 "where pg_class.relname = ? and pg_namespace.nspname=?", object, schema);
         } catch (Exception e) {
             log.debug(e);
