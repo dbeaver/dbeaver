@@ -149,13 +149,13 @@ public class VerticaSchema extends GenericSchema implements DBPSystemObject
         protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull VerticaSchema owner, @Nullable VerticaProjection forTable)
             throws SQLException
         {
-            StringBuilder sql = new StringBuilder();
-            sql.append("SELECT * FROM v_catalog.projection_columns pc\n" +
-                "\nWHERE projection_name=? " +
-                "\nORDER BY column_position");
+            String sql = ("SELECT pc.*,c.comment FROM v_catalog.projection_columns pc\n" +
+                "LEFT OUTER JOIN v_catalog.comments c ON c.object_id = pc.column_id\n" +
+                "WHERE pc.projection_id=?\n" +
+                "ORDER BY pc.column_position");
 
-            JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
-            dbStat.setString(1, forTable.getName());
+            JDBCPreparedStatement dbStat = session.prepareStatement(sql);
+            dbStat.setLong(1, forTable.getObjectId());
             return dbStat;
         }
 
