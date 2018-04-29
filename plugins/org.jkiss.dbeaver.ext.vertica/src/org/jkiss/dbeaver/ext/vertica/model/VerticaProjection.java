@@ -44,6 +44,7 @@ public class VerticaProjection extends JDBCTable<VerticaDataSource, VerticaSchem
 {
     private static final Log log = Log.getLog(VerticaProjection.class);
 
+    private final long objectId;
     private final String baseName;
     private final String ownerName;
     private final String anchorTableName;
@@ -62,6 +63,7 @@ public class VerticaProjection extends JDBCTable<VerticaDataSource, VerticaSchem
     public VerticaProjection(VerticaSchema schema, JDBCResultSet dbResult) {
         super(schema, JDBCUtils.safeGetString(dbResult, "projection_name"), true);
 
+        this.objectId = JDBCUtils.safeGetLong(dbResult, "projection_id");
         this.baseName = JDBCUtils.safeGetString(dbResult, "projection_basename");
         this.ownerName = JDBCUtils.safeGetString(dbResult, "owner_name");
         this.anchorTableName = JDBCUtils.safeGetString(dbResult, "anchor_table_name");
@@ -77,6 +79,10 @@ public class VerticaProjection extends JDBCTable<VerticaDataSource, VerticaSchem
         this.aggregateType = JDBCUtils.safeGetString(dbResult, "aggregate_type");
         this.description = JDBCUtils.safeGetString(dbResult, "comment");
 
+    }
+
+    public long getObjectId() {
+        return objectId;
     }
 
     @Property(viewable = true, order = 10)
@@ -192,6 +198,7 @@ public class VerticaProjection extends JDBCTable<VerticaDataSource, VerticaSchem
             this);
     }
 
+    @Property(viewable = true, order = 100)
     @Override
     public String getDescription() {
         return description;
