@@ -31,6 +31,8 @@ import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableColumnManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.UITask;
+import org.jkiss.dbeaver.ui.editors.object.struct.AttributeEditPage;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.Types;
@@ -53,7 +55,7 @@ public class GenericTableColumnManager extends SQLTableColumnManager<GenericTabl
         DBSDataType columnType = findBestDataType(parent.getDataSource(), DBConstants.DEFAULT_DATATYPE_NAMES);
 
         int columnSize = columnType != null && columnType.getDataKind() == DBPDataKind.STRING ? 100 : 0;
-        return parent.getDataSource().getMetaModel().createTableColumnImpl(
+        GenericTableColumn column = parent.getDataSource().getMetaModel().createTableColumnImpl(
             monitor,
             parent,
             getNewColumnName(monitor, context, parent),
@@ -71,7 +73,18 @@ public class GenericTableColumnManager extends SQLTableColumnManager<GenericTabl
             null,
             false,
             false
-            );
+        );
+        column.setPersisted(false);
+        return new UITask<GenericTableColumn>() {
+            @Override
+            protected GenericTableColumn runTask() {
+                AttributeEditPage page = new AttributeEditPage(null, column);
+                if (!page.edit()) {
+                    return null;
+                }
+                return column;
+            }
+        }.execute();
     }
 
     @Override
