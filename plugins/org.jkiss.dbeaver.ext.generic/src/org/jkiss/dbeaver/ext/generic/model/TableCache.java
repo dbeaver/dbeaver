@@ -186,7 +186,7 @@ public class TableCache extends JDBCStructLookupCache<GenericStructContainer, Ge
 */
 
         return getDataSource().getMetaModel().createTableColumnImpl(
-            session,
+            session.getProgressMonitor(),
             table,
             columnName,
             typeName, valueType, sourceType, ordinalPos,
