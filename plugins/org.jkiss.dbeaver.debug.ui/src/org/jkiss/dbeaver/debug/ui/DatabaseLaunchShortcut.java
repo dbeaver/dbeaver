@@ -52,13 +52,16 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.debug.DBGController;
 import org.jkiss.dbeaver.debug.core.DebugCore;
 import org.jkiss.dbeaver.debug.internal.ui.DebugUIMessages;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 public abstract class DatabaseLaunchShortcut implements ILaunchShortcut2 {
-    
+
+    private static final Log log = Log.getLog(DatabaseLaunchShortcut.class);
+
     private final String configurationTypeId;
     private final String launchObjectName;
     
@@ -175,7 +178,7 @@ public abstract class DatabaseLaunchShortcut implements ILaunchShortcut2 {
                     config = createConfiguration(launchable);
                 } catch (CoreException e) {
                     IStatus status = e.getStatus();
-                    DebugUI.log(status);
+                    log.log(status);
                     MessageDialog.openError(getShell(), DebugUIMessages.DatabaseLaunchShortcut_e_launch, status.getMessage());
                     return;
                 }
@@ -223,15 +226,14 @@ public abstract class DatabaseLaunchShortcut implements ILaunchShortcut2 {
         try {
             ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
             ILaunchConfiguration[] configs = launchManager.getLaunchConfigurations(configType);
-            candidateConfigs = new ArrayList<ILaunchConfiguration>(configs.length);
-            for (int i = 0; i < configs.length; i++) {
-                ILaunchConfiguration config = configs[i];
+            candidateConfigs = new ArrayList<>(configs.length);
+            for (ILaunchConfiguration config : configs) {
                 if (isCandidate(config, launchable, databaseContext)) {
                     candidateConfigs.add(config);
                 }
             }
         } catch (CoreException e) {
-            DebugUI.log(e.getStatus());
+            log.log(e.getStatus());
         }
         return candidateConfigs;
     }
@@ -261,10 +263,7 @@ public abstract class DatabaseLaunchShortcut implements ILaunchShortcut2 {
 
         String oid = DebugCore.extractProcedureOid(config);
         String procedureOid = String.valueOf(databaseContext.get(DBGController.PROCEDURE_OID));
-        if (!oid.equals(procedureOid)) {
-            return false;
-        }
-        return true;
+        return oid.equals(procedureOid);
     }
 
     protected ILaunchConfiguration chooseConfiguration(List<ILaunchConfiguration> configList, String mode) {

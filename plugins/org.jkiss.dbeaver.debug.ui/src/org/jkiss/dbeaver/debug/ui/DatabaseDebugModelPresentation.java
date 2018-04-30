@@ -135,7 +135,7 @@ public class DatabaseDebugModelPresentation extends LabelProvider implements IDe
         } catch (DebugException e) {
             String message = NLS.bind("Unable to compute valie for {0}", value);
             IStatus status = DebugCore.newErrorStatus(message, e);
-            DebugCore.log(status);
+            log.log(status);
             listener.detailComputed(value, e.getMessage());
         }
     }

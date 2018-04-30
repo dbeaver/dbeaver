@@ -47,14 +47,9 @@ public class Log
         return new Log(forClass.getName());
     }
 
-    public static void log(Log delegate, IStatus status) {
+    public void log(IStatus status) {
         if (status == null) {
             // nothing to log
-            return;
-        }
-        if (delegate == null) {
-            getEclipseLog().log(status);
-            // no way to log
             return;
         }
         int severity = status.getSeverity();
@@ -62,19 +57,19 @@ public class Log
         Throwable exception = status.getException();
         switch (severity) {
         case IStatus.CANCEL:
-            delegate.debug(message, exception);
+            debug(message, exception);
             break;
         case IStatus.ERROR:
-            delegate.error(message, exception);
+            error(message, exception);
             break;
         case IStatus.WARNING:
-            delegate.warn(message, exception);
+            warn(message, exception);
             break;
         case IStatus.INFO:
-            delegate.info(message, exception);
+            info(message, exception);
             break;
         case IStatus.OK:
-            delegate.trace(message, exception);
+            trace(message, exception);
             break;
         default:
             break;

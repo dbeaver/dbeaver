@@ -113,10 +113,6 @@ public class DebugCore {
 
     private static Log log = Log.getLog(DebugCore.class);
 
-    public static void log(IStatus status) {
-        Log.log(log, status);
-    }
-
     public static CoreException abort(String message, Throwable th) {
         return new CoreException(newErrorStatus(message, th));
     }
