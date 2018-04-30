@@ -19,6 +19,8 @@
 
 package org.jkiss.dbeaver.debug;
 
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
 import java.util.List;
 
 public interface DBGSession {
@@ -27,9 +29,9 @@ public interface DBGSession {
 
     List<? extends DBGBreakpointDescriptor> getBreakpoints();
 
-    void addBreakpoint(DBGBreakpointDescriptor descriptor) throws DBGException;
+    void addBreakpoint(DBRProgressMonitor monitor, DBGBreakpointDescriptor descriptor) throws DBGException;
 
-    void removeBreakpoint(DBGBreakpointDescriptor descriptor) throws DBGException;
+    void removeBreakpoint(DBRProgressMonitor monitor, DBGBreakpointDescriptor descriptor) throws DBGException;
 
     void execContinue() throws DBGException;
 
@@ -37,7 +39,7 @@ public interface DBGSession {
 
     void execStepOver() throws DBGException;
 
-    void close() throws DBGException;
+    void closeSession(DBRProgressMonitor monitor) throws DBGException;
 
     List<? extends DBGVariable<?>> getVariables() throws DBGException;
 

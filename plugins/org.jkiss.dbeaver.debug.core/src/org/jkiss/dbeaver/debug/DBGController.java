@@ -50,22 +50,14 @@ public interface DBGController {
 
     Map<String, Object> getDebugConfiguration();
 
-    /*
-     * General lifecycle
-     */
-
     /**
      * Sets debug context like OID etc.
-     * 
-     * @param context
      */
     void init(Map<String, Object> context);
 
     /**
      * 
-     * @param monitor
      * @return key to use for <code>detach</code>
-     * @throws DBGException
      */
     Object attach(DBRProgressMonitor monitor) throws DBGException;
 
@@ -73,32 +65,24 @@ public interface DBGController {
      * 
      * @param sessionKey
      *            the key obtained as a result of <code>attach</code>
-     * @param monitor
-     * @throws DBGException
      */
-    void detach(Object sessionKey, DBRProgressMonitor monitor) throws DBGException;
+    void detach(DBRProgressMonitor monitor, Object sessionKey) throws DBGException;
 
     void dispose();
-
-    DBGSessionInfo getSessionDescriptor(DBRProgressMonitor monitor, DBCExecutionContext connection) throws DBGException;
-
-    List<? extends DBGSessionInfo> getSessionDescriptors(DBRProgressMonitor monitor) throws DBGException;
 
     DBGBreakpointDescriptor describeBreakpoint(Map<String, Object> attributes);
 
     List<? extends DBGBreakpointDescriptor> getBreakpoints(Object sessionKey) throws DBGException;
 
-    void addBreakpoint(Object sessionKey, DBGBreakpointDescriptor descriptor) throws DBGException;
+    void addBreakpoint(DBRProgressMonitor monitor, Object sessionKey, DBGBreakpointDescriptor descriptor) throws DBGException;
 
-    void removeBreakpoint(Object sessionKey, DBGBreakpointDescriptor descriptor) throws DBGException;
+    void removeBreakpoint(DBRProgressMonitor monitor, Object sessionKey, DBGBreakpointDescriptor descriptor) throws DBGException;
 
     List<? extends DBGStackFrame> getStack(Object sessionKey) throws DBGException;
 
     List<? extends DBGVariable<?>> getVariables(Object sessionKey, DBGStackFrame stack) throws DBGException;
 
     String getSource(Object sessionKey, DBGStackFrame stack) throws DBGException;
-
-    List<? extends DBGObjectDescriptor> getObjects(String ownerCtx, String nameCtx) throws DBGException;
 
     /*
      * suspend/resume

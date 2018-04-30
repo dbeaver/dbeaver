@@ -138,7 +138,7 @@ public class DatabaseStackFrame extends DatabaseDebugElement implements IStackFr
 
     @Override
     public IVariable[] getVariables() throws DebugException {
-        if (refreshVariables) {
+        /*if (refreshVariables)*/ {
             try {
                 IDatabaseDebugTarget debugTarget = getDatabaseDebugTarget();
                 List<? extends DBGVariable<?>> variables = debugTarget.getController().getVariables(debugTarget.getSessionID(), dbgStackFrame);
