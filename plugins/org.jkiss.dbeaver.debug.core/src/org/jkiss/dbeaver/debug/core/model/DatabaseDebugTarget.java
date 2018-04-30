@@ -18,44 +18,25 @@
 
 package org.jkiss.dbeaver.debug.core.model;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.eclipse.core.resources.IMarkerDelta;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.debug.core.DebugEvent;
-import org.eclipse.debug.core.DebugException;
-import org.eclipse.debug.core.DebugPlugin;
-import org.eclipse.debug.core.IBreakpointManager;
-import org.eclipse.debug.core.ILaunch;
-import org.eclipse.debug.core.ILaunchConfiguration;
-import org.eclipse.debug.core.model.IBreakpoint;
-import org.eclipse.debug.core.model.IDebugTarget;
-import org.eclipse.debug.core.model.IMemoryBlock;
-import org.eclipse.debug.core.model.IProcess;
-import org.eclipse.debug.core.model.IThread;
+import org.eclipse.debug.core.*;
+import org.eclipse.debug.core.model.*;
 import org.eclipse.osgi.util.NLS;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.debug.DBGBreakpointDescriptor;
-import org.jkiss.dbeaver.debug.DBGController;
-import org.jkiss.dbeaver.debug.DBGEvent;
-import org.jkiss.dbeaver.debug.DBGEventHandler;
-import org.jkiss.dbeaver.debug.DBGException;
-import org.jkiss.dbeaver.debug.DBGStackFrame;
-import org.jkiss.dbeaver.debug.DBGVariable;
+import org.jkiss.dbeaver.debug.*;
 import org.jkiss.dbeaver.debug.core.DebugCore;
 import org.jkiss.dbeaver.debug.internal.core.DebugCoreMessages;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class DatabaseDebugTarget extends DatabaseDebugElement implements IDatabaseDebugTarget, DBGEventHandler {
 
@@ -85,7 +66,7 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
         this.controller = controller;
         this.controller.registerEventHandler(this);
         this.threads = new ArrayList<>();
-        this.thread = newThread(controller);
+        this.thread = newThread();
         this.threads.add(thread);
 
         DebugPlugin debugPlugin = DebugPlugin.getDefault();
@@ -95,12 +76,21 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
         debugPlugin.addDebugEventListener(this);
     }
 
+    public IDatabaseDebugTarget getDatabaseDebugTarget() {
+        return this;
+    }
+
     @Override
     public DBGController getController() {
         return controller;
     }
 
-    protected DatabaseThread newThread(DBGController controller) {
+    @Override
+    public Object getSessionID() {
+        return sessionKey;
+    }
+
+    protected DatabaseThread newThread() {
         return new DatabaseThread(this);
     }
 
@@ -465,29 +455,6 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
             IStatus status = DebugCore.newErrorStatus(message, e);
             throw new DebugException(status);
         }
-    }
-
-    protected List<? extends DBGStackFrame> requestStackFrames() throws DBGException {
-        DBGController controller = getController();
-        return controller.getStack(sessionKey);
-    }
-
-    protected List<? extends DBGVariable<?>> requestVariables(DBGStackFrame stack) throws DBGException {
-        DBGController controller = getController();
-        return controller.getVariables(sessionKey, stack);
-    }
-
-    protected String requestSource(DBGStackFrame stack) throws DBGException {
-        DBGController controller = getController();
-        String source;
-        source = controller.getSource(sessionKey, stack);
-        return source;
-    }
-
-    public DBSObject findDatabaseObject(Object identifier, DBRProgressMonitor monitor) throws DBException {
-        DBPDataSourceContainer container = controller.getDataSourceContainer();
-        Map<String, Object> context = controller.getDebugConfiguration();
-        return DebugCore.resolveDatabaseObject(container, context, identifier, monitor);
     }
 
 }

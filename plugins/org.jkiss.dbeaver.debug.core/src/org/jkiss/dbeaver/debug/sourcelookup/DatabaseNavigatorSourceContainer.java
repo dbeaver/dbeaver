@@ -34,13 +34,12 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 
-public class DatasourceSourceContainer extends CompositeSourceContainer {
+public class DatabaseNavigatorSourceContainer extends CompositeSourceContainer {
 
-    private final DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
     private final DBPDataSourceContainer datasource;
     private final IProject project;
 
-    public DatasourceSourceContainer(DataSourceDescriptor descriptor) {
+    public DatabaseNavigatorSourceContainer(DataSourceDescriptor descriptor) {
         this.datasource = descriptor;
         this.project = datasource.getRegistry().getProject();
     }
@@ -55,7 +54,7 @@ public class DatasourceSourceContainer extends CompositeSourceContainer {
         DBNNode node;
         try {
             VoidProgressMonitor monitor = new VoidProgressMonitor();
-            node = navigatorModel.getNodeByPath(monitor, project, name);
+            node = DBeaverCore.getInstance().getNavigatorModel().getNodeByPath(monitor, project, name);
         } catch (DBException e) {
             String message = NLS.bind(DebugCoreMessages.DatasourceSourceContainer_e_extract_node, name);
             throw new CoreException(DebugCore.newErrorStatus(message, e));

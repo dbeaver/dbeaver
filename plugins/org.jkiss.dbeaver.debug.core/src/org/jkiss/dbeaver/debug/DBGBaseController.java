@@ -85,12 +85,12 @@ public abstract class DBGBaseController implements DBGController {
         DBPDataSource dataSource = dataSourceContainer.getDataSource();
         try {
             this.executionContext = dataSource.openIsolatedContext(monitor, "Debug controller");
-            DBGSessionInfo targetInfo = getSessionDescriptor(getExecutionContext());
+            DBGSessionInfo targetInfo = getSessionDescriptor(monitor, getExecutionContext());
             DBCExecutionContext sessionContext = dataSource.openIsolatedContext(monitor, "Debug session");
-            DBGBaseSession debugSession = createSession(targetInfo, sessionContext);
+            DBGBaseSession debugSession = createSession(monitor, targetInfo, sessionContext);
             Object id = targetInfo.getID();
             sessions.put(id, debugSession);
-            attachSession(debugSession, sessionContext, configuration, monitor);
+            attachSession(monitor, debugSession, sessionContext, configuration);
             return id;
         } catch (DBException e) {
             String message = NLS.bind(DebugMessages.DatabaseDebugController_e_opening_debug_context,
@@ -100,8 +100,8 @@ public abstract class DBGBaseController implements DBGController {
         }
     }
 
-    public abstract void attachSession(DBGSession session, DBCExecutionContext sessionContext,
-            Map<String, Object> configuataion, DBRProgressMonitor monitor) throws DBGException, DBException;
+    public abstract void attachSession(DBRProgressMonitor monitor, DBGSession session, DBCExecutionContext sessionContext,
+                                       Map<String, Object> configuataion) throws DBGException, DBException;
 
     @Override
     public boolean canSuspend(Object sessionKey) {
@@ -191,7 +191,7 @@ public abstract class DBGBaseController implements DBGController {
         return session.getSource(stack);
     }
 
-    public abstract DBGBaseSession createSession(DBGSessionInfo targetInfo, DBCExecutionContext connection)
+    public abstract DBGBaseSession createSession(DBRProgressMonitor monitor, DBGSessionInfo targetInfo, DBCExecutionContext connection)
             throws DBGException;
 
     protected DBGBaseSession findSession(Object id) {

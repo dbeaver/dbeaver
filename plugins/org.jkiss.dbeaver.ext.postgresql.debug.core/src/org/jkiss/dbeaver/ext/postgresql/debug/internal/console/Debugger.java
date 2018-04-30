@@ -35,7 +35,6 @@ import org.jkiss.dbeaver.debug.DBGVariable;
 import org.jkiss.dbeaver.ext.postgresql.debug.internal.impl.PostgreDebugBreakpointDescriptor;
 import org.jkiss.dbeaver.ext.postgresql.debug.internal.impl.PostgreDebugBreakpointProperties;
 import org.jkiss.dbeaver.ext.postgresql.debug.internal.impl.PostgreDebugController;
-import org.jkiss.dbeaver.ext.postgresql.debug.internal.impl.PostgreDebugObjectDescriptor;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -639,7 +638,7 @@ public class Debugger {
                 break;
 
             case COMMAND_SESSIONS:
-                for (DBGSessionInfo s : controller.getSessionDescriptors()) {
+                for (DBGSessionInfo s : controller.getSessionDescriptors(new VoidProgressMonitor())) {
                     System.out.println(s);
                 }
                 break;
@@ -660,7 +659,7 @@ public class Debugger {
                     Connection debugConn = DriverManager.getConnection(url);
                     // TODO: fix connection
                     DBCExecutionContext executionContext = null;
-                    DBGSession s = controller.createSession(null, executionContext);
+                    DBGSession s = controller.createSession(new VoidProgressMonitor(), null, executionContext);
                     System.out.println("created");
                     System.out.println(s);
 

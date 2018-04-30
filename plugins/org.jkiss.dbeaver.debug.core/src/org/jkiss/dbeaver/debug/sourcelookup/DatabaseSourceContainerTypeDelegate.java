@@ -19,14 +19,21 @@
 package org.jkiss.dbeaver.debug.sourcelookup;
 
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.debug.core.sourcelookup.AbstractSourceLookupParticipant;
-import org.jkiss.dbeaver.debug.core.DebugCore;
+import org.eclipse.debug.core.sourcelookup.ISourceContainer;
+import org.eclipse.debug.core.sourcelookup.containers.AbstractSourceContainerTypeDelegate;
 
-public class ProcedureSourceLookupParticipant extends AbstractSourceLookupParticipant {
+public class DatabaseSourceContainerTypeDelegate extends AbstractSourceContainerTypeDelegate {
 
     @Override
-    public String getSourceName(Object object) throws CoreException {
-        return DebugCore.getSourceName(object);
+    public ISourceContainer createSourceContainer(String memento) throws CoreException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public String getMemento(ISourceContainer container) throws CoreException {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }
