@@ -71,7 +71,7 @@
    <extension
          point="org.eclipse.debug.core.sourceLocators">
       <sourceLocator
-            class="org.jkiss.dbeaver.debug.sourcelookup.ProcedureSourceLookupDirector"
+            class="org.jkiss.dbeaver.debug.sourcelookup.DBGSourceLookupDirector"
             id="org.jkiss.dbeaver.debug.core.procedureSourceLocator"
             name="%procedureSourceLocator.name">
       </sourceLocator>
@@ -79,14 +79,14 @@
    <extension
          point="org.eclipse.debug.core.sourcePathComputers">
       <sourcePathComputer
-            class="org.jkiss.dbeaver.debug.sourcelookup.ProcedureSourcePathComputer"
+            class="org.jkiss.dbeaver.debug.sourcelookup.DBGSourcePathComputer"
             id="org.jkiss.dbeaver.debug.core.procedureSourcePathComputer">
       </sourcePathComputer>
    </extension>
    <extension
          point="org.eclipse.debug.core.sourceContainerTypes">
       <sourceContainerType
-            class="org.jkiss.dbeaver.debug.sourcelookup.DatasourceSourceContainerTypeDelegate"
+            class="org.jkiss.dbeaver.debug.sourcelookup.DatabaseSourceContainerTypeDelegate"
             description="A collection of databases"
             id="org.jkiss.dbeaver.debug.core.datasourceSourceContainerType"
             name="Databases">

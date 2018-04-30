@@ -35,47 +35,53 @@ import org.jkiss.dbeaver.debug.DBGSession;
 import org.jkiss.dbeaver.debug.DBGSessionInfo;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 
 public class PostgreDebugController extends DBGBaseController {
 
-    private static final String SQL_SESSION = "select pid,usename,application_name,state,query from pg_stat_activity"; //$NON-NLS-1$
+    private static final String SQL_SESSION =
+        "SELECT pid,usename,application_name,state,query FROM pg_stat_activity"; //$NON-NLS-1$
 
-    private static final String SQL_OBJECT = "select  p.oid,p.proname,u.usename as owner,n.nspname, l.lanname as lang " //$NON-NLS-1$
-            + " from " + "  pg_catalog.pg_namespace n " + " join pg_catalog.pg_proc p on p.pronamespace = n.oid " //$NON-NLS-1$//$NON-NLS-2$ //$NON-NLS-3$
-            + "  join pg_user u on u.usesysid =   p.proowner " + "   join pg_language l on l.oid = p. prolang " //$NON-NLS-1$ //$NON-NLS-2$
-            + " where  " + "   l.lanname = 'plpgsql' " + "   and p.proname like '%?nameCtx%' " //$NON-NLS-1$//$NON-NLS-2$//$NON-NLS-3$
-            + "  and u.usename like '%?userCtx%' " + "  order by  " + "  n.nspname,p.proname"; //$NON-NLS-1$ //$NON-NLS-2$ //$NON-NLS-3$
+    private static final String SQL_OBJECT =
+        "SELECT  p.oid,p.proname,u.usename as owner,n.nspname, l.lanname as lang\n" +
+            "FROM pg_catalog.pg_namespace n\n" +
+            "JOIN pg_catalog.pg_proc p on p.pronamespace = n.oid\n" +
+            "JOIN pg_user u on u.usesysid =   p.proowner\n" +
+            "JOIN pg_language l on l.oid = p. prolang\n" +
+            "WHERE l.lanname = 'plpgsql' and p.proname like '%?nameCtx%' and u.usename like '%?userCtx%'\n" +
+            "ORDER BY  n.nspname,p.proname";
 
-    private static final String SQL_CURRENT_SESSION = "select pid,usename,application_name,state,query from pg_stat_activity where pid = pg_backend_pid()"; //$NON-NLS-1$
+    private static final String SQL_CURRENT_SESSION =
+        "SELECT pid,usename,application_name,state,query\n" +
+        "FROM pg_stat_activity WHERE pid = pg_backend_pid()"; //$NON-NLS-1$
 
     public PostgreDebugController(DBPDataSourceContainer dataSourceDescriptor) {
         super(dataSourceDescriptor);
     }
 
     @Override
-    public PostgreDebugSessionInfo getSessionDescriptor(DBCExecutionContext connectionTarget) throws DBGException {
-        try (Statement stmt = getConnection(connectionTarget).createStatement();
-                ResultSet rs = stmt.executeQuery(SQL_CURRENT_SESSION)) {
-
-            if (rs.next()) {
-                int pid = rs.getInt("pid");
-                String usename = rs.getString("usename");
-                String applicationName = rs.getString("application_name");
-                String state = rs.getString("state");
-                String query = rs.getString("query");
-                PostgreDebugSessionInfo res = new PostgreDebugSessionInfo(pid, usename, applicationName, state, query);
-                return res;
+    public PostgreDebugSessionInfo getSessionDescriptor(DBRProgressMonitor monitor, DBCExecutionContext connectionTarget) throws DBGException {
+        try (JDBCSession session = (JDBCSession) connectionTarget.openSession(monitor, DBCExecutionPurpose.UTIL, "Read session info")) {
+            try (Statement stmt = session.createStatement()) {
+                 try (ResultSet rs = stmt.executeQuery(SQL_CURRENT_SESSION)) {
+                     if (rs.next()) {
+                         int pid = rs.getInt("pid");
+                         String usename = rs.getString("usename");
+                         String applicationName = rs.getString("application_name");
+                         String state = rs.getString("state");
+                         String query = rs.getString("query");
+                         return new PostgreDebugSessionInfo(pid, usename, applicationName, state, query);
+                     }
+                     throw new DBGException("Error getting session");
+                 }
             }
-
-            throw new DBGException("Error getting session");
-
         } catch (SQLException e) {
             throw new DBGException("SQL error", e);
         }
-
     }
 
     private static Connection getConnection(DBCExecutionContext connectionTarget) throws SQLException {
@@ -83,23 +89,25 @@ public class PostgreDebugController extends DBGBaseController {
     }
 
     @Override
-    public List<PostgreDebugSessionInfo> getSessionDescriptors() throws DBGException {
-        DBCExecutionContext executionContext = getExecutionContext();
-        try (Statement stmt = getConnection(executionContext).createStatement();
-                ResultSet rs = stmt.executeQuery(SQL_SESSION)) {
-            List<PostgreDebugSessionInfo> res = new ArrayList<PostgreDebugSessionInfo>();
+    public List<PostgreDebugSessionInfo> getSessionDescriptors(DBRProgressMonitor monitor) throws DBGException {
+        try (JDBCSession session = (JDBCSession) getExecutionContext().openSession(monitor, DBCExecutionPurpose.UTIL, "Read session descriptor")) {
+            try (Statement stmt = session.createStatement()) {
+                try (ResultSet rs = stmt.executeQuery(SQL_SESSION)) {
+                    List<PostgreDebugSessionInfo> res = new ArrayList<PostgreDebugSessionInfo>();
 
-            while (rs.next()) {
-                int pid = rs.getInt("pid");
-                String usename = rs.getString("usename");
-                String state = rs.getString("state");
-                String applicationName = rs.getString("application_name");
-                String query = rs.getString("query");
-                PostgreDebugSessionInfo info = new PostgreDebugSessionInfo(pid, usename, applicationName, state, query);
-                res.add(info);
+                    while (rs.next()) {
+                        int pid = rs.getInt("pid");
+                        String usename = rs.getString("usename");
+                        String state = rs.getString("state");
+                        String applicationName = rs.getString("application_name");
+                        String query = rs.getString("query");
+                        PostgreDebugSessionInfo info = new PostgreDebugSessionInfo(pid, usename, applicationName, state, query);
+                        res.add(info);
+                    }
+
+                    return res;
+                }
             }
-
-            return res;
 
         } catch (SQLException e) {
             throw new DBGException("SQL error", e);
@@ -135,18 +143,16 @@ public class PostgreDebugController extends DBGBaseController {
     }
 
     @Override
-    public PostgreDebugSession createSession(DBGSessionInfo targetInfo, DBCExecutionContext sessionContext)
-            throws DBGException {
-        PostgreDebugSessionInfo sessionInfo = getSessionDescriptor(sessionContext);
-        PostgreDebugSession debugSession = new PostgreDebugSession(this, sessionInfo, targetInfo.getID());
+    public PostgreDebugSession createSession(DBRProgressMonitor monitor, DBGSessionInfo targetInfo, DBCExecutionContext sessionContext)
+            throws DBGException
+    {
+        PostgreDebugSessionInfo sessionInfo = getSessionDescriptor(monitor, sessionContext);
 
-        return debugSession;
-
+        return new PostgreDebugSession(this, sessionInfo, targetInfo.getID());
     }
 
     @Override
-    public void attachSession(DBGSession session, DBCExecutionContext sessionContext, Map<String, Object> configuration,
-            DBRProgressMonitor monitor) throws DBException {
+    public void attachSession(DBRProgressMonitor monitor, DBGSession session, DBCExecutionContext sessionContext, Map<String, Object> configuration) throws DBException {
         PostgreDebugSession pgSession = (PostgreDebugSession) session;
         JDBCExecutionContext sessionJdbc = (JDBCExecutionContext) sessionContext;
         int oid = Integer.parseInt(String.valueOf(configuration.get(PROCEDURE_OID)));

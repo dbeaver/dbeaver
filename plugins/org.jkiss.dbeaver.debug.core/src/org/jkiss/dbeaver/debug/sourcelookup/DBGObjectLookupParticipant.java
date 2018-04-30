@@ -18,14 +18,15 @@
 
 package org.jkiss.dbeaver.debug.sourcelookup;
 
-import org.eclipse.debug.core.sourcelookup.AbstractSourceLookupDirector;
-import org.eclipse.debug.core.sourcelookup.ISourceLookupParticipant;
+import org.eclipse.core.runtime.CoreException;
+import org.eclipse.debug.core.sourcelookup.AbstractSourceLookupParticipant;
+import org.jkiss.dbeaver.debug.core.DebugCore;
 
-public class ProcedureSourceLookupDirector extends AbstractSourceLookupDirector {
+public class DBGObjectLookupParticipant extends AbstractSourceLookupParticipant {
 
     @Override
-    public void initializeParticipants() {
-        addParticipants(new ISourceLookupParticipant[] { new ProcedureSourceLookupParticipant() });
+    public String getSourceName(Object object) throws CoreException {
+        return DebugCore.getSourceName(object);
     }
 
 }

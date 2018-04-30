@@ -27,14 +27,14 @@ import org.jkiss.dbeaver.debug.core.DebugCore;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 
-public class ProcedureSourcePathComputer implements ISourcePathComputerDelegate {
+public class DBGSourcePathComputer implements ISourcePathComputerDelegate {
 
     @Override
     public ISourceContainer[] computeSourceContainers(ILaunchConfiguration configuration, IProgressMonitor monitor)
             throws CoreException {
         String datasourceId = DebugCore.extractDatasourceId(configuration);
         DataSourceDescriptor descriptor = DataSourceRegistry.findDataSource(datasourceId);
-        DatasourceSourceContainer container = new DatasourceSourceContainer(descriptor);
+        DatabaseNavigatorSourceContainer container = new DatabaseNavigatorSourceContainer(descriptor);
         return new ISourceContainer[] { container };
     }
 

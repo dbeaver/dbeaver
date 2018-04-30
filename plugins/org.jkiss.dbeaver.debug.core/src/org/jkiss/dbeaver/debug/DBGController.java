@@ -30,21 +30,21 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
  */
 public interface DBGController {
 
-    public static final String DATABASE_NAME = "databaseName"; //$NON-NLS-1$
-    public static final String SCHEMA_NAME = "schemaName"; //$NON-NLS-1$
-    public static final String PROCEDURE_OID = "procedureOID"; //$NON-NLS-1$
-    public static final String PROCEDURE_NAME = "procedureName"; //$NON-NLS-1$
+    String DATABASE_NAME = "databaseName"; //$NON-NLS-1$
+    String SCHEMA_NAME = "schemaName"; //$NON-NLS-1$
+    String PROCEDURE_OID = "procedureOID"; //$NON-NLS-1$
+    String PROCEDURE_NAME = "procedureName"; //$NON-NLS-1$
 
-    public static final String ATTACH_PROCESS = "attachProcess"; //$NON-NLS-1$
-    public static final String ATTACH_PROCESS_ANY = "-1"; //$NON-NLS-1$
-    public static final String ATTACH_KIND = "attachKind"; //$NON-NLS-1$
-    public static final String ATTACH_KIND_LOCAL = "LOCAL"; //$NON-NLS-1$
-    public static final String ATTACH_KIND_GLOBAL = "GLOBAL"; //$NON-NLS-1$
+    String ATTACH_PROCESS = "attachProcess"; //$NON-NLS-1$
+    String ATTACH_PROCESS_ANY = "-1"; //$NON-NLS-1$
+    String ATTACH_KIND = "attachKind"; //$NON-NLS-1$
+    String ATTACH_KIND_LOCAL = "LOCAL"; //$NON-NLS-1$
+    String ATTACH_KIND_GLOBAL = "GLOBAL"; //$NON-NLS-1$
 
-    public static final String SCRIPT_EXECUTE = "scriptExecute"; //$NON-NLS-1$
-    public static final String SCRIPT_TEXT = "scriptText"; //$NON-NLS-1$
+    String SCRIPT_EXECUTE = "scriptExecute"; //$NON-NLS-1$
+    String SCRIPT_TEXT = "scriptText"; //$NON-NLS-1$
 
-    public static final String BREAKPOINT_LINE_NUMBER = "lineNumber"; //$NON-NLS-1$
+    String BREAKPOINT_LINE_NUMBER = "lineNumber"; //$NON-NLS-1$
 
     DBPDataSourceContainer getDataSourceContainer();
 
@@ -80,9 +80,9 @@ public interface DBGController {
 
     void dispose();
 
-    DBGSessionInfo getSessionDescriptor(DBCExecutionContext connection) throws DBGException;
+    DBGSessionInfo getSessionDescriptor(DBRProgressMonitor monitor, DBCExecutionContext connection) throws DBGException;
 
-    List<? extends DBGSessionInfo> getSessionDescriptors() throws DBGException;
+    List<? extends DBGSessionInfo> getSessionDescriptors(DBRProgressMonitor monitor) throws DBGException;
 
     DBGBreakpointDescriptor describeBreakpoint(Map<String, Object> attributes);
 

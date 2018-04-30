@@ -64,7 +64,6 @@ public class DatabaseVariable extends DatabaseDebugElement implements IVariable 
 
     @Override
     public IValue getValue() throws DebugException {
-        // TODO Auto-generated method stub
         return new DatabaseValue(getDatabaseDebugTarget(), dbgVariable);
     }
 

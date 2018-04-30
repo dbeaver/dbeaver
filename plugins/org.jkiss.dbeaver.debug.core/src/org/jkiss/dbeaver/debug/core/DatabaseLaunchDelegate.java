@@ -77,7 +77,7 @@ public class DatabaseLaunchDelegate extends LaunchConfigurationDelegate {
 
     protected DBGController createController(DBPDataSourceContainer dataSourceContainer) throws CoreException {
         try {
-            return DebugCore.findProcedureController(dataSourceContainer);
+            return DebugCore.findDebugController(dataSourceContainer);
         } catch (DBGException e) {
             throw new CoreException(GeneralUtils.makeExceptionStatus(e));
         }

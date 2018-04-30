@@ -41,7 +41,6 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.debug.DBGController;
 import org.jkiss.dbeaver.debug.DBGException;
 import org.jkiss.dbeaver.debug.DBGResolver;
-import org.jkiss.dbeaver.debug.core.model.DatabaseDebugTarget;
 import org.jkiss.dbeaver.debug.core.model.DatabaseStackFrame;
 import org.jkiss.dbeaver.debug.internal.core.DebugCoreActivator;
 import org.jkiss.dbeaver.debug.internal.core.DebugCoreMessages;
@@ -282,7 +281,7 @@ public class DebugCore {
         return result;
     }
 
-    public static DBGController findProcedureController(DBPDataSourceContainer dataSourceContainer)
+    public static DBGController findDebugController(DBPDataSourceContainer dataSourceContainer)
             throws DBGException {
         DBGController controller = Adapters.adapt(dataSourceContainer, DBGController.class);
         if (controller != null) {
@@ -297,10 +296,9 @@ public class DebugCore {
         if (object instanceof DatabaseStackFrame) {
             DatabaseStackFrame frame = (DatabaseStackFrame) object;
             Object sourceIdentifier = frame.getSourceIdentifier();
-            DatabaseDebugTarget debugTarget = frame.getDatabaseDebugTarget();
-            DBSObject dbsObject = null;
+            DBSObject dbsObject;
             try {
-                dbsObject = debugTarget.findDatabaseObject(sourceIdentifier, new VoidProgressMonitor());
+                dbsObject = findDatabaseObject(frame.getController(), sourceIdentifier, new VoidProgressMonitor());
             } catch (DBException e) {
                 Status error = DebugCore.newErrorStatus(e.getMessage(), e);
                 throw new CoreException(error);
@@ -337,4 +335,9 @@ public class DebugCore {
         DebugCoreActivator.getDefault().postEvent(encoded, nodePath);
     }
 
+    public static DBSObject findDatabaseObject(DBGController controller, Object identifier, DBRProgressMonitor monitor) throws DBException {
+        DBPDataSourceContainer container = controller.getDataSourceContainer();
+        Map<String, Object> context = controller.getDebugConfiguration();
+        return resolveDatabaseObject(container, context, identifier, monitor);
+    }
 }
