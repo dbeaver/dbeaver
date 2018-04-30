@@ -195,6 +195,9 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
     @Override
     public void setBackground(Color background)
     {
+        if (background == getBackground()) {
+            return;
+        }
         super.setBackground(background);
         this.imageLabel.setBackground(background);
         this.text.setBackground(background);
