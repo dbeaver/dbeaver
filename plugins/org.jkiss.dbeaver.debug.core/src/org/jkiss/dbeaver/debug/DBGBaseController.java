@@ -18,21 +18,16 @@
  */
 package org.jkiss.dbeaver.debug;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.debug.internal.DebugMessages;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+
+import java.util.*;
 
 public abstract class DBGBaseController implements DBGController {
 
@@ -40,12 +35,10 @@ public abstract class DBGBaseController implements DBGController {
 
     private final DBPDataSourceContainer dataSourceContainer;
 
-    private final Map<String, Object> configuration = new HashMap<String, Object>();
-    private final Map<Object, DBGBaseSession> sessions = new HashMap<Object, DBGBaseSession>(1);
+    private final Map<String, Object> configuration = new HashMap<>();
+    private final Map<Object, DBGBaseSession> sessions = new HashMap<>(1);
 
     private ListenerList<DBGEventHandler> eventHandlers = new ListenerList<>();
-
-    private DBCExecutionContext executionContext;
 
     public DBGBaseController(DBPDataSourceContainer dataSourceContainer) {
         this.dataSourceContainer = dataSourceContainer;
@@ -58,11 +51,7 @@ public abstract class DBGBaseController implements DBGController {
 
     @Override
     public Map<String, Object> getDebugConfiguration() {
-        return new HashMap<String, Object>(configuration);
-    }
-
-    public DBCExecutionContext getExecutionContext() {
-        return executionContext;
+        return new HashMap<>(configuration);
     }
 
     @Override
@@ -82,16 +71,14 @@ public abstract class DBGBaseController implements DBGController {
         if (!dataSourceContainer.isConnected()) {
             throw new DBGException("Not connected to database");
         }
-        DBPDataSource dataSource = dataSourceContainer.getDataSource();
         try {
-            this.executionContext = dataSource.openIsolatedContext(monitor, "Debug controller");
-            DBGSessionInfo targetInfo = getSessionDescriptor(monitor, getExecutionContext());
-            DBCExecutionContext sessionContext = dataSource.openIsolatedContext(monitor, "Debug session");
-            DBGBaseSession debugSession = createSession(monitor, targetInfo, sessionContext);
-            Object id = targetInfo.getID();
-            sessions.put(id, debugSession);
-            attachSession(monitor, debugSession, sessionContext, configuration);
-            return id;
+            DBGBaseSession debugSession = createSession(monitor, configuration);
+
+            Object targetId = debugSession.getSessionInfo().getID();
+
+            sessions.put(targetId, debugSession);
+
+            return targetId;
         } catch (DBException e) {
             String message = NLS.bind(DebugMessages.DatabaseDebugController_e_opening_debug_context,
                     dataSourceContainer);
@@ -99,9 +86,6 @@ public abstract class DBGBaseController implements DBGController {
             throw new DBGException(message, e);
         }
     }
-
-    public abstract void attachSession(DBRProgressMonitor monitor, DBGSession session, DBCExecutionContext sessionContext,
-                                       Map<String, Object> configuataion) throws DBGException, DBException;
 
     @Override
     public boolean canSuspend(Object sessionKey) {
@@ -125,22 +109,19 @@ public abstract class DBGBaseController implements DBGController {
     }
 
     @Override
-    public void detach(Object sessionkey, DBRProgressMonitor monitor) throws DBGException {
+    public void detach(DBRProgressMonitor monitor, Object sessionkey) throws DBGException {
         DBGSession session = sessions.remove(sessionkey);
         if (session != null) {
-            session.close();
+            session.closeSession(monitor);
         }
     }
 
     @Override
     public void dispose() {
-        if (executionContext != null) {
-            executionContext.close();
-        }
         Collection<DBGBaseSession> values = sessions.values();
         for (DBGBaseSession session : values) {
             try {
-                session.close();
+                session.closeSession(new VoidProgressMonitor());
             } catch (DBGException e) {
                 String message = NLS.bind("Error while closing session {0}", session);
                 log.error(message, e);
@@ -159,15 +140,15 @@ public abstract class DBGBaseController implements DBGController {
     }
 
     @Override
-    public void addBreakpoint(Object sessionKey, DBGBreakpointDescriptor descriptor) throws DBGException {
+    public void addBreakpoint(DBRProgressMonitor monitor, Object sessionKey, DBGBreakpointDescriptor descriptor) throws DBGException {
         DBGBaseSession session = ensureSessionAccessible(sessionKey);
-        session.addBreakpoint(descriptor);
+        session.addBreakpoint(monitor, descriptor);
     }
 
     @Override
-    public void removeBreakpoint(Object sessionKey, DBGBreakpointDescriptor descriptor) throws DBGException {
+    public void removeBreakpoint(DBRProgressMonitor monitor, Object sessionKey, DBGBreakpointDescriptor descriptor) throws DBGException {
         DBGBaseSession session = ensureSessionAccessible(sessionKey);
-        session.removeBreakpoint(descriptor);
+        session.removeBreakpoint(monitor, descriptor);
     }
 
     @Override
@@ -191,7 +172,7 @@ public abstract class DBGBaseController implements DBGController {
         return session.getSource(stack);
     }
 
-    public abstract DBGBaseSession createSession(DBRProgressMonitor monitor, DBGSessionInfo targetInfo, DBCExecutionContext connection)
+    public abstract DBGBaseSession createSession(DBRProgressMonitor monitor, Map<String, Object> configuration)
             throws DBGException;
 
     protected DBGBaseSession findSession(Object id) {
@@ -203,7 +184,7 @@ public abstract class DBGBaseController implements DBGController {
     }
 
     public List<DBGSession> getSessions() throws DBGException {
-        return new ArrayList<DBGSession>(sessions.values());
+        return new ArrayList<>(sessions.values());
     }
 
     @Override
@@ -255,11 +236,7 @@ public abstract class DBGBaseController implements DBGController {
 
     protected boolean isSessionAccessible(Object sessionKey) {
         DBGBaseSession session = findSession(sessionKey);
-        if (session == null) {
-            return false;
-        }
-        boolean isAccessible = session.isAttached() && !session.isWaiting() && session.isDone();
-        return isAccessible;
+        return session != null && session.isAttached() && !session.isWaiting() && session.isDone();
     }
 
     @Override

@@ -17,27 +17,20 @@
 
 package org.jkiss.dbeaver.ext.postgresql.debug.internal.console;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.util.List;
-import java.util.Scanner;
-
-import org.jkiss.dbeaver.debug.DBGBaseController;
-import org.jkiss.dbeaver.debug.DBGBreakpointDescriptor;
-import org.jkiss.dbeaver.debug.DBGController;
-import org.jkiss.dbeaver.debug.DBGException;
-import org.jkiss.dbeaver.debug.DBGObjectDescriptor;
-import org.jkiss.dbeaver.debug.DBGSession;
-import org.jkiss.dbeaver.debug.DBGSessionInfo;
-import org.jkiss.dbeaver.debug.DBGStackFrame;
-import org.jkiss.dbeaver.debug.DBGVariable;
+import org.jkiss.dbeaver.debug.*;
 import org.jkiss.dbeaver.ext.postgresql.debug.internal.impl.PostgreDebugBreakpointDescriptor;
 import org.jkiss.dbeaver.ext.postgresql.debug.internal.impl.PostgreDebugBreakpointProperties;
 import org.jkiss.dbeaver.ext.postgresql.debug.internal.impl.PostgreDebugController;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Scanner;
 
 @SuppressWarnings("nls")
 public class Debugger {
@@ -340,7 +333,7 @@ public class Debugger {
                     break;
                 }
 
-                controller.detach(debugSessionC.getSessionId(), new VoidProgressMonitor());
+                controller.detach(new VoidProgressMonitor(), debugSessionC.getSessionId());
 
                 System.out.println("Session closed");
 
@@ -497,19 +490,6 @@ public class Debugger {
 
                 }
 
-                DBGObjectDescriptor debugObject = null;
-
-                for (DBGObjectDescriptor o : controller.getObjects("_", "_")) {
-                    if (objId.equals(o.getID())) {
-                        debugObject = o;
-                    }
-                }
-
-                if (debugObject == null) {
-                    System.out.println(String.format("Object ID '%s' no found", strObjId));
-                    break;
-                }
-
                 if (controller.getSessions().size() == 0) {
                     System.out.println("Debug sessions not found");
                     break;
@@ -525,10 +505,9 @@ public class Debugger {
                         ? new PostgreDebugBreakpointProperties(lineNo, true)
                         : new PostgreDebugBreakpointProperties(true);
 
-                Object oid = debugObject.getID();
-                PostgreDebugBreakpointDescriptor descriptor = new PostgreDebugBreakpointDescriptor(oid,
+                PostgreDebugBreakpointDescriptor descriptor = new PostgreDebugBreakpointDescriptor(1,
                         breakpointProperties);
-                debugSession.addBreakpoint(descriptor);
+                debugSession.addBreakpoint(new VoidProgressMonitor(), descriptor);
 
                 System.out.println("Breakpoint added");
 
@@ -576,7 +555,7 @@ public class Debugger {
 
                 DBGBreakpointDescriptor bpr = chooseBreakpoint(sc, controller, debugSessionBR);
 
-                debugSessionBR.removeBreakpoint(bpr);
+                debugSessionBR.removeBreakpoint(new VoidProgressMonitor(), bpr);
 
                 System.out.println("Breakpoint removed ...");
 
@@ -638,9 +617,6 @@ public class Debugger {
                 break;
 
             case COMMAND_SESSIONS:
-                for (DBGSessionInfo s : controller.getSessionDescriptors(new VoidProgressMonitor())) {
-                    System.out.println(s);
-                }
                 break;
 
             case COMMAND_DEBUG_LIST:
@@ -659,7 +635,7 @@ public class Debugger {
                     Connection debugConn = DriverManager.getConnection(url);
                     // TODO: fix connection
                     DBCExecutionContext executionContext = null;
-                    DBGSession s = controller.createSession(new VoidProgressMonitor(), null, executionContext);
+                    DBGSession s = controller.createSession(new VoidProgressMonitor(), new HashMap<>());
                     System.out.println("created");
                     System.out.println(s);
 
@@ -696,11 +672,6 @@ public class Debugger {
                     }
                     scArg.close();
 
-                }
-
-                for (DBGObjectDescriptor o : controller.getObjects(owner.equals(ANY_ARG) ? "_" : owner,
-                        proc.equals(ANY_ARG) ? "_" : proc)) {
-                    System.out.println(o);
                 }
 
                 break;

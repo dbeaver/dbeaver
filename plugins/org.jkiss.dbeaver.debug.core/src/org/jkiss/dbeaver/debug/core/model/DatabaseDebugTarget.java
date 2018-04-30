@@ -199,7 +199,7 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
             terminated = true;
             suspended = false;
             try {
-                controller.detach(sessionKey, getProgressMonitor());
+                controller.detach(getProgressMonitor(), sessionKey);
                 controller.unregisterEventHandler(this);
             } catch (DBGException e) {
                 String message = NLS.bind("Error terminating {0}", getName());
@@ -296,7 +296,7 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
                 return;
             }
             try {
-                controller.addBreakpoint(sessionKey, descriptor);
+                controller.addBreakpoint(new VoidProgressMonitor(), sessionKey, descriptor);
             } catch (DBGException e) {
                 String message = NLS.bind("Unable to add breakpoint {0}", breakpoint);
                 Status error = DebugCore.newErrorStatus(message, e);
@@ -316,7 +316,7 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
                 return;
             }
             try {
-                controller.removeBreakpoint(sessionKey, descriptor);
+                controller.removeBreakpoint(new VoidProgressMonitor(), sessionKey, descriptor);
             } catch (DBGException e) {
                 String message = NLS.bind("Unable to remove breakpoint {0}", breakpoint);
                 Status error = DebugCore.newErrorStatus(message, e);
@@ -374,7 +374,7 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
     @Override
     public void disconnect() throws DebugException {
         try {
-            controller.detach(sessionKey, getProgressMonitor());
+            controller.detach(getProgressMonitor(), sessionKey);
         } catch (DBGException e) {
             String message = NLS.bind("Error disconnecting {0}", getName());
             IStatus status = DebugCore.newErrorStatus(message, e);
