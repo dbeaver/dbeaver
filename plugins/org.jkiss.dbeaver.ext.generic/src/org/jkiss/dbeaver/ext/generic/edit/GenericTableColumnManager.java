@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.generic.edit;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
@@ -48,17 +49,29 @@ public class GenericTableColumnManager extends SQLTableColumnManager<GenericTabl
     }
 
     @Override
-    protected GenericTableColumn createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, GenericTable parent, Object copyFrom)
-    {
+    protected GenericTableColumn createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, GenericTable parent, Object copyFrom) throws DBException {
         DBSDataType columnType = findBestDataType(parent.getDataSource(), DBConstants.DEFAULT_DATATYPE_NAMES);
 
-        final GenericTableColumn column = new GenericTableColumn(parent);
-        column.setName(getNewColumnName(monitor, context, parent));
-        column.setTypeName(columnType == null ? "INTEGER" : columnType.getName());
-        column.setMaxLength(columnType != null && columnType.getDataKind() == DBPDataKind.STRING ? 100 : 0);
-        column.setValueType(columnType == null ? Types.INTEGER : columnType.getTypeID());
-        column.setOrdinalPosition(-1);
-        return column;
+        int columnSize = columnType != null && columnType.getDataKind() == DBPDataKind.STRING ? 100 : 0;
+        return parent.getDataSource().getMetaModel().createTableColumnImpl(
+            monitor,
+            parent,
+            getNewColumnName(monitor, context, parent),
+            columnType == null ? "INTEGER" : columnType.getName(),
+            columnType == null ? Types.INTEGER : columnType.getTypeID(),
+            columnType == null ? Types.INTEGER : columnType.getTypeID(),
+            -1,
+            columnSize,
+            columnSize,
+            null,
+            null,
+            10,
+            false,
+            null,
+            null,
+            false,
+            false
+            );
     }
 
     @Override
