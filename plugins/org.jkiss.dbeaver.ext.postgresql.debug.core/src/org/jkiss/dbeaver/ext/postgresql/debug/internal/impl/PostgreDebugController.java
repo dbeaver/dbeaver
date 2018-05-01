@@ -18,10 +18,12 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.debug.internal.impl;
 
+import org.eclipse.core.resources.IMarker;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.debug.*;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Map;
 
@@ -38,11 +40,11 @@ public class PostgreDebugController extends DBGBaseController {
         try {
             PostgreDebugSession pgSession = new PostgreDebugSession(monitor,this);
 
-            int oid = Integer.parseInt(String.valueOf(configuration.get(PROCEDURE_OID)));
-            int pid = Integer.parseInt(String.valueOf(configuration.get(ATTACH_PROCESS)));
-            String kind = String.valueOf(configuration.get(ATTACH_KIND));
+            int oid = CommonUtils.toInt(configuration.get(DBGConstants.ATTR_PROCEDURE_OID));
+            int pid = CommonUtils.toInt(configuration.get(DBGConstants.ATTR_ATTACH_PROCESS));
+            String kind = String.valueOf(configuration.get(DBGConstants.ATTR_ATTACH_KIND));
             boolean global = DBGController.ATTACH_KIND_GLOBAL.equals(kind);
-            String call = (String) configuration.get(SCRIPT_TEXT);
+            String call = (String) configuration.get(DBGConstants.ATTR_SCRIPT_TEXT);
             pgSession.attach(monitor, oid, pid, global, call);
 
             return pgSession;
@@ -53,8 +55,8 @@ public class PostgreDebugController extends DBGBaseController {
 
     @Override
     public DBGBreakpointDescriptor describeBreakpoint(Map<String, Object> attributes) {
-        Object oid = attributes.get(DBGController.PROCEDURE_OID);
-        Object lineNumber = attributes.get(DBGController.BREAKPOINT_LINE_NUMBER);
+        Object oid = attributes.get(DBGConstants.ATTR_PROCEDURE_OID);
+        Object lineNumber = attributes.get(IMarker.LINE_NUMBER);
         long parsed = Long.parseLong(String.valueOf(lineNumber));
         return new PostgreDebugBreakpointDescriptor(oid, parsed, false);
     }

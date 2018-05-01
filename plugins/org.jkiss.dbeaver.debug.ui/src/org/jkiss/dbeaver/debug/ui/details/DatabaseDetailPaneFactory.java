@@ -27,7 +27,7 @@ import org.eclipse.debug.core.model.IBreakpoint;
 import org.eclipse.debug.ui.IDetailPane;
 import org.eclipse.debug.ui.IDetailPaneFactory;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.jkiss.dbeaver.debug.core.DebugCore;
+import org.jkiss.dbeaver.debug.DBGConstants;
 import org.jkiss.dbeaver.debug.internal.ui.DebugUIMessages;
 
 public class DatabaseDetailPaneFactory implements IDetailPaneFactory {
@@ -44,7 +44,7 @@ public class DatabaseDetailPaneFactory implements IDetailPaneFactory {
                 IBreakpoint breakpoint = (IBreakpoint) first;
                 try {
                     String type = breakpoint.getMarker().getType();
-                    if (DebugCore.BREAKPOINT_ID_DATABASE_LINE.equals(type)) {
+                    if (DBGConstants.BREAKPOINT_ID_DATABASE_LINE.equals(type)) {
                         set.add(DatabaseStandardBreakpointPane.DETAIL_PANE_STANDARD_BREAKPOINT);
                     } else {
                         set.add(DatabaseStandardBreakpointPane.DETAIL_PANE_STANDARD_BREAKPOINT);
@@ -65,7 +65,7 @@ public class DatabaseDetailPaneFactory implements IDetailPaneFactory {
                 IBreakpoint breakpoint = (IBreakpoint) first;
                 try {
                     String type = breakpoint.getMarker().getType();
-                    if (DebugCore.BREAKPOINT_ID_DATABASE_LINE.equals(type)) {
+                    if (DBGConstants.BREAKPOINT_ID_DATABASE_LINE.equals(type)) {
                         return DatabaseStandardBreakpointPane.DETAIL_PANE_STANDARD_BREAKPOINT;
                     } else {
                         return DatabaseStandardBreakpointPane.DETAIL_PANE_STANDARD_BREAKPOINT;

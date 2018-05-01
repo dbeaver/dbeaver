@@ -30,21 +30,8 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
  */
 public interface DBGController {
 
-    String DATABASE_NAME = "databaseName"; //$NON-NLS-1$
-    String SCHEMA_NAME = "schemaName"; //$NON-NLS-1$
-    String PROCEDURE_OID = "procedureOID"; //$NON-NLS-1$
-    String PROCEDURE_NAME = "procedureName"; //$NON-NLS-1$
-
-    String ATTACH_PROCESS = "attachProcess"; //$NON-NLS-1$
-    String ATTACH_PROCESS_ANY = "-1"; //$NON-NLS-1$
-    String ATTACH_KIND = "attachKind"; //$NON-NLS-1$
     String ATTACH_KIND_LOCAL = "LOCAL"; //$NON-NLS-1$
     String ATTACH_KIND_GLOBAL = "GLOBAL"; //$NON-NLS-1$
-
-    String SCRIPT_EXECUTE = "scriptExecute"; //$NON-NLS-1$
-    String SCRIPT_TEXT = "scriptText"; //$NON-NLS-1$
-
-    String BREAKPOINT_LINE_NUMBER = "lineNumber"; //$NON-NLS-1$
 
     DBPDataSourceContainer getDataSourceContainer();
 

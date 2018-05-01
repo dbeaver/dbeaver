@@ -495,6 +495,18 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
         return null;
     }
 
+    public PostgreProcedure getProcedure(DBRProgressMonitor monitor, long procId)
+        throws DBException
+    {
+        for (final PostgreSchema schema : getSchemas(monitor)) {
+            PostgreProcedure procedure = PostgreUtils.getObjectById(monitor, schema.proceduresCache, schema, procId);
+            if (procedure != null) {
+                return procedure;
+            }
+        }
+        return null;
+    }
+
     public PostgreDataType getDataType(long typeId) {
         if (typeId <= 0) {
             return null;

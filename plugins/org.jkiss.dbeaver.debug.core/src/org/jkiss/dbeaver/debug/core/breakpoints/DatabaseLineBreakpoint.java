@@ -28,7 +28,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IBreakpoint;
-import org.jkiss.dbeaver.debug.core.DebugCore;
+import org.jkiss.dbeaver.debug.DBGConstants;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -40,7 +40,7 @@ public class DatabaseLineBreakpoint extends DatabaseBreakpoint implements IDatab
     public DatabaseLineBreakpoint(DBSObject databaseObject, DBNNode node, IResource resource,
             final int lineNumber, final int charStart, final int charEnd, final boolean add) throws DebugException {
         this(databaseObject, node, resource, lineNumber, charStart, charEnd, add,
-                new HashMap<String, Object>(), DebugCore.BREAKPOINT_ID_DATABASE_LINE);
+                new HashMap<String, Object>(), DBGConstants.BREAKPOINT_ID_DATABASE_LINE);
     }
 
     protected DatabaseLineBreakpoint(DBSObject databaseObject, DBNNode node, final IResource resource,

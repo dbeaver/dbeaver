@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.debug.DBGConstants;
 import org.jkiss.dbeaver.debug.core.DebugCore;
 import org.jkiss.dbeaver.ext.postgresql.debug.internal.PostgreDebugCoreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
@@ -60,20 +61,14 @@ public class PostgreSqlDebugCore {
         IContainer container = null;
         ILaunchConfigurationWorkingCopy workingCopy = DebugCore.createConfiguration(container, CONFIGURATION_TYPE,
                 name);
-        workingCopy.setAttribute(DebugCore.ATTR_DRIVER_ID, dataSourceContainer.getDriver().getId());
-        workingCopy.setAttribute(DebugCore.ATTR_DATASOURCE_ID, dataSourceContainer.getId());
-        workingCopy.setAttribute(DebugCore.ATTR_DATABASE_NAME, databaseName);
-        workingCopy.setAttribute(DebugCore.ATTR_SCHEMA_NAME, schemaName);
-        workingCopy.setAttribute(DebugCore.ATTR_PROCEDURE_OID, String.valueOf(procedure.getObjectId()));
-        workingCopy.setAttribute(DebugCore.ATTR_PROCEDURE_NAME, procedureName);
+        workingCopy.setAttribute(DBGConstants.ATTR_DATASOURCE_ID, dataSourceContainer.getId());
+        workingCopy.setAttribute(DBGConstants.ATTR_PROCEDURE_OID, String.valueOf(procedure.getObjectId()));
+        workingCopy.setAttribute(DBGConstants.ATTR_PROCEDURE_NAME, procedureName);
 
-        workingCopy.setAttribute(DebugCore.ATTR_ATTACH_PROCESS, DebugCore.ATTR_ATTACH_PROCESS_DEFAULT);
-        workingCopy.setAttribute(DebugCore.ATTR_ATTACH_KIND, DebugCore.ATTR_ATTACH_KIND_DEFAULT);
-        workingCopy.setAttribute(DebugCore.ATTR_SCRIPT_EXECUTE, DebugCore.ATTR_SCRIPT_EXECUTE_DEFAULT);
-        workingCopy.setAttribute(DebugCore.ATTR_SCRIPT_TEXT, DebugCore.composeScriptText(procedure));
+        workingCopy.setAttribute(DBGConstants.ATTR_SCRIPT_TEXT, DebugCore.composeScriptText(procedure));
         final DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
         DBNDatabaseNode node = navigatorModel.getNodeByObject(new VoidProgressMonitor(), procedure, false);
-        workingCopy.setAttribute(DebugCore.ATTR_NODE_PATH, node.getNodeItemPath());
+        workingCopy.setAttribute(DBGConstants.ATTR_NODE_PATH, node.getNodeItemPath());
         return workingCopy;
     }
 }

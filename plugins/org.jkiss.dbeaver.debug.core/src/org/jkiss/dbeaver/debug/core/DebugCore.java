@@ -38,6 +38,7 @@ import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.debug.DBGConstants;
 import org.jkiss.dbeaver.debug.DBGController;
 import org.jkiss.dbeaver.debug.DBGException;
 import org.jkiss.dbeaver.debug.DBGResolver;
@@ -54,61 +55,9 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
-import org.jkiss.dbeaver.runtime.ide.core.DBeaverIDECore;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 public class DebugCore {
-
-    public static final String BUNDLE_SYMBOLIC_NAME = "org.jkiss.dbeaver.debug.core"; //$NON-NLS-1$
-
-    public static final String MODEL_IDENTIFIER_DATABASE = BUNDLE_SYMBOLIC_NAME + '.' + "database"; //$NON-NLS-1$
-
-    public static final String BREAKPOINT_ID_DATABASE = BUNDLE_SYMBOLIC_NAME + '.' + "databaseBreakpointMarker"; //$NON-NLS-1$
-    public static final String BREAKPOINT_ID_DATABASE_LINE = BUNDLE_SYMBOLIC_NAME + '.'
-            + "databaseLineBreakpointMarker"; //$NON-NLS-1$
-
-    public static final String BREAKPOINT_ATTRIBUTE_DATASOURCE_ID = DBeaverIDECore.MARKER_ATTRIBUTE_DATASOURCE_ID;
-    public static final String BREAKPOINT_ATTRIBUTE_DATABASE_NAME = BUNDLE_SYMBOLIC_NAME + '.' + "databaseName"; //$NON-NLS-1$
-    public static final String BREAKPOINT_ATTRIBUTE_SCHEMA_NAME = BUNDLE_SYMBOLIC_NAME + '.' + "schemaName"; //$NON-NLS-1$
-    public static final String BREAKPOINT_ATTRIBUTE_PROCEDURE_NAME = BUNDLE_SYMBOLIC_NAME + '.' + "procedureName"; //$NON-NLS-1$
-    public static final String BREAKPOINT_ATTRIBUTE_PROCEDURE_OID = BUNDLE_SYMBOLIC_NAME + '.' + "procedureOid"; //$NON-NLS-1$
-    public static final String BREAKPOINT_ATTRIBUTE_NODE_PATH = DBeaverIDECore.MARKER_ATTRIBUTE_NODE_PATH;
-
-    public static final String SOURCE_CONTAINER_TYPE_DATASOURCE = BUNDLE_SYMBOLIC_NAME + '.'
-            + "datasourceSourceContainerType"; //$NON-NLS-1$
-
-    public static final String ATTR_DRIVER_ID = BUNDLE_SYMBOLIC_NAME + '.' + "ATTR_DRIVER_ID"; //$NON-NLS-1$
-    public static final String ATTR_DRIVER_ID_DEFAULT = ""; //$NON-NLS-1$
-
-    public static final String ATTR_DATASOURCE_ID = BUNDLE_SYMBOLIC_NAME + '.' + "ATTR_DATASOURCE_ID"; //$NON-NLS-1$
-    public static final String ATTR_DATASOURCE_ID_DEFAULT = ""; //$NON-NLS-1$
-
-    public static final String ATTR_DATABASE_NAME = BUNDLE_SYMBOLIC_NAME + '.' + "ATTR_DATABASE_NAME"; //$NON-NLS-1$
-    public static final String ATTR_DATABASE_NAME_DEFAULT = ""; //$NON-NLS-1$
-
-    public static final String ATTR_SCHEMA_NAME = BUNDLE_SYMBOLIC_NAME + '.' + "ATTR_SCHEMA_NAME"; //$NON-NLS-1$
-    public static final String ATTR_SCHEMA_NAME_DEFAULT = ""; //$NON-NLS-1$
-
-    public static final String ATTR_PROCEDURE_OID = BUNDLE_SYMBOLIC_NAME + '.' + "ATTR_PROCEDURE_OID"; //$NON-NLS-1$
-    public static final String ATTR_PROCEDURE_OID_DEFAULT = ""; //$NON-NLS-1$
-
-    public static final String ATTR_PROCEDURE_NAME = BUNDLE_SYMBOLIC_NAME + '.' + "ATTR_PROCEDURE_NAME"; //$NON-NLS-1$
-    public static final String ATTR_PROCEDURE_NAME_DEFAULT = ""; //$NON-NLS-1$
-
-    public static final String ATTR_ATTACH_PROCESS = BUNDLE_SYMBOLIC_NAME + '.' + "ATTACH_PROCESS"; //$NON-NLS-1$
-    public static final String ATTR_ATTACH_PROCESS_DEFAULT = DBGController.ATTACH_PROCESS_ANY;
-
-    public static final String ATTR_ATTACH_KIND = BUNDLE_SYMBOLIC_NAME + '.' + "ATTR_ATTACH_KIND"; //$NON-NLS-1$
-    public static final String ATTR_ATTACH_KIND_DEFAULT = DBGController.ATTACH_KIND_LOCAL;
-
-    public static final String ATTR_SCRIPT_EXECUTE = BUNDLE_SYMBOLIC_NAME + '.' + "ATTR_SCRIPT_EXECUTE"; //$NON-NLS-1$
-    public static final String ATTR_SCRIPT_EXECUTE_DEFAULT = Boolean.FALSE.toString();
-
-    public static final String ATTR_SCRIPT_TEXT = BUNDLE_SYMBOLIC_NAME + '.' + "ATTR_SCRIPT_TEXT"; //$NON-NLS-1$
-    public static final String ATTR_SCRIPT_TEXT_DEFAULT = ""; //$NON-NLS-1$
-
-    public static final String ATTR_NODE_PATH = BUNDLE_SYMBOLIC_NAME + '.' + "ATTR_NODE_PATH"; //$NON-NLS-1$
-    public static final String ATTR_NODE_PATH_DEFAULT = ""; //$NON-NLS-1$
 
     private static Log log = Log.getLog(DebugCore.class);
 
@@ -135,8 +84,7 @@ public class DebugCore {
             sb.deleteCharAt(sb.length() - 1);
         }
         sb.append(')');
-        String call = sb.toString();
-        return call;
+        return sb.toString();
     }
 
     public static String composeScriptText(DBSProcedure procedure) {
@@ -145,7 +93,7 @@ public class DebugCore {
         } catch (DBException e) {
             String message = NLS.bind("Failed to compose call for {0}", procedure);
             log.error(message, e);
-            return ATTR_SCRIPT_TEXT_DEFAULT;
+            return "";
         }
     }
 
@@ -185,69 +133,8 @@ public class DebugCore {
         return extracted;
     }
 
-    public static String extractDriverId(ILaunchConfiguration configuration) {
-        return extractStringAttribute(configuration, ATTR_DRIVER_ID, ATTR_DRIVER_ID_DEFAULT);
-    }
-
-    public static String extractDatasourceId(ILaunchConfiguration configuration) {
-        return extractStringAttribute(configuration, ATTR_DATASOURCE_ID, ATTR_DATASOURCE_ID_DEFAULT);
-    }
-
-    public static String extractDatabaseName(ILaunchConfiguration configuration) {
-        return extractStringAttribute(configuration, ATTR_DATABASE_NAME, ATTR_DATABASE_NAME_DEFAULT);
-    }
-
-    public static String extractSchemaName(ILaunchConfiguration configuration) {
-        return extractStringAttribute(configuration, ATTR_SCHEMA_NAME, ATTR_SCHEMA_NAME_DEFAULT);
-    }
-
-    public static String extractProcedureOid(ILaunchConfiguration configuration) {
-        return extractStringAttribute(configuration, ATTR_PROCEDURE_OID, ATTR_PROCEDURE_OID_DEFAULT);
-    }
-
-    public static String extractProcedureName(ILaunchConfiguration configuration) {
-        return extractStringAttribute(configuration, ATTR_PROCEDURE_NAME, ATTR_PROCEDURE_NAME_DEFAULT);
-    }
-
-    public static String extractAttachProcess(ILaunchConfiguration configuration) {
-        return extractStringAttribute(configuration, ATTR_ATTACH_PROCESS, ATTR_ATTACH_PROCESS_DEFAULT);
-    }
-
-    public static String extractAttachKind(ILaunchConfiguration configuration) {
-        return extractStringAttribute(configuration, ATTR_ATTACH_KIND, ATTR_ATTACH_KIND_DEFAULT);
-    }
-
-    public static String extractScriptExecute(ILaunchConfiguration configuration) {
-        return extractStringAttribute(configuration, ATTR_SCRIPT_EXECUTE, ATTR_SCRIPT_EXECUTE_DEFAULT);
-    }
-
-    public static String extractScriptText(ILaunchConfiguration configuration) {
-        return extractStringAttribute(configuration, ATTR_SCRIPT_TEXT, ATTR_SCRIPT_TEXT_DEFAULT);
-    }
-
-    public static String extractNodePath(ILaunchConfiguration configuration) {
-        return extractStringAttribute(configuration, ATTR_NODE_PATH, ATTR_NODE_PATH_DEFAULT);
-    }
-
-    public static String extractStringAttribute(ILaunchConfiguration configuration, String attributeName,
-            String defaultValue) {
-        if (configuration == null) {
-            String message = NLS.bind(DebugCoreMessages.DebugCore_e_read_attribute_null, attributeName);
-            log.error(message);
-            return defaultValue;
-        }
-        try {
-            return configuration.getAttribute(attributeName, defaultValue);
-        } catch (CoreException e) {
-            String message = NLS.bind(DebugCoreMessages.DebugCore_e_read_attribute_generic, attributeName,
-                    configuration);
-            log.error(message, e);
-            return defaultValue;
-        }
-    }
-
     public static Status newErrorStatus(String message, Throwable th) {
-        return new Status(IStatus.ERROR, BUNDLE_SYMBOLIC_NAME, message, th);
+        return new Status(IStatus.ERROR, DBGConstants.BUNDLE_SYMBOLIC_NAME, message, th);
     }
 
     public static Status newErrorStatus(String message) {
@@ -264,7 +151,7 @@ public class DebugCore {
     }
 
     public static Map<String, Object> resolveDatabaseContext(DBSObject databaseObject) {
-        Map<String, Object> result = new HashMap<String, Object>();
+        Map<String, Object> result = new HashMap<>();
         if (databaseObject == null) {
             return result;
         }
@@ -324,9 +211,9 @@ public class DebugCore {
     }
 
     public static Map<String, Object> toBreakpointDescriptor(Map<String, Object> attributes) {
-        HashMap<String, Object> result = new HashMap<String, Object>();
-        result.put(DBGController.BREAKPOINT_LINE_NUMBER, attributes.get(IMarker.LINE_NUMBER));
-        result.put(DBGController.PROCEDURE_OID, attributes.get(BREAKPOINT_ATTRIBUTE_PROCEDURE_OID));
+        HashMap<String, Object> result = new HashMap<>();
+        result.put(IMarker.LINE_NUMBER, attributes.get(IMarker.LINE_NUMBER));
+        result.put(DBGConstants.ATTR_PROCEDURE_OID, attributes.get(DBGConstants.ATTR_PROCEDURE_OID));
         return result;
     }
     
