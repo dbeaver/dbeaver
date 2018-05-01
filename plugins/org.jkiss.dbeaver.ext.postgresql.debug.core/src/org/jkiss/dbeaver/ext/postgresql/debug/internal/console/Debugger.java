@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.postgresql.debug.internal.console;
 
 import org.jkiss.dbeaver.debug.*;
 import org.jkiss.dbeaver.ext.postgresql.debug.internal.impl.PostgreDebugBreakpointDescriptor;
-import org.jkiss.dbeaver.ext.postgresql.debug.internal.impl.PostgreDebugBreakpointProperties;
 import org.jkiss.dbeaver.ext.postgresql.debug.internal.impl.PostgreDebugController;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -501,17 +500,15 @@ public class Debugger {
                     break;
                 }
 
-                PostgreDebugBreakpointProperties breakpointProperties = lineNo > 0
-                        ? new PostgreDebugBreakpointProperties(lineNo, true)
-                        : new PostgreDebugBreakpointProperties(true);
+                PostgreDebugBreakpointDescriptor descriptor = lineNo > 0
+                        ? new PostgreDebugBreakpointDescriptor(1, lineNo, true)
+                        : new PostgreDebugBreakpointDescriptor(1, true);
 
-                PostgreDebugBreakpointDescriptor descriptor = new PostgreDebugBreakpointDescriptor(1,
-                        breakpointProperties);
                 debugSession.addBreakpoint(new VoidProgressMonitor(), descriptor);
 
                 System.out.println("Breakpoint added");
 
-                System.out.println(breakpointProperties.toString());
+                System.out.println(descriptor.toString());
 
                 break;
 

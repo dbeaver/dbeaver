@@ -16,11 +16,12 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.debug;
+package org.jkiss.dbeaver.debug.jdbc;
 
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.debug.*;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
@@ -31,9 +32,9 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-public abstract class DBGBaseSession implements DBGSession {
+public abstract class DBGJDBCSession implements DBGSession {
 
-    private static final Log log = Log.getLog(DBGBaseSession.class);
+    private static final Log log = Log.getLog(DBGJDBCSession.class);
 
     private final DBGBaseController controller;
 
@@ -41,7 +42,7 @@ public abstract class DBGBaseSession implements DBGSession {
 
     private final List<DBGBreakpointDescriptor> breakpoints = new ArrayList<>(1);
 
-    protected DBGBaseSession(DBGBaseController controller) {
+    protected DBGJDBCSession(DBGBaseController controller) {
         this.controller = controller;
     }
 
@@ -139,14 +140,6 @@ public abstract class DBGBaseSession implements DBGSession {
 
     protected void fireEvent(DBGEvent event) {
         controller.fireEvent(event);
-    }
-
-    protected void setSessionClientInfo(DBRProgressMonitor monitor, JDBCExecutionContext connection, String clientInfo) {
-        try (JDBCSession session = connection.openSession(monitor, DBCExecutionPurpose.UTIL, "Set client info")) {
-            session.setClientInfo("ApplicationName", clientInfo);
-        } catch (SQLException e) {
-            log.error(e);
-        }
     }
 
 }

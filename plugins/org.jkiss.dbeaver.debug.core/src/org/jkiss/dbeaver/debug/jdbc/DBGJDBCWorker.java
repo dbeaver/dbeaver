@@ -17,10 +17,11 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.debug;
+package org.jkiss.dbeaver.debug.jdbc;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.jkiss.dbeaver.debug.DBGEvent;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -32,12 +33,12 @@ import java.sql.Statement;
 
 public class DBGJDBCWorker extends AbstractJob {
 
-    private final DBGBaseSession debugSession;
+    private final DBGJDBCSession debugSession;
     private final String sql;
     private final DBGEvent before;
     private final DBGEvent after;
 
-    public DBGJDBCWorker(DBGBaseSession debugSession, String name, String sqlCommand, DBGEvent begin, DBGEvent end) {
+    public DBGJDBCWorker(DBGJDBCSession debugSession, String name, String sqlCommand, DBGEvent begin, DBGEvent end) {
         super(name);
         this.debugSession = debugSession;
         this.sql = sqlCommand;

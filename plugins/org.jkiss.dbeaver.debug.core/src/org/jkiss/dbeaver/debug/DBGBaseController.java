@@ -23,6 +23,7 @@ import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.debug.internal.DebugMessages;
+import org.jkiss.dbeaver.debug.jdbc.DBGJDBCSession;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -36,7 +37,7 @@ public abstract class DBGBaseController implements DBGController {
     private final DBPDataSourceContainer dataSourceContainer;
 
     private final Map<String, Object> configuration = new HashMap<>();
-    private final Map<Object, DBGBaseSession> sessions = new HashMap<>(1);
+    private final Map<Object, DBGJDBCSession> sessions = new HashMap<>(1);
 
     private ListenerList<DBGEventHandler> eventHandlers = new ListenerList<>();
 
@@ -72,7 +73,7 @@ public abstract class DBGBaseController implements DBGController {
             throw new DBGException("Not connected to database");
         }
         try {
-            DBGBaseSession debugSession = createSession(monitor, configuration);
+            DBGJDBCSession debugSession = createSession(monitor, configuration);
 
             Object targetId = debugSession.getSessionInfo().getID();
 
@@ -118,8 +119,8 @@ public abstract class DBGBaseController implements DBGController {
 
     @Override
     public void dispose() {
-        Collection<DBGBaseSession> values = sessions.values();
-        for (DBGBaseSession session : values) {
+        Collection<DBGJDBCSession> values = sessions.values();
+        for (DBGJDBCSession session : values) {
             try {
                 session.closeSession(new VoidProgressMonitor());
             } catch (DBGException e) {
@@ -135,19 +136,19 @@ public abstract class DBGBaseController implements DBGController {
 
     @Override
     public List<? extends DBGBreakpointDescriptor> getBreakpoints(Object sessionKey) throws DBGException {
-        DBGBaseSession session = ensureSessionAccessible(sessionKey);
+        DBGJDBCSession session = ensureSessionAccessible(sessionKey);
         return session.getBreakpoints();
     }
 
     @Override
     public void addBreakpoint(DBRProgressMonitor monitor, Object sessionKey, DBGBreakpointDescriptor descriptor) throws DBGException {
-        DBGBaseSession session = ensureSessionAccessible(sessionKey);
+        DBGJDBCSession session = ensureSessionAccessible(sessionKey);
         session.addBreakpoint(monitor, descriptor);
     }
 
     @Override
     public void removeBreakpoint(DBRProgressMonitor monitor, Object sessionKey, DBGBreakpointDescriptor descriptor) throws DBGException {
-        DBGBaseSession session = ensureSessionAccessible(sessionKey);
+        DBGJDBCSession session = ensureSessionAccessible(sessionKey);
         session.removeBreakpoint(monitor, descriptor);
     }
 
@@ -172,10 +173,10 @@ public abstract class DBGBaseController implements DBGController {
         return session.getSource(stack);
     }
 
-    public abstract DBGBaseSession createSession(DBRProgressMonitor monitor, Map<String, Object> configuration)
+    public abstract DBGJDBCSession createSession(DBRProgressMonitor monitor, Map<String, Object> configuration)
             throws DBGException;
 
-    protected DBGBaseSession findSession(Object id) {
+    protected DBGJDBCSession findSession(Object id) {
         return sessions.get(id);
     }
 
@@ -220,8 +221,8 @@ public abstract class DBGBaseController implements DBGController {
         // throw DBGException?
     }
 
-    protected DBGBaseSession ensureSessionAccessible(Object sessionKey) throws DBGException {
-        DBGBaseSession session = findSession(sessionKey);
+    protected DBGJDBCSession ensureSessionAccessible(Object sessionKey) throws DBGException {
+        DBGJDBCSession session = findSession(sessionKey);
         if (session == null) {
             String message = NLS.bind("Session for {0} is not available", sessionKey);
             throw new DBGException(message);
@@ -235,7 +236,7 @@ public abstract class DBGBaseController implements DBGController {
     }
 
     protected boolean isSessionAccessible(Object sessionKey) {
-        DBGBaseSession session = findSession(sessionKey);
+        DBGJDBCSession session = findSession(sessionKey);
         return session != null && session.isAttached() && !session.isWaiting() && session.isDone();
     }
 

@@ -56,8 +56,7 @@ public class PostgreDebugController extends DBGBaseController {
         Object oid = attributes.get(DBGController.PROCEDURE_OID);
         Object lineNumber = attributes.get(DBGController.BREAKPOINT_LINE_NUMBER);
         long parsed = Long.parseLong(String.valueOf(lineNumber));
-        PostgreDebugBreakpointProperties properties = new PostgreDebugBreakpointProperties(parsed, false);
-        return new PostgreDebugBreakpointDescriptor(oid, properties );
+        return new PostgreDebugBreakpointDescriptor(oid, parsed, false);
     }
 
 }
