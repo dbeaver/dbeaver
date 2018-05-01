@@ -64,11 +64,6 @@ public class DatabaseBreakpoint extends Breakpoint implements IDatabaseBreakpoin
     }
 
     @Override
-    public String getProcedureOid() throws CoreException {
-        return ensureMarker().getAttribute(BREAKPOINT_ATTRIBUTE_PROCEDURE_OID, null);
-    }
-
-    @Override
     public String getNodePath() throws CoreException {
         return ensureMarker().getAttribute(BREAKPOINT_ATTRIBUTE_NODE_PATH, null);
     }
