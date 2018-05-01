@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.debug.*;
 import org.jkiss.dbeaver.debug.core.DebugCore;
+import org.jkiss.dbeaver.debug.jdbc.DBGJDBCSession;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -62,7 +63,7 @@ import java.util.List;
  * state until next breakpoint or end of procedure will be reached <br/>
  *
  */
-public class PostgreDebugSession extends DBGBaseSession {
+public class PostgreDebugSession extends DBGJDBCSession {
 
     private final JDBCExecutionContext connection;
     private final JDBCExecutionContext controllerConnection;
@@ -288,7 +289,7 @@ public class PostgreDebugSession extends DBGBaseSession {
 
         createSlot(monitor, OID);
 
-        String taskName = "Local attached to " + sessionInfo.getID();
+        String taskName = "PostgreSQL Debug - Local session " + sessionInfo.getID();
 
         runLocalProc(call, taskName);
 
@@ -316,12 +317,11 @@ public class PostgreDebugSession extends DBGBaseSession {
             throw new DBGException("SQL error", e);
         }
 
-        PostgreDebugBreakpointProperties properties = new PostgreDebugBreakpointProperties(true);
-        bpGlobal = new PostgreDebugBreakpointDescriptor(oid, properties);
+        bpGlobal = new PostgreDebugBreakpointDescriptor(oid, true);
         addBreakpoint(monitor, bpGlobal);
 
         String sessionParam = String.valueOf(getSessionId());
-        String taskName = sessionParam + " global attached to " + sessionInfo.getID();
+        String taskName = "PostgreSQL Debug - Global session " + sessionInfo.getID();
         String sql = SQL_ATTACH.replaceAll("\\?sessionid", sessionParam);
         DBGEvent begin = new DBGEvent(this, DBGEvent.RESUME, DBGEvent.MODEL_SPECIFIC);
         DBGEvent end = new DBGEvent(this, DBGEvent.SUSPEND, DBGEvent.BREAKPOINT);
@@ -392,21 +392,20 @@ public class PostgreDebugSession extends DBGBaseSession {
 
     protected String composeAddBreakpointCommand(DBGBreakpointDescriptor descriptor) {
         PostgreDebugBreakpointDescriptor bp = (PostgreDebugBreakpointDescriptor) descriptor;
-        PostgreDebugBreakpointProperties bpd = bp.getProperties();
-        String sqlPattern = bpd.isGlobal() ? SQL_SET_GLOBAL_BREAKPOINT : SQL_SET_BREAKPOINT;
+        String sqlPattern = bp.isGlobal() ? SQL_SET_GLOBAL_BREAKPOINT : SQL_SET_BREAKPOINT;
 
         String sqlCommand = sqlPattern.replaceAll("\\?sessionid", String.valueOf(getSessionId()))
                 .replaceAll("\\?obj", String.valueOf(descriptor.getObjectId()))
-                .replaceAll("\\?line", bpd.isOnStart() ? "-1" : String.valueOf(bpd.getLineNo()))
-                .replaceAll("\\?target", bpd.isAll() ? "null" : String.valueOf(bpd.getTargetId()));
+                .replaceAll("\\?line", bp.isOnStart() ? "-1" : String.valueOf(bp.getLineNo()))
+                .replaceAll("\\?target", bp.isAll() ? "null" : String.valueOf(bp.getTargetId()));
         return sqlCommand;
     }
 
-    protected String composeRemoveBreakpointCommand(DBGBreakpointDescriptor bp) {
-        PostgreDebugBreakpointProperties properties = (PostgreDebugBreakpointProperties) bp.getProperties();
+    protected String composeRemoveBreakpointCommand(DBGBreakpointDescriptor breakpointDescriptor) {
+        PostgreDebugBreakpointDescriptor bp = (PostgreDebugBreakpointDescriptor) breakpointDescriptor;
         String sqlCommand = SQL_DROP_BREAKPOINT.replaceAll("\\?sessionid", String.valueOf(getSessionId()))
                 .replaceAll("\\?obj", String.valueOf(bp.getObjectId()))
-                .replaceAll("\\?line", properties.isOnStart() ? "-1" : String.valueOf(properties.getLineNo()));
+                .replaceAll("\\?line", bp.isOnStart() ? "-1" : String.valueOf(bp.getLineNo()));
         return sqlCommand;
     }
 
