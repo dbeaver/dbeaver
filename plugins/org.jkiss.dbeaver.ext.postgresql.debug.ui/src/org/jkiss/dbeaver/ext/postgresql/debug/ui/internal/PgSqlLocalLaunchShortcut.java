@@ -17,19 +17,19 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.debug.ui.internal;
 
-import java.util.Map;
-
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
+import org.jkiss.dbeaver.debug.DBGConstants;
 import org.jkiss.dbeaver.debug.DBGController;
-import org.jkiss.dbeaver.debug.core.DebugCore;
 import org.jkiss.dbeaver.debug.ui.DatabaseLaunchShortcut;
 import org.jkiss.dbeaver.debug.ui.DatabaseScriptDialog;
 import org.jkiss.dbeaver.ext.postgresql.debug.core.PostgreSqlDebugCore;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+
+import java.util.Map;
 
 public class PgSqlLocalLaunchShortcut extends DatabaseLaunchShortcut {
 
@@ -40,9 +40,9 @@ public class PgSqlLocalLaunchShortcut extends DatabaseLaunchShortcut {
     @Override
     protected ILaunchConfiguration createConfiguration(DBSObject launchable) throws CoreException {
         ILaunchConfigurationWorkingCopy workingCopy = PostgreSqlDebugCore.createConfiguration(launchable);
-        workingCopy.setAttribute(DebugCore.ATTR_ATTACH_KIND, DBGController.ATTACH_KIND_LOCAL);
+        workingCopy.setAttribute(DBGConstants.ATTR_ATTACH_KIND, DBGController.ATTACH_KIND_LOCAL);
         IWorkbenchPartSite site = getWorkbenchPartSite();
-        String script = workingCopy.getAttribute(DebugCore.ATTR_SCRIPT_TEXT, DebugCore.ATTR_SCRIPT_TEXT_DEFAULT);
+        String script = workingCopy.getAttribute(DBGConstants.ATTR_SCRIPT_TEXT, "");
         String inputName = "Script";
         DatabaseScriptDialog dialog = new DatabaseScriptDialog(getShell(), site, inputName, script, launchable);
         dialog.create();
@@ -54,15 +54,18 @@ public class PgSqlLocalLaunchShortcut extends DatabaseLaunchShortcut {
             return null;
         }
         String modified = dialog.getScriptTextValue();
-        workingCopy.setAttribute(DebugCore.ATTR_SCRIPT_TEXT, modified);
+        workingCopy.setAttribute(DBGConstants.ATTR_SCRIPT_TEXT, modified);
         return workingCopy.doSave();
     }
 
     @Override
-    protected boolean isCandidate(ILaunchConfiguration config, DBSObject launchable,
-            Map<String, Object> databaseContext) {
-        String kind = DebugCore.extractAttachKind(config);
-        if (!DBGController.ATTACH_KIND_LOCAL.equals(kind)) {
+    protected boolean isCandidate(ILaunchConfiguration config, DBSObject launchable, Map<String, Object> databaseContext) {
+        try {
+            String kind = config.getAttribute(DBGConstants.ATTR_ATTACH_KIND, (String)null);
+            if (!DBGController.ATTACH_KIND_LOCAL.equals(kind)) {
+                return false;
+            }
+        } catch (CoreException e) {
             return false;
         }
         return super.isCandidate(config, launchable, databaseContext);

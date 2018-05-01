@@ -282,7 +282,7 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
 
     @Override
     public boolean supportsBreakpoint(IBreakpoint breakpoint) {
-        return breakpoint.getModelIdentifier().equals(DebugCore.BREAKPOINT_ID_DATABASE_LINE);
+        return breakpoint.getModelIdentifier().equals(DBGConstants.BREAKPOINT_ID_DATABASE_LINE);
     }
 
     @Override
@@ -343,7 +343,7 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
     @Override
     public void breakpointManagerEnablementChanged(boolean enabled) {
         IBreakpoint[] breakpoints = DebugPlugin.getDefault().getBreakpointManager()
-                .getBreakpoints(DebugCore.BREAKPOINT_ID_DATABASE_LINE);
+                .getBreakpoints(DBGConstants.BREAKPOINT_ID_DATABASE_LINE);
         for (IBreakpoint breakpoint : breakpoints) {
             if (enabled) {
                 breakpointAdded(breakpoint);

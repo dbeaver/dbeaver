@@ -17,15 +17,13 @@
  */
 package org.jkiss.dbeaver.debug.core;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.LaunchConfigurationDelegate;
 import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.debug.DBGConstants;
 import org.jkiss.dbeaver.debug.DBGController;
 import org.jkiss.dbeaver.debug.DBGException;
 import org.jkiss.dbeaver.debug.core.model.DatabaseDebugTarget;
@@ -40,39 +38,22 @@ public class DatabaseLaunchDelegate extends LaunchConfigurationDelegate {
     @Override
     public void launch(ILaunchConfiguration configuration, String mode, ILaunch launch, IProgressMonitor monitor)
             throws CoreException {
-        String datasourceId = DebugCore.extractDatasourceId(configuration);
+        String datasourceId = configuration.getAttribute(DBGConstants.ATTR_DATASOURCE_ID, (String)null);
         DataSourceDescriptor datasourceDescriptor = DataSourceRegistry.findDataSource(datasourceId);
         if (datasourceDescriptor == null) {
             String message = NLS.bind("Unable to find data source with id {0}", datasourceId);
             throw new CoreException(DebugCore.newErrorStatus(message));
         }
-        Map<String, Object> attributes = extractAttributes(configuration);
         DBGController controller = createController(datasourceDescriptor);
         if (controller == null) {
             String message = NLS.bind("Unable to find debug controller for datasource {0}", datasourceDescriptor);
             throw new CoreException(DebugCore.newErrorStatus(message));
         }
-        controller.init(attributes);
+        controller.init(configuration.getAttributes());
         DatabaseProcess process = createProcess(launch, configuration.getName());
         DatabaseDebugTarget target = createDebugTarget(launch, controller, process);
         target.connect(monitor);
         launch.addDebugTarget(target);
-    }
-
-    protected Map<String, Object> extractAttributes(ILaunchConfiguration configuration) throws CoreException {
-        Map<String, Object> attributes = new HashMap<>();
-        attributes.put(DBGController.DATABASE_NAME, DebugCore.extractDatabaseName(configuration));
-        attributes.put(DBGController.SCHEMA_NAME, DebugCore.extractSchemaName(configuration));
-        attributes.put(DBGController.PROCEDURE_OID, DebugCore.extractProcedureOid(configuration));
-        attributes.put(DBGController.PROCEDURE_NAME, DebugCore.extractProcedureName(configuration));
-
-        attributes.put(DBGController.ATTACH_PROCESS, DebugCore.extractAttachProcess(configuration));
-        attributes.put(DBGController.ATTACH_KIND, DebugCore.extractAttachKind(configuration));
-        attributes.put(DBGController.SCRIPT_EXECUTE, DebugCore.extractScriptExecute(configuration));
-        attributes.put(DBGController.SCRIPT_TEXT, DebugCore.extractScriptText(configuration));
-        // Well, put it all for now
-        attributes.putAll(configuration.getAttributes());
-        return attributes;
     }
 
     protected DBGController createController(DBPDataSourceContainer dataSourceContainer) throws CoreException {
@@ -88,7 +69,7 @@ public class DatabaseLaunchDelegate extends LaunchConfigurationDelegate {
     }
 
     protected DatabaseDebugTarget createDebugTarget(ILaunch launch, DBGController controller, DatabaseProcess process) {
-        return new DatabaseDebugTarget(DebugCore.MODEL_IDENTIFIER_DATABASE, launch, process, controller);
+        return new DatabaseDebugTarget(DBGConstants.MODEL_IDENTIFIER_DATABASE, launch, process, controller);
     }
 
 }
