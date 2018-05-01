@@ -31,8 +31,6 @@ public interface IDatabaseBreakpoint extends IBreakpoint {
 
     String getProcedureName() throws CoreException;
 
-    String getProcedureOid() throws CoreException;
-
     String getNodePath() throws CoreException;
 
 }
