@@ -40,6 +40,19 @@ public class DBeaverIcons
 {
     private static final Log log = Log.getLog(DBeaverIcons.class);
 
+    private static final boolean useLegacyOverlay;
+
+    static {
+        boolean hasCachedImageDataProvider;
+        try {
+            Class.forName("org.eclipse.jface.resource.CompositeImageDescriptor$CachedImageDataProvider");
+            hasCachedImageDataProvider = true;
+        } catch (ClassNotFoundException e) {
+            hasCachedImageDataProvider = false;
+        }
+        useLegacyOverlay = !hasCachedImageDataProvider;
+    }
+
     private static class IconDescriptor {
         String id;
         Image image;
@@ -112,12 +125,30 @@ public class DBeaverIcons
             (image.getBottomRight() == null ? "" : image.getBottomRight().getLocation());
         IconDescriptor icon = compositeMap.get(compositeId);
         if (icon == null) {
-            OverlayImageDescriptor ovrImage = new OverlayImageDescriptor(mainIcon.imageDescriptor);
-            if (image.getTopLeft() != null) ovrImage.setTopLeft(new ImageDescriptor[] { getImageDescriptor(image.getTopLeft())} );
-            if (image.getTopRight() != null) ovrImage.setTopRight(new ImageDescriptor[]{ getImageDescriptor(image.getTopRight()) });
-            if (image.getBottomLeft() != null) ovrImage.setBottomLeft(new ImageDescriptor[]{getImageDescriptor(image.getBottomLeft())});
-            if (image.getBottomRight() != null) ovrImage.setBottomRight(new ImageDescriptor[]{getImageDescriptor(image.getBottomRight())});
-            Image resultImage = ovrImage.createImage();
+            Image resultImage;
+            if (useLegacyOverlay) {
+                OverlayImageDescriptorLegacy ovrImage = new OverlayImageDescriptorLegacy(mainIcon.image.getImageData());
+                if (image.getTopLeft() != null)
+                    ovrImage.setTopLeft(new ImageDescriptor[]{getImageDescriptor(image.getTopLeft())});
+                if (image.getTopRight() != null)
+                    ovrImage.setTopRight(new ImageDescriptor[]{getImageDescriptor(image.getTopRight())});
+                if (image.getBottomLeft() != null)
+                    ovrImage.setBottomLeft(new ImageDescriptor[]{getImageDescriptor(image.getBottomLeft())});
+                if (image.getBottomRight() != null)
+                    ovrImage.setBottomRight(new ImageDescriptor[]{getImageDescriptor(image.getBottomRight())});
+                resultImage = ovrImage.createImage();
+            } else {
+                OverlayImageDescriptor ovrImage = new OverlayImageDescriptor(mainIcon.imageDescriptor);
+                if (image.getTopLeft() != null)
+                    ovrImage.setTopLeft(new ImageDescriptor[]{getImageDescriptor(image.getTopLeft())});
+                if (image.getTopRight() != null)
+                    ovrImage.setTopRight(new ImageDescriptor[]{getImageDescriptor(image.getTopRight())});
+                if (image.getBottomLeft() != null)
+                    ovrImage.setBottomLeft(new ImageDescriptor[]{getImageDescriptor(image.getBottomLeft())});
+                if (image.getBottomRight() != null)
+                    ovrImage.setBottomRight(new ImageDescriptor[]{getImageDescriptor(image.getBottomRight())});
+                resultImage = ovrImage.createImage();
+            }
             icon = new IconDescriptor(compositeId, resultImage);
             compositeMap.put(compositeId, icon);
         }
