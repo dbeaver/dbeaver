@@ -288,7 +288,7 @@ public class Debugger {
         }
 
         // TODO: fix connection
-        controller = new PostgreDebugController(dataSource);
+        controller = new PostgreDebugController(dataSource, new HashMap<>());
 
         Scanner sc = new Scanner(System.in);
         Scanner scArg;
