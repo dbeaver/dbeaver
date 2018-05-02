@@ -14,14 +14,14 @@ Supports any database which has JDBC driver (which basically means - ANY databas
 * Based on <a href="http://www.eclipse.org/">Eclipse</a> platform.
 * Uses plugins architecture and provides additional functionality for the following databases: MySQL/MariaDB, PostgreSQL, Oracle, DB2 LUW, Exasol, SQL Server, Sybase/SAP ASE, SQLite, Firebird, H2, HSQLDB, Derby, Teradata, Vertica, Netezza, Informix, etc.
 
-<a href="https://dbeaver.jkiss.org/product/dbeaver-ss-mock.png"><img src="https://dbeaver.jkiss.org/product/dbeaver-ss-mock.png" width="400"/></a>
-<a href="https://dbeaver.jkiss.org/product/dbeaver-ss-erd.png"><img src="https://dbeaver.jkiss.org/product/dbeaver-ss-erd.png" width="400"/></a>
-<a href="https://dbeaver.jkiss.org/product/dbeaver-ss-classic.png"><img src="https://dbeaver.jkiss.org/product/dbeaver-ss-classic.png" width="400"/></a>
-<a href="https://dbeaver.jkiss.org/product/dbeaver-ss-dark.png"><img src="https://dbeaver.jkiss.org/product/dbeaver-ss-dark.png" width="400"/></a>
+<a href="https://dbeaver.io/product/dbeaver-ss-mock.png"><img src="https://dbeaver.io/product/dbeaver-ss-mock.png" width="400"/></a>
+<a href="https://dbeaver.io/product/dbeaver-ss-erd.png"><img src="https://dbeaver.io/product/dbeaver-ss-erd.png" width="400"/></a>
+<a href="https://dbeaver.io/product/dbeaver-ss-classic.png"><img src="https://dbeaver.io/product/dbeaver-ss-classic.png" width="400"/></a>
+<a href="https://dbeaver.io/product/dbeaver-ss-dark.png"><img src="https://dbeaver.io/product/dbeaver-ss-dark.png" width="400"/></a>
 
 ## Download
 
-You can download prebuilt binaries from <a href="https://dbeaver.jkiss.org/download">official web site</a> or directly from <a href="https://github.com/dbeaver/dbeaver/releases">GitHub releases</a>.
+You can download prebuilt binaries from <a href="https://dbeaver.io/download">official web site</a> or directly from <a href="https://github.com/dbeaver/dbeaver/releases">GitHub releases</a>.
 
 ## Running
 
@@ -57,7 +57,7 @@ Binaries are in `product/standalone/target/products`
 
 - If you have any questions, suggestions, ideas, etc - <a href="mailto:support@jkiss.org">write us</a>.
 - Pull requests are welcome.
-- Visit https://dbeaver.jkiss.org or https://dbeaver.com for more information.
+- Visit https://dbeaver.io or https://dbeaver.com for more information.
 - Thanks for using DBeaver! Star if you like it.
 
 ## Contribution: help the Beaver!
