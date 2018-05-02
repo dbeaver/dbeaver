@@ -137,7 +137,7 @@ public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject
 
     private boolean isInDebugMode() {
         return CommonUtils.getBoolean(
-                getEditorInput().getAttribute(DBPScriptObject.OPTION_DEBUGGER_SOURCE), true);
+                getEditorInput().getAttribute(DBPScriptObject.OPTION_DEBUGGER_SOURCE), false);
     }
 }
 
