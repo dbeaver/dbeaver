@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.debug.core;
 
+import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.debug.core.ILaunch;
@@ -25,6 +26,7 @@ import org.eclipse.debug.core.model.LaunchConfigurationDelegate;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.debug.DBGConstants;
 import org.jkiss.dbeaver.debug.DBGController;
+import org.jkiss.dbeaver.debug.DBGControllerFactory;
 import org.jkiss.dbeaver.debug.DBGException;
 import org.jkiss.dbeaver.debug.core.model.DatabaseDebugTarget;
 import org.jkiss.dbeaver.debug.core.model.DatabaseProcess;
@@ -32,6 +34,8 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+
+import java.util.Map;
 
 public class DatabaseLaunchDelegate extends LaunchConfigurationDelegate {
 
@@ -44,21 +48,26 @@ public class DatabaseLaunchDelegate extends LaunchConfigurationDelegate {
             String message = NLS.bind("Unable to find data source with id {0}", datasourceId);
             throw new CoreException(DebugCore.newErrorStatus(message));
         }
-        DBGController controller = createController(datasourceDescriptor);
+        DBGController controller = createController(datasourceDescriptor, configuration.getAttributes());
         if (controller == null) {
             String message = NLS.bind("Unable to find debug controller for datasource {0}", datasourceDescriptor);
             throw new CoreException(DebugCore.newErrorStatus(message));
         }
-        controller.init(configuration.getAttributes());
         DatabaseProcess process = createProcess(launch, configuration.getName());
         DatabaseDebugTarget target = createDebugTarget(launch, controller, process);
         target.connect(monitor);
         launch.addDebugTarget(target);
     }
 
-    protected DBGController createController(DBPDataSourceContainer dataSourceContainer) throws CoreException {
+    protected DBGController createController(DBPDataSourceContainer dataSourceContainer, Map<String, Object> attributes) throws CoreException {
         try {
-            return DebugCore.findDebugController(dataSourceContainer);
+            DBGControllerFactory controllerFactory = Adapters.adapt(dataSourceContainer, DBGControllerFactory.class);
+            if (controllerFactory != null) {
+                return controllerFactory.createController(dataSourceContainer, attributes);
+            }
+            throw new DBGException(
+                NLS.bind("Unable to find controller factory for datasource \"{0}\"", dataSourceContainer.getDriver().getProviderId())
+            );
         } catch (DBGException e) {
             throw new CoreException(GeneralUtils.makeExceptionStatus(e));
         }

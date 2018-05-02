@@ -36,13 +36,14 @@ public abstract class DBGBaseController implements DBGController {
 
     private final DBPDataSourceContainer dataSourceContainer;
 
-    private final Map<String, Object> configuration = new HashMap<>();
+    private final Map<String, Object> configuration;
     private final Map<Object, DBGJDBCSession> sessions = new HashMap<>(1);
 
     private ListenerList<DBGEventHandler> eventHandlers = new ListenerList<>();
 
-    public DBGBaseController(DBPDataSourceContainer dataSourceContainer) {
+    protected DBGBaseController(DBPDataSourceContainer dataSourceContainer, Map<String, Object> configuration) {
         this.dataSourceContainer = dataSourceContainer;
+        this.configuration = new HashMap<>(configuration);
     }
 
     @Override
@@ -53,11 +54,6 @@ public abstract class DBGBaseController implements DBGController {
     @Override
     public Map<String, Object> getDebugConfiguration() {
         return new HashMap<>(configuration);
-    }
-
-    @Override
-    public void init(Map<String, Object> context) {
-        this.configuration.putAll(context);
     }
 
     @Override

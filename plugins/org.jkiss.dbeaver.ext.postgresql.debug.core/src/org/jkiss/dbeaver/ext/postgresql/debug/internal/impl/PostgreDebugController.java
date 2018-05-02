@@ -29,8 +29,8 @@ import java.util.Map;
 
 public class PostgreDebugController extends DBGBaseController {
 
-    public PostgreDebugController(DBPDataSourceContainer dataSourceDescriptor) {
-        super(dataSourceDescriptor);
+    public PostgreDebugController(DBPDataSourceContainer dataSourceContainer, Map<String, Object> configuration) {
+        super(dataSourceContainer, configuration);
     }
 
     @Override

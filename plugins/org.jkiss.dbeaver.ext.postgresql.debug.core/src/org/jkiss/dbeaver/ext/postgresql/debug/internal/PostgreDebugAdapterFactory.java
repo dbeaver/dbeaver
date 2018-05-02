@@ -19,9 +19,11 @@ package org.jkiss.dbeaver.ext.postgresql.debug.internal;
 
 import org.eclipse.core.runtime.IAdapterFactory;
 import org.jkiss.dbeaver.debug.DBGController;
+import org.jkiss.dbeaver.debug.DBGControllerFactory;
 import org.jkiss.dbeaver.debug.DBGResolver;
 import org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider;
 import org.jkiss.dbeaver.ext.postgresql.debug.internal.impl.PostgreDebugController;
+import org.jkiss.dbeaver.ext.postgresql.debug.internal.impl.PostgreDebugControllerFactory;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -34,27 +36,19 @@ public class PostgreDebugAdapterFactory implements IAdapterFactory {
 
     @Override
     public <T> T getAdapter(Object adaptableObject, Class<T> adapterType) {
-        if (adapterType == DBGController.class) {
+        if (adapterType == DBGControllerFactory.class) {
             if (adaptableObject instanceof DBPDataSourceContainer) {
-                DBPDataSourceContainer sourceContainer = (DBPDataSourceContainer) adaptableObject;
-                DBPDriver driver = sourceContainer.getDriver();
-                if (driver == null) {
-                    return null;
+                DBPDataSourceContainer ds = (DBPDataSourceContainer) adaptableObject;
+                if (ds.getDriver().getDataSourceProvider() instanceof PostgreDataSourceProvider) {
+                    return adapterType.cast(new PostgreDebugControllerFactory());
                 }
-                DBPDataSourceProvider dataSourceProvider = driver.getDataSourceProvider();
-                if (dataSourceProvider instanceof PostgreDataSourceProvider) {
-                    PostgreDebugController postgreDebugController = new PostgreDebugController(sourceContainer);
-                    return adapterType.cast(postgreDebugController);
-                }
-
             }
         } else if (adapterType == DBGResolver.class) {
             if (adaptableObject instanceof DBPDataSourceContainer) {
-                DBPDataSourceContainer sourceContainer = (DBPDataSourceContainer) adaptableObject;
-                DBPDataSource dataSource = sourceContainer.getDataSource();
-                if (dataSource instanceof PostgreDataSource) {
-                    PostgreDataSource postgeDataSource = (PostgreDataSource) dataSource;
-                    return adapterType.cast(new PostgreResolver(postgeDataSource));
+                DBPDataSourceContainer ds = (DBPDataSourceContainer) adaptableObject;
+                if (ds.getDataSource() instanceof PostgreDataSource) {
+                    return adapterType.cast(
+                        new PostgreResolver((PostgreDataSource) ds.getDataSource()));
                 }
             }
         }

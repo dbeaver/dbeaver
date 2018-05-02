@@ -38,11 +38,6 @@ public interface DBGController {
     Map<String, Object> getDebugConfiguration();
 
     /**
-     * Sets debug context like OID etc.
-     */
-    void init(Map<String, Object> context);
-
-    /**
      * 
      * @return key to use for <code>detach</code>
      */

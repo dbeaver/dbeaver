@@ -38,10 +38,7 @@ import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.debug.DBGConstants;
-import org.jkiss.dbeaver.debug.DBGController;
-import org.jkiss.dbeaver.debug.DBGException;
-import org.jkiss.dbeaver.debug.DBGResolver;
+import org.jkiss.dbeaver.debug.*;
 import org.jkiss.dbeaver.debug.core.model.DatabaseStackFrame;
 import org.jkiss.dbeaver.debug.internal.core.DebugCoreActivator;
 import org.jkiss.dbeaver.debug.internal.core.DebugCoreMessages;
@@ -166,17 +163,6 @@ public class DebugCore {
         Map<String, Object> context = finder.resolveContext(databaseObject);
         result.putAll(context);
         return result;
-    }
-
-    public static DBGController findDebugController(DBPDataSourceContainer dataSourceContainer)
-            throws DBGException {
-        DBGController controller = Adapters.adapt(dataSourceContainer, DBGController.class);
-        if (controller != null) {
-            return controller;
-        }
-        String providerId = dataSourceContainer.getDriver().getProviderId();
-        String message = NLS.bind("Unable to find controller for datasource \"{0}\"", providerId);
-        throw new DBGException(message);
     }
 
     public static String getSourceName(Object object) throws CoreException {
