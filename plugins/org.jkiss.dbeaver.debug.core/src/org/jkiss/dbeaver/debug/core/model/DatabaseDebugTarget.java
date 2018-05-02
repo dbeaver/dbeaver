@@ -367,7 +367,7 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
 
     @Override
     public boolean canDisconnect() {
-        return true;
+        return session != null;
     }
 
     @Override
@@ -386,7 +386,7 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
 
     @Override
     public boolean isDisconnected() {
-        return false;
+        return session == null;
     }
 
     @Override
