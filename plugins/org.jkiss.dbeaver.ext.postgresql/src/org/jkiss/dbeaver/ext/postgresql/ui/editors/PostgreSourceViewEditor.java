@@ -99,7 +99,7 @@ public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject
                 {
                     setImageDescriptor(DBeaverIcons.getImageDescriptor(DBIcon.TREE_PERMISSIONS));
                     setToolTipText("Shows object permission grants");
-                    setChecked(showPermissions != null && showPermissions);
+                    setChecked(getShowPermissions());
                 }
                 @Override
                 public void run() {
@@ -109,20 +109,19 @@ public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject
             }, true));
         }
         if (sourceObject instanceof PostgreTableBase) {
-            contributionManager.add(new ControlContribution("PGDDLShowColumnComments") {
-                @Override
-                protected Control createControl(Composite parent) {
-                    Button showColumnCommentsCheck = UIUtils.createCheckbox(parent, "Show comments", "Show column comments in column definition", true, 0);
-                    showColumnCommentsCheck.addSelectionListener(new SelectionAdapter() {
-                        @Override
-                        public void widgetSelected(SelectionEvent e) {
-                            showColumnComments = showColumnCommentsCheck.getSelection();
-                            refreshPart(PostgreSourceViewEditor.this, true);
-                        }
-                    });
-                    return showColumnCommentsCheck;
-                }
-            });
+            contributionManager.add(ActionUtils.makeActionContribution(
+                new Action("Show comments", Action.AS_CHECK_BOX) {
+                    {
+                        setImageDescriptor(DBeaverIcons.getImageDescriptor(DBIcon.TYPE_TEXT));
+                        setToolTipText("Show column comments in table definition");
+                        setChecked(showColumnComments);
+                    }
+                    @Override
+                    public void run() {
+                        showColumnComments = isChecked();
+                        refreshPart(PostgreSourceViewEditor.this, true);
+                    }
+                }, true));
         }
     }
 
