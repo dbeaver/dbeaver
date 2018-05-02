@@ -46,6 +46,11 @@ public abstract class DBECommandComposite<OBJECT_TYPE extends DBPObject, HANDLER
         return properties.get(id);
     }
 
+    public boolean hasProperty(Object id)
+    {
+        return properties.containsKey(id);
+    }
+
     public Object getProperty(HANDLER_TYPE handler)
     {
         return properties.get(handler.getId());
