@@ -30,7 +30,7 @@
     <extension point="org.eclipse.debug.ui.launchConfigurationTabGroups">
         <launchConfigurationTabGroup
                 id="org.jkiss.dbeaver.debug.launchConfigurationTabGroup"
-                class="org.jkiss.dbeaver.debug.ui.DatabaseTabGroup"
+                class="org.jkiss.dbeaver.debug.ui.DatabaseDebugConfigurationTabGroup"
                 description="%launchConfigurationTabGroup.description"
                 type="org.jkiss.dbeaver.debug.launchConfiguration">
             <launchMode mode="debug" description="%launchConfigurationTabGroup.launchMode.description" perspective="org.jkiss.dbeaver.core.perspective"/>

@@ -18,6 +18,7 @@
 
 package org.jkiss.dbeaver.debug.ui;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
@@ -34,6 +35,7 @@ import org.jkiss.dbeaver.debug.DBGConstants;
 import org.jkiss.dbeaver.debug.DBGController;
 import org.jkiss.dbeaver.debug.internal.ui.DebugUIMessages;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
@@ -41,12 +43,15 @@ import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.CSmartSelector;
+import org.jkiss.dbeaver.ui.controls.DatabaseLabelProviders;
+import org.jkiss.dbeaver.ui.controls.SelectDataSourceCombo;
+import org.jkiss.dbeaver.ui.perspective.DataSourceManagementToolbar;
 import org.jkiss.utils.CommonUtils;
 
-public class DatabaseTab extends AbstractLaunchConfigurationTab {
+public class DatabaseDebugConfigurationTab extends AbstractLaunchConfigurationTab {
 
     private Text driverText;
-    private Text datasourceText;
     private Text oidText;
     private Text nameText;
 
@@ -60,6 +65,7 @@ public class DatabaseTab extends AbstractLaunchConfigurationTab {
      * dialog.
      */
     protected ModifyListener modifyListener = evt -> scheduleUpdateJob();
+    private SelectDataSourceCombo connectionCombo;
 
     @Override
     public void createControl(Composite parent) {
@@ -79,10 +85,27 @@ public class DatabaseTab extends AbstractLaunchConfigurationTab {
     }
 
     protected void createConnectionSettingsGroup(Composite composite) {
-        String groupText = DebugUIMessages.DatabaseTab_connection_group_text;
-        Group group = UIUtils.createControlGroup(composite, groupText, 2, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
+        Group group = UIUtils.createControlGroup(composite, DebugUIMessages.DatabaseTab_connection_group_text, 4, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
+
+        UIUtils.createControlLabel(group, DebugUIMessages.DatabaseTab_datasource_label_text);
+        connectionCombo = new SelectDataSourceCombo(group) {
+            @Override
+            protected IProject getActiveProject() {
+                return null;
+            }
+
+            @Override
+            protected void onDataSourceChange(DBPDataSourceContainer dataSource) {
+                String driverName = dataSource == null ? "" : dataSource.getDriver().getFullName();
+                driverText.setText(driverName);
+            }
+        };
+        connectionCombo.addItem(null);
+        for (DBPDataSourceContainer ds : DataSourceRegistry.getAllDataSources()) {
+            connectionCombo.addItem(ds);
+        }
+
         driverText = UIUtils.createLabelText(group, DebugUIMessages.DatabaseTab_driver_label_text, "", SWT.READ_ONLY);
-        datasourceText = UIUtils.createLabelText(group, DebugUIMessages.DatabaseTab_datasource_label_text, "", SWT.READ_ONLY);
     }
 
     protected void createDatabaseSettingsGroup(Composite composite) {
@@ -142,11 +165,9 @@ public class DatabaseTab extends AbstractLaunchConfigurationTab {
         try {
             String dsId = configuration.getAttribute(DBGConstants.ATTR_DATASOURCE_ID, (String) null);
             DataSourceDescriptor dataSource = DataSourceRegistry.findDataSource(dsId);
+            connectionCombo.select(dataSource);
             if (dataSource != null) {
-                datasourceText.setText(dataSource.getName());
-                datasourceText.setData(dataSource.getId());
-
-                driverText.setText(dataSource.getDriver().getName());
+                driverText.setText(dataSource.getDriver().getFullName());
             }
 
             oidText.setText(
@@ -211,7 +232,8 @@ public class DatabaseTab extends AbstractLaunchConfigurationTab {
 
     @Override
     public void performApply(ILaunchConfigurationWorkingCopy configuration) {
-        configuration.setAttribute(DBGConstants.ATTR_DATASOURCE_ID, String.valueOf(datasourceText.getData()));
+        DBPDataSourceContainer dataSource = connectionCombo.getSelectedItem();
+        configuration.setAttribute(DBGConstants.ATTR_DATASOURCE_ID, dataSource == null ? null : dataSource.getId());
         configuration.setAttribute(DBGConstants.ATTR_PROCEDURE_OID, oidText.getText());
         configuration.setAttribute(DBGConstants.ATTR_PROCEDURE_NAME, nameText.getText());
         configuration.setAttribute(DBGConstants.ATTR_ATTACH_PROCESS, processText.getText());
