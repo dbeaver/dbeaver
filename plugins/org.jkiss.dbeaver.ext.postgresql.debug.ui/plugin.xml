@@ -18,26 +18,6 @@
  * limitations under the License.
   -->
 <plugin>
-    <extension point="org.eclipse.debug.ui.launchConfigurationTypeImages">
-        <launchConfigurationTypeImage
-                configTypeID="org.jkiss.dbeaver.ext.postgresql.debug.core.pgSQL"
-                icon="platform:/plugin/org.jkiss.dbeaver.ext.postgresql/$nl$/icons/postgresql_icon.png"
-                id="org.jkiss.dbeaver.ext.postgresql.debug.ui.launchConfigurationTypeImages.launchConfigurationTypeImage.pgSQL">
-        </launchConfigurationTypeImage>
-    </extension>
-
-    <extension point="org.eclipse.debug.ui.launchConfigurationTabGroups">
-        <launchConfigurationTabGroup
-                class="org.jkiss.dbeaver.debug.ui.DatabaseTabGroup"
-                description="%launchConfigurationTabGroups.launchConfigurationTabGroup.pgSQL.description"
-                id="org.jkiss.dbeaver.ext.postgresql.debug.ui.launchConfigurationTabGroups.launchConfigurationTabGroup.pgSQL"
-                type="org.jkiss.dbeaver.ext.postgresql.debug.core.pgSQL">
-            <launchMode
-                    description="%launchConfigurationTabGroups.launchConfigurationTabGroup.launchMode.pgSQL.debug.description"
-                    mode="debug">
-            </launchMode>
-        </launchConfigurationTabGroup>
-    </extension>
 
     <extension point="org.eclipse.debug.ui.launchShortcuts">
         <shortcut

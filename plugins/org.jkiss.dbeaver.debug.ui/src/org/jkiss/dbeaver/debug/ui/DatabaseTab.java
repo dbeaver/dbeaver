@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.CommonUtils;
 
 public class DatabaseTab extends AbstractLaunchConfigurationTab {
 
@@ -149,13 +150,13 @@ public class DatabaseTab extends AbstractLaunchConfigurationTab {
             }
 
             oidText.setText(
-                configuration.getAttribute(DBGConstants.ATTR_PROCEDURE_OID, (String)null));
+                configuration.getAttribute(DBGConstants.ATTR_PROCEDURE_OID, ""));
 
             nameText.setText(
-                configuration.getAttribute(DBGConstants.ATTR_PROCEDURE_NAME, (String)null));
+                configuration.getAttribute(DBGConstants.ATTR_PROCEDURE_NAME, ""));
 
             processText.setText(
-                configuration.getAttribute(DBGConstants.ATTR_ATTACH_PROCESS, (String)null));
+                configuration.getAttribute(DBGConstants.ATTR_ATTACH_PROCESS, ""));
 
             String extracted = configuration.getAttribute(DBGConstants.ATTR_ATTACH_KIND, (String)null);
             if (DBGController.ATTACH_KIND_GLOBAL.equals(extracted)) {
@@ -168,7 +169,7 @@ public class DatabaseTab extends AbstractLaunchConfigurationTab {
             handleAttachKind(extracted);
 
             scriptText.setText(
-                configuration.getAttribute(DBGConstants.ATTR_SCRIPT_TEXT, (String)null));
+                configuration.getAttribute(DBGConstants.ATTR_SCRIPT_TEXT, ""));
 
         } catch (CoreException e) {
             e.printStackTrace();
