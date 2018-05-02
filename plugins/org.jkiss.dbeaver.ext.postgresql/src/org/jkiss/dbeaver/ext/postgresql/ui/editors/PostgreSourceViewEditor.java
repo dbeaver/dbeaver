@@ -125,7 +125,8 @@ public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject
             contributionManager.add(new ControlContribution("ProcedureDebugSource") {
                 @Override
                 protected Control createControl(Composite parent) {
-                    omitHeaderCheck = UIUtils.createCheckbox(parent, "Omit procedure header", "Show only procedure body without auto-generated header", false, 0);
+                    Composite ph = UIUtils.createPlaceholder(parent, 1, 0);
+                    omitHeaderCheck = UIUtils.createCheckbox(ph, "Omit procedure header", "Show only procedure body without auto-generated header", false, 0);
                     Object omitValue = getEditorInput().getAttribute(DBPScriptObject.OPTION_DEBUGGER_SOURCE);
                     boolean omitHeader = Boolean.parseBoolean(String.valueOf(omitValue));
                     omitHeaderCheck.setSelection(omitHeader);
@@ -137,16 +138,16 @@ public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject
                             refreshPart(PostgreSourceViewEditor.this, true);
                         }
                     });
-                    return omitHeaderCheck;
+                    return ph;
                 }
             });
         }
         if (sourceObject instanceof PostgrePermissionsOwner) {
-            contributionManager.add(new Separator());
             contributionManager.add(new ControlContribution("PGDDLShowPermissions") {
                 @Override
                 protected Control createControl(Composite parent) {
-                    Button showPermissionsCheck = UIUtils.createCheckbox(parent, "Show permissions", "Show permission grants", getShowPermissions(), 0);
+                    Composite ph = UIUtils.createPlaceholder(parent, 1, 0);
+                    Button showPermissionsCheck = UIUtils.createCheckbox(ph, "Show permissions", "Show permission grants", getShowPermissions(), 0);
                     showPermissionsCheck.addSelectionListener(new SelectionAdapter() {
                         @Override
                         public void widgetSelected(SelectionEvent e) {
@@ -154,7 +155,7 @@ public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject
                             refreshPart(PostgreSourceViewEditor.this, true);
                         }
                     });
-                    return showPermissionsCheck;
+                    return ph;
                 }
             });
         }
