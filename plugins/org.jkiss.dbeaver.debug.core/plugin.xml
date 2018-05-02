@@ -19,78 +19,59 @@
   -->
 <plugin>
 
-   <extension
-         id="databaseBreakpointMarker"
-         name="%databaseBreakpoint.name"
-         point="org.eclipse.core.resources.markers">
-      <super
-            type="org.jkiss.dbeaver.runtime.ide.core.datasourceMarker">
-      </super>
-      <super
-            type="org.eclipse.debug.core.breakpointMarker">
-      </super>
-      <persistent
-            value="true">
-      </persistent>
-      <attribute
-            name="org.jkiss.dbeaver.debug.core.databaseName">
-      </attribute>
-      <attribute
-            name="org.jkiss.dbeaver.debug.core.schemaName">
-      </attribute>
-      <attribute
-            name="org.jkiss.dbeaver.debug.core.procedureName">
-      </attribute>
-      <attribute
-            name="org.jkiss.dbeaver.debug.core.procedureOid">
-      </attribute>
-   </extension>
-   <extension
-         id="databaseLineBreakpointMarker"
-         name="%databaseLineBreakpoint.name"
-         point="org.eclipse.core.resources.markers">
-      <super
-            type="org.eclipse.debug.core.lineBreakpointMarker">
-      </super>
-      <super
-            type="org.jkiss.dbeaver.debug.core.databaseBreakpointMarker">
-      </super>
-      <persistent
-            value="true">
-      </persistent>
-   </extension>
-   <extension
-         point="org.eclipse.debug.core.breakpoints">
-      <breakpoint
-            class="org.jkiss.dbeaver.debug.core.breakpoints.DatabaseLineBreakpoint"
-            id="org.jkiss.dbeaver.debug.core.databaseLineBreakpoint"
-            markerType="org.jkiss.dbeaver.debug.core.databaseLineBreakpointMarker"
-            name="%databaseLineBreakpoint.name">
-      </breakpoint>
-   </extension>
-   <extension
-         point="org.eclipse.debug.core.sourceLocators">
-      <sourceLocator
-            class="org.jkiss.dbeaver.debug.sourcelookup.DBGSourceLookupDirector"
-            id="org.jkiss.dbeaver.debug.core.procedureSourceLocator"
-            name="%procedureSourceLocator.name">
-      </sourceLocator>
-   </extension>
-   <extension
-         point="org.eclipse.debug.core.sourcePathComputers">
-      <sourcePathComputer
-            class="org.jkiss.dbeaver.debug.sourcelookup.DBGSourcePathComputer"
-            id="org.jkiss.dbeaver.debug.core.procedureSourcePathComputer">
-      </sourcePathComputer>
-   </extension>
-   <extension
-         point="org.eclipse.debug.core.sourceContainerTypes">
-      <sourceContainerType
-            class="org.jkiss.dbeaver.debug.sourcelookup.DatabaseSourceContainerTypeDelegate"
-            description="A collection of databases"
-            id="org.jkiss.dbeaver.debug.core.datasourceSourceContainerType"
-            name="Databases">
-      </sourceContainerType>
-   </extension>
+    <extension id="databaseBreakpointMarker" name="%databaseBreakpoint.name" point="org.eclipse.core.resources.markers">
+        <super type="org.jkiss.dbeaver.runtime.ide.core.datasourceMarker"/>
+        <super type="org.eclipse.debug.core.breakpointMarker"/>
+        <persistent value="true"/>
+        <attribute name="org.jkiss.dbeaver.debug.core.procedureOid"/>
+    </extension>
+
+    <extension
+            id="databaseLineBreakpointMarker"
+            name="%databaseLineBreakpoint.name"
+            point="org.eclipse.core.resources.markers">
+        <super
+                type="org.eclipse.debug.core.lineBreakpointMarker">
+        </super>
+        <super
+                type="org.jkiss.dbeaver.debug.core.databaseBreakpointMarker">
+        </super>
+        <persistent
+                value="true">
+        </persistent>
+    </extension>
+    <extension
+            point="org.eclipse.debug.core.breakpoints">
+        <breakpoint
+                class="org.jkiss.dbeaver.debug.core.breakpoints.DatabaseLineBreakpoint"
+                id="org.jkiss.dbeaver.debug.core.databaseLineBreakpoint"
+                markerType="org.jkiss.dbeaver.debug.core.databaseLineBreakpointMarker"
+                name="%databaseLineBreakpoint.name">
+        </breakpoint>
+    </extension>
+    <extension
+            point="org.eclipse.debug.core.sourceLocators">
+        <sourceLocator
+                class="org.jkiss.dbeaver.debug.sourcelookup.DBGSourceLookupDirector"
+                id="org.jkiss.dbeaver.debug.core.procedureSourceLocator"
+                name="%procedureSourceLocator.name">
+        </sourceLocator>
+    </extension>
+    <extension
+            point="org.eclipse.debug.core.sourcePathComputers">
+        <sourcePathComputer
+                class="org.jkiss.dbeaver.debug.sourcelookup.DBGSourcePathComputer"
+                id="org.jkiss.dbeaver.debug.core.procedureSourcePathComputer">
+        </sourcePathComputer>
+    </extension>
+    <extension
+            point="org.eclipse.debug.core.sourceContainerTypes">
+        <sourceContainerType
+                class="org.jkiss.dbeaver.debug.sourcelookup.DatabaseSourceContainerTypeDelegate"
+                description="A collection of databases"
+                id="org.jkiss.dbeaver.debug.core.datasourceSourceContainerType"
+                name="Databases">
+        </sourceContainerType>
+    </extension>
 
 </plugin>

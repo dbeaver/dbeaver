@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ext.postgresql.ui.editors;
 
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.ControlContribution;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
@@ -27,8 +28,11 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer;
 import org.jkiss.utils.CommonUtils;
@@ -40,7 +44,6 @@ import java.util.Map;
  */
 public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject> {
     
-    private Button showHeaderCheck;
     private Boolean showPermissions;
     private boolean showColumnComments = true;
 
@@ -76,43 +79,34 @@ public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject
         PostgreScriptObject sourceObject = getSourceObject();
         if (sourceObject instanceof PostgreProcedure) {
             contributionManager.add(new Separator());
-            contributionManager.add(new ControlContribution("ProcedureDebugSource") {
-                @Override
-                protected Control createControl(Composite parent) {
-                    Composite ph = UIUtils.createPlaceholder(parent, 1, 0);
-                    showHeaderCheck = UIUtils.createCheckbox(ph, "Show header", "Shows auto-generated function header", false, 0);
-                    boolean showHeader = CommonUtils.getBoolean(
-                        getEditorInput().getAttribute(DBPScriptObject.OPTION_DEBUGGER_SOURCE), false);
-                    showHeaderCheck.setSelection(showHeader);
-                    showHeaderCheck.addSelectionListener(new SelectionAdapter() {
-                        @Override
-                        public void widgetSelected(SelectionEvent e) {
-                            getEditorInput().setAttribute(
-                                DBPScriptObject.OPTION_DEBUGGER_SOURCE,
-                                showHeaderCheck.getSelection());
-                            refreshPart(PostgreSourceViewEditor.this, true);
-                        }
-                    });
-                    return ph;
-                }
-            });
+            contributionManager.add(ActionUtils.makeActionContribution(
+                new Action("Show header", Action.AS_CHECK_BOX) {
+                    {
+                        setImageDescriptor(DBeaverIcons.getImageDescriptor(DBIcon.TREE_PROCEDURE));
+                        setToolTipText("Shows auto-generated function header");
+                        setChecked(!isInDebugMode());
+                    }
+                    @Override
+                    public void run() {
+                        getEditorInput().setAttribute(DBPScriptObject.OPTION_DEBUGGER_SOURCE, !isChecked());
+                        refreshPart(PostgreSourceViewEditor.this, true);
+                    }
+                }, true));
         }
         if (sourceObject instanceof PostgrePermissionsOwner) {
-            contributionManager.add(new ControlContribution("PGDDLShowPermissions") {
-                @Override
-                protected Control createControl(Composite parent) {
-                    Composite ph = UIUtils.createPlaceholder(parent, 1, 0);
-                    Button showPermissionsCheck = UIUtils.createCheckbox(ph, "Show permissions", "Show permission grants", getShowPermissions(), 0);
-                    showPermissionsCheck.addSelectionListener(new SelectionAdapter() {
-                        @Override
-                        public void widgetSelected(SelectionEvent e) {
-                            showPermissions = showPermissionsCheck.getSelection();
-                            refreshPart(PostgreSourceViewEditor.this, true);
-                        }
-                    });
-                    return ph;
+            contributionManager.add(ActionUtils.makeActionContribution(
+                new Action("Show permissions", Action.AS_CHECK_BOX) {
+                {
+                    setImageDescriptor(DBeaverIcons.getImageDescriptor(DBIcon.TREE_PERMISSIONS));
+                    setToolTipText("Shows object permission grants");
+                    setChecked(showPermissions != null && showPermissions);
                 }
-            });
+                @Override
+                public void run() {
+                    showPermissions = isChecked();
+                    refreshPart(PostgreSourceViewEditor.this, true);
+                }
+            }, true));
         }
         if (sourceObject instanceof PostgreTableBase) {
             contributionManager.add(new ControlContribution("PGDDLShowColumnComments") {
@@ -135,12 +129,16 @@ public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject
     @Override
     protected Map<String, Object> getSourceOptions() {
         Map<String, Object> options = super.getSourceOptions();
-        boolean inDebug = !CommonUtils.getBoolean(
-            getEditorInput().getAttribute(DBPScriptObject.OPTION_DEBUGGER_SOURCE), false);
+        boolean inDebug = isInDebugMode();
         options.put(DBPScriptObject.OPTION_DEBUGGER_SOURCE, inDebug);
         options.put(PostgreConstants.OPTION_DDL_SHOW_PERMISSIONS, getShowPermissions());
         options.put(PostgreConstants.OPTION_DDL_SHOW_COLUMN_COMMENTS, showColumnComments);
         return options;
+    }
+
+    private boolean isInDebugMode() {
+        return CommonUtils.getBoolean(
+                getEditorInput().getAttribute(DBPScriptObject.OPTION_DEBUGGER_SOURCE), true);
     }
 }
 

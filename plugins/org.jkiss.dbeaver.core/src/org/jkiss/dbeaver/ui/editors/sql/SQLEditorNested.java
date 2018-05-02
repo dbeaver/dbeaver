@@ -339,6 +339,15 @@ public abstract class SQLEditorNested<T extends DBSObject>
         }
     }
 
+/*
+    @Override
+    public void editorContextMenuAboutToShow(IMenuManager menu) {
+        super.editorContextMenuAboutToShow(menu);
+        menu.add(new Separator());
+        contributeEditorCommands(menu);
+    }
+*/
+
     @Override
     public void doSaveAs() {
         saveToExternalFile();
