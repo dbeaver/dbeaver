@@ -34,6 +34,7 @@ import java.util.Scanner;
 @SuppressWarnings("nls")
 public class Debugger {
 
+/*
     public static final String PROMPT = ">";
     public static final String COMMAND_ATTACH = "A";
     public static final String COMMAND_CLOSE = "X";
@@ -61,7 +62,7 @@ public class Debugger {
 
         DBGVariable<?> v = null;
 
-        List<? extends DBGVariable<?>> vars = session.getVariables();
+        List<? extends DBGVariable<?>> vars = session.getVariables(null);
 
         Scanner scArg;
 
@@ -332,7 +333,7 @@ public class Debugger {
                     break;
                 }
 
-                controller.detach(new VoidProgressMonitor(), debugSessionC.getSessionId());
+                debugSessionC.closeSession(new VoidProgressMonitor());
 
                 System.out.println("Session closed");
 
@@ -380,7 +381,7 @@ public class Debugger {
                     break;
                 }
 
-                List<? extends DBGVariable<?>> vars = debugSessionVL.getVariables();
+                List<? extends DBGVariable<?>> vars = debugSessionVL.getVariables(null);
 
                 if (vars.size() == 0) {
                     System.out.println("No vars defined");
@@ -706,5 +707,6 @@ public class Debugger {
         }
 
     }
+*/
 
 }

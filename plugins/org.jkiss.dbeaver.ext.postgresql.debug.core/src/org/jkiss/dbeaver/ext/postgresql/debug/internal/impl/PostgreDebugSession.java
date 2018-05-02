@@ -425,6 +425,21 @@ public class PostgreDebugSession extends DBGJDBCSession {
 
     }
 
+    @Override
+    public void execStepReturn() throws DBGException {
+        throw new DBGException("Exec return not implemented");
+    }
+
+    @Override
+    public void resume() throws DBGException {
+        throw new DBGException("Resume not implemented");
+    }
+
+    @Override
+    public void suspend() throws DBGException {
+        throw new DBGException("Suspend not implemented");
+    }
+
     /**
      * Execute step SQL command asynchronously, set debug session name to
      * [sessionID] name [managerPID]
@@ -447,7 +462,11 @@ public class PostgreDebugSession extends DBGJDBCSession {
     }
 
     @Override
-    public List<DBGVariable<?>> getVariables() throws DBGException {
+    public List<DBGVariable<?>> getVariables(DBGStackFrame stack) throws DBGException {
+        if (stack != null) {
+            selectFrame(stack.getLevel());
+        }
+
         List<DBGVariable<?>> vars = new ArrayList<>();
 
         String sql = SQL_GET_VARS.replaceAll("\\?sessionid", String.valueOf(sessionId));
@@ -614,6 +633,21 @@ public class PostgreDebugSession extends DBGJDBCSession {
     @Override
     public Integer getSessionId() {
         return sessionId;
+    }
+
+    @Override
+    public boolean canStepInto() {
+        return true;
+    }
+
+    @Override
+    public boolean canStepOver() {
+        return true;
+    }
+
+    @Override
+    public boolean canStepReturn() {
+        return true;
     }
 
     /**

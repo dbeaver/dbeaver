@@ -25,12 +25,13 @@ import org.eclipse.debug.core.IBreakpointManagerListener;
 import org.eclipse.debug.core.IDebugEventSetListener;
 import org.eclipse.debug.core.model.IDebugTarget;
 import org.jkiss.dbeaver.debug.DBGController;
+import org.jkiss.dbeaver.debug.DBGSession;
 
 public interface IDatabaseDebugTarget extends IDebugTarget, IDebugEventSetListener, IBreakpointManagerListener {
 
     DBGController getController();
 
-    Object getSessionID();
+    DBGSession getSession();
 
     void connect(IProgressMonitor monitor) throws CoreException;
 
