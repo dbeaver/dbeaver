@@ -56,7 +56,7 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
     private boolean suspended = false;
     private boolean terminated = false;
 
-    private Object sessionKey;
+    private DBGSession session;
 
     public DatabaseDebugTarget(String modelIdentifier, ILaunch launch, IProcess process, DBGController controller) {
         super(null);
@@ -86,8 +86,8 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
     }
 
     @Override
-    public Object getSessionID() {
-        return sessionKey;
+    public DBGSession getSession() {
+        return session;
     }
 
     protected DatabaseThread newThread() {
@@ -169,7 +169,7 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
     @Override
     public void connect(IProgressMonitor monitor) throws CoreException {
         try {
-            sessionKey = this.controller.attach(new DefaultProgressMonitor(monitor));
+            session = this.controller.openSession(new DefaultProgressMonitor(monitor));
         } catch (DBGException e) {
             String message = NLS.bind("Failed to connect {0} to the target", getName());
             IStatus error = DebugCore.newErrorStatus(message, e);
@@ -199,7 +199,10 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
             terminated = true;
             suspended = false;
             try {
-                controller.detach(getProgressMonitor(), sessionKey);
+                if (session != null) {
+                    session.closeSession(new VoidProgressMonitor());
+                    session = null;
+                }
                 controller.unregisterEventHandler(this);
             } catch (DBGException e) {
                 String message = NLS.bind("Error terminating {0}", getName());
@@ -247,7 +250,7 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
     public void resume() throws DebugException {
         suspended = false;
         try {
-            controller.resume(sessionKey);
+            session.resume();
         } catch (DBGException e) {
             String message = NLS.bind("Error resuming {0}", getName());
             IStatus status = DebugCore.newErrorStatus(message, e);
@@ -262,16 +265,12 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
     @Override
     public void suspend() throws DebugException {
         try {
-            controller.suspend(sessionKey);
+            session.suspend();
         } catch (DBGException e) {
             String message = NLS.bind("Error suspending {0}", getName());
             IStatus status = DebugCore.newErrorStatus(message, e);
             throw new DebugException(status);
         }
-    }
-
-    private VoidProgressMonitor getProgressMonitor() {
-        return new VoidProgressMonitor();
     }
 
     public void suspended(int detail) {
@@ -296,7 +295,7 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
                 return;
             }
             try {
-                controller.addBreakpoint(new VoidProgressMonitor(), sessionKey, descriptor);
+                session.addBreakpoint(new VoidProgressMonitor(), descriptor);
             } catch (DBGException e) {
                 String message = NLS.bind("Unable to add breakpoint {0}", breakpoint);
                 Status error = DebugCore.newErrorStatus(message, e);
@@ -316,7 +315,7 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
                 return;
             }
             try {
-                controller.removeBreakpoint(new VoidProgressMonitor(), sessionKey, descriptor);
+                session.removeBreakpoint(new VoidProgressMonitor(), descriptor);
             } catch (DBGException e) {
                 String message = NLS.bind("Unable to remove breakpoint {0}", breakpoint);
                 Status error = DebugCore.newErrorStatus(message, e);
@@ -374,7 +373,10 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
     @Override
     public void disconnect() throws DebugException {
         try {
-            controller.detach(getProgressMonitor(), sessionKey);
+            if (session != null) {
+                session.closeSession(new VoidProgressMonitor());
+                session = null;
+            }
         } catch (DBGException e) {
             String message = NLS.bind("Error disconnecting {0}", getName());
             IStatus status = DebugCore.newErrorStatus(message, e);
@@ -413,45 +415,42 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
     }
 
     public boolean canStepInto() {
-        return controller.canStepInto(sessionKey);
+        return session != null && session.canStepInto();
     }
 
     public boolean canStepOver() {
-        return controller.canStepOver(sessionKey);
+        return session != null && session.canStepOver();
     }
 
     public boolean canStepReturn() {
-        return controller.canStepReturn(sessionKey);
+        return session != null && session.canStepReturn();
     }
 
     public void stepInto() throws DebugException {
-        DBGController controller = getController();
         try {
-            controller.stepInto(sessionKey);
+            session.execStepInto();
         } catch (DBGException e) {
-            String message = NLS.bind("Step into failed for session {0}", sessionKey);
+            String message = NLS.bind("Step into failed for session {0}", session.getSessionId());
             IStatus status = DebugCore.newErrorStatus(message, e);
             throw new DebugException(status);
         }
     }
 
     public void stepOver() throws DebugException {
-        DBGController controller = getController();
         try {
-            controller.stepOver(sessionKey);
+            session.execStepOver();
         } catch (DBGException e) {
-            String message = NLS.bind("Step over failed for session {0}", sessionKey);
+            String message = NLS.bind("Step over failed for session {0}", session.getSessionId());
             IStatus status = DebugCore.newErrorStatus(message, e);
             throw new DebugException(status);
         }
     }
 
     public void stepReturn() throws DebugException {
-        DBGController controller = getController();
         try {
-            controller.stepReturn(sessionKey);
+            session.execStepReturn();
         } catch (DBGException e) {
-            String message = NLS.bind("Step return failed for session {0}", sessionKey);
+            String message = NLS.bind("Step return failed for session {0}", session.getSessionId());
             IStatus status = DebugCore.newErrorStatus(message, e);
             throw new DebugException(status);
         }

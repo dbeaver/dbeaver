@@ -158,7 +158,7 @@ public class DatabaseThread extends DatabaseDebugElement implements IThread {
     protected void extractStackFrames() throws DebugException {
         try {
             IDatabaseDebugTarget debugTarget = getDatabaseDebugTarget();
-            List<? extends DBGStackFrame> stackFrames = debugTarget.getController().getStack(debugTarget.getSessionID());
+            List<? extends DBGStackFrame> stackFrames = debugTarget.getSession().getStack();
             rebuildStack(stackFrames);
         } catch (DBGException e) {
             String message = NLS.bind("Error reading stack for {0}", getName());

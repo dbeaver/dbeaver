@@ -141,7 +141,7 @@ public class DatabaseStackFrame extends DatabaseDebugElement implements IStackFr
         /*if (refreshVariables)*/ {
             try {
                 IDatabaseDebugTarget debugTarget = getDatabaseDebugTarget();
-                List<? extends DBGVariable<?>> variables = debugTarget.getController().getVariables(debugTarget.getSessionID(), dbgStackFrame);
+                List<? extends DBGVariable<?>> variables = debugTarget.getSession().getVariables(dbgStackFrame);
                 rebuildVariables(variables);
             } catch (DBGException e) {
                 log.error(e);
@@ -232,7 +232,7 @@ public class DatabaseStackFrame extends DatabaseDebugElement implements IStackFr
         String source;
         try {
             IDatabaseDebugTarget debugTarget = getDatabaseDebugTarget();
-            source = debugTarget.getController().getSource(debugTarget.getSessionID(), dbgStackFrame);
+            source = debugTarget.getSession().getSource(dbgStackFrame);
         } catch (DBGException e) {
             String message = NLS.bind("Unable to retrieve sources for stack {0}", dbgStackFrame);
             IStatus status = DebugCore.newErrorStatus(message, e);
