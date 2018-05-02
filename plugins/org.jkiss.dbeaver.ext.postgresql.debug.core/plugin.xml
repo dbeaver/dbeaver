@@ -19,21 +19,6 @@
   -->
 <plugin>
 
-   <extension
-         point="org.eclipse.debug.core.launchConfigurationTypes">
-      <launchConfigurationType
-            category="org.jkiss.dbeaver.ext.postgresql.debug.ui.pgSQL"
-            delegate="org.jkiss.dbeaver.debug.core.DatabaseLaunchDelegate"
-            delegateDescription="%launchConfigurationTypes.launchConfigurationType.pgSQL.delegateDescription"
-            delegateName="%launchConfigurationTypes.launchConfigurationType.pgSQL.delegateName"
-            id="org.jkiss.dbeaver.ext.postgresql.debug.core.pgSQL"
-            modes="debug"
-            name="%launchConfigurationTypes.launchConfigurationType.pgSQL.name"
-            sourceLocatorId="org.jkiss.dbeaver.debug.core.procedureSourceLocator"
-            sourcePathComputerId="org.jkiss.dbeaver.debug.core.procedureSourcePathComputer">
-      </launchConfigurationType>
-   </extension>
-
    <extension point="org.eclipse.core.runtime.adapters">
       <factory adaptableType="org.jkiss.dbeaver.model.DBPDataSourceContainer" class="org.jkiss.dbeaver.ext.postgresql.debug.internal.PostgreDebugAdapterFactory">
          <adapter type="org.jkiss.dbeaver.debug.DBGControllerFactory"/>
