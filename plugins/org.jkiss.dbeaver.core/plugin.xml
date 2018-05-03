@@ -3534,6 +3534,16 @@
                 </propertyGroup>
             </processor>
             <processor
+                    id="stream.dbunit"
+                    class="org.jkiss.dbeaver.tools.transfer.stream.impl.DataExporterDbUnit"
+                    description="%dataTransfer.processor.dbunit.description"
+                    icon="icons/misc/xml.png"
+                    label="%dataTransfer.processor.dbunit.name">
+                <propertyGroup label="%dataTransfer.processor.dbunit.propertyGroup.general.label">
+                    <property id="extension" label="%dataTransfer.processor.dbunit.property.extension.label" defaultValue="xml"/>
+                </propertyGroup>
+            </processor>
+            <processor
                 id="stream.json"
                 class="org.jkiss.dbeaver.tools.transfer.stream.impl.DataExporterJSON"
                 description="%dataTransfer.processor.json.description"
