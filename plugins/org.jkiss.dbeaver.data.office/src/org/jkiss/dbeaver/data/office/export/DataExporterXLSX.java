@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.dbeaver.tools.transfer.stream.impl.StreamExporterAbstract;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetUtils;
@@ -306,7 +307,11 @@ public class DataExporterXLSX extends StreamExporterAbstract {
                 }
             }
             if (bindingsOk) {
-                ResultSetUtils.bindAttributes(session, null, bindings, null);
+                DBSEntity sourceEntity = null;
+                if (getSite().getSource() instanceof DBSEntity) {
+                    sourceEntity = (DBSEntity) getSite().getSource();
+                }
+                ResultSetUtils.bindAttributes(session, sourceEntity, null, bindings, null);
             }
         }
 	        /*if (printHeader) { FIXME
