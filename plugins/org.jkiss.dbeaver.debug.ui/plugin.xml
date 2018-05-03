@@ -19,6 +19,8 @@
   -->
 <plugin>
 
+    <extension-point id="org.jkiss.dbeaver.debug.ui.configurationPanels" name="DBeaver debug configuration panels" schema="schema/org.jkiss.dbeaver.debug.configurationPanels.exsd"/>
+
     <extension point="org.eclipse.debug.ui.launchConfigurationTypeImages">
         <launchConfigurationTypeImage
                 id="org.jkiss.dbeaver.debug.launchConfigurationTypeImage"

@@ -18,20 +18,20 @@
 package org.jkiss.dbeaver.ext.postgresql.debug.ui.internal;
 
 import org.eclipse.core.runtime.IAdapterFactory;
-import org.jkiss.dbeaver.debug.ui.DebugEditorAdvisor;
+import org.jkiss.dbeaver.debug.ui.DBGEditorAdvisor;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 
 public class PostgreDebugUIAdapterFactory implements IAdapterFactory {
 
-    private static final Class<?>[] CLASSES = new Class[] { DebugEditorAdvisor.class };
+    private static final Class<?>[] CLASSES = new Class[] { DBGEditorAdvisor.class };
     
-    private DebugEditorAdvisor debugEditorAdvisor = new PostgreSourceEditorAdvisor();
+    private DBGEditorAdvisor debugEditorAdvisor = new PostgreSourceEditorAdvisor();
 
     @Override
     public <T> T getAdapter(Object adaptableObject, Class<T> adapterType) {
-        if (adapterType == DebugEditorAdvisor.class) {
+        if (adapterType == DBGEditorAdvisor.class) {
             if (adaptableObject instanceof DBPDataSourceContainer) {
                 DBPDataSourceContainer sourceContainer = (DBPDataSourceContainer) adaptableObject;
                 DBPDataSource dataSource = sourceContainer.getDataSource();

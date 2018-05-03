@@ -15,17 +15,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.jkiss.dbeaver.ext.postgresql.debug.ui.internal;
 
-import org.jkiss.dbeaver.debug.ui.DBGEditorAdvisor;
+import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.swt.widgets.Composite;
+import org.jkiss.dbeaver.debug.ui.DBGConfigurationPanel;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 
-public class PostgreSourceEditorAdvisor implements DBGEditorAdvisor {
-
-    private static final String POSTGRESQL_SOURCE_VIEW = "postgresql.source.view"; //$NON-NLS-1$
+public class PostgreDebugPanelFunction implements DBGConfigurationPanel {
 
     @Override
-    public String getSourceFolderId() {
-        return POSTGRESQL_SOURCE_VIEW;
+    public void createPanel(Composite parent) {
+
     }
 
+    @Override
+    public void loadConfiguration(DBPDataSourceContainer dataSource, ILaunchConfiguration configuration) {
+
+    }
+
+    @Override
+    public void saveConfiguration(DBPDataSourceContainer dataSource, ILaunchConfiguration configuration) {
+
+    }
 }

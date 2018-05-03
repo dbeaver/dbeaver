@@ -169,7 +169,7 @@ public class DatabaseDebugModelPresentation extends LabelProvider implements IDe
     protected IEditorInput createEditorInput(DBNDatabaseNode dbnNode) {
         EntityEditorInput editorInput = new EntityEditorInput(dbnNode);
         editorInput.setAttribute(DBPScriptObject.OPTION_DEBUGGER_SOURCE, Boolean.TRUE);
-        DebugEditorAdvisor editorAdvisor = DebugUI.findEditorAdvisor(dbnNode.getDataSourceContainer());
+        DBGEditorAdvisor editorAdvisor = DebugUI.findEditorAdvisor(dbnNode.getDataSourceContainer());
         if (editorAdvisor != null) {
             String sourceFolderId = editorAdvisor.getSourceFolderId();
             editorInput.setDefaultFolderId(sourceFolderId);

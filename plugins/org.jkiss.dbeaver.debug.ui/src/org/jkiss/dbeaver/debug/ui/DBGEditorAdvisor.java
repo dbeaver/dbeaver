@@ -15,17 +15,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.postgresql.debug.ui.internal;
+package org.jkiss.dbeaver.debug.ui;
 
-import org.jkiss.dbeaver.debug.ui.DBGEditorAdvisor;
-
-public class PostgreSourceEditorAdvisor implements DBGEditorAdvisor {
-
-    private static final String POSTGRESQL_SOURCE_VIEW = "postgresql.source.view"; //$NON-NLS-1$
-
-    @Override
-    public String getSourceFolderId() {
-        return POSTGRESQL_SOURCE_VIEW;
-    }
+public interface DBGEditorAdvisor {
+    
+    String getSourceFolderId();
 
 }
