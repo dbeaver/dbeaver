@@ -63,7 +63,7 @@ public class PostgreResolver implements DBGResolver {
         HashMap<String, Object> context = new HashMap<String, Object>();
         if (databaseObject instanceof PostgreProcedure) {
             PostgreProcedure procedure = (PostgreProcedure) databaseObject;
-            context.put(PostgreDebugConstants.ATTR_PROCEDURE_OID, procedure.getObjectId());
+            context.put(PostgreDebugConstants.ATTR_FUNCTION_OID, procedure.getObjectId());
         }
         return context;
     }

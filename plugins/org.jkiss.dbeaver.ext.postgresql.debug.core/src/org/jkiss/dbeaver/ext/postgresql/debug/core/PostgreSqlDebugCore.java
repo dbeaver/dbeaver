@@ -63,7 +63,7 @@ public class PostgreSqlDebugCore {
         ILaunchConfigurationWorkingCopy workingCopy = DebugCore.createConfiguration(container, CONFIGURATION_TYPE,
                 name);
         workingCopy.setAttribute(DBGConstants.ATTR_DATASOURCE_ID, dataSourceContainer.getId());
-        workingCopy.setAttribute(PostgreDebugConstants.ATTR_PROCEDURE_OID, String.valueOf(procedure.getObjectId()));
+        workingCopy.setAttribute(PostgreDebugConstants.ATTR_FUNCTION_OID, String.valueOf(procedure.getObjectId()));
         workingCopy.setAttribute(PostgreDebugConstants.ATTR_PROCEDURE_NAME, procedureName);
 
         workingCopy.setAttribute(PostgreDebugConstants.ATTR_SCRIPT_TEXT, DebugCore.composeScriptText(procedure));

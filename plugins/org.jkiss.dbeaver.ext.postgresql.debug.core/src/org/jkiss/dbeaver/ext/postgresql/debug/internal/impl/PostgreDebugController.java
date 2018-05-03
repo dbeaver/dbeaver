@@ -41,7 +41,7 @@ public class PostgreDebugController extends DBGBaseController {
         try {
             PostgreDebugSession pgSession = new PostgreDebugSession(monitor,this);
 
-            int oid = CommonUtils.toInt(configuration.get(PostgreDebugConstants.ATTR_PROCEDURE_OID));
+            int oid = CommonUtils.toInt(configuration.get(PostgreDebugConstants.ATTR_FUNCTION_OID));
             int pid = CommonUtils.toInt(configuration.get(PostgreDebugConstants.ATTR_ATTACH_PROCESS));
             String kind = String.valueOf(configuration.get(PostgreDebugConstants.ATTR_ATTACH_KIND));
             boolean global = PostgreDebugConstants.ATTACH_KIND_GLOBAL.equals(kind);
@@ -56,7 +56,7 @@ public class PostgreDebugController extends DBGBaseController {
 
     @Override
     public DBGBreakpointDescriptor describeBreakpoint(Map<String, Object> attributes) {
-        Object oid = attributes.get(PostgreDebugConstants.ATTR_PROCEDURE_OID);
+        Object oid = attributes.get(PostgreDebugConstants.ATTR_FUNCTION_OID);
         Object lineNumber = attributes.get(IMarker.LINE_NUMBER);
         long parsed = Long.parseLong(String.valueOf(lineNumber));
         return new PostgreDebugBreakpointDescriptor(oid, parsed, false);
