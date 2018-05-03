@@ -22,7 +22,6 @@ import static org.jkiss.dbeaver.debug.DBGConstants.BREAKPOINT_ATTRIBUTE_DATABASE
 import static org.jkiss.dbeaver.debug.DBGConstants.BREAKPOINT_ATTRIBUTE_DATASOURCE_ID;
 import static org.jkiss.dbeaver.debug.DBGConstants.BREAKPOINT_ATTRIBUTE_NODE_PATH;
 import static org.jkiss.dbeaver.debug.DBGConstants.BREAKPOINT_ATTRIBUTE_PROCEDURE_NAME;
-import static org.jkiss.dbeaver.debug.DBGConstants.BREAKPOINT_ATTRIBUTE_PROCEDURE_OID;
 import static org.jkiss.dbeaver.debug.DBGConstants.BREAKPOINT_ATTRIBUTE_SCHEMA_NAME;
 import static org.jkiss.dbeaver.debug.DBGConstants.MODEL_IDENTIFIER_DATABASE;
 
@@ -31,8 +30,6 @@ import java.util.Map;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.model.Breakpoint;
-import org.jkiss.dbeaver.debug.DBGConstants;
-import org.jkiss.dbeaver.debug.DBGController;
 import org.jkiss.dbeaver.debug.core.DebugCore;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -85,10 +82,6 @@ public class DatabaseBreakpoint extends Breakpoint implements IDatabaseBreakpoin
         setAttribute(BREAKPOINT_ATTRIBUTE_PROCEDURE_NAME, procedureName);
     }
 
-    protected void setProcedureOid(String procedureOid) throws CoreException {
-        setAttribute(DBGConstants.ATTR_PROCEDURE_OID, procedureOid);
-    }
-
     protected void setNodePath(String nodePath) throws CoreException {
         setAttribute(BREAKPOINT_ATTRIBUTE_NODE_PATH, nodePath);
     }
@@ -115,7 +108,9 @@ public class DatabaseBreakpoint extends Breakpoint implements IDatabaseBreakpoin
         if (context.isEmpty()) {
             return;
         }
-        Object oid = context.get(DBGConstants.ATTR_PROCEDURE_OID);
-        attributes.put(DBGConstants.ATTR_PROCEDURE_OID, String.valueOf(oid));
+/*
+        Object oid = context.get(PostgreDebugConstants.ATTR_PROCEDURE_OID);
+        attributes.put(PostgreDebugConstants.ATTR_PROCEDURE_OID, String.valueOf(oid));
+*/
     }
 }

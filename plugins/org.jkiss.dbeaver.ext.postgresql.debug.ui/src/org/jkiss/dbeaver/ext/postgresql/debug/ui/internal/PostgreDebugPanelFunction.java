@@ -19,26 +19,47 @@
 package org.jkiss.dbeaver.ext.postgresql.debug.ui.internal;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Group;
 import org.jkiss.dbeaver.debug.ui.DBGConfigurationPanel;
+import org.jkiss.dbeaver.ext.postgresql.debug.PostgreDebugConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.Map;
 
 public class PostgreDebugPanelFunction implements DBGConfigurationPanel {
 
+    private Button kindLocal;
+    private Button kindGlobal;
+
     @Override
     public void createPanel(Composite parent) {
-        Button kindLocal = new Button(parent, SWT.RADIO);
-        kindLocal.setText("Local");
-        Button kindGlobal = new Button(parent, SWT.RADIO);
-        kindGlobal.setText("Global");
+        {
+            UIUtils.createControlGroup(parent, "Attach type", 2, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
+            kindLocal = new Button(parent, SWT.RADIO);
+            kindLocal.setText("Local");
+            kindGlobal = new Button(parent, SWT.RADIO);
+            kindGlobal.setText("Global");
+        }
+        {
+            Group functionGroup = UIUtils.createControlGroup(parent, "Function", 2, GridData.VERTICAL_ALIGN_BEGINNING, SWT.DEFAULT);
+            UIUtils.createLabelText(functionGroup, "Function", "", SWT.BORDER | SWT.READ_ONLY, new GridData(GridData.FILL_HORIZONTAL));
+
+            UIUtils.createLabelText(functionGroup, "Process ID", "", SWT.BORDER | SWT.READ_ONLY, new GridData(GridData.FILL_HORIZONTAL));
+        }
     }
 
     @Override
     public void loadConfiguration(DBPDataSourceContainer dataSource, Map<String, Object> configuration) {
-
+        Object kind = configuration.get(PostgreDebugConstants.ATTR_ATTACH_KIND);
+        if (PostgreDebugConstants.ATTACH_KIND_GLOBAL.equals(kind)) {
+            kindGlobal.setSelection(true);
+        } else {
+            kindLocal.setSelection(true);
+        }
     }
 
     @Override

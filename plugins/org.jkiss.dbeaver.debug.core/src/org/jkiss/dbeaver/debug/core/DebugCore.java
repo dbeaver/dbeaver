@@ -199,7 +199,7 @@ public class DebugCore {
     public static Map<String, Object> toBreakpointDescriptor(Map<String, Object> attributes) {
         HashMap<String, Object> result = new HashMap<>();
         result.put(IMarker.LINE_NUMBER, attributes.get(IMarker.LINE_NUMBER));
-        result.put(DBGConstants.ATTR_PROCEDURE_OID, attributes.get(DBGConstants.ATTR_PROCEDURE_OID));
+        //result.put(PostgreDebugConstants.ATTR_PROCEDURE_OID, attributes.get(PostgreDebugConstants.ATTR_PROCEDURE_OID));
         return result;
     }
     

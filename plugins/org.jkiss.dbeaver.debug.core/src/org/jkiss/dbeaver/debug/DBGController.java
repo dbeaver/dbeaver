@@ -30,9 +30,6 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
  */
 public interface DBGController {
 
-    String ATTACH_KIND_LOCAL = "LOCAL"; //$NON-NLS-1$
-    String ATTACH_KIND_GLOBAL = "GLOBAL"; //$NON-NLS-1$
-
     DBPDataSourceContainer getDataSourceContainer();
 
     Map<String, Object> getDebugConfiguration();
