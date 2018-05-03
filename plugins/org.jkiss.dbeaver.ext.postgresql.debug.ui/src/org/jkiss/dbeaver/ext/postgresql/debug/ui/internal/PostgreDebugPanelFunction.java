@@ -18,42 +18,122 @@
 
 package org.jkiss.dbeaver.ext.postgresql.debug.ui.internal;
 
+import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.Text;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.debug.ui.DBGConfigurationPanel;
+import org.jkiss.dbeaver.debug.ui.DBGConfigurationPanelContainer;
 import org.jkiss.dbeaver.ext.postgresql.debug.PostgreDebugConstants;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNModel;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.struct.DBSInstance;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.CSmartCombo;
+import org.jkiss.dbeaver.ui.controls.CSmartSelector;
+import org.jkiss.dbeaver.ui.dialogs.BrowseObjectDialog;
+import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
 public class PostgreDebugPanelFunction implements DBGConfigurationPanel {
 
+    private DBGConfigurationPanelContainer container;
     private Button kindLocal;
     private Button kindGlobal;
-    private Combo functionText;
+    private CSmartCombo<PostgreProcedure> functionCombo;
     private Text processIdText;
+    private SelectionListener listener = new SelectionAdapter() {
+        @Override
+        public void widgetSelected(SelectionEvent e) {
+            container.updateDialogState();
+        }
+    };
+    private PostgreProcedure selectedFunction;
 
     @Override
-    public void createPanel(Composite parent) {
+    public void createPanel(Composite parent, DBGConfigurationPanelContainer container) {
+        this.container = container;
+
         {
             Group kindGroup = UIUtils.createControlGroup(parent, "Attach type", 2, GridData.HORIZONTAL_ALIGN_BEGINNING, SWT.DEFAULT);
             kindLocal = new Button(kindGroup, SWT.RADIO);
             kindLocal.setText("Local");
+            kindLocal.addSelectionListener(listener);
             kindGlobal = new Button(kindGroup, SWT.RADIO);
             kindGlobal.setText("Global");
+            kindGlobal.addSelectionListener(listener);
         }
         {
             Group functionGroup = UIUtils.createControlGroup(parent, "Function", 2, GridData.VERTICAL_ALIGN_BEGINNING, SWT.DEFAULT);
-            functionText = UIUtils.createLabelCombo(functionGroup, "Function", "", SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+            UIUtils.createControlLabel(functionGroup, "Function");
+            functionCombo = new CSmartSelector<PostgreProcedure>(functionGroup, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY, new LabelProvider() {
+                @Override
+                public Image getImage(Object element) {
+                    return DBeaverIcons.getImage(DBIcon.TREE_PROCEDURE);
+                }
+
+                @Override
+                public String getText(Object element) {
+                    if (element == null) {
+                        return "N/A";
+                    }
+                    return ((PostgreProcedure)element).getFullQualifiedSignature();
+                }
+            }) {
+                @Override
+                protected void dropDown(boolean drop) {
+                    if (drop) {
+                        DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
+                        DBNDatabaseNode dsNode = navigatorModel.getNodeByObject(container.getDataSource());
+                        if (dsNode != null) {
+                            DBNNode curNode = selectedFunction == null ? null : navigatorModel.getNodeByObject(selectedFunction);
+                            DBNNode node = BrowseObjectDialog.selectObject(
+                                parent.getShell(),
+                                "Select function to debug",
+                                dsNode,
+                                curNode,
+                                new Class[]{DBSInstance.class, DBSObjectContainer.class, PostgreProcedure.class},
+                                new Class[]{PostgreProcedure.class});
+                            if (node instanceof DBNDatabaseNode && ((DBNDatabaseNode) node).getObject() instanceof PostgreProcedure) {
+                                functionCombo.removeAll();
+                                selectedFunction = (PostgreProcedure) ((DBNDatabaseNode) node).getObject();
+                                functionCombo.addItem(selectedFunction);
+                                functionCombo.select(selectedFunction);
+                                container.updateDialogState();
+                            }
+                        }
+                    }
+
+                }
+            };
+            functionCombo.addItem(null);
             GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-            gd.widthHint = UIUtils.getFontHeight(functionText) * 40 + 10;
-            functionText.setLayoutData(gd);
+            gd.widthHint = UIUtils.getFontHeight(functionCombo) * 40 + 10;
+            functionCombo.setLayoutData(gd);
 
             processIdText = UIUtils.createLabelText(functionGroup, "Process ID", "", SWT.BORDER, new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
             gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-            gd.widthHint = UIUtils.getFontHeight(functionText) * 10 + 10;
+            gd.widthHint = UIUtils.getFontHeight(processIdText) * 10 + 10;
             processIdText.setLayoutData(gd);
         }
     }
@@ -66,15 +146,68 @@ public class PostgreDebugPanelFunction implements DBGConfigurationPanel {
         } else {
             kindLocal.setSelection(true);
         }
+        Object processId = configuration.get(PostgreDebugConstants.ATTR_ATTACH_PROCESS);
+        processIdText.setText(processId == null ? "" : processId.toString());
+
+        long functionId = CommonUtils.toLong(configuration.get(PostgreDebugConstants.ATTR_FUNCTION_OID));
+        String databaseName = (String)configuration.get(PostgreDebugConstants.ATTR_DATABASE_NAME);
+        String schemaName = (String)configuration.get(PostgreDebugConstants.ATTR_SCHEMA_NAME);
+        if (functionId != 0 && dataSource != null) {
+            try {
+                container.getRunnableContext().run(true, true, monitor -> {
+                    try {
+                        if (!dataSource.isConnected()) {
+                            dataSource.connect(monitor, true, true);
+                        }
+                        PostgreDataSource ds = (PostgreDataSource) dataSource.getDataSource();
+                        PostgreDatabase database = ds.getDatabase(databaseName);
+                        if (database != null) {
+                            PostgreSchema schema = database.getSchema(monitor, schemaName);
+                            if (schema != null) {
+                                selectedFunction = schema.getProcedure(monitor, functionId);
+                            } else {
+                                container.setWarningMessage("Schema '" + schemaName + "' not found");
+                            }
+                        } else {
+                            container.setWarningMessage("Database '" + databaseName + "' not found");
+                        }
+                    } catch (DBException e) {
+                        throw new InvocationTargetException(e);
+                    }
+                });
+            } catch (InvocationTargetException e) {
+                container.setWarningMessage(e.getTargetException().getMessage());
+            } catch (InterruptedException e) {
+                // ignore
+            }
+        }
+        if (selectedFunction != null) {
+            functionCombo.addItem(selectedFunction);
+            functionCombo.select(selectedFunction);
+        } else {
+            container.setWarningMessage("Function '" + functionId + "' not found in schema '" + schemaName + "'");
+        }
     }
 
     @Override
     public void saveConfiguration(DBPDataSourceContainer dataSource, Map<String, Object> configuration) {
+        configuration.put(PostgreDebugConstants.ATTR_ATTACH_KIND,
+            kindGlobal.getSelection() ? PostgreDebugConstants.ATTACH_KIND_GLOBAL : PostgreDebugConstants.ATTACH_KIND_LOCAL);
+        configuration.put(PostgreDebugConstants.ATTR_ATTACH_PROCESS, processIdText.getText());
 
+        if (selectedFunction != null) {
+            configuration.put(PostgreDebugConstants.ATTR_FUNCTION_OID, selectedFunction.getObjectId());
+            configuration.put(PostgreDebugConstants.ATTR_DATABASE_NAME, selectedFunction.getDatabase().getName());
+            configuration.put(PostgreDebugConstants.ATTR_SCHEMA_NAME, selectedFunction.getSchema().getName());
+        } else {
+            configuration.remove(PostgreDebugConstants.ATTR_FUNCTION_OID);
+            configuration.remove(PostgreDebugConstants.ATTR_DATABASE_NAME);
+            configuration.remove(PostgreDebugConstants.ATTR_SCHEMA_NAME);
+        }
     }
 
     @Override
     public boolean isValid() {
-        return false;
+        return selectedFunction != null;
     }
 }

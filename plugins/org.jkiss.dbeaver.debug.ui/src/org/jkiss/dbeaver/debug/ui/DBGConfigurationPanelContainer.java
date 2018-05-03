@@ -16,19 +16,20 @@
  */
 package org.jkiss.dbeaver.debug.ui;
 
-import org.eclipse.swt.widgets.Composite;
-import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 
-import java.util.Map;
+/**
+ * Panel container
+ */
+public interface DBGConfigurationPanelContainer {
 
-public interface DBGConfigurationPanel {
-    
-    void createPanel(@NotNull Composite parent, DBGConfigurationPanelContainer container);
+    DBPDataSourceContainer getDataSource();
 
-    void loadConfiguration(@NotNull DBPDataSourceContainer dataSource, @NotNull Map<String, Object> configuration);
+    void updateDialogState();
 
-    void saveConfiguration(@NotNull DBPDataSourceContainer dataSource, @NotNull Map<String, Object> configuration);
+    void setWarningMessage(String message);
 
-    boolean isValid();
+    DBRRunnableContext getRunnableContext();
+
 }

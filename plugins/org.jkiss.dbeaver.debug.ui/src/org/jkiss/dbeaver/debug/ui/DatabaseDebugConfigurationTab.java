@@ -39,10 +39,12 @@ import org.jkiss.dbeaver.debug.internal.ui.DebugUIMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
+import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -53,7 +55,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class DatabaseDebugConfigurationTab extends AbstractLaunchConfigurationTab {
+public class DatabaseDebugConfigurationTab extends AbstractLaunchConfigurationTab implements DBGConfigurationPanelContainer {
 
     private DebugConfigurationPanelDescriptor selectedDebugType;
     private DBGConfigurationPanel selectedDebugPanel;
@@ -161,11 +163,12 @@ public class DatabaseDebugConfigurationTab extends AbstractLaunchConfigurationTa
         for (Control c : panelPlaceholder.getChildren()) {
             c.dispose();
         }
+
         if (debugPanel != null) {
             try {
                 selectedDebugType = debugPanel;
                 selectedDebugPanel = debugPanel.createPanel();
-                selectedDebugPanel.createPanel(panelPlaceholder);
+                selectedDebugPanel.createPanel(panelPlaceholder, this);
                 if (dataSource != null && currentConfiguration != null) {
                     try {
                         selectedDebugPanel.loadConfiguration(dataSource, currentConfiguration.getAttributes());
@@ -283,6 +286,27 @@ public class DatabaseDebugConfigurationTab extends AbstractLaunchConfigurationTa
     @Override
     public boolean canSave() {
         return connectionCombo.getSelectedItem() != null && selectedDebugType != null;
+    }
+
+    @Override
+    public DBPDataSourceContainer getDataSource() {
+        return connectionCombo.getSelectedItem();
+    }
+
+    @Override
+    public void updateDialogState() {
+        setDirty(true);
+        updateLaunchConfigurationDialog();
+    }
+
+    @Override
+    public void setWarningMessage(String message) {
+        super.setWarningMessage(message);
+    }
+
+    @Override
+    public DBRRunnableContext getRunnableContext() {
+        return new RunnableContextDelegate(getLaunchConfigurationDialog());
     }
 
 }
