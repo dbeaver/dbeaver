@@ -24,7 +24,6 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
@@ -62,11 +61,6 @@ public class DatabaseDebugConfigurationTab extends AbstractLaunchConfigurationTa
 
     private Text driverText;
 
-    /**
-     * Modify listener that simply updates the owning launch configuration
-     * dialog.
-     */
-    protected ModifyListener modifyListener = evt -> scheduleUpdateJob();
     private SelectDataSourceCombo connectionCombo;
     private Group typesGroup;
     private Composite panelPlaceholder;

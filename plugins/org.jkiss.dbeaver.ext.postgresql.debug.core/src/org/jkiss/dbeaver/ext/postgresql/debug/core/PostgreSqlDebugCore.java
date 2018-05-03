@@ -24,6 +24,7 @@ import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.debug.DBGConstants;
 import org.jkiss.dbeaver.debug.core.DebugCore;
+import org.jkiss.dbeaver.ext.postgresql.debug.PostgreDebugConstants;
 import org.jkiss.dbeaver.ext.postgresql.debug.internal.PostgreDebugCoreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
@@ -62,10 +63,10 @@ public class PostgreSqlDebugCore {
         ILaunchConfigurationWorkingCopy workingCopy = DebugCore.createConfiguration(container, CONFIGURATION_TYPE,
                 name);
         workingCopy.setAttribute(DBGConstants.ATTR_DATASOURCE_ID, dataSourceContainer.getId());
-        workingCopy.setAttribute(DBGConstants.ATTR_PROCEDURE_OID, String.valueOf(procedure.getObjectId()));
-        workingCopy.setAttribute(DBGConstants.ATTR_PROCEDURE_NAME, procedureName);
+        workingCopy.setAttribute(PostgreDebugConstants.ATTR_PROCEDURE_OID, String.valueOf(procedure.getObjectId()));
+        workingCopy.setAttribute(PostgreDebugConstants.ATTR_PROCEDURE_NAME, procedureName);
 
-        workingCopy.setAttribute(DBGConstants.ATTR_SCRIPT_TEXT, DebugCore.composeScriptText(procedure));
+        workingCopy.setAttribute(PostgreDebugConstants.ATTR_SCRIPT_TEXT, DebugCore.composeScriptText(procedure));
         final DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
         DBNDatabaseNode node = navigatorModel.getNodeByObject(new VoidProgressMonitor(), procedure, false);
         workingCopy.setAttribute(DBGConstants.ATTR_NODE_PATH, node.getNodeItemPath());

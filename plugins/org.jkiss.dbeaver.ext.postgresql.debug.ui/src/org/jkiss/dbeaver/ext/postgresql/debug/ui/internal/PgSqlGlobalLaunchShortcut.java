@@ -22,9 +22,8 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.InputDialog;
-import org.jkiss.dbeaver.debug.DBGConstants;
-import org.jkiss.dbeaver.debug.DBGController;
 import org.jkiss.dbeaver.debug.ui.DatabaseLaunchShortcut;
+import org.jkiss.dbeaver.ext.postgresql.debug.PostgreDebugConstants;
 import org.jkiss.dbeaver.ext.postgresql.debug.core.PostgreSqlDebugCore;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -39,8 +38,8 @@ public class PgSqlGlobalLaunchShortcut extends DatabaseLaunchShortcut {
     @Override
     protected ILaunchConfiguration createConfiguration(DBSObject launchable) throws CoreException {
         ILaunchConfigurationWorkingCopy workingCopy = PostgreSqlDebugCore.createConfiguration(launchable);
-        workingCopy.setAttribute(DBGConstants.ATTR_ATTACH_KIND, DBGController.ATTACH_KIND_GLOBAL);
-        String pid = workingCopy.getAttribute(DBGConstants.ATTR_ATTACH_PROCESS, (String)null);
+        workingCopy.setAttribute(PostgreDebugConstants.ATTR_ATTACH_KIND, PostgreDebugConstants.ATTACH_KIND_GLOBAL);
+        String pid = workingCopy.getAttribute(PostgreDebugConstants.ATTR_ATTACH_PROCESS, (String)null);
         String dialogTitle = "Specify PID";
         String dialogMessage = "Specify PID to attach. Use '-1' to allow any PID";
         InputDialog dialog = new InputDialog(getShell(), dialogTitle, dialogMessage, pid, newText -> {
@@ -61,15 +60,15 @@ public class PgSqlGlobalLaunchShortcut extends DatabaseLaunchShortcut {
             return null;
         }
         String modified = dialog.getValue();
-        workingCopy.setAttribute(DBGConstants.ATTR_ATTACH_PROCESS, modified);
+        workingCopy.setAttribute(PostgreDebugConstants.ATTR_ATTACH_PROCESS, modified);
         return workingCopy.doSave();
     }
     
     @Override
     protected boolean isCandidate(ILaunchConfiguration config, DBSObject launchable, Map<String, Object> databaseContext) {
         try {
-            String kind = config.getAttribute(DBGConstants.ATTR_ATTACH_KIND, (String)null);
-            if (!DBGController.ATTACH_KIND_LOCAL.equals(kind)) {
+            String kind = config.getAttribute(PostgreDebugConstants.ATTR_ATTACH_KIND, (String)null);
+            if (!PostgreDebugConstants.ATTACH_KIND_LOCAL.equals(kind)) {
                 return false;
             }
         } catch (CoreException e) {

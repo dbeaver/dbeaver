@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ext.postgresql.debug.internal.impl;
 import org.eclipse.core.resources.IMarker;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.debug.*;
+import org.jkiss.dbeaver.ext.postgresql.debug.PostgreDebugConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
@@ -40,11 +41,11 @@ public class PostgreDebugController extends DBGBaseController {
         try {
             PostgreDebugSession pgSession = new PostgreDebugSession(monitor,this);
 
-            int oid = CommonUtils.toInt(configuration.get(DBGConstants.ATTR_PROCEDURE_OID));
-            int pid = CommonUtils.toInt(configuration.get(DBGConstants.ATTR_ATTACH_PROCESS));
-            String kind = String.valueOf(configuration.get(DBGConstants.ATTR_ATTACH_KIND));
-            boolean global = DBGController.ATTACH_KIND_GLOBAL.equals(kind);
-            String call = (String) configuration.get(DBGConstants.ATTR_SCRIPT_TEXT);
+            int oid = CommonUtils.toInt(configuration.get(PostgreDebugConstants.ATTR_PROCEDURE_OID));
+            int pid = CommonUtils.toInt(configuration.get(PostgreDebugConstants.ATTR_ATTACH_PROCESS));
+            String kind = String.valueOf(configuration.get(PostgreDebugConstants.ATTR_ATTACH_KIND));
+            boolean global = PostgreDebugConstants.ATTACH_KIND_GLOBAL.equals(kind);
+            String call = (String) configuration.get(PostgreDebugConstants.ATTR_SCRIPT_TEXT);
             pgSession.attach(monitor, oid, pid, global, call);
 
             return pgSession;
@@ -55,7 +56,7 @@ public class PostgreDebugController extends DBGBaseController {
 
     @Override
     public DBGBreakpointDescriptor describeBreakpoint(Map<String, Object> attributes) {
-        Object oid = attributes.get(DBGConstants.ATTR_PROCEDURE_OID);
+        Object oid = attributes.get(PostgreDebugConstants.ATTR_PROCEDURE_OID);
         Object lineNumber = attributes.get(IMarker.LINE_NUMBER);
         long parsed = Long.parseLong(String.valueOf(lineNumber));
         return new PostgreDebugBreakpointDescriptor(oid, parsed, false);
