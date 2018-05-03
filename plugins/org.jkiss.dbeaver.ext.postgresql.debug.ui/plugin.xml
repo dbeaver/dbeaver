@@ -19,6 +19,15 @@
   -->
 <plugin>
 
+    <extension point="org.jkiss.dbeaver.debug.ui.configurationPanels">
+        <panel id="org.jkiss.dbeaver.ext.postgresql.debug.functionPanel"
+               name="Function"
+               description="PL/pgSQL function"
+               class="org.jkiss.dbeaver.ext.postgresql.debug.ui.internal.PostgreDebugPanelFunction">
+            <datasource id="postgresql"/>
+        </panel>
+    </extension>
+
     <extension point="org.eclipse.debug.ui.launchShortcuts">
         <shortcut
                 category="org.jkiss.dbeaver.ext.postgresql.debug.ui.pgSQL"
@@ -86,7 +95,7 @@
             <adapter type="org.eclipse.debug.ui.actions.IToggleBreakpointsTarget"/>
         </factory>
         <factory adaptableType="org.jkiss.dbeaver.model.DBPDataSourceContainer" class="org.jkiss.dbeaver.ext.postgresql.debug.ui.internal.PostgreDebugUIAdapterFactory">
-            <adapter type="org.jkiss.dbeaver.debug.ui.DebugEditorAdvisor"/>
+            <adapter type="org.jkiss.dbeaver.debug.ui.DBGEditorAdvisor"/>
         </factory>
     </extension>
 

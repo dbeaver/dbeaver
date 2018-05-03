@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
- * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,8 +16,17 @@
  */
 package org.jkiss.dbeaver.debug.ui;
 
-public interface DebugEditorAdvisor {
+import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.swt.widgets.Composite;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+
+public interface DBGConfigurationPanel {
     
-    String getSourceFolderId();
+    void createPanel(@NotNull Composite parent);
+
+    void loadConfiguration(@NotNull DBPDataSourceContainer dataSource, @NotNull ILaunchConfiguration configuration);
+
+    void saveConfiguration(@NotNull DBPDataSourceContainer dataSource, @NotNull ILaunchConfiguration configuration);
 
 }
