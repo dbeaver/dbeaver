@@ -31,14 +31,8 @@ public class DebugUIMessages extends NLS {
     public static String DatabaseTab_driver_label_text;
     public static String DatabaseTab_datasource_label_text;
 
-    public static String DatabaseTab_procedure_group_text;
-    public static String DatabaseTab_database_label_text;
-    public static String DatabaseTab_schema_label_text;
-    public static String DatabaseTab_oid_label_text;
-    public static String DatabaseTab_name_label_text;
-
-    public static String DatabaseTab_attach_group_text;
-    public static String DatabaseTab_script_execute_text;
+    public static String DatabaseTab_debug_type_group_text;
+    public static String DatabaseTab_configuration_group_text;
 
     public static String DatabaseTab_name;
 

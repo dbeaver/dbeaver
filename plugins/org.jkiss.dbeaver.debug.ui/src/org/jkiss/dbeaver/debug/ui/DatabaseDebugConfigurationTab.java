@@ -23,16 +23,19 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.ui.AbstractLaunchConfigurationTab;
-import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.PlatformUI;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.debug.DBGConstants;
-import org.jkiss.dbeaver.debug.DBGController;
+import org.jkiss.dbeaver.debug.internal.DebugConfigurationPanelDescriptor;
+import org.jkiss.dbeaver.debug.internal.DebugConfigurationPanelRegistry;
 import org.jkiss.dbeaver.debug.internal.ui.DebugUIMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -41,24 +44,23 @@ import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.CSmartSelector;
-import org.jkiss.dbeaver.ui.controls.DatabaseLabelProviders;
 import org.jkiss.dbeaver.ui.controls.SelectDataSourceCombo;
-import org.jkiss.dbeaver.ui.perspective.DataSourceManagementToolbar;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class DatabaseDebugConfigurationTab extends AbstractLaunchConfigurationTab {
 
-    private Text driverText;
-    private Text oidText;
-    private Text nameText;
+    private DebugConfigurationPanelDescriptor selectedDebugType;
+    private DBGConfigurationPanel selectedDebugPanel;
+    private ILaunchConfiguration currentConfiguration;
 
-    private Button attachLocal;
-    private Button attachGlobal;
-    private Text processText;
-    private Text scriptText;
+    private Text driverText;
 
     /**
      * Modify listener that simply updates the owning launch configuration
@@ -66,6 +68,8 @@ public class DatabaseDebugConfigurationTab extends AbstractLaunchConfigurationTa
      */
     protected ModifyListener modifyListener = evt -> scheduleUpdateJob();
     private SelectDataSourceCombo connectionCombo;
+    private Group typesGroup;
+    private Composite panelPlaceholder;
 
     @Override
     public void createControl(Composite parent) {
@@ -80,8 +84,7 @@ public class DatabaseDebugConfigurationTab extends AbstractLaunchConfigurationTa
 
     protected void createComponents(Composite comp) {
         createConnectionSettingsGroup(comp);
-        createDatabaseSettingsGroup(comp);
-        createAttachSettingsGroup(comp);
+        createPanelListGroup(comp);
     }
 
     protected void createConnectionSettingsGroup(Composite composite) {
@@ -98,6 +101,8 @@ public class DatabaseDebugConfigurationTab extends AbstractLaunchConfigurationTa
             protected void onDataSourceChange(DBPDataSourceContainer dataSource) {
                 String driverName = dataSource == null ? "" : dataSource.getDriver().getFullName();
                 driverText.setText(driverName);
+                loadConnectionDebugTypes();
+                scheduleUpdateJob();
             }
         };
         connectionCombo.addItem(null);
@@ -108,52 +113,91 @@ public class DatabaseDebugConfigurationTab extends AbstractLaunchConfigurationTa
         driverText = UIUtils.createLabelText(group, DebugUIMessages.DatabaseTab_driver_label_text, "", SWT.READ_ONLY);
     }
 
-    protected void createDatabaseSettingsGroup(Composite composite) {
-        String groupLabel = DebugUIMessages.DatabaseTab_procedure_group_text;
-        Group group = UIUtils.createControlGroup(composite, groupLabel, 2, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
-        {
-            String label = DebugUIMessages.DatabaseTab_oid_label_text;
-            oidText = UIUtils.createLabelText(group, label, "", SWT.READ_ONLY);
-        }
-        {
-            String label = DebugUIMessages.DatabaseTab_name_label_text;
-            nameText = UIUtils.createLabelText(group, label, "", SWT.READ_ONLY);
-        }
+    protected void createPanelListGroup(Composite composite) {
+        typesGroup = UIUtils.createControlGroup(composite, DebugUIMessages.DatabaseTab_debug_type_group_text, 3, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
+        panelPlaceholder = UIUtils.createControlGroup(composite, DebugUIMessages.DatabaseTab_configuration_group_text, 1, GridData.FILL_BOTH, SWT.DEFAULT);
+        loadConnectionDebugTypes();
     }
 
-    protected void createAttachSettingsGroup(Composite composite) {
-        String groupLabel = DebugUIMessages.DatabaseTab_attach_group_text;
-        Group group = UIUtils.createControlGroup(composite, groupLabel, 2,
-                GridData.FILL_HORIZONTAL | GridData.FILL_VERTICAL | GridData.GRAB_VERTICAL, SWT.DEFAULT);
-        group.setLayout(new GridLayout(3, false));
+    private void loadConnectionDebugTypes() {
+        for (Control c : typesGroup.getChildren()) {
+            c.dispose();
+        }
 
-        SelectionListener attachKindListener = new SelectionAdapter() {
-            public void widgetSelected(SelectionEvent event) {
-                Object data = event.widget.getData();
-                String attachKind = String.valueOf(data);
-                handleAttachKind(attachKind);
+        DBPDataSourceContainer dataSource = connectionCombo.getSelectedItem();
+        if (dataSource == null) {
+            UIUtils.createInfoLabel(typesGroup, "Select a connection to see available debug types");
+        } else {
+            List<DebugConfigurationPanelDescriptor> panels = DebugConfigurationPanelRegistry.getInstance().getPanels(dataSource);
+            if (CommonUtils.isEmpty(panels)) {
+                UIUtils.createInfoLabel(typesGroup, "Driver '" + dataSource.getDriver().getFullName() + "' doesn't support debugging");
+            } else {
+                for (DebugConfigurationPanelDescriptor panel : panels) {
+                    Button typeSelector = new Button(typesGroup, SWT.RADIO);
+                    typeSelector.setText(panel.getName());
+                    if (!CommonUtils.isEmpty(panel.getDescription())) {
+                        typeSelector.setToolTipText(panel.getDescription());
+                    }
+                    typeSelector.setData(panel);
+                    if (panel.isValid()) {
+                        typeSelector.addSelectionListener(new SelectionAdapter() {
+                            @Override
+                            public void widgetSelected(SelectionEvent e) {
+                                if (typeSelector.getSelection()) {
+                                    setDebugType(connectionCombo.getSelectedItem(), (DebugConfigurationPanelDescriptor) typeSelector.getData());
+                                    updateLaunchConfigurationDialog();
+                                }
+                            }
+                        });
+                    } else {
+                        typeSelector.setEnabled(false);
+                    }
+                }
             }
-        };
+        }
+        setDebugType(dataSource, null);
+        typesGroup.getParent().layout(true, true);
+    }
 
-        attachLocal = new Button(group, SWT.RADIO);
-        attachLocal.setData(DBGController.ATTACH_KIND_LOCAL);
-        attachLocal.setText("Local");
-        attachLocal.addSelectionListener(attachKindListener);
-        attachLocal.setLayoutData(GridDataFactory.swtDefaults().span(3, 1).create());
-
-        attachGlobal = new Button(group, SWT.RADIO);
-        attachGlobal.setData(DBGController.ATTACH_KIND_GLOBAL);
-        attachGlobal.setText("Global");
-        attachGlobal.addSelectionListener(attachKindListener);
-        attachGlobal.setLayoutData(GridDataFactory.swtDefaults().span(1, 1).create());
-
-        processText = UIUtils.createLabelText(group, "PID", "", SWT.READ_ONLY,
-                GridDataFactory.swtDefaults().span(1, 1).create());
-        processText.addModifyListener(modifyListener);
-
-        scriptText = new Text(group, SWT.MULTI);
-        scriptText.setLayoutData(GridDataFactory.fillDefaults().span(3, 1).grab(true, true).create());
-        scriptText.addModifyListener(modifyListener);
+    private void setDebugType(DBPDataSourceContainer dataSource, DebugConfigurationPanelDescriptor debugPanel) {
+        if (selectedDebugType == debugPanel) {
+            return;
+        }
+        for (Control c : panelPlaceholder.getChildren()) {
+            c.dispose();
+        }
+        if (debugPanel != null) {
+            try {
+                selectedDebugType = debugPanel;
+                selectedDebugPanel = debugPanel.createPanel();
+                selectedDebugPanel.createPanel(panelPlaceholder);
+                if (dataSource != null && currentConfiguration != null) {
+                    try {
+                        selectedDebugPanel.loadConfiguration(dataSource, currentConfiguration.getAttributes());
+                    } catch (CoreException e) {
+                        setWarningMessage("Error loading panel configuration: " + e.getMessage());
+                    }
+                }
+            } catch (DBException e) {
+                selectedDebugType = null;
+                selectedDebugPanel = null;
+                DBUserInterface.getInstance().showError("Panel create error", "Can't create debugger config panel " + debugPanel.getId(), e);
+            }
+        } else {
+            selectedDebugType = null;
+            selectedDebugPanel = null;
+        }
+        if (selectedDebugType == null) {
+            UIUtils.createInfoLabel(panelPlaceholder, "Select a debug type to see debug configuration");
+        } else {
+            for (Control c : typesGroup.getChildren()) {
+                if (c instanceof Button && c.getData() == debugPanel) {
+                    ((Button) c).setSelection(true);
+                    break;
+                }
+            }
+        }
+        updateLaunchConfigurationDialog();
     }
 
     @Override
@@ -162,6 +206,7 @@ public class DatabaseDebugConfigurationTab extends AbstractLaunchConfigurationTa
 
     @Override
     public void initializeFrom(ILaunchConfiguration configuration) {
+        this.currentConfiguration = configuration;
         try {
             String dsId = configuration.getAttribute(DBGConstants.ATTR_DATASOURCE_ID, (String) null);
             DataSourceDescriptor dataSource = DataSourceRegistry.findDataSource(dsId);
@@ -169,42 +214,20 @@ public class DatabaseDebugConfigurationTab extends AbstractLaunchConfigurationTa
             if (dataSource != null) {
                 driverText.setText(dataSource.getDriver().getFullName());
             }
+            loadConnectionDebugTypes();
 
-            oidText.setText(
-                configuration.getAttribute(DBGConstants.ATTR_PROCEDURE_OID, ""));
-
-            nameText.setText(
-                configuration.getAttribute(DBGConstants.ATTR_PROCEDURE_NAME, ""));
-
-            processText.setText(
-                configuration.getAttribute(DBGConstants.ATTR_ATTACH_PROCESS, ""));
-
-            String extracted = configuration.getAttribute(DBGConstants.ATTR_ATTACH_KIND, (String)null);
-            if (DBGController.ATTACH_KIND_GLOBAL.equals(extracted)) {
-                attachGlobal.setSelection(true);
-                attachLocal.setSelection(false);
-            } else {
-                attachGlobal.setSelection(false);
-                attachLocal.setSelection(true);
+            String typeId = configuration.getAttribute(DBGConstants.ATTR_DEBUG_TYPE, (String) null);
+            DebugConfigurationPanelDescriptor savedPanel = null;
+            if (typeId != null) {
+                savedPanel = DebugConfigurationPanelRegistry.getInstance().getPanel(typeId);
+                if (savedPanel == null) {
+                    setWarningMessage("Debug type '" + typeId + "' cannot be resolved");
+                }
             }
-            handleAttachKind(extracted);
-
-            scriptText.setText(
-                configuration.getAttribute(DBGConstants.ATTR_SCRIPT_TEXT, ""));
+            setDebugType(dataSource, savedPanel);
 
         } catch (CoreException e) {
-            e.printStackTrace();
-        }
-    }
-
-    void handleAttachKind(String attachKind) {
-        if (DBGController.ATTACH_KIND_GLOBAL.equals(attachKind)) {
-            processText.setEditable(true);
-            scriptText.setEnabled(false);
-        } else {
-            processText.setText("");
-            processText.setEditable(false);
-            scriptText.setEnabled(true);
+            setWarningMessage("Error loading debug configuration: " + e.getMessage());
         }
         updateLaunchConfigurationDialog();
     }
@@ -234,12 +257,22 @@ public class DatabaseDebugConfigurationTab extends AbstractLaunchConfigurationTa
     public void performApply(ILaunchConfigurationWorkingCopy configuration) {
         DBPDataSourceContainer dataSource = connectionCombo.getSelectedItem();
         configuration.setAttribute(DBGConstants.ATTR_DATASOURCE_ID, dataSource == null ? null : dataSource.getId());
-        configuration.setAttribute(DBGConstants.ATTR_PROCEDURE_OID, oidText.getText());
-        configuration.setAttribute(DBGConstants.ATTR_PROCEDURE_NAME, nameText.getText());
-        configuration.setAttribute(DBGConstants.ATTR_ATTACH_PROCESS, processText.getText());
-        Widget kind = attachGlobal.getSelection() ? attachGlobal : attachLocal;
-        configuration.setAttribute(DBGConstants.ATTR_ATTACH_KIND, String.valueOf(kind.getData()));
-        configuration.setAttribute(DBGConstants.ATTR_SCRIPT_TEXT, scriptText.getText());
+        configuration.setAttribute(DBGConstants.ATTR_DEBUG_TYPE, selectedDebugType == null ? null : selectedDebugType.getId());
+        if (selectedDebugPanel != null) {
+            Map<String, Object> attrs = new HashMap<>();
+            selectedDebugPanel.saveConfiguration(dataSource, attrs);
+            for (Map.Entry<String, Object> entry : attrs.entrySet()) {
+                if (entry.getValue() == null) {
+                    configuration.removeAttribute(entry.getKey());
+                } else if (entry.getValue() instanceof Integer) {
+                    configuration.setAttribute(entry.getKey(), (Integer)entry.getValue());
+                } else if (entry.getValue() instanceof Boolean) {
+                    configuration.setAttribute(entry.getKey(), (Boolean)entry.getValue());
+                } else {
+                    configuration.setAttribute(entry.getKey(), entry.getValue().toString());
+                }
+            }
+        }
     }
 
     @Override
@@ -247,4 +280,13 @@ public class DatabaseDebugConfigurationTab extends AbstractLaunchConfigurationTa
         return DebugUIMessages.DatabaseTab_name;
     }
 
+    @Override
+    public boolean isValid(ILaunchConfiguration launchConfig) {
+        return connectionCombo.getSelectedItem() != null && selectedDebugType != null && selectedDebugPanel.isValid();
+    }
+
+    @Override
+    public boolean canSave() {
+        return connectionCombo.getSelectedItem() != null && selectedDebugType != null;
+    }
 }
