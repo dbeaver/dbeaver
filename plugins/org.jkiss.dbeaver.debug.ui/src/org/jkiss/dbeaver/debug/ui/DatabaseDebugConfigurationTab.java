@@ -95,8 +95,9 @@ public class DatabaseDebugConfigurationTab extends AbstractLaunchConfigurationTa
             protected void onDataSourceChange(DBPDataSourceContainer dataSource) {
                 String driverName = dataSource == null ? "" : dataSource.getDriver().getFullName();
                 driverText.setText(driverName);
+                setDirty(true);
                 loadConnectionDebugTypes();
-                scheduleUpdateJob();
+                updateLaunchConfigurationDialog();
             }
         };
         connectionCombo.addItem(null);
@@ -138,8 +139,8 @@ public class DatabaseDebugConfigurationTab extends AbstractLaunchConfigurationTa
                             @Override
                             public void widgetSelected(SelectionEvent e) {
                                 if (typeSelector.getSelection()) {
+                                    setDirty(true);
                                     setDebugType(connectionCombo.getSelectedItem(), (DebugConfigurationPanelDescriptor) typeSelector.getData());
-                                    updateLaunchConfigurationDialog();
                                 }
                             }
                         });
@@ -223,7 +224,7 @@ public class DatabaseDebugConfigurationTab extends AbstractLaunchConfigurationTa
         } catch (CoreException e) {
             setWarningMessage("Error loading debug configuration: " + e.getMessage());
         }
-        updateLaunchConfigurationDialog();
+        scheduleUpdateJob();
     }
 
     @Override
@@ -283,4 +284,5 @@ public class DatabaseDebugConfigurationTab extends AbstractLaunchConfigurationTa
     public boolean canSave() {
         return connectionCombo.getSelectedItem() != null && selectedDebugType != null;
     }
+
 }

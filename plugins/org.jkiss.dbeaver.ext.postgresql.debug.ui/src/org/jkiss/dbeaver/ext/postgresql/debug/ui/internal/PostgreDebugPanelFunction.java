@@ -20,9 +20,7 @@ package org.jkiss.dbeaver.ext.postgresql.debug.ui.internal;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Group;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.debug.ui.DBGConfigurationPanel;
 import org.jkiss.dbeaver.ext.postgresql.debug.PostgreDebugConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -34,21 +32,29 @@ public class PostgreDebugPanelFunction implements DBGConfigurationPanel {
 
     private Button kindLocal;
     private Button kindGlobal;
+    private Combo functionText;
+    private Text processIdText;
 
     @Override
     public void createPanel(Composite parent) {
         {
-            UIUtils.createControlGroup(parent, "Attach type", 2, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
-            kindLocal = new Button(parent, SWT.RADIO);
+            Group kindGroup = UIUtils.createControlGroup(parent, "Attach type", 2, GridData.HORIZONTAL_ALIGN_BEGINNING, SWT.DEFAULT);
+            kindLocal = new Button(kindGroup, SWT.RADIO);
             kindLocal.setText("Local");
-            kindGlobal = new Button(parent, SWT.RADIO);
+            kindGlobal = new Button(kindGroup, SWT.RADIO);
             kindGlobal.setText("Global");
         }
         {
             Group functionGroup = UIUtils.createControlGroup(parent, "Function", 2, GridData.VERTICAL_ALIGN_BEGINNING, SWT.DEFAULT);
-            UIUtils.createLabelText(functionGroup, "Function", "", SWT.BORDER | SWT.READ_ONLY, new GridData(GridData.FILL_HORIZONTAL));
+            functionText = UIUtils.createLabelCombo(functionGroup, "Function", "", SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+            GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+            gd.widthHint = UIUtils.getFontHeight(functionText) * 40 + 10;
+            functionText.setLayoutData(gd);
 
-            UIUtils.createLabelText(functionGroup, "Process ID", "", SWT.BORDER | SWT.READ_ONLY, new GridData(GridData.FILL_HORIZONTAL));
+            processIdText = UIUtils.createLabelText(functionGroup, "Process ID", "", SWT.BORDER, new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+            gd.widthHint = UIUtils.getFontHeight(functionText) * 10 + 10;
+            processIdText.setLayoutData(gd);
         }
     }
 
