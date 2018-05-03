@@ -66,6 +66,7 @@ public class ResultSetUtils
 
     public static void bindAttributes(
         @NotNull DBCSession session,
+        @Nullable DBSEntity sourceEntity,
         @Nullable DBCResultSet resultSet,
         @NotNull DBDAttributeBindingMeta[] bindings,
         @Nullable List<Object[]> rows) throws DBException
@@ -84,7 +85,9 @@ public class ResultSetUtils
         try {
             SQLQuery sqlQuery = null;
             DBSEntity entity = null;
-            if (resultSet != null) {
+            if (sourceEntity != null) {
+                entity = sourceEntity;
+            } else if (resultSet != null) {
                 DBCStatement sourceStatement = resultSet.getSourceStatement();
                 if (sourceStatement != null && sourceStatement.getStatementSource() != null) {
                     DBCExecutionSource executionSource = sourceStatement.getStatementSource();
