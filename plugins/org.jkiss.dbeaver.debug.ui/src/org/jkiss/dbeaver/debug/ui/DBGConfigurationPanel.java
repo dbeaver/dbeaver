@@ -16,17 +16,19 @@
  */
 package org.jkiss.dbeaver.debug.ui;
 
-import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+
+import java.util.Map;
 
 public interface DBGConfigurationPanel {
     
     void createPanel(@NotNull Composite parent);
 
-    void loadConfiguration(@NotNull DBPDataSourceContainer dataSource, @NotNull ILaunchConfiguration configuration);
+    void loadConfiguration(@NotNull DBPDataSourceContainer dataSource, @NotNull Map<String, Object> configuration);
 
-    void saveConfiguration(@NotNull DBPDataSourceContainer dataSource, @NotNull ILaunchConfiguration configuration);
+    void saveConfiguration(@NotNull DBPDataSourceContainer dataSource, @NotNull Map<String, Object> configuration);
 
+    boolean isValid();
 }

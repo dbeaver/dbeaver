@@ -18,25 +18,36 @@
 
 package org.jkiss.dbeaver.ext.postgresql.debug.ui.internal;
 
-import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.debug.ui.DBGConfigurationPanel;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+
+import java.util.Map;
 
 public class PostgreDebugPanelFunction implements DBGConfigurationPanel {
 
     @Override
     public void createPanel(Composite parent) {
+        Button kindLocal = new Button(parent, SWT.RADIO);
+        kindLocal.setText("Local");
+        Button kindGlobal = new Button(parent, SWT.RADIO);
+        kindGlobal.setText("Global");
+    }
+
+    @Override
+    public void loadConfiguration(DBPDataSourceContainer dataSource, Map<String, Object> configuration) {
 
     }
 
     @Override
-    public void loadConfiguration(DBPDataSourceContainer dataSource, ILaunchConfiguration configuration) {
+    public void saveConfiguration(DBPDataSourceContainer dataSource, Map<String, Object> configuration) {
 
     }
 
     @Override
-    public void saveConfiguration(DBPDataSourceContainer dataSource, ILaunchConfiguration configuration) {
-
+    public boolean isValid() {
+        return false;
     }
 }

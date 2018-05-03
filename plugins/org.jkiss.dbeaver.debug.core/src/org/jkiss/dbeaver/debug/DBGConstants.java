@@ -29,6 +29,8 @@ public class DBGConstants {
     public static final String ATTR_PROCEDURE_NAME = BUNDLE_SYMBOLIC_NAME + ".ATTR_PROCEDURE_NAME"; //$NON-NLS-1$
     public static final String ATTR_PROCEDURE_OID = BUNDLE_SYMBOLIC_NAME + ".ATTR_PROCEDURE_OID"; //$NON-NLS-1$
     public static final String ATTR_DATASOURCE_ID = BUNDLE_SYMBOLIC_NAME + ".ATTR_DATASOURCE_ID"; //$NON-NLS-1$
+    public static final String ATTR_DEBUG_TYPE = BUNDLE_SYMBOLIC_NAME + ".ATTR_DEBUG_TYPE"; //$NON-NLS-1$
+
     public static final String SOURCE_CONTAINER_TYPE_DATASOURCE = BUNDLE_SYMBOLIC_NAME + ".datasourceSourceContainerType"; //$NON-NLS-1$
     public static final String BREAKPOINT_ATTRIBUTE_PROCEDURE_OID = BUNDLE_SYMBOLIC_NAME + ".procedureOid"; //$NON-NLS-1$
     public static final String BREAKPOINT_ATTRIBUTE_PROCEDURE_NAME = BUNDLE_SYMBOLIC_NAME + ".procedureName"; //$NON-NLS-1$

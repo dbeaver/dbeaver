@@ -26,6 +26,11 @@
                class="org.jkiss.dbeaver.ext.postgresql.debug.ui.internal.PostgreDebugPanelFunction">
             <datasource id="postgresql"/>
         </panel>
+        <panel id="org.jkiss.dbeaver.ext.postgresql.debug.triggerPanel"
+               name="Trigger"
+               description="PL/pgSQL table trigger">
+            <datasource id="postgresql"/>
+        </panel>
     </extension>
 
     <extension point="org.eclipse.debug.ui.launchShortcuts">
