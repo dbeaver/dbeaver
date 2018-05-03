@@ -34,17 +34,17 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.debug.ui.DBGConfigurationPanel;
 import org.jkiss.dbeaver.debug.ui.DBGConfigurationPanelContainer;
 import org.jkiss.dbeaver.ext.postgresql.debug.PostgreDebugConstants;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
+import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLQueryParameter;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.runtime.sql.SQLQueryParameterBindDialog;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CSmartCombo;
@@ -53,6 +53,8 @@ import org.jkiss.dbeaver.ui.dialogs.BrowseObjectDialog;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 public class PostgreDebugPanelFunction implements DBGConfigurationPanel {
@@ -62,13 +64,8 @@ public class PostgreDebugPanelFunction implements DBGConfigurationPanel {
     private Button kindGlobal;
     private CSmartCombo<PostgreProcedure> functionCombo;
     private Text processIdText;
-    private SelectionListener listener = new SelectionAdapter() {
-        @Override
-        public void widgetSelected(SelectionEvent e) {
-            container.updateDialogState();
-        }
-    };
     private PostgreProcedure selectedFunction;
+    private Button configParametersButton;
 
     @Override
     public void createPanel(Composite parent, DBGConfigurationPanelContainer container) {
@@ -76,6 +73,15 @@ public class PostgreDebugPanelFunction implements DBGConfigurationPanel {
 
         {
             Group kindGroup = UIUtils.createControlGroup(parent, "Attach type", 2, GridData.HORIZONTAL_ALIGN_BEGINNING, SWT.DEFAULT);
+
+            SelectionListener listener = new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    processIdText.setEnabled(kindGlobal.getSelection());
+                    container.updateDialogState();
+                }
+            };
+
             kindLocal = new Button(kindGroup, SWT.RADIO);
             kindLocal.setText("Local");
             kindLocal.addSelectionListener(listener);
@@ -121,6 +127,7 @@ public class PostgreDebugPanelFunction implements DBGConfigurationPanel {
                                 functionCombo.select(selectedFunction);
                                 container.updateDialogState();
                             }
+                            configParametersButton.setEnabled(selectedFunction != null);
                         }
                     }
 
@@ -130,6 +137,27 @@ public class PostgreDebugPanelFunction implements DBGConfigurationPanel {
             GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
             gd.widthHint = UIUtils.getFontHeight(functionCombo) * 40 + 10;
             functionCombo.setLayoutData(gd);
+
+            configParametersButton = UIUtils.createPushButton(functionGroup, "Configure Parameters...", null, new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    if (selectedFunction == null) {
+                        return;
+                    }
+                    List<SQLQueryParameter> parameters = new ArrayList<>();
+                    List<PostgreProcedureParameter> funcParams = selectedFunction.getParameters(null);
+                    for (int i = 0; i < funcParams.size(); i++) {
+                        PostgreProcedureParameter param = funcParams.get(i);
+                        parameters.add(new SQLQueryParameter(i, param.getName()));
+                    }
+                    SQLQueryParameterBindDialog dialog = new SQLQueryParameterBindDialog(parent.getShell(), parameters);
+                    dialog.open();
+                    super.widgetSelected(e);
+                }
+            });
+            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+            gd.horizontalSpan = 2;
+            configParametersButton.setLayoutData(gd);
 
             processIdText = UIUtils.createLabelText(functionGroup, "Process ID", "", SWT.BORDER, new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
             gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
@@ -146,6 +174,8 @@ public class PostgreDebugPanelFunction implements DBGConfigurationPanel {
         } else {
             kindLocal.setSelection(true);
         }
+        processIdText.setEnabled(kindGlobal.getSelection());
+
         Object processId = configuration.get(PostgreDebugConstants.ATTR_ATTACH_PROCESS);
         processIdText.setText(processId == null ? "" : processId.toString());
 
@@ -181,6 +211,7 @@ public class PostgreDebugPanelFunction implements DBGConfigurationPanel {
                 // ignore
             }
         }
+        configParametersButton.setEnabled(selectedFunction != null);
         if (selectedFunction != null) {
             functionCombo.addItem(selectedFunction);
             functionCombo.select(selectedFunction);
