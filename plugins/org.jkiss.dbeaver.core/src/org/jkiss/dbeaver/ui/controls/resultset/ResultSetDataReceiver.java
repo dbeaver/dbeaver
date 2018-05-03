@@ -22,6 +22,8 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBindingMeta;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -140,7 +142,12 @@ class ResultSetDataReceiver implements DBDDataReceiver {
         if (!nextSegmentRead) {
             try {
                 // Read locators' metadata
-                ResultSetUtils.bindAttributes(session, resultSet, metaColumns, rows);
+                DBSEntity entity = null;
+                DBSDataContainer dataContainer = resultSetViewer.getDataContainer();
+                if (dataContainer instanceof DBSEntity) {
+                    entity = (DBSEntity) dataContainer;
+                }
+                ResultSetUtils.bindAttributes(session, entity, resultSet, metaColumns, rows);
             } catch (Throwable e) {
                 errorList.add(e);
             }
