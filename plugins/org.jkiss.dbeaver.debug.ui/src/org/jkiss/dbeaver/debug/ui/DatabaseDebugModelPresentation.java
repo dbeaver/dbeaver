@@ -178,7 +178,7 @@ public class DatabaseDebugModelPresentation extends LabelProvider implements IDe
         IEditorPart editorPart = new UITask<IEditorPart>() {
             @Override
             protected IEditorPart runTask() {
-                return NavigatorHandlerObjectOpen.openEntityEditor(dbnNode, null, sourceFolderId, editorAttrs, DBeaverUI.getActiveWorkbenchWindow());
+                return NavigatorHandlerObjectOpen.openEntityEditor(dbnNode, null, sourceFolderId, editorAttrs, DBeaverUI.getActiveWorkbenchWindow(), false);
             }
         }.execute();
 

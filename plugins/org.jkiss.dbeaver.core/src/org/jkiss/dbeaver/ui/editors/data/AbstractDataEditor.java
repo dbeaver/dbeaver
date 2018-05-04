@@ -154,7 +154,8 @@ public abstract class AbstractDataEditor<OBJECT_TYPE extends DBSObject> extends 
                     DatabaseDataEditor.class.getName(),
                     null,
                     Collections.singletonMap(DatabaseDataEditor.ATTR_DATA_FILTER, newFilter),
-                    DBeaverUI.getActiveWorkbenchWindow());
+                    DBeaverUI.getActiveWorkbenchWindow(),
+                    true);
 
                 if (entityEditor instanceof MultiPageEditorPart) {
                     Object selectedPage = ((MultiPageEditorPart) entityEditor).getSelectedPage();
