@@ -27,6 +27,7 @@ public class PostgreDebugConstants {
     public static final String ATTR_FUNCTION_OID = "PG.ATTR_FUNCTION_OID"; //$NON-NLS-1$
     public static final String ATTR_DATABASE_NAME = "PG.ATTR_DATABASE_NAME"; //$NON-NLS-1$
     public static final String ATTR_SCHEMA_NAME = "PG.ATTR_SCHEMA_NAME"; //$NON-NLS-1$
+    public static final String ATTR_FUNCTION_PARAMETERS = "PG.ATTR_FUNCTION_PARAMETERS"; //$NON-NLS-1$
 
     public static final String ATTACH_KIND_LOCAL = "LOCAL"; //$NON-NLS-1$
     public static final String ATTACH_KIND_GLOBAL = "GLOBAL"; //$NON-NLS-1$

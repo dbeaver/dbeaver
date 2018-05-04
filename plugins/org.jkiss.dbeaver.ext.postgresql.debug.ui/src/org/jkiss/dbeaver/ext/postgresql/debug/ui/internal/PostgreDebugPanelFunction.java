@@ -18,6 +18,7 @@
 
 package org.jkiss.dbeaver.ext.postgresql.debug.ui.internal;
 
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -40,11 +41,10 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLQueryParameter;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
-import org.jkiss.dbeaver.runtime.sql.SQLQueryParameterBindDialog;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
+import org.jkiss.dbeaver.runtime.sql.ProcedureParameterBindDialog;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CSmartCombo;
@@ -54,6 +54,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -64,8 +65,10 @@ public class PostgreDebugPanelFunction implements DBGConfigurationPanel {
     private Button kindGlobal;
     private CSmartCombo<PostgreProcedure> functionCombo;
     private Text processIdText;
-    private PostgreProcedure selectedFunction;
     private Button configParametersButton;
+
+    private PostgreProcedure selectedFunction;
+    private Map<DBSProcedureParameter, Object> parameterValues = new HashMap<>();
 
     @Override
     public void createPanel(Composite parent, DBGConfigurationPanelContainer container) {
@@ -78,6 +81,7 @@ public class PostgreDebugPanelFunction implements DBGConfigurationPanel {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     processIdText.setEnabled(kindGlobal.getSelection());
+                    configParametersButton.setEnabled(kindLocal.getSelection());
                     container.updateDialogState();
                 }
             };
@@ -144,15 +148,11 @@ public class PostgreDebugPanelFunction implements DBGConfigurationPanel {
                     if (selectedFunction == null) {
                         return;
                     }
-                    List<SQLQueryParameter> parameters = new ArrayList<>();
-                    List<PostgreProcedureParameter> funcParams = selectedFunction.getParameters(null);
-                    for (int i = 0; i < funcParams.size(); i++) {
-                        PostgreProcedureParameter param = funcParams.get(i);
-                        parameters.add(new SQLQueryParameter(i, param.getName()));
+                    ProcedureParameterBindDialog dialog = new ProcedureParameterBindDialog(parent.getShell(), selectedFunction, parameterValues);
+                    if (dialog.open() == IDialogConstants.OK_ID) {
+                        parameterValues.clear();
+                        parameterValues.putAll(dialog.getValues());
                     }
-                    SQLQueryParameterBindDialog dialog = new SQLQueryParameterBindDialog(parent.getShell(), parameters);
-                    dialog.open();
-                    super.widgetSelected(e);
                 }
             });
             gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
@@ -174,6 +174,7 @@ public class PostgreDebugPanelFunction implements DBGConfigurationPanel {
         } else {
             kindLocal.setSelection(true);
         }
+        configParametersButton.setEnabled(kindLocal.getSelection());
         processIdText.setEnabled(kindGlobal.getSelection());
 
         Object processId = configuration.get(PostgreDebugConstants.ATTR_ATTACH_PROCESS);
@@ -211,12 +212,28 @@ public class PostgreDebugPanelFunction implements DBGConfigurationPanel {
                 // ignore
             }
         }
+
+        if (selectedFunction != null) {
+            @SuppressWarnings("unchecked")
+            List<String> paramValues = (List<String>) configuration.get(PostgreDebugConstants.ATTR_FUNCTION_PARAMETERS);
+            if (paramValues != null) {
+                List<PostgreProcedureParameter> parameters = selectedFunction.getParameters(null);
+                if (parameters.size() == paramValues.size()) {
+                    for (int i = 0; i < parameters.size(); i++) {
+                        PostgreProcedureParameter param = parameters.get(i);
+                        parameterValues.put(param, paramValues.get(i));
+                    }
+                }
+            }
+        }
         configParametersButton.setEnabled(selectedFunction != null);
         if (selectedFunction != null) {
             functionCombo.addItem(selectedFunction);
             functionCombo.select(selectedFunction);
         } else {
-            container.setWarningMessage("Function '" + functionId + "' not found in schema '" + schemaName + "'");
+            if (functionId != 0) {
+                container.setWarningMessage("Function '" + functionId + "' not found in schema '" + schemaName + "'");
+            }
         }
     }
 
@@ -230,10 +247,17 @@ public class PostgreDebugPanelFunction implements DBGConfigurationPanel {
             configuration.put(PostgreDebugConstants.ATTR_FUNCTION_OID, selectedFunction.getObjectId());
             configuration.put(PostgreDebugConstants.ATTR_DATABASE_NAME, selectedFunction.getDatabase().getName());
             configuration.put(PostgreDebugConstants.ATTR_SCHEMA_NAME, selectedFunction.getSchema().getName());
+            List<String> paramValues = new ArrayList<>();
+            for (PostgreProcedureParameter param : selectedFunction.getParameters(null)) {
+                Object value = parameterValues.get(param);
+                paramValues.add(value == null ? null : value.toString());
+            }
+            configuration.put(PostgreDebugConstants.ATTR_FUNCTION_PARAMETERS, paramValues);
         } else {
             configuration.remove(PostgreDebugConstants.ATTR_FUNCTION_OID);
             configuration.remove(PostgreDebugConstants.ATTR_DATABASE_NAME);
             configuration.remove(PostgreDebugConstants.ATTR_SCHEMA_NAME);
+            configuration.remove(PostgreDebugConstants.ATTR_FUNCTION_PARAMETERS);
         }
     }
 

@@ -260,14 +260,17 @@ public class DatabaseDebugConfigurationTab extends AbstractLaunchConfigurationTa
             Map<String, Object> attrs = new HashMap<>();
             selectedDebugPanel.saveConfiguration(dataSource, attrs);
             for (Map.Entry<String, Object> entry : attrs.entrySet()) {
-                if (entry.getValue() == null) {
+                Object value = entry.getValue();
+                if (value == null) {
                     configuration.removeAttribute(entry.getKey());
-                } else if (entry.getValue() instanceof Integer) {
-                    configuration.setAttribute(entry.getKey(), (Integer)entry.getValue());
-                } else if (entry.getValue() instanceof Boolean) {
-                    configuration.setAttribute(entry.getKey(), (Boolean)entry.getValue());
+                } else if (value instanceof Integer) {
+                    configuration.setAttribute(entry.getKey(), (Integer) value);
+                } else if (value instanceof Boolean) {
+                    configuration.setAttribute(entry.getKey(), (Boolean) value);
+                } else if (value instanceof List) {
+                    configuration.setAttribute(entry.getKey(), (List<String>)value);
                 } else {
-                    configuration.setAttribute(entry.getKey(), entry.getValue().toString());
+                    configuration.setAttribute(entry.getKey(), value.toString());
                 }
             }
         }

@@ -29,4 +29,9 @@ public enum DBSProcedureParameterKind
     RETURN,
     RESULTSET,
     TABLE,
+    ;
+
+    public String getTitle() {
+        return name();
+    }
 }
