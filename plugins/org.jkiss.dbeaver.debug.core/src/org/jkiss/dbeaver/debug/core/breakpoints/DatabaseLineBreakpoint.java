@@ -18,19 +18,18 @@
 
 package org.jkiss.dbeaver.debug.core.breakpoints;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IBreakpoint;
 import org.jkiss.dbeaver.debug.DBGConstants;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class DatabaseLineBreakpoint extends DatabaseBreakpoint implements IDatabaseLineBreakpoint {
 
@@ -38,30 +37,27 @@ public class DatabaseLineBreakpoint extends DatabaseBreakpoint implements IDatab
     }
 
     public DatabaseLineBreakpoint(DBSObject databaseObject, DBNNode node, IResource resource,
-            final int lineNumber, final int charStart, final int charEnd, final boolean add) throws DebugException {
+            final int lineNumber, final int charStart, final int charEnd, final boolean add) throws DebugException
+    {
         this(databaseObject, node, resource, lineNumber, charStart, charEnd, add,
-                new HashMap<String, Object>(), DBGConstants.BREAKPOINT_ID_DATABASE_LINE);
+            new HashMap<>(), DBGConstants.BREAKPOINT_ID_DATABASE_LINE);
     }
 
     protected DatabaseLineBreakpoint(DBSObject databaseObject, DBNNode node, final IResource resource,
             final int lineNumber, final int charStart, final int charEnd, final boolean add,
-            final Map<String, Object> attributes, final String markerType) throws DebugException {
-        IWorkspaceRunnable wr = new IWorkspaceRunnable() {
-            @Override
-            public void run(IProgressMonitor monitor) throws CoreException {
+            final Map<String, Object> attributes, final String markerType) throws DebugException
+    {
+        IWorkspaceRunnable wr = monitor -> {
+            // create the marker
+            setMarker(resource.createMarker(markerType));
 
-                // create the marker
-                setMarker(resource.createMarker(markerType));
+            // add attributes
+            addDatabaseBreakpointAttributes(attributes, databaseObject, node);
+            addLineBreakpointAttributes(attributes, getModelIdentifier(), true, lineNumber, charStart, charEnd);
+            ensureMarker().setAttributes(attributes);
 
-                // add attributes
-                addDatabaseBreakpointAttributes(attributes, databaseObject, node);
-                addLineBreakpointAttributes(attributes, getModelIdentifier(), true, lineNumber, charStart, charEnd);
-                ensureMarker().setAttributes(attributes);
-
-                // add to breakpoint manager if requested
-                register(add);
-            }
-
+            // add to breakpoint manager if requested
+            register(add);
         };
         run(getMarkerRule(resource), wr);
     }
@@ -94,11 +90,12 @@ public class DatabaseLineBreakpoint extends DatabaseBreakpoint implements IDatab
     }
 
     public void addLineBreakpointAttributes(Map<String, Object> attributes, String modelIdentifier, boolean enabled,
-            int lineNumber, int charStart, int charEnd) {
+            int lineNumber, int charStart, int charEnd)
+    {
         attributes.put(IBreakpoint.ID, modelIdentifier);
-        attributes.put(IBreakpoint.ENABLED, Boolean.valueOf(enabled));
-        attributes.put(IMarker.LINE_NUMBER, new Integer(lineNumber));
-        attributes.put(IMarker.CHAR_START, new Integer(charStart));
-        attributes.put(IMarker.CHAR_END, new Integer(charEnd));
+        attributes.put(IBreakpoint.ENABLED, enabled);
+        attributes.put(IMarker.LINE_NUMBER, lineNumber);
+        attributes.put(IMarker.CHAR_START, charStart);
+        attributes.put(IMarker.CHAR_END, charEnd);
     }
 }

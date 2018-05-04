@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.debug.core.DebugCore;
 import org.jkiss.dbeaver.debug.internal.core.DebugCoreMessages;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -252,9 +253,9 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
         try {
             session.resume();
         } catch (DBGException e) {
-            String message = NLS.bind("Error resuming {0}", getName());
-            IStatus status = DebugCore.newErrorStatus(message, e);
-            throw new DebugException(status);
+            log.error(e);
+            throw new DebugException(
+                GeneralUtils.makeErrorStatus(NLS.bind("Error resuming {0} - {1}", getName(), e.getMessage())));
         }
         if (thread.isSuspended()) {
             thread.resumedByTarget();
@@ -267,9 +268,9 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
         try {
             session.suspend();
         } catch (DBGException e) {
-            String message = NLS.bind("Error suspending {0}", getName());
-            IStatus status = DebugCore.newErrorStatus(message, e);
-            throw new DebugException(status);
+            log.error(e);
+            throw new DebugException(
+                GeneralUtils.makeErrorStatus(NLS.bind("Error suspending {0} - {1}", getName(), e.getMessage())));
         }
     }
 
