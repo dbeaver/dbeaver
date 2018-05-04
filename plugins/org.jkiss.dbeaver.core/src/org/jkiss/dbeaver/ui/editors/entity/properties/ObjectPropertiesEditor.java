@@ -347,11 +347,12 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
     }
 
     @Override
-    public void switchFolder(String folderId)
+    public boolean switchFolder(String folderId)
     {
         if (folderComposite != null) {
-            folderComposite.switchFolder(folderId);
+            return folderComposite.switchFolder(folderId);
         }
+        return false;
     }
 
     @Override
