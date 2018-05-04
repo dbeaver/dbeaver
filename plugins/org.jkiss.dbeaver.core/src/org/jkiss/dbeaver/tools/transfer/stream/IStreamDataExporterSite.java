@@ -48,5 +48,7 @@ public interface IStreamDataExporterSite {
     void flush() throws IOException;
 
     void writeBinaryData(@NotNull DBDContentStorage cs) throws IOException;
+    
+    String getOutputEncoding();
 
 }
