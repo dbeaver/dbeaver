@@ -48,11 +48,11 @@ import org.jkiss.utils.CommonUtils;
 public class DataExporterDbUnit extends StreamExporterAbstract {
 
     private static final String PROP_UPPER_CASE_TABLE_NAME = "upperCaseTableName";
-	private static final String PROP_NULL_VALUE_STRING = "nullValueString";
-	private static final String PROP_UPPER_CASE_COLUMN_NAMES = "upperCaseColumnNames";
-	private static final String PROP_INCLUDE_NULL_VALUES = "includeNullValues";
-	
-	private PrintWriter out;
+    private static final String PROP_NULL_VALUE_STRING = "nullValueString";
+    private static final String PROP_UPPER_CASE_COLUMN_NAMES = "upperCaseColumnNames";
+    private static final String PROP_INCLUDE_NULL_VALUES = "includeNullValues";
+
+    private PrintWriter out;
     private List<DBDAttributeBinding> columns;
     private String tableName;
     private boolean upperCaseTableName;
@@ -78,23 +78,24 @@ public class DataExporterDbUnit extends StreamExporterAbstract {
         super.dispose();
     }
 
-    private String getTableName() {
-    	String result = "UNKNOWN_TABLE_NAME";
-    	if (getSite() == null || getSite().getAttributes() == null || getSite().getAttributes().isEmpty()) {
-    		return result;
-    	}
-    	DBSAttributeBase metaAttribute = getSite().getAttributes().get(0).getMetaAttribute();
-		if (metaAttribute != null && metaAttribute instanceof JDBCColumnMetaData) {
-			JDBCColumnMetaData metaData = (JDBCColumnMetaData) metaAttribute;
-			result = metaData.getEntityName();
-		}
-		if (upperCaseTableName) {
-			result = result == null ? null : result.toUpperCase();
-		}
-    	return result;
+    private String getTableName()
+    {
+        String result = "UNKNOWN_TABLE_NAME";
+        if (getSite() == null || getSite().getAttributes() == null || getSite().getAttributes().isEmpty()) {
+            return result;
+        }
+        DBSAttributeBase metaAttribute = getSite().getAttributes().get(0).getMetaAttribute();
+        if (metaAttribute != null && metaAttribute instanceof JDBCColumnMetaData) {
+            JDBCColumnMetaData metaData = (JDBCColumnMetaData) metaAttribute;
+            result = metaData.getEntityName();
+        }
+        if (upperCaseTableName) {
+            result = result == null ? null : result.toUpperCase();
+        }
+        return result;
     }
 
-	@Override
+    @Override
     public void exportHeader(DBCSession session) throws DBException, IOException
     {
         columns = getSite().getAttributes();
@@ -110,12 +111,12 @@ public class DataExporterDbUnit extends StreamExporterAbstract {
         out.write("    <" + tableName);
         for (int i = 0; i < row.length; i++) {
             if (DBUtils.isNullValue(row[i]) && !includeNullValues) {
-            	continue;
+                continue;
             }
-        	DBDAttributeBinding column = columns.get(i);
+            DBDAttributeBinding column = columns.get(i);
             String columnName = escapeXmlElementName(column.getName());
             if (columnName != null && upperCaseColumnNames) {
-            	columnName = columnName.toUpperCase();
+                columnName = columnName.toUpperCase();
             }
             out.write(" " + columnName + "=\"");
             if (DBUtils.isNullValue(row[i])) {
@@ -132,13 +133,11 @@ public class DataExporterDbUnit extends StreamExporterAbstract {
                                 writeCellValue(reader);
                             }
                         } else {
-                        	// http://dbunit.sourceforge.net/datatypes.html
-                        	// Format BLOB 
-                        	// <TABLE_WITHBLOB COL0="[BASE64]VGhpcyBpcyBteSB0ZXh0Lg=="
-                        	out.write("[BASE64]");
-                        	try (final InputStream stream = cs.getContentStream()) {
-                        		Base64.encode(stream, cs.getContentLength(), getSite().getWriter());
-                        	}
+                            // BLOB format http://dbunit.sourceforge.net/datatypes.html
+                            out.write("[BASE64]");
+                            try (final InputStream stream = cs.getContentStream()) {
+                                Base64.encode(stream, cs.getContentLength(), getSite().getWriter());
+                            }
                         }
                     }
                 }
