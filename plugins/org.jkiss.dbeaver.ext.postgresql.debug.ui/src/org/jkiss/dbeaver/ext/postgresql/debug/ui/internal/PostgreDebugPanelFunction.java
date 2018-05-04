@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.debug.ui.DBGConfigurationPanel;
 import org.jkiss.dbeaver.debug.ui.DBGConfigurationPanelContainer;
 import org.jkiss.dbeaver.ext.postgresql.debug.PostgreDebugConstants;
+import org.jkiss.dbeaver.ext.postgresql.debug.core.PostgreSqlDebugCore;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -212,31 +213,16 @@ public class PostgreDebugPanelFunction implements DBGConfigurationPanel {
         processIdText.setText(processId == null ? "" : processId.toString());
 
         long functionId = CommonUtils.toLong(configuration.get(PostgreDebugConstants.ATTR_FUNCTION_OID));
-        String databaseName = (String)configuration.get(PostgreDebugConstants.ATTR_DATABASE_NAME);
-        String schemaName = (String)configuration.get(PostgreDebugConstants.ATTR_SCHEMA_NAME);
         if (functionId != 0 && dataSource != null) {
             try {
                 container.getRunnableContext().run(true, true, monitor -> {
                     try {
-                        if (!dataSource.isConnected()) {
-                            dataSource.connect(monitor, true, true);
-                        }
-                        PostgreDataSource ds = (PostgreDataSource) dataSource.getDataSource();
-                        PostgreDatabase database = ds.getDatabase(databaseName);
-                        if (database != null) {
-                            PostgreSchema schema = database.getSchema(monitor, schemaName);
-                            if (schema != null) {
-                                selectedFunction = schema.getProcedure(monitor, functionId);
-                            } else {
-                                container.setWarningMessage("Schema '" + schemaName + "' not found");
-                            }
-                        } else {
-                            container.setWarningMessage("Database '" + databaseName + "' not found");
-                        }
+                        selectedFunction = PostgreSqlDebugCore.resolveFunction(monitor, dataSource, configuration);
                     } catch (DBException e) {
                         throw new InvocationTargetException(e);
                     }
                 });
+                container.setWarningMessage(null);
             } catch (InvocationTargetException e) {
                 container.setWarningMessage(e.getTargetException().getMessage());
             } catch (InterruptedException e) {
@@ -263,10 +249,6 @@ public class PostgreDebugPanelFunction implements DBGConfigurationPanel {
         if (selectedFunction != null) {
             functionCombo.addItem(selectedFunction);
             functionCombo.select(selectedFunction);
-        } else {
-            if (functionId != 0) {
-                container.setWarningMessage("Function '" + functionId + "' not found in schema '" + schemaName + "'");
-            }
         }
     }
 

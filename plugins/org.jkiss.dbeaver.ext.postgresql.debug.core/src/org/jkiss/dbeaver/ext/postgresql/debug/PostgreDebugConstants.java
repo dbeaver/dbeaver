@@ -19,14 +19,11 @@ package org.jkiss.dbeaver.ext.postgresql.debug;
 
 public class PostgreDebugConstants {
 
-    public static final String ATTR_SCRIPT_TEXT = "PG.ATTR_SCRIPT_TEXT"; //$NON-NLS-1$
-    public static final String ATTR_SCRIPT_EXECUTE = "PG.ATTR_SCRIPT_EXECUTE"; //$NON-NLS-1$
     public static final String ATTR_ATTACH_KIND = "PG.ATTR_ATTACH_KIND"; //$NON-NLS-1$
     public static final String ATTR_ATTACH_PROCESS = "PG.ATTACH_PROCESS"; //$NON-NLS-1$
-    public static final String ATTR_PROCEDURE_NAME = "PG.ATTR_PROCEDURE_NAME"; //$NON-NLS-1$
-    public static final String ATTR_FUNCTION_OID = "PG.ATTR_FUNCTION_OID"; //$NON-NLS-1$
     public static final String ATTR_DATABASE_NAME = "PG.ATTR_DATABASE_NAME"; //$NON-NLS-1$
     public static final String ATTR_SCHEMA_NAME = "PG.ATTR_SCHEMA_NAME"; //$NON-NLS-1$
+    public static final String ATTR_FUNCTION_OID = "PG.ATTR_FUNCTION_OID"; //$NON-NLS-1$
     public static final String ATTR_FUNCTION_PARAMETERS = "PG.ATTR_FUNCTION_PARAMETERS"; //$NON-NLS-1$
 
     public static final String ATTACH_KIND_LOCAL = "LOCAL"; //$NON-NLS-1$

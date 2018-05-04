@@ -21,6 +21,7 @@ import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.osgi.util.NLS;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.debug.DBGConstants;
 import org.jkiss.dbeaver.debug.core.DebugCore;
@@ -33,8 +34,12 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.Map;
 
 public class PostgreSqlDebugCore {
 
@@ -64,12 +69,35 @@ public class PostgreSqlDebugCore {
                 name);
         workingCopy.setAttribute(DBGConstants.ATTR_DATASOURCE_ID, dataSourceContainer.getId());
         workingCopy.setAttribute(PostgreDebugConstants.ATTR_FUNCTION_OID, String.valueOf(procedure.getObjectId()));
-        workingCopy.setAttribute(PostgreDebugConstants.ATTR_PROCEDURE_NAME, procedureName);
 
-        workingCopy.setAttribute(PostgreDebugConstants.ATTR_SCRIPT_TEXT, DebugCore.composeScriptText(procedure));
         final DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
         DBNDatabaseNode node = navigatorModel.getNodeByObject(new VoidProgressMonitor(), procedure, false);
         workingCopy.setAttribute(DBGConstants.ATTR_NODE_PATH, node.getNodeItemPath());
         return workingCopy;
+    }
+
+    public static PostgreProcedure resolveFunction(DBRProgressMonitor monitor, DBPDataSourceContainer dsContainer, Map<String, Object> configuration) throws DBException {
+        if (!dsContainer.isConnected()) {
+            dsContainer.connect(monitor, true, true);
+        }
+        long functionId = CommonUtils.toLong(configuration.get(PostgreDebugConstants.ATTR_FUNCTION_OID));
+        String databaseName = (String)configuration.get(PostgreDebugConstants.ATTR_DATABASE_NAME);
+        String schemaName = (String)configuration.get(PostgreDebugConstants.ATTR_SCHEMA_NAME);
+        PostgreDataSource ds = (PostgreDataSource) dsContainer.getDataSource();
+        PostgreDatabase database = ds.getDatabase(databaseName);
+        if (database != null) {
+            PostgreSchema schema = database.getSchema(monitor, schemaName);
+            if (schema != null) {
+                PostgreProcedure function = schema.getProcedure(monitor, functionId);
+                if (function != null) {
+                    return function;
+                }
+                throw new DBException("Function " + functionId + " not found in schema " + schemaName);
+            } else {
+                throw new DBException("Schema '" + schemaName + "' not found in database " + databaseName);
+            }
+        } else {
+            throw new DBException("Database '" + databaseName + "' not found");
+        }
     }
 }

@@ -28,7 +28,12 @@ import org.jkiss.dbeaver.debug.*;
 import org.jkiss.dbeaver.debug.core.DebugCore;
 import org.jkiss.dbeaver.debug.jdbc.DBGJDBCSession;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
+import org.jkiss.dbeaver.ext.postgresql.debug.PostgreDebugConstants;
+import org.jkiss.dbeaver.ext.postgresql.debug.core.PostgreSqlDebugCore;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedureParameter;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
@@ -36,11 +41,13 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Typical scenario for debug session <br/>
@@ -76,7 +83,7 @@ public class PostgreDebugSession extends DBGJDBCSession {
     private PostgreDebugAttachKind attachKind = PostgreDebugAttachKind.UNKNOWN;
 
     private PostgreDebugBreakpointDescriptor bpGlobal;
-    private volatile Statement localStatement;
+    private volatile CallableStatement localStatement;
 
     private static final int LOCAL_WAIT = 50; // 0.5 sec
 
@@ -203,9 +210,9 @@ public class PostgreDebugSession extends DBGJDBCSession {
         }
     }
 
-    private String createSlot(DBRProgressMonitor monitor, int OID) throws DBGException {
+    private String createSlot(DBRProgressMonitor monitor, PostgreProcedure function) throws DBGException {
 
-        String sql = SQL_PREPARE_SLOT.replaceAll("\\?objectid", String.valueOf(OID));
+        String sql = SQL_PREPARE_SLOT.replaceAll("\\?objectid", String.valueOf(function.getObjectId()));
         try (JDBCSession session = getConnection().openSession(monitor, DBCExecutionPurpose.UTIL, "Attach to port")) {
             try (Statement stmt = session.createStatement()) {
                 try (ResultSet rs = stmt.executeQuery(sql)) {
@@ -254,13 +261,32 @@ public class PostgreDebugSession extends DBGJDBCSession {
         }
     }
 
-    protected void runLocalProc(String commandSQL, String name) throws DBGException {
+    protected void runLocalProc(PostgreProcedure function, List<String> paramValues, String name) throws DBGException {
+        List<PostgreProcedureParameter> parameters = function.getParameters(null);
+        if (parameters.size() != paramValues.size()) {
+            throw new DBGException("Parameter value count (" + paramValues.size() + ") doesn't match actual function parameters (" + parameters.size() + ")");
+        }
         Job job = new AbstractJob(name) {
             @Override
             protected IStatus run(DBRProgressMonitor monitor) {
                 try (JDBCSession session = getConnection().openSession(monitor, DBCExecutionPurpose.UTIL, "Run SQL command")) {
-                    localStatement = session.createStatement();
-                    localStatement.execute(commandSQL);
+                    StringBuilder query = new StringBuilder();
+                    query.append("{ CALL ").append(function.getFullyQualifiedName(DBPEvaluationContext.DML)).append("(");
+                    for (int i = 0; i < parameters.size(); i++) {
+                        if (i > 0) query.append(",");
+                        query.append("?");
+                    }
+                    query.append(") }");
+                    localStatement = session.prepareCall(query.toString());
+                    for (int i = 0; i < parameters.size(); i++) {
+                        String paramValue = paramValues.get(i);
+                        if (CommonUtils.isEmpty(paramValue)) {
+                            localStatement.setNull(i + 1, Types.VARCHAR);
+                        } else {
+                            localStatement.setString(i + 1, paramValue);
+                        }
+                    }
+                    localStatement.execute();
                     // And Now His Watch Is Ended
                     fireEvent(new DBGEvent(this, DBGEvent.RESUME, DBGEvent.STEP_RETURN));
                 } catch (SQLException e) {
@@ -285,13 +311,13 @@ public class PostgreDebugSession extends DBGJDBCSession {
         job.schedule();
     }
 
-    private void attachLocal(DBRProgressMonitor monitor, int OID, String call) throws DBGException {
+    private void attachLocal(DBRProgressMonitor monitor, PostgreProcedure function, List<String> parameters) throws DBGException {
 
-        createSlot(monitor, OID);
+        createSlot(monitor, function);
 
         String taskName = "PostgreSQL Debug - Local session " + sessionInfo.getID();
 
-        runLocalProc(call, taskName);
+        runLocalProc(function, parameters, taskName);
 
         waitPortNumber();
 
@@ -299,7 +325,7 @@ public class PostgreDebugSession extends DBGJDBCSession {
         getController().fireEvent(new DBGEvent(this, DBGEvent.SUSPEND, DBGEvent.MODEL_SPECIFIC));
     }
 
-    private void attachGlobal(DBRProgressMonitor monitor, int oid, String call, int targetPID) throws DBGException {
+    private void attachGlobal(DBRProgressMonitor monitor, int oid, int targetPID) throws DBGException {
 
         try (JDBCSession session = getControllerConnection().openSession(monitor, DBCExecutionPurpose.UTIL, "Attach global")) {
             try (Statement stmt = session.createStatement()) {
@@ -332,25 +358,22 @@ public class PostgreDebugSession extends DBGJDBCSession {
      * This method attach debug session to debug object (procedure) and wait
      * forever while target or any (depend on targetPID) session will run target
      * procedure
-     * 
-     *
-     * @param monitor
-     * @param OID
-     *            - OID for target procedure
-     * @param targetPID
-     *            - target session PID (-1 for any target)
-     * @param global
-     *            - is target session global
-     * @param call
-     *            - SQL call for target session
      */
-    public void attach(DBRProgressMonitor monitor, int OID, int targetPID, boolean global, String call) throws DBGException {
+    public void attach(DBRProgressMonitor monitor, Map<String, Object> configuration) throws DBException {
+        int functionOid = CommonUtils.toInt(configuration.get(PostgreDebugConstants.ATTR_FUNCTION_OID));
+        String kind = String.valueOf(configuration.get(PostgreDebugConstants.ATTR_ATTACH_KIND));
+        boolean global = PostgreDebugConstants.ATTACH_KIND_GLOBAL.equals(kind);
+
         if (global) {
+            int processId = CommonUtils.toInt(configuration.get(PostgreDebugConstants.ATTR_ATTACH_PROCESS));
             attachKind = PostgreDebugAttachKind.GLOBAL;
-            attachGlobal(monitor, OID, call, targetPID);
+            attachGlobal(monitor, functionOid, processId);
         } else {
             attachKind = PostgreDebugAttachKind.LOCAL;
-            attachLocal(monitor, OID, call);
+            PostgreProcedure function = PostgreSqlDebugCore.resolveFunction(monitor, connection.getDataSource().getContainer(), configuration);
+            List<String> parameterValues = (List<String>) configuration.get(PostgreDebugConstants.ATTR_FUNCTION_PARAMETERS);
+
+            attachLocal(monitor, function, parameterValues);
         }
     }
 
