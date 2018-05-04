@@ -211,6 +211,8 @@ public class DatabaseDebugConfigurationTab extends AbstractLaunchConfigurationTa
             connectionCombo.select(dataSource);
             if (dataSource != null) {
                 driverText.setText(dataSource.getDriver().getFullName());
+            } else {
+                driverText.setText("");
             }
             loadConnectionDebugTypes();
 
@@ -232,23 +234,13 @@ public class DatabaseDebugConfigurationTab extends AbstractLaunchConfigurationTa
 
     @Override
     public Image getImage() {
-        DBPImage image = extractDriverImage();
-        if (image == null) {
-            image = DBIcon.TREE_DATABASE;
+        if (connectionCombo != null) {
+            DBPDataSourceContainer dataSource = connectionCombo.getSelectedItem();
+            if (dataSource != null) {
+                return DBeaverIcons.getImage(dataSource.getDriver().getIcon());
+            }
         }
-        return DBeaverIcons.getImage(image);
-    }
-
-    protected DBPImage extractDriverImage() {
-        if (driverText == null || driverText.isDisposed()) {
-            return null;
-        }
-        String driverName = driverText.getText();
-        DriverDescriptor driver = DataSourceProviderRegistry.getInstance().findDriver(driverName);
-        if (driver == null) {
-            return null;
-        }
-        return driver.getIcon();
+        return DBeaverIcons.getImage(DBIcon.TREE_DATABASE);
     }
 
     @Override

@@ -55,9 +55,14 @@ public class DebugConfigurationPanelRegistry
         return descriptors;
     }
 
-    public List<DebugConfigurationPanelDescriptor> getPanels(DBPDataSourceContainer dataSource)
-    {
-        return descriptors;
+    public List<DebugConfigurationPanelDescriptor> getPanels(DBPDataSourceContainer dataSource) {
+        List<DebugConfigurationPanelDescriptor> result = new ArrayList<>();
+        for (DebugConfigurationPanelDescriptor desc : descriptors) {
+            if (desc.supportsDataSource(dataSource)) {
+                result.add(desc);
+            }
+        }
+        return result;
     }
 
     public DebugConfigurationPanelDescriptor getPanel(String id)

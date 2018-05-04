@@ -20,9 +20,14 @@ import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.debug.ui.DBGConfigurationPanel;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.registry.AbstractContextDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.utils.CommonUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * DebugConfigurationPanelDescriptor
@@ -35,6 +40,7 @@ public class DebugConfigurationPanelDescriptor extends AbstractContextDescriptor
     private final String name;
     private final String description;
     private final ObjectType implType;
+    private List<String> supportedDataSources = new ArrayList<>();
 
     public DebugConfigurationPanelDescriptor(
         IConfigurationElement config)
@@ -45,6 +51,16 @@ public class DebugConfigurationPanelDescriptor extends AbstractContextDescriptor
         this.name = config.getAttribute(RegistryConstants.ATTR_NAME);
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
         this.implType = new ObjectType(config, RegistryConstants.ATTR_CLASS);
+
+        IConfigurationElement[] dsElements = config.getChildren(RegistryConstants.TAG_DATASOURCE);
+        for (IConfigurationElement dsElement : dsElements) {
+            String dsId = dsElement.getAttribute(RegistryConstants.ATTR_ID);
+            String dsClassName = dsElement.getAttribute(RegistryConstants.ATTR_CLASS);
+            if (dsId == null && dsClassName == null) {
+                continue;
+            }
+            supportedDataSources.add(dsId != null ? dsId : dsClassName);
+        }
     }
 
     @NotNull
@@ -75,4 +91,10 @@ public class DebugConfigurationPanelDescriptor extends AbstractContextDescriptor
     public String toString() {
         return id;
     }
+
+    public boolean supportsDataSource(DBPDataSourceContainer dataSource) {
+        return supportedDataSources.contains(dataSource.getDriver().getProviderId()) ||
+            supportedDataSources.contains(dataSource.getDriver().getDriverClassName());
+    }
+
 }
