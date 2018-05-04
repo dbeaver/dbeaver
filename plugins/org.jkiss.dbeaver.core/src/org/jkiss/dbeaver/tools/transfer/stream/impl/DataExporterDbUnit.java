@@ -17,6 +17,12 @@
  */
 package org.jkiss.dbeaver.tools.transfer.stream.impl;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintWriter;
+import java.io.Reader;
+import java.util.List;
+
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -24,99 +30,96 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCColumnMetaData;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.utils.Base64;
 import org.jkiss.utils.CommonUtils;
-
-import javax.imageio.ImageIO;
-import java.awt.*;
-import java.io.File;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.Reader;
-import java.util.List;
 
 /**
  * DbUnit Dataset Exporter
+ * 
+ * DbUnit is a framwork for populating a database with test data before 
+ * running an integration test. This export uses the format used by FlatXmlDataSet/ReplacementDataSet
+ * described at http://dbunit.sourceforge.net/components.html
  */
 public class DataExporterDbUnit extends StreamExporterAbstract {
 
-    private PrintWriter out;
+    private static final String PROP_UPPER_CASE_TABLE_NAME = "upperCaseTableName";
+	private static final String PROP_NULL_VALUE_STRING = "nullValueString";
+	private static final String PROP_UPPER_CASE_COLUMN_NAMES = "upperCaseColumnNames";
+	private static final String PROP_INCLUDE_NULL_VALUES = "includeNullValues";
+	
+	private PrintWriter out;
     private List<DBDAttributeBinding> columns;
     private String tableName;
+    private boolean upperCaseTableName;
+    private boolean upperCaseColumnNames;
+    private boolean includeNullValues;
 
     @Override
     public void init(IStreamDataExporterSite site) throws DBException
     {
         super.init(site);
         out = site.getWriter();
+        upperCaseTableName = CommonUtils.getBoolean(site.getProperties().get(PROP_UPPER_CASE_TABLE_NAME), true);
+        upperCaseColumnNames = CommonUtils.getBoolean(site.getProperties().get(PROP_UPPER_CASE_COLUMN_NAMES), true);
+        includeNullValues = CommonUtils.getBoolean(site.getProperties().get(PROP_INCLUDE_NULL_VALUES), true);
     }
 
     @Override
     public void dispose()
     {
         out = null;
+        tableName = null;
+        columns = null;
         super.dispose();
     }
 
-    @Override
+    private String getTableName() {
+    	String result = "UNKNOWN_TABLE_NAME";
+    	if (getSite() == null || getSite().getAttributes() == null || getSite().getAttributes().isEmpty()) {
+    		return result;
+    	}
+    	DBSAttributeBase metaAttribute = getSite().getAttributes().get(0).getMetaAttribute();
+		if (metaAttribute != null && metaAttribute instanceof JDBCColumnMetaData) {
+			JDBCColumnMetaData metaData = (JDBCColumnMetaData) metaAttribute;
+			result = metaData.getEntityName();
+		}
+		if (upperCaseTableName) {
+			result = result == null ? null : result.toUpperCase();
+		}
+    	return result;
+    }
+
+	@Override
     public void exportHeader(DBCSession session) throws DBException, IOException
     {
         columns = getSite().getAttributes();
-        printHeader();
-    }
-
-    private void printHeader()
-    {
-        getSite().getAttributes().stream().forEach(a -> {
-            System.out.println("** " + a.getDescription());
-            System.out.println("** " + a.getLabel());
-            System.out.println("** " + a.getName());
-            System.out.println("** " + a.getFullTypeName());
-        });
-        getSite().getProperties().entrySet().stream().forEach(e -> {
-            System.out.println("## " + e.getKey() + " = " + e.getValue());
-        });
-        System.out.println("-- " + getSite().getSource().getName());
-
-        tableName = escapeXmlElementName(getSite().getSource().getName());
-        out.write("<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n");
-        out.write("<dataset>\n");
-        /*tableName = escapeXmlElementName(getSite().getSource().getName());
-        out.write("<!DOCTYPE " + tableName + " [\n");
-        out.write("  <!ELEMENT " + tableName + " (DATA_RECORD*)>\n");
-        out.write("  <!ELEMENT DATA_RECORD (");
-        int columnsSize = columns.size();
-        for (int i = 0; i < columnsSize; i++) {
-            String colName = columns.get(i).getLabel();
-            if (CommonUtils.isEmpty(colName)) {
-                colName = columns.get(i).getName();
-            }
-            out.write(escapeXmlElementName(colName) + "?");
-            if (i < columnsSize - 1) {
-                out.write(",");
-            }
-        }
-        out.write(")+>\n");
-        for (int i = 0; i < columnsSize; i++) {
-            out.write("  <!ELEMENT " + escapeXmlElementName(columns.get(i).getName()) + " (#PCDATA)>\n");
-        }
-        out.write("]>\n");
-        out.write("<" + tableName + ">\n");*/
+        tableName = getTableName();
+        String outputEncoding = getSite().getOutputEncoding() == null || getSite().getOutputEncoding().length() == 0 ? "UTF-8" : getSite().getOutputEncoding(); 
+        out.append("<?xml version=\"1.0\" encoding=\"").append(outputEncoding).append("\"?>").append(CommonUtils.getLineSeparator());
+        out.append("<dataset>").append(CommonUtils.getLineSeparator());
     }
 
     @Override
     public void exportRow(DBCSession session, Object[] row) throws DBException, IOException
     {
-        
         out.write("    <" + tableName);
         for (int i = 0; i < row.length; i++) {
-            DBDAttributeBinding column = columns.get(i);
+            if (DBUtils.isNullValue(row[i]) && !includeNullValues) {
+            	continue;
+            }
+        	DBDAttributeBinding column = columns.get(i);
             String columnName = escapeXmlElementName(column.getName());
+            if (columnName != null && upperCaseColumnNames) {
+            	columnName = columnName.toUpperCase();
+            }
             out.write(" " + columnName + "=\"");
             if (DBUtils.isNullValue(row[i])) {
-                writeTextCell("[NULL]"); // TODO Setting for null replacement string?
+                writeTextCell("" + getSite().getProperties().get(PROP_NULL_VALUE_STRING));
             } else if (row[i] instanceof DBDContent) {
                 // Content
                 // Inline textual content and handle binaries in some special way
@@ -129,7 +132,13 @@ public class DataExporterDbUnit extends StreamExporterAbstract {
                                 writeCellValue(reader);
                             }
                         } else {
-                            getSite().writeBinaryData(cs);
+                        	// http://dbunit.sourceforge.net/datatypes.html
+                        	// Format BLOB 
+                        	// <TABLE_WITHBLOB COL0="[BASE64]VGhpcyBpcyBteSB0ZXh0Lg=="
+                        	out.write("[BASE64]");
+                        	try (final InputStream stream = cs.getContentStream()) {
+                        		Base64.encode(stream, cs.getContentLength(), getSite().getWriter());
+                        	}
                         }
                     }
                 }
@@ -141,7 +150,7 @@ public class DataExporterDbUnit extends StreamExporterAbstract {
             }
             out.write("\"");
         }
-        out.write(">\n");
+        out.write(">" + CommonUtils.getLineSeparator());
     }
 
     @Override
@@ -155,24 +164,6 @@ public class DataExporterDbUnit extends StreamExporterAbstract {
         if (value != null) {
             value = value.replace("<", "&lt;").replace(">", "&gt;").replace("&", "&amp;");
             out.write(value);
-        }
-    }
-
-    private void writeImageCell(File file) throws DBException
-    {
-        if (file != null && file.exists()) {
-            Image image = null;
-            try {
-                image = ImageIO.read(file);
-            } catch (IOException e) {
-                throw new DBException("Can't read an exported image " + image, e);
-            }
-
-            if (image != null) {
-                String imagePath = file.getAbsolutePath();
-                imagePath = "files/" + imagePath.substring(imagePath.lastIndexOf(File.separator));
-                out.write(imagePath);
-            }
         }
     }
 
