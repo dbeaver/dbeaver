@@ -22,16 +22,28 @@ package org.jkiss.dbeaver.model.struct.rdb;
  */
 public enum DBSProcedureParameterKind
 {
-    UNKNOWN,
-    IN,
-    OUT,
-    INOUT,
-    RETURN,
-    RESULTSET,
-    TABLE,
+    UNKNOWN("Unknown", false),
+    IN("IN", true),
+    OUT("OUT", false),
+    INOUT("IN/OUT", true),
+    RETURN("Return", false),
+    RESULTSET("ResultSet", false),
+    TABLE("Table", false),
     ;
 
+    private final String title;
+    private final boolean isInput;
+
+    DBSProcedureParameterKind(String title, boolean isInput) {
+        this.title = title;
+        this.isInput = isInput;
+    }
+
     public String getTitle() {
-        return name();
+        return title;
+    }
+
+    public boolean isInput() {
+        return isInput;
     }
 }

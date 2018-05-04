@@ -151,12 +151,10 @@ public class PostgreDebugPanelFunction implements DBGConfigurationPanel {
     }
 
     private void createParametersGroup(Composite parent) {
-        Group composite = UIUtils.createControlGroup(parent, "Function parameters", 2, GridData.VERTICAL_ALIGN_BEGINNING, SWT.DEFAULT);
+        Group composite = UIUtils.createControlGroup(parent, "Function parameters", 2, GridData.FILL_BOTH, SWT.DEFAULT);
 
         parametersTable = new Table(composite, SWT.SINGLE | SWT.FULL_SELECTION | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
         final GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.widthHint = 400;
-        gd.heightHint = 200;
         parametersTable.setLayoutData(gd);
         parametersTable.setHeaderVisible(true);
         parametersTable.setLinesVisible(true);
@@ -201,13 +199,9 @@ public class PostgreDebugPanelFunction implements DBGConfigurationPanel {
     @Override
     public void loadConfiguration(DBPDataSourceContainer dataSource, Map<String, Object> configuration) {
         Object kind = configuration.get(PostgreDebugConstants.ATTR_ATTACH_KIND);
-        if (PostgreDebugConstants.ATTACH_KIND_GLOBAL.equals(kind)) {
-            kindGlobal.setSelection(true);
-        } else {
-            kindLocal.setSelection(true);
-        }
-        parametersTable.setEnabled(kindLocal.getSelection());
-        processIdText.setEnabled(kindGlobal.getSelection());
+        boolean isGlobal = PostgreDebugConstants.ATTACH_KIND_GLOBAL.equals(kind);
+        kindGlobal.setSelection(isGlobal);
+        kindLocal.setSelection(!isGlobal);
 
         Object processId = configuration.get(PostgreDebugConstants.ATTR_ATTACH_PROCESS);
         processIdText.setText(processId == null ? "" : processId.toString());
@@ -234,7 +228,7 @@ public class PostgreDebugPanelFunction implements DBGConfigurationPanel {
             @SuppressWarnings("unchecked")
             List<String> paramValues = (List<String>) configuration.get(PostgreDebugConstants.ATTR_FUNCTION_PARAMETERS);
             if (paramValues != null) {
-                List<PostgreProcedureParameter> parameters = selectedFunction.getParameters(null);
+                List<PostgreProcedureParameter> parameters = selectedFunction.getInputParameters();
                 if (parameters.size() == paramValues.size()) {
                     for (int i = 0; i < parameters.size(); i++) {
                         PostgreProcedureParameter param = parameters.get(i);
@@ -245,7 +239,9 @@ public class PostgreDebugPanelFunction implements DBGConfigurationPanel {
 
             updateParametersTable();
         }
-        parametersTable.setEnabled(selectedFunction != null);
+        parametersTable.setEnabled(selectedFunction != null && !isGlobal);
+        processIdText.setEnabled(isGlobal);
+
         if (selectedFunction != null) {
             functionCombo.addItem(selectedFunction);
             functionCombo.select(selectedFunction);
@@ -254,7 +250,7 @@ public class PostgreDebugPanelFunction implements DBGConfigurationPanel {
 
     private void updateParametersTable() {
         parametersTable.removeAll();
-        for (DBSProcedureParameter param : selectedFunction.getParameters(null)) {
+        for (DBSProcedureParameter param : selectedFunction.getInputParameters()) {
             TableItem item = new TableItem(parametersTable, SWT.NONE);
             item.setData(param);
             item.setImage(DBeaverIcons.getImage(DBIcon.TREE_ATTRIBUTE));
@@ -279,7 +275,7 @@ public class PostgreDebugPanelFunction implements DBGConfigurationPanel {
             configuration.put(PostgreDebugConstants.ATTR_DATABASE_NAME, selectedFunction.getDatabase().getName());
             configuration.put(PostgreDebugConstants.ATTR_SCHEMA_NAME, selectedFunction.getSchema().getName());
             List<String> paramValues = new ArrayList<>();
-            for (PostgreProcedureParameter param : selectedFunction.getParameters(null)) {
+            for (PostgreProcedureParameter param : selectedFunction.getInputParameters()) {
                 Object value = parameterValues.get(param);
                 paramValues.add(value == null ? null : value.toString());
             }

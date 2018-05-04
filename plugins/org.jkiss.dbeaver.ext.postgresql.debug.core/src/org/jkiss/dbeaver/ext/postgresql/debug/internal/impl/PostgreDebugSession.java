@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
@@ -262,7 +263,7 @@ public class PostgreDebugSession extends DBGJDBCSession {
     }
 
     protected void runLocalProc(PostgreProcedure function, List<String> paramValues, String name) throws DBGException {
-        List<PostgreProcedureParameter> parameters = function.getParameters(null);
+        List<PostgreProcedureParameter> parameters = function.getInputParameters();
         if (parameters.size() != paramValues.size()) {
             throw new DBGException("Parameter value count (" + paramValues.size() + ") doesn't match actual function parameters (" + parameters.size() + ")");
         }

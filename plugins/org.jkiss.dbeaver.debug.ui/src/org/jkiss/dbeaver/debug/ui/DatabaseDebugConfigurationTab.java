@@ -112,7 +112,7 @@ public class DatabaseDebugConfigurationTab extends AbstractLaunchConfigurationTa
 
     protected void createPanelListGroup(Composite composite) {
         typesGroup = UIUtils.createControlGroup(composite, DebugUIMessages.DatabaseTab_debug_type_group_text, 3, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
-        panelPlaceholder = UIUtils.createControlGroup(composite, DebugUIMessages.DatabaseTab_configuration_group_text, 1, GridData.FILL_BOTH, SWT.DEFAULT);
+        panelPlaceholder = UIUtils.createPlaceholder(composite, 1, 5);
         loadConnectionDebugTypes();
     }
 
@@ -143,6 +143,7 @@ public class DatabaseDebugConfigurationTab extends AbstractLaunchConfigurationTa
                                 if (typeSelector.getSelection()) {
                                     setDirty(true);
                                     setDebugType(connectionCombo.getSelectedItem(), (DebugConfigurationPanelDescriptor) typeSelector.getData());
+                                    typesGroup.getParent().layout(true, true);
                                 }
                             }
                         });
@@ -195,7 +196,6 @@ public class DatabaseDebugConfigurationTab extends AbstractLaunchConfigurationTa
                 }
             }
         }
-        updateLaunchConfigurationDialog();
     }
 
     @Override
