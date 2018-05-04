@@ -33,6 +33,7 @@
         </panel>
     </extension>
 
+<!--
     <extension point="org.eclipse.debug.ui.launchShortcuts">
         <shortcut
                 category="org.jkiss.dbeaver.ext.postgresql.debug.ui.pgSQL"
@@ -82,7 +83,9 @@
             </contextualLaunch>
         </shortcut>
     </extension>
+-->
 
+<!--
     <extension point="org.eclipse.debug.ui.launchGroups">
         <launchGroup
                 bannerImage="platform:/plugin/org.jkiss.dbeaver.ext.postgresql/$nl$/icons/postgresql_icon.png"
@@ -94,6 +97,7 @@
                 title="%launchGroups.launchGroup.pgSQL.title">
         </launchGroup>
     </extension>
+-->
 
     <extension point="org.eclipse.core.runtime.adapters">
         <factory adaptableType="org.jkiss.dbeaver.ext.postgresql.ui.editors.PostgreSourceViewEditor" class="org.jkiss.dbeaver.debug.ui.actions.DebugActionAdapterFactory">
@@ -102,9 +106,16 @@
         <factory adaptableType="org.jkiss.dbeaver.model.DBPDataSourceContainer" class="org.jkiss.dbeaver.ext.postgresql.debug.ui.internal.PostgreDebugUIAdapterFactory">
             <adapter type="org.jkiss.dbeaver.debug.ui.DBGEditorAdvisor"/>
         </factory>
+        <factory adaptableType="java.lang.Object" class="org.jkiss.dbeaver.ext.postgresql.debug.ui.internal.PostgreDebugObjectAdapterFactory">
+            <adapter type="org.jkiss.dbeaver.debug.DBGDebugObject"/>
+        </factory>
     </extension>
 
     <extension point="org.eclipse.ui.editorActions">
+        <!--
+            Breakpoin toggle contribution.
+            TODO: move to core debug. Dunno how because we need specific targetID
+        -->
         <editorContribution id="org.jkiss.dbeaver.debug.ui.editorContribution" targetID="postgresql.source.view">
             <action
                     actionID="RulerDoubleClick"
@@ -128,39 +139,40 @@
        </extension>
     -->
 
-    <extension point="org.eclipse.ui.actionSets">
-        <actionSet label="%actionSets.actionSet.pgSQL.label" visible="true" id="org.jkiss.dbeaver.ext.postgresql.debug.ui.actionSets.actionSet.pgSQL">
-            <menu label="%actionSets.actionSet.menu.debug.label" path="additions" id="org.eclipse.ui.debug">
-                <separator name="pgSQLGroup"/>
-            </menu>
-<!--
-            <action
-                    label="%actionSets.action.pgSQLMenu.label"
-                    style="pulldown"
-                    icon="platform:/plugin/org.jkiss.dbeaver.ext.postgresql/$nl$/icons/postgresql_icon.png"
-                    class="org.jkiss.dbeaver.ext.postgresql.debug.ui.internal.PgSqlMenuDelegate"
-                    menubarPath="org.eclipse.ui.debug/pgSQLGroup"
-                    id="org.jkiss.dbeaver.ext.postgresql.debug.ui.actionSets.action.pgSQLMenu">
-            </action>
-            <action
-                    definitionId="org.jkiss.dbeaver.ext.postgresql.debug.ui.commands.command.pgSQLMenuDelegateToolbar"
-                    label="%actionSets.action.pgSQLToolbar.label"
-                    style="pulldown"
-                    icon="platform:/plugin/org.jkiss.dbeaver.ext.postgresql/$nl$/icons/postgresql_icon.png"
-                    tooltip="%actionSets.action.pgSQLToolbar.tooltip"
-                    class="org.jkiss.dbeaver.ext.postgresql.debug.ui.internal.PgSqlMenuDelegate"
-                    toolbarPath="org.eclipse.debug.ui.launchActionSet/debug"
-                    id="org.jkiss.dbeaver.ext.postgresql.debug.ui.actionSets.action.pgSQLToolbar">
-            </action>
--->
-            <action
-                    definitionId="org.jkiss.dbeaver.ext.postgresql.debug.ui.commands.command.pgSQLConfigurations"
-                    label="%actionSets.action.pgSQLConfigurations.label"
-                    class="org.jkiss.dbeaver.ext.postgresql.debug.ui.internal.PgSqlOpenLaunchDialogAction"
-                    id="org.jkiss.dbeaver.ext.postgresql.debug.ui.actionSets.action.pgSQLConfigurations">
-            </action>
-        </actionSet>
-    </extension>
+    <!--
+        <extension point="org.eclipse.ui.actionSets">
+            <actionSet label="%actionSets.actionSet.pgSQL.label" visible="true" id="org.jkiss.dbeaver.ext.postgresql.debug.ui.actionSets.actionSet.pgSQL">
+                <menu label="%actionSets.actionSet.menu.debug.label" path="additions" id="org.eclipse.ui.debug">
+                    <separator name="pgSQLGroup"/>
+                </menu>
+
+                <action
+                        label="%actionSets.action.pgSQLMenu.label"
+                        style="pulldown"
+                        icon="platform:/plugin/org.jkiss.dbeaver.ext.postgresql/$nl$/icons/postgresql_icon.png"
+                        class="org.jkiss.dbeaver.ext.postgresql.debug.ui.internal.PgSqlMenuDelegate"
+                        menubarPath="org.eclipse.ui.debug/pgSQLGroup"
+                        id="org.jkiss.dbeaver.ext.postgresql.debug.ui.actionSets.action.pgSQLMenu">
+                </action>
+                <action
+                        definitionId="org.jkiss.dbeaver.ext.postgresql.debug.ui.commands.command.pgSQLMenuDelegateToolbar"
+                        label="%actionSets.action.pgSQLToolbar.label"
+                        style="pulldown"
+                        icon="platform:/plugin/org.jkiss.dbeaver.ext.postgresql/$nl$/icons/postgresql_icon.png"
+                        tooltip="%actionSets.action.pgSQLToolbar.tooltip"
+                        class="org.jkiss.dbeaver.ext.postgresql.debug.ui.internal.PgSqlMenuDelegate"
+                        toolbarPath="org.eclipse.debug.ui.launchActionSet/debug"
+                        id="org.jkiss.dbeaver.ext.postgresql.debug.ui.actionSets.action.pgSQLToolbar">
+                </action>
+
+                <action
+                        definitionId="org.jkiss.dbeaver.ext.postgresql.debug.ui.commands.command.pgSQLConfigurations"
+                        label="%actionSets.action.pgSQLConfigurations.label"
+                        class="org.jkiss.dbeaver.ext.postgresql.debug.ui.internal.PgSqlOpenLaunchDialogAction"
+                        id="org.jkiss.dbeaver.ext.postgresql.debug.ui.actionSets.action.pgSQLConfigurations">
+                </action>
+            </actionSet>
+        </extension>
 
     <extension point="org.eclipse.ui.commands">
         <command
@@ -176,5 +188,6 @@
                 id="org.jkiss.dbeaver.ext.postgresql.debug.ui.commands.command.pgSQLConfigurations">
         </command>
     </extension>
+    -->
 
 </plugin>

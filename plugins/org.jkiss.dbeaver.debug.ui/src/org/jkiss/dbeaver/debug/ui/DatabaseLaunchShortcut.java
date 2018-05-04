@@ -43,7 +43,7 @@ import org.eclipse.ui.model.WorkbenchLabelProvider;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.debug.DBGConstants;
 import org.jkiss.dbeaver.debug.core.DebugCore;
-import org.jkiss.dbeaver.debug.internal.ui.DebugUIMessages;
+import org.jkiss.dbeaver.debug.ui.internal.DebugUIMessages;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.utils.CommonUtils;
@@ -237,11 +237,7 @@ public abstract class DatabaseLaunchShortcut implements ILaunchShortcut2 {
 
         try {
             String dsId = config.getAttribute(DBGConstants.ATTR_DATASOURCE_ID, (String) null);
-            if (!CommonUtils.equalObjects(dsId, launchable.getDataSource().getContainer().getId())) {
-                return false;
-            }
-
-            return true;
+            return CommonUtils.equalObjects(dsId, launchable.getDataSource().getContainer().getId());
         } catch (CoreException e) {
             return false;
         }
