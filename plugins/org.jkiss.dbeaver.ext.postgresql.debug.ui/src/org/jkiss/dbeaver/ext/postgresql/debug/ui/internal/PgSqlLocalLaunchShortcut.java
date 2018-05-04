@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.debug.ui.DatabaseScriptDialog;
 import org.jkiss.dbeaver.ext.postgresql.debug.PostgreDebugConstants;
 import org.jkiss.dbeaver.ext.postgresql.debug.core.PostgreSqlDebugCore;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.util.Map;
 
@@ -38,6 +39,7 @@ public class PgSqlLocalLaunchShortcut extends DatabaseLaunchShortcut {
 
     @Override
     protected ILaunchConfiguration createConfiguration(DBSObject launchable) throws CoreException {
+/*
         ILaunchConfigurationWorkingCopy workingCopy = PostgreSqlDebugCore.createConfiguration(launchable);
         workingCopy.setAttribute(PostgreDebugConstants.ATTR_ATTACH_KIND, PostgreDebugConstants.ATTACH_KIND_LOCAL);
         IWorkbenchPartSite site = getWorkbenchPartSite();
@@ -55,6 +57,8 @@ public class PgSqlLocalLaunchShortcut extends DatabaseLaunchShortcut {
         String modified = dialog.getScriptTextValue();
         workingCopy.setAttribute(PostgreDebugConstants.ATTR_SCRIPT_TEXT, modified);
         return workingCopy.doSave();
+*/
+        throw new CoreException(GeneralUtils.makeErrorStatus("Not implemented"));
     }
 
     @Override
