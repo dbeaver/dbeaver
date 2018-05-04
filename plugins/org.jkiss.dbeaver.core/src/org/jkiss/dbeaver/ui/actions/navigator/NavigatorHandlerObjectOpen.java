@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.ui.IRefreshablePart;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.folders.ITabbedFolderContainer;
 import org.jkiss.dbeaver.ui.dialogs.connection.EditConnectionDialog;
@@ -125,12 +126,13 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
         @Nullable String defaultPageId,
         IWorkbenchWindow workbenchWindow)
     {
-        return openEntityEditor(selectedNode, defaultPageId, null , workbenchWindow);
+        return openEntityEditor(selectedNode, defaultPageId, null, null, workbenchWindow);
     }
 
     public static IEditorPart openEntityEditor(
         @NotNull DBNNode selectedNode,
         @Nullable String defaultPageId,
+        @Nullable String defaultFolderId,
         @Nullable Map<String, Object> attributes,
         IWorkbenchWindow workbenchWindow)
     {
@@ -140,17 +142,26 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
             return null;
         }
         try {
-            String defaultFolderId = null;
             if (selectedNode instanceof DBNDatabaseFolder && !(selectedNode.getParentNode() instanceof DBNDatabaseFolder) && selectedNode.getParentNode() instanceof DBNDatabaseNode) {
-                defaultFolderId = selectedNode.getNodeType();
+                if (defaultFolderId == null) {
+                    defaultFolderId = selectedNode.getNodeType();
+                }
                 selectedNode = selectedNode.getParentNode();
             }
 
             IEditorPart editor = findEntityEditor(workbenchWindow, selectedNode);
             if (editor != null) {
+                if (editor.getEditorInput() instanceof IDatabaseEditorInput) {
+                    setInputAttributes((DatabaseEditorInput<?>) editor.getEditorInput(), defaultPageId, defaultFolderId, attributes);
+                }
                 if (editor instanceof ITabbedFolderContainer && defaultFolderId != null) {
                     // Activate default folder
                     ((ITabbedFolderContainer) editor).switchFolder(defaultFolderId);
+                }
+                if (!CommonUtils.isEmpty(attributes)) {
+                    if (editor instanceof IRefreshablePart) {
+                        ((IRefreshablePart) editor).refreshPart(selectedNode, true);
+                    }
                 }
                 workbenchWindow.getActivePage().activate(editor);
                 return editor;

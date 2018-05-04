@@ -152,9 +152,9 @@ public abstract class AbstractDataEditor<OBJECT_TYPE extends DBSObject> extends 
                 IEditorPart entityEditor = NavigatorHandlerObjectOpen.openEntityEditor(
                     targetNode,
                     DatabaseDataEditor.class.getName(),
+                    null,
                     Collections.singletonMap(DatabaseDataEditor.ATTR_DATA_FILTER, newFilter),
-                    DBeaverUI.getActiveWorkbenchWindow()
-                );
+                    DBeaverUI.getActiveWorkbenchWindow());
 
                 if (entityEditor instanceof MultiPageEditorPart) {
                     Object selectedPage = ((MultiPageEditorPart) entityEditor).getSelectedPage();
