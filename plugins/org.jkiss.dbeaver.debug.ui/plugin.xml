@@ -39,6 +39,41 @@
         </launchConfigurationTabGroup>
     </extension>
 
+    <extension point="org.eclipse.debug.ui.launchGroups">
+        <launchGroup
+                bannerImage="platform:/plugin/org.jkiss.dbeaver.core/$nl$/icons/database.png"
+                id="org.jkiss.dbeaver.debug.launchGroup"
+                image="platform:/plugin/org.jkiss.dbeaver.core/$nl$/icons/database.png"
+                label="%launchGroups.launchGroup.label"
+                mode="debug"
+                title="%launchGroups.launchGroup.title">
+        </launchGroup>
+    </extension>
+
+    <extension point="org.eclipse.debug.ui.launchShortcuts">
+        <shortcut
+                id="org.jkiss.dbeaver.debug.ui.shortcut"
+                label="%launchShortcuts.shortcut.label"
+                description="%launchShortcuts.shortcut.description"
+                class="org.jkiss.dbeaver.debug.ui.internal.DatabaseDebugLaunchShortcut"
+                icon="platform:/plugin/org.jkiss.dbeaver.core/$nl$/icons/database.png"
+                modes="debug">
+            <configurationType id="org.jkiss.dbeaver.debug.ui.configuration"/>
+            <contextualLaunch>
+                <contextLabel label="%launchShortcuts.shortcut.label" mode="debug">
+                </contextLabel>
+                <enablement>
+                    <with variable="selection">
+                        <count value="1"/>
+                        <iterate ifEmpty="false" operator="and">
+                            <adapt type="org.jkiss.dbeaver.debug.DBGDebugObject"/>
+                        </iterate>
+                    </with>
+                </enablement>
+            </contextualLaunch>
+        </shortcut>
+    </extension>
+
     <extension point="org.eclipse.core.runtime.adapters">
         <factory adaptableType="org.jkiss.dbeaver.ui.editors.entity.EntityEditor"
                  class="org.jkiss.dbeaver.debug.ui.actions.DebugActionAdapterFactory">
@@ -86,6 +121,7 @@
                      style="push"/>
         </menuContribution>
     </extension>
+
     <extension point="org.eclipse.ui.commands">
         <category description="Debug Procedure commands" id="org.jkiss.dbeaver.debug.ui.commands.category.procedure"
                   name="Debug Procedure"/>
