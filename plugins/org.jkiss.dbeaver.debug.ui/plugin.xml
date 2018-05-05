@@ -111,20 +111,66 @@
     </extension>
 
     <extension point="org.eclipse.ui.handlers">
-        <handler class="org.jkiss.dbeaver.debug.ui.actions.ToggleBreakpointHandler"
-                 commandId="org.eclipse.debug.ui.commands.ToggleBreakpoint"/>
+        <handler commandId="org.eclipse.debug.ui.commands.ToggleBreakpoint" class="org.jkiss.dbeaver.debug.ui.actions.ToggleBreakpointHandler"/>
     </extension>
 
     <extension point="org.eclipse.ui.menus">
         <menuContribution allPopups="false" locationURI="popup:#SQLRulerContext?before=additions">
-            <command commandId="org.eclipse.debug.ui.commands.ToggleBreakpoint" label="%command.ToggleBreakpoint.label"
-                     style="push"/>
+            <command commandId="org.eclipse.debug.ui.commands.ToggleBreakpoint" label="%command.ToggleBreakpoint.label" style="push"/>
         </menuContribution>
     </extension>
 
     <extension point="org.eclipse.ui.commands">
-        <category description="Debug Procedure commands" id="org.jkiss.dbeaver.debug.ui.commands.category.procedure"
-                  name="Debug Procedure"/>
+        <category description="Database Debug commands" id="org.jkiss.dbeaver.debug.ui.commands.category" name="Database Debug"/>
+
+        <command
+                name="%commands.command.menuDelegateToolbar.name"
+                description="%commands.command.menuDelegateToolbar.description"
+                categoryId="org.jkiss.dbeaver.debug.ui.commands.category"
+                id="org.jkiss.dbeaver.debug.ui.commands.command.menuDelegateToolbar">
+        </command>
+        <command
+                name="%commands.command.debugConfigurations.name"
+                categoryId="org.jkiss.dbeaver.debug.ui.commands.category"
+                description="%commands.command.debugConfigurations.description"
+                id="org.jkiss.dbeaver.debug.ui.commands.command.debugConfigurations">
+        </command>
+    </extension>
+
+    <extension point="org.eclipse.ui.actionSets">
+        <actionSet label="%actionSets.actionSet.label" visible="true" id="org.jkiss.dbeaver.debug.actionSet">
+            <!-- Do we need an entry in main menu? I guess not -->
+            <!--
+            <menu label="%actionSets.actionSet.menu.debug.label" path="additions" id="org.eclipse.ui.debug">
+                <separator name="org.jkiss.dbeaver.debug.group"/>
+            </menu>
+            <action
+                    label="%actionSets.action.menu.label"
+                    style="pulldown"
+                    icon="platform:/plugin/org.eclipse.debug.ui/$nl$/icons/full/obj16/ldebug_obj.png"
+                    class="org.jkiss.dbeaver.debug.ui.internal.DebugMenuDelegate"
+                    menubarPath="org.eclipse.ui.debug/org.jkiss.dbeaver.debug.group"
+                    id="org.jkiss.dbeaver.debug.ui.actionSets.action.menuAction">
+            </action>
+            -->
+            <action
+                    definitionId="org.jkiss.dbeaver.debug.ui.commands.command.menuDelegateToolbar"
+                    label="%actionSets.action.toolbar.label"
+                    style="pulldown"
+                    icon="platform:/plugin/org.eclipse.debug.ui/$nl$/icons/full/obj16/ldebug_obj.png"
+                    tooltip="%actionSets.action.toolbar.tooltip"
+                    class="org.jkiss.dbeaver.debug.ui.internal.DebugMenuDelegate"
+                    toolbarPath="org.eclipse.debug.ui.launchActionSet/debug"
+                    id="org.jkiss.dbeaver.debug.ui.actionSets.action.debugToolbar">
+            </action>
+
+            <action
+                    definitionId="org.jkiss.dbeaver.debug.ui.commands.command.debugConfigurations"
+                    label="%actionSets.action.debugConfigurations.label"
+                    class="org.jkiss.dbeaver.debug.ui.internal.DebugLaunchDialogAction"
+                    id="org.jkiss.dbeaver.debug.ui.actionSets.action.debugConfigurations">
+            </action>
+        </actionSet>
     </extension>
 
 </plugin>
