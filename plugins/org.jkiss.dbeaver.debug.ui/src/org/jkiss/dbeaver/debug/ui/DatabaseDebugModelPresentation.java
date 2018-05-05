@@ -18,9 +18,6 @@
 
 package org.jkiss.dbeaver.debug.ui;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.debug.core.DebugException;
@@ -34,25 +31,31 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.debug.core.DebugCore;
 import org.jkiss.dbeaver.debug.core.breakpoints.DatabaseLineBreakpoint;
 import org.jkiss.dbeaver.debug.core.breakpoints.IDatabaseBreakpoint;
-import org.jkiss.dbeaver.debug.core.model.DatabaseProcess;
-import org.jkiss.dbeaver.debug.core.model.DatabaseStackFrame;
-import org.jkiss.dbeaver.debug.core.model.DatabaseThread;
-import org.jkiss.dbeaver.debug.core.model.DatabaseVariable;
-import org.jkiss.dbeaver.debug.core.model.IDatabaseDebugTarget;
+import org.jkiss.dbeaver.debug.core.model.*;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.jkiss.dbeaver.debug.core.model.DatabaseDebugTarget.SESSION_ACTION_TIMEOUT;
 
 public class DatabaseDebugModelPresentation extends LabelProvider implements IDebugModelPresentationExtension {
 
@@ -110,13 +113,13 @@ public class DatabaseDebugModelPresentation extends LabelProvider implements IDe
             }
             if (element instanceof DatabaseLineBreakpoint) {
                 DatabaseLineBreakpoint breakpoint = (DatabaseLineBreakpoint) element;
-                String database = breakpoint.getDatabaseName();
-                String schema = breakpoint.getSchemaName();
-                String procedure = breakpoint.getProcedureName();
+                String nodePath = breakpoint.getNodePath();
+                NodeFinder getNodeTask = new NodeFinder(nodePath);
+                RuntimeUtils.runTask(getNodeTask,"Get node by path", SESSION_ACTION_TIMEOUT);
+
                 int lineNumber = breakpoint.getLineNumber();
-                String pattern = "{0}.{1}.{2} - [line:{3}]";
-                Object[] bindings = new Object[] {database, schema, procedure, lineNumber};
-                return NLS.bind(pattern, bindings);
+                Object[] bindings = new Object[] {getNodeTask.node == null ? nodePath : getNodeTask.node.getNodeFullName(), lineNumber};
+                return NLS.bind("{0} - [line:{1}]", bindings);
             }
         } catch (CoreException e) {
             return "<not responding>";
@@ -195,4 +198,22 @@ public class DatabaseDebugModelPresentation extends LabelProvider implements IDe
         return false;
     }
 
+    private static class NodeFinder implements DBRRunnableWithProgress {
+        private final String nodePath;
+        DBNNode node;
+
+        public NodeFinder(String nodePath) {
+            this.nodePath = nodePath;
+            node = null;
+        }
+
+        @Override
+        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+            try {
+                node = DBeaverCore.getInstance().getNavigatorModel().getNodeByPath(new VoidProgressMonitor(), nodePath);
+            } catch (DBException e) {
+                throw new InvocationTargetException(e);
+            }
+        }
+    }
 }
