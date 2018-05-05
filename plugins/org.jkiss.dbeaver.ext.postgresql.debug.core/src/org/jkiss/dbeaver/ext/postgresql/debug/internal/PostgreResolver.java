@@ -18,8 +18,8 @@
 package org.jkiss.dbeaver.ext.postgresql.debug.internal;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.debug.DBGConstants;
 import org.jkiss.dbeaver.debug.DBGResolver;
+import org.jkiss.dbeaver.ext.postgresql.debug.PostgreDebugConstants;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -63,7 +63,7 @@ public class PostgreResolver implements DBGResolver {
         HashMap<String, Object> context = new HashMap<String, Object>();
         if (databaseObject instanceof PostgreProcedure) {
             PostgreProcedure procedure = (PostgreProcedure) databaseObject;
-            context.put(DBGConstants.ATTR_PROCEDURE_OID, procedure.getObjectId());
+            context.put(PostgreDebugConstants.ATTR_FUNCTION_OID, procedure.getObjectId());
         }
         return context;
     }

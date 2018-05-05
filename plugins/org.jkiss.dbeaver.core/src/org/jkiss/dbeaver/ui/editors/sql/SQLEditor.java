@@ -174,6 +174,11 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     @Override
+    protected String[] getKeyBindingContexts() {
+        return new String[]{TEXT_EDITOR_CONTEXT, SQLEditorContributions.SQL_EDITOR_CONTEXT, SQLEditorContributions.SQL_EDITOR_SCRIPT_CONTEXT};
+    }
+
+    @Override
     public DBCExecutionContext getExecutionContext() {
         return executionContext;
     }

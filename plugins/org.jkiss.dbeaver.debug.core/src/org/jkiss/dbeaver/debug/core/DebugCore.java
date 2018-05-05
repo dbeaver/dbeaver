@@ -66,34 +66,6 @@ public class DebugCore {
         return abort(message, null);
     }
 
-    public static String composeProcedureCall(DBSProcedure procedure, DBRProgressMonitor monitor) throws DBException {
-        StringBuilder sb = new StringBuilder();
-        sb.append("select").append(' ').append(procedure.getName());
-        sb.append('(');
-        Collection<? extends DBSProcedureParameter> parameters = procedure.getParameters(monitor);
-        int size = parameters.size();
-        if (size > 0) {
-            for (int i = 0; i < size; i++) {
-                Object value = '?';
-                sb.append(value);
-                sb.append(',');
-            }
-            sb.deleteCharAt(sb.length() - 1);
-        }
-        sb.append(')');
-        return sb.toString();
-    }
-
-    public static String composeScriptText(DBSProcedure procedure) {
-        try {
-            return composeProcedureCall(procedure, new VoidProgressMonitor());
-        } catch (DBException e) {
-            String message = NLS.bind("Failed to compose call for {0}", procedure);
-            log.error(message, e);
-            return "";
-        }
-    }
-
     public static ILaunchConfigurationWorkingCopy createConfiguration(IContainer container, String typeName,
             String name) throws CoreException {
         ILaunchManager manager = DebugPlugin.getDefault().getLaunchManager();
@@ -199,7 +171,7 @@ public class DebugCore {
     public static Map<String, Object> toBreakpointDescriptor(Map<String, Object> attributes) {
         HashMap<String, Object> result = new HashMap<>();
         result.put(IMarker.LINE_NUMBER, attributes.get(IMarker.LINE_NUMBER));
-        result.put(DBGConstants.ATTR_PROCEDURE_OID, attributes.get(DBGConstants.ATTR_PROCEDURE_OID));
+        //result.put(PostgreDebugConstants.ATTR_PROCEDURE_OID, attributes.get(PostgreDebugConstants.ATTR_PROCEDURE_OID));
         return result;
     }
     

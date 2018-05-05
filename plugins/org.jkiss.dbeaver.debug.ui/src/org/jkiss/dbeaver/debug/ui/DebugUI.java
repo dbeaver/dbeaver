@@ -29,9 +29,11 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 public class DebugUI {
 
     public static final String BUNDLE_SYMBOLIC_NAME = "org.jkiss.dbeaver.debug.ui"; //$NON-NLS-1$
+    public static final String DEBUG_LAUNCH_GROUP_ID = "org.jkiss.dbeaver.debug.launchGroup";
+    public static final String DEBUG_OPEN_CONFIGURATION_COMMAND_ID = "org.jkiss.dbeaver.debug.ui.commands.command.debugConfigurations"; //$NON-NLS-1$
 
-    public static DebugEditorAdvisor findEditorAdvisor(DBPDataSourceContainer dataSourceContainer) {
-        DebugEditorAdvisor advisor = Adapters.adapt(dataSourceContainer, DebugEditorAdvisor.class);
+    public static DBGEditorAdvisor findEditorAdvisor(DBPDataSourceContainer dataSourceContainer) {
+        DBGEditorAdvisor advisor = Adapters.adapt(dataSourceContainer, DBGEditorAdvisor.class);
         if (advisor != null) {
             return advisor;
         }

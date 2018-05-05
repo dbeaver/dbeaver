@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
- * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,21 +14,21 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.postgresql.debug.ui.internal;
+package org.jkiss.dbeaver.debug.ui;
 
-import org.eclipse.osgi.util.NLS;
+import org.eclipse.swt.widgets.Composite;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 
-public class PostgreDebugUIMessages extends NLS {
+import java.util.Map;
 
-    private static final String BUNDLE_NAME = "org.jkiss.dbeaver.ext.postgresql.debug.ui.internal.PostgreDebugUIMessages"; //$NON-NLS-1$
+public interface DBGConfigurationPanel {
+    
+    void createPanel(@NotNull Composite parent, DBGConfigurationPanelContainer container);
 
-    public static String PgSqlLaunchShortcut_name;
+    void loadConfiguration(@NotNull DBPDataSourceContainer dataSource, @NotNull Map<String, Object> configuration);
 
-    static {
-        // initialize resource bundle
-        NLS.initializeMessages(BUNDLE_NAME, PostgreDebugUIMessages.class);
-    }
+    void saveConfiguration(@NotNull DBPDataSourceContainer dataSource, @NotNull Map<String, Object> configuration);
 
-    private PostgreDebugUIMessages() {
-    }
+    boolean isValid();
 }

@@ -19,7 +19,7 @@
 package org.jkiss.dbeaver.debug.ui.details;
 
 import org.eclipse.swt.widgets.Composite;
-import org.jkiss.dbeaver.debug.internal.ui.DebugUIMessages;
+import org.jkiss.dbeaver.debug.ui.internal.DebugUIMessages;
 import org.jkiss.dbeaver.debug.ui.DebugUI;
 
 public class DatabaseStandardBreakpointPane extends DatabaseDebugDetailPane<DatabaseBreakpointEditor> {

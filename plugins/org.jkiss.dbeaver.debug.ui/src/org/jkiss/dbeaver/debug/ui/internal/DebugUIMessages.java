@@ -16,13 +16,13 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.debug.internal.ui;
+package org.jkiss.dbeaver.debug.ui.internal;
 
 import org.eclipse.osgi.util.NLS;
 
 public class DebugUIMessages extends NLS {
 
-    private static final String BUNDLE_NAME = "org.jkiss.dbeaver.debug.internal.ui.DebugUIMessages"; //$NON-NLS-1$
+    private static final String BUNDLE_NAME = "org.jkiss.dbeaver.debug.ui.internal.DebugUIMessages"; //$NON-NLS-1$
 
     public static String DatabaseStandardBreakpointPane_description;
     public static String DatabaseStandardBreakpointPane_name;
@@ -31,14 +31,8 @@ public class DebugUIMessages extends NLS {
     public static String DatabaseTab_driver_label_text;
     public static String DatabaseTab_datasource_label_text;
 
-    public static String DatabaseTab_procedure_group_text;
-    public static String DatabaseTab_database_label_text;
-    public static String DatabaseTab_schema_label_text;
-    public static String DatabaseTab_oid_label_text;
-    public static String DatabaseTab_name_label_text;
-
-    public static String DatabaseTab_attach_group_text;
-    public static String DatabaseTab_script_execute_text;
+    public static String DatabaseTab_debug_type_group_text;
+    public static String DatabaseTab_configuration_group_text;
 
     public static String DatabaseTab_name;
 

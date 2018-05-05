@@ -73,13 +73,12 @@ public class ToggleProcedureBreakpointTarget implements IToggleBreakpointsTarget
         int lineNumber = textSelection.getStartLine();
         IBreakpoint[] breakpoints = DebugPlugin.getDefault().getBreakpointManager()
                 .getBreakpoints(DBGConstants.MODEL_IDENTIFIER_DATABASE);
-        for (int i = 0; i < breakpoints.length; i++) {
-            IBreakpoint breakpoint = breakpoints[i];
+        for (IBreakpoint breakpoint : breakpoints) {
             if (breakpoint instanceof IDatabaseBreakpoint) {
                 IDatabaseBreakpoint databaseBreakpoint = (IDatabaseBreakpoint) breakpoint;
                 if (nodeItemPath.equals(databaseBreakpoint.getNodePath())) {
                     if (((ILineBreakpoint) breakpoint).getLineNumber() == (lineNumber + 1)) {
-                        DebugUITools.deleteBreakpoints(new IBreakpoint[] { breakpoint }, part.getSite().getShell(), null);
+                        DebugUITools.deleteBreakpoints(new IBreakpoint[]{breakpoint}, part.getSite().getShell(), null);
                         return;
                     }
                 }
@@ -92,8 +91,7 @@ public class ToggleProcedureBreakpointTarget implements IToggleBreakpointsTarget
 
     protected IResource extractResource(IEditorPart part, ISelection selection) {
         DBSObject databaseObject = DebugUI.extractDatabaseObject(part);
-        IResource resolved = DBeaverIDECore.resolveWorkspaceResource(databaseObject);
-        return resolved;
+        return DBeaverIDECore.resolveWorkspaceResource(databaseObject);
     }
 
     @Override

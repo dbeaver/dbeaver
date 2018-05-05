@@ -20,14 +20,19 @@ package org.jkiss.dbeaver.ext.postgresql.debug.internal.impl;
 
 import org.eclipse.core.resources.IMarker;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.debug.*;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.debug.DBGBaseController;
+import org.jkiss.dbeaver.debug.DBGBreakpointDescriptor;
+import org.jkiss.dbeaver.debug.DBGException;
+import org.jkiss.dbeaver.ext.postgresql.debug.PostgreDebugConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.Map;
 
 public class PostgreDebugController extends DBGBaseController {
+
+    private static final Log log = Log.getLog(PostgreDebugController.class);
 
     public PostgreDebugController(DBPDataSourceContainer dataSourceContainer, Map<String, Object> configuration) {
         super(dataSourceContainer, configuration);
@@ -37,25 +42,28 @@ public class PostgreDebugController extends DBGBaseController {
     public PostgreDebugSession createSession(DBRProgressMonitor monitor, Map<String, Object> configuration)
             throws DBGException
     {
+        PostgreDebugSession pgSession = null;
         try {
-            PostgreDebugSession pgSession = new PostgreDebugSession(monitor,this);
+            pgSession = new PostgreDebugSession(monitor,this);
 
-            int oid = CommonUtils.toInt(configuration.get(DBGConstants.ATTR_PROCEDURE_OID));
-            int pid = CommonUtils.toInt(configuration.get(DBGConstants.ATTR_ATTACH_PROCESS));
-            String kind = String.valueOf(configuration.get(DBGConstants.ATTR_ATTACH_KIND));
-            boolean global = DBGController.ATTACH_KIND_GLOBAL.equals(kind);
-            String call = (String) configuration.get(DBGConstants.ATTR_SCRIPT_TEXT);
-            pgSession.attach(monitor, oid, pid, global, call);
+            pgSession.attach(monitor, configuration);
 
             return pgSession;
         } catch (DBException e) {
+            if (pgSession != null) {
+                try {
+                    pgSession.closeSession(monitor);
+                } catch (Exception e1) {
+                    log.error(e1);
+                }
+            }
             throw new DBGException("Error attaching debug session", e);
         }
     }
 
     @Override
     public DBGBreakpointDescriptor describeBreakpoint(Map<String, Object> attributes) {
-        Object oid = attributes.get(DBGConstants.ATTR_PROCEDURE_OID);
+        Object oid = attributes.get(PostgreDebugConstants.ATTR_FUNCTION_OID);
         Object lineNumber = attributes.get(IMarker.LINE_NUMBER);
         long parsed = Long.parseLong(String.valueOf(lineNumber));
         return new PostgreDebugBreakpointDescriptor(oid, parsed, false);

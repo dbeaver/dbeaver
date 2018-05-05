@@ -23,14 +23,14 @@ import org.eclipse.debug.ui.CommonTab;
 import org.eclipse.debug.ui.ILaunchConfigurationDialog;
 import org.eclipse.debug.ui.ILaunchConfigurationTab;
 
-public class DatabaseTabGroup extends AbstractLaunchConfigurationTabGroup {
+public class DatabaseDebugConfigurationTabGroup extends AbstractLaunchConfigurationTabGroup {
 
-    public DatabaseTabGroup() {
+    public DatabaseDebugConfigurationTabGroup() {
     }
 
     @Override
     public void createTabs(ILaunchConfigurationDialog dialog, String mode) {
-        DatabaseTab databaseTab = new DatabaseTab();
+        DatabaseDebugConfigurationTab databaseTab = new DatabaseDebugConfigurationTab();
         CommonTab commonTab = new CommonTab();
         ILaunchConfigurationTab[] tabs = new ILaunchConfigurationTab[] { databaseTab, commonTab };
         setTabs(tabs);
