@@ -19,23 +19,21 @@
 package org.jkiss.dbeaver.debug.sourcelookup;
 
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.sourcelookup.ISourceContainer;
-import org.eclipse.debug.core.sourcelookup.ISourcePathComputerDelegate;
-import org.jkiss.dbeaver.debug.core.DebugCore;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.eclipse.debug.core.sourcelookup.containers.AbstractSourceContainerTypeDelegate;
 
-public class ProcedureSourcePathComputer implements ISourcePathComputerDelegate {
+public class DatabaseSourceContainerTypeDelegate extends AbstractSourceContainerTypeDelegate {
 
     @Override
-    public ISourceContainer[] computeSourceContainers(ILaunchConfiguration configuration, IProgressMonitor monitor)
-            throws CoreException {
-        String datasourceId = DebugCore.extractDatasourceId(configuration);
-        DataSourceDescriptor descriptor = DataSourceRegistry.findDataSource(datasourceId);
-        DatasourceSourceContainer container = new DatasourceSourceContainer(descriptor);
-        return new ISourceContainer[] { container };
+    public ISourceContainer createSourceContainer(String memento) throws CoreException {
+        // TODO Auto-generated method stub
+        return null;
+    }
+
+    @Override
+    public String getMemento(ISourceContainer container) throws CoreException {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }

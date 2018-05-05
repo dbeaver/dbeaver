@@ -67,7 +67,7 @@ public class GenericTableManager extends SQLTableManager<GenericTable, GenericSt
         } catch (DBException e) {
             log.error(e);
         }
-        return new GenericTable(parent, tableName, "TABLE", null);
+        return parent.getDataSource().getMetaModel().createTableImpl(parent, tableName, "TABLE", null);
     }
 
     @Override

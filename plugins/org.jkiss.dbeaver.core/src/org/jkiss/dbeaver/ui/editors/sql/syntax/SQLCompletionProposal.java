@@ -268,9 +268,10 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
         }
         String wordLower = wordPart.toLowerCase(Locale.ENGLISH);
         if (!CommonUtils.isEmpty(wordPart)) {
+            boolean matchContains = dataSource != null && dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.PROPOSALS_MATCH_CONTAINS);
             boolean matched;
             if (simpleMode) {
-                matched = replacementFull.startsWith(wordLower) &&
+                matched = (matchContains ? replacementFull.contains(wordLower) : replacementFull.startsWith(wordLower)) &&
                     (CommonUtils.isEmpty(event.getText()) || replacementFull.contains(event.getText().toLowerCase(Locale.ENGLISH))) ||
                     (this.replacementLast != null && this.replacementLast.startsWith(wordLower));
             } else {

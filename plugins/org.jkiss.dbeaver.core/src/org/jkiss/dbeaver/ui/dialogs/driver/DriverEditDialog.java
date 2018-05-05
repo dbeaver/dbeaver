@@ -22,8 +22,6 @@ import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.ProgressMonitorDialog;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
@@ -188,12 +186,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
 
             gd = new GridData(GridData.FILL_HORIZONTAL);
             driverNameText = UIUtils.createLabelText(propsGroup, CoreMessages.dialog_edit_driver_label_driver_name + "*", driver.getName(), SWT.BORDER | advStyle, gd);
-            driverNameText.addModifyListener(new ModifyListener() {
-                @Override
-                public void modifyText(ModifyEvent e) {
-                    onChangeProperty();
-                }
-            });
+            driverNameText.addModifyListener(e -> onChangeProperty());
 
             UIUtils.createControlLabel(propsGroup, CoreMessages.dialog_edit_driver_type_label);
             final CSmartCombo<DataSourceProviderDescriptor> providerCombo = new CSmartCombo<>(propsGroup, SWT.BORDER | SWT.READ_ONLY | SWT.DROP_DOWN, new LabelProvider() {
@@ -230,30 +223,15 @@ public class DriverEditDialog extends HelpEnabledDialog {
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 3;
             driverClassText = UIUtils.createLabelText(propsGroup, CoreMessages.dialog_edit_driver_label_class_name + "*", CommonUtils.notEmpty(driver.getDriverClassName()), SWT.BORDER | advStyle, gd);
-            driverClassText.addModifyListener(new ModifyListener() {
-                @Override
-                public void modifyText(ModifyEvent e) {
-                    onChangeProperty();
-                }
-            });
+            driverClassText.addModifyListener(e -> onChangeProperty());
 
             driverURLText = UIUtils.createLabelText(propsGroup, CoreMessages.dialog_edit_driver_label_sample_url, CommonUtils.notEmpty(driver.getSampleURL()), SWT.BORDER | advStyle, gd);
-            driverURLText.addModifyListener(new ModifyListener() {
-                @Override
-                public void modifyText(ModifyEvent e) {
-                    onChangeProperty();
-                }
-            });
+            driverURLText.addModifyListener(e -> onChangeProperty());
 
             gd = new GridData(GridData.FILL_HORIZONTAL);
             driverPortText = UIUtils.createLabelText(propsGroup, CoreMessages.dialog_edit_driver_label_default_port, driver.getDefaultPort() == null ? "" : driver.getDefaultPort(), SWT.BORDER | advStyle, gd);
             driverPortText.setLayoutData(new GridData(SWT.NONE));
-            driverPortText.addModifyListener(new ModifyListener() {
-                @Override
-                public void modifyText(ModifyEvent e) {
-                    onChangeProperty();
-                }
-            });
+            driverPortText.addModifyListener(e -> onChangeProperty());
 
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
@@ -339,12 +317,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
         loadSettings(false);
 
         if (showAddFiles) {
-            getShell().getDisplay().asyncExec(new Runnable() {
-                @Override
-                public void run() {
-                    addLibraryFiles();
-                }
-            });
+            getShell().getDisplay().asyncExec(this::addLibraryFiles);
         }
 
         driverNameText.setFocus();
@@ -394,14 +367,19 @@ public class DriverEditDialog extends HelpEnabledDialog {
                         cell.setImage(DBeaverIcons.getImage(UIIcon.JAR));
                     }
                 }
-            });
-            libTable.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
-            libTable.getControl().addListener(SWT.Selection, new Listener() {
+
                 @Override
-                public void handleEvent(Event event) {
-                    changeLibSelection();
+                public String getToolTipText(Object element) {
+                    if (element instanceof DBPDriverLibrary) {
+                        File localFile = ((DBPDriverLibrary) element).getLocalFile();
+                        return localFile == null ? "N/A" : localFile.getAbsolutePath();
+                    }
+                    return super.getToolTipText(element);
                 }
             });
+            ColumnViewerToolTipSupport.enableFor(libTable);
+            libTable.getControl().setLayoutData(new GridData(GridData.FILL_BOTH));
+            libTable.getControl().addListener(SWT.Selection, event -> changeLibSelection());
 
             // Find driver class
             boolean isReadOnly = !provider.isDriversManagable();
@@ -428,24 +406,21 @@ public class DriverEditDialog extends HelpEnabledDialog {
             classListCombo.setEnabled(!isReadOnly);
             findClassButton = new Button(findClassGroup, SWT.PUSH);
             findClassButton.setText(CoreMessages.dialog_edit_driver_button_bind_class);
-            findClassButton.addListener(SWT.Selection, new Listener() {
-                @Override
-                public void handleEvent(Event event) {
-                    try {
-                        DriverClassFindJob classFinder = new DriverClassFindJob(driver, "java/sql/Driver", true);
-                        new ProgressMonitorDialog(getShell()).run(true, true, classFinder);
+            findClassButton.addListener(SWT.Selection, event -> {
+                try {
+                    DriverClassFindJob classFinder = new DriverClassFindJob(driver, "java/sql/Driver", true);
+                    new ProgressMonitorDialog(getShell()).run(true, true, classFinder);
 
-                        if (classListCombo != null && !classListCombo.isDisposed()) {
-                            java.util.List<String> classNames = classFinder.getDriverClassNames();
-                            classListCombo.setItems(classNames.toArray(new String[classNames.size()]));
-                            classListCombo.setListVisible(true);
-                        }
-
-                    } catch (InvocationTargetException e) {
-                        log.error(e.getTargetException());
-                    } catch (InterruptedException e) {
-                        log.error(e);
+                    if (classListCombo != null && !classListCombo.isDisposed()) {
+                        List<String> classNames = classFinder.getDriverClassNames();
+                        classListCombo.setItems(classNames.toArray(new String[classNames.size()]));
+                        classListCombo.setListVisible(true);
                     }
+
+                } catch (InvocationTargetException e) {
+                    log.error(e.getTargetException());
+                } catch (InterruptedException e) {
+                    log.error(e);
                 }
             });
             findClassButton.setEnabled(!isReadOnly);
@@ -831,13 +806,10 @@ public class DriverEditDialog extends HelpEnabledDialog {
 
     public static void showBadConfigDialog(final Shell shell, final String message, final DBException error) {
         //log.debug(message);
-        Runnable runnable = new Runnable() {
-            @Override
-            public void run() {
-                DBPDataSource dataSource = error.getDataSource();
-                String title = "Bad driver [" + dataSource.getContainer().getDriver().getName() + "] configuration";
-                new BadDriverConfigDialog(shell, title, message == null ? title : message, error).open();
-            }
+        Runnable runnable = () -> {
+            DBPDataSource dataSource = error.getDataSource();
+            String title = "Bad driver [" + dataSource.getContainer().getDriver().getName() + "] configuration";
+            new BadDriverConfigDialog(shell, title, message == null ? title : message, error).open();
         };
         DBeaverUI.syncExec(runnable);
     }
@@ -866,14 +838,11 @@ public class DriverEditDialog extends HelpEnabledDialog {
         @Override
         protected void buttonPressed(int id) {
             if (id == IDialogConstants.RETRY_ID) {
-                DBeaverUI.asyncExec(new Runnable() {
-                    @Override
-                    public void run() {
-                        DriverEditDialog dialog = new DriverEditDialog(
-                            DBeaverUI.getActiveWorkbenchShell(),
-                            (DriverDescriptor) dataSource.getContainer().getDriver());
-                        dialog.open();
-                    }
+                DBeaverUI.asyncExec(() -> {
+                    DriverEditDialog dialog = new DriverEditDialog(
+                        DBeaverUI.getActiveWorkbenchShell(),
+                        (DriverDescriptor) dataSource.getContainer().getDriver());
+                    dialog.open();
                 });
                 super.buttonPressed(IDialogConstants.OK_ID);
             }

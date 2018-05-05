@@ -26,21 +26,20 @@ import org.eclipse.debug.core.sourcelookup.containers.CompositeSourceContainer;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.debug.DBGConstants;
 import org.jkiss.dbeaver.debug.core.DebugCore;
 import org.jkiss.dbeaver.debug.internal.core.DebugCoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 
-public class DatasourceSourceContainer extends CompositeSourceContainer {
+public class DatabaseNavigatorSourceContainer extends CompositeSourceContainer {
 
-    private final DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
     private final DBPDataSourceContainer datasource;
     private final IProject project;
 
-    public DatasourceSourceContainer(DataSourceDescriptor descriptor) {
+    public DatabaseNavigatorSourceContainer(DataSourceDescriptor descriptor) {
         this.datasource = descriptor;
         this.project = datasource.getRegistry().getProject();
     }
@@ -55,7 +54,7 @@ public class DatasourceSourceContainer extends CompositeSourceContainer {
         DBNNode node;
         try {
             VoidProgressMonitor monitor = new VoidProgressMonitor();
-            node = navigatorModel.getNodeByPath(monitor, project, name);
+            node = DBeaverCore.getInstance().getNavigatorModel().getNodeByPath(monitor, project, name);
         } catch (DBException e) {
             String message = NLS.bind(DebugCoreMessages.DatasourceSourceContainer_e_extract_node, name);
             throw new CoreException(DebugCore.newErrorStatus(message, e));
@@ -68,7 +67,7 @@ public class DatasourceSourceContainer extends CompositeSourceContainer {
 
     @Override
     public ISourceContainerType getType() {
-        return getSourceContainerType(DebugCore.SOURCE_CONTAINER_TYPE_DATASOURCE);
+        return getSourceContainerType(DBGConstants.SOURCE_CONTAINER_TYPE_DATASOURCE);
     }
 
     @Override

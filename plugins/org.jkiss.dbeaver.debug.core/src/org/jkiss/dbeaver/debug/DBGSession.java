@@ -19,17 +19,27 @@
 
 package org.jkiss.dbeaver.debug;
 
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
 import java.util.List;
 
 public interface DBGSession {
 
     DBGSessionInfo getSessionInfo();
 
+    Object getSessionId();
+
     List<? extends DBGBreakpointDescriptor> getBreakpoints();
 
-    void addBreakpoint(DBGBreakpointDescriptor descriptor) throws DBGException;
+    void addBreakpoint(DBRProgressMonitor monitor, DBGBreakpointDescriptor descriptor) throws DBGException;
 
-    void removeBreakpoint(DBGBreakpointDescriptor descriptor) throws DBGException;
+    void removeBreakpoint(DBRProgressMonitor monitor, DBGBreakpointDescriptor descriptor) throws DBGException;
+
+    boolean canStepInto();
+
+    boolean canStepOver();
+
+    boolean canStepReturn();
 
     void execContinue() throws DBGException;
 
@@ -37,17 +47,20 @@ public interface DBGSession {
 
     void execStepOver() throws DBGException;
 
-    void close() throws DBGException;
+    void execStepReturn() throws DBGException;
 
-    List<? extends DBGVariable<?>> getVariables() throws DBGException;
+    void resume() throws DBGException;
+
+    void suspend() throws DBGException;
+
+    List<? extends DBGVariable<?>> getVariables(DBGStackFrame stack) throws DBGException;
 
     void setVariableVal(DBGVariable<?> variable, Object value) throws DBGException;
 
     List<? extends DBGStackFrame> getStack() throws DBGException;
 
-    Object getSessionId();
-
-    void selectFrame(int frameNumber) throws DBGException;
-
     String getSource(DBGStackFrame stack) throws DBGException;
+
+    void closeSession(DBRProgressMonitor monitor) throws DBGException;
+
 }

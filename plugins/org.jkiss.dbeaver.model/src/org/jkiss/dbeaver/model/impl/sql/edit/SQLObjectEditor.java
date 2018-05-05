@@ -101,8 +101,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
     }
 
     @Override
-    public final void deleteObject(DBECommandContext commandContext, OBJECT_TYPE object, Map<String, Object> options)
-    {
+    public void deleteObject(DBECommandContext commandContext, OBJECT_TYPE object, Map<String, Object> options) throws DBException {
         commandContext.addCommand(
             new ObjectDeleteCommand(object, ModelMessages.model_jdbc_delete_object),
             new DeleteObjectReflector<>(this),

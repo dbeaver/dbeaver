@@ -51,12 +51,12 @@ public class ActionUtils
 {
     private static final Log log = Log.getLog(ActionUtils.class);
 
-    public static CommandContributionItem makeCommandContribution(IServiceLocator serviceLocator, String commandId)
+    public static CommandContributionItem makeCommandContribution(@NotNull IServiceLocator serviceLocator, @NotNull String commandId)
     {
         return makeCommandContribution(serviceLocator, commandId, CommandContributionItem.STYLE_PUSH);
     }
 
-    public static CommandContributionItem makeCommandContribution(IServiceLocator serviceLocator, String commandId, int style)
+    public static CommandContributionItem makeCommandContribution(@NotNull IServiceLocator serviceLocator, @NotNull String commandId, int style)
     {
         return new CommandContributionItem(new CommandContributionItemParameter(
             serviceLocator,
@@ -65,7 +65,7 @@ public class ActionUtils
             style));
     }
 
-    public static CommandContributionItem makeCommandContribution(IServiceLocator serviceLocator, String commandId, int style, DBPImage icon)
+    public static CommandContributionItem makeCommandContribution(@NotNull IServiceLocator serviceLocator, @NotNull String commandId, int style, @Nullable  DBPImage icon)
     {
         CommandContributionItemParameter parameters = new CommandContributionItemParameter(
             serviceLocator,
@@ -82,7 +82,7 @@ public class ActionUtils
     }
 
     public static ContributionItem makeActionContribution(
-        IAction action,
+        @NotNull IAction action,
         boolean showText)
     {
         ActionContributionItem item = new ActionContributionItem(action);
@@ -93,9 +93,9 @@ public class ActionUtils
     }
 
     public static CommandContributionItem makeCommandContribution(
-        IServiceLocator serviceLocator,
-        String commandId,
-        String name,
+        @NotNull IServiceLocator serviceLocator,
+        @NotNull String commandId,
+        @Nullable String name,
         @Nullable DBPImage image,
         @Nullable String toolTip,
         boolean showText)

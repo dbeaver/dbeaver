@@ -17,18 +17,16 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.debug.internal;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.debug.DBGController;
+import org.jkiss.dbeaver.debug.DBGConstants;
 import org.jkiss.dbeaver.debug.DBGResolver;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class PostgreResolver implements DBGResolver {
 
@@ -57,19 +55,7 @@ public class PostgreResolver implements DBGResolver {
         if (oid == null) {
             throw new DBException(errorIdentifier);
         }
-        String databaseName = String.valueOf(context.get(DBGController.DATABASE_NAME));
-        PostgreDatabase database = dataSource.getDatabase(databaseName);
-        if (database == null) {
-            return null;
-        }
-        String schemaName = String.valueOf(context.get(DBGController.SCHEMA_NAME));
-        PostgreSchema schema = null;
-        schema = database.getSchema(monitor, schemaName);
-        if (schema == null) {
-            return null;
-        }
-        PostgreProcedure procedure = schema.getProcedure(monitor, oid);
-        return procedure;
+        return dataSource.getDefaultInstance().getProcedure(monitor, oid);
     }
 
     @Override
@@ -77,16 +63,7 @@ public class PostgreResolver implements DBGResolver {
         HashMap<String, Object> context = new HashMap<String, Object>();
         if (databaseObject instanceof PostgreProcedure) {
             PostgreProcedure procedure = (PostgreProcedure) databaseObject;
-            context.put(DBGController.PROCEDURE_OID, procedure.getObjectId());
-            context.put(DBGController.PROCEDURE_NAME, procedure.getName());
-            PostgreSchema schema = procedure.getContainer();
-            if (schema != null) {
-                context.put(DBGController.SCHEMA_NAME, schema.getName());
-            }
-            PostgreDatabase database = procedure.getDatabase();
-            if (database != null) {
-                context.put(DBGController.DATABASE_NAME, database.getName());
-            }
+            context.put(DBGConstants.ATTR_PROCEDURE_OID, procedure.getObjectId());
         }
         return context;
     }

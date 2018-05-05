@@ -178,11 +178,6 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
         return PostgreUtils.getObjectById(monitor, roleCache, this, ownerId);
     }
 
-    @Property(viewable = false, order = 4)
-    public PostgreTablespace getDefaultTablespace(DBRProgressMonitor monitor) throws DBException {
-        return PostgreUtils.getObjectById(monitor, tablespaceCache, this, tablespaceId);
-    }
-
     @Property(viewable = false, order = 5)
     public PostgreCharset getDefaultEncoding(DBRProgressMonitor monitor) throws DBException {
         return PostgreUtils.getObjectById(monitor, encodingCache, this, encodingId);
@@ -212,7 +207,8 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
     public int getConnectionLimit() {
         return connectionLimit;
     }
-///////////////////////////////////////////////////
+
+    ///////////////////////////////////////////////////
     // Instance methods
 
     @NotNull
@@ -283,9 +279,26 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
         return encodingCache.getAllObjects(monitor, this);
     }
 
+    ///////////////////////////////////////////////
+    // Tablespaces
+
     @Association
     public Collection<PostgreTablespace> getTablespaces(DBRProgressMonitor monitor) throws DBException {
         return tablespaceCache.getAllObjects(monitor, this);
+    }
+
+    @Property(viewable = false, order = 4)
+    public PostgreTablespace getDefaultTablespace(DBRProgressMonitor monitor) throws DBException {
+        return PostgreUtils.getObjectById(monitor, tablespaceCache, this, tablespaceId);
+    }
+
+    public PostgreTablespace getTablespace(DBRProgressMonitor monitor, long tablespaceId) throws DBException {
+        for (PostgreTablespace ts : tablespaceCache.getAllObjects(monitor, this)) {
+            if (ts.getObjectId() == tablespaceId) {
+                return ts;
+            }
+        }
+        return null;
     }
 
     ///////////////////////////////////////////////
@@ -444,7 +457,7 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
         // Construct search path from current search path but put default schema first
         List<String> newSearchPath = new ArrayList<>(dataSource.getDefaultSearchPath());
         {
-            String defSchemaName = DBUtils.getQuotedIdentifier(schema);
+            String defSchemaName = schema.getName();
             int schemaIndex = newSearchPath.indexOf(defSchemaName);
             if (schemaIndex == 0) {
                 // Already default schema
@@ -457,9 +470,16 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
                 newSearchPath.add(0, defSchemaName);
             }
         }
+        StringBuilder spString = new StringBuilder();
+        for (String sp : newSearchPath) {
+            if (spString.length() > 0) spString.append(",");
+            if (sp.startsWith("$"))
+                spString.append(sp);
+            else
+                spString.append(DBUtils.getQuotedIdentifier(getDataSource(), sp));
+        }
         try (JDBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, "Change search path")) {
-            String sp = newSearchPath.stream().collect(Collectors.joining(","));
-            JDBCUtils.executeSQL(session, "SET search_path = " + sp);
+            JDBCUtils.executeSQL(session, "SET search_path = " + spString);
         } catch (SQLException e) {
             throw new DBCException("Error setting search path", e, dataSource);
         }
@@ -471,6 +491,18 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
         final PostgreSchema schema = getSchema(monitor, schemaId);
         if (schema != null) {
             return PostgreUtils.getObjectById(monitor, schema.proceduresCache, schema, procId);
+        }
+        return null;
+    }
+
+    public PostgreProcedure getProcedure(DBRProgressMonitor monitor, long procId)
+        throws DBException
+    {
+        for (final PostgreSchema schema : getSchemas(monitor)) {
+            PostgreProcedure procedure = PostgreUtils.getObjectById(monitor, schema.proceduresCache, schema, procId);
+            if (procedure != null) {
+                return procedure;
+            }
         }
         return null;
     }

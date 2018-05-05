@@ -18,46 +18,30 @@
 
 package org.jkiss.dbeaver.debug.core.model;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.eclipse.core.resources.IMarkerDelta;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.debug.core.DebugEvent;
-import org.eclipse.debug.core.DebugException;
-import org.eclipse.debug.core.DebugPlugin;
-import org.eclipse.debug.core.IBreakpointManager;
-import org.eclipse.debug.core.ILaunch;
-import org.eclipse.debug.core.ILaunchConfiguration;
-import org.eclipse.debug.core.model.IBreakpoint;
-import org.eclipse.debug.core.model.IDebugTarget;
-import org.eclipse.debug.core.model.IMemoryBlock;
-import org.eclipse.debug.core.model.IProcess;
-import org.eclipse.debug.core.model.IThread;
+import org.eclipse.debug.core.*;
+import org.eclipse.debug.core.model.*;
 import org.eclipse.osgi.util.NLS;
-import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.debug.DBGBreakpointDescriptor;
-import org.jkiss.dbeaver.debug.DBGController;
-import org.jkiss.dbeaver.debug.DBGEvent;
-import org.jkiss.dbeaver.debug.DBGEventHandler;
-import org.jkiss.dbeaver.debug.DBGException;
-import org.jkiss.dbeaver.debug.DBGStackFrame;
-import org.jkiss.dbeaver.debug.DBGVariable;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.debug.*;
 import org.jkiss.dbeaver.debug.core.DebugCore;
 import org.jkiss.dbeaver.debug.internal.core.DebugCoreMessages;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class DatabaseDebugTarget extends DatabaseDebugElement implements IDatabaseDebugTarget, DBGEventHandler {
 
+    private static final Log log = Log.getLog(DatabaseDebugTarget.class);
+    
     private final String modelIdentifier;
 
     private final ILaunch launch;
@@ -72,7 +56,7 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
     private boolean suspended = false;
     private boolean terminated = false;
 
-    private Object sessionKey;
+    private DBGSession session;
 
     public DatabaseDebugTarget(String modelIdentifier, ILaunch launch, IProcess process, DBGController controller) {
         super(null);
@@ -81,8 +65,8 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
         this.process = process;
         this.controller = controller;
         this.controller.registerEventHandler(this);
-        this.threads = new ArrayList<IThread>();
-        this.thread = newThread(controller);
+        this.threads = new ArrayList<>();
+        this.thread = newThread();
         this.threads.add(thread);
 
         DebugPlugin debugPlugin = DebugPlugin.getDefault();
@@ -92,12 +76,21 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
         debugPlugin.addDebugEventListener(this);
     }
 
+    public IDatabaseDebugTarget getDatabaseDebugTarget() {
+        return this;
+    }
+
     @Override
     public DBGController getController() {
         return controller;
     }
 
-    protected DatabaseThread newThread(DBGController controller) {
+    @Override
+    public DBGSession getSession() {
+        return session;
+    }
+
+    protected DatabaseThread newThread() {
         return new DatabaseThread(this);
     }
 
@@ -123,7 +116,7 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
 
     @Override
     public IThread[] getThreads() throws DebugException {
-        return (IThread[]) threads.toArray(new IThread[threads.size()]);
+        return threads.toArray(new IThread[threads.size()]);
     }
 
     @Override
@@ -162,13 +155,12 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
 
     @Override
     public void handleDebugEvents(DebugEvent[] events) {
-        for (int i = 0; i < events.length; i++) {
-            DebugEvent event = events[i];
+        for (DebugEvent event : events) {
             if (event.getKind() == DebugEvent.TERMINATE && event.getSource().equals(process)) {
                 try {
                     terminated();
                 } catch (DebugException e) {
-                    DebugCore.log(e.getStatus());
+                    log.log(e.getStatus());
                 }
             }
         }
@@ -177,7 +169,7 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
     @Override
     public void connect(IProgressMonitor monitor) throws CoreException {
         try {
-            sessionKey = this.controller.attach(new DefaultProgressMonitor(monitor));
+            session = this.controller.openSession(new DefaultProgressMonitor(monitor));
         } catch (DBGException e) {
             String message = NLS.bind("Failed to connect {0} to the target", getName());
             IStatus error = DebugCore.newErrorStatus(message, e);
@@ -207,7 +199,10 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
             terminated = true;
             suspended = false;
             try {
-                controller.detach(sessionKey, getProgressMonitor());
+                if (session != null) {
+                    session.closeSession(new VoidProgressMonitor());
+                    session = null;
+                }
                 controller.unregisterEventHandler(this);
             } catch (DBGException e) {
                 String message = NLS.bind("Error terminating {0}", getName());
@@ -255,7 +250,7 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
     public void resume() throws DebugException {
         suspended = false;
         try {
-            controller.resume(sessionKey);
+            session.resume();
         } catch (DBGException e) {
             String message = NLS.bind("Error resuming {0}", getName());
             IStatus status = DebugCore.newErrorStatus(message, e);
@@ -270,16 +265,12 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
     @Override
     public void suspend() throws DebugException {
         try {
-            controller.suspend(sessionKey);
+            session.suspend();
         } catch (DBGException e) {
             String message = NLS.bind("Error suspending {0}", getName());
             IStatus status = DebugCore.newErrorStatus(message, e);
             throw new DebugException(status);
         }
-    }
-
-    private VoidProgressMonitor getProgressMonitor() {
-        return new VoidProgressMonitor();
     }
 
     public void suspended(int detail) {
@@ -290,10 +281,7 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
 
     @Override
     public boolean supportsBreakpoint(IBreakpoint breakpoint) {
-        if (breakpoint.getModelIdentifier().equals(DebugCore.BREAKPOINT_ID_DATABASE_LINE)) {
-            return true;
-        }
-        return false;
+        return breakpoint.getModelIdentifier().equals(DBGConstants.BREAKPOINT_ID_DATABASE_LINE);
     }
 
     @Override
@@ -303,15 +291,15 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
             if (descriptor == null) {
                 String message = NLS.bind("Unable to describe breakpoint {0}", breakpoint);
                 Status error = DebugCore.newErrorStatus(message);
-                DebugCore.log(error);
+                log.log(error);
                 return;
             }
             try {
-                controller.addBreakpoint(sessionKey, descriptor);
+                session.addBreakpoint(new VoidProgressMonitor(), descriptor);
             } catch (DBGException e) {
                 String message = NLS.bind("Unable to add breakpoint {0}", breakpoint);
                 Status error = DebugCore.newErrorStatus(message, e);
-                DebugCore.log(error);
+                log.log(error);
             }
         }
     }
@@ -323,15 +311,15 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
             if (descriptor == null) {
                 String message = NLS.bind("Unable to describe breakpoint {0}", breakpoint);
                 Status error = DebugCore.newErrorStatus(message);
-                DebugCore.log(error);
+                log.log(error);
                 return;
             }
             try {
-                controller.removeBreakpoint(sessionKey, descriptor);
+                session.removeBreakpoint(new VoidProgressMonitor(), descriptor);
             } catch (DBGException e) {
                 String message = NLS.bind("Unable to remove breakpoint {0}", breakpoint);
                 Status error = DebugCore.newErrorStatus(message, e);
-                DebugCore.log(error);
+                log.log(error);
             }
         }
     }
@@ -354,9 +342,8 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
     @Override
     public void breakpointManagerEnablementChanged(boolean enabled) {
         IBreakpoint[] breakpoints = DebugPlugin.getDefault().getBreakpointManager()
-                .getBreakpoints(DebugCore.BREAKPOINT_ID_DATABASE_LINE);
-        for (int i = 0; i < breakpoints.length; i++) {
-            IBreakpoint breakpoint = breakpoints[i];
+                .getBreakpoints(DBGConstants.BREAKPOINT_ID_DATABASE_LINE);
+        for (IBreakpoint breakpoint : breakpoints) {
             if (enabled) {
                 breakpointAdded(breakpoint);
             } else {
@@ -366,28 +353,30 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
     }
 
     protected DBGBreakpointDescriptor describeBreakpoint(IBreakpoint breakpoint) {
-        Map<String, Object> description = new HashMap<String, Object>();
+        Map<String, Object> description = new HashMap<>();
         try {
             Map<String, Object> attributes = breakpoint.getMarker().getAttributes();
             Map<String, Object> remote = DebugCore.toBreakpointDescriptor(attributes);
             description.putAll(remote);
         } catch (CoreException e) {
-            DebugCore.log(e.getStatus());
+            log.log(e.getStatus());
             return null;
         }
-        DBGBreakpointDescriptor descriptor = controller.describeBreakpoint(description);
-        return descriptor;
+        return controller.describeBreakpoint(description);
     }
 
     @Override
     public boolean canDisconnect() {
-        return true;
+        return session != null;
     }
 
     @Override
     public void disconnect() throws DebugException {
         try {
-            controller.detach(sessionKey, getProgressMonitor());
+            if (session != null) {
+                session.closeSession(new VoidProgressMonitor());
+                session = null;
+            }
         } catch (DBGException e) {
             String message = NLS.bind("Error disconnecting {0}", getName());
             IStatus status = DebugCore.newErrorStatus(message, e);
@@ -397,7 +386,7 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
 
     @Override
     public boolean isDisconnected() {
-        return false;
+        return session == null;
     }
 
     @Override
@@ -420,78 +409,51 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
             try {
                 process.terminate();
             } catch (DebugException e) {
-                DebugCore.log(e.getStatus());
+                log.log(e.getStatus());
             }
         }
     }
 
     public boolean canStepInto() {
-        return controller.canStepInto(sessionKey);
+        return session != null && session.canStepInto();
     }
 
     public boolean canStepOver() {
-        return controller.canStepOver(sessionKey);
+        return session != null && session.canStepOver();
     }
 
     public boolean canStepReturn() {
-        return controller.canStepReturn(sessionKey);
+        return session != null && session.canStepReturn();
     }
 
     public void stepInto() throws DebugException {
-        DBGController controller = getController();
         try {
-            controller.stepInto(sessionKey);
+            session.execStepInto();
         } catch (DBGException e) {
-            String message = NLS.bind("Step into failed for session {0}", sessionKey);
+            String message = NLS.bind("Step into failed for session {0}", session.getSessionId());
             IStatus status = DebugCore.newErrorStatus(message, e);
             throw new DebugException(status);
         }
     }
 
     public void stepOver() throws DebugException {
-        DBGController controller = getController();
         try {
-            controller.stepOver(sessionKey);
+            session.execStepOver();
         } catch (DBGException e) {
-            String message = NLS.bind("Step over failed for session {0}", sessionKey);
+            String message = NLS.bind("Step over failed for session {0}", session.getSessionId());
             IStatus status = DebugCore.newErrorStatus(message, e);
             throw new DebugException(status);
         }
     }
 
     public void stepReturn() throws DebugException {
-        DBGController controller = getController();
         try {
-            controller.stepReturn(sessionKey);
+            session.execStepReturn();
         } catch (DBGException e) {
-            String message = NLS.bind("Step return failed for session {0}", sessionKey);
+            String message = NLS.bind("Step return failed for session {0}", session.getSessionId());
             IStatus status = DebugCore.newErrorStatus(message, e);
             throw new DebugException(status);
         }
-    }
-
-    protected List<? extends DBGStackFrame> requestStackFrames() throws DBGException {
-        DBGController controller = getController();
-        List<? extends DBGStackFrame> stack = controller.getStack(sessionKey);
-        return stack;
-    }
-
-    protected List<? extends DBGVariable<?>> requestVariables(DBGStackFrame stack) throws DBGException {
-        DBGController controller = getController();
-        List<? extends DBGVariable<?>> variables = controller.getVariables(sessionKey, stack);
-        return variables;
-    }
-
-    protected String requestSource(DBGStackFrame stack) throws DBGException {
-        DBGController controller = getController();
-        String source = controller.getSource(sessionKey, stack);
-        return source;
-    }
-
-    public DBSObject findDatabaseObject(Object identifier, DBRProgressMonitor monitor) throws DBException {
-        DBPDataSourceContainer container = controller.getDataSourceContainer();
-        Map<String, Object> context = controller.getDebugConfiguration();
-        return DebugCore.resolveDatabaseObject(container, context, identifier, monitor);
     }
 
 }

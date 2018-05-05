@@ -17,32 +17,24 @@
 
 package org.jkiss.dbeaver.ext.postgresql.debug.internal.console;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.util.List;
-import java.util.Scanner;
-
-import org.jkiss.dbeaver.debug.DBGBaseController;
-import org.jkiss.dbeaver.debug.DBGBreakpointDescriptor;
-import org.jkiss.dbeaver.debug.DBGController;
-import org.jkiss.dbeaver.debug.DBGException;
-import org.jkiss.dbeaver.debug.DBGObjectDescriptor;
-import org.jkiss.dbeaver.debug.DBGSession;
-import org.jkiss.dbeaver.debug.DBGSessionInfo;
-import org.jkiss.dbeaver.debug.DBGStackFrame;
-import org.jkiss.dbeaver.debug.DBGVariable;
+import org.jkiss.dbeaver.debug.*;
 import org.jkiss.dbeaver.ext.postgresql.debug.internal.impl.PostgreDebugBreakpointDescriptor;
-import org.jkiss.dbeaver.ext.postgresql.debug.internal.impl.PostgreDebugBreakpointProperties;
 import org.jkiss.dbeaver.ext.postgresql.debug.internal.impl.PostgreDebugController;
-import org.jkiss.dbeaver.ext.postgresql.debug.internal.impl.PostgreDebugObjectDescriptor;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Scanner;
+
 @SuppressWarnings("nls")
 public class Debugger {
 
+/*
     public static final String PROMPT = ">";
     public static final String COMMAND_ATTACH = "A";
     public static final String COMMAND_CLOSE = "X";
@@ -70,7 +62,7 @@ public class Debugger {
 
         DBGVariable<?> v = null;
 
-        List<? extends DBGVariable<?>> vars = session.getVariables();
+        List<? extends DBGVariable<?>> vars = session.getVariables(null);
 
         Scanner scArg;
 
@@ -297,7 +289,7 @@ public class Debugger {
         }
 
         // TODO: fix connection
-        controller = new PostgreDebugController(dataSource);
+        controller = new PostgreDebugController(dataSource, new HashMap<>());
 
         Scanner sc = new Scanner(System.in);
         Scanner scArg;
@@ -341,7 +333,7 @@ public class Debugger {
                     break;
                 }
 
-                controller.detach(debugSessionC.getSessionId(), new VoidProgressMonitor());
+                debugSessionC.closeSession(new VoidProgressMonitor());
 
                 System.out.println("Session closed");
 
@@ -389,7 +381,7 @@ public class Debugger {
                     break;
                 }
 
-                List<? extends DBGVariable<?>> vars = debugSessionVL.getVariables();
+                List<? extends DBGVariable<?>> vars = debugSessionVL.getVariables(null);
 
                 if (vars.size() == 0) {
                     System.out.println("No vars defined");
@@ -498,19 +490,6 @@ public class Debugger {
 
                 }
 
-                DBGObjectDescriptor debugObject = null;
-
-                for (DBGObjectDescriptor o : controller.getObjects("_", "_")) {
-                    if (objId.equals(o.getID())) {
-                        debugObject = o;
-                    }
-                }
-
-                if (debugObject == null) {
-                    System.out.println(String.format("Object ID '%s' no found", strObjId));
-                    break;
-                }
-
                 if (controller.getSessions().size() == 0) {
                     System.out.println("Debug sessions not found");
                     break;
@@ -522,18 +501,15 @@ public class Debugger {
                     break;
                 }
 
-                PostgreDebugBreakpointProperties breakpointProperties = lineNo > 0
-                        ? new PostgreDebugBreakpointProperties(lineNo, true)
-                        : new PostgreDebugBreakpointProperties(true);
+                PostgreDebugBreakpointDescriptor descriptor = lineNo > 0
+                        ? new PostgreDebugBreakpointDescriptor(1, lineNo, true)
+                        : new PostgreDebugBreakpointDescriptor(1, true);
 
-                Object oid = debugObject.getID();
-                PostgreDebugBreakpointDescriptor descriptor = new PostgreDebugBreakpointDescriptor(oid,
-                        breakpointProperties);
-                debugSession.addBreakpoint(descriptor);
+                debugSession.addBreakpoint(new VoidProgressMonitor(), descriptor);
 
                 System.out.println("Breakpoint added");
 
-                System.out.println(breakpointProperties.toString());
+                System.out.println(descriptor.toString());
 
                 break;
 
@@ -577,7 +553,7 @@ public class Debugger {
 
                 DBGBreakpointDescriptor bpr = chooseBreakpoint(sc, controller, debugSessionBR);
 
-                debugSessionBR.removeBreakpoint(bpr);
+                debugSessionBR.removeBreakpoint(new VoidProgressMonitor(), bpr);
 
                 System.out.println("Breakpoint removed ...");
 
@@ -639,9 +615,6 @@ public class Debugger {
                 break;
 
             case COMMAND_SESSIONS:
-                for (DBGSessionInfo s : controller.getSessionDescriptors()) {
-                    System.out.println(s);
-                }
                 break;
 
             case COMMAND_DEBUG_LIST:
@@ -660,7 +633,7 @@ public class Debugger {
                     Connection debugConn = DriverManager.getConnection(url);
                     // TODO: fix connection
                     DBCExecutionContext executionContext = null;
-                    DBGSession s = controller.createSession(null, executionContext);
+                    DBGSession s = controller.createSession(new VoidProgressMonitor(), new HashMap<>());
                     System.out.println("created");
                     System.out.println(s);
 
@@ -699,11 +672,6 @@ public class Debugger {
 
                 }
 
-                for (DBGObjectDescriptor o : controller.getObjects(owner.equals(ANY_ARG) ? "_" : owner,
-                        proc.equals(ANY_ARG) ? "_" : proc)) {
-                    System.out.println(o);
-                }
-
                 break;
 
             case COMMAND_ATTACH:
@@ -739,5 +707,6 @@ public class Debugger {
         }
 
     }
+*/
 
 }

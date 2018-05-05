@@ -43,7 +43,7 @@ public class DatabaseStackFrame extends DatabaseDebugElement implements IStackFr
 
     private static Log log = Log.getLog(DatabaseStackFrame.class);
 
-    private final List<DatabaseVariable> variables = new ArrayList<DatabaseVariable>();
+    private final List<DatabaseVariable> variables = new ArrayList<>();
 
     private final DatabaseThread thread;
     private final DBGStackFrame dbgStackFrame;
@@ -138,19 +138,19 @@ public class DatabaseStackFrame extends DatabaseDebugElement implements IStackFr
 
     @Override
     public IVariable[] getVariables() throws DebugException {
-        if (refreshVariables) {
+        /*if (refreshVariables)*/ {
             try {
-                List<? extends DBGVariable<?>> variables = getDatabaseDebugTarget().requestVariables(dbgStackFrame);
+                IDatabaseDebugTarget debugTarget = getDatabaseDebugTarget();
+                List<? extends DBGVariable<?>> variables = debugTarget.getSession().getVariables(dbgStackFrame);
                 rebuildVariables(variables);
             } catch (DBGException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                log.error(e);
             }
         }
         if (variables.isEmpty()) {
             return NO_VARIABLES;
         }
-        return (IVariable[]) variables.toArray(new IVariable[variables.size()]);
+        return variables.toArray(new IVariable[variables.size()]);
     }
 
     protected void invalidateVariables() {
@@ -161,7 +161,7 @@ public class DatabaseStackFrame extends DatabaseDebugElement implements IStackFr
         try {
             int frameLN = dbgStackFrame.getLineNumber();
             variables.clear();
-            Map<String, DBGVariable<?>> filtered = new LinkedHashMap<String, DBGVariable<?>>();
+            Map<String, DBGVariable<?>> filtered = new LinkedHashMap<>();
             for (DBGVariable<?> dbgVariable : dbgVariables) {
                 String name = dbgVariable.getName();
                 DBGVariable<?> existing = filtered.get(name);
@@ -176,7 +176,7 @@ public class DatabaseStackFrame extends DatabaseDebugElement implements IStackFr
                     } else {
                         String pattern = "Already have {0} and ignored {1} for frame at {2}";
                         String message = NLS.bind(pattern, new Object[]{existing, dbgVariable, frameLN});
-                        log.error(message);;
+                        log.error(message);
                     }
                 }
             }
@@ -215,8 +215,7 @@ public class DatabaseStackFrame extends DatabaseDebugElement implements IStackFr
     @Override
     public String getName() throws DebugException {
         String pattern = "{0} line: {1}";
-        String name = NLS.bind(pattern, dbgStackFrame.getName(), dbgStackFrame.getLineNumber());
-        return name;
+        return NLS.bind(pattern, dbgStackFrame.getName(), dbgStackFrame.getLineNumber());
     }
 
     @Override
@@ -232,7 +231,8 @@ public class DatabaseStackFrame extends DatabaseDebugElement implements IStackFr
     public String getSource() throws DebugException {
         String source;
         try {
-            source = getDatabaseDebugTarget().requestSource(dbgStackFrame);
+            IDatabaseDebugTarget debugTarget = getDatabaseDebugTarget();
+            source = debugTarget.getSession().getSource(dbgStackFrame);
         } catch (DBGException e) {
             String message = NLS.bind("Unable to retrieve sources for stack {0}", dbgStackFrame);
             IStatus status = DebugCore.newErrorStatus(message, e);
