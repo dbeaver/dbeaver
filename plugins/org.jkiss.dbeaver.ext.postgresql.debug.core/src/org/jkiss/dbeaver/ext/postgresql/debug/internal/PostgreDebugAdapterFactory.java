@@ -46,9 +46,8 @@ public class PostgreDebugAdapterFactory implements IAdapterFactory {
         } else if (adapterType == DBGResolver.class) {
             if (adaptableObject instanceof DBPDataSourceContainer) {
                 DBPDataSourceContainer ds = (DBPDataSourceContainer) adaptableObject;
-                if (ds.getDataSource() instanceof PostgreDataSource) {
-                    return adapterType.cast(
-                        new PostgreResolver((PostgreDataSource) ds.getDataSource()));
+                if (ds.getDriver().getProviderId().equals("postgresql")) {
+                    return adapterType.cast(new PostgreResolver(ds));
                 }
             }
         }

@@ -35,12 +35,11 @@ public class DatabaseDebugLaunchShortcut extends DatabaseLaunchShortcut {
     protected ILaunchConfiguration createConfiguration(DBSObject launchable) throws CoreException {
         ILaunchManager manager = DebugPlugin.getDefault().getLaunchManager();
         ILaunchConfigurationType type = manager.getLaunchConfigurationType(CONFIG_TYPE);
-        ILaunchConfigurationWorkingCopy workingCopy = type.newInstance(null, "Database debug configuration");
-        return workingCopy;
+        return type.newInstance(null, "Database debug configuration");
     }
     
     @Override
-    protected boolean isCandidate(ILaunchConfiguration config, DBSObject launchable, Map<String, Object> databaseContext) {
+    protected boolean isCandidate(ILaunchConfiguration config, DBSObject launchable, Map<String, Object> databaseContext) throws CoreException {
         return super.isCandidate(config, launchable, databaseContext);
     }
 

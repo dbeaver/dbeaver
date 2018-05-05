@@ -19,9 +19,9 @@ package org.jkiss.dbeaver.ext.postgresql.debug.internal;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.debug.DBGResolver;
-import org.jkiss.dbeaver.ext.postgresql.debug.PostgreDebugConstants;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
+import org.jkiss.dbeaver.ext.postgresql.debug.core.PostgreSqlDebugCore;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -30,40 +30,23 @@ import java.util.Map;
 
 public class PostgreResolver implements DBGResolver {
 
-    private final PostgreDataSource dataSource;
+    private final DBPDataSourceContainer dataSource;
 
-    public PostgreResolver(PostgreDataSource dataSource) {
+    public PostgreResolver(DBPDataSourceContainer dataSource) {
         this.dataSource = dataSource;
     }
 
     @Override
     public DBSObject resolveObject(Map<String, Object> context, Object identifier, DBRProgressMonitor monitor)
             throws DBException {
-        Long oid = null;
-        final String errorIdentifier = String.format("Unknown procedure identifier %s", identifier);
-        if (identifier instanceof Number) {
-            Number number = (Number) identifier;
-            oid = number.longValue();
-        } else if (identifier instanceof String) {
-            String string = (String) identifier;
-            try {
-                oid = Long.parseLong(string);
-            } catch (NumberFormatException e) {
-                throw new DBException(errorIdentifier, e, dataSource);
-            }
-        }
-        if (oid == null) {
-            throw new DBException(errorIdentifier);
-        }
-        return dataSource.getDefaultInstance().getProcedure(monitor, oid);
+        return PostgreSqlDebugCore.resolveFunction(monitor, dataSource, context);
     }
 
     @Override
     public Map<String, Object> resolveContext(DBSObject databaseObject) {
         HashMap<String, Object> context = new HashMap<String, Object>();
         if (databaseObject instanceof PostgreProcedure) {
-            PostgreProcedure procedure = (PostgreProcedure) databaseObject;
-            context.put(PostgreDebugConstants.ATTR_FUNCTION_OID, procedure.getObjectId());
+            PostgreSqlDebugCore.saveFunction((PostgreProcedure)databaseObject, context);
         }
         return context;
     }

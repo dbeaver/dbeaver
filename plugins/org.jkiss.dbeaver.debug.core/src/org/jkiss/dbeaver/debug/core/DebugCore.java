@@ -17,42 +17,33 @@
  */
 package org.jkiss.dbeaver.debug.core;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
-import org.eclipse.debug.core.ILaunchConfigurationType;
-import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
-import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.debug.*;
+import org.jkiss.dbeaver.debug.DBGConstants;
+import org.jkiss.dbeaver.debug.DBGController;
+import org.jkiss.dbeaver.debug.DBGResolver;
 import org.jkiss.dbeaver.debug.core.model.DatabaseStackFrame;
-import org.jkiss.dbeaver.debug.internal.core.DebugCoreActivator;
 import org.jkiss.dbeaver.debug.internal.core.DebugCoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
-import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
-import org.jkiss.dbeaver.utils.GeneralUtils;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class DebugCore {
 
@@ -64,14 +55,6 @@ public class DebugCore {
 
     public static CoreException abort(String message) {
         return abort(message, null);
-    }
-
-    public static ILaunchConfigurationWorkingCopy createConfiguration(IContainer container, String typeName,
-            String name) throws CoreException {
-        ILaunchManager manager = DebugPlugin.getDefault().getLaunchManager();
-        ILaunchConfigurationType type = manager.getLaunchConfigurationType(typeName);
-        ILaunchConfigurationWorkingCopy workingCopy = type.newInstance(container, name);
-        return workingCopy;
     }
 
     public static boolean canLaunch(ILaunchConfiguration configuration, String mode) {
@@ -92,8 +75,7 @@ public class DebugCore {
         if (scope == null) {
             return extracted;
         }
-        for (int i = 0; i < scope.length; i++) {
-            Object object = scope[i];
+        for (Object object : scope) {
             DBSObject adapted = Adapters.adapt(object, DBSObject.class, true);
             if (adapted != null) {
                 extracted.add(adapted);
@@ -154,16 +136,12 @@ public class DebugCore {
             final DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
             DBNDatabaseNode node = navigatorModel.getNodeByObject(new VoidProgressMonitor(), dbsObject, false);
             if (node != null) {
-                String nodePath = node.getNodeItemPath();
-                DebugCore.postDebuggerSourceEvent(nodePath);
-                return nodePath;
+                return node.getNodeItemPath();
             }
         }
         if (object instanceof String) {
             // well, let's be positive and assume it's a node path already
-            String nodePath = (String) object;
-            DebugCore.postDebuggerSourceEvent(nodePath);
-            return nodePath;
+            return (String) object;
         }
         return null;
     }
@@ -171,15 +149,9 @@ public class DebugCore {
     public static Map<String, Object> toBreakpointDescriptor(Map<String, Object> attributes) {
         HashMap<String, Object> result = new HashMap<>();
         result.put(IMarker.LINE_NUMBER, attributes.get(IMarker.LINE_NUMBER));
-        //result.put(PostgreDebugConstants.ATTR_PROCEDURE_OID, attributes.get(PostgreDebugConstants.ATTR_PROCEDURE_OID));
         return result;
     }
     
-    public static void postDebuggerSourceEvent(String nodePath) {
-        String encoded = GeneralUtils.encodeTopic(DBPScriptObject.OPTION_DEBUGGER_SOURCE);
-        DebugCoreActivator.getDefault().postEvent(encoded, nodePath);
-    }
-
     public static DBSObject findDatabaseObject(DBGController controller, Object identifier, DBRProgressMonitor monitor) throws DBException {
         DBPDataSourceContainer container = controller.getDataSourceContainer();
         Map<String, Object> context = controller.getDebugConfiguration();

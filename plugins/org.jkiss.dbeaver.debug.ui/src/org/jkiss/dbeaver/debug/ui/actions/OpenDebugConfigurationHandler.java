@@ -51,8 +51,6 @@ public class OpenDebugConfigurationHandler extends AbstractHandler implements IH
             }
         }
 
-        DebugLaunchDialogAction action = new DebugLaunchDialogAction();
-        action.run();
         return null;
     }
 
