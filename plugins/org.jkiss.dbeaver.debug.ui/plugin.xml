@@ -25,7 +25,7 @@
         <launchConfigurationTypeImage
                 id="org.jkiss.dbeaver.debug.launchConfigurationTypeImage"
                 configTypeID="org.jkiss.dbeaver.debug.launchConfiguration"
-                icon="platform:/plugin/org.jkiss.dbeaver.core/$nl$/icons/database.png">
+                icon="icons/database_debug.png">
         </launchConfigurationTypeImage>
     </extension>
 
@@ -41,9 +41,9 @@
 
     <extension point="org.eclipse.debug.ui.launchGroups">
         <launchGroup
-                bannerImage="platform:/plugin/org.jkiss.dbeaver.core/$nl$/icons/database.png"
+                bannerImage="icons/database_debug.png"
                 id="org.jkiss.dbeaver.debug.launchGroup"
-                image="platform:/plugin/org.jkiss.dbeaver.core/$nl$/icons/database.png"
+                image="icons/database_debug.png"
                 label="%launchGroups.launchGroup.label"
                 mode="debug"
                 title="%launchGroups.launchGroup.title">
@@ -56,7 +56,7 @@
                 label="%launchShortcuts.shortcut.label"
                 description="%launchShortcuts.shortcut.description"
                 class="org.jkiss.dbeaver.debug.ui.internal.DatabaseDebugLaunchShortcut"
-                icon="platform:/plugin/org.jkiss.dbeaver.core/$nl$/icons/database.png"
+                icon="icons/database_debug.png"
                 modes="debug">
             <configurationType id="org.jkiss.dbeaver.debug.ui.configuration"/>
             <contextualLaunch>
@@ -121,7 +121,7 @@
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
-        <image commandId="org.jkiss.dbeaver.debug.ui.command.debugConfigurationMenu" icon="platform:/plugin/org.eclipse.debug.ui/$nl$/icons/full/obj16/ldebug_obj.png"/>
+        <image commandId="org.jkiss.dbeaver.debug.ui.command.debugConfigurationMenu" icon="icons/debug_config.png"/>
     </extension>
 
 

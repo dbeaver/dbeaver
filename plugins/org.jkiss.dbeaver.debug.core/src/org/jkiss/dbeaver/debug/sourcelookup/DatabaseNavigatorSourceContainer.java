@@ -27,7 +27,7 @@ import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.debug.DBGConstants;
-import org.jkiss.dbeaver.debug.core.DebugCore;
+import org.jkiss.dbeaver.debug.core.DebugUtils;
 import org.jkiss.dbeaver.debug.internal.core.DebugCoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -57,7 +57,7 @@ public class DatabaseNavigatorSourceContainer extends CompositeSourceContainer {
             node = DBeaverCore.getInstance().getNavigatorModel().getNodeByPath(monitor, project, name);
         } catch (DBException e) {
             String message = NLS.bind(DebugCoreMessages.DatasourceSourceContainer_e_extract_node, name);
-            throw new CoreException(DebugCore.newErrorStatus(message, e));
+            throw new CoreException(DebugUtils.newErrorStatus(message, e));
         }
         if (node != null) {
             return new Object[] { node };

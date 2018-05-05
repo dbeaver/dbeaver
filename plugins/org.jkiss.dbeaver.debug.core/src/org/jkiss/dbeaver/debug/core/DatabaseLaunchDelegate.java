@@ -46,12 +46,12 @@ public class DatabaseLaunchDelegate extends LaunchConfigurationDelegate {
         DataSourceDescriptor datasourceDescriptor = DataSourceRegistry.findDataSource(datasourceId);
         if (datasourceDescriptor == null) {
             String message = NLS.bind("Unable to find data source with id {0}", datasourceId);
-            throw new CoreException(DebugCore.newErrorStatus(message));
+            throw new CoreException(DebugUtils.newErrorStatus(message));
         }
         DBGController controller = createController(datasourceDescriptor, configuration.getAttributes());
         if (controller == null) {
             String message = NLS.bind("Unable to find debug controller for datasource {0}", datasourceDescriptor);
-            throw new CoreException(DebugCore.newErrorStatus(message));
+            throw new CoreException(DebugUtils.newErrorStatus(message));
         }
         DatabaseProcess process = createProcess(launch, configuration.getName());
         DatabaseDebugTarget target = createDebugTarget(launch, controller, process);

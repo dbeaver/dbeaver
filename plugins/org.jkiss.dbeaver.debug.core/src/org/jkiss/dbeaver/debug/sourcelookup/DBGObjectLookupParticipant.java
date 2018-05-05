@@ -20,13 +20,13 @@ package org.jkiss.dbeaver.debug.sourcelookup;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.sourcelookup.AbstractSourceLookupParticipant;
-import org.jkiss.dbeaver.debug.core.DebugCore;
+import org.jkiss.dbeaver.debug.core.DebugUtils;
 
 public class DBGObjectLookupParticipant extends AbstractSourceLookupParticipant {
 
     @Override
     public String getSourceName(Object object) throws CoreException {
-        return DebugCore.getSourceName(object);
+        return DebugUtils.getSourceName(object);
     }
 
 }

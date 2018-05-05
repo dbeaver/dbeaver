@@ -30,7 +30,7 @@ import org.eclipse.debug.core.model.IThread;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.debug.DBGException;
 import org.jkiss.dbeaver.debug.DBGStackFrame;
-import org.jkiss.dbeaver.debug.core.DebugCore;
+import org.jkiss.dbeaver.debug.core.DebugUtils;
 import org.jkiss.dbeaver.debug.internal.core.DebugCoreMessages;
 
 /**
@@ -162,7 +162,7 @@ public class DatabaseThread extends DatabaseDebugElement implements IThread {
             rebuildStack(stackFrames);
         } catch (DBGException e) {
             String message = NLS.bind("Error reading stack for {0}", getName());
-            IStatus status = DebugCore.newErrorStatus(message, e);
+            IStatus status = DebugUtils.newErrorStatus(message, e);
             throw new DebugException(status);
         }
     }

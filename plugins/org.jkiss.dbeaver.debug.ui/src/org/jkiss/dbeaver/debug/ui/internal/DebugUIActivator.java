@@ -16,45 +16,44 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.debug.internal.core;
+package org.jkiss.dbeaver.debug.ui.internal;
 
-import org.eclipse.e4.core.contexts.EclipseContextFactory;
-import org.eclipse.e4.core.contexts.IEclipseContext;
-import org.eclipse.e4.core.services.events.IEventBroker;
+import org.eclipse.debug.core.DebugEvent;
+import org.eclipse.debug.core.DebugPlugin;
+import org.eclipse.debug.core.IDebugEventFilter;
+import org.eclipse.debug.core.IDebugEventSetListener;
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 
-public class DebugCoreActivator implements BundleActivator {
+public class DebugUIActivator extends AbstractUIPlugin {
 
-    private static DebugCoreActivator activator;
-    private static BundleContext bundleContext;
+    private static DebugUIActivator activator;
+    private IDebugEventSetListener eventListener;
 
-    private IEventBroker eventBroker;
-    
-    public static DebugCoreActivator getDefault() {
+    public static DebugUIActivator getDefault() {
         return activator;
-    }
-
-    static BundleContext getContext() {
-        return bundleContext;
     }
 
     @Override
     public void start(BundleContext context) throws Exception {
-        bundleContext = context;
         activator = this;
-        IEclipseContext serviceContext = EclipseContextFactory.getServiceContext(bundleContext);
-        eventBroker = serviceContext.get(IEventBroker.class);
+
+        eventListener = new DebugUIEventListener();
+
+        DebugPlugin debugPlugin = DebugPlugin.getDefault();
+        if (debugPlugin != null) {
+            debugPlugin.addDebugEventListener(eventListener);
+        }
     }
 
     @Override
     public void stop(BundleContext context) throws Exception {
+        DebugPlugin debugPlugin = DebugPlugin.getDefault();
+        if (debugPlugin != null) {
+            debugPlugin.removeDebugEventListener(eventListener);
+        }
         activator = null;
-        bundleContext = null;
-    }
-
-    public void postEvent(String topic, Object data) {
-        eventBroker.post(topic, data);
     }
 
 }
