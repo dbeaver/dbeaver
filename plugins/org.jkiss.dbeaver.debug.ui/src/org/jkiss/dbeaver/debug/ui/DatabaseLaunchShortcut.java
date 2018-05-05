@@ -90,7 +90,7 @@ public abstract class DatabaseLaunchShortcut implements ILaunchShortcut2 {
         IEditorSite editorSite = editor.getEditorSite();
         workbenchPartSite = editorSite;
         ISelection selection = editorSite.getSelectionProvider().getSelection();
-        if (selection instanceof IStructuredSelection) {
+        if (selection instanceof IStructuredSelection && !selection.isEmpty()) {
             Object[] array = ((IStructuredSelection) selection).toArray();
             searchAndLaunch(array, mode, getEditorEmptyMessage());
         } else {
@@ -176,7 +176,6 @@ public abstract class DatabaseLaunchShortcut implements ILaunchShortcut2 {
                 config = createConfiguration(launchable);
             }
             if (config != null) {
-                DebugCore.postDebuggerSourceEvent(config.getAttribute(DBGConstants.ATTR_NODE_PATH, (String) null));
                 DebugUITools.launch(config, mode);
             }
         }
@@ -213,34 +212,30 @@ public abstract class DatabaseLaunchShortcut implements ILaunchShortcut2 {
         return (DBSObject) dialog.getFirstResult();
     }
 
-    protected List<ILaunchConfiguration> getCandidates(DBSObject launchable, ILaunchConfigurationType configType, Map<String, Object> databaseContext) {
-        List<ILaunchConfiguration> candidateConfigs = Collections.emptyList();
-        try {
-            ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
-            ILaunchConfiguration[] configs = launchManager.getLaunchConfigurations(configType);
-            candidateConfigs = new ArrayList<>(configs.length);
-            for (ILaunchConfiguration config : configs) {
-                if (isCandidate(config, launchable, databaseContext)) {
-                    candidateConfigs.add(config);
-                }
+    protected List<ILaunchConfiguration> getCandidates(DBSObject launchable, ILaunchConfigurationType configType, Map<String, Object> databaseContext) throws CoreException {
+        List<ILaunchConfiguration> candidateConfigs = new ArrayList<>();
+
+        ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
+        ILaunchConfiguration[] configs = launchManager.getLaunchConfigurations(configType);
+        for (ILaunchConfiguration config : configs) {
+            if (isCandidate(config, launchable, databaseContext)) {
+                candidateConfigs.add(config);
             }
-        } catch (CoreException e) {
-            log.log(e.getStatus());
         }
         return candidateConfigs;
     }
 
-    protected boolean isCandidate(ILaunchConfiguration config, DBSObject launchable, Map<String, Object> databaseContext) {
+    protected boolean isCandidate(ILaunchConfiguration config, DBSObject launchable, Map<String, Object> databaseContext) throws CoreException {
         if (!config.exists()) {
             return false;
         }
 
-        try {
-            String dsId = config.getAttribute(DBGConstants.ATTR_DATASOURCE_ID, (String) null);
-            return CommonUtils.equalObjects(dsId, launchable.getDataSource().getContainer().getId());
-        } catch (CoreException e) {
-            return false;
+        for (Map.Entry<String, Object> entry : databaseContext.entrySet()) {
+            if (!CommonUtils.equalObjects(config.getAttribute(entry.getKey(), (String) null), entry.getValue())) {
+                return false;
+            }
         }
+        return true;
     }
 
     protected ILaunchConfiguration chooseConfiguration(List<ILaunchConfiguration> configList, String mode) {
