@@ -25,12 +25,6 @@ public interface IDatabaseBreakpoint extends IBreakpoint {
 
     String getDatasourceId() throws CoreException;
 
-    String getDatabaseName() throws CoreException;
-
-    String getSchemaName() throws CoreException;
-
-    String getProcedureName() throws CoreException;
-
     String getNodePath() throws CoreException;
 
 }
