@@ -67,13 +67,7 @@ public abstract class DBGBaseController implements DBGController {
         if (!dataSourceContainer.isConnected()) {
             throw new DBGException("Not connected to database");
         }
-        try {
-            return createSession(monitor, configuration);
-        } catch (DBException e) {
-            String message = NLS.bind(DebugMessages.DatabaseDebugController_e_opening_debug_context, dataSourceContainer);
-            log.error(message, e);
-            throw new DBGException(message, e);
-        }
+        return createSession(monitor, configuration);
     }
 
     @Override

@@ -57,6 +57,9 @@ public class PostgreDebugController extends DBGBaseController {
                     log.error(e1);
                 }
             }
+            if (e instanceof DBGException) {
+                throw (DBGException)e;
+            }
             throw new DBGException("Error attaching debug session", e);
         }
     }

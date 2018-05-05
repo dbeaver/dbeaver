@@ -92,6 +92,8 @@ public class PostgreDebugSession extends DBGJDBCSession {
 
     private static final String MAGIC_PORT = "PLDBGBREAK";
 
+    private static final String SQL_CHECK_PLUGIN = "select 'Server version: ' || serverversionstr || '.\nProxy API version: ' ||  proxyapiver from pldbg_get_proxy_info()";
+
     private static final String SQL_ATTACH = "select pldbg_wait_for_target(?sessionid)";
     private static final String SQL_ATTACH_TO_PORT = "select pldbg_attach_to_port(?portnumber)";
     private static final String SQL_PREPARE_SLOT = " select pldbg_oid_debug(?objectid)";
@@ -361,6 +363,12 @@ public class PostgreDebugSession extends DBGJDBCSession {
      * procedure
      */
     public void attach(DBRProgressMonitor monitor, Map<String, Object> configuration) throws DBException {
+        if (!checkDebugPlagin(monitor)) {
+            throw new DBGException("PostgreSQL debug plugin is not installed on the server.\n" +
+                "Refer to this WIKI article for installation instructions:\n" +
+                "https://github.com/dbeaver/dbeaver/wiki/PGDebugger#installation");
+        }
+
         int functionOid = CommonUtils.toInt(configuration.get(PostgreDebugConstants.ATTR_FUNCTION_OID));
         String kind = String.valueOf(configuration.get(PostgreDebugConstants.ATTR_ATTACH_KIND));
         boolean global = PostgreDebugConstants.ATTACH_KIND_GLOBAL.equals(kind);
@@ -375,6 +383,17 @@ public class PostgreDebugSession extends DBGJDBCSession {
             List<String> parameterValues = (List<String>) configuration.get(PostgreDebugConstants.ATTR_FUNCTION_PARAMETERS);
 
             attachLocal(monitor, function, parameterValues);
+        }
+    }
+
+    private boolean checkDebugPlagin(DBRProgressMonitor monitor) {
+        try (JDBCSession session = getControllerConnection().openSession(monitor, DBCExecutionPurpose.UTIL, "Check debug plugin installation")) {
+            String version = JDBCUtils.executeQuery(session, SQL_CHECK_PLUGIN);
+            log.debug("Debug plugin is installed:\n" + version);
+            return true;
+        } catch (Exception e) {
+            log.debug("Debug plugin not installed: " + e.getMessage());
+            return false;
         }
     }
 
