@@ -44,7 +44,7 @@ public class PostgreResolver implements DBGResolver {
 
     @Override
     public Map<String, Object> resolveContext(DBSObject databaseObject) {
-        HashMap<String, Object> context = new HashMap<String, Object>();
+        HashMap<String, Object> context = new HashMap<>();
         if (databaseObject instanceof PostgreProcedure) {
             PostgreSqlDebugCore.saveFunction((PostgreProcedure)databaseObject, context);
         }

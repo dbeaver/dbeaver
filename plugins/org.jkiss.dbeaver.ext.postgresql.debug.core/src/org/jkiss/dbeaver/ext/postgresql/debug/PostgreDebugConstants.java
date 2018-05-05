@@ -28,4 +28,7 @@ public class PostgreDebugConstants {
 
     public static final String ATTACH_KIND_LOCAL = "LOCAL"; //$NON-NLS-1$
     public static final String ATTACH_KIND_GLOBAL = "GLOBAL"; //$NON-NLS-1$
+
+    public static final String DEBUG_TYPE_FUNCTION = "org.jkiss.dbeaver.ext.postgresql.debug.function";
+
 }

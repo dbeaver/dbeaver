@@ -192,6 +192,7 @@ public class PostgreDebugPanelFunction implements DBGConfigurationPanel {
                 item.setText(1, newValue);
 
                 parameterValues.put(param, newValue);
+                container.updateDialogState();
             }
         };
     }

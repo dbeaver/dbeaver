@@ -33,6 +33,7 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.debug.DBGConstants;
+import org.jkiss.dbeaver.debug.core.DebugCore;
 import org.jkiss.dbeaver.debug.ui.internal.DebugConfigurationPanelDescriptor;
 import org.jkiss.dbeaver.debug.ui.internal.DebugConfigurationPanelRegistry;
 import org.jkiss.dbeaver.debug.ui.internal.DebugUIMessages;
@@ -248,20 +249,7 @@ public class DatabaseDebugConfigurationTab extends AbstractLaunchConfigurationTa
         if (selectedDebugPanel != null) {
             Map<String, Object> attrs = new HashMap<>();
             selectedDebugPanel.saveConfiguration(dataSource, attrs);
-            for (Map.Entry<String, Object> entry : attrs.entrySet()) {
-                Object value = entry.getValue();
-                if (value == null) {
-                    configuration.removeAttribute(entry.getKey());
-                } else if (value instanceof Integer) {
-                    configuration.setAttribute(entry.getKey(), (Integer) value);
-                } else if (value instanceof Boolean) {
-                    configuration.setAttribute(entry.getKey(), (Boolean) value);
-                } else if (value instanceof List) {
-                    configuration.setAttribute(entry.getKey(), (List<String>)value);
-                } else {
-                    configuration.setAttribute(entry.getKey(), value.toString());
-                }
-            }
+            DebugCore.putContextInConfiguration(configuration, attrs);
         }
     }
 

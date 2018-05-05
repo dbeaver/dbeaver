@@ -20,13 +20,13 @@
 <plugin>
 
     <extension point="org.jkiss.dbeaver.debug.ui.configurationPanels">
-        <panel id="org.jkiss.dbeaver.ext.postgresql.debug.functionPanel"
+        <panel id="org.jkiss.dbeaver.ext.postgresql.debug.function"
                name="Function"
                description="PL/pgSQL function"
                class="org.jkiss.dbeaver.ext.postgresql.debug.ui.internal.PostgreDebugPanelFunction">
             <datasource id="postgresql"/>
         </panel>
-        <panel id="org.jkiss.dbeaver.ext.postgresql.debug.triggerPanel"
+        <panel id="org.jkiss.dbeaver.ext.postgresql.debug.trigger"
                name="Trigger"
                description="PL/pgSQL table trigger">
             <datasource id="postgresql"/>

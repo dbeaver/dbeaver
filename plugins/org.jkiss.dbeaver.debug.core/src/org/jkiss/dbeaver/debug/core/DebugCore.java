@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -156,5 +157,22 @@ public class DebugCore {
         DBPDataSourceContainer container = controller.getDataSourceContainer();
         Map<String, Object> context = controller.getDebugConfiguration();
         return resolveDatabaseObject(container, context, identifier, monitor);
+    }
+
+    public static void putContextInConfiguration(ILaunchConfigurationWorkingCopy configuration, Map<String, Object> attrs) {
+        for (Map.Entry<String, Object> entry : attrs.entrySet()) {
+            Object value = entry.getValue();
+            if (value == null) {
+                configuration.removeAttribute(entry.getKey());
+            } else if (value instanceof Integer) {
+                configuration.setAttribute(entry.getKey(), (Integer) value);
+            } else if (value instanceof Boolean) {
+                configuration.setAttribute(entry.getKey(), (Boolean) value);
+            } else if (value instanceof List) {
+                configuration.setAttribute(entry.getKey(), (List<String>)value);
+            } else {
+                configuration.setAttribute(entry.getKey(), value.toString());
+            }
+        }
     }
 }

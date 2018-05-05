@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.debug.ui.internal;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.*;
+import org.jkiss.dbeaver.debug.core.DebugCore;
 import org.jkiss.dbeaver.debug.ui.DatabaseLaunchShortcut;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -32,12 +33,18 @@ public class DatabaseDebugLaunchShortcut extends DatabaseLaunchShortcut {
     }
 
     @Override
-    protected ILaunchConfiguration createConfiguration(DBSObject launchable) throws CoreException {
+    protected ILaunchConfiguration createConfiguration(Map<String, Object> databaseContext) throws CoreException {
         ILaunchManager manager = DebugPlugin.getDefault().getLaunchManager();
         ILaunchConfigurationType type = manager.getLaunchConfigurationType(CONFIG_TYPE);
-        return type.newInstance(null, "Database debug configuration");
+        ILaunchConfigurationWorkingCopy launchConfig = type.newInstance(null, "Database debug configuration");
+
+        if (databaseContext != null) {
+            DebugCore.putContextInConfiguration(launchConfig, databaseContext);
+        }
+
+        return launchConfig;
     }
-    
+
     @Override
     protected boolean isCandidate(ILaunchConfiguration config, DBSObject launchable, Map<String, Object> databaseContext) throws CoreException {
         return super.isCandidate(config, launchable, databaseContext);
