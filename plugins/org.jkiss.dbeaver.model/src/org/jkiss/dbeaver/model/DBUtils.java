@@ -286,6 +286,13 @@ public final class DBUtils {
         @Nullable String objectName)
         throws DBException
     {
+        if (!CommonUtils.isEmpty(catalogName)) {
+            Class<? extends DBSObject> childType = rootSC.getChildType(monitor);
+            if (DBSSchema.class.isAssignableFrom(childType)) {
+                // Datasource supports only schemas. Do not use catalog
+                catalogName = null;
+            }
+        }
         if (!CommonUtils.isEmpty(catalogName) && !CommonUtils.isEmpty(schemaName)) {
             // We have both both - just search both
             DBSObject catalog = rootSC.getChild(monitor, catalogName);

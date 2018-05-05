@@ -34,17 +34,10 @@
       </launchConfigurationType>
    </extension>
 
-   <extension
-         point="org.eclipse.core.runtime.adapters">
-      <factory
-            adaptableType="org.jkiss.dbeaver.model.DBPDataSourceContainer"
-            class="org.jkiss.dbeaver.ext.postgresql.debug.internal.PostgreDebugAdapterFactory">
-         <adapter
-               type="org.jkiss.dbeaver.debug.DBGController">
-         </adapter>
-         <adapter
-               type="org.jkiss.dbeaver.debug.DBGResolver">
-         </adapter>
+   <extension point="org.eclipse.core.runtime.adapters">
+      <factory adaptableType="org.jkiss.dbeaver.model.DBPDataSourceContainer" class="org.jkiss.dbeaver.ext.postgresql.debug.internal.PostgreDebugAdapterFactory">
+         <adapter type="org.jkiss.dbeaver.debug.DBGControllerFactory"/>
+         <adapter type="org.jkiss.dbeaver.debug.DBGResolver"/>
       </factory>
    </extension>
 

@@ -20,6 +20,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.ui.PostgreCreateDatabaseDialog;
@@ -56,6 +57,15 @@ public class PostgreDatabaseManager extends SQLObjectEditor<PostgreDatabase, Pos
     public DBSObjectCache<PostgreDataSource, PostgreDatabase> getObjectsCache(PostgreDatabase object)
     {
         return object.getDataSource().getDatabaseCache();
+    }
+
+    @Override
+    public void deleteObject(DBECommandContext commandContext, PostgreDatabase object, Map<String, Object> options) throws DBException {
+        if (object == object.getDataSource().getDefaultInstance()) {
+            throw new DBException("Cannot drop the currently open database." +
+                "\nSwitch to another database and try again\n(Note: enable '" + PostgreMessages.dialog_setting_connection_nondefaultDatabase + "' option to see them).");
+        }
+        super.deleteObject(commandContext, object, options);
     }
 
     @Override

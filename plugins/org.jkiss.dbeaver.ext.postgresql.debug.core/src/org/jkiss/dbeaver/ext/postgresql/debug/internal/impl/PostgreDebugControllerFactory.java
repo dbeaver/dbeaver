@@ -1,6 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2017-2018 Andrew Khitrin (ahitrin@gmail.com)
  * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,17 +16,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.ext.postgresql.debug.internal.impl;
 
-package org.jkiss.dbeaver.debug.sourcelookup;
+import org.jkiss.dbeaver.debug.DBGController;
+import org.jkiss.dbeaver.debug.DBGControllerFactory;
+import org.jkiss.dbeaver.debug.DBGException;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 
-import org.eclipse.debug.core.sourcelookup.AbstractSourceLookupDirector;
-import org.eclipse.debug.core.sourcelookup.ISourceLookupParticipant;
+import java.util.Map;
 
-public class ProcedureSourceLookupDirector extends AbstractSourceLookupDirector {
+public class PostgreDebugControllerFactory implements DBGControllerFactory {
+
 
     @Override
-    public void initializeParticipants() {
-        addParticipants(new ISourceLookupParticipant[] { new ProcedureSourceLookupParticipant() });
+    public DBGController createController(DBPDataSourceContainer dataSource, Map<String, Object> context) throws DBGException {
+        return new PostgreDebugController(dataSource, context);
     }
-
 }

@@ -665,6 +665,9 @@ public class ResultSetViewer extends Viewer
         PresentationSettings settings = this.presentationSettings.get(activePresentationDescriptor);
         if (settings == null) {
             settings = new PresentationSettings();
+            // By default panels are visible for column presentations
+            settings.panelsVisible = activePresentationDescriptor != null &&
+                (activePresentationDescriptor.getPresentationType() == IResultSetPresentation.PresentationType.COLUMNS);
             this.presentationSettings.put(activePresentationDescriptor, settings);
         }
         return settings;
@@ -3797,6 +3800,9 @@ public class ResultSetViewer extends Viewer
     }
 
     static class PresentationSettings {
+        PresentationSettings() {
+        }
+
         final Set<String> enabledPanelIds = new LinkedHashSet<>();
         String activePanelId;
         int panelRatio;

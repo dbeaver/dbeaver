@@ -40,5 +40,4 @@ public class VerticaTable extends GenericTable
         return TABLE_TYPE_FLEX.equals(getTableType());
     }
 
-
 }

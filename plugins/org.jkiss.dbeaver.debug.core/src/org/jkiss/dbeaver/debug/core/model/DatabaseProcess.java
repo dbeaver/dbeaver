@@ -45,8 +45,7 @@ public class DatabaseProcess implements IProcess {
 
     @Override
     public <T> T getAdapter(Class<T> adapter) {
-        IAdapterManager adapterManager = Platform.getAdapterManager();
-        return adapterManager.getAdapter(this, adapter);
+        return null;
     }
 
     @Override

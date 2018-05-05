@@ -1,7 +1,7 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
- * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
+ * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2017 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,18 +15,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.ext.firebird;
 
-package org.jkiss.dbeaver.debug.sourcelookup;
+import org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider;
 
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.debug.core.sourcelookup.AbstractSourceLookupParticipant;
-import org.jkiss.dbeaver.debug.core.DebugCore;
+public class FireBirdDataSourceProvider extends GenericDataSourceProvider {
 
-public class ProcedureSourceLookupParticipant extends AbstractSourceLookupParticipant {
+    public FireBirdDataSourceProvider()
+    {
+    }
 
     @Override
-    public String getSourceName(Object object) throws CoreException {
-        return DebugCore.getSourceName(object);
+    public long getFeatures() {
+        return FEATURE_NONE;
     }
 
 }

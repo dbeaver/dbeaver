@@ -18,19 +18,20 @@
 
 package org.jkiss.dbeaver.debug.core.breakpoints;
 
-import static org.jkiss.dbeaver.debug.core.DebugCore.BREAKPOINT_ATTRIBUTE_DATABASE_NAME;
-import static org.jkiss.dbeaver.debug.core.DebugCore.BREAKPOINT_ATTRIBUTE_DATASOURCE_ID;
-import static org.jkiss.dbeaver.debug.core.DebugCore.BREAKPOINT_ATTRIBUTE_NODE_PATH;
-import static org.jkiss.dbeaver.debug.core.DebugCore.BREAKPOINT_ATTRIBUTE_PROCEDURE_NAME;
-import static org.jkiss.dbeaver.debug.core.DebugCore.BREAKPOINT_ATTRIBUTE_PROCEDURE_OID;
-import static org.jkiss.dbeaver.debug.core.DebugCore.BREAKPOINT_ATTRIBUTE_SCHEMA_NAME;
-import static org.jkiss.dbeaver.debug.core.DebugCore.MODEL_IDENTIFIER_DATABASE;
+import static org.jkiss.dbeaver.debug.DBGConstants.BREAKPOINT_ATTRIBUTE_DATABASE_NAME;
+import static org.jkiss.dbeaver.debug.DBGConstants.BREAKPOINT_ATTRIBUTE_DATASOURCE_ID;
+import static org.jkiss.dbeaver.debug.DBGConstants.BREAKPOINT_ATTRIBUTE_NODE_PATH;
+import static org.jkiss.dbeaver.debug.DBGConstants.BREAKPOINT_ATTRIBUTE_PROCEDURE_NAME;
+import static org.jkiss.dbeaver.debug.DBGConstants.BREAKPOINT_ATTRIBUTE_PROCEDURE_OID;
+import static org.jkiss.dbeaver.debug.DBGConstants.BREAKPOINT_ATTRIBUTE_SCHEMA_NAME;
+import static org.jkiss.dbeaver.debug.DBGConstants.MODEL_IDENTIFIER_DATABASE;
 
 import java.util.Map;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.model.Breakpoint;
+import org.jkiss.dbeaver.debug.DBGConstants;
 import org.jkiss.dbeaver.debug.DBGController;
 import org.jkiss.dbeaver.debug.core.DebugCore;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -64,11 +65,6 @@ public class DatabaseBreakpoint extends Breakpoint implements IDatabaseBreakpoin
     }
 
     @Override
-    public String getProcedureOid() throws CoreException {
-        return ensureMarker().getAttribute(BREAKPOINT_ATTRIBUTE_PROCEDURE_OID, null);
-    }
-
-    @Override
     public String getNodePath() throws CoreException {
         return ensureMarker().getAttribute(BREAKPOINT_ATTRIBUTE_NODE_PATH, null);
     }
@@ -90,7 +86,7 @@ public class DatabaseBreakpoint extends Breakpoint implements IDatabaseBreakpoin
     }
 
     protected void setProcedureOid(String procedureOid) throws CoreException {
-        setAttribute(BREAKPOINT_ATTRIBUTE_PROCEDURE_OID, procedureOid);
+        setAttribute(DBGConstants.ATTR_PROCEDURE_OID, procedureOid);
     }
 
     protected void setNodePath(String nodePath) throws CoreException {
@@ -119,10 +115,7 @@ public class DatabaseBreakpoint extends Breakpoint implements IDatabaseBreakpoin
         if (context.isEmpty()) {
             return;
         }
-        attributes.put(BREAKPOINT_ATTRIBUTE_DATABASE_NAME, context.get(DBGController.DATABASE_NAME));
-        attributes.put(BREAKPOINT_ATTRIBUTE_SCHEMA_NAME, context.get(DBGController.SCHEMA_NAME));
-        attributes.put(BREAKPOINT_ATTRIBUTE_PROCEDURE_NAME, context.get(DBGController.PROCEDURE_NAME));
-        Object oid = context.get(DBGController.PROCEDURE_OID);
-        attributes.put(BREAKPOINT_ATTRIBUTE_PROCEDURE_OID, String.valueOf(oid));
+        Object oid = context.get(DBGConstants.ATTR_PROCEDURE_OID);
+        attributes.put(DBGConstants.ATTR_PROCEDURE_OID, String.valueOf(oid));
     }
 }

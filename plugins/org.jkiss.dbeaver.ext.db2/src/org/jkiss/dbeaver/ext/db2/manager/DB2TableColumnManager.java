@@ -113,14 +113,21 @@ public class DB2TableColumnManager extends SQLTableColumnManager<DB2TableColumn,
         }
 
         // Comment
-        DBEPersistAction commentAction = buildCommentAction(db2Column);
-        if (commentAction != null) {
-            actionList.add(commentAction);
+        if (CommonUtils.isNotEmpty(db2Column.getDescription())) {
+            actionList.add(buildCommentAction(db2Column));
         }
 
         if (hasColumnChanges) {
             // Be Safe, Add a reorg action
             actionList.add(buildReorgAction(db2Column));
+        }
+    }
+
+    @Override
+    protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options) {
+        super.addObjectCreateActions(actions, command, options);
+        if (!CommonUtils.isEmpty(command.getObject().getDescription())) {
+            actions.add(buildCommentAction(command.getObject()));
         }
     }
 
@@ -159,11 +166,10 @@ public class DB2TableColumnManager extends SQLTableColumnManager<DB2TableColumn,
             }
         }
 
-        String type = (String) command.getProperty("type");
-        if (type != null) {
+        if (command.hasProperty("dataType") || command.hasProperty("maxLength") || command.hasProperty("scale")) {
             sb.append(LINE_SEPARATOR);
             sb.append(CLAUSE_SET_TYPE);
-            sb.append(type);
+            sb.append(column.getDataType().getFullTypeName());
         }
 
         return sb.toString();
@@ -171,15 +177,11 @@ public class DB2TableColumnManager extends SQLTableColumnManager<DB2TableColumn,
 
     private DBEPersistAction buildCommentAction(DB2TableColumn db2Column)
     {
-        if (CommonUtils.isNotEmpty(db2Column.getDescription())) {
-            String tableName = db2Column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL);
-            String columnName = db2Column.getName();
-            String comment = db2Column.getDescription();
-            String commentSQL = String.format(SQL_COMMENT, tableName, columnName, comment);
-            return new SQLDatabasePersistAction(CMD_COMMENT, commentSQL);
-        } else {
-            return null;
-        }
+        String tableName = db2Column.getTable().getFullyQualifiedName(DBPEvaluationContext.DDL);
+        String columnName = db2Column.getName();
+        String comment = db2Column.getDescription();
+        String commentSQL = String.format(SQL_COMMENT, tableName, columnName, comment);
+        return new SQLDatabasePersistAction(CMD_COMMENT, commentSQL);
     }
 
     private DBEPersistAction buildReorgAction(DB2TableColumn db2Column)
