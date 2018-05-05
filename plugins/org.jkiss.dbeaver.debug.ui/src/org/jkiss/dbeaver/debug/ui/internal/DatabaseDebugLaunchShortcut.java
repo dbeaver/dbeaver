@@ -38,7 +38,7 @@ public class DatabaseDebugLaunchShortcut extends DatabaseLaunchShortcut {
     protected ILaunchConfiguration createConfiguration(DBSObject launchable, Map<String, Object> databaseContext) throws CoreException {
         ILaunchManager manager = DebugPlugin.getDefault().getLaunchManager();
         ILaunchConfigurationType type = manager.getLaunchConfigurationType(CONFIG_TYPE);
-        ILaunchConfigurationWorkingCopy launchConfig = type.newInstance(null, DBUtils.getObjectFullName(launchable, DBPEvaluationContext.DML));
+        ILaunchConfigurationWorkingCopy launchConfig = type.newInstance(null, launchable.getName());
 
         if (databaseContext != null) {
             DebugCore.putContextInConfiguration(launchConfig, databaseContext);
