@@ -23,11 +23,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.debug.core.DebugPlugin;
-import org.eclipse.debug.core.ILaunchConfiguration;
-import org.eclipse.debug.core.ILaunchConfigurationType;
-import org.eclipse.debug.core.ILaunchManager;
-import org.eclipse.debug.internal.ui.DebugUIPlugin;
+import org.eclipse.debug.core.*;
 import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.debug.ui.IDebugModelPresentation;
 import org.eclipse.debug.ui.ILaunchShortcut2;
@@ -43,8 +39,8 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.debug.core.DebugCore;
-import org.jkiss.dbeaver.debug.ui.internal.DebugLaunchDialogAction;
 import org.jkiss.dbeaver.debug.ui.internal.DebugUIMessages;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
@@ -174,9 +170,12 @@ public abstract class DatabaseLaunchShortcut implements ILaunchShortcut2 {
                 }
             }
             if (config == null) {
-                config = createConfiguration(databaseContext);
-                if (DebugUITools.openLaunchConfigurationPropertiesDialog(DebugUIPlugin.getShell(), config, DebugUI.DEBUG_LAUNCH_GROUP_ID) != IDialogConstants.OK_ID) {
+                config = createConfiguration(launchable, databaseContext);
+                if (DebugUITools.openLaunchConfigurationPropertiesDialog(DBeaverUI.getActiveWorkbenchShell(), config, DebugUI.DEBUG_LAUNCH_GROUP_ID) != IDialogConstants.OK_ID) {
                     return;
+                }
+                if (config instanceof ILaunchConfigurationWorkingCopy) {
+                    ((ILaunchConfigurationWorkingCopy) config).doSave();
                 }
             }
             if (config != null) {
@@ -257,7 +256,7 @@ public abstract class DatabaseLaunchShortcut implements ILaunchShortcut2 {
         return null;
     }
 
-    protected abstract ILaunchConfiguration createConfiguration(Map<String, Object> databaseContext) throws CoreException;
+    protected abstract ILaunchConfiguration createConfiguration(DBSObject launchable, Map<String, Object> databaseContext) throws CoreException;
 
     @Override
     public ILaunchConfiguration[] getLaunchConfigurations(ISelection selection) {
