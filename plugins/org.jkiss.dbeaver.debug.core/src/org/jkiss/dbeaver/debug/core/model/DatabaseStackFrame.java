@@ -34,7 +34,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.debug.DBGException;
 import org.jkiss.dbeaver.debug.DBGStackFrame;
 import org.jkiss.dbeaver.debug.DBGVariable;
-import org.jkiss.dbeaver.debug.core.DebugCore;
+import org.jkiss.dbeaver.debug.core.DebugUtils;
 
 public class DatabaseStackFrame extends DatabaseDebugElement implements IStackFrame {
 
@@ -235,7 +235,7 @@ public class DatabaseStackFrame extends DatabaseDebugElement implements IStackFr
             source = debugTarget.getSession().getSource(dbgStackFrame);
         } catch (DBGException e) {
             String message = NLS.bind("Unable to retrieve sources for stack {0}", dbgStackFrame);
-            IStatus status = DebugCore.newErrorStatus(message, e);
+            IStatus status = DebugUtils.newErrorStatus(message, e);
             throw new DebugException(status);
         }
         return source;

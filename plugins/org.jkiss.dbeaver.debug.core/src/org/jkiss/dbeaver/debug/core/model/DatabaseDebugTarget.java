@@ -27,7 +27,7 @@ import org.eclipse.debug.core.model.*;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.debug.*;
-import org.jkiss.dbeaver.debug.core.DebugCore;
+import org.jkiss.dbeaver.debug.core.DebugUtils;
 import org.jkiss.dbeaver.debug.internal.core.DebugCoreMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
@@ -160,12 +160,16 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
     @Override
     public void handleDebugEvents(DebugEvent[] events) {
         for (DebugEvent event : events) {
-            if (event.getKind() == DebugEvent.TERMINATE && event.getSource().equals(process)) {
-                try {
-                    terminated();
-                } catch (DebugException e) {
-                    log.log(e.getStatus());
-                }
+            switch (event.getKind()) {
+                case DebugEvent.TERMINATE:
+                    if (event.getSource().equals(process)) {
+                        try {
+                            terminated();
+                        } catch (DebugException e) {
+                            log.log(e.getStatus());
+                        }
+                    }
+                    break;
             }
         }
     }
@@ -368,7 +372,7 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
         Map<String, Object> description = new HashMap<>();
         try {
             Map<String, Object> attributes = breakpoint.getMarker().getAttributes();
-            Map<String, Object> remote = DebugCore.toBreakpointDescriptor(attributes);
+            Map<String, Object> remote = DebugUtils.toBreakpointDescriptor(attributes);
             description.putAll(remote);
         } catch (CoreException e) {
             log.log(e.getStatus());
@@ -445,7 +449,7 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
             session.execStepInto();
         } catch (DBGException e) {
             String message = NLS.bind("Step into failed for session {0}", session.getSessionId());
-            IStatus status = DebugCore.newErrorStatus(message, e);
+            IStatus status = DebugUtils.newErrorStatus(message, e);
             throw new DebugException(status);
         }
     }
@@ -455,7 +459,7 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
             session.execStepOver();
         } catch (DBGException e) {
             String message = NLS.bind("Step over failed for session {0}", session.getSessionId());
-            IStatus status = DebugCore.newErrorStatus(message, e);
+            IStatus status = DebugUtils.newErrorStatus(message, e);
             throw new DebugException(status);
         }
     }
@@ -465,7 +469,7 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
             session.execStepReturn();
         } catch (DBGException e) {
             String message = NLS.bind("Step return failed for session {0}", session.getSessionId());
-            IStatus status = DebugCore.newErrorStatus(message, e);
+            IStatus status = DebugUtils.newErrorStatus(message, e);
             throw new DebugException(status);
         }
     }

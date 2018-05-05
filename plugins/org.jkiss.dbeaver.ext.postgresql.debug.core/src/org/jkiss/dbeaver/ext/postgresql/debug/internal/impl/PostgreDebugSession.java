@@ -25,7 +25,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.debug.*;
-import org.jkiss.dbeaver.debug.core.DebugCore;
+import org.jkiss.dbeaver.debug.core.DebugUtils;
 import org.jkiss.dbeaver.debug.jdbc.DBGJDBCSession;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.debug.PostgreDebugConstants;
@@ -41,7 +41,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
@@ -305,7 +304,7 @@ public class PostgreDebugSession extends DBGJDBCSession {
                     String sqlState = e.getSQLState();
                     if (!PostgreConstants.EC_QUERY_CANCELED.equals(sqlState)) {
                         log.error(name, e);
-                        return DebugCore.newErrorStatus(name, e);
+                        return DebugUtils.newErrorStatus(name, e);
                     }
                 }
                 return Status.OK_STATUS;

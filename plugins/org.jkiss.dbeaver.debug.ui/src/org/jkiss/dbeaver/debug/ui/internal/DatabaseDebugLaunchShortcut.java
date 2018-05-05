@@ -18,10 +18,8 @@ package org.jkiss.dbeaver.debug.ui.internal;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.*;
-import org.jkiss.dbeaver.debug.core.DebugCore;
+import org.jkiss.dbeaver.debug.core.DebugUtils;
 import org.jkiss.dbeaver.debug.ui.DatabaseLaunchShortcut;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.Map;
@@ -41,7 +39,7 @@ public class DatabaseDebugLaunchShortcut extends DatabaseLaunchShortcut {
         ILaunchConfigurationWorkingCopy launchConfig = type.newInstance(null, launchable.getName());
 
         if (databaseContext != null) {
-            DebugCore.putContextInConfiguration(launchConfig, databaseContext);
+            DebugUtils.putContextInConfiguration(launchConfig, databaseContext);
         }
 
         return launchConfig;

@@ -35,7 +35,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.debug.core.DebugCore;
+import org.jkiss.dbeaver.debug.core.DebugUtils;
 import org.jkiss.dbeaver.debug.core.breakpoints.DatabaseLineBreakpoint;
 import org.jkiss.dbeaver.debug.core.breakpoints.IDatabaseBreakpoint;
 import org.jkiss.dbeaver.debug.core.model.*;
@@ -140,7 +140,7 @@ public class DatabaseDebugModelPresentation extends LabelProvider implements IDe
             listener.detailComputed(value, valueString);
         } catch (DebugException e) {
             String message = NLS.bind("Unable to compute valie for {0}", value);
-            IStatus status = DebugCore.newErrorStatus(message, e);
+            IStatus status = DebugUtils.newErrorStatus(message, e);
             log.log(status);
             listener.detailComputed(value, e.getMessage());
         }

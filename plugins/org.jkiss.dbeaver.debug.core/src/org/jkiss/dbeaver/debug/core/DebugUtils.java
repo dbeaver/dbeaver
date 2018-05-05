@@ -22,6 +22,8 @@ import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.debug.core.DebugEvent;
+import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.osgi.util.NLS;
@@ -46,9 +48,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class DebugCore {
+public class DebugUtils {
 
-    private static Log log = Log.getLog(DebugCore.class);
+    private static Log log = Log.getLog(DebugUtils.class);
 
     public static CoreException abort(String message, Throwable th) {
         return new CoreException(newErrorStatus(message, th));
@@ -128,7 +130,7 @@ public class DebugCore {
             try {
                 dbsObject = findDatabaseObject(frame.getController(), sourceIdentifier, new VoidProgressMonitor());
             } catch (DBException e) {
-                Status error = DebugCore.newErrorStatus(e.getMessage(), e);
+                Status error = DebugUtils.newErrorStatus(e.getMessage(), e);
                 throw new CoreException(error);
             }
             if (dbsObject == null) {
@@ -174,5 +176,25 @@ public class DebugCore {
                 configuration.setAttribute(entry.getKey(), value.toString());
             }
         }
+    }
+
+    /**
+     * Fires the given debug event.
+     *
+     * @param event
+     *            debug event to fire
+     */
+    public static void fireEvent(DebugEvent event) {
+        DebugPlugin manager = DebugPlugin.getDefault();
+        if (manager != null) {
+            manager.fireDebugEventSet(new DebugEvent[] { event });
+        }
+    }
+
+    /**
+     * Fires a terminate event.
+     */
+    public static void fireTerminate(Object source) {
+        fireEvent(new DebugEvent(source, DebugEvent.TERMINATE));
     }
 }

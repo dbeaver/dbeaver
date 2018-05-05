@@ -21,13 +21,11 @@ package org.jkiss.dbeaver.debug.core.model;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.core.runtime.IAdapterManager;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.debug.core.model.IStreamsProxy;
-import org.jkiss.dbeaver.debug.core.DebugEvents;
+import org.jkiss.dbeaver.debug.core.DebugUtils;
 
 public class DatabaseProcess implements IProcess {
 
@@ -63,7 +61,7 @@ public class DatabaseProcess implements IProcess {
         if (!terminated) {
             terminated = true;
             launch.removeProcess(this);
-            DebugEvents.fireTerminate(this);
+            DebugUtils.fireTerminate(this);
         }
     }
 
