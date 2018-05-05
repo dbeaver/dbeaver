@@ -153,8 +153,9 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
             IEditorPart editor = findEntityEditor(workbenchWindow, selectedNode);
             if (editor != null) {
                 boolean settingsChanged = false;
-                if (editor.getEditorInput() instanceof IDatabaseEditorInput) {
-                    settingsChanged = setInputAttributes((DatabaseEditorInput<?>) editor.getEditorInput(), defaultPageId, defaultFolderId, attributes);
+                IEditorInput editorInput = editor.getEditorInput();
+                if (editorInput instanceof IDatabaseEditorInput) {
+                    settingsChanged = setInputAttributes((DatabaseEditorInput<?>) editorInput, defaultPageId, defaultFolderId, attributes);
                 }
                 if (editor instanceof ITabbedFolderContainer && defaultFolderId != null) {
                     // Activate default folder

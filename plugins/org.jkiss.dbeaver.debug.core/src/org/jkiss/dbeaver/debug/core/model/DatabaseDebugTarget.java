@@ -178,7 +178,7 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
         } catch (DBGException e) {
             process.terminate();
             throw new CoreException(
-                GeneralUtils.makeExceptionStatus(NLS.bind("Failed to connect {0} to the target", getName()), e));
+                GeneralUtils.makeExceptionStatus(e));
         }
         // Initiate breakpoints
         IBreakpoint[] breakpoints = DebugPlugin.getDefault().getBreakpointManager().getBreakpoints(modelIdentifier);
