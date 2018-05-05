@@ -42,6 +42,7 @@ public class PostgreSqlDebugCore {
         String schemaName = procedure.getSchema().getName();
 
         configuration.put(DBGConstants.ATTR_DATASOURCE_ID, dataSourceContainer.getId());
+        configuration.put(DBGConstants.ATTR_DEBUG_TYPE, PostgreDebugConstants.DEBUG_TYPE_FUNCTION);
         configuration.put(PostgreDebugConstants.ATTR_DATABASE_NAME, databaseName);
         configuration.put(PostgreDebugConstants.ATTR_SCHEMA_NAME, schemaName);
         configuration.put(PostgreDebugConstants.ATTR_FUNCTION_OID, String.valueOf(procedure.getObjectId()));

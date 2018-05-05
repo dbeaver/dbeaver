@@ -27,9 +27,11 @@ import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchManager;
+import org.eclipse.debug.internal.ui.DebugUIPlugin;
 import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.debug.ui.IDebugModelPresentation;
 import org.eclipse.debug.ui.ILaunchShortcut2;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ISelection;
@@ -41,15 +43,14 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.debug.DBGConstants;
 import org.jkiss.dbeaver.debug.core.DebugCore;
+import org.jkiss.dbeaver.debug.ui.internal.DebugLaunchDialogAction;
 import org.jkiss.dbeaver.debug.ui.internal.DebugUIMessages;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -173,7 +174,10 @@ public abstract class DatabaseLaunchShortcut implements ILaunchShortcut2 {
                 }
             }
             if (config == null) {
-                config = createConfiguration(launchable);
+                config = createConfiguration(databaseContext);
+                if (DebugUITools.openLaunchConfigurationPropertiesDialog(DebugUIPlugin.getShell(), config, DebugUI.DEBUG_LAUNCH_GROUP_ID) != IDialogConstants.OK_ID) {
+                    return;
+                }
             }
             if (config != null) {
                 DebugUITools.launch(config, mode);
@@ -253,7 +257,7 @@ public abstract class DatabaseLaunchShortcut implements ILaunchShortcut2 {
         return null;
     }
 
-    protected abstract ILaunchConfiguration createConfiguration(DBSObject launchable) throws CoreException;
+    protected abstract ILaunchConfiguration createConfiguration(Map<String, Object> databaseContext) throws CoreException;
 
     @Override
     public ILaunchConfiguration[] getLaunchConfigurations(ISelection selection) {
