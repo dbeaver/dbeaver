@@ -177,6 +177,13 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
             process.terminate();
             throw new CoreException(error);
         }
+        // Initiate breakpoints
+        IBreakpoint[] breakpoints = DebugPlugin.getDefault().getBreakpointManager().getBreakpoints(modelIdentifier);
+        if (breakpoints != null) {
+            for (IBreakpoint bp : breakpoints) {
+                breakpointAdded(bp);
+            }
+        }
     }
 
     @Override
@@ -342,8 +349,7 @@ public class DatabaseDebugTarget extends DatabaseDebugElement implements IDataba
 
     @Override
     public void breakpointManagerEnablementChanged(boolean enabled) {
-        IBreakpoint[] breakpoints = DebugPlugin.getDefault().getBreakpointManager()
-                .getBreakpoints(DBGConstants.BREAKPOINT_ID_DATABASE_LINE);
+        IBreakpoint[] breakpoints = DebugPlugin.getDefault().getBreakpointManager().getBreakpoints(DBGConstants.BREAKPOINT_ID_DATABASE_LINE);
         for (IBreakpoint breakpoint : breakpoints) {
             if (enabled) {
                 breakpointAdded(breakpoint);

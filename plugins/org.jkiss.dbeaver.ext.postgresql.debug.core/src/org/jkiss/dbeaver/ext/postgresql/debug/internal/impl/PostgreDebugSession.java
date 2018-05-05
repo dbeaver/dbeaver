@@ -456,7 +456,7 @@ public class PostgreDebugSession extends DBGJDBCSession {
 
     @Override
     public void resume() throws DBGException {
-        throw new DBGException("Resume not implemented");
+        execContinue();
     }
 
     @Override
