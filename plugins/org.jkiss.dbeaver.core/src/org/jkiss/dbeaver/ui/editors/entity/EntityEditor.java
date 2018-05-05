@@ -632,19 +632,23 @@ public class EntityEditor extends MultiPageDatabaseEditor
     }
 
     @Override
-    public void switchFolder(String folderId)
+    public boolean switchFolder(String folderId)
     {
+        boolean changed = false;
         for (IEditorPart editor : editorMap.values()) {
             if (editor instanceof ITabbedFolderContainer) {
                 if (getActiveEditor() != editor) {
                     setActiveEditor(editor);
                 }
-                ((ITabbedFolderContainer)editor).switchFolder(folderId);
+                if (((ITabbedFolderContainer)editor).switchFolder(folderId)) {
+                    changed = true;
+                }
             }
         }
 //        if (getActiveEditor() instanceof IFolderedPart) {
 //            ((IFolderedPart)getActiveEditor()).switchFolder(folderId);
 //        }
+        return changed;
     }
 
     public void setActiveEditor(Class<?> editorInterface) {

@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
- * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,16 +14,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.debug.ui.internal;
 
-package org.jkiss.dbeaver.ext.postgresql.debug.ui.internal;
+import org.eclipse.debug.ui.actions.OpenLaunchDialogAction;
+import org.jkiss.dbeaver.debug.ui.DebugUI;
 
-import org.eclipse.debug.core.ILaunchManager;
-import org.jkiss.dbeaver.debug.ui.DatabaseLaunchContributionItem;
+public class DebugLaunchDialogAction extends OpenLaunchDialogAction {
 
-public class PgSqlDebugContributionItem extends DatabaseLaunchContributionItem {
-
-    protected PgSqlDebugContributionItem() {
-        super(ILaunchManager.DEBUG_MODE);
+    public DebugLaunchDialogAction() {
+        super(DebugUI.DEBUG_LAUNCH_GROUP_ID);
+        setActionDefinitionId(DebugUI.DEBUG_OPEN_CONFIGURATION_COMMAND_ID);
     }
 
 }

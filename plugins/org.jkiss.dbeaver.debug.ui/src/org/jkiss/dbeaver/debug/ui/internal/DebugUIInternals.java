@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.debug.internal.ui;
+package org.jkiss.dbeaver.debug.ui.internal;
 
 import java.util.ArrayList;
 import java.util.Arrays;

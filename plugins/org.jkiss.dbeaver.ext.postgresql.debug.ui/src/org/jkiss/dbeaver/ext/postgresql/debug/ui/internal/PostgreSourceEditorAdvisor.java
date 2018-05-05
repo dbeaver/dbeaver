@@ -17,9 +17,9 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.debug.ui.internal;
 
-import org.jkiss.dbeaver.debug.ui.DebugEditorAdvisor;
+import org.jkiss.dbeaver.debug.ui.DBGEditorAdvisor;
 
-public class PostgreSourceEditorAdvisor implements DebugEditorAdvisor {
+public class PostgreSourceEditorAdvisor implements DBGEditorAdvisor {
 
     private static final String POSTGRESQL_SOURCE_VIEW = "postgresql.source.view"; //$NON-NLS-1$
 

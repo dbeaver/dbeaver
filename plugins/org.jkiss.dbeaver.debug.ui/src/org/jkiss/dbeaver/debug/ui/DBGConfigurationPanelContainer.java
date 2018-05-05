@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
  * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
- * Copyright (C) 2017-2018 Alexander Fedorov (alexander.fedorov@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,22 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.debug.ui;
 
-package org.jkiss.dbeaver.ext.postgresql.debug.ui.internal;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 
-import org.eclipse.debug.ui.actions.AbstractLaunchToolbarAction;
-import org.eclipse.jface.action.IAction;
-import org.jkiss.dbeaver.ext.postgresql.debug.ui.PostgreSqlDebugUi;
+/**
+ * Panel container
+ */
+public interface DBGConfigurationPanelContainer {
 
-public class PgSqlMenuDelegate extends AbstractLaunchToolbarAction {
+    DBPDataSourceContainer getDataSource();
 
-    public PgSqlMenuDelegate() {
-        super(PostgreSqlDebugUi.DEBUG_PGSQL_LAUNCH_GROUP_ID);
-    }
-    
-    @Override
-    protected IAction getOpenDialogAction() {
-        return new PgSqlOpenLaunchDialogAction();
-    }
+    void updateDialogState();
+
+    void setWarningMessage(String message);
+
+    DBRRunnableContext getRunnableContext();
 
 }

@@ -28,7 +28,7 @@ import org.eclipse.debug.ui.IDetailPane;
 import org.eclipse.debug.ui.IDetailPaneFactory;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.jkiss.dbeaver.debug.DBGConstants;
-import org.jkiss.dbeaver.debug.internal.ui.DebugUIMessages;
+import org.jkiss.dbeaver.debug.ui.internal.DebugUIMessages;
 
 public class DatabaseDetailPaneFactory implements IDetailPaneFactory {
 

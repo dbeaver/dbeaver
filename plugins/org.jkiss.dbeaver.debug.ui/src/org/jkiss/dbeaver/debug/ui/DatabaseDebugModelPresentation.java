@@ -32,9 +32,11 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.debug.core.DebugCore;
 import org.jkiss.dbeaver.debug.core.breakpoints.DatabaseLineBreakpoint;
 import org.jkiss.dbeaver.debug.core.breakpoints.IDatabaseBreakpoint;
@@ -48,8 +50,9 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.ui.UITask;
+import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
-import org.jkiss.dbeaver.ui.editors.entity.EntityEditorInput;
 
 public class DatabaseDebugModelPresentation extends LabelProvider implements IDebugModelPresentationExtension {
 
@@ -167,15 +170,19 @@ public class DatabaseDebugModelPresentation extends LabelProvider implements IDe
     }
 
     protected IEditorInput createEditorInput(DBNDatabaseNode dbnNode) {
-        EntityEditorInput editorInput = new EntityEditorInput(dbnNode);
-        editorInput.setAttribute(DBPScriptObject.OPTION_DEBUGGER_SOURCE, Boolean.TRUE);
-        DebugEditorAdvisor editorAdvisor = DebugUI.findEditorAdvisor(dbnNode.getDataSourceContainer());
-        if (editorAdvisor != null) {
-            String sourceFolderId = editorAdvisor.getSourceFolderId();
-            editorInput.setDefaultFolderId(sourceFolderId);
-        }
-        DebugCore.postDebuggerSourceEvent(dbnNode.getNodeItemPath());
-        return editorInput;
+        DBGEditorAdvisor editorAdvisor = DebugUI.findEditorAdvisor(dbnNode.getDataSourceContainer());
+        String sourceFolderId = editorAdvisor == null ? null : editorAdvisor.getSourceFolderId();
+        Map<String, Object> editorAttrs = new HashMap<>();
+        editorAttrs.put(DBPScriptObject.OPTION_DEBUGGER_SOURCE, true);
+
+        IEditorPart editorPart = new UITask<IEditorPart>() {
+            @Override
+            protected IEditorPart runTask() {
+                return NavigatorHandlerObjectOpen.openEntityEditor(dbnNode, null, sourceFolderId, editorAttrs, DBeaverUI.getActiveWorkbenchWindow(), false);
+            }
+        }.execute();
+
+        return editorPart == null ? null : editorPart.getEditorInput();
     }
 
     @Override

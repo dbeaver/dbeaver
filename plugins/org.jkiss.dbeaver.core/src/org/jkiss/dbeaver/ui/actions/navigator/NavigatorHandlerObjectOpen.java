@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.ui.IRefreshablePart;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.folders.ITabbedFolderContainer;
 import org.jkiss.dbeaver.ui.dialogs.connection.EditConnectionDialog;
@@ -125,14 +126,16 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
         @Nullable String defaultPageId,
         IWorkbenchWindow workbenchWindow)
     {
-        return openEntityEditor(selectedNode, defaultPageId, null , workbenchWindow);
+        return openEntityEditor(selectedNode, defaultPageId, null, null, workbenchWindow, true);
     }
 
     public static IEditorPart openEntityEditor(
         @NotNull DBNNode selectedNode,
         @Nullable String defaultPageId,
+        @Nullable String defaultFolderId,
         @Nullable Map<String, Object> attributes,
-        IWorkbenchWindow workbenchWindow)
+        IWorkbenchWindow workbenchWindow,
+        boolean activate)
     {
         if (selectedNode instanceof DBNDataSource) {
             final DataSourceDescriptor dataSourceContainer = (DataSourceDescriptor) ((DBNDataSource)selectedNode).getDataSourceContainer();
@@ -140,19 +143,33 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
             return null;
         }
         try {
-            String defaultFolderId = null;
             if (selectedNode instanceof DBNDatabaseFolder && !(selectedNode.getParentNode() instanceof DBNDatabaseFolder) && selectedNode.getParentNode() instanceof DBNDatabaseNode) {
-                defaultFolderId = selectedNode.getNodeType();
+                if (defaultFolderId == null) {
+                    defaultFolderId = selectedNode.getNodeType();
+                }
                 selectedNode = selectedNode.getParentNode();
             }
 
             IEditorPart editor = findEntityEditor(workbenchWindow, selectedNode);
             if (editor != null) {
+                boolean settingsChanged = false;
+                if (editor.getEditorInput() instanceof IDatabaseEditorInput) {
+                    settingsChanged = setInputAttributes((DatabaseEditorInput<?>) editor.getEditorInput(), defaultPageId, defaultFolderId, attributes);
+                }
                 if (editor instanceof ITabbedFolderContainer && defaultFolderId != null) {
                     // Activate default folder
-                    ((ITabbedFolderContainer) editor).switchFolder(defaultFolderId);
+                    if (((ITabbedFolderContainer) editor).switchFolder(defaultFolderId)) {
+                        settingsChanged = true;
+                    }
                 }
-                workbenchWindow.getActivePage().activate(editor);
+                if (settingsChanged) {
+                    if (editor instanceof IRefreshablePart) {
+                        ((IRefreshablePart) editor).refreshPart(selectedNode, true);
+                    }
+                }
+                if (workbenchWindow.getActivePage().getActiveEditor() != editor || activate) {
+                    workbenchWindow.getActivePage().activate(editor);
+                }
                 return editor;
             }
 
@@ -252,14 +269,26 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
         }
     }
 
-    private static void setInputAttributes(DatabaseEditorInput<?> editorInput, String defaultPageId, String defaultFolderId, Map<String, Object> attributes) {
-        editorInput.setDefaultPageId(defaultPageId);
-        editorInput.setDefaultFolderId(defaultFolderId);
+    private static boolean setInputAttributes(DatabaseEditorInput<?> editorInput, String defaultPageId, String defaultFolderId, Map<String, Object> attributes) {
+        boolean changed = false;
+        if (defaultPageId != null && !CommonUtils.equalObjects(defaultPageId, editorInput.getDefaultPageId())) {
+            editorInput.setDefaultPageId(defaultPageId);
+            changed = true;
+        }
+        if (defaultFolderId != null && !CommonUtils.equalObjects(defaultFolderId, editorInput.getDefaultFolderId())) {
+            editorInput.setDefaultFolderId(defaultFolderId);
+            changed = true;
+        }
+
         if (!CommonUtils.isEmpty(attributes)) {
             for (Map.Entry<String, Object> attr : attributes.entrySet()) {
-                editorInput.setAttribute(attr.getKey(), attr.getValue());
+                if (!CommonUtils.equalObjects(editorInput.getAttribute(attr.getKey()), attr.getValue())) {
+                    editorInput.setAttribute(attr.getKey(), attr.getValue());
+                    changed = true;
+                }
             }
         }
+        return changed;
     }
 
     @Override

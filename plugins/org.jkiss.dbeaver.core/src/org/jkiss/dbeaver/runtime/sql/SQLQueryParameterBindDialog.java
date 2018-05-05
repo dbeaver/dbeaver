@@ -45,7 +45,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
 
     private static Map<String, SQLQueryParameterRegistry.ParameterInfo> savedParamValues = new HashMap<>();
 
-    protected SQLQueryParameterBindDialog(Shell shell, List<SQLQueryParameter> parameters)
+    public SQLQueryParameterBindDialog(Shell shell, List<SQLQueryParameter> parameters)
     {
         super(shell);
         this.parameters = parameters;
@@ -99,11 +99,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         for (SQLQueryParameter param : parameters) {
             if (param.getPrevious() != null) {
                 // Skip duplicates
-                List<SQLQueryParameter> dups = dupParameters.get(param.getName());
-                if (dups == null) {
-                    dups = new ArrayList<>();
-                    dupParameters.put(param.getName(), dups);
-                }
+                List<SQLQueryParameter> dups = dupParameters.computeIfAbsent(param.getName(), k -> new ArrayList<>());
                 dups.add(param);
                 continue;
             }

@@ -227,10 +227,18 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     }
 
     @Override
-    public Collection<PostgreProcedureParameter> getParameters(DBRProgressMonitor monitor)
-        throws DBException
-    {
+    public List<PostgreProcedureParameter> getParameters(@Nullable DBRProgressMonitor monitor) {
         return params;
+    }
+
+    public List<PostgreProcedureParameter> getInputParameters() {
+        List<PostgreProcedureParameter> result = new ArrayList<>();
+        for (PostgreProcedureParameter param : params) {
+            if (param.getParameterKind().isInput()) {
+                result.add(param);
+            }
+        }
+        return result;
     }
 
     @NotNull
