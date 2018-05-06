@@ -544,7 +544,7 @@ public class ResultSetModel {
             this.dataFilter = createDataFilter();
             updateDataFilter(prevFilter);
         }
-        Collections.sort(this.visibleAttributes, POSITION_SORTER);
+        this.visibleAttributes.sort(POSITION_SORTER);
 
         {
             // Check single source flag
@@ -597,11 +597,8 @@ public class ResultSetModel {
                 for (DBVColorOverride co : coList) {
                     DBDAttributeBinding binding = getAttributeBinding(entity, co.getAttributeName());
                     if (binding != null) {
-                        List<AttributeColorSettings> cmList = colorMapping.get(binding);
-                        if (cmList == null) {
-                            cmList = new ArrayList<>();
-                            colorMapping.put(binding, cmList);
-                        }
+                        List<AttributeColorSettings> cmList =
+                            colorMapping.computeIfAbsent(binding, k -> new ArrayList<>());
                         cmList.add(new AttributeColorSettings(co));
                     }
                 }
@@ -724,12 +721,7 @@ public class ResultSetModel {
         if (rows != null && !rows.isEmpty()) {
             // Remove rows (in descending order to prevent concurrent modification errors)
             List<ResultSetRow> rowsToRemove = new ArrayList<>(rows);
-            Collections.sort(rowsToRemove, new Comparator<ResultSetRow>() {
-                @Override
-                public int compare(ResultSetRow o1, ResultSetRow o2) {
-                    return o1.getVisualNumber() - o2.getVisualNumber();
-                }
-            });
+            rowsToRemove.sort(Comparator.comparingInt(ResultSetRow::getVisualNumber));
             for (ResultSetRow row : rowsToRemove) {
                 cleanupRow(row);
             }
@@ -858,7 +850,7 @@ public class ResultSetModel {
             }
         }
 
-        Collections.sort(this.visibleAttributes, POSITION_SORTER);
+        this.visibleAttributes.sort(POSITION_SORTER);
 
         this.dataFilter.setWhere(filter.getWhere());
         this.dataFilter.setOrder(filter.getOrder());
@@ -869,42 +861,39 @@ public class ResultSetModel {
         final boolean hasOrdering = dataFilter.hasOrdering();
         // Sort locally
         final List<DBDAttributeConstraint> orderConstraints = dataFilter.getOrderConstraints();
-        Collections.sort(curRows, new Comparator<ResultSetRow>() {
-            @Override
-            public int compare(ResultSetRow row1, ResultSetRow row2) {
-                if (!hasOrdering) {
-                    return row1.getRowNumber() - row2.getRowNumber();
-                }
-                int result = 0;
-                for (DBDAttributeConstraint co : orderConstraints) {
-                    final DBDAttributeBinding binding = getAttributeBinding(co.getAttribute());
-                    if (binding == null) {
-                        continue;
-                    }
-                    Object cell1 = getCellValue(binding, row1);
-                    Object cell2 = getCellValue(binding, row2);
-                    if (cell1 == cell2) {
-                        result = 0;
-                    } else if (DBUtils.isNullValue(cell1)) {
-                        result = 1;
-                    } else if (DBUtils.isNullValue(cell2)) {
-                        result = -1;
-                    } else if (cell1 instanceof Comparable) {
-                        result = ((Comparable) cell1).compareTo(cell2);
-                    } else {
-                        String str1 = String.valueOf(cell1);
-                        String str2 = String.valueOf(cell2);
-                        result = str1.compareTo(str2);
-                    }
-                    if (co.isOrderDescending()) {
-                        result = -result;
-                    }
-                    if (result != 0) {
-                        break;
-                    }
-                }
-                return result;
+        curRows.sort((row1, row2) -> {
+            if (!hasOrdering) {
+                return row1.getRowNumber() - row2.getRowNumber();
             }
+            int result = 0;
+            for (DBDAttributeConstraint co : orderConstraints) {
+                final DBDAttributeBinding binding = getAttributeBinding(co.getAttribute());
+                if (binding == null) {
+                    continue;
+                }
+                Object cell1 = getCellValue(binding, row1);
+                Object cell2 = getCellValue(binding, row2);
+                if (cell1 == cell2) {
+                    result = 0;
+                } else if (DBUtils.isNullValue(cell1)) {
+                    result = 1;
+                } else if (DBUtils.isNullValue(cell2)) {
+                    result = -1;
+                } else if (cell1 instanceof Comparable) {
+                    result = ((Comparable) cell1).compareTo(cell2);
+                } else {
+                    String str1 = String.valueOf(cell1);
+                    String str2 = String.valueOf(cell2);
+                    result = str1.compareTo(str2);
+                }
+                if (co.isOrderDescending()) {
+                    result = -result;
+                }
+                if (result != 0) {
+                    break;
+                }
+            }
+            return result;
         });
         for (int i = 0; i < curRows.size(); i++) {
             curRows.get(i).setVisualNumber(i);

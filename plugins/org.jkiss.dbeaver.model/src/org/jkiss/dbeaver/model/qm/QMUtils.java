@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.model.qm.meta.QMMTransactionInfo;
 import org.jkiss.dbeaver.model.qm.meta.QMMTransactionSavepointInfo;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -37,7 +36,6 @@ import java.util.List;
  */
 public class QMUtils {
 
-    public static final EmptyCursorImpl EMPTY_CURSOR = new EmptyCursorImpl();
     private static DBPPlatform application;
     private static QMExecutionHandler defaultHandler;
 
