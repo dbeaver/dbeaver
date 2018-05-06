@@ -32,20 +32,9 @@ public interface QMEventHistory {
 
     long getHistorySize();
 
-    List<QMMetaEvent> readEventHistory(
-        @Nullable QMObjectType objectType,
-        @Nullable Date startDate,
-        @Nullable Date endDate,
-        int maxEvents);
-
-    List<QMMSessionInfo> getSessionHistory(
-        @Nullable String containerId,
-        @Nullable Date startDate,
-        @Nullable Date endDate,
-        int maxSessions);
-
     List<QMMStatementExecuteInfo> getQueryHistory(
         @Nullable String containerId,
+        @Nullable String sessionId,
         @Nullable DBCExecutionPurpose queryPurpose,
         @Nullable Date startDate,
         @Nullable Date endDate,

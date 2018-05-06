@@ -75,7 +75,7 @@ public class QMUtils {
             return Collections.emptyList();
         }
         QMController queryManager = application.getQueryManager();
-        return queryManager == null ? Collections.<QMMetaEvent>emptyList() : queryManager.getPastMetaEvents();
+        return queryManager == null ? Collections.emptyList() : queryManager.getPastMetaEvents();
     }
 
     public static boolean isTransactionActive(DBCExecutionContext executionContext) {
