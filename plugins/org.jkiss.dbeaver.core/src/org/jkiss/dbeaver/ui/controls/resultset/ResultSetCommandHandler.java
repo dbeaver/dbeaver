@@ -51,7 +51,6 @@ import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
@@ -231,13 +230,10 @@ public class ResultSetCommandHandler extends AbstractHandler {
                 try {
                     final List<DBEPersistAction> sqlScript = new ArrayList<>();
                     try {
-                        DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
-                            @Override
-                            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                                List<DBEPersistAction> script = rsv.generateChangesScript(monitor);
-                                if (script != null) {
-                                    sqlScript.addAll(script);
-                                }
+                        DBeaverUI.runInProgressService(monitor -> {
+                            List<DBEPersistAction> script = rsv.generateChangesScript(monitor);
+                            if (script != null) {
+                                sqlScript.addAll(script);
                             }
                         });
                     } catch (InterruptedException e) {
@@ -384,20 +380,17 @@ public class ResultSetCommandHandler extends AbstractHandler {
                     "Go to Row",
                     "Enter row number (1.." + rowCount + ")",
                     String.valueOf(currentRow == null ? 1 : currentRow.getVisualNumber() + 1),
-                    new IInputValidator() {
-                        @Override
-                        public String isValid(String input) {
-                            try {
-                                int i = Integer.parseInt(input);
-                                if (i <= 0 || rowCount < i) {
-                                    return "Row number is out of range";
-                                }
-                            } catch (NumberFormatException x) {
-                                return "Not a number";
+                    input -> {
+                        try {
+                            int i = Integer.parseInt(input);
+                            if (i <= 0 || rowCount < i) {
+                                return "Row number is out of range";
                             }
-
-                            return null;
+                        } catch (NumberFormatException x) {
+                            return "Not a number";
                         }
+
+                        return null;
                     });
                 if (d.open() == Window.OK) {
                     int line = Integer.parseInt(d.getValue());

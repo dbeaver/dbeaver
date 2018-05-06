@@ -156,22 +156,19 @@ class ResultSetDataReceiver implements DBDDataReceiver {
         final List<Object[]> tmpRows = rows;
 
         final boolean nextSegmentRead = this.nextSegmentRead;
-        DBeaverUI.syncExec(new Runnable() {
-            @Override
-            public void run() {
-                // Push data into viewer
-                if (!nextSegmentRead) {
-                    resultSetViewer.updatePresentation(resultSet);
-                    resultSetViewer.setData(tmpRows, focusRow);
-                    resultSetViewer.getActivePresentation().refreshData(true, false, !resultSetViewer.getModel().isMetadataChanged());
-                } else {
-                    resultSetViewer.appendData(tmpRows);
-                    resultSetViewer.getActivePresentation().refreshData(false, true, true);
-                }
-                resultSetViewer.updateStatusMessage();
-                // Check for more data
-                hasMoreData = maxRows > 0 && tmpRows.size() >= maxRows;
+        DBeaverUI.syncExec(() -> {
+            // Push data into viewer
+            if (!nextSegmentRead) {
+                resultSetViewer.updatePresentation(resultSet);
+                resultSetViewer.setData(tmpRows, focusRow);
+                resultSetViewer.getActivePresentation().refreshData(true, false, !resultSetViewer.getModel().isMetadataChanged());
+            } else {
+                resultSetViewer.appendData(tmpRows);
+                resultSetViewer.getActivePresentation().refreshData(false, true, true);
             }
+            resultSetViewer.updateStatusMessage();
+            // Check for more data
+            hasMoreData = maxRows > 0 && tmpRows.size() >= maxRows;
         });
     }
 

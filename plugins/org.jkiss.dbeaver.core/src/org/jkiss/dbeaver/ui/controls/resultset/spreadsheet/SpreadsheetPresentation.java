@@ -131,7 +131,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     private Color foregroundSelected, backgroundSelected;
     private Color backgroundMatched;
     private Color cellHeaderForeground, cellHeaderBackground, cellHeaderSelectionBackground;
-    private Font boldFont, italicFont, bolItalicFont;
+    private Font boldFont, italicFont;
 
     private boolean showOddRows = true;
     private boolean showCelIcons = true;
@@ -1289,12 +1289,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 for (Integer row : spreadsheet.getRowSelection()) {
                     rows.add(controller.getModel().getRow(row));
                 }
-                Collections.sort(rows, new Comparator<ResultSetRow>() {
-                    @Override
-                    public int compare(ResultSetRow o1, ResultSetRow o2) {
-                        return o1.getVisualNumber() - o2.getVisualNumber();
-                    }
-                });
+                rows.sort(Comparator.comparingInt(ResultSetRow::getVisualNumber));
                 return rows;
             }
         }
@@ -1337,12 +1332,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 } else {
                     DBDAttributeBinding[] columns = model.getVisibleAttributes().toArray(new DBDAttributeBinding[model.getVisibleAttributeCount()]);
                     if (columnOrder != SWT.NONE && columnOrder != SWT.DEFAULT) {
-                        Arrays.sort(columns, new Comparator<DBDAttributeBinding>() {
-                            @Override
-                            public int compare(DBDAttributeBinding o1, DBDAttributeBinding o2) {
-                                return o1.getName().compareTo(o2.getName()) * (columnOrder == SWT.UP ? 1 : -1);
-                            }
-                        });
+                        Arrays.sort(columns, (o1, o2) -> o1.getName().compareTo(o2.getName()) * (columnOrder == SWT.UP ? 1 : -1));
                     }
                     return columns;
                 }

@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.spreadsheet;
 
-import org.eclipse.jface.action.IMenuListener;
-import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.accessibility.Accessible;
@@ -25,29 +23,17 @@ import org.eclipse.swt.accessibility.AccessibleEvent;
 import org.eclipse.swt.accessibility.AccessibleListener;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.dnd.Clipboard;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Listener;
-import org.eclipse.swt.widgets.Menu;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.ui.controls.lightgrid.GridCell;
-import org.jkiss.dbeaver.ui.controls.lightgrid.GridPos;
-import org.jkiss.dbeaver.ui.controls.lightgrid.IGridContentProvider;
-import org.jkiss.dbeaver.ui.controls.lightgrid.IGridController;
-import org.jkiss.dbeaver.ui.controls.lightgrid.IGridLabelProvider;
-import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
+import org.jkiss.dbeaver.ui.controls.lightgrid.*;
 import org.jkiss.dbeaver.ui.controls.resultset.AbstractPresentation;
 
 /**
@@ -130,12 +116,9 @@ public class Spreadsheet extends LightGrid implements Listener {
         hookAccessibility();
 
         {
-            super.addDisposeListener(new DisposeListener() {
-                @Override
-                public void widgetDisposed(DisposeEvent e) {
-                    if (clipboard != null && !clipboard.isDisposed()) {
-                        clipboard.dispose();
-                    }
+            super.addDisposeListener(e -> {
+                if (clipboard != null && !clipboard.isDisposed()) {
+                    clipboard.dispose();
                 }
             });
         }
@@ -328,12 +311,7 @@ public class Spreadsheet extends LightGrid implements Listener {
             case LightGrid.Event_NavigateLink:
                 // Perform navigation async because it may change grid content and
                 // we don't want to mess current grid state
-                DBeaverUI.asyncExec(new Runnable() {
-                    @Override
-                    public void run() {
-                        presentation.navigateLink((GridCell) event.data, event.stateMask);
-                    }
-                });
+                DBeaverUI.asyncExec(() -> presentation.navigateLink((GridCell) event.data, event.stateMask));
                 break;
         }
     }
@@ -349,17 +327,13 @@ public class Spreadsheet extends LightGrid implements Listener {
     {
         MenuManager menuMgr = new MenuManager(null, AbstractPresentation.RESULT_SET_PRESENTATION_CONTEXT_MENU);
         Menu menu = menuMgr.createContextMenu(this);
-        menuMgr.addMenuListener(new IMenuListener() {
-            @Override
-            public void menuAboutToShow(IMenuManager manager)
-            {
-                // Let controller to provide it's own menu items
-                GridPos focusPos = getFocusPos();
-                presentation.fillContextMenu(
-                    manager, focusPos.col >= 0 && focusPos.col < columnElements.length ? columnElements[focusPos.col] : null,
-                    focusPos.row >= 0 && focusPos.row < rowElements.length ? rowElements[focusPos.row] : null
-                );
-            }
+        menuMgr.addMenuListener(manager -> {
+            // Let controller to provide it's own menu items
+            GridPos focusPos = getFocusPos();
+            presentation.fillContextMenu(
+                manager, focusPos.col >= 0 && focusPos.col < columnElements.length ? columnElements[focusPos.col] : null,
+                focusPos.row >= 0 && focusPos.row < rowElements.length ? rowElements[focusPos.row] : null
+            );
         });
         menuMgr.setRemoveAllWhenShown(true);
         super.setMenu(menu);
@@ -435,12 +409,7 @@ public class Spreadsheet extends LightGrid implements Listener {
         final Accessible accessible = getAccessible();
 
         accessible.addAccessibleListener(new GridAccessibleListener());
-        addCursorChangeListener(new Listener() {
-            @Override
-            public void handleEvent(Event event) {
-                accessible.selectionChanged();
-            }
-        });
+        addCursorChangeListener(event -> accessible.selectionChanged());
     }
 
     private static class GridAccessibleListener implements AccessibleListener {

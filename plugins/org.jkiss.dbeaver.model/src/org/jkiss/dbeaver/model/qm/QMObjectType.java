@@ -37,7 +37,7 @@ public enum QMObjectType {
 
     private final Class<? extends QMMObject> type;
 
-    private QMObjectType(Class<? extends QMMObject> type)
+    QMObjectType(Class<? extends QMMObject> type)
     {
         this.type = type;
     }

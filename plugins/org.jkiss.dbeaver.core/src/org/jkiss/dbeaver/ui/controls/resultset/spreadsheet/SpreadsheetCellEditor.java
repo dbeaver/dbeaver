@@ -24,7 +24,6 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 
@@ -69,14 +68,7 @@ public class SpreadsheetCellEditor extends ControlEditor
             }
         };
         
-        resizeListener = new Listener()
-        {
-         @Override
-         public void handleEvent(Event event)
-            {
-                 layout();
-            }   
-        };
+        resizeListener = event -> layout();
         
         scrollListener = new SelectionListener()
         {

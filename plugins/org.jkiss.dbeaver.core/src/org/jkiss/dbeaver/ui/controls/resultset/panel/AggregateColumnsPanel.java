@@ -19,9 +19,7 @@ package org.jkiss.dbeaver.ui.controls.resultset.panel;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -103,26 +101,19 @@ public class AggregateColumnsPanel implements IResultSetPanel {
         new TreeColumn(this.aggregateTable, SWT.RIGHT).setText("Value");
 
         if (this.presentation instanceof ISelectionProvider) {
-            ((ISelectionProvider) this.presentation).addSelectionChangedListener(new ISelectionChangedListener() {
-                @Override
-                public void selectionChanged(SelectionChangedEvent event) {
-                    if (presentation.getController().getVisiblePanel() == AggregateColumnsPanel.this) {
-                        refresh(false);
-                    }
+            ((ISelectionProvider) this.presentation).addSelectionChangedListener(event -> {
+                if (presentation.getController().getVisiblePanel() == AggregateColumnsPanel.this) {
+                    refresh(false);
                 }
             });
         }
 
         MenuManager menuMgr = new MenuManager();
-        menuMgr.addMenuListener(new IMenuListener() {
-            @Override
-            public void menuAboutToShow(IMenuManager manager)
-            {
-                manager.add(new CopyAction());
-                manager.add(new CopyAllAction());
-                manager.add(new Separator());
-                fillToolBar(manager);
-            }
+        menuMgr.addMenuListener(manager -> {
+            manager.add(new CopyAction());
+            manager.add(new CopyAllAction());
+            manager.add(new Separator());
+            fillToolBar(manager);
         });
 
         menuMgr.setRemoveAllWhenShown(true);
@@ -157,12 +148,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
                     enabledFunctions.add(func);
                 }
             }
-            Collections.sort(enabledFunctions, new Comparator<AggregateFunctionDescriptor>() {
-                @Override
-                public int compare(AggregateFunctionDescriptor o1, AggregateFunctionDescriptor o2) {
-                    return funcIndexes.get(o1) - funcIndexes.get(o2);
-                }
-            });
+            enabledFunctions.sort(Comparator.comparingInt(funcIndexes::get));
         }
 
         if (enabledFunctions.isEmpty()) {
@@ -176,12 +162,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
                 enabledFunctions.add(func);
             }
         }
-        Collections.sort(enabledFunctions, new Comparator<AggregateFunctionDescriptor>() {
-            @Override
-            public int compare(AggregateFunctionDescriptor o1, AggregateFunctionDescriptor o2) {
-                return o1.getLabel().compareTo(o2.getLabel());
-            }
-        });
+        enabledFunctions.sort(Comparator.comparing(AggregateFunctionDescriptor::getLabel));
     }
 
     private void saveSettings() {
@@ -241,11 +222,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
                 DBDAttributeBinding attr = selection.getElementAttribute(element);
                 ResultSetRow row = selection.getElementRow(element);
                 Object cellValue = model.getCellValue(attr, row);
-                List<Object> values = attrValues.get(attr);
-                if (values == null) {
-                    values = new ArrayList<>();
-                    attrValues.put(attr, values);
-                }
+                List<Object> values = attrValues.computeIfAbsent(attr, k -> new ArrayList<>());
                 values.add(cellValue);
             }
 
