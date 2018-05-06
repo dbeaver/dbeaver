@@ -39,6 +39,14 @@ public final class IOUtils {
         }
     }
 
+    public static void close(AutoCloseable closeable) {
+        try {
+            closeable.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public static void fastCopy(final InputStream src, final OutputStream dest) throws IOException {
         fastCopy(src, dest, DEFAULT_BUFFER_SIZE);
     }
