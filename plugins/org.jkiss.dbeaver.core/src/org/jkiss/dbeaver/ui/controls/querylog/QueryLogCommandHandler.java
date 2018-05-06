@@ -51,16 +51,19 @@ public class QueryLogCommandHandler extends AbstractHandler {
         }
 
         String actionId = event.getCommand().getId();
-        if (actionId.equals(IWorkbenchCommandConstants.EDIT_SELECT_ALL)) {
-            logViewer.selectAll();
-            return null;
-        }
-        if (actionId.equals(IWorkbenchCommandConstants.EDIT_COPY)) {
-            logViewer.copySelectionToClipboard(false);
-            return null;
-        } else if (actionId.equals(CoreCommands.CMD_COPY_SPECIAL)) {
-            logViewer.copySelectionToClipboard(true);
-            return null;
+        switch (actionId) {
+            case IWorkbenchCommandConstants.EDIT_SELECT_ALL:
+                logViewer.selectAll();
+                return null;
+            case IWorkbenchCommandConstants.EDIT_COPY:
+                logViewer.copySelectionToClipboard(false);
+                return null;
+            case CoreCommands.CMD_COPY_SPECIAL:
+                logViewer.copySelectionToClipboard(true);
+                return null;
+            case IWorkbenchCommandConstants.FILE_REFRESH:
+                logViewer.refresh();
+                return null;
         }
         return null;
     }

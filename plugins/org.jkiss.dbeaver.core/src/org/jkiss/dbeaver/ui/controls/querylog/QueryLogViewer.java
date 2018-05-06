@@ -90,6 +90,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     public static final String COLOR_COMMITTED = "org.jkiss.dbeaver.txn.color.committed.background";  //= new RGB(0xBD, 0xFE, 0xBF);
     public static final String COLOR_REVERTED = "org.jkiss.dbeaver.txn.color.reverted.background";  // = new RGB(0xFF, 0x63, 0x47);
     public static final String COLOR_TRANSACTION = "org.jkiss.dbeaver.txn.color.transaction.background";  // = new RGB(0xFF, 0xE4, 0xB5);
+    private final Text searchText;
 
     private static abstract class LogColumn {
         private final String id;
@@ -317,7 +318,9 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     private final Color colorLightGreen;
     private final Color colorLightRed;
     private final Color colorLightYellow;
+    private final Color shadowColor;
     private final Font boldFont;
+    private final Font hintFont;
     private DragSource dndSource;
 
 
@@ -336,9 +339,25 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         colorLightGreen = colorRegistry.get(COLOR_COMMITTED);
         colorLightRed = colorRegistry.get(COLOR_REVERTED);
         colorLightYellow = colorRegistry.get(COLOR_TRANSACTION);
+        shadowColor = parent.getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW);
         boldFont = UIUtils.makeBoldFont(parent.getFont());
+        hintFont = UIUtils.modifyFont(parent.getFont(), SWT.ITALIC);
 
         boolean inDialog = UIUtils.isInDialog(parent);
+        // Search field
+        this.searchText = new Text(parent, SWT.BORDER);
+        this.searchText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        this.searchText.addPaintListener(e -> {
+            if (searchText.isEnabled() && searchText.getCharCount() == 0) {
+                e.gc.setForeground(shadowColor);
+                e.gc.setFont(hintFont);
+                e.gc.drawText("Type query part to search in query history",
+                    2, 0, true);
+                e.gc.setFont(null);
+            }
+        });
+
+
         // Create log table
         logTable = new Table(
             parent,
@@ -452,6 +471,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         UIUtils.dispose(dndSource);
         UIUtils.dispose(logTable);
         UIUtils.dispose(boldFont);
+        UIUtils.dispose(hintFont);
     }
 
     @Override
@@ -759,6 +779,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             manager.add(copyAllAction);
             manager.add(selectAllAction);
             manager.add(clearLogAction);
+            manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.FILE_REFRESH));
             //manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
         });
         menuMgr.setRemoveAllWhenShown(true);
