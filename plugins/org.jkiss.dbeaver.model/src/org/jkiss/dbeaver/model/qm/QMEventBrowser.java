@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.qm;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
@@ -30,6 +31,7 @@ public interface QMEventBrowser {
         @NotNull DBRProgressMonitor monitor,
         @Nullable String containerId,
         @Nullable String sessionId,
-        @Nullable String searchString);
+        @Nullable String searchString)
+        throws DBException;
 
 }
