@@ -16,8 +16,10 @@
  */
 package org.jkiss.dbeaver.runtime.qm;
 
+import org.eclipse.core.runtime.Adapters;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.qm.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -40,6 +42,7 @@ public class QMControllerImpl implements QMController {
     private QMExecutionHandler defaultHandler;
     private QMMCollectorImpl metaHandler;
     private final List<QMExecutionHandler> handlers = new ArrayList<>();
+    private QMEventBrowser eventBrowser;
 
     public QMControllerImpl() {
         defaultHandler = (QMExecutionHandler) Proxy.newProxyInstance(
@@ -80,6 +83,19 @@ public class QMControllerImpl implements QMController {
     }
 
     @Override
+    public synchronized QMEventBrowser getEventBrowser() {
+        if (eventBrowser == null) {
+            eventBrowser = Adapters.adapt(this, QMEventBrowser.class);
+            if (eventBrowser == null) {
+                // Default browser
+                eventBrowser = new DefaultEventBrowser();
+            }
+        }
+
+        return eventBrowser;
+    }
+
+    @Override
     public void registerHandler(QMExecutionHandler handler) {
         synchronized (handlers) {
             handlers.add(handler);
@@ -105,27 +121,6 @@ public class QMControllerImpl implements QMController {
     public void unregisterMetaListener(QMMetaListener metaListener)
     {
         metaHandler.removeListener(metaListener);
-    }
-
-    @Override
-    public QMEventCursor getQueryHistoryCursor(
-        @NotNull DBRProgressMonitor monitor,
-        @Nullable String containerId,
-        @Nullable String sessionId,
-        @Nullable String searchString)
-    {
-        if (CommonUtils.isEmpty(searchString)) {
-            return new QMUtils.ListCursorImpl(metaHandler.getPastEvents());
-        } else {
-            searchString = searchString.toLowerCase();
-            List<QMMetaEvent> filtered = new ArrayList<>();
-            for (QMMetaEvent event : metaHandler.getPastEvents()) {
-                if (event.getObject().getText().toLowerCase().contains(searchString)) {
-                    filtered.add(event);
-                }
-            }
-            return new QMUtils.ListCursorImpl(filtered);
-        }
     }
 
     List<QMExecutionHandler> getHandlers()
@@ -169,4 +164,27 @@ public class QMControllerImpl implements QMController {
 
     }
 
+    private class DefaultEventBrowser implements QMEventBrowser {
+        @Override
+        public QMEventCursor getQueryHistoryCursor(
+            @NotNull DBRProgressMonitor monitor,
+            @Nullable String containerId,
+            @Nullable String sessionId,
+            @Nullable String searchString)
+            throws DBException
+        {
+            if (CommonUtils.isEmpty(searchString)) {
+                return new QMUtils.ListCursorImpl(metaHandler.getPastEvents());
+            } else {
+                searchString = searchString.toLowerCase();
+                List<QMMetaEvent> filtered = new ArrayList<>();
+                for (QMMetaEvent event : metaHandler.getPastEvents()) {
+                    if (event.getObject().getText().toLowerCase().contains(searchString)) {
+                        filtered.add(event);
+                    }
+                }
+                return new QMUtils.ListCursorImpl(filtered);
+            }
+        }
+    }
 }

@@ -20,11 +20,13 @@ package org.jkiss.dbeaver.model.qm;
 /**
  * Query manager controller
  */
-public interface QMController extends QMEventBrowser {
+public interface QMController {
 
     QMMCollector getMetaCollector();
 
     QMExecutionHandler getDefaultHandler();
+
+    QMEventBrowser getEventBrowser();
 
     void registerHandler(QMExecutionHandler handler);
 

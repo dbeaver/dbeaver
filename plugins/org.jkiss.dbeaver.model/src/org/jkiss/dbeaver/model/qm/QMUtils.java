@@ -71,7 +71,7 @@ public class QMUtils {
         if (application == null) {
             return null;
         }
-        return application.getQueryManager();
+        return application.getQueryManager().getEventBrowser();
     }
 
     public static boolean isTransactionActive(DBCExecutionContext executionContext) {
