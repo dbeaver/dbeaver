@@ -53,7 +53,7 @@ public class DBGJDBCWorker extends AbstractJob {
             monitor.subTask(sql);
             try (Statement stmt = session.createStatement()) {
                 debugSession.fireEvent(before);
-                stmt.executeQuery(sql);
+                stmt.execute(sql);
                 debugSession.fireEvent(after);
                 return Status.OK_STATUS;
             }
