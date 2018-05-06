@@ -16,10 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
-import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.*;
@@ -127,9 +124,7 @@ public class ResultSetViewer extends Viewer
 
     private static final DecimalFormat ROW_COUNT_FORMAT = new DecimalFormat("###,###,###,###,###,##0");
 
-    @NotNull
-    private static IResultSetFilterManager filterManager = new SimpleFilterManager();
-
+    private IResultSetFilterManager filterManager;
     @NotNull
     private final IWorkbenchPartSite site;
     private final Composite viewerPanel;
@@ -198,6 +193,11 @@ public class ResultSetViewer extends Viewer
         this.recordMode = false;
         this.container = container;
         this.dataReceiver = new ResultSetDataReceiver(this);
+
+        this.filterManager = Adapters.adapt(this, IResultSetFilterManager.class);
+        if (this.filterManager == null) {
+            this.filterManager = new SimpleFilterManager();
+        }
 
         loadPresentationSettings();
 
@@ -823,7 +823,7 @@ public class ResultSetViewer extends Viewer
     }
 
     boolean isPanelsVisible() {
-        return viewerSash.getMaximizedControl() == null;
+        return viewerSash != null && viewerSash.getMaximizedControl() == null;
     }
 
     void showPanels(boolean show) {
@@ -957,14 +957,16 @@ public class ResultSetViewer extends Viewer
     @Override
     public <T> T getAdapter(Class<T> adapter)
     {
-        if (adapter.isAssignableFrom(activePresentation.getClass())) {
-            return adapter.cast(activePresentation);
-        }
-        // Try to get it from adapter
-        if (activePresentation instanceof IAdaptable) {
-            T adapted = ((IAdaptable) activePresentation).getAdapter(adapter);
-            if (adapted != null) {
-                return adapted;
+        if (activePresentation != null) {
+            if (adapter.isAssignableFrom(activePresentation.getClass())) {
+                return adapter.cast(activePresentation);
+            }
+            // Try to get it from adapter
+            if (activePresentation instanceof IAdaptable) {
+                T adapted = ((IAdaptable) activePresentation).getAdapter(adapter);
+                if (adapted != null) {
+                    return adapted;
+                }
             }
         }
         IResultSetPanel visiblePanel = getVisiblePanel();
@@ -1584,15 +1586,8 @@ public class ResultSetViewer extends Viewer
     // Context menu & filters
 
     @NotNull
-    static IResultSetFilterManager getFilterManager() {
+    IResultSetFilterManager getFilterManager() {
         return filterManager;
-    }
-
-    public static void registerFilterManager(@Nullable IResultSetFilterManager filterManager) {
-        if (filterManager == null) {
-            filterManager = new SimpleFilterManager();
-        }
-        ResultSetViewer.filterManager = filterManager;
     }
 
     void showFiltersMenu() {
