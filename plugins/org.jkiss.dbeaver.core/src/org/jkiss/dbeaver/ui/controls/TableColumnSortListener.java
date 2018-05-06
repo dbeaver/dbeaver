@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.controls;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.*;
 
 import java.text.Collator;
@@ -41,6 +42,8 @@ public class TableColumnSortListener implements Listener {
     {
         int columnCount = table.getColumnCount();
         String[] values = new String[columnCount];
+        Color[] foregrounds = new Color[columnCount];
+        Color[] backgrounds = new Color[columnCount];
         TableItem[] items = table.getItems();
         for (int i = 1; i < items.length; i++) {
             for (int j = 0; j < i; j++) {
@@ -48,6 +51,8 @@ public class TableColumnSortListener implements Listener {
                 if (comparator.compare(item, items[j]) < 0) {
                     for (int k = 0; k < columnCount; k++) {
                         values[k] = item.getText(k);
+                        foregrounds[k] = item.getForeground(k);
+                        backgrounds[k] = item.getBackground(k);
                     }
                     Object data = item.getData();
                     boolean checked = item.getChecked();
@@ -57,6 +62,10 @@ public class TableColumnSortListener implements Listener {
                     item.setText(values);
                     item.setData(data);
                     item.setChecked(checked);
+                    for (int k = 0; k < columnCount; k++) {
+                        if (foregrounds[k] != null) item.setForeground(k, foregrounds[k]);
+                        if (backgrounds[k] != null) item.setBackground(k, backgrounds[k]);
+                    }
                     items = table.getItems();
                     break;
                 }
