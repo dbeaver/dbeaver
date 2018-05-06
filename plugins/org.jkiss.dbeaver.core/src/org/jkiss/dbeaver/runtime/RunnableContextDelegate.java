@@ -16,9 +16,7 @@
  */
 package org.jkiss.dbeaver.runtime;
 
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.operation.IRunnableContext;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -38,11 +36,6 @@ public class RunnableContextDelegate implements DBRRunnableContext {
 
     @Override
     public void run(boolean fork, boolean cancelable, final DBRRunnableWithProgress runnable) throws InvocationTargetException, InterruptedException {
-        delegate.run(fork, cancelable, new IRunnableWithProgress() {
-            @Override
-            public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                runnable.run(RuntimeUtils.makeMonitor(monitor));
-            }
-        });
+        delegate.run(fork, cancelable, monitor -> runnable.run(RuntimeUtils.makeMonitor(monitor)));
     }
 }
