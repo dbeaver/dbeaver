@@ -80,7 +80,7 @@ public class QMMSessionInfo extends QMMObject {
 
     @Override
     public String getText() {
-        return contextName;
+        return this.containerName + " - " + contextName;
     }
 
     public QMMTransactionInfo changeTransactional(boolean transactional)
