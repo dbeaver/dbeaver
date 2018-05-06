@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -620,8 +619,9 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             try {
                 QMEventBrowser eventBrowser = QMUtils.getEventBrowser();
                 if (eventBrowser != null) {
-                    String searchPattern = CommonUtils.isEmptyTrimmed(searchString) ? null : searchString.trim();
-                    try (QMEventCursor cursor = eventBrowser.getQueryHistoryCursor(monitor, null, null, searchPattern)) {
+                    QMEventCriteria criteria = new QMEventCriteria();
+                    criteria.setSearchString(CommonUtils.isEmptyTrimmed(searchString) ? null : searchString.trim());
+                    try (QMEventCursor cursor = eventBrowser.getQueryHistoryCursor(monitor, criteria)) {
                         while (events.size() < this.entriesPerPage && cursor.hasNextEvent(monitor)) {
                             events.add(cursor.nextEvent(monitor));
                         }
