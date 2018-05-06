@@ -78,6 +78,11 @@ public class QMMSessionInfo extends QMMObject {
         super.reopen();
     }
 
+    @Override
+    public String getText() {
+        return contextName;
+    }
+
     public QMMTransactionInfo changeTransactional(boolean transactional)
     {
         if (this.transactional == transactional) {

@@ -16,8 +16,12 @@
  */
 package org.jkiss.dbeaver.runtime.qm;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.qm.*;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
@@ -104,9 +108,24 @@ public class QMControllerImpl implements QMController {
     }
 
     @Override
-    public List<QMMetaEvent> getPastMetaEvents()
+    public QMEventCursor getQueryHistoryCursor(
+        @NotNull DBRProgressMonitor monitor,
+        @Nullable String containerId,
+        @Nullable String sessionId,
+        @Nullable String searchString)
     {
-        return metaHandler.getPastEvents();
+        if (CommonUtils.isEmpty(searchString)) {
+            return new QMUtils.ListCursorImpl(metaHandler.getPastEvents());
+        } else {
+            searchString = searchString.toLowerCase();
+            List<QMMetaEvent> filtered = new ArrayList<>();
+            for (QMMetaEvent event : metaHandler.getPastEvents()) {
+                if (event.getObject().getText().toLowerCase().contains(searchString)) {
+                    filtered.add(event);
+                }
+            }
+            return new QMUtils.ListCursorImpl(filtered);
+        }
     }
 
     List<QMExecutionHandler> getHandlers()

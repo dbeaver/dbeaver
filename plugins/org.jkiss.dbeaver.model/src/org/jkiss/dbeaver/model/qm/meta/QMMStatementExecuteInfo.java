@@ -150,4 +150,8 @@ public class QMMStatementExecuteInfo extends QMMObject {
         return '"' + queryString + '"';
     }
 
+    @Override
+    public String getText() {
+        return queryString;
+    }
 }
