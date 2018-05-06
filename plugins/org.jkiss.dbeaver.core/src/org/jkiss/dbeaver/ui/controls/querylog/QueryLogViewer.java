@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ui.controls.querylog;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
@@ -32,6 +33,7 @@ import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jgit.annotations.Nullable;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.*;
@@ -45,6 +47,7 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -57,6 +60,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.*;
 import org.jkiss.dbeaver.model.qm.meta.*;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
@@ -67,13 +71,16 @@ import org.jkiss.dbeaver.ui.controls.TableColumnSortListener;
 import org.jkiss.dbeaver.ui.dialogs.sql.BaseSQLDialog;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenHandler;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.LongKeyMap;
 
+import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -90,7 +97,6 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     public static final String COLOR_COMMITTED = "org.jkiss.dbeaver.txn.color.committed.background";  //= new RGB(0xBD, 0xFE, 0xBF);
     public static final String COLOR_REVERTED = "org.jkiss.dbeaver.txn.color.reverted.background";  // = new RGB(0xFF, 0x63, 0x47);
     public static final String COLOR_TRANSACTION = "org.jkiss.dbeaver.txn.color.transaction.background";  // = new RGB(0xFF, 0xE4, 0xB5);
-    private final Text searchText;
 
     private static abstract class LogColumn {
         private final String id;
@@ -307,6 +313,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     };
 
     private final IWorkbenchPartSite site;
+    private final Text searchText;
     private Table logTable;
     private java.util.List<ColumnDescriptor> columns = new ArrayList<>();
     private LongKeyMap<TableItem> objectToItemMap = new LongKeyMap<>();
@@ -326,11 +333,20 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
 
     private int entriesPerPage = MIN_ENTRIES_PER_PAGE;
 
+    private Job filterJob;
+
     public QueryLogViewer(Composite parent, IWorkbenchPartSite site, QMEventFilter filter, boolean showConnection)
     {
         super();
 
         this.site = site;
+        this.filterJob = new AbstractJob("Filter query history") {
+            @Override
+            protected IStatus run(DBRProgressMonitor monitor) {
+                refresh();
+                return Status.OK_STATUS;
+            }
+        };
 
         // Prepare colors
 
@@ -356,7 +372,9 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                 e.gc.setFont(null);
             }
         });
-
+        this.searchText.addModifyListener(e -> {
+            scheduleLogRefresh();
+        });
 
         // Create log table
         logTable = new Table(
@@ -403,7 +421,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
 
         this.filter = filter;
 
-        reloadEvents();
+        reloadEvents(null);
 
         // Make sure app is initialized
         DBeaverCore.getInstance();
@@ -411,6 +429,15 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         QMUtils.registerMetaListener(this);
 
         DBeaverCore.getGlobalPreferenceStore().addPropertyChangeListener(this);
+    }
+
+    private synchronized void scheduleLogRefresh() {
+        // Many properties could be changed at once
+        // So here we just schedule single refresh job
+        if (logRefreshJob == null) {
+            logRefreshJob = new LogRefreshJob();
+        }
+        logRefreshJob.schedule(250);
     }
 
     public void setFilter(QMEventFilter filter) {
@@ -510,7 +537,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     @Override
     public void refresh()
     {
-        reloadEvents();
+        reloadEvents(searchText.getText());
     }
 
     private static String getObjectType(QMMObject object)
@@ -593,7 +620,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         return null;
     }
 
-    private void reloadEvents()
+    private void reloadEvents(@Nullable String searchString)
     {
         DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
 
@@ -601,11 +628,28 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         this.defaultFilter = new DefaultEventFilter();
 
         clearLog();
-        updateMetaInfo(QMUtils.getPastMetaEvents());
+
+        // Extract events
+        final List<QMMetaEvent> events = new ArrayList<>();
+        RuntimeUtils.runTask(monitor -> {
+            try {
+                QMEventBrowser eventBrowser = QMUtils.getEventBrowser();
+                if (eventBrowser != null) {
+                    String searchPattern = CommonUtils.isEmptyTrimmed(searchString) ? null : searchString.trim();
+                    QMEventCursor cursor = eventBrowser.getQueryHistoryCursor(monitor, null, null, searchPattern);
+                    while (events.size() < this.entriesPerPage && cursor.hasNextEvent(monitor)) {
+                        events.add(cursor.nextEvent(monitor));
+                    }
+                }
+            } catch (DBException e) {
+                throw new InvocationTargetException(e);
+            }
+        }, "Read meta events", 5000);
+        updateMetaInfo(events);
     }
 
     @Override
-    public void metaInfoChanged(@NotNull final java.util.List<QMMetaEvent> events) {
+    public void metaInfoChanged(DBRProgressMonitor monitor, @NotNull final List<QMMetaEvent> events) {
         if (DBeaverCore.isClosing()) {
             return;
         }
@@ -613,7 +657,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         DBeaverUI.asyncExec(() -> updateMetaInfo(events));
     }
 
-    private synchronized void updateMetaInfo(final java.util.List<QMMetaEvent> events)
+    private synchronized void updateMetaInfo(final List<QMMetaEvent> events)
     {
         if (logTable.isDisposed()) {
             return;
@@ -911,37 +955,25 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         return NLS.bind(CoreMessages.controls_querylog_format_minutes, String.valueOf(min), String.valueOf(sec));
     }
 
-    private ConfigRefreshJob configRefreshJob = null;
+    private LogRefreshJob logRefreshJob = null;
 
     @Override
     public synchronized void preferenceChange(PreferenceChangeEvent event)
     {
         if (event.getProperty().startsWith(QMConstants.PROP_PREFIX)) {
-            // Many properties could be changed at once
-            // So here we just schedule single refresh job
-            if (configRefreshJob == null) {
-                configRefreshJob = new ConfigRefreshJob();
-                configRefreshJob.schedule(250);
-                configRefreshJob.addJobChangeListener(new JobChangeAdapter() {
-                    @Override
-                    public void done(IJobChangeEvent event)
-                    {
-                        configRefreshJob = null;
-                    }
-                });
-            }
+            scheduleLogRefresh();
         }
     }
 
-    private class ConfigRefreshJob extends AbstractUIJob {
-        ConfigRefreshJob()
+    private class LogRefreshJob extends AbstractUIJob {
+        LogRefreshJob()
         {
             super(CoreMessages.controls_querylog_job_refresh);
         }
         @Override
         protected IStatus runInUIThread(DBRProgressMonitor monitor)
         {
-            reloadEvents();
+            refresh();
             return Status.OK_STATUS;
         }
     }

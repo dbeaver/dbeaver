@@ -326,7 +326,7 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
                 // Dispatch all events
                 for (QMMetaListener listener : listeners) {
                     try {
-                        listener.metaInfoChanged(events);
+                        listener.metaInfoChanged(monitor, events);
                     } catch (Throwable e) {
                         log.error("Error notifying event listener", e);
                     }

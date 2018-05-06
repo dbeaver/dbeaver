@@ -17,7 +17,9 @@
 
 package org.jkiss.dbeaver.model.qm;
 
+import org.eclipse.jgit.annotations.Nullable;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -25,6 +27,7 @@ import org.jkiss.dbeaver.model.qm.meta.QMMSessionInfo;
 import org.jkiss.dbeaver.model.qm.meta.QMMStatementExecuteInfo;
 import org.jkiss.dbeaver.model.qm.meta.QMMTransactionInfo;
 import org.jkiss.dbeaver.model.qm.meta.QMMTransactionSavepointInfo;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.Collections;
 import java.util.List;
@@ -34,48 +37,43 @@ import java.util.List;
  */
 public class QMUtils {
 
+    public static final EmptyCursorImpl EMPTY_CURSOR = new EmptyCursorImpl();
     private static DBPPlatform application;
-    private static QMExecutionHandler defaultHandler; 
-    
+    private static QMExecutionHandler defaultHandler;
+
     public static void initApplication(DBPPlatform application) {
         QMUtils.application = application;
     }
-    
-    public static QMExecutionHandler getDefaultHandler()
-    {
+
+    public static QMExecutionHandler getDefaultHandler() {
         if (defaultHandler == null) {
             defaultHandler = application.getQueryManager().getDefaultHandler();
         }
         return defaultHandler;
     }
 
-    public static void registerHandler(QMExecutionHandler handler)
-    {
+    public static void registerHandler(QMExecutionHandler handler) {
         application.getQueryManager().registerHandler(handler);
     }
 
-    public static void unregisterHandler(QMExecutionHandler handler)
-    {
+    public static void unregisterHandler(QMExecutionHandler handler) {
         application.getQueryManager().unregisterHandler(handler);
     }
 
-    public static void registerMetaListener(QMMetaListener metaListener)
-    {
+    public static void registerMetaListener(QMMetaListener metaListener) {
         application.getQueryManager().registerMetaListener(metaListener);
     }
 
-    public static void unregisterMetaListener(QMMetaListener metaListener)
-    {
+    public static void unregisterMetaListener(QMMetaListener metaListener) {
         application.getQueryManager().unregisterMetaListener(metaListener);
     }
 
-    public static List<QMMetaEvent> getPastMetaEvents()
-    {
+    @Nullable
+    public static QMEventBrowser getEventBrowser() {
         if (application == null) {
-            return Collections.emptyList();
+            return null;
         }
-        QMController queryManager = application.getQueryManager();
-        return queryManager == null ? Collections.emptyList() : queryManager.getPastMetaEvents();
+        return application.getQueryManager();
     }
 
     public static boolean isTransactionActive(DBCExecutionContext executionContext) {
@@ -148,6 +146,66 @@ public class QMUtils {
             }
         }
         return new QMTransactionState(execCount, updateCount, txnMode, txnStartTime);
+    }
+
+    public static class ListCursorImpl implements QMEventCursor {
+
+        private final List<QMMetaEvent> events;
+        private int position;
+
+        public ListCursorImpl(List<QMMetaEvent> events) {
+            this.events = events;
+            this.position = 0;
+        }
+
+        @Override
+        public long getTotalSize() {
+            return events.size();
+        }
+
+        @Override
+        public void scroll(long position, DBRProgressMonitor monitor) throws DBException {
+            if (position < 0 || position >= events.size()) {
+                throw new DBException("Position is out of range (" + getTotalSize() + ")");
+            }
+        }
+
+        @Override
+        public boolean hasNextEvent(DBRProgressMonitor monitor) throws DBException {
+            return position < events.size();
+        }
+
+        @Override
+        public QMMetaEvent nextEvent(DBRProgressMonitor monitor) throws DBException {
+            QMMetaEvent event = events.get(position);
+            position++;
+            return event;
+        }
+
+    }
+
+    public static class EmptyCursorImpl implements QMEventCursor {
+
+        @Override
+        public long getTotalSize() {
+            return 0;
+        }
+
+        @Override
+        public void scroll(long position, DBRProgressMonitor monitor) throws DBException {
+            throw new DBException("Empty cursor");
+        }
+
+        @Override
+        public boolean hasNextEvent(DBRProgressMonitor monitor) throws DBException {
+            return false;
+        }
+
+        @Override
+        public QMMetaEvent nextEvent(DBRProgressMonitor monitor) throws DBException {
+            throw new DBException("Empty cursor");
+        }
+
     }
 
 }

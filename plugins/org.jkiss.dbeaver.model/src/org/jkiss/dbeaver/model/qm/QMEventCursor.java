@@ -18,26 +18,25 @@
 package org.jkiss.dbeaver.model.qm;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.qm.meta.QMMSessionInfo;
 import org.jkiss.dbeaver.model.qm.meta.QMMStatementExecuteInfo;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.Date;
 import java.util.List;
 
 /**
- * Query manager history
+ * Event cursor
  */
-public interface QMEventHistory {
+public interface QMEventCursor {
 
-    long getHistorySize();
+    long getTotalSize();
 
-    List<QMMStatementExecuteInfo> getQueryHistory(
-        @Nullable String containerId,
-        @Nullable String sessionId,
-        @Nullable DBCExecutionPurpose queryPurpose,
-        @Nullable Date startDate,
-        @Nullable Date endDate,
-        int maxQueries);
+    void scroll(long position, DBRProgressMonitor monitor) throws DBException;
+
+    boolean hasNextEvent(DBRProgressMonitor monitor) throws DBException;
+
+    QMMetaEvent nextEvent(DBRProgressMonitor monitor) throws DBException;
 
 }

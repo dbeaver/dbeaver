@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.qm.QMEventFilter;
 import org.jkiss.dbeaver.model.qm.QMMetaEvent;
 import org.jkiss.dbeaver.model.qm.QMMetaListener;
 import org.jkiss.dbeaver.model.qm.meta.*;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -85,7 +86,7 @@ public class QMLogFileWriter implements QMMetaListener, DBPPreferenceListener {
     }
 
     @Override
-    public synchronized void metaInfoChanged(@NotNull List<QMMetaEvent> events)
+    public synchronized void metaInfoChanged(DBRProgressMonitor monitor, @NotNull List<QMMetaEvent> events)
     {
         if (!enabled || logWriter == null) {
             return;

@@ -84,6 +84,8 @@ public abstract class QMMObject {
         return closeTime > 0;
     }
 
+    public abstract String getText();
+
     protected synchronized void update()
     {
         this.updated = true;

@@ -17,12 +17,10 @@
 
 package org.jkiss.dbeaver.model.qm;
 
-import java.util.List;
-
 /**
  * Query manager controller
  */
-public interface QMController {
+public interface QMController extends QMEventBrowser {
 
     QMMCollector getMetaCollector();
 
@@ -36,5 +34,4 @@ public interface QMController {
 
     void unregisterMetaListener(QMMetaListener metaListener);
 
-    List<QMMetaEvent> getPastMetaEvents();
 }

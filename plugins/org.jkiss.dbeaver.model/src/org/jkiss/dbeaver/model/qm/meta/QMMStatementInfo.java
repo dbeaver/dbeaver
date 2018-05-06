@@ -45,6 +45,11 @@ public class QMMStatementInfo extends QMMObject {
         reference = null;
     }
 
+    @Override
+    public String getText() {
+        return session.getText();
+    }
+
     DBCStatement getReference()
     {
         return reference;
