@@ -162,7 +162,7 @@ public class QMUtils {
         }
 
         @Override
-        public void scroll(long position, DBRProgressMonitor monitor) throws DBException {
+        public void scroll(int position, DBRProgressMonitor monitor) throws DBException {
             if (position < 0 || position >= events.size()) {
                 throw new DBException("Position is out of range (" + getTotalSize() + ")");
             }
@@ -180,6 +180,11 @@ public class QMUtils {
             return event;
         }
 
+        @Override
+        public void close() {
+
+        }
+
     }
 
     public static class EmptyCursorImpl implements QMEventCursor {
@@ -190,7 +195,7 @@ public class QMUtils {
         }
 
         @Override
-        public void scroll(long position, DBRProgressMonitor monitor) throws DBException {
+        public void scroll(int position, DBRProgressMonitor monitor) throws DBException {
             throw new DBException("Empty cursor");
         }
 
@@ -202,6 +207,11 @@ public class QMUtils {
         @Override
         public QMMetaEvent nextEvent(DBRProgressMonitor monitor) throws DBException {
             throw new DBException("Empty cursor");
+        }
+
+        @Override
+        public void close() {
+
         }
 
     }

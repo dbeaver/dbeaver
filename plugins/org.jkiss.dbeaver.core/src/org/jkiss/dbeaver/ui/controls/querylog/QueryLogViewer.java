@@ -621,9 +621,10 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                 QMEventBrowser eventBrowser = QMUtils.getEventBrowser();
                 if (eventBrowser != null) {
                     String searchPattern = CommonUtils.isEmptyTrimmed(searchString) ? null : searchString.trim();
-                    QMEventCursor cursor = eventBrowser.getQueryHistoryCursor(monitor, null, null, searchPattern);
-                    while (events.size() < this.entriesPerPage && cursor.hasNextEvent(monitor)) {
-                        events.add(cursor.nextEvent(monitor));
+                    try (QMEventCursor cursor = eventBrowser.getQueryHistoryCursor(monitor, null, null, searchPattern)) {
+                        while (events.size() < this.entriesPerPage && cursor.hasNextEvent(monitor)) {
+                            events.add(cursor.nextEvent(monitor));
+                        }
                     }
                 }
             } catch (DBException e) {

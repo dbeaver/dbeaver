@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.model.qm.meta;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
@@ -29,8 +30,10 @@ public class QMMSessionInfo extends QMMObject {
     private final String containerId;
     private final String containerName;
     private final String driverId;
+    @Nullable
     private final DBPConnectionConfiguration connectionConfiguration;
     private final String contextName;
+    @Nullable
     private SQLDialect sqlDialect;
     private boolean transactional;
 
@@ -53,7 +56,15 @@ public class QMMSessionInfo extends QMMObject {
         if (transactional) {
             this.transaction = new QMMTransactionInfo(this, null);
         }
-        //stack = new RuntimeException();
+    }
+
+    public QMMSessionInfo(String containerId, String containerName, String driverId, DBPConnectionConfiguration connectionConfiguration, String contextName, boolean transactional) {
+        this.containerId = containerId;
+        this.containerName = containerName;
+        this.driverId = driverId;
+        this.connectionConfiguration = connectionConfiguration;
+        this.contextName = contextName;
+        this.transactional = transactional;
     }
 
     @Override
