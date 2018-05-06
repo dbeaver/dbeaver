@@ -34,10 +34,13 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedureParameter;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCCallableStatementImpl;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -280,18 +283,17 @@ public class PostgreDebugSession extends DBGJDBCSession {
                     }
                     query.append(") }");
                     localStatement = session.prepareCall(query.toString());
+                    JDBCCallableStatementImpl callImpl = new JDBCCallableStatementImpl(session, localStatement, query.toString(), false);
                     for (int i = 0; i < parameters.size(); i++) {
+                        PostgreProcedureParameter parameter = parameters.get(i);
                         String paramValue = paramValues.get(i);
-                        if (CommonUtils.isEmpty(paramValue)) {
-                            localStatement.setNull(i + 1, Types.VARCHAR);
-                        } else {
-                            localStatement.setString(i + 1, paramValue);
-                        }
+                        DBDValueHandler valueHandler = DBUtils.findValueHandler(session, parameter);
+                        valueHandler.bindValueObject(session, callImpl, parameter, i, paramValue);
                     }
                     localStatement.execute();
                     // And Now His Watch Is Ended
                     fireEvent(new DBGEvent(this, DBGEvent.RESUME, DBGEvent.STEP_RETURN));
-                } catch (SQLException e) {
+                } catch (Exception e) {
                     try {
                         if (localStatement != null) {
                             localStatement.close();
@@ -301,7 +303,7 @@ public class PostgreDebugSession extends DBGJDBCSession {
                         log.error(e1);
                     }
                     fireEvent(new DBGEvent(this, DBGEvent.TERMINATE, DBGEvent.CLIENT_REQUEST));
-                    String sqlState = e.getSQLState();
+                    String sqlState = e instanceof SQLException ? ((SQLException) e).getSQLState() : null;
                     if (!PostgreConstants.EC_QUERY_CANCELED.equals(sqlState)) {
                         log.error(name, e);
                         return DebugUtils.newErrorStatus(name, e);
