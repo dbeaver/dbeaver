@@ -151,20 +151,17 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             // Register filters text in focus service
             UIUtils.addDefaultEditActionsSupport(viewer.getSite(), this.filtersText);
 
-            this.filtersText.addPaintListener(new PaintListener() {
-                @Override
-                public void paintControl(PaintEvent e) {
-                    /*if (viewer.getModel().hasData())*/ {
-                        final boolean supportsDataFilter = viewer.supportsDataFilter();
-                        if (!supportsDataFilter || (filtersText.isEnabled() && filtersText.getCharCount() == 0)) {
-                            e.gc.setForeground(shadowColor);
-                            e.gc.setFont(hintFont);
-                            e.gc.drawText(supportsDataFilter ?
-                                    CoreMessages.sql_editor_resultset_filter_panel_text_enter_sql_to_filter:
-                                    CoreMessages.sql_editor_resultset_filter_panel_text_enter_filter_not_support,
-                                2, 0, true);
-                            e.gc.setFont(null);
-                        }
+            this.filtersText.addPaintListener(e -> {
+                /*if (viewer.getModel().hasData())*/ {
+                    final boolean supportsDataFilter = viewer.supportsDataFilter();
+                    if (!supportsDataFilter || (filtersText.isEnabled() && filtersText.getCharCount() == 0)) {
+                        e.gc.setForeground(shadowColor);
+                        e.gc.setFont(hintFont);
+                        e.gc.drawText(supportsDataFilter ?
+                                CoreMessages.sql_editor_resultset_filter_panel_text_enter_sql_to_filter:
+                                CoreMessages.sql_editor_resultset_filter_panel_text_enter_filter_not_support,
+                            2, 0, true);
+                        e.gc.setFont(null);
                     }
                 }
             });
@@ -274,15 +271,11 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             historyForwardButton.addSelectionListener(new HistoryMenuListener(historyForwardButton, false));
         }
 
-        this.addTraverseListener(new TraverseListener() {
-            @Override
-            public void keyTraversed(TraverseEvent e)
-            {
-                if (e.detail == SWT.TRAVERSE_RETURN) {
-                    setCustomDataFilter();
-                    e.doit = false;
-                    e.detail = SWT.TRAVERSE_NONE;
-                }
+        this.addTraverseListener(e -> {
+            if (e.detail == SWT.TRAVERSE_RETURN) {
+                setCustomDataFilter();
+                e.doit = false;
+                e.detail = SWT.TRAVERSE_NONE;
             }
         });
 
@@ -587,20 +580,17 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         final String word = wordDetector.getFullWord().toLowerCase(Locale.ENGLISH);
         final List<IContentProposal> proposals = new ArrayList<>();
 
-        final DBRRunnableWithProgress reader = new DBRRunnableWithProgress() {
-            @Override
-            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                for (DBDAttributeBinding attribute : viewer.getModel().getAttributes()) {
-                    final String name = DBUtils.getUnQuotedIdentifier(attribute.getDataSource(), attribute.getName());
-                    if (CommonUtils.isEmpty(word) || name.toLowerCase(Locale.ENGLISH).startsWith(word)) {
-                        final String content = DBUtils.getQuotedIdentifier(attribute) + " ";
-                        proposals.add(
-                                new ContentProposal(
-                                        content,
-                                        attribute.getName(),
-                                        SQLContextInformer.makeObjectDescription(monitor, attribute.getAttribute(), false),
-                                        content.length()));
-                    }
+        final DBRRunnableWithProgress reader = monitor -> {
+            for (DBDAttributeBinding attribute : viewer.getModel().getAttributes()) {
+                final String name = DBUtils.getUnQuotedIdentifier(attribute.getDataSource(), attribute.getName());
+                if (CommonUtils.isEmpty(word) || name.toLowerCase(Locale.ENGLISH).startsWith(word)) {
+                    final String content = DBUtils.getQuotedIdentifier(attribute) + " ";
+                    proposals.add(
+                            new ContentProposal(
+                                    content,
+                                    attribute.getName(),
+                                    SQLContextInformer.makeObjectDescription(monitor, attribute.getAttribute(), false),
+                                    content.length()));
                 }
             }
         };
