@@ -168,7 +168,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                     return CoreMessages.controls_querylog_rollback;
                 }
             } else if (object instanceof QMMSessionInfo) {
-                String containerName = ((QMMSessionInfo) object).getContainerName();
+                String containerName = ((QMMSessionInfo) object).getContainerName() + " <" + ((QMMSessionInfo) object).getContextName() + ">";
                 switch (event.getAction()) {
                     case BEGIN: return CoreMessages.controls_querylog_connected_to + containerName + "\"";
                     case END:   return CoreMessages.controls_querylog_disconnected_from + containerName + "\"";
