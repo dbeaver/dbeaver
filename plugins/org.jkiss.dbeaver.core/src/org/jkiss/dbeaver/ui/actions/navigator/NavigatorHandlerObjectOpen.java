@@ -40,8 +40,6 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
 import org.jkiss.dbeaver.model.navigator.*;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -154,7 +152,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
             if (editor != null) {
                 boolean settingsChanged = false;
                 IEditorInput editorInput = editor.getEditorInput();
-                if (editorInput instanceof IDatabaseEditorInput) {
+                if (editorInput instanceof DatabaseEditorInput) {
                     settingsChanged = setInputAttributes((DatabaseEditorInput<?>) editorInput, defaultPageId, defaultFolderId, attributes);
                 }
                 if (editor instanceof ITabbedFolderContainer && defaultFolderId != null) {
@@ -243,14 +241,11 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
 
     private static void refreshDatabaseNode(@NotNull DBNDatabaseNode selectedNode) throws InvocationTargetException, InterruptedException {
         final DBNDatabaseNode nodeToRefresh = selectedNode;
-        DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
-            @Override
-            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                try {
-                    nodeToRefresh.refreshNode(monitor, nodeToRefresh);
-                } catch (DBException e) {
-                    log.error("Error refreshing database object", e);
-                }
+        DBeaverUI.runInProgressService(monitor -> {
+            try {
+                nodeToRefresh.refreshNode(monitor, nodeToRefresh);
+            } catch (DBException e) {
+                log.error("Error refreshing database object", e);
             }
         });
     }
