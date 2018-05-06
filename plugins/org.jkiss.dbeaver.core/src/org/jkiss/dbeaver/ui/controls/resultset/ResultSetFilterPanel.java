@@ -45,7 +45,6 @@ import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.SystemJob;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
@@ -64,7 +63,6 @@ import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLWordPartDetector;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -442,7 +440,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     private void loadFiltersHistory(String query) {
         filtersHistory.clear();
         try {
-            final Collection<String> history = ResultSetViewer.getFilterManager().getQueryFilterHistory(query);
+            final Collection<String> history = viewer.getFilterManager().getQueryFilterHistory(query);
             filtersHistory.addAll(history);
         } catch (Throwable e) {
             log.debug("Error reading history", e);
@@ -477,7 +475,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         filtersHistory.add(whereCondition);
         if (!oldFilter) {
             try {
-                ResultSetViewer.getFilterManager().saveQueryFilterValue(getActiveSourceQuery(), whereCondition);
+                viewer.getFilterManager().saveQueryFilterValue(getActiveSourceQuery(), whereCondition);
             } catch (Throwable e) {
                 log.debug("Error saving filter", e);
             }
@@ -860,7 +858,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                         if (e.keyCode == SWT.DEL) {
                             final String filterValue = item.getText();
                             try {
-                                ResultSetViewer.getFilterManager().deleteQueryFilterValue(getActiveSourceQuery(), filterValue);
+                                viewer.getFilterManager().deleteQueryFilterValue(getActiveSourceQuery(), filterValue);
                             } catch (DBException e1) {
                                 log.warn("Error deleting filter value [" + filterValue + "]", e1);
                             }
