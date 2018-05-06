@@ -274,7 +274,7 @@ public class PostgreDebugSession extends DBGJDBCSession {
         Job job = new AbstractJob(name) {
             @Override
             protected IStatus run(DBRProgressMonitor monitor) {
-                try (JDBCSession session = getConnection().openSession(monitor, DBCExecutionPurpose.UTIL, "Run SQL command")) {
+                try (JDBCSession session = getConnection().openSession(monitor, DBCExecutionPurpose.USER, "Run SQL command")) {
                     StringBuilder query = new StringBuilder();
                     query.append("{ CALL ").append(function.getFullyQualifiedName(DBPEvaluationContext.DML)).append("(");
                     for (int i = 0; i < parameters.size(); i++) {
