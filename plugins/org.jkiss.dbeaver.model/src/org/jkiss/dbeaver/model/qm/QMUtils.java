@@ -17,8 +17,8 @@
 
 package org.jkiss.dbeaver.model.qm;
 
-import org.eclipse.jgit.annotations.Nullable;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
