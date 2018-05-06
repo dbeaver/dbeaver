@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,6 @@
 package org.jkiss.dbeaver.model.qm;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -29,9 +28,7 @@ public interface QMEventBrowser {
 
     QMEventCursor getQueryHistoryCursor(
         @NotNull DBRProgressMonitor monitor,
-        @Nullable String containerId,
-        @Nullable String sessionId,
-        @Nullable String searchString)
+        @NotNull QMEventCriteria criteria)
         throws DBException;
 
 }
