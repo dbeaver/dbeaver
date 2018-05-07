@@ -56,6 +56,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.*;
 import org.jkiss.dbeaver.model.qm.meta.*;
+import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
@@ -66,11 +67,9 @@ import org.jkiss.dbeaver.ui.controls.TableColumnSortListener;
 import org.jkiss.dbeaver.ui.dialogs.sql.BaseSQLDialog;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenHandler;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.LongKeyMap;
 
-import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -614,24 +613,26 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         clearLog();
 
         // Extract events
-        final List<QMMetaEvent> events = new ArrayList<>();
-        RuntimeUtils.runTask(monitor -> {
-            try {
+        new AbstractJob("Read meta events") {
+            @Override
+            protected IStatus run(DBRProgressMonitor monitor) {
+                final List<QMMetaEvent> events = new ArrayList<>();
                 QMEventBrowser eventBrowser = QMUtils.getEventBrowser();
                 if (eventBrowser != null) {
                     QMEventCriteria criteria = new QMEventCriteria();
                     criteria.setSearchString(CommonUtils.isEmptyTrimmed(searchString) ? null : searchString.trim());
                     try (QMEventCursor cursor = eventBrowser.getQueryHistoryCursor(monitor, criteria)) {
-                        while (events.size() < this.entriesPerPage && cursor.hasNextEvent(monitor)) {
+                        while (events.size() < entriesPerPage && cursor.hasNextEvent(monitor)) {
                             events.add(cursor.nextEvent(monitor));
                         }
+                    } catch (DBException e) {
+                        return GeneralUtils.makeExceptionStatus(e);
                     }
                 }
-            } catch (DBException e) {
-                throw new InvocationTargetException(e);
+                DBeaverUI.asyncExec(() -> updateMetaInfo(events));
+                return Status.OK_STATUS;
             }
-        }, "Read meta events", 5000);
-        updateMetaInfo(events);
+        }.schedule();
     }
 
     @Override
