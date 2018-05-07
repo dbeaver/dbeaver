@@ -344,6 +344,12 @@
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OraclePackage"/>
             <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleDataType" if="!object.predefined"/>
         </editor>
+        <editor id="schedulerJob.action" class="org.jkiss.dbeaver.ext.oracle.editors.SchedulerJobActionEditor"
+            label="%editor.scheduler.job.action.name" description="%editor.schedulerJob.action.description" icon="#sql_text" position="additions_middle"
+            contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="folder" embeddable="false">
+            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleSchedulerJob"/>
+            <objectType name="org.jkiss.dbeaver.ext.oracle.model.OracleDataType" if="!object.predefined"/>
+        </editor>
         <editor id="source.ddl" class="org.jkiss.dbeaver.ext.oracle.editors.OracleObjectDDLEditor"
             label="DDL" description="DDL" icon="#sql_text" position="additions_middle"
             contributor="org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributorNested" type="folder">
@@ -472,11 +478,13 @@
         <category id="org.jkiss.dbeaver.ext.oracle" name="Oracle" description="Oracle Commands"/>
         <command id="org.jkiss.dbeaver.ext.oracle.code.compile" name="Compile" description="Compile" categoryId="org.jkiss.dbeaver.ext.oracle"/>
         <command id="org.jkiss.dbeaver.ext.oracle.code.package.navigate" name="Go to source code" description="Navigate to object source code" categoryId="org.jkiss.dbeaver.ext.oracle"/>
+        <command id="org.jkiss.dbeaver.ext.oracle.job.run" name="Run" description="Run Job" categoryId="org.jkiss.dbeaver.ext.oracle"/>
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
         <image commandId="org.jkiss.dbeaver.ext.oracle.code.compile" icon="icons/compile.png"/>
         <image commandId="org.jkiss.dbeaver.ext.oracle.code.package.navigate" icon="icons/source_navigate.png"/>
+        <image commandId="org.jkiss.dbeaver.ext.oracle.job.run" icon="icons/run.png"/>
     </extension>
 
     <extension point="org.eclipse.ui.handlers">
@@ -516,6 +524,29 @@
                 </with>
             </enabledWhen>
         </handler>
+        <handler commandId="org.jkiss.dbeaver.ext.oracle.job.run" class="org.jkiss.dbeaver.ext.oracle.actions.JobRunHandler">
+            <enabledWhen>
+                <or>
+                    <with variable="selection">
+                        <count value="+"/>
+                        <iterate operator="and">
+                            <!-- Here and below we use double check - adapt + instanceof.
+                                sing <adapt> with final (Oracle-specific) type will force plugin activation (since E4.6)
+                                see https://bugs.eclipse.org/bugs/show_bug.cgi?id=485569
+                            -->
+                            <adapt type="org.jkiss.dbeaver.model.struct.DBSObject">
+                                <instanceof value="org.jkiss.dbeaver.ext.oracle.model.OracleSchedulerJob"/>
+                            </adapt>
+                        </iterate>
+                    </with>
+                    <with variable="activePart">
+                        <adapt type="org.jkiss.dbeaver.model.struct.DBSObject">
+                            <instanceof value="org.jkiss.dbeaver.ext.oracle.model.OracleSchedulerJob"/>
+                        </adapt>
+                    </with>
+                </or>
+            </enabledWhen>
+        </handler>
     </extension>
 
     <extension point="org.eclipse.ui.menus">
@@ -526,12 +557,16 @@
             <command commandId="org.jkiss.dbeaver.ext.oracle.code.package.navigate">
                 <visibleWhen checkEnabled="true"/>
             </command>
+            <command commandId="org.jkiss.dbeaver.ext.oracle.job.run">
+                <visibleWhen checkEnabled="true"/>
+            </command>
         </menuContribution>
     </extension>
     <extension point="org.eclipse.core.runtime.adapters">
         <factory adaptableType="java.lang.Object" class="org.jkiss.dbeaver.ext.oracle.actions.OracleObjectAdapter">
             <adapter type="org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject"/>
             <adapter type="org.jkiss.dbeaver.ext.oracle.model.OracleProcedurePackaged"/>
+            <adapter type="org.jkiss.dbeaver.ext.oracle.model.OracleSchedulerJob"/>
         </factory>
     </extension>
     <extension point="org.eclipse.ui.bindings">
