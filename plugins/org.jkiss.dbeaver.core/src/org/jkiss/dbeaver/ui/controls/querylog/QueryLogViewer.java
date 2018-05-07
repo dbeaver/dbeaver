@@ -125,11 +125,11 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
 
     private LogColumn COLUMN_TIME = new LogColumn("time", CoreMessages.controls_querylog_column_time_name, CoreMessages.controls_querylog_column_time_tooltip, 80) {
         private final DateFormat timeFormat = new SimpleDateFormat(DBConstants.DEFAULT_TIME_FORMAT, Locale.getDefault()); //$NON-NLS-1$
-        private final DateFormat timestampFormat = new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT, Locale.getDefault()); //$NON-NLS-1$
+        private final DateFormat timestampFormat = new SimpleDateFormat("MMM-dd HH:mm:ss", Locale.getDefault()); //$NON-NLS-1$
         @Override
         String getText(QMMetaEvent event)
         {
-            return timeFormat.format(event.getObject().getOpenTime());
+            return timestampFormat.format(event.getObject().getOpenTime());
         }
         String getToolTipText(QMMetaEvent event) {
             return timestampFormat.format(event.getObject().getOpenTime());
@@ -668,12 +668,12 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         try {
             // Add events in reverse order
             int itemIndex = 0;
-            for (int i = events.size(); i > 0; i--) {
+            for (int i = 0; i < events.size(); i++) {
                 if (useDefaultFilter && itemIndex >= entriesPerPage) {
                     // Do not add remaining (older) events - they don't fit page anyway
                     break;
                 }
-                QMMetaEvent event = events.get(i - 1);
+                QMMetaEvent event = events.get(i);
                 if ((filter != null && !filter.accept(event)) || (useDefaultFilter && !defaultFilter.accept(event))) {
                     continue;
                 }
@@ -1059,7 +1059,10 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         @Override
         protected SQLDialect getSQLDialect() {
             if (object.getObject() instanceof QMMStatementExecuteInfo) {
-                return ((QMMStatementExecuteInfo) object.getObject()).getStatement().getSession().getSQLDialect();
+                SQLDialect dialect = ((QMMStatementExecuteInfo) object.getObject()).getStatement().getSession().getSQLDialect();
+                if (dialect != null) {
+                    return dialect;
+                }
             }
             return super.getSQLDialect();
         }

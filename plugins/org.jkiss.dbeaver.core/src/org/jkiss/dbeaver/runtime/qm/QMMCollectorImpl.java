@@ -323,6 +323,8 @@ public class QMMCollectorImpl extends DefaultExecutionHandler implements QMMColl
             }
             final List<QMMetaListener> listeners = getListeners();
             if (!listeners.isEmpty() && !events.isEmpty()) {
+                // Reverse collection. Fresh events must come first.
+                Collections.reverse(events);
                 // Dispatch all events
                 for (QMMetaListener listener : listeners) {
                     try {
