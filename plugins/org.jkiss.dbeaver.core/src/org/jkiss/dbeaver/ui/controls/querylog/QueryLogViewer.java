@@ -407,14 +407,20 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
 
         this.filter = filter;
 
-        reloadEvents(null);
-
         // Make sure app is initialized
         DBeaverCore.getInstance();
         // Register QM listener
         QMUtils.registerMetaListener(this);
 
         DBeaverCore.getGlobalPreferenceStore().addPropertyChangeListener(this);
+
+        logTable.addListener(SWT.Resize, new Listener() {
+            @Override
+            public void handleEvent(Event event) {
+                logTable.removeListener(SWT.Resize, this);
+                reloadEvents(null);
+            }
+        });
     }
 
     private synchronized void scheduleLogRefresh() {
@@ -423,7 +429,8 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         if (logRefreshJob == null) {
             logRefreshJob = new LogRefreshJob();
         }
-        logRefreshJob.schedule(250);
+        logRefreshJob.cancel();
+        logRefreshJob.schedule(500);
     }
 
     public void setFilter(QMEventFilter filter) {
