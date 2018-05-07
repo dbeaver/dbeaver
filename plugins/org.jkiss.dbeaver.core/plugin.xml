@@ -3552,6 +3552,20 @@
                 </propertyGroup>
             </processor>
             <processor
+                    id="stream.dbunit"
+                    class="org.jkiss.dbeaver.tools.transfer.stream.impl.DataExporterDbUnit"
+                    description="%dataTransfer.processor.dbunit.description"
+                    icon="icons/misc/xml.png"
+                    label="%dataTransfer.processor.dbunit.name">
+                <propertyGroup label="%dataTransfer.processor.dbunit.propertyGroup.general.label">
+                	<property id="upperCaseTableName" label="%dataTransfer.processor.dbunit.property.uppercase.table.name.label" type="boolean" defaultValue="true"/>
+                	<property id="upperCaseColumnNames" label="%dataTransfer.processor.dbunit.property.uppercase.column.names.label" type="boolean" defaultValue="true"/>
+                    <property id="extension" label="%dataTransfer.processor.dbunit.property.extension.label" defaultValue="xml"/>
+                    <property id="includeNullValues" label="%dataTransfer.processor.dbunit.property.include.null.values.label" type="boolean" defaultValue="true"/>
+                    <property id="nullValueString" label="%dataTransfer.processor.dbunit.property.null.value.string.label" defaultValue="[NULL]"/>
+                </propertyGroup>
+            </processor>
+            <processor
                 id="stream.json"
                 class="org.jkiss.dbeaver.tools.transfer.stream.impl.DataExporterJSON"
                 description="%dataTransfer.processor.json.description"
