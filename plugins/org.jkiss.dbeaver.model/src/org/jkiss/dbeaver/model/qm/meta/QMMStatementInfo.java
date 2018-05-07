@@ -30,12 +30,19 @@ public class QMMStatementInfo extends QMMObject {
 
     private transient DBCStatement reference;
 
-    QMMStatementInfo(QMMSessionInfo session, DBCStatement reference, QMMStatementInfo previous)
+    public QMMStatementInfo(QMMSessionInfo session, DBCStatement reference, QMMStatementInfo previous)
     {
         this.session = session;
         this.reference = reference;
         this.purpose = reference.getSession().getPurpose();
         this.previous = previous;
+    }
+
+    public QMMStatementInfo(long openTime, long closeTime, QMMSessionInfo session, DBCExecutionPurpose purpose) {
+        super(openTime, closeTime);
+        this.session = session;
+        this.purpose = purpose;
+        this.previous = null;
     }
 
     @Override

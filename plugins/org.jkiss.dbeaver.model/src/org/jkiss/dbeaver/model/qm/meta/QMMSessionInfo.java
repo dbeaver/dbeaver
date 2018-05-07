@@ -58,7 +58,8 @@ public class QMMSessionInfo extends QMMObject {
         }
     }
 
-    public QMMSessionInfo(String containerId, String containerName, String driverId, DBPConnectionConfiguration connectionConfiguration, String contextName, boolean transactional) {
+    public QMMSessionInfo(long openTime, long closeTime, String containerId, String containerName, String driverId, DBPConnectionConfiguration connectionConfiguration, String contextName, boolean transactional) {
+        super(openTime, closeTime);
         this.containerId = containerId;
         this.containerName = containerName;
         this.driverId = driverId;
