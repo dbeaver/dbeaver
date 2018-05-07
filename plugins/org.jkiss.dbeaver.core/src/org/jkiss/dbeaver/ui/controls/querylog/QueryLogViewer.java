@@ -18,8 +18,6 @@ package org.jkiss.dbeaver.ui.controls.querylog;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.IJobChangeEvent;
-import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.MenuManager;
@@ -51,20 +49,20 @@ import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.*;
 import org.jkiss.dbeaver.model.qm.meta.*;
-import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.qm.DefaultEventFilter;
 import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
 import org.jkiss.dbeaver.ui.controls.TableColumnSortListener;
 import org.jkiss.dbeaver.ui.dialogs.sql.BaseSQLDialog;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenHandler;
@@ -72,6 +70,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.LongKeyMap;
 
+import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -124,7 +123,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     }
 
     private LogColumn COLUMN_TIME = new LogColumn("time", CoreMessages.controls_querylog_column_time_name, CoreMessages.controls_querylog_column_time_tooltip, 80) {
-        private final DateFormat timeFormat = new SimpleDateFormat(DBConstants.DEFAULT_TIME_FORMAT, Locale.getDefault()); //$NON-NLS-1$
+        //private final DateFormat timeFormat = new SimpleDateFormat(DBConstants.DEFAULT_TIME_FORMAT, Locale.getDefault()); //$NON-NLS-1$
         private final DateFormat timestampFormat = new SimpleDateFormat("MMM-dd HH:mm:ss", Locale.getDefault()); //$NON-NLS-1$
         @Override
         String getText(QMMetaEvent event)
@@ -619,6 +618,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             log.debug("Event reload is in progress. Skip");
             return;
         }
+        reloadInProgress = true;
         DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
 
         this.entriesPerPage = Math.max(MIN_ENTRIES_PER_PAGE, store.getInt(QMConstants.PROP_ENTRIES_PER_PAGE));
@@ -627,34 +627,12 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         clearLog();
 
         // Extract events
-        reloadInProgress = true;
-        AbstractJob reloadJob = new AbstractJob("Read meta events") {
-            @Override
-            protected IStatus run(DBRProgressMonitor monitor) {
-                final List<QMMetaEvent> events = new ArrayList<>();
-                QMEventBrowser eventBrowser = QMUtils.getEventBrowser();
-                if (eventBrowser != null) {
-                    QMEventCriteria criteria = new QMEventCriteria();
-                    criteria.setSearchString(CommonUtils.isEmptyTrimmed(searchString) ? null : searchString.trim());
-                    try (QMEventCursor cursor = eventBrowser.getQueryHistoryCursor(monitor, criteria)) {
-                        while (events.size() < entriesPerPage && cursor.hasNextEvent(monitor)) {
-                            events.add(cursor.nextEvent(monitor));
-                        }
-                    } catch (DBException e) {
-                        return GeneralUtils.makeExceptionStatus(e);
-                    }
-                }
-                DBeaverUI.asyncExec(() -> updateMetaInfo(events));
-                return Status.OK_STATUS;
-            }
-        };
-        reloadJob.addJobChangeListener(new JobChangeAdapter() {
-            @Override
-            public void done(IJobChangeEvent event) {
-                reloadInProgress = false;
-            }
-        });
-        reloadJob.schedule();
+
+        EventHistoryReadService loadingService = new EventHistoryReadService(searchString);
+        LoadingJob.createService(
+            loadingService,
+            new EvenHistoryReadVisualizer(loadingService))
+            .schedule();
     }
 
     @Override
@@ -1087,6 +1065,75 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         @Override
         protected boolean isLabelVisible() {
             return false;
+        }
+    }
+
+    class EventHistoryReadService extends AbstractLoadService<List<QMMetaEvent>> {
+
+        @Nullable
+        private String searchString;
+
+        protected EventHistoryReadService(@Nullable String searchString) {
+            super("Load query history");
+            this.searchString = searchString;
+        }
+
+        @Override
+        public List<QMMetaEvent> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+            final List<QMMetaEvent> events = new ArrayList<>();
+            QMEventBrowser eventBrowser = QMUtils.getEventBrowser();
+            if (eventBrowser != null) {
+                QMEventCriteria criteria = new QMEventCriteria();
+                criteria.setSearchString(CommonUtils.isEmptyTrimmed(searchString) ? null : searchString.trim());
+                monitor.beginTask("Load query history", 1);
+                if (!CommonUtils.isEmpty(searchString)) {
+                    monitor.subTask("Search queries: " + searchString);
+                } else {
+                    monitor.subTask("Load all queries");
+                }
+                try (QMEventCursor cursor = eventBrowser.getQueryHistoryCursor(monitor, criteria)) {
+                    while (events.size() < entriesPerPage && cursor.hasNextEvent(monitor)) {
+                        if (monitor.isCanceled()) {
+                            break;
+                        }
+                        events.add(cursor.nextEvent(monitor));
+                        monitor.subTask(events.get(events.size() - 1).toString());
+                    }
+                } catch (DBException e) {
+                    throw new InvocationTargetException(e);
+                }
+                monitor.done();
+            }
+            return events;
+        }
+
+        @Override
+        public Object getFamily() {
+            return QueryLogViewer.class;
+        }
+
+    }
+
+    private class EvenHistoryReadVisualizer extends ProgressLoaderVisualizer<List<QMMetaEvent>> {
+        public EvenHistoryReadVisualizer(EventHistoryReadService loadingService) {
+            super(loadingService, logTable);
+        }
+
+        @Override
+        public void visualizeLoading() {
+            reloadInProgress = true;
+            super.visualizeLoading();
+        }
+
+        @Override
+        public void completeLoading(List<QMMetaEvent> result) {
+            try {
+                super.completeLoading(result);
+                super.visualizeLoading();
+                updateMetaInfo(result);
+            } finally {
+                reloadInProgress = false;
+            }
         }
     }
 
