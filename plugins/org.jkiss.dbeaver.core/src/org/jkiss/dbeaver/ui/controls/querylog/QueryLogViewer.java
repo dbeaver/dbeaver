@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.ui.controls.querylog;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.MenuManager;
@@ -324,6 +326,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     private final Font hintFont;
     private DragSource dndSource;
 
+    private volatile boolean reloadInProgress = false;
 
     private int entriesPerPage = MIN_ENTRIES_PER_PAGE;
 
@@ -605,6 +608,10 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
 
     private void reloadEvents(@Nullable String searchString)
     {
+        if (reloadInProgress) {
+            log.debug("Event reload is in progress. Skip");
+            return;
+        }
         DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
 
         this.entriesPerPage = Math.max(MIN_ENTRIES_PER_PAGE, store.getInt(QMConstants.PROP_ENTRIES_PER_PAGE));
@@ -613,7 +620,8 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         clearLog();
 
         // Extract events
-        new AbstractJob("Read meta events") {
+        reloadInProgress = true;
+        AbstractJob reloadJob = new AbstractJob("Read meta events") {
             @Override
             protected IStatus run(DBRProgressMonitor monitor) {
                 final List<QMMetaEvent> events = new ArrayList<>();
@@ -632,7 +640,14 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                 DBeaverUI.asyncExec(() -> updateMetaInfo(events));
                 return Status.OK_STATUS;
             }
-        }.schedule();
+        };
+        reloadJob.addJobChangeListener(new JobChangeAdapter() {
+            @Override
+            public void done(IJobChangeEvent event) {
+                reloadInProgress = false;
+            }
+        });
+        reloadJob.schedule();
     }
 
     @Override
