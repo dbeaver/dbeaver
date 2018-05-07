@@ -42,6 +42,12 @@ public abstract class QMMObject {
         this.openTime = getTimeStamp();
     }
 
+    protected QMMObject(long openTime, long closeTime) {
+        this.objectId = generateObjectId();
+        this.openTime = openTime;
+        this.closeTime = closeTime;
+    }
+
     protected void close()
     {
         this.closeTime = getTimeStamp();
