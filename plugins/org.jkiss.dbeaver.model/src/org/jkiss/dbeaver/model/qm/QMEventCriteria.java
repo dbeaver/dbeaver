@@ -61,7 +61,12 @@ public class QMEventCriteria {
         this.objectTypes = objectTypes;
     }
 
+    public boolean hasObjectTypes() {
+        return !ArrayUtils.isEmpty(objectTypes) && objectTypes.length != QMObjectType.values().length;
+    }
+
     public boolean hasObjectType(QMObjectType type) {
+        // If all object types are here it is the same as no object type
         return !ArrayUtils.isEmpty(objectTypes) && ArrayUtils.contains(objectTypes, type);
     }
 
@@ -71,6 +76,11 @@ public class QMEventCriteria {
 
     public void setQueryTypes(DBCExecutionPurpose[] queryTypes) {
         this.queryTypes = queryTypes;
+    }
+
+    public boolean hasQueryTypes() {
+        // If all query types are here it is the same as no query type
+        return !ArrayUtils.isEmpty(queryTypes) && queryTypes.length != DBCExecutionPurpose.values().length;
     }
 
     public boolean hasQueryType(DBCExecutionPurpose type) {
