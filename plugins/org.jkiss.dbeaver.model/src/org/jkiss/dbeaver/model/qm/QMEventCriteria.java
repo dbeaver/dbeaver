@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.qm;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.utils.ArrayUtils;
@@ -30,10 +31,10 @@ public class QMEventCriteria {
     String containerId;
     @Nullable
     String sessionId;
-    @Nullable
-    QMObjectType[] objectTypes;
-    @Nullable
-    DBCExecutionPurpose[] queryTypes;
+    @NotNull
+    QMObjectType[] objectTypes = new QMObjectType[0];
+    @NotNull
+    DBCExecutionPurpose[] queryTypes = new DBCExecutionPurpose[0];
     @Nullable
     String searchString;
 
@@ -62,12 +63,12 @@ public class QMEventCriteria {
     }
 
     public boolean hasObjectTypes() {
-        return !ArrayUtils.isEmpty(objectTypes) && objectTypes.length != QMObjectType.values().length;
+        return objectTypes.length > 0 && objectTypes.length != QMObjectType.values().length;
     }
 
     public boolean hasObjectType(QMObjectType type) {
         // If all object types are here it is the same as no object type
-        return !ArrayUtils.isEmpty(objectTypes) && ArrayUtils.contains(objectTypes, type);
+        return objectTypes.length > 0 && ArrayUtils.contains(objectTypes, type);
     }
 
     public DBCExecutionPurpose[] getQueryTypes() {
@@ -80,11 +81,11 @@ public class QMEventCriteria {
 
     public boolean hasQueryTypes() {
         // If all query types are here it is the same as no query type
-        return !ArrayUtils.isEmpty(queryTypes) && queryTypes.length != DBCExecutionPurpose.values().length;
+        return queryTypes.length > 0 && queryTypes.length != DBCExecutionPurpose.values().length;
     }
 
     public boolean hasQueryType(DBCExecutionPurpose type) {
-        return !ArrayUtils.isEmpty(queryTypes) && ArrayUtils.contains(queryTypes, type);
+        return queryTypes.length > 0 && ArrayUtils.contains(queryTypes, type);
     }
 
     public String getSearchString() {

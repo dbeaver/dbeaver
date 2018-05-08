@@ -18,10 +18,7 @@ package org.jkiss.dbeaver.ui.controls.querylog;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.action.MenuManager;
-import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.resource.ColorRegistry;
@@ -51,6 +48,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.*;
@@ -67,16 +65,17 @@ import org.jkiss.dbeaver.ui.controls.TableColumnSortListener;
 import org.jkiss.dbeaver.ui.dialogs.sql.BaseSQLDialog;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenHandler;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.PrefUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.LongKeyMap;
 
 import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Iterator;
+import java.util.*;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * QueryLogViewer
@@ -545,7 +544,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             } else {
                 statement = ((QMMStatementExecuteInfo)object).getStatement();
             }
-            return "SQL" + (statement == null ? "" : " / " + statement.getPurpose().name()); //$NON-NLS-1$
+            return "SQL" + (statement == null ? "" : " / " + CommonUtils.capitalizeWord(statement.getPurpose().getTitle())); //$NON-NLS-1$
 //        } else if (object instanceof QMMStatementScripInfo) {
 //            return CoreMessages.controls_querylog_script;
         } else if (object instanceof QMMTransactionInfo) {
@@ -814,10 +813,65 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             manager.add(clearLogAction);
             manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.FILE_REFRESH));
             //manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
+
+            manager.add(new Separator());
+            createFiltersMenu(manager);
         });
         menuMgr.setRemoveAllWhenShown(true);
         logTable.setMenu(menu);
         site.registerContextMenu(menuMgr, this);
+    }
+
+    private void createFiltersMenu(IMenuManager manager) {
+        DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
+        QMEventCriteria criteria = QMUtils.createDefaultCriteria(store);
+        for (DBCExecutionPurpose purpose : DBCExecutionPurpose.values()) {
+            IAction toggleAction = new Action(purpose.getTitle(), Action.AS_CHECK_BOX) {
+                @Override
+                public boolean isChecked() {
+                    return criteria.hasQueryType(purpose);
+                }
+                @Override
+                public void run() {
+                    DBCExecutionPurpose[] queryTypes = criteria.getQueryTypes();
+                    if (isChecked()) {
+                        queryTypes = ArrayUtils.remove(DBCExecutionPurpose.class, queryTypes, purpose);
+                    } else {
+                        queryTypes = ArrayUtils.add(DBCExecutionPurpose.class, queryTypes, purpose);
+                    }
+                    List<String> typeNames = new ArrayList<>(queryTypes.length);
+                    for (DBCExecutionPurpose queryType : queryTypes) typeNames.add(queryType.name());
+                    store.setValue(QMConstants.PROP_QUERY_TYPES, CommonUtils.makeString(typeNames, ','));
+                    PrefUtils.savePreferenceStore(store);
+                    scheduleLogRefresh();
+                }
+            };
+            manager.add(toggleAction);
+        }
+        manager.add(new Separator());
+        for (QMObjectType type : QMObjectType.values()) {
+            IAction toggleAction = new Action(type.getTitle(), Action.AS_CHECK_BOX) {
+                @Override
+                public boolean isChecked() {
+                    return criteria.hasObjectType(type);
+                }
+                @Override
+                public void run() {
+                    QMObjectType[] objectTypes = criteria.getObjectTypes();
+                    if (isChecked()) {
+                        objectTypes = ArrayUtils.remove(QMObjectType.class, objectTypes, type);
+                    } else {
+                        objectTypes = ArrayUtils.add(QMObjectType.class, objectTypes, type);
+                    }
+                    List<QMObjectType> typeList = new ArrayList<>();
+                    Collections.addAll(typeList, objectTypes);
+                    store.setValue(QMConstants.PROP_OBJECT_TYPES, QMObjectType.toString(typeList));
+                    PrefUtils.savePreferenceStore(store);
+                    scheduleLogRefresh();
+                }
+            };
+            manager.add(toggleAction);
+        }
     }
 
     private void openSelectionInEditor() {
