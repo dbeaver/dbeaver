@@ -149,7 +149,7 @@ public class DataExporterDbUnit extends StreamExporterAbstract {
             }
             out.write("\"");
         }
-        out.write(">" + CommonUtils.getLineSeparator());
+        out.write("/>" + CommonUtils.getLineSeparator());
     }
 
     @Override
