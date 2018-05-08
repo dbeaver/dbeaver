@@ -361,6 +361,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             }
         });
         this.searchText.addModifyListener(e -> scheduleLogRefresh());
+        UIUtils.enableHostEditorKeyBindingsSupport(site, searchText);
 
         // Create log table
         logTable = new Table(
