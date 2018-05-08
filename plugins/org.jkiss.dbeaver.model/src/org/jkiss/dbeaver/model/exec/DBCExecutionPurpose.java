@@ -17,6 +17,8 @@
 
 package org.jkiss.dbeaver.model.exec;
 
+import org.jkiss.utils.CommonUtils;
+
 /**
  * Execution purpose.
  *
@@ -29,23 +31,30 @@ package org.jkiss.dbeaver.model.exec;
  */
 public enum DBCExecutionPurpose {
 
-    USER(0, true),               // User query
-    USER_FILTERED(1, true),      // User query with additional filters
-    USER_SCRIPT(2, true),        // User script query
-    UTIL(3, false),              // Utility query (utility method initialized by user)
-    META(4, false),              // Metadata query, processed by data source providers internally
-    META_DDL(5, false),;
+    USER(0, "User", true),               // User query
+    USER_FILTERED(1, "User filtered", true),      // User query with additional filters
+    USER_SCRIPT(2, "User script", true),        // User script query
+    UTIL(3, "Util", false),              // Utility query (utility method initialized by user)
+    META(4, "Meta", false),              // Metadata query, processed by data source providers internally
+    META_DDL(5, "Meta DDL", false),
+    ;
 
     private final int id;
+    private final String title;
     private final boolean user;
 
-    DBCExecutionPurpose(int id, boolean user) {
+    DBCExecutionPurpose(int id, String title, boolean user) {
         this.id = id;
+        this.title = title;
         this.user = user;
     }
 
     public int getId() {
         return id;
+    }
+
+    public String getTitle() {
+        return title;
     }
 
     public boolean isUser() {
@@ -60,4 +69,5 @@ public enum DBCExecutionPurpose {
         }
         return USER;
     }
+
 }
