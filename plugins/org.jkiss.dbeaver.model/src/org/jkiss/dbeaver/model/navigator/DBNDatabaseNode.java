@@ -604,7 +604,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
     {
         DBPDataSourceContainer dataSource = getDataSourceContainer();
         if (dataSource != null && this instanceof DBNContainer) {
-            Class<?> childrenClass = this.getChildrenClass(meta);
+            Class<?> childrenClass = this.getChildrenOrFolderClass(meta);
             if (childrenClass != null) {
                 Object valueObject = getValueObject();
                 DBSObject parentObject = null;
@@ -621,17 +621,19 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
     {
         DBPDataSourceContainer dataSource = getDataSourceContainer();
         if (dataSource != null && this instanceof DBNContainer) {
-            Class<?> childrenClass = this.getChildrenClass(meta);
+            Class<?> childrenClass = this.getChildrenOrFolderClass(meta);
             if (childrenClass != null) {
                 Object parentObject = getValueObject();
                 if (parentObject instanceof DBPDataSource) {
                     parentObject = null;
                 }
                 dataSource.setObjectFilter(
-                    this.getChildrenClass(meta),
+                    childrenClass,
                     (DBSObject) parentObject,
                     filter);
                 dataSource.persistConfiguration();
+            } else {
+                log.error("Cannot detect child node type - can't save filter configuration");
             }
         } else {
             log.error("No active datasource - can't save filter configuration");
@@ -750,8 +752,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
         }
     }
 
-    protected Class<?> getChildrenClass(DBXTreeItem childMeta)
-    {
+    protected Class<?> getChildrenClass(DBXTreeItem childMeta) {
         Object valueObject = getValueObject();
         if (valueObject == null) {
             return null;
@@ -763,6 +764,14 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
         }
         Type propType = getter.getGenericReturnType();
         return BeanUtils.getCollectionType(propType);
+    }
+
+    protected Class<?> getChildrenOrFolderClass(DBXTreeItem childMeta) {
+        Class<?> childrenClass = this.getChildrenClass(childMeta);
+        if (childrenClass == null && this instanceof DBNContainer) {
+            childrenClass = ((DBNContainer)this).getChildrenClass();
+        }
+        return childrenClass;
     }
 
     public IProject getOwnerProject() {

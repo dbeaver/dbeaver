@@ -21,17 +21,17 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.graphics.Color;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.trace.DBCTrace;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
-import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.DBVColorOverride;
 import org.jkiss.dbeaver.model.virtual.DBVEntity;
 import org.jkiss.dbeaver.model.virtual.DBVUtils;
@@ -903,16 +903,31 @@ public class ResultSetModel {
     private void fillVisibleAttributes() {
         this.visibleAttributes.clear();
 
-        if (executionSource != null && executionSource.getDataContainer() instanceof DBSEntity) {
-            // Filter pseudo attributes if we query single entity
-            for (DBDAttributeBinding binding : this.attributes) {
-                if (isVisibleByDefault(binding)) {
-                    // Make visible "real" attributes
-                    this.visibleAttributes.add(binding);
+        boolean entityDataView = executionSource != null && executionSource.getDataContainer() instanceof DBSEntity;
+
+        DBSObjectFilter columnFilter = null;
+        if (entityDataView) {
+            // Detect column filter
+            DBSEntity entity = (DBSEntity) executionSource.getDataContainer();
+            DBPDataSourceContainer container = entity.getDataSource().getContainer();
+            if (container.getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_USE_NAVIGATOR_FILTERS) && attributes.length > 0) {
+                DBSEntityAttribute entityAttribute = attributes[0].getEntityAttribute();
+                if (entityAttribute != null) {
+                    columnFilter = container.getObjectFilter(entityAttribute.getClass(), entity, false);
                 }
             }
-        } else {
-            Collections.addAll(this.visibleAttributes, this.attributes);
+        }
+
+        // Filter pseudo attributes if we query single entity
+        for (DBDAttributeBinding binding : this.attributes) {
+            if (!entityDataView || isVisibleByDefault(binding)) {
+                // Make visible "real" attributes
+                if (columnFilter != null && !columnFilter.matches(binding.getName())) {
+                    // Filtered out by column filter
+                    continue;
+                }
+                this.visibleAttributes.add(binding);
+            }
         }
     }
 
