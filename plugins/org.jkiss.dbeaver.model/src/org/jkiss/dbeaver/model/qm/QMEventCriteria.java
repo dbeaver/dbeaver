@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.qm;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.utils.ArrayUtils;
 
 /**
  * QM event criteria
@@ -60,12 +61,20 @@ public class QMEventCriteria {
         this.objectTypes = objectTypes;
     }
 
+    public boolean hasObjectType(QMObjectType type) {
+        return !ArrayUtils.isEmpty(objectTypes) && ArrayUtils.contains(objectTypes, type);
+    }
+
     public DBCExecutionPurpose[] getQueryTypes() {
         return queryTypes;
     }
 
     public void setQueryTypes(DBCExecutionPurpose[] queryTypes) {
         this.queryTypes = queryTypes;
+    }
+
+    public boolean hasQueryType(DBCExecutionPurpose type) {
+        return !ArrayUtils.isEmpty(queryTypes) && ArrayUtils.contains(queryTypes, type);
     }
 
     public String getSearchString() {

@@ -1084,8 +1084,9 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             final List<QMMetaEvent> events = new ArrayList<>();
             QMEventBrowser eventBrowser = QMUtils.getEventBrowser();
             if (eventBrowser != null) {
-                QMEventCriteria criteria = new QMEventCriteria();
+                QMEventCriteria criteria = QMUtils.createDefaultCriteria(DBeaverCore.getGlobalPreferenceStore());
                 criteria.setSearchString(CommonUtils.isEmptyTrimmed(searchString) ? null : searchString.trim());
+
                 monitor.beginTask("Load query history", 1);
                 if (!CommonUtils.isEmpty(searchString)) {
                     monitor.subTask("Search queries: " + searchString);
