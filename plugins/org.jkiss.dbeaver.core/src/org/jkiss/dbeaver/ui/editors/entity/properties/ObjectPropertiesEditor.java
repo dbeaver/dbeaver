@@ -293,7 +293,9 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
     public void doSave(IProgressMonitor monitor)
     {
         for (ISaveablePart sp : nestedSaveable) {
-            sp.doSave(monitor);
+            if (sp.isDirty()) {
+                sp.doSave(monitor);
+            }
         }
     }
 

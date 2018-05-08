@@ -232,7 +232,9 @@ public class EntityEditor extends MultiPageDatabaseEditor
         // Flush all nested object editors and result containers
         for (IEditorPart editor : editorMap.values()) {
             if (editor instanceof ObjectPropertiesEditor || editor instanceof IResultSetContainer) {
-                editor.doSave(monitor);
+                if (editor.isDirty()) {
+                    editor.doSave(monitor);
+                }
             }
             if (monitor.isCanceled()) {
                 return;
@@ -418,9 +420,11 @@ public class EntityEditor extends MultiPageDatabaseEditor
                 DBeaverUI.syncExec(() -> DBUserInterface.getInstance().showError("Validation", e.getMessage()));
                 return IDialogConstants.CANCEL_ID;
             }
+            Map<String, Object> options = new HashMap<>();
+            options.put(DBPScriptObject.OPTION_OBJECT_SAVE, true);
             script.append(SQLUtils.generateScript(
                 commandContext.getExecutionContext().getDataSource(),
-                command.getPersistActions(DBPScriptObject.EMPTY_OPTIONS),
+                command.getPersistActions(options),
                 false));
         }
         if (script.length() == 0) {
@@ -945,7 +949,9 @@ public class EntityEditor extends MultiPageDatabaseEditor
             try {
                 final DBECommandContext commandContext = getCommandContext();
                 if (commandContext != null && commandContext.isDirty()) {
-                    success = saveCommandContext(monitor, DBPScriptObject.EMPTY_OPTIONS);
+                    Map<String, Object> options = new HashMap<>();
+                    options.put(DBPScriptObject.OPTION_OBJECT_SAVE, true);
+                    success = saveCommandContext(monitor, options);
                 } else {
                     success = true;
                 }

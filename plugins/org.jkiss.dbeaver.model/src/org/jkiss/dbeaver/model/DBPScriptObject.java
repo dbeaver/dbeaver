@@ -46,6 +46,9 @@ public interface DBPScriptObject extends DBPObject {
     // nested objects (columns, constraints, etc) which can be embedded in parent object declaration (tables)
     String OPTION_EMBEDDED_SOURCE = "embedded.source";
 
+    // Means that result script will be used for object save
+    String OPTION_OBJECT_SAVE = "object.save";
+
     Map<String, Object> EMPTY_OPTIONS = Collections.unmodifiableMap(new HashMap<>());
 
     String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options)

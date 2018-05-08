@@ -53,7 +53,9 @@ public abstract class PostgreTableManagerBase extends SQLTableManager<PostgreTab
         } else {
             comment = table.getDescription();
         }
-        boolean showComments = CommonUtils.getOption(options, PostgreConstants.OPTION_DDL_SHOW_COLUMN_COMMENTS);
+        boolean showComments =
+            CommonUtils.getOption(options, PostgreConstants.OPTION_DDL_SHOW_COLUMN_COMMENTS) ||
+            CommonUtils.getOption(options, DBPScriptObject.OPTION_OBJECT_SAVE);
         if (showComments && comment != null) {
             actions.add(new SQLDatabasePersistAction(
                 "Comment table",
