@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,12 +23,16 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.meta.QMMSessionInfo;
 import org.jkiss.dbeaver.model.qm.meta.QMMStatementExecuteInfo;
 import org.jkiss.dbeaver.model.qm.meta.QMMTransactionInfo;
 import org.jkiss.dbeaver.model.qm.meta.QMMTransactionSavepointInfo;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -144,6 +148,23 @@ public class QMUtils {
             }
         }
         return new QMTransactionState(execCount, updateCount, txnMode, txnStartTime);
+    }
+
+    public static QMEventCriteria createDefaultCriteria(DBPPreferenceStore store) {
+        QMEventCriteria criteria = new QMEventCriteria();
+
+        Collection<QMObjectType> objectTypes = QMObjectType.fromString(store.getString(QMConstants.PROP_OBJECT_TYPES));
+        criteria.setObjectTypes(objectTypes.toArray(new QMObjectType[0]));
+        List<DBCExecutionPurpose> queryTypes = new ArrayList<>();
+        for (String queryType : CommonUtils.splitString(store.getString(QMConstants.PROP_QUERY_TYPES), ',')) {
+            try {
+                queryTypes.add(DBCExecutionPurpose.valueOf(queryType));
+            } catch (IllegalArgumentException e) {
+                // ignore
+            }
+        }
+        criteria.setQueryTypes(queryTypes.toArray(new DBCExecutionPurpose[0]));
+        return criteria;
     }
 
     public static class ListCursorImpl implements QMEventCursor {
