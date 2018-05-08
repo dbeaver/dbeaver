@@ -89,7 +89,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     private static final String VIEWER_ID = "DBeaver.QM.LogViewer";
     private static final int MIN_ENTRIES_PER_PAGE = 1;
 
-    public static final String COLOR_COMMITTED = "org.jkiss.dbeaver.txn.color.committed.background";  //= new RGB(0xBD, 0xFE, 0xBF);
+    public static final String COLOR_UNCOMMITTED = "org.jkiss.dbeaver.txn.color.committed.background";  //= new RGB(0xBD, 0xFE, 0xBF);
     public static final String COLOR_REVERTED = "org.jkiss.dbeaver.txn.color.reverted.background";  // = new RGB(0xFF, 0x63, 0x47);
     public static final String COLOR_TRANSACTION = "org.jkiss.dbeaver.txn.color.transaction.background";  // = new RGB(0xFF, 0xE4, 0xB5);
 
@@ -340,7 +340,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
 
         ColorRegistry colorRegistry = site.getWorkbenchWindow().getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry();
 
-        colorLightGreen = colorRegistry.get(COLOR_COMMITTED);
+        colorLightGreen = colorRegistry.get(COLOR_UNCOMMITTED);
         colorLightRed = colorRegistry.get(COLOR_REVERTED);
         colorLightYellow = colorRegistry.get(COLOR_TRANSACTION);
         shadowColor = parent.getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW);
@@ -595,11 +595,11 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             }
             QMMTransactionSavepointInfo savepoint = exec.getSavepoint();
             if (savepoint == null) {
-                return colorLightGreen;
+                return null;
             } else if (savepoint.isClosed()) {
                 return savepoint.isCommitted() ? colorLightGreen : colorLightYellow;
             } else {
-                return null;
+                return colorLightGreen;
             }
         } else if (event.getObject() instanceof QMMTransactionInfo || event.getObject() instanceof QMMTransactionSavepointInfo) {
             QMMTransactionSavepointInfo savepoint;
@@ -608,7 +608,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             } else {
                 savepoint = (QMMTransactionSavepointInfo) event.getObject();
             }
-            return savepoint.isCommitted() ? colorLightGreen : colorLightYellow;
+            return savepoint.isCommitted() ? null : colorLightYellow;
         }
         return null;
     }
