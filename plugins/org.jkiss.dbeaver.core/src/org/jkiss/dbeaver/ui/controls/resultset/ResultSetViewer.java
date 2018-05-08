@@ -1739,18 +1739,18 @@ public class ResultSetViewer extends Viewer
         }
         manager.add(new GroupMarker(MENU_GROUP_EDIT));
 
+        // Filters and View
+        {
+            MenuManager filtersMenu = new MenuManager(
+                CoreMessages.controls_resultset_viewer_action_order_filter,
+                DBeaverIcons.getImageDescriptor(UIIcon.FILTER),
+                MENU_ID_FILTERS); //$NON-NLS-1$
+            filtersMenu.setActionDefinitionId(ResultSetCommandHandler.CMD_FILTER_MENU);
+            filtersMenu.setRemoveAllWhenShown(true);
+            filtersMenu.addMenuListener(manager1 -> fillFiltersMenu(attr, manager1));
+            manager.add(filtersMenu);
+        }
         if (dataSource != null && attr != null && model.getVisibleAttributeCount() > 0 && !model.isUpdateInProgress()) {
-            // Filters and View
-            {
-                MenuManager filtersMenu = new MenuManager(
-                    CoreMessages.controls_resultset_viewer_action_order_filter,
-                    DBeaverIcons.getImageDescriptor(UIIcon.FILTER),
-                    MENU_ID_FILTERS); //$NON-NLS-1$
-                filtersMenu.setActionDefinitionId(ResultSetCommandHandler.CMD_FILTER_MENU);
-                filtersMenu.setRemoveAllWhenShown(true);
-                filtersMenu.addMenuListener(manager1 -> fillFiltersMenu(attr, manager1));
-                manager.add(filtersMenu);
-            }
             {
                 MenuManager viewMenu = new MenuManager(
                     "View/Format",
@@ -2082,9 +2082,9 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    private void fillFiltersMenu(@NotNull DBDAttributeBinding attribute, @NotNull IMenuManager filtersMenu)
+    private void fillFiltersMenu(@Nullable DBDAttributeBinding attribute, @NotNull IMenuManager filtersMenu)
     {
-        if (supportsDataFilter()) {
+        if (attribute != null && supportsDataFilter()) {
             filtersMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_FILTER_MENU_DISTINCT));
 
             //filtersMenu.add(new FilterByListAction(operator, type, attribute));
@@ -2125,10 +2125,12 @@ public class ResultSetViewer extends Viewer
                 filtersMenu.add(new FilterResetAttributeAction(attribute));
             }
         }
-        filtersMenu.add(new Separator());
-        filtersMenu.add(new OrderByAttributeAction(attribute, true));
-        filtersMenu.add(new OrderByAttributeAction(attribute, false));
-        filtersMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGGLE_ORDER));
+        if (attribute != null) {
+            filtersMenu.add(new Separator());
+            filtersMenu.add(new OrderByAttributeAction(attribute, true));
+            filtersMenu.add(new OrderByAttributeAction(attribute, false));
+            filtersMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGGLE_ORDER));
+        }
         filtersMenu.add(new Separator());
         filtersMenu.add(new ToggleServerSideOrderingAction());
         filtersMenu.add(new ShowFiltersAction(true));
