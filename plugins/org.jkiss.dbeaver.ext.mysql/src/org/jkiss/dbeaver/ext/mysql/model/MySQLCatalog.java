@@ -674,6 +674,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
                 "SELECT * FROM " + MySQLConstants.META_TABLE_ROUTINES +
                     "\nWHERE " + MySQLConstants.COL_ROUTINE_SCHEMA + "=?" +
                     (object == null && objectName == null ? "" : " AND " + MySQLConstants.COL_ROUTINE_NAME + "=?") +
+                    "\nAND ROUTINE_TYPE IN ('PROCEDURE','FUNCTION')" +
                     "\nORDER BY " + MySQLConstants.COL_ROUTINE_NAME
             );
             dbStat.setString(1, owner.getName());
