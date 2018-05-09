@@ -294,9 +294,7 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                                     boolean theSame = true;
                                     for (int j = 0; j < valueList.size(); j++) {
                                         if (miltiUniqColumns.contains(valueList.get(j).getAttribute().getName())) {
-                                            if ((valueList.get(j) == null && attributeValues.get(j) != null) ||
-                                                    (valueList.get(j) != null && attributeValues.get(j) == null) ||
-                                                    (!valueList.get(j).equals(attributeValues.get(j)))) {
+                                            if (!CommonUtils.equalObjects(valueList.get(j), attributeValues.get(j))) {
                                                 theSame = false;
                                                 break;
                                             }
