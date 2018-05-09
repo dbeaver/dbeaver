@@ -186,7 +186,7 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
                         cell.setImage(DBeaverIcons.getImage(DBValueFormatting.getTypeImage(attribute)));
                         cell.setText(attribute.getName());
                         try {
-                            if (DBUtils.checkUnique(mockDataSettings.getMonitor(), mockDataSettings.getEntity(), attribute)) {
+                            if (DBUtils.checkUnique(mockDataSettings.getMonitor(), mockDataSettings.getEntity(), attribute) != null) {
                                 cell.setFont(boldFont);
                             }
                         } catch (DBException e) {
