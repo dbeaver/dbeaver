@@ -72,7 +72,7 @@ public class FKGenerator extends AbstractMockValueGenerator
                 throw new DBException("Can't find reference column for '" + attribute.getName() + "'");
             }
 
-            int numberRefRecords = DBUtils.checkUnique(monitor, dbsEntity, attribute) ? UNIQ_REF_RECORDS_LIMIT : REF_RECORDS_LIMIT;
+            int numberRefRecords = (DBUtils.checkUnique(monitor, dbsEntity, attribute) == DBUtils.UNIQ_TYPE.SINGLE) ? UNIQ_REF_RECORDS_LIMIT : REF_RECORDS_LIMIT;
             Collection<DBDLabelValuePair> values = readColumnValues(monitor, fk.getDataSource(), (DBSAttributeEnumerable) column.getReferencedColumn(), numberRefRecords);
             for (DBDLabelValuePair value : values) {
                 refValues.add(value.getValue());

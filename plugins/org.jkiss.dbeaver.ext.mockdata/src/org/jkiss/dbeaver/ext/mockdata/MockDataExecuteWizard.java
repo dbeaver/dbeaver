@@ -34,10 +34,7 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
-import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
-import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.tools.AbstractToolWizard;
 import org.jkiss.utils.CommonUtils;
@@ -239,6 +236,21 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
 
                 monitor.beginTask("Insert data", (int) rowsNumber);
 
+                boolean hasMiltiUniqs = false;
+                Set<String> miltiUniqColumns = new HashSet<>();
+                for (DBSAttributeBase attribute : attributes) {
+                    if (DBUtils.checkUnique(monitor, dbsEntity, attribute) == DBUtils.UNIQ_TYPE.MULTI) {
+                        hasMiltiUniqs = true;
+
+                        // collect the columns from multi-uniqs
+                        DBSEntityReferrer constraint = (DBSEntityReferrer) DBUtils.getConstraint(monitor, dbsEntity, attribute);
+                        for (DBSEntityAttributeRef attributeRef : constraint.getAttributeReferences(monitor)) {
+                            miltiUniqColumns.add(attributeRef.getAttribute().getName());
+                        }
+                    }
+                }
+                List<List<DBDAttributeValue>> valuesCacheForUniqs = new ArrayList<>();
+
                 // generate and insert the data
                 session.enableLogging(false);
                 DBSDataManipulator.ExecuteBatch batch = null;
@@ -273,6 +285,33 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                             } catch (DBException e) {
                                 processGeneratorException(e);
                                 return true;
+                            }
+
+                            // skip duplicate records for uniqs
+                            if (hasMiltiUniqs) {
+                                boolean collision = false;
+                                for (List<DBDAttributeValue> valueList : valuesCacheForUniqs) {
+                                    boolean theSame = true;
+                                    for (int j = 0; j < valueList.size(); j++) {
+                                        if (miltiUniqColumns.contains(valueList.get(j).getAttribute().getName())) {
+                                            if ((valueList.get(j) == null && attributeValues.get(j) != null) ||
+                                                    (valueList.get(j) != null && attributeValues.get(j) == null) ||
+                                                    (!valueList.get(j).equals(attributeValues.get(j)))) {
+                                                theSame = false;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    if (theSame) {
+                                        collision = true;
+                                        break;
+                                    }
+                                }
+                                if (collision) {
+                                    continue;
+                                } else {
+                                    valuesCacheForUniqs.add(attributeValues);
+                                }
                             }
 
                             if (batch == null) {
