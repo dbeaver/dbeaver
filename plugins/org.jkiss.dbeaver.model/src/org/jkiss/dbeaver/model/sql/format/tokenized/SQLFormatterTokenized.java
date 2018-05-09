@@ -382,6 +382,10 @@ public class SQLFormatterTokenized implements SQLFormatter {
         switch (token.getString()) {
             case ":":
             case ".":
+            case ">":
+            case "<":
+            case "[":
+            case "]":
                 return true;
             default:
                 return false;
