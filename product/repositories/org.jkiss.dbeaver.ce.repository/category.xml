@@ -36,5 +36,8 @@
     <feature id="org.jkiss.dbeaver.ext.wmi.feature">
         <category name="org.jkiss.dbeaver"/>
     </feature>
+    <feature id="org.jkiss.dbeaver.debug.feature">
+        <category name="org.jkiss.dbeaver"/>
+    </feature>
 
 </site>
