@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.mysql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -45,6 +46,8 @@ import java.util.Map;
  */
 public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCatalog> implements MySQLSourceObject, DBPRefreshableObject
 {
+    private static final Log log = Log.getLog(MySQLProcedure.class);
+
     private DBSProcedureType procedureType;
     private String resultType;
     private String bodyType;
@@ -74,7 +77,12 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
         setName(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_ROUTINE_NAME));
         setDescription(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_ROUTINE_COMMENT));
         String procType = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_ROUTINE_TYPE);
-        this.procedureType = procType == null ? DBSProcedureType.PROCEDURE : DBSProcedureType.valueOf(procType.toUpperCase(Locale.ENGLISH));
+        try {
+            this.procedureType = procType == null ? DBSProcedureType.PROCEDURE : DBSProcedureType.valueOf(procType.toUpperCase(Locale.ENGLISH));
+        } catch (IllegalArgumentException e) {
+            log.debug("Unsupported procedure type: " + procType);
+            this.procedureType = DBSProcedureType.PROCEDURE;
+        }
         this.resultType = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_DTD_IDENTIFIER);
         this.bodyType = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_ROUTINE_BODY);
         this.charset = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_CHARACTER_SET_CLIENT);
