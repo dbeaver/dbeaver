@@ -216,7 +216,7 @@
                 label="UUID"
                 description="UUID random values"
                 class="org.jkiss.dbeaver.ext.mockdata.generator.StringUuidGenerator"
-                tags="uuid">
+                tags="id,uuid">
             <type kind="STRING"/>
         </generator>
 
