@@ -122,9 +122,9 @@ public class SQLFormatterTokenized implements SQLFormatter {
         for (int index = argList.size() - 1; index >= 1; index--) {
             token = argList.get(index);
             FormatterToken prevToken = argList.get(index - 1);
-            if (token.getType() == TokenType.SPACE && (prevToken.getType() == TokenType.SYMBOL || prevToken.getType() == TokenType.COMMENT)) {
+            if (token.getType() == TokenType.SPACE && prevToken.getType() == TokenType.COMMENT) {
                 argList.remove(index);
-            } else if ((token.getType() == TokenType.SYMBOL || token.getType() == TokenType.COMMENT) && prevToken.getType() == TokenType.SPACE) {
+            } else if (token.getType() == TokenType.COMMENT && prevToken.getType() == TokenType.SPACE) {
                 argList.remove(index - 1);
             } else if (token.getType() == TokenType.SPACE) {
                 token.setString(" "); //$NON-NLS-1$
