@@ -1554,16 +1554,35 @@ public final class DBUtils {
         return true;
     }
 
-    public static boolean checkUnique(DBRProgressMonitor monitor, DBSEntity dbsEntity, DBSAttributeBase attribute) throws DBException {
+    public enum UNIQ_TYPE {
+        SINGLE, MULTI
+    }
+
+    public static UNIQ_TYPE checkUnique(DBRProgressMonitor monitor, DBSEntity dbsEntity, DBSAttributeBase attribute) throws DBException {
         for (DBSEntityConstraint constraint : dbsEntity.getConstraints(monitor)) {
             DBSEntityConstraintType constraintType = constraint.getConstraintType();
             if (constraintType.isUnique()) {
                 DBSEntityAttributeRef constraintAttribute = getConstraintAttribute(monitor, ((DBSEntityReferrer) constraint), attribute.getName());
                 if (constraintAttribute != null && constraintAttribute.getAttribute() == attribute) {
-                    return true;
+                    List<? extends DBSEntityAttributeRef> refColumns = ((DBSEntityReferrer) constraint).getAttributeReferences(monitor);
+                    if (refColumns.size() > 1) {
+                        return UNIQ_TYPE.MULTI;
+                    } else {
+                        return UNIQ_TYPE.SINGLE;
+                    }
                 }
             }
         }
-        return false;
+        return null;
+    }
+
+    public static DBSEntityConstraint getConstraint(DBRProgressMonitor monitor, DBSEntity dbsEntity, DBSAttributeBase attribute) throws DBException {
+        for (DBSEntityConstraint constraint : dbsEntity.getConstraints(monitor)) {
+            DBSEntityAttributeRef constraintAttribute = getConstraintAttribute(monitor, ((DBSEntityReferrer) constraint), attribute.getName());
+            if (constraintAttribute != null && constraintAttribute.getAttribute() == attribute) {
+                return constraint;
+            }
+        }
+        return null;
     }
 }

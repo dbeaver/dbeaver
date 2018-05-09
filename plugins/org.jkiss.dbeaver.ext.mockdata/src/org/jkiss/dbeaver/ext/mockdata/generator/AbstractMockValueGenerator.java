@@ -81,7 +81,7 @@ public abstract class AbstractMockValueGenerator implements MockValueGenerator {
     public Object generateValue(DBRProgressMonitor monitor) throws DBException, IOException {
         if (isFirstRun) {
             isFirstRun = false;
-            isUnique = DBUtils.checkUnique(monitor, dbsEntity, attribute);
+            isUnique = (DBUtils.checkUnique(monitor, dbsEntity, attribute) == DBUtils.UNIQ_TYPE.SINGLE);
             if (isUnique && (attribute instanceof DBSAttributeEnumerable)) {
                 uniqueValues = new HashSet<>();
                 Collection<DBDLabelValuePair> valuePairs = readColumnValues(monitor, dbsEntity.getDataSource(), (DBSAttributeEnumerable) attribute, UNIQUE_VALUES_SET_SIZE);
