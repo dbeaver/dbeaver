@@ -287,6 +287,9 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
         public void run(DBRProgressMonitor monitor) {
             monitor.beginTask("Detect appropriate editor", 1);
             try {
+                if (content == null) {
+                    throw new DBException("Null content value");
+                }
                 streamManagers = ValueManagerRegistry.getInstance().getApplicableStreamManagers(monitor, valueController.getValueType(), content);
                 String savedManagerId = valueToManagerMap.get(makeValueId());
                 if (savedManagerId != null) {
