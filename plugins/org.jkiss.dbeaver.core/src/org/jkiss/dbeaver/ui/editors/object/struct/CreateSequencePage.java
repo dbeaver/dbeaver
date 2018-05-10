@@ -51,8 +51,8 @@ public class CreateSequencePage extends BaseObjectEditPage {
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         propsGroup.setLayoutData(gd);
 
-        UIUtils.createLabelText(propsGroup, "Container", DBUtils.getObjectFullName(container, DBPEvaluationContext.UI)).setEditable(false);
-        final Text nameText = UIUtils.createLabelText(propsGroup, "Sequence Name", null);
+        UIUtils.createLabelText(propsGroup, CoreMessages.dialog_struct_create_sequence_container, DBUtils.getObjectFullName(container, DBPEvaluationContext.UI)).setEditable(false);
+        final Text nameText = UIUtils.createLabelText(propsGroup,  CoreMessages.dialog_struct_create_sequence_name, null);
         nameText.addModifyListener(new ModifyListener() {
             @Override
             public void modifyText(ModifyEvent e)
