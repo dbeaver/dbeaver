@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.registry.datatype.DataTypeAbstractDescriptor;
 import org.jkiss.utils.CommonUtils;
@@ -175,6 +176,12 @@ public class MockGeneratorDescriptor extends DataTypeAbstractDescriptor<MockValu
             }
         }
         return null;
+    }
+
+    @Override
+    public boolean supportsType(DBSTypedObject typedObject) {
+        return  (typedObject.getDataKind() == DBPDataKind.STRING) ||
+                super.supportsType(typedObject);
     }
 
     @NotNull
