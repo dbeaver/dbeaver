@@ -217,20 +217,17 @@ public class ResultSetDataContainer implements DBSDataContainer, IAdaptable {
 
         @Override
         public DBCResultSetMetaData getMeta() throws DBCException {
-            return new DBCResultSetMetaData() {
-                @Override
-                public List<DBCAttributeMetaData> getAttributes() {
-                    List<DBDAttributeBinding> attributes = model.getVisibleAttributes();
-                    List<DBCAttributeMetaData> meta = new ArrayList<>(attributes.size());
-                    boolean selectedColumnsOnly = proceedSelectedColumnsOnly();
-                    for (DBDAttributeBinding attribute : attributes) {
-                        DBCAttributeMetaData metaAttribute = attribute.getMetaAttribute();
-                        if (!selectedColumnsOnly || options.getSelectedColumns().contains(metaAttribute.getName())) {
-                            meta.add(metaAttribute);
-                        }
+            return () -> {
+                List<DBDAttributeBinding> attributes = model.getVisibleAttributes();
+                List<DBCAttributeMetaData> meta = new ArrayList<>(attributes.size());
+                boolean selectedColumnsOnly = proceedSelectedColumnsOnly();
+                for (DBDAttributeBinding attribute : attributes) {
+                    DBCAttributeMetaData metaAttribute = attribute.getMetaAttribute();
+                    if (!selectedColumnsOnly || options.getSelectedColumns().contains(metaAttribute.getName())) {
+                        meta.add(metaAttribute);
                     }
-                    return meta;
                 }
+                return meta;
             };
         }
 

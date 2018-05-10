@@ -45,7 +45,7 @@ import java.util.TreeSet;
 /**
  * JDBC abstract table column
  */
-public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBCAttribute implements DBSTableColumn, DBSAttributeEnumerable, DBPSaveableObject {
+public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBCAttribute implements DBSTableColumn, DBSEntityAttribute, DBSAttributeEnumerable, DBPSaveableObject {
 
     private final TABLE_TYPE table;
     private boolean persisted;

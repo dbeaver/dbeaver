@@ -82,7 +82,7 @@ public class StringContent extends AbstractContent {
     }
 
     @Override
-    public Object getRawValue() {
+    public String getRawValue() {
         return storage.getCachedValue();
     }
 

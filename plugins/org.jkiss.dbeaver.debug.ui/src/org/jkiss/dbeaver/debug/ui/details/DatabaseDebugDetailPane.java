@@ -18,9 +18,6 @@
 
 package org.jkiss.dbeaver.debug.ui.details;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.ListenerList;
@@ -36,12 +33,17 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IPropertyListener;
 import org.eclipse.ui.IWorkbenchPartConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
-import org.jkiss.dbeaver.debug.ui.DebugUI;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.ActionBars;
 import org.jkiss.dbeaver.ui.Widgets;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public abstract class DatabaseDebugDetailPane<EDITOR extends DatabaseDebugDetailEditor>
         implements IDetailPane2, IDetailPane3 {
+
+    private static final Log log = Log.getLog(DatabaseDebugDetailPane.class);
 
     private String name;
     private String description;
@@ -88,18 +90,16 @@ public abstract class DatabaseDebugDetailPane<EDITOR extends DatabaseDebugDetail
         editorParent.setBackground(parent.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND));
         editor = createEditor(editorParent);
         editor.setMnemonics(false);
-        editor.addPropertyListener(new IPropertyListener() {
-            @Override
-            public void propertyChanged(Object source, int propId) {
-                if (autoSaveProperties.contains(new Integer(propId))) {
-                    try {
-                        editor.doSave();
-                        return;
-                    } catch (CoreException e) {
-                    }
+        editor.addPropertyListener((source, propId) -> {
+            if (autoSaveProperties.contains(propId)) {
+                try {
+                    editor.doSave();
+                    return;
+                } catch (CoreException e) {
+                    log.log(e.getStatus());
                 }
-                firePropertyChange(IWorkbenchPartConstants.PROP_DIRTY);
             }
+            firePropertyChange(IWorkbenchPartConstants.PROP_DIRTY);
         });
         return editor.createControl(editorParent);
     }
@@ -107,14 +107,14 @@ public abstract class DatabaseDebugDetailPane<EDITOR extends DatabaseDebugDetail
     protected abstract EDITOR createEditor(Composite parent);
 
     protected void registerAutosaveProperties(int[] autosave) {
-        for (int i = 0; i < autosave.length; i++) {
-            autoSaveProperties.add(new Integer(autosave[i]));
+        for (int anAutosave : autosave) {
+            autoSaveProperties.add(anAutosave);
         }
     }
 
     protected void unregisterAutosaveProperties(int[] autosave) {
-        for (int i = 0; i < autosave.length; i++) {
-            autoSaveProperties.remove(new Integer(autosave[i]));
+        for (int anAutosave : autosave) {
+            autoSaveProperties.remove(anAutosave);
         }
     }
 
@@ -144,7 +144,7 @@ public abstract class DatabaseDebugDetailPane<EDITOR extends DatabaseDebugDetail
         try {
             editor.setInput(input);
         } catch (CoreException e) {
-            DebugUI.log(e.getStatus());
+            log.log(e.getStatus());
         }
     }
 
@@ -169,7 +169,7 @@ public abstract class DatabaseDebugDetailPane<EDITOR extends DatabaseDebugDetail
             if (statusLine != null) {
                 statusLine.setErrorMessage(e.getMessage());
             } else {
-                DebugUI.log(e.getStatus());
+                log.log(e.getStatus());
             }
         }
     }

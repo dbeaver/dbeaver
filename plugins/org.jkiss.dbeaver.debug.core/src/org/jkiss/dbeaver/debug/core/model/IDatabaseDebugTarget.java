@@ -20,15 +20,31 @@ package org.jkiss.dbeaver.debug.core.model;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.IBreakpointManagerListener;
 import org.eclipse.debug.core.IDebugEventSetListener;
 import org.eclipse.debug.core.model.IDebugTarget;
 import org.jkiss.dbeaver.debug.DBGController;
+import org.jkiss.dbeaver.debug.DBGSession;
 
 public interface IDatabaseDebugTarget extends IDebugTarget, IDebugEventSetListener, IBreakpointManagerListener {
 
     DBGController getController();
 
+    DBGSession getSession();
+
     void connect(IProgressMonitor monitor) throws CoreException;
+
+    boolean canStepInto();
+
+    boolean canStepOver();
+
+    boolean canStepReturn();
+
+    void stepInto() throws DebugException;
+
+    void stepOver() throws DebugException;
+
+    void stepReturn() throws DebugException;
 
 }

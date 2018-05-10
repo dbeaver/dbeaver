@@ -100,9 +100,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
                 fireSelectionChanged(new PlainTextSelectionImpl());
             }
         });
-        text.addDisposeListener(e -> {
-            dispose();
-        });
+        text.addDisposeListener(e -> dispose());
 
         final ScrollBar verticalBar = text.getVerticalBar();
         verticalBar.addSelectionListener(new SelectionAdapter() {
@@ -206,12 +204,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
                         horOffsetEnd - horOffsetBegin - 1,
                         null,
                         curLineColor);
-                    DBeaverUI.asyncExec(new Runnable() {
-                        @Override
-                        public void run() {
-                            text.setStyleRanges(new StyleRange[]{curLineRange});
-                        }
-                    });
+                    DBeaverUI.asyncExec(() -> text.setStyleRanges(new StyleRange[]{curLineRange}));
                 }
             }
 
@@ -582,7 +575,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
         public List<String> toList()
         {
             return curSelection == null ?
-                Collections.<String>emptyList() :
+                Collections.emptyList() :
                 Collections.singletonList(curSelection);
         }
 

@@ -40,8 +40,6 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * MySQLTableColumn
@@ -49,8 +47,6 @@ import java.util.regex.Pattern;
 public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements DBSTableColumn, DBPNamedObject2, DBPOrderedObject
 {
     private static final Log log = Log.getLog(MySQLTableColumn.class);
-
-    private static Pattern enumPattern = Pattern.compile("'([^']*)'");
 
     public enum KeyType implements JDBCColumnKeyType {
         PRI,
@@ -173,13 +169,42 @@ public class MySQLTableColumn extends JDBCTableColumn<MySQLTableBase> implements
 
         this.fullTypeName = JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_COLUMN_TYPE);
         if (!CommonUtils.isEmpty(fullTypeName) && (isTypeEnum() || isTypeSet())) {
-            enumValues = new ArrayList<>();
-            Matcher enumMatcher = enumPattern.matcher(fullTypeName);
-            while (enumMatcher.find()) {
-                String enumStr = enumMatcher.group(1);
-                enumValues.add(enumStr);
-            }
+            enumValues = parseEnumValues(fullTypeName);
         }
+    }
+
+    private static List<String> parseEnumValues(String typeName) {
+        List<String> values = new ArrayList<>();
+        StringBuilder value = new StringBuilder();
+        int pos = 0;
+        while (true) {
+            int startPos = typeName.indexOf('\'', pos);
+            if (startPos < 0) {
+                break;
+            }
+            int endPos = -1;
+            for (int i = startPos + 1; i < typeName.length(); i++) {
+                char c = typeName.charAt(i);
+                if (c == '\'') {
+                    if (i < typeName.length() - 2 && typeName.charAt(i + 1) == '\'') {
+                        // Quote escape
+                        value.append(c);
+                        i++;
+                        continue;
+                    }
+                    endPos = i;
+                    break;
+                }
+                value.append(c);
+            }
+            if (endPos < 0) {
+                break;
+            }
+            values.add(value.toString());
+            pos = endPos + 1;
+            value.setLength(0);
+        }
+        return values;
     }
 
     @NotNull

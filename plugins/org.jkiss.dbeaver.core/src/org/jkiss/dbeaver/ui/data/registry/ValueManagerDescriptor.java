@@ -129,7 +129,7 @@ public class ValueManagerDescriptor extends AbstractDescriptor
         for (SupportInfo info : supportInfos) {
             if (dataSource != null && info.dataSource != null) {
                 DriverDescriptor driver = (DriverDescriptor) dataSource.getContainer().getDriver();
-                if (!info.dataSource.equals(driver.getProviderDescriptor().getId()) && !info.dataSource.equals(dataSource.getClass().getName())) {
+                if (!info.dataSource.equals(driver.getProviderId()) && !info.dataSource.equals(dataSource.getClass().getName())) {
                     continue;
                 }
             } else if (checkDataSource) {

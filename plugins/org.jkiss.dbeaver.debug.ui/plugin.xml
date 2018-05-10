@@ -19,91 +19,184 @@
   -->
 <plugin>
 
-   <extension
-         point="org.eclipse.core.runtime.adapters">
-      <factory
-            adaptableType="org.jkiss.dbeaver.ui.editors.entity.EntityEditor"
-            class="org.jkiss.dbeaver.debug.ui.actions.DebugActionAdapterFactory">
-         <adapter
-               type="org.eclipse.debug.ui.actions.IToggleBreakpointsTarget">
-         </adapter>
-      </factory>
-      <factory
-            adaptableType="org.jkiss.dbeaver.ui.editors.entity.EntityEditorInput"
-            class="org.jkiss.dbeaver.debug.ui.actions.DebugActionAdapterFactory">
-         <adapter
-               type="org.eclipse.debug.ui.actions.ILaunchable">
-         </adapter>
-      </factory>
-      <factory
-            adaptableType="org.jkiss.dbeaver.model.navigator.DBNDatabaseObject"
-            class="org.jkiss.dbeaver.debug.ui.actions.DebugActionAdapterFactory">
-         <adapter
-               type="org.eclipse.debug.ui.actions.ILaunchable">
-         </adapter>
-      </factory>
-   </extension>
+    <extension-point id="org.jkiss.dbeaver.debug.ui.configurationPanels" name="DBeaver debug configuration panels" schema="schema/org.jkiss.dbeaver.debug.configurationPanels.exsd"/>
 
-   <extension
-         point="org.eclipse.debug.ui.debugModelPresentations">
-      <debugModelPresentation
-            class="org.jkiss.dbeaver.debug.ui.DatabaseDebugModelPresentation"
-            id="org.jkiss.dbeaver.debug.core.database">
-      </debugModelPresentation>
-   </extension>
+    <extension point="org.eclipse.debug.ui.launchConfigurationTypeImages">
+        <launchConfigurationTypeImage
+                id="org.jkiss.dbeaver.debug.launchConfigurationTypeImage"
+                configTypeID="org.jkiss.dbeaver.debug.launchConfiguration"
+                icon="icons/database_debug.png">
+        </launchConfigurationTypeImage>
+    </extension>
 
-   <extension
-         point="org.eclipse.debug.ui.detailPaneFactories">
-      <detailFactories
-            class="org.jkiss.dbeaver.debug.ui.details.DatabaseDetailPaneFactory"
-            id="org.jkiss.dbeaver.debug.ui.detailPaneFactories.detailFactories.database">
-         <enablement>
-            <with
-                  variable="selection">
-               <count
-                     value="1">
-               </count>
-               <iterate
-                     operator="or">
-                  <instanceof
-                        value="org.jkiss.dbeaver.debug.core.breakpoints.IDatabaseBreakpoint">
-                  </instanceof>
-               </iterate>
-               <iterate
-                     operator="or">
-               </iterate>
-            </with>
-         </enablement>
-      </detailFactories>
-   </extension>
+    <extension point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+        <launchConfigurationTabGroup
+                id="org.jkiss.dbeaver.debug.launchConfigurationTabGroup"
+                class="org.jkiss.dbeaver.debug.ui.DatabaseDebugConfigurationTabGroup"
+                description="%launchConfigurationTabGroup.description"
+                type="org.jkiss.dbeaver.debug.launchConfiguration">
+            <launchMode mode="debug" description="%launchConfigurationTabGroup.launchMode.description" perspective="org.jkiss.dbeaver.core.perspective"/>
+        </launchConfigurationTabGroup>
+    </extension>
 
-   <extension
-         point="org.eclipse.ui.handlers">
-      <handler
-            class="org.jkiss.dbeaver.debug.ui.actions.ToggleBreakpointHandler"
-            commandId="org.eclipse.debug.ui.commands.ToggleBreakpoint">
-      </handler>
-   </extension>
+    <extension point="org.eclipse.debug.ui.launchGroups">
+        <launchGroup
+                bannerImage="icons/database_debug.png"
+                id="org.jkiss.dbeaver.debug.launchGroup"
+                image="icons/database_debug.png"
+                label="%launchGroups.launchGroup.label"
+                mode="debug"
+                title="%launchGroups.launchGroup.title">
+        </launchGroup>
+    </extension>
 
-   <extension
-         point="org.eclipse.ui.menus">
-      <menuContribution
-            allPopups="false"
-            locationURI="popup:#SQLRulerContext?before=additions">
-         <command
-               commandId="org.eclipse.debug.ui.commands.ToggleBreakpoint"
-               label="%command.ToggleBreakpoint.label"
-               style="push">
-         </command>
-      </menuContribution>
-   </extension>
-   <extension
-         point="org.eclipse.ui.commands">
-      <category
-            description="Debug Procedure commands"
-            id="org.jkiss.dbeaver.debug.ui.commands.category.procedure"
-            name="Debug Procedure">
-      </category>
-   </extension>
+    <extension point="org.eclipse.debug.ui.launchShortcuts">
+        <shortcut
+                id="org.jkiss.dbeaver.debug.ui.shortcut"
+                label="%launchShortcuts.shortcut.label"
+                description="%launchShortcuts.shortcut.description"
+                class="org.jkiss.dbeaver.debug.ui.internal.DatabaseDebugLaunchShortcut"
+                icon="icons/database_debug.png"
+                modes="debug">
+            <configurationType id="org.jkiss.dbeaver.debug.ui.configuration"/>
+            <contextualLaunch>
+                <contextLabel label="%launchShortcuts.shortcut.label" mode="debug">
+                </contextLabel>
+                <enablement>
+                    <with variable="selection">
+                        <count value="1"/>
+                        <iterate ifEmpty="false" operator="and">
+                            <adapt type="org.jkiss.dbeaver.debug.DBGDebugObject"/>
+                        </iterate>
+                    </with>
+                </enablement>
+            </contextualLaunch>
+        </shortcut>
+    </extension>
+
+    <extension point="org.eclipse.core.runtime.adapters">
+        <factory adaptableType="org.jkiss.dbeaver.ui.editors.entity.EntityEditor"
+                 class="org.jkiss.dbeaver.debug.ui.actions.DebugActionAdapterFactory">
+            <adapter type="org.eclipse.debug.ui.actions.IToggleBreakpointsTarget"/>
+        </factory>
+        <factory adaptableType="org.jkiss.dbeaver.ui.editors.entity.EntityEditorInput"
+                 class="org.jkiss.dbeaver.debug.ui.actions.DebugActionAdapterFactory">
+            <adapter type="org.eclipse.debug.ui.actions.ILaunchable"/>
+        </factory>
+        <factory adaptableType="org.jkiss.dbeaver.model.navigator.DBNDatabaseObject"
+                 class="org.jkiss.dbeaver.debug.ui.actions.DebugActionAdapterFactory">
+            <adapter type="org.eclipse.debug.ui.actions.ILaunchable"/>
+        </factory>
+    </extension>
+
+    <extension point="org.eclipse.debug.ui.debugModelPresentations">
+        <debugModelPresentation class="org.jkiss.dbeaver.debug.ui.DatabaseDebugModelPresentation"
+                                id="org.jkiss.dbeaver.debug.core.database"/>
+    </extension>
+
+    <extension point="org.eclipse.debug.ui.detailPaneFactories">
+        <detailFactories
+                class="org.jkiss.dbeaver.debug.ui.details.DatabaseDetailPaneFactory"
+                id="org.jkiss.dbeaver.debug.ui.detailPaneFactories.detailFactories.database">
+            <enablement>
+                <with variable="selection">
+                    <count value="1"/>
+                    <iterate operator="or">
+                        <instanceof value="org.jkiss.dbeaver.debug.core.breakpoints.IDatabaseBreakpoint"/>
+                    </iterate>
+                    <iterate operator="or"/>
+                </with>
+            </enablement>
+        </detailFactories>
+    </extension>
+
+    <extension point="org.eclipse.ui.commands">
+        <category description="Database Debug commands" id="org.jkiss.dbeaver.debug.ui.commands.category" name="Database Debug"/>
+
+        <command
+                name="%commands.command.menuDelegateToolbar.name"
+                description="%commands.command.menuDelegateToolbar.description"
+                id="org.jkiss.dbeaver.debug.ui.command.debugConfigurationMenu">
+        </command>
+    </extension>
+
+    <extension point="org.eclipse.ui.commandImages">
+        <image commandId="org.jkiss.dbeaver.debug.ui.command.debugConfigurationMenu" icon="icons/debug_config.png"/>
+    </extension>
+
+
+    <extension point="org.eclipse.ui.handlers">
+        <handler commandId="org.eclipse.debug.ui.commands.ToggleBreakpoint" class="org.jkiss.dbeaver.debug.ui.actions.ToggleBreakpointHandler"/>
+        <handler commandId="org.jkiss.dbeaver.debug.ui.command.debugConfigurationMenu" class="org.jkiss.dbeaver.debug.ui.actions.OpenDebugConfigurationHandler"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.menus">
+        <menuContribution allPopups="false" locationURI="popup:#SQLRulerContext?before=additions">
+            <command commandId="org.eclipse.debug.ui.commands.ToggleBreakpoint" label="%command.ToggleBreakpoint.label" style="push"/>
+        </menuContribution>
+
+        <menuContribution allPopups="false" locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
+            <toolbar id="dbeaver-debug" label="%toolbar.debug.label">
+                <command commandId="org.jkiss.dbeaver.debug.ui.command.debugConfigurationMenu" id="org.jkiss.dbeaver.debug.ui.menu.pulldown"
+                         label="%actionSets.action.toolbar.label"
+                         tooltip="%actionSets.action.toolbar.tooltip" style="pulldown">
+                    <visibleWhen>
+                        <reference definitionId="DBeaverPerspectiveActive"/>
+                    </visibleWhen>
+                </command>
+                <separator name="additions" visible="false"/>
+            </toolbar>
+        </menuContribution>
+
+        <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.debug.ui.menu.pulldown">
+            <dynamic id="org.jkiss.dbeaver.debug.ui.menu.configuration" class="org.jkiss.dbeaver.debug.ui.internal.DebugConfigurationMenuContributor"/>
+        </menuContribution>
+
+    </extension>
+
+
+    <!-- DBeaver perspective hook -->
+    <extension point="org.eclipse.ui.perspectiveExtensions">
+        <!-- Extension to default DBeaver perspectiver -->
+        <perspectiveExtension targetID="org.jkiss.dbeaver.core.perspective">
+            <!-- Bottom Left -->
+            <view
+                    closeable="true"
+                    standalone="false"
+                    moveable="true"
+                    visible="true"
+                    showTitle="true"
+                    relationship="stack"
+                    relative="org.jkiss.dbeaver.core.projectExplorer"
+                    id="org.eclipse.debug.ui.DebugView"/>
+            <view
+                    closeable="true"
+                    standalone="false"
+                    moveable="true"
+                    visible="false"
+                    showTitle="true"
+                    relationship="stack"
+                    relative="org.jkiss.dbeaver.core.projectExplorer"
+                    id="org.eclipse.debug.ui.BreakpointView"/>
+
+            <!-- Bottom Right -->
+            <view
+                    closeable="true"
+                    standalone="false"
+                    moveable="true"
+                    visible="true"
+                    showTitle="true"
+                    relationship="stack"
+                    relative="org.eclipse.ui.views.PropertySheet"
+                    id="org.eclipse.debug.ui.VariableView"/>
+
+            <!-- Add View Shortcuts !-->
+            <viewShortcut id="org.eclipse.debug.ui.DebugView" />
+            <viewShortcut id="org.eclipse.debug.ui.VariableView" />
+            <viewShortcut id="org.eclipse.debug.ui.BreakpointView" />
+
+        </perspectiveExtension>
+
+    </extension>
 
 </plugin>

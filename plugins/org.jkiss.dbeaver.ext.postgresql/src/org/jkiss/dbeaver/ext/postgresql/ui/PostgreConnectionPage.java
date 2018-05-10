@@ -220,9 +220,9 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
         }
         homesSelector.populateHomes(site.getDriver(), connectionInfo.getClientHomeId());
 
-        showNonDefault.setSelection(CommonUtils.toBoolean(connectionInfo.getProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB)));
+        showNonDefault.setSelection(CommonUtils.getBoolean(connectionInfo.getProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB), true));
 
-        switchDatabaseOnExpand.setSelection(CommonUtils.toBoolean(connectionInfo.getProviderProperty(PostgreConstants.PROP_SWITCH_DB_ON_EXPAND)));
+        switchDatabaseOnExpand.setSelection(CommonUtils.getBoolean(connectionInfo.getProviderProperty(PostgreConstants.PROP_SWITCH_DB_ON_EXPAND), true));
         switchDatabaseOnExpand.setEnabled(showNonDefault.getSelection());
 
         activated = true;

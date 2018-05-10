@@ -30,6 +30,7 @@ import org.eclipse.ui.contexts.IContextActivation;
 import org.eclipse.ui.contexts.IContextService;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeature;
 import org.jkiss.dbeaver.model.runtime.features.DBRFeatureRegistry;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.ui.DBeaverUIConstants;
 import org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
@@ -185,7 +186,9 @@ class WorkbenchContextListener implements IWindowListener, IPageListener, IPartL
                 }
                 activationSQL = contextService.activateContext(SQL_EDITOR_CONTEXT_ID);
             }
-            if (part instanceof EntityEditor || part.getAdapter(ResultSetViewer.class) != null) {
+            if (part.getAdapter(ResultSetViewer.class) != null || (
+                part instanceof EntityEditor && ((EntityEditor) part).getDatabaseObject() instanceof DBSDataContainer))
+            {
                 if (activationResults != null) {
                     contextService.deactivateContext(activationResults);
                 }

@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.edit;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -52,7 +53,10 @@ public abstract class PostgreTableManagerBase extends SQLTableManager<PostgreTab
         } else {
             comment = table.getDescription();
         }
-        if (comment != null) {
+        boolean showComments =
+            CommonUtils.getOption(options, PostgreConstants.OPTION_DDL_SHOW_COLUMN_COMMENTS) ||
+            CommonUtils.getOption(options, DBPScriptObject.OPTION_OBJECT_SAVE);
+        if (showComments && comment != null) {
             actions.add(new SQLDatabasePersistAction(
                 "Comment table",
                 "COMMENT ON " + (table.isView() ? "VIEW": "TABLE") + " " + table.getFullyQualifiedName(DBPEvaluationContext.DDL) +
@@ -61,7 +65,7 @@ public abstract class PostgreTableManagerBase extends SQLTableManager<PostgreTab
         DBRProgressMonitor monitor = new VoidProgressMonitor();
         if (isDDL) {
             try {
-                {
+                if (showComments) {
                     // Column comments
                     boolean hasComments = false;
                     for (PostgreTableColumn column : CommonUtils.safeCollection(table.getAttributes(monitor))) {
@@ -75,7 +79,7 @@ public abstract class PostgreTableManagerBase extends SQLTableManager<PostgreTab
                     }
                 }
 
-                {
+                if (showComments) {
                     // Constraint comments
                     boolean hasComments = false;
                     for (PostgreTableConstraintBase constr : CommonUtils.safeCollection(table.getConstraints(monitor))) {

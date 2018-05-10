@@ -18,19 +18,21 @@
 
 package org.jkiss.dbeaver.runtime.ide.ui.texteditor;
 
-import static org.jkiss.dbeaver.runtime.ide.core.DBeaverIDECore.MARKER_ATTRIBUTE_DATASOURCE_ID;
-import static org.jkiss.dbeaver.runtime.ide.core.DBeaverIDECore.MARKER_ATTRIBUTE_NODE_PATH;
-
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.texteditor.ResourceMarkerAnnotationModel;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.runtime.ide.core.DBeaverIDECore;
+
+import static org.jkiss.dbeaver.runtime.ide.core.DBeaverIDECore.MARKER_ATTRIBUTE_DATASOURCE_ID;
+import static org.jkiss.dbeaver.runtime.ide.core.DBeaverIDECore.MARKER_ATTRIBUTE_NODE_PATH;
 
 public class DatabaseMarkerAnnotationModel extends ResourceMarkerAnnotationModel {
+
+    private static final Log log = Log.getLog(DatabaseMarkerAnnotationModel.class);
 
     private final static String[] ATTRIBUTE_NAMES = new String[] { //
             MARKER_ATTRIBUTE_DATASOURCE_ID, //
@@ -66,15 +68,10 @@ public class DatabaseMarkerAnnotationModel extends ResourceMarkerAnnotationModel
         }
         try {
             Object[] attributes = marker.getAttributes(ATTRIBUTE_NAMES);
-            if (!datasourceId.equals(attributes[0])) {
-                return false;
-            }
-            if (!nodeItemPath.equals(attributes[1])) {
-              return false;
-          }
-            return true;
+            return datasourceId.equals(attributes[0]) &&
+                nodeItemPath.equals(attributes[1]);
         } catch (CoreException e) {
-            DBeaverIDECore.log(e.getStatus());
+            log.log(e.getStatus());
             return false;
         }
     }

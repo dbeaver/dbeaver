@@ -180,7 +180,7 @@ public abstract class PostgreTableReal extends PostgreTableBase
         protected PostgreTrigger fetchObject(@NotNull JDBCSession session, @NotNull PostgreTableReal owner, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
-            return new PostgreTrigger(owner, dbResult);
+            return new PostgreTrigger(session.getProgressMonitor(), owner, dbResult);
         }
 
     }

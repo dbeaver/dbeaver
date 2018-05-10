@@ -96,4 +96,8 @@ public class QMMTransactionInfo extends QMMObject {
         return "TRANSACTION";
     }
 
+    @Override
+    public String getText() {
+        return session.getText();
+    }
 }

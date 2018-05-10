@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.model.qm;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.List;
 
@@ -31,6 +32,6 @@ public interface QMMetaListener {
      * Implementation must process all events in sync mode.
      * QM collector will clean all closed objects after listeners notification.
      */
-    void metaInfoChanged(@NotNull List<QMMetaEvent> events);
+    void metaInfoChanged(@NotNull DBRProgressMonitor monitor, @NotNull List<QMMetaEvent> events);
 
 }

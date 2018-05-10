@@ -232,7 +232,9 @@ public class EntityEditor extends MultiPageDatabaseEditor
         // Flush all nested object editors and result containers
         for (IEditorPart editor : editorMap.values()) {
             if (editor instanceof ObjectPropertiesEditor || editor instanceof IResultSetContainer) {
-                editor.doSave(monitor);
+                if (editor.isDirty()) {
+                    editor.doSave(monitor);
+                }
             }
             if (monitor.isCanceled()) {
                 return;
@@ -418,9 +420,11 @@ public class EntityEditor extends MultiPageDatabaseEditor
                 DBeaverUI.syncExec(() -> DBUserInterface.getInstance().showError("Validation", e.getMessage()));
                 return IDialogConstants.CANCEL_ID;
             }
+            Map<String, Object> options = new HashMap<>();
+            options.put(DBPScriptObject.OPTION_OBJECT_SAVE, true);
             script.append(SQLUtils.generateScript(
                 commandContext.getExecutionContext().getDataSource(),
-                command.getPersistActions(DBPScriptObject.EMPTY_OPTIONS),
+                command.getPersistActions(options),
                 false));
         }
         if (script.length() == 0) {
@@ -632,19 +636,23 @@ public class EntityEditor extends MultiPageDatabaseEditor
     }
 
     @Override
-    public void switchFolder(String folderId)
+    public boolean switchFolder(String folderId)
     {
+        boolean changed = false;
         for (IEditorPart editor : editorMap.values()) {
             if (editor instanceof ITabbedFolderContainer) {
                 if (getActiveEditor() != editor) {
                     setActiveEditor(editor);
                 }
-                ((ITabbedFolderContainer)editor).switchFolder(folderId);
+                if (((ITabbedFolderContainer)editor).switchFolder(folderId)) {
+                    changed = true;
+                }
             }
         }
 //        if (getActiveEditor() instanceof IFolderedPart) {
 //            ((IFolderedPart)getActiveEditor()).switchFolder(folderId);
 //        }
+        return changed;
     }
 
     public void setActiveEditor(Class<?> editorInterface) {
@@ -941,7 +949,9 @@ public class EntityEditor extends MultiPageDatabaseEditor
             try {
                 final DBECommandContext commandContext = getCommandContext();
                 if (commandContext != null && commandContext.isDirty()) {
-                    success = saveCommandContext(monitor, DBPScriptObject.EMPTY_OPTIONS);
+                    Map<String, Object> options = new HashMap<>();
+                    options.put(DBPScriptObject.OPTION_OBJECT_SAVE, true);
+                    success = saveCommandContext(monitor, options);
                 } else {
                     success = true;
                 }

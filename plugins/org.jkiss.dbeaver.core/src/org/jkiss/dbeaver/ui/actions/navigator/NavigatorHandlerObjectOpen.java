@@ -40,13 +40,12 @@ import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
 import org.jkiss.dbeaver.model.navigator.*;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.ui.IRefreshablePart;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.folders.ITabbedFolderContainer;
 import org.jkiss.dbeaver.ui.dialogs.connection.EditConnectionDialog;
@@ -125,14 +124,16 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
         @Nullable String defaultPageId,
         IWorkbenchWindow workbenchWindow)
     {
-        return openEntityEditor(selectedNode, defaultPageId, null , workbenchWindow);
+        return openEntityEditor(selectedNode, defaultPageId, null, null, workbenchWindow, true);
     }
 
     public static IEditorPart openEntityEditor(
         @NotNull DBNNode selectedNode,
         @Nullable String defaultPageId,
+        @Nullable String defaultFolderId,
         @Nullable Map<String, Object> attributes,
-        IWorkbenchWindow workbenchWindow)
+        IWorkbenchWindow workbenchWindow,
+        boolean activate)
     {
         if (selectedNode instanceof DBNDataSource) {
             final DataSourceDescriptor dataSourceContainer = (DataSourceDescriptor) ((DBNDataSource)selectedNode).getDataSourceContainer();
@@ -140,19 +141,34 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
             return null;
         }
         try {
-            String defaultFolderId = null;
             if (selectedNode instanceof DBNDatabaseFolder && !(selectedNode.getParentNode() instanceof DBNDatabaseFolder) && selectedNode.getParentNode() instanceof DBNDatabaseNode) {
-                defaultFolderId = selectedNode.getNodeType();
+                if (defaultFolderId == null) {
+                    defaultFolderId = selectedNode.getNodeType();
+                }
                 selectedNode = selectedNode.getParentNode();
             }
 
             IEditorPart editor = findEntityEditor(workbenchWindow, selectedNode);
             if (editor != null) {
+                boolean settingsChanged = false;
+                IEditorInput editorInput = editor.getEditorInput();
+                if (editorInput instanceof DatabaseEditorInput) {
+                    settingsChanged = setInputAttributes((DatabaseEditorInput<?>) editorInput, defaultPageId, defaultFolderId, attributes);
+                }
                 if (editor instanceof ITabbedFolderContainer && defaultFolderId != null) {
                     // Activate default folder
-                    ((ITabbedFolderContainer) editor).switchFolder(defaultFolderId);
+                    if (((ITabbedFolderContainer) editor).switchFolder(defaultFolderId)) {
+                        settingsChanged = true;
+                    }
                 }
-                workbenchWindow.getActivePage().activate(editor);
+                if (settingsChanged) {
+                    if (editor instanceof IRefreshablePart) {
+                        ((IRefreshablePart) editor).refreshPart(selectedNode, true);
+                    }
+                }
+                if (workbenchWindow.getActivePage().getActiveEditor() != editor || activate) {
+                    workbenchWindow.getActivePage().activate(editor);
+                }
                 return editor;
             }
 
@@ -225,14 +241,11 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
 
     private static void refreshDatabaseNode(@NotNull DBNDatabaseNode selectedNode) throws InvocationTargetException, InterruptedException {
         final DBNDatabaseNode nodeToRefresh = selectedNode;
-        DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
-            @Override
-            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                try {
-                    nodeToRefresh.refreshNode(monitor, nodeToRefresh);
-                } catch (DBException e) {
-                    log.error("Error refreshing database object", e);
-                }
+        DBeaverUI.runInProgressService(monitor -> {
+            try {
+                nodeToRefresh.refreshNode(monitor, nodeToRefresh);
+            } catch (DBException e) {
+                log.error("Error refreshing database object", e);
             }
         });
     }
@@ -252,14 +265,26 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
         }
     }
 
-    private static void setInputAttributes(DatabaseEditorInput<?> editorInput, String defaultPageId, String defaultFolderId, Map<String, Object> attributes) {
-        editorInput.setDefaultPageId(defaultPageId);
-        editorInput.setDefaultFolderId(defaultFolderId);
+    private static boolean setInputAttributes(DatabaseEditorInput<?> editorInput, String defaultPageId, String defaultFolderId, Map<String, Object> attributes) {
+        boolean changed = false;
+        if (defaultPageId != null && !CommonUtils.equalObjects(defaultPageId, editorInput.getDefaultPageId())) {
+            editorInput.setDefaultPageId(defaultPageId);
+            changed = true;
+        }
+        if (defaultFolderId != null && !CommonUtils.equalObjects(defaultFolderId, editorInput.getDefaultFolderId())) {
+            editorInput.setDefaultFolderId(defaultFolderId);
+            changed = true;
+        }
+
         if (!CommonUtils.isEmpty(attributes)) {
             for (Map.Entry<String, Object> attr : attributes.entrySet()) {
-                editorInput.setAttribute(attr.getKey(), attr.getValue());
+                if (!CommonUtils.equalObjects(editorInput.getAttribute(attr.getKey()), attr.getValue())) {
+                    editorInput.setAttribute(attr.getKey(), attr.getValue());
+                    changed = true;
+                }
             }
         }
+        return changed;
     }
 
     @Override

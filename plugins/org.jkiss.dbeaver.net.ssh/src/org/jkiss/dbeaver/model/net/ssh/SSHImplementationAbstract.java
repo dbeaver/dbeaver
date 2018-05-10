@@ -36,7 +36,7 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
     private static final Log log = Log.getLog(SSHImplementationAbstract.class);
 
     // Saved config - used for tunnel invalidate
-    private transient int savedLocalPort;
+    private transient int savedLocalPort = 0;
     protected transient DBWHandlerConfiguration savedConfiguration;
     protected transient DBPConnectionConfiguration savedConnectionInfo;
 
@@ -108,7 +108,7 @@ public abstract class SSHImplementationAbstract implements SSHImplementation {
             throw new DBException("Bad database port number: " + dbPortString);
         }
         int localPort = savedLocalPort;
-        if (platform != null) {
+        if (localPort == 0 && platform != null) {
             localPort = SSHUtils.findFreePort(platform);
         }
         if (!CommonUtils.isEmpty(sshLocalPort)) {

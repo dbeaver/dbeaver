@@ -195,6 +195,9 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
     @Override
     public void setBackground(Color background)
     {
+        if (background == getBackground()) {
+            return;
+        }
         super.setBackground(background);
         this.imageLabel.setBackground(background);
         this.text.setBackground(background);
@@ -344,7 +347,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         checkWidget();
 
         String itemText;
-        Image itemImage;
+        Image itemImage = null;
         Color itemBackground = null;
         if (index < 0) {
             selectedItem = null;
@@ -354,7 +357,11 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         } else {
             selectedItem = this.items.get(index);
             itemText = labelProvider.getText(selectedItem);
-            itemImage = labelProvider.getImage(selectedItem);
+            try {
+                itemImage = labelProvider.getImage(selectedItem);
+            } catch (Exception e) {
+                // No image
+            }
             if (labelProvider instanceof IColorProvider) {
                 itemBackground = ((IColorProvider) labelProvider).getBackground(selectedItem);
             }

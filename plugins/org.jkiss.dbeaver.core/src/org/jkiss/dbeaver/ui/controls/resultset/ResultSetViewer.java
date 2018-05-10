@@ -16,10 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
-import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.*;
@@ -127,9 +124,7 @@ public class ResultSetViewer extends Viewer
 
     private static final DecimalFormat ROW_COUNT_FORMAT = new DecimalFormat("###,###,###,###,###,##0");
 
-    @NotNull
-    private static IResultSetFilterManager filterManager = new SimpleFilterManager();
-
+    private IResultSetFilterManager filterManager;
     @NotNull
     private final IWorkbenchPartSite site;
     private final Composite viewerPanel;
@@ -198,6 +193,11 @@ public class ResultSetViewer extends Viewer
         this.recordMode = false;
         this.container = container;
         this.dataReceiver = new ResultSetDataReceiver(this);
+
+        this.filterManager = Adapters.adapt(this, IResultSetFilterManager.class);
+        if (this.filterManager == null) {
+            this.filterManager = new SimpleFilterManager();
+        }
 
         loadPresentationSettings();
 
@@ -665,6 +665,9 @@ public class ResultSetViewer extends Viewer
         PresentationSettings settings = this.presentationSettings.get(activePresentationDescriptor);
         if (settings == null) {
             settings = new PresentationSettings();
+            // By default panels are visible for column presentations
+            settings.panelsVisible = activePresentationDescriptor != null &&
+                (activePresentationDescriptor.getPresentationType() == IResultSetPresentation.PresentationType.COLUMNS);
             this.presentationSettings.put(activePresentationDescriptor, settings);
         }
         return settings;
@@ -820,7 +823,7 @@ public class ResultSetViewer extends Viewer
     }
 
     boolean isPanelsVisible() {
-        return viewerSash.getMaximizedControl() == null;
+        return viewerSash != null && viewerSash.getMaximizedControl() == null;
     }
 
     void showPanels(boolean show) {
@@ -954,14 +957,16 @@ public class ResultSetViewer extends Viewer
     @Override
     public <T> T getAdapter(Class<T> adapter)
     {
-        if (adapter.isAssignableFrom(activePresentation.getClass())) {
-            return adapter.cast(activePresentation);
-        }
-        // Try to get it from adapter
-        if (activePresentation instanceof IAdaptable) {
-            T adapted = ((IAdaptable) activePresentation).getAdapter(adapter);
-            if (adapted != null) {
-                return adapted;
+        if (activePresentation != null) {
+            if (adapter.isAssignableFrom(activePresentation.getClass())) {
+                return adapter.cast(activePresentation);
+            }
+            // Try to get it from adapter
+            if (activePresentation instanceof IAdaptable) {
+                T adapted = ((IAdaptable) activePresentation).getAdapter(adapter);
+                if (adapted != null) {
+                    return adapted;
+                }
             }
         }
         IResultSetPanel visiblePanel = getVisiblePanel();
@@ -1581,15 +1586,8 @@ public class ResultSetViewer extends Viewer
     // Context menu & filters
 
     @NotNull
-    static IResultSetFilterManager getFilterManager() {
+    IResultSetFilterManager getFilterManager() {
         return filterManager;
-    }
-
-    public static void registerFilterManager(@Nullable IResultSetFilterManager filterManager) {
-        if (filterManager == null) {
-            filterManager = new SimpleFilterManager();
-        }
-        ResultSetViewer.filterManager = filterManager;
     }
 
     void showFiltersMenu() {
@@ -1741,18 +1739,18 @@ public class ResultSetViewer extends Viewer
         }
         manager.add(new GroupMarker(MENU_GROUP_EDIT));
 
+        // Filters and View
+        {
+            MenuManager filtersMenu = new MenuManager(
+                CoreMessages.controls_resultset_viewer_action_order_filter,
+                DBeaverIcons.getImageDescriptor(UIIcon.FILTER),
+                MENU_ID_FILTERS); //$NON-NLS-1$
+            filtersMenu.setActionDefinitionId(ResultSetCommandHandler.CMD_FILTER_MENU);
+            filtersMenu.setRemoveAllWhenShown(true);
+            filtersMenu.addMenuListener(manager1 -> fillFiltersMenu(attr, manager1));
+            manager.add(filtersMenu);
+        }
         if (dataSource != null && attr != null && model.getVisibleAttributeCount() > 0 && !model.isUpdateInProgress()) {
-            // Filters and View
-            {
-                MenuManager filtersMenu = new MenuManager(
-                    CoreMessages.controls_resultset_viewer_action_order_filter,
-                    DBeaverIcons.getImageDescriptor(UIIcon.FILTER),
-                    MENU_ID_FILTERS); //$NON-NLS-1$
-                filtersMenu.setActionDefinitionId(ResultSetCommandHandler.CMD_FILTER_MENU);
-                filtersMenu.setRemoveAllWhenShown(true);
-                filtersMenu.addMenuListener(manager1 -> fillFiltersMenu(attr, manager1));
-                manager.add(filtersMenu);
-            }
             {
                 MenuManager viewMenu = new MenuManager(
                     "View/Format",
@@ -2084,9 +2082,9 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    private void fillFiltersMenu(@NotNull DBDAttributeBinding attribute, @NotNull IMenuManager filtersMenu)
+    private void fillFiltersMenu(@Nullable DBDAttributeBinding attribute, @NotNull IMenuManager filtersMenu)
     {
-        if (supportsDataFilter()) {
+        if (attribute != null && supportsDataFilter()) {
             filtersMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_FILTER_MENU_DISTINCT));
 
             //filtersMenu.add(new FilterByListAction(operator, type, attribute));
@@ -2127,10 +2125,12 @@ public class ResultSetViewer extends Viewer
                 filtersMenu.add(new FilterResetAttributeAction(attribute));
             }
         }
-        filtersMenu.add(new Separator());
-        filtersMenu.add(new OrderByAttributeAction(attribute, true));
-        filtersMenu.add(new OrderByAttributeAction(attribute, false));
-        filtersMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGGLE_ORDER));
+        if (attribute != null) {
+            filtersMenu.add(new Separator());
+            filtersMenu.add(new OrderByAttributeAction(attribute, true));
+            filtersMenu.add(new OrderByAttributeAction(attribute, false));
+            filtersMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGGLE_ORDER));
+        }
         filtersMenu.add(new Separator());
         filtersMenu.add(new ToggleServerSideOrderingAction());
         filtersMenu.add(new ShowFiltersAction(true));
@@ -2478,14 +2478,11 @@ public class ResultSetViewer extends Viewer
         final DataFilterRegistry.SavedDataFilter savedConfig = DataFilterRegistry.getInstance().getSavedConfig(dataContainer);
         if (savedConfig != null) {
             final DBDDataFilter dataFilter = new DBDDataFilter();
-            DBRRunnableWithProgress restoreTask = new DBRRunnableWithProgress() {
-                @Override
-                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                    try {
-                        savedConfig.restoreDataFilter(monitor, dataContainer, dataFilter);
-                    } catch (DBException e) {
-                        throw new InvocationTargetException(e);
-                    }
+            DBRRunnableWithProgress restoreTask = monitor -> {
+                try {
+                    savedConfig.restoreDataFilter(monitor, dataContainer, dataFilter);
+                } catch (DBException e) {
+                    throw new InvocationTargetException(e);
                 }
             };
             RuntimeUtils.runTask(restoreTask, "Restore data filter", 60000);
@@ -3797,6 +3794,9 @@ public class ResultSetViewer extends Viewer
     }
 
     static class PresentationSettings {
+        PresentationSettings() {
+        }
+
         final Set<String> enabledPanelIds = new LinkedHashSet<>();
         String activePanelId;
         int panelRatio;

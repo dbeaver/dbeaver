@@ -22,6 +22,8 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBindingMeta;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -140,7 +142,12 @@ class ResultSetDataReceiver implements DBDDataReceiver {
         if (!nextSegmentRead) {
             try {
                 // Read locators' metadata
-                ResultSetUtils.bindAttributes(session, resultSet, metaColumns, rows);
+                DBSEntity entity = null;
+                DBSDataContainer dataContainer = resultSetViewer.getDataContainer();
+                if (dataContainer instanceof DBSEntity) {
+                    entity = (DBSEntity) dataContainer;
+                }
+                ResultSetUtils.bindAttributes(session, entity, resultSet, metaColumns, rows);
             } catch (Throwable e) {
                 errorList.add(e);
             }
@@ -149,22 +156,19 @@ class ResultSetDataReceiver implements DBDDataReceiver {
         final List<Object[]> tmpRows = rows;
 
         final boolean nextSegmentRead = this.nextSegmentRead;
-        DBeaverUI.syncExec(new Runnable() {
-            @Override
-            public void run() {
-                // Push data into viewer
-                if (!nextSegmentRead) {
-                    resultSetViewer.updatePresentation(resultSet);
-                    resultSetViewer.setData(tmpRows, focusRow);
-                    resultSetViewer.getActivePresentation().refreshData(true, false, !resultSetViewer.getModel().isMetadataChanged());
-                } else {
-                    resultSetViewer.appendData(tmpRows);
-                    resultSetViewer.getActivePresentation().refreshData(false, true, true);
-                }
-                resultSetViewer.updateStatusMessage();
-                // Check for more data
-                hasMoreData = maxRows > 0 && tmpRows.size() >= maxRows;
+        DBeaverUI.syncExec(() -> {
+            // Push data into viewer
+            if (!nextSegmentRead) {
+                resultSetViewer.updatePresentation(resultSet);
+                resultSetViewer.setData(tmpRows, focusRow);
+                resultSetViewer.getActivePresentation().refreshData(true, false, !resultSetViewer.getModel().isMetadataChanged());
+            } else {
+                resultSetViewer.appendData(tmpRows);
+                resultSetViewer.getActivePresentation().refreshData(false, true, true);
             }
+            resultSetViewer.updateStatusMessage();
+            // Check for more data
+            hasMoreData = maxRows > 0 && tmpRows.size() >= maxRows;
         });
     }
 

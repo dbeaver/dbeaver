@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.dbeaver.debug.core;singleton:=true
-Bundle-Version: 1.0.11
-Bundle-Release-Date: 20180430
+Bundle-Version: 1.0.12
+Bundle-Release-Date: 20180514
 Bundle-Vendor: %Bundle-Vendor
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Require-Bundle: org.eclipse.osgi.services,
@@ -17,6 +17,6 @@ Require-Bundle: org.eclipse.osgi.services,
 Export-Package: org.jkiss.dbeaver.debug,
  org.jkiss.dbeaver.debug.core,
  org.jkiss.dbeaver.debug.core.breakpoints,
- org.jkiss.dbeaver.debug.core.model
-Bundle-Activator: org.jkiss.dbeaver.debug.internal.core.DebugCoreActivator
+ org.jkiss.dbeaver.debug.core.model,
+ org.jkiss.dbeaver.debug.jdbc
 Bundle-ActivationPolicy: lazy

@@ -31,7 +31,7 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.debug.core.DebugCore;
+import org.jkiss.dbeaver.debug.DBGConstants;
 import org.jkiss.dbeaver.debug.core.breakpoints.DatabaseLineBreakpoint;
 import org.jkiss.dbeaver.debug.core.breakpoints.IDatabaseBreakpoint;
 import org.jkiss.dbeaver.debug.ui.DebugUI;
@@ -72,14 +72,13 @@ public class ToggleProcedureBreakpointTarget implements IToggleBreakpointsTarget
         ITextSelection textSelection = (ITextSelection) selection;
         int lineNumber = textSelection.getStartLine();
         IBreakpoint[] breakpoints = DebugPlugin.getDefault().getBreakpointManager()
-                .getBreakpoints(DebugCore.MODEL_IDENTIFIER_DATABASE);
-        for (int i = 0; i < breakpoints.length; i++) {
-            IBreakpoint breakpoint = breakpoints[i];
+                .getBreakpoints(DBGConstants.MODEL_IDENTIFIER_DATABASE);
+        for (IBreakpoint breakpoint : breakpoints) {
             if (breakpoint instanceof IDatabaseBreakpoint) {
                 IDatabaseBreakpoint databaseBreakpoint = (IDatabaseBreakpoint) breakpoint;
                 if (nodeItemPath.equals(databaseBreakpoint.getNodePath())) {
                     if (((ILineBreakpoint) breakpoint).getLineNumber() == (lineNumber + 1)) {
-                        DebugUITools.deleteBreakpoints(new IBreakpoint[] { breakpoint }, part.getSite().getShell(), null);
+                        DebugUITools.deleteBreakpoints(new IBreakpoint[]{breakpoint}, part.getSite().getShell(), null);
                         return;
                     }
                 }
@@ -92,8 +91,7 @@ public class ToggleProcedureBreakpointTarget implements IToggleBreakpointsTarget
 
     protected IResource extractResource(IEditorPart part, ISelection selection) {
         DBSObject databaseObject = DebugUI.extractDatabaseObject(part);
-        IResource resolved = DBeaverIDECore.resolveWorkspaceResource(databaseObject);
-        return resolved;
+        return DBeaverIDECore.resolveWorkspaceResource(databaseObject);
     }
 
     @Override

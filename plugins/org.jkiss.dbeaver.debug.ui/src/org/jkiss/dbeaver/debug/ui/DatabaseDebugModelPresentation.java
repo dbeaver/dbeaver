@@ -18,9 +18,6 @@
 
 package org.jkiss.dbeaver.debug.ui;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.debug.core.DebugException;
@@ -32,24 +29,33 @@ import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.debug.core.DebugCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.debug.core.DebugUtils;
 import org.jkiss.dbeaver.debug.core.breakpoints.DatabaseLineBreakpoint;
 import org.jkiss.dbeaver.debug.core.breakpoints.IDatabaseBreakpoint;
-import org.jkiss.dbeaver.debug.core.model.DatabaseProcess;
-import org.jkiss.dbeaver.debug.core.model.DatabaseStackFrame;
-import org.jkiss.dbeaver.debug.core.model.DatabaseThread;
-import org.jkiss.dbeaver.debug.core.model.DatabaseVariable;
-import org.jkiss.dbeaver.debug.core.model.IDatabaseDebugTarget;
+import org.jkiss.dbeaver.debug.core.model.*;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.ui.UITask;
+import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
-import org.jkiss.dbeaver.ui.editors.entity.EntityEditorInput;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
+
+import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
+import java.util.Map;
+
+import static org.jkiss.dbeaver.debug.core.model.DatabaseDebugTarget.SESSION_ACTION_TIMEOUT;
 
 public class DatabaseDebugModelPresentation extends LabelProvider implements IDebugModelPresentationExtension {
 
@@ -107,13 +113,13 @@ public class DatabaseDebugModelPresentation extends LabelProvider implements IDe
             }
             if (element instanceof DatabaseLineBreakpoint) {
                 DatabaseLineBreakpoint breakpoint = (DatabaseLineBreakpoint) element;
-                String database = breakpoint.getDatabaseName();
-                String schema = breakpoint.getSchemaName();
-                String procedure = breakpoint.getProcedureName();
+                String nodePath = breakpoint.getNodePath();
+                NodeFinder getNodeTask = new NodeFinder(nodePath);
+                RuntimeUtils.runTask(getNodeTask,"Get node by path", SESSION_ACTION_TIMEOUT);
+
                 int lineNumber = breakpoint.getLineNumber();
-                String pattern = "{0}.{1}.{2} - [line:{3}]";
-                Object[] bindings = new Object[] {database, schema, procedure, lineNumber};
-                return NLS.bind(pattern, bindings);
+                Object[] bindings = new Object[] {getNodeTask.node == null ? nodePath : getNodeTask.node.getNodeFullName(), lineNumber};
+                return NLS.bind("{0} - [line:{1}]", bindings);
             }
         } catch (CoreException e) {
             return "<not responding>";
@@ -134,8 +140,8 @@ public class DatabaseDebugModelPresentation extends LabelProvider implements IDe
             listener.detailComputed(value, valueString);
         } catch (DebugException e) {
             String message = NLS.bind("Unable to compute valie for {0}", value);
-            IStatus status = DebugCore.newErrorStatus(message, e);
-            DebugCore.log(status);
+            IStatus status = DebugUtils.newErrorStatus(message, e);
+            log.log(status);
             listener.detailComputed(value, e.getMessage());
         }
     }
@@ -167,15 +173,19 @@ public class DatabaseDebugModelPresentation extends LabelProvider implements IDe
     }
 
     protected IEditorInput createEditorInput(DBNDatabaseNode dbnNode) {
-        EntityEditorInput editorInput = new EntityEditorInput(dbnNode);
-        editorInput.setAttribute(DBPScriptObject.OPTION_DEBUGGER_SOURCE, Boolean.TRUE);
-        DebugEditorAdvisor editorAdvisor = DebugUI.findEditorAdvisor(dbnNode.getDataSourceContainer());
-        if (editorAdvisor != null) {
-            String sourceFolderId = editorAdvisor.getSourceFolderId();
-            editorInput.setDefaultFolderId(sourceFolderId);
-        }
-        DebugCore.postDebuggerSourceEvent(dbnNode.getNodeItemPath());
-        return editorInput;
+        DBGEditorAdvisor editorAdvisor = DebugUI.findEditorAdvisor(dbnNode.getDataSourceContainer());
+        String sourceFolderId = editorAdvisor == null ? null : editorAdvisor.getSourceFolderId();
+        Map<String, Object> editorAttrs = new HashMap<>();
+        editorAttrs.put(DBPScriptObject.OPTION_DEBUGGER_SOURCE, true);
+
+        IEditorPart editorPart = new UITask<IEditorPart>() {
+            @Override
+            protected IEditorPart runTask() {
+                return NavigatorHandlerObjectOpen.openEntityEditor(dbnNode, null, sourceFolderId, editorAttrs, DBeaverUI.getActiveWorkbenchWindow(), false);
+            }
+        }.execute();
+
+        return editorPart == null ? null : editorPart.getEditorInput();
     }
 
     @Override
@@ -188,4 +198,22 @@ public class DatabaseDebugModelPresentation extends LabelProvider implements IDe
         return false;
     }
 
+    private static class NodeFinder implements DBRRunnableWithProgress {
+        private final String nodePath;
+        DBNNode node;
+
+        public NodeFinder(String nodePath) {
+            this.nodePath = nodePath;
+            node = null;
+        }
+
+        @Override
+        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+            try {
+                node = DBeaverCore.getInstance().getNavigatorModel().getNodeByPath(new VoidProgressMonitor(), nodePath);
+            } catch (DBException e) {
+                throw new InvocationTargetException(e);
+            }
+        }
+    }
 }

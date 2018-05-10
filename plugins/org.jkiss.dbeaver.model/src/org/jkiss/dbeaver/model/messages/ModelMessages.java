@@ -114,7 +114,6 @@ public class ModelMessages extends NLS {
 	public static String model_jdbc_scale;
 	public static String model_jdbc_Schema;
 	public static String model_jdbc_Serializable;
-	public static String model_jdbc_set_to_current_time;
 	public static String model_jdbc_type_name;
 	public static String model_jdbc_unknown;
 	public static String model_jdbc_unsupported_column_type_;

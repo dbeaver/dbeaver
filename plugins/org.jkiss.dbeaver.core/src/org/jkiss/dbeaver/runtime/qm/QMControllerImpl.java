@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,14 +16,22 @@
  */
 package org.jkiss.dbeaver.runtime.qm;
 
+import org.eclipse.core.runtime.Adapters;
+import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.qm.*;
+import org.jkiss.dbeaver.model.qm.meta.*;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -36,6 +44,7 @@ public class QMControllerImpl implements QMController {
     private QMExecutionHandler defaultHandler;
     private QMMCollectorImpl metaHandler;
     private final List<QMExecutionHandler> handlers = new ArrayList<>();
+    private QMEventBrowser eventBrowser;
 
     public QMControllerImpl() {
         defaultHandler = (QMExecutionHandler) Proxy.newProxyInstance(
@@ -76,6 +85,19 @@ public class QMControllerImpl implements QMController {
     }
 
     @Override
+    public synchronized QMEventBrowser getEventBrowser() {
+        if (eventBrowser == null) {
+            eventBrowser = Adapters.adapt(this, QMEventBrowser.class);
+            if (eventBrowser == null) {
+                // Default browser
+                eventBrowser = new DefaultEventBrowser();
+            }
+        }
+
+        return eventBrowser;
+    }
+
+    @Override
     public void registerHandler(QMExecutionHandler handler) {
         synchronized (handlers) {
             handlers.add(handler);
@@ -101,12 +123,6 @@ public class QMControllerImpl implements QMController {
     public void unregisterMetaListener(QMMetaListener metaListener)
     {
         metaHandler.removeListener(metaListener);
-    }
-
-    @Override
-    public List<QMMetaEvent> getPastMetaEvents()
-    {
-        return metaHandler.getPastEvents();
     }
 
     List<QMExecutionHandler> getHandlers()
@@ -150,4 +166,60 @@ public class QMControllerImpl implements QMController {
 
     }
 
+    private class DefaultEventBrowser implements QMEventBrowser {
+        @Override
+        public QMEventCursor getQueryHistoryCursor(
+            @NotNull DBRProgressMonitor monitor,
+            @NotNull QMEventCriteria criteria)
+            throws DBException
+        {
+            List<QMMetaEvent> pastEvents = metaHandler.getPastEvents();
+            if (criteria.getObjectTypes() != null || criteria.getQueryTypes() != null) {
+                // Filter by query type and object type
+                for (Iterator<QMMetaEvent> iter = pastEvents.iterator(); iter.hasNext(); ) {
+                    QMMetaEvent event = iter.next();
+                    if (criteria.getObjectTypes() != null) {
+                        if (!matchesObjectType(event.getObject(), criteria.getObjectTypes())) {
+                            iter.remove();
+                            continue;
+                        }
+                    }
+                    if (criteria.getQueryTypes() != null) {
+                        QMMStatementInfo statementInfo = null;
+                        if (event.getObject() instanceof QMMStatementInfo) {
+                            statementInfo = (QMMStatementInfo) event.getObject();
+                        } else if (event.getObject() instanceof QMMStatementExecuteInfo) {
+                            statementInfo = ((QMMStatementExecuteInfo) event.getObject()).getStatement();
+                        }
+                        if (statementInfo != null &&
+                            !ArrayUtils.contains(criteria.getQueryTypes(), ((QMMStatementInfo) event.getObject()).getPurpose()))
+                        {
+                            iter.remove();
+                        }
+                    }
+                }
+            }
+            if (CommonUtils.isEmpty(criteria.getSearchString())) {
+                return new QMUtils.ListCursorImpl(pastEvents);
+            } else {
+                String searchString = criteria.getSearchString().toLowerCase();
+                List<QMMetaEvent> filtered = new ArrayList<>();
+                for (QMMetaEvent event : pastEvents) {
+                    if (event.getObject().getText().toLowerCase().contains(searchString)) {
+                        filtered.add(event);
+                    }
+                }
+                return new QMUtils.ListCursorImpl(filtered);
+            }
+        }
+
+        private boolean matchesObjectType(QMMObject object, QMObjectType[] objectTypes) {
+            if (object instanceof QMMSessionInfo)
+                return ArrayUtils.contains(objectTypes, QMObjectType.session);
+            else if (object instanceof QMMTransactionInfo || object instanceof QMMTransactionSavepointInfo)
+                return ArrayUtils.contains(objectTypes, QMObjectType.txn);
+            else
+                return ArrayUtils.contains(objectTypes, QMObjectType.query);
+        }
+    }
 }

@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.vertica.model;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.vertica.VerticaUtils;
 import org.jkiss.dbeaver.model.DBPDataKind;
@@ -23,6 +24,8 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
+import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * VerticaProjectionColumn
@@ -30,6 +33,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 public class VerticaProjectionColumn extends JDBCTableColumn<VerticaProjection>
 {
     private static final Log log = Log.getLog(VerticaProjectionColumn.class);
+    private String description;
 
     protected VerticaProjectionColumn(VerticaProjection table, JDBCResultSet dbResult) {
         super(table, true);
@@ -37,6 +41,7 @@ public class VerticaProjectionColumn extends JDBCTableColumn<VerticaProjection>
         setName(JDBCUtils.safeGetString(dbResult, "projection_column_name"));
         setOrdinalPosition(JDBCUtils.safeGetInt(dbResult, "column_position"));
         this.typeName = JDBCUtils.safeGetString(dbResult, "data_type");
+        this.description = JDBCUtils.safeGetString(dbResult, "comment");
         this.valueType = VerticaUtils.resolveValueType(this.typeName);
 
         {
@@ -93,4 +98,15 @@ public class VerticaProjectionColumn extends JDBCTableColumn<VerticaProjection>
     public Integer getPrecision() {
         return super.getPrecision();
     }
+
+    @Override
+    public String getDescription() {
+        return super.getDescription();
+    }
+
+    @Property(viewable = true, order = 100)
+    public String getDescription(DBRProgressMonitor monitor) throws DBException {
+        return description;
+    }
+
 }

@@ -1,7 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
- * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,12 +18,7 @@ package org.jkiss.dbeaver.ui.controls.querylog;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.IJobChangeEvent;
-import org.eclipse.core.runtime.jobs.JobChangeAdapter;
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IAction;
-import org.eclipse.jface.action.MenuManager;
-import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.resource.ColorRegistry;
@@ -45,36 +39,43 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.*;
 import org.jkiss.dbeaver.model.qm.meta.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.qm.DefaultEventFilter;
 import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
 import org.jkiss.dbeaver.ui.controls.TableColumnSortListener;
 import org.jkiss.dbeaver.ui.dialogs.sql.BaseSQLDialog;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenHandler;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.PrefUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.LongKeyMap;
 
+import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.Locale;
+import java.util.*;
+import java.util.List;
 
 /**
  * QueryLogViewer
@@ -87,7 +88,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     private static final String VIEWER_ID = "DBeaver.QM.LogViewer";
     private static final int MIN_ENTRIES_PER_PAGE = 1;
 
-    public static final String COLOR_COMMITTED = "org.jkiss.dbeaver.txn.color.committed.background";  //= new RGB(0xBD, 0xFE, 0xBF);
+    public static final String COLOR_UNCOMMITTED = "org.jkiss.dbeaver.txn.color.committed.background";  //= new RGB(0xBD, 0xFE, 0xBF);
     public static final String COLOR_REVERTED = "org.jkiss.dbeaver.txn.color.reverted.background";  // = new RGB(0xFF, 0x63, 0x47);
     public static final String COLOR_TRANSACTION = "org.jkiss.dbeaver.txn.color.transaction.background";  // = new RGB(0xFF, 0xE4, 0xB5);
 
@@ -121,8 +122,8 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     }
 
     private LogColumn COLUMN_TIME = new LogColumn("time", CoreMessages.controls_querylog_column_time_name, CoreMessages.controls_querylog_column_time_tooltip, 80) {
-        private final DateFormat timeFormat = new SimpleDateFormat(DBConstants.DEFAULT_TIME_FORMAT, Locale.getDefault()); //$NON-NLS-1$
-        private final DateFormat timestampFormat = new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT, Locale.getDefault()); //$NON-NLS-1$
+        private final DateFormat timeFormat = new SimpleDateFormat("MMM-dd HH:mm:ss", Locale.getDefault()); //$NON-NLS-1$
+        private final DateFormat timestampFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.getDefault()); //$NON-NLS-1$
         @Override
         String getText(QMMetaEvent event)
         {
@@ -147,7 +148,8 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             if (object instanceof QMMStatementExecuteInfo) {
                 QMMStatementExecuteInfo statement = (QMMStatementExecuteInfo) object;
                 //return SQLUtils.stripTransformations(statement.getQueryString());
-                return CommonUtils.truncateString(statement.getQueryString(), 4000);
+                return CommonUtils.truncateString(
+                    CommonUtils.notEmpty(statement.getQueryString()), 4000);
             } else if (object instanceof QMMTransactionInfo) {
                 if (((QMMTransactionInfo) object).isCommitted()) {
                     return CoreMessages.controls_querylog_commit;
@@ -306,6 +308,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     };
 
     private final IWorkbenchPartSite site;
+    private final Text searchText;
     private Table logTable;
     private java.util.List<ColumnDescriptor> columns = new ArrayList<>();
     private LongKeyMap<TableItem> objectToItemMap = new LongKeyMap<>();
@@ -317,9 +320,12 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     private final Color colorLightGreen;
     private final Color colorLightRed;
     private final Color colorLightYellow;
+    private final Color shadowColor;
     private final Font boldFont;
+    private final Font hintFont;
     private DragSource dndSource;
 
+    private volatile boolean reloadInProgress = false;
 
     private int entriesPerPage = MIN_ENTRIES_PER_PAGE;
 
@@ -333,12 +339,29 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
 
         ColorRegistry colorRegistry = site.getWorkbenchWindow().getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry();
 
-        colorLightGreen = colorRegistry.get(COLOR_COMMITTED);
+        colorLightGreen = colorRegistry.get(COLOR_UNCOMMITTED);
         colorLightRed = colorRegistry.get(COLOR_REVERTED);
         colorLightYellow = colorRegistry.get(COLOR_TRANSACTION);
+        shadowColor = parent.getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW);
         boldFont = UIUtils.makeBoldFont(parent.getFont());
+        hintFont = UIUtils.modifyFont(parent.getFont(), SWT.ITALIC);
 
         boolean inDialog = UIUtils.isInDialog(parent);
+        // Search field
+        this.searchText = new Text(parent, SWT.BORDER);
+        this.searchText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        this.searchText.addPaintListener(e -> {
+            if (searchText.isEnabled() && searchText.getCharCount() == 0) {
+                e.gc.setForeground(shadowColor);
+                e.gc.setFont(hintFont);
+                e.gc.drawText("Type query part to search in query history",
+                    2, 0, true);
+                e.gc.setFont(null);
+            }
+        });
+        this.searchText.addModifyListener(e -> scheduleLogRefresh());
+        UIUtils.enableHostEditorKeyBindingsSupport(site, searchText);
+
         // Create log table
         logTable = new Table(
             parent,
@@ -384,14 +407,30 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
 
         this.filter = filter;
 
-        reloadEvents();
-
         // Make sure app is initialized
         DBeaverCore.getInstance();
         // Register QM listener
         QMUtils.registerMetaListener(this);
 
         DBeaverCore.getGlobalPreferenceStore().addPropertyChangeListener(this);
+
+        logTable.addListener(SWT.Resize, new Listener() {
+            @Override
+            public void handleEvent(Event event) {
+                logTable.removeListener(SWT.Resize, this);
+                reloadEvents(null);
+            }
+        });
+    }
+
+    private synchronized void scheduleLogRefresh() {
+        // Many properties could be changed at once
+        // So here we just schedule single refresh job
+        if (logRefreshJob == null) {
+            logRefreshJob = new LogRefreshJob();
+        }
+        logRefreshJob.cancel();
+        logRefreshJob.schedule(500);
     }
 
     public void setFilter(QMEventFilter filter) {
@@ -452,6 +491,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         UIUtils.dispose(dndSource);
         UIUtils.dispose(logTable);
         UIUtils.dispose(boldFont);
+        UIUtils.dispose(hintFont);
     }
 
     @Override
@@ -490,7 +530,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     @Override
     public void refresh()
     {
-        reloadEvents();
+        reloadEvents(searchText.getText());
     }
 
     private static String getObjectType(QMMObject object)
@@ -504,7 +544,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             } else {
                 statement = ((QMMStatementExecuteInfo)object).getStatement();
             }
-            return "SQL" + (statement == null ? "" : " / " + statement.getPurpose().name()); //$NON-NLS-1$
+            return "SQL" + (statement == null ? "" : " / " + CommonUtils.capitalizeWord(statement.getPurpose().getTitle())); //$NON-NLS-1$
 //        } else if (object instanceof QMMStatementScripInfo) {
 //            return CoreMessages.controls_querylog_script;
         } else if (object instanceof QMMTransactionInfo) {
@@ -555,11 +595,11 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             }
             QMMTransactionSavepointInfo savepoint = exec.getSavepoint();
             if (savepoint == null) {
-                return colorLightGreen;
+                return null;
             } else if (savepoint.isClosed()) {
                 return savepoint.isCommitted() ? colorLightGreen : colorLightYellow;
             } else {
-                return null;
+                return colorLightGreen;
             }
         } else if (event.getObject() instanceof QMMTransactionInfo || event.getObject() instanceof QMMTransactionSavepointInfo) {
             QMMTransactionSavepointInfo savepoint;
@@ -568,24 +608,36 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             } else {
                 savepoint = (QMMTransactionSavepointInfo) event.getObject();
             }
-            return savepoint.isCommitted() ? colorLightGreen : colorLightYellow;
+            return savepoint.isCommitted() ? null : colorLightYellow;
         }
         return null;
     }
 
-    private void reloadEvents()
+    private void reloadEvents(@Nullable String searchString)
     {
+        if (reloadInProgress) {
+            log.debug("Event reload is in progress. Skip");
+            return;
+        }
+        reloadInProgress = true;
         DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
 
         this.entriesPerPage = Math.max(MIN_ENTRIES_PER_PAGE, store.getInt(QMConstants.PROP_ENTRIES_PER_PAGE));
         this.defaultFilter = new DefaultEventFilter();
 
         clearLog();
-        updateMetaInfo(QMUtils.getPastMetaEvents());
+
+        // Extract events
+
+        EventHistoryReadService loadingService = new EventHistoryReadService(searchString);
+        LoadingJob.createService(
+            loadingService,
+            new EvenHistoryReadVisualizer(loadingService))
+            .schedule();
     }
 
     @Override
-    public void metaInfoChanged(@NotNull final java.util.List<QMMetaEvent> events) {
+    public void metaInfoChanged(DBRProgressMonitor monitor, @NotNull final List<QMMetaEvent> events) {
         if (DBeaverCore.isClosing()) {
             return;
         }
@@ -593,7 +645,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         DBeaverUI.asyncExec(() -> updateMetaInfo(events));
     }
 
-    private synchronized void updateMetaInfo(final java.util.List<QMMetaEvent> events)
+    private synchronized void updateMetaInfo(final List<QMMetaEvent> events)
     {
         if (logTable.isDisposed()) {
             return;
@@ -602,12 +654,12 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         try {
             // Add events in reverse order
             int itemIndex = 0;
-            for (int i = events.size(); i > 0; i--) {
+            for (int i = 0; i < events.size(); i++) {
                 if (useDefaultFilter && itemIndex >= entriesPerPage) {
                     // Do not add remaining (older) events - they don't fit page anyway
                     break;
                 }
-                QMMetaEvent event = events.get(i - 1);
+                QMMetaEvent event = events.get(i);
                 if ((filter != null && !filter.accept(event)) || (useDefaultFilter && !defaultFilter.accept(event))) {
                     continue;
                 }
@@ -759,11 +811,67 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             manager.add(copyAllAction);
             manager.add(selectAllAction);
             manager.add(clearLogAction);
+            manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.FILE_REFRESH));
             //manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
+
+            manager.add(new Separator());
+            createFiltersMenu(manager);
         });
         menuMgr.setRemoveAllWhenShown(true);
         logTable.setMenu(menu);
         site.registerContextMenu(menuMgr, this);
+    }
+
+    private void createFiltersMenu(IMenuManager manager) {
+        DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
+        QMEventCriteria criteria = QMUtils.createDefaultCriteria(store);
+        for (DBCExecutionPurpose purpose : DBCExecutionPurpose.values()) {
+            IAction toggleAction = new Action(purpose.getTitle(), Action.AS_CHECK_BOX) {
+                @Override
+                public boolean isChecked() {
+                    return criteria.hasQueryType(purpose);
+                }
+                @Override
+                public void run() {
+                    DBCExecutionPurpose[] queryTypes = criteria.getQueryTypes();
+                    if (isChecked()) {
+                        queryTypes = ArrayUtils.remove(DBCExecutionPurpose.class, queryTypes, purpose);
+                    } else {
+                        queryTypes = ArrayUtils.add(DBCExecutionPurpose.class, queryTypes, purpose);
+                    }
+                    List<String> typeNames = new ArrayList<>(queryTypes.length);
+                    for (DBCExecutionPurpose queryType : queryTypes) typeNames.add(queryType.name());
+                    store.setValue(QMConstants.PROP_QUERY_TYPES, CommonUtils.makeString(typeNames, ','));
+                    PrefUtils.savePreferenceStore(store);
+                    scheduleLogRefresh();
+                }
+            };
+            manager.add(toggleAction);
+        }
+        manager.add(new Separator());
+        for (QMObjectType type : QMObjectType.values()) {
+            IAction toggleAction = new Action(type.getTitle(), Action.AS_CHECK_BOX) {
+                @Override
+                public boolean isChecked() {
+                    return criteria.hasObjectType(type);
+                }
+                @Override
+                public void run() {
+                    QMObjectType[] objectTypes = criteria.getObjectTypes();
+                    if (isChecked()) {
+                        objectTypes = ArrayUtils.remove(QMObjectType.class, objectTypes, type);
+                    } else {
+                        objectTypes = ArrayUtils.add(QMObjectType.class, objectTypes, type);
+                    }
+                    List<QMObjectType> typeList = new ArrayList<>();
+                    Collections.addAll(typeList, objectTypes);
+                    store.setValue(QMConstants.PROP_OBJECT_TYPES, QMObjectType.toString(typeList));
+                    PrefUtils.savePreferenceStore(store);
+                    scheduleLogRefresh();
+                }
+            };
+            manager.add(toggleAction);
+        }
     }
 
     private void openSelectionInEditor() {
@@ -890,37 +998,25 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         return NLS.bind(CoreMessages.controls_querylog_format_minutes, String.valueOf(min), String.valueOf(sec));
     }
 
-    private ConfigRefreshJob configRefreshJob = null;
+    private LogRefreshJob logRefreshJob = null;
 
     @Override
     public synchronized void preferenceChange(PreferenceChangeEvent event)
     {
         if (event.getProperty().startsWith(QMConstants.PROP_PREFIX)) {
-            // Many properties could be changed at once
-            // So here we just schedule single refresh job
-            if (configRefreshJob == null) {
-                configRefreshJob = new ConfigRefreshJob();
-                configRefreshJob.schedule(250);
-                configRefreshJob.addJobChangeListener(new JobChangeAdapter() {
-                    @Override
-                    public void done(IJobChangeEvent event)
-                    {
-                        configRefreshJob = null;
-                    }
-                });
-            }
+            scheduleLogRefresh();
         }
     }
 
-    private class ConfigRefreshJob extends AbstractUIJob {
-        ConfigRefreshJob()
+    private class LogRefreshJob extends AbstractUIJob {
+        LogRefreshJob()
         {
             super(CoreMessages.controls_querylog_job_refresh);
         }
         @Override
         protected IStatus runInUIThread(DBRProgressMonitor monitor)
         {
-            reloadEvents();
+            refresh();
             return Status.OK_STATUS;
         }
     }
@@ -1004,7 +1100,10 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         @Override
         protected SQLDialect getSQLDialect() {
             if (object.getObject() instanceof QMMStatementExecuteInfo) {
-                return ((QMMStatementExecuteInfo) object.getObject()).getStatement().getSession().getSQLDialect();
+                SQLDialect dialect = ((QMMStatementExecuteInfo) object.getObject()).getStatement().getSession().getSQLDialect();
+                if (dialect != null) {
+                    return dialect;
+                }
             }
             return super.getSQLDialect();
         }
@@ -1022,6 +1121,76 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         @Override
         protected boolean isLabelVisible() {
             return false;
+        }
+    }
+
+    class EventHistoryReadService extends AbstractLoadService<List<QMMetaEvent>> {
+
+        @Nullable
+        private String searchString;
+
+        protected EventHistoryReadService(@Nullable String searchString) {
+            super("Load query history");
+            this.searchString = searchString;
+        }
+
+        @Override
+        public List<QMMetaEvent> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+            final List<QMMetaEvent> events = new ArrayList<>();
+            QMEventBrowser eventBrowser = QMUtils.getEventBrowser();
+            if (eventBrowser != null) {
+                QMEventCriteria criteria = QMUtils.createDefaultCriteria(DBeaverCore.getGlobalPreferenceStore());
+                criteria.setSearchString(CommonUtils.isEmptyTrimmed(searchString) ? null : searchString.trim());
+
+                monitor.beginTask("Load query history", 1);
+                if (!CommonUtils.isEmpty(searchString)) {
+                    monitor.subTask("Search queries: " + searchString);
+                } else {
+                    monitor.subTask("Load all queries");
+                }
+                try (QMEventCursor cursor = eventBrowser.getQueryHistoryCursor(monitor, criteria)) {
+                    while (events.size() < entriesPerPage && cursor.hasNextEvent(monitor)) {
+                        if (monitor.isCanceled()) {
+                            break;
+                        }
+                        events.add(cursor.nextEvent(monitor));
+                        monitor.subTask(events.get(events.size() - 1).toString());
+                    }
+                } catch (DBException e) {
+                    throw new InvocationTargetException(e);
+                }
+                monitor.done();
+            }
+            return events;
+        }
+
+        @Override
+        public Object getFamily() {
+            return QueryLogViewer.class;
+        }
+
+    }
+
+    private class EvenHistoryReadVisualizer extends ProgressLoaderVisualizer<List<QMMetaEvent>> {
+        public EvenHistoryReadVisualizer(EventHistoryReadService loadingService) {
+            super(loadingService, logTable);
+        }
+
+        @Override
+        public void visualizeLoading() {
+            reloadInProgress = true;
+            super.visualizeLoading();
+        }
+
+        @Override
+        public void completeLoading(List<QMMetaEvent> result) {
+            try {
+                super.completeLoading(result);
+                super.visualizeLoading();
+                updateMetaInfo(result);
+            } finally {
+                reloadInProgress = false;
+            }
         }
     }
 

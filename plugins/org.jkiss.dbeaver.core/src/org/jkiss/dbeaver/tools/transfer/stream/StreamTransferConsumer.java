@@ -549,5 +549,10 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                 }
             }
         }
+
+        @Override
+        public String getOutputEncoding() {
+            return settings == null ? null : settings.getOutputEncoding();
+        }
     }
 }

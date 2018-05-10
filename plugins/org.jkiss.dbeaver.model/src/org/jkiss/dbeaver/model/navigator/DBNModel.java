@@ -364,6 +364,9 @@ public class DBNModel implements IResourceChangeListener {
                             break;
                         }
                     }
+                } else if (child.getObject() == objectToCache) {
+                    cached = true;
+                    break;
                 }
             }
         }

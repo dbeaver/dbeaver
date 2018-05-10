@@ -544,6 +544,7 @@
                 </with>
             </activeWhen>
         </handler>
+
         <handler commandId="org.jkiss.dbeaver.core.export.data" class="org.jkiss.dbeaver.tools.transfer.handlers.DataExportHandler">
             <enabledWhen>
                 <with variable="selection">
@@ -1678,6 +1679,9 @@
 
 
         <!-- Query log control handlers -->
+        <handler commandId="org.eclipse.ui.file.refresh" class="org.jkiss.dbeaver.ui.controls.querylog.QueryLogCommandHandler">
+            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.querylog.control"/></activeWhen>
+        </handler>
         <handler commandId="org.eclipse.ui.edit.selectAll" class="org.jkiss.dbeaver.ui.controls.querylog.QueryLogCommandHandler">
            <activeWhen><reference definitionId="org.jkiss.dbeaver.core.ui.querylog.control"/></activeWhen>
         </handler>
@@ -2416,13 +2420,17 @@
 
         <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.queryManager">
             <command
-                  commandId="org.jkiss.dbeaver.core.qm.filter"
-                  label="%command.org.jkiss.dbeaver.core.qm.filter.name"
-                  tooltip="%command.org.jkiss.dbeaver.core.qm.filter.description"/>
+                commandId="org.jkiss.dbeaver.core.qm.filter"
+                label="%command.org.jkiss.dbeaver.core.qm.filter.name"
+                tooltip="%command.org.jkiss.dbeaver.core.qm.filter.description"/>
             <command
-                  commandId="org.jkiss.dbeaver.core.qm.clear"
-                  label="%command.org.jkiss.dbeaver.core.qm.clear.name"
-                  tooltip="%command.org.jkiss.dbeaver.core.qm.clear.description"/>
+                commandId="org.jkiss.dbeaver.core.qm.clear"
+                label="%command.org.jkiss.dbeaver.core.qm.clear.name"
+                tooltip="%command.org.jkiss.dbeaver.core.qm.clear.description"/>
+            <command
+                commandId="org.eclipse.ui.file.refresh"
+                label="%command.org.jkiss.dbeaver.core.qm.refresh.name"
+                tooltip="%command.org.jkiss.dbeaver.core.qm.refresh.description"/>
             <separator name="additions" visible="true"/>
         </menuContribution>
 
@@ -2435,6 +2443,10 @@
                   commandId="org.jkiss.dbeaver.core.qm.clear"
                   label="%command.org.jkiss.dbeaver.core.qm.clear.name"
                   tooltip="%command.org.jkiss.dbeaver.core.qm.clear.description"/>
+            <command
+                    commandId="org.eclipse.ui.file.refresh"
+                    label="%command.org.jkiss.dbeaver.core.qm.refresh.name"
+                    tooltip="%command.org.jkiss.dbeaver.core.qm.refresh.description"/>
             <separator name="additions" visible="true"/>
         </menuContribution>
 
@@ -2534,25 +2546,25 @@
         <!--<key commandId="org.jkiss.dbeaver.core.sql.editor.open" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+L"/>-->
         <key commandId="org.jkiss.dbeaver.core.sql.editor.recent" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+Enter"/>
 
-        <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+Enter"/>
-        <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.statementNew" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+\"/>
-        <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.script" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+X"/>
-        <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.scriptNew" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+X"/>
-        <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.count" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+C"/>
-        <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.all.rows" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+A"/>
-        <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.expression" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+'"/>
-        <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+E"/>
-        <key commandId="org.jkiss.dbeaver.ui.editors.sql.close.tab" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+\"/>
+        <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.statement" contextId="org.jkiss.dbeaver.ui.editors.sql.script" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+Enter"/>
+        <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.statementNew" contextId="org.jkiss.dbeaver.ui.editors.sql.script" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+\"/>
+        <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.script" contextId="org.jkiss.dbeaver.ui.editors.sql.script" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+X"/>
+        <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.scriptNew" contextId="org.jkiss.dbeaver.ui.editors.sql.script" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+X"/>
+        <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.count" contextId="org.jkiss.dbeaver.ui.editors.sql.script" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+C"/>
+        <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.all.rows" contextId="org.jkiss.dbeaver.ui.editors.sql.script" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+A"/>
+        <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.expression" contextId="org.jkiss.dbeaver.ui.editors.sql.script" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+'"/>
+        <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain" contextId="org.jkiss.dbeaver.ui.editors.sql.script" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+E"/>
+        <key commandId="org.jkiss.dbeaver.ui.editors.sql.close.tab" contextId="org.jkiss.dbeaver.ui.editors.sql.script" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+\"/>
 
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.navigate.object" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="F4"/>
-        <key commandId="org.jkiss.dbeaver.ui.editors.sql.query.next" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+ARROW_DOWN"/>
-        <key commandId="org.jkiss.dbeaver.ui.editors.sql.query.prev" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+ARROW_UP"/>
-        <key commandId="org.jkiss.dbeaver.ui.editors.sql.show.output" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+O"/>
-        <key commandId="org.jkiss.dbeaver.ui.editors.sql.show.log" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+P"/>
+        <key commandId="org.jkiss.dbeaver.ui.editors.sql.query.next" contextId="org.jkiss.dbeaver.ui.editors.sql.script" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+ARROW_DOWN"/>
+        <key commandId="org.jkiss.dbeaver.ui.editors.sql.query.prev" contextId="org.jkiss.dbeaver.ui.editors.sql.script" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+ARROW_UP"/>
+        <key commandId="org.jkiss.dbeaver.ui.editors.sql.show.output" contextId="org.jkiss.dbeaver.ui.editors.sql.script" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+O"/>
+        <key commandId="org.jkiss.dbeaver.ui.editors.sql.show.log" contextId="org.jkiss.dbeaver.ui.editors.sql.script" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+P"/>
 
-        <key commandId="org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+6"/>
-        <key commandId="org.jkiss.dbeaver.ui.editors.sql.maximize.result.panel" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+6"/>
-        <key commandId="org.jkiss.dbeaver.ui.editors.sql.switch.panel" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+6"/>
+        <key commandId="org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel" contextId="org.jkiss.dbeaver.ui.editors.sql.script" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+6"/>
+        <key commandId="org.jkiss.dbeaver.ui.editors.sql.maximize.result.panel" contextId="org.jkiss.dbeaver.ui.editors.sql.script" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+6"/>
+        <key commandId="org.jkiss.dbeaver.ui.editors.sql.switch.panel" contextId="org.jkiss.dbeaver.ui.editors.sql.script" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+6"/>
         <!--<key commandId="org.jkiss.dbeaver.ui.editors.sql.assist.templates" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+SPACE"/>-->
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.open.file" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+O"/>
 
@@ -2560,7 +2572,7 @@
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.comment.multi" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+/"/>
 
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.word.wrap" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+E"/>
-        <key commandId="org.jkiss.dbeaver.ui.editors.sql.rename" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+F2"/>
+        <key commandId="org.jkiss.dbeaver.ui.editors.sql.rename" contextId="org.jkiss.dbeaver.ui.editors.sql.script" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+F2"/>
 
         <key commandId="org.jkiss.dbeaver.ui.editors.text.content.format" contextId="org.eclipse.ui.contexts.window" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+F"/>
 
@@ -2609,6 +2621,12 @@
               name="%context.org.jkiss.dbeaver.ui.editors.sql.name"
               parentId="org.eclipse.ui.textEditorScope">
         </context>
+        <context
+                id="org.jkiss.dbeaver.ui.editors.sql.script"
+                name="%context.org.jkiss.dbeaver.ui.editors.sql.script.name"
+                parentId="org.jkiss.dbeaver.ui.editors.sql">
+        </context>
+
     </extension>
 
     <extension point="org.eclipse.ui.editors">
@@ -3531,6 +3549,20 @@
                     label="%dataTransfer.processor.xml.name">
                 <propertyGroup label="%dataTransfer.processor.xml.propertyGroup.general.label">
                     <property id="extension" label="%dataTransfer.processor.xml.property.extension.label" defaultValue="xml"/>
+                </propertyGroup>
+            </processor>
+            <processor
+                    id="stream.dbunit"
+                    class="org.jkiss.dbeaver.tools.transfer.stream.impl.DataExporterDbUnit"
+                    description="%dataTransfer.processor.dbunit.description"
+                    icon="icons/misc/xml.png"
+                    label="%dataTransfer.processor.dbunit.name">
+                <propertyGroup label="%dataTransfer.processor.dbunit.propertyGroup.general.label">
+                	<property id="upperCaseTableName" label="%dataTransfer.processor.dbunit.property.uppercase.table.name.label" type="boolean" defaultValue="true"/>
+                	<property id="upperCaseColumnNames" label="%dataTransfer.processor.dbunit.property.uppercase.column.names.label" type="boolean" defaultValue="true"/>
+                    <property id="extension" label="%dataTransfer.processor.dbunit.property.extension.label" defaultValue="xml"/>
+                    <property id="includeNullValues" label="%dataTransfer.processor.dbunit.property.include.null.values.label" type="boolean" defaultValue="true"/>
+                    <property id="nullValueString" label="%dataTransfer.processor.dbunit.property.null.value.string.label" defaultValue="[NULL]"/>
                 </propertyGroup>
             </processor>
             <processor

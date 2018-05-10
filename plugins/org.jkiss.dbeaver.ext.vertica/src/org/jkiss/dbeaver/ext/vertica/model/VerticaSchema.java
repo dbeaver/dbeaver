@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructLookupCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.ArrayUtils;
 
 import java.sql.SQLException;
@@ -62,6 +63,24 @@ public class VerticaSchema extends GenericSchema implements DBPSystemObject
         super(dataSource, catalog, schemaName);
     }
 
+    @Override
+    public Collection<? extends DBSObject> getChildren(DBRProgressMonitor monitor) throws DBException {
+        List<DBSObject> children = new ArrayList<>(getTables(monitor));
+        children.addAll(getProjections(monitor));
+        return children;
+    }
+
+    @Override
+    public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName)
+        throws DBException
+    {
+        DBSObject child = getTable(monitor, childName);
+        if (child == null) {
+            child = getProjection(monitor, childName);
+        }
+        return child;
+    }
+
     @Association
     public Collection<GenericTable> getFlexTables(DBRProgressMonitor monitor) throws DBException {
         Collection<GenericTable> tables = getTables(monitor);
@@ -80,6 +99,11 @@ public class VerticaSchema extends GenericSchema implements DBPSystemObject
     @Association
     public Collection<VerticaProjection> getProjections(DBRProgressMonitor monitor) throws DBException {
         return projectionCache.getAllObjects(monitor, this);
+    }
+
+    @Association
+    public VerticaProjection getProjection(DBRProgressMonitor monitor, String name) throws DBException {
+        return projectionCache.getObject(monitor, this, name);
     }
 
     @Association
@@ -104,7 +128,9 @@ public class VerticaSchema extends GenericSchema implements DBPSystemObject
         @Override
         public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull VerticaSchema schema, @Nullable VerticaProjection object, @Nullable String objectName) throws SQLException {
             final JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT * FROM v_catalog.projections WHERE projection_schema=?" +
+                "SELECT p.*,c.comment FROM v_catalog.projections p\n" +
+                    "LEFT OUTER JOIN v_catalog.comments c ON c.object_type = 'PROJECTION' AND c.object_schema = p.projection_schema AND c.object_name = p.projection_name\n" +
+                    "WHERE p.projection_schema=?" +
                     (object == null && objectName == null ? "" : " AND projection_name=?")
             );
             dbStat.setString(1, schema.getName());
@@ -123,13 +149,13 @@ public class VerticaSchema extends GenericSchema implements DBPSystemObject
         protected JDBCStatement prepareChildrenStatement(@NotNull JDBCSession session, @NotNull VerticaSchema owner, @Nullable VerticaProjection forTable)
             throws SQLException
         {
-            StringBuilder sql = new StringBuilder();
-            sql.append("SELECT * FROM v_catalog.projection_columns pc\n" +
-                "\nWHERE projection_name=? " +
-                "\nORDER BY column_position");
+            String sql = ("SELECT pc.*,c.comment FROM v_catalog.projection_columns pc\n" +
+                "LEFT OUTER JOIN v_catalog.comments c ON c.object_id = pc.column_id\n" +
+                "WHERE pc.projection_id=?\n" +
+                "ORDER BY pc.column_position");
 
-            JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
-            dbStat.setString(1, forTable.getName());
+            JDBCPreparedStatement dbStat = session.prepareStatement(sql);
+            dbStat.setLong(1, forTable.getObjectId());
             return dbStat;
         }
 

@@ -50,6 +50,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
     private Button alwaysUseAllColumns;
     private Button newRowsAfter;
     private Button refreshAfterUpdate;
+    private Button useNavigatorFilters;
 
     private Button advUseFetchSize;
 
@@ -74,7 +75,8 @@ public class PrefPageResultSetMain extends TargetPrefPage
             store.contains(DBeaverPreferences.RS_EDIT_REFRESH_AFTER_UPDATE) ||
             store.contains(DBeaverPreferences.KEEP_STATEMENT_OPEN) ||
             store.contains(DBeaverPreferences.RESULT_SET_ORDER_SERVER_SIDE) ||            
-            store.contains(ModelPreferences.RESULT_SET_USE_FETCH_SIZE)
+            store.contains(ModelPreferences.RESULT_SET_USE_FETCH_SIZE) ||
+            store.contains(DBeaverPreferences.RESULT_SET_USE_NAVIGATOR_FILTERS)
             ;
     }
 
@@ -123,6 +125,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             alwaysUseAllColumns = UIUtils.createCheckbox(miscGroup, CoreMessages.pref_page_content_editor_checkbox_keys_always_use_all_columns, false);
             newRowsAfter = UIUtils.createCheckbox(miscGroup, CoreMessages.pref_page_content_editor_checkbox_new_rows_after, false);
             refreshAfterUpdate = UIUtils.createCheckbox(miscGroup, CoreMessages.pref_page_content_editor_checkbox_refresh_after_update, false);
+            useNavigatorFilters = UIUtils.createCheckbox(miscGroup, CoreMessages.pref_page_content_editor_checkbox_use_navigator_filters, CoreMessages.pref_page_content_editor_checkbox_use_navigator_filters_tip, false, 1);
         }
 
         {
@@ -155,6 +158,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             alwaysUseAllColumns.setSelection(store.getBoolean(DBeaverPreferences.RS_EDIT_USE_ALL_COLUMNS));
             newRowsAfter.setSelection(store.getBoolean(DBeaverPreferences.RS_EDIT_NEW_ROWS_AFTER));
             refreshAfterUpdate.setSelection(store.getBoolean(DBeaverPreferences.RS_EDIT_REFRESH_AFTER_UPDATE));
+            useNavigatorFilters.setSelection(store.getBoolean(DBeaverPreferences.RESULT_SET_USE_NAVIGATOR_FILTERS));
 
             advUseFetchSize.setSelection(store.getBoolean(ModelPreferences.RESULT_SET_USE_FETCH_SIZE));
 
@@ -181,6 +185,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
             store.setValue(DBeaverPreferences.RS_EDIT_USE_ALL_COLUMNS, alwaysUseAllColumns.getSelection());
             store.setValue(DBeaverPreferences.RS_EDIT_NEW_ROWS_AFTER, newRowsAfter.getSelection());
             store.setValue(DBeaverPreferences.RS_EDIT_REFRESH_AFTER_UPDATE, refreshAfterUpdate.getSelection());
+            store.setValue(DBeaverPreferences.RESULT_SET_USE_NAVIGATOR_FILTERS, useNavigatorFilters.getSelection());
 
             store.setValue(ModelPreferences.RESULT_SET_USE_FETCH_SIZE, advUseFetchSize.getSelection());
         } catch (Exception e) {
@@ -205,6 +210,7 @@ public class PrefPageResultSetMain extends TargetPrefPage
         store.setToDefault(DBeaverPreferences.RS_EDIT_USE_ALL_COLUMNS);
         store.setToDefault(DBeaverPreferences.RS_EDIT_NEW_ROWS_AFTER);
         store.setToDefault(DBeaverPreferences.RS_EDIT_REFRESH_AFTER_UPDATE);
+        store.setToDefault(DBeaverPreferences.RESULT_SET_USE_NAVIGATOR_FILTERS);
 
         store.setToDefault(ModelPreferences.RESULT_SET_USE_FETCH_SIZE);
 
