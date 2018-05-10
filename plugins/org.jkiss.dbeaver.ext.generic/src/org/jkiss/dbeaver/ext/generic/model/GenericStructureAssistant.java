@@ -97,8 +97,8 @@ public class GenericStructureAssistant extends JDBCStructureAssistant
         final GenericMetaObject tableObject = getDataSource().getMetaObject(GenericConstants.OBJECT_TABLE);
         final DBRProgressMonitor monitor = session.getProgressMonitor();
         try (JDBCResultSet dbResult = session.getMetaData().getTables(
-            catalog == null ? dataSource.getAllObjectsPattern() : catalog.getName(),
-            schema == null ? dataSource.getAllObjectsPattern() : schema.getName(),
+            catalog == null ? null : catalog.getName(),
+            schema == null ? null : schema.getName(),
             tableNameMask,
             null)) {
             while (dbResult.next()) {
@@ -128,8 +128,8 @@ public class GenericStructureAssistant extends JDBCStructureAssistant
         final GenericMetaObject procObject = getDataSource().getMetaObject(GenericConstants.OBJECT_PROCEDURE);
         DBRProgressMonitor monitor = session.getProgressMonitor();
         try (JDBCResultSet dbResult = session.getMetaData().getProcedures(
-            catalog == null ? dataSource.getAllObjectsPattern() : catalog.getName(),
-            schema == null ? dataSource.getAllObjectsPattern() : schema.getName(),
+            catalog == null ? null : catalog.getName(),
+            schema == null ? null : schema.getName(),
             procNameMask)) {
             while (dbResult.next()) {
                 if (monitor.isCanceled()) {
