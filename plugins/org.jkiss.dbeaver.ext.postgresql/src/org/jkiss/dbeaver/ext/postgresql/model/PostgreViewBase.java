@@ -20,16 +20,21 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -84,6 +89,20 @@ public abstract class PostgreViewBase extends PostgreTableReal
                 try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read view definition")) {
                     String definition = JDBCUtils.queryString(session, "SELECT pg_get_viewdef(?, true)", getObjectId());
                     this.source = PostgreUtils.getViewDDL(this, definition);
+                    
+                    // comment 
+					if (!CommonUtils.isEmpty(getDescription())) {
+						this.source += "\nCOMMENT ON " + getViewType() + " " + DBUtils.getQuotedIdentifier(this)
+								+ " IS " + SQLUtils.quoteString(this, getDescription()) + ";";
+					}
+					// acl privilege
+					List<DBEPersistAction> actions = new ArrayList<>();
+					PostgreUtils.getObjectGrantPermissionActions(monitor, this, actions, options);
+					if (!actions.isEmpty()) {
+						this.source += "\n\n" + SQLUtils.generateScript(getDataSource(),
+								actions.toArray(new DBEPersistAction[actions.size()]), false);
+					}
+
                     String extDefinition = readExtraDefinition(session, options);
                     if (extDefinition != null) {
                         this.source += "\n" + extDefinition;
