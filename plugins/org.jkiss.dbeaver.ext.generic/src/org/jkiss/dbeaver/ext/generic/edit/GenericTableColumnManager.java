@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.generic.edit;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
@@ -30,6 +31,8 @@ import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableColumnManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.UITask;
+import org.jkiss.dbeaver.ui.editors.object.struct.AttributeEditPage;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.Types;
@@ -48,17 +51,40 @@ public class GenericTableColumnManager extends SQLTableColumnManager<GenericTabl
     }
 
     @Override
-    protected GenericTableColumn createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, GenericTable parent, Object copyFrom)
-    {
+    protected GenericTableColumn createDatabaseObject(DBRProgressMonitor monitor, DBECommandContext context, GenericTable parent, Object copyFrom) throws DBException {
         DBSDataType columnType = findBestDataType(parent.getDataSource(), DBConstants.DEFAULT_DATATYPE_NAMES);
 
-        final GenericTableColumn column = new GenericTableColumn(parent);
-        column.setName(getNewColumnName(monitor, context, parent));
-        column.setTypeName(columnType == null ? "INTEGER" : columnType.getName());
-        column.setMaxLength(columnType != null && columnType.getDataKind() == DBPDataKind.STRING ? 100 : 0);
-        column.setValueType(columnType == null ? Types.INTEGER : columnType.getTypeID());
-        column.setOrdinalPosition(-1);
-        return column;
+        int columnSize = columnType != null && columnType.getDataKind() == DBPDataKind.STRING ? 100 : 0;
+        GenericTableColumn column = parent.getDataSource().getMetaModel().createTableColumnImpl(
+            monitor,
+            parent,
+            getNewColumnName(monitor, context, parent),
+            columnType == null ? "INTEGER" : columnType.getName(),
+            columnType == null ? Types.INTEGER : columnType.getTypeID(),
+            columnType == null ? Types.INTEGER : columnType.getTypeID(),
+            -1,
+            columnSize,
+            columnSize,
+            null,
+            null,
+            10,
+            false,
+            null,
+            null,
+            false,
+            false
+        );
+        column.setPersisted(false);
+        return new UITask<GenericTableColumn>() {
+            @Override
+            protected GenericTableColumn runTask() {
+                AttributeEditPage page = new AttributeEditPage(null, column);
+                if (!page.edit()) {
+                    return null;
+                }
+                return column;
+            }
+        }.execute();
     }
 
     @Override

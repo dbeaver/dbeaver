@@ -368,16 +368,21 @@ public class TabbedFolderComposite extends Composite implements ITabbedFolderCon
     }
 
     @Override
-    public void switchFolder(@Nullable String folderId) {
+    public boolean switchFolder(@Nullable String folderId) {
         for (FolderPane folderPane : folderPanes) {
             for (int i = 0; i < folderPane.folderList.getNumberOfElements(); i++) {
                 if (folderId == null || folderPane.folderList.getElementAt(i).getInfo().getId().equals(folderId)) {
-                    folderPane.folderList.select(i);
-                    lastActiveFolder = folderPane;
-                    break;
+                    if (folderPane.folderList.getSelectionIndex() != i) {
+                        folderPane.folderList.select(i);
+                        lastActiveFolder = folderPane;
+                        return true;
+                    } else {
+                        return false;
+                    }
                 }
             }
         }
+        return false;
     }
 
     @Override

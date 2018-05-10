@@ -22,14 +22,12 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPHiddenObject;
-import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableIndex;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 
 import java.sql.ResultSet;
@@ -41,7 +39,7 @@ import java.util.Map;
 /**
  * PostgreIndex
  */
-public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase> implements PostgreScriptObject, DBPHiddenObject
+public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase> implements PostgreObject, PostgreScriptObject, DBPHiddenObject
 {
     private long indexId;
     private boolean isUnique;
@@ -55,6 +53,7 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
     private String description;
     private List<PostgreIndexColumn> columns = new ArrayList<>();
     private long amId;
+    private long tablespaceId;
 
     private transient boolean isHidden;
     private transient String indexDDL;
@@ -78,6 +77,7 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
 
         this.description = JDBCUtils.safeGetString(dbResult, "description");
         this.amId = JDBCUtils.safeGetLong(dbResult, "relam");
+        this.tablespaceId = JDBCUtils.safeGetLong(dbResult, "reltablespace");
 
         // Unique key indexes (including PK) are implicit. We don't want to show them separately
         if (this.isUnique) {
@@ -100,7 +100,13 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
         return getTable().getDataSource();
     }
 
-    public long getIndexId() {
+    @Override
+    public PostgreDatabase getDatabase() {
+        return getTable().getDatabase();
+    }
+
+    @Override
+    public long getObjectId() {
         return indexId;
     }
 
@@ -167,6 +173,15 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
             return null;
         }
         return PostgreUtils.getObjectById(monitor, getTable().getDatabase().accessMethodCache, getTable().getDatabase(), amId);
+    }
+
+    @Nullable
+    @Property(viewable = true, order = 31)
+    public PostgreTablespace getTablespace(DBRProgressMonitor monitor) throws DBException {
+        if (tablespaceId <= 0) {
+            return getDatabase().getDefaultTablespace(monitor);
+        }
+        return getDatabase().getTablespace(monitor, tablespaceId);
     }
 
     @Override

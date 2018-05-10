@@ -22,14 +22,11 @@ import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.TextTransfer;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
@@ -55,8 +52,6 @@ import java.util.List;
  * RSV value view panel
  */
 public class MetaDataPanel implements IResultSetPanel {
-
-    private static final Log log = Log.getLog(MetaDataPanel.class);
 
     public static final String PANEL_ID = "results-metadata";
 
@@ -91,46 +86,36 @@ public class MetaDataPanel implements IResultSetPanel {
 
         this.attributeList = new MetaDataTable(parent);
         this.attributeList.setFitWidth(false);
-        this.attributeList.getItemsViewer().addSelectionChangedListener(new ISelectionChangedListener() {
-            @Override
-            public void selectionChanged(SelectionChangedEvent event) {
-                DBDAttributeBinding attr = getSelectedAttribute();
-                if (attr != null && !updateSelection) {
-                    if (isAttributeVisible(attr)) {
-                        updateSelection = true;
-                        try {
-                            presentation.setCurrentAttribute(attr);
-                        } finally {
-                            updateSelection = false;
-                        }
+        this.attributeList.getItemsViewer().addSelectionChangedListener(event -> {
+            DBDAttributeBinding attr = getSelectedAttribute();
+            if (attr != null && !updateSelection) {
+                if (isAttributeVisible(attr)) {
+                    updateSelection = true;
+                    try {
+                        presentation.setCurrentAttribute(attr);
+                    } finally {
+                        updateSelection = false;
                     }
                 }
             }
         });
         if (this.presentation instanceof ISelectionProvider) {
-            final ISelectionChangedListener listener = new ISelectionChangedListener() {
-                @Override
-                public void selectionChanged(SelectionChangedEvent event) {
-                    if (!updateSelection && MetaDataPanel.this.presentation.getController().getVisiblePanel() == MetaDataPanel.this) {
-                        DBDAttributeBinding attr = presentation.getCurrentAttribute();
-                        if (attr != null && attr != getSelectedAttribute()) {
-                            updateSelection = true;
-                            try {
-                                attributeList.getItemsViewer().setSelection(new StructuredSelection(attr));
-                            } finally {
-                                updateSelection = false;
-                            }
+            final ISelectionChangedListener listener = event -> {
+                if (!updateSelection && MetaDataPanel.this.presentation.getController().getVisiblePanel() == MetaDataPanel.this) {
+                    DBDAttributeBinding attr = presentation.getCurrentAttribute();
+                    if (attr != null && attr != getSelectedAttribute()) {
+                        updateSelection = true;
+                        try {
+                            attributeList.getItemsViewer().setSelection(new StructuredSelection(attr));
+                        } finally {
+                            updateSelection = false;
                         }
                     }
                 }
             };
             ((ISelectionProvider) this.presentation).addSelectionChangedListener(listener);
-            attributeList.getControl().addDisposeListener(new DisposeListener() {
-                @Override
-                public void widgetDisposed(DisposeEvent e) {
-                    ((ISelectionProvider) presentation).removeSelectionChangedListener(listener);
-                }
-            });
+            attributeList.getControl().addDisposeListener(e ->
+                ((ISelectionProvider) presentation).removeSelectionChangedListener(listener));
         }
 
         return this.attributeList;

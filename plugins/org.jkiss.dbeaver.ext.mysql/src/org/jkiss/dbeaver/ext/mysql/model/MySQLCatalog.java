@@ -61,6 +61,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
 
     final TableCache tableCache = new TableCache();
     final ProceduresCache proceduresCache = new ProceduresCache();
+    final PackageCache packageCache = new PackageCache();
     final TriggerCache triggerCache = new TriggerCache();
     final ConstraintCache constraintCache = new ConstraintCache(tableCache);
     final IndexCache indexCache = new IndexCache(tableCache);
@@ -184,7 +185,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
                         if (dbResult.next()) {
                             databaseSize = dbResult.getLong(1);
                         } else {
-                            databaseSize = 0l;
+                            databaseSize = 0L;
                         }
                     }
                 }
@@ -262,6 +263,13 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         throws DBException
     {
         return proceduresCache.getObject(monitor, this, procName);
+    }
+
+    @Association
+    public Collection<MySQLPackage> getPackages(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        return packageCache.getAllObjects(monitor, this);
     }
 
     @Association
@@ -674,7 +682,32 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
                 "SELECT * FROM " + MySQLConstants.META_TABLE_ROUTINES +
                     "\nWHERE " + MySQLConstants.COL_ROUTINE_SCHEMA + "=?" +
                     (object == null && objectName == null ? "" : " AND " + MySQLConstants.COL_ROUTINE_NAME + "=?") +
+                    "\nAND ROUTINE_TYPE IN ('PROCEDURE','FUNCTION')" +
                     "\nORDER BY " + MySQLConstants.COL_ROUTINE_NAME
+            );
+            dbStat.setString(1, owner.getName());
+            if (object != null || objectName != null) {
+                dbStat.setString(2, object != null ? object.getName() : objectName);
+            }
+            return dbStat;
+        }
+    }
+
+    static class PackageCache extends JDBCObjectLookupCache<MySQLCatalog, MySQLPackage> {
+
+        @Override
+        protected MySQLPackage fetchObject(@NotNull JDBCSession session, @NotNull MySQLCatalog owner, @NotNull JDBCResultSet dbResult)
+            throws SQLException, DBException
+        {
+            return new MySQLPackage(owner, dbResult);
+        }
+
+        @Override
+        public JDBCStatement prepareLookupStatement(JDBCSession session, MySQLCatalog owner, MySQLPackage object, String objectName) throws SQLException {
+            JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT name,comment FROM mysql.proc\n" +
+                    "WHERE db = ? AND type = 'PACKAGE'" +
+                    (object == null && objectName == null ? "" : " \nAND name = ?")
             );
             dbStat.setString(1, owner.getName());
             if (object != null || objectName != null) {

@@ -19,23 +19,15 @@
 
 package org.jkiss.dbeaver.debug.ui;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.debug.core.DebugPlugin;
-import org.eclipse.debug.core.ILaunchConfiguration;
-import org.eclipse.debug.core.ILaunchConfigurationType;
-import org.eclipse.debug.core.ILaunchManager;
+import org.eclipse.debug.core.*;
 import org.eclipse.debug.ui.DebugUITools;
 import org.eclipse.debug.ui.IDebugModelPresentation;
 import org.eclipse.debug.ui.ILaunchShortcut2;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ISelection;
@@ -43,22 +35,25 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.window.Window;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IEditorSite;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.IWorkbenchPartSite;
-import org.eclipse.ui.IWorkbenchWindow;
-import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.*;
 import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
-import org.jkiss.dbeaver.debug.DBGController;
-import org.jkiss.dbeaver.debug.core.DebugCore;
-import org.jkiss.dbeaver.debug.internal.ui.DebugUIMessages;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.debug.core.DebugUtils;
+import org.jkiss.dbeaver.debug.ui.internal.DebugUIMessages;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public abstract class DatabaseLaunchShortcut implements ILaunchShortcut2 {
-    
+
+    private static final Log log = Log.getLog(DatabaseLaunchShortcut.class);
+
     private final String configurationTypeId;
     private final String launchObjectName;
     
@@ -92,7 +87,7 @@ public abstract class DatabaseLaunchShortcut implements ILaunchShortcut2 {
         IEditorSite editorSite = editor.getEditorSite();
         workbenchPartSite = editorSite;
         ISelection selection = editorSite.getSelectionProvider().getSelection();
-        if (selection instanceof IStructuredSelection) {
+        if (selection instanceof IStructuredSelection && !selection.isEmpty()) {
             Object[] array = ((IStructuredSelection) selection).toArray();
             searchAndLaunch(array, mode, getEditorEmptyMessage());
         } else {
@@ -142,7 +137,7 @@ public abstract class DatabaseLaunchShortcut implements ILaunchShortcut2 {
     }
 
     protected void searchAndLaunch(Object[] scope, String mode, String emptyMessage) {
-        List<DBSObject> extracted = DebugCore.extractLaunchable(scope);
+        List<DBSObject> extracted = DebugUtils.extractLaunchable(scope);
         DBSObject launchable = null;
         if (extracted.size() == 0) {
             MessageDialog.openError(getShell(), DebugUIMessages.DatabaseLaunchShortcut_e_launch, emptyMessage);
@@ -152,12 +147,16 @@ public abstract class DatabaseLaunchShortcut implements ILaunchShortcut2 {
             launchable = extracted.get(0);
         }
         if (launchable != null) {
-            launch(launchable, mode);
+            try {
+                launch(launchable, mode);
+            } catch (CoreException e) {
+                DBUserInterface.getInstance().showError(DebugUIMessages.DatabaseLaunchShortcut_e_launch, "Cannot launch debug", e.getStatus());
+            }
         }
     }
 
-    protected void launch(DBSObject launchable, String mode) {
-        Map<String, Object> databaseContext = DebugCore.resolveDatabaseContext(launchable);
+    protected void launch(DBSObject launchable, String mode) throws CoreException {
+        Map<String, Object> databaseContext = DebugUtils.resolveDatabaseContext(launchable);
         List<ILaunchConfiguration> configs = getCandidates(launchable, getConfigurationType(), databaseContext);
         if (configs != null) {
             ILaunchConfiguration config = null;
@@ -171,17 +170,15 @@ public abstract class DatabaseLaunchShortcut implements ILaunchShortcut2 {
                 }
             }
             if (config == null) {
-                try {
-                    config = createConfiguration(launchable);
-                } catch (CoreException e) {
-                    IStatus status = e.getStatus();
-                    DebugUI.log(status);
-                    MessageDialog.openError(getShell(), DebugUIMessages.DatabaseLaunchShortcut_e_launch, status.getMessage());
+                config = createConfiguration(launchable, databaseContext);
+                if (DebugUITools.openLaunchConfigurationPropertiesDialog(DBeaverUI.getActiveWorkbenchShell(), config, DebugUI.DEBUG_LAUNCH_GROUP_ID) != IDialogConstants.OK_ID) {
                     return;
+                }
+                if (config instanceof ILaunchConfigurationWorkingCopy) {
+                    ((ILaunchConfigurationWorkingCopy) config).doSave();
                 }
             }
             if (config != null) {
-                DebugCore.postDebuggerSourceEvent(DebugCore.extractNodePath(config));
                 DebugUITools.launch(config, mode);
             }
         }
@@ -218,51 +215,28 @@ public abstract class DatabaseLaunchShortcut implements ILaunchShortcut2 {
         return (DBSObject) dialog.getFirstResult();
     }
 
-    protected List<ILaunchConfiguration> getCandidates(DBSObject launchable, ILaunchConfigurationType configType, Map<String, Object> databaseContext) {
-        List<ILaunchConfiguration> candidateConfigs = Collections.emptyList();
-        try {
-            ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
-            ILaunchConfiguration[] configs = launchManager.getLaunchConfigurations(configType);
-            candidateConfigs = new ArrayList<ILaunchConfiguration>(configs.length);
-            for (int i = 0; i < configs.length; i++) {
-                ILaunchConfiguration config = configs[i];
-                if (isCandidate(config, launchable, databaseContext)) {
-                    candidateConfigs.add(config);
-                }
+    protected List<ILaunchConfiguration> getCandidates(DBSObject launchable, ILaunchConfigurationType configType, Map<String, Object> databaseContext) throws CoreException {
+        List<ILaunchConfiguration> candidateConfigs = new ArrayList<>();
+
+        ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
+        ILaunchConfiguration[] configs = launchManager.getLaunchConfigurations(configType);
+        for (ILaunchConfiguration config : configs) {
+            if (isCandidate(config, launchable, databaseContext)) {
+                candidateConfigs.add(config);
             }
-        } catch (CoreException e) {
-            DebugUI.log(e.getStatus());
         }
         return candidateConfigs;
     }
 
-    protected boolean isCandidate(ILaunchConfiguration config, DBSObject launchable, Map<String, Object> databaseContext) {
+    protected boolean isCandidate(ILaunchConfiguration config, DBSObject launchable, Map<String, Object> databaseContext) throws CoreException {
         if (!config.exists()) {
             return false;
         }
-        
-        String datasource = DebugCore.extractDatasourceId(config);
-        String id = launchable.getDataSource().getContainer().getId();
-        if (!datasource.equals(id)) {
-            return false;
-        }
 
-        String database = DebugCore.extractDatabaseName(config);
-        String databaseName = String.valueOf(databaseContext.get(DBGController.DATABASE_NAME));
-        if (!database.equals(databaseName)) {
-            return false;
-        }
-
-        String schema = DebugCore.extractSchemaName(config);
-        String schemaName = String.valueOf(databaseContext.get(DBGController.SCHEMA_NAME));
-        if (!schema.equals(schemaName)) {
-            return false;
-        }
-
-        String oid = DebugCore.extractProcedureOid(config);
-        String procedureOid = String.valueOf(databaseContext.get(DBGController.PROCEDURE_OID));
-        if (!oid.equals(procedureOid)) {
-            return false;
+        for (Map.Entry<String, Object> entry : databaseContext.entrySet()) {
+            if (!CommonUtils.equalObjects(config.getAttribute(entry.getKey(), (String) null), entry.getValue())) {
+                return false;
+            }
         }
         return true;
     }
@@ -282,7 +256,7 @@ public abstract class DatabaseLaunchShortcut implements ILaunchShortcut2 {
         return null;
     }
 
-    protected abstract ILaunchConfiguration createConfiguration(DBSObject launchable) throws CoreException;
+    protected abstract ILaunchConfiguration createConfiguration(DBSObject launchable, Map<String, Object> databaseContext) throws CoreException;
 
     @Override
     public ILaunchConfiguration[] getLaunchConfigurations(ISelection selection) {

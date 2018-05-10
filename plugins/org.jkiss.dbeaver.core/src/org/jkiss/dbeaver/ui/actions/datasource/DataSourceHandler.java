@@ -94,10 +94,10 @@ public class DataSourceHandler
                     if (onFinish != null) {
                         onFinish.onTaskFinished(result);
                     } else if (!result.isOK()) {
-                        DBUserInterface.getInstance().showError(
+                        DBeaverUI.asyncExec(() -> DBUserInterface.getInstance().showError(
                             connectJob.getName(),
                             null,//NLS.bind(CoreMessages.runtime_jobs_connect_status_error, dataSourceContainer.getName()),
-                            result);
+                            result));
                     }
                 }
             };

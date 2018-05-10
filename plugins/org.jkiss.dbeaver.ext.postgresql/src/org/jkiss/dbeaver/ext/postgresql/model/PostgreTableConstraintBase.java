@@ -39,16 +39,19 @@ import java.util.Map;
 /**
  * PostgreTableConstraintBase
  */
-public abstract class PostgreTableConstraintBase extends JDBCTableConstraint<PostgreTableBase> implements PostgreObject,DBPScriptObject {
+public abstract class PostgreTableConstraintBase extends JDBCTableConstraint<PostgreTableBase> implements PostgreObject,PostgreScriptObject {
     private static final Log log = Log.getLog(PostgreTableConstraintBase.class);
 
     private long oid;
     private String constrDDL;
+    private long indexId;
 
     public PostgreTableConstraintBase(PostgreTableBase table, String name, DBSEntityConstraintType constraintType, JDBCResultSet resultSet) throws DBException {
         super(table, name, null, constraintType, true);
 
         this.oid = JDBCUtils.safeGetLong(resultSet, "oid");
+        this.indexId = JDBCUtils.safeGetLong(resultSet, "conindid");
+
         this.description = JDBCUtils.safeGetString(resultSet, "description");
     }
 
@@ -92,6 +95,11 @@ public abstract class PostgreTableConstraintBase extends JDBCTableConstraint<Pos
         return super.getDescription();
     }
 
+    //@Property(viewable = true, order = 12)
+    public PostgreIndex getIndex(DBRProgressMonitor monitor) throws DBException {
+        return indexId == 0 ? null : getTable().getSchema().getIndex(monitor, indexId);
+    }
+
     abstract void cacheAttributes(DBRProgressMonitor monitor, List<? extends PostgreTableConstraintColumn> children, boolean secondPass);
 
     @Override
@@ -114,4 +122,8 @@ public abstract class PostgreTableConstraintBase extends JDBCTableConstraint<Pos
         }
     }
 
+    @Override
+    public void setObjectDefinitionText(String sourceText) throws DBException {
+        throw new DBException("Constraints DDL is read-only");
+    }
 }

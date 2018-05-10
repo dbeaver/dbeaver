@@ -18,18 +18,27 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
+import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -95,7 +104,24 @@ public abstract class PostgreViewBase extends PostgreTableReal
                 source = "";
             }
         }
-        return source;
+
+        List<DBEPersistAction> actions = new ArrayList<>();
+        if (CommonUtils.getOption(options, PostgreConstants.OPTION_DDL_SHOW_COLUMN_COMMENTS) && getDescription() != null) {
+            actions.add(
+                new SQLDatabasePersistAction("Comment",
+                    "COMMENT ON VIEW " + getFullyQualifiedName(DBPEvaluationContext.DDL) + " IS " + SQLUtils.quoteString(this, getDescription())));
+        }
+        if (CommonUtils.getOption(options, PostgreConstants.OPTION_DDL_SHOW_PERMISSIONS)) {
+            PostgreUtils.getObjectGrantPermissionActions(monitor, this, actions, options);
+        }
+
+        StringBuilder ddl = new StringBuilder(source);
+        if (!actions.isEmpty()) {
+            ddl.append("\n\n").append(SQLUtils.generateScript(
+                getDataSource(), actions.toArray(new DBEPersistAction[actions.size()]), false));
+        }
+
+        return ddl.toString();
     }
 
     protected String readExtraDefinition(JDBCSession session, Map<String, Object> options) throws DBException {
@@ -110,4 +136,9 @@ public abstract class PostgreViewBase extends PostgreTableReal
 
     public abstract String getViewType();
 
+    @Override
+    public DBSObject refreshObject(DBRProgressMonitor monitor) throws DBException {
+        this.source = null;
+        return super.refreshObject(monitor);
+    }
 }

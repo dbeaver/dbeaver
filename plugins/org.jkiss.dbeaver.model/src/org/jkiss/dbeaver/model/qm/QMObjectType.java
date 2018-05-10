@@ -31,20 +31,26 @@ import java.util.List;
  */
 public enum QMObjectType {
 
-    session(QMMSessionInfo.class),
-    txn(QMMTransactionInfo.class),
-    query(QMMStatementInfo.class);
+    session("Session", QMMSessionInfo.class),
+    txn("Transactions", QMMTransactionInfo.class),
+    query("Queries", QMMStatementInfo.class);
 
+    private final String title;
     private final Class<? extends QMMObject> type;
 
-    private QMObjectType(Class<? extends QMMObject> type)
+    QMObjectType(String title, Class<? extends QMMObject> type)
     {
+        this.title = title;
         this.type = type;
     }
 
     public Class<? extends QMMObject> getType()
     {
         return type;
+    }
+
+    public String getTitle() {
+        return title;
     }
 
     public static String toString(Collection<QMObjectType> objectTypes)

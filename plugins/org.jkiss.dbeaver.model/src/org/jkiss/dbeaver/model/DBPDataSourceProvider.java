@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
  */
 public interface DBPDataSourceProvider extends DBPObject
 {
+    long FEATURE_NONE        = 0;
     long FEATURE_CATALOGS    = 1;
     long FEATURE_SCHEMAS     = 2;
 

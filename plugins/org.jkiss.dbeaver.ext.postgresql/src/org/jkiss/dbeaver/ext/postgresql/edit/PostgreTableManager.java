@@ -87,10 +87,10 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
         final PostgreTableRegular table = (PostgreTableRegular) command.getObject();
         final String alterPrefix = "ALTER TABLE " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL) + " ";
         final VoidProgressMonitor monitor = new VoidProgressMonitor();
-        if (command.getProperty("hasOids") != null) {
+        if (command.hasProperty("hasOids")) {
             actionList.add(new SQLDatabasePersistAction(alterPrefix + (table.isHasOids() ? "SET WITH OIDS" : "SET WITHOUT OIDS")));
         }
-        if (command.getProperty("tablespace") != null) {
+        if (command.hasProperty("tablespace")) {
             actionList.add(new SQLDatabasePersistAction(alterPrefix + "SET TABLESPACE " + table.getTablespace(monitor).getName()));
         }
     }

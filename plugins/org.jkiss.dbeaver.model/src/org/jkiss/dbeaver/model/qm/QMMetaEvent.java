@@ -25,9 +25,29 @@ import org.jkiss.dbeaver.model.qm.meta.QMMObject;
 public class QMMetaEvent {
 
     public enum Action {
-        BEGIN,
-        END,
-        UPDATE,
+        BEGIN(0),
+        END(1),
+        UPDATE(2),
+        ;
+
+        private final int id;
+
+        Action(int id) {
+            this.id = id;
+        }
+
+        public int getId() {
+            return id;
+        }
+
+        public static Action getById(int id) {
+            for (Action action : values()) {
+                if (action.id == id) {
+                    return action;
+                }
+            }
+            return BEGIN;
+        }
     }
 
     private final QMMObject object;

@@ -174,6 +174,11 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     @Override
+    protected String[] getKeyBindingContexts() {
+        return new String[]{TEXT_EDITOR_CONTEXT, SQLEditorContributions.SQL_EDITOR_CONTEXT, SQLEditorContributions.SQL_EDITOR_SCRIPT_CONTEXT};
+    }
+
+    @Override
     public DBCExecutionContext getExecutionContext() {
         return executionContext;
     }
@@ -246,7 +251,14 @@ public class SQLEditor extends SQLEditorBase implements
             EditorUtils.setInputDataSource(input, container, true);
         }
 
-        checkConnected(false, status -> DBeaverUI.syncExec(this::setFocus));
+        checkConnected(false, status -> {
+            DBeaverUI.asyncExec(() -> {
+                if (!status.isOK()) {
+                    DBUserInterface.getInstance().showError("Can't connect to database", "Error connecting to datasource", status);
+                }
+                setFocus();
+            });
+        });
         setPartName(getEditorName());
 
         fireDataSourceChange();

@@ -16,17 +16,18 @@
  */
 package org.jkiss.dbeaver.ext.sqlite.model;
 
-import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 
 public class SQLiteDataSource extends GenericDataSource {
 
@@ -53,6 +54,21 @@ public class SQLiteDataSource extends GenericDataSource {
             affinity = SQLiteAffinity.NUMERIC;
         }
         return super.getLocalDataType(affinity.name());
+    }
+
+    @Override
+    protected boolean isConnectionReadOnlyBroken() {
+        return true;
+    }
+
+    @Override
+    protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException {
+        Map<String, String> connectionsProps = new HashMap<>();
+        if (getContainer().isConnectionReadOnly()) {
+            // Read-only prop
+            connectionsProps.put("open_mode", "1");  //1 == readonly
+        }
+        return connectionsProps;
     }
 
 }

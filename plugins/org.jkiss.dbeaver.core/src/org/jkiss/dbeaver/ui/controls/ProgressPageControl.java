@@ -131,6 +131,9 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
     public final void substituteProgressPanel(ProgressPageControl externalPageControl)
     {
         this.ownerPageControl = externalPageControl;
+        if (this.ownerPageControl != null) {
+            this.ownerPageControl.setChildControl(this);
+        }
     }
 
     public void createOrSubstituteProgressPanel(IWorkbenchPartSite site) {
@@ -515,17 +518,12 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
 
     public void activate(boolean active)
     {
-        if (active && curInfo != null) {
-            setInfo(curInfo);
-        }
-
-        if (this.ownerPageControl != null) {
-            if (active) {
+        if (active) {
+            if (curInfo != null) {
+                setInfo(curInfo);
+            }
+            if (this.ownerPageControl != null) {
                 this.ownerPageControl.setChildControl(this);
-            } else {
-                // Do NOT set child to NULL because deactivation usually means just focus lost
-                // and we don't want to deactivate page control on focus loss.
-                //this.ownerPageControl.setChildControl(null);
             }
         }
     }

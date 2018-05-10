@@ -60,6 +60,18 @@ public class QMMStatementExecuteInfo extends QMMObject {
 
     }
 
+    public QMMStatementExecuteInfo(long openTime, long closeTime, QMMStatementInfo stmt, String queryString, long rowCount, int errorCode, String errorMessage, long fetchBeginTime, long fetchEndTime, boolean transactional) {
+        super(openTime, closeTime);
+        this.statement = stmt;
+        this.queryString = queryString;
+        this.rowCount = rowCount;
+        this.errorCode = errorCode;
+        this.errorMessage = errorMessage;
+        this.fetchBeginTime = fetchBeginTime;
+        this.fetchEndTime = fetchEndTime;
+        this.transactional = transactional;
+    }
+
     void close(long rowCount, Throwable error)
     {
         if (error != null) {
@@ -150,4 +162,8 @@ public class QMMStatementExecuteInfo extends QMMObject {
         return '"' + queryString + '"';
     }
 
+    @Override
+    public String getText() {
+        return queryString;
+    }
 }

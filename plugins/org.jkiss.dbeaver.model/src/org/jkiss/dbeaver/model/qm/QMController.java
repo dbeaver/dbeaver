@@ -17,8 +17,6 @@
 
 package org.jkiss.dbeaver.model.qm;
 
-import java.util.List;
-
 /**
  * Query manager controller
  */
@@ -28,6 +26,8 @@ public interface QMController {
 
     QMExecutionHandler getDefaultHandler();
 
+    QMEventBrowser getEventBrowser();
+
     void registerHandler(QMExecutionHandler handler);
 
     void unregisterHandler(QMExecutionHandler handler);
@@ -36,5 +36,4 @@ public interface QMController {
 
     void unregisterMetaListener(QMMetaListener metaListener);
 
-    List<QMMetaEvent> getPastMetaEvents();
 }

@@ -239,13 +239,13 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase>
         return dataType;
     }
 
-    public void setType(DB2DataType dataType)
-    {
+    public void setDataType(DB2DataType dataType) {
         this.dataType = dataType;
+        this.setTypeName(dataType.getTypeName());
     }
 
     @Override
-    @Property(viewable = true, order = 38)
+    @Property(viewable = true, editable = true, updatable = true, order = 38)
     public long getMaxLength()
     {
         return super.getMaxLength();

@@ -34,12 +34,6 @@ public class DBeaverIDECore {
     public static final String MARKER_ATTRIBUTE_DATASOURCE_ID = BUNDLE_SYMBOLIC_NAME + '.' + "datasourceId"; //$NON-NLS-1$
     public static final String MARKER_ATTRIBUTE_NODE_PATH = BUNDLE_SYMBOLIC_NAME + '.' + "nodePath"; //$NON-NLS-1$
 
-    private static Log log = Log.getLog(DBeaverIDECore.class);
-
-    public static void log(IStatus status) {
-        Log.log(log, status);
-    }
-    
     public static IResource resolveWorkspaceResource(DBSObject dbsObject) {
         WorkspaceResourceResolver resolver = Adapters.adapt(dbsObject, WorkspaceResourceResolver.class, true);
         if (resolver != null) {

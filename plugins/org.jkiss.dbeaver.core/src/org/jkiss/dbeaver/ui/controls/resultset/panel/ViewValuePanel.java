@@ -24,12 +24,7 @@ import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.ISelectionChangedListener;
 import org.eclipse.jface.viewers.ISelectionProvider;
-import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
-import org.eclipse.swt.events.PaintEvent;
-import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.FillLayout;
@@ -108,18 +103,15 @@ public class ViewValuePanel implements IResultSetPanel, IAdaptable {
 
         viewPlaceholder = new Composite(parent, SWT.NONE);
         viewPlaceholder.setLayout(new FillLayout());
-        viewPlaceholder.addPaintListener(new PaintListener() {
-            @Override
-            public void paintControl(PaintEvent e) {
-                if (viewPlaceholder.getChildren().length == 0) {
-                    String hidePanelCmd = ActionUtils.findCommandDescription(
-                        ResultSetCommandHandler.CMD_TOGGLE_PANELS,
-                        ViewValuePanel.this.presentation.getController().getSite(),
-                        true);
+        viewPlaceholder.addPaintListener(e -> {
+            if (viewPlaceholder.getChildren().length == 0) {
+                String hidePanelCmd = ActionUtils.findCommandDescription(
+                    ResultSetCommandHandler.CMD_TOGGLE_PANELS,
+                    ViewValuePanel.this.presentation.getController().getSite(),
+                    true);
 
-                    UIUtils.drawMessageOverControl(viewPlaceholder, e, "Select a cell to view/edit value", 0);
-                    UIUtils.drawMessageOverControl(viewPlaceholder, e, "Press " + hidePanelCmd + " to hide this panel", 20);
-                }
+                UIUtils.drawMessageOverControl(viewPlaceholder, e, "Select a cell to view/edit value", 0);
+                UIUtils.drawMessageOverControl(viewPlaceholder, e, "Press " + hidePanelCmd + " to hide this panel", 20);
             }
         });
 
@@ -137,21 +129,13 @@ public class ViewValuePanel implements IResultSetPanel, IAdaptable {
 
         if (this.presentation instanceof ISelectionProvider) {
             final ISelectionProvider selectionProvider = (ISelectionProvider) this.presentation;
-            final ISelectionChangedListener selectionListener = new ISelectionChangedListener() {
-                @Override
-                public void selectionChanged(SelectionChangedEvent event) {
-                    if (ViewValuePanel.this.presentation.getController().getVisiblePanel() == ViewValuePanel.this) {
-                        refreshValue(false);
-                    }
+            final ISelectionChangedListener selectionListener = event -> {
+                if (ViewValuePanel.this.presentation.getController().getVisiblePanel() == ViewValuePanel.this) {
+                    refreshValue(false);
                 }
             };
             selectionProvider.addSelectionChangedListener(selectionListener);
-            viewPlaceholder.addDisposeListener(new DisposeListener() {
-                @Override
-                public void widgetDisposed(DisposeEvent e) {
-                    selectionProvider.removeSelectionChangedListener(selectionListener);
-                }
-            });
+            viewPlaceholder.addDisposeListener(e -> selectionProvider.removeSelectionChangedListener(selectionListener));
         }
 
         return viewPlaceholder;
@@ -264,15 +248,11 @@ public class ViewValuePanel implements IResultSetPanel, IAdaptable {
             } else {
                 final Composite placeholder = UIUtils.createPlaceholder(viewPlaceholder, 1);
                 placeholder.setBackground(placeholder.getDisplay().getSystemColor(SWT.COLOR_WIDGET_BACKGROUND));
-                placeholder.addPaintListener(new PaintListener() {
-                    @Override
-                    public void paintControl(PaintEvent e)
-                    {
-                        Rectangle bounds = placeholder.getBounds();
-                        String message = "No editor for [" + previewController.getValueType().getTypeName() + "]";
-                        Point ext = e.gc.textExtent(message);
-                        e.gc.drawText(message, (bounds.width - ext.x) / 2, bounds.height / 3 + 20);
-                    }
+                placeholder.addPaintListener(e -> {
+                    Rectangle bounds = placeholder.getBounds();
+                    String message = "No editor for [" + previewController.getValueType().getTypeName() + "]";
+                    Point ext = e.gc.textExtent(message);
+                    e.gc.drawText(message, (bounds.width - ext.x) / 2, bounds.height / 3 + 20);
                 });
                 referenceValueEditor = null;
             }

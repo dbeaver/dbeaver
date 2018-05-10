@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,28 +18,15 @@
 package org.jkiss.dbeaver.runtime.qm;
 
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.qm.QMConstants;
-import org.jkiss.dbeaver.model.qm.QMEventFilter;
-import org.jkiss.dbeaver.model.qm.QMMetaEvent;
-import org.jkiss.dbeaver.model.qm.QMObjectType;
+import org.jkiss.dbeaver.model.qm.*;
 import org.jkiss.dbeaver.model.qm.meta.*;
-import org.jkiss.utils.CommonUtils;
-
-import java.util.ArrayList;
-import java.util.Collection;
 
 /**
  * Default event filter based on preference settings.
  */
 public class DefaultEventFilter implements QMEventFilter {
 
-    private boolean showSessions = false;
-    private boolean showTransactions = false;
-    private boolean showQueries = false;
-
-    private java.util.List<DBCExecutionPurpose> showPurposes = new ArrayList<>();
+    private QMEventCriteria eventCriteria = new QMEventCriteria();
 
     public DefaultEventFilter()
     {
@@ -48,21 +35,7 @@ public class DefaultEventFilter implements QMEventFilter {
 
     public void reloadPreferences()
     {
-        DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
-
-        Collection<QMObjectType> objectTypes = QMObjectType.fromString(store.getString(QMConstants.PROP_OBJECT_TYPES));
-        this.showSessions = objectTypes.contains(QMObjectType.session);
-        this.showTransactions = objectTypes.contains(QMObjectType.txn);
-        this.showQueries = objectTypes.contains(QMObjectType.query);
-
-        this.showPurposes.clear();
-        for (String queryType : CommonUtils.splitString(store.getString(QMConstants.PROP_QUERY_TYPES), ',')) {
-            try {
-                this.showPurposes.add(DBCExecutionPurpose.valueOf(queryType));
-            } catch (IllegalArgumentException e) {
-                // ignore
-            }
-        }
+        eventCriteria = QMUtils.createDefaultCriteria(DBeaverCore.getGlobalPreferenceStore());
     }
 
     @Override
@@ -70,11 +43,12 @@ public class DefaultEventFilter implements QMEventFilter {
     {
         QMMObject object = event.getObject();
         if (object instanceof QMMStatementExecuteInfo) {
-            return showQueries && showPurposes.contains(((QMMStatementExecuteInfo) object).getStatement().getPurpose());
+            return eventCriteria.hasObjectType(QMObjectType.query) &&
+                eventCriteria.hasQueryType(((QMMStatementExecuteInfo) object).getStatement().getPurpose());
         } else if (object instanceof QMMTransactionInfo || object instanceof QMMTransactionSavepointInfo) {
-            return showTransactions;
+            return eventCriteria.hasObjectType(QMObjectType.txn);
         } else if (object instanceof QMMSessionInfo) {
-            return showSessions;
+            return eventCriteria.hasObjectType(QMObjectType.session);
         }
         return true;
     }

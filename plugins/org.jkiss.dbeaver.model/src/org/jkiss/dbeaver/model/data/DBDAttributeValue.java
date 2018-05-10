@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.data;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 
@@ -71,4 +72,17 @@ public class DBDAttributeValue {
         return values;
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null || !(obj instanceof DBDAttributeValue)) {
+            return false;
+        }
+        if (!CommonUtils.equalObjects(value, ((DBDAttributeValue) obj).value)) {
+            return false;
+        }
+        if (!CommonUtils.equalObjects(attribute.getName(), ((DBDAttributeValue) obj).attribute.getName())) {
+            return false;
+        }
+        return true;
+    }
 }

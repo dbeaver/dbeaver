@@ -156,7 +156,7 @@ public class TransactionMonitorToolbar {
             ColorRegistry colorRegistry = workbenchWindow.getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry();
 
             Color colorReverted = colorRegistry.get(QueryLogViewer.COLOR_REVERTED);
-            Color colorCommitted = colorRegistry.get(QueryLogViewer.COLOR_COMMITTED);
+            Color colorCommitted = colorRegistry.get(QueryLogViewer.COLOR_UNCOMMITTED);
             final RGB COLOR_FULL = colorReverted.getRGB();
             final RGB COLOR_EMPTY = colorCommitted.getRGB();
 

@@ -24,17 +24,13 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.viewers.IColorProvider;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.LabelProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.RowData;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -66,13 +62,13 @@ import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IActionConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.DataSourcePropertyTester;
 import org.jkiss.dbeaver.ui.controls.CSmartSelector;
+import org.jkiss.dbeaver.ui.controls.DatabaseLabelProviders;
+import org.jkiss.dbeaver.ui.controls.SelectDataSourceCombo;
 import org.jkiss.dbeaver.ui.dialogs.SelectObjectDialog;
-import org.jkiss.dbeaver.ui.dialogs.connection.SelectDataSourceDialog;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -89,8 +85,6 @@ import java.util.*;
 public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEventListener, DBPPreferenceListener, INavigatorListener {
     private static final Log log = Log.getLog(DataSourceManagementToolbar.class);
 
-    public static final String EMPTY_SELECTION_TEXT = CoreMessages.toolbar_datasource_selector_empty;
-
     private static DataSourceManagementToolbar toolBarInstance;
 
     private IWorkbenchWindow workbenchWindow;
@@ -99,7 +93,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
     private IPartListener partListener;
 
     private Text resultSetSize;
-    private CSmartSelector<DBPDataSourceContainer> connectionCombo;
+    private SelectDataSourceCombo connectionCombo;
     private CSmartSelector<DBNDatabaseNode> databaseCombo;
 
     private SoftReference<DBPDataSourceContainer> curDataSourceContainer = null;
@@ -216,6 +210,10 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                 }
             }
         };
+    }
+
+    public void showConnectionSelector() {
+        connectionCombo.showConnectionSelector();
     }
 
     private void dispose() {
@@ -729,13 +727,16 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         final int fontHeight = UIUtils.getFontHeight(parent);
         int comboWidth = fontHeight * 20;
 
-        connectionCombo = new CSmartSelector<DBPDataSourceContainer>(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.BORDER, new ConnectionLabelProvider()) {
+        connectionCombo = new SelectDataSourceCombo(comboGroup) {
+
             @Override
-            protected void dropDown(boolean drop) {
-                if (!drop) {
-                    return;
-                }
-                showConnectionSelector();
+            protected IProject getActiveProject() {
+                return DataSourceManagementToolbar.this.getActiveProject();
+            }
+
+            @Override
+            protected void onDataSourceChange(DBPDataSourceContainer dataSource) {
+                changeDataSourceSelection(dataSource);
             }
         };
         RowData rd = new RowData();
@@ -748,7 +749,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         connectionCombo.select(0);
 
         comboWidth = fontHeight * 16;
-        databaseCombo = new CSmartSelector<DBNDatabaseNode>(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.BORDER, new DatabaseLabelProvider()) {
+        databaseCombo = new CSmartSelector<DBNDatabaseNode>(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.BORDER, new DatabaseLabelProviders.DatabaseLabelProvider()) {
             @Override
             protected void dropDown(boolean drop) {
                 if (!drop) {
@@ -808,17 +809,6 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         return comboGroup;
     }
 
-    void showConnectionSelector() {
-        SelectDataSourceDialog dialog = new SelectDataSourceDialog(connectionCombo.getShell(), getActiveProject(), connectionCombo.getSelectedItem());
-        dialog.setModeless(true);
-        if (dialog.open() == IDialogConstants.CANCEL_ID) {
-            return;
-        }
-        DBPDataSourceContainer dataSource = dialog.getDataSource();
-        connectionCombo.select(dataSource);
-        changeDataSourceSelection(dataSource);
-    }
-
     void showDatabaseSelector() {
         DBNDatabaseNode selectedDB = databaseCombo.getSelectedItem();
         List<DBNDatabaseNode> items = new ArrayList<>(databaseCombo.getItems());
@@ -870,71 +860,6 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         protected Control createControl(Composite parent) {
             DataSourceManagementToolbar toolbar = new DataSourceManagementToolbar(DBeaverUI.getActiveWorkbenchWindow());
             return toolbar.createControl(parent);
-        }
-    }
-
-    private static class ConnectionLabelProvider extends LabelProvider implements IColorProvider {
-        @Override
-        public Image getImage(Object element) {
-            if (element == null) {
-                return DBeaverIcons.getImage(DBIcon.TREE_DATABASE);
-            }
-            DBNModel nm = DBeaverCore.getInstance().getNavigatorModel();
-            nm.ensureProjectLoaded(((DBPDataSourceContainer) element).getRegistry().getProject());
-            final DBNDatabaseNode node = nm.findNode((DBPDataSourceContainer) element);
-            return node == null ? null : DBeaverIcons.getImage(node.getNodeIcon());
-        }
-
-        @Override
-        public String getText(Object element) {
-            if (element == null) {
-                return EMPTY_SELECTION_TEXT;
-            }
-            return ((DBPDataSourceContainer) element).getName();
-        }
-
-        @Override
-        public Color getForeground(Object element) {
-            return null;
-        }
-
-        @Override
-        public Color getBackground(Object element) {
-            return element == null ? null : UIUtils.getConnectionColor(((DBPDataSourceContainer) element).getConnectionConfiguration());
-        }
-    }
-
-    private static class DatabaseLabelProvider extends LabelProvider implements IColorProvider {
-        @Override
-        public Image getImage(Object element) {
-            if (element == null) {
-                return DBeaverIcons.getImage(DBIcon.TREE_DATABASE);
-            }
-            return DBeaverIcons.getImage(((DBNDatabaseNode)element).getNodeIconDefault());
-        }
-
-        @Override
-        public String getText(Object element) {
-            if (element == null) {
-                return EMPTY_SELECTION_TEXT;
-            }
-            return ((DBNDatabaseNode)element).getNodeName();
-        }
-
-        @Override
-        public Color getForeground(Object element) {
-            return null;
-        }
-
-        @Override
-        public Color getBackground(Object element) {
-            if (element instanceof DBNDatabaseNode) {
-                final DBPDataSourceContainer container = ((DBNDatabaseNode) element).getDataSourceContainer();
-                if (container != null) {
-                    return UIUtils.getConnectionColor((container.getConnectionConfiguration()));
-                }
-            }
-            return null;
         }
     }
 

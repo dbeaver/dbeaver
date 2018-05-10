@@ -32,7 +32,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dnd.LocalObjectTransfer;
-import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IntKeyMap;
@@ -2578,12 +2577,7 @@ public abstract class LightGrid extends Canvas {
         for (Integer columnIndex : columnIndices.keySet()) {
             selectedColumns.add(columns.get(columnIndex));
         }
-        Collections.sort(selectedColumns, new Comparator<GridColumn>() {
-            @Override
-            public int compare(GridColumn o1, GridColumn o2) {
-                return o1.getIndex() - o2.getIndex();
-            }
-        });
+        selectedColumns.sort(Comparator.comparingInt(GridColumn::getIndex));
     }
 
     /**
@@ -2591,66 +2585,23 @@ public abstract class LightGrid extends Canvas {
      */
     private void initListeners()
     {
-        disposeListener = new Listener() {
-            @Override
-            public void handleEvent(Event e)
-            {
-                onDispose(e);
-            }
-        };
+        disposeListener = this::onDispose;
         addListener(SWT.Dispose, disposeListener);
 
-        addPaintListener(new PaintListener() {
-            @Override
-            public void paintControl(PaintEvent e)
-            {
-                onPaint(e);
-            }
-        });
-
-        addListener(SWT.Resize, new Listener() {
-            @Override
-            public void handleEvent(Event e)
-            {
-                onResize();
-            }
-        });
+        addPaintListener(this::onPaint);
+        addListener(SWT.Resize, e -> onResize());
 
         if (getVerticalBar() != null) {
-            getVerticalBar().addListener(SWT.Selection, new Listener() {
-                @Override
-                public void handleEvent(Event e)
-                {
-                    onScrollSelection();
-                }
-            });
+            getVerticalBar().addListener(SWT.Selection, e -> onScrollSelection());
         }
 
         if (getHorizontalBar() != null) {
-            getHorizontalBar().addListener(SWT.Selection, new Listener() {
-                @Override
-                public void handleEvent(Event e)
-                {
-                    onScrollSelection();
-                }
-            });
+            getHorizontalBar().addListener(SWT.Selection, e -> onScrollSelection());
         }
 
-        addListener(SWT.KeyDown, new Listener() {
-            @Override
-            public void handleEvent(Event e)
-            {
-                onKeyDown(e);
-            }
-        });
+        addListener(SWT.KeyDown, this::onKeyDown);
 
-        addTraverseListener(new TraverseListener() {
-            @Override
-            public void keyTraversed(TraverseEvent e)
-            {
-                e.doit = true;
-            }
-        });
+        addTraverseListener(e -> e.doit = true);
 
         addMouseListener(new MouseListener() {
             @Override
@@ -2672,13 +2623,7 @@ public abstract class LightGrid extends Canvas {
             }
         });
 
-        addMouseMoveListener(new MouseMoveListener() {
-            @Override
-            public void mouseMove(MouseEvent e)
-            {
-                onMouseMove(e);
-            }
-        });
+        addMouseMoveListener(this::onMouseMove);
 
         addMouseTrackListener(new MouseTrackListener() {
             @Override
@@ -2715,13 +2660,7 @@ public abstract class LightGrid extends Canvas {
 
         // Special code to reflect mouse wheel events if using an external
         // scroller
-        addListener(SWT.MouseWheel, new Listener() {
-            @Override
-            public void handleEvent(Event e)
-            {
-                onMouseWheel(e);
-            }
-        });
+        addListener(SWT.MouseWheel, this::onMouseWheel);
     }
 
     private void onFocusIn()
@@ -2979,12 +2918,7 @@ public abstract class LightGrid extends Canvas {
         if (focusItem > row) {
             focusItem = row;
         }
-        for (Iterator<GridPos> iter = selectedCells.iterator(); iter.hasNext(); ) {
-            GridPos pos = iter.next();
-            if (pos.row > row) {
-                iter.remove();
-            }
-        }
+        selectedCells.removeIf(pos -> pos.row > row);
         updateSelectionCache();
         computeHeaderSizes();
         this.scrollValuesObsolete = true;
