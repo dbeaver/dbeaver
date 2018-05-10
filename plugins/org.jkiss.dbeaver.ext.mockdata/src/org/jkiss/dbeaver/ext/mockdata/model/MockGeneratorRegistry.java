@@ -32,6 +32,8 @@ public class MockGeneratorRegistry
 {
     static final String TAG_GENERATOR = "generator"; //$NON-NLS-1$
 
+    public static final String FK_GENERATOR_ID = "fkGenerator"; //$NON-NLS-1$
+
     private static final Log log = Log.getLog(MockGeneratorRegistry.class);
 
     private static MockGeneratorRegistry instance = null;
@@ -94,6 +96,9 @@ public class MockGeneratorRegistry
 
         List<MockGeneratorDescriptor> result = new ArrayList<>();
         for (MockGeneratorDescriptor descriptor : generators) {
+            if (FK_GENERATOR_ID.equalsIgnoreCase(descriptor.getId())) {
+                continue;
+            }
 
             if (((!descriptor.isGlobal() && descriptor.supportsDataSource(dataSource) && descriptor.supportsType(typedObject)) ||
                 (descriptor.isGlobal() && descriptor.supportsType(typedObject))))
