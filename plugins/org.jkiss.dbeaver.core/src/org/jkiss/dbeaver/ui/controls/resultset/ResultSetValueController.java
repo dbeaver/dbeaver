@@ -221,7 +221,7 @@ public class ResultSetValueController implements IAttributeController, IRowContr
 
     @Override
     public void showMessage(String message, DBPMessageType messageType) {
-        DBeaverUI.syncExec(() -> controller.setStatus(message, messageType));
+        DBeaverUI.asyncExec(() -> controller.setStatus(message, messageType));
     }
 
     @NotNull
