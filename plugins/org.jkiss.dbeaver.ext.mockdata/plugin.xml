@@ -65,8 +65,43 @@
     <extension point="org.jkiss.dbeaver.mockGenerator">
 
         <generator
+                id="numericConstantGenerator"
+                label="Numeric Constant"
+                description="Constant numeric value"
+                class="org.jkiss.dbeaver.ext.mockdata.generator.ConstantGenerator">
+            <type kind="NUMERIC"/>
+
+            <propertyGroup label="General">
+                <property id="value" label="Value" type="numeric" defaultValue="0"/>
+            </propertyGroup>
+        </generator>
+
+        <generator
+                id="numericRandomGenerator"
+                label="Numeric Random"
+                description="Random numeric values"
+                class="org.jkiss.dbeaver.ext.mockdata.generator.NumericRandomGenerator">
+            <type kind="NUMERIC"/>
+        </generator>
+
+        <generator
+                id="numericSequenceGenerator"
+                label="Numeric Sequence"
+                description="Sequence of numbers with adjustable start, step and order"
+                class="org.jkiss.dbeaver.ext.mockdata.generator.NumericSequenceGenerator"
+                tags="id,number,order">
+            <type kind="NUMERIC"/>
+
+            <propertyGroup label="General">
+                <property id="start" label="Start value" type="long" defaultValue="0" description="Initial sequence value"/>
+                <property id="step" label="Increment step" type="long" defaultValue="1" description="Sequence increment step"/>
+                <property id="reverse" label="Reverse order" type="boolean" defaultValue="FALSE" description="Reverse the sequence order"/>
+            </propertyGroup>
+        </generator>
+
+        <generator
                 id="booleanConstantGenerator"
-                label="Constant"
+                label="Boolean Constant"
                 description="Constant boolean value"
                 class="org.jkiss.dbeaver.ext.mockdata.generator.ConstantGenerator">
             <type kind="BOOLEAN"/>
@@ -78,7 +113,7 @@
 
         <generator
                 id="booleanRandomGenerator"
-                label="Random"
+                label="Boolean Random"
                 description="Random boolean values"
                 class="org.jkiss.dbeaver.ext.mockdata.generator.BooleanRandomGenerator">
             <type kind="BOOLEAN"/>
@@ -86,7 +121,7 @@
 
         <generator
                 id="booleanSequenceGenerator"
-                label="Sequence"
+                label="Boolean Sequence"
                 description="Adjustable sequence of boolean values"
                 class="org.jkiss.dbeaver.ext.mockdata.generator.BooleanSequenceGenerator">
             <type kind="BOOLEAN"/>
@@ -99,7 +134,7 @@
 
         <generator
                 id="dateConstantGenerator"
-                label="Constant"
+                label="Date Constant"
                 description="Constant date value"
                 class="org.jkiss.dbeaver.ext.mockdata.generator.ConstantGenerator">
             <type kind="DATETIME"/>
@@ -111,7 +146,7 @@
 
         <generator
                 id="dateRandomGenerator"
-                label="Random"
+                label="Date Random"
                 description="Random date values"
                 class="org.jkiss.dbeaver.ext.mockdata.generator.DateRandomGenerator">
             <type kind="DATETIME"/>
@@ -124,7 +159,7 @@
 
         <generator
                 id="dateSequenceGenerator"
-                label="Sequence"
+                label="Date Sequence"
                 description="Adjustable sequence of dates"
                 class="org.jkiss.dbeaver.ext.mockdata.generator.DateSequenceGenerator">
             <type kind="DATETIME"/>
@@ -149,43 +184,8 @@
         </generator>
 
         <generator
-                id="numericConstantGenerator"
-                label="Constant"
-                description="Constant numeric value"
-                class="org.jkiss.dbeaver.ext.mockdata.generator.ConstantGenerator">
-            <type kind="NUMERIC"/>
-
-            <propertyGroup label="General">
-                <property id="value" label="Value" type="numeric" defaultValue="0"/>
-            </propertyGroup>
-        </generator>
-
-        <generator
-                id="numericRandomGenerator"
-                label="Random"
-                description="Random numeric values"
-                class="org.jkiss.dbeaver.ext.mockdata.generator.NumericRandomGenerator">
-            <type kind="NUMERIC"/>
-        </generator>
-
-        <generator
-                id="numericSequenceGenerator"
-                label="Sequence"
-                description="Sequence of numbers with adjustable start, step and order"
-                class="org.jkiss.dbeaver.ext.mockdata.generator.NumericSequenceGenerator"
-                tags="id,number,order">
-            <type kind="NUMERIC"/>
-
-            <propertyGroup label="General">
-                <property id="start" label="Start value" type="long" defaultValue="0" description="Initial sequence value"/>
-                <property id="step" label="Increment step" type="long" defaultValue="1" description="Sequence increment step"/>
-                <property id="reverse" label="Reverse order" type="boolean" defaultValue="FALSE" description="Reverse the sequence order"/>
-            </propertyGroup>
-        </generator>
-
-        <generator
                 id="stringConstantGenerator"
-                label="Constant"
+                label="String Constant"
                 description="Constant string"
                 class="org.jkiss.dbeaver.ext.mockdata.generator.ConstantGenerator">
             <type kind="STRING"/>
@@ -216,7 +216,7 @@
                 label="UUID"
                 description="UUID random values"
                 class="org.jkiss.dbeaver.ext.mockdata.generator.StringUuidGenerator"
-                tags="uuid">
+                tags="id,uuid">
             <type kind="STRING"/>
         </generator>
 

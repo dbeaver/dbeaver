@@ -54,7 +54,7 @@ public class CreateProcedurePage extends BaseObjectEditPage {
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         propsGroup.setLayoutData(gd);
 
-        final Text containerText = UIUtils.createLabelText(propsGroup, "Container", DBUtils.getObjectFullName(this.container, DBPEvaluationContext.UI));
+        final Text containerText = UIUtils.createLabelText(propsGroup, CoreMessages.dialog_struct_create_procedure_container, DBUtils.getObjectFullName(this.container, DBPEvaluationContext.UI));
         containerText.setEditable(false);
         final Text nameText = UIUtils.createLabelText(propsGroup, CoreMessages.dialog_struct_create_procedure_label_name, null);
         nameText.addModifyListener(e -> {
