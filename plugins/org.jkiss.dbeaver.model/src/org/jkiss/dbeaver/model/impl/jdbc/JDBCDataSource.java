@@ -37,7 +37,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCFactoryDefault;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLState;
@@ -48,7 +47,6 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.net.SocketException;
 import java.sql.*;
 import java.util.ArrayList;
@@ -73,8 +71,6 @@ public abstract class JDBCDataSource
         IAdaptable
 {
     private static final Log log = Log.getLog(JDBCDataSource.class);
-
-    public static final int DISCONNECT_TIMEOUT = 5000;
 
     @NotNull
     private final DBPDataSourceContainer container;
@@ -143,22 +139,34 @@ public abstract class JDBCDataSource
                 }
             }
             monitor.subTask("Connecting " + purpose);
-            Connection connection;
-            if (driverInstance == null) {
-                connection = DriverManager.getConnection(url, connectProps);
-            } else {
-                connection = driverInstance.connect(url, connectProps);
+            Connection[] connection = new Connection[1];
+            Exception[] error = new Exception[1];
+            int openTimeout = getContainer().getPreferenceStore().getInt(ModelPreferences.CONNECTION_OPEN_TIMEOUT);
+
+            RuntimeUtils.runTask(monitor1 -> {
+                try {
+                    if (driverInstance == null) {
+                        connection[0] = DriverManager.getConnection(url, connectProps);
+                    } else {
+                        connection[0] = driverInstance.connect(url, connectProps);
+                    }
+                } catch (Exception e) {
+                    error[0] = e;
+                }
+            }, "Check connection is alive", openTimeout + 2000);
+            if (error[0] != null) {
+                throw error[0];
             }
-            if (connection == null) {
+            if (connection[0] == null) {
                 throw new DBCException("Null connection returned");
             }
 
             // Set read-only flag
             if (container.isConnectionReadOnly() && !isConnectionReadOnlyBroken()) {
-                connection.setReadOnly(true);
+                connection[0].setReadOnly(true);
             }
 
-            return connection;
+            return connection[0];
         }
         catch (SQLException ex) {
             throw new DBCConnectException(ex.getMessage(), ex, this);
@@ -216,28 +224,26 @@ public abstract class JDBCDataSource
     {
         if (connection != null) {
             // Close datasource (in async task)
-            RuntimeUtils.runTask(new DBRRunnableWithProgress() {
-                @Override
-                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                    try {
-                        // If we in transaction - rollback it.
-                        // Any valuable transaction changes should be committed by UI
-                        // so here we do it just in case to avoid error messages on close with open transaction
-                        if (!connection.getAutoCommit()) {
-                            connection.rollback();
-                        }
-                    } catch (Throwable e) {
-                        // Do not write warning because connection maybe broken before the moment of close
-                        log.debug("Error closing transaction", e);
+            RuntimeUtils.runTask(monitor -> {
+                try {
+                    // If we in transaction - rollback it.
+                    // Any valuable transaction changes should be committed by UI
+                    // so here we do it just in case to avoid error messages on close with open transaction
+                    if (!connection.getAutoCommit()) {
+                        connection.rollback();
                     }
-                    try {
-                        connection.close();
-                    }
-                    catch (Throwable ex) {
-                        log.error("Error closing connection", ex);
-                    }
+                } catch (Throwable e) {
+                    // Do not write warning because connection maybe broken before the moment of close
+                    log.debug("Error closing transaction", e);
                 }
-            }, "Close JDBC connection (" + purpose + ")", DISCONNECT_TIMEOUT);
+                try {
+                    connection.close();
+                }
+                catch (Throwable ex) {
+                    log.error("Error closing connection", ex);
+                }
+            }, "Close JDBC connection (" + purpose + ")",
+                getContainer().getPreferenceStore().getInt(ModelPreferences.CONNECTION_CLOSE_TIMEOUT));
         }
     }
 

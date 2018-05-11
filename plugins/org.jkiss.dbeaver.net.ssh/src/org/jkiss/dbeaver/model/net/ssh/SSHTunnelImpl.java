@@ -17,6 +17,9 @@
 package org.jkiss.dbeaver.model.net.ssh;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
@@ -24,6 +27,7 @@ import org.jkiss.dbeaver.model.net.DBWTunnel;
 import org.jkiss.dbeaver.model.net.ssh.registry.SSHImplementationDescriptor;
 import org.jkiss.dbeaver.model.net.ssh.registry.SSHImplementationRegistry;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
@@ -34,6 +38,7 @@ import java.util.Map;
  */
 public class SSHTunnelImpl implements DBWTunnel {
 
+    private static final Log log = Log.getLog(SSHTunnelImpl.class);
     private static final String DEF_IMPLEMENTATION = "jsch";
 
     private SSHImplementation implementation;
@@ -97,9 +102,17 @@ public class SSHTunnelImpl implements DBWTunnel {
     }
 
     @Override
-    public void invalidateHandler(DBRProgressMonitor monitor) throws DBException, IOException {
+    public void invalidateHandler(DBRProgressMonitor monitor, DBPDataSource dataSource) throws DBException, IOException {
         if (implementation != null) {
-            implementation.invalidateTunnel(monitor);
+            RuntimeUtils.runTask(monitor1 -> {
+                try {
+                    implementation.invalidateTunnel(monitor1);
+                } catch (Exception e) {
+                    log.error("Error invalidating SSH tunnel", e);
+                }
+            },
+            "Check connection is alive",
+            dataSource.getContainer().getPreferenceStore().getInt(ModelPreferences.CONNECTION_VALIDATION_TIMEOUT));
         }
     }
 
