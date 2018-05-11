@@ -22,10 +22,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IPathEditorInput;
-import org.eclipse.ui.IPersistableElement;
-import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.*;
 import org.eclipse.ui.editors.text.IEncodingSupport;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -390,7 +387,11 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider,
         this.fileCharset = fileCharset;
         for (IEditorPart part : editorParts) {
             try {
-                part.init(part.getEditorSite(), this);
+                if (part instanceof IReusableEditor) {
+                    ((IReusableEditor) part).setInput(this);
+                } else {
+                    part.init(part.getEditorSite(), this);
+                }
             } catch (PartInitException e) {
                 log.error("Error refreshing content editor part " + part, e);
             }

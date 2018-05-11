@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.impl.net;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -29,7 +30,7 @@ public class SocksProxyImpl implements DBWNetworkHandler {
 
 
     @Override
-    public void invalidateHandler(DBRProgressMonitor monitor) throws DBException, IOException {
+    public void invalidateHandler(DBRProgressMonitor monitor, DBPDataSource dataSource) throws DBException, IOException {
 
     }
 }
