@@ -40,6 +40,7 @@
    <plugin id="org.eclipse.ui.workbench.nl_fr" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
    <plugin id="org.eclipse.ui.workbench.nl_ru" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
    <plugin id="org.eclipse.ui.workbench.nl_zh" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
+   <plugin id="org.eclipse.ui.workbench.nl_ja" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
 -->
 
 
