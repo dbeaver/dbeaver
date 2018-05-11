@@ -33,6 +33,10 @@ public class PrefPageErrorHandle extends TargetPrefPage
 {
     public static final String PAGE_ID = "org.jkiss.dbeaver.preferences.main.errorHandle"; //$NON-NLS-1$
 
+    private Spinner connectionOpenTimeout;
+    private Spinner connectionCloseTimeout;
+    private Spinner connectionValidateTimeout;
+
     private Button rollbackOnErrorCheck;
     private Button connectionAutoRecoverEnabled;
     private Spinner connectionAutoRecoverRetryCount;
@@ -47,6 +51,10 @@ public class PrefPageErrorHandle extends TargetPrefPage
     {
         DBPPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return
+            store.contains(ModelPreferences.CONNECTION_OPEN_TIMEOUT) ||
+            store.contains(ModelPreferences.CONNECTION_CLOSE_TIMEOUT) ||
+            store.contains(ModelPreferences.CONNECTION_VALIDATION_TIMEOUT) ||
+
             store.contains(ModelPreferences.QUERY_ROLLBACK_ON_ERROR) ||
             store.contains(ModelPreferences.EXECUTE_RECOVER_ENABLED) ||
             store.contains(ModelPreferences.EXECUTE_RECOVER_RETRY_COUNT)
@@ -62,7 +70,16 @@ public class PrefPageErrorHandle extends TargetPrefPage
     @Override
     protected Control createPreferenceContent(Composite parent)
     {
-        Composite composite = UIUtils.createPlaceholder(parent, 2, 5);
+        Composite composite = UIUtils.createPlaceholder(parent, 1, 5);
+
+        // Misc settings
+        {
+            Group timeoutsGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_error_handle_group_timeouts_title, 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+
+            connectionOpenTimeout = UIUtils.createLabelSpinner(timeoutsGroup, CoreMessages.pref_page_error_handle_connection_open_timeout_label, CoreMessages.pref_page_error_handle_connection_open_timeout_label_tip, 0, 0, Integer.MAX_VALUE);
+            connectionCloseTimeout = UIUtils.createLabelSpinner(timeoutsGroup, CoreMessages.pref_page_error_handle_connection_close_timeout_label, CoreMessages.pref_page_error_handle_connection_close_timeout_label_tip, 0, 0, Integer.MAX_VALUE);
+            connectionValidateTimeout = UIUtils.createLabelSpinner(timeoutsGroup, CoreMessages.pref_page_error_handle_connection_validate_timeout_label, CoreMessages.pref_page_error_handle_connection_validate_timeout_label_tip, 0, 0, Integer.MAX_VALUE);
+        }
 
         // Misc settings
         {
@@ -80,6 +97,10 @@ public class PrefPageErrorHandle extends TargetPrefPage
     protected void loadPreferences(DBPPreferenceStore store)
     {
         try {
+            connectionOpenTimeout.setSelection(store.getInt(ModelPreferences.CONNECTION_OPEN_TIMEOUT));
+            connectionCloseTimeout.setSelection(store.getInt(ModelPreferences.CONNECTION_CLOSE_TIMEOUT));
+            connectionValidateTimeout.setSelection(store.getInt(ModelPreferences.CONNECTION_VALIDATION_TIMEOUT));
+
             rollbackOnErrorCheck.setSelection(store.getBoolean(ModelPreferences.QUERY_ROLLBACK_ON_ERROR));
             connectionAutoRecoverEnabled.setSelection(store.getBoolean(ModelPreferences.EXECUTE_RECOVER_ENABLED));
             connectionAutoRecoverRetryCount.setSelection(store.getInt(ModelPreferences.EXECUTE_RECOVER_RETRY_COUNT));
@@ -92,6 +113,10 @@ public class PrefPageErrorHandle extends TargetPrefPage
     protected void savePreferences(DBPPreferenceStore store)
     {
         try {
+            store.setValue(ModelPreferences.CONNECTION_OPEN_TIMEOUT, connectionOpenTimeout.getSelection());
+            store.setValue(ModelPreferences.CONNECTION_CLOSE_TIMEOUT, connectionCloseTimeout.getSelection());
+            store.setValue(ModelPreferences.CONNECTION_VALIDATION_TIMEOUT, connectionValidateTimeout.getSelection());
+
             store.setValue(ModelPreferences.QUERY_ROLLBACK_ON_ERROR, rollbackOnErrorCheck.getSelection());
             store.setValue(ModelPreferences.EXECUTE_RECOVER_ENABLED, connectionAutoRecoverEnabled.getSelection());
             store.setValue(ModelPreferences.EXECUTE_RECOVER_RETRY_COUNT, connectionAutoRecoverRetryCount.getSelection());
@@ -104,6 +129,10 @@ public class PrefPageErrorHandle extends TargetPrefPage
     @Override
     protected void clearPreferences(DBPPreferenceStore store)
     {
+        store.setToDefault(ModelPreferences.CONNECTION_OPEN_TIMEOUT);
+        store.setToDefault(ModelPreferences.CONNECTION_CLOSE_TIMEOUT);
+        store.setToDefault(ModelPreferences.CONNECTION_VALIDATION_TIMEOUT);
+
         store.setToDefault(ModelPreferences.QUERY_ROLLBACK_ON_ERROR);
         store.setToDefault(ModelPreferences.EXECUTE_RECOVER_ENABLED);
         store.setToDefault(ModelPreferences.EXECUTE_RECOVER_RETRY_COUNT);

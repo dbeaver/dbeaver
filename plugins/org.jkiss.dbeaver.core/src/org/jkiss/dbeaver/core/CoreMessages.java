@@ -813,6 +813,15 @@ public class CoreMessages extends NLS {
 
 	public static String pref_page_error_handle_name;
 	public static String pref_page_error_handle_description;
+
+	public static String pref_page_error_handle_group_timeouts_title;
+	public static String pref_page_error_handle_connection_open_timeout_label;
+	public static String pref_page_error_handle_connection_open_timeout_label_tip;
+	public static String pref_page_error_handle_connection_close_timeout_label;
+	public static String pref_page_error_handle_connection_close_timeout_label_tip;
+	public static String pref_page_error_handle_connection_validate_timeout_label;
+	public static String pref_page_error_handle_connection_validate_timeout_label_tip;
+
 	public static String pref_page_error_handle_group_execute_title;
 	public static String pref_page_error_handle_recover_enabled_label;
 	public static String pref_page_error_handle_recover_enabled_tip;
