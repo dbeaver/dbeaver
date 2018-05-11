@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentCached;
@@ -37,6 +38,7 @@ import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.editors.ContentInlineEditor;
 import org.jkiss.dbeaver.ui.data.editors.ContentPanelEditor;
+import org.jkiss.dbeaver.ui.data.editors.StringInlineEditor;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.dialogs.data.TextViewDialog;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditor;
@@ -87,7 +89,10 @@ public class ContentValueManager extends BaseValueManager {
         Object value = controller.getValue();
         IValueController.EditType binaryEditType = IValueController.EditType.valueOf(
             controller.getExecutionContext().getDataSource().getContainer().getPreferenceStore().getString(DBeaverPreferences.RESULT_SET_BINARY_EDITOR_TYPE));
-        if (binaryEditType != IValueController.EditType.EDITOR && value instanceof DBDContentCached) {
+        if (controller.getValueType().getDataKind() == DBPDataKind.STRING) {
+            // String
+            return new TextViewDialog(controller);
+        } else if (binaryEditType != IValueController.EditType.EDITOR && value instanceof DBDContentCached) {
             // Use string editor for cached content
             return new TextViewDialog(controller);
         } else if (value instanceof DBDContent) {
@@ -146,9 +151,12 @@ public class ContentValueManager extends BaseValueManager {
         switch (controller.getEditType()) {
             case INLINE:
                 // Open inline/panel editor
-                if (controller.getValue() instanceof DBDContentCached &&
-                    ContentUtils.isTextValue(((DBDContentCached)controller.getValue()).getCachedValue()))
-            {
+                Object value = controller.getValue();
+                if (controller.getValueType().getDataKind() == DBPDataKind.STRING) {
+                    return new StringInlineEditor(controller);
+                } else if (value instanceof DBDContentCached &&
+                    ContentUtils.isTextValue(((DBDContentCached) value).getCachedValue()))
+                {
                     return new ContentInlineEditor(controller);
                 } else {
                     return null;

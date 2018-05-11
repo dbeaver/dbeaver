@@ -29,6 +29,8 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.ui.data.IStreamValueManager;
 import org.jkiss.dbeaver.ui.data.IValueManager;
 import org.jkiss.dbeaver.ui.data.managers.DefaultValueManager;
+import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.MimeType;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -111,6 +113,26 @@ public class ValueManagerRegistry {
                 default:
                     result.put(contentManager, matchType);
                     break;
+            }
+        }
+        return result;
+    }
+
+    public Map<StreamValueManagerDescriptor, IStreamValueManager.MatchType> getStreamManagersByMimeType(@NotNull String mimeType, String primaryType) {
+        MimeType mime = new MimeType(mimeType);
+        MimeType primaryMime = primaryType == null ? null : new MimeType(primaryType);
+
+        Map<StreamValueManagerDescriptor, IStreamValueManager.MatchType> result = new LinkedHashMap<>();
+        for (StreamValueManagerDescriptor contentManager : streamManagers) {
+            for (String sm : contentManager.getSupportedMime()) {
+                if (!CommonUtils.isEmpty(sm) && mime.match(sm)) {
+                    if (!CommonUtils.isEmpty(contentManager.getPrimaryMime()) && primaryMime != null && primaryMime.match(contentManager.getPrimaryMime())) {
+                        result.put(contentManager, IStreamValueManager.MatchType.PRIMARY);
+                    } else {
+                        result.put(contentManager, IStreamValueManager.MatchType.DEFAULT);
+                    }
+                    break;
+                }
             }
         }
         return result;
