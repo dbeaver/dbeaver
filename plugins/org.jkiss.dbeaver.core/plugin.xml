@@ -3777,6 +3777,7 @@
         <language code="fr" label="%language.fr.label"/>
         <language code="de" label="%language.de.label"/>
         <language code="it" label="%language.it.label"/>
+        <language code="ja" label="%language.ja.label"/>
     </extension>
 
     <extension
