@@ -331,18 +331,16 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider,
         markReadOnly(valueController.isReadOnly());
     }
 
-    public void updateContentFromFile(IProgressMonitor monitor)
+    public void updateContentFromFile(DBRProgressMonitor monitor, Object value)
         throws DBException
     {
         if (valueController.isReadOnly()) {
             throw new DBCException("Can't update read-only value");
         }
 
-        DBRProgressMonitor localMonitor = RuntimeUtils.makeMonitor(monitor);
-        Object value = getValue();
         if (value instanceof DBDContent) {
             DBDContent content = (DBDContent) value;
-            DBDContentStorage storage = content.getContents(localMonitor);
+            DBDContentStorage storage = content.getContents(monitor);
             if (storage instanceof DBDContentStorageLocal) {
                 // Nothing to update - we user content's storage
                 contentDetached = true;
@@ -357,14 +355,14 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider,
                         storage = BytesContentStorage.createFromStream(is, contentFile.length(), fileCharset);
                     }
                     //StringContentStorage.
-                    contentDetached = content.updateContents(localMonitor, storage);
+                    contentDetached = content.updateContents(monitor, storage);
                 } catch (IOException e) {
                     throw new DBException("Error reading content from file", e);
                 }
             } else {
                 // Create new storage and pass it to content
                 storage = new TemporaryContentStorage(DBeaverCore.getInstance(), contentFile, fileCharset);
-                contentDetached = content.updateContents(localMonitor, storage);
+                contentDetached = content.updateContents(monitor, storage);
             }
         } else {
             // Just read as string
