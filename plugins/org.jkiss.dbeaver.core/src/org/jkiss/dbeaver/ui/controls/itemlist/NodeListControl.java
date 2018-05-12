@@ -33,10 +33,7 @@ import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.navigator.DBNEvent;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.navigator.INavigatorListener;
+import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeFolder;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNodeHandler;
@@ -225,6 +222,12 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         if (getRootNode() instanceof DBNDatabaseNode) {
             DBNDatabaseNode dbNode = (DBNDatabaseNode) getRootNode();
             List<Class<?>> baseTypes = dbNode.getChildrenTypes(nodeMeta);
+            if (CommonUtils.isEmpty(baseTypes) && dbNode instanceof DBNDatabaseFolder) {
+                Class<? extends DBSObject> childrenClass = ((DBNDatabaseFolder) dbNode).getChildrenClass();
+                if (childrenClass != null) {
+                    return new Class[] { childrenClass };
+                }
+            }
             // Collect base types for inline children
             return CommonUtils.isEmpty(baseTypes) ? null : baseTypes.toArray(new Class<?>[baseTypes.size()]);
         } else {
