@@ -223,7 +223,7 @@ public class ResultSetUtils
             monitor.worked(1);
 
             if (readReferences && rows != null) {
-                monitor.subTask("Late bindings");
+                monitor.subTask("Read results metadata");
                 // Read nested bindings
                 for (DBDAttributeBinding binding : bindings) {
                     binding.lateBinding(session, rows);
