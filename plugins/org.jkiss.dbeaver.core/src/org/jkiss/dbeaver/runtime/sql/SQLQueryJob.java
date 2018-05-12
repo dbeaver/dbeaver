@@ -147,6 +147,10 @@ public class SQLQueryJob extends DataSourceJob
         return lastGoodQuery;
     }
 
+    public DBCStatement getCurrentStatement() {
+        return curStatement;
+    }
+
     private boolean hasLimits()
     {
         return rsOffset >= 0 && rsMaxRows > 0;
