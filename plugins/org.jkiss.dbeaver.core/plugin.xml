@@ -2603,12 +2603,12 @@
         <!-- RSV context. It extends SQL editor because RSV can be embedded in editor and thus must overrride it's bindings -->
         <context
                 id="org.jkiss.dbeaver.ui.context.resultset"
-                parentId="org.jkiss.dbeaver.ui.editors.sql"
+                parentId="org.eclipse.ui.contexts.window"
                 name="%context.org.jkiss.dbeaver.ui.context.resultset.name"
                 description="%context.org.jkiss.dbeaver.ui.context.resultset.description"/>
         <context
                 id="org.jkiss.dbeaver.ui.context.resultset.focused"
-                parentId="org.jkiss.dbeaver.ui.context.resultset"
+                parentId="org.eclipse.ui.contexts.window"
                 name="%context.org.jkiss.dbeaver.ui.context.resultset.name focused"
                 description="%context.org.jkiss.dbeaver.ui.context.resultset.description"/>
         <context

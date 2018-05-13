@@ -71,6 +71,7 @@ public class DBeaverUI implements DBPPlatformUI {
     private SharedTextColors sharedTextColors;
     private TrayIconHandler trayItem;
     private final List<IDisposable> globalDisposables = new ArrayList<>();
+    private WorkbenchContextListener contextListener;
 
     public static DBeaverUI getInstance() {
         if (instance == null) {
@@ -129,8 +130,8 @@ public class DBeaverUI implements DBPPlatformUI {
         DBUserInterface.setInstance(this);
 
         // Register context listener
-        WorkbenchContextListener.registerInWorkbench();
-
+        asyncExec(() -> contextListener = WorkbenchContextListener.registerInWorkbench());
+        
 /*      // Global focus lister for debug
         Display.getCurrent().addFilter(SWT.FocusIn, new Listener() {
             @Override
@@ -139,6 +140,13 @@ public class DBeaverUI implements DBPPlatformUI {
             }
         });
 */
+    }
+
+    public void refreshPartContexts(IWorkbenchPart part) {
+        if (contextListener != null) {
+            contextListener.deactivatePartContexts(part);
+            contextListener.activatePartContexts(part);
+        }
     }
 
     public static AbstractUIJob runUIJob(String jobName, final DBRRunnableWithProgress runnableWithProgress) {
