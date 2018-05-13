@@ -143,7 +143,7 @@ public abstract class JDBCDataSource
             Exception[] error = new Exception[1];
             int openTimeout = getContainer().getPreferenceStore().getInt(ModelPreferences.CONNECTION_OPEN_TIMEOUT);
 
-            RuntimeUtils.runTask(monitor1 -> {
+            boolean openTaskFinished = RuntimeUtils.runTask(monitor1 -> {
                 try {
                     if (driverInstance == null) {
                         connection[0] = DriverManager.getConnection(url, connectProps);
@@ -153,9 +153,12 @@ public abstract class JDBCDataSource
                 } catch (Exception e) {
                     error[0] = e;
                 }
-            }, "Check connection is alive", openTimeout + 2000);
+            }, "Opening database connection", openTimeout + 2000);
             if (error[0] != null) {
                 throw error[0];
+            }
+            if (!openTaskFinished) {
+                throw new DBCException("Connection has timed out");
             }
             if (connection[0] == null) {
                 throw new DBCException("Null connection returned");
