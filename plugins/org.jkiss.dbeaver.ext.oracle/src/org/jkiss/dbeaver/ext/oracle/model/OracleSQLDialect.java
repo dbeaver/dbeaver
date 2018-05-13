@@ -47,7 +47,8 @@ class OracleSQLDialect extends JDBCSQLDialect {
     public static final String[][] ORACLE_BEGIN_END_BLOCK = new String[][]{
         {SQLConstants.BLOCK_BEGIN, SQLConstants.BLOCK_END},
         {"IF", SQLConstants.BLOCK_END},
-        {"LOOP", SQLConstants.BLOCK_END + " LOOP"}
+        {"LOOP", SQLConstants.BLOCK_END + " LOOP"},
+        {"CASE", SQLConstants.BLOCK_END + " CASE"}
     };
 
     public static final String[] ADVANCED_KEYWORDS = {
