@@ -159,6 +159,9 @@ public class ProgressEditorPart extends EditorPart {
                 // Close editor
                 DBeaverUI.asyncExec(() ->
                     entityEditor.getSite().getWorkbenchWindow().getActivePage().closeEditor(entityEditor, false));
+            } else {
+                // Activate entity editor (we have changed inner editors and need to force contexts activation).
+                DBeaverUI.asyncExec(() -> DBeaverUI.getInstance().refreshPartContexts(entityEditor));
             }
         }
     }
