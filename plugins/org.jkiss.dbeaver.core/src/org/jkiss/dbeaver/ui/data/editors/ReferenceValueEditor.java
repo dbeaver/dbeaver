@@ -22,7 +22,6 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
-import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -33,7 +32,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
@@ -41,7 +39,6 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
@@ -55,7 +52,6 @@ import org.jkiss.dbeaver.ui.editors.object.struct.EditDictionaryPage;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.List;
 
@@ -73,6 +69,8 @@ public class ReferenceValueEditor {
     private DBSEntityReferrer refConstraint;
     private Table editorSelector;
     private SelectorLoaderJob loaderJob = null;
+    private volatile boolean sortByValue = true;
+    private volatile boolean sortAsc = true;
 
     public ReferenceValueEditor(IValueController valueController, IValueEditor valueEditor) {
         this.valueController = valueController;
@@ -137,18 +135,14 @@ public class ReferenceValueEditor {
                         public void widgetSelected(SelectionEvent e) {
                             // Open
                             final IWorkbenchWindow window = valueController.getValueSite().getWorkbenchWindow();
-                            DBeaverUI.runInUI(window, new DBRRunnableWithProgress() {
-                                @Override
-                                public void run(DBRProgressMonitor monitor)
-                                    throws InvocationTargetException, InterruptedException {
-                                    DBNDatabaseNode tableNode = NavigatorUtils.getNodeByObject(
-                                        monitor,
-                                        refTable,
-                                        true
-                                    );
-                                    if (tableNode != null) {
-                                        NavigatorHandlerObjectOpen.openEntityEditor(tableNode, DatabaseDataEditor.class.getName(), window);
-                                    }
+                            DBeaverUI.runInUI(window, monitor -> {
+                                DBNDatabaseNode tableNode = NavigatorUtils.getNodeByObject(
+                                    monitor,
+                                    refTable,
+                                    true
+                                );
+                                if (tableNode != null) {
+                                    NavigatorHandlerObjectOpen.openEntityEditor(tableNode, DatabaseDataEditor.class.getName(), window);
                                 }
                             });
                         }
@@ -178,9 +172,14 @@ public class ReferenceValueEditor {
         //gd.grabExcessHorizontalSpace = true;
         editorSelector.setLayoutData(gd);
 
-        UIUtils.createTableColumn(editorSelector, SWT.LEFT, CoreMessages.dialog_value_view_column_value);
-        UIUtils.createTableColumn(editorSelector, SWT.LEFT, CoreMessages.dialog_value_view_column_description);
+        TableColumn valueColumn = UIUtils.createTableColumn(editorSelector, SWT.LEFT, CoreMessages.dialog_value_view_column_value);
+        valueColumn.setData(Boolean.TRUE);
+        TableColumn descColumn = UIUtils.createTableColumn(editorSelector, SWT.LEFT, CoreMessages.dialog_value_view_column_description);
+        descColumn.setData(Boolean.FALSE);
         UIUtils.packColumns(editorSelector);
+        SortListener sortListener = new SortListener();
+        valueColumn.addListener(SWT.Selection, sortListener);
+        descColumn.addListener(SWT.Selection, sortListener);
 
         editorSelector.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -200,43 +199,39 @@ public class ReferenceValueEditor {
         });
 
         Control control = valueEditor.getControl();
-        ModifyListener modifyListener = new ModifyListener() {
-            @Override
-            public void modifyText(ModifyEvent e)
-            {
-                Object curEditorValue;
-                try {
-                    curEditorValue = valueEditor.extractEditorValue();
-                } catch (DBException e1) {
-                    log.error(e1);
-                    return;
+        ModifyListener modifyListener = e -> {
+            Object curEditorValue;
+            try {
+                curEditorValue = valueEditor.extractEditorValue();
+            } catch (DBException e1) {
+                log.error(e1);
+                return;
+            }
+            // Try to select current value in the table
+            final String curTextValue = valueController.getValueHandler().getValueDisplayString(
+                ((IAttributeController) valueController).getBinding(),
+                curEditorValue,
+                DBDDisplayFormat.UI);
+            boolean valueFound = false;
+            for (TableItem item : editorSelector.getItems()) {
+                if (item.getText(0).equals(curTextValue)) {
+                    editorSelector.select(editorSelector.indexOf(item));
+                    editorSelector.showItem(item);
+                    valueFound = true;
+                    break;
                 }
-                // Try to select current value in the table
-                final String curTextValue = valueController.getValueHandler().getValueDisplayString(
-                    ((IAttributeController) valueController).getBinding(),
-                    curEditorValue,
-                    DBDDisplayFormat.UI);
-                boolean valueFound = false;
-                for (TableItem item : editorSelector.getItems()) {
-                    if (item.getText(0).equals(curTextValue)) {
-                        editorSelector.select(editorSelector.indexOf(item));
-                        editorSelector.showItem(item);
-                        valueFound = true;
-                        break;
-                    }
-                }
+            }
 
-                if (!valueFound) {
-                    // Read dictionary
-                    if (loaderJob.getState() == Job.RUNNING) {
-                        // Cancel it and create new one
-                        loaderJob.cancel();
-                        loaderJob = new SelectorLoaderJob();
-                    }
-                    loaderJob.setPattern(curEditorValue);
-                    if (loaderJob.getState() != Job.WAITING) {
-                        loaderJob.schedule(100);
-                    }
+            if (!valueFound) {
+                // Read dictionary
+                if (loaderJob.getState() == Job.RUNNING) {
+                    // Cancel it and create new one
+                    loaderJob.cancel();
+                    loaderJob = new SelectorLoaderJob();
+                }
+                loaderJob.setPattern(curEditorValue);
+                if (loaderJob.getState() != Job.WAITING) {
+                    loaderJob.schedule(100);
                 }
             }
         };
@@ -256,22 +251,22 @@ public class ReferenceValueEditor {
         return true;
     }
 
-    private void updateDictionarySelector(Map<Object, String> keyValues, DBSEntityAttributeRef keyColumn, DBDValueHandler keyHandler) {
+    private void updateDictionarySelector(Collection<DBDLabelValuePair> keyValues, DBSEntityAttributeRef keyColumn, DBDValueHandler keyHandler) {
         if (editorSelector == null || editorSelector.isDisposed()) {
             return;
         }
         editorSelector.setRedraw(false);
         try {
             editorSelector.removeAll();
-            for (Map.Entry<Object, String> entry : keyValues.entrySet()) {
+            for (DBDLabelValuePair entry : keyValues) {
                 TableItem discItem = new TableItem(editorSelector, SWT.NONE);
                 discItem.setText(0,
                     keyHandler.getValueDisplayString(
                         keyColumn.getAttribute(),
-                        entry.getKey(),
+                        entry.getValue(),
                         DBDDisplayFormat.UI));
-                discItem.setText(1, entry.getValue());
-                discItem.setData(entry.getKey());
+                discItem.setText(1, entry.getLabel());
+                discItem.setData(entry.getValue());
             }
 
             Control editorControl = valueEditor.getControl();
@@ -305,6 +300,29 @@ public class ReferenceValueEditor {
         }
     }
 
+    private class SortListener implements Listener {
+        private TableColumn prevColumn = null;
+        private int sortDirection = SWT.DOWN;
+
+        public SortListener() {
+        }
+
+        @Override
+        public void handleEvent(Event event) {
+            TableColumn column = (TableColumn) event.widget;
+            if (prevColumn == column) {
+                // Set reverse order
+                sortDirection = (sortDirection == SWT.UP ? SWT.DOWN : SWT.UP);
+            }
+            prevColumn = column;
+            sortByValue = (Boolean)column.getData();
+            sortAsc = sortDirection == SWT.DOWN;
+            editorSelector.setSortColumn(column);
+            editorSelector.setSortDirection(sortDirection);
+            loaderJob.schedule();
+        }
+    }
+
     private class SelectorLoaderJob extends DataSourceJob {
 
         private Object pattern;
@@ -328,6 +346,7 @@ public class ReferenceValueEditor {
             if (editorSelector.isDisposed()) {
                 return Status.OK_STATUS;
             }
+/*
             final Map<Object, String> keyValues = new TreeMap<>((o1, o2) -> {
                 if (o1 instanceof Comparable && o2 instanceof Comparable) {
                     return ((Comparable) o1).compareTo(o2);
@@ -342,6 +361,7 @@ public class ReferenceValueEditor {
                     return o1.toString().compareTo(o2.toString());
                 }
             });
+*/
             try {
                 IAttributeController attributeController = (IAttributeController)valueController;
                 final DBSEntityAttribute tableColumn = attributeController.getBinding().getEntityAttribute();
@@ -397,20 +417,17 @@ public class ReferenceValueEditor {
                             refColumn,
                             pattern,
                             precedingKeys,
+                            sortByValue,
+                            sortAsc,
                             200);
-                        for (DBDLabelValuePair pair : enumValues) {
-                            keyValues.put(pair.getValue(), pair.getLabel());
-                        }
+//                        for (DBDLabelValuePair pair : enumValues) {
+//                            keyValues.put(pair.getValue(), pair.getLabel());
+//                        }
                         if (monitor.isCanceled()) {
                             return Status.CANCEL_STATUS;
                         }
                         final DBDValueHandler colHandler = DBUtils.findValueHandler(session, fkAttribute);
-                        DBeaverUI.syncExec(new Runnable() {
-                            @Override
-                            public void run() {
-                                updateDictionarySelector(keyValues, fkColumn, colHandler);
-                            }
-                        });
+                        DBeaverUI.syncExec(() -> updateDictionarySelector(enumValues, fkColumn, colHandler));
                     }
                 }
 
