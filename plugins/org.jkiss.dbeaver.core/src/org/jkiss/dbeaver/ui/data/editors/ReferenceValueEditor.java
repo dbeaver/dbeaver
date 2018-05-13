@@ -16,9 +16,6 @@
  */
 package org.jkiss.dbeaver.ui.data.editors;
 
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
@@ -40,10 +37,12 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
+import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
+import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
 import org.jkiss.dbeaver.ui.data.IAttributeController;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
@@ -52,7 +51,9 @@ import org.jkiss.dbeaver.ui.editors.object.struct.EditDictionaryPage;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.*;
+import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -68,9 +69,9 @@ public class ReferenceValueEditor {
     private IValueEditor valueEditor;
     private DBSEntityReferrer refConstraint;
     private Table editorSelector;
-    private SelectorLoaderJob loaderJob = null;
     private volatile boolean sortByValue = true;
     private volatile boolean sortAsc = true;
+    private Object lastPattern;
 
     public ReferenceValueEditor(IValueController valueController, IValueEditor valueEditor) {
         this.valueController = valueController;
@@ -154,7 +155,7 @@ public class ReferenceValueEditor {
                     public void widgetSelected(SelectionEvent e) {
                         EditDictionaryPage editDictionaryPage = new EditDictionaryPage("Dictionary structure", refTable);
                         if (editDictionaryPage.edit(parent.getShell())) {
-                            loaderJob.schedule();
+                            reloadSelectorValues(null);
                         }
                     }
                 });
@@ -224,15 +225,7 @@ public class ReferenceValueEditor {
 
             if (!valueFound) {
                 // Read dictionary
-                if (loaderJob.getState() == Job.RUNNING) {
-                    // Cancel it and create new one
-                    loaderJob.cancel();
-                    loaderJob = new SelectorLoaderJob();
-                }
-                loaderJob.setPattern(curEditorValue);
-                if (loaderJob.getState() != Job.WAITING) {
-                    loaderJob.schedule(100);
-                }
+                reloadSelectorValues(curEditorValue);
             }
         };
         if (control instanceof Text) {
@@ -241,28 +234,37 @@ public class ReferenceValueEditor {
             ((StyledText)control).addModifyListener(modifyListener);
         }
 
-        loaderJob = new SelectorLoaderJob();
         final Object curValue = valueController.getValue();
-        if (curValue instanceof Number) {
-            loaderJob.setPattern(curValue);
-        }
-        loaderJob.schedule(500);
+
+        reloadSelectorValues(curValue instanceof Number ? curValue : null);
 
         return true;
     }
 
-    private void updateDictionarySelector(Collection<DBDLabelValuePair> keyValues, DBSEntityAttributeRef keyColumn, DBDValueHandler keyHandler) {
+    private void reloadSelectorValues(Object pattern) {
+        lastPattern = pattern;
+        SelectorLoaderService loadingService = new SelectorLoaderService();
+        if (pattern != null) {
+            loadingService.setPattern(pattern);
+        }
+        LoadingJob.createService(
+            loadingService,
+            new SelectorLoaderVisualizer(loadingService))
+            .schedule();
+    }
+
+    private void updateDictionarySelector(EnumValuesData valuesData) {
         if (editorSelector == null || editorSelector.isDisposed()) {
             return;
         }
         editorSelector.setRedraw(false);
         try {
             editorSelector.removeAll();
-            for (DBDLabelValuePair entry : keyValues) {
+            for (DBDLabelValuePair entry : valuesData.keyValues) {
                 TableItem discItem = new TableItem(editorSelector, SWT.NONE);
                 discItem.setText(0,
-                    keyHandler.getValueDisplayString(
-                        keyColumn.getAttribute(),
+                    valuesData.keyHandler.getValueDisplayString(
+                        valuesData.keyColumn.getAttribute(),
                         entry.getValue(),
                         DBDDisplayFormat.UI));
                 discItem.setText(1, entry.getLabel());
@@ -319,20 +321,28 @@ public class ReferenceValueEditor {
             sortAsc = sortDirection == SWT.DOWN;
             editorSelector.setSortColumn(column);
             editorSelector.setSortDirection(sortDirection);
-            loaderJob.schedule();
+            reloadSelectorValues(lastPattern);
         }
     }
 
-    private class SelectorLoaderJob extends DataSourceJob {
+    private static class EnumValuesData {
+        List<DBDLabelValuePair> keyValues;
+        DBSEntityAttributeRef keyColumn;
+        DBDValueHandler keyHandler;
+
+        public EnumValuesData(Collection<DBDLabelValuePair> keyValues, DBSEntityAttributeRef keyColumn, DBDValueHandler keyHandler) {
+            this.keyValues = new ArrayList<>(keyValues);
+            this.keyColumn = keyColumn;
+            this.keyHandler = keyHandler;
+        }
+    }
+
+    class SelectorLoaderService extends AbstractLoadService<EnumValuesData> {
 
         private Object pattern;
 
-        private SelectorLoaderJob()
-        {
-            super(
-                CoreMessages.dialog_value_view_job_selector_name + valueController.getValueName() + " possible values",
-                    valueController.getExecutionContext());
-            setUser(false);
+        private SelectorLoaderService() {
+            super(CoreMessages.dialog_value_view_job_selector_name + valueController.getValueName() + " possible values");
         }
 
         void setPattern(@Nullable Object pattern)
@@ -341,10 +351,9 @@ public class ReferenceValueEditor {
         }
 
         @Override
-        protected IStatus run(DBRProgressMonitor monitor)
-        {
+        public EnumValuesData evaluate(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
             if (editorSelector.isDisposed()) {
-                return Status.OK_STATUS;
+                return null;
             }
 /*
             final Map<Object, String> keyValues = new TreeMap<>((o1, o2) -> {
@@ -366,21 +375,21 @@ public class ReferenceValueEditor {
                 IAttributeController attributeController = (IAttributeController)valueController;
                 final DBSEntityAttribute tableColumn = attributeController.getBinding().getEntityAttribute();
                 if (tableColumn == null) {
-                    return Status.OK_STATUS;
+                    return null;
                 }
                 final DBSEntityAttributeRef fkColumn = DBUtils.getConstraintAttribute(monitor, refConstraint, tableColumn);
                 if (fkColumn == null) {
-                    return Status.OK_STATUS;
+                    return null;
                 }
                 DBSEntityAssociation association;
                 if (refConstraint instanceof DBSEntityAssociation) {
                     association = (DBSEntityAssociation)refConstraint;
                 } else {
-                    return Status.OK_STATUS;
+                    return null;
                 }
                 final DBSEntityAttribute refColumn = DBUtils.getReferenceAttribute(monitor, association, tableColumn, false);
                 if (refColumn == null) {
-                    return Status.OK_STATUS;
+                    return null;
                 }
                 List<DBDAttributeValue> precedingKeys = null;
                 List<? extends DBSEntityAttributeRef> allColumns = CommonUtils.safeList(refConstraint.getAttributeReferences(monitor));
@@ -408,7 +417,7 @@ public class ReferenceValueEditor {
                 final DBSEntityConstraint refConstraint = association.getReferencedConstraint();
                 final DBSConstraintEnumerable enumConstraint = (DBSConstraintEnumerable) refConstraint;
                 if (fkAttribute != null && enumConstraint != null) {
-                    try (DBCSession session = getExecutionContext().openSession(
+                    try (DBCSession session = valueController.getExecutionContext().openSession(
                         monitor,
                         DBCExecutionPurpose.UTIL,
                         NLS.bind(CoreMessages.dialog_value_view_context_name, fkAttribute.getName()))) {
@@ -424,10 +433,10 @@ public class ReferenceValueEditor {
 //                            keyValues.put(pair.getValue(), pair.getLabel());
 //                        }
                         if (monitor.isCanceled()) {
-                            return Status.CANCEL_STATUS;
+                            return null;
                         }
                         final DBDValueHandler colHandler = DBUtils.findValueHandler(session, fkAttribute);
-                        DBeaverUI.syncExec(() -> updateDictionarySelector(enumValues, fkColumn, colHandler));
+                        return new EnumValuesData(enumValues, fkColumn, colHandler);
                     }
                 }
 
@@ -436,9 +445,32 @@ public class ReferenceValueEditor {
                 // just ignore
                 log.warn(e);
             }
-            return Status.OK_STATUS;
+            return null;
         }
 
+        @Override
+        public Object getFamily() {
+            return valueController.getExecutionContext();
+        }
+
+    }
+
+    private class SelectorLoaderVisualizer extends ProgressLoaderVisualizer<EnumValuesData> {
+        public SelectorLoaderVisualizer(SelectorLoaderService loadingService) {
+            super(loadingService, editorSelector);
+        }
+
+        @Override
+        public void visualizeLoading() {
+            super.visualizeLoading();
+        }
+
+        @Override
+        public void completeLoading(EnumValuesData result) {
+            super.completeLoading(result);
+            super.visualizeLoading();
+            updateDictionarySelector(result);
+        }
     }
 
 }

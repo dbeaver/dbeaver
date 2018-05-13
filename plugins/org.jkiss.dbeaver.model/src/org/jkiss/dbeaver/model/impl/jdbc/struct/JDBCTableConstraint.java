@@ -102,8 +102,8 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
      * @param keyColumn enumeration column.
      * @param keyPattern pattern for enumeration values. If null or empty then returns full enumration set
      * @param preceedingKeys other constrain key values. May be null.
-     * @param sortByValue
-     * @param sortAsc
+     * @param sortByValue sort results by eky value. If false then sort by description
+     * @param sortAsc sort ascending/descending
      * @param maxResults maximum enumeration values in result set     @return  @throws DBException
      */
     @Override
@@ -217,17 +217,16 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
                 }
             }
             if (hasCond) query.append(")");
-
-            query.append(" ORDER BY ");
-            if (sortByValue) {
-                query.append(DBUtils.getQuotedIdentifier(keyColumn));
-            } else {
-                // Sort by description
-                query.append(descColumns);
-            }
-            if (!sortAsc) {
-                query.append(" DESC");
-            }
+        }
+        query.append(" ORDER BY ");
+        if (sortByValue) {
+            query.append(DBUtils.getQuotedIdentifier(keyColumn));
+        } else {
+            // Sort by description
+            query.append(descColumns);
+        }
+        if (!sortAsc) {
+            query.append(" DESC");
         }
 
         try (DBCStatement dbStat = session.prepareStatement(DBCStatementType.QUERY, query.toString(), false, false, false)) {
