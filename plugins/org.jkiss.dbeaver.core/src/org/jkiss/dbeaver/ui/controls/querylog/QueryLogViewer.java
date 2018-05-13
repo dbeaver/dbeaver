@@ -1190,7 +1190,9 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             try {
                 super.completeLoading(result);
                 super.visualizeLoading();
-                updateMetaInfo(result);
+                if (result != null) {
+                    updateMetaInfo(result);
+                }
             } finally {
                 reloadInProgress = false;
             }
