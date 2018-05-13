@@ -192,7 +192,7 @@ public class QMControllerImpl implements QMController {
                             statementInfo = ((QMMStatementExecuteInfo) event.getObject()).getStatement();
                         }
                         if (statementInfo != null &&
-                            !ArrayUtils.contains(criteria.getQueryTypes(), ((QMMStatementInfo) event.getObject()).getPurpose()))
+                            !ArrayUtils.contains(criteria.getQueryTypes(), statementInfo.getPurpose()))
                         {
                             iter.remove();
                         }
