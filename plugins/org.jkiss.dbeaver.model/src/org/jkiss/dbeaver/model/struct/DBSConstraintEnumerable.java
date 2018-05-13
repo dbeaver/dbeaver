@@ -44,13 +44,16 @@ public interface DBSConstraintEnumerable extends DBSEntityConstraint
      * @param keyColumn enumeration column.
      * @param keyPattern pattern for enumeration values. If null or empty then returns full enumration set
      * @param preceedingKeys other constrain key values. May be null.
-     * @param maxResults maximum enumeration values in result set     @return statement with result set which contains valid enumeration values.
-     * */
+     * @param sortByValue
+     * @param sortAsc
+     * @param maxResults maximum enumeration values in result set     @return statement with result set which contains valid enumeration values.        */
     Collection<DBDLabelValuePair> getKeyEnumeration(
         DBCSession session,
         DBSEntityAttribute keyColumn,
         Object keyPattern,
         @Nullable List<DBDAttributeValue> preceedingKeys,
+        boolean sortByValue,
+        boolean sortAsc,
         int maxResults)
         throws DBException;
 

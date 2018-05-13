@@ -737,6 +737,9 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
 
     private void updateItem(QMMetaEvent event, TableItem item)
     {
+        if (item.isDisposed()) {
+            return;
+        }
         item.setData(event);
         for (int i = 0, columnsSize = columns.size(); i < columnsSize; i++) {
             ColumnDescriptor cd = columns.get(i);
