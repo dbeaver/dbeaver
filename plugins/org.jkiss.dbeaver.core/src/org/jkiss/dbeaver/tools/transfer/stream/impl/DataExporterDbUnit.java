@@ -21,7 +21,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.io.Reader;
+import java.math.BigDecimal;
+import java.sql.Date;
+import java.sql.Time;
+import java.sql.Timestamp;
 import java.util.List;
+import java.util.Locale;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -119,12 +124,43 @@ public class DataExporterDbUnit extends StreamExporterAbstract {
                 columnName = columnName.toUpperCase();
             }
             out.write(" " + columnName + "=\"");
-            if (DBUtils.isNullValue(row[i])) {
+            Object columnValue = row[i];
+            if (DBUtils.isNullValue(columnValue)) {
                 writeTextCell("" + getSite().getProperties().get(PROP_NULL_VALUE_STRING));
-            } else if (row[i] instanceof DBDContent) {
+            } else if (columnValue instanceof Float || columnValue instanceof Double || columnValue instanceof BigDecimal) {
+                int scale = column.getMetaAttribute().getScale() != null && column.getMetaAttribute().getScale() > 0 ? column.getMetaAttribute().getScale() : 1;
+                try {
+                    out.write(String.format(Locale.ROOT, "%." + scale + "f", columnValue));
+                } catch (Exception e) {
+                    out.write(columnValue.toString());
+                }
+            } else if (columnValue instanceof Boolean) {
+                out.write(columnValue.toString());
+            } else if (columnValue instanceof Number) {
+                out.write(columnValue.toString());
+            } else if (columnValue instanceof Timestamp) {
+                try {
+                    int nanoseconds = ((Timestamp) columnValue).getNanos();
+                    out.write(String.format(Locale.ROOT, "%1$tY-%1$tm-%1$td %1$tH:%1$tM:%1$tS.%2$d", columnValue, nanoseconds));
+                } catch (Exception e) {
+                    out.write(columnValue.toString());
+                }
+            } else if (columnValue instanceof Time) {
+                try {
+                    out.write(String.format(Locale.ROOT, "%1$tH:%1$tM:%1$tS", columnValue));
+                } catch (Exception e) {
+                    out.write(columnValue.toString());
+                }
+            } else if (columnValue instanceof Date) {
+                try {
+                    out.write(String.format(Locale.ROOT, "%1$tY-%1$tm-%1$td", columnValue));
+                } catch (Exception e) {
+                    out.write(columnValue.toString());
+                }
+            } else if (columnValue instanceof DBDContent) {
                 // Content
                 // Inline textual content and handle binaries in some special way
-                DBDContent content = (DBDContent)row[i];
+                DBDContent content = (DBDContent) columnValue;
                 try {
                     DBDContentStorage cs = content.getContents(session.getProgressMonitor());
                     if (cs != null) {
@@ -133,8 +169,6 @@ public class DataExporterDbUnit extends StreamExporterAbstract {
                                 writeCellValue(reader);
                             }
                         } else {
-                            // BLOB format http://dbunit.sourceforge.net/datatypes.html
-                            out.write("[BASE64]");
                             try (final InputStream stream = cs.getContentStream()) {
                                 Base64.encode(stream, cs.getContentLength(), getSite().getWriter());
                             }
@@ -145,7 +179,7 @@ public class DataExporterDbUnit extends StreamExporterAbstract {
                     content.release();
                 }
             } else {
-                writeTextCell(super.getValueDisplayString(column, row[i]));
+                writeTextCell(super.getValueDisplayString(column, columnValue));
             }
             out.write("\"");
         }
