@@ -31,6 +31,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.printing.PrintDialog;
 import org.eclipse.swt.printing.Printer;
@@ -526,6 +527,25 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
             fgPrinterData.endPage = 1;
             fgPrinterData.scope = PrinterData.ALL_PAGES;
             fgPrinterData.copyCount = 1;
+        }
+    }
+
+    @Override
+    protected void performHorizontalScroll(int scrollCount) {
+        ScrollBar hsb = text.getHorizontalBar();
+        if (hsb != null && hsb.isVisible()) {
+            int curPosition = text.getHorizontalPixel();
+            int pageIncrement = UIUtils.getFontHeight(text.getFont()) * 10;
+            if (scrollCount > 0) {
+                if (curPosition > 0) {
+                    curPosition -= pageIncrement;
+                }
+            } else {
+                curPosition += pageIncrement;
+            }
+            if (curPosition < 0) curPosition = 0;
+            text.setHorizontalPixel(curPosition);
+            //text.setHorizontalIndex();
         }
     }
 
