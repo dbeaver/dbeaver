@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -1654,13 +1654,13 @@ public class JDBCResultSetImpl implements JDBCResultSet {
     @Nullable
     @Override
     public <T> T getObject(int columnIndex, Class<T> type) throws SQLException {
-        return JDBCUtils.callMethod17(getOriginal(), "getObject", type, new Class<?>[] {Integer.TYPE, Class.class}, columnIndex, type);
+        return original.getObject(columnIndex, type);
     }
 
     @Nullable
     @Override
     public <T> T getObject(String columnLabel, Class<T> type) throws SQLException {
-        return JDBCUtils.callMethod17(getOriginal(), "getObject", type, new Class<?>[] {String.class, Class.class}, columnLabel, type);
+        return original.getObject(columnLabel, type);
     }
 
     @Override
