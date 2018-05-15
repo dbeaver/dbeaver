@@ -81,6 +81,7 @@ public interface DBPDriver extends DBPNamedObject
     boolean isEmbedded();
     boolean isAnonymousAccess();
     boolean isCustomDriverLoader();
+    boolean isInstantiable();
     boolean isInternalDriver();
 
     @Nullable
@@ -119,5 +120,4 @@ public interface DBPDriver extends DBPNamedObject
     Object getDriverInstance(@NotNull DBRProgressMonitor monitor) throws DBException;
 
     void loadDriver(DBRProgressMonitor monitor) throws DBException;
-
 }
