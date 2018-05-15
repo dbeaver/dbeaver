@@ -22,8 +22,8 @@ package org.jkiss.dbeaver.ui;
 public interface IHelpContextIds
 {
 
-    String CTX_DRIVER_MANAGER = "driver-manager"; //$NON-NLS-1$
-    String CTX_DRIVER_EDITOR = "driver-editor"; //$NON-NLS-1$
+    String CTX_DRIVER_MANAGER = "database-drivers"; //$NON-NLS-1$
+    String CTX_DRIVER_EDITOR = "database-drivers"; //$NON-NLS-1$
 
     String CTX_SQL_EDITOR = "sql-editor"; //$NON-NLS-1$
     String CTX_RESULT_SET_VIEWER  = "result-set-viewer"; //$NON-NLS-1$
