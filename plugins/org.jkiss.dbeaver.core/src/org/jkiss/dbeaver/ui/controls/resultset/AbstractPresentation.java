@@ -22,12 +22,13 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.viewers.*;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.MouseWheelListener;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.contexts.IContextActivation;
 import org.eclipse.ui.contexts.IContextService;
@@ -190,6 +191,18 @@ public abstract class AbstractPresentation implements IResultSetPresentation, IS
             });
         }
         control.addDisposeListener(e -> UIUtils.removeFocusTracker(site, control));
+
+        // Enable horizontal scrolling
+        control.addMouseWheelListener(e -> {
+            boolean shift = ((e.stateMask & SWT.MOD2) != 0);
+            if (shift) {
+                performHorizontalScroll(e.count);
+            }
+        });
+    }
+
+    protected void performHorizontalScroll(int scrollCount) {
+
     }
 
     protected void activateTextKeyBindings(@NotNull IResultSetController controller, Control control) {
