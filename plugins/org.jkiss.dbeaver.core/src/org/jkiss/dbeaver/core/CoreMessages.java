@@ -391,11 +391,13 @@ public class CoreMessages extends NLS {
 	public static String dialog_edit_driver_dialog_open_driver_library;
 	public static String dialog_edit_driver_label_category;
 	public static String dialog_edit_driver_label_class_name;
+	public static String dialog_edit_driver_label_class_name_tip;
 	public static String dialog_edit_driver_label_default_port;
 	public static String dialog_edit_driver_label_description;
 	public static String dialog_edit_driver_label_driver_class;
 	public static String dialog_edit_driver_label_driver_name;
 	public static String dialog_edit_driver_label_sample_url;
+	public static String dialog_edit_driver_label_sample_url_tip;
 	public static String dialog_edit_driver_label_website;
 	public static String dialog_edit_driver_tab_name_advanced_parameters;
 	public static String dialog_edit_driver_tab_name_connection_properties;

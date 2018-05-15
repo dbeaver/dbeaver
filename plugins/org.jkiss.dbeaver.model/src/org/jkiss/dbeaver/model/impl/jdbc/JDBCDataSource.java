@@ -115,11 +115,13 @@ public abstract class JDBCDataSource
         throws DBCException
     {
         // It MUST be a JDBC driver
-        Driver driverInstance;
-        try {
-            driverInstance = getDriverInstance(monitor);
-        } catch (DBException e) {
-            throw new DBCConnectException("Can't create driver instance", e, this);
+        Driver driverInstance = null;
+        if (getContainer().getDriver().isInstantiable()) {
+            try {
+                driverInstance = getDriverInstance(monitor);
+            } catch (DBException e) {
+                throw new DBCConnectException("Can't create driver instance", e, this);
+            }
         }
 
         DBPConnectionConfiguration connectionInfo = container.getActualConnectionConfiguration();
@@ -142,13 +144,14 @@ public abstract class JDBCDataSource
             Connection[] connection = new Connection[1];
             Exception[] error = new Exception[1];
             int openTimeout = getContainer().getPreferenceStore().getInt(ModelPreferences.CONNECTION_OPEN_TIMEOUT);
+            final Driver driverInstanceFinal = driverInstance;
 
             boolean openTaskFinished = RuntimeUtils.runTask(monitor1 -> {
                 try {
-                    if (driverInstance == null) {
+                    if (driverInstanceFinal == null) {
                         connection[0] = DriverManager.getConnection(url, connectProps);
                     } else {
-                        connection[0] = driverInstance.connect(url, connectProps);
+                        connection[0] = driverInstanceFinal.connect(url, connectProps);
                     }
                 } catch (Exception e) {
                     error[0] = e;
