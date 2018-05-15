@@ -3259,6 +3259,44 @@ public abstract class LightGrid extends Canvas {
         redraw();
     }
 
+    public void scrollHorizontally(int count) {
+        Rectangle clientArea = getClientArea();
+        GridColumn leftColumn = null, rightColumn = null;
+        for (GridColumn column : columns) {
+            Rectangle bounds = column.getBounds();
+            if (leftColumn == null) {
+                if (bounds.x + bounds.width > 0) {
+                    leftColumn = column;
+                }
+            } else {
+                if (bounds.x + bounds.width > clientArea.width) {
+                    rightColumn = column;
+                    break;
+                }
+            }
+        }
+        GridColumn scrollTo = null;
+        if (count > 0) {
+            if (leftColumn != null) {
+                scrollTo = getPreviousVisibleColumn(leftColumn);
+                if (scrollTo == null) {
+                    scrollTo = leftColumn;
+                }
+            }
+        } else {
+            if (rightColumn != null) {
+                scrollTo = getNextVisibleColumn(rightColumn);
+                if (scrollTo == null) {
+                    scrollTo = rightColumn;
+                }
+            }
+
+        }
+        if (scrollTo != null) {
+            showColumn(scrollTo);
+        }
+    }
+
     /**
      * Key down event handler.
      *
