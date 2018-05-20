@@ -118,7 +118,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     }
 
     @Override
-    public List<? extends GenericTrigger> loadTriggers(DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTable table) throws DBException {
+    public List<GenericTrigger> loadTriggers(DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTable table) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container.getDataSource(), "Read triggers")) {
             String schema = getSystemSchemaFQN(container.getDataSource(), container.getCatalog());
             StringBuilder query = new StringBuilder("SELECT triggers.name FROM " + schema + ".sysobjects triggers");
@@ -157,7 +157,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
                             continue;
                         }
                         name = name.trim();
-                        GenericTrigger trigger = new GenericTrigger(container, table, name, null);
+                        SQLServerTrigger trigger = new SQLServerTrigger(container, table, name, null);
                         result.add(trigger);
                     }
                 }

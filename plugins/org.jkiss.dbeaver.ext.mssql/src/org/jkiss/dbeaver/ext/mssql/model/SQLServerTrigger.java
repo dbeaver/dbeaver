@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,28 +16,31 @@
  */
 package org.jkiss.dbeaver.ext.mssql.model;
 
-import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
-import org.jkiss.dbeaver.ext.generic.model.GenericTableIndex;
+import org.jkiss.dbeaver.ext.generic.model.GenericTrigger;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 
 /**
-* SEL Server index
+* SQL server trigger
 */
-public class SQLServerIndex extends GenericTableIndex {
+public class SQLServerTrigger extends GenericTrigger implements DBPQualifiedObject {
 
-    public SQLServerIndex(GenericTable table, boolean nonUnique, String qualifier, long cardinality, String indexName, DBSIndexType indexType, boolean persisted) {
-        super(table, nonUnique, qualifier, cardinality, indexName, indexType, persisted);
+    public SQLServerTrigger(GenericStructContainer container, GenericTable table, String name, String description) {
+        super(container, table, name, description);
     }
 
-    @NotNull
+    @Override
+    public SQLServerTable getTable() {
+        return (SQLServerTable) super.getTable();
+    }
+
     @Override
     public String getFullyQualifiedName(DBPEvaluationContext context) {
         return DBUtils.getFullQualifiedName(getDataSource(),
             getTable().getSchema(),
-            getTable(),
             this);
     }
 }
