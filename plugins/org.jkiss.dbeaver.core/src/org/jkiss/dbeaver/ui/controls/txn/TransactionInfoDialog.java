@@ -28,7 +28,6 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.qm.QMEventFilter;
-import org.jkiss.dbeaver.model.qm.QMMetaEvent;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.qm.meta.QMMObject;
 import org.jkiss.dbeaver.model.qm.meta.QMMSessionInfo;
@@ -39,12 +38,7 @@ import org.jkiss.dbeaver.ui.controls.querylog.QueryLogViewer;
 
 public abstract class TransactionInfoDialog extends Dialog {
 
-    private static final QMEventFilter VOID_FILTER = new QMEventFilter() {
-        @Override
-        public boolean accept(QMMetaEvent event) {
-            return false;
-        }
-    };
+    private static final QMEventFilter VOID_FILTER = event -> false;
 
 
     private final IWorkbenchPart activeEditor;
@@ -110,26 +104,23 @@ public abstract class TransactionInfoDialog extends Dialog {
         final QMMSessionInfo currentSession = QMUtils.getCurrentSession(executionContext);
         final QMMTransactionSavepointInfo currentSP = QMUtils.getCurrentTransaction(executionContext);
 
-        QMEventFilter filter = new QMEventFilter() {
-            @Override
-            public boolean accept(QMMetaEvent event) {
-                QMMObject object = event.getObject();
-                if (object instanceof QMMStatementExecuteInfo) {
-                    QMMStatementExecuteInfo exec = (QMMStatementExecuteInfo) object;
-                    if (!showPrevious && exec.getSavepoint() != currentSP) {
-                        return false;
-                    }
-                    if (exec.getStatement().getSession() != currentSession) {
-                        return false;
-                    }
-                    DBCExecutionPurpose purpose = exec.getStatement().getPurpose();
-                    if (purpose == DBCExecutionPurpose.META || purpose == DBCExecutionPurpose.UTIL) {
-                        return false;
-                    }
-                    return (showAll || exec.isTransactional());
+        QMEventFilter filter = event -> {
+            QMMObject object = event.getObject();
+            if (object instanceof QMMStatementExecuteInfo) {
+                QMMStatementExecuteInfo exec = (QMMStatementExecuteInfo) object;
+                if (!showPrevious && exec.getSavepoint() != currentSP) {
+                    return false;
                 }
-                return false;
+                if (exec.getStatement().getSession() != currentSession) {
+                    return false;
+                }
+                DBCExecutionPurpose purpose = exec.getStatement().getPurpose();
+                if (purpose == DBCExecutionPurpose.META || purpose == DBCExecutionPurpose.UTIL) {
+                    return false;
+                }
+                return (showAll || exec.isTransactional());
             }
+            return false;
         };
         return filter;
     }
