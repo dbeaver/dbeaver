@@ -420,7 +420,9 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             @Override
             public void handleEvent(Event event) {
                 logTable.removeListener(SWT.Resize, this);
-                reloadEvents(null);
+                if (!reloadInProgress) {
+                    reloadEvents(null);
+                }
             }
         });
     }
