@@ -474,4 +474,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         }
     }
 
+    public List<? extends GenericTrigger> getTriggerCache() {
+        return triggers;
+    }
 }
