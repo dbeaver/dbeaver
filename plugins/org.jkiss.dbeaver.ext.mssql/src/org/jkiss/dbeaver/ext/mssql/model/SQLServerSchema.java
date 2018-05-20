@@ -25,7 +25,15 @@ import org.jkiss.dbeaver.ext.generic.model.GenericSchema;
 */
 public class SQLServerSchema extends GenericSchema {
 
-    public SQLServerSchema(GenericDataSource dataSource, GenericCatalog catalog, String schemaName) {
+    private long schemaId;
+
+    public SQLServerSchema(GenericDataSource dataSource, GenericCatalog catalog, String schemaName, long schemaId) {
         super(dataSource, catalog, schemaName);
+
+        this.schemaId = schemaId;
+    }
+
+    public long getSchemaId() {
+        return schemaId;
     }
 }
