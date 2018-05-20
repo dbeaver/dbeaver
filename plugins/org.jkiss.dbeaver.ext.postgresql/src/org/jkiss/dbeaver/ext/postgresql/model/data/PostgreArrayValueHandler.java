@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCCollection;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCArrayValueHandler;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.util.ArrayList;
@@ -108,7 +109,11 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
                 } else {
                     itemString = valueHandler.getValueDisplayString(collection.getComponentType(), item, DBDDisplayFormat.NATIVE);
                 }
-                str.append(itemString);
+                if (format == DBDDisplayFormat.NATIVE) {
+                    str.append(SQLUtils.escapeString(collection.getComponentType().getDataSource(), itemString));
+                } else {
+                    str.append(itemString);
+                }
             }
             str.append("}");
             if (format == DBDDisplayFormat.NATIVE) {
