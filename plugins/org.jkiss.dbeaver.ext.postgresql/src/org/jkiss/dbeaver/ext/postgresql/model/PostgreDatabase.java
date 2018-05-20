@@ -473,10 +473,7 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
         StringBuilder spString = new StringBuilder();
         for (String sp : newSearchPath) {
             if (spString.length() > 0) spString.append(",");
-            if (sp.startsWith("$"))
-                spString.append(sp);
-            else
-                spString.append(DBUtils.getQuotedIdentifier(getDataSource(), sp));
+            spString.append(DBUtils.getQuotedIdentifier(getDataSource(), sp));
         }
         try (JDBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, "Change search path")) {
             JDBCUtils.executeSQL(session, "SET search_path = " + spString);
