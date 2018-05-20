@@ -62,7 +62,7 @@ public abstract class TransactionInfoDialog extends Dialog {
     protected void createTransactionLogPanel(Composite composite) {
         DBCExecutionContext context = getCurrentContext();
         QMEventFilter filter = context == null ? VOID_FILTER : createContextFilter(context);
-        logViewer = new QueryLogViewer(composite, activeEditor.getSite(), filter, false);
+        logViewer = new QueryLogViewer(composite, activeEditor.getSite(), filter, false, true);
         logViewer.setUseDefaultFilter(false);
         final Object gd = logViewer.getControl().getLayoutData();
         if (gd instanceof GridData) {
