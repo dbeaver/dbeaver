@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-    <description name="DBeaver - office integration" url="https://dbeaver.jkiss.org/update/office/latest">DBeaver - office integration</description>
+    <description name="DBeaver - office integration" url="https://dbeaver.io/update/office/latest">DBeaver - office integration</description>
 
     <feature id="org.jkiss.dbeaver.ext.office.feature">
         <category name="org.jikss.dbeaver.office.category"/>
