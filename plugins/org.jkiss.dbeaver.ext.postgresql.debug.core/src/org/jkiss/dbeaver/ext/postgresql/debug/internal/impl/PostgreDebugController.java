@@ -44,10 +44,13 @@ public class PostgreDebugController extends DBGBaseController {
     {
         PostgreDebugSession pgSession = null;
         try {
+            log.debug("Creating debug session");
             pgSession = new PostgreDebugSession(monitor,this);
 
+            log.debug("Attaching debug session");
             pgSession.attach(monitor, configuration);
 
+            log.debug("Debug session created");
             return pgSession;
         } catch (DBException e) {
             if (pgSession != null) {
@@ -60,6 +63,7 @@ public class PostgreDebugController extends DBGBaseController {
             if (e instanceof DBGException) {
                 throw (DBGException)e;
             }
+            log.debug(String.format("Error attaching debug session %s", e.getMessage()));
             throw new DBGException("Error attaching debug session", e);
         }
     }
