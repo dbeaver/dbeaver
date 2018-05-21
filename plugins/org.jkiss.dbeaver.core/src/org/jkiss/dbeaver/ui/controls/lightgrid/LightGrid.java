@@ -3623,7 +3623,7 @@ public abstract class LightGrid extends Canvas {
 
         boolean hoverChange = false;
 
-        if (hoveringItem != row || !CommonUtils.equalObjects(hoveringDetail, detail) || hoveringColumn != col) {
+        if (hoveringItem != row || !CommonUtils.equalObjects(hoveringDetail, detail) || hoveringColumn != col || y <= headerHeight) {
             hoveringItem = row;
             hoveringDetail = detail;
             hoveringColumn = col;
