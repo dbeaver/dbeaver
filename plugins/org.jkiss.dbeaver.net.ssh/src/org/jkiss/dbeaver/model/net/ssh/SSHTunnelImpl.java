@@ -43,6 +43,10 @@ public class SSHTunnelImpl implements DBWTunnel {
 
     private SSHImplementation implementation;
 
+    public SSHImplementation getImplementation() {
+        return implementation;
+    }
+
     @Override
     public DBPConnectionConfiguration initializeTunnel(DBRProgressMonitor monitor, DBPPlatform platform, DBWHandlerConfiguration configuration, DBPConnectionConfiguration connectionInfo)
         throws DBException, IOException
