@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -44,9 +44,9 @@ import java.util.Date;
  */
 public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
 
-    protected static final SimpleDateFormat DEFAULT_DATETIME_FORMAT = new SimpleDateFormat("''" + DBConstants.DEFAULT_TIMESTAMP_FORMAT + "''");
-    protected static final SimpleDateFormat DEFAULT_DATE_FORMAT = new SimpleDateFormat("''" + DBConstants.DEFAULT_DATE_FORMAT + "''");
-    protected static final SimpleDateFormat DEFAULT_TIME_FORMAT = new SimpleDateFormat("''" + DBConstants.DEFAULT_TIME_FORMAT + "''");
+    public static final SimpleDateFormat DEFAULT_DATETIME_FORMAT = new SimpleDateFormat("''" + DBConstants.DEFAULT_TIMESTAMP_FORMAT + "''");
+    public static final SimpleDateFormat DEFAULT_DATE_FORMAT = new SimpleDateFormat("''" + DBConstants.DEFAULT_DATE_FORMAT + "''");
+    public static final SimpleDateFormat DEFAULT_TIME_FORMAT = new SimpleDateFormat("''" + DBConstants.DEFAULT_TIME_FORMAT + "''");
 
     public JDBCDateTimeValueHandler(DBDDataFormatterProfile formatterProfile)
     {
@@ -182,9 +182,13 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
     protected String getFormatterId(DBSTypedObject column)
     {
         switch (column.getTypeID()) {
-            case Types.TIME: return DBDDataFormatter.TYPE_NAME_TIME;
-            case Types.DATE: return DBDDataFormatter.TYPE_NAME_DATE;
-            default: return DBDDataFormatter.TYPE_NAME_TIMESTAMP;
+            case Types.TIME:
+            case Types.TIME_WITH_TIMEZONE:
+                return DBDDataFormatter.TYPE_NAME_TIME;
+            case Types.DATE:
+                return DBDDataFormatter.TYPE_NAME_DATE;
+            default:
+                return DBDDataFormatter.TYPE_NAME_TIMESTAMP;
         }
     }
 
