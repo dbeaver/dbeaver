@@ -23,6 +23,7 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.custom.StyledText;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.ViewValuePanel;
 import org.jkiss.dbeaver.ui.data.IStreamValueEditor;
@@ -36,6 +37,8 @@ public abstract class AbstractTextPanelEditor implements IStreamValueEditor<Styl
 
     public static final String PREF_TEXT_EDITOR_WORD_WRAP = "content.text.editor.word-wrap";
     public static final String PREF_TEXT_EDITOR_AUTO_FORMAT = "content.text.editor.auto-format";
+
+    private static final Log log = Log.getLog(AbstractTextPanelEditor.class);
 
     @Override
     public abstract StyledText createControl(IValueController valueController);
@@ -92,7 +95,11 @@ public abstract class AbstractTextPanelEditor implements IStreamValueEditor<Styl
     protected void applyEditorStyle() {
         BaseTextEditor textEditor = getTextEditor();
         if (textEditor != null && ViewValuePanel.getPanelSettings().getBoolean(PREF_TEXT_EDITOR_AUTO_FORMAT)) {
-            textEditor.getViewer().doOperation(ISourceViewer.FORMAT);
+            try {
+                textEditor.getViewer().doOperation(ISourceViewer.FORMAT);
+            } catch (Exception e) {
+                log.debug("Error formatting text", e);
+            }
         }
     }
 
