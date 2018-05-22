@@ -42,6 +42,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.net.DefaultCallbackHandler;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
@@ -438,7 +439,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     @Override
     public PostgreDataType getLocalDataType(String typeName)
     {
-        return getDefaultInstance().getDataType(typeName);
+        return getDefaultInstance().getDataType(new VoidProgressMonitor(), typeName);
     }
 
     @Override

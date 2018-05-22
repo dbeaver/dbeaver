@@ -19,11 +19,14 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.LongKeyMap;
@@ -41,6 +44,11 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
 
     PostgreDataTypeCache() {
         setListOrderComparator(DBUtils.nameComparator());
+    }
+
+    @Override
+    protected String getCacheName() {
+        return "Data type cache";
     }
 
     @Override
@@ -103,10 +111,16 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
     @Override
     protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreSchema owner) throws SQLException
     {
-        final JDBCPreparedStatement dbStat = session.prepareStatement(
-            "SELECT t.oid,t.* \n" +
-                "FROM pg_catalog.pg_type t WHERE typnamespace=?\n" +
-                "ORDER by t.oid");
+        // Initially cache only base types (everything but composite and arrays)
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT t.oid,t.* \n").append("FROM pg_catalog.pg_type t WHERE typnamespace=? ");
+        if (PostgreUtils.supportsTypeCategory(session.getDataSource())) {
+            sql.append("AND typcategory not in ('A','C')");
+        } else {
+            sql.append("AND typtype <> 'c'");
+        }
+        sql.append("\nORDER by t.oid");
+        final JDBCPreparedStatement dbStat = session.prepareStatement(sql.toString());
         dbStat.setLong(1, owner.getObjectId());
         return dbStat;
     }
@@ -119,6 +133,52 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
 
     public PostgreDataType getDataType(long oid) {
         return dataTypeMap.get(oid);
+    }
+
+    @NotNull
+    static PostgreDataType resolveDataType(@NotNull DBRProgressMonitor monitor, @NotNull PostgreDatabase database, long oid) throws SQLException, DBException {
+        // Initially cache only base types (everything but composite and arrays)
+        try (JDBCSession session = database.getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Resolve data type by OID")) {
+            try (final JDBCPreparedStatement dbStat = session.prepareStatement("SELECT t.oid,t.* FROM pg_catalog.pg_type t WHERE oid=? ")) {
+                dbStat.setLong(1, oid);
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    if (dbResult.next()) {
+                        long schemaOid = JDBCUtils.safeGetLong(dbResult, "typnamespace");
+                        PostgreSchema schema = database.getSchema(monitor, schemaOid);
+                        if (schema == null) {
+                            throw new DBException("Schema " + schemaOid + " not found for data type " + oid);
+                        }
+                        return PostgreDataType.readDataType(session, schema, dbResult);
+                    } else {
+                        throw new DBException("Data type " + oid + " not found in database " + database.getName());
+                    }
+                }
+            }
+            //dbStat;
+        }
+    }
+
+    @NotNull
+    static PostgreDataType resolveDataType(@NotNull DBRProgressMonitor monitor, @NotNull PostgreDatabase database, String name) throws SQLException, DBException {
+        // Initially cache only base types (everything but composite and arrays)
+        try (JDBCSession session = database.getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Resolve data type by name")) {
+            try (final JDBCPreparedStatement dbStat = session.prepareStatement("SELECT t.oid,t.* FROM pg_catalog.pg_type t WHERE typname=? ")) {
+                dbStat.setString(1, name);
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    if (dbResult.next()) {
+                        long schemaOid = JDBCUtils.safeGetLong(dbResult, "typnamespace");
+                        PostgreSchema schema = database.getSchema(monitor, schemaOid);
+                        if (schema == null) {
+                            throw new DBException("Schema " + schemaOid + " not found for data type " + name);
+                        }
+                        return PostgreDataType.readDataType(session, schema, dbResult);
+                    } else {
+                        throw new DBException("Data type " + name + " not found in database " + database.getName());
+                    }
+                }
+            }
+            //dbStat;
+        }
     }
 
 }

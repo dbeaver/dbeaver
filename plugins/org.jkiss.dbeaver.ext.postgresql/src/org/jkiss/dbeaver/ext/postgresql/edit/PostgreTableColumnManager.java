@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableColumnManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.TextUtils;
@@ -66,7 +67,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
                     return;
             }
         }
-        final PostgreDataType rawType = dataType.getElementType();
+        final PostgreDataType rawType = dataType.getElementType(new VoidProgressMonitor());
         if (rawType != null) {
             sql.append(rawType.getTypeName());
         } else {
@@ -164,7 +165,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
             protected PostgreTableColumn runTask() {
                 final PostgreTableColumn column = new PostgreTableColumn(parent);
                 column.setName(getNewColumnName(monitor, context, parent));
-                final PostgreDataType dataType = parent.getDatabase().getDataType(PostgreOid.VARCHAR);
+                final PostgreDataType dataType = parent.getDatabase().getDataType(monitor, PostgreOid.VARCHAR);
                 column.setDataType(dataType); //$NON-NLS-1$
                 column.setOrdinalPosition(-1);
 

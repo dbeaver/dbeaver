@@ -51,7 +51,7 @@ public class PostgreArrayValueHandler extends JDBCArrayValueHandler {
                 PostgreDataType itemType = null;
                 final PostgreDataType arrayType = PostgreUtils.findDataType((PostgreDataSource) session.getDataSource(), type);
                 if (arrayType != null) {
-                    itemType = arrayType.getElementType();
+                    itemType = arrayType.getElementType(session.getProgressMonitor());
                 }
                 if (itemType != null) {
                     if (className.equals(PostgreConstants.PG_OBJECT_CLASS)) {

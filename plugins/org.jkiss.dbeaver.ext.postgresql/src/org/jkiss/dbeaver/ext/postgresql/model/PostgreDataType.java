@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
-import org.jkiss.dbeaver.model.impl.DBPositiveNumberTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
@@ -277,7 +276,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     @Nullable
     @Override
     public DBSDataType getComponentType(@NotNull DBRProgressMonitor monitor) throws DBException {
-        return getElementType();
+        return getElementType(monitor);
     }
 
     @Nullable
@@ -302,13 +301,13 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     }
 
     @Property(category = CAT_MAIN, viewable = true, order = 12)
-    public PostgreDataType getBaseType() {
-        return resolveType(baseTypeId);
+    public PostgreDataType getBaseType(DBRProgressMonitor monitor) {
+        return getDatabase().getDataType(monitor, baseTypeId);
     }
 
     @Property(category = CAT_MAIN, viewable = true, order = 13)
-    public PostgreDataType getElementType() {
-        return elementTypeId == 0 ? null : resolveType(elementTypeId);
+    public PostgreDataType getElementType(DBRProgressMonitor monitor) {
+        return elementTypeId == 0 ? null : getDatabase().getDataType(monitor, elementTypeId);
     }
 
     @Property(category = CAT_MAIN, order = 15)
@@ -397,8 +396,8 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     }
 
     @Property(category = CAT_ARRAY)
-    public PostgreDataType getArrayItemType() {
-        return arrayItemTypeId == 0 ? null : resolveType(arrayItemTypeId);
+    public PostgreDataType getArrayItemType(DBRProgressMonitor monitor) {
+        return arrayItemTypeId == 0 ? null : getDatabase().getDataType(monitor, arrayItemTypeId);
     }
 
     // Plain type
@@ -413,10 +412,6 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
 
     public boolean hasAttributes() {
         return typeType == PostgreTypeType.c && classId >= 0;
-    }
-
-    private PostgreDataType resolveType(long typeId) {
-        return getDatabase().getDataType(typeId);
     }
 
     @NotNull
@@ -531,7 +526,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
 
         @Override
         protected PostgreDataTypeAttribute fetchObject(@NotNull JDBCSession session, @NotNull PostgreDataType postgreDataType, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
-            return new PostgreDataTypeAttribute(postgreDataType, resultSet);
+            return new PostgreDataTypeAttribute(session.getProgressMonitor(), postgreDataType, resultSet);
         }
     }
 
