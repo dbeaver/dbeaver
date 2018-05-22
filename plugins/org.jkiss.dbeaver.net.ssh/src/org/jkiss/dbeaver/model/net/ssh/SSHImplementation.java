@@ -32,6 +32,10 @@ public interface SSHImplementation {
     DBPConnectionConfiguration initTunnel(DBRProgressMonitor monitor, DBPPlatform platform, DBWHandlerConfiguration configuration, DBPConnectionConfiguration connectionInfo)
         throws DBException, IOException;
 
+    String getClientVersion();
+
+    String getServerVersion();
+
     void invalidateTunnel(DBRProgressMonitor monitor)
         throws DBException, IOException;
 
