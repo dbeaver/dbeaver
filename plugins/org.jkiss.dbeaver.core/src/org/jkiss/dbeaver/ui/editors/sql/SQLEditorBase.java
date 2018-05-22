@@ -72,9 +72,9 @@ import org.jkiss.utils.Pair;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.ResourceBundle;
 import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * SQL Executor
@@ -886,10 +886,15 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                         String queryText = document.get(statementStart, tokenOffset - statementStart);
                         queryText = SQLUtils.fixLineFeeds(queryText);
 
-                        if (isDelimiter && (keepDelimiters || (hasBlocks ? dialect.isDelimiterAfterBlock() : dialect.isDelimiterAfterQuery()))) {
+                        if (isDelimiter && (keepDelimiters || (hasBlocks ?
+                            dialect.isDelimiterAfterBlock() && queryText.trim().toUpperCase(Locale.ENGLISH).endsWith(SQLConstants.BLOCK_END) :
+                            dialect.isDelimiterAfterQuery())))
+                        {
                             if (delimiterText != null && delimiterText.equals(SQLConstants.DEFAULT_STATEMENT_DELIMITER)) {
-                                // Add delimiter in the end of query. Do this only for semicolon delimiters
-                                // Quite dirty workaround needed for SQL server
+                                // Add delimiter in the end of query. Do this only for semicolon delimiters.
+                                // For SQL server add it in the end of query. For Oracle only after END clause
+                                // Quite dirty workaround needed for Oracle and SQL Server.
+                                // TODO: move this transformation into SQLDialect
                                 queryText += delimiterText;
                             }
                         }

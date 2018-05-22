@@ -78,7 +78,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
 
     @Override
     public SQLServerSchema createSchemaImpl(GenericDataSource dataSource, GenericCatalog catalog, String schemaName) throws DBException {
-        return new SQLServerSchema(dataSource, catalog, schemaName);
+        return new SQLServerSchema(dataSource, catalog, schemaName, 0);
     }
 
     public String getViewDDL(DBRProgressMonitor monitor, GenericTable sourceObject, Map<String, Object> options) throws DBException {
@@ -118,23 +118,34 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     }
 
     @Override
-    public List<? extends GenericTrigger> loadTriggers(DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTable table) throws DBException {
+    public List<GenericTrigger> loadTriggers(DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTable table) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container.getDataSource(), "Read triggers")) {
             String schema = getSystemSchemaFQN(container.getDataSource(), container.getCatalog());
             StringBuilder query = new StringBuilder("SELECT triggers.name FROM " + schema + ".sysobjects triggers");
+            GenericSchema tableSchema = table == null ? null : table.getSchema();
+            long schemaId = tableSchema instanceof SQLServerSchema ? ((SQLServerSchema) tableSchema).getSchemaId() : 0;
+
             if (table != null) {
                 query.append(",").append(schema).append(".sysobjects tables");
             }
             query.append("\nWHERE triggers.type = 'TR'\n");
             if (table != null) {
-                query.append(
-                    "AND triggers.deltrig = tables.id\n" +
-                    "AND user_name(tables.uid) = ? AND tables.name = ?");
+                query.append("AND triggers.deltrig = tables.id\n");
+                if (schemaId == 0) {
+                    query.append("AND user_name(tables.uid) = ?");
+                } else {
+                    query.append("AND tables.uid = ?");
+                }
+                query.append(" AND tables.name = ?");
             }
 
             try (JDBCPreparedStatement dbStat = session.prepareStatement(query.toString())) {
                 if (table != null) {
-                    dbStat.setString(1, table.getSchema().getName());
+                    if (schemaId == 0) {
+                        dbStat.setString(1, tableSchema.getName());
+                    } else {
+                        dbStat.setLong(1, schemaId);
+                    }
                     dbStat.setString(2, table.getName());
                 }
                 List<GenericTrigger> result = new ArrayList<>();
@@ -146,7 +157,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
                             continue;
                         }
                         name = name.trim();
-                        GenericTrigger trigger = new GenericTrigger(container, table, name, null);
+                        SQLServerTrigger trigger = new SQLServerTrigger(container, table, name, null);
                         result.add(trigger);
                     }
                 }
@@ -234,18 +245,18 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
         String sql;
         if (showAllSchemas) {
             if (getServerType() == ServerType.SQL_SERVER && dataSource.isServerVersionAtLeast(SQLServerConstants.SQL_SERVER_2005_VERSION_MAJOR ,0)) {
-                sql = "SELECT name FROM " + sysSchema + ".schemas";
+                sql = "SELECT * FROM " + sysSchema + ".schemas";
             } else {
-                sql = "SELECT name FROM " + sysSchema + ".sysusers";
+                sql = "SELECT * FROM " + sysSchema + ".sysusers";
             }
         } else {
             if (getServerType() == ServerType.SQL_SERVER) {
-                sql = "SELECT DISTINCT s.name\n" +
+                sql = "SELECT DISTINCT s.*\n" +
                     "FROM " + sysSchema + ".schemas s, " + sysSchema + ".sysobjects o\n" +
                     "WHERE s.schema_id=o.uid\n" +
                     "ORDER BY 1";
             } else {
-                sql = "SELECT DISTINCT u.name\n" +
+                sql = "SELECT DISTINCT u.name,u.uid\n" +
                     "FROM " + sysSchema + ".sysusers u, " + sysSchema + ".sysobjects o\n" +
                     "WHERE u.uid=o.uid\n" +
                     "ORDER BY 1";
@@ -258,7 +269,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
 
             try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                 while (dbResult.next()) {
-                    String name = JDBCUtils.safeGetString(dbResult, 1);
+                    String name = JDBCUtils.safeGetString(dbResult, "name");
                     if (name == null) {
                         continue;
                     }
@@ -268,8 +279,9 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
                         continue;
                     }
 
-                    SQLServerSchema schema = createSchemaImpl(
-                        dataSource, catalog, name);
+                    long schemaId = JDBCUtils.safeGetLong(dbResult, "schema_id");
+                    SQLServerSchema schema = new SQLServerSchema(
+                        dataSource, catalog, name, schemaId);
                     result.add(schema);
                 }
             }

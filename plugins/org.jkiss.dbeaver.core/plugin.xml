@@ -2518,7 +2518,7 @@
         <key commandId="org.jkiss.dbeaver.core.resultset.row.previous" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+ARROW_LEFT"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.row.next" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+ARROW_RIGHT"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.row.last" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+SHIFT+ARROW_RIGHT"/>
-        <key commandId="org.jkiss.dbeaver.core.resultset.fetch.page" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+'"/>
+        <key commandId="org.jkiss.dbeaver.core.resultset.fetch.page" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+;"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.fetch.all" contextId="org.jkiss.dbeaver.ui.context.resultset" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+\"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.row.edit" contextId="org.jkiss.dbeaver.ui.context.resultset.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="SHIFT+ENTER"/>
         <key commandId="org.jkiss.dbeaver.core.resultset.row.edit.inline" contextId="org.jkiss.dbeaver.ui.context.resultset.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ENTER"/>
@@ -2556,7 +2556,7 @@
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.run.explain" contextId="org.jkiss.dbeaver.ui.editors.sql.script" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+E"/>
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.close.tab" contextId="org.jkiss.dbeaver.ui.editors.sql.script" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+\"/>
 
-        <key commandId="org.jkiss.dbeaver.ui.editors.sql.navigate.object" contextId="org.jkiss.dbeaver.ui.editors.sql" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="F4"/>
+        <key commandId="org.jkiss.dbeaver.ui.editors.sql.navigate.object" contextId="org.jkiss.dbeaver.ui.editors.sql.script" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="F4"/>
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.query.next" contextId="org.jkiss.dbeaver.ui.editors.sql.script" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+ARROW_DOWN"/>
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.query.prev" contextId="org.jkiss.dbeaver.ui.editors.sql.script" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+ARROW_UP"/>
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.show.output" contextId="org.jkiss.dbeaver.ui.editors.sql.script" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+O"/>
@@ -3781,6 +3781,7 @@
         <language code="fr" label="%language.fr.label"/>
         <language code="de" label="%language.de.label"/>
         <language code="it" label="%language.it.label"/>
+        <language code="es" label="%language.es.label"/>
     </extension>
 
     <extension

@@ -54,6 +54,23 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
     }
 
     @Override
+    public Object getValueFromObject(DBCSession session, DBSTypedObject type, Object object, boolean copy) throws DBCException {
+        Object value = super.getValueFromObject(session, type, object, copy);
+        if (value instanceof Date) {
+            switch (type.getTypeID()) {
+                case Types.TIME:
+                case Types.TIME_WITH_TIMEZONE:
+                    return getTimeValue(value);
+                case Types.DATE:
+                    return getDateValue(value);
+                default:
+                    return getTimestampValue(value);
+            }
+        }
+        return value;
+    }
+
+    @Override
     public Object fetchValueObject(@NotNull DBCSession session, @NotNull DBCResultSet resultSet, @NotNull DBSTypedObject type, int index) throws DBCException {
         try {
             if (resultSet instanceof JDBCResultSet) {

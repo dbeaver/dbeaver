@@ -9,14 +9,14 @@
     <packaging>pom</packaging>
 
     <properties>
-        <dbeaver-version>5.0.5</dbeaver-version>
+        <dbeaver-version>5.0.6</dbeaver-version>
         <dbeaver-product>DBeaver</dbeaver-product>
         <tycho-version>1.0.0</tycho-version>
         <tycho-versions-version>0.26.0</tycho-versions-version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
         <eclipse-p2-repo.url>http://download.eclipse.org/releases/oxygen/</eclipse-p2-repo.url>
-        <local-p2-repo.url>https://dbeaver.jkiss.org/eclipse-repo</local-p2-repo.url>
+        <local-p2-repo.url>https://dbeaver.io/eclipse-repo</local-p2-repo.url>
     </properties>
 
     <modules>
