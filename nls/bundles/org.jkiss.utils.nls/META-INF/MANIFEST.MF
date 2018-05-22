@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.utils.nls
-Bundle-Version: 1.0.15
-Bundle-Release-Date: 20180514
+Bundle-Version: 1.0.16
+Bundle-Release-Date: 20180528
 Fragment-Host: org.jkiss.utils
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Vendor: JKISS

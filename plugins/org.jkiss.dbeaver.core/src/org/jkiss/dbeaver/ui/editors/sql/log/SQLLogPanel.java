@@ -40,7 +40,7 @@ public class SQLLogPanel extends Composite
         gl.horizontalSpacing = 0;
         setLayout(gl);
 
-        queryLogViewer = new QueryLogViewer(this, editor.getSite(), new SQLLogFilter(editor), false);
+        queryLogViewer = new QueryLogViewer(this, editor.getSite(), new SQLLogFilter(editor), false, true);
     }
 
     public QueryLogViewer getQueryLogViewer()

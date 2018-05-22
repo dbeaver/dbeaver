@@ -197,7 +197,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         String searchPathStr = JDBCUtils.queryString(session, "SHOW search_path");
         this.searchPath.clear();
         if (searchPathStr != null) {
-            for (String str : searchPathStr.replace("$user", activeUser).split(",")) {
+            for (String str : searchPathStr.split(",")) {
                 str = str.trim();
                 this.searchPath.add(DBUtils.getUnQuotedIdentifier(this, str));
             }

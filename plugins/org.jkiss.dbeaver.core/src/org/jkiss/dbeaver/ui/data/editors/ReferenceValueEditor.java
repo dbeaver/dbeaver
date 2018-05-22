@@ -469,7 +469,9 @@ public class ReferenceValueEditor {
         public void completeLoading(EnumValuesData result) {
             super.completeLoading(result);
             super.visualizeLoading();
-            updateDictionarySelector(result);
+            if (result != null) {
+                updateDictionarySelector(result);
+            }
         }
     }
 

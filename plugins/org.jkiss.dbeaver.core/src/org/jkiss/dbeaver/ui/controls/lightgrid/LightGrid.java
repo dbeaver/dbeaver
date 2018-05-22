@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.resource.JFaceColors;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.*;
 import org.eclipse.swt.events.*;
@@ -29,6 +30,7 @@ import org.eclipse.ui.progress.UIJob;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dnd.LocalObjectTransfer;
@@ -3614,11 +3616,14 @@ public abstract class LightGrid extends Canvas {
         Point point = new Point(x, y);
         final GridColumn col = getColumn(point);
         final int row = getRow(point);
-        Integer detail = y;
+        Integer detail =
+            (hoveringOnColumnSorter ? 1000000 : 0) +
+            (hoveringOnColumnFilter ? 1000000 : 0) +
+            y;
 
         boolean hoverChange = false;
 
-        if (hoveringItem != row || !CommonUtils.equalObjects(hoveringDetail, detail) || hoveringColumn != col) {
+        if (hoveringItem != row || !CommonUtils.equalObjects(hoveringDetail, detail) || hoveringColumn != col || y <= headerHeight) {
             hoveringItem = row;
             hoveringDetail = detail;
             hoveringColumn = col;
@@ -3653,7 +3658,13 @@ public abstract class LightGrid extends Canvas {
                 newTip = getCellToolTip(hoveringColumn, hoveringItem);
             } else if (columnHeadersVisible && hoveringColumn != null && y <= headerHeight) {
                 // get column header specific tooltip
-                newTip = hoveringColumn.getHeaderTooltip();
+                if (hoveringOnColumnSorter) {
+                    newTip = NLS.bind(CoreMessages.grid_tooltip_sort_by_column, getLabelProvider().getText(hoveringColumn.getElement()));
+                } else if (hoveringOnColumnFilter) {
+                    newTip = NLS.bind(CoreMessages.grid_tooltip_filter_by_column, getLabelProvider().getText(hoveringColumn.getElement()));
+                } else {
+                    newTip = hoveringColumn.getHeaderTooltip();
+                }
             } else if (rowHeaderVisible && hoveringItem >= 0 && x <= rowHeaderWidth) {
                 newTip = getLabelProvider().getToolTipText(getRowElement(hoveringItem));
             }
