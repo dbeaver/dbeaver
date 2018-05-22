@@ -51,7 +51,6 @@ import java.sql.SQLException;
 import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 /**
  * PostgreDatabase
@@ -173,37 +172,37 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
         return templateName;
     }
 
-    @Property(viewable = false, order = 3)
+    @Property(order = 3)
     public PostgreRole getDBA(DBRProgressMonitor monitor) throws DBException {
         return PostgreUtils.getObjectById(monitor, roleCache, this, ownerId);
     }
 
-    @Property(viewable = false, order = 5)
+    @Property(order = 5)
     public PostgreCharset getDefaultEncoding(DBRProgressMonitor monitor) throws DBException {
         return PostgreUtils.getObjectById(monitor, encodingCache, this, encodingId);
     }
 
-    @Property(viewable = false, order = 10)
+    @Property(order = 10)
     public String getCollate() {
         return collate;
     }
 
-    @Property(viewable = false, order = 11)
+    @Property(order = 11)
     public String getCtype() {
         return ctype;
     }
 
-    @Property(viewable = false, order = 12)
+    @Property(order = 12)
     public boolean isTemplate() {
         return isTemplate;
     }
 
-    @Property(viewable = false, order = 13)
+    @Property(order = 13)
     public boolean isAllowConnect() {
         return allowConnect;
     }
 
-    @Property(viewable = false, order = 14)
+    @Property(order = 14)
     public int getConnectionLimit() {
         return connectionLimit;
     }
@@ -213,7 +212,7 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
 
     @NotNull
     @Override
-    public DBCExecutionContext getDefaultContext(boolean meta) {
+    public JDBCExecutionContext getDefaultContext(boolean meta) {
         return dataSource.getDefaultContext(meta);
     }
 
@@ -287,7 +286,7 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
         return tablespaceCache.getAllObjects(monitor, this);
     }
 
-    @Property(viewable = false, order = 4)
+    @Property(order = 4)
     public PostgreTablespace getDefaultTablespace(DBRProgressMonitor monitor) throws DBException {
         return PostgreUtils.getObjectById(monitor, tablespaceCache, this, tablespaceId);
     }
@@ -504,7 +503,7 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
         return null;
     }
 
-    public PostgreDataType getDataType(long typeId) {
+    public PostgreDataType getDataType(DBRProgressMonitor monitor, long typeId) {
         if (typeId <= 0) {
             return null;
         }
@@ -519,11 +518,18 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
                 return dataType;
             }
         }
-        log.debug("Data type '" + typeId + "' not found");
-        return null;
+        // Type not found. Let's resolve it
+        try {
+            dataType = PostgreDataTypeCache.resolveDataType(monitor, this, typeId);
+            dataType.getParentObject().dataTypeCache.cacheObject(dataType);
+            return dataType;
+        } catch (Exception e) {
+            log.debug("Can't resolve data type " + typeId, e);
+            return null;
+        }
     }
 
-    public PostgreDataType getDataType(String typeName) {
+    public PostgreDataType getDataType(DBRProgressMonitor monitor, String typeName) {
         if (typeName.endsWith("[]")) {
             // In some cases ResultSetMetadata returns it as []
             typeName = "_" + typeName.substring(0, typeName.length() - 2);
@@ -560,8 +566,16 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
                 return dataType;
             }
         }
-        log.debug("Data type '" + typeName + "' not found in database '" + getName() + "'");
-        return null;
+
+        // Type not found. Let's resolve it
+        try {
+            PostgreDataType dataType = PostgreDataTypeCache.resolveDataType(monitor, this, typeName);
+            dataType.getParentObject().dataTypeCache.cacheObject(dataType);
+            return dataType;
+        } catch (Exception e) {
+            log.debug("Can't resolve data type " + typeName, e);
+            return null;
+        }
     }
 
     @Override
@@ -597,7 +611,7 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
             // FIXME: maybe some better workaround?
             if (PostgreConstants.EC_PERMISSION_DENIED.equals(error.getDatabaseState())) {
                 log.warn(error);
-                setCache(Collections.<PostgreRole>emptyList());
+                setCache(Collections.emptyList());
                 return true;
             }
             return false;

@@ -518,7 +518,7 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
             throws SQLException, DBException
         {
             try {
-                return new PostgreTableColumn(table, dbResult);
+                return new PostgreTableColumn(session.getProgressMonitor(), table, dbResult);
             } catch (DBException e) {
                 log.warn("Error reading attribute info", e);
                 return null;
@@ -804,7 +804,7 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
         protected PostgreProcedure fetchObject(@NotNull JDBCSession session, @NotNull PostgreSchema owner, @NotNull JDBCResultSet dbResult)
             throws SQLException, DBException
         {
-            return new PostgreProcedure(owner, dbResult);
+            return new PostgreProcedure(session.getProgressMonitor(), owner, dbResult);
         }
 
     }
