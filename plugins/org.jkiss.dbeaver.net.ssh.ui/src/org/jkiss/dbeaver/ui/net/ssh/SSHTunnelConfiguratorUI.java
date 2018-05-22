@@ -117,7 +117,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
             tunnelTimeout = UIUtils.createLabelSpinner(advancedGroup, SSHUIMessages.model_ssh_configurator_label_tunnel_timeout, SSHConstants.DEFAULT_CONNECT_TIMEOUT, 0, 300000);
         }
 
-        Button testButton = UIUtils.createPushButton(composite, "Test runnel configuration", null, new SelectionAdapter() {
+        Button testButton = UIUtils.createPushButton(composite, SSHUIMessages.model_ssh_configurator_button_test_tunnel, null, new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 testTunnelConnection();
