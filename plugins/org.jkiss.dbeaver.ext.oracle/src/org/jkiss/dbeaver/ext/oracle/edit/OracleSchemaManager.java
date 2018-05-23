@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -88,10 +89,12 @@ public class OracleSchemaManager extends SQLObjectEditor<OracleSchema, OracleDat
     protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
     {
         OracleUser user = command.getObject().getUser();
-        actions.add(
-            new SQLDatabasePersistAction("Create schema",
-                "CREATE USER " + DBUtils.getQuotedIdentifier(user) + " IDENTIFIED BY \"" + user.getPassword() + "\"")
-        );
+        String sql = "CREATE USER " + DBUtils.getQuotedIdentifier(user);
+        if (!CommonUtils.isEmpty(user.getPassword())) {
+            sql += " IDENTIFIED BY \"" + user.getPassword() + "\"";
+        }
+
+        actions.add(new SQLDatabasePersistAction("Create schema", sql));
     }
 
     @Override
@@ -137,7 +140,7 @@ public class OracleSchemaManager extends SQLObjectEditor<OracleSchema, OracleDat
         {
             getShell().setText("Set schema/user properties");
             Control container = super.createDialogArea(parent);
-            Composite composite = UIUtils.createPlaceholder((Composite) container, 2);
+            Composite composite = UIUtils.createPlaceholder((Composite) container, 2, 5);
             composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
             nameText = UIUtils.createLabelText(composite, "Schema/User Name", null);
