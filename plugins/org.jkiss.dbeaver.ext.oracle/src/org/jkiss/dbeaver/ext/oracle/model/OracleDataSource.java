@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
 
@@ -668,6 +669,20 @@ public class OracleDataSource extends JDBCDataSource
             if (!positions.isEmpty()) {
                 return positions.toArray(new ErrorPosition[positions.size()]);
             }
+        }
+        if (error.getCause() != null) {
+            // Maybe OracleDatabaseException
+            try {
+                Object errorPosition = BeanUtils.readObjectProperty(error.getCause(), "errorPosition");
+                if (errorPosition instanceof Number) {
+                    DBPErrorAssistant.ErrorPosition pos = new DBPErrorAssistant.ErrorPosition();
+                    pos.position = ((Number) errorPosition).intValue();
+                    return new ErrorPosition[]{pos};
+                }
+            } catch (Exception e) {
+                // Nope, its not it
+            }
+
         }
         if (error instanceof SQLException && SQLState.SQL_42000.getCode().equals(((SQLException) error).getSQLState())) {
             try (JDBCSession session = (JDBCSession) context.openSession(monitor, DBCExecutionPurpose.UTIL, "Extract last error position")) {
