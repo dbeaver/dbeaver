@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataTypeProvider;
@@ -36,6 +37,7 @@ import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -50,7 +52,6 @@ import java.util.Map;
  */
 public class JDBCUtils {
     private static final Log log = Log.getLog(JDBCUtils.class);
-    public static final int CONNECTION_VALIDATION_TIMEOUT = 5000;
 
     private static final Map<String, Integer> badColumnNames = new HashMap<>();
 
@@ -479,30 +480,36 @@ public class JDBCUtils {
             log.debug(e);
             return false;
         }
-        String testSQL = null;
-        if (dataSource instanceof SQLDataSource) {
-            testSQL = ((SQLDataSource) dataSource).getSQLDialect().getTestSQL();
-        }
-        try {
-            if (!CommonUtils.isEmpty(testSQL)) {
-                // Execute test SQL
-                try (Statement dbStat = connection.createStatement()) {
-                    dbStat.execute(testSQL);
+        final String testSQL = (dataSource instanceof SQLDataSource) ?
+            ((SQLDataSource) dataSource).getSQLDialect().getTestSQL() : null;
+        int invalidateTimeout = dataSource.getContainer().getPreferenceStore().getInt(ModelPreferences.CONNECTION_VALIDATION_TIMEOUT);
+
+        // Invalidate in non-blocking task.
+        // Timeout is CONNECTION_VALIDATION_TIMEOUT + 2 seconds
+        final boolean[] isValid = new boolean[1];
+        RuntimeUtils.runTask(monitor -> {
+            try {
+                if (!CommonUtils.isEmpty(testSQL)) {
+                    // Execute test SQL
+                    try (Statement dbStat = connection.createStatement()) {
+                        dbStat.execute(testSQL);
+                        isValid[0] = true;
+                    }
+                } else {
+                    try {
+                        isValid[0] = connection.isValid(invalidateTimeout);
+                    } catch (Throwable e) {
+                        // isValid may be unsupported by driver
+                        // Let's try to read table list
+                        connection.getMetaData().getTables(null, null, "DBEAVER_FAKE_TABLE_NAME_FOR_PING", null);
+                        isValid[0] = true;
+                    }
                 }
-            } else {
-                try {
-                    return connection.isValid(CONNECTION_VALIDATION_TIMEOUT);
-                } catch (Throwable e) {
-                    // isValid may be unsupported by driver
-                    // Let's try to read table list
-                    connection.getMetaData().getTables(null, null, "DBEAVER_FAKE_TABLE_NAME_FOR_PING", null);
-                }
+            } catch (SQLException e) {
+                isValid[0] = false;
             }
-            return true;
-        } catch (Throwable e1) {
-            log.debug("Connection seems to be broken", e1);
-            return false;
-        }
+        }, "Check connection is alive", invalidateTimeout + 2000);
+        return isValid[0];
     }
 
     public static void scrollResultSet(ResultSet dbResult, long offset, boolean forceFetch) throws SQLException

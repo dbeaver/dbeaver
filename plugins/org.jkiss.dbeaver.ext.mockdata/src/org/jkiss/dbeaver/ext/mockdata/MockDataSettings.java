@@ -33,8 +33,6 @@ import java.util.*;
 
 public class MockDataSettings {
 
-    public static final String FK_GENERATOR_ID = "fkGenerator"; //$NON-NLS-1$
-
     public static final String PROP_REMOVE_OLD_DATA = "removeOldData"; //$NON-NLS-1$
     public static final String PROP_ROWS_NUMBER = "rowsNumber"; //$NON-NLS-1$
 
@@ -73,7 +71,7 @@ public class MockDataSettings {
             //((JDBCColumnKeyType) attribute).isInUniqueKey()
             List<DBSEntityReferrer> attributeReferrers = DBUtils.getAttributeReferrers(monitor, (DBSEntityAttribute) attribute);
             if (!CommonUtils.isEmpty(attributeReferrers)) {
-                MockGeneratorDescriptor generator = generatorRegistry.getGenerator(FK_GENERATOR_ID);
+                MockGeneratorDescriptor generator = generatorRegistry.getGenerator(MockGeneratorRegistry.FK_GENERATOR_ID);
                 putGenerator(generatorProperties, generator);
             } else {
                 List<MockGeneratorDescriptor> generators = generatorRegistry.findAllGenerators(dataManipulator.getDataSource(), attribute);

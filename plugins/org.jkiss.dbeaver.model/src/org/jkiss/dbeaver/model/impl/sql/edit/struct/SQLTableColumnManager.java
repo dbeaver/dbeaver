@@ -49,81 +49,64 @@ public abstract class SQLTableColumnManager<OBJECT_TYPE extends JDBCTableColumn<
         void appendModifier(OBJECT_TYPE column, StringBuilder sql, DBECommandAbstract<OBJECT_TYPE> command);
     }
 
-    protected final ColumnModifier<OBJECT_TYPE> DataTypeModifier = new ColumnModifier<OBJECT_TYPE>() {
-        @Override
-        public void appendModifier(OBJECT_TYPE column, StringBuilder sql, DBECommandAbstract<OBJECT_TYPE> command) {
-            final String typeName = column.getTypeName();
+    protected final ColumnModifier<OBJECT_TYPE> DataTypeModifier = (column, sql, command) -> {
+        final String typeName = column.getTypeName();
+        DBPDataKind dataKind = column.getDataKind();
+        final DBSDataType dataType = findDataType(column.getDataSource(), typeName);
+        sql.append(' ').append(typeName);
+        if (dataType == null) {
+            log.debug("Type name '" + typeName + "' is not supported by driver"); //$NON-NLS-1$ //$NON-NLS-2$
+        } else {
+            dataKind = dataType.getDataKind();
+        }
+        String modifiers = SQLUtils.getColumnTypeModifiers(column.getDataSource(), column, typeName, dataKind);
+        if (modifiers != null) {
+            sql.append(modifiers);
+        }
+    };
+
+    protected final ColumnModifier<OBJECT_TYPE> NotNullModifier = (column, sql, command) -> {
+        if (column.isRequired()) {
+            sql.append(" NOT NULL"); //$NON-NLS-1$
+        }
+    };
+
+    protected final ColumnModifier<OBJECT_TYPE> NullNotNullModifier = (column, sql, command) ->
+        sql.append(column.isRequired() ? " NOT NULL" : " NULL");
+
+    protected final ColumnModifier<OBJECT_TYPE> NullNotNullModifierConditional = (column, sql, command) -> {
+        if (command instanceof DBECommandComposite) {
+            if (((DBECommandComposite) command).getProperty("required") == null) {
+                // Do not set NULL/NOT NULL if it wasn't chaged
+                return;
+            }
+        }
+        NullNotNullModifier.appendModifier(column, sql, command);
+    };
+
+    protected final ColumnModifier<OBJECT_TYPE> DefaultModifier = (column, sql, command) -> {
+        String defaultValue = CommonUtils.toString(column.getDefaultValue());
+        if (!CommonUtils.isEmpty(defaultValue)) {
             DBPDataKind dataKind = column.getDataKind();
-            final DBSDataType dataType = findDataType(column.getDataSource(), typeName);
-            sql.append(' ').append(typeName);
-            if (dataType == null) {
-                log.debug("Type name '" + typeName + "' is not supported by driver"); //$NON-NLS-1$ //$NON-NLS-2$
-            } else {
-                dataKind = dataType.getDataKind();
-            }
-            String modifiers = SQLUtils.getColumnTypeModifiers(column.getDataSource(), column, typeName, dataKind);
-            if (modifiers != null) {
-                sql.append(modifiers);
-            }
-        }
-    };
-
-    protected final ColumnModifier<OBJECT_TYPE> NotNullModifier = new ColumnModifier<OBJECT_TYPE>() {
-        @Override
-        public void appendModifier(OBJECT_TYPE column, StringBuilder sql, DBECommandAbstract<OBJECT_TYPE> command) {
-            if (column.isRequired()) {
-                sql.append(" NOT NULL"); //$NON-NLS-1$
-            }
-        }
-    };
-
-    protected final ColumnModifier<OBJECT_TYPE> NullNotNullModifier = new ColumnModifier<OBJECT_TYPE>() {
-        @Override
-        public void appendModifier(OBJECT_TYPE column, StringBuilder sql, DBECommandAbstract<OBJECT_TYPE> command) {
-            sql.append(column.isRequired() ? " NOT NULL" : " NULL");
-        }
-    };
-
-    protected final ColumnModifier<OBJECT_TYPE> NullNotNullModifierConditional = new ColumnModifier<OBJECT_TYPE>() {
-        @Override
-        public void appendModifier(OBJECT_TYPE column, StringBuilder sql, DBECommandAbstract<OBJECT_TYPE> command) {
-            if (command instanceof DBECommandComposite) {
-                if (((DBECommandComposite) command).getProperty("required") == null) {
-                    // Do not set NULL/NOT NULL if it wasn't chaged
-                    return;
+            boolean useQuotes = false;//dataKind == DBPDataKind.STRING;
+            if (!defaultValue.startsWith(QUOTE) && !defaultValue.endsWith(QUOTE)) {
+                if (useQuotes && defaultValue.trim().startsWith(QUOTE)) {
+                    useQuotes = false;
                 }
-            }
-            NullNotNullModifier.appendModifier(column, sql, command);
-        }
-    };
-
-    protected final ColumnModifier<OBJECT_TYPE> DefaultModifier = new ColumnModifier<OBJECT_TYPE>() {
-        @Override
-        public void appendModifier(OBJECT_TYPE column, StringBuilder sql, DBECommandAbstract<OBJECT_TYPE> command) {
-            String defaultValue = CommonUtils.toString(column.getDefaultValue());
-            if (!CommonUtils.isEmpty(defaultValue)) {
-                DBPDataKind dataKind = column.getDataKind();
-                boolean useQuotes = false;//dataKind == DBPDataKind.STRING;
-                if (!defaultValue.startsWith(QUOTE) && !defaultValue.endsWith(QUOTE)) {
-                    if (useQuotes && defaultValue.trim().startsWith(QUOTE)) {
-                        useQuotes = false;
-                    }
-                    if (dataKind == DBPDataKind.DATETIME) {
-                        final char firstChar = defaultValue.trim().charAt(0);
-                        if (!Character.isLetter(firstChar) && firstChar != '(' && firstChar != '[') {
-                            useQuotes = true;
-                        }
+                if (dataKind == DBPDataKind.DATETIME) {
+                    final char firstChar = defaultValue.trim().charAt(0);
+                    if (!Character.isLetter(firstChar) && firstChar != '(' && firstChar != '[') {
+                        useQuotes = true;
                     }
                 }
-
-                sql.append(" DEFAULT "); //$NON-NLS-1$
-                if (useQuotes) sql.append(QUOTE);
-                sql.append(defaultValue);
-                if (useQuotes) sql.append(QUOTE);
             }
+
+            sql.append(" DEFAULT "); //$NON-NLS-1$
+            if (useQuotes) sql.append(QUOTE);
+            sql.append(defaultValue);
+            if (useQuotes) sql.append(QUOTE);
         }
     };
-
 
     protected ColumnModifier[] getSupportedModifiers(OBJECT_TYPE column, Map<String, Object> options)
     {

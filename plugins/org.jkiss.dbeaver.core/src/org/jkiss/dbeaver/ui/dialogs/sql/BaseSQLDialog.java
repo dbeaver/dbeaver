@@ -160,7 +160,11 @@ public abstract class BaseSQLDialog extends BaseDialog {
     {
         try {
             this.sqlInput.setText(getSQLText());
-            sqlViewer.init(subSite, sqlInput);
+            if (sqlViewer.getSite() != null) {
+                sqlViewer.setInput(sqlInput);
+            } else {
+                sqlViewer.init(subSite, sqlInput);
+            }
             sqlViewer.reloadSyntaxRules();
         } catch (PartInitException e) {
             DBUserInterface.getInstance().showError(getShell().getText(), null, e);

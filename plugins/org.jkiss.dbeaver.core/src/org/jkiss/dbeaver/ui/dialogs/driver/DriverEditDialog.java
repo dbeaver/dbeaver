@@ -99,7 +99,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
 
     private boolean showAddFiles = false;
 
-    public static int getDialogCount() {
+    static int getDialogCount() {
         return dialogCount;
     }
 
@@ -112,7 +112,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
         this.origLibList = new ArrayList<>(driver.getDriverLibraries());
     }
 
-    public DriverEditDialog(Shell shell, DataSourceProviderDescriptor provider, String category) {
+    DriverEditDialog(Shell shell, DataSourceProviderDescriptor provider, String category) {
         super(shell, IHelpContextIds.CTX_DRIVER_EDITOR);
         this.provider = provider;
         this.driver = provider.createDriver();
@@ -121,7 +121,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
         this.origLibList = new ArrayList<>();
     }
 
-    public DriverEditDialog(Shell shell, DataSourceProviderDescriptor provider, DriverDescriptor driver) {
+    DriverEditDialog(Shell shell, DataSourceProviderDescriptor provider, DriverDescriptor driver) {
         super(shell, IHelpContextIds.CTX_DRIVER_EDITOR);
         this.provider = provider;
         this.driver = provider.createDriver(driver);
@@ -222,10 +222,12 @@ public class DriverEditDialog extends HelpEnabledDialog {
 
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 3;
-            driverClassText = UIUtils.createLabelText(propsGroup, CoreMessages.dialog_edit_driver_label_class_name + "*", CommonUtils.notEmpty(driver.getDriverClassName()), SWT.BORDER | advStyle, gd);
+            driverClassText = UIUtils.createLabelText(propsGroup, CoreMessages.dialog_edit_driver_label_class_name, CommonUtils.notEmpty(driver.getDriverClassName()), SWT.BORDER | advStyle, gd);
+            driverClassText.setToolTipText(CoreMessages.dialog_edit_driver_label_class_name_tip);
             driverClassText.addModifyListener(e -> onChangeProperty());
 
             driverURLText = UIUtils.createLabelText(propsGroup, CoreMessages.dialog_edit_driver_label_sample_url, CommonUtils.notEmpty(driver.getSampleURL()), SWT.BORDER | advStyle, gd);
+            driverURLText.setToolTipText(CoreMessages.dialog_edit_driver_label_sample_url_tip);
             driverURLText.addModifyListener(e -> onChangeProperty());
 
             gd = new GridData(GridData.FILL_HORIZONTAL);
@@ -704,9 +706,8 @@ public class DriverEditDialog extends HelpEnabledDialog {
     private void onChangeProperty() {
         Button button = getButton(IDialogConstants.OK_ID);
         if (button != null) {
-            button.setEnabled(
-                !CommonUtils.isEmpty(driverNameText.getText()) &&
-                    !CommonUtils.isEmpty(driverClassText.getText()));
+            boolean isValid = !CommonUtils.isEmpty(driverNameText.getText());
+            button.setEnabled(isValid);
         }
     }
 
@@ -818,7 +819,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
 
         private final DBPDataSource dataSource;
 
-        public BadDriverConfigDialog(Shell shell, String title, String message, DBException error) {
+        BadDriverConfigDialog(Shell shell, String title, String message, DBException error) {
             super(
                 shell == null ? DBeaverUI.getActiveWorkbenchShell() : shell,
                 title,
@@ -886,10 +887,8 @@ public class DriverEditDialog extends HelpEnabledDialog {
 
         @Override
         public boolean hasChildren(Object element) {
-            if (element instanceof DBPDriverLibrary) {
-                return !CommonUtils.isEmpty(driver.getLibraryFiles((DBPDriverLibrary) element));
-            }
-            return false;
+            return element instanceof DBPDriverLibrary &&
+                !CommonUtils.isEmpty(driver.getLibraryFiles((DBPDriverLibrary) element));
         }
     }
 }

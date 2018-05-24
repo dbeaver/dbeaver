@@ -107,6 +107,16 @@ public class SSHImplementationSshj extends SSHImplementationAbstract {
     }
 
     @Override
+    public String getClientVersion() {
+        return sshClient == null ? null : sshClient.getTransport().getClientVersion();
+    }
+
+    @Override
+    public String getServerVersion() {
+        return sshClient == null ? null : sshClient.getTransport().getServerVersion();
+    }
+
+    @Override
     public void invalidateTunnel(DBRProgressMonitor monitor) throws DBException, IOException {
         boolean isAlive = sshClient != null && sshClient.isConnected();
         if (isAlive) {

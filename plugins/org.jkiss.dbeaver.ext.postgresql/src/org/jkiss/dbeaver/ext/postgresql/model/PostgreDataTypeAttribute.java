@@ -18,14 +18,15 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * PostgreDataTypeAttribute
  */
 public class PostgreDataTypeAttribute extends PostgreAttribute<PostgreDataType>
 {
-    public PostgreDataTypeAttribute(PostgreDataType dataType, JDBCResultSet dbResult) throws DBException {
-        super(dataType, dbResult);
+    public PostgreDataTypeAttribute(DBRProgressMonitor monitor, PostgreDataType dataType, JDBCResultSet dbResult) throws DBException {
+        super(monitor, dataType, dbResult);
     }
 
     @Override

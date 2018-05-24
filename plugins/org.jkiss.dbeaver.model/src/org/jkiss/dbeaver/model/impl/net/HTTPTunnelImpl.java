@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.model.impl.net;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
@@ -48,7 +49,7 @@ public class HTTPTunnelImpl implements DBWTunnel {
     }
 
     @Override
-    public void invalidateHandler(DBRProgressMonitor monitor) throws DBException, IOException {
+    public void invalidateHandler(DBRProgressMonitor monitor, DBPDataSource dataSource) throws DBException, IOException {
 
     }
 

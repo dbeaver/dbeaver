@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,6 +24,8 @@ import org.jkiss.utils.time.ExtendedDateFormat;
 import java.text.DateFormat;
 import java.text.FieldPosition;
 import java.text.ParseException;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAccessor;
 import java.util.Locale;
 import java.util.Map;
 
@@ -35,6 +37,7 @@ public class DateTimeDataFormatter implements DBDDataFormatter {
     private DateFormat dateFormat;
     private StringBuffer buffer;
     private FieldPosition position;
+    private DateTimeFormatter dateTimeFormatter;
 
     @Override
     public void init(DBSTypedObject type, Locale locale, Map<Object, Object> properties)
@@ -45,6 +48,7 @@ public class DateTimeDataFormatter implements DBDDataFormatter {
             locale);
         buffer = new StringBuffer();
         position = new FieldPosition(0);
+        dateTimeFormatter = DateTimeFormatter.ofPattern(pattern);
     }
 
     @Override
@@ -56,6 +60,9 @@ public class DateTimeDataFormatter implements DBDDataFormatter {
     @Override
     public String formatValue(Object value)
     {
+        if (value instanceof TemporalAccessor) {
+            return dateTimeFormatter.format((TemporalAccessor) value);
+        }
         synchronized (dateFormat) {
             buffer.setLength(0);
             return value == null ? null : dateFormat.format(value, buffer, position).toString();
@@ -65,6 +72,9 @@ public class DateTimeDataFormatter implements DBDDataFormatter {
     @Override
     public Object parseValue(String value, Class<?> typeHint) throws ParseException
     {
+        if (typeHint != null && TemporalAccessor.class.isAssignableFrom(typeHint)) {
+            return dateTimeFormatter.parse(value);
+        }
         return dateFormat.parse(value);
     }
 

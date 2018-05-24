@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -96,7 +95,7 @@ public class InvalidateJob extends DataSourceJob
             for (DBWNetworkHandler nh : activeHandlers) {
                 monitor.subTask("Invalidate network [" + container.getName() + "]");
                 try {
-                    nh.invalidateHandler(monitor);
+                    nh.invalidateHandler(monitor, dataSource);
                 } catch (Exception e) {
                     invalidateResults.add(new ContextInvalidateResult(DBCExecutionContext.InvalidateResult.ERROR, e));
                     networkOK = false;

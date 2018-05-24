@@ -20,10 +20,6 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.IExecutionListener;
 import org.eclipse.core.commands.NotHandledException;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.ui.*;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.contexts.IContextActivation;
@@ -166,20 +162,25 @@ class WorkbenchContextListener implements IWindowListener, IPageListener, IPartL
 
     @Override
     public void partActivated(IWorkbenchPart part) {
+        activatePartContexts(part);
+//        log.info(part.getClass().getSimpleName() + " ACTIVATED: " + contextService.getActiveContextIds());
+    }
+
+    void activatePartContexts(IWorkbenchPart part) {
         IContextService contextService = PlatformUI.getWorkbench().getService(IContextService.class);
         if (contextService == null) {
             return;
         }
         try {
             contextService.deferUpdates(true);
-            if (part instanceof INavigatorModelView) {
+            if (part.getAdapter(INavigatorModelView.class) != null) {
                 if (activationNavigator != null) {
                     //log.debug("Double activation of navigator context");
                     contextService.deactivateContext(activationNavigator);
                 }
                 activationNavigator = contextService.activateContext(NAVIGATOR_CONTEXT_ID);
             }
-            if (part instanceof SQLEditorBase) {
+            if (part.getAdapter(SQLEditorBase.class) != null) {
                 if (activationSQL != null) {
                     //log.debug("Double activation of SQL context");
                     contextService.deactivateContext(activationSQL);
@@ -200,11 +201,15 @@ class WorkbenchContextListener implements IWindowListener, IPageListener, IPartL
         finally {
             contextService.deferUpdates(false);
         }
-//        log.info(part.getClass().getSimpleName() + " ACTIVATED: " + contextService.getActiveContextIds());
     }
 
     @Override
     public void partDeactivated(IWorkbenchPart part) {
+        deactivatePartContexts(part);
+//        log.info(part.getClass().getSimpleName() + " DEACTIVATED: " + contextService.getActiveContextIds());
+    }
+
+    void deactivatePartContexts(IWorkbenchPart part) {
         IContextService contextService = PlatformUI.getWorkbench().getService(IContextService.class);
         if (contextService == null) {
             return;
@@ -227,7 +232,6 @@ class WorkbenchContextListener implements IWindowListener, IPageListener, IPartL
         finally {
             contextService.deferUpdates(false);
         }
-//        log.info(part.getClass().getSimpleName() + " DEACTIVATED: " + contextService.getActiveContextIds());
     }
 
     @Override
@@ -245,13 +249,8 @@ class WorkbenchContextListener implements IWindowListener, IPageListener, IPartL
 
     }
 
-    static void registerInWorkbench() {
-        DBeaverUI.asyncExec(new Runnable() {
-            @Override
-            public void run() {
-                new WorkbenchContextListener();
-            }
-        });
+    static WorkbenchContextListener registerInWorkbench() {
+        return new WorkbenchContextListener();
     }
 
     private static class CommandExecutionListener implements IExecutionListener {

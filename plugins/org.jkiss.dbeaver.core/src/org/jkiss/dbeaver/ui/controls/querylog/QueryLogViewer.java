@@ -316,6 +316,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     private QMEventFilter defaultFilter = new DefaultEventFilter();
     private QMEventFilter filter;
     private boolean useDefaultFilter = true;
+    private boolean currentSessionOnly;
 
     private final Color colorLightGreen;
     private final Color colorLightRed;
@@ -329,11 +330,12 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
 
     private int entriesPerPage = MIN_ENTRIES_PER_PAGE;
 
-    public QueryLogViewer(Composite parent, IWorkbenchPartSite site, QMEventFilter filter, boolean showConnection)
+    public QueryLogViewer(Composite parent, IWorkbenchPartSite site, QMEventFilter filter, boolean showConnection, boolean currentSessionOnly)
     {
         super();
 
         this.site = site;
+        this.currentSessionOnly = currentSessionOnly;
 
         // Prepare colors
 
@@ -418,7 +420,9 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             @Override
             public void handleEvent(Event event) {
                 logTable.removeListener(SWT.Resize, this);
-                reloadEvents(null);
+                if (!reloadInProgress) {
+                    reloadEvents(null);
+                }
             }
         });
     }
@@ -737,6 +741,9 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
 
     private void updateItem(QMMetaEvent event, TableItem item)
     {
+        if (item.isDisposed()) {
+            return;
+        }
         item.setData(event);
         for (int i = 0, columnsSize = columns.size(); i < columnsSize; i++) {
             ColumnDescriptor cd = columns.get(i);
@@ -1137,7 +1144,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         @Override
         public List<QMMetaEvent> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
             final List<QMMetaEvent> events = new ArrayList<>();
-            QMEventBrowser eventBrowser = QMUtils.getEventBrowser();
+            QMEventBrowser eventBrowser = QMUtils.getEventBrowser(currentSessionOnly);
             if (eventBrowser != null) {
                 QMEventCriteria criteria = QMUtils.createDefaultCriteria(DBeaverCore.getGlobalPreferenceStore());
                 criteria.setSearchString(CommonUtils.isEmptyTrimmed(searchString) ? null : searchString.trim());
@@ -1187,7 +1194,9 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             try {
                 super.completeLoading(result);
                 super.visualizeLoading();
-                updateMetaInfo(result);
+                if (result != null) {
+                    updateMetaInfo(result);
+                }
             } finally {
                 reloadInProgress = false;
             }

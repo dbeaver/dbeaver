@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanStyle;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
+import org.jkiss.dbeaver.model.impl.AsyncServerOutputReader;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -41,6 +42,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.net.DefaultCallbackHandler;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
@@ -196,7 +198,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         String searchPathStr = JDBCUtils.queryString(session, "SHOW search_path");
         this.searchPath.clear();
         if (searchPathStr != null) {
-            for (String str : searchPathStr.replace("$user", activeUser).split(",")) {
+            for (String str : searchPathStr.split(",")) {
                 str = str.trim();
                 this.searchPath.add(DBUtils.getUnQuotedIdentifier(this, str));
             }
@@ -412,12 +414,9 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     {
         if (adapter == DBSStructureAssistant.class) {
             return adapter.cast(new PostgreStructureAssistant(this));
+        } else if (adapter == DBCServerOutputReader.class) {
+            return adapter.cast(new AsyncServerOutputReader());
         }
-/*
-        else if (adapter == DBAServerSessionManager.class) {
-            return new PostgreSessionManager(this);
-        }
-*/
         return super.getAdapter(adapter);
     }
 
@@ -440,7 +439,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     @Override
     public PostgreDataType getLocalDataType(String typeName)
     {
-        return getDefaultInstance().getDataType(typeName);
+        return getDefaultInstance().getDataType(new VoidProgressMonitor(), typeName);
     }
 
     @Override

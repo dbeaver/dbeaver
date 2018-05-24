@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 
 /**
-* Query transformer for TOP
+* SEL Server index
 */
 public class SQLServerIndex extends GenericTableIndex {
 

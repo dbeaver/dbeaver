@@ -71,11 +71,11 @@ public class QMUtils {
     }
 
     @Nullable
-    public static QMEventBrowser getEventBrowser() {
+    public static QMEventBrowser getEventBrowser(boolean currentSessionOnly) {
         if (application == null) {
             return null;
         }
-        return application.getQueryManager().getEventBrowser();
+        return application.getQueryManager().getEventBrowser(currentSessionOnly);
     }
 
     public static boolean isTransactionActive(DBCExecutionContext executionContext) {
