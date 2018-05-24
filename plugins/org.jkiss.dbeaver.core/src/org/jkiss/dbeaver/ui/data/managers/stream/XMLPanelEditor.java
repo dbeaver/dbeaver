@@ -18,15 +18,15 @@ package org.jkiss.dbeaver.ui.data.managers.stream;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.data.DBDContent;
+import org.jkiss.dbeaver.model.impl.StringContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
@@ -62,12 +62,7 @@ public class XMLPanelEditor extends AbstractTextPanelEditor {
         StyledText editorControl = editor.getEditorControl();
         assert editorControl != null;
         initEditorSettings(editorControl);
-        editorControl.addDisposeListener(new DisposeListener() {
-            @Override
-            public void widgetDisposed(DisposeEvent e) {
-                editor.releaseEditorInput();
-            }
-        });
+        editorControl.addDisposeListener(e -> editor.releaseEditorInput());
         return editorControl;
     }
 
@@ -78,7 +73,7 @@ public class XMLPanelEditor extends AbstractTextPanelEditor {
         try {
             monitor.subTask("Prime XML value");
             IEditorInput sqlInput = new ContentEditorInput(valueController, null, null, monitor);
-            editor.init(subSite, sqlInput);
+            editor.setInput(sqlInput);
             applyEditorStyle();
         } catch (Exception e) {
             throw new DBException("Can't load XML vaue", e);
@@ -90,20 +85,25 @@ public class XMLPanelEditor extends AbstractTextPanelEditor {
     @Override
     public void extractEditorValue(@NotNull DBRProgressMonitor monitor, @NotNull StyledText control, @NotNull DBDContent value) throws DBException
     {
-        if (valueController.isReadOnly() || !editor.isDirty()) {
-            return;
-        }
-
         monitor.beginTask("Read XML value", 1);
-        try {
-            monitor.subTask("Read XML value");
-            editor.doSave(RuntimeUtils.getNestedMonitor(monitor));
-            final ContentEditorInput editorInput = (ContentEditorInput) editor.getEditorInput();
-            editorInput.updateContentFromFile(RuntimeUtils.getNestedMonitor(monitor));
-        } catch (Exception e) {
-            throw new DBException("Error saving XML value", e);
-        } finally {
-            monitor.done();
+        if (valueController.getValueType().getDataKind() == DBPDataKind.STRING) {
+            value.updateContents(
+                monitor,
+                new StringContentStorage(control.getText()));
+        } else {
+            try {
+                monitor.subTask("Read XML value");
+                editor.doSave(RuntimeUtils.getNestedMonitor(monitor));
+                final IEditorInput editorInput = editor.getEditorInput();
+                if (editorInput instanceof ContentEditorInput) {
+                    final ContentEditorInput contentEditorInput = (ContentEditorInput) editorInput;
+                    contentEditorInput.updateContentFromFile(monitor, value);
+                }
+            } catch (Exception e) {
+                throw new DBException("Error saving XML value", e);
+            } finally {
+                monitor.done();
+            }
         }
     }
 

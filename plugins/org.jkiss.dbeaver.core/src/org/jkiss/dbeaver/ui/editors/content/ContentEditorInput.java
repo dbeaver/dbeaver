@@ -22,10 +22,7 @@ import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IPathEditorInput;
-import org.eclipse.ui.IPersistableElement;
-import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.*;
 import org.eclipse.ui.editors.text.IEncodingSupport;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -331,18 +328,16 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider,
         markReadOnly(valueController.isReadOnly());
     }
 
-    public void updateContentFromFile(IProgressMonitor monitor)
+    public void updateContentFromFile(DBRProgressMonitor monitor, Object value)
         throws DBException
     {
         if (valueController.isReadOnly()) {
             throw new DBCException("Can't update read-only value");
         }
 
-        DBRProgressMonitor localMonitor = RuntimeUtils.makeMonitor(monitor);
-        Object value = getValue();
         if (value instanceof DBDContent) {
             DBDContent content = (DBDContent) value;
-            DBDContentStorage storage = content.getContents(localMonitor);
+            DBDContentStorage storage = content.getContents(monitor);
             if (storage instanceof DBDContentStorageLocal) {
                 // Nothing to update - we user content's storage
                 contentDetached = true;
@@ -357,14 +352,14 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider,
                         storage = BytesContentStorage.createFromStream(is, contentFile.length(), fileCharset);
                     }
                     //StringContentStorage.
-                    contentDetached = content.updateContents(localMonitor, storage);
+                    contentDetached = content.updateContents(monitor, storage);
                 } catch (IOException e) {
                     throw new DBException("Error reading content from file", e);
                 }
             } else {
                 // Create new storage and pass it to content
                 storage = new TemporaryContentStorage(DBeaverCore.getInstance(), contentFile, fileCharset);
-                contentDetached = content.updateContents(localMonitor, storage);
+                contentDetached = content.updateContents(monitor, storage);
             }
         } else {
             // Just read as string
@@ -392,7 +387,11 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider,
         this.fileCharset = fileCharset;
         for (IEditorPart part : editorParts) {
             try {
-                part.init(part.getEditorSite(), this);
+                if (part instanceof IReusableEditor) {
+                    ((IReusableEditor) part).setInput(this);
+                } else {
+                    part.init(part.getEditorSite(), this);
+                }
             } catch (PartInitException e) {
                 log.error("Error refreshing content editor part " + part, e);
             }

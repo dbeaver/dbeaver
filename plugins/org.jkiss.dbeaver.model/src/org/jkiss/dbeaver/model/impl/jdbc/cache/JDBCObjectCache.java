@@ -97,7 +97,7 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
         try {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Load objects from " + owner.getName())) {
                 try (JDBCStatement dbStat = prepareObjectsStatement(session, owner)) {
-                    monitor.subTask("Load " + getClass().getSimpleName());
+                    monitor.subTask("Load " + getCacheName());
                     dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
                     dbStat.executeStatement();
                     JDBCResultSet dbResult = dbStat.getResultSet();
@@ -137,12 +137,16 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
 
         Comparator<OBJECT> comparator = getListOrderComparator();
         if (comparator != null) {
-            Collections.sort(tmpObjectList, comparator);
+            tmpObjectList.sort(comparator);
         }
 
         detectCaseSensitivity(owner);
         mergeCache(tmpObjectList);
         this.invalidateObjects(monitor, owner, new CacheIterator());
+    }
+
+    protected String getCacheName() {
+        return getClass().getSimpleName();
     }
 
     // Can be implemented to provide custom cache error handler

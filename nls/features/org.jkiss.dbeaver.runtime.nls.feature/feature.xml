@@ -2,7 +2,7 @@
 <feature
       id="org.jkiss.dbeaver.runtime.nls.feature"
       label="%featureName"
-      version="1.0.15"
+      version="1.0.16"
       provider-name="%providerName">
 
    <description>
@@ -18,7 +18,7 @@
    </license>
 
    <url>
-      <update label="DBeaver Universal Database Manager" url="https://dbeaver.jkiss.org/"/>
+      <update label="DBeaver Universal Database Manager" url="https://dbeaver.io/"/>
    </url>
 
    <plugin

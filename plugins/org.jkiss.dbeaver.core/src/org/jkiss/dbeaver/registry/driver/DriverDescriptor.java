@@ -627,9 +627,13 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     }
 
     @Override
-    public boolean isCustomDriverLoader()
-    {
+    public boolean isCustomDriverLoader() {
         return customDriverLoader;
+    }
+
+    @Override
+    public boolean isInstantiable() {
+        return !CommonUtils.isEmpty(driverClassName);
     }
 
     @Nullable

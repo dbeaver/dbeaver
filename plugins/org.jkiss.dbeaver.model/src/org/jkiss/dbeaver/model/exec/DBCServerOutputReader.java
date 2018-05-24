@@ -16,9 +16,11 @@
  */
 package org.jkiss.dbeaver.model.exec;
 
-import org.jkiss.dbeaver.model.DBPCloseableObject;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLQueryResult;
 
 import java.io.PrintWriter;
 
@@ -29,8 +31,21 @@ public interface DBCServerOutputReader extends DBPObject
 {
     boolean isServerOutputEnabled();
 
-    void enableServerOutput(DBRProgressMonitor monitor, DBCExecutionContext context, boolean enable) throws DBCException;
+    /**
+     * If async output reading is supported then SQL job will read output during statement execution.
+     */
+    boolean isAsyncOutputReadSupported();
 
-    void readServerOutput(DBRProgressMonitor monitor, DBCExecutionContext context, PrintWriter output)
+    /**
+     * Reads server output messages.
+     * Only @queryResult or @statement can be specified. Non-null statement means async output reading.
+     * Output for statement can be requested only if @isAsyncOutputReadSupported returns true.
+     */
+    void readServerOutput(
+        @NotNull DBRProgressMonitor monitor,
+        @NotNull DBCExecutionContext context,
+        @Nullable SQLQueryResult queryResult,
+        @Nullable DBCStatement statement,
+        @NotNull PrintWriter output)
         throws DBCException;
 }

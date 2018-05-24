@@ -391,11 +391,13 @@ public class CoreMessages extends NLS {
 	public static String dialog_edit_driver_dialog_open_driver_library;
 	public static String dialog_edit_driver_label_category;
 	public static String dialog_edit_driver_label_class_name;
+	public static String dialog_edit_driver_label_class_name_tip;
 	public static String dialog_edit_driver_label_default_port;
 	public static String dialog_edit_driver_label_description;
 	public static String dialog_edit_driver_label_driver_class;
 	public static String dialog_edit_driver_label_driver_name;
 	public static String dialog_edit_driver_label_sample_url;
+	public static String dialog_edit_driver_label_sample_url_tip;
 	public static String dialog_edit_driver_label_website;
 	public static String dialog_edit_driver_tab_name_advanced_parameters;
 	public static String dialog_edit_driver_tab_name_connection_properties;
@@ -813,6 +815,15 @@ public class CoreMessages extends NLS {
 
 	public static String pref_page_error_handle_name;
 	public static String pref_page_error_handle_description;
+
+	public static String pref_page_error_handle_group_timeouts_title;
+	public static String pref_page_error_handle_connection_open_timeout_label;
+	public static String pref_page_error_handle_connection_open_timeout_label_tip;
+	public static String pref_page_error_handle_connection_close_timeout_label;
+	public static String pref_page_error_handle_connection_close_timeout_label_tip;
+	public static String pref_page_error_handle_connection_validate_timeout_label;
+	public static String pref_page_error_handle_connection_validate_timeout_label_tip;
+
 	public static String pref_page_error_handle_group_execute_title;
 	public static String pref_page_error_handle_recover_enabled_label;
 	public static String pref_page_error_handle_recover_enabled_tip;
@@ -1350,7 +1361,10 @@ public class CoreMessages extends NLS {
 	public static String toolbar_cmd_undo_name;
 	public static String toolbar_cmd_redo_name;
 	//toolbar editor menu item
-	
+
+	public static String grid_tooltip_sort_by_column;
+	public static String grid_tooltip_filter_by_column;
+
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, CoreMessages.class);

@@ -26,10 +26,13 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.DBPositiveNumberTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.IPropertyValueTransformer;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
 import org.jkiss.utils.CommonUtils;
@@ -66,12 +69,12 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     }
 
     public PostgreAttribute(
-        OWNER table,
+        DBRProgressMonitor monitor, OWNER table,
         JDBCResultSet dbResult)
         throws DBException
     {
         super(table, true);
-        loadInfo(dbResult);
+        loadInfo(monitor, dbResult);
     }
 
     @Override
@@ -85,7 +88,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         return objectId;
     }
 
-    private void loadInfo(JDBCResultSet dbResult)
+    private void loadInfo(DBRProgressMonitor monitor, JDBCResultSet dbResult)
         throws DBException
     {
         setName(JDBCUtils.safeGetString(dbResult, "attname"));
@@ -93,16 +96,16 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         setRequired(JDBCUtils.safeGetBoolean(dbResult, "attnotnull"));
         objectId = JDBCUtils.safeGetLong(dbResult, "attr_id");
         final long typeId = JDBCUtils.safeGetLong(dbResult, "atttypid");
-        dataType = getTable().getDatabase().getDataType(typeId);
+        dataType = getTable().getDatabase().getDataType(monitor, typeId);
         if (dataType == null) {
             log.error("Attribute data type '" + typeId + "' not found. Use " + PostgreConstants.TYPE_VARCHAR);
-            dataType = getTable().getDatabase().getDataType(PostgreConstants.TYPE_VARCHAR);
+            dataType = getTable().getDatabase().getDataType(monitor, PostgreConstants.TYPE_VARCHAR);
         } else {
             // TODO: [#2824] Perhaps we should just use type names declared in pg_catalog
             // Replacing them with "convenient" types names migh cause some issues
             if (false && dataType.getCanonicalName() != null && getDataSource().isServerVersionAtLeast(9, 6)) {
                 // se canonical type names. But only for PG >= 9.6 (because I can't test with earlier versions)
-                PostgreDataType canonicalType = getTable().getDatabase().getDataType(dataType.getCanonicalName());
+                PostgreDataType canonicalType = getTable().getDatabase().getDataType(monitor, dataType.getCanonicalName());
                 if (canonicalType != null) {
                     this.dataType = canonicalType;
                 }
@@ -204,7 +207,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
     }
 
     @Nullable
-    @Property(viewable = true, editable = true, updatable = false, order = 24)
+    @Property(viewable = true, editable = true, order = 24)
     public PostgreAttributeIdentity getIdentity() {
         return identity;
     }
@@ -213,7 +216,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         this.identity = identity;
     }
 
-    @Property(viewable = false, order = 25)
+    @Property(order = 25)
     public boolean isLocal() {
         return isLocal;
     }
@@ -283,15 +286,8 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         @Override
         public Object[] getPossibleValues(PostgreAttribute column)
         {
-            Set<PostgreDataType> types = new TreeSet<>(new Comparator<PostgreDataType>() {
-                @Override
-                public int compare(PostgreDataType o1, PostgreDataType o2) {
-                    return o1.getTypeName().compareTo(o2.getTypeName());
-                }
-            });
-            for (PostgreDataType type : column.getDataSource().getLocalDataTypes()) {
-                types.add(type);
-            }
+            Set<PostgreDataType> types = new TreeSet<>(Comparator.comparing(JDBCDataType::getTypeName));
+            types.addAll(column.getDataSource().getLocalDataTypes());
             return types.toArray(new PostgreDataType[types.size()]);
         }
     }
@@ -300,7 +296,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         @Override
         public PostgreDataType transform(PostgreAttribute object, Object value) {
             if (value instanceof String) {
-                PostgreDataType dataType = object.getDataSource().getDefaultInstance().getDataType((String) value);
+                PostgreDataType dataType = object.getDataSource().getDefaultInstance().getDataType(new VoidProgressMonitor(), (String)value);
                 if (dataType == null) {
                     throw new IllegalArgumentException("Bad data type name specified: " + value);
                 }

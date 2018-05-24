@@ -384,12 +384,7 @@ public class GeneralUtils {
         if (string == null) {
             return null;
         }
-        return replaceVariables(string, new GeneralUtils.IVariableResolver() {
-            @Override
-            public String get(String name) {
-                return System.getenv(name);
-            }
-        });
+        return replaceVariables(string, System::getenv);
     }
 
     @NotNull

@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
@@ -56,14 +57,10 @@ public class PostgreGenericTypeCache extends JDBCBasicDataTypeCache<GenericStruc
         super(owner);
     }
 
-    private boolean supportsTypeCategory() {
-        return owner.getDataSource().isServerVersionAtLeast(8, 4);
-    }
-
     @Override
     protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull GenericStructContainer owner) throws SQLException
     {
-        boolean supportsCategory = supportsTypeCategory();
+        boolean supportsCategory = PostgreUtils.supportsTypeCategory(session.getDataSource());
         return session.prepareStatement(
             "SELECT t.oid as typid,tn.nspname typnsname,t.* \n" +
                 "FROM pg_catalog.pg_type t , pg_catalog.pg_namespace tn\n" +
@@ -75,7 +72,7 @@ public class PostgreGenericTypeCache extends JDBCBasicDataTypeCache<GenericStruc
     @Override
     protected JDBCDataType fetchObject(@NotNull JDBCSession session, @NotNull GenericStructContainer owner, @NotNull JDBCResultSet dbResult) throws SQLException, DBException
     {
-        boolean supportsTypeCategory = supportsTypeCategory();
+        boolean supportsTypeCategory = PostgreUtils.supportsTypeCategory(session.getDataSource());
         String name = JDBCUtils.safeGetString(dbResult, "typname");
         if (CommonUtils.isEmpty(name)) {
             return null;

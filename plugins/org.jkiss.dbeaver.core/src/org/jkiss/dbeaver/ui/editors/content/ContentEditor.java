@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui.editors.content;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.action.IContributionManager;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.layout.GridData;
@@ -38,6 +37,7 @@ import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.IRefreshablePart;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -52,7 +52,6 @@ import org.jkiss.dbeaver.ui.dialogs.ColumnInfoPanel;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.editors.MultiPageAbstractEditor;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
@@ -220,66 +219,63 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
             return;
         }
         // Execute save in UI thread
-        DBeaverUI.syncExec(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    // Check for dirty parts
-                    final List<IEditorPart> dirtyParts = new ArrayList<>();
-                    for (ContentPartInfo partInfo : contentParts) {
-                        if (partInfo.activated && partInfo.editorPart.isDirty()) {
-                            dirtyParts.add(partInfo.editorPart);
-                        }
+        DBeaverUI.syncExec(() -> {
+            try {
+                // Check for dirty parts
+                final List<IEditorPart> dirtyParts = new ArrayList<>();
+                for (ContentPartInfo partInfo : contentParts) {
+                    if (partInfo.activated && partInfo.editorPart.isDirty()) {
+                        dirtyParts.add(partInfo.editorPart);
                     }
-
-                    IEditorPart dirtyPart = null;
-                    if (dirtyParts.isEmpty()) {
-                        // No modified parts - no additional save required
-                    } else if (dirtyParts.size() == 1) {
-                        // Single part modified - save it
-                        dirtyPart = dirtyParts.get(0);
-                    } else {
-                        // Multiple parts modified - need to choose one
-                        dirtyPart = SelectContentPartDialog.selectContentPart(getSite().getShell(), dirtyParts);
-                    }
-
-                    if (dirtyPart != null) {
-                        saveInProgress = true;
-                        try {
-                            dirtyPart.doSave(monitor);
-                        } finally {
-                            saveInProgress = false;
-                        }
-                    }
-                    // Set dirty flag - if error will occur during content save
-                    // then document remains dirty
-                    ContentEditor.this.dirty = true;
-
-                    ContentEditorInput editorInput = getEditorInput();
-                    editorInput.updateContentFromFile(monitor);
-                    editorInput.getValueController().updateValue(editorInput.getValue(), true);
-
-                    // Activate owner editor and focus on cell corresponding to this content editor
-                    IWorkbenchPartSite parentEditorSite = editorInput.getValueController().getValueSite();
-                    IWorkbenchPart parentEditor;
-                    if (parentEditorSite instanceof MultiPageEditorSite) {
-                        parentEditor = ((MultiPageEditorSite) parentEditorSite).getMultiPageEditor();
-                        if (parentEditor instanceof EntityEditor) {
-                            ((EntityEditor) parentEditor).setActiveEditor(IResultSetContainer.class);
-                        }
-                    } else {
-                        parentEditor = parentEditorSite.getPart();
-                    }
-                    parentEditorSite.getWorkbenchWindow().getActivePage().activate(parentEditor);
-
-                    // Close editor
-                    closeValueEditor();
-                } catch (Exception e) {
-                    DBUserInterface.getInstance().showError(
-                            "Can't save content",
-                        "Can't save content to database",
-                        e);
                 }
+
+                IEditorPart dirtyPart = null;
+                if (dirtyParts.isEmpty()) {
+                    // No modified parts - no additional save required
+                } else if (dirtyParts.size() == 1) {
+                    // Single part modified - save it
+                    dirtyPart = dirtyParts.get(0);
+                } else {
+                    // Multiple parts modified - need to choose one
+                    dirtyPart = SelectContentPartDialog.selectContentPart(getSite().getShell(), dirtyParts);
+                }
+
+                if (dirtyPart != null) {
+                    saveInProgress = true;
+                    try {
+                        dirtyPart.doSave(monitor);
+                    } finally {
+                        saveInProgress = false;
+                    }
+                }
+                // Set dirty flag - if error will occur during content save
+                // then document remains dirty
+                ContentEditor.this.dirty = true;
+
+                ContentEditorInput editorInput = getEditorInput();
+                editorInput.updateContentFromFile(new DefaultProgressMonitor(monitor), editorInput.getValue());
+                editorInput.getValueController().updateValue(editorInput.getValue(), true);
+
+                // Activate owner editor and focus on cell corresponding to this content editor
+                IWorkbenchPartSite parentEditorSite = editorInput.getValueController().getValueSite();
+                IWorkbenchPart parentEditor;
+                if (parentEditorSite instanceof MultiPageEditorSite) {
+                    parentEditor = ((MultiPageEditorSite) parentEditorSite).getMultiPageEditor();
+                    if (parentEditor instanceof EntityEditor) {
+                        ((EntityEditor) parentEditor).setActiveEditor(IResultSetContainer.class);
+                    }
+                } else {
+                    parentEditor = parentEditorSite.getPart();
+                }
+                parentEditorSite.getWorkbenchWindow().getActivePage().activate(parentEditor);
+
+                // Close editor
+                closeValueEditor();
+            } catch (Exception e) {
+                DBUserInterface.getInstance().showError(
+                        "Can't save content",
+                    "Can't save content to database",
+                    e);
             }
         });
     }
@@ -293,17 +289,12 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
             return;
         }
         try {
-            getSite().getWorkbenchWindow().run(true, true, new IRunnableWithProgress() {
-                @Override
-                public void run(IProgressMonitor monitor)
-                        throws InvocationTargetException, InterruptedException
-                {
-                    try {
-                        getEditorInput().saveToExternalFile(saveFile, monitor);
-                    }
-                    catch (CoreException e) {
-                        throw new InvocationTargetException(e);
-                    }
+            getSite().getWorkbenchWindow().run(true, true, monitor -> {
+                try {
+                    getEditorInput().saveToExternalFile(saveFile, monitor);
+                }
+                catch (CoreException e) {
+                    throw new InvocationTargetException(e);
                 }
             });
         }
@@ -506,15 +497,11 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
     @Override
     public Object extractEditorValue() throws DBException
     {
-        DBeaverUI.runInUI(new DBRRunnableWithProgress() {
-            @Override
-            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-            {
-                try {
-                    getEditorInput().updateContentFromFile(RuntimeUtils.getNestedMonitor(monitor));
-                } catch (DBException e) {
-                    throw new InvocationTargetException(e);
-                }
+        DBeaverUI.runInUI(monitor -> {
+            try {
+                getEditorInput().updateContentFromFile(monitor, getEditorInput().getValue());
+            } catch (DBException e) {
+                throw new InvocationTargetException(e);
             }
         });
 

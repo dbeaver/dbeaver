@@ -251,14 +251,12 @@ public class SQLEditor extends SQLEditorBase implements
             EditorUtils.setInputDataSource(input, container, true);
         }
 
-        checkConnected(false, status -> {
-            DBeaverUI.asyncExec(() -> {
-                if (!status.isOK()) {
-                    DBUserInterface.getInstance().showError("Can't connect to database", "Error connecting to datasource", status);
-                }
-                setFocus();
-            });
-        });
+        checkConnected(false, status -> DBeaverUI.asyncExec(() -> {
+            if (!status.isOK()) {
+                DBUserInterface.getInstance().showError("Can't connect to database", "Error connecting to datasource", status);
+            }
+            setFocus();
+        }));
         setPartName(getEditorName());
 
         fireDataSourceChange();
@@ -440,17 +438,17 @@ public class SQLEditor extends SQLEditorBase implements
 
     @Nullable
     @Override
-    public Object getAdapter(Class required)
+    public <T> T getAdapter(Class<T> required)
     {
         if (required == IFindReplaceTarget.class) {
-            return findReplaceTarget;
+            return required.cast(findReplaceTarget);
         }
         ResultSetViewer resultsView = getActiveResultSetViewer();
         if (resultsView != null) {
             if (required == ResultSetViewer.class) {
-                return resultsView;
+                return required.cast(resultsView);
             }
-            Object adapter = resultsView.getAdapter(required);
+            T adapter = resultsView.getAdapter(required);
             if (adapter != null) {
                 return adapter;
             }
@@ -509,7 +507,6 @@ public class SQLEditor extends SQLEditorBase implements
     /**
      * Sets focus in current editor.
      * This function is called on drag-n-drop and some other operations
-     * @return
      */
     @Override
     public boolean validateEditorInputState() {
@@ -1022,8 +1019,7 @@ public class SQLEditor extends SQLEditorBase implements
                 DBPDataSource dataSource = getDataSource();
                 if (dataSource instanceof SQLDataSource) {
                     List<SQLScriptElement> xQueries = new ArrayList<>(elements.size());
-                    for (int i = 0; i < elements.size(); i++) {
-                        SQLScriptElement element = elements.get(i);
+                    for (SQLScriptElement element : elements) {
                         if (element instanceof SQLQuery) {
                             SQLQuery query = transformer.transformQuery((SQLDataSource) dataSource, getSyntaxManager(), (SQLQuery) element);
                             if (!CommonUtils.isEmpty(query.getParameters())) {
@@ -1074,12 +1070,8 @@ public class SQLEditor extends SQLEditorBase implements
                             status);
                         return;
                     }
-                    updateExecutionContext(new Runnable() {
-                        @Override
-                        public void run() {
-                            DBeaverUI.syncExec(() -> processQueries(queries, newTab, export, false, queryListener));
-                        }
-                    });
+                    updateExecutionContext(() -> DBeaverUI.syncExec(() ->
+                        processQueries(queries, newTab, export, false, queryListener)));
                 };
                 if (!checkSession(connectListener)) {
                     return;
@@ -1484,7 +1476,7 @@ public class SQLEditor extends SQLEditorBase implements
 
     private void showScriptPositionRuler(boolean show)
     {
-        IColumnSupport columnSupport = (IColumnSupport) getAdapter(IColumnSupport.class);
+        IColumnSupport columnSupport = getAdapter(IColumnSupport.class);
         if (columnSupport != null) {
             RulerColumnDescriptor positionColumn = RulerColumnRegistry.getDefault().getColumnDescriptor(ScriptPositionColumn.ID);
             columnSupport.setColumnVisible(positionColumn, show);
@@ -1614,10 +1606,10 @@ public class SQLEditor extends SQLEditorBase implements
 
     public class QueryProcessor implements SQLResultsConsumer {
 
-        private SQLQueryJob curJob;
+        private volatile SQLQueryJob curJob;
         private AtomicInteger curJobRunning = new AtomicInteger(0);
         private final List<QueryResultsContainer> resultContainers = new ArrayList<>();
-        private DBDDataReceiver curDataReceiver = null;
+        private volatile DBDDataReceiver curDataReceiver = null;
 
         QueryProcessor() {
             // Create first (default) results provider
@@ -2084,13 +2076,8 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         @Override
-        public boolean isPersisted()
-        {
-            if (dataContainer != null) {
-                return dataContainer.isPersisted();
-            } else {
-                return true;
-            }
+        public boolean isPersisted() {
+            return dataContainer == null || dataContainer.isPersisted();
         }
 
         @NotNull
@@ -2194,9 +2181,8 @@ public class SQLEditor extends SQLEditorBase implements
             try {
                 boolean isInExecute = getTotalQueryRunning() > 0;
                 if (!isInExecute) {
-                    DBeaverUI.asyncExec(() -> {
-                        setTitleImage(DBeaverIcons.getImage(UIIcon.SQL_SCRIPT_EXECUTE));
-                    });
+                    DBeaverUI.asyncExec(() ->
+                        setTitleImage(DBeaverIcons.getImage(UIIcon.SQL_SCRIPT_EXECUTE)));
                 }
                 queryProcessor.curJobRunning.incrementAndGet();
                 synchronized (runningQueries) {
@@ -2228,9 +2214,8 @@ public class SQLEditor extends SQLEditorBase implements
                 }
                 queryProcessor.curJobRunning.decrementAndGet();
                 if (getTotalQueryRunning() <= 0) {
-                    DBeaverUI.asyncExec(() -> {
-                        setTitleImage(editorImage);
-                    });
+                    DBeaverUI.asyncExec(() ->
+                        setTitleImage(editorImage));
                 }
 
                 if (isDisposed()) {
@@ -2248,7 +2233,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         private void processQueryResult(DBCSession session, SQLQueryResult result) {
-            dumpServerOutput(result);
+            dumpQueryServerOutput(result);
             if (!scriptMode) {
                 runPostExecuteActions(result);
             }
@@ -2393,18 +2378,18 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
-    private void dumpServerOutput(@Nullable SQLQueryResult result) {
+    private void dumpQueryServerOutput(@Nullable SQLQueryResult result) {
         final DBCExecutionContext executionContext = getExecutionContext();
         if (executionContext != null) {
             final DBPDataSource dataSource = executionContext.getDataSource();
             // Dump server output
             DBCServerOutputReader outputReader = DBUtils.getAdapter(DBCServerOutputReader.class, dataSource);
             if (outputReader == null && result != null) {
-                outputReader = new DefaultServerOutputReader(result);
+                outputReader = new DefaultServerOutputReader();
             }
             if (outputReader != null && outputReader.isServerOutputEnabled()) {
                 synchronized (serverOutputs) {
-                    serverOutputs.add(new ServerOutputInfo(outputReader, executionContext));
+                    serverOutputs.add(new ServerOutputInfo(outputReader, executionContext, result));
                 }
             }
         }
@@ -2479,10 +2464,12 @@ public class SQLEditor extends SQLEditorBase implements
     private static class ServerOutputInfo {
         private final DBCServerOutputReader outputReader;
         private final DBCExecutionContext executionContext;
+        private final SQLQueryResult result;
 
-        ServerOutputInfo(DBCServerOutputReader outputReader, DBCExecutionContext executionContext) {
+        ServerOutputInfo(DBCServerOutputReader outputReader, DBCExecutionContext executionContext, SQLQueryResult result) {
             this.outputReader = outputReader;
             this.executionContext = executionContext;
+            this.result = result;
         }
     }
 
@@ -2513,30 +2500,57 @@ public class SQLEditor extends SQLEditorBase implements
                 serverOutputs.clear();
             }
 
+            final StringWriter dump = new StringWriter();
             for (ServerOutputInfo info : outputs) {
-                final StringWriter dump = new StringWriter();
                 try {
-                    info.outputReader.readServerOutput(monitor, info.executionContext, new PrintWriter(dump, true));
-                    final String dumpString = dump.toString();
-                    if (!dumpString.isEmpty()) {
-                        DBeaverUI.asyncExec(() -> {
-                            if (outputViewer.isDisposed()) {
-                                return;
-                            }
-                            try {
-                                IOUtils.copyText(new StringReader(dumpString), outputViewer.getOutputWriter());
-                            } catch (IOException e) {
-                                log.error(e);
-                            }
-                            if (outputViewer.isHasNewOutput()) {
-                                outputViewer.scrollToEnd();
-                                updateOutputViewerIcon(true);
-                            }
-                        });
-                    }
+                    info.outputReader.readServerOutput(monitor, info.executionContext, info.result, null, new PrintWriter(dump, true));
                 } catch (Exception e) {
                     log.error(e);
                 }
+            }
+
+            {
+                // Check running queries for async output
+                DBCServerOutputReader outputReader = null;
+                final DBCExecutionContext executionContext = getExecutionContext();
+                if (executionContext != null) {
+                    final DBPDataSource dataSource = executionContext.getDataSource();
+                    // Dump server output
+                    outputReader = DBUtils.getAdapter(DBCServerOutputReader.class, dataSource);
+                }
+                if (outputReader != null && outputReader.isAsyncOutputReadSupported()) {
+                    for (QueryProcessor qp : queryProcessors) {
+                        SQLQueryJob queryJob = qp.curJob;
+                        if (queryJob != null) {
+                            DBCStatement statement = queryJob.getCurrentStatement();
+                            if (statement != null) {
+                                try {
+                                    outputReader.readServerOutput(monitor, executionContext, null, statement, new PrintWriter(dump, true));
+                                } catch (DBCException e) {
+                                    log.error(e);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            final String dumpString = dump.toString();
+            if (!dumpString.isEmpty()) {
+                DBeaverUI.asyncExec(() -> {
+                    if (outputViewer.isDisposed()) {
+                        return;
+                    }
+                    try {
+                        IOUtils.copyText(new StringReader(dumpString), outputViewer.getOutputWriter());
+                    } catch (IOException e) {
+                        log.error(e);
+                    }
+                    if (outputViewer.isHasNewOutput()) {
+                        outputViewer.scrollToEnd();
+                        updateOutputViewerIcon(true);
+                    }
+                });
             }
         }
     }

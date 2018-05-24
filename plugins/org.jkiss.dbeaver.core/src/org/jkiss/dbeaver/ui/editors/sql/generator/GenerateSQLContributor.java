@@ -59,6 +59,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.IResultSetSelection;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetModel;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetRow;
 import org.jkiss.dbeaver.ui.dialogs.sql.ViewSQLDialog;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -580,25 +581,20 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                     IEditorPart activeEditor = activePage.getActiveEditor();
 
                     DBPDataSource dataSource = null;
-                    if (activeEditor instanceof DBPContextProvider) {
+                    IWorkbenchPart activePart = activePage.getActivePart();
+                    if (activePart != null) {
+                        ISelectionProvider selectionProvider = activePart.getSite().getSelectionProvider();
+                        if (selectionProvider != null) {
+                            DBSObject selectedObject = NavigatorUtils.getSelectedObject(selectionProvider.getSelection());
+                            if (selectedObject != null) {
+                                dataSource = selectedObject.getDataSource();
+                            }
+                        }
+                    }
+                    if (dataSource == null && activeEditor instanceof DBPContextProvider) {
                         DBCExecutionContext context = ((DBPContextProvider) activeEditor).getExecutionContext();
                         if (context != null) {
                             dataSource = context.getDataSource();
-                        }
-                    }
-                    if (dataSource == null) {
-                        IWorkbenchPart activePart = activePage.getActivePart();
-                        if (activePart != null) {
-                            ISelectionProvider selectionProvider = activePart.getSite().getSelectionProvider();
-                            if (selectionProvider != null) {
-                                ISelection selection = selectionProvider.getSelection();
-                                if (selection instanceof IStructuredSelection && !selection.isEmpty()) {
-                                    final DBSObject object = RuntimeUtils.getObjectAdapter(((IStructuredSelection) selection).getFirstElement(), DBSObject.class);
-                                    if (object != null) {
-                                        dataSource = object.getDataSource();
-                                    }
-                                }
-                            }
                         }
                     }
 
