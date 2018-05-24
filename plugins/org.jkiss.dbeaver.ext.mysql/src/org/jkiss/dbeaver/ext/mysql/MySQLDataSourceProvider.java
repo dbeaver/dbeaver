@@ -57,7 +57,7 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
 
         // Prevent stupid errors "Cannot convert value '0000-00-00 00:00:00' from column X to TIMESTAMP"
         // Widely appears in MyISAM tables (joomla, etc)
-        connectionsProps.put("zeroDateTimeBehavior", "convertToNull");
+        //connectionsProps.put("zeroDateTimeBehavior", "CONVERT_TO_NULL");
         // Set utf-8 as default charset
         connectionsProps.put("characterEncoding", GeneralUtils.UTF8_ENCODING);
         connectionsProps.put("tinyInt1isBit", "false");

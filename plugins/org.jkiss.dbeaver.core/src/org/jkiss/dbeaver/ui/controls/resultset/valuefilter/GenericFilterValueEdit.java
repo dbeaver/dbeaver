@@ -24,8 +24,6 @@ import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.TableItem;
@@ -187,6 +185,8 @@ class GenericFilterValueEdit {
                         refColumn,
                         filterPattern,
                         null,
+                        true,
+                        true,
                         MAX_MULTI_VALUES);
                 }
                 return null;

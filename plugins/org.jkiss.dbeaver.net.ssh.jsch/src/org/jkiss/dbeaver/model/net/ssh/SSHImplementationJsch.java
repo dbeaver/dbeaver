@@ -93,6 +93,16 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
     }
 
     @Override
+    public String getClientVersion() {
+        return session == null ? null : session.getClientVersion();
+    }
+
+    @Override
+    public String getServerVersion() {
+        return session == null ? null : session.getServerVersion();
+    }
+
+    @Override
     public void invalidateTunnel(DBRProgressMonitor monitor) throws DBException, IOException {
         boolean isAlive = session != null && session.isConnected();
         if (isAlive) {

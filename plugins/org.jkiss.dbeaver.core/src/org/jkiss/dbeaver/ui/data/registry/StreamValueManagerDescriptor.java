@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.ui.data.IStreamValueManager;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -54,7 +55,16 @@ public class StreamValueManagerDescriptor extends AbstractDescriptor
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
 
         this.primaryMime = config.getAttribute(ATTR_PRIMARY_MIME);
-        this.supportedMime = CommonUtils.notEmpty(config.getAttribute(ATTR_SUPPORTED_MIME)).split(",");
+        String supportedMimeString = config.getAttribute(ATTR_SUPPORTED_MIME);
+        if (CommonUtils.isEmpty(supportedMimeString)) {
+            this.supportedMime = new String[] { this.primaryMime };
+        } else {
+            String[] mimeList = supportedMimeString.split(",");
+            if (!ArrayUtils.contains(mimeList, this.primaryMime)) {
+                mimeList = ArrayUtils.add(String.class, mimeList, this.primaryMime);
+            }
+            this.supportedMime = mimeList;
+        }
     }
 
     public String getId()

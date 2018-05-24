@@ -81,7 +81,7 @@ public class PostgreSchemaManager extends SQLObjectEditor<PostgreSchema, Postgre
         try {
             final PostgreRole owner = schema.getOwner(new VoidProgressMonitor());
             if (owner != null) {
-                script.append("\nAUTHORIZATION ").append(owner.getName());
+                script.append("\nAUTHORIZATION ").append(DBUtils.getQuotedIdentifier(owner));
             }
         } catch (DBException e) {
             log.error(e);

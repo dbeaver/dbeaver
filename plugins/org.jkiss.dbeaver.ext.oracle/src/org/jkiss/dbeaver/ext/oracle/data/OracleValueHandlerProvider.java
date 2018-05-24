@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -45,6 +45,11 @@ public class OracleValueHandlerProvider implements DBDValueHandlerProvider {
             return OracleBFILEValueHandler.INSTANCE;
         } else if (typedObject.getTypeID() == java.sql.Types.STRUCT) {
             return OracleObjectValueHandler.INSTANCE;
+        } else if (typedObject.getTypeID() == Types.TIME_WITH_TIMEZONE ||
+            typedObject.getTypeID() == Types.TIMESTAMP_WITH_TIMEZONE ||
+            typedObject.getTypeID() == OracleConstants.DATA_TYPE_TIMESTAMP_WITH_TIMEZONE)
+        {
+            return new OracleTemporalAccessorValueHandler(preferences.getDataFormatterProfile());
         } else if (typeName.contains("TIMESTAMP") || typedObject.getDataKind() == DBPDataKind.DATETIME) {
             return new OracleTimestampValueHandler(preferences.getDataFormatterProfile());
         } else {

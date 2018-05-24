@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.AbstractObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionComment;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -125,6 +126,10 @@ public class PostgreUtils {
             }
         }
         return null;
+    }
+
+    public static boolean supportsTypeCategory(JDBCDataSource dataSource) {
+        return dataSource.isServerVersionAtLeast(8, 4);
     }
 
     @Nullable
@@ -575,4 +580,5 @@ public class PostgreUtils {
             }
         }
     }
+
 }

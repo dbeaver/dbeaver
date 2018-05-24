@@ -2,7 +2,7 @@
 <feature
         id="org.jkiss.dbeaver.standalone.feature"
         label="%featureName"
-        version="5.0.5"
+        version="5.0.6"
         provider-name="%providerName"
         plugin="org.jkiss.dbeaver.core.application">
 
@@ -19,7 +19,7 @@
     </license>
 
     <url>
-        <update label="DBeaver Universal Database Manager" url="https://dbeaver.jkiss.org/"/>
+        <update label="DBeaver Universal Database Manager" url="https://dbeaver.io/"/>
     </url>
 
     <includes id="org.jkiss.dbeaver.rcp.feature" version="0.0.0"/>

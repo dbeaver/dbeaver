@@ -58,6 +58,7 @@ public class MavenArtifactVersion implements IMavenIdentifier {
     private List<MavenArtifactVersion> imports;
     private final List<MavenArtifactLicense> licenses = new ArrayList<>();
     private final List<MavenProfile> profiles = new ArrayList<>();
+    private final List<MavenRepository> repositories = new ArrayList<>();
 
     private GeneralUtils.IVariableResolver propertyResolver = new GeneralUtils.IVariableResolver() {
         @Override
@@ -77,7 +78,7 @@ public class MavenArtifactVersion implements IMavenIdentifier {
                     }
                     String value = profile.properties.get(name);
                     if (value != null) {
-                        return value;
+                        return evaluateString(value);
                     }
                 }
             }
@@ -89,11 +90,7 @@ public class MavenArtifactVersion implements IMavenIdentifier {
         this.artifact = artifact;
         this.version = version;
 
-        try {
-            loadPOM(monitor);
-        } catch (IOException e) {
-            log.error("Error loading artifact version POM: " + e.getMessage());
-        }
+        loadPOM(monitor);
     }
 
     @NotNull
@@ -261,6 +258,8 @@ public class MavenArtifactVersion implements IMavenIdentifier {
         if (description != null) {
             description = TextUtils.compactWhiteSpaces(description.trim());
         }
+        repositories.addAll(parseRepositories(root));
+
         {
             // Parent
             Element parentElement = XMLUtils.getChildElement(root, "parent");
@@ -304,7 +303,7 @@ public class MavenArtifactVersion implements IMavenIdentifier {
         MavenProfile defaultProfile = new MavenProfile(DEFAULT_PROFILE_ID);
         defaultProfile.active = true;
         profiles.add(defaultProfile);
-        parseProfile(monitor, defaultProfile, root);
+        parseProfile(monitor, defaultProfile, root, true);
 
         {
             // Profiles
@@ -313,7 +312,7 @@ public class MavenArtifactVersion implements IMavenIdentifier {
                 for (Element profElement : XMLUtils.getChildElementList(licensesElement, "profile")) {
                     MavenProfile profile = new MavenProfile(XMLUtils.getChildElementBody(profElement, "id"));
                     profiles.add(profile);
-                    parseProfile(monitor, profile, profElement);
+                    parseProfile(monitor, profile, profElement, false);
                 }
             }
         }
@@ -321,7 +320,7 @@ public class MavenArtifactVersion implements IMavenIdentifier {
         monitor.worked(1);
     }
 
-    private void parseProfile(DBRProgressMonitor monitor, MavenProfile profile, Element element) {
+    private void parseProfile(DBRProgressMonitor monitor, MavenProfile profile, Element element, boolean isDefault) {
         {
             // Activation
             Element activationElement = XMLUtils.getChildElement(element, "activation");
@@ -362,30 +361,10 @@ public class MavenArtifactVersion implements IMavenIdentifier {
                 }
             }
         }
-        {
+        if (!isDefault) {
             // Repositories
-            Element repsElement = XMLUtils.getChildElement(element, "repositories");
-            if (repsElement != null) {
-                for (Element repElement : XMLUtils.getChildElementList(repsElement, "repository")) {
-                    MavenRepository repository = new MavenRepository(
-                        XMLUtils.getChildElementBody(repElement, "id"),
-                        XMLUtils.getChildElementBody(repElement, "name"),
-                        XMLUtils.getChildElementBody(repElement, "url"),
-                        MavenRepository.RepositoryType.EXTERNAL);
-                    String layout = XMLUtils.getChildElementBody(repElement, "layout");
-                    if ("legacy".equals(layout)) {
-                        log.debug("Skip legacy repository [" + repository + "]");
-                        continue;
-                    }
-                    Element releasesElement = XMLUtils.getChildElement(repElement, "releases");
-                    if (releasesElement == null) {
-                        continue;
-                    }
-                    boolean enabled = CommonUtils.toBoolean(XMLUtils.getChildElementBody(releasesElement, "enabled"));
-                    if (enabled) {
-                        profile.addRepository(repository);
-                    }
-                }
+            for (MavenRepository repository : parseRepositories(element)) {
+                profile.addRepository(repository);
             }
         }
         {
@@ -396,6 +375,34 @@ public class MavenArtifactVersion implements IMavenIdentifier {
             }
             profile.dependencies = parseDependencies(monitor, element, false);
         }
+    }
+
+    private List<MavenRepository> parseRepositories(Element element)
+    {
+        List<MavenRepository> repositories = new ArrayList<>();
+        // Repositories
+        Element repsElement = XMLUtils.getChildElement(element, "repositories");
+        if (repsElement != null) {
+            for (Element repElement : XMLUtils.getChildElementList(repsElement, "repository")) {
+                MavenRepository repository = new MavenRepository(
+                    XMLUtils.getChildElementBody(repElement, "id"),
+                    XMLUtils.getChildElementBody(repElement, "name"),
+                    XMLUtils.getChildElementBody(repElement, "url"),
+                    MavenRepository.RepositoryType.EXTERNAL);
+                String layout = XMLUtils.getChildElementBody(repElement, "layout");
+                if ("legacy".equals(layout)) {
+                    log.debug("Skip legacy repository [" + repository + "]");
+                    continue;
+                }
+                Element releasesElement = XMLUtils.getChildElement(repElement, "releases");
+                boolean enabled = releasesElement == null ||
+                    CommonUtils.toBoolean(XMLUtils.getChildElementBody(releasesElement, "enabled"));
+                if (enabled) {
+                    repositories.add(repository);
+                }
+            }
+        }
+        return repositories;
     }
 
     private List<MavenArtifactDependency> parseDependencies(DBRProgressMonitor monitor, Element element, boolean depManagement) {
@@ -538,19 +545,22 @@ public class MavenArtifactVersion implements IMavenIdentifier {
 
     @NotNull
     public Collection<MavenRepository> getActiveRepositories() {
-        Map<String, MavenRepository> repositories = new LinkedHashMap<>();
+        Map<String, MavenRepository> result = new LinkedHashMap<>();
+        for (MavenRepository rep : repositories) {
+            result.put(rep.getId(), rep);
+        }
         for (MavenArtifactVersion v = MavenArtifactVersion.this; v != null; v = v.parent) {
             for (MavenProfile profile : v.profiles) {
                 if (profile.isActive()) {
                     List<MavenRepository> pr = profile.getRepositories();
                     if (pr != null) {
                         for (MavenRepository repository : pr) {
-                            repositories.put(repository.getId(), repository);
+                            result.put(repository.getId(), repository);
                         }
                     }
                 }
             }
         }
-        return repositories.values();
+        return result.values();
     }
 }

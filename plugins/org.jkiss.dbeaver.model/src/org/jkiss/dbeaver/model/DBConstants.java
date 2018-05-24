@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,9 @@ public class DBConstants {
 
     public static final String PROP_ID_NAME = "name"; //NON-NLS-1
     public static final String PROP_ID_DESCRIPTION = "description"; //NON-NLS-1
+    public static final String PROP_ID_DATA_TYPE = "dataType"; //NON-NLS-1
+    public static final String PROP_ID_REQUIRED = "required"; //NON-NLS-1
+    public static final String PROP_ID_DEFAULT_VALUE = "defaultValue"; //NON-NLS-1
     public static final String PROP_ID_TYPE_NAME = "typeName"; //NON-NLS-1
     public static final String PROP_ID_MAX_LENGTH = "maxLength"; //NON-NLS-1
     public static final String PROP_ID_NOT_NULL = "notNull"; //NON-NLS-1
@@ -79,8 +82,10 @@ public class DBConstants {
     public static final String TYPE_NAME_JSON2 = TYPE_NAME_JSON.toLowerCase(Locale.ENGLISH);
 
     public static final String DEFAULT_TIME_FORMAT = "HH:mm:ss";
+    public static final String DEFAULT_TIME_TZ_FORMAT = "HH:mm:ss Z";
     public static final String DEFAULT_DATE_FORMAT = "yyyy-MM-dd";
     public static final String DEFAULT_TIMESTAMP_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS";
+    public static final String DEFAULT_TIMESTAMP_TZ_FORMAT = "yyyy-MM-dd HH:mm:ss.SSS'Z'";
 
     public static final String DEFAULT_ISO_TIMESTAMP_FORMAT = "yyyy-MM-dd'T'HH:mm:ss'Z'";
 

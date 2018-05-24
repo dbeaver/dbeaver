@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,9 +16,12 @@
  */
 package org.jkiss.dbeaver.model.impl;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCServerOutputReader;
+import org.jkiss.dbeaver.model.exec.DBCStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLQueryResult;
 import org.jkiss.utils.CommonUtils;
@@ -33,25 +36,22 @@ import java.util.List;
  */
 public class DefaultServerOutputReader implements DBCServerOutputReader
 {
-    private final SQLQueryResult queryResult;
-
-    public DefaultServerOutputReader(SQLQueryResult queryResult) {
-        this.queryResult = queryResult;
-    }
-
     @Override
     public boolean isServerOutputEnabled() {
         return true;
     }
 
     @Override
-    public void enableServerOutput(DBRProgressMonitor monitor, DBCExecutionContext context, boolean enable) throws DBCException {
-        // do nothing
+    public boolean isAsyncOutputReadSupported() {
+        return false;
     }
 
     @Override
-    public void readServerOutput(DBRProgressMonitor monitor, DBCExecutionContext context, PrintWriter output) throws DBCException {
-        List<Throwable> warnings = queryResult.getWarnings();
+    public void readServerOutput(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext context, @Nullable SQLQueryResult queryResult, @Nullable DBCStatement statement, @NotNull PrintWriter output) throws DBCException {
+        dumpWarnings(output, queryResult.getWarnings());
+    }
+
+    protected void dumpWarnings(@NotNull PrintWriter output, List<Throwable> warnings) {
         if (warnings != null && warnings.size() > 0) {
             for (Throwable warning : warnings) {
                 if (warning instanceof SQLException) {

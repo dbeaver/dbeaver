@@ -88,7 +88,7 @@ public class StringContent extends AbstractContent {
 
     @Override
     public boolean isNull() {
-        return false;
+        return storage.getCachedValue() == null;
     }
 
     @Override

@@ -40,6 +40,7 @@ public class SSHUIMessages extends NLS {
 	public static String model_ssh_configurator_label_local_port_description;
     public static String model_ssh_configurator_label_keep_alive;
 	public static String model_ssh_configurator_label_tunnel_timeout;
+	public static String model_ssh_configurator_button_test_tunnel;
 
 	static {
 		// initialize resource bundle

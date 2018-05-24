@@ -156,7 +156,7 @@ public class ConnectionPageNetwork extends ActiveWizardPage<ConnectionWizard> {
             prevDataSource = dataSource;
             handlersFolder.layout();
             for (TabItem item : handlersFolder.getItems()) {
-                ((Composite)item.getControl()).layout();
+                ((Composite)item.getControl()).layout(false);
             }
         }
 

@@ -278,7 +278,7 @@ public class ViewValuePanel implements IResultSetPanel, IAdaptable {
                         // Some error extracting current value
                         // This may happen if we were disconnected
                     }
-                    if (!CommonUtils.equalObjects(oldValue, newValue)) {
+                    if (forceRefresh || !CommonUtils.equalObjects(oldValue, newValue)) {
                         valueEditor.primeEditorValue(newValue);
                     }
                 }

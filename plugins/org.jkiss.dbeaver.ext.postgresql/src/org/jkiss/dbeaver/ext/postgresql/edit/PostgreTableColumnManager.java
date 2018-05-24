@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLTableColumnManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.TextUtils;
@@ -66,7 +67,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
                     return;
             }
         }
-        final PostgreDataType rawType = dataType.getElementType();
+        final PostgreDataType rawType = dataType.getElementType(new VoidProgressMonitor());
         if (rawType != null) {
             sql.append(rawType.getTypeName());
         } else {
@@ -164,7 +165,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
             protected PostgreTableColumn runTask() {
                 final PostgreTableColumn column = new PostgreTableColumn(parent);
                 column.setName(getNewColumnName(monitor, context, parent));
-                final PostgreDataType dataType = parent.getDatabase().getDataType(PostgreOid.VARCHAR);
+                final PostgreDataType dataType = parent.getDatabase().getDataType(monitor, PostgreOid.VARCHAR);
                 column.setDataType(dataType); //$NON-NLS-1$
                 column.setOrdinalPosition(-1);
 
@@ -208,14 +209,14 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
         if (column.getDataType() != null) {
             typeClause += " USING " + DBUtils.getQuotedIdentifier(column) + "::" + column.getDataType().getName();
         }
-        if (command.getProperty("dataType") != null || command.getProperty("maxLength") != null || command.getProperty("precision") != null || command.getProperty("scale") != null) {
+        if (command.getProperty(DBConstants.PROP_ID_DATA_TYPE) != null || command.getProperty("maxLength") != null || command.getProperty("precision") != null || command.getProperty("scale") != null) {
             actionList.add(new SQLDatabasePersistAction("Set column type", prefix + "TYPE " + typeClause));
         }
-        if (command.getProperty("required") != null) {
+        if (command.getProperty(DBConstants.PROP_ID_REQUIRED) != null) {
             actionList.add(new SQLDatabasePersistAction("Set column nullability", prefix + (column.isRequired() ? "SET" : "DROP") + " NOT NULL"));
         }
 
-        if (command.getProperty("defaultValue") != null) {
+        if (command.getProperty(DBConstants.PROP_ID_DEFAULT_VALUE) != null) {
             if (CommonUtils.isEmpty(column.getDefaultValue())) {
                 actionList.add(new SQLDatabasePersistAction("Drop column default", prefix + "DROP DEFAULT"));
             } else {

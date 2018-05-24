@@ -16,29 +16,39 @@
  */
 package org.jkiss.dbeaver.ui.net.ssh;
 
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.SSHConstants;
+import org.jkiss.dbeaver.model.net.ssh.SSHTunnelImpl;
 import org.jkiss.dbeaver.model.net.ssh.registry.SSHImplementationDescriptor;
 import org.jkiss.dbeaver.model.net.ssh.registry.SSHImplementationRegistry;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TextWithOpen;
 import org.jkiss.dbeaver.ui.controls.TextWithOpenFile;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.Map;
 
 /**
  * SSH tunnel configuration
  */
 public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWHandlerConfiguration> {
+
+    private DBWHandlerConfiguration savedConfiguration;
 
     private Text hostText;
     private Spinner portText;
@@ -107,6 +117,13 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
             tunnelTimeout = UIUtils.createLabelSpinner(advancedGroup, SSHUIMessages.model_ssh_configurator_label_tunnel_timeout, SSHConstants.DEFAULT_CONNECT_TIMEOUT, 0, 300000);
         }
 
+        Button testButton = UIUtils.createPushButton(composite, SSHUIMessages.model_ssh_configurator_button_test_tunnel, null, new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                testTunnelConnection();
+            }
+        });
+
         authMethodCombo.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e)
@@ -115,6 +132,46 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
             }
         });
 
+    }
+
+    private void testTunnelConnection() {
+        DBWHandlerConfiguration configuration = new DBWHandlerConfiguration(savedConfiguration);
+        saveSettings(configuration);
+
+        try {
+            final String[] tunnelVersions = new String[2];
+            DBeaverUI.runInProgressDialog(monitor -> {
+                monitor.beginTask("Instantiate SSH tunnel", 2);
+                SSHTunnelImpl tunnel = new SSHTunnelImpl();
+                DBPConnectionConfiguration connectionConfig = new DBPConnectionConfiguration();
+                connectionConfig.setHostName("localhost");
+                connectionConfig.setHostPort(configuration.getProperties().get(SSHConstants.PROP_PORT));
+                try {
+                    monitor.subTask("Initialize tunnel");
+                    tunnel.initializeTunnel(monitor, DBeaverCore.getInstance(), configuration, connectionConfig);
+                    monitor.worked(1);
+                    // Get info
+                    tunnelVersions[0] = tunnel.getImplementation().getClientVersion();
+                    tunnelVersions[1] = tunnel.getImplementation().getServerVersion();
+
+                    // Close it
+                    monitor.subTask("Close tunnel");
+                    tunnel.closeTunnel(monitor);
+                    monitor.worked(1);
+                } catch (Exception e) {
+                    throw new InvocationTargetException(e);
+                }
+                monitor.done();
+            });
+
+            MessageDialog.openInformation(hostText.getShell(), CoreMessages.dialog_connection_wizard_start_connection_monitor_success,
+                "Connected!\n\nClient version: " + tunnelVersions[0] + "\nServer version: " + tunnelVersions[1]);
+        } catch (InvocationTargetException ex) {
+            DBUserInterface.getInstance().showError(
+                CoreMessages.dialog_connection_wizard_start_dialog_error_title,
+                null,
+                GeneralUtils.makeExceptionStatus(ex.getTargetException()));
+        }
     }
 
     @Override
@@ -163,6 +220,8 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
             tunnelTimeout.setSelection(CommonUtils.toInt(timeoutString));
         }
         updatePrivateKeyVisibility();
+
+        savedConfiguration = new DBWHandlerConfiguration(configuration);
     }
 
     @Override
