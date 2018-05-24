@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.oracle.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.oracle.model.source.OracleStatefulObject;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPScriptObjectExt;
@@ -44,7 +45,7 @@ import java.util.Map;
 /**
  * Oracle scheduler job
  */
-public class OracleSchedulerJob extends OracleSchemaObject implements DBPScriptObjectExt {
+public class OracleSchedulerJob extends OracleSchemaObject implements OracleStatefulObject, DBPScriptObjectExt {
 
     private static final String CAT_SETTINGS = "Settings";
     private static final String CAT_STATISTICS = "Statistics";

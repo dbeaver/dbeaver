@@ -16,24 +16,19 @@
  */
 package org.jkiss.dbeaver.ext.oracle.actions;
 
-import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.IWorkbenchPartSite;
-import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.oracle.model.OracleObjectPersistAction;
-import org.jkiss.dbeaver.ext.oracle.model.OracleObjectType;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchedulerJob;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.model.DBPEvent;
@@ -45,22 +40,19 @@ import org.jkiss.dbeaver.model.exec.DBCStatementType;
 import org.jkiss.dbeaver.model.exec.compile.DBCCompileError;
 import org.jkiss.dbeaver.model.exec.compile.DBCCompileLog;
 import org.jkiss.dbeaver.model.exec.compile.DBCCompileLogBase;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
-import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -71,7 +63,7 @@ import java.util.Map;
  * The structure is copied from CompileHandler
  * @author crowne
  */
-public class JobRunHandler extends AbstractHandler implements IElementUpdater
+public class JobRunHandler extends OracleTaskHandler
 {
     private static final Log log = Log.getLog(JobRunHandler.class);
 
@@ -102,15 +94,11 @@ public class JobRunHandler extends AbstractHandler implements IElementUpdater
                 compileLog.clearLog();
                 Throwable error = null;
                 try {
-                    DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
-                        @Override
-                        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-                        {
-                            try {
-                                runJob(monitor, compileLog, job);
-                            } catch (DBCException e) {
-                                throw new InvocationTargetException(e);
-                            }
+                    DBeaverUI.runInProgressService(monitor -> {
+                        try {
+                            runJob(monitor, compileLog, job);
+                        } catch (DBCException e) {
+                            throw new InvocationTargetException(e);
                         }
                     });
                     if (compileLog.getError() != null) {
@@ -172,37 +160,14 @@ public class JobRunHandler extends AbstractHandler implements IElementUpdater
     @Override
     public void updateElement(UIElement element, Map parameters)
     {
-        List<OracleSourceObject> objects = new ArrayList<>();
-        IWorkbenchPartSite partSite = UIUtils.getWorkbenchPartSite(element.getServiceLocator());
-        if (partSite != null) {
-            final ISelectionProvider selectionProvider = partSite.getSelectionProvider();
-            if (selectionProvider != null) {
-                ISelection selection = selectionProvider.getSelection();
-                if (selection instanceof IStructuredSelection && !selection.isEmpty()) {
-                    for (Iterator<?> iter = ((IStructuredSelection) selection).iterator(); iter.hasNext(); ) {
-                        final Object item = iter.next();
-                        final OracleSourceObject sourceObject = RuntimeUtils.getObjectAdapter(item, OracleSourceObject.class);
-                        if (sourceObject != null) {
-                            objects.add(sourceObject);
-                        }
-                    }
-                }
-            }
-            if (objects.isEmpty()) {
-                final IWorkbenchPart activePart = partSite.getPart();
-                final OracleSourceObject sourceObject = RuntimeUtils.getObjectAdapter(activePart, OracleSourceObject.class);
-                if (sourceObject != null) {
-                    objects.add(sourceObject);
-                }
-            }
-        }
+        List<OracleSourceObject> objects = getOracleSourceObjects(element);
         if (!objects.isEmpty()) {
             if (objects.size() > 1) {
-                element.setText("Compile " + objects.size() + " objects");
+                element.setText("Run " + objects.size() + " jobs");
             } else {
                 final OracleSourceObject sourceObject = objects.get(0);
                 String objectType = TextUtils.formatWord(sourceObject.getSourceType().name());
-                element.setText("Compile " + objectType/* + " '" + sourceObject.getName() + "'"*/);
+                element.setText("Run " + objectType/* + " '" + sourceObject.getName() + "'"*/);
             }
         }
     }
@@ -250,42 +215,6 @@ public class JobRunHandler extends AbstractHandler implements IElementUpdater
             }
 
             return success;
-        }
-    }
-
-    public static boolean logObjectErrors(
-        JDBCSession session,
-        DBCCompileLog compileLog,
-        OracleSchedulerJob job,
-        OracleObjectType objectType)
-    {
-        try {
-            try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT * FROM SYS.ALL_ERRORS WHERE OWNER=? AND NAME=? AND TYPE=? ORDER BY SEQUENCE")) {
-                dbStat.setString(1, job.getSchema().getName());
-                dbStat.setString(2, job.getName());
-                dbStat.setString(3, objectType.getTypeName());
-                try (ResultSet dbResult = dbStat.executeQuery()) {
-                    boolean hasErrors = false;
-                    while (dbResult.next()) {
-                        DBCCompileError error = new DBCCompileError(
-                            "ERROR".equals(dbResult.getString("ATTRIBUTE")),
-                            dbResult.getString("TEXT"),
-                            dbResult.getInt("LINE"),
-                            dbResult.getInt("POSITION"));
-                        hasErrors = true;
-                        if (error.isError()) {
-                            compileLog.error(error);
-                        } else {
-                            compileLog.warn(error);
-                        }
-                    }
-                    return !hasErrors;
-                }
-            }
-        } catch (Exception e) {
-            log.error("Can't read user errors", e);
-            return false;
         }
     }
 
