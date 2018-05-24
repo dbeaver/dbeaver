@@ -32,8 +32,8 @@ public class PostgreTableColumn extends PostgreAttribute<PostgreTableBase> imple
         super(table);
     }
 
-    public PostgreTableColumn(PostgreTableBase table, JDBCResultSet dbResult) throws DBException {
-        super(table, dbResult);
+    public PostgreTableColumn(DBRProgressMonitor monitor, PostgreTableBase table, JDBCResultSet dbResult) throws DBException {
+        super(monitor, table, dbResult);
     }
 
     @Override

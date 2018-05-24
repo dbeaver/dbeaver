@@ -49,7 +49,10 @@ import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.ControlAdapter;
+import org.eclipse.swt.events.ControlEvent;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
@@ -309,6 +312,12 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             }
         }
         return super.getCursorLocation();
+    }
+
+
+    @Override
+    protected void performHorizontalScroll(int scrollCount) {
+        spreadsheet.scrollHorizontally(scrollCount);
     }
 
     @Override

@@ -105,14 +105,15 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     }
 
     public PostgreProcedure(
+        DBRProgressMonitor monitor,
         PostgreSchema schema,
         ResultSet dbResult)
     {
         super(schema, true);
-        loadInfo(dbResult);
+        loadInfo(monitor, dbResult);
     }
 
-    private void loadInfo(ResultSet dbResult) {
+    private void loadInfo(DBRProgressMonitor monitor, ResultSet dbResult) {
         this.oid = JDBCUtils.safeGetLong(dbResult, "oid");
         setName(JDBCUtils.safeGetString(dbResult, "proname"));
         this.ownerId = JDBCUtils.safeGetLong(dbResult, "proowner");
@@ -127,7 +128,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
 
             for (int i = 0; i < allArgTypes.length; i++) {
                 Long paramType = allArgTypes[i];
-                final PostgreDataType dataType = container.getDatabase().getDataType(paramType.intValue());
+                final PostgreDataType dataType = container.getDatabase().getDataType(monitor, paramType.intValue());
                 if (dataType == null) {
                     log.warn("Parameter data type [" + paramType + "] not found");
                     continue;
@@ -156,7 +157,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
             if (!ArrayUtils.isEmpty(inArgTypes)) {
                 for (int i = 0; i < inArgTypes.length; i++) {
                     Long paramType = inArgTypes[i];
-                    final PostgreDataType dataType = container.getDatabase().getDataType(paramType.intValue());
+                    final PostgreDataType dataType = container.getDatabase().getDataType(monitor, paramType.intValue());
                     if (dataType == null) {
                         log.warn("Parameter data type [" + paramType + "] not found");
                         continue;
@@ -175,7 +176,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         {
             final long varTypeId = JDBCUtils.safeGetLong(dbResult, "provariadic");
             if (varTypeId != 0) {
-                varArrayType = container.getDatabase().getDataType(varTypeId);
+                varArrayType = container.getDatabase().getDataType(monitor, varTypeId);
             }
         }
         this.procTransform = JDBCUtils.safeGetString(dbResult, "protransform");
@@ -193,7 +194,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         {
             final long retTypeId = JDBCUtils.safeGetLong(dbResult, "prorettype");
             if (retTypeId != 0) {
-                returnType = container.getDatabase().getDataType(retTypeId);
+                returnType = container.getDatabase().getDataType(monitor, retTypeId);
             }
         }
         this.procSrc = JDBCUtils.safeGetString(dbResult, "prosrc");

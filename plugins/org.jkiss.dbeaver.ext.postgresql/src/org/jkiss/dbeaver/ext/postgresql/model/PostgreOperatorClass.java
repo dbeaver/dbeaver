@@ -93,7 +93,7 @@ public class PostgreOperatorClass extends PostgreInformation {
 
     @Property(viewable = true, order = 6)
     public PostgreDataType getType(DBRProgressMonitor monitor) {
-        return accessMethod.getDatabase().getDataType(typeId);
+        return accessMethod.getDatabase().getDataType(monitor, typeId);
     }
 
     @Property(viewable = true, order = 7)
@@ -106,7 +106,7 @@ public class PostgreOperatorClass extends PostgreInformation {
         if (keyTypeId == 0) {
             return getType(monitor);
         }
-        return accessMethod.getDatabase().getDataType(keyTypeId);
+        return accessMethod.getDatabase().getDataType(monitor, keyTypeId);
     }
 }
 

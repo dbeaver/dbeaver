@@ -396,6 +396,14 @@ public class ResultSetModel {
                 // Both nulls - nothing to update
                 return false;
             }
+            // Check composite type
+            if (ownerValue != null) {
+                if (!(ownerValue instanceof DBDComposite)) {
+                    log.warn("Value [" + ownerValue + "] edit is not supported");
+                    return false;
+                }
+            }
+
             // Do not add edited cell for new/deleted rows
             if (row.getState() == ResultSetRow.STATE_NORMAL) {
 
@@ -416,11 +424,7 @@ public class ResultSetModel {
                 }
             }
             if (ownerValue != null) {
-                if (ownerValue instanceof DBDComposite) {
-                    ((DBDComposite) ownerValue).setAttributeValue(attr.getAttribute(), value);
-                } else {
-                    log.warn("Value [" + ownerValue + "] edit is not supported");
-                }
+                ((DBDComposite) ownerValue).setAttributeValue(attr.getAttribute(), value);
             } else {
                 row.values[rootIndex] = value;
             }

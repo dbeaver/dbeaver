@@ -26,7 +26,7 @@ public interface QMController {
 
     QMExecutionHandler getDefaultHandler();
 
-    QMEventBrowser getEventBrowser();
+    QMEventBrowser getEventBrowser(boolean currentSessionOnly);
 
     void registerHandler(QMExecutionHandler handler);
 

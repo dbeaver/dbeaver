@@ -211,10 +211,15 @@ public final class SQLUtils {
 
     public static String quoteString(DBPDataSource dataSource, String string)
     {
+        return "'" + escapeString(dataSource, string) + "'";
+    }
+
+    public static String escapeString(DBPDataSource dataSource, String string)
+    {
         @NotNull
         SQLDialect dialect = dataSource instanceof SQLDataSource ?
-                ((SQLDataSource) dataSource).getSQLDialect() : BasicSQLDialect.INSTANCE;
-        return "'" + dialect.escapeString(string) + "'";
+            ((SQLDataSource) dataSource).getSQLDialect() : BasicSQLDialect.INSTANCE;
+        return dialect.escapeString(string);
     }
 
     public static String unQuoteString(DBPDataSource dataSource, String string)

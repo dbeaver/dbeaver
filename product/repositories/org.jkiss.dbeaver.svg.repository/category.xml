@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <site>
-    <description name="DBeaver - SVG format" url="https://dbeaver.jkiss.org/update/svg/latest">DBeaver - SVG format support</description>
+    <description name="DBeaver - SVG format" url="https://dbeaver.io/update/svg/latest">DBeaver - SVG format support</description>
 
     <feature id="org.jkiss.dbeaver.ext.ui.svg.feature">
         <category name="org.jikss.dbeaver.svg.category"/>

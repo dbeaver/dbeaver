@@ -32,12 +32,15 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDContent;
+import org.jkiss.dbeaver.model.data.DBDContentCached;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.impl.data.StringContent;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -52,8 +55,11 @@ import org.jkiss.dbeaver.ui.data.IStreamValueManager;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.registry.StreamValueManagerDescriptor;
 import org.jkiss.dbeaver.ui.data.registry.ValueManagerRegistry;
+import org.jkiss.dbeaver.utils.MimeTypes;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.MimeType;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.List;
 
@@ -88,51 +94,91 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
     @Override
     public void primeEditorValue(@Nullable final Object value) throws DBException
     {
-        final DBDContent content = (DBDContent) valueController.getValue();
-        if (content == null) {
-            valueController.showMessage("NULL content value. Must be DBDContent.", DBPMessageType.ERROR);
-            return;
-        }
+        final Object content = valueController.getValue();
         if (streamEditor == null) {
             valueController.showMessage("NULL content editor.", DBPMessageType.ERROR);
             return;
         }
-        DBeaverUI.runInUI(valueController.getValueSite().getWorkbenchWindow(), monitor -> {
-            try {
-                streamEditor.primeEditorValue(monitor, control, content);
-            } catch (Throwable e) {
-                log.debug(e);
-                valueController.showMessage(e.getMessage(), DBPMessageType.ERROR);
+        if (isStringValue()) {
+            // It is a string
+            streamEditor.primeEditorValue(
+                new VoidProgressMonitor(),
+                control,
+                new StringContent(
+                    valueController.getExecutionContext().getDataSource(), (String) content));
+        } else if (content instanceof DBDContent) {
+            DBRRunnableWithProgress runnable = monitor -> {
+                try {
+                    streamEditor.primeEditorValue(monitor, control, (DBDContent) content);
+                } catch (Throwable e) {
+                    log.debug(e);
+                    valueController.showMessage(e.getMessage(), DBPMessageType.ERROR);
+                }
+            };
+            if (content instanceof DBDContentCached) {
+                try {
+                    runnable.run(new VoidProgressMonitor());
+                } catch (InvocationTargetException e) {
+                    log.debug(e);
+                    valueController.showMessage(e.getMessage(), DBPMessageType.ERROR);
+                } catch (InterruptedException e) {
+                    // ignore
+                }
+            } else {
+                DBeaverUI.runInUI(valueController.getValueSite().getWorkbenchWindow(), runnable);
             }
-        });
+        } else if (content == null) {
+            valueController.showMessage("NULL content value. Must be DBDContent.", DBPMessageType.ERROR);
+        } else {
+            valueController.showMessage("Unsupported content value. Must be DBDContent or String.", DBPMessageType.ERROR);
+        }
+    }
+
+    private boolean isStringValue() {
+        return valueController.getValueType().getDataKind() == DBPDataKind.STRING;
     }
 
     @Override
     public Object extractEditorValue() throws DBException
     {
-        final DBDContent content = (DBDContent) valueController.getValue();
-        if (content == null) {
-            log.warn("NULL content value. Must be DBDContent.");
-        } else if (streamEditor == null) {
-            log.warn("NULL content editor.");
+        final Object content = valueController.getValue();
+        if (isStringValue()) {
+            StringContent stringContent = new StringContent(
+                valueController.getExecutionContext().getDataSource(), null);
+            streamEditor.extractEditorValue(new VoidProgressMonitor(), control, stringContent);
+            return stringContent.getRawValue();
         } else {
-            try {
-                streamEditor.extractEditorValue(new VoidProgressMonitor(), control, content);
-            } catch (Throwable e) {
-                log.debug(e);
-                valueController.showMessage(e.getMessage(), DBPMessageType.ERROR);
+            if (content == null) {
+                log.warn("NULL content value. Must be DBDContent.");
+            } else if (streamEditor == null) {
+                log.warn("NULL content editor.");
+            } else {
+                try {
+                    streamEditor.extractEditorValue(new VoidProgressMonitor(), control, (DBDContent) content);
+                } catch (Throwable e) {
+                    log.debug(e);
+                    valueController.showMessage(e.getMessage(), DBPMessageType.ERROR);
+                }
             }
+            return content;
         }
-        return content;
     }
 
     @Override
     protected Control createControl(Composite editPlaceholder)
     {
-        final DBDContent content = (DBDContent) valueController.getValue();
+        final Object content = valueController.getValue();
 
         if (curStreamManager == null) {
-            detectStreamManager(content);
+            if (isStringValue()) {
+                try {
+                    loadStringStreamManagers();
+                } catch (Throwable e) {
+                    DBUserInterface.getInstance().showError("No string editor", "Can't load string content managers", e);
+                }
+            } else if (content instanceof DBDContent) {
+                detectStreamManager((DBDContent) content);
+            }
         }
         if (curStreamManager != null) {
             try {
@@ -147,6 +193,30 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
 
         editorControl = streamEditor.createControl(valueController);
         return editorControl;
+    }
+
+    private void loadStringStreamManagers() throws DBException {
+        streamManagers = ValueManagerRegistry.getInstance().getStreamManagersByMimeType(MimeTypes.TEXT, MimeTypes.TEXT_PLAIN);
+        String savedManagerId = valueToManagerMap.get(makeValueId());
+        detectCurrentStreamManager(savedManagerId);
+    }
+
+    private void detectCurrentStreamManager(String savedManagerId) throws DBException {
+        if (savedManagerId != null) {
+            curStreamManager = findManager(savedManagerId);
+        }
+        if (curStreamManager == null) {
+            curStreamManager = findManager(IStreamValueManager.MatchType.EXCLUSIVE);
+            if (curStreamManager == null)
+                curStreamManager = findManager(IStreamValueManager.MatchType.PRIMARY);
+            if (curStreamManager == null)
+                curStreamManager = findManager(IStreamValueManager.MatchType.DEFAULT);
+            if (curStreamManager == null)
+                curStreamManager = findManager(IStreamValueManager.MatchType.APPLIES);
+            if (curStreamManager == null) {
+                throw new DBException("Can't find appropriate stream manager");
+            }
+        }
     }
 
     private void detectStreamManager(final DBDContent content) {
@@ -187,6 +257,24 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
             dsId = valueController.getExecutionContext().getDataSource().getContainer().getId();
         }
         return dsId + ":" + valueId;
+    }
+
+    private StreamValueManagerDescriptor findManager(String id) {
+        for (Map.Entry<StreamValueManagerDescriptor, IStreamValueManager.MatchType> entry : streamManagers.entrySet()) {
+            if (entry.getKey().getId().equals(id)) {
+                return entry.getKey();
+            }
+        }
+        return null;
+    }
+
+    private StreamValueManagerDescriptor findManager(IStreamValueManager.MatchType matchType) {
+        for (Map.Entry<StreamValueManagerDescriptor, IStreamValueManager.MatchType> entry : streamManagers.entrySet()) {
+            if (entry.getValue() == matchType) {
+                return entry.getKey();
+            }
+        }
+        return null;
     }
 
     @Override
@@ -287,23 +375,12 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
         public void run(DBRProgressMonitor monitor) {
             monitor.beginTask("Detect appropriate editor", 1);
             try {
+                if (content == null) {
+                    throw new DBException("Null content value");
+                }
                 streamManagers = ValueManagerRegistry.getInstance().getApplicableStreamManagers(monitor, valueController.getValueType(), content);
                 String savedManagerId = valueToManagerMap.get(makeValueId());
-                if (savedManagerId != null) {
-                    curStreamManager = findManager(savedManagerId);
-                }
-                if (curStreamManager == null) {
-                    curStreamManager = findManager(IStreamValueManager.MatchType.EXCLUSIVE);
-                    if (curStreamManager == null)
-                        curStreamManager = findManager(IStreamValueManager.MatchType.PRIMARY);
-                    if (curStreamManager == null)
-                        curStreamManager = findManager(IStreamValueManager.MatchType.DEFAULT);
-                    if (curStreamManager == null)
-                        curStreamManager = findManager(IStreamValueManager.MatchType.APPLIES);
-                    if (curStreamManager == null) {
-                        throw new DBException("Can't find appropriate stream manager");
-                    }
-                }
+                detectCurrentStreamManager(savedManagerId);
             } catch (Exception e) {
                 valueController.showMessage(e.getMessage(), DBPMessageType.ERROR);
             } finally {
@@ -311,22 +388,5 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
             }
         }
 
-        private StreamValueManagerDescriptor findManager(IStreamValueManager.MatchType matchType) {
-            for (Map.Entry<StreamValueManagerDescriptor, IStreamValueManager.MatchType> entry : streamManagers.entrySet()) {
-                if (entry.getValue() == matchType) {
-                    return entry.getKey();
-                }
-            }
-            return null;
-        }
-
-        private StreamValueManagerDescriptor findManager(String id) {
-            for (Map.Entry<StreamValueManagerDescriptor, IStreamValueManager.MatchType> entry : streamManagers.entrySet()) {
-                if (entry.getKey().getId().equals(id)) {
-                    return entry.getKey();
-                }
-            }
-            return null;
-        }
     }
 }
