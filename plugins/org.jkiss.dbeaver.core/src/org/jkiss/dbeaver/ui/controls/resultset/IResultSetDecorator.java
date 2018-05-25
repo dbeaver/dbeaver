@@ -18,29 +18,30 @@
 package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 
 import java.util.List;
 
 /**
- * ResultSet panel.
- * RSV can embed multiple panels to provide additional visualization functionality
+ * ResultSet decorator.
  */
 public interface IResultSetDecorator {
 
-    Composite createTopBar(ResultSetViewer viewer, Composite parent);
+    void attach(IResultSetController controller);
 
-    Composite createBottomBar(ResultSetViewer viewer, Composite parent);
+    Composite createTopBar(Composite parent);
+
+    Composite createBottomBar(Composite parent);
+
+    void setFocus();
 
     void updateEditControls();
 
     List<String> getSupportedPresentations();
 
     void fillContextMenu(@NotNull IMenuManager manager, @Nullable final DBDAttributeBinding attr, @Nullable final ResultSetRow row);
+
 }

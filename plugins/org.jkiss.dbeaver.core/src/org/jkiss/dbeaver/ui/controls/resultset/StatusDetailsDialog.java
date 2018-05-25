@@ -20,13 +20,8 @@ import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.MouseAdapter;
 import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.TraverseEvent;
-import org.eclipse.swt.events.TraverseListener;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Table;
-import org.eclipse.swt.widgets.TableColumn;
-import org.eclipse.swt.widgets.TableItem;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
 import org.jkiss.dbeaver.ui.dialogs.ViewExceptionDialog;
@@ -38,13 +33,11 @@ class StatusDetailsDialog extends EditTextDialog {
 
     private static final String DIALOG_ID = "DBeaver.StatusDetailsDialog";//$NON-NLS-1$
 
-    private final ResultSetViewer resultSetViewer;
     private final List<Throwable> warnings;
     private Table warnTable;
 
-    public StatusDetailsDialog(ResultSetViewer resultSetViewer, String message, List<Throwable> warnings) {
-        super(resultSetViewer.getControl().getShell(), "Status details", message);
-        this.resultSetViewer = resultSetViewer;
+    public StatusDetailsDialog(Shell shell, String message, List<Throwable> warnings) {
+        super(shell, "Status details", message);
         this.warnings = warnings;
         textHeight = 100;
         setReadonly(true);
@@ -90,13 +83,10 @@ class StatusDetailsDialog extends EditTextDialog {
                     openWarning();
                 }
             });
-            warnTable.addTraverseListener(new TraverseListener() {
-                @Override
-                public void keyTraversed(TraverseEvent e) {
-                    if (e.detail == SWT.TRAVERSE_RETURN) {
-                        openWarning();
-                        e.doit = false;
-                    }
+            warnTable.addTraverseListener(e -> {
+                if (e.detail == SWT.TRAVERSE_RETURN) {
+                    openWarning();
+                    e.doit = false;
                 }
             });
         }

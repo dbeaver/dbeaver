@@ -184,4 +184,5 @@ class ResultSetDataReceiver implements DBDDataReceiver {
     public void setFocusRow(int focusRow) {
         this.focusRow = focusRow;
     }
+
 }

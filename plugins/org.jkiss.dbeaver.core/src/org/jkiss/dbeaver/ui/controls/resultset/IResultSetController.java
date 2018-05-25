@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
@@ -62,6 +63,8 @@ public interface IResultSetController extends DBPContextProvider {
 
     @NotNull
     DBDDataReceiver getDataReceiver();
+
+    public Composite getControl();
 
     boolean hasData();
 
