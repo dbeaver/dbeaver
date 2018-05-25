@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCCallableStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceInfo;
@@ -78,18 +79,16 @@ import java.util.Map;
  */
 public class PostgreDebugSession extends DBGJDBCSession {
 
-    private final JDBCExecutionContext connection;
     private final JDBCExecutionContext controllerConnection;
-
-    private final DBGSessionInfo sessionInfo;
 
     private int sessionId = -1;
     private int localPortNumber = -1;
 
     private PostgreDebugAttachKind attachKind = PostgreDebugAttachKind.UNKNOWN;
+    private DBGSessionInfo sessionInfo;
 
     private PostgreDebugBreakpointDescriptor bpGlobal;
-    private volatile CallableStatement localStatement;
+    private volatile JDBCCallableStatement localStatement;
 
     private static final int LOCAL_WAIT = 50; // 0.5 sec
 
@@ -134,7 +133,6 @@ public class PostgreDebugSession extends DBGJDBCSession {
         
         DBPDataSource dataSource = controller.getDataSourceContainer().getDataSource();
         try {
-            this.connection = (JDBCExecutionContext) dataSource.openIsolatedContext(monitor, "Debug process session");
             log.debug("Controller session creating.");
             this.controllerConnection = (JDBCExecutionContext) dataSource.openIsolatedContext(monitor, "Debug controller session");
             log.debug("Debug controller session created.");
@@ -163,12 +161,6 @@ public class PostgreDebugSession extends DBGJDBCSession {
             log.debug(String.format("Error creating debug session %s",e.getMessage()));
             throw new DBGException(e, dataSource);
         }
-
-        this.sessionInfo = getSessionDescriptor(monitor);
-    }
-
-    public JDBCExecutionContext getConnection() {
-        return connection;
     }
 
     @Override
@@ -176,7 +168,7 @@ public class PostgreDebugSession extends DBGJDBCSession {
         return controllerConnection;
     }
 
-    private PostgreDebugSessionInfo getSessionDescriptor(DBRProgressMonitor monitor) throws DBGException {
+    private PostgreDebugSessionInfo getSessionDescriptor(DBRProgressMonitor monitor, JDBCExecutionContext connection) throws DBGException {
         try (JDBCSession session = connection.openSession(monitor, DBCExecutionPurpose.UTIL, "Read session info")) {
             try (Statement stmt = session.createStatement()) {
                 try (ResultSet rs = stmt.executeQuery(SQL_CURRENT_SESSION)) {
@@ -252,12 +244,12 @@ public class PostgreDebugSession extends DBGJDBCSession {
         }
     }
 
-    private String createSlot(DBRProgressMonitor monitor, PostgreProcedure function) throws DBGException {
+    private String createSlot(DBRProgressMonitor monitor, JDBCExecutionContext connection, PostgreProcedure function) throws DBGException {
 
         String objId = String.valueOf(function.getObjectId());
         String sql = SQL_PREPARE_SLOT.replaceAll("\\?objectid", objId);
         log.debug(String.format("Create slot for object ID %s", objId));
-        try (JDBCSession session = getConnection().openSession(monitor, DBCExecutionPurpose.UTIL, "Attach to port")) {
+        try (JDBCSession session = connection.openSession(monitor, DBCExecutionPurpose.UTIL, "Attach to port")) {
             try (Statement stmt = session.createStatement()) {
                 try (ResultSet rs = stmt.executeQuery(sql)) {
                     if (!rs.next()) {
@@ -285,9 +277,10 @@ public class PostgreDebugSession extends DBGJDBCSession {
         log.debug(String.format("Waiting for port number with timeout %d",LOCAL_TIMEOT));
         while (totalWait < LOCAL_TIMEOT) {
             try {
-                if (localStatement != null) {
+                CallableStatement statement = this.localStatement;
+                if (statement != null) {
                     hasStatement = true;
-                    if (localPortRcv(localStatement.getWarnings())) {
+                    if (localPortRcv(statement.getWarnings())) {
                         log.debug("Local port recived");
                         break;
                     }
@@ -315,7 +308,7 @@ public class PostgreDebugSession extends DBGJDBCSession {
         }
     }
 
-    protected void runLocalProc(PostgreProcedure function, List<String> paramValues, String name) throws DBGException {
+    protected void runLocalProc(JDBCExecutionContext connection, PostgreProcedure function, List<String> paramValues, String name) throws DBGException {
         List<PostgreProcedureParameter> parameters = function.getInputParameters();
         log.debug("Run local proc");
         if (parameters.size() != paramValues.size()) {
@@ -326,46 +319,51 @@ public class PostgreDebugSession extends DBGJDBCSession {
         Job job = new AbstractJob(name) {
             @Override
             protected IStatus run(DBRProgressMonitor monitor) {
-                try (JDBCSession session = getConnection().openSession(monitor, DBCExecutionPurpose.USER, "Run SQL command")) {
-                    StringBuilder query = new StringBuilder();
-                    query.append("{ CALL ").append(function.getFullyQualifiedName(DBPEvaluationContext.DML)).append("(");
-                    for (int i = 0; i < parameters.size(); i++) {
-                        if (i > 0) query.append(",");
-                        query.append("?");
-                    }
-                    query.append(") }");
-                    log.debug(String.format("Prepared local call %s", query));
-                    localStatement = session.prepareCall(query.toString());
-                    JDBCCallableStatementImpl callImpl = new JDBCCallableStatementImpl(session, localStatement, query.toString(), false);
-                    for (int i = 0; i < parameters.size(); i++) {
-                        PostgreProcedureParameter parameter = parameters.get(i);
-                        String paramValue = paramValues.get(i);
-                        DBDValueHandler valueHandler = DBUtils.findValueHandler(session, parameter);
-                        valueHandler.bindValueObject(session, callImpl, parameter, i, paramValue);
-                    }
-                    localStatement.execute();
-                    // And Now His Watch Is Ended
-                    log.debug("Local statment executed (ANHWIE)");
-                    fireEvent(new DBGEvent(this, DBGEvent.RESUME, DBGEvent.STEP_RETURN));
-                } catch (Exception e) {
+                try (JDBCSession session = connection.openSession(monitor, DBCExecutionPurpose.USER, "Run SQL command")) {
                     try {
-                        if (localStatement != null) {
-                            localStatement.close();
-                            localStatement = null;
+                        StringBuilder query = new StringBuilder();
+                        query.append("{ CALL ").append(function.getFullyQualifiedName(DBPEvaluationContext.DML)).append("(");
+                        for (int i = 0; i < parameters.size(); i++) {
+                            if (i > 0) query.append(",");
+                            query.append("?");
                         }
-                    } catch (SQLException e1) {
-                        log.debug(String.format("Error clearing local statment"));
-                        log.error(e1);
-                    }
-                    log.debug(String.format("Error execute local statment",e.getMessage()));
-                    fireEvent(new DBGEvent(this, DBGEvent.TERMINATE, DBGEvent.CLIENT_REQUEST));
-                    String sqlState = e instanceof SQLException ? ((SQLException) e).getSQLState() : null;
-                    if (!PostgreConstants.EC_QUERY_CANCELED.equals(sqlState)) {
-                        log.error(name, e);
-                        return DebugUtils.newErrorStatus(name, e);
+                        query.append(") }");
+                        log.debug(String.format("Prepared local call %s", query));
+                        localStatement = session.prepareCall(query.toString());
+
+                        for (int i = 0; i < parameters.size(); i++) {
+                            PostgreProcedureParameter parameter = parameters.get(i);
+                            String paramValue = paramValues.get(i);
+                            DBDValueHandler valueHandler = DBUtils.findValueHandler(session, parameter);
+                            valueHandler.bindValueObject(session, localStatement, parameter, i, paramValue);
+                        }
+                        localStatement.execute();
+                        // And Now His Watch Is Ended
+                        log.debug("Local statement executed (ANHWIE)");
+                        fireEvent(new DBGEvent(this, DBGEvent.RESUME, DBGEvent.STEP_RETURN));
+                    } catch (Exception e) {
+                        log.debug("Error execute local statement: " + e.getMessage());
+                        String sqlState = e instanceof SQLException ? ((SQLException) e).getSQLState() : null;
+                        if (!PostgreConstants.EC_QUERY_CANCELED.equals(sqlState)) {
+                            log.error(name, e);
+                            return DebugUtils.newErrorStatus(name, e);
+                        }
+                    } finally {
+                        try {
+                            if (localStatement != null) {
+                                localStatement.close();
+                                localStatement = null;
+                            }
+                        } catch (Exception e1) {
+                            log.debug("Error clearing local statment");
+                            log.error(e1);
+                        }
+                        connection.close();
+
+                        fireEvent(new DBGEvent(this, DBGEvent.TERMINATE, DBGEvent.CLIENT_REQUEST));
                     }
                 }
-                log.debug("Local stament executed");
+                log.debug("Local statement executed");
                 return Status.OK_STATUS;
             }
         };
@@ -374,18 +372,26 @@ public class PostgreDebugSession extends DBGJDBCSession {
 
     private void attachLocal(DBRProgressMonitor monitor, PostgreProcedure function, List<String> parameters) throws DBGException {
 
-        log.debug("Attaching locally....");
-        createSlot(monitor, function);
+        try {
+            JDBCExecutionContext connection = (JDBCExecutionContext) controllerConnection.getDataSource().openIsolatedContext(monitor, "Debug process session");
+            log.debug("Attaching locally....");
+            this.sessionInfo = getSessionDescriptor(monitor, connection);
 
-        String taskName = "PostgreSQL Debug - Local session " + sessionInfo.getID();
+            createSlot(monitor, connection, function);
 
-        runLocalProc(function, parameters, taskName);
+            String taskName = "PostgreSQL Debug - Local session " + sessionInfo.getID();
 
-        waitPortNumber();
+            runLocalProc(connection, function, parameters, taskName);
 
-        sessionId = attachToPort(monitor);
-        log.debug(String.format("Attached local session UD = %d",sessionId));
-        getController().fireEvent(new DBGEvent(this, DBGEvent.SUSPEND, DBGEvent.MODEL_SPECIFIC));
+            waitPortNumber();
+
+            sessionId = attachToPort(monitor);
+            log.debug(String.format("Attached local session UD = %d", sessionId));
+            getController().fireEvent(new DBGEvent(this, DBGEvent.SUSPEND, DBGEvent.MODEL_SPECIFIC));
+        } catch (DBException e) {
+            throw new DBGException("Error opening debug session", e);
+        }
+
     }
 
     private void attachGlobal(DBRProgressMonitor monitor, int oid, int targetPID) throws DBGException {
@@ -450,7 +456,7 @@ public class PostgreDebugSession extends DBGJDBCSession {
             log.debug("Global attached");
         } else {
             attachKind = PostgreDebugAttachKind.LOCAL;
-            PostgreProcedure function = PostgreSqlDebugCore.resolveFunction(monitor, connection.getDataSource().getContainer(), configuration);
+            PostgreProcedure function = PostgreSqlDebugCore.resolveFunction(monitor, controllerConnection.getDataSource().getContainer(), configuration);
             List<String> parameterValues = (List<String>) configuration.get(PostgreDebugConstants.ATTR_FUNCTION_PARAMETERS);
 
             attachLocal(monitor, function, parameterValues);
@@ -469,13 +475,17 @@ public class PostgreDebugSession extends DBGJDBCSession {
         }
     }
 
-    private void detachLocal(DBRProgressMonitor monitor) throws DBGException {
-        try (JDBCSession session = getControllerConnection().openSession(monitor, DBCExecutionPurpose.UTIL, "Abort local session")) {
+    private void detachLocal(DBRProgressMonitor monitor, JDBCExecutionContext connection) throws DBGException {
+        if (localStatement == null) {
+            // Execution already terminated
+            return;
+        }
+        try (JDBCSession session = connection.openSession(monitor, DBCExecutionPurpose.UTIL, "Abort local session")) {
             JDBCUtils.executeQuery(session, composeAbortCommand());
-            log.debug("Local deattached");
+            log.debug("Local detached");
         } catch (SQLException e) {
-            log.debug("Unable to abort target");
-            log.error("Unable to abort target", e);            
+            log.debug("Unable to abort local session");
+            log.error("Unable to abort local target", e);
         }
     }
 
@@ -486,7 +496,7 @@ public class PostgreDebugSession extends DBGJDBCSession {
             JDBCUtils.executeQuery(session, composeAbortCommand());
             log.debug("Global deattached");
         } catch (SQLException e) {
-            log.error("Unable to abort target", e);
+            log.error("Unable to abort global target", e);
         }
     }
 
@@ -496,7 +506,7 @@ public class PostgreDebugSession extends DBGJDBCSession {
             detachGlobal(monitor);
             break;
         case LOCAL:
-            detachLocal(monitor);
+            detachLocal(monitor, getControllerConnection());
             break;
         default:
             break;
@@ -803,15 +813,7 @@ public class PostgreDebugSession extends DBGJDBCSession {
      * @return boolean
      */
     public boolean isAttached() {
-        switch (attachKind) {
-        case GLOBAL:
-            return connection != null && (sessionId > 0);
-        case LOCAL:
-            return sessionId > 0;
-        default:
-            return false;
-        }
-
+        return sessionId > 0;
     }
 
     /**
@@ -833,14 +835,14 @@ public class PostgreDebugSession extends DBGJDBCSession {
 
     @Override
     public void closeSession(DBRProgressMonitor monitor) throws DBGException {
+        if (!isAttached()) {
+            return;
+        }
         log.debug("Closing session.");
         try {
             super.closeSession(monitor);
             log.debug("Session closed.");
         } finally {
-            if (connection != null) {
-                IOUtils.close(connection);
-            }
             if (controllerConnection != null) {
                 IOUtils.close(controllerConnection);
             }
