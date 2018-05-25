@@ -144,7 +144,7 @@ public class DatabaseStackFrame extends DatabaseDebugElement implements IStackFr
                 List<? extends DBGVariable<?>> variables = debugTarget.getSession().getVariables(dbgStackFrame);
                 rebuildVariables(variables);
             } catch (DBGException e) {
-                log.error(e);
+                log.debug("Error getting variables", e);
             }
         }
         if (variables.isEmpty()) {
