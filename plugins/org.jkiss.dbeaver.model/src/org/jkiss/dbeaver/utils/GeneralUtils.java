@@ -563,7 +563,12 @@ public class GeneralUtils {
         }
         return msg.toString().trim();
 */
-        return ex.getMessage();
+        try {
+            ex.getClass().getDeclaredMethod("toString");
+            return ex.toString();
+        } catch (NoSuchMethodException e) {
+            return ex.getMessage();
+        }
     }
 
     @NotNull

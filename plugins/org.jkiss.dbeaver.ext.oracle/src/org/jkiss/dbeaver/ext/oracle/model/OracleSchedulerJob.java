@@ -19,6 +19,13 @@ package org.jkiss.dbeaver.ext.oracle.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.oracle.model.source.OracleStatefulObject;
+import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPScriptObjectExt;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -28,15 +35,17 @@ import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObjectState;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Collection;
+import java.util.Map;
 
 /**
  * Oracle scheduler job
  */
-public class OracleSchedulerJob extends OracleSchemaObject {
+public class OracleSchedulerJob extends OracleSchemaObject implements OracleStatefulObject, DBPScriptObjectExt {
 
     private static final String CAT_SETTINGS = "Settings";
     private static final String CAT_STATISTICS = "Statistics";
@@ -104,6 +113,19 @@ public class OracleSchedulerJob extends OracleSchemaObject {
     private String comments;
 
     private final ArgumentsCache argumentsCache = new ArgumentsCache();
+
+    enum JobState {
+    	DISABLED,
+    	RETRYSCHEDULED,
+    	SCHEDULED,
+    	RUNNING,
+    	COMPLETED,
+    	BROKEN,
+    	FAILED,
+    	REMOTE,
+    	SUCCEEDED,
+    	CHAIN_STALLED;
+    }
 
     protected OracleSchedulerJob(OracleSchema schema, ResultSet dbResult) {
         super(schema, JDBCUtils.safeGetString(dbResult, "JOB_NAME"), true);
@@ -481,5 +503,126 @@ public class OracleSchedulerJob extends OracleSchemaObject {
         }
 
     }
+
+	public DBSObjectState getObjectState() {
+		DBSObjectState objectState = null;
+		
+		try {
+			if ( JobState.valueOf(state).equals(JobState.RUNNING) ) {
+				objectState = DBSObjectState.ACTIVE;
+			} else if ( JobState.valueOf(state).equals(JobState.BROKEN) ) {
+				objectState = DBSObjectState.INVALID;
+			} else if ( JobState.valueOf(state).equals(JobState.CHAIN_STALLED) ) {
+				objectState = DBSObjectState.INVALID;
+			} else if ( JobState.valueOf(state).equals(JobState.FAILED) ) {
+				objectState = DBSObjectState.INVALID;
+			} else {
+				objectState = DBSObjectState.NORMAL;
+			}
+		} catch (IllegalArgumentException e) {
+			objectState = DBSObjectState.UNKNOWN;
+		}
+		
+		return objectState;
+	}
+
+	public void refreshObjectState(DBRProgressMonitor monitor) {
+        if (monitor != null) {
+        	monitor.beginTask("Load action for '" + this.getName() + "'...", 1);
+        	try (final JDBCSession session = DBUtils.openMetaSession(monitor, this.getDataSource(), "Load action for " + OracleObjectType.JOB + " '" + this.getName() + "'")) {
+        		try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                        "SELECT STATE FROM " + OracleConstants.SCHEMA_SYS + ".ALL_SCHEDULER_JOBS " +
+                            "WHERE OWNER=? AND JOB_NAME=? ")) {
+                    dbStat.setString(1, getOwner() );
+                    dbStat.setString(2, getName());
+                    dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
+                    try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                        StringBuilder jobState = null;
+                        int lineCount = 0;
+                        while (dbResult.next()) {
+                            if (monitor.isCanceled()) {
+                                break;
+                            }
+                            final String line = dbResult.getString(1);
+                            if (jobState == null) {
+                                jobState = new StringBuilder(15);
+                            }
+                            jobState.append(line);
+                            lineCount++;
+                            monitor.subTask("Line " + lineCount);
+                        }
+                        if (jobState != null) {
+                        	state = jobState.toString();
+                        }
+                    }
+        		}
+            } catch (SQLException e) {
+            	monitor.subTask("Error refreshing job state " + e.getMessage());
+            } finally {
+                monitor.done();
+            }
+        }
+	}
+
+    public DBEPersistAction[] getRunActions() {
+        StringBuffer runScript = new StringBuffer();
+        runScript.append("BEGIN\n");
+        runScript.append("\tDBMS_SCHEDULER.RUN_JOB(JOB_NAME => '");
+        runScript.append(getFullyQualifiedName(DBPEvaluationContext.DDL));
+        runScript.append("', USE_CURRENT_SESSION => FALSE);");
+        runScript.append("END;");
+    	return new DBEPersistAction[] {
+            new OracleObjectPersistAction(
+                OracleObjectType.JOB,
+                "Run Job",
+                runScript.toString()
+            )};
+    }
+
+	@Override
+	public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
+        if (jobAction == null && monitor != null) {
+        	monitor.beginTask("Load action for '" + this.getName() + "'...", 1);
+        	try (final JDBCSession session = DBUtils.openMetaSession(monitor, this.getDataSource(), "Load action for " + OracleObjectType.JOB + " '" + this.getName() + "'")) {
+        		try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                        "SELECT JOB_ACTION FROM " + OracleConstants.SCHEMA_SYS + ".ALL_SCHEDULER_JOBS " +
+                            "WHERE OWNER=? AND JOB_NAME=? ")) {
+                    dbStat.setString(1, getOwner() );
+                    dbStat.setString(2, getName());
+                    dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);
+                    try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                        StringBuilder action = null;
+                        int lineCount = 0;
+                        while (dbResult.next()) {
+                            if (monitor.isCanceled()) {
+                                break;
+                            }
+                            final String line = dbResult.getString(1);
+                            if (action == null) {
+                                action = new StringBuilder(4000);
+                            }
+                            action.append(line);
+                            lineCount++;
+                            monitor.subTask("Line " + lineCount);
+                        }
+                        if (action != null) {
+                        	jobAction = action.toString();
+                        }
+                    }
+        		}
+            } catch (SQLException e) {
+                throw new DBCException(e, this.getDataSource());
+            } finally {
+                monitor.done();
+            }
+        }
+        return jobAction;
+	}
+
+	@Override
+	public String getExtendedDefinitionText(DBRProgressMonitor monitor) throws DBException {
+		// TODO Complete this so that Generate DDL includes the entire job definition, not just the action block
+		return null;
+	}
 
 }

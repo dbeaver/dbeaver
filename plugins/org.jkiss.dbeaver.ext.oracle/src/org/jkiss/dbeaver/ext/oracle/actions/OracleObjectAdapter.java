@@ -18,9 +18,11 @@ package org.jkiss.dbeaver.ext.oracle.actions;
 
 import org.eclipse.core.runtime.IAdapterFactory;
 import org.jkiss.dbeaver.ext.oracle.model.OracleProcedurePackaged;
+import org.jkiss.dbeaver.ext.oracle.model.OracleSchedulerJob;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.model.DBPScriptObjectExt;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseItem;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
@@ -43,6 +45,8 @@ public class OracleObjectAdapter implements IAdapterFactory {
                 dbObject = ((IDatabaseEditor) adaptableObject).getEditorInput().getDatabaseObject();
             } else if (adaptableObject instanceof DatabaseEditorInput) {
                 dbObject = ((DatabaseEditorInput) adaptableObject).getDatabaseObject();
+            } else if (adaptableObject instanceof DBNDatabaseItem) {
+                dbObject = ((DBNDatabaseItem) adaptableObject).getObject();
             }
             if (dbObject != null && adapterType.isAssignableFrom(dbObject.getClass())) {
                 return adapterType.cast(dbObject);
@@ -53,6 +57,6 @@ public class OracleObjectAdapter implements IAdapterFactory {
 
     @Override
     public Class[] getAdapterList() {
-        return new Class[] { OracleSourceObject.class, OracleProcedurePackaged.class, DBPScriptObjectExt.class };
+        return new Class[] { OracleSourceObject.class, OracleProcedurePackaged.class, DBPScriptObjectExt.class, OracleSchedulerJob.class };
     }
 }

@@ -26,10 +26,11 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.oracle.model.OracleObjectPersistAction;
+import org.jkiss.dbeaver.ext.oracle.model.OracleSchedulerJob;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
-import org.jkiss.dbeaver.ext.oracle.views.OracleCompilerDialog;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -39,7 +40,6 @@ import org.jkiss.dbeaver.model.exec.DBCStatementType;
 import org.jkiss.dbeaver.model.exec.compile.DBCCompileError;
 import org.jkiss.dbeaver.model.exec.compile.DBCCompileLog;
 import org.jkiss.dbeaver.model.exec.compile.DBCCompileLogBase;
-import org.jkiss.dbeaver.model.exec.compile.DBCSourceHost;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
@@ -58,17 +58,24 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-public class CompileHandler extends OracleTaskHandler
+/**
+ * This handler provides the capability to run scheduled jobs.
+ * The structure is copied from CompileHandler
+ * @author crowne
+ */
+public class JobRunHandler extends OracleTaskHandler
 {
+    private static final Log log = Log.getLog(JobRunHandler.class);
+
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException
     {
         final IWorkbenchPart activePart = HandlerUtil.getActiveEditor(event);
-        final List<OracleSourceObject> objects = getSelectedObjects(event);
+        final List<OracleSchedulerJob> objects = getSelectedJobs(event);
         if (!objects.isEmpty()) {
             if (activePart instanceof EntityEditor) {
-                // Save editor before compile
-                // USe null monitor as entity editor has its own detached job for save
+                // Save editor before run
+                // Use null monitor as entity editor has its own detached job for save
                 EntityEditor entityEditor = (EntityEditor) activePart;
                 if (entityEditor.isDirty()) {
                     NullProgressMonitor monitor = new NullProgressMonitor();
@@ -81,26 +88,15 @@ public class CompileHandler extends OracleTaskHandler
             }
             final Shell activeShell = HandlerUtil.getActiveShell(event);
             if (objects.size() == 1) {
-                final OracleSourceObject unit = objects.get(0);
+                final OracleSchedulerJob job = objects.get(0);
 
-                DBCSourceHost sourceHost = null;
-                if (activePart != null) {
-                    sourceHost = RuntimeUtils.getObjectAdapter(activePart, DBCSourceHost.class);
-                    if (sourceHost == null) {
-                        sourceHost = activePart.getAdapter(DBCSourceHost.class);
-                    }
-                }
-                if (sourceHost != null && sourceHost.getSourceObject() != unit) {
-                    sourceHost = null;
-                }
-
-                final DBCCompileLog compileLog = sourceHost == null ? new DBCCompileLogBase() : sourceHost.getCompileLog();
+                final DBCCompileLog compileLog = new DBCCompileLogBase();
                 compileLog.clearLog();
                 Throwable error = null;
                 try {
                     DBeaverUI.runInProgressService(monitor -> {
                         try {
-                            compileUnit(monitor, compileLog, unit);
+                            runJob(monitor, compileLog, job);
                         } catch (DBCException e) {
                             throw new InvocationTargetException(e);
                         }
@@ -114,7 +110,7 @@ public class CompileHandler extends OracleTaskHandler
                     return null;
                 }
                 if (error != null) {
-                    DBUserInterface.getInstance().showError("Unexpected compilation error", null, error);
+                    DBUserInterface.getInstance().showError("Unexpected run schedule error", null, error);
                 } else if (!CommonUtils.isEmpty(compileLog.getErrorStack())) {
                     // Show compile errors
                     int line = -1, position = -1;
@@ -127,51 +123,35 @@ public class CompileHandler extends OracleTaskHandler
                         }
                     }
 
-                    // If compiled object is currently open in editor - try to position on error line
-                    if (sourceHost != null && sourceHost.getSourceObject() == unit && line > 0 && position >= 0) {
-                        sourceHost.positionSource(line, position);
-                        activePart.getSite().getPage().activate(activePart);
-                    }
-
-                    String errorTitle = unit.getName() + " compilation failed";
-                    if (sourceHost != null) {
-                        sourceHost.setCompileInfo(errorTitle, true);
-                        sourceHost.showCompileLog();
-                    }
+                    String errorTitle = job.getName() + " run schedule failed";
                     DBUserInterface.getInstance().showError(errorTitle, fullMessage.toString());
                 } else {
-                    String message = unit.getName() + " compiled successfully";
-                    if (sourceHost != null) {
-                        sourceHost.setCompileInfo(message, true);
-                    }
+                    String message = job.getName() + " successfully scheduled to run";
                     UIUtils.showMessageBox(activeShell, "Done", message, SWT.ICON_INFORMATION);
                 }
-            } else {
-                OracleCompilerDialog dialog = new OracleCompilerDialog(activeShell, objects);
-                dialog.open();
             }
         }
         return null;
     }
 
-    private List<OracleSourceObject> getSelectedObjects(ExecutionEvent event)
+    private List<OracleSchedulerJob> getSelectedJobs(ExecutionEvent event)
     {
-        List<OracleSourceObject> objects = new ArrayList<>();
+        List<OracleSchedulerJob> objects = new ArrayList<>();
         final ISelection currentSelection = HandlerUtil.getCurrentSelection(event);
         if (currentSelection instanceof IStructuredSelection && !currentSelection.isEmpty()) {
             for (Iterator<?> iter = ((IStructuredSelection) currentSelection).iterator(); iter.hasNext(); ) {
                 final Object element = iter.next();
-                final OracleSourceObject sourceObject = RuntimeUtils.getObjectAdapter(element, OracleSourceObject.class);
-                if (sourceObject != null) {
-                    objects.add(sourceObject);
+                final OracleSchedulerJob sourceJob = RuntimeUtils.getObjectAdapter(element, OracleSchedulerJob.class);
+                if (sourceJob != null) {
+                    objects.add(sourceJob);
                 }
             }
         }
         if (objects.isEmpty()) {
             final IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
-            final OracleSourceObject sourceObject = RuntimeUtils.getObjectAdapter(activePart, OracleSourceObject.class);
-            if (sourceObject != null) {
-                objects.add(sourceObject);
+            final OracleSchedulerJob sourceJob = RuntimeUtils.getObjectAdapter(activePart, OracleSchedulerJob.class);
+            if (sourceJob != null) {
+                objects.add(sourceJob);
             }
         }
         return objects;
@@ -181,26 +161,25 @@ public class CompileHandler extends OracleTaskHandler
     public void updateElement(UIElement element, Map parameters)
     {
         List<OracleSourceObject> objects = getOracleSourceObjects(element);
-
         if (!objects.isEmpty()) {
             if (objects.size() > 1) {
-                element.setText("Compile " + objects.size() + " objects");
+                element.setText("Run " + objects.size() + " jobs");
             } else {
                 final OracleSourceObject sourceObject = objects.get(0);
                 String objectType = TextUtils.formatWord(sourceObject.getSourceType().name());
-                element.setText("Compile " + objectType/* + " '" + sourceObject.getName() + "'"*/);
+                element.setText("Run " + objectType/* + " '" + sourceObject.getName() + "'"*/);
             }
         }
     }
 
-    public static boolean compileUnit(DBRProgressMonitor monitor, DBCCompileLog compileLog, OracleSourceObject unit) throws DBCException
+    public static boolean runJob(DBRProgressMonitor monitor, DBCCompileLog compileLog, OracleSchedulerJob job) throws DBCException
     {
-        final DBEPersistAction[] compileActions = unit.getCompileActions();
+        final DBEPersistAction[] compileActions = job.getRunActions();
         if (ArrayUtils.isEmpty(compileActions)) {
             return true;
         }
 
-        try (JDBCSession session = DBUtils.openUtilSession(monitor, unit.getDataSource(), "Compile '" + unit.getName() + "'")) {
+        try (JDBCSession session = DBUtils.openUtilSession(monitor, job.getDataSource(), "Run '" + job.getName() + "'")) {
             boolean success = true;
             for (DBEPersistAction action : compileActions) {
                 final String script = action.getScript();
@@ -211,7 +190,7 @@ public class CompileHandler extends OracleTaskHandler
                 }
                 try {
                     try (DBCStatement dbStat = session.prepareStatement(
-                        DBCStatementType.QUERY,
+                        DBCStatementType.SCRIPT,
                         script,
                         false, false, false))
                     {
@@ -224,20 +203,19 @@ public class CompileHandler extends OracleTaskHandler
                     throw e;
                 }
                 if (action instanceof OracleObjectPersistAction) {
-                    if (!logObjectErrors(session, compileLog, unit, ((OracleObjectPersistAction) action).getObjectType())) {
+                    if (!logObjectErrors(session, compileLog, job, ((OracleObjectPersistAction) action).getObjectType())) {
                         success = false;
                     }
                 }
             }
-            final DBSObjectState oldState = unit.getObjectState();
-            unit.refreshObjectState(monitor);
-            if (unit.getObjectState() != oldState) {
-                unit.getDataSource().getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, unit));
+            final DBSObjectState oldState = job.getObjectState();
+            job.refreshObjectState(monitor);
+            if (job.getObjectState() != oldState) {
+                job.getDataSource().getContainer().fireEvent(new DBPEvent(DBPEvent.Action.OBJECT_UPDATE, job));
             }
 
             return success;
         }
     }
-
 
 }
