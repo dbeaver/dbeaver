@@ -21,7 +21,9 @@ package org.jkiss.dbeaver.ui.controls.resultset;
  * Result set provider
  */
 public interface IResultSetListener {
+
     void handleResultSetLoad();
 
     void handleResultSetChange();
+
 }
