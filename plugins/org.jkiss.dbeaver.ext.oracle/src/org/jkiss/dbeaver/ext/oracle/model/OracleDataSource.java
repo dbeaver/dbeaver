@@ -318,6 +318,11 @@ public class OracleDataSource extends JDBCDataSource
     }
 
     @Association
+    public OracleUser getUser(DBRProgressMonitor monitor, String name) throws DBException {
+        return userCache.getObject(monitor, this, name);
+    }
+
+    @Association
     public Collection<OracleUserProfile> getProfiles(DBRProgressMonitor monitor) throws DBException {
         return profileCache.getAllObjects(monitor, this);
     }
