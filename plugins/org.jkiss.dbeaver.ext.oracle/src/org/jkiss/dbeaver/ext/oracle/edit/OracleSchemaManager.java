@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.oracle.edit;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -139,6 +140,7 @@ public class OracleSchemaManager extends SQLObjectEditor<OracleSchema, OracleDat
         protected Control createDialogArea(Composite parent)
         {
             getShell().setText("Set schema/user properties");
+
             Control container = super.createDialogArea(parent);
             Composite composite = UIUtils.createPlaceholder((Composite) container, 2, 5);
             composite.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -147,6 +149,12 @@ public class OracleSchemaManager extends SQLObjectEditor<OracleSchema, OracleDat
             nameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             passwordText = UIUtils.createLabelText(composite, "User Password", null, SWT.BORDER | SWT.PASSWORD);
             passwordText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+            CLabel infoLabel = UIUtils.createInfoLabel(composite, "Creating a schema is the same as creating a user.\nYou need to specify a password.");
+            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.horizontalSpan = 2;
+            infoLabel.setLayoutData(gd);
+
 
             return parent;
         }
