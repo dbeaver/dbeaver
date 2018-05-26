@@ -201,7 +201,7 @@ public abstract class ObjectViewerRenderer {
                 } else {
                     textBounds = ((TableItem) event.item).getTextBounds(event.index);
                 }
-                linkLayout.draw(gc, textBounds.x, textBounds.y + 1);
+                linkLayout.draw(gc, textBounds.x, textBounds.y);
             }
         }
     }
