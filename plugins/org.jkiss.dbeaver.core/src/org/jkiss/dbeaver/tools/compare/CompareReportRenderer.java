@@ -108,7 +108,7 @@ public class CompareReportRenderer {
         styles.append("table {font-family:\"Lucida Sans Unicode\", \"Lucida Grande\", Sans-Serif;font-size:12px;text-align:left;} ");
         styles.append(".missing {color:red;} .differs {color:red;} ");
         styles.append(".object td,th {border-top:solid 1px; border-right:solid 1px; border-color: black; white-space:nowrap;} ");
-        styles.append(".property td,th {border-right:solid 1px; border-color: black; white-space:pre; } ");
+        styles.append(".property td,th {border-top:dashed 1px; border-right:solid 1px; border-color: black; white-space:pre; } ");
         styles.append(".struct {border-top:none; !important } ");
 //        styles.append(".object:first-child {border:none; } ");
 //        styles.append(".property:first-child {border:none; } ");
@@ -152,6 +152,7 @@ public class CompareReportRenderer {
 
             xml.startElement("tr");
             xml.addAttribute("class", "object level" + line.depth);
+            xml.addAttribute("valign", "top");
             xml.startElement("td");
             xml.addText(line.structure.getNodeType());
             xml.endElement();
@@ -206,6 +207,7 @@ public class CompareReportRenderer {
                     }
                     xml.startElement("tr");
                     xml.addAttribute("class", "property level" + (line.depth + 1) + (differs ? " differs" : ""));
+                    xml.addAttribute("valign", "top");
                     xml.startElement("td");
                     xml.addText(reportProperty.property.getDisplayName());
                     xml.endElement();
