@@ -96,7 +96,9 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
             } catch (InterruptedException e) {
                 // ignore
             }
-            propsControl.loadProperties(propertySource);
+            if (propertySource != null) {
+                propsControl.loadProperties(propertySource);
+            }
             prevConnectionInfo = activeDataSource.getConnectionConfiguration();
 
             tempDataSource.dispose();
