@@ -18,28 +18,36 @@
 
 package org.jkiss.dbeaver.ext.postgresql.debug.internal.impl;
 
+import org.eclipse.core.resources.IMarker;
 import org.jkiss.dbeaver.debug.DBGBreakpointDescriptor;
+import org.jkiss.dbeaver.ext.postgresql.debug.PostgreDebugConstants;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.HashMap;
 import java.util.Map;
 
 /**
- * PG breakpoint
+ * PG breakpoint.
+ * It contains PG-specific info for IDatabaseBreakpoint
  */
 public class PostgreDebugBreakpointDescriptor implements DBGBreakpointDescriptor {
 
+    private final Object oid;
     private final long lineNo;
     private final boolean onStart;
     private final long targetId;
     private final boolean all;
-    private final boolean global;
 
-    public PostgreDebugBreakpointDescriptor(long lineNo, boolean global) {
+    public PostgreDebugBreakpointDescriptor(Object oid, long lineNo) {
+        this.oid = oid;
         this.lineNo = lineNo;
         this.onStart = lineNo < 0;
         this.targetId = -1;
         this.all = true;
-        this.global = global;
+    }
+
+    public Object getObjectId() {
+        return oid;
     }
 
     public long getLineNo() {
@@ -58,19 +66,25 @@ public class PostgreDebugBreakpointDescriptor implements DBGBreakpointDescriptor
         return all;
     }
 
-    public boolean isGlobal() {
-        return global;
-    }
-
     @Override
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<>();
-        map.put("lineNo", lineNo);
+        map.put(PostgreDebugConstants.ATTR_FUNCTION_OID, String.valueOf(oid));
         map.put("onStart", onStart);
-        map.put("targetId", targetId);
+        map.put("targetId", String.valueOf(targetId));
         map.put("all", all);
-        map.put("global", global);
         return map;
+    }
+
+    public static DBGBreakpointDescriptor fromMap(Map<String, Object> attributes) {
+        long oid = CommonUtils.toLong(attributes.get(PostgreDebugConstants.ATTR_FUNCTION_OID));
+        long parsed = CommonUtils.toLong(attributes.get(IMarker.LINE_NUMBER));
+        return new PostgreDebugBreakpointDescriptor(oid, parsed);
+    }
+
+    @Override
+    public String toString() {
+        return "PostgreDebugBreakpointDescriptor [obj=" + oid + ", properties=" + toMap() + "]";
     }
 
 }

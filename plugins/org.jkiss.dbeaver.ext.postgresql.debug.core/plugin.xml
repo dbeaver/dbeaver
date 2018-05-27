@@ -24,6 +24,9 @@
          <adapter type="org.jkiss.dbeaver.debug.DBGControllerFactory"/>
          <adapter type="org.jkiss.dbeaver.debug.DBGResolver"/>
       </factory>
+      <factory adaptableType="org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure" class="org.jkiss.dbeaver.ext.postgresql.debug.internal.PostgreBreakpointAdapterFactory">
+         <adapter type="org.jkiss.dbeaver.debug.DBGBreakpointDescriptor"/>
+      </factory>
    </extension>
 
 </plugin>

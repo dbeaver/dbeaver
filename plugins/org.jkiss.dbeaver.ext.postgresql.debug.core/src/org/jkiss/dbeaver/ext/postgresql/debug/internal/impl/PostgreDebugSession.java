@@ -44,7 +44,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceInfo;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
-import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCCallableStatementImpl;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -417,7 +416,7 @@ public class PostgreDebugSession extends DBGJDBCSession {
             throw new DBGException("SQL error", e);
         }
 
-        bpGlobal = new PostgreDebugBreakpointDescriptor(oid, true);
+        bpGlobal = new PostgreDebugBreakpointDescriptor(oid, -1);
         addBreakpoint(monitor, bpGlobal);
         log.debug("Global breakpoint added");
 
@@ -521,7 +520,7 @@ public class PostgreDebugSession extends DBGJDBCSession {
 
     protected String composeAddBreakpointCommand(DBGBreakpointDescriptor descriptor) {
         PostgreDebugBreakpointDescriptor bp = (PostgreDebugBreakpointDescriptor) descriptor;
-        String sqlPattern = bp.isGlobal() ? SQL_SET_GLOBAL_BREAKPOINT : SQL_SET_BREAKPOINT;
+        String sqlPattern = attachKind == PostgreDebugAttachKind.GLOBAL ? SQL_SET_GLOBAL_BREAKPOINT : SQL_SET_BREAKPOINT;
 
         String sqlCommand = sqlPattern.replaceAll("\\?sessionid", String.valueOf(getSessionId()))
                 .replaceAll("\\?obj", String.valueOf(functionOid))
