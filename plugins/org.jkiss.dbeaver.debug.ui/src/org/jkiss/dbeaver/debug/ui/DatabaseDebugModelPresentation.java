@@ -113,12 +113,8 @@ public class DatabaseDebugModelPresentation extends LabelProvider implements IDe
             }
             if (element instanceof DatabaseLineBreakpoint) {
                 DatabaseLineBreakpoint breakpoint = (DatabaseLineBreakpoint) element;
-                String nodePath = breakpoint.getNodePath();
-                NodeFinder getNodeTask = new NodeFinder(nodePath);
-                RuntimeUtils.runTask(getNodeTask,"Get node by path", SESSION_ACTION_TIMEOUT);
-
                 int lineNumber = breakpoint.getLineNumber();
-                Object[] bindings = new Object[] {getNodeTask.node == null ? nodePath : getNodeTask.node.getNodeFullName(), lineNumber};
+                Object[] bindings = new Object[] { breakpoint.getObjectName(), lineNumber };
                 return NLS.bind("{0} - [line:{1}]", bindings);
             }
         } catch (CoreException e) {
@@ -209,10 +205,16 @@ public class DatabaseDebugModelPresentation extends LabelProvider implements IDe
 
         @Override
         public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+            monitor.beginTask("Resolve database object node", 1);
             try {
-                node = DBeaverCore.getInstance().getNavigatorModel().getNodeByPath(new VoidProgressMonitor(), nodePath);
+                monitor.beginTask("Search node in database navigator", 1);
+                RuntimeUtils.pause(100000);
+                node = DBeaverCore.getInstance().getNavigatorModel().getNodeByPath(monitor, nodePath);
+                monitor.worked(1);
             } catch (DBException e) {
                 throw new InvocationTargetException(e);
+            } finally {
+                monitor.done();
             }
         }
     }

@@ -18,16 +18,15 @@
 
 package org.jkiss.dbeaver.debug.core.breakpoints;
 
-import static org.jkiss.dbeaver.debug.DBGConstants.BREAKPOINT_ATTRIBUTE_DATASOURCE_ID;
-import static org.jkiss.dbeaver.debug.DBGConstants.BREAKPOINT_ATTRIBUTE_NODE_PATH;
-import static org.jkiss.dbeaver.debug.DBGConstants.MODEL_IDENTIFIER_DATABASE;
-
 import java.util.Map;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.model.Breakpoint;
 import org.jkiss.dbeaver.debug.DBGBreakpointDescriptor;
+import org.jkiss.dbeaver.debug.DBGConstants;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -35,17 +34,22 @@ public class DatabaseBreakpoint extends Breakpoint implements IDatabaseBreakpoin
 
     @Override
     public String getModelIdentifier() {
-        return MODEL_IDENTIFIER_DATABASE;
+        return DBGConstants.MODEL_IDENTIFIER_DATABASE;
     }
 
     @Override
     public String getDatasourceId() throws CoreException {
-        return ensureMarker().getAttribute(BREAKPOINT_ATTRIBUTE_DATASOURCE_ID, null);
+        return ensureMarker().getAttribute(DBGConstants.BREAKPOINT_ATTRIBUTE_DATASOURCE_ID, null);
     }
 
     @Override
     public String getNodePath() throws CoreException {
-        return ensureMarker().getAttribute(BREAKPOINT_ATTRIBUTE_NODE_PATH, null);
+        return ensureMarker().getAttribute(DBGConstants.BREAKPOINT_ATTRIBUTE_NODE_PATH, null);
+    }
+
+    @Override
+    public String getObjectName() throws CoreException {
+        return ensureMarker().getAttribute(DBGConstants.BREAKPOINT_ATTRIBUTE_OBJECT_NAME, null);
     }
 
     protected void register(boolean register) throws CoreException {
@@ -60,8 +64,9 @@ public class DatabaseBreakpoint extends Breakpoint implements IDatabaseBreakpoin
     }
 
     protected void addDatabaseBreakpointAttributes(Map<String, Object> attributes, DBSObject databaseObject, DBNNode node, DBGBreakpointDescriptor breakpointDescriptor) {
-        attributes.put(BREAKPOINT_ATTRIBUTE_DATASOURCE_ID, databaseObject.getDataSource().getContainer().getId());
-        attributes.put(BREAKPOINT_ATTRIBUTE_NODE_PATH, node.getNodeItemPath());
+        attributes.put(DBGConstants.BREAKPOINT_ATTRIBUTE_DATASOURCE_ID, databaseObject.getDataSource().getContainer().getId());
+        attributes.put(DBGConstants.BREAKPOINT_ATTRIBUTE_NODE_PATH, node.getNodeItemPath());
+        attributes.put(DBGConstants.BREAKPOINT_ATTRIBUTE_OBJECT_NAME, DBUtils.getObjectFullName(databaseObject, DBPEvaluationContext.UI));
         attributes.putAll(breakpointDescriptor.toMap());
     }
 }

@@ -43,8 +43,8 @@ import java.util.Map;
 public class DatabaseDebugTarget extends DatabaseDebugElement implements IDatabaseDebugTarget, DBGEventHandler {
 
     private static final Log log = Log.getLog(DatabaseDebugTarget.class);
-    public static final int BREAKPOINT_ACTION_TIMEOUT = 5000;
-    public static final int SESSION_ACTION_TIMEOUT = 5000;
+    public static final int BREAKPOINT_ACTION_TIMEOUT = 20000;
+    public static final int SESSION_ACTION_TIMEOUT = 20000;
 
     private final String modelIdentifier;
 
