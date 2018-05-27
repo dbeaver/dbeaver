@@ -28,43 +28,18 @@ import java.util.Map;
  */
 public class PostgreDebugBreakpointDescriptor implements DBGBreakpointDescriptor {
 
-    private final Object oid;
     private final long lineNo;
     private final boolean onStart;
     private final long targetId;
     private final boolean all;
     private final boolean global;
 
-    public PostgreDebugBreakpointDescriptor(Object oid, long lineNo, long targetId, boolean global) {
-        this.oid = oid;
-        this.lineNo = lineNo;
-        this.onStart = lineNo < 0;
-        this.targetId = targetId;
-        this.all = targetId < 0;
-        this.global = global;
-    }
-
-    public PostgreDebugBreakpointDescriptor(Object oid, long lineNo, boolean global) {
-        this.oid = oid;
+    public PostgreDebugBreakpointDescriptor(long lineNo, boolean global) {
         this.lineNo = lineNo;
         this.onStart = lineNo < 0;
         this.targetId = -1;
         this.all = true;
         this.global = global;
-    }
-
-    public PostgreDebugBreakpointDescriptor(Object oid, boolean global) {
-        this.oid = oid;
-        this.lineNo = -1;
-        this.onStart = true;
-        this.targetId = -1;
-        this.all = true;
-        this.global = global;
-    }
-
-    @Override
-    public Object getObjectId() {
-        return oid;
     }
 
     public long getLineNo() {
@@ -96,11 +71,6 @@ public class PostgreDebugBreakpointDescriptor implements DBGBreakpointDescriptor
         map.put("all", all);
         map.put("global", global);
         return map;
-    }
-
-    @Override
-    public String toString() {
-        return "PostgreDebugBreakpointDescriptor [obj=" + oid + ", properties=" + toMap() + "]";
     }
 
 }
