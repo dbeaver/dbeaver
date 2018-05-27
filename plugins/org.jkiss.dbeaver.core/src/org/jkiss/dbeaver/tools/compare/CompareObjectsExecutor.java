@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.tools.compare;
 import org.eclipse.core.runtime.IStatus;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPSystemObject;
@@ -225,6 +226,7 @@ public class CompareObjectsExecutor {
                 break;
             }
         }
+        boolean compareScripts = compareLazyProperties && settings.isCompareScripts();
         compareLazyProperties = compareLazyProperties && settings.isCompareLazyProperties();
 
         // Load all properties
@@ -238,8 +240,24 @@ public class CompareObjectsExecutor {
                 nodeProperties = new IdentityHashMap<>();
                 propertyValues.put(databaseObject, nodeProperties);
             }
-            PropertyCollector propertySource = new PropertyCollector(databaseObject, compareLazyProperties);
+            PropertyCollector propertySource = new PropertyCollector(databaseObject, compareLazyProperties || compareScripts);
             for (ObjectPropertyDescriptor prop : properties) {
+                if (prop.isLazy()) {
+                    if (!compareLazyProperties) {
+                        if (compareScripts) {
+                            // Only DBPScriptObject methods
+                            if (!prop.getId().equals(DBConstants.PARAM_OBJECT_DEFINITION_TEXT) && !prop.getId().equals(DBConstants.PARAM_EXTENDED_DEFINITION_TEXT)) {
+                                continue;
+                            }
+                        } else {
+                            continue;
+                        }
+                    }
+                } else {
+                    if (prop.isHidden()) {
+                        continue;
+                    }
+                }
                 Object propertyValue = propertySource.getPropertyValue(monitor, databaseObject, prop);
                 synchronized (PROPS_LOCK) {
                     if (propertyValue instanceof DBPNamedObject) {

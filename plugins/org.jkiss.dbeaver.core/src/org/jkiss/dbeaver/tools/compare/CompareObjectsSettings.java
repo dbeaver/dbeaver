@@ -32,13 +32,11 @@ public class CompareObjectsSettings {
         FILE("Save to file");
         private final String title;
 
-        private OutputType(String title)
-        {
+        private OutputType(String title) {
             this.title = title;
         }
 
-        public String getTitle()
-        {
+        public String getTitle() {
             return title;
         }
     }
@@ -47,82 +45,76 @@ public class CompareObjectsSettings {
     private boolean skipSystemObjects = true;
     private boolean compareLazyProperties = false;
     private boolean compareOnlyStructure = false;
+    private boolean compareScripts = false;
     private boolean showOnlyDifferences = false;
     private OutputType outputType = OutputType.BROWSER;
     private String outputFolder = DialogUtils.getCurDialogFolder();
 
-    public CompareObjectsSettings(List<DBNDatabaseNode> nodes)
-    {
+    public CompareObjectsSettings(List<DBNDatabaseNode> nodes) {
         this.nodes = nodes;
     }
 
-    public List<DBNDatabaseNode> getNodes()
-    {
+    public List<DBNDatabaseNode> getNodes() {
         return nodes;
     }
 
-    public boolean isSkipSystemObjects()
-    {
+    public boolean isSkipSystemObjects() {
         return skipSystemObjects;
     }
 
-    public void setSkipSystemObjects(boolean skipSystemObjects)
-    {
+    public void setSkipSystemObjects(boolean skipSystemObjects) {
         this.skipSystemObjects = skipSystemObjects;
     }
 
-    public boolean isCompareLazyProperties()
-    {
+    public boolean isCompareLazyProperties() {
         return compareLazyProperties;
     }
 
-    public void setCompareLazyProperties(boolean compareLazyProperties)
-    {
+    public void setCompareLazyProperties(boolean compareLazyProperties) {
         this.compareLazyProperties = compareLazyProperties;
     }
 
-    public boolean isCompareOnlyStructure()
-    {
+    public boolean isCompareOnlyStructure() {
         return compareOnlyStructure;
     }
 
-    public void setCompareOnlyStructure(boolean compareOnlyStructure)
-    {
+    public void setCompareOnlyStructure(boolean compareOnlyStructure) {
         this.compareOnlyStructure = compareOnlyStructure;
     }
 
-    public boolean isShowOnlyDifferences()
-    {
+    public boolean isCompareScripts() {
+        return compareScripts;
+    }
+
+    public void setCompareScripts(boolean compareScripts) {
+        this.compareScripts = compareScripts;
+    }
+
+    public boolean isShowOnlyDifferences() {
         return showOnlyDifferences;
     }
 
-    public void setShowOnlyDifferences(boolean showOnlyDifferences)
-    {
+    public void setShowOnlyDifferences(boolean showOnlyDifferences) {
         this.showOnlyDifferences = showOnlyDifferences;
     }
 
-    public OutputType getOutputType()
-    {
+    public OutputType getOutputType() {
         return outputType;
     }
 
-    public void setOutputType(OutputType outputType)
-    {
+    public void setOutputType(OutputType outputType) {
         this.outputType = outputType;
     }
 
-    public String getOutputFolder()
-    {
+    public String getOutputFolder() {
         return outputFolder;
     }
 
-    public void setOutputFolder(String outputFolder)
-    {
+    public void setOutputFolder(String outputFolder) {
         this.outputFolder = outputFolder;
     }
 
-    void loadFrom(IDialogSettings dialogSettings)
-    {
+    void loadFrom(IDialogSettings dialogSettings) {
         if (dialogSettings.get("skipSystem") != null) {
             skipSystemObjects = dialogSettings.getBoolean("skipSystem");
         }
@@ -135,6 +127,9 @@ public class CompareObjectsSettings {
         if (dialogSettings.get("showDifference") != null) {
             showOnlyDifferences = dialogSettings.getBoolean("showDifference");
         }
+        if (dialogSettings.get("compareScripts") != null) {
+            compareScripts = dialogSettings.getBoolean("compareScripts");
+        }
         if (dialogSettings.get("outputType") != null) {
             outputType = OutputType.valueOf(dialogSettings.get("outputType"));
         }
@@ -143,11 +138,11 @@ public class CompareObjectsSettings {
         }
     }
 
-    void saveTo(IDialogSettings dialogSettings)
-    {
+    void saveTo(IDialogSettings dialogSettings) {
         dialogSettings.put("skipSystem", skipSystemObjects);
         dialogSettings.put("compareLazy", compareLazyProperties);
         dialogSettings.put("compareStructure", compareOnlyStructure);
+        dialogSettings.put("compareScripts", compareScripts);
         dialogSettings.put("showDifference", showOnlyDifferences);
         dialogSettings.put("outputType", outputType.name());
         dialogSettings.put("outputFolder", outputFolder);
