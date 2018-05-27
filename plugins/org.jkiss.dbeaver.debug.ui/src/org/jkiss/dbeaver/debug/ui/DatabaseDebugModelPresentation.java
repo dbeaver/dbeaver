@@ -31,7 +31,6 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
@@ -43,19 +42,13 @@ import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.jkiss.dbeaver.debug.core.model.DatabaseDebugTarget.SESSION_ACTION_TIMEOUT;
 
 public class DatabaseDebugModelPresentation extends LabelProvider implements IDebugModelPresentationExtension {
 
@@ -194,28 +187,4 @@ public class DatabaseDebugModelPresentation extends LabelProvider implements IDe
         return false;
     }
 
-    private static class NodeFinder implements DBRRunnableWithProgress {
-        private final String nodePath;
-        DBNNode node;
-
-        public NodeFinder(String nodePath) {
-            this.nodePath = nodePath;
-            node = null;
-        }
-
-        @Override
-        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-            monitor.beginTask("Resolve database object node", 1);
-            try {
-                monitor.beginTask("Search node in database navigator", 1);
-                RuntimeUtils.pause(100000);
-                node = DBeaverCore.getInstance().getNavigatorModel().getNodeByPath(monitor, nodePath);
-                monitor.worked(1);
-            } catch (DBException e) {
-                throw new InvocationTargetException(e);
-            } finally {
-                monitor.done();
-            }
-        }
-    }
 }
