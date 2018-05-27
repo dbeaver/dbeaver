@@ -81,6 +81,7 @@ public class PostgreDebugSession extends DBGJDBCSession {
 
     private final JDBCExecutionContext controllerConnection;
 
+    private int functionOid = -1;
     private int sessionId = -1;
     private int localPortNumber = -1;
 
@@ -442,8 +443,8 @@ public class PostgreDebugSession extends DBGJDBCSession {
         }
 
         log.debug("Attaching...");
-        
-        int functionOid = CommonUtils.toInt(configuration.get(PostgreDebugConstants.ATTR_FUNCTION_OID));
+
+        functionOid = CommonUtils.toInt(configuration.get(PostgreDebugConstants.ATTR_FUNCTION_OID));
         log.debug(String.format("Function OID %d", functionOid));
         
         String kind = String.valueOf(configuration.get(PostgreDebugConstants.ATTR_ATTACH_KIND));
@@ -523,7 +524,7 @@ public class PostgreDebugSession extends DBGJDBCSession {
         String sqlPattern = bp.isGlobal() ? SQL_SET_GLOBAL_BREAKPOINT : SQL_SET_BREAKPOINT;
 
         String sqlCommand = sqlPattern.replaceAll("\\?sessionid", String.valueOf(getSessionId()))
-                .replaceAll("\\?obj", String.valueOf(descriptor.getObjectId()))
+                .replaceAll("\\?obj", String.valueOf(functionOid))
                 .replaceAll("\\?line", bp.isOnStart() ? "-1" : String.valueOf(bp.getLineNo()))
                 .replaceAll("\\?target", bp.isAll() ? "null" : String.valueOf(bp.getTargetId()));
         return sqlCommand;
@@ -532,7 +533,7 @@ public class PostgreDebugSession extends DBGJDBCSession {
     protected String composeRemoveBreakpointCommand(DBGBreakpointDescriptor breakpointDescriptor) {
         PostgreDebugBreakpointDescriptor bp = (PostgreDebugBreakpointDescriptor) breakpointDescriptor;
         String sqlCommand = SQL_DROP_BREAKPOINT.replaceAll("\\?sessionid", String.valueOf(getSessionId()))
-                .replaceAll("\\?obj", String.valueOf(bp.getObjectId()))
+                .replaceAll("\\?obj", String.valueOf(functionOid))
                 .replaceAll("\\?line", bp.isOnStart() ? "-1" : String.valueOf(bp.getLineNo()));
         return sqlCommand;
     }
