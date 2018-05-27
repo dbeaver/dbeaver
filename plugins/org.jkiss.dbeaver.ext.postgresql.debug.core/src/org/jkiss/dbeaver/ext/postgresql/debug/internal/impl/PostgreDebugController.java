@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.debug.DBGBaseController;
 import org.jkiss.dbeaver.debug.DBGBreakpointDescriptor;
 import org.jkiss.dbeaver.debug.DBGException;
-import org.jkiss.dbeaver.ext.postgresql.debug.PostgreDebugConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
@@ -70,10 +69,9 @@ public class PostgreDebugController extends DBGBaseController {
 
     @Override
     public DBGBreakpointDescriptor describeBreakpoint(Map<String, Object> attributes) {
-        Object oid = attributes.get(PostgreDebugConstants.ATTR_FUNCTION_OID);
         Object lineNumber = attributes.get(IMarker.LINE_NUMBER);
         long parsed = Long.parseLong(String.valueOf(lineNumber));
-        return new PostgreDebugBreakpointDescriptor(oid, parsed, false);
+        return new PostgreDebugBreakpointDescriptor(parsed, false);
     }
 
 }
