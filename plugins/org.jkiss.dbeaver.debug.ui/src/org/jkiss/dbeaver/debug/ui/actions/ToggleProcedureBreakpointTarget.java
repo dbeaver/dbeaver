@@ -19,6 +19,7 @@
 package org.jkiss.dbeaver.debug.ui.actions;
 
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.Adapters;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.model.IBreakpoint;
@@ -31,14 +32,18 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.debug.DBGBreakpointDescriptor;
 import org.jkiss.dbeaver.debug.DBGConstants;
 import org.jkiss.dbeaver.debug.core.breakpoints.DatabaseLineBreakpoint;
 import org.jkiss.dbeaver.debug.core.breakpoints.IDatabaseBreakpoint;
 import org.jkiss.dbeaver.debug.ui.DebugUI;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.ide.core.DBeaverIDECore;
+import org.jkiss.dbeaver.utils.GeneralUtils;
 
 public class ToggleProcedureBreakpointTarget implements IToggleBreakpointsTargetExtension2 {
 
@@ -85,8 +90,17 @@ public class ToggleProcedureBreakpointTarget implements IToggleBreakpointsTarget
             }
         }
         int charstart = -1, charend = -1;
+
+        DBGBreakpointDescriptor breakpointDescriptor = Adapters.adapt(databaseObject, DBGBreakpointDescriptor.class);
+        if (breakpointDescriptor == null) {
+            throw new CoreException(GeneralUtils.makeErrorStatus(
+                "Object '" + DBUtils.getObjectFullName(databaseObject, DBPEvaluationContext.UI) + "' doesn't support breakpoints"));
+        }
+
         // create line breakpoint (doc line numbers start at 0)
-        new DatabaseLineBreakpoint(databaseObject, node, resource, lineNumber + 1, charstart, charend, true);
+        new DatabaseLineBreakpoint(
+            databaseObject, node, resource, breakpointDescriptor,
+            lineNumber + 1, charstart, charend, true);
     }
 
     protected IResource extractResource(IEditorPart part, ISelection selection) {

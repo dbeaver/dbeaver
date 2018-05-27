@@ -27,6 +27,7 @@ import java.util.Map;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.model.Breakpoint;
+import org.jkiss.dbeaver.debug.DBGBreakpointDescriptor;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
@@ -58,9 +59,9 @@ public class DatabaseBreakpoint extends Breakpoint implements IDatabaseBreakpoin
         }
     }
 
-    protected void addDatabaseBreakpointAttributes(Map<String, Object> attributes, DBSObject databaseObject, DBNNode node) {
+    protected void addDatabaseBreakpointAttributes(Map<String, Object> attributes, DBSObject databaseObject, DBNNode node, DBGBreakpointDescriptor breakpointDescriptor) {
         attributes.put(BREAKPOINT_ATTRIBUTE_DATASOURCE_ID, databaseObject.getDataSource().getContainer().getId());
-
         attributes.put(BREAKPOINT_ATTRIBUTE_NODE_PATH, node.getNodeItemPath());
+        attributes.putAll(breakpointDescriptor.toMap());
     }
 }
