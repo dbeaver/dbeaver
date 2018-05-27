@@ -109,8 +109,29 @@ class ResultSetPersister {
         this.viewer = viewer;
         this.model = viewer.getModel();
         this.columns = model.getAttributes();
+
+        collectChanges();
     }
 
+    public boolean hasInserts() {
+        return !addedRows.isEmpty();
+    }
+
+    public boolean hasDeletes() {
+        return !deletedRows.isEmpty();
+    }
+
+    public boolean hasUpdates() {
+        return !changedRows.isEmpty();
+    }
+
+    public List<DBDAttributeBinding> getUpdatedAttributes() {
+        Set<DBDAttributeBinding> attrs = new LinkedHashSet<>();
+        for (ResultSetRow row : changedRows) {
+            attrs.addAll(row.changes.keySet());
+        }
+        return new ArrayList<>(attrs);
+    }
     /**
      * Applies changes.
      * @throws org.jkiss.dbeaver.DBException
@@ -120,10 +141,12 @@ class ResultSetPersister {
     boolean applyChanges(@Nullable DBRProgressMonitor monitor, boolean generateScript, @Nullable DataUpdateListener listener)
         throws DBException
     {
-        collectChanges();
-
-        prepareDeleteStatements();
-        prepareInsertStatements();
+        if (hasDeletes()) {
+            prepareDeleteStatements();
+        }
+        if (hasInserts()) {
+            prepareInsertStatements();
+        }
         prepareUpdateStatements();
         return execute(monitor, generateScript, listener);
     }

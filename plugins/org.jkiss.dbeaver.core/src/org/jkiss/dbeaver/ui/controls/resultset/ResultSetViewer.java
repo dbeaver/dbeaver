@@ -2822,9 +2822,9 @@ public class ResultSetViewer extends Viewer
     private ResultSetPersister createDataPersister(boolean skipKeySearch)
         throws DBException
     {
-        if (!skipKeySearch && !model.isSingleSource()) {
-            throw new DBException("Can't save data for result set from multiple sources");
-        }
+//        if (!skipKeySearch && !model.isSingleSource()) {
+//            throw new DBException("Can't save data for result set from multiple sources");
+//        }
         boolean needPK = false;
         if (!skipKeySearch) {
             for (ResultSetRow row : model.getAllRows()) {
@@ -2834,13 +2834,12 @@ public class ResultSetViewer extends Viewer
                 }
             }
         }
+        ResultSetPersister persister = new ResultSetPersister(this);
         if (needPK) {
             // If we have deleted or updated rows then check for unique identifier
-            if (!checkEntityIdentifier()) {
-                throw new DBException("No unique identifier defined");
-            }
+            checkEntityIdentifiers(persister);
         }
-        return new ResultSetPersister(this);
+        return persister;
     }
 
     @NotNull
@@ -3006,51 +3005,57 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    private boolean checkEntityIdentifier() throws DBException
+    private void checkEntityIdentifiers(ResultSetPersister persister) throws DBException
     {
-        DBSEntity entity = model.getSingleSource();
-        if (entity == null) {
-            DBUserInterface.getInstance().showError(
-                    "Unrecognized entity",
-                "Can't detect source entity");
-            return false;
-        }
+
         final DBCExecutionContext executionContext = getExecutionContext();
         if (executionContext == null) {
-            return false;
+            throw new DBCException("Can't persist data - not connected to database");
         }
-        // Check for value locators
-        // Probably we have only virtual one with empty attribute set
-        final DBDRowIdentifier identifier = getVirtualEntityIdentifier();
-        if (identifier != null) {
-            if (CommonUtils.isEmpty(identifier.getAttributes())) {
-                // Empty identifier. We have to define it
-                return new UIConfirmation() {
-                    @Override
-                    public Boolean runTask() {
-                        return ValidateUniqueKeyUsageDialog.validateUniqueKey(ResultSetViewer.this, executionContext);
-                    }
-                }.confirm();
+
+        boolean needsSingleEntity = persister.hasInserts() || persister.hasDeletes();
+
+        DBSEntity entity = model.getSingleSource();
+        if (needsSingleEntity) {
+            if (entity == null) {
+                throw new DBCException("Can't detect source entity");
             }
         }
-        {
+
+        if (entity != null) {
+            // Check for value locators
+            // Probably we have only virtual one with empty attribute set
+            final DBDRowIdentifier identifier = getVirtualEntityIdentifier();
+            if (identifier != null) {
+                if (CommonUtils.isEmpty(identifier.getAttributes())) {
+                    // Empty identifier. We have to define it
+                    if (!new UIConfirmation() {
+                        @Override
+                        public Boolean runTask() {
+                            return ValidateUniqueKeyUsageDialog.validateUniqueKey(ResultSetViewer.this, executionContext);
+                        }
+                    }.confirm())
+                    {
+                        throw new DBCException("No unique key defined");
+                    }
+                }
+            }
+        }
+
+        List<DBDAttributeBinding> updatedAttributes = persister.getUpdatedAttributes();
+        for (DBDAttributeBinding attr : updatedAttributes) {
             // Check attributes of non-virtual identifier
-            DBDRowIdentifier rowIdentifier = model.getVisibleAttribute(0).getRowIdentifier();
+            DBDRowIdentifier rowIdentifier = attr.getRowIdentifier();
             if (rowIdentifier == null) {
                 // We shouldn't be here ever!
                 // Virtual id should be created if we missing natural one
-                DBUserInterface.getInstance().showError(
-                        "No entity identifier",
-                    "Entity " + entity.getName() + " has no unique key");
-                return false;
+                throw new DBCException("Attribute " + attr.getName() + " was changed but it hasn't associated unique key");
             } else if (CommonUtils.isEmpty(rowIdentifier.getAttributes())) {
-                DBUserInterface.getInstance().showError(
-                        "No entity identifier",
-                    "Attributes of '" + DBUtils.getObjectFullName(rowIdentifier.getUniqueKey(), DBPEvaluationContext.UI) + "' are missing in result set");
-                return false;
+                throw new DBCException(
+                    "Can't change attribute '" + attr.getName() +
+                        "' - attributes of key '" + DBUtils.getObjectFullName(rowIdentifier.getUniqueKey(), DBPEvaluationContext.UI) + "' are missing in result set");
             }
         }
-        return true;
     }
 
     boolean editEntityIdentifier(DBRProgressMonitor monitor) throws DBException
