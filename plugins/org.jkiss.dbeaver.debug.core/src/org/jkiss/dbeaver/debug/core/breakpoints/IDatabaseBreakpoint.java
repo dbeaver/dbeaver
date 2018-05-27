@@ -27,4 +27,6 @@ public interface IDatabaseBreakpoint extends IBreakpoint {
 
     String getNodePath() throws CoreException;
 
+    String getObjectName() throws CoreException;
+
 }
