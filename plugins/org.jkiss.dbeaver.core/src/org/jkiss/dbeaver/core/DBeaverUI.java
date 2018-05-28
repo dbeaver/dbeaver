@@ -242,7 +242,7 @@ public class DBeaverUI implements DBPPlatformUI {
      */
     public static void runInProgressService(final DBRRunnableWithProgress runnable)
         throws InvocationTargetException, InterruptedException {
-        getDefaultRunnableContext().run(true, true, runnable::run);
+        getDefaultRunnableContext().run(true, true, runnable);
     }
 
     /**
