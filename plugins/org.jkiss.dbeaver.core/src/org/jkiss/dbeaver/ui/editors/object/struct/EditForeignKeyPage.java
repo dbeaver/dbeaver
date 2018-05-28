@@ -30,7 +30,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBValueFormatting;
@@ -337,7 +336,7 @@ public class EditForeignKeyPage extends BaseObjectEditPage {
             curConstraint = null;
             if (refTableNode != null) {
                 final DBSTable refTable = (DBSTable) refTableNode.getObject();
-                DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
+                UIUtils.runInProgressService(new DBRRunnableWithProgress() {
                     @Override
                     public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                     {

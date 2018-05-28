@@ -23,7 +23,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeTransformerDescriptor;
@@ -102,7 +101,7 @@ class TransformerSettingsDialog extends BaseDialog {
         propertiesEditor.getControl().setFocus();
 
         if (CommonUtils.isEmpty(properties)) {
-            DBeaverUI.asyncExec(this::okPressed);
+            UIUtils.asyncExec(this::okPressed);
         }
 
         return parent;

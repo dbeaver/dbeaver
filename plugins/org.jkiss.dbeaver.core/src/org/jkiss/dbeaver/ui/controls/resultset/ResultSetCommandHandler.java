@@ -45,7 +45,6 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -230,7 +229,7 @@ public class ResultSetCommandHandler extends AbstractHandler {
                 try {
                     final List<DBEPersistAction> sqlScript = new ArrayList<>();
                     try {
-                        DBeaverUI.runInProgressService(monitor -> {
+                        UIUtils.runInProgressService(monitor -> {
                             List<DBEPersistAction> script = rsv.generateChangesScript(monitor);
                             if (script != null) {
                                 sqlScript.addAll(script);

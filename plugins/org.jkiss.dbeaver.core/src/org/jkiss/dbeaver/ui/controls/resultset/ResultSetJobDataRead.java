@@ -25,7 +25,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.progress.UIJob;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -35,6 +34,7 @@ import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.ILoadService;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
 
 import java.lang.reflect.InvocationTargetException;
@@ -135,7 +135,7 @@ class ResultSetJobDataRead extends ResultSetJobAbstract implements ILoadService<
         private ProgressLoaderVisualizer<Object> visualizer;
 
         PumpVisualizer(ProgressLoaderVisualizer<Object> visualizer) {
-            super(DBeaverUI.getDisplay(), "RSV Pump Visualizer");
+            super(UIUtils.getDisplay(), "RSV Pump Visualizer");
             setSystem(true);
             this.visualizer = visualizer;
         }

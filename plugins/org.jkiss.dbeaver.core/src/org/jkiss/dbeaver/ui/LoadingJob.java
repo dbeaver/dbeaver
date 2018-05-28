@@ -20,7 +20,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
@@ -94,7 +93,7 @@ public class LoadingJob<RESULT>  extends AbstractJob {
         }
         finally {
             loadFinished = true;
-            DBeaverUI.asyncExec(new LoadFinisher(result, error));
+            UIUtils.asyncExec(new LoadFinisher(result, error));
         }
         return Status.OK_STATUS;
     }

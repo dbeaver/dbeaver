@@ -31,7 +31,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreRole;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
@@ -95,7 +94,7 @@ public class PostgreCreateSchemaDialog extends BaseDialog
                     final PostgreRole dba = database.getDBA(monitor);
                     final String defUserName = dba == null ? "" : dba.getName(); //$NON-NLS-1$
 
-                    DBeaverUI.syncExec(new Runnable() {
+                    UIUtils.syncExec(new Runnable() {
                         @Override
                         public void run() {
                             for (PostgreRole authId : allUsers) {

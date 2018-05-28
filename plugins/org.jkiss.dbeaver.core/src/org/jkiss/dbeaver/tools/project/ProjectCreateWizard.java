@@ -29,10 +29,10 @@ import org.eclipse.ui.wizards.newresource.BasicNewProjectResourceWizard;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverNature;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.preferences.PrefPageProjectSettings;
 import org.jkiss.dbeaver.ui.preferences.WizardPrefPage;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -75,7 +75,7 @@ public class ProjectCreateWizard extends BasicNewProjectResourceWizard implement
 	public boolean performFinish() {
         if (super.performFinish()) {
             try {
-                DBeaverUI.run(getContainer(), true, true, new DBRRunnableWithProgress() {
+                UIUtils.run(getContainer(), true, true, new DBRRunnableWithProgress() {
                     @Override
                     public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                         try {

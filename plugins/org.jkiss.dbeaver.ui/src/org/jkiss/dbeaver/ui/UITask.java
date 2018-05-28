@@ -16,7 +16,6 @@
  */
 package org.jkiss.dbeaver.ui;
 
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.runtime.RunnableWithResult;
 
 public abstract class UITask<RESULT> extends RunnableWithResult<RESULT> {
@@ -29,6 +28,6 @@ public abstract class UITask<RESULT> extends RunnableWithResult<RESULT> {
     protected abstract RESULT runTask();
 
     public RESULT execute() {
-        return DBeaverUI.syncExec(this);
+        return UIUtils.syncExec(this);
     }
 }

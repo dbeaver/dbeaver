@@ -23,19 +23,19 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
 import org.jkiss.utils.CommonUtils;
@@ -99,7 +99,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
 
         getShell().setText(CoreMessages.dialog_driver_manager_title);
         getShell().setMinimumSize(300, 300);
-        dialogImage = DBeaverActivator.getImageDescriptor("/icons/driver_manager.png").createImage(); //$NON-NLS-1$
+        dialogImage = DBeaverIcons.getImage(UIIcon.DRIVER_MANAGER);
         getShell().setImage(dialogImage);
 
         Composite group = UIUtils.createPlaceholder((Composite) super.createDialogArea(parent), 2);

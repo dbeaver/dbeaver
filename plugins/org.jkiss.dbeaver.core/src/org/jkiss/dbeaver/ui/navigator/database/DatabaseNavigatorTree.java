@@ -40,7 +40,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
@@ -264,7 +263,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                         }
                     }
                 };
-                DBeaverUI.runInProgressService(runnable);
+                UIUtils.runInProgressService(runnable);
                 if (runnable.getResult() != null) {
                     showNode(runnable.getResult());
                     treeViewer.expandToLevel(runnable.getResult(), 1);
@@ -378,7 +377,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
             }
 
             if (!(newSelection.getData() instanceof DBNNode) ||
-                !(ActionUtils.isCommandEnabled(IWorkbenchCommandConstants.FILE_RENAME, DBeaverUI.getActiveWorkbenchWindow().getActivePage().getActivePart().getSite()))) {
+                !(ActionUtils.isCommandEnabled(IWorkbenchCommandConstants.FILE_RENAME, UIUtils.getActiveWorkbenchWindow().getActivePage().getActivePart().getSite()))) {
                 curSelection = null;
                 return;
             }
@@ -407,7 +406,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                 try {
                     if (!treeViewer.getTree().isDisposed() && treeViewer.getTree().isFocusControl() && curSelection == selection && !canceled) {
                         final TreeItem itemToRename = selection;
-                        DBeaverUI.asyncExec(() -> renameItem(itemToRename));
+                        UIUtils.asyncExec(() -> renameItem(itemToRename));
                     }
                 } finally {
                     canceled = false;
@@ -449,7 +448,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                     disposeOldEditor();
                     treeViewer.getTree().setFocus();
                     if (!CommonUtils.isEmpty(newName) && !newName.equals(node.getNodeName())) {
-                        NavigatorHandlerObjectRename.renameNode(DBeaverUI.getActiveWorkbenchWindow(), node, newName);
+                        NavigatorHandlerObjectRename.renameNode(UIUtils.getActiveWorkbenchWindow(), node, newName);
                     }
                 } else if (e.keyCode == SWT.ESC) {
                     disposeOldEditor();
@@ -508,7 +507,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
             setInitialText("Type part of object name to filter");
             ((GridLayout)getLayout()).verticalSpacing = 0;
 
-            UIUtils.addDefaultEditActionsSupport(DBeaverUI.getActiveWorkbenchWindow(), getFilterControl());
+            UIUtils.addDefaultEditActionsSupport(UIUtils.getActiveWorkbenchWindow(), getFilterControl());
         }
 
         @Override

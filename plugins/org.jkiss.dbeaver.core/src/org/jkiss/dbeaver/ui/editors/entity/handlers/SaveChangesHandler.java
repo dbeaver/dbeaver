@@ -27,9 +27,9 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -48,7 +48,7 @@ public class SaveChangesHandler extends AbstractHandler
             return true;
         }
         SaveRunner saveRunner = new SaveRunner(monitor, saveable);
-        DBeaverUI.syncExec(saveRunner);
+        UIUtils.syncExec(saveRunner);
         return saveRunner.getResult();
     }
 
@@ -58,7 +58,7 @@ public class SaveChangesHandler extends AbstractHandler
         final EntityEditor editor = RuntimeUtils.getObjectAdapter(HandlerUtil.getActiveEditor(event), EntityEditor.class);
         if (editor != null) {
             try {
-                DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
+                UIUtils.runInProgressService(new DBRRunnableWithProgress() {
                     @Override
                     public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                     {
@@ -108,7 +108,7 @@ public class SaveChangesHandler extends AbstractHandler
                     shell = ((IWorkbenchPart) saveable).getSite().getShell();
                     saveableName = ((IWorkbenchPart) saveable).getTitle();
                 } else {
-                    shell = DBeaverUI.getActiveWorkbenchShell();
+                    shell = UIUtils.getActiveWorkbenchShell();
                     saveableName = CommonUtils.toString(saveable);
                 }
                 int confirmResult = ConfirmationDialog.showConfirmDialog(

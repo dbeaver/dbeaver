@@ -30,7 +30,6 @@ import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
@@ -76,7 +75,7 @@ public class ScriptsImportWizard extends Wizard implements IImportWizard {
         final ScriptsImportData importData = pageMain.getImportData();
         final ScriptsImporter importer = new ScriptsImporter(importData);
         try {
-            DBeaverUI.run(getContainer(), true, true, importer);
+            UIUtils.run(getContainer(), true, true, importer);
         }
         catch (InterruptedException ex) {
             return false;
