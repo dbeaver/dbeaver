@@ -25,7 +25,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -151,7 +151,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         }
 
         // Update default bg color in async mode to let Eclipse set appropriate styles
-        DBeaverUI.asyncExec(() -> {
+        UIUtils.asyncExec(() -> {
             if (isDisposed()) {
                 return;
             }
@@ -570,7 +570,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
                 this.popup = null;
                 this.dropDownControl = null;
                 disposeTime = System.currentTimeMillis();
-                DBeaverUI.asyncExec(toDispose::dispose);
+                UIUtils.asyncExec(toDispose::dispose);
             }
             return;
         }

@@ -28,8 +28,8 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ui.ImageUtils;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
 /**
@@ -121,7 +121,7 @@ public class CustomCheckboxCellEditor extends CellEditor {
         setCheckIcon();
         applyEditorValue();
         // Run in async to avoid NPE. fireApplyEditorValue disposes and nullifies editor
-        DBeaverUI.asyncExec(this::fireApplyEditorValue);
+        UIUtils.asyncExec(this::fireApplyEditorValue);
     }
 
     private void addMouseListener() {

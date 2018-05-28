@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
@@ -98,10 +97,10 @@ public class TrayIconHandler {
     }
 
     private void showMainWindow() {
-        DBeaverUI.asyncExec(new Runnable() {
+        UIUtils.asyncExec(new Runnable() {
             @Override
             public void run() {
-                Shell activeShell = DBeaverUI.getActiveWorkbenchShell();
+                Shell activeShell = UIUtils.getActiveWorkbenchShell();
                 if (activeShell != null){
                     if (activeShell.getMinimized()) {
                         activeShell.setMinimized(false);

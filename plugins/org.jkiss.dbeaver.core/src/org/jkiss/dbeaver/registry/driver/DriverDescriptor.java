@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
@@ -39,6 +38,7 @@ import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.registry.*;
 import org.jkiss.dbeaver.registry.maven.MavenArtifactReference;
 import org.jkiss.dbeaver.ui.UITask;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.AcceptLicenseDialog;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverDownloadDialog;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -1038,7 +1038,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             // TODO: implement new version check
             if (false) {
                 try {
-                    DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
+                    UIUtils.runInProgressService(new DBRRunnableWithProgress() {
                         @Override
                         public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                             try {
@@ -1135,7 +1135,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         }
 
         LicenceAcceptor licenceAcceptor = new LicenceAcceptor(licenseText);
-        DBeaverUI.syncExec(licenceAcceptor);
+        UIUtils.syncExec(licenceAcceptor);
         if (licenceAcceptor.result) {
             // Save in registry
             prefs.setValue(LICENSE_ACCEPT_KEY + getId(), true + ":" + System.currentTimeMillis() + ":" + System.getProperty(StandardConstants.ENV_USER_NAME));
@@ -1628,7 +1628,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         public void run()
         {
             result =  AcceptLicenseDialog.acceptLicense(
-                DBeaverUI.getActiveWorkbenchShell(),
+                UIUtils.getActiveWorkbenchShell(),
                 "You have to accept license of '" + getFullName() + " ' to continue",
                 licenseText);
         }

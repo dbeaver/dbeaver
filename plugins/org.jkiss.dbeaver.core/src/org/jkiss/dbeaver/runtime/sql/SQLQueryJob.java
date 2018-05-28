@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -855,7 +854,7 @@ public class SQLQueryJob extends DataSourceJob
             @Override
             protected Integer runTask() {
                 MessageDialogWithToggle dialog = new MessageDialogWithToggle(
-                        DBeaverUI.getActiveWorkbenchShell(),
+                        UIUtils.getActiveWorkbenchShell(),
                         "Confirm query execution",
                         null,
                         "You are in '" + connectionType.getName() + "' connection.\nDo you confirm query execution?",

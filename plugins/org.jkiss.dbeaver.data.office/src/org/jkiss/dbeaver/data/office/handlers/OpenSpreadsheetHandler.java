@@ -96,7 +96,7 @@ public class OpenSpreadsheetHandler extends AbstractHandler
 
                     consumer.finishTransfer(monitor, false);
 
-                    DBeaverUI.asyncExec(() -> {
+                    UIUtils.asyncExec(() -> {
                         if (!UIUtils.launchProgram(tempFile.getAbsolutePath())) {
                             DBeaverUI.getInstance().showError("Open XLSX", "Can't open XLSX file '" + tempFile.getAbsolutePath() + "'");
                         }

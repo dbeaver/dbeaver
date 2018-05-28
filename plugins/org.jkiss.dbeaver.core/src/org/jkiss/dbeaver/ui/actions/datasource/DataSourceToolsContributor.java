@@ -23,13 +23,13 @@ import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.tools.ToolDescriptor;
 import org.jkiss.dbeaver.registry.tools.ToolGroupDescriptor;
 import org.jkiss.dbeaver.registry.tools.ToolsRegistry;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.common.EmptyListAction;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorActionExecuteTool;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -46,7 +46,7 @@ public class DataSourceToolsContributor extends DataSourceMenuContributor
     @Override
     protected void fillContributionItems(List<IContributionItem> menuItems)
     {
-        IWorkbenchPart activePart = DBeaverUI.getActiveWorkbenchWindow().getActivePage().getActivePart();
+        IWorkbenchPart activePart = UIUtils.getActiveWorkbenchWindow().getActivePage().getActivePart();
         if (activePart == null) {
             return;
         }
@@ -69,7 +69,7 @@ public class DataSourceToolsContributor extends DataSourceMenuContributor
     {
         boolean hasTools = false;
         if (!CommonUtils.isEmpty(tools)) {
-            IWorkbenchWindow workbenchWindow = DBeaverUI.getActiveWorkbenchWindow();
+            IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
             if (workbenchWindow.getActivePage() != null) {
                 IWorkbenchPart activePart = workbenchWindow.getActivePage().getActivePart();
                 if (activePart != null) {

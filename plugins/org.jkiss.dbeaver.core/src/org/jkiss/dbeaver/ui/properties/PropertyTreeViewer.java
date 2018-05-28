@@ -37,7 +37,6 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.views.properties.IPropertySource2;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
@@ -166,7 +165,7 @@ public class PropertyTreeViewer extends TreeViewer {
                 if (cellValue instanceof DBSObject) {
                     DBNDatabaseNode node = NavigatorHandlerObjectOpen.getNodeByObject((DBSObject) cellValue);
                     if (node != null) {
-                        NavigatorHandlerObjectOpen.openEntityEditor(node, null, DBeaverUI.getActiveWorkbenchWindow());
+                        NavigatorHandlerObjectOpen.openEntityEditor(node, null, UIUtils.getActiveWorkbenchWindow());
                     }
                 }
             }
@@ -209,7 +208,7 @@ public class PropertyTreeViewer extends TreeViewer {
     }
 
     public void repackColumns() {
-        DBeaverUI.asyncExec(new Runnable() {
+        UIUtils.asyncExec(new Runnable() {
             @Override
             public void run() {
                 Tree tree = getTree();
@@ -410,7 +409,7 @@ public class PropertyTreeViewer extends TreeViewer {
             if (prop.property == null || !prop.isEditable()) {
                 return;
             }
-            final CellEditor cellEditor = UIUtils.createPropertyEditor(DBeaverUI.getActiveWorkbenchWindow(), treeControl, prop.propertySource, prop.property, SWT.LEFT);
+            final CellEditor cellEditor = UIUtils.createPropertyEditor(UIUtils.getActiveWorkbenchWindow(), treeControl, prop.propertySource, prop.property, SWT.LEFT);
             if (cellEditor == null) {
                 return;
             }

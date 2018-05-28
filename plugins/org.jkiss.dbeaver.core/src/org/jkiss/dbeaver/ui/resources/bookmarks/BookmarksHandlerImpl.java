@@ -26,12 +26,12 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.resources.AbstractResourceHandler;
@@ -122,7 +122,7 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
             }
             dsNode.initializeNode(null, status -> {
                 if (status.isOK()) {
-                    DBeaverUI.syncExec(() -> openNodeByPath(dsNode, (IFile) resource, storage));
+                    UIUtils.syncExec(() -> openNodeByPath(dsNode, (IFile) resource, storage));
                 } else {
                     DBUserInterface.getInstance().showError(
                         "Open bookmark",
@@ -140,10 +140,10 @@ public class BookmarksHandlerImpl extends AbstractResourceHandler {
     {
         try {
             BookmarkNodeLoader nodeLoader = new BookmarkNodeLoader(dsNode, storage, file);
-            DBeaverUI.runInProgressService(nodeLoader);
+            UIUtils.runInProgressService(nodeLoader);
             if (nodeLoader.databaseNode != null) {
-                DBeaverUI.syncExec(() -> NavigatorHandlerObjectOpen.openEntityEditor(
-                    nodeLoader.databaseNode, null, DBeaverUI.getActiveWorkbenchWindow()));
+                UIUtils.syncExec(() -> NavigatorHandlerObjectOpen.openEntityEditor(
+                    nodeLoader.databaseNode, null, UIUtils.getActiveWorkbenchWindow()));
             }
         } catch (InvocationTargetException e) {
             DBUserInterface.getInstance().showError(

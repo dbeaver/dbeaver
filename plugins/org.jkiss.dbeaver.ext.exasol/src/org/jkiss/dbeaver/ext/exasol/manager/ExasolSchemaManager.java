@@ -23,7 +23,6 @@ import java.util.Map;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.exasol.ExasolMessages;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolSchema;
@@ -40,6 +39,7 @@ import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UITask;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 
 
@@ -72,7 +72,7 @@ public class ExasolSchemaManager
             @Override
             protected ExasolSchema runTask()
             {
-                ExasolCreateSchemaDialog dialog = new ExasolCreateSchemaDialog(DBeaverUI.getActiveWorkbenchShell(), parent);
+                ExasolCreateSchemaDialog dialog = new ExasolCreateSchemaDialog(UIUtils.getActiveWorkbenchShell(), parent);
                 if (dialog.open() != IDialogConstants.OK_ID) {
                     return null;
                 }
@@ -114,7 +114,7 @@ public class ExasolSchemaManager
         int result = new UITask<Integer>() {
             protected Integer runTask() {
                 ConfirmationDialog dialog = new ConfirmationDialog(
-                        DBeaverUI.getActiveWorkbenchShell(),
+                        UIUtils.getActiveWorkbenchShell(),
                         ExasolMessages.dialog_schema_drop_title,
                         null,
                         ExasolMessages.dialog_schema_drop_message,

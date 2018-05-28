@@ -23,7 +23,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.db2.*;
 import org.jkiss.dbeaver.ext.db2.editors.DB2StructureAssistant;
 import org.jkiss.dbeaver.ext.db2.editors.DB2TablespaceChooser;
@@ -520,7 +519,7 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
                 @Override
                 protected String runTask() {
                     final DB2TablespaceChooser tsChooserDialog = new DB2TablespaceChooser(
-                        DBeaverUI.getActiveWorkbenchShell(),
+                        UIUtils.getActiveWorkbenchShell(),
                         listTablespaces);
                     if (tsChooserDialog.open() == IDialogConstants.OK_ID) {
                         return tsChooserDialog.getSelectedTablespace();

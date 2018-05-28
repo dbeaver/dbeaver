@@ -23,5 +23,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.mylyn.commons.notifications.ui,
  org.eclipse.mylyn.commons.workbench,
  org.jkiss.dbeaver.model
-Export-Package: org.jkiss.dbeaver.ui,
+Export-Package: org.jkiss.dbeaver.runtime,
+ org.jkiss.dbeaver.ui,
+ org.jkiss.dbeaver.ui.controls,
  org.jkiss.dbeaver.ui.notifications

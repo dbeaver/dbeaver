@@ -29,7 +29,6 @@ import org.eclipse.swt.widgets.TreeItem;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.exasol.ExasolMessages;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTableBase;
 import org.jkiss.dbeaver.model.DBPDataKind;
@@ -191,7 +190,7 @@ public abstract class ExasolBaseTableToolDialog
             protected IStatus run(final DBRProgressMonitor monitor)
             {
                 final DataSourceJob curJob = this;
-                DBeaverUI.asyncExec(new Runnable() {
+                UIUtils.asyncExec(new Runnable() {
                     @Override
                     public void run() {
                         scriptListener.beginScriptProcessing(curJob, objects);
@@ -207,7 +206,7 @@ public abstract class ExasolBaseTableToolDialog
                         final ExasolTableBase object = objects.get(i);
                         monitor.subTask("Process " + DBUtils.getObjectFullName(object, DBPEvaluationContext.UI));
                         objectProcessingError = null;
-                        DBeaverUI.asyncExec(new Runnable() {
+                        UIUtils.asyncExec(new Runnable() {
                             @Override
                             public void run() {
                                 scriptListener.beginObjectProcessing(object, objectNumber);
@@ -226,7 +225,7 @@ public abstract class ExasolBaseTableToolDialog
                                 	resultSet.addRow((Object[]) resultSetData );
                                 	
                                     // Run in sync because we need result set
-                                    DBeaverUI.syncExec(new Runnable() {
+                                    UIUtils.syncExec(new Runnable() {
                                         @Override
                                         public void run() {
                                                 try {
@@ -244,7 +243,7 @@ public abstract class ExasolBaseTableToolDialog
                         } catch (Exception e) {
                             objectProcessingError = e;
                         } finally {
-                            DBeaverUI.asyncExec(new Runnable() {
+                            UIUtils.asyncExec(new Runnable() {
                                 @Override
                                 public void run() {
                                     scriptListener.endObjectProcessing(object, objectProcessingError);
@@ -255,7 +254,7 @@ public abstract class ExasolBaseTableToolDialog
                     }
                 } finally {
                     monitor.done();
-                    DBeaverUI.asyncExec(new Runnable() {
+                    UIUtils.asyncExec(new Runnable() {
                         @Override
                         public void run() {
                             scriptListener.endScriptProcessing();

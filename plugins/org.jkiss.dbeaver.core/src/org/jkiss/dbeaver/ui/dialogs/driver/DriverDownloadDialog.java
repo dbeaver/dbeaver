@@ -26,7 +26,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.registry.driver.DriverDependencies;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -46,11 +45,11 @@ public class DriverDownloadDialog extends WizardDialog
     DriverDownloadDialog(Shell shell, DriverDescriptor driver, DriverDependencies dependencies, boolean updateVersion, boolean forceDownload)
     {
         super(shell, new DriverDownloadWizard(driver, dependencies, updateVersion, forceDownload));
-        getWizard().init(DBeaverUI.getActiveWorkbenchWindow().getWorkbench(), null);
+        getWizard().init(UIUtils.getActiveWorkbenchWindow().getWorkbench(), null);
         addPageChangedListener(new IPageChangedListener() {
             @Override
             public void pageChanged(final PageChangedEvent event) {
-                DBeaverUI.asyncExec(new Runnable() {
+                UIUtils.asyncExec(new Runnable() {
                     @Override
                     public void run() {
                         getWizard().pageActivated(event.getSelectedPage());
@@ -79,7 +78,7 @@ public class DriverDownloadDialog extends WizardDialog
     protected Control createDialogArea(Composite parent) {
         Control dialogArea = super.createDialogArea(parent);
         if (getWizard().isForceDownload()) {
-            DBeaverUI.asyncExec(new Runnable() {
+            UIUtils.asyncExec(new Runnable() {
                 @Override
                 public void run() {
                     buttonPressed(IDialogConstants.FINISH_ID);
@@ -133,7 +132,7 @@ public class DriverDownloadDialog extends WizardDialog
     }
 
     void closeWizard() {
-        DBeaverUI.asyncExec(new Runnable() {
+        UIUtils.asyncExec(new Runnable() {
             @Override
             public void run() {
                 buttonPressed(IDialogConstants.CANCEL_ID);

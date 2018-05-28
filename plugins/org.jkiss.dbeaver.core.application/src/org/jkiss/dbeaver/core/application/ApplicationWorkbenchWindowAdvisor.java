@@ -40,11 +40,11 @@ import org.eclipse.ui.part.MarkerTransfer;
 import org.eclipse.ui.part.ResourceTransfer;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.app.DBPProjectListener;
 import org.jkiss.dbeaver.registry.ProjectRegistry;
 import org.jkiss.dbeaver.registry.WorkbenchHandlerRegistry;
 import org.jkiss.dbeaver.ui.IWorkbenchWindowInitializer;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.perspective.AbstractPageListener;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
@@ -233,7 +233,7 @@ public class ApplicationWorkbenchWindowAdvisor extends WorkbenchWindowAdvisor im
 
         if (isRunWorkbenchInitializers()) {
             // Open New Connection wizard
-            DBeaverUI.asyncExec(new Runnable() {
+            UIUtils.asyncExec(new Runnable() {
                 @Override
                 public void run() {
                     for (IWorkbenchWindowInitializer wwInit : WorkbenchHandlerRegistry.getInstance().getWorkbenchWindowInitializers()) {

@@ -23,7 +23,6 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
@@ -180,7 +179,7 @@ class DriverDependenciesTree {
         Point curSize = shell.getSize();
         int itemHeight = filesTree.getItemHeight();
         shell.setSize(curSize.x, Math.min(
-            (int)(DBeaverUI.getActiveWorkbenchWindow().getShell().getSize().y * 0.66),
+            (int)(UIUtils.getActiveWorkbenchWindow().getShell().getSize().y * 0.66),
             shell.computeSize(SWT.DEFAULT, SWT.DEFAULT).y) + itemHeight * 2);
         shell.layout();
     }

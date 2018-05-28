@@ -27,7 +27,6 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.erd.model.DiagramLoader;
 import org.jkiss.dbeaver.ext.erd.model.ERDObject;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
@@ -40,6 +39,7 @@ import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.LoadingJob;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
@@ -212,7 +212,7 @@ public class ERDEditorStandalone extends ERDEditorPart implements DBPContextProv
         }
         if (delta.getKind() == IResourceDelta.REMOVED) {
             // Refresh editor
-            DBeaverUI.asyncExec(new Runnable() {
+            UIUtils.asyncExec(new Runnable() {
                 @Override
                 public void run() {
                     getSite().getWorkbenchWindow().getActivePage().closeEditor(ERDEditorStandalone.this, false);

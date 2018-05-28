@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.*;
@@ -27,12 +26,10 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.eclipse.ui.dialogs.FilteredTree;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -189,7 +186,7 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
                 okPressed();
             }
         });
-        DBeaverUI.asyncExec(() -> {
+        UIUtils.asyncExec(() -> {
             treeViewer.getControl().setFocus();
             if (showConnected) {
                 treeViewer.expandAll();

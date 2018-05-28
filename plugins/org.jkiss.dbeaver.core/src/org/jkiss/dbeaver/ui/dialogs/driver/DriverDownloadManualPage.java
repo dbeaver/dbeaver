@@ -23,7 +23,6 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverFileSource;
 import org.jkiss.dbeaver.runtime.WebUtils;
@@ -129,7 +128,7 @@ class DriverDownloadManualPage extends DriverDownloadPage {
 
     @Override
     boolean performFinish() {
-        DBeaverUI.asyncExec(new Runnable() {
+        UIUtils.asyncExec(new Runnable() {
             @Override
             public void run() {
                 WebUtils.openWebBrowser(fileSource.getUrl());

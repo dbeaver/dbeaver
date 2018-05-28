@@ -31,7 +31,6 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.printing.PrintDialog;
 import org.eclipse.swt.printing.Printer;
@@ -45,7 +44,6 @@ import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
@@ -205,7 +203,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
                         horOffsetEnd - horOffsetBegin - 1,
                         null,
                         curLineColor);
-                    DBeaverUI.asyncExec(() -> text.setStyleRanges(new StyleRange[]{curLineRange}));
+                    UIUtils.asyncExec(() -> text.setStyleRanges(new StyleRange[]{curLineRange}));
                 }
             }
 

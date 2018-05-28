@@ -24,7 +24,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.registry.driver.DriverDependencies;
@@ -104,13 +103,13 @@ public class DriverLibraryDetailsDialog extends HelpEnabledDialog
         DriverDependencies dependencies = new DriverDependencies(libList);
         final DriverDependenciesTree depsTree = new DriverDependenciesTree(
             paramsGroup,
-            DBeaverUI.getDefaultRunnableContext(),
+            UIUtils.getDefaultRunnableContext(),
             dependencies,
             driver,
             libList,
             false);
         depsTree.resolveLibraries();
-        DBeaverUI.asyncExec(new Runnable() {
+        UIUtils.asyncExec(new Runnable() {
             @Override
             public void run() {
                 depsTree.resizeTree();

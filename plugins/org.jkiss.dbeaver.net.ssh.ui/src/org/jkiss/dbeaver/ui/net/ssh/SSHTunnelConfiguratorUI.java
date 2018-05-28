@@ -25,7 +25,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.ssh.SSHConstants;
@@ -140,7 +139,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
 
         try {
             final String[] tunnelVersions = new String[2];
-            DBeaverUI.runInProgressDialog(monitor -> {
+            UIUtils.runInProgressDialog(monitor -> {
                 monitor.beginTask("Instantiate SSH tunnel", 2);
                 SSHTunnelImpl tunnel = new SSHTunnelImpl();
                 DBPConnectionConfiguration connectionConfig = new DBPConnectionConfiguration();
@@ -282,7 +281,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
 //        }
         pwdLabel.setText(isPassword ? SSHUIMessages.model_ssh_configurator_label_password : SSHUIMessages.model_ssh_configurator_label_passphrase);
 
-        DBeaverUI.asyncExec(() -> hostText.getParent().getParent().layout(true, true));
+        UIUtils.asyncExec(() -> hostText.getParent().getParent().layout(true, true));
     }
 
     @Override

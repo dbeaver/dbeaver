@@ -25,12 +25,12 @@ import org.eclipse.ui.menus.CommandContributionItem;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreCommands;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 import org.jkiss.utils.CommonUtils;
 
@@ -43,7 +43,7 @@ public class DataSourceTransactionModeContributor extends DataSourceMenuContribu
     @Override
     protected void fillContributionItems(final List<IContributionItem> menuItems)
     {
-        IWorkbenchWindow window = DBeaverUI.getActiveWorkbenchWindow();
+        IWorkbenchWindow window = UIUtils.getActiveWorkbenchWindow();
         if (window == null) {
             return;
         }

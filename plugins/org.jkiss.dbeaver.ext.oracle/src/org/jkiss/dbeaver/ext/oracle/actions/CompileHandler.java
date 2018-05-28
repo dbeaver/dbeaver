@@ -26,7 +26,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.oracle.model.OracleObjectPersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.ext.oracle.views.OracleCompilerDialog;
@@ -98,7 +97,7 @@ public class CompileHandler extends OracleTaskHandler
                 compileLog.clearLog();
                 Throwable error = null;
                 try {
-                    DBeaverUI.runInProgressService(monitor -> {
+                    UIUtils.runInProgressService(monitor -> {
                         try {
                             compileUnit(monitor, compileLog, unit);
                         } catch (DBCException e) {

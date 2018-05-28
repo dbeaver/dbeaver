@@ -19,31 +19,29 @@ package org.jkiss.dbeaver.core;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.dialogs.ProgressMonitorDialog;
-import org.eclipse.jface.operation.IRunnableContext;
-import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.*;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.services.IDisposable;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPErrorAssistant;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.access.DBAAuthInfo;
 import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
-import org.jkiss.dbeaver.model.runtime.*;
-import org.jkiss.dbeaver.runtime.DummyRunnableContext;
-import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
+import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
+import org.jkiss.dbeaver.model.runtime.DBRProcessListener;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
-import org.jkiss.dbeaver.ui.AbstractUIJob;
-import org.jkiss.dbeaver.ui.SharedTextColors;
 import org.jkiss.dbeaver.ui.TrayIconHandler;
 import org.jkiss.dbeaver.ui.UITask;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceInvalidateHandler;
 import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.BaseAuthDialog;
@@ -54,7 +52,6 @@ import org.jkiss.dbeaver.ui.views.process.ShellProcessView;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -68,7 +65,6 @@ public class DBeaverUI implements DBPPlatformUI {
 
     private static DBeaverUI instance;
 
-    private SharedTextColors sharedTextColors;
     private TrayIconHandler trayItem;
     private final List<IDisposable> globalDisposables = new ArrayList<>();
     private WorkbenchContextListener contextListener;
@@ -91,23 +87,7 @@ public class DBeaverUI implements DBPPlatformUI {
         }
     }
 
-    public static SharedTextColors getSharedTextColors() {
-        return getInstance().sharedTextColors;
-    }
-
-    public static void run(
-        IRunnableContext runnableContext,
-        boolean fork,
-        boolean cancelable,
-        final DBRRunnableWithProgress runnableWithProgress)
-        throws InvocationTargetException, InterruptedException {
-        runnableContext.run(fork, cancelable,
-            monitor -> runnableWithProgress.run(RuntimeUtils.makeMonitor(monitor)));
-    }
-
     private void dispose() {
-        this.sharedTextColors.dispose();
-
         if (trayItem != null) {
             trayItem.hide();
         }
@@ -125,12 +105,11 @@ public class DBeaverUI implements DBPPlatformUI {
     }
 
     private void initialize() {
-        this.sharedTextColors = new SharedTextColors();
         this.trayItem = new TrayIconHandler();
         DBUserInterface.setInstance(this);
 
         // Register context listener
-        asyncExec(() -> contextListener = WorkbenchContextListener.registerInWorkbench());
+        UIUtils.asyncExec(() -> contextListener = WorkbenchContextListener.registerInWorkbench());
         
 /*      // Global focus lister for debug
         Display.getCurrent().addFilter(SWT.FocusIn, new Listener() {
@@ -149,62 +128,7 @@ public class DBeaverUI implements DBPPlatformUI {
         }
     }
 
-    public static AbstractUIJob runUIJob(String jobName, final DBRRunnableWithProgress runnableWithProgress) {
-        return runUIJob(jobName, 0, runnableWithProgress);
-    }
-
-    public static AbstractUIJob runUIJob(String jobName, int timeout, final DBRRunnableWithProgress runnableWithProgress) {
-        AbstractUIJob job = new AbstractUIJob(jobName) {
-            @Override
-            public IStatus runInUIThread(DBRProgressMonitor monitor) {
-                try {
-                    runnableWithProgress.run(monitor);
-                } catch (InvocationTargetException e) {
-                    return GeneralUtils.makeExceptionStatus(e);
-                } catch (InterruptedException e) {
-                    return Status.CANCEL_STATUS;
-                }
-                return Status.OK_STATUS;
-            }
-        };
-        job.setSystem(true);
-        job.schedule(timeout);
-        return job;
-    }
-
-    @NotNull
-    public static IWorkbenchWindow getActiveWorkbenchWindow() {
-        IWorkbench workbench = PlatformUI.getWorkbench();
-        IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
-        if (window != null) {
-            return window;
-        }
-        IWorkbenchWindow[] windows = workbench.getWorkbenchWindows();
-        if (windows.length > 0) {
-            return windows[0];
-        }
-        throw new IllegalStateException("No workbench window");
-    }
-
-    public static Shell getActiveWorkbenchShell() {
-        IWorkbench workbench = PlatformUI.getWorkbench();
-        IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
-        if (window != null) {
-            return window.getShell();
-        } else {
-            return Display.getDefault().getActiveShell();
-        }
-    }
-
-    public static Display getDisplay() {
-        try {
-            return PlatformUI.getWorkbench().getDisplay();
-        } catch (Exception e) {
-            return Display.getDefault();
-        }
-    }
-
-/*
+    /*
     public static void runWithProgress(IWorkbenchPartSite site, final DBRRunnableWithProgress runnable)
         throws InvocationTargetException, InterruptedException
     {
@@ -227,90 +151,8 @@ public class DBeaverUI implements DBPPlatformUI {
     }
 */
 
-    public static DBRRunnableContext getDefaultRunnableContext() {
-        IWorkbench workbench = PlatformUI.getWorkbench();
-        if (workbench != null && workbench.getActiveWorkbenchWindow() != null) {
-            return new RunnableContextDelegate(workbench.getActiveWorkbenchWindow());
-        } else {
-            return (fork, cancelable, runnable) -> runnable.run(new VoidProgressMonitor());
-        }
-    }
-
-    /**
-     * Runs task in Eclipse progress service.
-     * NOTE: this call can't be canceled if it will block in IO
-     */
-    public static void runInProgressService(final DBRRunnableWithProgress runnable)
-        throws InvocationTargetException, InterruptedException {
-        getDefaultRunnableContext().run(true, true, runnable);
-    }
-
-    /**
-     * Runs task in Eclipse progress dialog.
-     * NOTE: this call can't be canceled if it will block in IO
-     */
-    public static void runInProgressDialog(final DBRRunnableWithProgress runnable) throws InvocationTargetException {
-        try {
-            IRunnableContext runnableContext;
-            IWorkbench workbench = PlatformUI.getWorkbench();
-            IWorkbenchWindow workbenchWindow = workbench.getActiveWorkbenchWindow();
-            if (workbenchWindow != null) {
-                runnableContext = new ProgressMonitorDialog(workbench.getActiveWorkbenchWindow().getShell());
-            } else {
-                runnableContext = workbench.getProgressService();
-            }
-            runnableContext.run(true, true, monitor -> runnable.run(RuntimeUtils.makeMonitor(monitor)));
-        } catch (InterruptedException e) {
-            // do nothing
-        }
-    }
-
-    public static void runInUI(IRunnableContext context, final DBRRunnableWithProgress runnable) {
-        try {
-            PlatformUI.getWorkbench().getProgressService().runInUI(context,
-                monitor -> runnable.run(RuntimeUtils.makeMonitor(monitor)), DBeaverActivator.getWorkspace().getRoot());
-        } catch (InvocationTargetException e) {
-            DBUserInterface.getInstance().showError(null, null, e.getTargetException());
-        } catch (InterruptedException e) {
-            // do nothing
-        }
-    }
-
-    public static void runInUI(final DBRRunnableWithProgress runnable) {
-        IWorkbench workbench = PlatformUI.getWorkbench();
-        IWorkbenchWindow window = workbench.getActiveWorkbenchWindow();
-        IRunnableContext context = window != null ? window : DummyRunnableContext.INSTANCE;
-        runInUI(context, runnable);
-    }
-
-    public static void asyncExec(Runnable runnable) {
-        try {
-            getDisplay().asyncExec(runnable);
-        } catch (Exception e) {
-            log.debug(e);
-        }
-    }
-
-    public static void syncExec(Runnable runnable) {
-        try {
-            getDisplay().syncExec(runnable);
-        } catch (Exception e) {
-            log.debug(e);
-        }
-    }
-
-    public static <T> T syncExec(RunnableWithResult<T> runnable) {
-        try {
-            getDisplay().syncExec(runnable);
-            return runnable.getResult();
-        } catch (Exception e) {
-            log.debug(e);
-            return null;
-        }
-    }
-
     public static void notifyAgent(String message, int status) {
-        if (!DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.AGENT_LONG_OPERATION_NOTIFY)) {
+        if (!ModelPreferences.getPreferences().getBoolean(DBeaverPreferences.AGENT_LONG_OPERATION_NOTIFY)) {
             // Notifications disabled
             return;
         }
@@ -337,11 +179,11 @@ public class DBeaverUI implements DBPPlatformUI {
         // log.debug(message);
         Runnable runnable = () -> {
             // Display the dialog
-            StandardErrorDialog dialog = new StandardErrorDialog(DBeaverUI.getActiveWorkbenchShell(),
+            StandardErrorDialog dialog = new StandardErrorDialog(UIUtils.getActiveWorkbenchShell(),
                     title, message, RuntimeUtils.stripStack(status), IStatus.ERROR);
             dialog.open();
         };
-        DBeaverUI.syncExec(runnable);
+        UIUtils.syncExec(runnable);
         return UserResponse.OK;
     }
 
@@ -384,7 +226,7 @@ public class DBeaverUI implements DBPPlatformUI {
         return new UITask<DBAAuthInfo>() {
             @Override
             public DBAAuthInfo runTask() {
-                final Shell shell = DBeaverUI.getActiveWorkbenchShell();
+                final Shell shell = UIUtils.getActiveWorkbenchShell();
                 final BaseAuthDialog authDialog = new BaseAuthDialog(shell, prompt, passwordOnly);
                 if (!passwordOnly) {
                     authDialog.setUserName(userName);
@@ -405,7 +247,7 @@ public class DBeaverUI implements DBPPlatformUI {
         return new UITask<DBAPasswordChangeInfo>() {
             @Override
             public DBAPasswordChangeInfo runTask() {
-                final Shell shell = DBeaverUI.getActiveWorkbenchShell();
+                final Shell shell = UIUtils.getActiveWorkbenchShell();
                 final PasswordChangeDialog passwordChangeDialog = new PasswordChangeDialog(shell, prompt, userName, oldPassword);
                 if (passwordChangeDialog.open() == IDialogConstants.OK_ID) {
                     return passwordChangeDialog.getPasswordInfo();
@@ -436,10 +278,10 @@ public class DBeaverUI implements DBPPlatformUI {
             showError("Execute process", processDescriptor.getName(), e);
         }
         if (processDescriptor.getCommand().isShowProcessPanel()) {
-            asyncExec(() -> {
+            UIUtils.asyncExec(() -> {
                 try {
                     final ShellProcessView processView =
-                        (ShellProcessView) DBeaverUI.getActiveWorkbenchWindow().getActivePage().showView(
+                        (ShellProcessView) UIUtils.getActiveWorkbenchWindow().getActivePage().showView(
                             ShellProcessView.VIEW_ID,
                             ShellProcessView.getNextId(),
                             IWorkbenchPage.VIEW_VISIBLE
@@ -454,6 +296,6 @@ public class DBeaverUI implements DBPPlatformUI {
 
     @Override
     public void executeInUI(Runnable runnable) {
-        syncExec(runnable);
+        UIUtils.syncExec(runnable);
     }
 }

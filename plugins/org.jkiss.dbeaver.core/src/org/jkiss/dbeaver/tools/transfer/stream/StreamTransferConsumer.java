@@ -23,7 +23,6 @@ import org.eclipse.swt.dnd.Transfer;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -331,9 +330,9 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
         if (!isBinary && settings.isOutputClipboard()) {
             if (outputBuffer != null) {
-                DBeaverUI.syncExec(() -> {
+                UIUtils.syncExec(() -> {
                     TextTransfer textTransfer = TextTransfer.getInstance();
-                    new Clipboard(DBeaverUI.getDisplay()).setContents(
+                    new Clipboard(UIUtils.getDisplay()).setContents(
                         new Object[]{outputBuffer.toString()},
                         new Transfer[]{textTransfer});
                 });
@@ -342,7 +341,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         } else {
             if (settings.isOpenFolderOnFinish()) {
                 // Last one
-                DBeaverUI.asyncExec(new Runnable() {
+                UIUtils.asyncExec(new Runnable() {
                     @Override
                     public void run() {
                         UIUtils.launchProgram(settings.getOutputFolder());

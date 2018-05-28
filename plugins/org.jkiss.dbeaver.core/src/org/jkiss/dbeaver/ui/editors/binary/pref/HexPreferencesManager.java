@@ -27,7 +27,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.swt.widgets.List;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.binary.HexEditControl;
 
@@ -309,7 +308,7 @@ public class HexPreferencesManager {
         fontsListCurrent = fontsNonScalable;
         fontsRejected = new HashSet<>();
         fontsGc = new GC(parent);
-        DBeaverUI.asyncExec(this::populateFixedCharWidthFontsAsync);
+        UIUtils.asyncExec(this::populateFixedCharWidthFontsAsync);
     }
 
 
@@ -353,7 +352,7 @@ public class HexPreferencesManager {
             fontsNonScalable = fontsScalable = fontsListCurrent = null;
             fontsRejected = null;
         } else {
-            DBeaverUI.asyncExec(this::populateFixedCharWidthFontsAsync);
+            UIUtils.asyncExec(this::populateFixedCharWidthFontsAsync);
         }
     }
 
