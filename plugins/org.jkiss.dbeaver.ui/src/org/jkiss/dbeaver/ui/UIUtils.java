@@ -54,7 +54,7 @@ import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.handlers.IHandlerActivation;
 import org.eclipse.ui.handlers.IHandlerService;
-import org.eclipse.ui.internal.views.navigator.ResourceNavigatorMessages;
+import org.eclipse.ui.internal.WorkbenchMessages;
 import org.eclipse.ui.services.IServiceLocator;
 import org.eclipse.ui.swt.IFocusService;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
@@ -1345,7 +1345,7 @@ public class UIUtils {
     }
 
     public static void fillDefaultTableContextMenu(IMenuManager menu, final Table table) {
-        menu.add(new Action(ResourceNavigatorMessages.CopyAction_title) {
+        menu.add(new Action(WorkbenchMessages.Workbench_copy) {
             @Override
             public void run() {
                 StringBuilder text = new StringBuilder();
