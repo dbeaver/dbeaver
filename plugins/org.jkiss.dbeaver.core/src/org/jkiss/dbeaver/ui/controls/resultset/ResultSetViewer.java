@@ -52,6 +52,7 @@ import org.eclipse.ui.actions.CompoundContributionItem;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.CommandContributionItemParameter;
 import org.eclipse.ui.menus.IMenuService;
+import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -128,6 +129,7 @@ public class ResultSetViewer extends Viewer
     private final IWorkbenchPartSite site;
     private final Composite viewerPanel;
     private final IResultSetDecorator decorator;
+    @Nullable
     private ResultSetFilterPanel filtersPanel;
     private SashForm viewerSash;
 
@@ -176,6 +178,8 @@ public class ResultSetViewer extends Viewer
     private AutoRefreshControl autoRefreshControl;
     private boolean actionsDisabled;
 
+    private Color defaultBackground, defaultForeground;
+
     private static Action NOREFS_ACTION, REFS_TITLE_ACTION;
 
     static {
@@ -206,11 +210,20 @@ public class ResultSetViewer extends Viewer
         UIUtils.setHelp(this.viewerPanel, IHelpContextIds.CTX_RESULT_SET_VIEWER);
         this.viewerPanel.setRedraw(false);
 
+        {
+            String bgRGB = getPreferenceStore().getString(AbstractTextEditor.PREFERENCE_COLOR_BACKGROUND);
+            String fgRGB = getPreferenceStore().getString(AbstractTextEditor.PREFERENCE_COLOR_FOREGROUND);
+            defaultBackground = CommonUtils.isEmpty(bgRGB) ? viewerPanel.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND) : UIUtils.getSharedColor(bgRGB);
+            defaultForeground = CommonUtils.isEmpty(fgRGB) ? viewerPanel.getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND) : UIUtils.getSharedColor(fgRGB);
+        }
+
         try {
             this.autoRefreshControl = new AutoRefreshControl(
                 this.viewerPanel, ResultSetViewer.class.getSimpleName(), monitor -> refreshData(null));
 
-            this.filtersPanel = new ResultSetFilterPanel(this);
+            if ((decorator.getDecoratorFeatures() & IResultSetDecorator.FEATURE_FILTERS) != 0) {
+                this.filtersPanel = new ResultSetFilterPanel(this);
+            }
             this.findReplaceTarget = new DynamicFindReplaceTarget();
 
             this.viewerSash = UIUtils.createPartDivider(site.getPart(), viewerPanel, SWT.HORIZONTAL | SWT.SMOOTH);
@@ -265,7 +278,9 @@ public class ResultSetViewer extends Viewer
 
             setActivePresentation(new EmptyPresentation());
 
-            createStatusBar();
+            if ((decorator.getDecoratorFeatures() & IResultSetDecorator.FEATURE_STATUS_BAR) != 0) {
+                createStatusBar();
+            }
 
             this.viewerPanel.addDisposeListener(e -> dispose());
 
@@ -273,6 +288,7 @@ public class ResultSetViewer extends Viewer
         } finally {
             this.viewerPanel.setRedraw(true);
         }
+
         updateFiltersText();
     }
 
@@ -280,6 +296,11 @@ public class ResultSetViewer extends Viewer
     @NotNull
     public IResultSetContainer getContainer() {
         return container;
+    }
+
+    @Override
+    public IResultSetDecorator getDecorator() {
+        return decorator;
     }
 
     AutoRefreshControl getAutoRefresh() {
@@ -329,7 +350,7 @@ public class ResultSetViewer extends Viewer
 
     public void updateFiltersText(boolean resetFilterValue)
     {
-        if (this.viewerPanel.isDisposed()) {
+        if (filtersPanel == null || this.viewerPanel.isDisposed()) {
             return;
         }
 
@@ -394,15 +415,20 @@ public class ResultSetViewer extends Viewer
     @NotNull
     @Override
     public Color getDefaultBackground() {
+        if (filtersPanel == null) {
+            return defaultBackground;
+        }
         return filtersPanel.getEditControl().getBackground();
     }
 
     @NotNull
     @Override
     public Color getDefaultForeground() {
+        if (filtersPanel == null) {
+            return defaultForeground;
+        }
         return filtersPanel.getEditControl().getForeground();
     }
-
 
     private void persistConfig() {
         DBCExecutionContext context = getExecutionContext();
@@ -1357,20 +1383,22 @@ public class ResultSetViewer extends Viewer
         }
         setStatus(statusMessage, hasWarnings ? DBPMessageType.WARNING : DBPMessageType.INFORMATION);
 
-        // Update row count label
-        if (!hasData()) {
-            rowCountLabel.setMessage("No Data");
-        } else if (!isHasMoreData()) {
-            rowCountLabel.setMessage(ROW_COUNT_FORMAT.format(model.getRowCount()));
-        } else {
-            if (model.getTotalRowCount() == null) {
-                rowCountLabel.setMessage(ROW_COUNT_FORMAT.format(model.getRowCount()) + "+");
+        if (rowCountLabel != null) {
+            // Update row count label
+            if (!hasData()) {
+                rowCountLabel.setMessage("No Data");
+            } else if (!isHasMoreData()) {
+                rowCountLabel.setMessage(ROW_COUNT_FORMAT.format(model.getRowCount()));
             } else {
-                // We know actual row count
-                rowCountLabel.setMessage(ROW_COUNT_FORMAT.format(model.getTotalRowCount()));
+                if (model.getTotalRowCount() == null) {
+                    rowCountLabel.setMessage(ROW_COUNT_FORMAT.format(model.getRowCount()) + "+");
+                } else {
+                    // We know actual row count
+                    rowCountLabel.setMessage(ROW_COUNT_FORMAT.format(model.getTotalRowCount()));
+                }
             }
+            rowCountLabel.updateActionState();
         }
-        rowCountLabel.updateActionState();
     }
 
     private String getExecutionTimeMessage()
@@ -2668,7 +2696,9 @@ public class ResultSetViewer extends Viewer
             public void aboutToRun(IJobChangeEvent event) {
                 model.setUpdateInProgress(true);
                 model.setStatistics(null);
-                UIUtils.syncExec(() -> filtersPanel.enableFilters(false));
+                if (filtersPanel != null) {
+                    UIUtils.syncExec(() -> filtersPanel.enableFilters(false));
+                }
             }
 
             @Override
@@ -2682,68 +2712,65 @@ public class ResultSetViewer extends Viewer
                 if (control.isDisposed()) {
                     return;
                 }
-                UIUtils.syncExec(new Runnable() {
-                    @Override
-                    public void run() {
-                        try {
-                            final Control control = getControl();
-                            if (control.isDisposed()) {
-                                return;
-                            }
-                            final boolean metadataChanged = model.isMetadataChanged();
-                            if (error != null) {
-                                setStatus(error.getMessage(), DBPMessageType.ERROR);
-                                DBUserInterface.getInstance().showError(
-                                        "Error executing query",
-                                    "Query execution failed",
-                                    error);
-                            } else {
-                                if (!metadataChanged && focusRow >= 0 && focusRow < model.getRowCount() && model.getVisibleAttributeCount() > 0) {
-                                    // Seems to be refresh
-                                    // Restore original position
-                                    restorePresentationState(presentationState);
-                                }
-                            }
-                            if (metadataChanged) {
-                                activePresentation.updateValueView();
-                            }
-                            updatePanelsContent(false);
-
-                            if (!scroll) {
-                                // Add new history item
-                                if (saveHistory && error == null) {
-                                    setNewState(dataContainer, dataFilter);
-                                }
-
-                                if (dataFilter != null) {
-                                    model.updateDataFilter(dataFilter);
-                                    // New data filter may have different columns visibility
-                                    redrawData(true, false);
-                                }
-                            }
-                            model.setUpdateInProgress(false);
-                            if (job.getStatistics() == null || !job.getStatistics().isEmpty()) {
-                                if (error == null) {
-                                    // Update status (update execution statistics)
-                                    updateStatusMessage();
-                                }
-                                updateFiltersText(error == null);
-                                updateToolbar();
-                                fireResultSetLoad();
-                            }
-                            // auto-refresh
-                            autoRefreshControl.scheduleAutoRefresh(error != null);
-                        } finally {
-                            if (finalizer != null) {
-                                try {
-                                    finalizer.run();
-                                } catch (Throwable e) {
-                                    log.error(e);
-                                }
-                            }
-
-                            dataPumpJob = null;
+                UIUtils.syncExec(() -> {
+                    try {
+                        final Control control1 = getControl();
+                        if (control1.isDisposed()) {
+                            return;
                         }
+                        final boolean metadataChanged = model.isMetadataChanged();
+                        if (error != null) {
+                            setStatus(error.getMessage(), DBPMessageType.ERROR);
+                            DBUserInterface.getInstance().showError(
+                                    "Error executing query",
+                                "Query execution failed",
+                                error);
+                        } else {
+                            if (!metadataChanged && focusRow >= 0 && focusRow < model.getRowCount() && model.getVisibleAttributeCount() > 0) {
+                                // Seems to be refresh
+                                // Restore original position
+                                restorePresentationState(presentationState);
+                            }
+                        }
+                        if (metadataChanged) {
+                            activePresentation.updateValueView();
+                        }
+                        updatePanelsContent(false);
+
+                        if (!scroll) {
+                            // Add new history item
+                            if (saveHistory && error == null) {
+                                setNewState(dataContainer, dataFilter);
+                            }
+
+                            if (dataFilter != null) {
+                                model.updateDataFilter(dataFilter);
+                                // New data filter may have different columns visibility
+                                redrawData(true, false);
+                            }
+                        }
+                        model.setUpdateInProgress(false);
+                        if (job.getStatistics() == null || !job.getStatistics().isEmpty()) {
+                            if (error == null) {
+                                // Update status (update execution statistics)
+                                updateStatusMessage();
+                            }
+                            updateFiltersText(error == null);
+                            updateToolbar();
+                            fireResultSetLoad();
+                        }
+                        // auto-refresh
+                        autoRefreshControl.scheduleAutoRefresh(error != null);
+                    } finally {
+                        if (finalizer != null) {
+                            try {
+                                finalizer.run();
+                            } catch (Throwable e) {
+                                log.error(e);
+                            }
+                        }
+
+                        dataPumpJob = null;
                     }
                 });
             }

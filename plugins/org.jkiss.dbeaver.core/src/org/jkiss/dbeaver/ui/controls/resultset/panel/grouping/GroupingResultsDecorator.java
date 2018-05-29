@@ -28,4 +28,13 @@ public class GroupingResultsDecorator implements IResultSetDecorator {
         return FEATURE_PANELS;
     }
 
+    @Override
+    public String getEmptyDataMessage() {
+        return "No Groupings";
+    }
+
+    @Override
+    public String getEmptyDataDescription() {
+        return "Drag and drop results column(s) here to create grouping";
+    }
 }

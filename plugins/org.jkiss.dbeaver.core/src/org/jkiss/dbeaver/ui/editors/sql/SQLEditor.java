@@ -31,6 +31,7 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
@@ -1935,7 +1936,14 @@ public class SQLEditor extends SQLEditorBase implements
 
         @Override
         public IResultSetDecorator createResultSetDecorator() {
-            return new QueryResultsDecorator();
+            return new QueryResultsDecorator() {
+                @Override
+                public String getEmptyDataDescription() {
+                    String execQuery = ActionUtils.findCommandDescription(CoreCommands.CMD_EXECUTE_STATEMENT, getSite(), true);
+                    String execScript = ActionUtils.findCommandDescription(CoreCommands.CMD_EXECUTE_SCRIPT, getSite(), true);
+                    return NLS.bind(CoreMessages.sql_editor_resultset_filter_panel_control_execute_to_see_reslut, execQuery, execScript);
+                }
+            };
         }
 
         @Override
