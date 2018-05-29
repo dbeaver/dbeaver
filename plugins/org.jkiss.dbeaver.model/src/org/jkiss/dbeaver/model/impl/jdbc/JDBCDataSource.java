@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCFactoryDefault;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLState;
@@ -411,6 +412,22 @@ public abstract class JDBCDataSource
             return false;
         }
         return true;
+    }
+
+    public boolean isDriverVersionAtLeast(int major, int minor) {
+        try {
+            Driver driver = getDriverInstance(new VoidProgressMonitor());
+            int majorVersion = driver.getMajorVersion();
+            if (majorVersion < major) {
+                return false;
+            } else if (majorVersion == major && driver.getMinorVersion() < minor) {
+                return false;
+            }
+            return true;
+        } catch (DBException e) {
+            log.debug("Can't obtain driver instance", e);
+            return false;
+        }
     }
 
     @NotNull
