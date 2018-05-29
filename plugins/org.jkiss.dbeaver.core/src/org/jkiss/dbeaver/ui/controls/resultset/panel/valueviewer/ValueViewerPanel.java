@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.controls.resultset.panel;
+package org.jkiss.dbeaver.ui.controls.resultset.panel.valueviewer;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.action.Action;
@@ -37,7 +37,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDValue;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
@@ -56,9 +55,9 @@ import org.jkiss.utils.CommonUtils;
 /**
  * RSV value view panel
  */
-public class ViewValuePanel implements IResultSetPanel, IAdaptable {
+public class ValueViewerPanel implements IResultSetPanel, IAdaptable {
 
-    private static final Log log = Log.getLog(ViewValuePanel.class);
+    private static final Log log = Log.getLog(ValueViewerPanel.class);
 
     public static final String PANEL_ID = "value-view";
     public static final String SETTINGS_SECTION = "panel-" + PANEL_ID;
@@ -79,22 +78,7 @@ public class ViewValuePanel implements IResultSetPanel, IAdaptable {
         return ResultSetUtils.getViewerSettings(SETTINGS_SECTION);
     }
 
-    public ViewValuePanel() {
-    }
-
-    @Override
-    public String getPanelTitle() {
-        return "Value";
-    }
-
-    @Override
-    public DBPImage getPanelImage() {
-        return UIIcon.PANEL_VALUE;
-    }
-
-    @Override
-    public String getPanelDescription() {
-        return "Value view/edit";
+    public ValueViewerPanel() {
     }
 
     @Override
@@ -107,7 +91,7 @@ public class ViewValuePanel implements IResultSetPanel, IAdaptable {
             if (viewPlaceholder.getChildren().length == 0) {
                 String hidePanelCmd = ActionUtils.findCommandDescription(
                     ResultSetCommandHandler.CMD_TOGGLE_PANELS,
-                    ViewValuePanel.this.presentation.getController().getSite(),
+                    ValueViewerPanel.this.presentation.getController().getSite(),
                     true);
 
                 UIUtils.drawMessageOverControl(viewPlaceholder, e, "Select a cell to view/edit value", 0);
@@ -130,7 +114,7 @@ public class ViewValuePanel implements IResultSetPanel, IAdaptable {
         if (this.presentation instanceof ISelectionProvider) {
             final ISelectionProvider selectionProvider = (ISelectionProvider) this.presentation;
             final ISelectionChangedListener selectionListener = event -> {
-                if (ViewValuePanel.this.presentation.getController().getVisiblePanel() == ViewValuePanel.this) {
+                if (ValueViewerPanel.this.presentation.getController().getVisiblePanel() == ValueViewerPanel.this) {
                     refreshValue(false);
                 }
             };

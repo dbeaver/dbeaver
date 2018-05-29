@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.controls.resultset.panel;
+package org.jkiss.dbeaver.ui.controls.resultset.panel.valueviewer;
 
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.ui.IWorkbenchPart;
@@ -40,7 +40,7 @@ public class ValueViewPropertyTester extends PropertyTester
     private boolean checkResultSetProperty(ResultSetViewer rsv, String property, Object expectedValue)
     {
         IResultSetPanel visiblePanel = rsv.getVisiblePanel();
-        if (visiblePanel instanceof ViewValuePanel) {
+        if (visiblePanel instanceof ValueViewerPanel) {
             switch (property) {
                 case PROP_ACTIVE:
                     return true;

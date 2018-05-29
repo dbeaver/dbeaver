@@ -28,12 +28,6 @@ import org.jkiss.dbeaver.model.DBPImage;
  */
 public interface IResultSetPanel {
 
-    String getPanelTitle();
-
-    DBPImage getPanelImage();
-
-    String getPanelDescription();
-
     Control createContents(IResultSetPresentation presentation, Composite parent);
 
     void activatePanel();
