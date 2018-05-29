@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -38,6 +38,8 @@ public class GroupingPanel implements IResultSetPanel {
     private IResultSetPresentation presentation;
     private IDialogSettings panelSettings;
 
+    private GroupingResultsContainer resultsContainer;
+
     public GroupingPanel() {
     }
 
@@ -45,7 +47,6 @@ public class GroupingPanel implements IResultSetPanel {
     public Control createContents(final IResultSetPresentation presentation, Composite parent) {
         this.presentation = presentation;
         this.panelSettings = ResultSetUtils.getViewerSettings(SETTINGS_SECTION_GROUPING);
-        Composite composite = UIUtils.createPlaceholder(parent, 1);
 
         loadSettings();
 
@@ -56,6 +57,8 @@ public class GroupingPanel implements IResultSetPanel {
                 }
             });
         }
+
+        this.resultsContainer = new GroupingResultsContainer(parent, presentation);
 
 /*
         MenuManager menuMgr = new MenuManager();
@@ -70,52 +73,15 @@ public class GroupingPanel implements IResultSetPanel {
         this.aggregateTable.setMenu(menuMgr.createContextMenu(this.aggregateTable));
 */
 
-        return composite;
+        return this.resultsContainer.getResultSetController().getControl();
     }
 
     private void loadSettings() {
-/*
-        IDialogSettings functionsSection = panelSettings.getSection("functions");
-        if (functionsSection != null) {
-            final Map<AggregateFunctionDescriptor, Integer> funcIndexes = new HashMap<>();
-
-            for (IDialogSettings funcSection : functionsSection.getSections()) {
-                String funcId = funcSection.getName();
-                if (!funcSection.getBoolean("enabled")) {
-                    continue;
-                }
-                AggregateFunctionDescriptor func = FunctionsRegistry.getInstance().getFunction(funcId);
-                if (func == null) {
-                    log.debug("Function '" + funcId + "' not found");
-                } else {
-                    funcIndexes.put(func, funcSection.getInt("index"));
-                    enabledFunctions.add(func);
-                }
-            }
-            enabledFunctions.sort(Comparator.comparingInt(funcIndexes::get));
-        }
-
-        if (enabledFunctions.isEmpty()) {
-            loadDefaultFunctions();
-        }
-*/
+        IDialogSettings functionsSection = panelSettings.getSection("groups");
     }
 
     private void saveSettings() {
-        IDialogSettings functionsSection = UIUtils.getSettingsSection(panelSettings, "functions");
-
-/*
-        for (AggregateFunctionDescriptor func : FunctionsRegistry.getInstance().getFunctions()) {
-            IDialogSettings funcSection = UIUtils.getSettingsSection(functionsSection, func.getId());
-            boolean enabled = enabledFunctions.contains(func);
-            funcSection.put("enabled", enabled);
-            if (enabled) {
-                funcSection.put("index", enabledFunctions.indexOf(func));
-            } else {
-                funcSection.put("index", -1);
-            }
-        }
-*/
+        IDialogSettings functionsSection = UIUtils.getSettingsSection(panelSettings, "groups");
     }
 
     @Override
@@ -130,21 +96,7 @@ public class GroupingPanel implements IResultSetPanel {
 
     @Override
     public void refresh(boolean force) {
-/*
-        aggregateTable.setRedraw(false);
-        try {
-            aggregateTable.removeAll();
-            if (this.presentation instanceof ISelectionProvider) {
-                ISelection selection = ((ISelectionProvider) presentation).getSelection();
-                if (selection instanceof IResultSetSelection) {
-                    aggregateSelection((IResultSetSelection)selection);
-                }
-            }
-            UIUtils.packColumns(aggregateTable, true, null);
-        } finally {
-            aggregateTable.setRedraw(true);
-        }
-*/
+        resultsContainer.getResultSetController().refresh();
         saveSettings();
     }
 
