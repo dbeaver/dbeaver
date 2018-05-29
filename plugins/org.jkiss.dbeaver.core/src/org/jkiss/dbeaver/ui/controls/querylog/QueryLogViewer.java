@@ -45,7 +45,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -66,7 +65,6 @@ import org.jkiss.dbeaver.ui.dialogs.sql.BaseSQLDialog;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenHandler;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.LongKeyMap;
@@ -646,7 +644,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             return;
         }
         // Run in UI thread
-        DBeaverUI.asyncExec(() -> updateMetaInfo(events));
+        UIUtils.asyncExec(() -> updateMetaInfo(events));
     }
 
     private synchronized void updateMetaInfo(final List<QMMetaEvent> events)
@@ -909,7 +907,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
         }
         if (sql.length() > 0) {
             OpenHandler.openSQLConsole(
-                DBeaverUI.getActiveWorkbenchWindow(),
+                UIUtils.getActiveWorkbenchWindow(),
                 dsContainer,
                 "QueryManager",
                 sql.toString()

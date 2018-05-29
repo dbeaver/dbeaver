@@ -29,14 +29,11 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
@@ -172,7 +169,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
                                         public void onTaskFinished(IStatus status)
                                         {
                                             if (status.isOK()) {
-                                                DBeaverUI.asyncExec(new Runnable() {
+                                                UIUtils.asyncExec(new Runnable() {
                                                     @Override
                                                     public void run() {
                                                         if (!dataSourceTree.isDisposed()) {
@@ -280,7 +277,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
             UIUtils.createTableColumn(typesTable, SWT.LEFT, CoreMessages.dialog_search_objects_column_description);
         }
 
-        DBeaverUI.asyncExec(new Runnable() {
+        UIUtils.asyncExec(new Runnable() {
             @Override
             public void run() {
                 loadState();

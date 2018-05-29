@@ -22,7 +22,6 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSourceFolder;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -31,6 +30,7 @@ import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenHandler;
@@ -69,9 +69,9 @@ public class DBeaverInstanceServer implements IInstanceController {
     public void openExternalFiles(final String[] fileNames) {
         log.debug("Open external file(s) [" + Arrays.toString(fileNames) + "]");
 
-        final IWorkbenchWindow window = DBeaverUI.getActiveWorkbenchWindow();
+        final IWorkbenchWindow window = UIUtils.getActiveWorkbenchWindow();
         final Shell shell = window.getShell();
-        DBeaverUI.syncExec(() -> {
+        UIUtils.syncExec(() -> {
             for (String filePath : fileNames) {
                 File file = new File(filePath);
                 if (file.exists()) {
@@ -89,7 +89,7 @@ public class DBeaverInstanceServer implements IInstanceController {
     public void openDatabaseConnection(String connectionSpec) throws RemoteException {
         log.debug("Open external database connection [" + connectionSpec + "]");
 
-        final IWorkbenchWindow workbenchWindow = DBeaverUI.getActiveWorkbenchWindow();
+        final IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
         DataSourceRegistry dsRegistry = DBeaverCore.getInstance().getProjectRegistry().getActiveDataSourceRegistry();
 
         String driverName = null, url = null, host = null, port = null, server = null, database = null, user = null, password = null;
@@ -184,7 +184,7 @@ public class DBeaverInstanceServer implements IInstanceController {
 
         if (openConsole) {
             DataSourceDescriptor finalDs = ds;
-            DBeaverUI.syncExec(() -> {
+            UIUtils.syncExec(() -> {
                 OpenHandler.openSQLConsole(workbenchWindow, finalDs, finalDs.getName(), "");
                 workbenchWindow.getShell().forceActive();
             });
@@ -218,8 +218,8 @@ public class DBeaverInstanceServer implements IInstanceController {
     public void closeAllEditors() {
         log.debug("Close all open editor tabs");
 
-        DBeaverUI.syncExec(() -> {
-            IWorkbenchWindow window = DBeaverUI.getActiveWorkbenchWindow();
+        UIUtils.syncExec(() -> {
+            IWorkbenchWindow window = UIUtils.getActiveWorkbenchWindow();
             if (window != null) {
                 IWorkbenchPage page = window.getActivePage();
                 if (page != null) {
@@ -234,7 +234,7 @@ public class DBeaverInstanceServer implements IInstanceController {
         log.debug("Execute workbench command " + commandId);
 
         try {
-            ActionUtils.runCommand(commandId, DBeaverUI.getActiveWorkbenchWindow());
+            ActionUtils.runCommand(commandId, UIUtils.getActiveWorkbenchWindow());
         } catch (Exception e) {
             throw new RemoteException("Can't execute command '" + commandId + "'", e);
         }

@@ -22,10 +22,10 @@ import org.eclipse.core.runtime.Status;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 import java.io.IOException;
@@ -102,11 +102,11 @@ public class DBeaverVersionChecker extends AbstractJob {
 
     private void showUpdaterDialog(final VersionDescriptor versionDescriptor)
     {
-        DBeaverUI.asyncExec(new Runnable() {
+        UIUtils.asyncExec(new Runnable() {
             @Override
             public void run() {
                 VersionUpdateDialog dialog = new VersionUpdateDialog(
-                    DBeaverUI.getActiveWorkbenchShell(),
+                    UIUtils.getActiveWorkbenchShell(),
                     versionDescriptor);
                 dialog.open();
             }

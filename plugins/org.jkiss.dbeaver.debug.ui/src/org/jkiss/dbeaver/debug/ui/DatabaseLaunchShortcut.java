@@ -39,11 +39,11 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.dialogs.ElementListSelectionDialog;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.debug.core.DebugUtils;
 import org.jkiss.dbeaver.debug.ui.internal.DebugUIMessages;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -171,7 +171,7 @@ public abstract class DatabaseLaunchShortcut implements ILaunchShortcut2 {
             }
             if (config == null) {
                 config = createConfiguration(launchable, databaseContext);
-                if (DebugUITools.openLaunchConfigurationPropertiesDialog(DBeaverUI.getActiveWorkbenchShell(), config, DebugUI.DEBUG_LAUNCH_GROUP_ID) != IDialogConstants.OK_ID) {
+                if (DebugUITools.openLaunchConfigurationPropertiesDialog(UIUtils.getActiveWorkbenchShell(), config, DebugUI.DEBUG_LAUNCH_GROUP_ID) != IDialogConstants.OK_ID) {
                     return;
                 }
                 if (config instanceof ILaunchConfigurationWorkingCopy) {

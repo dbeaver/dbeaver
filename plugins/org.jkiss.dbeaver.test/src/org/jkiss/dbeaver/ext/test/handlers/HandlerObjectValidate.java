@@ -24,11 +24,11 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.lang.reflect.InvocationTargetException;
 
@@ -49,7 +49,7 @@ public class HandlerObjectValidate extends AbstractHandler {
     private void validateNode(Shell shell, DBNNode element)
     {
         try {
-            DBeaverUI.runInProgressService(new NodeValidator(element));
+            UIUtils.runInProgressService(new NodeValidator(element));
         } catch (InterruptedException e) {
             // skip
         } catch (InvocationTargetException e) {

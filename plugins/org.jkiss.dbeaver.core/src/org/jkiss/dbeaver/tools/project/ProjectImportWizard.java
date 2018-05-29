@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -77,7 +76,7 @@ public class ProjectImportWizard extends Wizard implements IImportWizard {
 	@Override
 	public boolean performFinish() {
         try {
-            DBeaverUI.run(getContainer(), true, true, new DBRRunnableWithProgress() {
+            UIUtils.run(getContainer(), true, true, new DBRRunnableWithProgress() {
                 @Override
                 public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     try {

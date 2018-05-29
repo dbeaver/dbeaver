@@ -25,7 +25,6 @@ import org.eclipse.ui.IExportWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -97,7 +96,7 @@ public class CompareObjectsWizard extends Wizard implements IExportWizard {
         // Compare
         final CompareObjectsExecutor executor = new CompareObjectsExecutor(settings);
         try {
-            DBeaverUI.run(getContainer(), true, true, new DBRRunnableWithProgress() {
+            UIUtils.run(getContainer(), true, true, new DBRRunnableWithProgress() {
                 @Override
                 public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     try {

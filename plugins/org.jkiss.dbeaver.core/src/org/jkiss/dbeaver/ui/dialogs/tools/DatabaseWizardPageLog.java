@@ -25,7 +25,6 @@ import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
@@ -78,7 +77,7 @@ public class DatabaseWizardPageLog extends WizardPage {
         if (getShell().isDisposed()) {
             return;
         }
-        DBeaverUI.syncExec(new Runnable() {
+        UIUtils.syncExec(new Runnable() {
             @Override
             public void run() {
                 synchronized (DatabaseWizardPageLog.this) {
@@ -106,7 +105,7 @@ public class DatabaseWizardPageLog extends WizardPage {
         if (getShell().isDisposed()) {
             return;
         }
-        DBeaverUI.syncExec(new Runnable() {
+        UIUtils.syncExec(new Runnable() {
             @Override
             public void run() {
                 synchronized (DatabaseWizardPageLog.this) {

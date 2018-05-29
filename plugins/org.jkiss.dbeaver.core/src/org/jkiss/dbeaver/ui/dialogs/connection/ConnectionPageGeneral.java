@@ -37,7 +37,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -700,7 +699,7 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
                     }
                 }
                 if (!schemaNames.isEmpty()) {
-                    DBeaverUI.syncExec(new Runnable() {
+                    UIUtils.syncExec(new Runnable() {
                         @Override
                         public void run() {
                             if (!defaultSchema.isDisposed()) {

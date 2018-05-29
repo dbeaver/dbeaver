@@ -37,7 +37,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
@@ -561,7 +560,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             editorName = "Query";
         }
         OpenHandler.openSQLConsole(
-            DBeaverUI.getActiveWorkbenchWindow(),
+            UIUtils.getActiveWorkbenchWindow(),
             dataContainer == null || dataContainer.getDataSource() == null ? null : dataContainer.getDataSource().getContainer(),
             editorName,
             getActiveQueryText()
@@ -645,7 +644,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
                 @Override
                 public void mouseDown(final MouseEvent e) {
-                    DBeaverUI.asyncExec(() -> showObjectInfoPopup(e));
+                    UIUtils.asyncExec(() -> showObjectInfoPopup(e));
                 }
             });
         }

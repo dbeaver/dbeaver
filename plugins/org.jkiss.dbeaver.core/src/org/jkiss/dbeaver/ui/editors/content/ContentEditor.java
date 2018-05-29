@@ -32,7 +32,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -78,7 +77,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
         try {
             LOBInitializer initializer = new LOBInitializer(valueController);
             //valueController.getValueSite().getWorkbenchWindow().run(true, true, initializer);
-            DBeaverUI.runInProgressService(initializer);
+            UIUtils.runInProgressService(initializer);
             editorInput = initializer.editorInput;
         } catch (Throwable e) {
             if (e instanceof InvocationTargetException) {
@@ -219,7 +218,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
             return;
         }
         // Execute save in UI thread
-        DBeaverUI.syncExec(() -> {
+        UIUtils.syncExec(() -> {
             try {
                 // Check for dirty parts
                 final List<IEditorPart> dirtyParts = new ArrayList<>();
@@ -497,7 +496,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
     @Override
     public Object extractEditorValue() throws DBException
     {
-        DBeaverUI.runInUI(monitor -> {
+        UIUtils.runInUI(monitor -> {
             try {
                 getEditorInput().updateContentFromFile(monitor, getEditorInput().getValue());
             } catch (DBException e) {
@@ -516,7 +515,7 @@ public class ContentEditor extends MultiPageAbstractEditor implements IValueEdit
         LOBInitializer initializer = new LOBInitializer(valueController, input.getEditors(), input.getDefaultEditor(), input);
         try {
             //valueController.getValueSite().getWorkbenchWindow().run(true, true, initializer);
-            DBeaverUI.runInProgressService(initializer);
+            UIUtils.runInProgressService(initializer);
         } catch (InvocationTargetException e) {
             DBUserInterface.getInstance().showError("Cannot refresh content editor", null, e);
         } catch (InterruptedException e) {

@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
@@ -39,6 +38,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.rdb.DBSManipulationType;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -437,7 +437,7 @@ class ResultSetPersister {
 
             if (!generateScript) {
                 // Reflect changes
-                DBeaverUI.syncExec(new Runnable() {
+                UIUtils.syncExec(new Runnable() {
                     @Override
                     public void run() {
                         boolean rowsChanged = false;
@@ -845,7 +845,7 @@ class ResultSetPersister {
                 }
 
                 // Ok, now we have refreshed values. Let's update real model
-                DBeaverUI.syncExec(new Runnable() {
+                UIUtils.syncExec(new Runnable() {
                     @Override
                     public void run() {
                         // Update only if metadata wasn't changed

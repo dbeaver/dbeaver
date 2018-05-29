@@ -27,8 +27,6 @@ import org.eclipse.jface.viewers.IFontProvider;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.graphics.Font;
@@ -40,7 +38,6 @@ import org.eclipse.ui.part.MultiPageEditorSite;
 import org.eclipse.ui.progress.UIJob;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPEventListener;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -53,6 +50,7 @@ import org.jkiss.dbeaver.runtime.properties.ILazyPropertyLoadListener;
 import org.jkiss.dbeaver.runtime.properties.PropertiesContributor;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
+import org.jkiss.dbeaver.ui.controls.IProgressControlProvider;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.controls.folders.TabbedFolderPage;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
@@ -222,7 +220,7 @@ public class TabbedFolderPageProperties extends TabbedFolderPage implements IRef
             super.fillCustomActions(contributionManager);
             {
                 contributionManager.add(ActionUtils.makeCommandContribution(
-                    DBeaverUI.getActiveWorkbenchWindow(),
+                    UIUtils.getActiveWorkbenchWindow(),
                     IWorkbenchCommandConstants.FILE_REFRESH));
                 contributionManager.add(new Action(isAttached() ? "Detach properties to top panel" : "Move properties to tab", DBeaverIcons.getImageDescriptor(UIIcon.ASTERISK)) {
                     @Override
@@ -266,10 +264,10 @@ public class TabbedFolderPageProperties extends TabbedFolderPage implements IRef
                 if (editor.getEditorInput() instanceof DatabaseEditorInput) {
                     node = ((DatabaseEditorInput) editor.getEditorInput()).getNavigatorNode();
                 }
-                DBeaverUI.getActiveWorkbenchWindow().getActivePage().closeEditor(editor, false);
+                UIUtils.getActiveWorkbenchWindow().getActivePage().closeEditor(editor, false);
 
                 if (node != null) {
-                    NavigatorHandlerObjectOpen.openEntityEditor(node, null, DBeaverUI.getActiveWorkbenchWindow());
+                    NavigatorHandlerObjectOpen.openEntityEditor(node, null, UIUtils.getActiveWorkbenchWindow());
                 }
             }
         }

@@ -19,18 +19,17 @@ package org.jkiss.dbeaver.ui.editors.sql;
 
 import org.eclipse.jface.action.*;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenHandler;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -45,7 +44,7 @@ public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLE
         {
             final DBPDataSource dataSource = getDataSource();
             OpenHandler.openSQLConsole(
-                DBeaverUI.getActiveWorkbenchWindow(),
+                UIUtils.getActiveWorkbenchWindow(),
                 dataSource == null ? null : dataSource.getContainer(),
                 "Source",
                 getDocument().get()

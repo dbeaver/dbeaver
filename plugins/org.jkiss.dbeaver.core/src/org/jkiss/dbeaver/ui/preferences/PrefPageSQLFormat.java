@@ -32,7 +32,6 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IEditorSite;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
@@ -245,7 +244,7 @@ public class PrefPageSQLFormat extends TargetPrefPage
             try {
                 try (final InputStream sqlStream = getClass().getResourceAsStream(FORMAT_FILE_NAME)) {
                     final String sqlText = ContentUtils.readToString(sqlStream, GeneralUtils.DEFAULT_ENCODING);
-                    IEditorSite subSite = new SubEditorSite(DBeaverUI.getActiveWorkbenchWindow().getActivePage().getActivePart().getSite());
+                    IEditorSite subSite = new SubEditorSite(UIUtils.getActiveWorkbenchWindow().getActivePage().getActivePart().getSite());
                     StringEditorInput sqlInput = new StringEditorInput("SQL preview", sqlText, true, GeneralUtils.getDefaultFileEncoding());
                     sqlViewer.init(subSite, sqlInput);
                 }

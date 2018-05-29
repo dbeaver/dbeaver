@@ -29,7 +29,6 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.browser.IWorkbenchBrowserSupport;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.mockdata.MockDataSettings.AttributeGeneratorProperties;
 import org.jkiss.dbeaver.ext.mockdata.model.MockGeneratorDescriptor;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -386,7 +385,7 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
         // init the generators properties
         if (firstInit) {
             try {
-                DBeaverUI.run(this.getContainer(), true, true, monitor -> {
+                UIUtils.run(this.getContainer(), true, true, monitor -> {
                     try {
                         firstInit = false;
                         MockDataExecuteWizard wizard = getWizard();
@@ -510,7 +509,7 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
         }
 
         // set the properties table columns width
-        DBeaverUI.asyncExec(() -> {
+        UIUtils.asyncExec(() -> {
             ((Tree) propsEditor.getControl()).getColumn(0).setWidth(DEFAULT_NAME_COLUMN_WIDTH);
             ((Tree) propsEditor.getControl()).getColumn(1).setWidth(
                     propsEditor.getControl().getSize().x - DEFAULT_NAME_COLUMN_WIDTH - 30);

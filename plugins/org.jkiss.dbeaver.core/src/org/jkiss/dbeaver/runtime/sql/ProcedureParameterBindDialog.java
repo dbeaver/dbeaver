@@ -22,7 +22,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
@@ -140,7 +139,7 @@ public class ProcedureParameterBindDialog extends StatusDialog {
         };
 
         if (!parameters.isEmpty()) {
-            DBeaverUI.asyncExec(() -> {
+            UIUtils.asyncExec(() -> {
                 paramTable.select(0);
                 tableEditor.showEditor(paramTable.getItem(0), 1);
             });

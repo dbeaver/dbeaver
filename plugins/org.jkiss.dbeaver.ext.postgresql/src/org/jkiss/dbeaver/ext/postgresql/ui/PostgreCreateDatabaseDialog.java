@@ -30,7 +30,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -129,7 +128,7 @@ public class PostgreCreateDatabaseDialog extends BaseDialog
                     final PostgreCharset defCharset = database.getDefaultEncoding(monitor);
                     final PostgreTablespace defTablespace = database.getDefaultTablespace(monitor);
 
-                    DBeaverUI.syncExec(new Runnable() {
+                    UIUtils.syncExec(new Runnable() {
                         @Override
                         public void run() {
                             for (PostgreRole authId : allUsers) {

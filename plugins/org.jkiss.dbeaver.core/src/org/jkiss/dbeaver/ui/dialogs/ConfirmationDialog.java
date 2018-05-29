@@ -24,7 +24,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.preferences.PreferenceStoreDelegate;
@@ -82,7 +81,7 @@ public class ConfirmationDialog extends MessageDialogWithToggle {
             }
         }
         ConfirmationDialog dialog = new ConfirmationDialog(
-            parent == null ? DBeaverUI.getActiveWorkbenchShell() : parent,
+            parent == null ? UIUtils.getActiveWorkbenchShell() : parent,
             title,
             null, // accept the default window icon
             message,
