@@ -741,9 +741,9 @@ public class ResultSetViewer extends Viewer
         boolean firstPanel = panelFolder.getItemCount() == 0;
         CTabItem panelTab = new CTabItem(panelFolder, SWT.CLOSE);
         panelTab.setData(id);
-        panelTab.setText(panel.getPanelTitle());
+        panelTab.setText(panelDescriptor.getLabel());
         panelTab.setImage(DBeaverIcons.getImage(panelDescriptor.getIcon()));
-        panelTab.setToolTipText(panel.getPanelDescription());
+        panelTab.setToolTipText(panelDescriptor.getDescription());
         panelTab.setControl(panelControl);
 
         if (setActive || firstPanel) {
@@ -861,6 +861,11 @@ public class ResultSetViewer extends Viewer
 
         for (final ResultSetPanelDescriptor panel : availablePanels) {
             Action panelAction = new Action(panel.getLabel(), Action.AS_CHECK_BOX) {
+                {
+                    setToolTipText(panel.getDescription());
+                    // Icons turns menu into mess - checkboxes are much better
+                    //setImageDescriptor(DBeaverIcons.getImageDescriptor(panel.getIcon()));
+                }
                 @Override
                 public boolean isChecked() {
                     return activePanels.containsKey(panel.getId());
@@ -879,7 +884,6 @@ public class ResultSetViewer extends Viewer
                     }
                 }
             };
-            //panelAction.setImageDescriptor(DBeaverIcons.getImageDescriptor(panel.getIcon()));
             items.add(new ActionContributionItem(panelAction));
         }
         return items;

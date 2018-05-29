@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.controls.resultset.panel;
+package org.jkiss.dbeaver.ui.controls.resultset.panel.aggregate;
 
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogSettings;
@@ -70,21 +70,6 @@ public class AggregateColumnsPanel implements IResultSetPanel {
     private final List<AggregateFunctionDescriptor> enabledFunctions = new ArrayList<>();
 
     public AggregateColumnsPanel() {
-    }
-
-    @Override
-    public String getPanelTitle() {
-        return "Aggregate";
-    }
-
-    @Override
-    public DBPImage getPanelImage() {
-        return UIIcon.PANEL_AGGREGATE;
-    }
-
-    @Override
-    public String getPanelDescription() {
-        return "Aggregate columns";
     }
 
     @Override

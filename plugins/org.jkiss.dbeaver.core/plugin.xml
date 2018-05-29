@@ -120,8 +120,8 @@
             properties="active,hasData,hasMoreData,canCopy,canPaste,canCut,canMove,editable,changed,canToggle,canSwitchPresentation,canNavigateLink,canNavigateHistory,supportsCount"
             type="org.eclipse.ui.IWorkbenchPart"/>
         <propertyTester
-            class="org.jkiss.dbeaver.ui.controls.resultset.panel.ValueViewPropertyTester"
-            id="org.jkiss.dbeaver.ui.controls.resultset.panel.ValueViewPropertyTester"
+            class="org.jkiss.dbeaver.ui.controls.resultset.panel.valueviewer.ValueViewPropertyTester"
+            id="org.jkiss.dbeaver.ui.controls.resultset.panel.valueviewer.ValueViewPropertyTester"
             namespace="org.jkiss.dbeaver.core.resultset.panel.valueView"
             properties="active"
             type="org.eclipse.ui.IWorkbenchPart"/>
@@ -1555,7 +1555,7 @@
             </enabledWhen>
         </handler>
 
-        <handler commandId="org.jkiss.dbeaver.core.resultset.cell.save" class="org.jkiss.dbeaver.ui.controls.resultset.panel.ValueViewCommandHandler">
+        <handler commandId="org.jkiss.dbeaver.core.resultset.cell.save" class="org.jkiss.dbeaver.ui.controls.resultset.panel.valueviewer.ValueViewCommandHandler">
             <activeWhen>
                 <with variable="activePart">
                     <test property="org.jkiss.dbeaver.core.resultset.panel.valueView.active"/>
@@ -3708,28 +3708,36 @@
         <panel
                 id="value-view"
                 label="%panel.value-view.label"
-                description="%resultset.panel.valueview.description"
+                description="%panel.value-view.description"
                 icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/panel_value.png"
                 default="true"
-                class="org.jkiss.dbeaver.ui.controls.resultset.panel.ViewValuePanel">
+                class="org.jkiss.dbeaver.ui.controls.resultset.panel.valueviewer.ValueViewerPanel">
             <supports type="columns"/>
         </panel>
         <panel
                 id="column-aggregate"
                 label="%panel.column-aggregate.label"
-                description="%resultset.panel.columnsaggregate.description"
+                description="%panel.column-aggregate.description"
                 icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/panel_aggregate.png"
                 default="false"
-                class="org.jkiss.dbeaver.ui.controls.resultset.panel.AggregateColumnsPanel">
+                class="org.jkiss.dbeaver.ui.controls.resultset.panel.aggregate.AggregateColumnsPanel">
             <supports type="columns"/>
         </panel>
         <panel
                 id="results-metadata"
                 label="%panel.results-metadata.label"
-                description="%resultset.panel.metadata.description"
+                description="%panel.results-metadata.description"
                 icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/panel_metadata.png"
                 default="false"
-                class="org.jkiss.dbeaver.ui.controls.resultset.panel.MetaDataPanel">
+                class="org.jkiss.dbeaver.ui.controls.resultset.panel.metadata.MetaDataPanel">
+        </panel>
+        <panel
+                id="results-grouping"
+                label="%panel.results-grouping.label"
+                description="%panel.results-grouping.description"
+                icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/panel_grouping.png"
+                default="false"
+                class="org.jkiss.dbeaver.ui.controls.resultset.panel.grouping.GroupingPanel">
         </panel>
     </extension>
 

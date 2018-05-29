@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -58,12 +57,7 @@ public class ResultSetPresentationRegistry {
                 presentations.add(descriptor);
             }
         }
-        Collections.sort(presentations, new Comparator<ResultSetPresentationDescriptor>() {
-            @Override
-            public int compare(ResultSetPresentationDescriptor o1, ResultSetPresentationDescriptor o2) {
-                return o1.getOrder() - o2.getOrder();
-            }
-        });
+        presentations.sort(Comparator.comparingInt(ResultSetPresentationDescriptor::getOrder));
 
         // Load panel descriptors
         IConfigurationElement[] panelElements = registry.getConfigurationElementsFor(ResultSetPanelDescriptor.EXTENSION_ID);
@@ -117,12 +111,7 @@ public class ResultSetPresentationRegistry {
                 result.add(panel);
             }
         }
-        Collections.sort(result, new Comparator<ResultSetPanelDescriptor>() {
-            @Override
-            public int compare(ResultSetPanelDescriptor o1, ResultSetPanelDescriptor o2) {
-                return o1.getLabel().compareTo(o2.getLabel());
-            }
-        });
+        result.sort(Comparator.comparing(ResultSetPanelDescriptor::getLabel));
         return result;
     }
 

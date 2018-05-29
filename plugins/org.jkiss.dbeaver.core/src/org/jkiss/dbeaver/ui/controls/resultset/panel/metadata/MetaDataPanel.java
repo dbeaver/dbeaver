@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.controls.resultset.panel;
+package org.jkiss.dbeaver.ui.controls.resultset.panel.metadata;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
@@ -35,7 +35,6 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.ui.LoadingJob;
-import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.ui.controls.itemlist.DatabaseObjectListControl;
@@ -62,21 +61,6 @@ public class MetaDataPanel implements IResultSetPanel {
     private transient boolean updateSelection = false;
 
     public MetaDataPanel() {
-    }
-
-    @Override
-    public String getPanelTitle() {
-        return "MetaData";
-    }
-
-    @Override
-    public DBPImage getPanelImage() {
-        return UIIcon.PANEL_METADATA;
-    }
-
-    @Override
-    public String getPanelDescription() {
-        return "Resultset metadata";
     }
 
     @Override

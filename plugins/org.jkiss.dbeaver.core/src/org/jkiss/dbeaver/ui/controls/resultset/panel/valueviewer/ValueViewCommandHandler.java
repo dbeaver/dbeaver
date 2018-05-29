@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ui.controls.resultset.panel;
+package org.jkiss.dbeaver.ui.controls.resultset.panel.valueviewer;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -43,12 +43,12 @@ public class ValueViewCommandHandler extends AbstractHandler {
         }
         String actionId = event.getCommand().getId();
         IResultSetPanel visiblePanel = rsv.getVisiblePanel();
-        if (visiblePanel instanceof ViewValuePanel) {
+        if (visiblePanel instanceof ValueViewerPanel) {
             switch (actionId) {
                 case ITextEditorActionDefinitionIds.SMART_ENTER:
                 case CoreCommands.CMD_EXECUTE_STATEMENT:
                 case CMD_SAVE_VALUE:
-                    ((ViewValuePanel) visiblePanel).saveValue();
+                    ((ValueViewerPanel) visiblePanel).saveValue();
                     break;
             }
         }
