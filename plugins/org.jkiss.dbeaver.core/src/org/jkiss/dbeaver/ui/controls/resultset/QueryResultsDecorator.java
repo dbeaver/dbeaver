@@ -16,6 +16,8 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
+import org.jkiss.dbeaver.core.CoreMessages;
+
 /**
  * Decorator for query results
  */
@@ -24,6 +26,16 @@ public class QueryResultsDecorator implements IResultSetDecorator  {
     @Override
     public long getDecoratorFeatures() {
         return FEATURE_FILTERS | FEATURE_STATUS_BAR | FEATURE_PANELS;
+    }
+
+    @Override
+    public String getEmptyDataMessage() {
+        return CoreMessages.sql_editor_resultset_filter_panel_control_no_data;
+    }
+
+    @Override
+    public String getEmptyDataDescription() {
+        return null;
     }
 
 }

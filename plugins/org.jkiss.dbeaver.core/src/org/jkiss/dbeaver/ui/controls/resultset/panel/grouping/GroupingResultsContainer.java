@@ -47,7 +47,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
 
     @Override
     public DBSDataContainer getDataContainer() {
-        return null;
+        return this.dataContainer;
     }
 
     @Override

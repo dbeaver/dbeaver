@@ -56,6 +56,9 @@ public interface IResultSetController extends DBPContextProvider {
     IResultSetContainer getContainer();
 
     @NotNull
+    IResultSetDecorator getDecorator();
+
+    @NotNull
     ResultSetModel getModel();
 
     @Nullable

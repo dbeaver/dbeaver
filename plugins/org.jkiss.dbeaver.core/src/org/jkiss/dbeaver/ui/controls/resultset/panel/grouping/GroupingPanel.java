@@ -96,8 +96,8 @@ public class GroupingPanel implements IResultSetPanel {
 
     @Override
     public void refresh(boolean force) {
-        resultsContainer.getResultSetController().refresh();
-        saveSettings();
+        //resultsContainer.getResultSetController().refresh();
+        //saveSettings();
     }
 
     @Override

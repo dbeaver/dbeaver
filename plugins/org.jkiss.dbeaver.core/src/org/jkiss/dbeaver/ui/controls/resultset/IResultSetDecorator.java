@@ -27,4 +27,8 @@ public interface IResultSetDecorator {
     long FEATURE_PANELS          = 4;
 
     long getDecoratorFeatures();
+
+    String getEmptyDataMessage();
+
+    String getEmptyDataDescription();
 }
