@@ -42,9 +42,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetContainer;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
+import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.data.AbstractDataEditor;
@@ -171,6 +169,11 @@ public class CursorViewDialog extends ValueViewDialog implements IResultSetConta
         }
         AbstractDataEditor.openNewDataEditor(targetNode, newFilter);
 
+    }
+
+    @Override
+    public IResultSetDecorator createResultSetDecorator() {
+        return new QueryResultsDecorator();
     }
 
     private class CursorDataContainer implements DBSDataContainer {
