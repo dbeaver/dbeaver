@@ -27,14 +27,11 @@ import org.eclipse.jface.viewers.TableViewerColumn;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusAdapter;
 import org.eclipse.swt.events.FocusEvent;
-import org.eclipse.swt.events.TraverseEvent;
-import org.eclipse.swt.events.TraverseListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
@@ -118,7 +115,7 @@ public class FilterValueEditPopup extends Dialog {
         FocusAdapter focusListener = new FocusAdapter() {
             @Override
             public void focusLost(FocusEvent e) {
-                DBeaverUI.asyncExec(() -> {
+                UIUtils.asyncExec(() -> {
                     if (!UIUtils.isParent(getShell(), getShell().getDisplay().getFocusControl())) {
                         cancelPressed();
                     }

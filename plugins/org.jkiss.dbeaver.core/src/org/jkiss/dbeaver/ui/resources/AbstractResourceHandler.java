@@ -24,11 +24,11 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.entity.FolderEditor;
 import org.jkiss.dbeaver.ui.editors.entity.NodeEditorInput;
 
@@ -71,7 +71,7 @@ public abstract class AbstractResourceHandler implements DBPResourceHandler {
             DBNResource node = DBeaverCore.getInstance().getNavigatorModel().getNodeByResource(resource);
             if (node != null) {
                 NodeEditorInput nodeInput = new NodeEditorInput(node);
-                DBeaverUI.getActiveWorkbenchWindow().getActivePage().openEditor(
+                UIUtils.getActiveWorkbenchWindow().getActivePage().openEditor(
                     nodeInput,
                     FolderEditor.class.getName());
             }

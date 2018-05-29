@@ -32,7 +32,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -89,7 +88,7 @@ class ProjectExportWizardPage extends WizardPage {
         }
 
         Set<IProject> projectList = new LinkedHashSet<>();
-        final ISelection selection = DBeaverUI.getActiveWorkbenchWindow().getActivePage().getSelection();
+        final ISelection selection = UIUtils.getActiveWorkbenchWindow().getActivePage().getSelection();
         if (selection != null && !selection.isEmpty() && selection instanceof IStructuredSelection) {
             for (Iterator<?> iter = ((IStructuredSelection) selection).iterator(); iter.hasNext(); ) {
                 Object element = iter.next();

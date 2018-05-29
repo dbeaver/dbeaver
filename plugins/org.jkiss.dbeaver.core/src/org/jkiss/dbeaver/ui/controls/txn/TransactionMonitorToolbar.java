@@ -34,7 +34,6 @@ import org.eclipse.ui.*;
 import org.eclipse.ui.menus.WorkbenchWindowControlContribution;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCSavepoint;
@@ -168,7 +167,7 @@ public class TransactionMonitorToolbar {
                 bg = getDisplay().getSystemColor(SWT.COLOR_WHITE);
             } else {
                 // Use gradient depending on update count
-                ISharedTextColors sharedColors = DBeaverUI.getSharedTextColors();
+                ISharedTextColors sharedColors = UIUtils.getSharedTextColors();
 
                 int minCount = 0, maxCount = 400;
                 int ratio = ((updateCount - minCount) * 100) / (maxCount - minCount);
@@ -209,7 +208,7 @@ public class TransactionMonitorToolbar {
             monitor.done();
 
             // Update UI
-            DBeaverUI.asyncExec(() -> {
+            UIUtils.asyncExec(() -> {
                 if (isDisposed()) {
                     return;
                 }
@@ -256,7 +255,7 @@ public class TransactionMonitorToolbar {
 
         @Override
         protected Control createControl(Composite parent) {
-            TransactionMonitorToolbar toolbar = new TransactionMonitorToolbar(DBeaverUI.getActiveWorkbenchWindow());
+            TransactionMonitorToolbar toolbar = new TransactionMonitorToolbar(UIUtils.getActiveWorkbenchWindow());
             return toolbar.createControl(parent);
         }
     }

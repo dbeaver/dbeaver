@@ -20,7 +20,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -32,6 +31,7 @@ import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.data.IAttributeController;
 import org.jkiss.dbeaver.ui.data.IRowController;
 import org.jkiss.dbeaver.ui.data.IValueManager;
@@ -133,7 +133,7 @@ public class ResultSetValueController implements IAttributeController, IRowContr
         boolean updated = controller.getModel().updateCellValue(binding, curRow, value);
         if (updated && updatePresentation) {
             // Update controls
-            DBeaverUI.syncExec(new Runnable() {
+            UIUtils.syncExec(new Runnable() {
                 @Override
                 public void run() {
                     controller.updatePanelsContent(false);
@@ -221,7 +221,7 @@ public class ResultSetValueController implements IAttributeController, IRowContr
 
     @Override
     public void showMessage(String message, DBPMessageType messageType) {
-        DBeaverUI.asyncExec(() -> controller.setStatus(message, messageType));
+        UIUtils.asyncExec(() -> controller.setStatus(message, messageType));
     }
 
     @NotNull

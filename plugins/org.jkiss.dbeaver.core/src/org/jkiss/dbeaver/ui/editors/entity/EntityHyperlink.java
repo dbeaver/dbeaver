@@ -22,7 +22,6 @@ import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.hyperlink.IHyperlink;
 import org.eclipse.ui.IWorkbenchSite;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -31,6 +30,7 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
@@ -91,7 +91,7 @@ public class EntityHyperlink implements IHyperlink
                 node = NavigatorUtils.getNodeByObject(monitor, object, true);
 
                 if (node != null) {
-                    DBeaverUI.asyncExec(new Runnable() {
+                    UIUtils.asyncExec(new Runnable() {
                         @Override
                         public void run() {
                             NavigatorUtils.executeNodeAction(DBXTreeNodeHandler.Action.open, node, site);

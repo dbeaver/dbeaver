@@ -27,7 +27,6 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.oracle.model.OracleObjectPersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.OracleSchedulerJob;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
@@ -94,7 +93,7 @@ public class JobRunHandler extends OracleTaskHandler
                 compileLog.clearLog();
                 Throwable error = null;
                 try {
-                    DBeaverUI.runInProgressService(monitor -> {
+                    UIUtils.runInProgressService(monitor -> {
                         try {
                             runJob(monitor, compileLog, job);
                         } catch (DBCException e) {

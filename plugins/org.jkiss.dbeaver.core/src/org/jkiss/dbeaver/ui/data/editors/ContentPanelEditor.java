@@ -31,7 +31,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPMessageType;
@@ -57,7 +56,6 @@ import org.jkiss.dbeaver.ui.data.registry.StreamValueManagerDescriptor;
 import org.jkiss.dbeaver.ui.data.registry.ValueManagerRegistry;
 import org.jkiss.dbeaver.utils.MimeTypes;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
-import org.jkiss.utils.MimeType;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -125,7 +123,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
                     // ignore
                 }
             } else {
-                DBeaverUI.runInUI(valueController.getValueSite().getWorkbenchWindow(), runnable);
+                UIUtils.runInUI(valueController.getValueSite().getWorkbenchWindow(), runnable);
             }
         } else if (content == null) {
             valueController.showMessage("NULL content value. Must be DBDContent.", DBPMessageType.ERROR);

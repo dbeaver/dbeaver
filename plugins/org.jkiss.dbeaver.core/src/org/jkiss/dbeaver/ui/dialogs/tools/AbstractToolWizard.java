@@ -203,7 +203,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
         }
         long startTime = System.currentTimeMillis();
         try {
-            DBeaverUI.run(getContainer(), true, true, this);
+            UIUtils.run(getContainer(), true, true, this);
         }
         catch (InterruptedException ex) {
             UIUtils.showMessageBox(getShell(), task, NLS.bind(CoreMessages.tools_wizard_error_task_canceled, task, getObjectsName()), SWT.ICON_ERROR);

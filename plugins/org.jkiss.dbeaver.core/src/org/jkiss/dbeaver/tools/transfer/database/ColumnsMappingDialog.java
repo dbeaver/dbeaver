@@ -30,7 +30,6 @@ import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.TableItem;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataTypeProvider;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -165,7 +164,7 @@ public class ColumnsMappingDialog extends StatusDialog {
                     DatabaseMappingAttribute mapping = (DatabaseMappingAttribute) cell.getElement();
                     cell.setText(mapping.getTargetName());
                     if (mapping.mappingType == DatabaseMappingType.unspecified) {
-                        cell.setBackground(DBeaverUI.getSharedTextColors().getColor(SharedTextColors.COLOR_WARNING));
+                        cell.setBackground(UIUtils.getSharedTextColors().getColor(SharedTextColors.COLOR_WARNING));
                     } else {
                         cell.setBackground(null);
                     }

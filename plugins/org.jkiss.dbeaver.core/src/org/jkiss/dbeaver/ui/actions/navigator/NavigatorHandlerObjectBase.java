@@ -24,7 +24,6 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -148,7 +147,7 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
         if (node == null) {
             NodeLoader nodeLoader = new NodeLoader(model, Collections.singleton(object));
             try {
-                DBeaverUI.runInProgressService(nodeLoader);
+                UIUtils.runInProgressService(nodeLoader);
             } catch (InvocationTargetException e) {
                 log.warn("Can't load node for object '" + object.getName() + "'", e.getTargetException());
             } catch (InterruptedException e) {
@@ -179,7 +178,7 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
         if (!missingObjects.isEmpty()) {
             NodeLoader nodeLoader = new NodeLoader(model, missingObjects);
             try {
-                DBeaverUI.runInProgressService(nodeLoader);
+                UIUtils.runInProgressService(nodeLoader);
             } catch (InvocationTargetException e) {
                 log.warn("Can't load node for objects " + missingObjects.size(), e.getTargetException());
             } catch (InterruptedException e) {

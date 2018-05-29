@@ -25,7 +25,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.erd.editor.ERDEditorInput;
 import org.jkiss.dbeaver.ext.erd.editor.ERDEditorStandalone;
 import org.jkiss.dbeaver.ext.erd.model.DiagramLoader;
@@ -35,6 +34,7 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.resources.AbstractResourceHandler;
 import org.jkiss.dbeaver.ui.resources.ResourceUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -114,7 +114,7 @@ public class ERDResourceHandler extends AbstractResourceHandler {
         }
 
         ERDEditorInput erdInput = new ERDEditorInput((IFile)resource);
-        DBeaverUI.getActiveWorkbenchWindow().getActivePage().openEditor(
+        UIUtils.getActiveWorkbenchWindow().getActivePage().openEditor(
             erdInput,
             ERDEditorStandalone.class.getName());
     }
@@ -162,7 +162,7 @@ public class ERDResourceHandler extends AbstractResourceHandler {
                 }
             };
             if (monitor == null) {
-                DBeaverUI.runInProgressService(runnable);
+                UIUtils.runInProgressService(runnable);
             } else {
                 runnable.run(monitor);
             }

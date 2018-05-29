@@ -26,7 +26,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
@@ -240,7 +239,7 @@ class PostgreBackupWizardPageObjects extends PostgreWizardPageSettings<PostgreBa
                         objects.addAll(curSchema.getViews(monitor));
                     }
                     Collections.sort(objects, DBUtils.nameComparator());
-                    DBeaverUI.syncExec(new Runnable() {
+                    UIUtils.syncExec(new Runnable() {
                         @Override
                         public void run() {
                             tablesTable.removeAll();

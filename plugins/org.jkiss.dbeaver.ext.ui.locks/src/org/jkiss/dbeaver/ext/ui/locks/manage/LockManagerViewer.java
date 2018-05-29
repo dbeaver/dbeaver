@@ -32,7 +32,6 @@ import org.eclipse.ui.ISharedImages;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchSite;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.ui.locks.graph.LockGraphicalView;
 import org.jkiss.dbeaver.ext.ui.locks.table.LockTable;
 import org.jkiss.dbeaver.ext.ui.locks.table.LockTableDetail;
@@ -93,7 +92,7 @@ public class LockManagerViewer {
     protected LockManagerViewer(IWorkbenchPart part, Composite parent, final DBAServerLockManager<DBAServerLock, DBAServerLockItem> lockManager) {
 
 
-        refreshControl = new AutoRefreshControl(parent, lockManager.getClass().getSimpleName(), monitor -> DBeaverUI.syncExec(() -> refreshLocks(null)));
+        refreshControl = new AutoRefreshControl(parent, lockManager.getClass().getSimpleName(), monitor -> UIUtils.syncExec(() -> refreshLocks(null)));
         this.graphManager = (LockGraphManager) lockManager;
 
         boldFont = UIUtils.makeBoldFont(parent.getFont());

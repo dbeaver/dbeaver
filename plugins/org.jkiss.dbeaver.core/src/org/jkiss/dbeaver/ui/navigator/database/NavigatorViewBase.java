@@ -27,13 +27,13 @@ import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNodeHandler;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.PropertyPageStandard;
@@ -136,7 +136,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
                                 NavigatorViewBase.DoubleClickBehavior.valueOf(DBeaverCore.getGlobalPreferenceStore().getString(DBeaverPreferences.NAVIGATOR_CONNECTION_DOUBLE_CLICK));
                             switch (doubleClickBehavior) {
                                 case EDIT:
-                                    NavigatorHandlerObjectOpen.openEntityEditor((DBNDataSource) node, null, DBeaverUI.getActiveWorkbenchWindow());
+                                    NavigatorHandlerObjectOpen.openEntityEditor((DBNDataSource) node, null, UIUtils.getActiveWorkbenchWindow());
                                     break;
                                 case CONNECT:
                                     if (dataSource.isConnected()) {
@@ -199,7 +199,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
         }
 
         if (lastSelection instanceof DBNDatabaseNode && DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.NAVIGATOR_SYNC_EDITOR_DATASOURCE)) {
-            IEditorPart activeEditor = DBeaverUI.getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+            IEditorPart activeEditor = UIUtils.getActiveWorkbenchWindow().getActivePage().getActiveEditor();
             if (activeEditor != null) {
                 NavigatorUtils.syncEditorWithNavigator(this, activeEditor);
             }

@@ -23,7 +23,6 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchPart;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.qm.QMTransactionState;
 import org.jkiss.dbeaver.model.qm.QMUtils;
@@ -188,7 +187,7 @@ public class PendingTransactionsDialog extends TransactionInfoDialog {
             dsItem.setExpanded(true);
         }
 
-        DBeaverUI.asyncExec(new Runnable() {
+        UIUtils.asyncExec(new Runnable() {
             @Override
             public void run() {
                 UIUtils.packColumns(contextTree);
@@ -197,7 +196,7 @@ public class PendingTransactionsDialog extends TransactionInfoDialog {
     }
 
     public static void showDialog(Shell shell) {
-        IWorkbenchPart activePart = DBeaverUI.getActiveWorkbenchWindow().getActivePage().getActivePart();
+        IWorkbenchPart activePart = UIUtils.getActiveWorkbenchWindow().getActivePage().getActivePart();
         if (activePart == null) {
             DBUserInterface.getInstance().showError(
                     "No active part",

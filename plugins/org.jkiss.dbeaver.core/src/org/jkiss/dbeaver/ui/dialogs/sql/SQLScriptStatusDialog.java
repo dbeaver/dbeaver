@@ -27,7 +27,6 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.ISharedImages;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -54,7 +53,7 @@ public abstract class SQLScriptStatusDialog<T extends DBSObject> extends BaseDia
 
     protected SQLScriptStatusDialog(String title, @Nullable DBPImage image)
     {
-        super(DBeaverUI.getActiveWorkbenchShell(), title, image);
+        super(UIUtils.getActiveWorkbenchShell(), title, image);
     }
 
     @Override
@@ -107,7 +106,7 @@ public abstract class SQLScriptStatusDialog<T extends DBSObject> extends BaseDia
         finishLabel.setLayoutData(gd);
         finishLabel.setText("Finished");
 
-        DBeaverUI.asyncExec(new Runnable() {
+        UIUtils.asyncExec(new Runnable() {
             @Override
             public void run() {
                 UIUtils.packColumns(objectTree, false, null);

@@ -24,7 +24,6 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.FileEditorInput;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.ui.ProgramInfo;
@@ -89,7 +88,7 @@ public class DefaultResourceHandlerImpl extends AbstractResourceHandler {
             IEditorDescriptor desc = PlatformUI.getWorkbench().
                 getEditorRegistry().getDefaultEditor(resource.getName());
             if (desc != null) {
-                DBeaverUI.getActiveWorkbenchWindow().getActivePage().openEditor(
+                UIUtils.getActiveWorkbenchWindow().getActivePage().openEditor(
                     new FileEditorInput((IFile) resource),
                     desc.getId());
             } else {

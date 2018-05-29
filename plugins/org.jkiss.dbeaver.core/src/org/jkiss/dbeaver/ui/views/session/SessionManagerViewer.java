@@ -31,7 +31,6 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchSite;
 import org.eclipse.ui.PartInitException;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSession;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -79,7 +78,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
         SashForm sash = UIUtils.createPartDivider(part, composite, SWT.VERTICAL | SWT.SMOOTH);
         sash.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        refreshControl = new AutoRefreshControl(sash, sessionManager.getClass().getSimpleName(), monitor -> DBeaverUI.syncExec(this::refreshSessions));
+        refreshControl = new AutoRefreshControl(sash, sessionManager.getClass().getSimpleName(), monitor -> UIUtils.syncExec(this::refreshSessions));
 
         sessionTable = new SessionListControl(sash, part.getSite(), sessionManager);
         sessionTable.getItemsViewer().addSelectionChangedListener(event -> onSessionSelect(getSelectedSession()));

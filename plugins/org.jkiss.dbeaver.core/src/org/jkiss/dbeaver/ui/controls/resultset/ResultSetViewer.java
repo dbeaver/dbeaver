@@ -62,7 +62,6 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -594,7 +593,7 @@ public class ResultSetViewer extends Viewer
         // Set focus in presentation control
         // Use async exec to avoid focus switch after user UI interaction (e.g. combo)
         if (focusInPresentation) {
-            DBeaverUI.asyncExec(() -> {
+            UIUtils.asyncExec(() -> {
                 Control control = activePresentation.getControl();
                 if (control != null && !control.isDisposed()) {
                     control.setFocus();
@@ -1922,7 +1921,7 @@ public class ResultSetViewer extends Viewer
             }
         };
         try {
-            DBeaverUI.runInProgressService(refCollector);
+            UIUtils.runInProgressService(refCollector);
         } catch (InvocationTargetException e) {
             log.error("Error reading referencing tables for '" + singleSource.getName() + "'", e.getTargetException());
         } catch (InterruptedException e) {
@@ -2421,7 +2420,7 @@ public class ResultSetViewer extends Viewer
                     // Apply changes
                     applyChanges(null, success -> {
                         if (success) {
-                            DBeaverUI.asyncExec(() -> refreshData(null));
+                            UIUtils.asyncExec(() -> refreshData(null));
                         }
                     });
                     return false;
@@ -2663,7 +2662,7 @@ public class ResultSetViewer extends Viewer
             public void aboutToRun(IJobChangeEvent event) {
                 model.setUpdateInProgress(true);
                 model.setStatistics(null);
-                DBeaverUI.syncExec(() -> filtersPanel.enableFilters(false));
+                UIUtils.syncExec(() -> filtersPanel.enableFilters(false));
             }
 
             @Override
@@ -2677,7 +2676,7 @@ public class ResultSetViewer extends Viewer
                 if (control.isDisposed()) {
                     return;
                 }
-                DBeaverUI.syncExec(new Runnable() {
+                UIUtils.syncExec(new Runnable() {
                     @Override
                     public void run() {
                         try {
@@ -3187,7 +3186,7 @@ public class ResultSetViewer extends Viewer
         @Override
         protected IContributionItem[] getContributionItems() {
             final ResultSetViewer rsv = (ResultSetViewer) ResultSetCommandHandler.getActiveResultSet(
-                DBeaverUI.getActiveWorkbenchWindow().getActivePage().getActivePart());
+                UIUtils.getActiveWorkbenchWindow().getActivePage().getActivePart());
             if (rsv == null) {
                 return new IContributionItem[0];
             }
@@ -3717,7 +3716,7 @@ public class ResultSetViewer extends Viewer
         @Override
         public void run()
         {
-            DBeaverUI.runUIJob("Edit virtual key", monitor -> {
+            UIUtils.runUIJob("Edit virtual key", monitor -> {
                 try {
                     if (define) {
                         editEntityIdentifier(monitor);

@@ -26,8 +26,8 @@ import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.RetargetTextEditorAction;
 import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.DBeaverActivator;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.ResourceBundle;
 
@@ -126,7 +126,7 @@ public class SQLEditorContributor extends TextEditorActionContributor
         }
 
         if (!isNestedEditor()) {
-            IWorkbenchWindow window = DBeaverUI.getActiveWorkbenchWindow();
+            IWorkbenchWindow window = UIUtils.getActiveWorkbenchWindow();
             IMenuManager editMenu = manager.findMenuUsingPath(IWorkbenchActionConstants.M_EDIT);
             if (editMenu != null) {
                 editMenu.insertAfter(IWorkbenchActionConstants.MB_ADDITIONS, ActionUtils.makeCommandContribution(window, ITextEditorActionDefinitionIds.BLOCK_SELECTION_MODE));

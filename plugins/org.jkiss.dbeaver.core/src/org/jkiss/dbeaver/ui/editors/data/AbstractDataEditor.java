@@ -24,7 +24,6 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
@@ -146,7 +145,7 @@ public abstract class AbstractDataEditor<OBJECT_TYPE extends DBSObject> extends 
     }
 
     public static void openNewDataEditor(DBNDatabaseNode targetNode, DBDDataFilter newFilter) {
-        DBeaverUI.asyncExec(new Runnable() {
+        UIUtils.asyncExec(new Runnable() {
             @Override
             public void run() {
                 IEditorPart entityEditor = NavigatorHandlerObjectOpen.openEntityEditor(
@@ -154,7 +153,7 @@ public abstract class AbstractDataEditor<OBJECT_TYPE extends DBSObject> extends 
                     DatabaseDataEditor.class.getName(),
                     null,
                     Collections.singletonMap(DatabaseDataEditor.ATTR_DATA_FILTER, newFilter),
-                    DBeaverUI.getActiveWorkbenchWindow(),
+                    UIUtils.getActiveWorkbenchWindow(),
                     true);
 
                 if (entityEditor instanceof MultiPageEditorPart) {

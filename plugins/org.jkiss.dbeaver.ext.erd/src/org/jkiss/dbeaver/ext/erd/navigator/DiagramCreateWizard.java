@@ -28,7 +28,6 @@ import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.erd.ERDMessages;
 import org.jkiss.dbeaver.ext.erd.model.DiagramObjectCollector;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
@@ -39,6 +38,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 
 import java.lang.reflect.InvocationTargetException;
@@ -121,9 +121,9 @@ public class DiagramCreateWizard extends Wizard implements INewWizard {
                 }
             }
             DiagramCreator creator = new DiagramCreator(rootObjects);
-            DBeaverUI.run(getContainer(), true, true, creator);
+            UIUtils.run(getContainer(), true, true, creator);
 
-            NavigatorHandlerObjectOpen.openResource(creator.diagramFile, DBeaverUI.getActiveWorkbenchWindow());
+            NavigatorHandlerObjectOpen.openResource(creator.diagramFile, UIUtils.getActiveWorkbenchWindow());
         }
         catch (InterruptedException ex) {
             return false;

@@ -28,7 +28,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.IDataSourceContainerProviderEx;
@@ -36,6 +35,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.runtime.jobs.DisconnectJob;
 import org.jkiss.dbeaver.runtime.jobs.InvalidateJob;
 import org.jkiss.dbeaver.ui.UITask;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
 import org.jkiss.dbeaver.ui.dialogs.ConnectionLostDialog;
 import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
@@ -108,7 +108,7 @@ public class DataSourceInvalidateHandler extends AbstractDataSourceHandler
 //                            "Invalidate data source [" + context.getDataSource().getContainer().getName() + "]",
 //                            "Error while connecting to the datasource",// + "\nTime spent: " + RuntimeUtils.formatExecutionTime(invalidateJob.getTimeSpent()),
 //                            error);
-                        DBeaverUI.syncExec(new Runnable() {
+                        UIUtils.syncExec(new Runnable() {
                             @Override
                             public void run() {
 
@@ -151,7 +151,7 @@ public class DataSourceInvalidateHandler extends AbstractDataSourceHandler
             ConnectionRecoverDialog dialog = new ConnectionRecoverDialog(shell, title, message == null ? title : message, error);
             dialog.open();
         };
-        DBeaverUI.syncExec(runnable);
+        UIUtils.syncExec(runnable);
     }
 
     private static class ConnectionRecoverDialog extends StandardErrorDialog {
@@ -161,7 +161,7 @@ public class DataSourceInvalidateHandler extends AbstractDataSourceHandler
         ConnectionRecoverDialog(Shell shell, String title, String message, DBException error)
         {
             super(
-                shell == null ? DBeaverUI.getActiveWorkbenchShell() : shell,
+                shell == null ? UIUtils.getActiveWorkbenchShell() : shell,
                 title,
                 message,
                 GeneralUtils.makeExceptionStatus(error),

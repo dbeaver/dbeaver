@@ -32,7 +32,6 @@ import org.eclipse.ui.ISharedImages;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
@@ -324,7 +323,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
         refreshData();
 
         // Pack UI
-        DBeaverUI.asyncExec(new Runnable() {
+        UIUtils.asyncExec(new Runnable() {
             @Override
             public void run() {
                 UIUtils.packColumns(columnsViewer.getTree());

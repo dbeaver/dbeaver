@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
@@ -47,7 +46,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.registry.editor.EntityEditorDescriptor;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
 import org.jkiss.dbeaver.runtime.properties.PropertiesContributor;
-import org.jkiss.dbeaver.ui.IProgressControlProvider;
+import org.jkiss.dbeaver.ui.controls.IProgressControlProvider;
 import org.jkiss.dbeaver.ui.IRefreshablePart;
 import org.jkiss.dbeaver.ui.ISearchContextProvider;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -254,7 +253,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
             if (sashForm.getSize().y > 0) {
                 sashUpdater.run();
             } else {
-                DBeaverUI.asyncExec(sashUpdater);
+                UIUtils.asyncExec(sashUpdater);
             }
         }
     }
@@ -481,7 +480,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
             };
             try {
                 if (node.needsInitialization()) {
-                    DBeaverUI.runInProgressService(tabsCollector);
+                    UIUtils.runInProgressService(tabsCollector);
                 } else {
                     tabsCollector.run(new VoidProgressMonitor());
                 }

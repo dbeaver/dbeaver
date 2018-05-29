@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.LoadingJob;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
 import org.jkiss.dbeaver.ui.editors.DatabaseLazyEditorInput;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
@@ -157,11 +158,11 @@ public class ProgressEditorPart extends EditorPart {
             initEntityEditor(result);
             if (result == null) {
                 // Close editor
-                DBeaverUI.asyncExec(() ->
+                UIUtils.asyncExec(() ->
                     entityEditor.getSite().getWorkbenchWindow().getActivePage().closeEditor(entityEditor, false));
             } else {
                 // Activate entity editor (we have changed inner editors and need to force contexts activation).
-                DBeaverUI.asyncExec(() -> DBeaverUI.getInstance().refreshPartContexts(entityEditor));
+                UIUtils.asyncExec(() -> DBeaverUI.getInstance().refreshPartContexts(entityEditor));
             }
         }
     }

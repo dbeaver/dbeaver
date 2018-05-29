@@ -29,7 +29,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -136,7 +135,7 @@ public class ReferenceValueEditor {
                         public void widgetSelected(SelectionEvent e) {
                             // Open
                             final IWorkbenchWindow window = valueController.getValueSite().getWorkbenchWindow();
-                            DBeaverUI.runInUI(window, monitor -> {
+                            UIUtils.runInUI(window, monitor -> {
                                 DBNDatabaseNode tableNode = NavigatorUtils.getNodeByObject(
                                     monitor,
                                     refTable,

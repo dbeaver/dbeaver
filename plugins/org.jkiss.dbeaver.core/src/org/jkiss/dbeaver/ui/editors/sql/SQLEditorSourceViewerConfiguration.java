@@ -43,11 +43,11 @@ import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.editors.text.TextSourceViewerConfiguration;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.indent.SQLAutoIndentStrategy;
 import org.jkiss.dbeaver.ui.editors.sql.indent.SQLCommentAutoIndentStrategy;
 import org.jkiss.dbeaver.ui.editors.sql.indent.SQLStringAutoIndentStrategy;
@@ -167,8 +167,8 @@ public class SQLEditorSourceViewerConfiguration extends TextSourceViewerConfigur
         assistant.setInformationControlCreator(getInformationControlCreator(sourceViewer));
 
         //In the future, a preference page will be added to customize foreground and background.
-        Color foreground = new Color(DBeaverUI.getDisplay(), 0, 0, 0);
-        Color background = new Color(DBeaverUI.getDisplay(), 255, 255, 255);
+        Color foreground = new Color(UIUtils.getDisplay(), 0, 0, 0);
+        Color background = new Color(UIUtils.getDisplay(), 255, 255, 255);
 
         assistant.setContextInformationPopupOrientation(IContentAssistant.CONTEXT_INFO_ABOVE);
         assistant.setContextInformationPopupForeground(foreground);

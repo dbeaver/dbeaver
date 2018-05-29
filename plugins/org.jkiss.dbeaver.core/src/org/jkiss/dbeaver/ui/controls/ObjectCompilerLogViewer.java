@@ -26,7 +26,6 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.internal.WorkbenchMessages;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.exec.compile.DBCCompileError;
 import org.jkiss.dbeaver.model.exec.compile.DBCCompileLogBase;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -66,7 +65,7 @@ public class ObjectCompilerLogViewer extends DBCCompileLogBase {
 
     public void layoutLog()
     {
-        DBeaverUI.syncExec(new Runnable() {
+        UIUtils.syncExec(new Runnable() {
             @Override
             public void run() {
                 if (!infoTable.isDisposed()) {
@@ -82,7 +81,7 @@ public class ObjectCompilerLogViewer extends DBCCompileLogBase {
     protected void log(final int type, final Object message, final Throwable t)
     {
         super.log(type, message, t);
-        DBeaverUI.syncExec(new Runnable() {
+        UIUtils.syncExec(new Runnable() {
             @Override
             public void run() {
                 if (infoTable == null || infoTable.isDisposed()) {

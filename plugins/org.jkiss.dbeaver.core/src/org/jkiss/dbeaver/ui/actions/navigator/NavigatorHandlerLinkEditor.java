@@ -24,7 +24,6 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -36,6 +35,7 @@ import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.ProjectFileEditorInput;
@@ -89,7 +89,7 @@ public class NavigatorHandlerLinkEditor extends AbstractHandler {
                 }
 
                 final NavigatorViewBase view = navigatorView;
-                DBeaverUI.runInUI(activePage.getWorkbenchWindow(), new DBRRunnableWithProgress() {
+                UIUtils.runInUI(activePage.getWorkbenchWindow(), new DBRRunnableWithProgress() {
                     @Override
                     public void run(DBRProgressMonitor monitor)
                         throws InvocationTargetException, InterruptedException {

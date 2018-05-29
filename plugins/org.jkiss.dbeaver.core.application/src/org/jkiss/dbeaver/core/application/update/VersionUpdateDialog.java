@@ -29,7 +29,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -143,7 +142,7 @@ class VersionUpdateDialog extends Dialog {
                 UIUtils.launchProgram(newVersion.getBaseURL());
             }
         } else if (buttonId == IDialogConstants.PROCEED_ID) {
-            final IWorkbenchWindow window = DBeaverUI.getActiveWorkbenchWindow();
+            final IWorkbenchWindow window = UIUtils.getActiveWorkbenchWindow();
             CheckForUpdateAction.activateStandardHandler(window);
             try {
                 ActionUtils.runCommand(CheckForUpdateAction.P2_UPDATE_COMMAND, PlatformUI.getWorkbench().getActiveWorkbenchWindow());
