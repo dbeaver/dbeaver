@@ -790,8 +790,8 @@ public class DriverEditDialog extends HelpEnabledDialog {
         }
 
         DriverDescriptor oldDriver = provider.getDriverByName(driver.getCategory(), driver.getName());
-        if (oldDriver != null && oldDriver != driver) {
-            UIUtils.showMessageBox(getShell(), "Driver create", "Driver '" + driver.getName() + "' already exists. Change driver name", SWT.ICON_ERROR);
+        if (oldDriver != null && oldDriver != driver && !oldDriver.isDisabled() && oldDriver.getReplacedBy() == null) {
+            UIUtils.showMessageBox(getShell(), "Driver settings save", "Driver '" + driver.getName() + "' already exists. Change driver name", SWT.ICON_ERROR);
             return;
         }
 
