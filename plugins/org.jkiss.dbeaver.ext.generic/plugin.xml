@@ -894,13 +894,24 @@
                 <!-- AWS -->
                 <driver
                     id="aws_redshift"
-                    label="Redshift"
+                    label="Redshift (JDBC 4.1)"
                     class="com.amazon.redshift.jdbc41.Driver"
                     sampleURL="jdbc:redshift://{host}:{port}/{database}"
                     defaultPort="5439"
                     description="Amazon Redshift JDBC driver"
                     webURL="http://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-connection.html">
-                    <file type="jar" path="https://s3.amazonaws.com/redshift-downloads/drivers/jdbc/1.2.12.1017/RedshiftJDBC42-1.2.12.1017.jar"/>
+                    <file type="jar" path="https://s3.amazonaws.com/redshift-downloads/drivers/jdbc/1.2.12.1017/1.2.15.1025/RedshiftJDBC41-1.2.15.1025.jar"/>
+                </driver>
+                <driver
+                    id="aws_redshift_42"
+                    label="Redshift"
+                    class="com.amazon.redshift.jdbc42.Driver"
+                    sampleURL="jdbc:redshift://{host}:{port}/{database}"
+                    defaultPort="5439"
+                    description="Amazon Redshift JDBC driver"
+                    webURL="http://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-connection.html">
+                    <replace provider="generic" driver="aws_redshift"/>
+                    <file type="jar" path="https://s3.amazonaws.com/redshift-downloads/drivers/jdbc/1.2.15.1025/RedshiftJDBC42-1.2.15.1025.jar"/>
                 </driver>
 
                 <!-- Virtuoso  -->
