@@ -17,31 +17,14 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset;
 
-import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.swt.widgets.Composite;
-import org.jkiss.code.NotNull;
-import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-
-import java.util.List;
-
 /**
  * ResultSet decorator.
  */
 public interface IResultSetDecorator {
 
-    void attach(IResultSetController controller);
+    long FEATURE_FILTERS         = 1;
+    long FEATURE_STATUS_BAR      = 2;
+    long FEATURE_PANELS          = 4;
 
-    Composite createTopBar(Composite parent);
-
-    Composite createBottomBar(Composite parent);
-
-    void setFocus();
-
-    void updateEditControls();
-
-    List<String> getSupportedPresentations();
-
-    void fillContextMenu(@NotNull IMenuManager manager, @Nullable final DBDAttributeBinding attr, @Nullable final ResultSetRow row);
-
+    long getDecoratorFeatures();
 }

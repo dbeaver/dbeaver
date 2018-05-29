@@ -87,9 +87,7 @@ import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetContainer;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetListener;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
+import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
@@ -1933,6 +1931,11 @@ public class SQLEditor extends SQLEditorBase implements
                 setActiveResultsContainer(resultsProvider);
                 resultsProvider.viewer.refreshWithFilter(newFilter);
             });
+        }
+
+        @Override
+        public IResultSetDecorator createResultSetDecorator() {
+            return new QueryResultsDecorator();
         }
 
         @Override

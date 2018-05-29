@@ -34,9 +34,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetContainer;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetListener;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
+import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
@@ -142,6 +140,11 @@ public abstract class AbstractDataEditor<OBJECT_TYPE extends DBSObject> extends 
         }
 
         openNewDataEditor(targetNode, newFilter);
+    }
+
+    @Override
+    public IResultSetDecorator createResultSetDecorator() {
+        return new QueryResultsDecorator();
     }
 
     public static void openNewDataEditor(DBNDatabaseNode targetNode, DBDDataFilter newFilter) {

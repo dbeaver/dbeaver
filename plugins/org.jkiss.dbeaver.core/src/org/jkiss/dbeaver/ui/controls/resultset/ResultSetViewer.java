@@ -127,6 +127,7 @@ public class ResultSetViewer extends Viewer
     @NotNull
     private final IWorkbenchPartSite site;
     private final Composite viewerPanel;
+    private final IResultSetDecorator decorator;
     private ResultSetFilterPanel filtersPanel;
     private SashForm viewerSash;
 
@@ -191,6 +192,7 @@ public class ResultSetViewer extends Viewer
         this.site = site;
         this.recordMode = false;
         this.container = container;
+        this.decorator = container.createResultSetDecorator();
         this.dataReceiver = new ResultSetDataReceiver(this);
 
         this.filterManager = Adapters.adapt(this, IResultSetFilterManager.class);

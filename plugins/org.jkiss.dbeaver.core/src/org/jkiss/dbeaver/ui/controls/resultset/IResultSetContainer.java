@@ -60,4 +60,6 @@ public interface IResultSetContainer {
      */
     void openNewContainer(DBRProgressMonitor monitor, @NotNull DBSDataContainer dataContainer, @NotNull DBDDataFilter newFilter);
 
+    IResultSetDecorator createResultSetDecorator();
+
 }

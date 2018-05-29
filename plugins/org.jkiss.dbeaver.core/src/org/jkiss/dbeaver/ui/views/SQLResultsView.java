@@ -24,9 +24,7 @@ import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetContainer;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
+import org.jkiss.dbeaver.ui.controls.resultset.*;
 
 public class SQLResultsView extends ViewPart
 {
@@ -95,6 +93,11 @@ public class SQLResultsView extends ViewPart
         @Override
         public void openNewContainer(DBRProgressMonitor monitor, DBSDataContainer dataContainer, DBDDataFilter newFilter) {
             DBeaverUI.getInstance().showError("Data container", "Not supported");
+        }
+
+        @Override
+        public IResultSetDecorator createResultSetDecorator() {
+            return new QueryResultsDecorator();
         }
     }
 
