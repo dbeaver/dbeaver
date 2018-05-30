@@ -122,6 +122,8 @@ public class ResultSetViewer extends Viewer
 
     private static final String SETTINGS_SECTION_PRESENTATIONS = "presentations";
 
+    static final String CONTROL_ID = ResultSetViewer.class.getSimpleName();
+
     private static final DecimalFormat ROW_COUNT_FORMAT = new DecimalFormat("###,###,###,###,###,##0");
 
     private IResultSetFilterManager filterManager;
@@ -207,6 +209,7 @@ public class ResultSetViewer extends Viewer
         loadPresentationSettings();
 
         this.viewerPanel = UIUtils.createPlaceholder(parent, 1);
+        this.viewerPanel.setData(CONTROL_ID, this);
         UIUtils.setHelp(this.viewerPanel, IHelpContextIds.CTX_RESULT_SET_VIEWER);
         this.viewerPanel.setRedraw(false);
 

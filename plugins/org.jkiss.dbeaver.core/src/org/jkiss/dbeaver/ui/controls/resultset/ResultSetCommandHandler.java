@@ -32,6 +32,7 @@ import org.eclipse.jface.window.Window;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchCommandConstants;
@@ -110,6 +111,16 @@ public class ResultSetCommandHandler extends AbstractHandler {
     public static final String CMD_TOGGLE_ORDER = "org.jkiss.dbeaver.core.resultset.toggleOrder";
 
     public static IResultSetController getActiveResultSet(IWorkbenchPart activePart) {
+        if (activePart != null) {
+            for (Control focusControl = activePart.getSite().getShell().getDisplay().getFocusControl(); focusControl != null; focusControl = focusControl.getParent()) {
+                ResultSetViewer viewer = (ResultSetViewer) focusControl.getData(ResultSetViewer.CONTROL_ID);
+                if (viewer != null) {
+                    return viewer;
+                }
+            }
+        }
+
+
         if (activePart instanceof IResultSetContainer) {
             return ((IResultSetContainer) activePart).getResultSetController();
         } else if (activePart instanceof MultiPageAbstractEditor) {
@@ -124,10 +135,16 @@ public class ResultSetCommandHandler extends AbstractHandler {
     @Nullable
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
-        final ResultSetViewer rsv = (ResultSetViewer) getActiveResultSet(HandlerUtil.getActivePart(event));
+        IWorkbenchPart activePart = HandlerUtil.getActivePart(event);
+        if (activePart == null) {
+            return null;
+        }
+        final ResultSetViewer rsv = (ResultSetViewer) getActiveResultSet(activePart);
         if (rsv == null) {
             return null;
         }
+
+        Shell activeShell = HandlerUtil.getActiveShell(event);
         String actionId = event.getCommand().getId();
         IResultSetPresentation presentation = rsv.getActivePresentation();
         switch (actionId) {
@@ -249,7 +266,7 @@ public class ResultSetCommandHandler extends AbstractHandler {
                                 "Actual parameter values may differ, what you see is a default string representation of values") +
                             scriptText;
                         ViewSQLDialog dialog = new ViewSQLDialog(
-                            HandlerUtil.getActivePart(event).getSite(),
+                            activePart.getSite(),
                             rsv.getExecutionContext(),
                             CoreMessages.editors_entity_dialog_preview_title,
                             UIIcon.SQL_PREVIEW,
@@ -263,7 +280,7 @@ public class ResultSetCommandHandler extends AbstractHandler {
                 break;
             }
             case CMD_COPY_COLUMN_NAMES: {
-                ResultSetCopySpecialHandler.CopyConfigDialog configDialog = new ResultSetCopySpecialHandler.CopyConfigDialog(HandlerUtil.getActiveShell(event), "CopyGridNamesOptionsDialog");
+                ResultSetCopySpecialHandler.CopyConfigDialog configDialog = new ResultSetCopySpecialHandler.CopyConfigDialog(activeShell, "CopyGridNamesOptionsDialog");
                 if (configDialog.open() != IDialogConstants.OK_ID) {
                     return null;
                 }
@@ -284,7 +301,7 @@ public class ResultSetCommandHandler extends AbstractHandler {
                 break;
             }
             case CMD_COPY_ROW_NAMES: {
-                ResultSetCopySpecialHandler.CopyConfigDialog configDialog = new ResultSetCopySpecialHandler.CopyConfigDialog(HandlerUtil.getActiveShell(event), "CopyGridNamesOptionsDialog");
+                ResultSetCopySpecialHandler.CopyConfigDialog configDialog = new ResultSetCopySpecialHandler.CopyConfigDialog(activeShell, "CopyGridNamesOptionsDialog");
                 if (configDialog.open() != IDialogConstants.OK_ID) {
                     return null;
                 }
@@ -329,7 +346,7 @@ public class ResultSetCommandHandler extends AbstractHandler {
                 FindReplaceAction action = new FindReplaceAction(
                     DBeaverActivator.getCoreResourceBundle(),
                     "Editor.FindReplace.",
-                    HandlerUtil.getActiveShell(event),
+                    activeShell,
                     rsv.getAdapter(IFindReplaceTarget.class));
                 action.run();
                 break;
@@ -375,7 +392,7 @@ public class ResultSetCommandHandler extends AbstractHandler {
                     break;
                 }
                 GotoLineDialog d = new GotoLineDialog(
-                    HandlerUtil.getActiveShell(event),
+                    activeShell,
                     "Go to Row",
                     "Enter row number (1.." + rowCount + ")",
                     String.valueOf(currentRow == null ? 1 : currentRow.getVisualNumber() + 1),
