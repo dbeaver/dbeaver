@@ -283,7 +283,7 @@ public class ResultSetViewer extends Viewer
 
             setEmptyPresentation();
 
-            if ((decorator.getDecoratorFeatures() & IResultSetDecorator.FEATURE_STATUS_BAR) != 0) {
+            if (supportsStatusBar()) {
                 createStatusBar();
             }
 
@@ -295,10 +295,6 @@ public class ResultSetViewer extends Viewer
         }
 
         updateFiltersText();
-    }
-
-    private boolean supportsPanels() {
-        return (decorator.getDecoratorFeatures() & IResultSetDecorator.FEATURE_PANELS) != 0;
     }
 
     @Override
@@ -318,6 +314,14 @@ public class ResultSetViewer extends Viewer
 
     ////////////////////////////////////////////////////////////
     // Filters
+
+    private boolean supportsPanels() {
+        return (decorator.getDecoratorFeatures() & IResultSetDecorator.FEATURE_PANELS) != 0;
+    }
+
+    private boolean supportsStatusBar() {
+        return (decorator.getDecoratorFeatures() & IResultSetDecorator.FEATURE_STATUS_BAR) != 0;
+    }
 
     boolean supportsDataFilter()
     {
@@ -1937,6 +1941,7 @@ public class ResultSetViewer extends Viewer
             manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.FILE_REFRESH));
         }
 
+        if (supportsPanels())
         manager.add(new Separator());
         manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
     }
