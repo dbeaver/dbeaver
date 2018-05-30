@@ -22,6 +22,7 @@ package org.jkiss.dbeaver.ui.controls.resultset;
  */
 public interface IResultSetDecorator {
 
+    long FEATURE_NONE            = 0;
     long FEATURE_FILTERS         = 1;
     long FEATURE_STATUS_BAR      = 2;
     long FEATURE_PANELS          = 4;
@@ -31,4 +32,6 @@ public interface IResultSetDecorator {
     String getEmptyDataMessage();
 
     String getEmptyDataDescription();
+
+    void registerDragAndDrop(IResultSetPresentation presentation);
 }

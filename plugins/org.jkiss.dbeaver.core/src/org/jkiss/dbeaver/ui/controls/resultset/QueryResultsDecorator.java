@@ -38,4 +38,9 @@ public class QueryResultsDecorator implements IResultSetDecorator  {
         return null;
     }
 
+    @Override
+    public void registerDragAndDrop(IResultSetPresentation presentation) {
+        // No specific DnD handling
+    }
+
 }
