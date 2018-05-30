@@ -981,4 +981,22 @@ public final class SQLUtils {
         return CommonUtils.escapeIdentifier(table.getName());
     }
 
+    public static void appendQueryConditions(DBPDataSource dataSource, @NotNull StringBuilder query, @Nullable String tableAlias, @Nullable DBDDataFilter dataFilter)
+    {
+        if (dataFilter != null && dataFilter.hasConditions()) {
+            query.append("\nWHERE "); //$NON-NLS-1$
+            appendConditionString(dataFilter, dataSource, tableAlias, query, true);
+        }
+    }
+
+    public static void appendQueryOrder(DBPDataSource dataSource, @NotNull StringBuilder query, @Nullable String tableAlias, @Nullable DBDDataFilter dataFilter)
+    {
+        if (dataFilter != null) {
+            // Construct ORDER BY
+            if (dataFilter.hasOrdering()) {
+                query.append("\nORDER BY "); //$NON-NLS-1$
+                appendOrderString(dataFilter, dataSource, tableAlias, query);
+            }
+        }
+    }
 }

@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.view.EmptyPresentation;
@@ -130,6 +131,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
             if (i > 0) sql.append(", ");
             sql.append(groupAttributes.get(i));
         }
+
         dataContainer.setGroupingQuery(sql.toString());
         groupingViewer.refresh();
     }

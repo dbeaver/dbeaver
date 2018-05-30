@@ -19,8 +19,14 @@ package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.ISharedImages;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 
@@ -100,13 +106,12 @@ public class GroupingPanel implements IResultSetPanel, IResultSetListener {
 
     private void fillToolBar(IContributionManager contributionManager)
     {
-/*
+        contributionManager.add(new AddColumnAction());
         contributionManager.add(new AddFunctionAction());
-        contributionManager.add(new RemoveFunctionAction());
-        contributionManager.add(new ResetFunctionsAction());
+        contributionManager.add(new DeleteColumnAction());
+        contributionManager.add(new CustomizeAction());
         contributionManager.add(new Separator());
-        contributionManager.add(new GroupByColumnsAction());
-*/
+        contributionManager.add(new ClearGroupingAction());
     }
 
     @Override
@@ -117,6 +122,61 @@ public class GroupingPanel implements IResultSetPanel, IResultSetListener {
     @Override
     public void handleResultSetChange() {
 
+    }
+
+    private class AddColumnAction extends Action {
+        public AddColumnAction() {
+            super("Add column", DBeaverIcons.getImageDescriptor(UIIcon.OBJ_ADD));
+        }
+
+        @Override
+        public void run() {
+
+        }
+    }
+
+    private class AddFunctionAction extends Action {
+        public AddFunctionAction() {
+            super("Add function", DBeaverIcons.getImageDescriptor(DBIcon.TREE_FUNCTION));
+        }
+
+        @Override
+        public void run() {
+
+        }
+    }
+
+    private class DeleteColumnAction extends Action {
+        public DeleteColumnAction() {
+            super("Delete column", DBeaverIcons.getImageDescriptor(UIIcon.ACTION_OBJECT_DELETE));
+        }
+
+        @Override
+        public void run() {
+
+        }
+    }
+
+    private class CustomizeAction extends Action {
+        public CustomizeAction() {
+            super("Customize", DBeaverIcons.getImageDescriptor(UIIcon.CONFIGURATION));
+        }
+
+        @Override
+        public void run() {
+
+        }
+    }
+
+    private class ClearGroupingAction extends Action {
+        public ClearGroupingAction() {
+            super("Clear groupings", UIUtils.getShardImageDescriptor(ISharedImages.IMG_ETOOL_CLEAR));
+        }
+
+        @Override
+        public void run() {
+            resultsContainer.clearGrouping();
+        }
     }
 
 }
