@@ -26,6 +26,7 @@ public interface IResultSetDecorator {
     long FEATURE_FILTERS         = 1;
     long FEATURE_STATUS_BAR      = 2;
     long FEATURE_PANELS          = 4;
+    long FEATURE_EDIT            = 5;
 
     long getDecoratorFeatures();
 
