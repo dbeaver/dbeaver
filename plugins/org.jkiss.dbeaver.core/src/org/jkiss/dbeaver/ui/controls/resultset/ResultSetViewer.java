@@ -1617,7 +1617,9 @@ public class ResultSetViewer extends Viewer
     @Override
     public boolean isReadOnly()
     {
-        if (model.isUpdateInProgress() || !(activePresentation instanceof IResultSetEditor)) {
+        if (model.isUpdateInProgress() || !(activePresentation instanceof IResultSetEditor) ||
+            (decorator.getDecoratorFeatures() & IResultSetDecorator.FEATURE_EDIT) == 0)
+        {
             return true;
         }
         DBCExecutionContext executionContext = getExecutionContext();

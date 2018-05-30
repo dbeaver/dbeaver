@@ -25,7 +25,7 @@ public class QueryResultsDecorator implements IResultSetDecorator  {
 
     @Override
     public long getDecoratorFeatures() {
-        return FEATURE_FILTERS | FEATURE_STATUS_BAR | FEATURE_PANELS;
+        return FEATURE_FILTERS | FEATURE_STATUS_BAR | FEATURE_PANELS | FEATURE_EDIT;
     }
 
     @Override
