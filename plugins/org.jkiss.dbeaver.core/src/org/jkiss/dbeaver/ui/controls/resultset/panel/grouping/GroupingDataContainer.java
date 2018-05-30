@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
@@ -71,7 +72,10 @@ public class GroupingDataContainer implements DBSDataContainer {
 
         DBRProgressMonitor monitor = session.getProgressMonitor();
 
-        statistics.setQueryText(query);
+        StringBuilder sqlQuery = new StringBuilder(this.query);
+        SQLUtils.appendQueryOrder(getDataSource(), sqlQuery, null, dataFilter);
+
+        statistics.setQueryText(sqlQuery.toString());
         statistics.addStatementsCount();
 
         monitor.subTask(ModelMessages.model_jdbc_fetch_table_data);
@@ -80,7 +84,7 @@ public class GroupingDataContainer implements DBSDataContainer {
             source,
             session,
             DBCStatementType.SCRIPT,
-            query,
+            sqlQuery.toString(),
             firstRow,
             maxRows))
         {
