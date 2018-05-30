@@ -112,10 +112,13 @@ public class ResultSetCommandHandler extends AbstractHandler {
 
     public static IResultSetController getActiveResultSet(IWorkbenchPart activePart) {
         if (activePart != null) {
-            for (Control focusControl = activePart.getSite().getShell().getDisplay().getFocusControl(); focusControl != null; focusControl = focusControl.getParent()) {
-                ResultSetViewer viewer = (ResultSetViewer) focusControl.getData(ResultSetViewer.CONTROL_ID);
-                if (viewer != null) {
-                    return viewer;
+            Shell shell = activePart.getSite().getShell();
+            if (shell != null) {
+                for (Control focusControl = shell.getDisplay().getFocusControl(); focusControl != null; focusControl = focusControl.getParent()) {
+                    ResultSetViewer viewer = (ResultSetViewer) focusControl.getData(ResultSetViewer.CONTROL_ID);
+                    if (viewer != null) {
+                        return viewer;
+                    }
                 }
             }
         }
