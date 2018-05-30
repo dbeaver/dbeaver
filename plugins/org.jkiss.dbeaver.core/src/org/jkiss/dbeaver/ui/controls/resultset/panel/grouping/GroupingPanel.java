@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.*;
 /**
  * RSV grouping panel
  */
-public class GroupingPanel implements IResultSetPanel {
+public class GroupingPanel implements IResultSetPanel, IResultSetListener {
 
     private static final Log log = Log.getLog(GroupingPanel.class);
 
@@ -50,14 +50,6 @@ public class GroupingPanel implements IResultSetPanel {
 
         loadSettings();
 
-        if (this.presentation instanceof ISelectionProvider) {
-            ((ISelectionProvider) this.presentation).addSelectionChangedListener(event -> {
-                if (presentation.getController().getVisiblePanel() == GroupingPanel.this) {
-                    refresh(false);
-                }
-            });
-        }
-
         this.resultsContainer = new GroupingResultsContainer(parent, presentation);
 
 /*
@@ -72,6 +64,9 @@ public class GroupingPanel implements IResultSetPanel {
         menuMgr.setRemoveAllWhenShown(true);
         this.aggregateTable.setMenu(menuMgr.createContextMenu(this.aggregateTable));
 */
+        this.presentation.getController().addListener(this);
+        this.resultsContainer.getResultSetController().getControl().addDisposeListener(e ->
+            this.presentation.getController().removeListener(this));
 
         return this.resultsContainer.getResultSetController().getControl();
     }
@@ -96,8 +91,6 @@ public class GroupingPanel implements IResultSetPanel {
 
     @Override
     public void refresh(boolean force) {
-        //resultsContainer.getResultSetController().refresh();
-        //saveSettings();
     }
 
     @Override
@@ -114,6 +107,16 @@ public class GroupingPanel implements IResultSetPanel {
         contributionManager.add(new Separator());
         contributionManager.add(new GroupByColumnsAction());
 */
+    }
+
+    @Override
+    public void handleResultSetLoad() {
+        resultsContainer.clearGrouping();
+    }
+
+    @Override
+    public void handleResultSetChange() {
+
     }
 
 }

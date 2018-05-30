@@ -4344,7 +4344,11 @@ public abstract class LightGrid extends Canvas {
             public void dragSetData (DragSourceEvent event) {
                 if (draggingColumn != null) {
                     if (GridColumnTransfer.INSTANCE.isSupportedType(event.dataType)) {
-                        event.data = draggingColumn.getElement();
+                        List<Object> elements = new ArrayList<>();
+                        for (GridColumn col : selectedColumns) {
+                            elements.add(col.getElement());
+                        }
+                        event.data = elements;
                     } else if (TextTransfer.getInstance().isSupportedType(event.dataType)) {
                         event.data = getLabelProvider().getText(draggingColumn.getElement());
                     }
@@ -4455,9 +4459,9 @@ public abstract class LightGrid extends Canvas {
     }
 
 
-    public final static class GridColumnTransfer extends LocalObjectTransfer<GridColumn> {
+    public final static class GridColumnTransfer extends LocalObjectTransfer<List<Object>> {
 
-        private static final GridColumnTransfer INSTANCE = new GridColumnTransfer();
+        public static final GridColumnTransfer INSTANCE = new GridColumnTransfer();
         private static final String TYPE_NAME = "LighGrid.GridColumn Transfer" + System.currentTimeMillis() + ":" + INSTANCE.hashCode();//$NON-NLS-1$
         private static final int TYPEID = registerType(TYPE_NAME);
 

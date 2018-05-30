@@ -170,6 +170,8 @@ public interface IResultSetController extends DBPContextProvider {
     @NotNull
     IResultSetPresentation getActivePresentation();
 
+    void setEmptyPresentation();
+
     IResultSetPanel getVisiblePanel();
 
     IResultSetPanel[] getActivePanels();
@@ -192,4 +194,8 @@ public interface IResultSetController extends DBPContextProvider {
     void lockActionsByFocus(Control lockedBy);
 
     IResultSetSelection getSelection();
+
+    void addListener(IResultSetListener listener);
+
+    void removeListener(IResultSetListener listener);
 }

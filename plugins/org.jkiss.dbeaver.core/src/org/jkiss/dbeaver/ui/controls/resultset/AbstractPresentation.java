@@ -199,6 +199,9 @@ public abstract class AbstractPresentation implements IResultSetPresentation, IS
                 performHorizontalScroll(e.count);
             }
         });
+
+        // Register DnD handlers for this presentation
+        controller.getDecorator().registerDragAndDrop(this);
     }
 
     protected void performHorizontalScroll(int scrollCount) {
