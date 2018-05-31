@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping;
 
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.dnd.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -61,7 +62,7 @@ public class GroupingResultsDecorator implements IResultSetDecorator {
         if (oldDropTarget instanceof DropTarget) {
             ((DropTarget) oldDropTarget).dispose();
         }
-        DropTarget dropTarget = new DropTarget(presentation.getControl(), DND.DROP_MOVE);
+        DropTarget dropTarget = new DropTarget(presentation.getControl(), DND.DROP_MOVE | DND.DROP_COPY);
         dropTarget.setTransfer(LightGrid.GridColumnTransfer.INSTANCE, TextTransfer.getInstance());
         dropTarget.addDropListener(new DropTargetAdapter() {
             @Override
@@ -87,7 +88,7 @@ public class GroupingResultsDecorator implements IResultSetDecorator {
             @Override
             public void drop(DropTargetEvent event) {
                 handleDragEvent(event);
-                if (event.detail == DND.DROP_MOVE) {
+                if (event.detail == DND.DROP_MOVE || event.detail == DND.DROP_COPY) {
                     dropColumns(event);
                 }
             }
@@ -101,7 +102,9 @@ public class GroupingResultsDecorator implements IResultSetDecorator {
                 if (!isDropSupported(event)) {
                     event.detail = DND.DROP_NONE;
                 } else {
-                    event.detail = DND.DROP_MOVE;
+                    if (event.detail == DND.DROP_NONE) {
+                        event.detail = DND.DROP_MOVE;
+                    }
                 }
                 event.feedback = DND.FEEDBACK_SELECT;
             }
@@ -126,6 +129,13 @@ public class GroupingResultsDecorator implements IResultSetDecorator {
                 }
                 if (!attributeBindings.isEmpty()) {
                     container.addGroupingAttributes(attributeBindings);
+                }
+                if (event.detail == DND.DROP_COPY) {
+                    GroupingConfigDialog dialog = new GroupingConfigDialog(container.getResultSetController().getControl().getShell(), container);
+                    if (dialog.open() != IDialogConstants.OK_ID) {
+                        container.clearGrouping();
+                        return;
+                    }
                 }
                 try {
                     container.rebuildGrouping();
