@@ -150,12 +150,9 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         };
 
         if (!parameters.isEmpty()) {
-            UIUtils.asyncExec(new Runnable() {
-                @Override
-                public void run() {
-                    paramTable.select(0);
-                    tableEditor.showEditor(paramTable.getItem(0), 2);
-                }
+            UIUtils.asyncExec(() -> {
+                paramTable.select(0);
+                tableEditor.showEditor(paramTable.getItem(0), 2);
             });
         }
 
