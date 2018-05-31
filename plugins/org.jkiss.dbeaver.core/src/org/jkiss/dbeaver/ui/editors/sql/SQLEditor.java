@@ -30,6 +30,7 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
@@ -2131,6 +2132,11 @@ public class SQLEditor extends SQLEditorBase implements
         @Override
         public void handleResultSetChange() {
             updateDirtyFlag();
+        }
+
+        @Override
+        public void handleResultSetSelectionChange(SelectionChangedEvent event) {
+
         }
     }
 

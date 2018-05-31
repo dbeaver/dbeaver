@@ -18,18 +18,17 @@ package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping;
 
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.view.EmptyPresentation;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class GroupingResultsContainer implements IResultSetContainer {
@@ -51,7 +50,15 @@ public class GroupingResultsContainer implements IResultSetContainer {
     private void initDefaultSettings() {
         this.groupAttributes.clear();
         this.groupFunctions.clear();
-        this.groupFunctions.add("COUNT(*)");
+        addGroupingFunctions(Collections.singletonList("COUNT(*)"));
+    }
+
+    public List<String> getGroupAttributes() {
+        return groupAttributes;
+    }
+
+    public List<String> getGroupFunctions() {
+        return groupFunctions;
     }
 
     @Override
@@ -84,13 +91,46 @@ public class GroupingResultsContainer implements IResultSetContainer {
         return new GroupingResultsDecorator(this);
     }
 
-    public void addGroupingAttribute(List<DBDAttributeBinding> attributes) {
-        for (DBDAttributeBinding attr : attributes) {
-            String attrName = attr.getFullyQualifiedName(DBPEvaluationContext.DML);
+    public void addGroupingAttributes(List<String> attributes) {
+        for (String attrName : attributes) {
+            attrName = DBUtils.getUnQuotedIdentifier(getDataContainer().getDataSource(), attrName);
             if (!groupAttributes.contains(attrName)) {
                 groupAttributes.add(attrName);
             }
         }
+    }
+
+    public boolean removeGroupingAttribute(List<String> attributes) {
+        boolean changed = false;
+        for (String attrName : attributes) {
+            attrName = DBUtils.getUnQuotedIdentifier(getDataContainer().getDataSource(), attrName);
+            if (groupAttributes.contains(attrName)) {
+                groupAttributes.remove(attrName);
+                changed = true;
+            }
+        }
+        return changed;
+    }
+
+    public void addGroupingFunctions(List<String> functions) {
+        for (String func : functions) {
+            func = DBUtils.getUnQuotedIdentifier(getDataContainer().getDataSource(), func);
+            if (!groupFunctions.contains(func)) {
+                groupFunctions.add(func);
+            }
+        }
+    }
+
+    public boolean removeGroupingFunction(List<String> attributes) {
+        boolean changed = false;
+        for (String func : attributes) {
+            func = DBUtils.getUnQuotedIdentifier(getDataContainer().getDataSource(), func);
+            if (groupFunctions.contains(func)) {
+                groupFunctions.remove(func);
+                changed = true;
+            }
+        }
+        return changed;
     }
 
     public void clearGrouping() {
