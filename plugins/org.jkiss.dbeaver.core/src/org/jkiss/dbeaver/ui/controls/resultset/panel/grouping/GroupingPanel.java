@@ -70,11 +70,25 @@ public class GroupingPanel implements IResultSetPanel, IResultSetListener {
         menuMgr.setRemoveAllWhenShown(true);
         this.aggregateTable.setMenu(menuMgr.createContextMenu(this.aggregateTable));
 */
+        IResultSetController groupingViewer = this.resultsContainer.getResultSetController();
+
         this.presentation.getController().addListener(this);
-        this.resultsContainer.getResultSetController().getControl().addDisposeListener(e ->
+        groupingViewer.getControl().addDisposeListener(e ->
             this.presentation.getController().removeListener(this));
 
-        return this.resultsContainer.getResultSetController().getControl();
+        groupingViewer.addListener(new IResultSetListener() {
+            @Override
+            public void handleResultSetLoad() {
+
+            }
+
+            @Override
+            public void handleResultSetChange() {
+
+            }
+        });
+
+        return groupingViewer.getControl();
     }
 
     private void loadSettings() {
@@ -107,10 +121,8 @@ public class GroupingPanel implements IResultSetPanel, IResultSetListener {
     private void fillToolBar(IContributionManager contributionManager)
     {
         contributionManager.add(new AddColumnAction());
-        contributionManager.add(new AddFunctionAction());
-        contributionManager.add(new DeleteColumnAction());
-        contributionManager.add(new CustomizeAction());
         contributionManager.add(new Separator());
+        contributionManager.add(new DeleteColumnAction());
         contributionManager.add(new ClearGroupingAction());
     }
 
@@ -126,18 +138,7 @@ public class GroupingPanel implements IResultSetPanel, IResultSetListener {
 
     private class AddColumnAction extends Action {
         public AddColumnAction() {
-            super("Add column", DBeaverIcons.getImageDescriptor(UIIcon.OBJ_ADD));
-        }
-
-        @Override
-        public void run() {
-
-        }
-    }
-
-    private class AddFunctionAction extends Action {
-        public AddFunctionAction() {
-            super("Add function", DBeaverIcons.getImageDescriptor(DBIcon.TREE_FUNCTION));
+            super("Configure columns", DBeaverIcons.getImageDescriptor(UIIcon.OBJ_ADD));
         }
 
         @Override
@@ -152,14 +153,8 @@ public class GroupingPanel implements IResultSetPanel, IResultSetListener {
         }
 
         @Override
-        public void run() {
-
-        }
-    }
-
-    private class CustomizeAction extends Action {
-        public CustomizeAction() {
-            super("Customize", DBeaverIcons.getImageDescriptor(UIIcon.CONFIGURATION));
+        public boolean isEnabled() {
+            return !resultsContainer.getResultSetController().getSelection().isEmpty();
         }
 
         @Override
