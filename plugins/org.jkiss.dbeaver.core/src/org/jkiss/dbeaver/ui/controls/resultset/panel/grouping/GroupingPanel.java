@@ -20,6 +20,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.ToolBarManager;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.widgets.Composite;
@@ -155,7 +156,14 @@ public class GroupingPanel implements IResultSetPanel {
 
         @Override
         public void run() {
-
+            GroupingConfigDialog dialog = new GroupingConfigDialog(presentation.getControl().getShell(), resultsContainer);
+            if (dialog.open() == IDialogConstants.OK_ID) {
+                try {
+                    resultsContainer.rebuildGrouping();
+                } catch (DBException e) {
+                    DBUserInterface.getInstance().showError("Grouping error", "Can't change grouping settings", e);
+                }
+            }
         }
     }
 

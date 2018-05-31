@@ -180,4 +180,11 @@ public class GroupingResultsContainer implements IResultSetContainer {
         groupingViewer.refresh();
     }
 
+    public void setGrouping(List<String> attributes, List<String> functions) {
+        groupAttributes.clear();
+        groupAttributes.addAll(attributes);
+
+        groupFunctions.clear();
+        groupFunctions.addAll(functions);
+    }
 }
