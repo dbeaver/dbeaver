@@ -29,10 +29,7 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.*;
-import org.eclipse.swt.events.FocusEvent;
-import org.eclipse.swt.events.FocusListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
@@ -805,6 +802,7 @@ public class ResultSetViewer extends Viewer
         panelTab.setImage(DBeaverIcons.getImage(panelDescriptor.getIcon()));
         panelTab.setToolTipText(panelDescriptor.getDescription());
         panelTab.setControl(panelControl);
+        UIUtils.disposeControlOnItemDispose(panelTab);
 
         if (setActive || firstPanel) {
             panelFolder.setSelection(panelTab);

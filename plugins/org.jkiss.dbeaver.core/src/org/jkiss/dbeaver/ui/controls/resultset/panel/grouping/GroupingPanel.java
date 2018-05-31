@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Collections;
 import java.util.List;
@@ -69,9 +70,22 @@ public class GroupingPanel implements IResultSetPanel {
         IResultSetController groupingViewer = this.resultsContainer.getResultSetController();
 
         IResultSetListener ownerListener = new ResultSetListenerAdapter() {
+            String prevQueryText = null;
             @Override
             public void handleResultSetLoad() {
-                resultsContainer.clearGrouping();
+                // Here we can refresh grouping (makes sense if source query was modified with some conditions)
+                // Or just clear it (if brand new query was executed)
+                String queryText = presentation.getController().getDataContainer().getName();
+                if (prevQueryText != null && !CommonUtils.equalObjects(prevQueryText, queryText)) {
+                    resultsContainer.getResultSetController().setEmptyPresentation();
+                } else {
+                    try {
+                        resultsContainer.rebuildGrouping();
+                    } catch (DBException e) {
+                        DBUserInterface.getInstance().showError("Grouping error", "Can't refresh grouping query", e);
+                    }
+                }
+                prevQueryText = queryText;
             }
         };
 
@@ -161,14 +175,10 @@ public class GroupingPanel implements IResultSetPanel {
             if (currentAttribute != null) {
                 List<String> attributes = Collections.singletonList(currentAttribute.getFullyQualifiedName(DBPEvaluationContext.UI));
                 if (resultsContainer.removeGroupingAttribute(attributes) || resultsContainer.removeGroupingFunction(attributes)) {
-                    if (resultsContainer.getGroupAttributes().isEmpty() || resultsContainer.getGroupFunctions().isEmpty()) {
-                        resultsContainer.getResultSetController().setEmptyPresentation();
-                    } else {
-                        try {
-                            resultsContainer.rebuildGrouping();
-                        } catch (DBException e) {
-                            DBUserInterface.getInstance().showError("Grouping error", "Can't change grouping query", e);
-                        }
+                    try {
+                        resultsContainer.rebuildGrouping();
+                    } catch (DBException e) {
+                        DBUserInterface.getInstance().showError("Grouping error", "Can't change grouping query", e);
                     }
                 }
             }

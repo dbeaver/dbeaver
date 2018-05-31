@@ -141,6 +141,10 @@ public class GroupingResultsContainer implements IResultSetContainer {
     }
 
     public void rebuildGrouping() throws DBException {
+        if (groupAttributes.isEmpty() || groupFunctions.isEmpty()) {
+            getResultSetController().setEmptyPresentation();
+            return;
+        }
         DBCStatistics statistics = presentation.getController().getModel().getStatistics();
         if (statistics == null) {
             throw new DBException("No main query - can't perform grouping");
