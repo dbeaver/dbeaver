@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping;
 
 import org.eclipse.swt.dnd.*;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
@@ -117,14 +118,14 @@ public class GroupingResultsDecorator implements IResultSetDecorator {
                     return;
                 }
                 List<Object> dropElements = (List<Object>) event.data;
-                List<DBDAttributeBinding> attributeBindings = new ArrayList<>();
+                List<String> attributeBindings = new ArrayList<>();
                 for (Object element : dropElements) {
                     if (element instanceof DBDAttributeBinding) {
-                        attributeBindings.add((DBDAttributeBinding) element);
+                        attributeBindings.add(((DBDAttributeBinding) element).getFullyQualifiedName(DBPEvaluationContext.DML));
                     }
                 }
                 if (!attributeBindings.isEmpty()) {
-                    container.addGroupingAttribute(attributeBindings);
+                    container.addGroupingAttributes(attributeBindings);
                 }
                 try {
                     container.rebuildGrouping();

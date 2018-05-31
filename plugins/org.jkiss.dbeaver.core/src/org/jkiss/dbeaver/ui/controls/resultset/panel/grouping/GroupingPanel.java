@@ -16,24 +16,32 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping;
 
-import org.eclipse.jface.action.*;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IContributionManager;
+import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.jface.viewers.ISelectionProvider;
-import org.eclipse.swt.dnd.TextTransfer;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.ISharedImages;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * RSV grouping panel
  */
-public class GroupingPanel implements IResultSetPanel, IResultSetListener {
+public class GroupingPanel implements IResultSetPanel {
 
     private static final Log log = Log.getLog(GroupingPanel.class);
 
@@ -58,37 +66,37 @@ public class GroupingPanel implements IResultSetPanel, IResultSetListener {
 
         this.resultsContainer = new GroupingResultsContainer(parent, presentation);
 
-/*
-        MenuManager menuMgr = new MenuManager();
-        menuMgr.addMenuListener(manager -> {
-            manager.add(new CopyAction());
-            manager.add(new CopyAllAction());
-            manager.add(new Separator());
-            fillToolBar(manager);
-        });
-
-        menuMgr.setRemoveAllWhenShown(true);
-        this.aggregateTable.setMenu(menuMgr.createContextMenu(this.aggregateTable));
-*/
         IResultSetController groupingViewer = this.resultsContainer.getResultSetController();
 
-        this.presentation.getController().addListener(this);
-        groupingViewer.getControl().addDisposeListener(e ->
-            this.presentation.getController().removeListener(this));
-
-        groupingViewer.addListener(new IResultSetListener() {
+        IResultSetListener ownerListener = new ResultSetListenerAdapter() {
             @Override
             public void handleResultSetLoad() {
-
+                resultsContainer.clearGrouping();
             }
+        };
 
+        this.presentation.getController().addListener(ownerListener);
+        groupingViewer.getControl().addDisposeListener(e ->
+            this.presentation.getController().removeListener(ownerListener));
+
+        IResultSetListener groupingResultsListener = new ResultSetListenerAdapter() {
             @Override
-            public void handleResultSetChange() {
-
+            public void handleResultSetLoad() {
+                updateControls();
             }
-        });
+            @Override
+            public void handleResultSetSelectionChange(SelectionChangedEvent event) {
+                updateControls();
+            }
+        };
+        groupingViewer.addListener(groupingResultsListener);
 
         return groupingViewer.getControl();
+    }
+
+    private void updateControls() {
+        // Update panel toolbar
+        this.presentation.getController().updatePanelActions();
     }
 
     private void loadSettings() {
@@ -126,16 +134,6 @@ public class GroupingPanel implements IResultSetPanel, IResultSetListener {
         contributionManager.add(new ClearGroupingAction());
     }
 
-    @Override
-    public void handleResultSetLoad() {
-        resultsContainer.clearGrouping();
-    }
-
-    @Override
-    public void handleResultSetChange() {
-
-    }
-
     private class AddColumnAction extends Action {
         public AddColumnAction() {
             super("Configure columns", DBeaverIcons.getImageDescriptor(UIIcon.OBJ_ADD));
@@ -159,7 +157,21 @@ public class GroupingPanel implements IResultSetPanel, IResultSetListener {
 
         @Override
         public void run() {
-
+            DBDAttributeBinding currentAttribute = resultsContainer.getResultSetController().getActivePresentation().getCurrentAttribute();
+            if (currentAttribute != null) {
+                List<String> attributes = Collections.singletonList(currentAttribute.getFullyQualifiedName(DBPEvaluationContext.UI));
+                if (resultsContainer.removeGroupingAttribute(attributes) || resultsContainer.removeGroupingFunction(attributes)) {
+                    if (resultsContainer.getGroupAttributes().isEmpty() || resultsContainer.getGroupFunctions().isEmpty()) {
+                        resultsContainer.getResultSetController().setEmptyPresentation();
+                    } else {
+                        try {
+                            resultsContainer.rebuildGrouping();
+                        } catch (DBException e) {
+                            DBUserInterface.getInstance().showError("Grouping error", "Can't change grouping query", e);
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -169,8 +181,14 @@ public class GroupingPanel implements IResultSetPanel, IResultSetListener {
         }
 
         @Override
+        public boolean isEnabled() {
+            return !resultsContainer.getGroupAttributes().isEmpty();
+        }
+
+        @Override
         public void run() {
             resultsContainer.clearGrouping();
+            updateControls();
         }
     }
 

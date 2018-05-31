@@ -25,10 +25,7 @@ import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.jface.text.IFindReplaceTarget;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.ISelectionProvider;
-import org.eclipse.jface.viewers.StructuredSelection;
-import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.*;
@@ -125,6 +122,7 @@ public class ResultSetViewer extends Viewer
     static final String CONTROL_ID = ResultSetViewer.class.getSimpleName();
 
     private static final DecimalFormat ROW_COUNT_FORMAT = new DecimalFormat("###,###,###,###,###,##0");
+    private static final IResultSetListener[] EMPTY_LISTENERS = new IResultSetListener[0];
 
     private IResultSetFilterManager filterManager;
     @NotNull
@@ -644,6 +642,12 @@ public class ResultSetViewer extends Viewer
                 tb.update(true);
             }
         }
+
+        // Listen presentation selection change
+        if (presentation instanceof ISelectionProvider) {
+            ((ISelectionProvider) presentation).addSelectionChangedListener(event -> fireResultSetSelectionChange(event));
+        }
+
 
         // Set focus in presentation control
         // Use async exec to avoid focus switch after user UI interaction (e.g. combo)
@@ -3174,23 +3178,33 @@ public class ResultSetViewer extends Viewer
         persistConfig();
     }
 
-    void fireResultSetChange() {
+    @NotNull
+    private IResultSetListener[] getListenersCopy() {
+        IResultSetListener[] listenersCopy;
         synchronized (listeners) {
-            if (!listeners.isEmpty()) {
-                for (IResultSetListener listener : listeners) {
-                    listener.handleResultSetChange();
-                }
+            if (listeners.isEmpty()) {
+                return EMPTY_LISTENERS;
             }
+            listenersCopy = listeners.toArray(new IResultSetListener[listeners.size()]);
+        }
+        return listenersCopy;
+    }
+
+    void fireResultSetChange() {
+        for (IResultSetListener listener : getListenersCopy()) {
+            listener.handleResultSetChange();
         }
     }
 
     private void fireResultSetLoad() {
-        synchronized (listeners) {
-            if (!listeners.isEmpty()) {
-                for (IResultSetListener listener : listeners) {
-                    listener.handleResultSetLoad();
-                }
-            }
+        for (IResultSetListener listener : getListenersCopy()) {
+            listener.handleResultSetLoad();
+        }
+    }
+
+    private void fireResultSetSelectionChange(SelectionChangedEvent event) {
+        for (IResultSetListener listener : getListenersCopy()) {
+            listener.handleResultSetSelectionChange(event);
         }
     }
 
