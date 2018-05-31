@@ -2266,7 +2266,10 @@ public class ResultSetViewer extends Viewer
             DBSEntityAttributeRef ownAttr = ownAttrs.get(i);
             DBSEntityAttributeRef refAttr = refAttrs.get(i);
             DBDAttributeBinding ownBinding = model.getAttributeBinding(ownAttr.getAttribute());
-            assert ownBinding != null;
+            if (ownBinding == null) {
+                DBUserInterface.getInstance().showError("Can't navigate", "Attribute " + ownAttr.getAttribute() + " is missing in result set");
+                return;
+            }
 
             DBDAttributeConstraint constraint = new DBDAttributeConstraint(refAttr.getAttribute(), visualPosition++);
             constraint.setVisible(true);
