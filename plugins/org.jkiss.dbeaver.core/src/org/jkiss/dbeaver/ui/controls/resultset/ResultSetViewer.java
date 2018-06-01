@@ -2217,6 +2217,9 @@ public class ResultSetViewer extends Viewer
         if (!confirmProceed()) {
             return;
         }
+        if (!newWindow && !confirmPanelsReset()) {
+            return;
+        }
 
         if (getExecutionContext() == null) {
             throw new DBException("Not connected");
@@ -2353,6 +2356,30 @@ public class ResultSetViewer extends Viewer
 
     private boolean confirmProceed() {
         return new UIConfirmation() { @Override public Boolean runTask() { return checkForChanges(); } }.confirm();
+    }
+
+    private boolean confirmPanelsReset() {
+        return new UIConfirmation() {
+            @Override public Boolean runTask() {
+                boolean panelsDirty = false;
+                for (IResultSetPanel panel : getActivePanels()) {
+                    if (panel.isDirty()) {
+                        panelsDirty = true;
+                        break;
+                    }
+                }
+                if (panelsDirty) {
+                    int result = ConfirmationDialog.showConfirmDialog(
+                        viewerPanel.getShell(),
+                        DBeaverPreferences.CONFIRM_RS_PANEL_RESET,
+                        ConfirmationDialog.CONFIRM);
+                    if (result == IDialogConstants.CANCEL_ID) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        }.confirm();
     }
 
     private void openResultsInNewWindow(DBRProgressMonitor monitor, DBSEntity targetEntity, final DBDDataFilter newFilter) {
