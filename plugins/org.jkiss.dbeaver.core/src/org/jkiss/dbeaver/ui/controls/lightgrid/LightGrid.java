@@ -221,6 +221,7 @@ public abstract class LightGrid extends Canvas {
     private int headerHeight = 0;
 
     private boolean hoveringOnHeader = false;
+    private boolean hoveringOnColumnIcon = false;
     private boolean hoveringOnColumnSorter = false;
     private boolean hoveringOnColumnFilter = false;
     private boolean hoveringOnLink = false;
@@ -1927,6 +1928,8 @@ public abstract class LightGrid extends Canvas {
     {
         boolean overSorter = false, overResizer = false, overFilter = false;
         hoveringOnHeader = false;
+        boolean overIcon = false;
+
         if (y <= headerHeight) {
             int x2 = 0;
 
@@ -1947,7 +1950,6 @@ public abstract class LightGrid extends Canvas {
                     overSorter = true;
                 }
 
-                
             } else {
                 if (x > getRowHeaderWidth()) {
                     for (GridColumn column : columns) {
@@ -1964,7 +1966,12 @@ public abstract class LightGrid extends Canvas {
                             	overFilter = true;
                             	break;
                             }
-                            
+
+                            if (column.isOverIcon(x, y)) {
+                                overIcon = true;
+                                break;
+                            }
+
                             x2 += column.getWidth();
                             if (x2 >= (x - COLUMN_RESIZER_THRESHOLD) && x2 <= (x + COLUMN_RESIZER_THRESHOLD)) {
                                 overResizer = true;
@@ -1997,8 +2004,11 @@ public abstract class LightGrid extends Canvas {
                 setCursor(null);
             }
             hoveringOnColumnSorter = overSorter;
+        } else if (overIcon != hoveringOnColumnIcon) {
+            setCursor(overIcon ? sortCursor : null);
+            hoveringOnColumnIcon = overIcon;
         }
-        
+
         if(overFilter != hoveringOnColumnFilter) {
         	if(overFilter) 
         		setCursor(sortCursor);        	
