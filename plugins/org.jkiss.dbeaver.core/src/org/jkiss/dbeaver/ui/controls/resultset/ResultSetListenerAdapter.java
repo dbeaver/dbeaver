@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,33 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package org.jkiss.dbeaver.ui.controls.resultset;
 
-import org.jkiss.dbeaver.core.CoreMessages;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 
 /**
- * Decorator for query results
+ * Result set listener adapter
  */
-public class QueryResultsDecorator implements IResultSetDecorator  {
+public class ResultSetListenerAdapter implements IResultSetListener {
 
     @Override
-    public long getDecoratorFeatures() {
-        return FEATURE_FILTERS | FEATURE_STATUS_BAR | FEATURE_PANELS | FEATURE_EDIT;
+    public void handleResultSetLoad() {
+
     }
 
     @Override
-    public String getEmptyDataMessage() {
-        return CoreMessages.sql_editor_resultset_filter_panel_control_no_data;
+    public void handleResultSetChange() {
+
     }
 
     @Override
-    public String getEmptyDataDescription() {
-        return null;
-    }
+    public void handleResultSetSelectionChange(SelectionChangedEvent event) {
 
-    @Override
-    public void registerDragAndDrop(IResultSetPresentation presentation) {
-        // No specific DnD handling
     }
-
 }

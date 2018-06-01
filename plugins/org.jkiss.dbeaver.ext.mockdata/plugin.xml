@@ -9,11 +9,9 @@
         <handler commandId="org.jkiss.dbeaver.ext.mockdata.resultset.mockdata" class="org.jkiss.dbeaver.ext.mockdata.handlers.ResultSetMockDataHandler">
             <enabledWhen>
                 <or>
-                    <and>
-                        <with variable="activeEditor">
-                            <adapt type="org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer"/>
-                        </with>
-                    </and>
+                    <with variable="activeEditor">
+                        <adapt type="org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer"/>
+                    </with>
                     <with variable="selection">
                         <count value="+"/>
                         <iterate operator="and">

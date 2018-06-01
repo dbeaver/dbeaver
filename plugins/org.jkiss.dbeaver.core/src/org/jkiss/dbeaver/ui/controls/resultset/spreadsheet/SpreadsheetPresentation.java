@@ -1260,7 +1260,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
         @NotNull
         @Override
-        public Collection<DBDAttributeBinding> getSelectedAttributes() {
+        public List<DBDAttributeBinding> getSelectedAttributes() {
             if (controller.isRecordMode()) {
                 Object[] elements = spreadsheet.getContentProvider().getElements(false);
                 List<DBDAttributeBinding> attrs = new ArrayList<>();
@@ -1284,7 +1284,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
         @NotNull
         @Override
-        public Collection<ResultSetRow> getSelectedRows()
+        public List<ResultSetRow> getSelectedRows()
         {
             if (controller.isRecordMode()) {
                 ResultSetRow currentRow = controller.getCurrentRow();

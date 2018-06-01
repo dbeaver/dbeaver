@@ -21,7 +21,7 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 
-import java.util.Collection;
+import java.util.List;
 
 /**
  * Result set selection
@@ -32,10 +32,10 @@ public interface IResultSetSelection extends IStructuredSelection {
     IResultSetController getController();
 
     @NotNull
-    Collection<DBDAttributeBinding> getSelectedAttributes();
+    List<DBDAttributeBinding> getSelectedAttributes();
 
     @NotNull
-    Collection<ResultSetRow> getSelectedRows();
+    List<ResultSetRow> getSelectedRows();
 
     DBDAttributeBinding getElementAttribute(Object element);
 

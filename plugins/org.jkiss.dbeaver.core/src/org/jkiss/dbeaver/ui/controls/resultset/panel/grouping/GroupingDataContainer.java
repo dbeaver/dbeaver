@@ -16,20 +16,25 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping;
 
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
-import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.model.exec.DBCExecutionSource;
-import org.jkiss.dbeaver.model.exec.DBCSession;
-import org.jkiss.dbeaver.model.exec.DBCStatistics;
+import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 
 public class GroupingDataContainer implements DBSDataContainer {
 
+    private static final Log log = Log.getLog(GroupingDataContainer.class);
+
     private IResultSetController parentController;
+    private String query;
 
     public GroupingDataContainer(IResultSetController parentController) {
         this.parentController = parentController;
@@ -62,7 +67,64 @@ public class GroupingDataContainer implements DBSDataContainer {
 
     @Override
     public DBCStatistics readData(DBCExecutionSource source, DBCSession session, DBDDataReceiver dataReceiver, DBDDataFilter dataFilter, long firstRow, long maxRows, long flags) throws DBCException {
-        return null;
+        DBCStatistics statistics = new DBCStatistics();
+        boolean hasLimits = firstRow >= 0 && maxRows > 0;
+
+        DBRProgressMonitor monitor = session.getProgressMonitor();
+
+        StringBuilder sqlQuery = new StringBuilder(this.query);
+        SQLUtils.appendQueryOrder(getDataSource(), sqlQuery, null, dataFilter);
+
+        statistics.setQueryText(sqlQuery.toString());
+        statistics.addStatementsCount();
+
+        monitor.subTask(ModelMessages.model_jdbc_fetch_table_data);
+
+        try (DBCStatement dbStat = DBUtils.makeStatement(
+            source,
+            session,
+            DBCStatementType.SCRIPT,
+            sqlQuery.toString(),
+            firstRow,
+            maxRows))
+        {
+            if (monitor.isCanceled()) {
+                return statistics;
+            }
+            long startTime = System.currentTimeMillis();
+            boolean executeResult = dbStat.executeStatement();
+            statistics.setExecuteTime(System.currentTimeMillis() - startTime);
+            if (executeResult) {
+                try (DBCResultSet dbResult = dbStat.openResultSet()) {
+                    try {
+                        dataReceiver.fetchStart(session, dbResult, firstRow, maxRows);
+
+                        startTime = System.currentTimeMillis();
+                        long rowCount = 0;
+                        while (dbResult.nextRow()) {
+                            if (monitor.isCanceled() || (hasLimits && rowCount >= maxRows)) {
+                                // Fetch not more than max rows
+                                break;
+                            }
+                            dataReceiver.fetchRow(session, dbResult);
+                            rowCount++;
+                        }
+                        statistics.setFetchTime(System.currentTimeMillis() - startTime);
+                        statistics.setRowsFetched(rowCount);
+                    } finally {
+                        // Signal that fetch was ended
+                        try {
+                            dataReceiver.fetchEnd(session, dbResult);
+                        } catch (Throwable e) {
+                            log.error("Error while finishing result set fetch", e); //$NON-NLS-1$
+                        }
+                    }
+                }
+            }
+            return statistics;
+        } finally {
+            dataReceiver.close();
+        }
     }
 
     @Override
@@ -73,5 +135,9 @@ public class GroupingDataContainer implements DBSDataContainer {
     @Override
     public boolean isPersisted() {
         return false;
+    }
+
+    public void setGroupingQuery(String sql) {
+        this.query = sql;
     }
 }

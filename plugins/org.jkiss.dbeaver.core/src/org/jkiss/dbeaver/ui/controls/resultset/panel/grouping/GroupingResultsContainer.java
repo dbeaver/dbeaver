@@ -17,22 +17,48 @@
 package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping;
 
 import org.eclipse.swt.widgets.Composite;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
+import org.jkiss.dbeaver.ui.controls.resultset.view.EmptyPresentation;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public class GroupingResultsContainer implements IResultSetContainer {
 
     private final IResultSetPresentation presentation;
     private GroupingDataContainer dataContainer;
     private ResultSetViewer groupingViewer;
+    private List<String> groupAttributes = new ArrayList<>();
+    private List<String> groupFunctions = new ArrayList<>();
 
     public GroupingResultsContainer(Composite parent, IResultSetPresentation presentation) {
         this.presentation = presentation;
         this.dataContainer = new GroupingDataContainer(presentation.getController());
         this.groupingViewer = new ResultSetViewer(parent, presentation.getController().getSite(), this);
+
+        initDefaultSettings();
+    }
+
+    private void initDefaultSettings() {
+        this.groupAttributes.clear();
+        this.groupFunctions.clear();
+        addGroupingFunctions(Collections.singletonList("COUNT(*)"));
+    }
+
+    public List<String> getGroupAttributes() {
+        return groupAttributes;
+    }
+
+    public List<String> getGroupFunctions() {
+        return groupFunctions;
     }
 
     @Override
@@ -62,7 +88,103 @@ public class GroupingResultsContainer implements IResultSetContainer {
 
     @Override
     public IResultSetDecorator createResultSetDecorator() {
-        return new GroupingResultsDecorator();
+        return new GroupingResultsDecorator(this);
     }
 
+    public void addGroupingAttributes(List<String> attributes) {
+        for (String attrName : attributes) {
+            attrName = DBUtils.getUnQuotedIdentifier(getDataContainer().getDataSource(), attrName);
+            if (!groupAttributes.contains(attrName)) {
+                groupAttributes.add(attrName);
+            }
+        }
+    }
+
+    public boolean removeGroupingAttribute(List<String> attributes) {
+        boolean changed = false;
+        for (String attrName : attributes) {
+            attrName = DBUtils.getUnQuotedIdentifier(getDataContainer().getDataSource(), attrName);
+            if (groupAttributes.contains(attrName)) {
+                groupAttributes.remove(attrName);
+                changed = true;
+            }
+        }
+        return changed;
+    }
+
+    public void addGroupingFunctions(List<String> functions) {
+        for (String func : functions) {
+            func = DBUtils.getUnQuotedIdentifier(getDataContainer().getDataSource(), func);
+            if (!groupFunctions.contains(func)) {
+                groupFunctions.add(func);
+            }
+        }
+    }
+
+    public boolean removeGroupingFunction(List<String> attributes) {
+        boolean changed = false;
+        for (String func : attributes) {
+            func = DBUtils.getUnQuotedIdentifier(getDataContainer().getDataSource(), func);
+            if (groupFunctions.contains(func)) {
+                groupFunctions.remove(func);
+                changed = true;
+            }
+        }
+        return changed;
+    }
+
+    public void clearGrouping() {
+        initDefaultSettings();
+        if (!(groupingViewer.getActivePresentation() instanceof EmptyPresentation)) {
+            groupingViewer.setEmptyPresentation();
+        }
+    }
+
+    public void rebuildGrouping() throws DBException {
+        if (groupAttributes.isEmpty() || groupFunctions.isEmpty()) {
+            getResultSetController().setEmptyPresentation();
+            return;
+        }
+        DBCStatistics statistics = presentation.getController().getModel().getStatistics();
+        if (statistics == null) {
+            throw new DBException("No main query - can't perform grouping");
+        }
+        String queryText = statistics.getQueryText();
+        if (queryText == null || queryText.isEmpty()) {
+            DBSDataContainer dataContainer = presentation.getController().getDataContainer();
+            if (dataContainer != null) {
+                queryText = dataContainer.getName();
+            } else {
+                throw new DBException("Empty data container");
+            }
+        }
+
+        StringBuilder sql = new StringBuilder();
+        sql.append("SELECT ");
+        for (int i = 0; i < groupAttributes.size(); i++) {
+            if (i > 0) sql.append(", ");
+            sql.append(groupAttributes.get(i));
+        }
+        for (String func : groupFunctions) {
+            sql.append(", ").append(func);
+        }
+        sql.append(" FROM (\n");
+        sql.append(queryText);
+        sql.append(") src\nGROUP BY ");
+        for (int i = 0; i < groupAttributes.size(); i++) {
+            if (i > 0) sql.append(", ");
+            sql.append(groupAttributes.get(i));
+        }
+
+        dataContainer.setGroupingQuery(sql.toString());
+        groupingViewer.refresh();
+    }
+
+    public void setGrouping(List<String> attributes, List<String> functions) {
+        groupAttributes.clear();
+        groupAttributes.addAll(attributes);
+
+        groupFunctions.clear();
+        groupFunctions.addAll(functions);
+    }
 }
