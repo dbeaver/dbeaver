@@ -63,11 +63,13 @@ class GroupingConfigDialog extends BaseDialog
         for (DBDAttributeBinding attr : resultsContainer.getOwnerPresentation().getController().getModel().getAttributes()) {
             proposals.add(attr.getName());
         }
-        IContentProposalProvider proposalProvider = new SimpleContentProposalProvider(proposals.toArray(new String[0]));
+        SimpleContentProposalProvider proposalProvider = new SimpleContentProposalProvider(new String[0]);
+        proposalProvider.setFiltering(true);
+        proposalProvider.setProposals(proposals.toArray(new String[0]));
         columnsTable = StringEditorTable.createEditableList(composite, "Columns", resultsContainer.getGroupAttributes(), DBIcon.TREE_ATTRIBUTE, proposalProvider);
 
         Collections.addAll(proposals,"COUNT", "AVG", "MAX", "MIN", "SUM");
-        proposalProvider = new SimpleContentProposalProvider(proposals.toArray(new String[0]));
+        proposalProvider.setProposals(proposals.toArray(new String[0]));
         functionsTable = StringEditorTable.createEditableList(composite, "Functions", resultsContainer.getGroupFunctions(), DBIcon.TREE_FUNCTION, proposalProvider);
 
         return composite;

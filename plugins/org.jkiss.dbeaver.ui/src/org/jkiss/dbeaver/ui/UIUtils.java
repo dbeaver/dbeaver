@@ -1596,6 +1596,7 @@ public class UIUtils {
                 autoActivation ? ".abcdefghijklmnopqrstuvwxyz_$(".toCharArray() : ".(".toCharArray());
             proposalAdapter.setProposalAcceptanceStyle(insertAfter ? ContentProposalAdapter.PROPOSAL_INSERT : ContentProposalAdapter.PROPOSAL_REPLACE);
             proposalAdapter.setPopupSize(new Point(300, 200));
+            //proposalAdapter.setFilterStyle(ContentProposalAdapter.FILTER_CHARACTER);
             return proposalAdapter;
         } catch (ParseException e) {
             log.error("Error installing filters content assistant");
