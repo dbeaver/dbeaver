@@ -16,13 +16,29 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping;
 
-import org.eclipse.jface.action.*;
+import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IContributionManager;
+import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.action.ToolBarManager;
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.jface.viewers.ISelectionProvider;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.ui.ISharedImages;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.Collections;
+import java.util.List;
 
 /**
  * RSV grouping panel
@@ -50,30 +66,52 @@ public class GroupingPanel implements IResultSetPanel {
 
         loadSettings();
 
-        if (this.presentation instanceof ISelectionProvider) {
-            ((ISelectionProvider) this.presentation).addSelectionChangedListener(event -> {
-                if (presentation.getController().getVisiblePanel() == GroupingPanel.this) {
-                    refresh(false);
-                }
-            });
-        }
-
         this.resultsContainer = new GroupingResultsContainer(parent, presentation);
 
-/*
-        MenuManager menuMgr = new MenuManager();
-        menuMgr.addMenuListener(manager -> {
-            manager.add(new CopyAction());
-            manager.add(new CopyAllAction());
-            manager.add(new Separator());
-            fillToolBar(manager);
-        });
+        IResultSetController groupingViewer = this.resultsContainer.getResultSetController();
 
-        menuMgr.setRemoveAllWhenShown(true);
-        this.aggregateTable.setMenu(menuMgr.createContextMenu(this.aggregateTable));
-*/
+        IResultSetListener ownerListener = new ResultSetListenerAdapter() {
+            String prevQueryText = null;
+            @Override
+            public void handleResultSetLoad() {
+                // Here we can refresh grouping (makes sense if source query was modified with some conditions)
+                // Or just clear it (if brand new query was executed)
+                String queryText = presentation.getController().getDataContainer().getName();
+                if (prevQueryText != null && !CommonUtils.equalObjects(prevQueryText, queryText)) {
+                    resultsContainer.getResultSetController().setEmptyPresentation();
+                } else {
+                    try {
+                        resultsContainer.rebuildGrouping();
+                    } catch (DBException e) {
+                        DBUserInterface.getInstance().showError("Grouping error", "Can't refresh grouping query", e);
+                    }
+                }
+                prevQueryText = queryText;
+            }
+        };
 
-        return this.resultsContainer.getResultSetController().getControl();
+        this.presentation.getController().addListener(ownerListener);
+        groupingViewer.getControl().addDisposeListener(e ->
+            this.presentation.getController().removeListener(ownerListener));
+
+        IResultSetListener groupingResultsListener = new ResultSetListenerAdapter() {
+            @Override
+            public void handleResultSetLoad() {
+                updateControls();
+            }
+            @Override
+            public void handleResultSetSelectionChange(SelectionChangedEvent event) {
+                updateControls();
+            }
+        };
+        groupingViewer.addListener(groupingResultsListener);
+
+        return groupingViewer.getControl();
+    }
+
+    private void updateControls() {
+        // Update panel toolbar
+        this.presentation.getController().updatePanelActions();
     }
 
     private void loadSettings() {
@@ -96,8 +134,6 @@ public class GroupingPanel implements IResultSetPanel {
 
     @Override
     public void refresh(boolean force) {
-        //resultsContainer.getResultSetController().refresh();
-        //saveSettings();
     }
 
     @Override
@@ -107,13 +143,71 @@ public class GroupingPanel implements IResultSetPanel {
 
     private void fillToolBar(IContributionManager contributionManager)
     {
-/*
-        contributionManager.add(new AddFunctionAction());
-        contributionManager.add(new RemoveFunctionAction());
-        contributionManager.add(new ResetFunctionsAction());
+        contributionManager.add(new AddColumnAction());
         contributionManager.add(new Separator());
-        contributionManager.add(new GroupByColumnsAction());
-*/
+        contributionManager.add(new DeleteColumnAction());
+        contributionManager.add(new ClearGroupingAction());
+    }
+
+    private class AddColumnAction extends Action {
+        public AddColumnAction() {
+            super("Configure columns", DBeaverIcons.getImageDescriptor(UIIcon.OBJ_ADD));
+        }
+
+        @Override
+        public void run() {
+            GroupingConfigDialog dialog = new GroupingConfigDialog(presentation.getControl().getShell(), resultsContainer);
+            if (dialog.open() == IDialogConstants.OK_ID) {
+                try {
+                    resultsContainer.rebuildGrouping();
+                } catch (DBException e) {
+                    DBUserInterface.getInstance().showError("Grouping error", "Can't change grouping settings", e);
+                }
+            }
+        }
+    }
+
+    private class DeleteColumnAction extends Action {
+        public DeleteColumnAction() {
+            super("Delete column", DBeaverIcons.getImageDescriptor(UIIcon.ACTION_OBJECT_DELETE));
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return !resultsContainer.getResultSetController().getSelection().isEmpty();
+        }
+
+        @Override
+        public void run() {
+            DBDAttributeBinding currentAttribute = resultsContainer.getResultSetController().getActivePresentation().getCurrentAttribute();
+            if (currentAttribute != null) {
+                List<String> attributes = Collections.singletonList(currentAttribute.getFullyQualifiedName(DBPEvaluationContext.UI));
+                if (resultsContainer.removeGroupingAttribute(attributes) || resultsContainer.removeGroupingFunction(attributes)) {
+                    try {
+                        resultsContainer.rebuildGrouping();
+                    } catch (DBException e) {
+                        DBUserInterface.getInstance().showError("Grouping error", "Can't change grouping query", e);
+                    }
+                }
+            }
+        }
+    }
+
+    private class ClearGroupingAction extends Action {
+        public ClearGroupingAction() {
+            super("Clear groupings", UIUtils.getShardImageDescriptor(ISharedImages.IMG_ETOOL_CLEAR));
+        }
+
+        @Override
+        public boolean isEnabled() {
+            return !resultsContainer.getGroupAttributes().isEmpty();
+        }
+
+        @Override
+        public void run() {
+            resultsContainer.clearGrouping();
+            updateControls();
+        }
     }
 
 }

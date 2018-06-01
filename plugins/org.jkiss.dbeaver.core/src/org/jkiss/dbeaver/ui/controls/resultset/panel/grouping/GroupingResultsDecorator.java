@@ -16,16 +16,33 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping;
 
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.swt.dnd.*;
+import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetDecorator;
+import org.jkiss.dbeaver.ui.controls.resultset.IResultSetPresentation;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Decorator for grouping panel
  */
 public class GroupingResultsDecorator implements IResultSetDecorator {
 
+    private GroupingResultsContainer container;
+
+    public GroupingResultsDecorator(GroupingResultsContainer container) {
+        this.container = container;
+    }
+
     @Override
     public long getDecoratorFeatures() {
-        return FEATURE_PANELS;
+        return FEATURE_NONE;
     }
 
     @Override
@@ -37,4 +54,96 @@ public class GroupingResultsDecorator implements IResultSetDecorator {
     public String getEmptyDataDescription() {
         return "Drag and drop results column(s) here to create grouping";
     }
+
+    @Override
+    public void registerDragAndDrop(IResultSetPresentation presentation) {
+        // Register drop target to accept columns dropping
+        Object oldDropTarget = presentation.getControl().getData(DND.DROP_TARGET_KEY);
+        if (oldDropTarget instanceof DropTarget) {
+            ((DropTarget) oldDropTarget).dispose();
+        }
+        DropTarget dropTarget = new DropTarget(presentation.getControl(), DND.DROP_MOVE | DND.DROP_COPY);
+        dropTarget.setTransfer(LightGrid.GridColumnTransfer.INSTANCE, TextTransfer.getInstance());
+        dropTarget.addDropListener(new DropTargetAdapter() {
+            @Override
+            public void dragEnter(DropTargetEvent event) {
+                handleDragEvent(event);
+            }
+
+            @Override
+            public void dragLeave(DropTargetEvent event) {
+                handleDragEvent(event);
+            }
+
+            @Override
+            public void dragOperationChanged(DropTargetEvent event) {
+                handleDragEvent(event);
+            }
+
+            @Override
+            public void dragOver(DropTargetEvent event) {
+                handleDragEvent(event);
+            }
+
+            @Override
+            public void drop(DropTargetEvent event) {
+                handleDragEvent(event);
+                if (event.detail == DND.DROP_MOVE || event.detail == DND.DROP_COPY) {
+                    dropColumns(event);
+                }
+            }
+
+            @Override
+            public void dropAccept(DropTargetEvent event) {
+                handleDragEvent(event);
+            }
+
+            private void handleDragEvent(DropTargetEvent event) {
+                if (!isDropSupported(event)) {
+                    event.detail = DND.DROP_NONE;
+                } else {
+                    if (event.detail == DND.DROP_NONE) {
+                        event.detail = DND.DROP_MOVE;
+                    }
+                }
+                event.feedback = DND.FEEDBACK_SELECT;
+            }
+
+            private boolean isDropSupported(DropTargetEvent event) {
+                return true;
+                // TODO: check type
+                //ArrayUtils.contains(event.dataTypes, LightGrid.GridColumnTransfer.INSTANCE);
+            }
+
+            @SuppressWarnings("unchecked")
+            private void dropColumns(DropTargetEvent event) {
+                if (!(event.data instanceof List)) {
+                    return;
+                }
+                List<Object> dropElements = (List<Object>) event.data;
+                List<String> attributeBindings = new ArrayList<>();
+                for (Object element : dropElements) {
+                    if (element instanceof DBDAttributeBinding) {
+                        attributeBindings.add(((DBDAttributeBinding) element).getFullyQualifiedName(DBPEvaluationContext.DML));
+                    }
+                }
+                if (!attributeBindings.isEmpty()) {
+                    container.addGroupingAttributes(attributeBindings);
+                }
+                if (event.detail == DND.DROP_COPY) {
+                    GroupingConfigDialog dialog = new GroupingConfigDialog(container.getResultSetController().getControl().getShell(), container);
+                    if (dialog.open() != IDialogConstants.OK_ID) {
+                        container.clearGrouping();
+                        return;
+                    }
+                }
+                try {
+                    container.rebuildGrouping();
+                } catch (DBException e) {
+                    DBUserInterface.getInstance().showError("Grouping error", "Can't perform grouping query", e);
+                }
+            }
+        });
+    }
+
 }

@@ -192,7 +192,7 @@ public abstract class JDBCDataSource
 
         {
             // Use properties defined by datasource itself
-            Map<String,String> internalProps = getInternalConnectionProperties(monitor, "Get connection prop[erties", connectionInfo);
+            Map<String,String> internalProps = getInternalConnectionProperties(monitor, "Get connection properties", connectionInfo);
             if (internalProps != null) {
                 connectProps.putAll(internalProps);
             }

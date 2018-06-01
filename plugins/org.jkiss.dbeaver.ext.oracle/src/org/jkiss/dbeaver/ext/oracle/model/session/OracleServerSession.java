@@ -35,6 +35,7 @@ public class OracleServerSession implements DBAServerSession {
     private String state;
     private String sql;
     private String event;
+    private String elapsedTime;
     private Timestamp logonTime;
     private String serviceName;
 
@@ -52,6 +53,7 @@ public class OracleServerSession implements DBAServerSession {
         this.state = JDBCUtils.safeGetString(dbResult, "STATE");
         this.sql = JDBCUtils.safeGetString(dbResult, "SQL_FULLTEXT");
         this.event = JDBCUtils.safeGetString(dbResult, "EVENT");
+        this.elapsedTime = JDBCUtils.safeGetString(dbResult, "LAST_CALL_ET");
         this.logonTime = JDBCUtils.safeGetTimestamp(dbResult, "LOGON_TIME");
         this.serviceName = JDBCUtils.safeGetString(dbResult, "SERVICE_NAME");
 
@@ -101,13 +103,19 @@ public class OracleServerSession implements DBAServerSession {
         return event;
     }
 
-    @Property(category = "Session", order = 7)
+    @Property(category = "Session", viewable = true, order = 7)
+    public String getElapsedTime()
+    {
+        return elapsedTime;
+    }
+
+    @Property(category = "Session", order = 8)
     public Timestamp getLogonTime()
     {
         return logonTime;
     }
 
-    @Property(category = "Session", order = 8)
+    @Property(category = "Session", order = 9)
     public String getServiceName()
     {
         return serviceName;

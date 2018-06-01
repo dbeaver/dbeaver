@@ -25,17 +25,11 @@ import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.jface.text.IFindReplaceTarget;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.ISelectionProvider;
-import org.eclipse.jface.viewers.StructuredSelection;
-import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.*;
-import org.eclipse.swt.events.FocusEvent;
-import org.eclipse.swt.events.FocusListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
@@ -122,7 +116,10 @@ public class ResultSetViewer extends Viewer
 
     private static final String SETTINGS_SECTION_PRESENTATIONS = "presentations";
 
+    static final String CONTROL_ID = ResultSetViewer.class.getSimpleName();
+
     private static final DecimalFormat ROW_COUNT_FORMAT = new DecimalFormat("###,###,###,###,###,##0");
+    private static final IResultSetListener[] EMPTY_LISTENERS = new IResultSetListener[0];
 
     private IResultSetFilterManager filterManager;
     @NotNull
@@ -207,6 +204,7 @@ public class ResultSetViewer extends Viewer
         loadPresentationSettings();
 
         this.viewerPanel = UIUtils.createPlaceholder(parent, 1);
+        this.viewerPanel.setData(CONTROL_ID, this);
         UIUtils.setHelp(this.viewerPanel, IHelpContextIds.CTX_RESULT_SET_VIEWER);
         this.viewerPanel.setRedraw(false);
 
@@ -232,53 +230,55 @@ public class ResultSetViewer extends Viewer
             this.presentationPanel = UIUtils.createPlaceholder(this.viewerSash, 1);
             this.presentationPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-            this.panelFolder = new CTabFolder(this.viewerSash, SWT.FLAT | SWT.TOP);
-            this.panelFolder.marginWidth = 0;
-            this.panelFolder.marginHeight = 0;
-            this.panelFolder.setMinimizeVisible(true);
-            this.panelFolder.setMRUVisible(true);
-            this.panelFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
+            if (supportsPanels()) {
+                this.panelFolder = new CTabFolder(this.viewerSash, SWT.FLAT | SWT.TOP);
+                this.panelFolder.marginWidth = 0;
+                this.panelFolder.marginHeight = 0;
+                this.panelFolder.setMinimizeVisible(true);
+                this.panelFolder.setMRUVisible(true);
+                this.panelFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-            this.panelToolBar = new ToolBarManager(SWT.HORIZONTAL | SWT.RIGHT | SWT.FLAT);
-            ToolBar panelToolbarControl = this.panelToolBar.createControl(panelFolder);
-            this.panelFolder.setTopRight(panelToolbarControl, SWT.RIGHT | SWT.WRAP);
-            this.panelFolder.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    CTabItem activeTab = panelFolder.getSelection();
-                    if (activeTab != null) {
-                        setActivePanel((String) activeTab.getData());
+                this.panelToolBar = new ToolBarManager(SWT.HORIZONTAL | SWT.RIGHT | SWT.FLAT);
+                ToolBar panelToolbarControl = this.panelToolBar.createControl(panelFolder);
+                this.panelFolder.setTopRight(panelToolbarControl, SWT.RIGHT | SWT.WRAP);
+                this.panelFolder.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        CTabItem activeTab = panelFolder.getSelection();
+                        if (activeTab != null) {
+                            setActivePanel((String) activeTab.getData());
+                        }
                     }
-                }
-            });
-            this.panelFolder.addListener(SWT.Resize, event -> {
-                if (!viewerSash.isDisposed()) {
-                    int[] weights = viewerSash.getWeights();
-                    getPresentationSettings().panelRatio = weights[1];
-                }
-            });
-            this.panelFolder.addCTabFolder2Listener(new CTabFolder2Adapter() {
-                @Override
-                public void close(CTabFolderEvent event) {
-                    CTabItem item = (CTabItem) event.item;
-                    String panelId = (String) item.getData();
-                    removePanel(panelId);
-                }
+                });
+                this.panelFolder.addListener(SWT.Resize, event -> {
+                    if (!viewerSash.isDisposed()) {
+                        int[] weights = viewerSash.getWeights();
+                        getPresentationSettings().panelRatio = weights[1];
+                    }
+                });
+                this.panelFolder.addCTabFolder2Listener(new CTabFolder2Adapter() {
+                    @Override
+                    public void close(CTabFolderEvent event) {
+                        CTabItem item = (CTabItem) event.item;
+                        String panelId = (String) item.getData();
+                        removePanel(panelId);
+                    }
 
-                @Override
-                public void minimize(CTabFolderEvent event) {
-                    showPanels(false);
-                }
+                    @Override
+                    public void minimize(CTabFolderEvent event) {
+                        showPanels(false);
+                    }
 
-                @Override
-                public void maximize(CTabFolderEvent event) {
+                    @Override
+                    public void maximize(CTabFolderEvent event) {
 
-                }
-            });
+                    }
+                });
+            }
 
-            setActivePresentation(new EmptyPresentation());
+            setEmptyPresentation();
 
-            if ((decorator.getDecoratorFeatures() & IResultSetDecorator.FEATURE_STATUS_BAR) != 0) {
+            if (supportsStatusBar()) {
                 createStatusBar();
             }
 
@@ -309,6 +309,14 @@ public class ResultSetViewer extends Viewer
 
     ////////////////////////////////////////////////////////////
     // Filters
+
+    private boolean supportsPanels() {
+        return (decorator.getDecoratorFeatures() & IResultSetDecorator.FEATURE_PANELS) != 0;
+    }
+
+    private boolean supportsStatusBar() {
+        return (decorator.getDecoratorFeatures() & IResultSetDecorator.FEATURE_STATUS_BAR) != 0;
+    }
 
     boolean supportsDataFilter()
     {
@@ -450,6 +458,12 @@ public class ResultSetViewer extends Viewer
         return activePresentation;
     }
 
+    @Override
+    public void setEmptyPresentation() {
+        setActivePresentation(new EmptyPresentation());
+        activePresentationDescriptor = null;
+    }
+
     void updatePresentation(final DBCResultSet resultSet) {
         if (getControl().isDisposed()) {
             return;
@@ -517,46 +531,52 @@ public class ResultSetViewer extends Viewer
                 }
             }
         } finally {
-            if (changed) {
-                // Update combo
-                viewerPanel.setRedraw(false);
-                try {
-                    boolean pVisible = activePresentationDescriptor != null;
-                    ((RowData)presentationSwitchToolbar.getLayoutData()).exclude = !pVisible;
-                    presentationSwitchToolbar.setVisible(pVisible);
-                    if (!pVisible) {
-                        presentationSwitchToolbar.setEnabled(false);
-                    } else {
-                        presentationSwitchToolbar.setEnabled(true);
-                        for (ToolItem item : presentationSwitchToolbar.getItems()) item.dispose();
-                        for (ResultSetPresentationDescriptor pd : availablePresentations) {
-                            ToolItem item = new ToolItem(presentationSwitchToolbar, SWT.CHECK);
-                            item.setImage(DBeaverIcons.getImage(pd.getIcon()));
-                            item.setText(pd.getLabel());
-                            item.setToolTipText(pd.getDescription());
-                            item.setData(pd);
-                            if (pd == activePresentationDescriptor) {
-                                item.setSelection(true);
-                            }
-                            item.addSelectionListener(new SelectionAdapter() {
-                                @Override
-                                public void widgetSelected(SelectionEvent e) {
-                                    if (e.widget != null && e.widget.getData() != null) {
-                                        switchPresentation((ResultSetPresentationDescriptor) e.widget.getData());
-                                    }
-                                }
-                            });
-                        }
-                    }
-                    statusBar.layout();
-                    viewerPanel.layout();
-                } finally {
-                    // Enable redraw
-                    viewerPanel.setRedraw(true);
-                }
+            if (changed && presentationSwitchToolbar != null) {
+                updatePresentationInToolbar();
             }
         }
 
+    }
+
+    private void updatePresentationInToolbar() {
+        // Update combo
+        viewerPanel.setRedraw(false);
+        try {
+            boolean pVisible = activePresentationDescriptor != null;
+            ((RowData) presentationSwitchToolbar.getLayoutData()).exclude = !pVisible;
+            presentationSwitchToolbar.setVisible(pVisible);
+            if (!pVisible) {
+                presentationSwitchToolbar.setEnabled(false);
+            } else {
+                presentationSwitchToolbar.setEnabled(true);
+                for (ToolItem item : presentationSwitchToolbar.getItems()) item.dispose();
+                for (ResultSetPresentationDescriptor pd : availablePresentations) {
+                    ToolItem item = new ToolItem(presentationSwitchToolbar, SWT.CHECK);
+                    item.setImage(DBeaverIcons.getImage(pd.getIcon()));
+                    item.setText(pd.getLabel());
+                    item.setToolTipText(pd.getDescription());
+                    item.setData(pd);
+                    if (pd == activePresentationDescriptor) {
+                        item.setSelection(true);
+                    }
+                    item.addSelectionListener(new SelectionAdapter() {
+                        @Override
+                        public void widgetSelected(SelectionEvent e) {
+                            if (e.widget != null && e.widget.getData() != null) {
+                                switchPresentation((ResultSetPresentationDescriptor) e.widget.getData());
+                            }
+                        }
+                    });
+                }
+            }
+            statusBar.layout();
+            viewerPanel.layout();
+        } catch (Exception e) {
+            log.debug("Error updating presentation toolbar", e);
+        } finally {
+            // Enable redraw
+            viewerPanel.setRedraw(true);
+        }
     }
 
     private void setActivePresentation(@NotNull IResultSetPresentation presentation) {
@@ -566,8 +586,10 @@ public class ResultSetViewer extends Viewer
         for (Control child : presentationPanel.getChildren()) {
             child.dispose();
         }
-        for (CTabItem panelItem : panelFolder.getItems()) {
-            panelItem.dispose();
+        if (panelFolder != null) {
+            for (CTabItem panelItem : panelFolder.getItems()) {
+                panelItem.dispose();
+            }
         }
 
         // Set new presentation
@@ -585,7 +607,7 @@ public class ResultSetViewer extends Viewer
         activePresentation.createPresentation(this, presentationPanel);
 
         // Activate panels
-        {
+        if (supportsPanels()) {
             boolean panelsVisible = false;
             int[] panelWeights = new int[]{700, 300};
 
@@ -617,6 +639,12 @@ public class ResultSetViewer extends Viewer
                 tb.update(true);
             }
         }
+
+        // Listen presentation selection change
+        if (presentation instanceof ISelectionProvider) {
+            ((ISelectionProvider) presentation).addSelectionChangedListener(event -> fireResultSetSelectionChange(event));
+        }
+
 
         // Set focus in presentation control
         // Use async exec to avoid focus switch after user UI interaction (e.g. combo)
@@ -728,6 +756,9 @@ public class ResultSetViewer extends Viewer
 
     @Override
     public void activatePanel(String id, boolean setActive, boolean showPanels) {
+        if (!supportsPanels()) {
+            return;
+        }
         if (showPanels && !isPanelsVisible()) {
             showPanels(true);
         }
@@ -771,6 +802,7 @@ public class ResultSetViewer extends Viewer
         panelTab.setImage(DBeaverIcons.getImage(panelDescriptor.getIcon()));
         panelTab.setToolTipText(panelDescriptor.getDescription());
         panelTab.setControl(panelControl);
+        UIUtils.disposeControlOnItemDispose(panelTab);
 
         if (setActive || firstPanel) {
             panelFolder.setSelection(panelTab);
@@ -841,9 +873,11 @@ public class ResultSetViewer extends Viewer
     }
 
     private CTabItem getPanelTab(String panelId) {
-        for (CTabItem tab : panelFolder.getItems()) {
-            if (CommonUtils.equalObjects(tab.getData(), panelId)) {
-                return tab;
+        if (panelFolder != null) {
+            for (CTabItem tab : panelFolder.getItems()) {
+                if (CommonUtils.equalObjects(tab.getData(), panelId)) {
+                    return tab;
+                }
             }
         }
         return null;
@@ -854,7 +888,7 @@ public class ResultSetViewer extends Viewer
     }
 
     void showPanels(boolean show) {
-        if (show == isPanelsVisible()) {
+        if (!supportsPanels() || show == isPanelsVisible()) {
             return;
         }
         CTabItem activePanelTab = panelFolder.getSelection();
@@ -1013,6 +1047,7 @@ public class ResultSetViewer extends Viewer
         return null;
     }
 
+    @Override
     public void addListener(IResultSetListener listener)
     {
         synchronized (listeners) {
@@ -1020,6 +1055,7 @@ public class ResultSetViewer extends Viewer
         }
     }
 
+    @Override
     public void removeListener(IResultSetListener listener)
     {
         synchronized (listeners) {
@@ -1044,7 +1080,9 @@ public class ResultSetViewer extends Viewer
         for (ToolBarManager tb : toolbarList) {
             UIUtils.updateContributionItems(tb);
         }
-        UIUtils.updateContributionItems(panelToolBar);
+        if (panelToolBar != null) {
+            UIUtils.updateContributionItems(panelToolBar);
+        }
     }
 
     public void redrawData(boolean attributesChanged, boolean rowsChanged)
@@ -1588,7 +1626,9 @@ public class ResultSetViewer extends Viewer
     @Override
     public boolean isReadOnly()
     {
-        if (model.isUpdateInProgress() || !(activePresentation instanceof IResultSetEditor)) {
+        if (model.isUpdateInProgress() || !(activePresentation instanceof IResultSetEditor) ||
+            (decorator.getDecoratorFeatures() & IResultSetDecorator.FEATURE_EDIT) == 0)
+        {
             return true;
         }
         DBCExecutionContext executionContext = getExecutionContext();
@@ -1903,6 +1943,7 @@ public class ResultSetViewer extends Viewer
             manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.FILE_REFRESH));
         }
 
+        if (supportsPanels())
         manager.add(new Separator());
         manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
     }
@@ -2225,7 +2266,10 @@ public class ResultSetViewer extends Viewer
             DBSEntityAttributeRef ownAttr = ownAttrs.get(i);
             DBSEntityAttributeRef refAttr = refAttrs.get(i);
             DBDAttributeBinding ownBinding = model.getAttributeBinding(ownAttr.getAttribute());
-            assert ownBinding != null;
+            if (ownBinding == null) {
+                DBUserInterface.getInstance().showError("Can't navigate", "Attribute " + ownAttr.getAttribute() + " is missing in result set");
+                return;
+            }
 
             DBDAttributeConstraint constraint = new DBDAttributeConstraint(refAttr.getAttribute(), visualPosition++);
             constraint.setVisible(true);
@@ -2363,9 +2407,11 @@ public class ResultSetViewer extends Viewer
         addDefaultPanelActions();
         panelToolBar.update(true);
 
-        ToolBar toolBar = panelToolBar.getControl();
-        Point toolBarSize = toolBar.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-        this.panelFolder.setTabHeight(toolBarSize.y);
+        if (this.panelFolder != null) {
+            ToolBar toolBar = panelToolBar.getControl();
+            Point toolBarSize = toolBar.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+            this.panelFolder.setTabHeight(toolBarSize.y);
+        }
     }
 
     @Override
@@ -3133,23 +3179,33 @@ public class ResultSetViewer extends Viewer
         persistConfig();
     }
 
-    void fireResultSetChange() {
+    @NotNull
+    private IResultSetListener[] getListenersCopy() {
+        IResultSetListener[] listenersCopy;
         synchronized (listeners) {
-            if (!listeners.isEmpty()) {
-                for (IResultSetListener listener : listeners) {
-                    listener.handleResultSetChange();
-                }
+            if (listeners.isEmpty()) {
+                return EMPTY_LISTENERS;
             }
+            listenersCopy = listeners.toArray(new IResultSetListener[listeners.size()]);
+        }
+        return listenersCopy;
+    }
+
+    void fireResultSetChange() {
+        for (IResultSetListener listener : getListenersCopy()) {
+            listener.handleResultSetChange();
         }
     }
 
     private void fireResultSetLoad() {
-        synchronized (listeners) {
-            if (!listeners.isEmpty()) {
-                for (IResultSetListener listener : listeners) {
-                    listener.handleResultSetLoad();
-                }
-            }
+        for (IResultSetListener listener : getListenersCopy()) {
+            listener.handleResultSetLoad();
+        }
+    }
+
+    private void fireResultSetSelectionChange(SelectionChangedEvent event) {
+        for (IResultSetListener listener : getListenersCopy()) {
+            listener.handleResultSetSelectionChange(event);
         }
     }
 
@@ -3193,13 +3249,13 @@ public class ResultSetViewer extends Viewer
 
         @NotNull
         @Override
-        public Collection<DBDAttributeBinding> getSelectedAttributes() {
+        public List<DBDAttributeBinding> getSelectedAttributes() {
             return Collections.emptyList();
         }
 
         @NotNull
         @Override
-        public Collection<ResultSetRow> getSelectedRows() {
+        public List<ResultSetRow> getSelectedRows() {
             return Collections.emptyList();
         }
 

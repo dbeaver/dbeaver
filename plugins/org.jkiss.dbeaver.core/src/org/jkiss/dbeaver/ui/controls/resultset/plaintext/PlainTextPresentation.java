@@ -55,7 +55,6 @@ import org.jkiss.dbeaver.ui.controls.StyledTextFindReplaceTarget;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -612,16 +611,16 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
 
         @NotNull
         @Override
-        public Collection<DBDAttributeBinding> getSelectedAttributes() {
+        public List<DBDAttributeBinding> getSelectedAttributes() {
             if (curAttribute == null) {
                 return Collections.emptyList();
             }
-            return Collections.singleton(curAttribute);
+            return Collections.singletonList(curAttribute);
         }
 
         @NotNull
         @Override
-        public Collection<ResultSetRow> getSelectedRows()
+        public List<ResultSetRow> getSelectedRows()
         {
             ResultSetRow currentRow = controller.getCurrentRow();
             if (currentRow == null) {

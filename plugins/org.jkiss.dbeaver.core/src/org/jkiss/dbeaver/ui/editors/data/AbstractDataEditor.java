@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.editors.data;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IActionBars;
@@ -214,6 +215,11 @@ public abstract class AbstractDataEditor<OBJECT_TYPE extends DBSObject> extends 
     public void handleResultSetChange()
     {
         firePropertyChange(IEditorPart.PROP_DIRTY);
+    }
+
+    @Override
+    public void handleResultSetSelectionChange(SelectionChangedEvent event) {
+        // No actions
     }
 
     @Override
