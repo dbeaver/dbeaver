@@ -42,8 +42,6 @@ import java.util.List;
  */
 public class StringEditorTable {
 
-    private static Button removeButton;
-
     public static Table createEditableList(
         @NotNull Composite parent,
         @NotNull String name,
@@ -103,21 +101,8 @@ public class StringEditorTable {
         final Button addButton = new Button(buttonsGroup, SWT.PUSH);
         addButton.setText(CoreMessages.dialog_filter_button_add);
         addButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        addButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                TableItem newItem = new TableItem(valueTable, SWT.LEFT);
-                if (icon != null) {
-                    newItem.setImage(DBeaverIcons.getImage(icon));
-                }
-                valueTable.setSelection(newItem);
-                tableEditor.closeEditor();
-                tableEditor.showEditor(newItem);
-                removeButton.setEnabled(true);
-            }
-        });
 
-        removeButton = new Button(buttonsGroup, SWT.PUSH);
+        Button removeButton = new Button(buttonsGroup, SWT.PUSH);
         removeButton.setText(CoreMessages.dialog_filter_button_remove);
         removeButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         removeButton.addSelectionListener(new SelectionAdapter() {
@@ -142,6 +127,20 @@ public class StringEditorTable {
                 tableEditor.closeEditor();
                 valueTable.removeAll();
                 removeButton.setEnabled(false);
+            }
+        });
+
+        addButton.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                TableItem newItem = new TableItem(valueTable, SWT.LEFT);
+                if (icon != null) {
+                    newItem.setImage(DBeaverIcons.getImage(icon));
+                }
+                valueTable.setSelection(newItem);
+                tableEditor.closeEditor();
+                tableEditor.showEditor(newItem);
+                removeButton.setEnabled(true);
             }
         });
 
