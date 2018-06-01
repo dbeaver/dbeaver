@@ -28,6 +28,7 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ui.ILabelProviderEx;
 import org.jkiss.dbeaver.ui.ILazyLabelProvider;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -554,6 +555,26 @@ public class ViewerColumnController {
             super.okPressed();
         }
 
+        @Override
+        protected void createButtonsForButtonBar(Composite parent) {
+            createButton(parent, IDialogConstants.DETAILS_ID, CoreMessages.dialog_edit_driver_button_reset_to_defaults, false);
+            super.createButtonsForButtonBar(parent);
+        }
+
+        @Override
+        protected void buttonPressed(int buttonId) {
+            if (buttonId == IDialogConstants.DETAILS_ID) {
+                resetToDefaults();
+            }
+            super.buttonPressed(buttonId);
+        }
+
+        private void resetToDefaults() {
+            for (TableItem item : colTable.getItems()) {
+                ColumnInfo ci = (ColumnInfo) item.getData();
+                item.setChecked(ci.defaultVisible);
+            }
+        }
     }
 
     private static class ColumnInfoComparator implements Comparator<ColumnInfo> {
