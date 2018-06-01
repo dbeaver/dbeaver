@@ -56,7 +56,7 @@ public class GroupingResultsDecorator implements IResultSetDecorator {
 
     @Override
     public String getEmptyDataDescription() {
-        return "Drag and drop results column(s) here to create grouping\nPress CONTROL to configure grouping settings";
+        return "Drag-and-drop results column(s) here to create grouping\nPress CONTROL to configure grouping settings";
     }
 
     @Override
