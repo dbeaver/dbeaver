@@ -3249,13 +3249,13 @@ public class ResultSetViewer extends Viewer
 
         @NotNull
         @Override
-        public Collection<DBDAttributeBinding> getSelectedAttributes() {
+        public List<DBDAttributeBinding> getSelectedAttributes() {
             return Collections.emptyList();
         }
 
         @NotNull
         @Override
-        public Collection<ResultSetRow> getSelectedRows() {
+        public List<ResultSetRow> getSelectedRows() {
             return Collections.emptyList();
         }
 

@@ -283,16 +283,22 @@ public class ResultSetCommandHandler extends AbstractHandler {
                 break;
             }
             case CMD_COPY_COLUMN_NAMES: {
-                ResultSetCopySpecialHandler.CopyConfigDialog configDialog = new ResultSetCopySpecialHandler.CopyConfigDialog(activeShell, "CopyGridNamesOptionsDialog");
-                if (configDialog.open() != IDialogConstants.OK_ID) {
-                    return null;
-                }
                 StringBuilder buffer = new StringBuilder();
                 IResultSetSelection selection = rsv.getSelection();
-                Collection<DBDAttributeBinding> attrs = selection.isEmpty() ? rsv.getModel().getVisibleAttributes() : selection.getSelectedAttributes();
+                List<DBDAttributeBinding> attrs = selection.isEmpty() ? rsv.getModel().getVisibleAttributes() : selection.getSelectedAttributes();
+
+                ResultSetCopySettings settings = new ResultSetCopySettings();
+                if (attrs.size() > 1) {
+                    ResultSetCopySpecialHandler.CopyConfigDialog configDialog = new ResultSetCopySpecialHandler.CopyConfigDialog(activeShell, "CopyGridNamesOptionsDialog");
+                    if (configDialog.open() != IDialogConstants.OK_ID) {
+                        return null;
+                    }
+                    settings = configDialog.copySettings;
+                }
+
                 for (DBDAttributeBinding attr : attrs) {
                     if (buffer.length() > 0) {
-                        buffer.append(configDialog.copySettings.getColumnDelimiter());
+                        buffer.append(settings.getColumnDelimiter());
                     }
                     String colName = attr.getLabel();
                     if (CommonUtils.isEmpty(colName)) {
@@ -300,20 +306,24 @@ public class ResultSetCommandHandler extends AbstractHandler {
                     }
                     buffer.append(colName);
                 }
+
                 ResultSetUtils.copyToClipboard(buffer.toString());
                 break;
             }
             case CMD_COPY_ROW_NAMES: {
-                ResultSetCopySpecialHandler.CopyConfigDialog configDialog = new ResultSetCopySpecialHandler.CopyConfigDialog(activeShell, "CopyGridNamesOptionsDialog");
-                if (configDialog.open() != IDialogConstants.OK_ID) {
-                    return null;
-                }
-
                 StringBuilder buffer = new StringBuilder();
-                IResultSetSelection selection = rsv.getSelection();
-                for (ResultSetRow row : selection.getSelectedRows()) {
+                List<ResultSetRow> selectedRows = rsv.getSelection().getSelectedRows();
+                ResultSetCopySettings settings = new ResultSetCopySettings();
+                if (selectedRows.size() > 1) {
+                    ResultSetCopySpecialHandler.CopyConfigDialog configDialog = new ResultSetCopySpecialHandler.CopyConfigDialog(activeShell, "CopyGridNamesOptionsDialog");
+                    if (configDialog.open() != IDialogConstants.OK_ID) {
+                        return null;
+                    }
+                    settings = configDialog.copySettings;
+                }
+                for (ResultSetRow row : selectedRows) {
                     if (buffer.length() > 0) {
-                        buffer.append(configDialog.copySettings.getRowDelimiter());
+                        buffer.append(settings.getRowDelimiter());
                     }
                     buffer.append(row.getVisualNumber() + 1);
                 }
