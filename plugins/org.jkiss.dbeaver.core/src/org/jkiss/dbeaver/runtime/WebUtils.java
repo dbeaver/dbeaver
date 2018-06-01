@@ -35,6 +35,7 @@ import java.util.Base64;
  */
 public class WebUtils {
     private static final Log log = Log.getLog(WebUtils.class);
+    private static final int MAX_RETRY_COUNT = 10;
 
     @NotNull
     public static URLConnection openConnection(String urlString) throws IOException {
@@ -43,7 +44,16 @@ public class WebUtils {
 
     @NotNull
     public static URLConnection openConnection(String urlString, DBAAuthInfo authInfo) throws IOException {
+        return openURLConnection(urlString, authInfo, 1);
+    }
 
+    @NotNull
+    private static URLConnection openURLConnection(String urlString, DBAAuthInfo authInfo, int retryNumber) throws IOException {
+        if (retryNumber > MAX_RETRY_COUNT) {
+            throw new IOException("Too many redirects (" + retryNumber + ")");
+        } else if (retryNumber > 1) {
+            log.debug("Retry number " + retryNumber);
+        }
         log.debug("Open [" + urlString + "]");
 
         DBPPreferenceStore prefs = DBeaverCore.getGlobalPreferenceStore();
@@ -65,6 +75,7 @@ public class WebUtils {
             final HttpURLConnection httpConnection = (HttpURLConnection) connection;
             httpConnection.setRequestMethod("GET"); //$NON-NLS-1$
             httpConnection.setInstanceFollowRedirects(true);
+            HttpURLConnection.setFollowRedirects(true);
             connection.setRequestProperty(
                 "User-Agent",  //$NON-NLS-1$
                 GeneralUtils.getProductTitle());
@@ -80,6 +91,10 @@ public class WebUtils {
             final HttpURLConnection httpConnection = (HttpURLConnection) connection;
             final int responseCode = httpConnection.getResponseCode();
             if (responseCode != 200) {
+                if (responseCode == HttpURLConnection.HTTP_MOVED_TEMP || responseCode == HttpURLConnection.HTTP_MOVED_PERM || responseCode == HttpURLConnection.HTTP_SEE_OTHER) {
+                    String newUrl = connection.getHeaderField("Location");
+                    return openURLConnection(newUrl, authInfo, retryNumber + 1);
+                }
                 throw new IOException("Can't open '" + urlString + "': " + httpConnection.getResponseMessage());
             }
         }
