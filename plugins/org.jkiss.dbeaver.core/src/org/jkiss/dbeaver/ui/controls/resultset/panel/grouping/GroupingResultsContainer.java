@@ -35,6 +35,10 @@ import java.util.List;
 
 public class GroupingResultsContainer implements IResultSetContainer {
 
+    public static final String FUNCTION_COUNT = "COUNT";
+
+    public static final String DEFAULT_FUNCTION = FUNCTION_COUNT + "(*)";
+
     private final IResultSetPresentation presentation;
     private GroupingDataContainer dataContainer;
     private ResultSetViewer groupingViewer;
@@ -52,7 +56,11 @@ public class GroupingResultsContainer implements IResultSetContainer {
     private void initDefaultSettings() {
         this.groupAttributes.clear();
         this.groupFunctions.clear();
-        addGroupingFunctions(Collections.singletonList("COUNT(*)"));
+        addGroupingFunctions(Collections.singletonList(DEFAULT_FUNCTION));
+    }
+
+    public IResultSetPresentation getOwnerPresentation() {
+        return presentation;
     }
 
     public List<String> getGroupAttributes() {

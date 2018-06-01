@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.controls;
 
+import org.eclipse.jface.fieldassist.ContentProposalAdapter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.TableEditor;
 import org.eclipse.swt.events.*;
@@ -32,21 +33,32 @@ public abstract class CustomTableEditor implements MouseListener, TraverseListen
 
     private final Table table;
     private final TableEditor tableEditor;
+    private ContentProposalAdapter proposalAdapter;
     private int columnIndex;
     protected int firstTraverseIndex = -1, lastTraverseIndex = -1;
     protected boolean editOnEnter = true;
 
     public CustomTableEditor(Table table) {
+        this(table, null);
+    }
+
+    public CustomTableEditor(Table table, ContentProposalAdapter proposalAdapter) {
         this.table = table;
+        this.proposalAdapter = proposalAdapter;
 
         tableEditor = new TableEditor(table);
         tableEditor.horizontalAlignment = SWT.CENTER;
         tableEditor.verticalAlignment = SWT.TOP;
         tableEditor.grabHorizontal = true;
+        //tableEditor.grabVertical = true;
         tableEditor.minimumWidth = 50;
 
         table.addMouseListener(this);
         table.addTraverseListener(this);
+    }
+
+    public void setProposalAdapter(ContentProposalAdapter proposalAdapter) {
+        this.proposalAdapter = proposalAdapter;
     }
 
     @Override
@@ -68,12 +80,7 @@ public abstract class CustomTableEditor implements MouseListener, TraverseListen
         final TableItem item = table.getItem(new Point(e.x, e.y));
         if (item != null) {
             columnIndex = UIUtils.getColumnAtPos(item, e.x, e.y);
-            UIUtils.asyncExec(new Runnable() {
-                @Override
-                public void run() {
-                    showEditor(item);
-                }
-            });
+            UIUtils.asyncExec(() -> showEditor(item));
         }
     }
 
@@ -94,11 +101,17 @@ public abstract class CustomTableEditor implements MouseListener, TraverseListen
             @Override
             public void focusLost(FocusEvent e) {
                 saveEditorValue(editor, columnIndex, tableEditor.getItem());
-                closeEditor();
+                if (!isProposalPopupActive()) {
+                    closeEditor();
+                }
             }
         });
         editor.addTraverseListener(this);
         tableEditor.setEditor(editor, item, columnIndex);
+    }
+
+    private boolean isProposalPopupActive() {
+        return proposalAdapter != null && proposalAdapter.isProposalPopupOpen();
     }
 
     public void closeEditor() {
@@ -116,7 +129,9 @@ public abstract class CustomTableEditor implements MouseListener, TraverseListen
         if (e.detail == SWT.TRAVERSE_RETURN) {
             if (editor != null) {
                 saveEditorValue(editor, columnIndex, tableEditor.getItem());
-                closeEditor();
+                if (!isProposalPopupActive()) {
+                    this.closeEditor();
+                }
             } else if (editOnEnter) {
                 TableItem[] selection = table.getSelection();
                 if (selection != null && selection.length >= 1) {
@@ -131,7 +146,9 @@ public abstract class CustomTableEditor implements MouseListener, TraverseListen
             TableItem item = tableEditor.getItem();
             if (item != null) {
                 saveEditorValue(editor, columnIndex, item);
-                closeEditor();
+                if (!isProposalPopupActive()) {
+                    this.closeEditor();
+                }
 
                 int lastColumn = lastTraverseIndex > 0 ? lastTraverseIndex : table.getColumnCount() - 1;
                 if (columnIndex < lastColumn) {
@@ -153,7 +170,9 @@ public abstract class CustomTableEditor implements MouseListener, TraverseListen
                 e.detail = SWT.TRAVERSE_NONE;
             }
         } else if (e.detail == SWT.TRAVERSE_ESCAPE && editor != null) {
-            closeEditor();
+            if (!isProposalPopupActive()) {
+                this.closeEditor();
+            }
             e.doit = false;
             e.detail = SWT.TRAVERSE_NONE;
         }
