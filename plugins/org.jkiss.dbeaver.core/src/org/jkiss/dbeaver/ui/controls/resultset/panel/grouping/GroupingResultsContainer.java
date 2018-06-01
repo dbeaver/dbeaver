@@ -18,10 +18,12 @@ package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping;
 
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
+import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
@@ -93,7 +95,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
 
     public void addGroupingAttributes(List<String> attributes) {
         for (String attrName : attributes) {
-            attrName = DBUtils.getUnQuotedIdentifier(getDataContainer().getDataSource(), attrName);
+            attrName = cleanupObjectName(attrName);
             if (!groupAttributes.contains(attrName)) {
                 groupAttributes.add(attrName);
             }
@@ -103,13 +105,26 @@ public class GroupingResultsContainer implements IResultSetContainer {
     public boolean removeGroupingAttribute(List<String> attributes) {
         boolean changed = false;
         for (String attrName : attributes) {
-            attrName = DBUtils.getUnQuotedIdentifier(getDataContainer().getDataSource(), attrName);
+            attrName = cleanupObjectName(attrName);
             if (groupAttributes.contains(attrName)) {
                 groupAttributes.remove(attrName);
                 changed = true;
             }
         }
+        if (changed) {
+            resetDataFilters();
+        }
         return changed;
+    }
+
+    private String cleanupObjectName(String attrName) {
+        DBPDataSource dataSource = getDataContainer().getDataSource();
+        if (DBUtils.isQuotedIdentifier(dataSource, attrName)) {
+            attrName = DBUtils.getUnQuotedIdentifier(dataSource, attrName);
+        } else {
+            attrName = DBObjectNameCaseTransformer.transformName(dataSource, attrName);
+        }
+        return attrName;
     }
 
     public void addGroupingFunctions(List<String> functions) {
@@ -135,6 +150,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
 
     public void clearGrouping() {
         initDefaultSettings();
+        groupingViewer.resetDataFilter(false);
         if (!(groupingViewer.getActivePresentation() instanceof EmptyPresentation)) {
             groupingViewer.setEmptyPresentation();
         }
@@ -186,5 +202,11 @@ public class GroupingResultsContainer implements IResultSetContainer {
 
         groupFunctions.clear();
         groupFunctions.addAll(functions);
+
+        resetDataFilters();
+    }
+
+    private void resetDataFilters() {
+        groupingViewer.getModel().createDataFilter();
     }
 }
