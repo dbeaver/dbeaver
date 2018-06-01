@@ -1312,8 +1312,11 @@ public class UIUtils {
 
     public static void drawMessageOverControl(Control control, PaintEvent e, String message, int offset) {
         Rectangle bounds = control.getBounds();
-        Point ext = e.gc.textExtent(message);
-        e.gc.drawText(message, (bounds.width - ext.x) / 2, bounds.height / 3 + offset);
+        for (String line : message.split("\n")) {
+            Point ext = e.gc.textExtent(line);
+            e.gc.drawText(line, (bounds.width - ext.x) / 2, bounds.height / 3 + offset);
+            offset += ext.y;
+        }
     }
 
     public static boolean launchProgram(String path)
