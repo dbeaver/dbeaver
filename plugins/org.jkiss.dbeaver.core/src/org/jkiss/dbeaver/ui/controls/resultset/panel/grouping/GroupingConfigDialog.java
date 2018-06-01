@@ -17,13 +17,18 @@
 package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping;
 
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.fieldassist.IContentProposalProvider;
+import org.eclipse.jface.fieldassist.SimpleContentProposalProvider;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.StringEditorTable;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -54,8 +59,16 @@ class GroupingConfigDialog extends BaseDialog
     {
         Composite composite = super.createDialogArea(parent);
 
-        columnsTable = StringEditorTable.createEditableList(composite, "Columns", resultsContainer.getGroupAttributes(), DBIcon.TREE_ATTRIBUTE);
-        functionsTable = StringEditorTable.createEditableList(composite, "Functions", resultsContainer.getGroupFunctions(), DBIcon.TREE_FUNCTION);
+        List<String> proposals = new ArrayList<>();
+        for (DBDAttributeBinding attr : resultsContainer.getOwnerPresentation().getController().getModel().getAttributes()) {
+            proposals.add(attr.getName());
+        }
+        IContentProposalProvider proposalProvider = new SimpleContentProposalProvider(proposals.toArray(new String[0]));
+        columnsTable = StringEditorTable.createEditableList(composite, "Columns", resultsContainer.getGroupAttributes(), DBIcon.TREE_ATTRIBUTE, proposalProvider);
+
+        Collections.addAll(proposals,"COUNT", "AVG", "MAX", "MIN", "SUM");
+        proposalProvider = new SimpleContentProposalProvider(proposals.toArray(new String[0]));
+        functionsTable = StringEditorTable.createEditableList(composite, "Functions", resultsContainer.getGroupFunctions(), DBIcon.TREE_FUNCTION, proposalProvider);
 
         return composite;
     }

@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.ui.controls;
 
+import org.eclipse.jface.fieldassist.ContentProposalAdapter;
+import org.eclipse.jface.fieldassist.IContentProposalProvider;
+import org.eclipse.jface.fieldassist.TextContentAdapter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ControlAdapter;
 import org.eclipse.swt.events.ControlEvent;
@@ -23,6 +26,8 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -37,7 +42,15 @@ import java.util.List;
  */
 public class StringEditorTable {
 
-    public static Table createEditableList(Composite parent, String name, List<String> values, DBPImage icon) {
+    private static Button removeButton;
+
+    public static Table createEditableList(
+        @NotNull Composite parent,
+        @NotNull String name,
+        @Nullable List<String> values,
+        @Nullable  DBPImage icon,
+        @Nullable IContentProposalProvider proposalProvider)
+    {
         Group group = UIUtils.createControlGroup(parent, name, 2, GridData.FILL_BOTH, 0);
 
         final Table valueTable = new Table(group, SWT.SINGLE | SWT.FULL_SELECTION | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
@@ -69,6 +82,14 @@ public class StringEditorTable {
             protected Control createEditor(Table table, int index, TableItem item) {
                 Text editor = new Text(table, SWT.BORDER);
                 editor.setText(item.getText());
+                if (proposalProvider != null) {
+                    setProposalAdapter(UIUtils.installContentProposal(
+                        editor,
+                        new TextContentAdapter(),
+                        proposalProvider,
+                        true,
+                        false));
+                }
                 return editor;
             }
             @Override
@@ -92,10 +113,11 @@ public class StringEditorTable {
                 valueTable.setSelection(newItem);
                 tableEditor.closeEditor();
                 tableEditor.showEditor(newItem);
+                removeButton.setEnabled(true);
             }
         });
 
-        final Button removeButton = new Button(buttonsGroup, SWT.PUSH);
+        removeButton = new Button(buttonsGroup, SWT.PUSH);
         removeButton.setText(CoreMessages.dialog_filter_button_remove);
         removeButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         removeButton.addSelectionListener(new SelectionAdapter() {
