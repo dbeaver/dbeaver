@@ -172,7 +172,12 @@ public class ViewerColumnController {
         control.setRedraw(false);
         isInitializing = true;
         try {
+            boolean needRefresh = false;
             for (ColumnInfo columnInfo : columns) {
+                boolean columnExists = (columnInfo.column != null);
+                if (columnExists != columnInfo.visible) {
+                    needRefresh = true;
+                }
                 if (columnInfo.column != null) {
                     columnInfo.column.dispose();
                     columnInfo.column = null;
@@ -189,12 +194,14 @@ public class ViewerColumnController {
                     }
                 });
             }
-            viewer.refresh();
-            for (ColumnInfo columnInfo : getVisibleColumns()) {
-                if (columnInfo.column instanceof TreeColumn) {
-                    ((TreeColumn) columnInfo.column).pack();
-                } else {
-                    ((TableColumn) columnInfo.column).pack();
+            if (needRefresh && pack) {
+                viewer.refresh();
+                for (ColumnInfo columnInfo : getVisibleColumns()) {
+                    if (columnInfo.column instanceof TreeColumn) {
+                        ((TreeColumn) columnInfo.column).pack();
+                    } else {
+                        ((TableColumn) columnInfo.column).pack();
+                    }
                 }
             }
         } finally {
