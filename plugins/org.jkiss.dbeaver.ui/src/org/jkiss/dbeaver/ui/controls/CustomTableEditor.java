@@ -50,7 +50,6 @@ public abstract class CustomTableEditor implements MouseListener, TraverseListen
         tableEditor.horizontalAlignment = SWT.CENTER;
         tableEditor.verticalAlignment = SWT.TOP;
         tableEditor.grabHorizontal = true;
-        //tableEditor.grabVertical = true;
         tableEditor.minimumWidth = 50;
 
         table.addMouseListener(this);
@@ -96,6 +95,8 @@ public abstract class CustomTableEditor implements MouseListener, TraverseListen
         if (editor == null) {
             return;
         }
+        tableEditor.minimumHeight = editor.computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
+
         editor.setFocus();
         editor.addFocusListener(new FocusAdapter() {
             @Override
