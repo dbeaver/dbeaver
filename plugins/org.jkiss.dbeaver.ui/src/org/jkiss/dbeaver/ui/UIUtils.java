@@ -34,12 +34,14 @@ import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.resource.StringConverter;
-import org.eclipse.jface.text.IFindReplaceTarget;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.window.IShellProvider;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.*;
+import org.eclipse.swt.custom.CLabel;
+import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.custom.CTabItem;
+import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
@@ -58,7 +60,6 @@ import org.eclipse.ui.internal.WorkbenchMessages;
 import org.eclipse.ui.services.IServiceLocator;
 import org.eclipse.ui.swt.IFocusService;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
-import org.eclipse.ui.texteditor.FindReplaceAction;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -89,7 +90,6 @@ import java.text.DecimalFormatSymbols;
 import java.text.MessageFormat;
 import java.util.Collection;
 import java.util.Locale;
-import java.util.ResourceBundle;
 import java.util.SortedMap;
 
 /**
@@ -1324,29 +1324,6 @@ public class UIUtils {
         return Program.launch(path);
     }
 
-    public static void fillDefaultStyledTextContextMenu(final StyledText text) {
-        MenuManager menuMgr = new MenuManager();
-        menuMgr.addMenuListener(manager ->
-            UIUtils.fillDefaultStyledTextContextMenu(manager, text));
-        menuMgr.setRemoveAllWhenShown(true);
-        text.setMenu(menuMgr.createContextMenu(text));
-    }
-
-    public static void fillDefaultStyledTextContextMenu(IMenuManager menu, final StyledText text) {
-        final Point selectionRange = text.getSelectionRange();
-        menu.add(new StyledTextAction(IWorkbenchCommandConstants.EDIT_COPY, selectionRange.y > 0, text, ST.COPY));
-        menu.add(new StyledTextAction(IWorkbenchCommandConstants.EDIT_PASTE, text.getEditable(), text, ST.PASTE));
-        menu.add(new StyledTextAction(IWorkbenchCommandConstants.EDIT_CUT, selectionRange.y > 0, text, ST.CUT));
-        menu.add(new StyledTextAction(IWorkbenchCommandConstants.EDIT_SELECT_ALL, true, text, ST.SELECT_ALL));
-        IFindReplaceTarget stFindReplaceTarget = new StyledTextFindReplaceTarget(text);
-        menu.add(new FindReplaceAction(
-            ResourceBundle.getBundle("org.eclipse.ui.texteditor.ConstructedEditorMessages"),
-            "Editor.FindReplace.",
-            text.getShell(),
-            stFindReplaceTarget));
-        menu.add(new GroupMarker("styled_text_additions"));
-    }
-
     public static void fillDefaultTableContextMenu(IMenuManager menu, final Table table) {
         menu.add(new Action(WorkbenchMessages.Workbench_copy) {
             @Override
@@ -1547,23 +1524,6 @@ public class UIUtils {
         } catch (Exception e) {
             log.debug(e);
             return null;
-        }
-    }
-
-    private static class StyledTextAction extends Action {
-        private final StyledText styledText;
-        private final int action;
-        public StyledTextAction(String actionId, boolean enabled, StyledText styledText, int action) {
-            super(ActionUtils.findCommandName(actionId));
-            this.setActionDefinitionId(actionId);
-            this.setEnabled(enabled);
-            this.styledText = styledText;
-            this.action = action;
-        }
-
-        @Override
-        public void run() {
-            styledText.invokeAction(action);
         }
     }
 

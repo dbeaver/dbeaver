@@ -27,6 +27,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.themes.ITheme;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.StyledTextUtils;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -114,7 +115,7 @@ public class SQLEditorOutputViewer extends Composite {
             @Override
             public void menuAboutToShow(IMenuManager manager)
             {
-                UIUtils.fillDefaultStyledTextContextMenu(manager, text);
+                StyledTextUtils.fillDefaultStyledTextContextMenu(manager, text);
                 manager.add(new Separator());
                 manager.add(new Action("Clear") {
                     @Override
