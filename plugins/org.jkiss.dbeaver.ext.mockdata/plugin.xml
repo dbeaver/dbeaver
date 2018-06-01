@@ -10,12 +10,12 @@
             <enabledWhen>
                 <or>
                     <with variable="activeEditor">
-                        <adapt type="org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer"/>
+                        <adapt type="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
                     </with>
                     <with variable="selection">
                         <count value="+"/>
                         <iterate operator="and">
-                            <adapt type="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
+                            <adapt type="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
                         </iterate>
                     </with>
                 </or>
