@@ -48,7 +48,9 @@ public class DateTimeDataFormatter implements DBDDataFormatter {
             locale);
         buffer = new StringBuffer();
         position = new FieldPosition(0);
-        dateTimeFormatter = DateTimeFormatter.ofPattern(pattern);
+        // DateTimeFormatter pattern for nanoseconds is "n" but old "f" (ExtendedDateFormat)
+        String java8DatePattern = pattern.replaceAll("f+", "n");
+        dateTimeFormatter = DateTimeFormatter.ofPattern(java8DatePattern);
     }
 
     @Override

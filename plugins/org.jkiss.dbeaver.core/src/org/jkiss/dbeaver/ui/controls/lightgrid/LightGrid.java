@@ -4350,7 +4350,17 @@ public abstract class LightGrid extends Canvas {
                         }
                         event.data = elements;
                     } else if (TextTransfer.getInstance().isSupportedType(event.dataType)) {
-                        event.data = getLabelProvider().getText(draggingColumn.getElement());
+                        // Copy all selected columns
+                        if (selectedColumns.size() > 1) {
+                            StringBuilder text = new StringBuilder();
+                            for (GridColumn column : selectedColumns) {
+                                if (text.length() > 0) text.append(", ");
+                                text.append(getLabelProvider().getText(column.getElement()));
+                            }
+                            event.data = text.toString();
+                        } else {
+                            event.data = getLabelProvider().getText(draggingColumn.getElement());
+                        }
                     }
                 }
             }

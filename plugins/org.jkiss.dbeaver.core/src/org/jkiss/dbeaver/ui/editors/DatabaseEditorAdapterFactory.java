@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 
@@ -32,7 +33,14 @@ import org.jkiss.dbeaver.model.struct.DBSWrapper;
  */
 public class DatabaseEditorAdapterFactory implements IAdapterFactory
 {
-    private static final Class<?>[] ADAPTER_LIST = { DBSObject.class, DBSDataContainer.class, DBPDataSourceContainer.class };
+    private static final Class<?>[] ADAPTER_LIST = {
+        DBSObject.class,
+        DBSDataContainer.class,
+        DBSDataManipulator.class,
+        DBPDataSourceContainer.class,
+        DBSDataContainer.class,
+        DBPDataSourceContainer.class
+    };
 
     @Override
     public <T> T getAdapter(Object adaptableObject, Class<T> adapterType)

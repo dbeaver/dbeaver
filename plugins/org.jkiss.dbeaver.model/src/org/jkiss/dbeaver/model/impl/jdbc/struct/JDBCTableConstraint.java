@@ -147,15 +147,9 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
         DBDValueHandler keyValueHandler = DBUtils.findValueHandler(session, keyColumn);
 
         if (keyPattern != null) {
-            if (keyPattern instanceof CharSequence) {
-                if (((CharSequence)keyPattern).length() > 0) {
-                    keyPattern = "%" + keyPattern.toString() + "%";
-                } else {
-                    keyPattern = null;
-                }
-            } else if (keyPattern instanceof Number) {
+            if (keyColumn.getDataKind() == DBPDataKind.NUMERIC || keyPattern instanceof Number) {
                 // Subtract gap value to see some values before specified
-                int gapSize =  maxResults / 2;
+                int gapSize = maxResults / 2;
                 if (keyPattern instanceof Integer) {
                     keyPattern = (Integer) keyPattern - gapSize;
                 } else if (keyPattern instanceof Short) {
@@ -170,10 +164,15 @@ public abstract class JDBCTableConstraint<TABLE extends JDBCTable>
                     keyPattern = ((BigInteger) keyPattern).subtract(BigInteger.valueOf(gapSize));
                 } else if (keyPattern instanceof BigDecimal) {
                     keyPattern = ((BigDecimal) keyPattern).subtract(new BigDecimal(gapSize));
+                } else if (keyPattern instanceof String) {
+                    keyPattern = Double.parseDouble((String) keyPattern) - gapSize;
                 }
-            } else {
-                // not supported
-                keyPattern = null;
+            } else if (keyPattern instanceof CharSequence) {
+                if (((CharSequence)keyPattern).length() > 0) {
+                    keyPattern = "%" + keyPattern.toString() + "%";
+                } else {
+                    keyPattern = null;
+                }
             }
         }
 
