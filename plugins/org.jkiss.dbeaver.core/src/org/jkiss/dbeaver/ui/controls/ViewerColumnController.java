@@ -171,12 +171,10 @@ public class ViewerColumnController {
         control.setRedraw(false);
         isInitializing = true;
         try {
-            boolean needRefresh = false;
             for (ColumnInfo columnInfo : columns) {
                 if (columnInfo.column != null) {
                     columnInfo.column.dispose();
                     columnInfo.column = null;
-                    needRefresh = true;
                 }
             }
             createVisibleColumns();
@@ -190,14 +188,12 @@ public class ViewerColumnController {
                     }
                 });
             }
-            if (needRefresh) {
-                viewer.refresh();
-                for (ColumnInfo columnInfo : getVisibleColumns()) {
-                    if (columnInfo.column instanceof TreeColumn) {
-                        ((TreeColumn) columnInfo.column).pack();
-                    } else {
-                        ((TableColumn) columnInfo.column).pack();
-                    }
+            viewer.refresh();
+            for (ColumnInfo columnInfo : getVisibleColumns()) {
+                if (columnInfo.column instanceof TreeColumn) {
+                    ((TreeColumn) columnInfo.column).pack();
+                } else {
+                    ((TableColumn) columnInfo.column).pack();
                 }
             }
         } finally {
@@ -359,7 +355,17 @@ public class ViewerColumnController {
     private void readColumnsConfiguration()
     {
         final Collection<ViewerColumnRegistry.ColumnState> savedConfig = ViewerColumnRegistry.getInstance().getSavedConfig(configId);
-        if (savedConfig == null) {
+        if (savedConfig == null || savedConfig.isEmpty()) {
+            return;
+        }
+        boolean hasVisible = false;
+        for (ViewerColumnRegistry.ColumnState savedState : savedConfig) {
+            if (savedState.visible) {
+                hasVisible = true;
+                break;
+            }
+        }
+        if (!hasVisible) {
             return;
         }
         for (ColumnInfo columnInfo : columns) {
