@@ -78,7 +78,7 @@ public class GroupingPanel implements IResultSetPanel {
                 // Or just clear it (if brand new query was executed)
                 String queryText = presentation.getController().getDataContainer().getName();
                 if (prevQueryText != null && !CommonUtils.equalObjects(prevQueryText, queryText)) {
-                    resultsContainer.getResultSetController().setEmptyPresentation();
+                    resultsContainer.clearGrouping();
                 } else {
                     try {
                         resultsContainer.rebuildGrouping();
@@ -107,6 +107,11 @@ public class GroupingPanel implements IResultSetPanel {
         groupingViewer.addListener(groupingResultsListener);
 
         return groupingViewer.getControl();
+    }
+
+    @Override
+    public boolean isDirty() {
+        return !resultsContainer.getGroupAttributes().isEmpty();
     }
 
     private void updateControls() {

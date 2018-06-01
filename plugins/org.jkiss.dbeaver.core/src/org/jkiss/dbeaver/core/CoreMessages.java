@@ -119,6 +119,10 @@ public class CoreMessages extends NLS {
 	public static String confirm_close_resultset_edit_message;
 	public static String confirm_close_resultset_edit_toggleMessage;
 
+	public static String confirm_reset_panels_content_title;
+	public static String confirm_reset_panels_content_message;
+	public static String confirm_reset_panels_content_toggleMessage;
+
 	public static String confirm_disconnect_txn_title;
 	public static String confirm_disconnect_txn_message;
 	public static String confirm_disconnect_txn_toggleMessage;
