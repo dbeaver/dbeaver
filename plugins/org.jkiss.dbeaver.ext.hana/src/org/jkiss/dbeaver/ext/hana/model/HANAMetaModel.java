@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 
 import java.sql.SQLException;
 import java.util.Map;
@@ -68,9 +69,10 @@ public class HANAMetaModel extends GenericMetaModel
     public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
         GenericDataSource dataSource = sourceObject.getDataSource();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read HANA procedure source")) {
+            String procedureType = sourceObject.getProcedureType().name();
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT SCHEMA_NAME,PROCEDURE_NAME,DEFINITION FROM SYS.PROCEDURES\n" +
-                    "WHERE SCHEMA_NAME = ? and PROCEDURE_NAME = ?"))
+                "SELECT SCHEMA_NAME,"+ procedureType + "_NAME,DEFINITION FROM SYS."+ procedureType + "S\n" +
+                    "WHERE SCHEMA_NAME = ? AND " + procedureType + "_NAME = ?"))
             {
                 dbStat.setString(1, sourceObject.getContainer().getName());
                 dbStat.setString(2, sourceObject.getName());
