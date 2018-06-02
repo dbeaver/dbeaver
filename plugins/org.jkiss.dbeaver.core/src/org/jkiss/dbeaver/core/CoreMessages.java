@@ -265,6 +265,10 @@ public class CoreMessages extends NLS {
 	public static String controls_resultset_filter_title;
 	public static String controls_resultset_filter_warning_custom_order_disabled;
 
+	public static String controls_resultset_grouping_edit;
+	public static String controls_resultset_grouping_remove_column;
+	public static String controls_resultset_grouping_clear;
+
 	public static String controls_resultset_viewer_action_edit;
 	public static String controls_resultset_viewer_action_order_filter;
     public static String controls_resultset_viewer_action_custom_filter;

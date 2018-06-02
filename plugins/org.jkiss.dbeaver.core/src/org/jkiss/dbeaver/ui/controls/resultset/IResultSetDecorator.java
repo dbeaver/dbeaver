@@ -17,6 +17,8 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset;
 
+import org.eclipse.jface.action.IContributionManager;
+
 /**
  * ResultSet decorator.
  */
@@ -33,6 +35,8 @@ public interface IResultSetDecorator {
     String getEmptyDataMessage();
 
     String getEmptyDataDescription();
+
+    void fillContributions(IContributionManager contributionManager);
 
     void registerDragAndDrop(IResultSetPresentation presentation);
 }
