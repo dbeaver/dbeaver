@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPDataTypeProvider;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -42,10 +43,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.DBSTypedObjectEx;
 import org.jkiss.utils.CommonUtils;
 
-import java.sql.Array;
-import java.sql.Connection;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -194,7 +192,7 @@ public class JDBCCollection implements DBDCollection, DBDValueCloneable {
                 try {
                     elementType = arrayType.getComponentType(monitor);
                 } catch (DBException e) {
-                    e.printStackTrace();
+                    log.debug("Error getting array component type", e);
                 }
             }
         }
@@ -240,6 +238,61 @@ public class JDBCCollection implements DBDCollection, DBDValueCloneable {
             }
         } catch (DBException e) {
             throw new DBCException("Can't extract array data from JDBC array", e); //$NON-NLS-1$
+        }
+    }
+
+    @NotNull
+    public static JDBCCollection makeCollectionFromJavaArray(@NotNull JDBCSession session, @NotNull DBSTypedObject column, Object array) throws DBCException {
+        DBSDataType elementType;
+        DBPDataKind dataKind;
+        DBPDataTypeProvider dataTypeProvider = session.getDataSource();
+        if (array instanceof int[]) {
+            dataKind = DBPDataKind.NUMERIC;
+            elementType = dataTypeProvider.getLocalDataType(Types.INTEGER);
+        } else if (array instanceof short[]) {
+            dataKind = DBPDataKind.NUMERIC;
+            elementType = dataTypeProvider.getLocalDataType(Types.SMALLINT);
+        } else if (array instanceof byte[]) {
+            dataKind = DBPDataKind.NUMERIC;
+            elementType = dataTypeProvider.getLocalDataType(Types.BINARY);
+        } else if (array instanceof long[]) {
+            dataKind = DBPDataKind.NUMERIC;
+            elementType = dataTypeProvider.getLocalDataType(Types.BIGINT);
+        } else if (array instanceof boolean[]) {
+            dataKind = DBPDataKind.BOOLEAN;
+            elementType = dataTypeProvider.getLocalDataType(Types.BOOLEAN);
+        } else if (array instanceof String[]) {
+            dataKind = DBPDataKind.STRING;
+            elementType = dataTypeProvider.getLocalDataType(Types.VARCHAR);
+        } else if (array instanceof Date[]) {
+            dataKind = DBPDataKind.DATETIME;
+            elementType = dataTypeProvider.getLocalDataType(Types.TIMESTAMP);
+        } else {
+            dataKind = DBPDataKind.OBJECT;
+            elementType = dataTypeProvider.getLocalDataType(Types.STRUCT);
+        }
+        if (elementType == null) {
+            try {
+                String typeName = dataTypeProvider.getDefaultDataTypeName(dataKind);
+                if (typeName != null) {
+                    elementType = dataTypeProvider.getLocalDataType(typeName);
+                }
+            } catch (Exception e) {
+                throw new DBCException("Error resolving default data type", e);
+            }
+        }
+
+        try {
+            if (elementType == null) {
+                throw new DBCException("Can't resolve array element data type"); //$NON-NLS-1$
+            }
+            final DBDValueHandler elementValueHandler = DBUtils.findValueHandler(session, elementType);
+            if (array == null) {
+                return new JDBCCollection(elementType, elementValueHandler, null);
+            }
+            return makeCollectionFromJavaArray(session, elementType, elementValueHandler, array);
+        } catch (DBException e) {
+            throw new DBCException("Can't extract array data from Java array", e); //$NON-NLS-1$
         }
     }
 
