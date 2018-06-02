@@ -49,6 +49,9 @@ public class StringTextGenerator extends AbstractStringValueGenerator {
         if (min != null) {
             this.minLength = min;
         }
+        if (minLength > templateString.length()) {
+            minLength = templateString.length();
+        }
 
         Integer max = (Integer) properties.get("maxLength"); //$NON-NLS-1$
         if (max != null) {
@@ -60,6 +63,9 @@ public class StringTextGenerator extends AbstractStringValueGenerator {
         }
         if (maxLength > templateString.length()) { // TODO check templateString shouldn't be empty
             maxLength = templateString.length();
+        }
+        if (minLength > maxLength) {
+            maxLength = minLength;
         }
     }
 
