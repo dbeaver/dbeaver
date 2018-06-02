@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCDataType;
+import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
@@ -74,6 +75,7 @@ public class JDBCBasicDataTypeCache<OWNER extends DBSObject, OBJECT extends JDBC
         return makeDataType(dbResult, name, valueType);
     }
 
+    @SuppressWarnings("unchecked")
     @NotNull
     protected OBJECT makeDataType(@NotNull JDBCResultSet dbResult, String name, int valueType) {
         return (OBJECT) new JDBCDataType(
@@ -88,6 +90,7 @@ public class JDBCBasicDataTypeCache<OWNER extends DBSObject, OBJECT extends JDBC
             JDBCUtils.safeGetInt(dbResult, JDBCConstants.MAXIMUM_SCALE));
     }
 
+    @SuppressWarnings("unchecked")
     private OBJECT makeDataType(OWNER owner, int valueType, String name, @Nullable String remarks, boolean unsigned, boolean searchable, int precision, int minScale, int maxScale) {
         return (OBJECT) new JDBCDataType(
                 this.owner,
@@ -129,5 +132,13 @@ public class JDBCBasicDataTypeCache<OWNER extends DBSObject, OBJECT extends JDBC
         setCache(standardTypes);
     }
 
+    public DBSDataType getCachedObject(int typeID) {
+        for (JDBCDataType type : getCachedObjects()) {
+            if (type.getTypeID() == typeID) {
+                return type;
+            }
+        }
+        return null;
+    }
 
 }
