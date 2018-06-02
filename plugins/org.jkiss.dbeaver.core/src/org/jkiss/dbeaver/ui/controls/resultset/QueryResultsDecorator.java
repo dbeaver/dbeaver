@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset;
 
+import org.eclipse.jface.action.IContributionManager;
 import org.jkiss.dbeaver.core.CoreMessages;
 
 /**
@@ -36,6 +37,11 @@ public class QueryResultsDecorator implements IResultSetDecorator  {
     @Override
     public String getEmptyDataDescription() {
         return null;
+    }
+
+    @Override
+    public void fillContributions(IContributionManager contributionManager) {
+
     }
 
     @Override

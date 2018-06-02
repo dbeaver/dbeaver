@@ -266,7 +266,7 @@ public class ResultSetViewer extends Viewer
 
                     @Override
                     public void minimize(CTabFolderEvent event) {
-                        showPanels(false);
+                        showPanels(false, true);
                     }
 
                     @Override
@@ -619,7 +619,7 @@ public class ResultSetViewer extends Viewer
                 }
                 activateDefaultPanels(settings);
             }
-            showPanels(panelsVisible);
+            showPanels(panelsVisible, false);
             viewerSash.setWeights(panelWeights);
         }
 
@@ -760,7 +760,7 @@ public class ResultSetViewer extends Viewer
             return;
         }
         if (showPanels && !isPanelsVisible()) {
-            showPanels(true);
+            showPanels(true, false);
         }
 
         PresentationSettings presentationSettings = getPresentationSettings();
@@ -849,6 +849,7 @@ public class ResultSetViewer extends Viewer
         if (panel != null) {
             panel.activatePanel();
             updatePanelActions();
+            savePresentationSettings();
         }
     }
 
@@ -859,7 +860,7 @@ public class ResultSetViewer extends Viewer
         }
         getPresentationSettings().enabledPanelIds.remove(panelId);
         if (activePanels.isEmpty()) {
-            showPanels(false);
+            showPanels(false, true);
         }
     }
 
@@ -887,7 +888,7 @@ public class ResultSetViewer extends Viewer
         return viewerSash != null && viewerSash.getMaximizedControl() == null;
     }
 
-    void showPanels(boolean show) {
+    void showPanels(boolean show, boolean saveSettings) {
         if (!supportsPanels() || show == isPanelsVisible()) {
             return;
         }
@@ -913,7 +914,9 @@ public class ResultSetViewer extends Viewer
         }
 
         getPresentationSettings().panelsVisible = show;
-        savePresentationSettings();
+        if (saveSettings) {
+            savePresentationSettings();
+        }
     }
 
     private List<IContributionItem> fillPanelsMenu() {
@@ -1943,9 +1946,10 @@ public class ResultSetViewer extends Viewer
             manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.FILE_REFRESH));
         }
 
-        if (supportsPanels())
         manager.add(new Separator());
         manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
+
+        decorator.fillContributions(manager);
     }
 
     @Nullable
