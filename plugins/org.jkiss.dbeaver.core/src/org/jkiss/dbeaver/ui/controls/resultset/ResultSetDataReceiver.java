@@ -51,6 +51,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
     // All (unique) errors happened during fetch
     private List<Throwable> errorList = new ArrayList<>();
     private int focusRow;
+    private DBSDataContainer targetDataContainer;
 
     ResultSetDataReceiver(ResultSetViewer resultSetViewer)
     {
@@ -67,6 +68,14 @@ class ResultSetDataReceiver implements DBDDataReceiver {
 
     void setNextSegmentRead(boolean nextSegmentRead) {
         this.nextSegmentRead = nextSegmentRead;
+    }
+
+    public void setFocusRow(int focusRow) {
+        this.focusRow = focusRow;
+    }
+
+    public void setTargetDataContainer(DBSDataContainer targetDataContainer) {
+        this.targetDataContainer = targetDataContainer;
     }
 
     public List<Throwable> getErrorList() {
@@ -143,7 +152,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
             try {
                 // Read locators' metadata
                 DBSEntity entity = null;
-                DBSDataContainer dataContainer = resultSetViewer.getDataContainer();
+                DBSDataContainer dataContainer = targetDataContainer != null ? targetDataContainer : resultSetViewer.getDataContainer();
                 if (dataContainer instanceof DBSEntity) {
                     entity = (DBSEntity) dataContainer;
                 }
@@ -179,10 +188,6 @@ class ResultSetDataReceiver implements DBDDataReceiver {
 
         attrErrors.clear();
         rows = new ArrayList<>();
-    }
-
-    public void setFocusRow(int focusRow) {
-        this.focusRow = focusRow;
     }
 
 }

@@ -2349,12 +2349,13 @@ public class ResultSetViewer extends Viewer
         if (newWindow) {
             openResultsInNewWindow(monitor, targetEntity, newFilter);
         } else {
+            DBSDataContainer targetDataContainer = (DBSDataContainer) targetEntity;
             // Workaround for script results
             // In script mode history state isn't updated so we check for it here
             if (curState == null) {
-                setNewState(getDataContainer(), model.getDataFilter());
+                setNewState(targetDataContainer, model.getDataFilter());
             }
-            runDataPump((DBSDataContainer) targetEntity, newFilter, 0, getSegmentMaxRows(), -1, true, false, null);
+            runDataPump(targetDataContainer, newFilter, 0, getSegmentMaxRows(), -1, true, false, null);
         }
     }
 
@@ -2762,6 +2763,8 @@ public class ResultSetViewer extends Viewer
         }
         final Object presentationState = savePresentationState();
         dataReceiver.setFocusRow(focusRow);
+        // Set explicit target container
+        dataReceiver.setTargetDataContainer(dataContainer);
         dataPumpJob = new ResultSetJobDataRead(
             dataContainer,
             useDataFilter,
