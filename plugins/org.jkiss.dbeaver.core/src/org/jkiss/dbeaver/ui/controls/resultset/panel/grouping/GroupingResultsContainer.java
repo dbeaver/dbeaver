@@ -206,10 +206,10 @@ public class GroupingResultsContainer implements IResultSetContainer {
 
     public void setGrouping(List<String> attributes, List<String> functions) {
         groupAttributes.clear();
-        groupAttributes.addAll(attributes);
+        addGroupingAttributes(attributes);
 
         groupFunctions.clear();
-        groupFunctions.addAll(functions);
+        addGroupingFunctions(functions);
 
         resetDataFilters();
     }
