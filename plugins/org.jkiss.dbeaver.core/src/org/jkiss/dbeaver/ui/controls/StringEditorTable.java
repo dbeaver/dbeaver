@@ -20,10 +20,7 @@ import org.eclipse.jface.fieldassist.ContentProposalAdapter;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.jface.fieldassist.TextContentAdapter;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ControlAdapter;
-import org.eclipse.swt.events.ControlEvent;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
@@ -80,6 +77,10 @@ public class StringEditorTable {
             protected Control createEditor(Table table, int index, TableItem item) {
                 Text editor = new Text(table, SWT.BORDER);
                 editor.setText(item.getText());
+                editor.addModifyListener(e -> {
+                    // Save value immediately. This solves MacOS problems with focus events.
+                    saveEditorValue(editor, index, item);
+                });
                 if (proposalProvider != null) {
                     setProposalAdapter(UIUtils.installContentProposal(
                         editor,
