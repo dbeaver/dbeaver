@@ -29,20 +29,26 @@ import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
 import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Collection;
 import java.util.Locale;
 
 /**
@@ -160,6 +166,10 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
     public void apply(IDocument document) {
         try {
             String replaceOn = replacementString;
+            String extraString = getExtraString();
+            if (extraString != null) {
+                replaceOn += extraString;
+            }
             if (replacementAfter != null) {
                 replaceOn += replacementAfter;
             }
@@ -186,6 +196,37 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
         } catch (BadLocationException e) {
             // ignore
             log.debug(e);
+        }
+    }
+
+    private String getExtraString() {
+        try {
+            VoidProgressMonitor monitor = new VoidProgressMonitor();
+            if (object instanceof DBSObjectReference) {
+                if (((DBSObjectReference) object).getObjectType() == RelationalObjectType.TYPE_PROCEDURE) {
+                    object = ((DBSObjectReference) object).resolveObject(monitor);
+                }
+            }
+            if (object instanceof DBSProcedure) {
+                // Ad parameter marks
+                Collection<? extends DBSProcedureParameter> parameters = ((DBSProcedure) object).getParameters(monitor);
+                if (!CommonUtils.isEmpty(parameters)) {
+                    StringBuilder params = new StringBuilder();
+                    for (DBSProcedureParameter param : parameters) {
+                        if (param.getParameterKind().isInput()) {
+                            if (params.length() > 0) params.append(", ");
+                            params.append(":").append(param.getName());
+                        }
+                    }
+                    return "(" + params.toString() + ")";
+                } else {
+                    return "()";
+                }
+            }
+            return null;
+        } catch (DBException e) {
+            log.error("Error resolving procedure parameters", e);
+            return null;
         }
     }
 
