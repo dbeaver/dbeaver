@@ -97,6 +97,7 @@ public class UIIcon {
     public static final DBIcon SORT = new DBIcon("sort", "misc/sort.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
     public static final DBIcon FILTER = new DBIcon("filter", "misc/filter.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon FILTER_SMALL = new DBIcon("filter_small", "misc/filter_small.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon FILTER_VALUE = new DBIcon("filter_value", "misc/filter_value.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon FILTER_INPUT = new DBIcon("filter_input", "misc/filter_input.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon FILTER_CLIPBOARD = new DBIcon("filter_clipboard", "misc/filter_clipboard.png"); //$NON-NLS-1$ //$NON-NLS-2$
