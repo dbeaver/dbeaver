@@ -140,7 +140,7 @@ class GridColumn {
         if (y < bounds.y || y > bounds.y + bounds.height) {
             return false;
         }
-        int arrowEnd = bounds.width - rightMargin;
+        int arrowEnd = bounds.width - rightMargin + GridColumnRenderer.IMAGE_SPACING;
         Rectangle sortBounds = GridColumnRenderer.getSortControlBounds();
         int arrowBegin = arrowEnd - sortBounds.width;
         return x >= arrowBegin && x <= arrowEnd && y < bounds.y + sortBounds.height;
@@ -217,7 +217,7 @@ class GridColumn {
             x += textWidth + rightMargin;
         }
         if (isSortable()) {
-            x += rightMargin + GridColumnRenderer.getSortControlBounds().width;
+            x += rightMargin + GridColumnRenderer.getSortControlBounds().width + GridColumnRenderer.IMAGE_SPACING;
         }
 
         x+= GridColumnRenderer.getFilterControlBounds().width;

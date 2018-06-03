@@ -43,7 +43,7 @@ class GridColumnRenderer extends AbstractRenderer
     public static final Image IMAGE_ASTERISK = DBeaverIcons.getImage(UIIcon.SORT_UNKNOWN);
     public static final Image IMAGE_DESC = DBeaverIcons.getImage(UIIcon.SORT_DECREASE);
     public static final Image IMAGE_ASC = DBeaverIcons.getImage(UIIcon.SORT_INCREASE);
-    public static final Image IMAGE_FILTER = DBeaverIcons.getImage(UIIcon.FILTER);
+    public static final Image IMAGE_FILTER = DBeaverIcons.getImage(UIIcon.FILTER_SMALL);
 
     public static final int SORT_WIDTH = IMAGE_DESC.getBounds().width;
     public static final int FILTER_WIDTH = IMAGE_FILTER.getBounds().width;
@@ -153,6 +153,7 @@ class GridColumnRenderer extends AbstractRenderer
                 sortBounds.x = bounds.x + bounds.width - ARROW_MARGIN - sortBounds.width;
                 sortBounds.y = y;
             }
+            sortBounds.x += IMAGE_SPACING;
             paintSort(gc, sortBounds, sortOrder);
         }
 
