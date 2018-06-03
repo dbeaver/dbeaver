@@ -69,7 +69,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
         MYLYN_PREF_PAGE_ID,
 
         // Disable Install/Update
-        "org.eclipse.equinox.internal.p2.ui.sdk.ProvisioningPreferencePage",
+        //"org.eclipse.equinox.internal.p2.ui.sdk.ProvisioningPreferencePage",
 
         // Team preferences - not needed in CE
         "org.eclipse.team.ui.TeamPreferences",
