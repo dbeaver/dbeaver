@@ -128,7 +128,9 @@ class GridColumn {
         int filterEnd = bounds.width - (sortBounds == null ? GridColumnRenderer.ARROW_MARGIN : sortBounds.width + GridColumnRenderer.IMAGE_SPACING);
         int filterBegin = filterEnd - filterBounds.width;
 
-        return x >= filterBegin && x <= filterEnd && y < bounds.y + (filterBounds == null ? 0 : filterBounds.height);
+        return
+            x >= filterBegin && x <= filterEnd &&
+            y < bounds.y + (filterBounds == null ? 0 : filterBounds.height) + GridColumnRenderer.TOP_MARGIN;
     }
 
     public boolean isOverSortArrow(int x, int y)
@@ -143,7 +145,9 @@ class GridColumn {
         int arrowEnd = bounds.width - rightMargin + GridColumnRenderer.IMAGE_SPACING;
         Rectangle sortBounds = GridColumnRenderer.getSortControlBounds();
         int arrowBegin = arrowEnd - sortBounds.width;
-        return x >= arrowBegin && x <= arrowEnd && y < bounds.y + sortBounds.height;
+        return
+            x >= arrowBegin && x <= arrowEnd &&
+            y <= bounds.y + sortBounds.height + GridColumnRenderer.TOP_MARGIN;
     }
 
     public boolean isOverIcon(int x, int y) {
