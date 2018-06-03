@@ -120,7 +120,7 @@ public class AttributeEditPage extends BaseObjectEditPage {
 
     @Override
     protected void performFinish() throws DBException {
-        // Change focus to save currently editing value
-        propertyViewer.getTree().setFocus();
+        // Save any active editors
+        propertyViewer.saveEditorValues();
     }
 }

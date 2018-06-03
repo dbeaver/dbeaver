@@ -629,6 +629,20 @@ public class PropertyTreeViewer extends TreeViewer {
         this.extraLabelProvider = extraLabelProvider;
     }
 
+    public void saveEditorValues() {
+        if (curCellEditor != null && curCellEditor.isActivated()) {
+            try {
+                // This is a hack. On MacOS buttons don't get focus so when user closes dialog
+                // by clicking on Ok button CellEditor doesn't get FocusLost event and thus doesn't save its value.
+                // This is workaround. Calling protected method fireApplyEditorValue in okPressed saves the value.
+                // See https://github.com/dbeaver/dbeaver/issues/3553
+                BeanUtils.invokeObjectMethod(curCellEditor, "fireApplyEditorValue");
+            } catch (Throwable throwable) {
+                throwable.printStackTrace();
+            }
+        }
+    }
+
     private static class TreeNode {
         final TreeNode parent;
         final DBPPropertySource propertySource;
