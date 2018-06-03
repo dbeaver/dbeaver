@@ -91,7 +91,7 @@
             <type kind="NUMERIC"/>
 
             <propertyGroup label="General">
-                <property id="start" label="Start value" type="long" defaultValue="0" description="Initial sequence value"/>
+                <property id="start" label="Start value" type="long" defaultValue="1" description="Initial sequence value"/>
                 <property id="step" label="Increment step" type="long" defaultValue="1" description="Sequence increment step"/>
                 <property id="reverse" label="Reverse order" type="boolean" defaultValue="FALSE" description="Reverse the sequence order"/>
             </propertyGroup>

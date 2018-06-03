@@ -28,22 +28,22 @@ import java.util.Map;
 
 public class NumericSequenceGenerator extends AbstractMockValueGenerator {
 
-    private long start = 0;
-    private long step = 0;
+    private long start = 1;
+    private long step = 1;
     private boolean reverse = false;
 
     @Override
     public void init(DBSDataManipulator container, DBSAttributeBase attribute, Map<Object, Object> properties) throws DBException {
         super.init(container, attribute, properties);
 
-        Long start = (Long) properties.get("start"); //$NON-NLS-1$
-        if (start != null) {
-            this.start = start;
+        Long startProperty = getLongProperty(properties, "start"); //$NON-NLS-1$
+        if (startProperty != null) {
+            this.start = startProperty;
         }
 
-        Long step = (Long) properties.get("step"); //$NON-NLS-1$
-        if (step != null) {
-            this.step = step;
+        Long stepProperty = getLongProperty(properties, "step"); //$NON-NLS-1$
+        if (stepProperty != null) {
+            this.step = stepProperty;
         }
 
         Boolean reverse = (Boolean) properties.get("reverse"); //$NON-NLS-1$
