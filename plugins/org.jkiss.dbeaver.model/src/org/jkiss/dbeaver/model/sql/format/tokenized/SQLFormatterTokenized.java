@@ -229,10 +229,8 @@ public class SQLFormatterTokenized implements SQLFormatter {
                         }
                         break;
                     case "VALUES":  //$NON-NLS-1$
-                        indent--;
-                        index += insertReturnAndIndent(argList, index, indent);
-                        break;
                     case "END":  //$NON-NLS-1$
+                    case "LIMIT":  //$NON-NLS-1$
                         indent--;
                         index += insertReturnAndIndent(argList, index, indent);
                         break;
@@ -279,6 +277,7 @@ public class SQLFormatterTokenized implements SQLFormatter {
                 if (slComments != null) {
                     for (String slc : slComments) {
                         if (token.getString().startsWith(slc)) {
+                            index += insertReturnAndIndent(argList, index, indent);
                             isComment = true;
                             break;
                         }
