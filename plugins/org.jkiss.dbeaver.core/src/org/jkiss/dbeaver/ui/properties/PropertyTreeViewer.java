@@ -636,9 +636,9 @@ public class PropertyTreeViewer extends TreeViewer {
                 // by clicking on Ok button CellEditor doesn't get FocusLost event and thus doesn't save its value.
                 // This is workaround. Calling protected method fireApplyEditorValue in okPressed saves the value.
                 // See https://github.com/dbeaver/dbeaver/issues/3553
-                BeanUtils.invokeObjectMethod(curCellEditor, "fireApplyEditorValue");
+                CellEditor.class.getDeclaredMethod("fireApplyEditorValue").invoke(curCellEditor);
             } catch (Throwable throwable) {
-                throwable.printStackTrace();
+                // Ignore
             }
         }
     }
