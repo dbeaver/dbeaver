@@ -1910,6 +1910,9 @@ public class ResultSetViewer extends Viewer
                 if (isHasMoreData() && getDataContainer() != null &&  (getDataContainer().getSupportedFeatures() & DBSDataContainer.DATA_COUNT) != 0) {
                     navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_COUNT));
                 }
+                navigateMenu.add(new Separator());
+                navigateMenu.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.NAVIGATE_BACKWARD_HISTORY, CommandContributionItem.STYLE_PUSH, UIIcon.RS_BACK));
+                navigateMenu.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.NAVIGATE_FORWARD_HISTORY, CommandContributionItem.STYLE_PUSH, UIIcon.RS_FORWARD));
 
                 manager.add(navigateMenu);
             }
