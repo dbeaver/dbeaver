@@ -191,6 +191,7 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant
         try (JDBCPreparedStatement dbStat = session.prepareStatement(
             "SELECT DISTINCT x.oid,x.proname,x.pronamespace FROM pg_catalog.pg_proc x " +
                 "WHERE x.proname " + (caseSensitive ? "LIKE" : "ILIKE") + " ? " +
+                "AND x.proname NOT LIKE '\\_%'" + // Exclude procedures starting with underscore
                 (CommonUtils.isEmpty(schema) ? "" : " AND x.pronamespace IN (" + SQLUtils.generateParamList(schema.size())+ ")") +
                 " ORDER BY x.proname LIMIT " + maxResults)) {
             dbStat.setString(1, procNameMask);
