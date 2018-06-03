@@ -54,6 +54,7 @@ import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.Method;
 import java.text.Collator;
 import java.util.*;
 import java.util.List;
@@ -636,7 +637,9 @@ public class PropertyTreeViewer extends TreeViewer {
                 // by clicking on Ok button CellEditor doesn't get FocusLost event and thus doesn't save its value.
                 // This is workaround. Calling protected method focusLost in okPressed saves the value.
                 // See https://github.com/dbeaver/dbeaver/issues/3553
-                CellEditor.class.getDeclaredMethod("focusLost").invoke(curCellEditor);
+                Method focusLost = CellEditor.class.getDeclaredMethod("focusLost");
+                focusLost.setAccessible(true);
+                focusLost.invoke(curCellEditor);
             } catch (Throwable throwable) {
                 // Ignore
             }
