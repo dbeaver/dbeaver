@@ -443,6 +443,11 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     }
 
     @Override
+    public DBSDataType getLocalDataType(int typeID) {
+        return getDefaultInstance().getDataType(new VoidProgressMonitor(), typeID);
+    }
+
+    @Override
     public String getDefaultDataTypeName(@NotNull DBPDataKind dataKind) {
         return PostgreUtils.getDefaultDataTypeName(dataKind);
     }

@@ -158,7 +158,7 @@ public class ResultSetCommandHandler extends AbstractHandler {
                 rsv.toggleMode();
                 break;
             case CMD_TOGGLE_PANELS:
-                rsv.showPanels(!rsv.isPanelsVisible());
+                rsv.showPanels(!rsv.isPanelsVisible(), true);
                 break;
             case CMD_FOCUS_FILTER:
                 rsv.switchFilterFocus();

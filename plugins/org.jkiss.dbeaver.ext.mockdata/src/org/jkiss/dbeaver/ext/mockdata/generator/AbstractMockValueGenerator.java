@@ -128,4 +128,39 @@ public abstract class AbstractMockValueGenerator implements MockValueGenerator {
         return column.getValueEnumeration(session, null, number);
     }
 
+    protected Boolean getBooleanProperty(Map<Object, Object> properties, String propName) {
+        Object prop = properties.get(propName);
+        if (prop != null) {
+            if (prop instanceof Boolean) {
+                return  (Boolean) prop;
+            } else {
+                return Boolean.valueOf(prop.toString());
+            }
+        }
+        return null;
+    }
+
+    protected Double getDoubleProperty(Map<Object, Object> properties, String propName) {
+        Object prop = properties.get(propName);
+        if (prop != null) {
+            if (prop instanceof Double) {
+                return  (Double) prop;
+            } else {
+                return Double.valueOf(prop.toString());
+            }
+        }
+        return null;
+    }
+
+    protected Long getLongProperty(Map<Object, Object> properties, String propName) {
+        Object prop = properties.get(propName);
+        if (prop != null) {
+            if (prop instanceof Long) {
+                return  (Long) prop;
+            } else {
+                return Long.valueOf(prop.toString());
+            }
+        }
+        return null;
+    }
 }

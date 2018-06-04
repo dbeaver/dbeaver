@@ -114,6 +114,11 @@ public class AggregateColumnsPanel implements IResultSetPanel {
         return this.aggregateTable;
     }
 
+    @Override
+    public boolean isDirty() {
+        return false;
+    }
+
     private void loadSettings() {
         groupByColumns = panelSettings.getBoolean(PARAM_GROUP_BY_COLUMNS);
         IDialogSettings functionsSection = panelSettings.getSection("functions");

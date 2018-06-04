@@ -568,6 +568,16 @@ public abstract class JDBCDataSource
     }
 
     @Override
+    public DBSDataType getLocalDataType(int typeID) {
+        for (DBSDataType dataType : getLocalDataTypes()) {
+            if (dataType.getTypeID() == typeID) {
+                return dataType;
+            }
+        }
+        return null;
+    }
+
+    @Override
     public String getDefaultDataTypeName(@NotNull DBPDataKind dataKind)
     {
         String typeName = getStandardSQLDataTypeName(dataKind);

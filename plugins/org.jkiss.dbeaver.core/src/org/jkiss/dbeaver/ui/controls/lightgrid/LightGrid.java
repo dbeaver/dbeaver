@@ -221,6 +221,7 @@ public abstract class LightGrid extends Canvas {
     private int headerHeight = 0;
 
     private boolean hoveringOnHeader = false;
+    private boolean hoveringOnColumnIcon = false;
     private boolean hoveringOnColumnSorter = false;
     private boolean hoveringOnColumnFilter = false;
     private boolean hoveringOnLink = false;
@@ -1927,6 +1928,8 @@ public abstract class LightGrid extends Canvas {
     {
         boolean overSorter = false, overResizer = false, overFilter = false;
         hoveringOnHeader = false;
+        boolean overIcon = false;
+
         if (y <= headerHeight) {
             int x2 = 0;
 
@@ -1947,7 +1950,6 @@ public abstract class LightGrid extends Canvas {
                     overSorter = true;
                 }
 
-                
             } else {
                 if (x > getRowHeaderWidth()) {
                     for (GridColumn column : columns) {
@@ -1964,7 +1966,12 @@ public abstract class LightGrid extends Canvas {
                             	overFilter = true;
                             	break;
                             }
-                            
+
+                            if (column.isOverIcon(x, y)) {
+                                overIcon = true;
+                                break;
+                            }
+
                             x2 += column.getWidth();
                             if (x2 >= (x - COLUMN_RESIZER_THRESHOLD) && x2 <= (x + COLUMN_RESIZER_THRESHOLD)) {
                                 overResizer = true;
@@ -1997,8 +2004,11 @@ public abstract class LightGrid extends Canvas {
                 setCursor(null);
             }
             hoveringOnColumnSorter = overSorter;
+        } else if (overIcon != hoveringOnColumnIcon) {
+            setCursor(overIcon ? sortCursor : null);
+            hoveringOnColumnIcon = overIcon;
         }
-        
+
         if(overFilter != hoveringOnColumnFilter) {
         	if(overFilter) 
         		setCursor(sortCursor);        	
@@ -4345,13 +4355,17 @@ public abstract class LightGrid extends Canvas {
                 if (draggingColumn != null) {
                     if (GridColumnTransfer.INSTANCE.isSupportedType(event.dataType)) {
                         List<Object> elements = new ArrayList<>();
-                        for (GridColumn col : selectedColumns) {
-                            elements.add(col.getElement());
+                        if (isDragSingleColumn()) {
+                            elements.add(draggingColumn.getElement());
+                        } else {
+                            for (GridColumn col : selectedColumns) {
+                                elements.add(col.getElement());
+                            }
                         }
                         event.data = elements;
                     } else if (TextTransfer.getInstance().isSupportedType(event.dataType)) {
                         // Copy all selected columns
-                        if (selectedColumns.size() > 1) {
+                        if (selectedColumns.size() > 1 && !isDragSingleColumn()) {
                             StringBuilder text = new StringBuilder();
                             for (GridColumn column : selectedColumns) {
                                 if (text.length() > 0) text.append(", ");
@@ -4466,6 +4480,10 @@ public abstract class LightGrid extends Canvas {
                 draggingColumn = null;
             }
         });
+    }
+
+    private boolean isDragSingleColumn() {
+        return draggingColumn != null && !selectedColumns.contains(draggingColumn);
     }
 
 

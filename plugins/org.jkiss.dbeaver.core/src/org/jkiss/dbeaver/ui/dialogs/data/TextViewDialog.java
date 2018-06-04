@@ -43,9 +43,8 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.StyledTextUtils;
 import org.jkiss.dbeaver.ui.data.IValueController;
-import org.jkiss.dbeaver.ui.data.IValueEditorStandalone;
 import org.jkiss.dbeaver.ui.data.editors.ReferenceValueEditor;
 import org.jkiss.dbeaver.ui.editors.binary.BinaryContent;
 import org.jkiss.dbeaver.ui.editors.binary.HexEditControl;
@@ -142,7 +141,7 @@ public class TextViewDialog extends ValueViewDialog {
                     updateValueLength();
                 }
             });
-            UIUtils.fillDefaultStyledTextContextMenu(textEdit);
+            StyledTextUtils.fillDefaultStyledTextContextMenu(textEdit);
 
             if (useHex) {
                 CTabItem item = new CTabItem(editorContainer, SWT.NO_FOCUS);

@@ -63,6 +63,13 @@ public interface DBPDataTypeProvider
     DBSDataType getLocalDataType(String typeName);
 
     /**
+     * Gets data type with specified type id
+     *
+     * @return data type of null
+     */
+    DBSDataType getLocalDataType(int typeID);
+
+    /**
      * Returns name of default data type for specified data kind
      * @param dataKind data kind
      * @return data type name or null if data kind not supported

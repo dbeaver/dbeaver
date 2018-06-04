@@ -53,6 +53,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.StyledTextContentAdapter;
+import org.jkiss.dbeaver.ui.controls.StyledTextUtils;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
@@ -140,7 +141,8 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
             this.filtersText = new StyledText(filterComposite, SWT.SINGLE);
             this.filtersText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-            UIUtils.fillDefaultStyledTextContextMenu(filtersText);
+            StyledTextUtils.fillDefaultStyledTextContextMenu(filtersText);
+            StyledTextUtils.enableDND(this.filtersText);
 
             this.historyPanel = new HistoryPanel(filterComposite);
             this.refreshPanel = new RefreshPanel(filterComposite);

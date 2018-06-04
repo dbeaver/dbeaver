@@ -28,6 +28,7 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.ui.ILabelProviderEx;
 import org.jkiss.dbeaver.ui.ILazyLabelProvider;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -173,10 +174,13 @@ public class ViewerColumnController {
         try {
             boolean needRefresh = false;
             for (ColumnInfo columnInfo : columns) {
+                boolean columnExists = (columnInfo.column != null);
+                if (columnExists != columnInfo.visible) {
+                    needRefresh = true;
+                }
                 if (columnInfo.column != null) {
                     columnInfo.column.dispose();
                     columnInfo.column = null;
-                    needRefresh = true;
                 }
             }
             createVisibleColumns();
@@ -190,7 +194,7 @@ public class ViewerColumnController {
                     }
                 });
             }
-            if (needRefresh) {
+            if (needRefresh && pack) {
                 viewer.refresh();
                 for (ColumnInfo columnInfo : getVisibleColumns()) {
                     if (columnInfo.column instanceof TreeColumn) {
@@ -359,7 +363,17 @@ public class ViewerColumnController {
     private void readColumnsConfiguration()
     {
         final Collection<ViewerColumnRegistry.ColumnState> savedConfig = ViewerColumnRegistry.getInstance().getSavedConfig(configId);
-        if (savedConfig == null) {
+        if (savedConfig == null || savedConfig.isEmpty()) {
+            return;
+        }
+        boolean hasVisible = false;
+        for (ViewerColumnRegistry.ColumnState savedState : savedConfig) {
+            if (savedState.visible) {
+                hasVisible = true;
+                break;
+            }
+        }
+        if (!hasVisible) {
             return;
         }
         for (ColumnInfo columnInfo : columns) {
@@ -548,6 +562,26 @@ public class ViewerColumnController {
             super.okPressed();
         }
 
+        @Override
+        protected void createButtonsForButtonBar(Composite parent) {
+            createButton(parent, IDialogConstants.DETAILS_ID, CoreMessages.dialog_edit_driver_button_reset_to_defaults, false);
+            super.createButtonsForButtonBar(parent);
+        }
+
+        @Override
+        protected void buttonPressed(int buttonId) {
+            if (buttonId == IDialogConstants.DETAILS_ID) {
+                resetToDefaults();
+            }
+            super.buttonPressed(buttonId);
+        }
+
+        private void resetToDefaults() {
+            for (TableItem item : colTable.getItems()) {
+                ColumnInfo ci = (ColumnInfo) item.getData();
+                item.setChecked(ci.defaultVisible);
+            }
+        }
     }
 
     private static class ColumnInfoComparator implements Comparator<ColumnInfo> {

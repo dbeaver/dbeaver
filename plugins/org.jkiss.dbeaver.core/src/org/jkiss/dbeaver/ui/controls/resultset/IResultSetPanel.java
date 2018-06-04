@@ -30,6 +30,8 @@ public interface IResultSetPanel {
 
     Control createContents(IResultSetPresentation presentation, Composite parent);
 
+    boolean isDirty();
+
     void activatePanel();
 
     void deactivatePanel();

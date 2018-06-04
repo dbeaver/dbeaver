@@ -18,10 +18,12 @@ package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping;
 
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
+import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
@@ -32,6 +34,10 @@ import java.util.Collections;
 import java.util.List;
 
 public class GroupingResultsContainer implements IResultSetContainer {
+
+    public static final String FUNCTION_COUNT = "COUNT";
+
+    public static final String DEFAULT_FUNCTION = FUNCTION_COUNT + "(*)";
 
     private final IResultSetPresentation presentation;
     private GroupingDataContainer dataContainer;
@@ -50,7 +56,11 @@ public class GroupingResultsContainer implements IResultSetContainer {
     private void initDefaultSettings() {
         this.groupAttributes.clear();
         this.groupFunctions.clear();
-        addGroupingFunctions(Collections.singletonList("COUNT(*)"));
+        addGroupingFunctions(Collections.singletonList(DEFAULT_FUNCTION));
+    }
+
+    public IResultSetPresentation getOwnerPresentation() {
+        return presentation;
     }
 
     public List<String> getGroupAttributes() {
@@ -93,7 +103,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
 
     public void addGroupingAttributes(List<String> attributes) {
         for (String attrName : attributes) {
-            attrName = DBUtils.getUnQuotedIdentifier(getDataContainer().getDataSource(), attrName);
+            attrName = cleanupObjectName(attrName);
             if (!groupAttributes.contains(attrName)) {
                 groupAttributes.add(attrName);
             }
@@ -103,13 +113,26 @@ public class GroupingResultsContainer implements IResultSetContainer {
     public boolean removeGroupingAttribute(List<String> attributes) {
         boolean changed = false;
         for (String attrName : attributes) {
-            attrName = DBUtils.getUnQuotedIdentifier(getDataContainer().getDataSource(), attrName);
+            attrName = cleanupObjectName(attrName);
             if (groupAttributes.contains(attrName)) {
                 groupAttributes.remove(attrName);
                 changed = true;
             }
         }
+        if (changed) {
+            resetDataFilters();
+        }
         return changed;
+    }
+
+    private String cleanupObjectName(String attrName) {
+        DBPDataSource dataSource = getDataContainer().getDataSource();
+        if (DBUtils.isQuotedIdentifier(dataSource, attrName)) {
+            attrName = DBUtils.getUnQuotedIdentifier(dataSource, attrName);
+        } else {
+            attrName = DBObjectNameCaseTransformer.transformName(dataSource, attrName);
+        }
+        return attrName;
     }
 
     public void addGroupingFunctions(List<String> functions) {
@@ -135,6 +158,7 @@ public class GroupingResultsContainer implements IResultSetContainer {
 
     public void clearGrouping() {
         initDefaultSettings();
+        groupingViewer.resetDataFilter(false);
         if (!(groupingViewer.getActivePresentation() instanceof EmptyPresentation)) {
             groupingViewer.setEmptyPresentation();
         }
@@ -182,9 +206,15 @@ public class GroupingResultsContainer implements IResultSetContainer {
 
     public void setGrouping(List<String> attributes, List<String> functions) {
         groupAttributes.clear();
-        groupAttributes.addAll(attributes);
+        addGroupingAttributes(attributes);
 
         groupFunctions.clear();
-        groupFunctions.addAll(functions);
+        addGroupingFunctions(functions);
+
+        resetDataFilters();
+    }
+
+    private void resetDataFilters() {
+        groupingViewer.getModel().createDataFilter();
     }
 }

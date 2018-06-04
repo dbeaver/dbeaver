@@ -126,6 +126,11 @@ public class ValueViewerPanel implements IResultSetPanel, IAdaptable {
     }
 
     @Override
+    public boolean isDirty() {
+        return valueEditor != null && valueEditor.isDirty();
+    }
+
+    @Override
     public void activatePanel() {
         refreshValue(false);
     }

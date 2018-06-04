@@ -3802,14 +3802,14 @@
         <page
             class="org.jkiss.dbeaver.ui.search.metadata.SearchMetadataPage"
             enabled="true"
-            icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/databases.png"
+            icon="icons/search/metadata.png"
             id="org.jkiss.dbeaver.ui.search.metadata.SearchMetadataPage"
             label="%search.page.label.db.metadata">
         </page>
         <page
             class="org.jkiss.dbeaver.ui.search.data.SearchDataPage"
             enabled="true"
-            icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_text.png"
+            icon="icons/search/data.png"
             id="org.jkiss.dbeaver.ui.search.data.SearchDataPage"
             label="%search.page.label.db.fulltext">
         </page>
@@ -3818,14 +3818,14 @@
         point="org.eclipse.search.searchResultViewPages">
         <viewPage
             class="org.jkiss.dbeaver.ui.search.metadata.SearchMetadataResultsPage"
-            icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/databases.png"
+            icon="icons/search/metadata.png"
             id="org.jkiss.dbeaver.ui.search.metadata.SearchMetadataResultsPage"
             label="%search.result.view.page.metadata.result.name"
             searchResultClass="org.jkiss.dbeaver.ui.search.metadata.SearchMetadataResult">
         </viewPage>
         <viewPage
             class="org.jkiss.dbeaver.ui.search.data.SearchDataResultsPage"
-            icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_text.png"
+            icon="icons/search/data.png"
             id="org.jkiss.dbeaver.ui.search.data.SearchDataResultsPage"
             label="%search.result.view.page.data.result.name"
             searchResultClass="org.jkiss.dbeaver.ui.search.data.SearchDataResult">

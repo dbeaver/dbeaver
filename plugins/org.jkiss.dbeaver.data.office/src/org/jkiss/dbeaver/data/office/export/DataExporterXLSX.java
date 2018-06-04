@@ -94,6 +94,7 @@ public class DataExporterXLSX extends StreamExporterAbstract {
 
     private int splitByRowCount = EXCEL2007MAXROWS;
     private int splitByCol = 0;
+    private int rowCount = 0;
 
     private XSSFCellStyle style;
     private XSSFCellStyle styleHeader;
@@ -240,7 +241,7 @@ public class DataExporterXLSX extends StreamExporterAbstract {
         style.setBorderBottom(border);
         style.setBorderLeft(border);
         style.setBorderRight(border);
-
+        this.rowCount = 0;
 
         super.init(site);
     }
@@ -477,7 +478,7 @@ public class DataExporterXLSX extends StreamExporterAbstract {
 
         }
         wsh.incRow();
-
+        rowCount++;
     }
 
     private CellType getCellType(DBDAttributeBinding column) {
@@ -495,8 +496,11 @@ public class DataExporterXLSX extends StreamExporterAbstract {
 
     @Override
     public void exportFooter(DBRProgressMonitor monitor)
-        throws DBException, IOException {
-
+        throws DBException, IOException
+    {
+        if (rowCount == 0) {
+            exportRow(null, new Object[columns.size()]);
+        }
     }
 
 
