@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping;
 
+import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.DropTarget;
@@ -56,7 +57,14 @@ public class GroupingResultsDecorator implements IResultSetDecorator {
 
     @Override
     public String getEmptyDataDescription() {
-        return "Drag and drop results column(s) here to create grouping\nPress CONTROL to configure grouping settings";
+        return "Drag-and-drop results column(s) here to create grouping\nPress CONTROL to configure grouping settings";
+    }
+
+    @Override
+    public void fillContributions(IContributionManager contributionManager) {
+        contributionManager.add(new GroupingPanel.EditColumnsAction(container));
+        contributionManager.add(new GroupingPanel.DeleteColumnAction(container));
+        contributionManager.add(new GroupingPanel.ClearGroupingAction(container));
     }
 
     @Override

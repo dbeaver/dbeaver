@@ -49,7 +49,10 @@ public class BasicSQLDialect implements SQLDialect {
     };
 
     private static final String[][] DEFAULT_BEGIN_END_BLOCK = new String[][]{
-        {SQLConstants.BLOCK_BEGIN, SQLConstants.BLOCK_END}
+        {
+            SQLConstants.BLOCK_BEGIN,
+            SQLConstants.BLOCK_END
+        }
     };
     protected static final String[] NON_TRANSACTIONAL_KEYWORDS = new String[]{
         //SQLConstants.KEYWORD_SELECT, "WITH",

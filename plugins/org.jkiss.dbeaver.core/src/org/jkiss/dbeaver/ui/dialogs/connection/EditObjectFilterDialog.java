@@ -99,8 +99,8 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
         blockControl = UIUtils.createPlaceholder(composite, 1);
         blockControl.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        includeTable = StringEditorTable.createEditableList(blockControl, CoreMessages.dialog_filter_list_include, filter.getInclude(), null);
-        excludeTable = StringEditorTable.createEditableList(blockControl, CoreMessages.dialog_filter_list_exclude, filter.getExclude(), null);
+        includeTable = StringEditorTable.createEditableList(blockControl, CoreMessages.dialog_filter_list_include, filter.getInclude(), null, null);
+        excludeTable = StringEditorTable.createEditableList(blockControl, CoreMessages.dialog_filter_list_exclude, filter.getExclude(), null, null);
 
         UIUtils.createInfoLabel(blockControl, CoreMessages.dialog_connection_edit_wizard_general_filter_hint_text);
 

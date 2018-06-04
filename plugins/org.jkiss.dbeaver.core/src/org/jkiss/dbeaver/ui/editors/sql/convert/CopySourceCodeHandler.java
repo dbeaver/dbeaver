@@ -43,6 +43,7 @@ import org.jkiss.dbeaver.registry.sql.SQLConverterRegistry;
 import org.jkiss.dbeaver.registry.sql.SQLTargetConverterDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.StyledTextUtils;
 import org.jkiss.dbeaver.ui.dialogs.sql.BaseSQLDialog;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
@@ -175,7 +176,7 @@ public class CopySourceCodeHandler extends AbstractHandler {
                 targetText = new StyledText(targetGroup, SWT.BORDER | SWT.READ_ONLY | SWT.V_SCROLL | SWT.WRAP);
                 targetText.setLayoutData(new GridData(GridData.FILL_BOTH));
                 targetText.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
-                UIUtils.fillDefaultStyledTextContextMenu(targetText);
+                StyledTextUtils.fillDefaultStyledTextContextMenu(targetText);
             }
 
             loadOptions();

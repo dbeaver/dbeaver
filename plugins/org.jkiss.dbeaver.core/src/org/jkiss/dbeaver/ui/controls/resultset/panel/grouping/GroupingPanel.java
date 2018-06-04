@@ -22,12 +22,13 @@ import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.action.ToolBarManager;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.ISharedImages;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
@@ -45,7 +46,7 @@ import java.util.List;
  */
 public class GroupingPanel implements IResultSetPanel {
 
-    private static final Log log = Log.getLog(GroupingPanel.class);
+    //private static final Log log = Log.getLog(GroupingPanel.class);
 
     public static final String PANEL_ID = "results-grouping";
 
@@ -78,7 +79,7 @@ public class GroupingPanel implements IResultSetPanel {
                 // Or just clear it (if brand new query was executed)
                 String queryText = presentation.getController().getDataContainer().getName();
                 if (prevQueryText != null && !CommonUtils.equalObjects(prevQueryText, queryText)) {
-                    resultsContainer.getResultSetController().setEmptyPresentation();
+                    resultsContainer.clearGrouping();
                 } else {
                     try {
                         resultsContainer.rebuildGrouping();
@@ -107,6 +108,11 @@ public class GroupingPanel implements IResultSetPanel {
         groupingViewer.addListener(groupingResultsListener);
 
         return groupingViewer.getControl();
+    }
+
+    @Override
+    public boolean isDirty() {
+        return !resultsContainer.getGroupAttributes().isEmpty();
     }
 
     private void updateControls() {
@@ -143,20 +149,29 @@ public class GroupingPanel implements IResultSetPanel {
 
     private void fillToolBar(IContributionManager contributionManager)
     {
-        contributionManager.add(new AddColumnAction());
+        contributionManager.add(new EditColumnsAction(resultsContainer));
         contributionManager.add(new Separator());
-        contributionManager.add(new DeleteColumnAction());
-        contributionManager.add(new ClearGroupingAction());
+        contributionManager.add(new DeleteColumnAction(resultsContainer));
+        contributionManager.add(new ClearGroupingAction(resultsContainer));
     }
 
-    private class AddColumnAction extends Action {
-        public AddColumnAction() {
-            super("Configure columns", DBeaverIcons.getImageDescriptor(UIIcon.OBJ_ADD));
+    abstract static class GroupingAction extends Action {
+        protected final GroupingResultsContainer resultsContainer;
+
+        public GroupingAction(GroupingResultsContainer resultsContainer, String text, ImageDescriptor image) {
+            super(text, image);
+            this.resultsContainer = resultsContainer;
+        }
+    }
+
+    static class EditColumnsAction extends GroupingAction {
+        public EditColumnsAction(GroupingResultsContainer resultsContainer) {
+            super(resultsContainer, CoreMessages.controls_resultset_grouping_edit, DBeaverIcons.getImageDescriptor(UIIcon.OBJ_ADD));
         }
 
         @Override
         public void run() {
-            GroupingConfigDialog dialog = new GroupingConfigDialog(presentation.getControl().getShell(), resultsContainer);
+            GroupingConfigDialog dialog = new GroupingConfigDialog(resultsContainer.getResultSetController().getControl().getShell(), resultsContainer);
             if (dialog.open() == IDialogConstants.OK_ID) {
                 try {
                     resultsContainer.rebuildGrouping();
@@ -167,9 +182,9 @@ public class GroupingPanel implements IResultSetPanel {
         }
     }
 
-    private class DeleteColumnAction extends Action {
-        public DeleteColumnAction() {
-            super("Delete column", DBeaverIcons.getImageDescriptor(UIIcon.ACTION_OBJECT_DELETE));
+    static class DeleteColumnAction extends GroupingAction {
+        public DeleteColumnAction(GroupingResultsContainer resultsContainer) {
+            super(resultsContainer, CoreMessages.controls_resultset_grouping_remove_column, DBeaverIcons.getImageDescriptor(UIIcon.ACTION_OBJECT_DELETE));
         }
 
         @Override
@@ -193,9 +208,9 @@ public class GroupingPanel implements IResultSetPanel {
         }
     }
 
-    private class ClearGroupingAction extends Action {
-        public ClearGroupingAction() {
-            super("Clear groupings", UIUtils.getShardImageDescriptor(ISharedImages.IMG_ETOOL_CLEAR));
+    static class ClearGroupingAction extends GroupingAction {
+        public ClearGroupingAction(GroupingResultsContainer resultsContainer) {
+            super(resultsContainer, CoreMessages.controls_resultset_grouping_clear, UIUtils.getShardImageDescriptor(ISharedImages.IMG_ETOOL_CLEAR));
         }
 
         @Override
@@ -206,7 +221,7 @@ public class GroupingPanel implements IResultSetPanel {
         @Override
         public void run() {
             resultsContainer.clearGrouping();
-            updateControls();
+            resultsContainer.getOwnerPresentation().getController().updatePanelActions();
         }
     }
 

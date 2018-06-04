@@ -266,7 +266,7 @@ public class ResultSetViewer extends Viewer
 
                     @Override
                     public void minimize(CTabFolderEvent event) {
-                        showPanels(false);
+                        showPanels(false, true);
                     }
 
                     @Override
@@ -619,7 +619,7 @@ public class ResultSetViewer extends Viewer
                 }
                 activateDefaultPanels(settings);
             }
-            showPanels(panelsVisible);
+            showPanels(panelsVisible, false);
             viewerSash.setWeights(panelWeights);
         }
 
@@ -760,7 +760,7 @@ public class ResultSetViewer extends Viewer
             return;
         }
         if (showPanels && !isPanelsVisible()) {
-            showPanels(true);
+            showPanels(true, false);
         }
 
         PresentationSettings presentationSettings = getPresentationSettings();
@@ -849,6 +849,7 @@ public class ResultSetViewer extends Viewer
         if (panel != null) {
             panel.activatePanel();
             updatePanelActions();
+            savePresentationSettings();
         }
     }
 
@@ -859,7 +860,7 @@ public class ResultSetViewer extends Viewer
         }
         getPresentationSettings().enabledPanelIds.remove(panelId);
         if (activePanels.isEmpty()) {
-            showPanels(false);
+            showPanels(false, true);
         }
     }
 
@@ -887,7 +888,7 @@ public class ResultSetViewer extends Viewer
         return viewerSash != null && viewerSash.getMaximizedControl() == null;
     }
 
-    void showPanels(boolean show) {
+    void showPanels(boolean show, boolean saveSettings) {
         if (!supportsPanels() || show == isPanelsVisible()) {
             return;
         }
@@ -913,7 +914,9 @@ public class ResultSetViewer extends Viewer
         }
 
         getPresentationSettings().panelsVisible = show;
-        savePresentationSettings();
+        if (saveSettings) {
+            savePresentationSettings();
+        }
     }
 
     private List<IContributionItem> fillPanelsMenu() {
@@ -1907,6 +1910,9 @@ public class ResultSetViewer extends Viewer
                 if (isHasMoreData() && getDataContainer() != null &&  (getDataContainer().getSupportedFeatures() & DBSDataContainer.DATA_COUNT) != 0) {
                     navigateMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_COUNT));
                 }
+                navigateMenu.add(new Separator());
+                navigateMenu.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.NAVIGATE_BACKWARD_HISTORY, CommandContributionItem.STYLE_PUSH, UIIcon.RS_BACK));
+                navigateMenu.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.NAVIGATE_FORWARD_HISTORY, CommandContributionItem.STYLE_PUSH, UIIcon.RS_FORWARD));
 
                 manager.add(navigateMenu);
             }
@@ -1943,9 +1949,10 @@ public class ResultSetViewer extends Viewer
             manager.add(ActionUtils.makeCommandContribution(site, IWorkbenchCommandConstants.FILE_REFRESH));
         }
 
-        if (supportsPanels())
         manager.add(new Separator());
         manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
+
+        decorator.fillContributions(manager);
     }
 
     @Nullable
@@ -2217,6 +2224,9 @@ public class ResultSetViewer extends Viewer
         if (!confirmProceed()) {
             return;
         }
+        if (!newWindow && !confirmPanelsReset()) {
+            return;
+        }
 
         if (getExecutionContext() == null) {
             throw new DBException("Not connected");
@@ -2342,17 +2352,42 @@ public class ResultSetViewer extends Viewer
         if (newWindow) {
             openResultsInNewWindow(monitor, targetEntity, newFilter);
         } else {
+            DBSDataContainer targetDataContainer = (DBSDataContainer) targetEntity;
             // Workaround for script results
             // In script mode history state isn't updated so we check for it here
             if (curState == null) {
-                setNewState(getDataContainer(), model.getDataFilter());
+                setNewState(targetDataContainer, model.getDataFilter());
             }
-            runDataPump((DBSDataContainer) targetEntity, newFilter, 0, getSegmentMaxRows(), -1, true, false, null);
+            runDataPump(targetDataContainer, newFilter, 0, getSegmentMaxRows(), -1, true, false, null);
         }
     }
 
     private boolean confirmProceed() {
         return new UIConfirmation() { @Override public Boolean runTask() { return checkForChanges(); } }.confirm();
+    }
+
+    private boolean confirmPanelsReset() {
+        return new UIConfirmation() {
+            @Override public Boolean runTask() {
+                boolean panelsDirty = false;
+                for (IResultSetPanel panel : getActivePanels()) {
+                    if (panel.isDirty()) {
+                        panelsDirty = true;
+                        break;
+                    }
+                }
+                if (panelsDirty) {
+                    int result = ConfirmationDialog.showConfirmDialog(
+                        viewerPanel.getShell(),
+                        DBeaverPreferences.CONFIRM_RS_PANEL_RESET,
+                        ConfirmationDialog.CONFIRM);
+                    if (result == IDialogConstants.CANCEL_ID) {
+                        return false;
+                    }
+                }
+                return true;
+            }
+        }.confirm();
     }
 
     private void openResultsInNewWindow(DBRProgressMonitor monitor, DBSEntity targetEntity, final DBDDataFilter newFilter) {
@@ -2731,6 +2766,8 @@ public class ResultSetViewer extends Viewer
         }
         final Object presentationState = savePresentationState();
         dataReceiver.setFocusRow(focusRow);
+        // Set explicit target container
+        dataReceiver.setTargetDataContainer(dataContainer);
         dataPumpJob = new ResultSetJobDataRead(
             dataContainer,
             useDataFilter,
