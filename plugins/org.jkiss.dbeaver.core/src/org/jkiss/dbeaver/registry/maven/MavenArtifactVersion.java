@@ -424,7 +424,11 @@ public class MavenArtifactVersion implements IMavenIdentifier {
                 MavenArtifactDependency.Scope scope = null;
                 String scopeName = XMLUtils.getChildElementBody(dep, "scope");
                 if (!CommonUtils.isEmpty(scopeName)) {
-                    scope = MavenArtifactDependency.Scope.valueOf(scopeName.toUpperCase(Locale.ENGLISH));
+                    try {
+                        scope = MavenArtifactDependency.Scope.valueOf(scopeName.toUpperCase(Locale.ENGLISH));
+                    } catch (IllegalArgumentException e) {
+                        log.debug("Bad artifact '" + getArtifactId() + "' scope: " + scopeName);
+                    }
                 }
                 if (scope == null && dmInfo != null) {
                     scope = dmInfo.getScope();
