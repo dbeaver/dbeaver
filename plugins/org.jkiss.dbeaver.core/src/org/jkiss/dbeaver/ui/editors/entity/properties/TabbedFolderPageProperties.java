@@ -22,10 +22,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.jface.viewers.ColumnLabelProvider;
-import org.eclipse.jface.viewers.IFontProvider;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
@@ -42,6 +39,7 @@ import org.jkiss.dbeaver.model.DBPEvent;
 import org.jkiss.dbeaver.model.DBPEventListener;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
@@ -163,7 +161,7 @@ public class TabbedFolderPageProperties extends TabbedFolderPage implements IRef
         }
     }
 
-    private class PropertiesPageControl extends ProgressPageControl implements ILazyPropertyLoadListener {
+    private class PropertiesPageControl extends ProgressPageControl implements ILazyPropertyLoadListener, ISearchExecutor {
 
         PropertiesPageControl(Composite parent) {
             super(parent, SWT.SHEET);
@@ -216,6 +214,11 @@ public class TabbedFolderPageProperties extends TabbedFolderPage implements IRef
         }
 
         @Override
+        protected ISearchExecutor getSearchRunner() {
+            return this;
+        }
+
+        @Override
         protected void fillCustomActions(IContributionManager contributionManager) {
             super.fillCustomActions(contributionManager);
             {
@@ -239,6 +242,17 @@ public class TabbedFolderPageProperties extends TabbedFolderPage implements IRef
             }
         }
 
+        @Override
+        public boolean performSearch(String searchString, int options) {
+            propertyTree.setFilters(new PropertyTreeViewer.NodeFilter(searchString));
+            propertyTree.expandAll();
+            return propertyTree.getTree().getItemCount() > 0;
+        }
+
+        @Override
+        public void cancelSearch() {
+            propertyTree.resetFilters();
+        }
     }
 
     private boolean isAttached() {

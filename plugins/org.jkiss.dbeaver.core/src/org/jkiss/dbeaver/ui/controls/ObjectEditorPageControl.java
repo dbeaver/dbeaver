@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.edit.DBEObjectManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
+import org.jkiss.dbeaver.ui.ISearchExecutor;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 
 public class ObjectEditorPageControl extends ProgressPageControl {
@@ -101,6 +102,24 @@ public class ObjectEditorPageControl extends ProgressPageControl {
         }
     }
 
+    @Override
+    protected ISearchExecutor getSearchRunner() {
+        ISearchExecutor searchRunner = super.getSearchRunner();
+        if (searchRunner != null) {
+            return searchRunner;
+        }
+        return new ISearchExecutor() {
+            @Override
+            public boolean performSearch(String searchString, int options) {
+                return false;
+            }
+
+            @Override
+            public void cancelSearch() {
+
+            }
+        };
+    }
 
 /*
     @Override
