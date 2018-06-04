@@ -145,7 +145,8 @@ class PostgreBackupWizardPageSettings extends PostgreWizardPageSettings<PostgreB
         setControl(composite);
     }
 
-    private void updateState()
+    @Override
+    protected void updateState()
     {
         String fileName = outputFolderText.getText();
         wizard.setOutputFolder(CommonUtils.isEmpty(fileName) ? null : new File(fileName));
