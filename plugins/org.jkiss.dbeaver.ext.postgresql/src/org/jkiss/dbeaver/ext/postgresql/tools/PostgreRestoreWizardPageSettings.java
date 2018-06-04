@@ -85,7 +85,8 @@ class PostgreRestoreWizardPageSettings extends PostgreWizardPageSettings<Postgre
         setControl(composite);
     }
 
-    private void updateState()
+    @Override
+    protected void updateState()
     {
         wizard.format = PostgreBackupWizard.ExportFormat.values()[formatCombo.getSelectionIndex()];
         wizard.inputFile = inputFileText.getText();

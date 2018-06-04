@@ -124,7 +124,8 @@ public class PostgreScriptExecuteWizardPageSettings extends PostgreWizardPageSet
         updateState();
     }
 
-    private void updateState()
+    @Override
+    protected void updateState()
     {
         String fileName = inputFileText.getText();
         wizard.setInputFile(CommonUtils.isEmpty(fileName) ? null : new File(fileName));

@@ -85,17 +85,15 @@ class PostgreBackupWizardPageObjects extends PostgreWizardPageSettings<PostgreBa
             Composite catPanel = UIUtils.createPlaceholder(sash, 1);
             catPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
             schemasTable = new Table(catPanel, SWT.BORDER | SWT.CHECK);
-            schemasTable.addListener(SWT.Selection, new Listener() {
-                public void handleEvent(Event event) {
-                    TableItem item = (TableItem) event.item;
-                    PostgreSchema catalog = (PostgreSchema) item.getData();
-                    if (event.detail == SWT.CHECK) {
-                        schemasTable.select(schemasTable.indexOf(item));
-                        checkedObjects.remove(catalog);
-                    }
-                    loadTables(catalog);
-                    updateState();
+            schemasTable.addListener(SWT.Selection, event -> {
+                TableItem item = (TableItem) event.item;
+                PostgreSchema catalog = (PostgreSchema) item.getData();
+                if (event.detail == SWT.CHECK) {
+                    schemasTable.select(schemasTable.indexOf(item));
+                    checkedObjects.remove(catalog);
                 }
+                loadTables(catalog);
+                updateState();
             });
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.heightHint = 50;
@@ -116,12 +114,10 @@ class PostgreBackupWizardPageObjects extends PostgreWizardPageSettings<PostgreBa
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.heightHint = 50;
             tablesTable.setLayoutData(gd);
-            tablesTable.addListener(SWT.Selection, new Listener() {
-                public void handleEvent(Event event) {
-                    if (event.detail == SWT.CHECK) {
-                        updateCheckedTables();
-                        updateState();
-                    }
+            tablesTable.addListener(SWT.Selection, event -> {
+                if (event.detail == SWT.CHECK) {
+                    updateCheckedTables();
+                    updateState();
                 }
             });
 
@@ -149,11 +145,7 @@ class PostgreBackupWizardPageObjects extends PostgreWizardPageSettings<PostgreBa
                 PostgreSchema catalog = ((PostgreTableBase) object).getContainer();
                 dataSource = catalog.getDataSource();
                 activeCatalogs.add(catalog);
-                Set<PostgreTableBase> tables = checkedObjects.get(catalog);
-                if (tables == null) {
-                    tables = new HashSet<>();
-                    checkedObjects.put(catalog, tables);
-                }
+                Set<PostgreTableBase> tables = checkedObjects.computeIfAbsent(catalog, k -> new HashSet<>());
                 tables.add((PostgreTableBase) object);
                 if (((PostgreTableBase) object).isView()) {
                     wizard.showViews = true;
@@ -238,18 +230,15 @@ class PostgreBackupWizardPageObjects extends PostgreWizardPageSettings<PostgreBa
                     if (wizard.showViews) {
                         objects.addAll(curSchema.getViews(monitor));
                     }
-                    Collections.sort(objects, DBUtils.nameComparator());
-                    UIUtils.syncExec(new Runnable() {
-                        @Override
-                        public void run() {
-                            tablesTable.removeAll();
-                            for (PostgreTableBase table : objects) {
-                                TableItem item = new TableItem(tablesTable, SWT.NONE);
-                                item.setImage(DBeaverIcons.getImage(table.isView() ? DBIcon.TREE_VIEW : DBIcon.TREE_TABLE));
-                                item.setText(0, table.getName());
-                                item.setData(table);
-                                item.setChecked(isCatalogChecked && (checkedObjects == null || checkedObjects.contains(table)));
-                            }
+                    objects.sort(DBUtils.nameComparator());
+                    UIUtils.syncExec(() -> {
+                        tablesTable.removeAll();
+                        for (PostgreTableBase table : objects) {
+                            TableItem item = new TableItem(tablesTable, SWT.NONE);
+                            item.setImage(DBeaverIcons.getImage(table.isView() ? DBIcon.TREE_VIEW : DBIcon.TREE_TABLE));
+                            item.setText(0, table.getName());
+                            item.setData(table);
+                            item.setChecked(isCatalogChecked && (checkedObjects == null || checkedObjects.contains(table)));
                         }
                     });
                 } catch (DBException e) {
@@ -281,7 +270,8 @@ class PostgreBackupWizardPageObjects extends PostgreWizardPageSettings<PostgreBa
         wizard.objects.add(info);
     }
 
-    private void updateState()
+    @Override
+    protected void updateState()
     {
         boolean complete = false;
         if (!checkedObjects.isEmpty()) {

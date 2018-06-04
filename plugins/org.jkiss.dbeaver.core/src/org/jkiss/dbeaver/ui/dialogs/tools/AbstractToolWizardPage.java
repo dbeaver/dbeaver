@@ -48,7 +48,7 @@ public abstract class AbstractToolWizardPage<WIZARD extends AbstractToolWizard> 
     }
 
 
-    protected static void createCheckButtons(Composite buttonsPanel, final Table table) {
+    protected void createCheckButtons(Composite buttonsPanel, final Table table) {
         UIUtils.createPushButton(buttonsPanel, "All", null, new CheckListener(table, true));
         UIUtils.createPushButton(buttonsPanel, "None", null, new CheckListener(table, false));
     }
@@ -64,7 +64,11 @@ public abstract class AbstractToolWizardPage<WIZARD extends AbstractToolWizard> 
 
     }
 
-    private static class CheckListener extends SelectionAdapter {
+    protected void updateState() {
+        setPageComplete(true);
+    }
+
+    private class CheckListener extends SelectionAdapter {
         private final Table table;
         private final boolean check;
 
@@ -78,6 +82,7 @@ public abstract class AbstractToolWizardPage<WIZARD extends AbstractToolWizard> 
             for (TableItem item : table.getItems()) {
                 item.setChecked(check);
             }
+            updateState();
         }
     }
 

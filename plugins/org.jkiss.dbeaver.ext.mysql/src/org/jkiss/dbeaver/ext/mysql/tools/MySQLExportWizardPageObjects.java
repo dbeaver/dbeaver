@@ -262,7 +262,8 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
         }
     }
 
-    private void updateState()
+    @Override
+    protected void updateState()
     {
         boolean complete = false;
         if (!checkedObjects.isEmpty()) {

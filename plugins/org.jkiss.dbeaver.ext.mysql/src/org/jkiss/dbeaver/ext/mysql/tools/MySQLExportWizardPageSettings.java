@@ -136,7 +136,8 @@ class MySQLExportWizardPageSettings extends MySQLWizardPageSettings<MySQLExportW
         setControl(composite);
     }
 
-    private void updateState()
+    @Override
+    protected void updateState()
     {
         String fileName = outputFolderText.getText();
         wizard.setOutputFolder(CommonUtils.isEmpty(fileName) ? null : new File(fileName));
