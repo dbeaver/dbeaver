@@ -34,23 +34,34 @@ public class CreateLinkedFoldersRunnable extends CreateLinkedResourcesRunnable {
     }
 
     public String composeErrorMessage(IResource resource, Path... paths) {
-        String message = NLS.bind(IdeCoreMessages.CreateLinkedFolderRunnable_e_unable_to_link, resource, paths);
-        return message;
+        return NLS.bind(IdeCoreMessages.CreateLinkedFolderRunnable_e_unable_to_link, resource, paths);
     }
 
     @Override
     public String composeCancelMessage(IResource resource, Path path) {
-        String message = NLS.bind(IdeCoreMessages.CreateLinkedFolderRunnable_e_cancelled_link, resource, path);
-        return message;
+        return NLS.bind(IdeCoreMessages.CreateLinkedFolderRunnable_e_cancelled_link, resource, path);
     }
 
     @Override
     protected void createLink(IContainer container, Path path, int flags, IProgressMonitor monitor)
             throws CoreException {
-        String memberName = path.getFileName().toString();
+        String memberName;
+        if (path.getFileName() == null) {
+            // #3565 - external folders don't have file name
+            // Get last part of full path.
+            String pathStr = path.toString().replace('\\', '/');
+            while (pathStr.endsWith("/")) pathStr = pathStr.substring(0, pathStr.length() - 1);
+            int divPos = pathStr.lastIndexOf('/');
+            if (divPos >= 0) {
+                pathStr = pathStr.substring(divPos + 1);
+            }
+            memberName = pathStr;
+        } else {
+            memberName = path.getFileName().toString();
+        }
         org.eclipse.core.runtime.Path memberPath = new org.eclipse.core.runtime.Path(memberName);
         final IFolder linked = container.getFolder(memberPath);
-        linked.createLink(path.toUri(), IResource.NONE, monitor);
+        linked.createLink(path.toUri(), IResource.ALLOW_MISSING_LOCAL, monitor);
     }
 
 }
