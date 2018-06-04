@@ -701,6 +701,26 @@ public class PropertyTreeViewer extends TreeViewer {
         }
     }
 
+    public static class NodeFilter extends ViewerFilter {
+        private final String searchString;
+        public NodeFilter(String searchString) {
+            this.searchString = searchString.toUpperCase(Locale.ENGLISH);
+        }
+
+        @Override
+        public boolean select(Viewer viewer, Object parentElement, Object element) {
+            if (element instanceof TreeNode) {
+                DBPPropertyDescriptor property = ((TreeNode) element).property;
+                if (property != null) {
+                    return property.getDisplayName().toUpperCase(Locale.ENGLISH).contains(searchString);
+                } else if (((TreeNode) element).category != null) {
+                    return true;
+                }
+            }
+            return false;
+        }
+    }
+
     class PropsContentProvider implements IStructuredContentProvider, ITreeContentProvider {
         @Override
         public void inputChanged(Viewer v, Object oldInput, Object newInput)
