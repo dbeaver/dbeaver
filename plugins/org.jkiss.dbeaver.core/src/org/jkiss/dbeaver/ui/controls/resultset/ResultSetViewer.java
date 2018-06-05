@@ -22,6 +22,7 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.jface.text.IFindReplaceTarget;
@@ -29,7 +30,10 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.*;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.FocusListener;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
@@ -79,6 +83,7 @@ import org.jkiss.dbeaver.ui.controls.resultset.view.EmptyPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.view.StatisticsPresentation;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
+import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditDictionaryPage;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDataFormat;
@@ -209,8 +214,9 @@ public class ResultSetViewer extends Viewer
         this.viewerPanel.setRedraw(false);
 
         {
-            String bgRGB = getPreferenceStore().getString(AbstractTextEditor.PREFERENCE_COLOR_BACKGROUND);
-            String fgRGB = getPreferenceStore().getString(AbstractTextEditor.PREFERENCE_COLOR_FOREGROUND);
+            IPreferenceStore preferenceStore = EditorUtils.getEditorsPreferenceStore();
+            String bgRGB = preferenceStore.getString(AbstractTextEditor.PREFERENCE_COLOR_BACKGROUND);
+            String fgRGB = preferenceStore.getString(AbstractTextEditor.PREFERENCE_COLOR_FOREGROUND);
             defaultBackground = CommonUtils.isEmpty(bgRGB) ? viewerPanel.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND) : UIUtils.getSharedColor(bgRGB);
             defaultForeground = CommonUtils.isEmpty(fgRGB) ? viewerPanel.getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND) : UIUtils.getSharedColor(fgRGB);
         }
@@ -3694,9 +3700,10 @@ public class ResultSetViewer extends Viewer
             if (dataSource == null) {
                 return;
             }
-            DBPPreferenceStore preferenceStore = DBeaverCore.getGlobalPreferenceStore();
-            boolean curValue = preferenceStore.getBoolean(DBeaverPreferences.RESULT_SET_COLORIZE_DATA_TYPES);
-            preferenceStore.setValue(DBeaverPreferences.RESULT_SET_COLORIZE_DATA_TYPES, !curValue);
+            DBPPreferenceStore dsStore = dataSource.getContainer().getPreferenceStore();
+            boolean curValue = dsStore.getBoolean(DBeaverPreferences.RESULT_SET_COLORIZE_DATA_TYPES);
+            // Set local setting to default
+            dsStore.setValue(DBeaverPreferences.RESULT_SET_COLORIZE_DATA_TYPES, !curValue);
             refreshData(null);
         }
 
