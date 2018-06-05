@@ -1278,8 +1278,6 @@ public class ResultSetViewer extends Viewer
 
     private void dispose()
     {
-        savePresentationSettings();
-
         clearData();
 
         for (ToolBarManager tb : toolbarList) {
