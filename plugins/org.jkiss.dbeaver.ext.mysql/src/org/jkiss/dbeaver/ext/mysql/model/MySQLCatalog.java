@@ -338,6 +338,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
         constraintCache.clearCache();
         proceduresCache.clearCache();
         triggerCache.clearCache();
+        eventCache.clearCache();
         return this;
     }
 
