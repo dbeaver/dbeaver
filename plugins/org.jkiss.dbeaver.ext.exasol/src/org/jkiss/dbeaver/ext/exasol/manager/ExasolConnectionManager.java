@@ -23,7 +23,6 @@ import java.util.Map;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.exasol.ExasolMessages;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolConnection;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
@@ -39,6 +38,7 @@ import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UITask;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 
 
@@ -69,7 +69,7 @@ public class ExasolConnectionManager
             @Override
             protected ExasolConnection runTask()
             {
-                ExasolConnectionDialog dialog = new ExasolConnectionDialog(DBeaverUI.getActiveWorkbenchShell(), parent);
+                ExasolConnectionDialog dialog = new ExasolConnectionDialog(UIUtils.getActiveWorkbenchShell(), parent);
                 if (dialog.open() != IDialogConstants.OK_ID)
                 {
                     return null;
@@ -172,7 +172,7 @@ public class ExasolConnectionManager
                 int result = new UITask<Integer>() {
                     protected Integer runTask() {
                         ConfirmationDialog dialog = new ConfirmationDialog(
-                            DBeaverUI.getActiveWorkbenchShell(),
+                            UIUtils.getActiveWorkbenchShell(),
                             ExasolMessages.dialog_connection_alter_title,
                             null,
                             ExasolMessages.dialog_connection_alter_message,

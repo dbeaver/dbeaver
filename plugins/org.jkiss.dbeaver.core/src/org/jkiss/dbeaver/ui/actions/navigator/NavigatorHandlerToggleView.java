@@ -25,7 +25,6 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -54,7 +53,7 @@ public class NavigatorHandlerToggleView extends AbstractHandler implements IElem
     @Override
     public void updateElement(UIElement element, Map parameters) {
         final String viewId = (String) parameters.get("viewId");
-        final IViewPart view = DBeaverUI.getActiveWorkbenchWindow().getActivePage().findView(viewId);
+        final IViewPart view = UIUtils.getActiveWorkbenchWindow().getActivePage().findView(viewId);
         element.setChecked(view != null);
     }
 }

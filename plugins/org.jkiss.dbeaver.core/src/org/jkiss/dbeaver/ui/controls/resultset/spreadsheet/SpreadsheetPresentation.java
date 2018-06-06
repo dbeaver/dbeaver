@@ -71,7 +71,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -88,7 +87,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.PropertyPageStandard;
 import org.jkiss.dbeaver.ui.controls.lightgrid.*;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
-import org.jkiss.dbeaver.ui.controls.resultset.panel.ViewValuePanel;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.valueviewer.ValueViewerPanel;
 import org.jkiss.dbeaver.ui.data.IMultiController;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
@@ -915,7 +914,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 if (ArrayUtils.contains(supportedEditTypes, IValueController.EditType.PANEL)) {
                     // Inline editor isn't supported but panel viewer is
                     // Enable panel
-                    controller.activatePanel(ViewValuePanel.PANEL_ID, true, true);
+                    controller.activatePanel(ValueViewerPanel.PANEL_ID, true, true);
                     return null;
                 }
             }
@@ -1261,7 +1260,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
         @NotNull
         @Override
-        public Collection<DBDAttributeBinding> getSelectedAttributes() {
+        public List<DBDAttributeBinding> getSelectedAttributes() {
             if (controller.isRecordMode()) {
                 Object[] elements = spreadsheet.getContentProvider().getElements(false);
                 List<DBDAttributeBinding> attrs = new ArrayList<>();
@@ -1285,7 +1284,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
         @NotNull
         @Override
-        public Collection<ResultSetRow> getSelectedRows()
+        public List<ResultSetRow> getSelectedRows()
         {
             if (controller.isRecordMode()) {
                 ResultSetRow currentRow = controller.getCurrentRow();
@@ -1592,7 +1591,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     normalColor.getRGB(),
                     backgroundSelected.getRGB(),
                     50);
-                return DBeaverUI.getSharedTextColors().getColor(mixRGB);
+                return UIUtils.getSharedTextColors().getColor(mixRGB);
             }
             boolean recordMode = controller.isRecordMode();
             ResultSetRow row = (ResultSetRow) (!recordMode ?  rowElement : colElement);

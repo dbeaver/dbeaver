@@ -17,11 +17,16 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset;
 
+import org.eclipse.jface.viewers.SelectionChangedEvent;
+
 /**
  * Result set provider
  */
 public interface IResultSetListener {
+
     void handleResultSetLoad();
 
     void handleResultSetChange();
+
+    void handleResultSetSelectionChange(SelectionChangedEvent event);
 }

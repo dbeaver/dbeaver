@@ -30,5 +30,6 @@ public class DBGConstants {
     public static final String MODEL_IDENTIFIER_DATABASE = BUNDLE_SYMBOLIC_NAME + ".database"; //$NON-NLS-1$
     public static final String BREAKPOINT_ATTRIBUTE_DATASOURCE_ID = DBeaverIDECore.MARKER_ATTRIBUTE_DATASOURCE_ID;
     public static final String BREAKPOINT_ATTRIBUTE_NODE_PATH = DBeaverIDECore.MARKER_ATTRIBUTE_NODE_PATH;
+    public static final String BREAKPOINT_ATTRIBUTE_OBJECT_NAME = BUNDLE_SYMBOLIC_NAME + ".objectName"; //$NON-NLS-1$
 
 }

@@ -26,7 +26,6 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
@@ -231,7 +230,7 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
                         objects.addAll(curCatalog.getViews(monitor));
                     }
                     Collections.sort(objects, DBUtils.nameComparator());
-                    DBeaverUI.syncExec(new Runnable() {
+                    UIUtils.syncExec(new Runnable() {
                         @Override
                         public void run() {
                             tablesTable.removeAll();
@@ -263,7 +262,8 @@ class MySQLExportWizardPageObjects extends MySQLWizardPageSettings<MySQLExportWi
         }
     }
 
-    private void updateState()
+    @Override
+    protected void updateState()
     {
         boolean complete = false;
         if (!checkedObjects.isEmpty()) {

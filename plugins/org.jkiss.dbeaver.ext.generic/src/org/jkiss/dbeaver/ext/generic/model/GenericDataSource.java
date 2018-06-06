@@ -56,8 +56,7 @@ import java.util.regex.Matcher;
  * GenericDataSource
  */
 public class GenericDataSource extends JDBCDataSource
-    implements DBSObjectSelector, DBPTermProvider, IAdaptable, GenericStructContainer
-{
+    implements DBSObjectSelector, DBPTermProvider, IAdaptable, GenericStructContainer {
     private static final Log log = Log.getLog(GenericDataSource.class);
 
     static boolean populateClientAppName = false;
@@ -80,8 +79,7 @@ public class GenericDataSource extends JDBCDataSource
     private Format nativeFormatTimestamp, nativeFormatTime, nativeFormatDate;
 
     public GenericDataSource(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSourceContainer container, @NotNull GenericMetaModel metaModel, @NotNull SQLDialect dialect)
-        throws DBException
-    {
+        throws DBException {
         super(monitor, container, dialect, false);
         this.metaModel = metaModel;
         final DBPDriver driver = container.getDriver();
@@ -162,8 +160,7 @@ public class GenericDataSource extends JDBCDataSource
         }
     }
 
-    public String getAllObjectsPattern()
-    {
+    public String getAllObjectsPattern() {
         return allObjectsPattern;
     }
 
@@ -173,16 +170,14 @@ public class GenericDataSource extends JDBCDataSource
     }
 
     @Nullable
-    public GenericMetaObject getMetaObject(String id)
-    {
+    public GenericMetaObject getMetaObject(String id) {
         return metaModel.getMetaObject(id);
     }
 
     @Override
-    protected DBPDataSourceInfo createDataSourceInfo(@NotNull JDBCDatabaseMetaData metaData)
-    {
+    protected DBPDataSourceInfo createDataSourceInfo(@NotNull JDBCDatabaseMetaData metaData) {
         final GenericDataSourceInfo info = new GenericDataSourceInfo(getContainer().getDriver(), metaData);
-        final JDBCSQLDialect dialect = (JDBCSQLDialect)getSQLDialect();
+        final JDBCSQLDialect dialect = (JDBCSQLDialect) getSQLDialect();
 
         final Object supportsReferences = getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_SUPPORTS_REFERENCES);
         if (supportsReferences != null) {
@@ -212,8 +207,7 @@ public class GenericDataSource extends JDBCDataSource
     }
 
     @Override
-    public void shutdown(DBRProgressMonitor monitor)
-    {
+    public void shutdown(DBRProgressMonitor monitor) {
         super.shutdown(monitor);
         String paramShutdown = CommonUtils.toString(getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_SHUTDOWN_URL_PARAM));
         if (!CommonUtils.isEmpty(paramShutdown)) {
@@ -231,8 +225,8 @@ public class GenericDataSource extends JDBCDataSource
                 final Driver driver = getDriverInstance(new VoidProgressMonitor()); // Use void monitor - driver already loaded
                 if (driver != null) {
                     driver.connect(
-                            getContainer().getActualConnectionConfiguration().getUrl() + paramShutdown,
-                            shutdownProps.isEmpty() ? null : shutdownProps);
+                        getContainer().getActualConnectionConfiguration().getUrl() + paramShutdown,
+                        shutdownProps.isEmpty() ? null : shutdownProps);
                 }
             } catch (Exception e) {
                 log.debug("Shutdown finished: :" + e.getMessage());
@@ -247,29 +241,24 @@ public class GenericDataSource extends JDBCDataSource
 
     @Association
     public Collection<GenericTableType> getTableTypes(DBRProgressMonitor monitor)
-        throws DBException
-    {
+        throws DBException {
         return tableTypeCache.getAllObjects(monitor, this);
     }
 
-    public Collection<GenericCatalog> getCatalogs()
-    {
+    public Collection<GenericCatalog> getCatalogs() {
         return catalogs;
     }
 
-    public GenericCatalog getCatalog(String name)
-    {
+    public GenericCatalog getCatalog(String name) {
         return DBUtils.findObject(getCatalogs(), name);
     }
 
     @Association
-    public Collection<GenericSchema> getSchemas()
-    {
+    public Collection<GenericSchema> getSchemas() {
         return schemas;
     }
 
-    public GenericSchema getSchema(String name)
-    {
+    public GenericSchema getSchema(String name) {
         return DBUtils.findObject(getSchemas(), name);
     }
 
@@ -327,49 +316,42 @@ public class GenericDataSource extends JDBCDataSource
 
     @Override
     public Collection<GenericTable> getTables(DBRProgressMonitor monitor)
-        throws DBException
-    {
+        throws DBException {
         return structureContainer == null ? null : structureContainer.getTables(monitor);
     }
 
     @Override
     public GenericTable getTable(DBRProgressMonitor monitor, String name)
-        throws DBException
-    {
+        throws DBException {
         return structureContainer == null ? null : structureContainer.getTable(monitor, name);
     }
 
     @Override
     public Collection<GenericPackage> getPackages(DBRProgressMonitor monitor)
-        throws DBException
-    {
+        throws DBException {
         return structureContainer == null ? null : structureContainer.getPackages(monitor);
     }
 
     @Override
     public Collection<GenericTableIndex> getIndexes(DBRProgressMonitor monitor)
-        throws DBException
-    {
+        throws DBException {
         return structureContainer == null ? null : structureContainer.getIndexes(monitor);
     }
 
     @Override
     public Collection<GenericProcedure> getProcedures(DBRProgressMonitor monitor)
-        throws DBException
-    {
+        throws DBException {
         return structureContainer == null ? null : structureContainer.getProcedures(monitor);
     }
 
     @Override
-    public GenericProcedure getProcedure(DBRProgressMonitor monitor, String uniqueName) throws DBException
-    {
+    public GenericProcedure getProcedure(DBRProgressMonitor monitor, String uniqueName) throws DBException {
         return structureContainer == null ? null : structureContainer.getProcedure(monitor, uniqueName);
     }
 
     @Override
     public Collection<GenericProcedure> getProcedures(DBRProgressMonitor monitor, String name)
-        throws DBException
-    {
+        throws DBException {
         return structureContainer == null ? null : structureContainer.getProcedures(monitor, name);
     }
 
@@ -390,8 +372,7 @@ public class GenericDataSource extends JDBCDataSource
 
     @Override
     public void initialize(@NotNull DBRProgressMonitor monitor)
-        throws DBException
-    {
+        throws DBException {
         super.initialize(monitor);
         Object omitCatalog = getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_OMIT_CATALOG);
         Object omitTypeCache = getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_OMIT_TYPE_CACHE);
@@ -486,8 +467,7 @@ public class GenericDataSource extends JDBCDataSource
 
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
-        throws DBException
-    {
+        throws DBException {
         super.refreshObject(monitor);
 
         this.selectedEntityName = null;
@@ -514,8 +494,7 @@ public class GenericDataSource extends JDBCDataSource
     }
 
     GenericTable findTable(@NotNull DBRProgressMonitor monitor, String catalogName, String schemaName, String tableName)
-        throws DBException
-    {
+        throws DBException {
         GenericObjectContainer container = null;
         if (!CommonUtils.isEmpty(catalogName) && !CommonUtils.isEmpty(catalogs)) {
             container = getCatalog(catalogName);
@@ -526,7 +505,7 @@ public class GenericDataSource extends JDBCDataSource
         }
         if (!CommonUtils.isEmpty(schemaName)) {
             if (container != null) {
-                container = ((GenericCatalog)container).getSchema(monitor, schemaName);
+                container = ((GenericCatalog) container).getSchema(monitor, schemaName);
             } else if (!CommonUtils.isEmpty(schemas)) {
                 container = this.getSchema(schemaName);
             } else {
@@ -545,8 +524,7 @@ public class GenericDataSource extends JDBCDataSource
 
     @Override
     public Collection<? extends DBSObject> getChildren(@NotNull DBRProgressMonitor monitor)
-        throws DBException
-    {
+        throws DBException {
         if (!CommonUtils.isEmpty(getCatalogs())) {
             return getCatalogs();
         } else if (!CommonUtils.isEmpty(getSchemas())) {
@@ -560,8 +538,7 @@ public class GenericDataSource extends JDBCDataSource
 
     @Override
     public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName)
-        throws DBException
-    {
+        throws DBException {
         if (!CommonUtils.isEmpty(getCatalogs())) {
             return getCatalog(childName);
         } else if (!CommonUtils.isEmpty(getSchemas())) {
@@ -575,8 +552,7 @@ public class GenericDataSource extends JDBCDataSource
 
     @Override
     public Class<? extends DBSObject> getChildType(@NotNull DBRProgressMonitor monitor)
-        throws DBException
-    {
+        throws DBException {
         if (!CommonUtils.isEmpty(catalogs)) {
             return GenericCatalog.class;
         } else if (!CommonUtils.isEmpty(schemas)) {
@@ -598,8 +574,7 @@ public class GenericDataSource extends JDBCDataSource
     }
 
     private boolean isChild(DBSObject object)
-        throws DBException
-    {
+        throws DBException {
         if (object instanceof GenericCatalog) {
             return !CommonUtils.isEmpty(catalogs) && catalogs.contains(GenericCatalog.class.cast(object));
         } else if (object instanceof GenericSchema) {
@@ -609,8 +584,7 @@ public class GenericDataSource extends JDBCDataSource
     }
 
     @Override
-    public boolean supportsDefaultChange()
-    {
+    public boolean supportsDefaultChange() {
         if (selectedEntityFromAPI) {
             return true;
         }
@@ -628,8 +602,7 @@ public class GenericDataSource extends JDBCDataSource
     }
 
     @Override
-    public DBSObject getDefaultObject()
-    {
+    public DBSObject getDefaultObject() {
         if (!CommonUtils.isEmpty(selectedEntityName)) {
             if (!CommonUtils.isEmpty(catalogs)) {
                 if (selectedEntityType == null || selectedEntityType.equals(GenericConstants.ENTITY_TYPE_CATALOG)) {
@@ -646,8 +619,7 @@ public class GenericDataSource extends JDBCDataSource
 
     @Override
     public void setDefaultObject(@NotNull DBRProgressMonitor monitor, @NotNull DBSObject object)
-        throws DBException
-    {
+        throws DBException {
         final DBSObject oldSelectedEntity = getDefaultObject();
         // Check removed because we can select the same object on invalidate
 //        if (object == oldSelectedEntity) {
@@ -686,18 +658,15 @@ public class GenericDataSource extends JDBCDataSource
         return false;
     }
 
-    String getSelectedEntityType()
-    {
+    String getSelectedEntityType() {
         return selectedEntityType;
     }
 
-    String getSelectedEntityName()
-    {
+    String getSelectedEntityName() {
         return selectedEntityName;
     }
 
-    private void determineSelectedEntity(JDBCSession session)
-    {
+    private void determineSelectedEntity(JDBCSession session) {
         // Get selected entity (catalog or schema)
         selectedEntityName = null;
         if (CommonUtils.isEmpty(queryGetActiveDB)) {
@@ -707,8 +676,7 @@ public class GenericDataSource extends JDBCDataSource
                     selectedEntityType = GenericConstants.ENTITY_TYPE_CATALOG;
                     selectedEntityFromAPI = true;
                 }
-            }
-            catch (SQLException e) {
+            } catch (SQLException e) {
                 // Seems to be not supported
                 log.debug(e);
             }
@@ -756,8 +724,7 @@ public class GenericDataSource extends JDBCDataSource
         }
     }
 
-    void setActiveEntityName(DBRProgressMonitor monitor, JDBCExecutionContext context, DBSObject entity) throws DBCException
-    {
+    void setActiveEntityName(DBRProgressMonitor monitor, JDBCExecutionContext context, DBSObject entity) throws DBCException {
         if (entity == null) {
             log.debug("Null current entity");
             return;
@@ -791,8 +758,7 @@ public class GenericDataSource extends JDBCDataSource
     }
 
     @Override
-    public <T> T getAdapter(Class<T> adapter)
-    {
+    public <T> T getAdapter(Class<T> adapter) {
         if (adapter == DBSStructureAssistant.class) {
             return adapter.cast(new GenericStructureAssistant(this));
         } else if (adapter == DBCQueryPlanner.class) {
@@ -809,8 +775,7 @@ public class GenericDataSource extends JDBCDataSource
     }
 
     @Override
-    public String getObjectTypeTerm(String path, String objectType, boolean multiple)
-    {
+    public String getObjectTypeTerm(String path, String objectType, boolean multiple) {
         String term = null;
         if (GenericConstants.TERM_CATALOG.equals(objectType)) {
             term = getInfo().getCatalogTerm();
@@ -829,7 +794,7 @@ public class GenericDataSource extends JDBCDataSource
     @Override
     public ErrorPosition[] getErrorPosition(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext context, @NotNull String query, @NotNull Throwable error) {
         ErrorPosition position = metaModel.getErrorPosition(error);
-        return position == null ? null : new ErrorPosition[] { position };
+        return position == null ? null : new ErrorPosition[]{position};
     }
 
     protected JDBCBasicDataTypeCache<GenericStructContainer, ? extends JDBCDataType> getDataTypeCache() {
@@ -841,20 +806,22 @@ public class GenericDataSource extends JDBCDataSource
     }
 
     @Override
-    public Collection<? extends DBSDataType> getLocalDataTypes()
-    {
+    public Collection<? extends DBSDataType> getLocalDataTypes() {
         return dataTypeCache.getCachedObjects();
     }
 
     @Override
-    public DBSDataType getLocalDataType(String typeName)
-    {
+    public DBSDataType getLocalDataType(String typeName) {
         return dataTypeCache.getCachedObject(typeName);
     }
 
+    @Override
+    public DBSDataType getLocalDataType(int typeID) {
+        return dataTypeCache.getCachedObject(typeID);
+    }
+
     @NotNull
-    public DBPDataKind resolveDataKind(@NotNull String typeName, int valueType)
-    {
+    public DBPDataKind resolveDataKind(@NotNull String typeName, int valueType) {
         DBSDataType dataType = getLocalDataType(typeName);
         if (dataType != null) {
             return super.resolveDataKind(dataType.getTypeName(), dataType.getTypeID());
@@ -891,13 +858,12 @@ public class GenericDataSource extends JDBCDataSource
 
     private class TableTypeCache extends JDBCObjectCache<GenericDataSource, GenericTableType> {
         @Override
-        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull GenericDataSource owner) throws SQLException
-        {
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull GenericDataSource owner) throws SQLException {
             return session.getMetaData().getTableTypes().getSourceStatement();
         }
+
         @Override
-        protected GenericTableType fetchObject(@NotNull JDBCSession session, @NotNull GenericDataSource owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException
-        {
+        protected GenericTableType fetchObject(@NotNull JDBCSession session, @NotNull GenericDataSource owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new GenericTableType(
                 GenericDataSource.this,
                 GenericUtils.safeGetString(
@@ -907,10 +873,8 @@ public class GenericDataSource extends JDBCDataSource
         }
     }
 
-    private class DataSourceObjectContainer extends GenericObjectContainer
-    {
-        private DataSourceObjectContainer()
-        {
+    private class DataSourceObjectContainer extends GenericObjectContainer {
+        private DataSourceObjectContainer() {
             super(GenericDataSource.this);
         }
 

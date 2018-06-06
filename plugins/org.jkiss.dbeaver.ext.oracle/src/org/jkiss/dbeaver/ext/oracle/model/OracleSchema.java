@@ -100,13 +100,13 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         return OracleConstants.USER_PUBLIC.equals(this.name);
     }
 
-    @Property(viewable = false, order = 200)
+    @Property(order = 200)
     public long getId()
     {
         return id;
     }
 
-    @Property(viewable = false, order = 190)
+    @Property(order = 190)
     public Date getCreateTime() {
         return createTime;
     }
@@ -269,12 +269,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
                 allTableTriggers.addAll(triggers);
             }
         }
-        allTableTriggers.sort(new Comparator<OracleTableTrigger>() {
-            @Override
-            public int compare(OracleTableTrigger o1, OracleTableTrigger o2) {
-                return o1.getName().compareTo(o2.getName());
-            }
-        });
+        allTableTriggers.sort(Comparator.comparing(OracleTrigger::getName));
         return allTableTriggers;
     }
 
@@ -313,17 +308,18 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         return recycleBin.getAllObjects(monitor, this);
     }
 
+    @Property(order = 90)
+    public OracleUser getSchemaUser(DBRProgressMonitor monitor) throws DBException {
+        return getDataSource().getUser(monitor, name);
+    }
+
     @Override
     public Collection<DBSObject> getChildren(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         List<DBSObject> children = new ArrayList<>();
-        for (OracleTableBase table : tableCache.getAllObjects(monitor, this)) {
-            children.add(table);
-        }
-        for (OraclePackage pack : packageCache.getAllObjects(monitor, this)) {
-            children.add(pack);
-        }
+        children.addAll(tableCache.getAllObjects(monitor, this));
+        children.addAll(packageCache.getAllObjects(monitor, this));
         return children;
     }
 
@@ -410,7 +406,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         TableCache()
         {
             super("TABLE_NAME");
-            setListOrderComparator(DBUtils.<OracleTableBase>nameComparator());
+            setListOrderComparator(DBUtils.nameComparator());
         }
 
         @NotNull
@@ -486,7 +482,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
 
         @Override
         protected void cacheChildren(OracleTableBase parent, List<OracleTableColumn> oracleTableColumns) {
-            Collections.sort(oracleTableColumns, DBUtils.orderComparator());
+            oracleTableColumns.sort(DBUtils.orderComparator());
             super.cacheChildren(parent, oracleTableColumns);
         }
 

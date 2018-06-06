@@ -25,7 +25,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreCommands;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -35,6 +34,7 @@ import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.runtime.IPluginService;
 import org.jkiss.dbeaver.runtime.qm.DefaultExecutionHandler;
 import org.jkiss.dbeaver.ui.ActionUtils;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 
 /**
@@ -104,7 +104,7 @@ public class DataSourcePropertyTester extends PropertyTester
         // Update commands
         final ICommandService commandService = PlatformUI.getWorkbench().getService(ICommandService.class);
         if (commandService != null) {
-            DBeaverUI.asyncExec(new Runnable() {
+            UIUtils.asyncExec(new Runnable() {
                 @Override
                 public void run() {
                     commandService.refreshElements(commandID, null);
@@ -187,7 +187,7 @@ public class DataSourcePropertyTester extends PropertyTester
         }
 
         private void updateUI(Runnable runnable) {
-            DBeaverUI.asyncExec(runnable);
+            UIUtils.asyncExec(runnable);
         }
     }
 
@@ -197,11 +197,11 @@ public class DataSourcePropertyTester extends PropertyTester
      * Making each editor QM listener is too expensive.
      */
     private static void updateEditorsDirtyFlag() {
-        IEditorReference[] editors = DBeaverUI.getActiveWorkbenchWindow().getActivePage().getEditorReferences();
+        IEditorReference[] editors = UIUtils.getActiveWorkbenchWindow().getActivePage().getEditorReferences();
         for (IEditorReference ref : editors) {
             final IEditorPart editor = ref.getEditor(false);
             if (editor instanceof SQLEditor) {
-                DBeaverUI.asyncExec(new Runnable() {
+                UIUtils.asyncExec(new Runnable() {
                     @Override
                     public void run() {
                         ((SQLEditor) editor).updateDirtyFlag();

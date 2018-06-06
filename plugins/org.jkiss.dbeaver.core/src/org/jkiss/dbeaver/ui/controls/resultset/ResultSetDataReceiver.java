@@ -17,13 +17,13 @@
 package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBindingMeta;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -51,6 +51,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
     // All (unique) errors happened during fetch
     private List<Throwable> errorList = new ArrayList<>();
     private int focusRow;
+    private DBSDataContainer targetDataContainer;
 
     ResultSetDataReceiver(ResultSetViewer resultSetViewer)
     {
@@ -67,6 +68,14 @@ class ResultSetDataReceiver implements DBDDataReceiver {
 
     void setNextSegmentRead(boolean nextSegmentRead) {
         this.nextSegmentRead = nextSegmentRead;
+    }
+
+    public void setFocusRow(int focusRow) {
+        this.focusRow = focusRow;
+    }
+
+    public void setTargetDataContainer(DBSDataContainer targetDataContainer) {
+        this.targetDataContainer = targetDataContainer;
     }
 
     public List<Throwable> getErrorList() {
@@ -143,7 +152,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
             try {
                 // Read locators' metadata
                 DBSEntity entity = null;
-                DBSDataContainer dataContainer = resultSetViewer.getDataContainer();
+                DBSDataContainer dataContainer = targetDataContainer != null ? targetDataContainer : resultSetViewer.getDataContainer();
                 if (dataContainer instanceof DBSEntity) {
                     entity = (DBSEntity) dataContainer;
                 }
@@ -156,7 +165,7 @@ class ResultSetDataReceiver implements DBDDataReceiver {
         final List<Object[]> tmpRows = rows;
 
         final boolean nextSegmentRead = this.nextSegmentRead;
-        DBeaverUI.syncExec(() -> {
+        UIUtils.syncExec(() -> {
             // Push data into viewer
             if (!nextSegmentRead) {
                 resultSetViewer.updatePresentation(resultSet);
@@ -181,7 +190,4 @@ class ResultSetDataReceiver implements DBDDataReceiver {
         rows = new ArrayList<>();
     }
 
-    public void setFocusRow(int focusRow) {
-        this.focusRow = focusRow;
-    }
 }

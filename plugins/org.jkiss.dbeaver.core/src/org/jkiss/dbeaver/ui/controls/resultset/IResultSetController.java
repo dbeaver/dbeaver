@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
@@ -55,6 +56,9 @@ public interface IResultSetController extends DBPContextProvider {
     IResultSetContainer getContainer();
 
     @NotNull
+    IResultSetDecorator getDecorator();
+
+    @NotNull
     ResultSetModel getModel();
 
     @Nullable
@@ -62,6 +66,8 @@ public interface IResultSetController extends DBPContextProvider {
 
     @NotNull
     DBDDataReceiver getDataReceiver();
+
+    public Composite getControl();
 
     boolean hasData();
 
@@ -164,6 +170,8 @@ public interface IResultSetController extends DBPContextProvider {
     @NotNull
     IResultSetPresentation getActivePresentation();
 
+    void setEmptyPresentation();
+
     IResultSetPanel getVisiblePanel();
 
     IResultSetPanel[] getActivePanels();
@@ -186,4 +194,8 @@ public interface IResultSetController extends DBPContextProvider {
     void lockActionsByFocus(Control lockedBy);
 
     IResultSetSelection getSelection();
+
+    void addListener(IResultSetListener listener);
+
+    void removeListener(IResultSetListener listener);
 }

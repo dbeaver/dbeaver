@@ -28,7 +28,6 @@ import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.ui.IWorkbenchPartSite;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.db2.DB2Messages;
 import org.jkiss.dbeaver.ext.db2.model.DB2DataSource;
 import org.jkiss.dbeaver.ext.db2.model.DB2Index;
@@ -80,7 +79,7 @@ public class DB2ReorgTableDialog extends DB2BaseTableToolDialog {
 
         // Read TS and indexes
         try {
-            DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
+            UIUtils.runInProgressService(new DBRRunnableWithProgress() {
                 @Override
                 public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                 {

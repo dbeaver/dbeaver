@@ -223,8 +223,18 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData {
         return ordinalPosition;
     }
 
+    @Property(viewable = true, category = PROP_CATEGORY_COLUMN, order = 5)
+    public String getCatalogName() {
+        return catalogName;
+    }
+
+    @Property(viewable = true, category = PROP_CATEGORY_COLUMN, order = 6)
+    public String getSchemaName() {
+        return schemaName;
+    }
+
     @Nullable
-    @Property(viewable = true, category = PROP_CATEGORY_COLUMN, order = 4)
+    @Property(viewable = true, category = PROP_CATEGORY_COLUMN, order = 7)
     @Override
     public String getEntityName() {
         return tableName;

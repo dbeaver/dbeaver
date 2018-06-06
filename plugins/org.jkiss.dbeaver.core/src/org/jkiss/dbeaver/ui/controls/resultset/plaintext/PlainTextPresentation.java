@@ -31,7 +31,6 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.printing.PrintDialog;
 import org.eclipse.swt.printing.Printer;
@@ -45,7 +44,6 @@ import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
@@ -57,7 +55,6 @@ import org.jkiss.dbeaver.ui.controls.StyledTextFindReplaceTarget;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -205,7 +202,7 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
                         horOffsetEnd - horOffsetBegin - 1,
                         null,
                         curLineColor);
-                    DBeaverUI.asyncExec(() -> text.setStyleRanges(new StyleRange[]{curLineRange}));
+                    UIUtils.asyncExec(() -> text.setStyleRanges(new StyleRange[]{curLineRange}));
                 }
             }
 
@@ -614,16 +611,16 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
 
         @NotNull
         @Override
-        public Collection<DBDAttributeBinding> getSelectedAttributes() {
+        public List<DBDAttributeBinding> getSelectedAttributes() {
             if (curAttribute == null) {
                 return Collections.emptyList();
             }
-            return Collections.singleton(curAttribute);
+            return Collections.singletonList(curAttribute);
         }
 
         @NotNull
         @Override
-        public Collection<ResultSetRow> getSelectedRows()
+        public List<ResultSetRow> getSelectedRows()
         {
             ResultSetRow currentRow = controller.getCurrentRow();
             if (currentRow == null) {

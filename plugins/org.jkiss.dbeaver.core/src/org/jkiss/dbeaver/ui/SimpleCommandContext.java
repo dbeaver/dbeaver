@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ui;
 
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.commands.ICommandService;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.edit.AbstractCommandContext;
 
@@ -34,7 +33,7 @@ public class SimpleCommandContext extends AbstractCommandContext {
 
     protected void refreshCommandState()
     {
-        ICommandService commandService = DBeaverUI.getActiveWorkbenchWindow().getService(ICommandService.class);
+        ICommandService commandService = UIUtils.getActiveWorkbenchWindow().getService(ICommandService.class);
         if (commandService != null) {
             commandService.refreshElements(IWorkbenchCommandConstants.EDIT_UNDO, null);
             commandService.refreshElements(IWorkbenchCommandConstants.EDIT_REDO, null);

@@ -2,7 +2,7 @@
 <feature
       id="org.jkiss.dbeaver.standalone.nls.feature"
       label="%featureName"
-      version="1.0.16"
+      version="1.0.17"
       provider-name="%providerName">
 
    <description>
@@ -40,6 +40,7 @@
    <plugin id="org.eclipse.ui.workbench.nl_fr" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
    <plugin id="org.eclipse.ui.workbench.nl_ru" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
    <plugin id="org.eclipse.ui.workbench.nl_zh" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
+   <plugin id="org.eclipse.ui.workbench.nl_ja" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
 -->
 
 

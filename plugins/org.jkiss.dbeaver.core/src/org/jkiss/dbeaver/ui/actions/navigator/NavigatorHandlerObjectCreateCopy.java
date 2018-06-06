@@ -32,13 +32,13 @@ import org.eclipse.swt.dnd.FileTransfer;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dnd.TreeNodeTransfer;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -99,7 +99,7 @@ public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCrea
         assert targetResource != null;
         final IContainer targetFolder = targetResource instanceof IContainer ? (IContainer) targetResource : targetResource.getParent();
         try {
-            DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
+            UIUtils.runInProgressService(new DBRRunnableWithProgress() {
                 @Override
                 public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     try {
@@ -162,7 +162,7 @@ public class NavigatorHandlerObjectCreateCopy extends NavigatorHandlerObjectCrea
         assert targetResource != null;
         final IContainer targetFolder = targetResource instanceof IContainer ? (IContainer) targetResource : targetResource.getParent();
         try {
-            DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
+            UIUtils.runInProgressService(new DBRRunnableWithProgress() {
                 @Override
                 public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     try {

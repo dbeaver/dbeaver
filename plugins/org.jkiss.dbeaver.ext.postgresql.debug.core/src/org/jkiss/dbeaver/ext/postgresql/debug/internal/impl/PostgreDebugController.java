@@ -70,10 +70,7 @@ public class PostgreDebugController extends DBGBaseController {
 
     @Override
     public DBGBreakpointDescriptor describeBreakpoint(Map<String, Object> attributes) {
-        Object oid = attributes.get(PostgreDebugConstants.ATTR_FUNCTION_OID);
-        Object lineNumber = attributes.get(IMarker.LINE_NUMBER);
-        long parsed = Long.parseLong(String.valueOf(lineNumber));
-        return new PostgreDebugBreakpointDescriptor(oid, parsed, false);
+        return PostgreDebugBreakpointDescriptor.fromMap(attributes);
     }
 
 }

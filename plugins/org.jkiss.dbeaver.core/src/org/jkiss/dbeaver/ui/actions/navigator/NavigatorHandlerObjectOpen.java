@@ -36,7 +36,6 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.app.DBPResourceHandler;
 import org.jkiss.dbeaver.model.edit.DBEObjectEditor;
 import org.jkiss.dbeaver.model.navigator.*;
@@ -114,7 +113,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
     {
         DBNDatabaseNode node = NavigatorHandlerObjectOpen.getNodeByObject(object);
         if (node != null) {
-            return NavigatorHandlerObjectOpen.openEntityEditor(node, null, DBeaverUI.getActiveWorkbenchWindow());
+            return NavigatorHandlerObjectOpen.openEntityEditor(node, null, UIUtils.getActiveWorkbenchWindow());
         }
         return null;
     }
@@ -241,7 +240,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
 
     private static void refreshDatabaseNode(@NotNull DBNDatabaseNode selectedNode) throws InvocationTargetException, InterruptedException {
         final DBNDatabaseNode nodeToRefresh = selectedNode;
-        DBeaverUI.runInProgressService(monitor -> {
+        UIUtils.runInProgressService(monitor -> {
             try {
                 nodeToRefresh.refreshNode(monitor, nodeToRefresh);
             } catch (DBException e) {

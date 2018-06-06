@@ -28,7 +28,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAAuthInfo;
 import org.jkiss.dbeaver.model.exec.*;
@@ -43,6 +42,7 @@ import org.jkiss.dbeaver.runtime.jobs.ConnectJob;
 import org.jkiss.dbeaver.runtime.jobs.DisconnectJob;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.UITask;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.entity.handlers.SaveChangesHandler;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -94,7 +94,7 @@ public class DataSourceHandler
                     if (onFinish != null) {
                         onFinish.onTaskFinished(result);
                     } else if (!result.isOK()) {
-                        DBeaverUI.asyncExec(() -> DBUserInterface.getInstance().showError(
+                        UIUtils.asyncExec(() -> DBUserInterface.getInstance().showError(
                             connectJob.getName(),
                             null,//NLS.bind(CoreMessages.runtime_jobs_connect_status_error, dataSourceContainer.getName()),
                             result));
@@ -128,7 +128,7 @@ public class DataSourceHandler
                 // Schedule in UI because connect may be initiated during application startup
                 // and UI is still not initiated. In this case no progress dialog will appear
                 // to be sure run in UI async
-                DBeaverUI.asyncExec(new Runnable() {
+                UIUtils.asyncExec(new Runnable() {
                     @Override
                     public void run() {
                         connectJob.schedule();
@@ -222,7 +222,7 @@ public class DataSourceHandler
                 }
             });
             // Run in UI thread to update actions (some Eclipse magic)
-            DBeaverUI.asyncExec(new Runnable() {
+            UIUtils.asyncExec(new Runnable() {
                 @Override
                 public void run() {
                     disconnectJob.schedule();
@@ -263,7 +263,7 @@ public class DataSourceHandler
                     if (commitTxn == null) {
                         // Ask for confirmation
                         TransactionCloseConfirmer closeConfirmer = new TransactionCloseConfirmer(context.getDataSource().getContainer().getName());
-                        DBeaverUI.syncExec(closeConfirmer);
+                        UIUtils.syncExec(closeConfirmer);
                         switch (closeConfirmer.result) {
                             case IDialogConstants.YES_ID:
                                 commitTxn = true;
@@ -276,7 +276,7 @@ public class DataSourceHandler
                         }
                     }
                     final boolean commit = commitTxn;
-                    DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
+                    UIUtils.runInProgressService(new DBRRunnableWithProgress() {
                         @Override
                         public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                             closeActiveTransaction(monitor, context, commit);

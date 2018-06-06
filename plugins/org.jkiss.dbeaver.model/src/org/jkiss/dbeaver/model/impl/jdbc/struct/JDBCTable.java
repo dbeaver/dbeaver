@@ -153,8 +153,8 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         if (tableAlias != null) {
             query.append(" ").append(tableAlias); //$NON-NLS-1$
         }
-        appendQueryConditions(query, tableAlias, dataFilter);
-        appendQueryOrder(query, tableAlias, dataFilter);
+        SQLUtils.appendQueryConditions(dataSource, query, tableAlias, dataFilter);
+        SQLUtils.appendQueryOrder(dataSource, query, tableAlias, dataFilter);
 
         String sqlQuery = query.toString();
         statistics.setQueryText(sqlQuery);
@@ -258,7 +258,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 
         StringBuilder query = new StringBuilder("SELECT COUNT(*) FROM "); //$NON-NLS-1$
         query.append(getFullyQualifiedName(DBPEvaluationContext.DML));
-        appendQueryConditions(query, null, dataFilter);
+        SQLUtils.appendQueryConditions(getDataSource(), query, null, dataFilter);
         monitor.subTask(ModelMessages.model_jdbc_fetch_table_row_count);
         try (DBCStatement dbStat = session.prepareStatement(
             DBCStatementType.QUERY,
@@ -565,25 +565,6 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
 //        }
         // Do not quote pseudo attribute name
         return DBUtils.isPseudoAttribute(attribute) ? attribute.getName() : DBUtils.getObjectFullName(getDataSource(), attribute, DBPEvaluationContext.DML);
-    }
-
-    private void appendQueryConditions(@NotNull StringBuilder query, @Nullable String tableAlias, @Nullable DBDDataFilter dataFilter)
-    {
-        if (dataFilter != null && dataFilter.hasConditions()) {
-            query.append("\nWHERE "); //$NON-NLS-1$
-            SQLUtils.appendConditionString(dataFilter, getDataSource(), tableAlias, query, true);
-        }
-    }
-
-    private void appendQueryOrder(@NotNull StringBuilder query, @Nullable String tableAlias, @Nullable DBDDataFilter dataFilter)
-    {
-        if (dataFilter != null) {
-            // Construct ORDER BY
-            if (dataFilter.hasOrdering()) {
-                query.append("\nORDER BY "); //$NON-NLS-1$
-                SQLUtils.appendOrderString(dataFilter, getDataSource(), tableAlias, query);
-            }
-        }
     }
 
     private void appendAttributeCriteria(@Nullable String tableAlias, SQLDialect dialect, StringBuilder query, DBSAttributeBase attribute, Object value) {

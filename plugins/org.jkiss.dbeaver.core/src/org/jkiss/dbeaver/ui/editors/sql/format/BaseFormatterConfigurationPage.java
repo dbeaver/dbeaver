@@ -22,7 +22,6 @@ import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatter;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
 import org.jkiss.dbeaver.registry.sql.SQLFormatterConfigurer;
@@ -65,7 +64,7 @@ public abstract class BaseFormatterConfigurationPage extends ActiveWizardPage im
     public boolean configure(String formatName, SQLFormatter formatter, SQLFormatterConfiguration configuration) {
         Wizard wizard = new ConfigWizard(formatName, configuration);
         wizard.addPage(this);
-        WizardDialog configDialog = new WizardDialog(DBeaverUI.getActiveWorkbenchShell(), wizard) {
+        WizardDialog configDialog = new WizardDialog(UIUtils.getActiveWorkbenchShell(), wizard) {
             @Override
             protected void createButtonsForButtonBar(Composite parent) {
                 super.createButtonsForButtonBar(parent);

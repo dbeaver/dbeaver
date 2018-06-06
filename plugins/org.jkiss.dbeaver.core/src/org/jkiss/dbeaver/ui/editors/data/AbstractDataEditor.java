@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.editors.data;
 
 import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IActionBars;
@@ -24,7 +25,6 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
@@ -35,9 +35,7 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetContainer;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetListener;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
+import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
@@ -145,8 +143,13 @@ public abstract class AbstractDataEditor<OBJECT_TYPE extends DBSObject> extends 
         openNewDataEditor(targetNode, newFilter);
     }
 
+    @Override
+    public IResultSetDecorator createResultSetDecorator() {
+        return new QueryResultsDecorator();
+    }
+
     public static void openNewDataEditor(DBNDatabaseNode targetNode, DBDDataFilter newFilter) {
-        DBeaverUI.asyncExec(new Runnable() {
+        UIUtils.asyncExec(new Runnable() {
             @Override
             public void run() {
                 IEditorPart entityEditor = NavigatorHandlerObjectOpen.openEntityEditor(
@@ -154,7 +157,7 @@ public abstract class AbstractDataEditor<OBJECT_TYPE extends DBSObject> extends 
                     DatabaseDataEditor.class.getName(),
                     null,
                     Collections.singletonMap(DatabaseDataEditor.ATTR_DATA_FILTER, newFilter),
-                    DBeaverUI.getActiveWorkbenchWindow(),
+                    UIUtils.getActiveWorkbenchWindow(),
                     true);
 
                 if (entityEditor instanceof MultiPageEditorPart) {
@@ -212,6 +215,11 @@ public abstract class AbstractDataEditor<OBJECT_TYPE extends DBSObject> extends 
     public void handleResultSetChange()
     {
         firePropertyChange(IEditorPart.PROP_DIRTY);
+    }
+
+    @Override
+    public void handleResultSetSelectionChange(SelectionChangedEvent event) {
+        // No actions
     }
 
     @Override

@@ -96,7 +96,7 @@ public class ERDExportGraphML implements ERDExportFormatHandler
                         {
                             // Generic node
                             EntityPart entityPart = diagramPart.getEntityPart(entity);
-                            EntityFigure entityFigure = (EntityFigure) entityPart.getFigure();
+                            EntityFigure entityFigure = entityPart.getFigure();
                             Rectangle partBounds = entityPart.getBounds();
                             xml.startElement("y:GenericNode");
                             xml.addAttribute("configuration", "com.yworks.entityRelationship.big_entity");

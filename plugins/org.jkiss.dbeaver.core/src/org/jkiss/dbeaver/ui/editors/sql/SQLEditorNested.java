@@ -45,7 +45,6 @@ import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.compile.DBCCompileLog;
 import org.jkiss.dbeaver.model.exec.compile.DBCSourceHost;
@@ -157,7 +156,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
 
     @Override
     public void doSave(final IProgressMonitor progressMonitor) {
-        DBeaverUI.syncExec(() -> SQLEditorNested.super.doSave(progressMonitor));
+        UIUtils.syncExec(() -> SQLEditorNested.super.doSave(progressMonitor));
     }
 
     @Override
@@ -256,7 +255,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
                 job.addJobChangeListener(new JobChangeAdapter() {
                     @Override
                     public void done(IJobChangeEvent event) {
-                        DBeaverUI.asyncExec(() -> {
+                        UIUtils.asyncExec(() -> {
                             SQLEditorNested.this.setInput(getEditorInput());
                             SQLEditorNested.this.reloadSyntaxRules();
                         });

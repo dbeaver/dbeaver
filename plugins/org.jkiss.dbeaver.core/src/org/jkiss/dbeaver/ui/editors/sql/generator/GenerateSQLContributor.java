@@ -36,7 +36,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDRowIdentifier;
@@ -76,7 +75,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
     @Override
     protected IContributionItem[] getContributionItems()
     {
-        IWorkbenchPart part = DBeaverUI.getActiveWorkbenchWindow().getActivePage().getActivePart();
+        IWorkbenchPart part = UIUtils.getActiveWorkbenchWindow().getActivePage().getActivePart();
         IStructuredSelection structuredSelection = GenerateSQLContributor.getSelectionFromPart(part);
         if (structuredSelection == null || structuredSelection.isEmpty()) {
             return new IContributionItem[0];
@@ -577,7 +576,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                 @Override
                 public void run()
                 {
-                    IWorkbenchPage activePage = DBeaverUI.getActiveWorkbenchWindow().getActivePage();
+                    IWorkbenchPage activePage = UIUtils.getActiveWorkbenchWindow().getActivePage();
                     IEditorPart activeEditor = activePage.getActiveEditor();
 
                     DBPDataSource dataSource = null;
@@ -630,7 +629,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
             sqlGenerator.setCompactSQL(
                 getDialogBoundsSettings().get(PROP_USE_COMPACT_SQL) != null &&
                 getDialogBoundsSettings().getBoolean(PROP_USE_COMPACT_SQL));
-            DBeaverUI.runInUI(sqlGenerator);
+            UIUtils.runInUI(sqlGenerator);
             Object sql = sqlGenerator.getResult();
             if (sql != null) {
                 setSQLText(CommonUtils.toString(sql));
@@ -646,7 +645,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                     sqlGenerator.setFullyQualifiedNames(useFQNames.getSelection());
                     getDialogBoundsSettings().put(PROP_USE_FQ_NAMES, useFQNames.getSelection());
 
-                    DBeaverUI.runInUI(sqlGenerator);
+                    UIUtils.runInUI(sqlGenerator);
                     Object sql = sqlGenerator.getResult();
                     if (sql != null) {
                         setSQLText(CommonUtils.toString(sql));
@@ -661,7 +660,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                     sqlGenerator.setCompactSQL(useCompactSQL.getSelection());
                     getDialogBoundsSettings().put(PROP_USE_COMPACT_SQL, useCompactSQL.getSelection());
 
-                    DBeaverUI.runInUI(sqlGenerator);
+                    UIUtils.runInUI(sqlGenerator);
                     Object sql = sqlGenerator.getResult();
                     if (sql != null) {
                         setSQLText(CommonUtils.toString(sql));

@@ -24,6 +24,7 @@ import org.eclipse.core.resources.IWorkspaceRunnable;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.DebugException;
 import org.eclipse.debug.core.model.IBreakpoint;
+import org.jkiss.dbeaver.debug.DBGBreakpointDescriptor;
 import org.jkiss.dbeaver.debug.DBGConstants;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -37,13 +38,14 @@ public class DatabaseLineBreakpoint extends DatabaseBreakpoint implements IDatab
     }
 
     public DatabaseLineBreakpoint(DBSObject databaseObject, DBNNode node, IResource resource,
-            final int lineNumber, final int charStart, final int charEnd, final boolean add) throws DebugException
+          DBGBreakpointDescriptor breakpointDescriptor, final int lineNumber, final int charStart, final int charEnd, final boolean add) throws DebugException
     {
-        this(databaseObject, node, resource, lineNumber, charStart, charEnd, add,
+        this(databaseObject, node, resource, breakpointDescriptor, lineNumber, charStart, charEnd, add,
             new HashMap<>(), DBGConstants.BREAKPOINT_ID_DATABASE_LINE);
     }
 
     protected DatabaseLineBreakpoint(DBSObject databaseObject, DBNNode node, final IResource resource,
+             DBGBreakpointDescriptor breakpointDescriptor,
             final int lineNumber, final int charStart, final int charEnd, final boolean add,
             final Map<String, Object> attributes, final String markerType) throws DebugException
     {
@@ -52,7 +54,7 @@ public class DatabaseLineBreakpoint extends DatabaseBreakpoint implements IDatab
             setMarker(resource.createMarker(markerType));
 
             // add attributes
-            addDatabaseBreakpointAttributes(attributes, databaseObject, node);
+            addDatabaseBreakpointAttributes(attributes, databaseObject, node, breakpointDescriptor);
             addLineBreakpointAttributes(attributes, getModelIdentifier(), true, lineNumber, charStart, charEnd);
             ensureMarker().setAttributes(attributes);
 

@@ -38,9 +38,9 @@ import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.binary.pref.HexPreferencesPage;
 import org.jkiss.dbeaver.utils.ContentUtils;
@@ -93,7 +93,7 @@ public class BinaryEditor extends EditorPart implements ISelectionProvider, IMen
         }
         if (delta.getKind() == IResourceDelta.CHANGED) {
             // Refresh editor
-            DBeaverUI.asyncExec(new Runnable() {
+            UIUtils.asyncExec(new Runnable() {
                 @Override
                 public void run() {
                     if (manager != null) {

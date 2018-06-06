@@ -46,7 +46,6 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPRegistryListener;
@@ -453,7 +452,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
             (event.getAction() == DBPEvent.Action.OBJECT_SELECT && Boolean.TRUE.equals(event.getEnabled()) &&
                 DBUtils.getContainer(event.getObject()) == getDataSourceContainer())
             ) {
-            DBeaverUI.asyncExec(
+            UIUtils.asyncExec(
                 new Runnable() {
                     @Override
                     public void run() {
@@ -468,11 +467,11 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         if (event.getAction() == DBPEvent.Action.OBJECT_UPDATE && event.getEnabled() != null) {
             DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_CONNECTED);
             DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_TRANSACTIONAL);
-            DBeaverUI.asyncExec(
+            UIUtils.asyncExec(
                 new Runnable() {
                     @Override
                     public void run() {
-                        IWorkbenchWindow workbenchWindow = DBeaverUI.getActiveWorkbenchWindow();
+                        IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
                         if (workbenchWindow instanceof WorkbenchWindow) {
                             ((WorkbenchWindow) workbenchWindow).updateActionBars();
                         }
@@ -558,7 +557,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                         databaseReader.addJobChangeListener(new JobChangeAdapter() {
                             @Override
                             public void done(final IJobChangeEvent event) {
-                                DBeaverUI.syncExec(new Runnable() {
+                                UIUtils.syncExec(new Runnable() {
                                     @Override
                                     public void run() {
                                         fillDatabaseList((DatabaseListReader) event.getJob());
@@ -639,7 +638,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         updateJob.addJobChangeListener(new JobChangeAdapter() {
             @Override
             public void done(IJobChangeEvent event) {
-                DBeaverUI.asyncExec(new Runnable() {
+                UIUtils.asyncExec(new Runnable() {
                     @Override
                     public void run() {
                         updateControls(false);
@@ -797,7 +796,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
             }
         });
 
-        DBeaverUI.asyncExec(new Runnable() {
+        UIUtils.asyncExec(new Runnable() {
             @Override
             public void run() {
                 if (workbenchWindow != null && workbenchWindow.getActivePage() != null) {
@@ -858,7 +857,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
 
         @Override
         protected Control createControl(Composite parent) {
-            DataSourceManagementToolbar toolbar = new DataSourceManagementToolbar(DBeaverUI.getActiveWorkbenchWindow());
+            DataSourceManagementToolbar toolbar = new DataSourceManagementToolbar(UIUtils.getActiveWorkbenchWindow());
             return toolbar.createControl(parent);
         }
     }

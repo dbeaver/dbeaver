@@ -7,7 +7,6 @@ import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorPart;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -34,7 +33,7 @@ public class EditorFolderElementHandler extends CSSPropertySelectedTabsSWTHandle
 				if (PROP_BACKGROUND.equalsIgnoreCase(property) && (value.getCssValueType() == CSSValue.CSS_VALUE_LIST)) {
 					Color newColor = null;
 					try {
-						IEditorPart activeEditor = DBeaverUI.getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+						IEditorPart activeEditor = UIUtils.getActiveWorkbenchWindow().getActivePage().getActiveEditor();
 						if (activeEditor instanceof DBPContextProvider) {
                             DBCExecutionContext context = ((DBPContextProvider) activeEditor).getExecutionContext();
                             if (context != null) {

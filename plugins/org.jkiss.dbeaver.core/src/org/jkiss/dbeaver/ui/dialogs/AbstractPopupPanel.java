@@ -16,41 +16,14 @@
  */
 package org.jkiss.dbeaver.ui.dialogs;
 
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.dialogs.Dialog;
-import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.jface.viewers.CellLabelProvider;
-import org.eclipse.jface.viewers.IFontProvider;
-import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusAdapter;
 import org.eclipse.swt.events.FocusEvent;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Text;
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.core.DBeaverUI;
-import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.DBPObject;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
-import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.ui.*;
-import org.jkiss.dbeaver.ui.controls.ListContentProvider;
-import org.jkiss.dbeaver.ui.controls.itemlist.DatabaseObjectListControl;
-import org.jkiss.utils.CommonUtils;
-
-import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 /**
  * SelectObjectDialog
@@ -107,7 +80,7 @@ public abstract class AbstractPopupPanel extends Dialog {
             FocusAdapter focusListener = new FocusAdapter() {
                 @Override
                 public void focusLost(FocusEvent e) {
-                    DBeaverUI.asyncExec(() -> {
+                    UIUtils.asyncExec(() -> {
                         if (getShell() != null && !UIUtils.isParent(getShell(), getShell().getDisplay().getFocusControl())) {
                             cancelPressed();
                         }

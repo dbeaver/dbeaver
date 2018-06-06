@@ -29,7 +29,6 @@ import org.eclipse.ui.part.Page;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -37,6 +36,7 @@ import org.jkiss.dbeaver.model.navigator.DBNResource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.LoadingJob;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.ui.controls.itemlist.NodeListControl;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
@@ -65,7 +65,7 @@ public abstract class AbstractSearchResultsPage <OBJECT_TYPE> extends Page imple
             }
             if (objects != null) {
                 final List newObjects = objects;
-                DBeaverUI.syncExec(() -> populateObjects(new VoidProgressMonitor(), newObjects));
+                UIUtils.syncExec(() -> populateObjects(new VoidProgressMonitor(), newObjects));
             }
 
         };

@@ -37,7 +37,6 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.views.properties.IPropertySource2;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
@@ -55,6 +54,7 @@ import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.Method;
 import java.text.Collator;
 import java.util.*;
 import java.util.List;
@@ -166,7 +166,7 @@ public class PropertyTreeViewer extends TreeViewer {
                 if (cellValue instanceof DBSObject) {
                     DBNDatabaseNode node = NavigatorHandlerObjectOpen.getNodeByObject((DBSObject) cellValue);
                     if (node != null) {
-                        NavigatorHandlerObjectOpen.openEntityEditor(node, null, DBeaverUI.getActiveWorkbenchWindow());
+                        NavigatorHandlerObjectOpen.openEntityEditor(node, null, UIUtils.getActiveWorkbenchWindow());
                     }
                 }
             }
@@ -209,7 +209,7 @@ public class PropertyTreeViewer extends TreeViewer {
     }
 
     public void repackColumns() {
-        DBeaverUI.asyncExec(new Runnable() {
+        UIUtils.asyncExec(new Runnable() {
             @Override
             public void run() {
                 Tree tree = getTree();
@@ -410,7 +410,7 @@ public class PropertyTreeViewer extends TreeViewer {
             if (prop.property == null || !prop.isEditable()) {
                 return;
             }
-            final CellEditor cellEditor = UIUtils.createPropertyEditor(DBeaverUI.getActiveWorkbenchWindow(), treeControl, prop.propertySource, prop.property, SWT.LEFT);
+            final CellEditor cellEditor = UIUtils.createPropertyEditor(UIUtils.getActiveWorkbenchWindow(), treeControl, prop.propertySource, prop.property, SWT.LEFT);
             if (cellEditor == null) {
                 return;
             }
@@ -630,6 +630,22 @@ public class PropertyTreeViewer extends TreeViewer {
         this.extraLabelProvider = extraLabelProvider;
     }
 
+    public void saveEditorValues() {
+        if (curCellEditor != null && curCellEditor.isActivated()) {
+            try {
+                // This is a hack. On MacOS buttons don't get focus so when user closes dialog
+                // by clicking on Ok button CellEditor doesn't get FocusLost event and thus doesn't save its value.
+                // This is workaround. Calling protected method focusLost in okPressed saves the value.
+                // See https://github.com/dbeaver/dbeaver/issues/3553
+                Method focusLost = CellEditor.class.getDeclaredMethod("focusLost");
+                focusLost.setAccessible(true);
+                focusLost.invoke(curCellEditor);
+            } catch (Throwable throwable) {
+                // Ignore
+            }
+        }
+    }
+
     private static class TreeNode {
         final TreeNode parent;
         final DBPPropertySource propertySource;
@@ -682,6 +698,26 @@ public class PropertyTreeViewer extends TreeViewer {
                             CommonUtils.equalObjects(property.getId(), node.property.getId()));
             }
             return super.equals(obj);
+        }
+    }
+
+    public static class NodeFilter extends ViewerFilter {
+        private final String searchString;
+        public NodeFilter(String searchString) {
+            this.searchString = searchString.toUpperCase(Locale.ENGLISH);
+        }
+
+        @Override
+        public boolean select(Viewer viewer, Object parentElement, Object element) {
+            if (element instanceof TreeNode) {
+                DBPPropertyDescriptor property = ((TreeNode) element).property;
+                if (property != null) {
+                    return property.getDisplayName().toUpperCase(Locale.ENGLISH).contains(searchString);
+                } else if (((TreeNode) element).category != null) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 

@@ -5,7 +5,6 @@ import java.util.Map;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolUser;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
 import org.jkiss.dbeaver.ext.exasol.ui.ExasolUserDialog;
@@ -21,6 +20,7 @@ import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.UITask;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
 public class ExasolUserManager extends SQLObjectEditor<ExasolUser, ExasolDataSource> implements DBEObjectRenamer<ExasolUser> {
@@ -49,7 +49,7 @@ public class ExasolUserManager extends SQLObjectEditor<ExasolUser, ExasolDataSou
 			@Override
 			protected ExasolUser runTask()
 			{
-				ExasolUserDialog dialog = new ExasolUserDialog(DBeaverUI.getActiveWorkbenchShell(), parent);
+				ExasolUserDialog dialog = new ExasolUserDialog(UIUtils.getActiveWorkbenchShell(), parent);
                 if (dialog.open() != IDialogConstants.OK_ID)
                 {
                     return null;
@@ -153,7 +153,7 @@ public class ExasolUserManager extends SQLObjectEditor<ExasolUser, ExasolDataSou
 					@Override
 					protected String runTask()
 					{
-						ExasolUserQueryPassword dialog = new ExasolUserQueryPassword(DBeaverUI.getActiveWorkbenchShell());
+						ExasolUserQueryPassword dialog = new ExasolUserQueryPassword(UIUtils.getActiveWorkbenchShell());
 						
 		                if (dialog.open() != IDialogConstants.OK_ID)
 		                {

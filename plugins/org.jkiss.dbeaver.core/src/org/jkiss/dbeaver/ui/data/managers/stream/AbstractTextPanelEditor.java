@@ -25,7 +25,7 @@ import org.eclipse.swt.custom.StyledText;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCException;
-import org.jkiss.dbeaver.ui.controls.resultset.panel.ViewValuePanel;
+import org.jkiss.dbeaver.ui.controls.resultset.panel.valueviewer.ValueViewerPanel;
 import org.jkiss.dbeaver.ui.data.IStreamValueEditor;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
@@ -58,7 +58,7 @@ public abstract class AbstractTextPanelEditor implements IStreamValueEditor<Styl
                     boolean newWW = !editorControl.getWordWrap();
                     setChecked(newWW);
                     editorControl.setWordWrap(newWW);
-                    ViewValuePanel.getPanelSettings().put(PREF_TEXT_EDITOR_WORD_WRAP, newWW);
+                    ValueViewerPanel.getPanelSettings().put(PREF_TEXT_EDITOR_WORD_WRAP, newWW);
                 }
             };
             wwAction.setChecked(editorControl.getWordWrap());
@@ -70,13 +70,13 @@ public abstract class AbstractTextPanelEditor implements IStreamValueEditor<Styl
             final Action afAction = new Action("Auto Format", Action.AS_CHECK_BOX) {
                 @Override
                 public void run() {
-                    boolean newAF = !ViewValuePanel.getPanelSettings().getBoolean(PREF_TEXT_EDITOR_AUTO_FORMAT);
+                    boolean newAF = !ValueViewerPanel.getPanelSettings().getBoolean(PREF_TEXT_EDITOR_AUTO_FORMAT);
                     setChecked(newAF);
-                    ViewValuePanel.getPanelSettings().put(PREF_TEXT_EDITOR_AUTO_FORMAT, newAF);
+                    ValueViewerPanel.getPanelSettings().put(PREF_TEXT_EDITOR_AUTO_FORMAT, newAF);
                     applyEditorStyle();
                 }
             };
-            afAction.setChecked(ViewValuePanel.getPanelSettings().getBoolean(PREF_TEXT_EDITOR_AUTO_FORMAT));
+            afAction.setChecked(ValueViewerPanel.getPanelSettings().getBoolean(PREF_TEXT_EDITOR_AUTO_FORMAT));
             manager.add(afAction);
         }
     }
@@ -86,7 +86,7 @@ public abstract class AbstractTextPanelEditor implements IStreamValueEditor<Styl
     }
 
     protected void initEditorSettings(StyledText control) {
-        boolean wwEnabled = ViewValuePanel.getPanelSettings().getBoolean(PREF_TEXT_EDITOR_WORD_WRAP);
+        boolean wwEnabled = ValueViewerPanel.getPanelSettings().getBoolean(PREF_TEXT_EDITOR_WORD_WRAP);
         if (wwEnabled != control.getWordWrap()) {
             control.setWordWrap(wwEnabled);
         }
@@ -94,7 +94,7 @@ public abstract class AbstractTextPanelEditor implements IStreamValueEditor<Styl
 
     protected void applyEditorStyle() {
         BaseTextEditor textEditor = getTextEditor();
-        if (textEditor != null && ViewValuePanel.getPanelSettings().getBoolean(PREF_TEXT_EDITOR_AUTO_FORMAT)) {
+        if (textEditor != null && ValueViewerPanel.getPanelSettings().getBoolean(PREF_TEXT_EDITOR_AUTO_FORMAT)) {
             try {
                 textEditor.getViewer().doOperation(ISourceViewer.FORMAT);
             } catch (Exception e) {

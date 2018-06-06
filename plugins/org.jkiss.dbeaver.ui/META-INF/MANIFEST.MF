@@ -3,14 +3,15 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: %Bundle-Vendor
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.dbeaver.ui;singleton:=true
-Bundle-Version: 4.2.18
-Bundle-Release-Date: 20180528
+Bundle-Version: 4.2.19
+Bundle-Release-Date: 20180604
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Activator: org.jkiss.dbeaver.bundle.UIActivator
 Bundle-ActivationPolicy: lazy
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.expressions,
  org.eclipse.swt,
+ org.eclipse.core.resources,
  org.eclipse.jface,
  org.eclipse.jface.text,
  org.eclipse.ui,
@@ -23,5 +24,7 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.mylyn.commons.notifications.ui,
  org.eclipse.mylyn.commons.workbench,
  org.jkiss.dbeaver.model
-Export-Package: org.jkiss.dbeaver.ui,
+Export-Package: org.jkiss.dbeaver.runtime,
+ org.jkiss.dbeaver.ui,
+ org.jkiss.dbeaver.ui.controls,
  org.jkiss.dbeaver.ui.notifications

@@ -20,9 +20,6 @@ import org.eclipse.ui.IURIEditorInput;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.ide.IDEEncoding;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.DBeaverPreferences;
-import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
@@ -33,6 +30,7 @@ import org.jkiss.dbeaver.model.sql.SQLScriptContext;
 import org.jkiss.dbeaver.model.sql.eval.ScriptVariablesResolver;
 import org.jkiss.dbeaver.runtime.sql.SQLControlCommandHandler;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryListener;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenHandler;
@@ -75,10 +73,10 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
         }
         final File finalIncFile = incFile;
         final boolean statusFlag[] = new boolean[1];
-        DBeaverUI.syncExec(new Runnable() {
+        UIUtils.syncExec(new Runnable() {
             @Override
             public void run() {
-                final IWorkbenchWindow workbenchWindow = DBeaverUI.getActiveWorkbenchWindow();
+                final IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
                 final IncludeEditorInput input = new IncludeEditorInput(finalIncFile, fileContents);
                 SQLEditor sqlEditor = OpenHandler.openSQLConsole(
                         workbenchWindow,
@@ -128,7 +126,7 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
 
         @Override
         public void onEndScript(DBCStatistics statistics, boolean hasErrors) {
-            DBeaverUI.syncExec(new Runnable() {
+            UIUtils.syncExec(new Runnable() {
                 @Override
                 public void run() {
                     workbenchWindow.getActivePage().closeEditor(editor, false);

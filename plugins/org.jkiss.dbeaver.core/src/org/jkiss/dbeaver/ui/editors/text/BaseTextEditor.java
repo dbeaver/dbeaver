@@ -37,12 +37,12 @@ import org.eclipse.ui.texteditor.AbstractDecoratedTextEditor;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.ICommentsSupport;
 import org.jkiss.dbeaver.ui.ISingleControlEditor;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.INonPersistentEditorInput;
@@ -282,7 +282,7 @@ public abstract class BaseTextEditor extends AbstractDecoratedTextEditor impleme
         }
 
         try {
-            DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
+            UIUtils.runInProgressService(new DBRRunnableWithProgress() {
                 @Override
                 public void run(final DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                 {

@@ -33,6 +33,7 @@ class CompareObjectsPageSettings extends ActiveWizardPage<CompareObjectsWizard> 
     private Button skipSystemObjects;
     private Button compareLazyProperties;
     private Button compareOnlyStructure;
+    private Button compareScriptProperties;
 
     CompareObjectsPageSettings() {
         super("Compare objects");
@@ -103,6 +104,14 @@ class CompareObjectsPageSettings extends ActiveWizardPage<CompareObjectsWizard> 
                 public void widgetSelected(SelectionEvent e)
                 {
                     settings.setCompareOnlyStructure(compareOnlyStructure.getSelection());
+                }
+            });
+            compareScriptProperties = UIUtils.createCheckbox(compareSettings, "Compare scripts/procedures", settings.isCompareScripts());
+            compareScriptProperties.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                    settings.setCompareScripts(compareScriptProperties.getSelection());
                 }
             });
         }

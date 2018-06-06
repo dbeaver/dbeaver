@@ -23,8 +23,6 @@ import java.util.Map;
 
 public interface DBGBreakpointDescriptor {
 
-    Object getObjectId();
-
     Map<String, Object> toMap();
 
 }

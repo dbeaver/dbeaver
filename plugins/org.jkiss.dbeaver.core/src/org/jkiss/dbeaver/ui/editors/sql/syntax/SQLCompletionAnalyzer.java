@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
+import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -135,6 +136,22 @@ class SQLCompletionAnalyzer
                 } else {
                     // Get root object or objects from active database (if any)
                     makeDataSourceProposals();
+                }
+            }
+
+            if (!request.simpleMode && request.queryType == SQLCompletionProcessor.QueryType.COLUMN && dataSource instanceof DBSObjectContainer) {
+                // Add procedures/functions for column proposals
+                DBSStructureAssistant structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, dataSource);
+                DBSObjectContainer sc = (DBSObjectContainer) dataSource;
+                DBSObject selectedObject = DBUtils.getActiveInstanceObject(dataSource);
+                if (selectedObject instanceof DBSObjectContainer) {
+                    sc = (DBSObjectContainer)selectedObject;
+                }
+                if (structureAssistant != null) {
+                    makeProposalsFromAssistant(dataSource, structureAssistant,
+                        sc,
+                        new DBSObjectType[] {RelationalObjectType.TYPE_PROCEDURE },
+                        request.wordPart);
                 }
             }
         } else {
@@ -328,7 +345,7 @@ class SQLCompletionAnalyzer
                         }
                     }
                     if (structureAssistant != null) {
-                        makeProposalsFromAssistant(dataSource, structureAssistant, sc, lastToken);
+                        makeProposalsFromAssistant(dataSource, structureAssistant, sc, null, lastToken);
                     }
                 }
             }
@@ -591,13 +608,14 @@ class SQLCompletionAnalyzer
             DBPDataSource dataSource,
             DBSStructureAssistant assistant,
             @Nullable DBSObjectContainer rootSC,
+            DBSObjectType[] objectTypes,
             String objectName)
     {
         try {
             Collection<DBSObjectReference> references = assistant.findObjectsByMask(
                 monitor,
                 rootSC,
-                assistant.getAutoCompleteObjectTypes(),
+                objectTypes == null ? assistant.getAutoCompleteObjectTypes() : objectTypes,
                 makeObjectNameMask(dataSource, request.wordDetector.removeQuotes(objectName)),
                 request.wordDetector.isQuoted(objectName),
                 dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.USE_GLOBAL_ASSISTANT),

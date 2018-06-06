@@ -29,7 +29,6 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.struct.*;
@@ -217,7 +216,7 @@ public class SearchDataPage extends AbstractSearchPage {
         final List<DBNNode> checkedNodes = new ArrayList<>();
         dataSourceTree.setEnabled(false);
         try {
-            DBeaverUI.runInProgressDialog(monitor -> {
+            UIUtils.runInProgressDialog(monitor -> {
                 monitor.beginTask("Load database nodes", 1);
                 try {
                     monitor.subTask("Load tree state");
