@@ -735,19 +735,21 @@ public class ResultSetViewer extends Viewer
     }
 
     private void savePresentationSettings() {
-        IDialogSettings pSections = ResultSetUtils.getViewerSettings(SETTINGS_SECTION_PRESENTATIONS);
-        for (Map.Entry<ResultSetPresentationDescriptor, PresentationSettings> pEntry : presentationSettings.entrySet()) {
-            if (pEntry.getKey() == null) {
-                continue;
-            }
-            String pId = pEntry.getKey().getId();
-            PresentationSettings settings = pEntry.getValue();
-            IDialogSettings pSection = UIUtils.getSettingsSection(pSections, pId);
+        if ((decorator.getDecoratorFeatures() & IResultSetDecorator.FEATURE_PANELS) != 0) {
+            IDialogSettings pSections = ResultSetUtils.getViewerSettings(SETTINGS_SECTION_PRESENTATIONS);
+            for (Map.Entry<ResultSetPresentationDescriptor, PresentationSettings> pEntry : presentationSettings.entrySet()) {
+                if (pEntry.getKey() == null) {
+                    continue;
+                }
+                String pId = pEntry.getKey().getId();
+                PresentationSettings settings = pEntry.getValue();
+                IDialogSettings pSection = UIUtils.getSettingsSection(pSections, pId);
 
-            pSection.put("enabledPanelIds", CommonUtils.joinStrings(",", settings.enabledPanelIds));
-            pSection.put("activePanelId", settings.activePanelId);
-            pSection.put("panelRatio", settings.panelRatio);
-            pSection.put("panelsVisible", settings.panelsVisible);
+                pSection.put("enabledPanelIds", CommonUtils.joinStrings(",", settings.enabledPanelIds));
+                pSection.put("activePanelId", settings.activePanelId);
+                pSection.put("panelRatio", settings.panelRatio);
+                pSection.put("panelsVisible", settings.panelsVisible);
+            }
         }
     }
 
