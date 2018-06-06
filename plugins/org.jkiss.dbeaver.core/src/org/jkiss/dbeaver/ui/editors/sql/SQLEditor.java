@@ -30,7 +30,9 @@ import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
@@ -87,9 +89,7 @@ import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetContainer;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetListener;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
+import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
@@ -129,12 +129,12 @@ public class SQLEditor extends SQLEditorBase implements
     private static final long SCRIPT_UI_UPDATE_PERIOD = 100;
     private static final int MAX_PARALLEL_QUERIES_NO_WARN = 10;
 
-    private static Image IMG_DATA_GRID = DBeaverActivator.getImageDescriptor("/icons/sql/page_data_grid.png").createImage(); //$NON-NLS-1$
-    private static Image IMG_DATA_GRID_LOCKED = DBeaverActivator.getImageDescriptor("/icons/sql/page_data_grid_locked.png").createImage(); //$NON-NLS-1$
-    private static Image IMG_EXPLAIN_PLAN = DBeaverActivator.getImageDescriptor("/icons/sql/page_explain_plan.png").createImage(); //$NON-NLS-1$
-    private static Image IMG_LOG = DBeaverActivator.getImageDescriptor("/icons/sql/page_error.png").createImage(); //$NON-NLS-1$
-    private static Image IMG_OUTPUT = DBeaverActivator.getImageDescriptor("/icons/sql/page_output.png").createImage(); //$NON-NLS-1$
-    private static Image IMG_OUTPUT_ALERT = DBeaverActivator.getImageDescriptor("/icons/sql/page_output_alert.png").createImage(); //$NON-NLS-1$
+    private static Image IMG_DATA_GRID = DBeaverIcons.getImage(UIIcon.SQL_PAGE_DATA_GRID);
+    private static Image IMG_DATA_GRID_LOCKED = DBeaverIcons.getImage(UIIcon.SQL_PAGE_DATA_GRID_LOCKED);
+    private static Image IMG_EXPLAIN_PLAN = DBeaverIcons.getImage(UIIcon.SQL_PAGE_EXPLAIN_PLAN);
+    private static Image IMG_LOG = DBeaverIcons.getImage(UIIcon.SQL_PAGE_LOG);
+    private static Image IMG_OUTPUT = DBeaverIcons.getImage(UIIcon.SQL_PAGE_OUTPUT);
+    private static Image IMG_OUTPUT_ALERT = DBeaverIcons.getImage(UIIcon.SQL_PAGE_OUTPUT_ALERT);
 
     public static final String VAR_CONNECTION_NAME = "connectionName";
     public static final String VAR_FILE_NAME = "fileName";
@@ -251,7 +251,7 @@ public class SQLEditor extends SQLEditorBase implements
             EditorUtils.setInputDataSource(input, container, true);
         }
 
-        checkConnected(false, status -> DBeaverUI.asyncExec(() -> {
+        checkConnected(false, status -> UIUtils.asyncExec(() -> {
             if (!status.isOK()) {
                 DBUserInterface.getInstance().showError("Can't connect to database", "Error connecting to datasource", status);
             }
@@ -343,7 +343,7 @@ public class SQLEditor extends SQLEditorBase implements
     private class OutputLogWriter extends Writer {
         @Override
         public void write(@NotNull final char[] cbuf, final int off, final int len) throws IOException {
-            DBeaverUI.syncExec(() -> {
+            UIUtils.syncExec(() -> {
                 if (!outputViewer.isDisposed()) {
                     outputViewer.getOutputWriter().write(cbuf, off, len);
                     outputViewer.scrollToEnd();
@@ -501,7 +501,7 @@ public class SQLEditor extends SQLEditorBase implements
         updateExecutionContext(null);
 
         // Update controls
-        DBeaverUI.asyncExec(this::onDataSourceChange);
+        UIUtils.asyncExec(this::onDataSourceChange);
     }
 
     /**
@@ -1070,7 +1070,7 @@ public class SQLEditor extends SQLEditorBase implements
                             status);
                         return;
                     }
-                    updateExecutionContext(() -> DBeaverUI.syncExec(() ->
+                    updateExecutionContext(() -> UIUtils.syncExec(() ->
                         processQueries(queries, newTab, export, false, queryListener)));
                 };
                 if (!checkSession(connectListener)) {
@@ -1218,7 +1218,7 @@ public class SQLEditor extends SQLEditorBase implements
     private void fireDataSourceChange()
     {
         updateExecutionContext(null);
-        DBeaverUI.syncExec(this::onDataSourceChange);
+        UIUtils.syncExec(this::onDataSourceChange);
     }
 
     private void onDataSourceChange()
@@ -1357,7 +1357,7 @@ public class SQLEditor extends SQLEditorBase implements
         final boolean dsEvent = event.getObject() == getDataSourceContainer();
         final boolean objectEvent = event.getObject().getDataSource() == getDataSource();
         if (dsEvent || objectEvent) {
-            DBeaverUI.asyncExec(
+            UIUtils.asyncExec(
                 () -> {
                     switch (event.getAction()) {
                         case OBJECT_REMOVE:
@@ -1485,7 +1485,7 @@ public class SQLEditor extends SQLEditorBase implements
 
     private void showStatementInEditor(final SQLQuery query, final boolean select)
     {
-        DBeaverUI.runUIJob("Select SQL query in editor", monitor -> {
+        UIUtils.runUIJob("Select SQL query in editor", monitor -> {
             if (isDisposed()) {
                 return;
             }
@@ -1575,7 +1575,7 @@ public class SQLEditor extends SQLEditorBase implements
     {
         @Override
         protected IContributionItem[] getContributionItems() {
-            IEditorPart activeEditor = DBeaverUI.getActiveWorkbenchWindow().getActivePage().getActiveEditor();
+            IEditorPart activeEditor = UIUtils.getActiveWorkbenchWindow().getActivePage().getActiveEditor();
             if (!(activeEditor instanceof SQLEditorBase)) {
                 return new IContributionItem[0];
             }
@@ -1780,7 +1780,7 @@ public class SQLEditor extends SQLEditorBase implements
 //            }
             if (resultSetNumber >= resultContainers.size() && !isDisposed()) {
                 // Open new results processor in UI thread
-                DBeaverUI.syncExec(() -> createResultsProvider(resultSetNumber));
+                UIUtils.syncExec(() -> createResultsProvider(resultSetNumber));
             }
             if (resultSetNumber >= resultContainers.size()) {
                 // Editor seems to be disposed - no data receiver
@@ -1788,7 +1788,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
             final QueryResultsContainer resultsProvider = resultContainers.get(resultSetNumber);
             // Open new results processor in UI thread
-            DBeaverUI.syncExec(() -> {
+            UIUtils.syncExec(() -> {
                 if (statement != null && !resultTabs.isDisposed()) {
                     resultsProvider.query = statement;
                     resultsProvider.lastGoodQuery = statement;
@@ -1927,12 +1927,24 @@ public class SQLEditor extends SQLEditorBase implements
 
         @Override
         public void openNewContainer(DBRProgressMonitor monitor, DBSDataContainer dataContainer, DBDDataFilter newFilter) {
-            DBeaverUI.syncExec(() -> {
+            UIUtils.syncExec(() -> {
                 QueryResultsContainer resultsProvider = queryProcessor.createResultsProvider(dataContainer);
                 resultsProvider.tabItem.getParent().setSelection(resultsProvider.tabItem);
                 setActiveResultsContainer(resultsProvider);
                 resultsProvider.viewer.refreshWithFilter(newFilter);
             });
+        }
+
+        @Override
+        public IResultSetDecorator createResultSetDecorator() {
+            return new QueryResultsDecorator() {
+                @Override
+                public String getEmptyDataDescription() {
+                    String execQuery = ActionUtils.findCommandDescription(CoreCommands.CMD_EXECUTE_STATEMENT, getSite(), true);
+                    String execScript = ActionUtils.findCommandDescription(CoreCommands.CMD_EXECUTE_SCRIPT, getSite(), true);
+                    return NLS.bind(CoreMessages.sql_editor_resultset_filter_panel_control_execute_to_see_reslut, execQuery, execScript);
+                }
+            };
         }
 
         @Override
@@ -2121,6 +2133,11 @@ public class SQLEditor extends SQLEditorBase implements
         public void handleResultSetChange() {
             updateDirtyFlag();
         }
+
+        @Override
+        public void handleResultSetSelectionChange(SelectionChangedEvent event) {
+
+        }
     }
 
     private String getResultsTabName(int resultSetNumber, int queryIndex, String name) {
@@ -2163,7 +2180,7 @@ public class SQLEditor extends SQLEditorBase implements
             try {
                 lastUIUpdateTime = -1;
                 scriptMode = true;
-                DBeaverUI.syncExec(() -> {
+                UIUtils.syncExec(() -> {
                     if (isDisposed()) {
                         return;
                     }
@@ -2181,7 +2198,7 @@ public class SQLEditor extends SQLEditorBase implements
             try {
                 boolean isInExecute = getTotalQueryRunning() > 0;
                 if (!isInExecute) {
-                    DBeaverUI.asyncExec(() ->
+                    UIUtils.asyncExec(() ->
                         setTitleImage(DBeaverIcons.getImage(UIIcon.SQL_SCRIPT_EXECUTE)));
                 }
                 queryProcessor.curJobRunning.incrementAndGet();
@@ -2189,7 +2206,7 @@ public class SQLEditor extends SQLEditorBase implements
                     runningQueries.add(query);
                 }
                 if (lastUIUpdateTime < 0 || System.currentTimeMillis() - lastUIUpdateTime > SCRIPT_UI_UPDATE_PERIOD) {
-                    DBeaverUI.syncExec(() -> {
+                    UIUtils.syncExec(() -> {
                         TextViewer textViewer = getTextViewer();
                         if (textViewer != null) {
                             topOffset = textViewer.getTopIndexStartOffset();
@@ -2214,14 +2231,14 @@ public class SQLEditor extends SQLEditorBase implements
                 }
                 queryProcessor.curJobRunning.decrementAndGet();
                 if (getTotalQueryRunning() <= 0) {
-                    DBeaverUI.asyncExec(() ->
+                    UIUtils.asyncExec(() ->
                         setTitleImage(editorImage));
                 }
 
                 if (isDisposed()) {
                     return;
                 }
-                DBeaverUI.runUIJob("Process SQL query result", monitor -> {
+                UIUtils.runUIJob("Process SQL query result", monitor -> {
                     // Finish query
                     processQueryResult(session, result);
                     // Update dirty flag
@@ -2273,7 +2290,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
             // Close tab on error
             if (closeTabOnError && error != null) {
-                DBeaverUI.asyncExec(() -> {
+                UIUtils.asyncExec(() -> {
                     CTabItem tabItem = queryProcessor.getFirstResults().tabItem;
                     if (tabItem != null && tabItem.getShowClose()) {
                         tabItem.dispose();
@@ -2299,7 +2316,7 @@ public class SQLEditor extends SQLEditorBase implements
                     return;
                 }
                 runPostExecuteActions(null);
-                DBeaverUI.syncExec(() -> {
+                UIUtils.syncExec(() -> {
                     if (isDisposed()) {
                         // Editor closed
                         return;
@@ -2537,7 +2554,7 @@ public class SQLEditor extends SQLEditorBase implements
 
             final String dumpString = dump.toString();
             if (!dumpString.isEmpty()) {
-                DBeaverUI.asyncExec(() -> {
+                UIUtils.asyncExec(() -> {
                     if (outputViewer.isDisposed()) {
                         return;
                     }

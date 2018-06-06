@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCFactoryDefault;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLState;
@@ -191,7 +192,7 @@ public abstract class JDBCDataSource
 
         {
             // Use properties defined by datasource itself
-            Map<String,String> internalProps = getInternalConnectionProperties(monitor, "Get connection prop[erties", connectionInfo);
+            Map<String,String> internalProps = getInternalConnectionProperties(monitor, "Get connection properties", connectionInfo);
             if (internalProps != null) {
                 connectProps.putAll(internalProps);
             }
@@ -413,6 +414,22 @@ public abstract class JDBCDataSource
         return true;
     }
 
+    public boolean isDriverVersionAtLeast(int major, int minor) {
+        try {
+            Driver driver = getDriverInstance(new VoidProgressMonitor());
+            int majorVersion = driver.getMajorVersion();
+            if (majorVersion < major) {
+                return false;
+            } else if (majorVersion == major && driver.getMinorVersion() < minor) {
+                return false;
+            }
+            return true;
+        } catch (DBException e) {
+            log.debug("Can't obtain driver instance", e);
+            return false;
+        }
+    }
+
     @NotNull
     @Override
     @Property(viewable = true, order = 1)
@@ -548,6 +565,16 @@ public abstract class JDBCDataSource
     public DBSDataType resolveDataType(@NotNull DBRProgressMonitor monitor, @NotNull String typeFullName) throws DBException
     {
         return getLocalDataType(typeFullName);
+    }
+
+    @Override
+    public DBSDataType getLocalDataType(int typeID) {
+        for (DBSDataType dataType : getLocalDataTypes()) {
+            if (dataType.getTypeID() == typeID) {
+                return dataType;
+            }
+        }
+        return null;
     }
 
     @Override

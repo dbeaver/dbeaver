@@ -112,7 +112,7 @@ public abstract class SQLIndexManager<OBJECT_TYPE extends JDBCTableIndex<? exten
                 getDropIndexPattern(command.getObject())
                     .replace(PATTERN_ITEM_TABLE, command.getObject().getTable().getFullyQualifiedName(DBPEvaluationContext.DDL))
                     .replace(PATTERN_ITEM_INDEX, command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL))
-                    .replace(PATTERN_ITEM_INDEX_SHORT, command.getObject().getName()))
+                    .replace(PATTERN_ITEM_INDEX_SHORT, DBUtils.getQuotedIdentifier(command.getObject())))
         );
     }
 

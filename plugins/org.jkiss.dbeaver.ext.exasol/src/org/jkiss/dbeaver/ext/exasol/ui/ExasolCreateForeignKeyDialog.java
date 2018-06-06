@@ -55,7 +55,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.exasol.ExasolMessages;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTable;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolTableUniqueKey;
@@ -362,7 +361,7 @@ public class ExasolCreateForeignKeyDialog extends BaseObjectEditPage {
             curConstraint = null;
             if (refTableNode != null) {
                 final ExasolTable refTable = (ExasolTable) refTableNode.getObject();
-                DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
+                UIUtils.runInProgressService(new DBRRunnableWithProgress() {
                     @Override
                     public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                     {

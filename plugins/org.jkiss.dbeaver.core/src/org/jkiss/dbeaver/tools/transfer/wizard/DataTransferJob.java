@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -77,7 +76,7 @@ public class DataTransferJob extends AbstractJob {
     private void showResult(final long time, final boolean hasErrors)
     {
         // Run async to avoid blocking progress monitor dialog
-        DBeaverUI.asyncExec(new Runnable() {
+        UIUtils.asyncExec(new Runnable() {
             @Override
             public void run() {
                 // Make a sound

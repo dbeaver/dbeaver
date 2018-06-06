@@ -23,7 +23,6 @@ import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.part.ViewPart;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProcessController;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
@@ -66,7 +65,7 @@ public class ShellProcessView extends ViewPart implements DBRProcessController
         if (processDescriptor != null) {
             if (processDescriptor.isRunning()) {
                 processDescriptor.terminate();
-                DBeaverUI.asyncExec(new Runnable() {
+                UIUtils.asyncExec(new Runnable() {
                     @Override
                     public void run() {
                         setPartName(processDescriptor.getName() + " (destroyed: " + processDescriptor.getExitValue() + ")");
@@ -151,7 +150,7 @@ public class ShellProcessView extends ViewPart implements DBRProcessController
             return;
         }
         final String logLine = line + GeneralUtils.getDefaultLineSeparator();
-        DBeaverUI.asyncExec(new Runnable() {
+        UIUtils.asyncExec(new Runnable() {
             @Override
             public void run() {
                 if (processLogText == null || processLogText.isDisposed()) {

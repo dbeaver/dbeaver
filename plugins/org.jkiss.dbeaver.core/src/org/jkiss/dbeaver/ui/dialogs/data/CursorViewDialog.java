@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -43,9 +42,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetContainer;
-import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
-import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
+import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.editors.data.AbstractDataEditor;
@@ -90,7 +87,7 @@ public class CursorViewDialog extends ValueViewDialog implements IResultSetConta
                         }
                     }
                 }
-                DBeaverUI.asyncExec(new Runnable() {
+                UIUtils.asyncExec(new Runnable() {
                     @Override
                     public void run() {
                         close();
@@ -172,6 +169,11 @@ public class CursorViewDialog extends ValueViewDialog implements IResultSetConta
         }
         AbstractDataEditor.openNewDataEditor(targetNode, newFilter);
 
+    }
+
+    @Override
+    public IResultSetDecorator createResultSetDecorator() {
+        return new QueryResultsDecorator();
     }
 
     private class CursorDataContainer implements DBSDataContainer {

@@ -50,6 +50,11 @@ public class ERDEntityAttribute extends ERDObject<DBSEntityAttribute>
         } else {
             text = object.getName();
         }
+        if (diagram.hasAttributeStyle(ERDViewStyle.NULLABILITY)) {
+            if (object.isRequired()) {
+                text += " NOT NULL";
+            }
+        }
         if (diagram.hasAttributeStyle(ERDViewStyle.COMMENTS)) {
             String comment = object.getDescription();
             if (!CommonUtils.isEmpty(comment)) {

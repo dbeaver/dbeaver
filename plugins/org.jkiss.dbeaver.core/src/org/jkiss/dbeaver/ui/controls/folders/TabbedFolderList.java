@@ -40,7 +40,6 @@ import org.eclipse.swt.layout.FormData;
 import org.eclipse.swt.layout.FormLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -718,7 +717,7 @@ public class TabbedFolderList extends Composite {
      */
     private void initColours() {
         Display display = Display.getCurrent();
-        ISharedTextColors sharedColors = DBeaverUI.getSharedTextColors();
+        ISharedTextColors sharedColors = UIUtils.getSharedTextColors();
 
         ColorRegistry colorRegistry = UIUtils.getColorRegistry();
 
@@ -770,7 +769,7 @@ public class TabbedFolderList extends Composite {
     @Override
     public void setBackground(Color color) {
         super.setBackground(color);
-        DBeaverUI.asyncExec(new Runnable() {
+        UIUtils.asyncExec(new Runnable() {
             @Override
             public void run() {
                 initColours();

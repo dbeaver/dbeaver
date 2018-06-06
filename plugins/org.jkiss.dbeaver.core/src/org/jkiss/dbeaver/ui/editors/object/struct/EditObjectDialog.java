@@ -24,7 +24,6 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Shell;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -95,7 +94,7 @@ class EditObjectDialog extends TrayDialog {
     }
 
     public static boolean showDialog(IDialogPage dialogPage) {
-        return showDialog(DBeaverUI.getActiveWorkbenchShell(), dialogPage);
+        return showDialog(UIUtils.getActiveWorkbenchShell(), dialogPage);
     }
 
     public static boolean showDialog(Shell shell, IDialogPage dialogPage) {

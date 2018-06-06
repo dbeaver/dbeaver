@@ -35,7 +35,6 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
@@ -58,6 +57,7 @@ import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
+import org.jkiss.dbeaver.ui.controls.IProgressControlProvider;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.controls.PropertyPageStandard;
 import org.jkiss.dbeaver.ui.controls.folders.ITabbedFolder;
@@ -314,7 +314,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
             // So we'll get actual data from database
             final DBNDatabaseNode treeNode = getEditorInput().getNavigatorNode();
             try {
-                DBeaverUI.runInProgressService(monitor1 -> {
+                UIUtils.runInProgressService(monitor1 -> {
                     try {
                         treeNode.refreshNode(monitor1, DBNEvent.FORCE_REFRESH);
                     } catch (DBException e) {
@@ -334,7 +334,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         } else {
             // Try to handle error in nested editors
             final Throwable vError = error;
-            DBeaverUI.syncExec(() -> {
+            UIUtils.syncExec(() -> {
                 final IErrorVisualizer errorVisualizer = getAdapter(IErrorVisualizer.class);
                 if (errorVisualizer != null) {
                     errorVisualizer.visualizeError(monitor, vError);
@@ -343,7 +343,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
 
             // Show error dialog
 
-            DBeaverUI.asyncExec(() ->
+            UIUtils.asyncExec(() ->
                 DBUserInterface.getInstance().showError("Can't save '" + getDatabaseObject().getName() + "'", null, vError));
             return false;
         }
@@ -417,7 +417,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
                 command.validateCommand();
             } catch (final DBException e) {
                 log.debug(e);
-                DBeaverUI.syncExec(() -> DBUserInterface.getInstance().showError("Validation", e.getMessage()));
+                UIUtils.syncExec(() -> DBUserInterface.getInstance().showError("Validation", e.getMessage()));
                 return IDialogConstants.CANCEL_ID;
             }
             Map<String, Object> options = new HashMap<>();
@@ -431,7 +431,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
             return IDialogConstants.PROCEED_ID;
         }
         ChangesPreviewer changesPreviewer = new ChangesPreviewer(script, allowSave);
-        DBeaverUI.syncExec(changesPreviewer);
+        UIUtils.syncExec(changesPreviewer);
         return changesPreviewer.getResult();
     }
 
@@ -466,7 +466,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
             @Override
             public void onCommandChange(DBECommand command)
             {
-                DBeaverUI.syncExec(() -> firePropertyChange(IEditorPart.PROP_DIRTY));
+                UIUtils.syncExec(() -> firePropertyChange(IEditorPart.PROP_DIRTY));
             }
         };
         DBECommandContext commandContext = getCommandContext();

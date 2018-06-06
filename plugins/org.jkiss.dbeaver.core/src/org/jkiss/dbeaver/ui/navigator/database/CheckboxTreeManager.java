@@ -22,13 +22,13 @@ import org.eclipse.jface.viewers.ICheckStateListener;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.ArrayUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -61,7 +61,7 @@ public class CheckboxTreeManager implements ICheckStateListener {
     private void updateElementsCheck(final Object[] elements, final boolean checked, final boolean change) {
         checkedElements = viewer.getCheckedElements();
         try {
-            DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
+            UIUtils.runInProgressService(new DBRRunnableWithProgress() {
                 @Override
                 public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     monitor.beginTask("Load sources tree", 100 * elements.length);
@@ -108,7 +108,7 @@ public class CheckboxTreeManager implements ICheckStateListener {
         }
 
         // Run ui
-        DBeaverUI.syncExec(new Runnable() {
+        UIUtils.syncExec(new Runnable() {
             @Override
             public void run() {
                 if (change) {

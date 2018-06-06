@@ -26,7 +26,6 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -239,7 +238,7 @@ public abstract class AttributesSelectorPage extends BaseObjectEditPage {
         // Collect attributes
         final List<DBSEntityAttribute> attributes = new ArrayList<>();
         try {
-            DBeaverUI.runInProgressService(new DBRRunnableWithProgress() {
+            UIUtils.runInProgressService(new DBRRunnableWithProgress() {
                 @Override
                 public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                 {

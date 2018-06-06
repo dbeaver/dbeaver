@@ -19,8 +19,6 @@ package org.jkiss.dbeaver.ui.editors.object.struct;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -47,6 +45,7 @@ public class AttributeEditPage extends BaseObjectEditPage {
 
     private DBSEntityAttribute attribute;
     private final DBECommandContext commandContext;
+    private PropertyTreeViewer propertyViewer;
 
     public AttributeEditPage(@Nullable DBECommandContext commandContext, @NotNull DBSEntityAttribute attribute)
     {
@@ -70,7 +69,7 @@ public class AttributeEditPage extends BaseObjectEditPage {
         });
 
         UIUtils.createControlLabel(propsGroup, "Properties").setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-        final PropertyTreeViewer propertyViewer = new PropertyTreeViewer(propsGroup, SWT.BORDER);
+        propertyViewer = new PropertyTreeViewer(propsGroup, SWT.BORDER);
         gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 400;
         propertyViewer.getControl().setLayoutData(gd);
@@ -121,6 +120,7 @@ public class AttributeEditPage extends BaseObjectEditPage {
 
     @Override
     protected void performFinish() throws DBException {
-        //commandContext.saveChanges(new VoidProgressMonitor());
+        // Save any active editors
+        propertyViewer.saveEditorValues();
     }
 }

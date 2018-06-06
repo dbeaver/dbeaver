@@ -31,7 +31,6 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
@@ -791,8 +790,8 @@ public class DriverEditDialog extends HelpEnabledDialog {
         }
 
         DriverDescriptor oldDriver = provider.getDriverByName(driver.getCategory(), driver.getName());
-        if (oldDriver != null && oldDriver != driver) {
-            UIUtils.showMessageBox(getShell(), "Driver create", "Driver '" + driver.getName() + "' already exists. Change driver name", SWT.ICON_ERROR);
+        if (oldDriver != null && oldDriver != driver && !oldDriver.isDisabled() && oldDriver.getReplacedBy() == null) {
+            UIUtils.showMessageBox(getShell(), "Driver settings save", "Driver '" + driver.getName() + "' already exists. Change driver name", SWT.ICON_ERROR);
             return;
         }
 
@@ -812,7 +811,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
             String title = "Bad driver [" + dataSource.getContainer().getDriver().getName() + "] configuration";
             new BadDriverConfigDialog(shell, title, message == null ? title : message, error).open();
         };
-        DBeaverUI.syncExec(runnable);
+        UIUtils.syncExec(runnable);
     }
 
     private static class BadDriverConfigDialog extends StandardErrorDialog {
@@ -821,7 +820,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
 
         BadDriverConfigDialog(Shell shell, String title, String message, DBException error) {
             super(
-                shell == null ? DBeaverUI.getActiveWorkbenchShell() : shell,
+                shell == null ? UIUtils.getActiveWorkbenchShell() : shell,
                 title,
                 message,
                 RuntimeUtils.stripStack(GeneralUtils.makeExceptionStatus(error)),
@@ -839,9 +838,9 @@ public class DriverEditDialog extends HelpEnabledDialog {
         @Override
         protected void buttonPressed(int id) {
             if (id == IDialogConstants.RETRY_ID) {
-                DBeaverUI.asyncExec(() -> {
+                UIUtils.asyncExec(() -> {
                     DriverEditDialog dialog = new DriverEditDialog(
-                        DBeaverUI.getActiveWorkbenchShell(),
+                        UIUtils.getActiveWorkbenchShell(),
                         (DriverDescriptor) dataSource.getContainer().getDriver());
                     dialog.open();
                 });

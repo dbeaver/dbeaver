@@ -18,12 +18,7 @@
 package org.jkiss.dbeaver.ui.controls.resultset.view;
 
 import org.eclipse.jface.action.IMenuManager;
-import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
-import org.eclipse.swt.events.PaintEvent;
-import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Point;
@@ -33,15 +28,12 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.core.CoreCommands;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.AbstractPresentation;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetController;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetCopySettings;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * Empty presentation.
@@ -65,30 +57,20 @@ public class EmptyPresentation extends AbstractPresentation {
         fontData[0].setStyle(fontData[0].getStyle() | SWT.BOLD);
         fontData[0].setHeight(18);
         final Font largeFont = new Font(normalFont.getDevice(), fontData[0]);
-        placeholder.addDisposeListener(new DisposeListener() {
-            @Override
-            public void widgetDisposed(DisposeEvent e) {
-                UIUtils.dispose(largeFont);
-            }
-        });
+        placeholder.addDisposeListener(e -> UIUtils.dispose(largeFont));
 
-        placeholder.addPaintListener(new PaintListener() {
-            @Override
-            public void paintControl(PaintEvent e) {
-                if (controller.isRefreshInProgress()) {
-                    return;
-                }
-                e.gc.setFont(largeFont);
-                int fontSize = largeFont.getFontData()[0].getHeight();
-                UIUtils.drawMessageOverControl(placeholder, e, CoreMessages.sql_editor_resultset_filter_panel_control_no_data, -(fontSize / 2));
-                e.gc.setFont(normalFont);
-                if (controller.getDataContainer() instanceof SQLEditor.QueryResultsContainer) {
-                    String execQuery = ActionUtils.findCommandDescription(CoreCommands.CMD_EXECUTE_STATEMENT, controller.getSite(), true);
-                    String execScript = ActionUtils.findCommandDescription(CoreCommands.CMD_EXECUTE_SCRIPT, controller.getSite(), true);
-                    UIUtils.drawMessageOverControl(placeholder, e, NLS.bind(CoreMessages.sql_editor_resultset_filter_panel_control_execute_to_see_reslut, execQuery, execScript), fontSize + fontSize / 3);
-                }
+        placeholder.addPaintListener(e -> {
+            if (controller.isRefreshInProgress()) {
+                return;
             }
-
+            e.gc.setFont(largeFont);
+            int fontSize = largeFont.getFontData()[0].getHeight();
+            UIUtils.drawMessageOverControl(placeholder, e, controller.getDecorator().getEmptyDataMessage(), -(fontSize / 2));
+            e.gc.setFont(normalFont);
+            String emptyDataDescription = controller.getDecorator().getEmptyDataDescription();
+            if (!CommonUtils.isEmpty(emptyDataDescription)) {
+                UIUtils.drawMessageOverControl(placeholder, e, emptyDataDescription, fontSize + fontSize / 3);
+            }
         });
 
         trackPresentationControl();

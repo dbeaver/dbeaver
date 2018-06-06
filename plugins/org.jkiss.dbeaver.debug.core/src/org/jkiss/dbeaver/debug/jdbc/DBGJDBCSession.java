@@ -50,8 +50,6 @@ public abstract class DBGJDBCSession implements DBGSession {
         return controller;
     }
 
-    public abstract JDBCExecutionContext getConnection();
-
     public abstract JDBCExecutionContext getControllerConnection();
 
 
@@ -90,7 +88,7 @@ public abstract class DBGJDBCSession implements DBGSession {
 
     public void closeSession(DBRProgressMonitor monitor) throws DBGException {
         if (!isAttached()) {
-            throw new DBGException("Debug session not attached");
+            return;
         }
         doDetach(monitor);
         if (!isDone() && workerJob != null) {

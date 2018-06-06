@@ -628,6 +628,11 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
         return dataTypeCache.getCachedObject(typeName);
     }
 
+    @Override
+    public DBSDataType getLocalDataType(int typeID) {
+        return dataTypeCache.getCachedObject(typeID);
+    }
+
     static class CatalogCache extends JDBCObjectCache<MySQLDataSource, MySQLCatalog>
     {
         @Override

@@ -19,12 +19,18 @@ package org.jkiss.dbeaver.ext.mysql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Map;
 
@@ -208,7 +214,29 @@ public class MySQLEvent extends MySQLInformation implements MySQLSourceObject {
     @Override
     @Property(hidden = true, editable = true, updatable = true, order = -1)
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
-        return eventDefinition;
+        DateFormat dateFormat = new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT);
+        StringBuilder sql = new StringBuilder();
+        sql.append("CREATE EVENT ").append(DBUtils.getQuotedIdentifier(this)).append("\n")
+            .append("ON SCHEDULE EVERY ").append(intervalValue).append(" ").append(intervalField).append("\n");
+        if (starts != null) {
+            sql.append("STARTS '").append(dateFormat.format(starts)).append("'\n");
+        }
+        if (ends != null) {
+            sql.append("ENDS '").append(dateFormat.format(ends)).append("'\n");
+        }
+        if (!CommonUtils.isEmpty(onCompletion)) {
+            sql.append("ON COMPLETION ").append(onCompletion).append("\n");
+        }
+        sql.append(
+            "ENABLED".equals(status) ? "ENABLE" :
+                "DISABLED".equals(status) ? "DISABLE" : "DISABLE ON SLAVE"
+        ).append("\n");
+
+        if (!CommonUtils.isEmpty(eventComment)) {
+            sql.append("COMMENT '").append(SQLUtils.escapeString(getDataSource(), eventComment)).append("'\n");
+        }
+        sql.append("DO ").append(eventDefinition);
+        return sql.toString();
     }
 
     @Override

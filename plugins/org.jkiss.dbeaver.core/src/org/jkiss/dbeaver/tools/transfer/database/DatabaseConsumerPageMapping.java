@@ -31,7 +31,6 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -360,7 +359,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                 DatabaseMappingObject mapping = (DatabaseMappingObject) cell.getElement();
                 cell.setText(mapping.getTargetName());
                 if (mapping.getMappingType() == DatabaseMappingType.unspecified) {
-                    cell.setBackground(DBeaverUI.getSharedTextColors().getColor(SharedTextColors.COLOR_WARNING));
+                    cell.setBackground(UIUtils.getSharedTextColors().getColor(SharedTextColors.COLOR_WARNING));
                 } else {
                     cell.setBackground(null);
                 }
@@ -683,7 +682,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
         try {
             final String ddl = DatabaseTransferConsumer.generateTargetTableDDL(new VoidProgressMonitor(), dataSource, container, mapping);
             ViewSQLDialog dialog = new ViewSQLDialog(
-                DBeaverUI.getActiveWorkbenchWindow().getActivePage().getActivePart().getSite(),
+                UIUtils.getActiveWorkbenchWindow().getActivePage().getActivePart().getSite(),
                 dataSource.getDefaultContext(true),
                 "Target DDL",
                 null,

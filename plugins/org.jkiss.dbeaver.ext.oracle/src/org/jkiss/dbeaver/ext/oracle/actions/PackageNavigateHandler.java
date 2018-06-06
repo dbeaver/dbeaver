@@ -31,7 +31,6 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.oracle.model.OraclePackage;
 import org.jkiss.dbeaver.ext.oracle.model.OracleProcedureArgument;
 import org.jkiss.dbeaver.ext.oracle.model.OracleProcedurePackaged;
@@ -39,6 +38,7 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameterKind;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
@@ -125,7 +125,7 @@ public class PackageNavigateHandler extends AbstractHandler //implements IElemen
                 try {
                     final IRegion procRegion = findAdapter.find(0, procRegex, true, false, false, true);
                     if (procRegion != null) {
-                        DBeaverUI.asyncExec(new Runnable() {
+                        UIUtils.asyncExec(new Runnable() {
                             @Override
                             public void run() {
                                 sqlEditor.selectAndReveal(procRegion.getOffset(), procRegion.getLength());

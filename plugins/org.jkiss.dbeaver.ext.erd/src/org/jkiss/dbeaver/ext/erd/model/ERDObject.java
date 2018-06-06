@@ -21,12 +21,12 @@ package org.jkiss.dbeaver.ext.erd.model;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
 import java.beans.PropertyChangeListener;
@@ -93,14 +93,14 @@ public abstract class ERDObject<OBJECT> implements IAdaptable, DBPNamedObject
 
     public void openEditor() {
         if (object instanceof DBSObject) {
-            DBeaverUI.runUIJob("Open object editor", monitor -> {
+            UIUtils.runUIJob("Open object editor", monitor -> {
                 DBNDatabaseNode node = NavigatorUtils.getNodeByObject(
                     monitor,
                     (DBSObject) object,
                     true
                 );
                 if (node != null) {
-                    NavigatorUtils.openNavigatorNode(node, DBeaverUI.getActiveWorkbenchWindow());
+                    NavigatorUtils.openNavigatorNode(node, UIUtils.getActiveWorkbenchWindow());
                 }
             });
         }

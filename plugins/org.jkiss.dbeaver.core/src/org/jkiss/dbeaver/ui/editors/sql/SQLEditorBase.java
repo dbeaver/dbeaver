@@ -46,17 +46,13 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
-import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.ui.ICommentsSupport;
-import org.jkiss.dbeaver.ui.IErrorVisualizer;
-import org.jkiss.dbeaver.ui.TextUtils;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleManager;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.rules.SQLVariableRule;
@@ -262,7 +258,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
 
     protected ISharedTextColors getSharedColors()
     {
-        return DBeaverUI.getSharedTextColors();
+        return UIUtils.getSharedTextColors();
     }
 
     @Override

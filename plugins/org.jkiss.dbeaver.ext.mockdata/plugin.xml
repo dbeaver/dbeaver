@@ -9,15 +9,13 @@
         <handler commandId="org.jkiss.dbeaver.ext.mockdata.resultset.mockdata" class="org.jkiss.dbeaver.ext.mockdata.handlers.ResultSetMockDataHandler">
             <enabledWhen>
                 <or>
-                    <and>
-                        <with variable="activeEditor">
-                            <adapt type="org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer"/>
-                        </with>
-                    </and>
+                    <with variable="activeEditor">
+                        <adapt type="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
+                    </with>
                     <with variable="selection">
                         <count value="+"/>
                         <iterate operator="and">
-                            <adapt type="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
+                            <adapt type="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
                         </iterate>
                     </with>
                 </or>
@@ -93,7 +91,7 @@
             <type kind="NUMERIC"/>
 
             <propertyGroup label="General">
-                <property id="start" label="Start value" type="long" defaultValue="0" description="Initial sequence value"/>
+                <property id="start" label="Start value" type="long" defaultValue="1" description="Initial sequence value"/>
                 <property id="step" label="Increment step" type="long" defaultValue="1" description="Sequence increment step"/>
                 <property id="reverse" label="Reverse order" type="boolean" defaultValue="FALSE" description="Reverse the sequence order"/>
             </propertyGroup>

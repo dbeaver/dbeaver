@@ -35,7 +35,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolGrantee;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -90,7 +89,7 @@ public class ExasolCreateSchemaDialog extends BaseDialog {
                 try {
                     grantees = new ArrayList<>(datasource.getAllGrantees(monitor));
                     
-                    DBeaverUI.syncExec(new Runnable() {
+                    UIUtils.syncExec(new Runnable() {
                         @Override
                         public void run()
                         {

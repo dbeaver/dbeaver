@@ -20,11 +20,11 @@ import org.eclipse.jface.viewers.IStructuredContentProvider;
 import org.eclipse.jface.viewers.ITreeContentProvider;
 import org.eclipse.jface.viewers.Viewer;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.database.load.TreeLoadNode;
 import org.jkiss.dbeaver.ui.navigator.database.load.TreeLoadService;
@@ -127,7 +127,7 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
                     ex.getMessage(),
                     ex);
                 // Collapse this item
-                DBeaverUI.asyncExec(new Runnable() {
+                UIUtils.asyncExec(new Runnable() {
                     @Override
                     public void run() {
                         navigatorTree.getViewer().collapseToLevel(parent, 1);

@@ -23,7 +23,6 @@ import org.eclipse.ui.IPersistableElement;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -37,6 +36,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UITask;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ConnectionLostDialog;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditorInput;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -195,7 +195,7 @@ public class DatabaseLazyEditorInput implements IDatabaseEditorInput
                 final Integer result = new UITask<Integer>() {
                     @Override
                     protected Integer runTask() {
-                        ConnectionLostDialog clDialog = new ConnectionLostDialog(DBeaverUI.getActiveWorkbenchShell(), dataSource, e, "Close");
+                        ConnectionLostDialog clDialog = new ConnectionLostDialog(UIUtils.getActiveWorkbenchShell(), dataSource, e, "Close");
                         return clDialog.open();
                     }
                 }.execute();

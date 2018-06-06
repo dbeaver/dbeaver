@@ -31,7 +31,6 @@ import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -163,7 +162,7 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
             protected IStatus run(final DBRProgressMonitor monitor)
             {
                 final DataSourceJob curJob = this;
-                DBeaverUI.asyncExec(new Runnable() {
+                UIUtils.asyncExec(new Runnable() {
                     @Override
                     public void run() {
                         scriptListener.beginScriptProcessing(curJob, objects);
@@ -179,7 +178,7 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
                         final T object = objects.get(i);
                         monitor.subTask("Process " + DBUtils.getObjectFullName(object, DBPEvaluationContext.UI));
                         objectProcessingError = null;
-                        DBeaverUI.asyncExec(new Runnable() {
+                        UIUtils.asyncExec(new Runnable() {
                             @Override
                             public void run() {
                                 scriptListener.beginObjectProcessing(object, objectNumber);
@@ -192,7 +191,7 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
                                     if (statement.executeStatement()) {
                                         try (DBCResultSet resultSet = statement.openResultSet()) {
                                             // Run in sync because we need result set
-                                            DBeaverUI.syncExec(new Runnable() {
+                                            UIUtils.syncExec(new Runnable() {
                                                 @Override
                                                 public void run() {
                                                     try {
@@ -207,7 +206,7 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
                                             break;
                                         }
                                     } else {
-                                        DBeaverUI.syncExec(new Runnable() {
+                                        UIUtils.syncExec(new Runnable() {
                                             @Override
                                             public void run() {
                                                 try {
@@ -223,7 +222,7 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
                         } catch (Exception e) {
                             objectProcessingError = e;
                         } finally {
-                            DBeaverUI.asyncExec(new Runnable() {
+                            UIUtils.asyncExec(new Runnable() {
                                 @Override
                                 public void run() {
                                     scriptListener.endObjectProcessing(object, objectProcessingError);
@@ -234,7 +233,7 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
                     }
                 } finally {
                     monitor.done();
-                    DBeaverUI.asyncExec(new Runnable() {
+                    UIUtils.asyncExec(new Runnable() {
                         @Override
                         public void run() {
                             scriptListener.endScriptProcessing();

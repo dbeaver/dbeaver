@@ -31,10 +31,8 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.model.WorkbenchLabelProvider;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.debug.core.DebugUtils;
 import org.jkiss.dbeaver.debug.core.breakpoints.DatabaseLineBreakpoint;
 import org.jkiss.dbeaver.debug.core.breakpoints.IDatabaseBreakpoint;
@@ -43,19 +41,14 @@ import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UITask;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
-
-import static org.jkiss.dbeaver.debug.core.model.DatabaseDebugTarget.SESSION_ACTION_TIMEOUT;
 
 public class DatabaseDebugModelPresentation extends LabelProvider implements IDebugModelPresentationExtension {
 
@@ -113,12 +106,8 @@ public class DatabaseDebugModelPresentation extends LabelProvider implements IDe
             }
             if (element instanceof DatabaseLineBreakpoint) {
                 DatabaseLineBreakpoint breakpoint = (DatabaseLineBreakpoint) element;
-                String nodePath = breakpoint.getNodePath();
-                NodeFinder getNodeTask = new NodeFinder(nodePath);
-                RuntimeUtils.runTask(getNodeTask,"Get node by path", SESSION_ACTION_TIMEOUT);
-
                 int lineNumber = breakpoint.getLineNumber();
-                Object[] bindings = new Object[] {getNodeTask.node == null ? nodePath : getNodeTask.node.getNodeFullName(), lineNumber};
+                Object[] bindings = new Object[] { breakpoint.getObjectName(), lineNumber };
                 return NLS.bind("{0} - [line:{1}]", bindings);
             }
         } catch (CoreException e) {
@@ -181,7 +170,7 @@ public class DatabaseDebugModelPresentation extends LabelProvider implements IDe
         IEditorPart editorPart = new UITask<IEditorPart>() {
             @Override
             protected IEditorPart runTask() {
-                return NavigatorHandlerObjectOpen.openEntityEditor(dbnNode, null, sourceFolderId, editorAttrs, DBeaverUI.getActiveWorkbenchWindow(), false);
+                return NavigatorHandlerObjectOpen.openEntityEditor(dbnNode, null, sourceFolderId, editorAttrs, UIUtils.getActiveWorkbenchWindow(), false);
             }
         }.execute();
 
@@ -198,22 +187,4 @@ public class DatabaseDebugModelPresentation extends LabelProvider implements IDe
         return false;
     }
 
-    private static class NodeFinder implements DBRRunnableWithProgress {
-        private final String nodePath;
-        DBNNode node;
-
-        public NodeFinder(String nodePath) {
-            this.nodePath = nodePath;
-            node = null;
-        }
-
-        @Override
-        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-            try {
-                node = DBeaverCore.getInstance().getNavigatorModel().getNodeByPath(new VoidProgressMonitor(), nodePath);
-            } catch (DBException e) {
-                throw new InvocationTargetException(e);
-            }
-        }
-    }
 }

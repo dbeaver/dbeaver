@@ -21,8 +21,6 @@ import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.TraverseEvent;
-import org.eclipse.swt.events.TraverseListener;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -30,6 +28,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPMessageType;
+import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -41,13 +40,13 @@ import org.jkiss.dbeaver.utils.RuntimeUtils;
  */
 class StatusLabel extends Composite {
 
-    private final ResultSetViewer viewer;
+    private final IResultSetController viewer;
     private final Label statusIcon;
     private final Text statusText;
     //private final Color colorDefault, colorError, colorWarning;
     private DBPMessageType messageType;
 
-    public StatusLabel(@NotNull Composite parent, int style, @Nullable final ResultSetViewer viewer) {
+    public StatusLabel(@NotNull Composite parent, int style, @Nullable final IResultSetController viewer) {
         super(parent, SWT.BORDER);
         this.viewer = viewer;
 
@@ -96,22 +95,22 @@ class StatusLabel extends Composite {
                 showDetails();
             }
         });
-        statusText.addTraverseListener(new TraverseListener() {
-            @Override
-            public void keyTraversed(TraverseEvent e) {
-                if (e.detail == SWT.TRAVERSE_RETURN) {
-                    showDetails();
-                }
+        statusText.addTraverseListener(e -> {
+            if (e.detail == SWT.TRAVERSE_RETURN) {
+                showDetails();
             }
         });
     }
 
     protected void showDetails() {
-        StatusDetailsDialog dialog = new StatusDetailsDialog(
-            viewer,
-            getMessage(),
-            viewer.getDataReceiver().getErrorList());
-        dialog.open();
+        DBDDataReceiver dataReceiver = viewer.getDataReceiver();
+        if (dataReceiver instanceof ResultSetDataReceiver) {
+            StatusDetailsDialog dialog = new StatusDetailsDialog(
+                viewer.getSite().getShell(),
+                getMessage(),
+                ((ResultSetDataReceiver) dataReceiver).getErrorList());
+            dialog.open();
+        }
     }
 
     public void setStatus(String message) {

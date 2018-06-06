@@ -25,7 +25,6 @@ import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -58,7 +57,7 @@ public class EditDictionaryPage extends AttributesSelectorPage {
         super(title, entity);
         this.entity = entity;
         this.dictionary = DBVUtils.findVirtualEntity(entity, true);
-        DBeaverUI.runInUI(PlatformUI.getWorkbench().getActiveWorkbenchWindow(), new DBRRunnableWithProgress() {
+        UIUtils.runInUI(PlatformUI.getWorkbench().getActiveWorkbenchWindow(), new DBRRunnableWithProgress() {
             @Override
             public void run(DBRProgressMonitor monitor)
                 throws InvocationTargetException, InterruptedException

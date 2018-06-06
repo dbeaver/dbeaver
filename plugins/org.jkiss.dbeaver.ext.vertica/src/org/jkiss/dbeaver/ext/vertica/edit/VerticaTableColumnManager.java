@@ -81,7 +81,7 @@ public class VerticaTableColumnManager extends GenericTableColumnManager {
 
     /**
      * Copy-pasted from PostgreSQL implementation.
-     * TODO: Vertica is originally based on PG. <aybe we should refactor this stuff somehow.
+     * TODO: Vertica is originally based on PG. Maybe we should refactor this stuff somehow.
      */
     @Override
     protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
@@ -90,8 +90,8 @@ public class VerticaTableColumnManager extends GenericTableColumnManager {
 
         String prefix = "ALTER TABLE " + DBUtils.getObjectFullName(column.getTable(), DBPEvaluationContext.DDL) + " ALTER COLUMN " + DBUtils.getQuotedIdentifier(column) + " ";
         String typeClause = column.getFullTypeName();
-        if (command.getProperty(DBConstants.PROP_ID_DATA_TYPE) != null || command.getProperty("maxLength") != null || command.getProperty("precision") != null || command.getProperty("scale") != null) {
-            actionList.add(new SQLDatabasePersistAction("Set column type", prefix + "TYPE " + typeClause));
+        if (command.getProperty(DBConstants.PROP_ID_TYPE_NAME) != null || command.getProperty("maxLength") != null || command.getProperty("precision") != null || command.getProperty("scale") != null) {
+            actionList.add(new SQLDatabasePersistAction("Set column type", prefix + "SET DATA TYPE " + typeClause));
         }
         if (command.getProperty(DBConstants.PROP_ID_REQUIRED) != null) {
             actionList.add(new SQLDatabasePersistAction("Set column nullability", prefix + (column.isRequired() ? "SET" : "DROP") + " NOT NULL"));

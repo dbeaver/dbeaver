@@ -22,7 +22,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
@@ -169,7 +168,7 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
                 }
 
                 // Open object in UI thread
-                DBeaverUI.syncExec(this::openNewObject);
+                UIUtils.syncExec(this::openNewObject);
 
                 return Status.OK_STATUS;
             } catch (Exception e) {
@@ -178,7 +177,7 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
         }
 
         private void openNewObject() {
-            IWorkbenchWindow workbenchWindow = DBeaverUI.getActiveWorkbenchWindow();
+            IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
             try {
                 final DBNDatabaseNode newChild = DBeaverCore.getInstance().getNavigatorModel().findNode(newObject);
                 if (newChild != null) {

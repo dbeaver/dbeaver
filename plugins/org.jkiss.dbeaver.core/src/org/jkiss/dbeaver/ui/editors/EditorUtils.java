@@ -26,9 +26,12 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.preferences.InstanceScope;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.*;
 import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.ide.IDE;
+import org.eclipse.ui.preferences.ScopedPreferenceStore;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -255,4 +258,9 @@ public class EditorUtils {
         }
         return "Auto save all editors".equals(currentJob.getName());
     }
+
+    public static IPreferenceStore getEditorsPreferenceStore() {
+        return new ScopedPreferenceStore(InstanceScope.INSTANCE, "org.eclipse.ui.editors");
+    }
+
 }

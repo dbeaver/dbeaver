@@ -355,6 +355,15 @@ public class CommonUtils {
         return strValue;
     }
 
+    public static String[] splitWithDelimiter(String s, String delimiter) {
+        if (s == null) {
+            return null;
+        }
+        String delimiterReplacement = "DRDRDR"; //$NON-NLS-1$
+        s = s.replace(delimiter, delimiterReplacement + delimiter);
+        return s.split(delimiterReplacement);
+    }
+
     @NotNull
     public static List<String> splitString(@Nullable String str, char delimiter) {
         if (CommonUtils.isEmpty(str)) {

@@ -35,7 +35,6 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -584,7 +583,7 @@ public class ComplexObjectEditor extends TreeViewer {
                         }
                     }
                 };
-                DBeaverUI.runInUI(runnable);
+                UIUtils.runInUI(runnable);
                 children = getChildren(runnable.getResult());
             } else if (parent instanceof CompositeField) {
                 Object value = ((CompositeField) parent).value;

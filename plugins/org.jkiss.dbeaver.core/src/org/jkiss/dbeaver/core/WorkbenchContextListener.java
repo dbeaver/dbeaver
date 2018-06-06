@@ -173,7 +173,9 @@ class WorkbenchContextListener implements IWindowListener, IPageListener, IPartL
         }
         try {
             contextService.deferUpdates(true);
-            if (part.getAdapter(INavigatorModelView.class) != null) {
+            if (part instanceof INavigatorModelView) {
+                // We check for instanceof (do not use adapter) because otherwise it become active
+                // for all entity editor and clashes with SQL editor and other complex stuff.
                 if (activationNavigator != null) {
                     //log.debug("Double activation of navigator context");
                     contextService.deactivateContext(activationNavigator);

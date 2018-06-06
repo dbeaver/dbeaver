@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.oracle.edit;
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -27,7 +28,6 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.ext.oracle.model.OracleDataSource;
@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -72,7 +73,7 @@ public class OracleSchemaManager extends SQLObjectEditor<OracleSchema, OracleDat
         return new UITask<OracleSchema>() {
             @Override
             protected OracleSchema runTask() {
-                NewUserDialog dialog = new NewUserDialog(DBeaverUI.getActiveWorkbenchShell(), parent);
+                NewUserDialog dialog = new NewUserDialog(UIUtils.getActiveWorkbenchShell(), parent);
                 if (dialog.open() != IDialogConstants.OK_ID) {
                     return null;
                 }
@@ -88,10 +89,12 @@ public class OracleSchemaManager extends SQLObjectEditor<OracleSchema, OracleDat
     protected void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options)
     {
         OracleUser user = command.getObject().getUser();
-        actions.add(
-            new SQLDatabasePersistAction("Create schema",
-                "CREATE USER " + DBUtils.getQuotedIdentifier(user) + " IDENTIFIED BY \"" + user.getPassword() + "\"")
-        );
+        String sql = "CREATE USER " + DBUtils.getQuotedIdentifier(user);
+        if (!CommonUtils.isEmpty(user.getPassword())) {
+            sql += " IDENTIFIED BY \"" + user.getPassword() + "\"";
+        }
+
+        actions.add(new SQLDatabasePersistAction("Create schema", sql));
     }
 
     @Override
@@ -136,14 +139,21 @@ public class OracleSchemaManager extends SQLObjectEditor<OracleSchema, OracleDat
         protected Control createDialogArea(Composite parent)
         {
             getShell().setText("Set schema/user properties");
+
             Control container = super.createDialogArea(parent);
-            Composite composite = UIUtils.createPlaceholder((Composite) container, 2);
+            Composite composite = UIUtils.createPlaceholder((Composite) container, 2, 5);
             composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
             nameText = UIUtils.createLabelText(composite, "Schema/User Name", null);
             nameText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
             passwordText = UIUtils.createLabelText(composite, "User Password", null, SWT.BORDER | SWT.PASSWORD);
             passwordText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+            CLabel infoLabel = UIUtils.createInfoLabel(composite, "Creating a schema is the same as creating a user.\nYou need to specify a password.");
+            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd.horizontalSpan = 2;
+            infoLabel.setLayoutData(gd);
+
 
             return parent;
         }

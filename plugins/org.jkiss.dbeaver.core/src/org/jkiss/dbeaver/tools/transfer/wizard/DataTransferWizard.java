@@ -25,7 +25,6 @@ import org.eclipse.ui.IWorkbench;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
@@ -57,7 +56,7 @@ public class DataTransferWizard extends Wizard implements IExportWizard {
         IDialogSettings section = UIUtils.getDialogSettings(RS_EXPORT_WIZARD_DIALOG_SETTINGS);
         setDialogSettings(section);
 
-        settings.loadFrom(DBeaverUI.getActiveWorkbenchWindow(), section);
+        settings.loadFrom(UIUtils.getActiveWorkbenchWindow(), section);
     }
 
     public DataTransferSettings getSettings()
@@ -169,7 +168,7 @@ public class DataTransferWizard extends Wizard implements IExportWizard {
 
         // Start consumers
         try {
-            DBeaverUI.run(getContainer(), true, true, new DBRRunnableWithProgress() {
+            UIUtils.run(getContainer(), true, true, new DBRRunnableWithProgress() {
                 @Override
                 public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                     try {

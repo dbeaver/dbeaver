@@ -28,7 +28,7 @@ import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.CustomTableEditor;
+import org.jkiss.dbeaver.ui.controls.StringEditorTable;
 import org.jkiss.dbeaver.ui.dialogs.HelpEnabledDialog;
 import org.jkiss.utils.CommonUtils;
 
@@ -99,8 +99,8 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
         blockControl = UIUtils.createPlaceholder(composite, 1);
         blockControl.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        includeTable = createEditableList(CoreMessages.dialog_filter_list_include, filter.getInclude());
-        excludeTable = createEditableList(CoreMessages.dialog_filter_list_exclude, filter.getExclude());
+        includeTable = StringEditorTable.createEditableList(blockControl, CoreMessages.dialog_filter_list_include, filter.getInclude(), null, null);
+        excludeTable = StringEditorTable.createEditableList(blockControl, CoreMessages.dialog_filter_list_exclude, filter.getExclude(), null, null);
 
         UIUtils.createInfoLabel(blockControl, CoreMessages.dialog_connection_edit_wizard_general_filter_hint_text);
 
@@ -155,108 +155,17 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
         }
         if (CommonUtils.isEmpty(filterName)) {
             // Reset filter
-            fillFilterValues(includeTable, null);
-            fillFilterValues(excludeTable, null);
+            StringEditorTable.fillFilterValues(includeTable, null, null);
+            StringEditorTable.fillFilterValues(excludeTable, null, null);
         } else {
             // Find saved filter
             DBSObjectFilter savedFilter = dsRegistry.getSavedFilter(filterName);
             if (savedFilter != null) {
-                fillFilterValues(includeTable, savedFilter.getInclude());
-                fillFilterValues(excludeTable, savedFilter.getExclude());
+                StringEditorTable.fillFilterValues(includeTable, savedFilter.getInclude(), null);
+                StringEditorTable.fillFilterValues(excludeTable, savedFilter.getExclude(), null);
             }
         }
         filter.setName(filterName);
-    }
-
-    private Table createEditableList(String name, List<String> values) {
-        Group group = UIUtils.createControlGroup(blockControl, name, 2, GridData.FILL_BOTH, 0);
-
-        final Table valueTable = new Table(group, SWT.SINGLE | SWT.FULL_SELECTION | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
-        final GridData gd = new GridData(GridData.FILL_BOTH);
-        gd.widthHint = 300;
-        gd.heightHint = 100;
-        valueTable.setLayoutData(gd);
-        // valueTable.setHeaderVisible(true);
-        valueTable.setLinesVisible(true);
-
-        final TableColumn valueColumn = UIUtils.createTableColumn(valueTable, SWT.LEFT, CoreMessages.dialog_filter_table_column_value);
-        valueColumn.setWidth(300);
-
-        fillFilterValues(valueTable, values);
-
-        final CustomTableEditor tableEditor = new CustomTableEditor(valueTable) {
-            @Override
-            protected Control createEditor(Table table, int index, TableItem item) {
-                Text editor = new Text(table, SWT.BORDER);
-                editor.setText(item.getText());
-                return editor;
-            }
-            @Override
-            protected void saveEditorValue(Control control, int index, TableItem item) {
-                item.setText(((Text) control).getText());
-            }
-        };
-
-        Composite buttonsGroup = UIUtils.createPlaceholder(group, 1, 5);
-        buttonsGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
-        final Button addButton = new Button(buttonsGroup, SWT.PUSH);
-        addButton.setText(CoreMessages.dialog_filter_button_add);
-        addButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        addButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                TableItem newItem = new TableItem(valueTable, SWT.LEFT);
-                valueTable.setSelection(newItem);
-                tableEditor.closeEditor();
-                tableEditor.showEditor(newItem);
-            }
-        });
-
-        final Button removeButton = new Button(buttonsGroup, SWT.PUSH);
-        removeButton.setText(CoreMessages.dialog_filter_button_remove);
-        removeButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        removeButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                int selectionIndex = valueTable.getSelectionIndex();
-                if (selectionIndex >= 0) {
-                    tableEditor.closeEditor();
-                    valueTable.remove(selectionIndex);
-                    removeButton.setEnabled(valueTable.getSelectionIndex() >= 0);
-                }
-            }
-        });
-        removeButton.setEnabled(false);
-
-        final Button clearButton = new Button(buttonsGroup, SWT.PUSH);
-        clearButton.setText(CoreMessages.dialog_filter_button_clear);
-        clearButton.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        clearButton.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                tableEditor.closeEditor();
-                valueTable.removeAll();
-                removeButton.setEnabled(false);
-            }
-        });
-
-        valueTable.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                int selectionIndex = valueTable.getSelectionIndex();
-                removeButton.setEnabled(selectionIndex >= 0);
-            }
-        });
-        return valueTable;
-    }
-
-    private void fillFilterValues(Table valueTable, List<String> values) {
-        valueTable.removeAll();
-        if (!CommonUtils.isEmpty(values)) {
-            for (String value : values) {
-                new TableItem(valueTable, SWT.LEFT).setText(value);
-            }
-        }
     }
 
     private void enableFiltersContent() {
@@ -272,24 +181,12 @@ public class EditObjectFilterDialog extends HelpEnabledDialog {
 
     private void saveConfigurations() {
         filter.setEnabled(enableButton.getSelection());
-        filter.setInclude(collectValues(includeTable));
-        filter.setExclude(collectValues(excludeTable));
+        filter.setInclude(StringEditorTable.collectValues(includeTable));
+        filter.setExclude(StringEditorTable.collectValues(excludeTable));
         filter.setName(namesCombo.getText());
         if (!CommonUtils.isEmpty(filter.getName())) {
             dsRegistry.updateSavedFilter(filter);
         }
-    }
-
-    private List<String> collectValues(Table table) {
-        List<String> values = new ArrayList<>();
-        for (TableItem item : table.getItems()) {
-            String value = item.getText().trim();
-            if (value.isEmpty() || value.equals("%")) { //$NON-NLS-1$
-                continue;
-            }
-            values.add(value);
-        }
-        return values;
     }
 
     @Override

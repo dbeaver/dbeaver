@@ -26,7 +26,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPObject;
@@ -44,6 +43,7 @@ import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceAbstract;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceEditable;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.ObjectViewerRenderer;
@@ -102,7 +102,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
     protected void openNodeEditor(DBNNode node) {
         IServiceLocator serviceLocator = workbenchSite != null ?
             workbenchSite :
-            DBeaverUI.getActiveWorkbenchWindow();
+            UIUtils.getActiveWorkbenchWindow();
         NavigatorUtils.executeNodeAction(DBXTreeNodeHandler.Action.open, node, serviceLocator);
     }
 

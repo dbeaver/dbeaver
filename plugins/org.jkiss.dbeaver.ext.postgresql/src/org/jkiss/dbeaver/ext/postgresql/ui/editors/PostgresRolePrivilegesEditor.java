@@ -424,7 +424,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
         }
         isLoaded = true;
 
-        DBeaverUI.asyncExec(() -> {
+        UIUtils.asyncExec(() -> {
             UIUtils.packColumns(permissionTable, false);
         });
 
@@ -450,7 +450,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
     public void refreshPart(Object source, boolean force)
     {
         isLoaded = false;
-        DBeaverUI.syncExec(() -> {
+        UIUtils.syncExec(() -> {
                 updateObjectPermissions(null);
         });
         activatePart();

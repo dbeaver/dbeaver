@@ -34,9 +34,7 @@ import org.eclipse.jface.text.source.ISharedTextColors;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.swt.graphics.RGB;
-import org.jkiss.dbeaver.core.DBeaverUI;
-
-import static org.jkiss.dbeaver.registry.editor.EntityEditorDescriptor.Type.editor;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 public class XMLSourceViewerConfiguration extends SourceViewerConfiguration {
     static final RGB COLOR_XML_COMMENT = new RGB(128, 0, 0);
@@ -49,7 +47,7 @@ public class XMLSourceViewerConfiguration extends SourceViewerConfiguration {
     private final XMLEditor editor;
 
     public XMLSourceViewerConfiguration(XMLEditor editor) {
-        this.colorManager = DBeaverUI.getSharedTextColors();
+        this.colorManager = UIUtils.getSharedTextColors();
         this.editor = editor;
     }
 

@@ -40,7 +40,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBValueFormatting;
@@ -1140,7 +1139,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             if (!isDisposed()) {
                 // Make refresh of whole table
                 // Some other objects could also be updated implicitly with our lazy loader
-                DBeaverUI.asyncExec(new Runnable() {
+                UIUtils.asyncExec(new Runnable() {
                     @Override
                     public void run() {
                         if (!isDisposed()) {

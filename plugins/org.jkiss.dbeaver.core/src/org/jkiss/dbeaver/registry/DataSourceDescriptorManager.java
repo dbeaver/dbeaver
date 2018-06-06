@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.registry;
 
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceFolder;
 import org.jkiss.dbeaver.model.DBPObject;
@@ -29,6 +28,7 @@ import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.AbstractObjectManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.dialogs.connection.CreateConnectionDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.NewConnectionWizard;
@@ -101,11 +101,11 @@ public class DataSourceDescriptorManager extends AbstractObjectManager<DataSourc
             dataSource.setName(newName);
             registry.addDataSource(dataSource);
         } else {
-            DBeaverUI.asyncExec(new Runnable() {
+            UIUtils.asyncExec(new Runnable() {
                 @Override
                 public void run() {
                     CreateConnectionDialog dialog = new CreateConnectionDialog(
-                        DBeaverUI.getActiveWorkbenchWindow(),
+                        UIUtils.getActiveWorkbenchWindow(),
                         new NewConnectionWizard());
                     dialog.open();
                 }

@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.oracle.model;
 
 import org.jkiss.dbeaver.ext.oracle.actions.CompileHandler;
+import org.jkiss.dbeaver.ext.oracle.actions.OracleTaskHandler;
 import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -43,7 +44,7 @@ public class OracleObjectValidateAction extends OracleObjectPersistAction {
             return;
         }
         DBCCompileLog log = new DBCCompileLogBase();
-        CompileHandler.logObjectErrors((JDBCSession) session, log, object, getObjectType());
+        OracleTaskHandler.logObjectErrors((JDBCSession) session, log, object, getObjectType());
         if (!log.getErrorStack().isEmpty()) {
             StringBuilder message = new StringBuilder();
             message.append("Error during ").append(getObjectType().getTypeName()).append(" '").append(object.getName()).append("' validation:");
