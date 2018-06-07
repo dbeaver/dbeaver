@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.mockdata.generator;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.mockdata.MockDataMessages;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
@@ -30,7 +31,28 @@ public class BooleanSequenceGenerator extends AbstractMockValueGenerator {
     private boolean value;
 
     private enum ORDER {
-        ALTERNATELY, CONSTANT
+        ALTERNATELY (MockDataMessages.tools_mockdata_generator_boolean_sequence_prop_order_value_alternately),
+        CONSTANT (MockDataMessages.tools_mockdata_generator_boolean_sequence_prop_order_value_constant);
+
+        private String label;
+
+        ORDER(String label) {
+            this.label = label;
+        }
+
+        @Override
+        public String toString() {
+            return label;
+        }
+
+        public static ORDER find(String label) {
+            for (ORDER order : values()) {
+                if (order.label.equalsIgnoreCase(label)) {
+                    return order;
+                }
+            }
+            return null;
+        }
     }
     private ORDER order;
 
@@ -40,7 +62,7 @@ public class BooleanSequenceGenerator extends AbstractMockValueGenerator {
 
         String o = (String) properties.get("order"); //$NON-NLS-1$
         if (o != null) {
-            this.order = ORDER.valueOf(o);
+            this.order = ORDER.find(o);
         }
 
         Boolean initial = (Boolean) properties.get("initial"); //$NON-NLS-1$
