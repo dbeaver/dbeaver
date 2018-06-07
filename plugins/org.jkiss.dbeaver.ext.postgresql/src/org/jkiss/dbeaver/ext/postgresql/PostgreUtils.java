@@ -455,8 +455,31 @@ public class PostgreUtils {
             driver.getDriverParameter(PostgreConstants.PROP_GREENPLUM_DRIVER));
     }
 
-    public static List<PostgrePermission> extractPermissionsFromACL(@NotNull  PostgrePermissionsOwner owner, @Nullable Object acl) {
+    public static List<PostgrePermission> extractPermissionsFromACL(DBRProgressMonitor monitor, @NotNull PostgrePermissionsOwner owner, @Nullable Object acl) throws DBException {
         if (!(acl instanceof java.sql.Array)) {
+            if (acl == null) {
+                // Special case. Means ALL permissions are granted to table owner
+                PostgreRole objectOwner = owner.getOwner(monitor);
+                String granteeName = objectOwner == null ? null : objectOwner.getName();
+
+                List<PostgrePrivilege> privileges = new ArrayList<>();
+                for (PostgrePrivilegeType pt : PostgrePrivilegeType.values()) {
+                    if (pt.supportsType(owner.getClass())) {
+                        privileges.add(
+                            new PostgrePrivilege(
+                                granteeName,
+                                granteeName,
+                                owner.getDatabase().getName(),
+                                owner.getSchema().getName(),
+                                owner.getName(),
+                                pt,
+                                false,
+                                false));
+                    }
+                }
+                PostgreObjectPermission permission = new PostgreObjectPermission(owner, objectOwner == null ? null : objectOwner.getName(), privileges);
+                return Collections.singletonList(permission);
+            }
             return Collections.emptyList();
         }
         Object itemArray;

@@ -35,7 +35,7 @@ public enum PostgrePrivilegeType {
 
     EXECUTE('X', true, PostgreProcedure.class),
 
-    UNKNOWN((char)0, false, Object.class);
+    UNKNOWN((char)0, false);
 
     private final Class<?>[] targetType;
     private final char code;
