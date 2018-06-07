@@ -115,7 +115,7 @@ public class SSHTunnelImpl implements DBWTunnel {
                     log.error("Error invalidating SSH tunnel", e);
                 }
             },
-            "Check connection is alive",
+            "Ping SSH tunnel " + dataSource.getContainer().getName(),
             dataSource.getContainer().getPreferenceStore().getInt(ModelPreferences.CONNECTION_VALIDATION_TIMEOUT));
         }
     }
