@@ -58,6 +58,7 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
         private Number minValue;
         private Number maxValue;
         private Number incrementBy;
+        private Number cacheValue;
         private boolean isCycled;
 
         @Property(viewable = true, editable = true, updatable = false, order = 10)
@@ -77,6 +78,10 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
             return incrementBy;
         }
         @Property(viewable = true, editable = true, updatable = false, order = 14)
+        public Number getCacheValue() {
+            return cacheValue;
+        }
+        @Property(viewable = true, editable = true, updatable = false, order = 15)
         public boolean isCycled() {
             return isCycled;
         }
@@ -124,6 +129,7 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
                             additionalInfo.minValue = JDBCUtils.safeGetLong(seqResults, "min_value");
                             additionalInfo.maxValue = JDBCUtils.safeGetLong(seqResults, "max_value");
                             additionalInfo.incrementBy = JDBCUtils.safeGetLong(seqResults, "increment_by");
+                            additionalInfo.cacheValue = JDBCUtils.safeGetLong(seqResults, "cache_size");
                             additionalInfo.isCycled = JDBCUtils.safeGetBoolean(seqResults, "cycle");
                         }
                     }
@@ -137,6 +143,7 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
                             additionalInfo.minValue = JDBCUtils.safeGetLong(seqResults, "min_value");
                             additionalInfo.maxValue = JDBCUtils.safeGetLong(seqResults, "max_value");
                             additionalInfo.incrementBy = JDBCUtils.safeGetLong(seqResults, "increment_by");
+                            additionalInfo.cacheValue = JDBCUtils.safeGetLong(seqResults, "cache_size");
                             additionalInfo.isCycled = JDBCUtils.safeGetBoolean(seqResults, "is_cycled");
                         }
                     }
@@ -214,6 +221,9 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
         if (info.getLastValue() != null && info.getLastValue().longValue() > 0) {
             sql.append("\n\tSTART ").append(info.getLastValue());
         }
+		sql.append("\n\tCACHE ").append(info.getCacheValue())
+		   .append("\n\t").append(info.isCycled ? "" : "NO ").append("CYCLE")
+		   .append(";");
 
 		if (!CommonUtils.isEmpty(getDescription())) {
 			sql.append("\nCOMMENT ON SEQUENCE ").append(DBUtils.getQuotedIdentifier(this)).append(" IS ")
