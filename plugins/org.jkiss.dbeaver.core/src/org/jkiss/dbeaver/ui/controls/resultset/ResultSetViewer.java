@@ -2844,7 +2844,7 @@ public class ResultSetViewer extends Viewer
                                 // Update status (update execution statistics)
                                 updateStatusMessage();
                             }
-                            updateFiltersText(error == null);
+                            updateFiltersText(true);
                             updateToolbar();
                             fireResultSetLoad();
                         }
