@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.mockdata;
 
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IImportWizard;
 import org.eclipse.ui.IWorkbench;
@@ -153,7 +154,7 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
     public boolean executeProcess(DBRProgressMonitor monitor, DBSDataManipulator dataManipulator) throws IOException {
 
         DBCExecutionContext context = dataManipulator.getDataSource().getDefaultContext(true);
-        try (DBCSession session = context.openSession(monitor, DBCExecutionPurpose.USER, MockDataMessages.tools_mockdata_generate_data_task)) {
+        try (DBCSession session = context.openSession(monitor, DBCExecutionPurpose.USER, MockDataMessages.tools_mockdata_wizard_task_generate_data)) {
             DBCTransactionManager txnManager = DBUtils.getTransactionManager(session.getExecutionContext());
             boolean autoCommit;
             try {
@@ -165,11 +166,11 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
             AbstractExecutionSource executionSource = new AbstractExecutionSource(dataManipulator, session.getExecutionContext(), this);
 
             boolean success = true;
-            monitor.beginTask("Generate Mock Data", 3);
+            monitor.beginTask(MockDataMessages.tools_mockdata_wizard_task_generate_data, 3);
             ArrayList<DBEPersistAction> persistActions = new ArrayList<>();
             if (mockDataSettings.isRemoveOldData()) {
-                logPage.appendLog("Removing old data from the '" + dataManipulator.getName() + "'.\n");
-                monitor.subTask("Cleanup old data");
+                logPage.appendLog(NLS.bind(MockDataMessages.tools_mockdata_wizard_log_removing_from, dataManipulator.getName()));
+                monitor.subTask(MockDataMessages.tools_mockdata_wizard_log_cleaning);
                 DBCStatistics deleteStats = new DBCStatistics();
                 try {
                     dataManipulator.truncateData(session, executionSource);
@@ -178,7 +179,7 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                     }
                 } catch (Exception e) {
                     success = false;
-                    String message = "    Error removing the data: " + e.getMessage();
+                    String message = NLS.bind(MockDataMessages.tools_mockdata_wizard_log_removing_error, e.getMessage());
                     log.error(message, e);
                     logPage.appendLog(message + "\n\n", true);
                 }
@@ -189,10 +190,10 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                             false);
                     logPage.appendLog("    The insert data script:\n " + scriptText + "\n\n");
                 }
-                logPage.appendLog("    Rows updated: " + deleteStats.getRowsUpdated() + "\n");
-                logPage.appendLog("    Duration: " + deleteStats.getExecuteTime() + "ms\n\n");
+                // logPage.appendLog(NLS.bind(MockDataMessages.tools_mockdata_wizard_log_rows_updated, deleteStats.getRowsUpdated())); no reason because trancate
+                logPage.appendLog(NLS.bind(MockDataMessages.tools_mockdata_wizard_log_duration, deleteStats.getExecuteTime()));
             } else {
-                logPage.appendLog("Old data isn't removed.\n\n");
+                logPage.appendLog(MockDataMessages.tools_mockdata_wizard_log_not_removed);
             }
 
             if (!success) {
@@ -200,9 +201,9 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
             }
 
             try {
-                monitor.subTask("Insert data");
+                monitor.subTask(MockDataMessages.tools_mockdata_wizard_task_insert_data);
 
-                logPage.appendLog("Inserting mock data into the '" + dataManipulator.getName() + "'.\n");
+                logPage.appendLog(NLS.bind(MockDataMessages.tools_mockdata_wizard_log_inserting_into, dataManipulator.getName()));
                 DBCStatistics insertStats = new DBCStatistics();
                 persistActions = new ArrayList<>();
 
@@ -234,7 +235,7 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                 }
                 int counter = 0;
 
-                monitor.beginTask("Insert data", (int) rowsNumber);
+                monitor.beginTask(MockDataMessages.tools_mockdata_wizard_task_insert_data, (int) rowsNumber);
 
                 boolean hasMiltiUniqs = false;
                 Set<String> miltiUniqColumns = new HashSet<>();
@@ -263,7 +264,7 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                             txnManager.commit(session);
                         }
 
-                        monitor.subTask(String.valueOf(counter) + " rows inserted");
+                        monitor.subTask(NLS.bind(MockDataMessages.tools_mockdata_wizard_log_inserted_rows, String.valueOf(counter)));
                         monitor.worked(BATCH_SIZE);
                     }
 
@@ -356,11 +357,11 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                             false);
                     logPage.appendLog("    The insert data script:\n " + scriptText + "\n\n");
                 }
-                logPage.appendLog("    Rows updated: " + insertStats.getRowsUpdated() + "\n");
-                logPage.appendLog("    Duration: " + insertStats.getExecuteTime() + "ms\n\n");
+                logPage.appendLog(NLS.bind(MockDataMessages.tools_mockdata_wizard_log_rows_updated, insertStats.getRowsUpdated()));
+                logPage.appendLog(NLS.bind(MockDataMessages.tools_mockdata_wizard_log_duration, insertStats.getExecuteTime()));
 
             } catch (DBException e) {
-                String message = "    Error inserting mock data: " + e.getMessage();
+                String message = NLS.bind(MockDataMessages.tools_mockdata_wizard_log_error_inserting, e.getMessage());
                 log.error(message, e);
                 logPage.appendLog(message + "\n\n", true);
             }
@@ -373,7 +374,7 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
     }
 
     private void processGeneratorException(Exception e) {
-        String message = "    Error generating mock data: " + e.getMessage();
+        String message = NLS.bind(MockDataMessages.tools_mockdata_wizard_log_error_generating, e.getMessage());
         log.error(message, e);
         logPage.appendLog(message + "\n\n", true);
     }
