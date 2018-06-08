@@ -27,15 +27,15 @@ public enum PostgrePrivilegeType {
     INSERT('a', true, PostgreTableReal.class, PostgreTableColumn.class),
     UPDATE('w', true, PostgreTableBase.class, PostgreTableColumn.class),
     DELETE('d', true, PostgreTableReal.class, PostgreTableColumn.class),
-    TRUNCATE('t', true, PostgreTableReal.class),
+    TRUNCATE('D', true, PostgreTableReal.class),
     REFERENCES('x', true, PostgreTableReal.class, PostgreTableColumn.class),
-    TRIGGER('D', true, PostgreTableReal.class),
+    TRIGGER('t', true, PostgreTableReal.class),
     // SEQUENCE privs
     USAGE('U', true, PostgreSequence.class),
 
     EXECUTE('X', true, PostgreProcedure.class),
 
-    UNKNOWN((char)0, false, Object.class);
+    UNKNOWN((char)0, false);
 
     private final Class<?>[] targetType;
     private final char code;
