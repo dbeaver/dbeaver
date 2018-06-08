@@ -2891,6 +2891,7 @@ public class ResultSetViewer extends Viewer
      */
     private boolean applyChanges(@Nullable final DBRProgressMonitor monitor, @Nullable final ResultSetPersister.DataUpdateListener listener)
     {
+        //getActivePresentation().
         try {
             final ResultSetPersister persister = createDataPersister(false);
             final ResultSetPersister.DataUpdateListener applyListener = success -> {
