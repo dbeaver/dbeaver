@@ -22,10 +22,10 @@ import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 /**
 * TextPanelEditor
 */
-public class TextPanelEditor extends AbstractTextPanelEditor<BaseTextEditor> {
+public class TextPanelEditor extends AbstractTextPanelEditor<TextEditorPart> {
 
     @Override
-    protected BaseTextEditor createEditorParty(IValueController valueController) {
+    protected TextEditorPart createEditorParty(IValueController valueController) {
         return new TextEditorPart();
     }
 }

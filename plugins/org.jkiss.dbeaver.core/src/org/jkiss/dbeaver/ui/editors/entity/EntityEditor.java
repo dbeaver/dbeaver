@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.text.IUndoManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -371,33 +372,42 @@ public class EntityEditor extends MultiPageDatabaseEditor
 
     public void undoChanges()
     {
-        DBECommandContext commandContext = getCommandContext();
-        if (commandContext != null && commandContext.getUndoCommand() != null) {
-            if (!getDatabaseObject().isPersisted() && commandContext.getUndoCommands().size() == 1) {
-                //getSite().getPage().closeEditor(this, true);
-                //return;
-                // Undo of last command in command context will close editor
-                // Let's ask user about it
-                if (ConfirmationDialog.showConfirmDialog(
-                    null,
-                    DBeaverPreferences.CONFIRM_ENTITY_REJECT,
-                    ConfirmationDialog.QUESTION,
-                    getDatabaseObject().getName()) != IDialogConstants.YES_ID)
-                {
-                    return;
+        IUndoManager undoManager = getAdapter(IUndoManager.class);
+        if (undoManager != null) {
+            undoManager.undo();
+        } else {
+            DBECommandContext commandContext = getCommandContext();
+            if (commandContext != null && commandContext.getUndoCommand() != null) {
+                if (!getDatabaseObject().isPersisted() && commandContext.getUndoCommands().size() == 1) {
+                    //getSite().getPage().closeEditor(this, true);
+                    //return;
+                    // Undo of last command in command context will close editor
+                    // Let's ask user about it
+                    if (ConfirmationDialog.showConfirmDialog(
+                            null,
+                            DBeaverPreferences.CONFIRM_ENTITY_REJECT,
+                            ConfirmationDialog.QUESTION,
+                            getDatabaseObject().getName()) != IDialogConstants.YES_ID) {
+                        return;
+                    }
                 }
+                commandContext.undoCommand();
+                firePropertyChange(IEditorPart.PROP_DIRTY);
             }
-            commandContext.undoCommand();
-            firePropertyChange(IEditorPart.PROP_DIRTY);
         }
     }
 
     public void redoChanges()
     {
-        DBECommandContext commandContext = getCommandContext();
-        if (commandContext != null && commandContext.getRedoCommand() != null) {
-            commandContext.redoCommand();
-            firePropertyChange(IEditorPart.PROP_DIRTY);
+        IUndoManager undoManager = getAdapter(IUndoManager.class);
+        if (undoManager != null) {
+            undoManager.redo();
+        } else {
+            DBECommandContext commandContext = getCommandContext();
+            if (commandContext != null && commandContext.getRedoCommand() != null) {
+                commandContext.redoCommand();
+                firePropertyChange(IEditorPart.PROP_DIRTY);
+            }
         }
     }
 
