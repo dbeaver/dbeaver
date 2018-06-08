@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.editors.entity;
 
 import org.eclipse.core.expressions.PropertyTester;
+import org.eclipse.jface.text.IUndoManager;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.ui.ActionUtils;
@@ -43,15 +44,27 @@ public class EntityEditorPropertyTester extends PropertyTester
             return false;
         }
         EntityEditor editor = (EntityEditor)receiver;
-        DBECommandContext commandContext = editor.getEditorInput().getCommandContext();
-        if (commandContext != null) {
+        if (PROP_DIRTY.equals(property)) {
+            return editor.isDirty();
+        }
+
+        IUndoManager undoManager = editor.getAdapter(IUndoManager.class);
+        if (undoManager != null) {
             switch (property) {
                 case PROP_CAN_UNDO:
-                    return commandContext.getUndoCommand() != null;
+                    return undoManager.undoable();
                 case PROP_CAN_REDO:
-                    return commandContext.getRedoCommand() != null;
-                case PROP_DIRTY:
-                    return editor.isDirty();
+                    return undoManager.redoable();
+            }
+        } else {
+            DBECommandContext commandContext = editor.getEditorInput().getCommandContext();
+            if (commandContext != null) {
+                switch (property) {
+                    case PROP_CAN_UNDO:
+                        return commandContext.getUndoCommand() != null;
+                    case PROP_CAN_REDO:
+                        return commandContext.getRedoCommand() != null;
+                }
             }
         }
 

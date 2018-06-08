@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.text.IUndoManager;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
@@ -56,7 +57,7 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor> imp
 
     private IValueController valueController;
     private IEditorSite subSite;
-    private BaseTextEditor editor;
+    private EDITOR editor;
 
     @Override
     public StyledText createControl(IValueController valueController) {
@@ -77,7 +78,7 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor> imp
         return editor.getEditorControl();
     }
 
-    protected abstract BaseTextEditor createEditorParty(IValueController valueController);
+    protected abstract EDITOR createEditorParty(IValueController valueController);
 
     @Override
     public void contributeActions(@NotNull IContributionManager manager, @NotNull final StyledText control) throws DBCException {
@@ -117,18 +118,18 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor> imp
         }
     }
 
-    protected BaseTextEditor getTextEditor() {
+    protected EDITOR getTextEditor() {
         return editor;
     }
 
-    protected void initEditorSettings(StyledText control) {
+    private void initEditorSettings(StyledText control) {
         boolean wwEnabled = ValueViewerPanel.getPanelSettings().getBoolean(PREF_TEXT_EDITOR_WORD_WRAP);
         if (wwEnabled != control.getWordWrap()) {
             control.setWordWrap(wwEnabled);
         }
     }
 
-    protected void applyEditorStyle() {
+    private void applyEditorStyle() {
         BaseTextEditor textEditor = getTextEditor();
         if (textEditor != null && ValueViewerPanel.getPanelSettings().getBoolean(PREF_TEXT_EDITOR_AUTO_FORMAT)) {
             try {
@@ -145,6 +146,9 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor> imp
         if (textEditor != null) {
             if (adapter.isAssignableFrom(textEditor.getClass())) {
                 return adapter.cast(textEditor);
+            }
+            if (adapter == IUndoManager.class) {
+                return adapter.cast(textEditor.getTextViewer().getUndoManager());
             }
             return textEditor.getAdapter(adapter);
         }

@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.ui.editors.xml.XMLEditor;
 public class XMLPanelEditor extends AbstractTextPanelEditor<XMLEditor> {
 
     @Override
-    protected BaseTextEditor createEditorParty(IValueController valueController) {
+    protected XMLEditor createEditorParty(IValueController valueController) {
         return new XMLEditor();
     }
 }
