@@ -57,7 +57,7 @@ public class DatabaseEditorUtils {
         CTabFolder tabFolder = null;
         Composite rootComposite = null;
         for (Composite c = composite; c != null; c = c.getParent()) {
-            if (c.getParent() instanceof CTabFolder) {
+            if (!c.isDisposed() && c.getParent() instanceof CTabFolder) {
                 tabFolder = (CTabFolder) c.getParent();
                 rootComposite = c;
                 break;
