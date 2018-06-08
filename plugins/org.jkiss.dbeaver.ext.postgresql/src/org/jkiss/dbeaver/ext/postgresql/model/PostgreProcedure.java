@@ -454,7 +454,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
 
     @Override
     public Collection<PostgrePermission> getPermissions(DBRProgressMonitor monitor, boolean includeNestedObjects) throws DBException {
-        return PostgreUtils.extractPermissionsFromACL(this, acl);
+        return PostgreUtils.extractPermissionsFromACL(monitor,this, acl);
     }
 
     @Override

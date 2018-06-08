@@ -132,10 +132,15 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
             }
         }
 
-        this.dataKind = JDBCDataSource.getDataKind(getName(), valueType);
-        if (this.dataKind == DBPDataKind.OBJECT) {
-            if (PostgreConstants.TYPE_JSONB.equals(name) || PostgreConstants.TYPE_JSON.equals(name)) {
-                this.dataKind = DBPDataKind.CONTENT;
+        if (typeType == PostgreTypeType.e) {
+            // Enums are strings
+            this.dataKind = DBPDataKind.STRING;
+        } else {
+            this.dataKind = JDBCDataSource.getDataKind(getName(), valueType);
+            if (this.dataKind == DBPDataKind.OBJECT) {
+                if (PostgreConstants.TYPE_JSONB.equals(name) || PostgreConstants.TYPE_JSON.equals(name)) {
+                    this.dataKind = DBPDataKind.CONTENT;
+                }
             }
         }
 
@@ -449,7 +454,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     @Override
     public DBCLogicalOperator[] getSupportedOperators(DBSTypedObject attribute) {
         if (dataKind == DBPDataKind.STRING) {
-            if (typeCategory == PostgreTypeCategory.S) {
+            if (typeCategory == PostgreTypeCategory.S || typeCategory == PostgreTypeCategory.E) {
                 return new DBCLogicalOperator[]{
                     DBCLogicalOperator.IS_NULL,
                     DBCLogicalOperator.IS_NOT_NULL,

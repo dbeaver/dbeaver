@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -28,6 +28,8 @@ import org.eclipse.gef.EditPolicy;
 import org.eclipse.gef.Request;
 import org.eclipse.gef.RequestConstants;
 import org.jkiss.dbeaver.ext.erd.ERDMessages;
+import org.jkiss.dbeaver.ext.erd.command.EntityAddCommand;
+import org.jkiss.dbeaver.ext.erd.command.NoteSetTextCommand;
 import org.jkiss.dbeaver.ext.erd.figures.NoteFigure;
 import org.jkiss.dbeaver.ext.erd.model.ERDNote;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
@@ -73,21 +75,12 @@ public class NotePart extends NodePart
 	@Override
     public void performRequest(Request request)
 	{
-		if (request.getType() == RequestConstants.REQ_DIRECT_EDIT)
-		{
-/*
-			if (request instanceof DirectEditRequest
-					&& !directEditHitTest(((DirectEditRequest) request).getLocation().getCopy()))
-				return;
-			performDirectEdit();
-*/
-		} else if (request.getType() == RequestConstants.REQ_OPEN) {
+		if (request.getType() == RequestConstants.REQ_OPEN) {
             final String newText = EditTextDialog.editText(getViewer().getControl().getShell(), ERDMessages.part_note_title, getNote().getObject());
             if (newText != null) {
-                getNote().setObject(newText);
-                ((NoteFigure)getFigure()).setText(newText);
+                NoteSetTextCommand command = new NoteSetTextCommand(getNote(), (NoteFigure) getFigure(), newText);
+                getViewer().getEditDomain().getCommandStack().execute(command);
             }
-            //getTable().openEditor();
         }
 	}
 
