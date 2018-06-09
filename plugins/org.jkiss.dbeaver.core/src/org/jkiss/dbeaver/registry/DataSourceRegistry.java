@@ -219,13 +219,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
         synchronized (dataSources) {
             dsCopy = CommonUtils.copyList(dataSources);
         }
-        Collections.sort(dsCopy, new Comparator<DataSourceDescriptor>() {
-            @Override
-            public int compare(DataSourceDescriptor o1, DataSourceDescriptor o2)
-            {
-                return o1.getName().compareToIgnoreCase(o2.getName());
-            }
-        });
+        dsCopy.sort((o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName()));
         return dsCopy;
     }
 
@@ -620,7 +614,7 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
 
                                 // Filters
                                 if (origin.isDefault()) {
-                                    try (XMLBuilder.Element el2 = xml.startElement(RegistryConstants.TAG_FILTERS)) {
+                                    try (XMLBuilder.Element ignored = xml.startElement(RegistryConstants.TAG_FILTERS)) {
                                         for (DBSObjectFilter cf : savedFilters) {
                                             if (!cf.isEmpty()) {
                                                 saveObjectFiler(xml, null, null, cf);
@@ -1095,8 +1089,8 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                             new DBPConnectionConfiguration());
                     } else {
                         // Clean settings - they have to be loaded later by parser
-                        curDataSource.getConnectionConfiguration().setProperties(Collections.<String, String>emptyMap());
-                        curDataSource.getConnectionConfiguration().setHandlers(Collections.<DBWHandlerConfiguration>emptyList());
+                        curDataSource.getConnectionConfiguration().setProperties(Collections.emptyMap());
+                        curDataSource.getConnectionConfiguration().setHandlers(Collections.emptyList());
                         curDataSource.clearFilters();
                     }
                     curDataSource.setName(name);
@@ -1237,16 +1231,21 @@ public class DataSourceRegistry implements DBPDataSourceRegistry
                         String propName = atts.getValue(RegistryConstants.ATTR_NAME);
                         String propValue = atts.getValue(RegistryConstants.ATTR_VALUE);
                         // TODO: remove bootstrap preferences later. PResent for config backward compatibility
-                        if (propName.equals(DEFAULT_AUTO_COMMIT)) {
-                            curDataSource.getConnectionConfiguration().getBootstrap().setDefaultAutoCommit(CommonUtils.toBoolean(propValue));
-                        } else if (propName.equals(DEFAULT_ISOLATION)) {
-                            curDataSource.getConnectionConfiguration().getBootstrap().setDefaultTransactionIsolation(CommonUtils.toInt(propValue));
-                        } else if (propName.equals(DEFAULT_ACTIVE_OBJECT)) {
-                            if (!CommonUtils.isEmpty(propValue)) {
-                                curDataSource.getConnectionConfiguration().getBootstrap().setDefaultObjectName(propValue);
-                            }
-                        } else {
-                            curDataSource.getPreferenceStore().getProperties().put(propName, propValue);
+                        switch (propName) {
+                            case DEFAULT_AUTO_COMMIT:
+                                curDataSource.getConnectionConfiguration().getBootstrap().setDefaultAutoCommit(CommonUtils.toBoolean(propValue));
+                                break;
+                            case DEFAULT_ISOLATION:
+                                curDataSource.getConnectionConfiguration().getBootstrap().setDefaultTransactionIsolation(CommonUtils.toInt(propValue));
+                                break;
+                            case DEFAULT_ACTIVE_OBJECT:
+                                if (!CommonUtils.isEmpty(propValue)) {
+                                    curDataSource.getConnectionConfiguration().getBootstrap().setDefaultObjectName(propValue);
+                                }
+                                break;
+                            default:
+                                curDataSource.getPreferenceStore().getProperties().put(propName, propValue);
+                                break;
                         }
                     }
                     break;

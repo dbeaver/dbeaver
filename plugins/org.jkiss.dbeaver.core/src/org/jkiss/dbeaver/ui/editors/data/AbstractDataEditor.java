@@ -149,25 +149,22 @@ public abstract class AbstractDataEditor<OBJECT_TYPE extends DBSObject> extends 
     }
 
     public static void openNewDataEditor(DBNDatabaseNode targetNode, DBDDataFilter newFilter) {
-        UIUtils.asyncExec(new Runnable() {
-            @Override
-            public void run() {
-                IEditorPart entityEditor = NavigatorHandlerObjectOpen.openEntityEditor(
-                    targetNode,
-                    DatabaseDataEditor.class.getName(),
-                    null,
-                    Collections.singletonMap(DatabaseDataEditor.ATTR_DATA_FILTER, newFilter),
-                    UIUtils.getActiveWorkbenchWindow(),
-                    true);
+        UIUtils.asyncExec(() -> {
+            IEditorPart entityEditor = NavigatorHandlerObjectOpen.openEntityEditor(
+                targetNode,
+                DatabaseDataEditor.class.getName(),
+                null,
+                Collections.singletonMap(DatabaseDataEditor.ATTR_DATA_FILTER, newFilter),
+                UIUtils.getActiveWorkbenchWindow(),
+                true);
 
-                if (entityEditor instanceof MultiPageEditorPart) {
-                    Object selectedPage = ((MultiPageEditorPart) entityEditor).getSelectedPage();
-                    if (selectedPage instanceof IResultSetContainer) {
-                        ResultSetViewer rsv = (ResultSetViewer) ((IResultSetContainer) selectedPage).getResultSetController();
-                        if (rsv != null && !rsv.isRefreshInProgress() && !newFilter.equals(rsv.getModel().getDataFilter())) {
-                            // Set filter directly
-                            rsv.refreshWithFilter(newFilter);
-                        }
+            if (entityEditor instanceof MultiPageEditorPart) {
+                Object selectedPage = ((MultiPageEditorPart) entityEditor).getSelectedPage();
+                if (selectedPage instanceof IResultSetContainer) {
+                    ResultSetViewer rsv = (ResultSetViewer) ((IResultSetContainer) selectedPage).getResultSetController();
+                    if (rsv != null && !rsv.isRefreshInProgress() && !newFilter.equals(rsv.getModel().getDataFilter())) {
+                        // Set filter directly
+                        rsv.refreshWithFilter(newFilter);
                     }
                 }
             }
