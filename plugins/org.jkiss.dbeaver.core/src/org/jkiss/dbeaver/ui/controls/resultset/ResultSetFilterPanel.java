@@ -17,10 +17,14 @@
 
 package org.jkiss.dbeaver.ui.controls.resultset;
 
+import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.fieldassist.ContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.jface.text.Document;
+import org.eclipse.jface.text.IUndoManager;
+import org.eclipse.jface.text.TextViewer;
+import org.eclipse.jface.text.TextViewerUndoManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.*;
@@ -73,7 +77,7 @@ import java.util.regex.Pattern;
 /**
  * ResultSetFilterPanel
  */
-class ResultSetFilterPanel extends Composite implements IContentProposalProvider
+class ResultSetFilterPanel extends Composite implements IContentProposalProvider, IAdaptable
 {
     private static final Log log = Log.getLog(ResultSetFilterPanel.class);
 
@@ -89,6 +93,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     private final RefreshPanel refreshPanel;
     private final HistoryPanel historyPanel;
 
+    private final TextViewer filtersTextViewer;
     private final StyledText filtersText;
 
     private final ToolBar filterToolbar;
@@ -118,16 +123,16 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
         this.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        sizingGC = new GC(this);
+        this.sizingGC = new GC(this);
 
         GridLayout gl = new GridLayout(4, false);
         gl.marginHeight = 3;
         gl.marginWidth = 3;
         this.setLayout(gl);
 
-        hoverBgColor = getDisplay().getSystemColor(SWT.COLOR_WIDGET_LIGHT_SHADOW);
-        shadowColor = getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW);
-        hintFont = UIUtils.modifyFont(getFont(), SWT.ITALIC);
+        this.hoverBgColor = getDisplay().getSystemColor(SWT.COLOR_WIDGET_LIGHT_SHADOW);
+        this.shadowColor = getDisplay().getSystemColor(SWT.COLOR_WIDGET_NORMAL_SHADOW);
+        this.hintFont = UIUtils.modifyFont(getFont(), SWT.ITALIC);
 
         {
             this.filterComposite = new Composite(this, SWT.BORDER);
@@ -136,12 +141,18 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             gl.marginWidth = 0;
             gl.horizontalSpacing = 0;
             gl.verticalSpacing = 0;
-            filterComposite.setLayout(gl);
-            filterComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            this.filterComposite.setLayout(gl);
+            this.filterComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-            activeObjectPanel = new ActiveObjectPanel(filterComposite);
+            this.activeObjectPanel = new ActiveObjectPanel(filterComposite);
 
-            this.filtersText = new StyledText(filterComposite, SWT.MULTI);
+            this.filtersTextViewer = new TextViewer(filterComposite, SWT.MULTI);
+            this.filtersTextViewer.setDocument(new Document());
+            TextViewerUndoManager undoManager = new TextViewerUndoManager(200);
+            undoManager.connect(filtersTextViewer);
+            this.filtersTextViewer.setUndoManager(undoManager);
+            this.filtersText = this.filtersTextViewer.getTextWidget();
+
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.verticalIndent = 1;
             this.filtersText.setLayoutData(gd);
@@ -629,6 +640,14 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         UIUtils.waitJobCompletion(searchJob);
 
         return proposals.toArray(new IContentProposal[0]);
+    }
+
+    @Override
+    public <T> T getAdapter(Class<T> adapter) {
+        if (adapter == IUndoManager.class) {
+            return adapter.cast(filtersTextViewer.getUndoManager());
+        }
+        return null;
     }
 
     private class FilterPanel extends Canvas {
