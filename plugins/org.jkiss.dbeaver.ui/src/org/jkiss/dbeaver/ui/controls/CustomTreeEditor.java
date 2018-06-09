@@ -83,6 +83,7 @@ public abstract class CustomTreeEditor implements MouseListener, TraverseListene
         if (editor == null) {
             return;
         }
+        treeEditor.minimumHeight = editor.computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
         editor.setFocus();
         editor.addFocusListener(new FocusAdapter() {
             @Override

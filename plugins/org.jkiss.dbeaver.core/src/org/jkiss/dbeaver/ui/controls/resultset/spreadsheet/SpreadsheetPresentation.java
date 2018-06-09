@@ -139,6 +139,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     private boolean showCelIcons = true;
     private boolean colorizeDataTypes = true;
     private boolean rightJustifyNumbers = true;
+    private IValueEditor activeInlineEditor;
 
     public SpreadsheetPresentation() {
         findReplaceTarget = new SpreadsheetFindReplaceTarget(this);
@@ -153,6 +154,22 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     DBPDataSource getDataSource() {
         DBSDataContainer dataContainer = controller.getDataContainer();
         return dataContainer == null ? null : dataContainer.getDataSource();
+    }
+
+    @Override
+    public void applyChanges() {
+        if (activeInlineEditor != null && activeInlineEditor.getControl() != null && !activeInlineEditor.getControl().isDisposed()) {
+            IValueController valueController = (IValueController) activeInlineEditor.getControl().getData(DATA_VALUE_CONTROLLER);
+            if (valueController != null) {
+                try {
+                    Object value = activeInlineEditor.extractEditorValue();
+                    valueController.updateValue(value, true);
+                } catch (DBException e) {
+                    DBUserInterface.getInstance().showError("Error extracting editor value", null, e);
+                }
+            }
+            spreadsheet.cancelInlineEditor();
+        }
     }
 
     @Override
@@ -820,6 +837,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 return null;
             }
             spreadsheet.cancelInlineEditor();
+            activeInlineEditor = null;
 
             placeholder = new Composite(spreadsheet, SWT.NONE);
             placeholder.setFont(spreadsheet.getFont());
@@ -865,48 +883,50 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         }
 */
 
-        final IValueEditor editor;
         try {
-            editor = valueController.getValueManager().createEditor(valueController);
+            activeInlineEditor = valueController.getValueManager().createEditor(valueController);
         }
         catch (Exception e) {
             DBUserInterface.getInstance().showError("Cannot edit value", null, e);
             return null;
         }
-        if (editor != null) {
-            editor.createControl();
+        if (activeInlineEditor != null) {
+            activeInlineEditor.createControl();
+            if (activeInlineEditor.getControl() != null) {
+                activeInlineEditor.getControl().setData(DATA_VALUE_CONTROLLER, valueController);
+            }
         }
-        if (editor instanceof IValueEditorStandalone) {
-            valueController.registerEditor((IValueEditorStandalone)editor);
-            Control editorControl = editor.getControl();
+        if (activeInlineEditor instanceof IValueEditorStandalone) {
+            valueController.registerEditor((IValueEditorStandalone) activeInlineEditor);
+            Control editorControl = activeInlineEditor.getControl();
             if (editorControl != null) {
-                editorControl.addDisposeListener(e -> valueController.unregisterEditor((IValueEditorStandalone)editor));
+                editorControl.addDisposeListener(e -> valueController.unregisterEditor((IValueEditorStandalone) activeInlineEditor));
             }
             // show dialog in separate job to avoid block
             new UIJob("Open separate editor") {
                 @Override
                 public IStatus runInUIThread(IProgressMonitor monitor)
                 {
-                    ((IValueEditorStandalone)editor).showValueEditor();
+                    ((IValueEditorStandalone) activeInlineEditor).showValueEditor();
                     return Status.OK_STATUS;
                 }
             }.schedule();
             //((IValueEditorStandalone)editor).showValueEditor();
         } else {
             // Set editable value
-            if (editor != null) {
+            if (activeInlineEditor != null) {
                 try {
-                    editor.primeEditorValue(valueController.getValue());
+                    activeInlineEditor.primeEditorValue(valueController.getValue());
                 } catch (DBException e) {
                     log.error(e);
                 }
-                editor.setDirty(false);
+                activeInlineEditor.setDirty(false);
             }
         }
         if (inline) {
-            if (editor != null) {
+            if (activeInlineEditor != null) {
                 spreadsheet.showCellEditor(placeholder);
-                return editor.getControl();
+                return activeInlineEditor.getControl();
             } else {
                 // No editor was created so just drop placeholder
                 placeholder.dispose();

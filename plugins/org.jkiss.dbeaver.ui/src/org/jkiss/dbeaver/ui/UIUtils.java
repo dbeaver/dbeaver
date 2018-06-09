@@ -1109,6 +1109,9 @@ public class UIUtils {
      */
     public static boolean hasFocus(Control control)
     {
+        if (control == null || control.isDisposed()) {
+            return false;
+        }
         Control focusControl = control.getDisplay().getFocusControl();
         if (focusControl == null) {
             return false;

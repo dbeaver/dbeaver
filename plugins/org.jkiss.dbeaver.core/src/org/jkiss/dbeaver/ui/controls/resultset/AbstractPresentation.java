@@ -49,6 +49,7 @@ public abstract class AbstractPresentation implements IResultSetPresentation, IS
     public static final String RESULTS_CONTROL_CONTEXT_ID = "org.jkiss.dbeaver.ui.context.resultset.focused";
     public static final StructuredSelection EMPTY_SELECTION = new StructuredSelection();
     public static final String RESULT_SET_PRESENTATION_CONTEXT_MENU = "org.jkiss.dbeaver.ui.controls.resultset.conext.menu";
+    public static final String DATA_VALUE_CONTROLLER = "org.jkiss.dbeaver.resultset.value-controller";
 
     @NotNull
     protected IResultSetController controller;
@@ -60,6 +61,11 @@ public abstract class AbstractPresentation implements IResultSetPresentation, IS
     @NotNull
     public IResultSetController getController() {
         return controller;
+    }
+
+    @Override
+    public void applyChanges() {
+        // Do nothing
     }
 
     @Override
