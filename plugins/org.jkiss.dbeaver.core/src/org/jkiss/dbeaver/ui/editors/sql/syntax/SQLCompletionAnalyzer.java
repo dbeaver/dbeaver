@@ -82,10 +82,11 @@ class SQLCompletionAnalyzer
         if (dataSource == null) {
             return;
         }
+        boolean emptyWord = request.wordPart.length() == 0;
         if (request.queryType != null) {
             // Try to determine which object is queried (if wordPart is not empty)
             // or get list of root database objects
-            if (request.wordPart.length() == 0) {
+            if (emptyWord) {
                 // Get root objects
                 DBPObject rootObject = null;
                 if (request.queryType == SQLCompletionProcessor.QueryType.COLUMN && dataSource instanceof DBSObjectContainer) {
@@ -139,7 +140,10 @@ class SQLCompletionAnalyzer
                 }
             }
 
-            if (!request.simpleMode && request.queryType == SQLCompletionProcessor.QueryType.COLUMN && dataSource instanceof DBSObjectContainer) {
+            if (dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.SHOW_COLUMN_PROCEDURES) &&
+                !request.simpleMode &&
+                request.queryType == SQLCompletionProcessor.QueryType.COLUMN && dataSource instanceof DBSObjectContainer)
+            {
                 // Add procedures/functions for column proposals
                 DBSStructureAssistant structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, dataSource);
                 DBSObjectContainer sc = (DBSObjectContainer) dataSource;
