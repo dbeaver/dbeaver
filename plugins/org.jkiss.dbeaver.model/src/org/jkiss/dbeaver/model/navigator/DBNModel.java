@@ -231,7 +231,6 @@ public class DBNModel implements IResourceChangeListener {
     /**
      * Find node by path.
      * Deprecated - use getNodeByPath with project parameter
-     * @throws DBException
      */
     @Nullable
     public DBNNode getNodeByPath(@NotNull DBRProgressMonitor monitor, @NotNull String path) throws DBException {
