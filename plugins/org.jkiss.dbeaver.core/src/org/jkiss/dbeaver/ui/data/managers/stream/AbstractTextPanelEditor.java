@@ -21,6 +21,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.text.IUndoManager;
+import org.eclipse.jface.text.TextViewer;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
@@ -148,7 +149,10 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor> imp
                 return adapter.cast(textEditor);
             }
             if (adapter == IUndoManager.class) {
-                return adapter.cast(textEditor.getTextViewer().getUndoManager());
+                TextViewer textViewer = textEditor.getTextViewer();
+                if (textViewer != null && textViewer.getUndoManager() != null) {
+                    return adapter.cast(textViewer.getUndoManager());
+                }
             }
             return textEditor.getAdapter(adapter);
         }
