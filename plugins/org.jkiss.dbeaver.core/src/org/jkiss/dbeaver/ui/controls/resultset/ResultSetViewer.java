@@ -1033,6 +1033,20 @@ public class ResultSetViewer extends Viewer
     @Override
     public <T> T getAdapter(Class<T> adapter)
     {
+        if (UIUtils.hasFocus(filtersPanel)) {
+            T result = filtersPanel.getAdapter(adapter);
+            if (result != null) {
+                return result;
+            }
+        } else if (UIUtils.hasFocus(panelFolder)) {
+            IResultSetPanel visiblePanel = getVisiblePanel();
+            if (visiblePanel instanceof IAdaptable) {
+                T adapted = ((IAdaptable) visiblePanel).getAdapter(adapter);
+                if (adapted != null) {
+                    return adapted;
+                }
+            }
+        }
         if (activePresentation != null) {
             if (adapter.isAssignableFrom(activePresentation.getClass())) {
                 return adapter.cast(activePresentation);
@@ -1043,13 +1057,6 @@ public class ResultSetViewer extends Viewer
                 if (adapted != null) {
                     return adapted;
                 }
-            }
-        }
-        IResultSetPanel visiblePanel = getVisiblePanel();
-        if (visiblePanel instanceof IAdaptable) {
-            T adapted = ((IAdaptable) visiblePanel).getAdapter(adapter);
-            if (adapted != null) {
-                return adapted;
             }
         }
         if (adapter == IFindReplaceTarget.class) {
