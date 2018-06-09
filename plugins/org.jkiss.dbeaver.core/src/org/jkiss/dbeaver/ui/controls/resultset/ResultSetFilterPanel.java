@@ -831,7 +831,10 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                         new TableItem(historyTable, SWT.NONE).setText(hi);
                     }
                 }
-                historyTable.deselectAll();
+                //historyTable.deselectAll();
+                if (historyTable.getItemCount() > 0) {
+                    historyTable.setSelection(0);
+                }
             }
 
             historyTable.addMouseTrackListener(new MouseTrackAdapter() {
@@ -856,21 +859,30 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                         }
                     }
                     if (item != null && !item.isDisposed()) {
-                        if (e.keyCode == SWT.DEL) {
-                            final String filterValue = item.getText();
-                            try {
-                                viewer.getFilterManager().deleteQueryFilterValue(getActiveSourceQuery(), filterValue);
-                            } catch (DBException e1) {
-                                log.warn("Error deleting filter value [" + filterValue + "]", e1);
-                            }
-                            filtersHistory.remove(filterValue);
-                            item.dispose();
-                            hoverItem = null;
-                        } else if (e.keyCode == SWT.CR || e.keyCode == SWT.SPACE) {
-                            final String newFilter = item.getText();
-                            popup.dispose();
-                            setFilterValue(newFilter);
-                            setCustomDataFilter();
+                        switch (e.keyCode) {
+                            case SWT.DEL:
+                                final String filterValue = item.getText();
+                                try {
+                                    viewer.getFilterManager().deleteQueryFilterValue(getActiveSourceQuery(), filterValue);
+                                } catch (DBException e1) {
+                                    log.warn("Error deleting filter value [" + filterValue + "]", e1);
+                                }
+                                filtersHistory.remove(filterValue);
+                                item.dispose();
+                                hoverItem = null;
+                                break;
+                            case SWT.CR:
+                            case SWT.SPACE:
+                                final String newFilter = item.getText();
+                                popup.dispose();
+                                setFilterValue(newFilter);
+                                setCustomDataFilter();
+                                break;
+                            case SWT.ARROW_UP:
+                                if (historyTable.getSelectionIndex() <= 0) {
+                                    popup.dispose();
+                                }
+                                break;
                         }
                     }
                 }
