@@ -30,10 +30,7 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.*;
-import org.eclipse.swt.events.FocusEvent;
-import org.eclipse.swt.events.FocusListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
@@ -156,6 +153,7 @@ public class ResultSetViewer extends Viewer
 
     private final Map<ResultSetPresentationDescriptor, PresentationSettings> presentationSettings = new HashMap<>();
     private final Map<String, IResultSetPanel> activePanels = new HashMap<>();
+    private final Map<String, ToolBarManager> activeToolBars = new HashMap<>();
 
     @NotNull
     private final IResultSetContainer container;
@@ -208,18 +206,18 @@ public class ResultSetViewer extends Viewer
 
         loadPresentationSettings();
 
-        this.viewerPanel = UIUtils.createPlaceholder(parent, 1);
-        this.viewerPanel.setData(CONTROL_ID, this);
-        UIUtils.setHelp(this.viewerPanel, IHelpContextIds.CTX_RESULT_SET_VIEWER);
-        this.viewerPanel.setRedraw(false);
-
         {
             IPreferenceStore preferenceStore = EditorUtils.getEditorsPreferenceStore();
             String bgRGB = preferenceStore.getString(AbstractTextEditor.PREFERENCE_COLOR_BACKGROUND);
             String fgRGB = preferenceStore.getString(AbstractTextEditor.PREFERENCE_COLOR_FOREGROUND);
-            defaultBackground = CommonUtils.isEmpty(bgRGB) ? viewerPanel.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND) : UIUtils.getSharedColor(bgRGB);
-            defaultForeground = CommonUtils.isEmpty(fgRGB) ? viewerPanel.getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND) : UIUtils.getSharedColor(fgRGB);
+            defaultBackground = CommonUtils.isEmpty(bgRGB) ? parent.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND) : UIUtils.getSharedColor(bgRGB);
+            defaultForeground = CommonUtils.isEmpty(fgRGB) ? parent.getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND) : UIUtils.getSharedColor(fgRGB);
         }
+
+        this.viewerPanel = UIUtils.createPlaceholder(parent, 1);
+        this.viewerPanel.setData(CONTROL_ID, this);
+        UIUtils.setHelp(this.viewerPanel, IHelpContextIds.CTX_RESULT_SET_VIEWER);
+        this.viewerPanel.setRedraw(false);
 
         try {
             this.autoRefreshControl = new AutoRefreshControl(
@@ -931,31 +929,7 @@ public class ResultSetViewer extends Viewer
         List<IContributionItem> items = new ArrayList<>();
 
         for (final ResultSetPanelDescriptor panel : availablePanels) {
-            Action panelAction = new Action(panel.getLabel(), Action.AS_CHECK_BOX) {
-                {
-                    setToolTipText(panel.getDescription());
-                    // Icons turns menu into mess - checkboxes are much better
-                    //setImageDescriptor(DBeaverIcons.getImageDescriptor(panel.getIcon()));
-                }
-                @Override
-                public boolean isChecked() {
-                    return activePanels.containsKey(panel.getId());
-                }
-
-                @Override
-                public void run() {
-                    if (isPanelsVisible() && isChecked()) {
-                        CTabItem panelTab = getPanelTab(panel.getId());
-                        if (panelTab != null) {
-                            panelTab.dispose();
-                            removePanel(panel.getId());
-                        }
-                    } else {
-                        activatePanel(panel.getId(), true, true);
-                    }
-                }
-            };
-            items.add(new ActionContributionItem(panelAction));
+            items.add(new ActionContributionItem(new PanelToggleAction(panel)));
         }
         return items;
     }
@@ -1688,7 +1662,7 @@ public class ResultSetViewer extends Viewer
         fillFiltersMenu(curAttribute, menuManager);
         showContextMenuAtCursor(menuManager);
     }
-    
+
     @Override
     public void showDistinctFilter(DBDAttributeBinding curAttribute) {
         showFiltersDistinctMenu(curAttribute, false);
@@ -1939,11 +1913,25 @@ public class ResultSetViewer extends Viewer
                 layoutMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGGLE_PANELS));
                 layoutMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_SWITCH_PRESENTATION));
                 {
-                    layoutMenu.add(new Separator());
+                    MenuManager panelsMenu = new MenuManager(
+                        "Panels",
+                        DBeaverIcons.getImageDescriptor(UIIcon.PANEL_CUSTOMIZE),
+                        "result_panels"); //$NON-NLS-1$
+                    layoutMenu.add(panelsMenu);
                     for (IContributionItem item : fillPanelsMenu()) {
-                        layoutMenu.add(item);
+                        panelsMenu.add(item);
                     }
                 }
+/*
+                {
+                    MenuManager toolBarsMenu = new MenuManager(
+                        "Toolbars",
+                        null,
+                        "result_toolbars"); //$NON-NLS-1$
+                    layoutMenu.add(toolBarsMenu);
+                    toolBarsMenu.add(new ToolbarToggleAction("sample", "Sample"));
+                }
+*/
                 manager.add(layoutMenu);
 
             }
@@ -2578,12 +2566,9 @@ public class ResultSetViewer extends Viewer
 
         if (container.isReadyToRun() && dataContainer != null && dataPumpJob == null) {
             int segmentSize = getSegmentMaxRows();
-            Runnable finalizer = new Runnable() {
-                @Override
-                public void run() {
-                    if (activePresentation.getControl() != null && !activePresentation.getControl().isDisposed()) {
-                        activePresentation.formatData(true);
-                    }
+            Runnable finalizer = () -> {
+                if (activePresentation.getControl() != null && !activePresentation.getControl().isDisposed()) {
+                    activePresentation.formatData(true);
                 }
             };
 
@@ -3583,15 +3568,15 @@ public class ResultSetViewer extends Viewer
             }
         }
     }
-    
-    
+
+
     private class FilterByValueAction extends Action {
     	private final DBCLogicalOperator operator;
         private final FilterByAttributeType type;
         private final DBDAttributeBinding attribute;
         private final Object value;
-        
-        
+
+
         FilterByValueAction(DBCLogicalOperator operator, FilterByAttributeType type, DBDAttributeBinding attribute, Object value)
         {
             super(attribute.getName() + " = " + CommonUtils.truncateString(String.valueOf(value), 64), null);
@@ -3601,11 +3586,11 @@ public class ResultSetViewer extends Viewer
             this.value = value;
         }
 
-        
+
         @Override
         public void run()
         {
-            
+
             if (operator.getArgumentCount() != 0 && value == null) {
                 return;
             }
@@ -3618,8 +3603,8 @@ public class ResultSetViewer extends Viewer
             }
         }
     }
-    
-    
+
+
 
     private class FilterResetAttributeAction extends Action {
         private final DBDAttributeBinding attribute;
@@ -3946,6 +3931,66 @@ public class ResultSetViewer extends Viewer
         String activePanelId;
         int panelRatio;
         boolean panelsVisible;
+    }
+
+    private class PanelToggleAction extends Action {
+        private final ResultSetPanelDescriptor panel;
+
+        public PanelToggleAction(ResultSetPanelDescriptor panel) {
+            super(panel.getLabel(), Action.AS_CHECK_BOX);
+            this.panel = panel;
+            setToolTipText(panel.getDescription());
+            // Icons turns menu into mess - checkboxes are much better
+            //setImageDescriptor(DBeaverIcons.getImageDescriptor(panel.getIcon()));
+        }
+
+        @Override
+        public boolean isChecked() {
+            return activePanels.containsKey(panel.getId());
+        }
+
+        @Override
+        public void run() {
+            if (isPanelsVisible() && isChecked()) {
+                CTabItem panelTab = getPanelTab(panel.getId());
+                if (panelTab != null) {
+                    panelTab.dispose();
+                    removePanel(panel.getId());
+                }
+            } else {
+                activatePanel(panel.getId(), true, true);
+            }
+        }
+    }
+
+    private class ToolbarToggleAction extends Action {
+        private final String toolbarId;
+
+        public ToolbarToggleAction(String toolbarId, String toolbarLabel) {
+            super(toolbarLabel, Action.AS_CHECK_BOX);
+            this.toolbarId = toolbarId;
+            //setToolTipText(panel.getDescription());
+        }
+
+        @Override
+        public boolean isChecked() {
+            return activePanels.containsKey(toolbarId);
+        }
+
+        @Override
+        public void run() {
+/*
+            if (isPanelsVisible() && isChecked()) {
+                CTabItem panelTab = getPanelTab(panel.getId());
+                if (panelTab != null) {
+                    panelTab.dispose();
+                    removePanel(panel.getId());
+                }
+            } else {
+                activatePanel(panel.getId(), true, true);
+            }
+*/
+        }
     }
 
     /*
