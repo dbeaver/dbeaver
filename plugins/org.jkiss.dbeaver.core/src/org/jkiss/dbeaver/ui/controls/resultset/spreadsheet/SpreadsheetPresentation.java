@@ -157,6 +157,14 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     }
 
     @Override
+    public boolean isDirty() {
+        return activeInlineEditor != null &&
+            activeInlineEditor.getControl() != null &&
+            !activeInlineEditor.getControl().isDisposed() &&
+            activeInlineEditor.getControl().isVisible();
+    }
+
+    @Override
     public void applyChanges() {
         if (activeInlineEditor != null && activeInlineEditor.getControl() != null && !activeInlineEditor.getControl().isDisposed()) {
             IValueController valueController = (IValueController) activeInlineEditor.getControl().getData(DATA_VALUE_CONTROLLER);
@@ -170,6 +178,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             }
             spreadsheet.cancelInlineEditor();
         }
+        super.applyChanges();
     }
 
     @Override

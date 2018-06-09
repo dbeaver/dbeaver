@@ -64,8 +64,17 @@ public abstract class AbstractPresentation implements IResultSetPresentation, IS
     }
 
     @Override
+    public boolean isDirty() {
+        return false;
+    }
+
+    @Override
     public void applyChanges() {
-        // Do nothing
+        // Set focus to main control
+        Control control = getControl();
+        if (control != null && !control.isDisposed()) {
+            control.setFocus();
+        }
     }
 
     @Override

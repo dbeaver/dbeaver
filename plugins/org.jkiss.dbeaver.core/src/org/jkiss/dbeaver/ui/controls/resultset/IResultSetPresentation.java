@@ -71,6 +71,8 @@ public interface IResultSetPresentation {
 
     void updateValueView();
 
+    boolean isDirty();
+
     void applyChanges();
 
     /**

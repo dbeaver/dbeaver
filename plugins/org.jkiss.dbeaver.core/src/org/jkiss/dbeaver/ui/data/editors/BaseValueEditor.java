@@ -103,6 +103,9 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
                 activationEditor = null;
             }
         });
+        inlineControl.addDisposeListener(e -> {
+            control = null;
+        });
 
         if (isInline) {
             inlineControl.setFont(valueController.getEditPlaceholder().getFont());
