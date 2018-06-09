@@ -110,6 +110,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
     private String prevQuery = null;
     private final List<String> filtersHistory = new ArrayList<>();
     private Menu historyMenu;
+    private boolean filterExpanded = false;
 
     ResultSetFilterPanel(ResultSetViewer rsv) {
         super(rsv.getControl(), SWT.NONE);
@@ -140,8 +141,10 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
             activeObjectPanel = new ActiveObjectPanel(filterComposite);
 
-            this.filtersText = new StyledText(filterComposite, SWT.SINGLE);
-            this.filtersText.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            this.filtersText = new StyledText(filterComposite, SWT.MULTI);
+            GridData gd = new GridData(GridData.FILL_BOTH);
+            gd.verticalIndent = 1;
+            this.filtersText.setLayoutData(gd);
             StyledTextUtils.fillDefaultStyledTextContextMenu(filtersText);
             StyledTextUtils.enableDND(this.filtersText);
 
@@ -174,11 +177,28 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                     filtersClearButton.setEnabled(!CommonUtils.isEmpty(filterText));
                 }
             });
+            this.filtersText.addVerifyKeyListener(e -> {
+                if (e.keyCode == SWT.CR) {
+                    if (filterExpanded && (e.stateMask & SWT.CTRL) == 0) {
+                        return;
+                    }
+                    e.doit = false;
+                }
+            });
             this.filtersText.addKeyListener(new KeyAdapter() {
                 @Override
                 public void keyPressed(KeyEvent e) {
                     if (e.keyCode == SWT.ARROW_DOWN) {
+                        if (filterExpanded && (e.stateMask & SWT.CTRL) ==0) {
+                            return;
+                        }
                         historyPanel.showFilterHistoryPopup();
+                    } else if (e.keyCode == SWT.CR) {
+                        if (filterExpanded && (e.stateMask & SWT.CTRL) == 0) {
+                            return;
+                        }
+                        e.doit = false;
+                        setCustomDataFilter();
                     }
                 }
             });
@@ -209,6 +229,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
         {
             filterToolbar = new ToolBar(this, SWT.HORIZONTAL | SWT.RIGHT);
+            filterToolbar.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING));
 
             filtersApplyButton = new ToolItem(filterToolbar, SWT.PUSH | SWT.NO_FOCUS);
             filtersApplyButton.setImage(DBeaverIcons.getImage(UIIcon.FILTER_APPLY));
@@ -274,6 +295,10 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
         this.addTraverseListener(e -> {
             if (e.detail == SWT.TRAVERSE_RETURN) {
+                if (filterExpanded) {
+                    e.doit = true;
+                    return;
+                }
                 setCustomDataFilter();
                 e.doit = false;
                 e.detail = SWT.TRAVERSE_NONE;
@@ -611,6 +636,8 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         FilterPanel(Composite parent, int style) {
             super(parent, style);
 
+            GridData gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_VERTICAL);
+            setLayoutData(gd);
             addPaintListener(this::paintPanel);
             addMouseTrackListener(new MouseTrackAdapter() {
                 @Override
@@ -641,7 +668,6 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
         ActiveObjectPanel(Composite addressBar) {
             super(addressBar, SWT.NONE);
-            setLayoutData(new GridData(GridData.FILL_VERTICAL));
             setToolTipText(CoreMessages.sql_editor_resultset_filter_panel_btn_open_console);
 
             this.addMouseListener(new MouseAdapter() {
@@ -720,10 +746,12 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
         @Override
         protected void paintPanel(PaintEvent e) {
+            Point hintSize = computeSize(SWT.DEFAULT, SWT.DEFAULT);
+            int panelHeight = hintSize.y;
             e.gc.setForeground(shadowColor);
             if (hover) {
                 e.gc.setBackground(hoverBgColor);
-                e.gc.fillRectangle(e.x, e.y, e.width - 3, e.height);
+                e.gc.fillRectangle(e.x, e.y, e.width - 3, panelHeight);
                 e.gc.drawLine(
                     e.x + e.width - 4, e.y,
                     e.x + e.width - 4, e.y + e.height);
@@ -737,7 +765,6 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             e.gc.setClipping(e.x, e.y, e.width - 8, e.height);
 
             int textOffset = 2;
-            int panelHeight = getSize().y;
             DBPImage activeObjectImage = getActiveObjectImage();
             if (activeObjectImage != null) {
                 Image icon = DBeaverIcons.getImage(activeObjectImage);
@@ -763,7 +790,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             dropImageE = DBeaverIcons.getImage(UIIcon.DROP_DOWN);
             dropImageD = new Image(dropImageE.getDevice(), dropImageE, SWT.IMAGE_GRAY);
 
-            GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+            GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.FILL_VERTICAL);
             gd.heightHint = MIN_FILTER_TEXT_HEIGHT;
             gd.widthHint = dropImageE.getBounds().width + 2;
             setLayoutData(gd);
@@ -917,24 +944,30 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
     private class EditFilterPanel extends FilterPanel {
 
-        private final Image enabledImage, disabledImage;
+        private final Image enabledImageExpand, disabledImageExpand;
+        private final Image enabledImageCollapse, disabledImageCollapse;
 
         EditFilterPanel(Composite addressBar) {
             super(addressBar, SWT.NONE);
             setToolTipText("Expan filter panel");
-            enabledImage = DBeaverIcons.getImage(UIIcon.FIT_WINDOW);
-            disabledImage = new Image(enabledImage.getDevice(), enabledImage, SWT.IMAGE_GRAY);
-            addDisposeListener(e -> UIUtils.dispose(disabledImage));
+            enabledImageExpand = DBeaverIcons.getImage(UIIcon.FIT_WINDOW);
+            disabledImageExpand = new Image(enabledImageExpand.getDevice(), enabledImageExpand, SWT.IMAGE_GRAY);
+            enabledImageCollapse = DBeaverIcons.getImage(UIIcon.ORIGINAL_SIZE);
+            disabledImageCollapse = new Image(enabledImageCollapse.getDevice(), enabledImageCollapse, SWT.IMAGE_GRAY);
+            addDisposeListener(e -> {
+                UIUtils.dispose(disabledImageExpand);
+                UIUtils.dispose(disabledImageCollapse);
+            });
             addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseUp(MouseEvent e) {
-
+                    toggleFilterPanel();
                 }
             });
 
-            GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+            GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.FILL_VERTICAL);
             gd.heightHint = MIN_FILTER_TEXT_HEIGHT;
-            gd.widthHint = enabledImage.getBounds().width + 4;
+            gd.widthHint = enabledImageExpand.getBounds().width + 4;
             setLayoutData(gd);
         }
 
@@ -942,11 +975,20 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
         protected void paintPanel(PaintEvent e) {
             e.gc.setForeground(shadowColor);
             if (hover) {
-                e.gc.drawImage(enabledImage, e.x, e.y + 2);
+                e.gc.drawImage(filterExpanded ? enabledImageCollapse : enabledImageExpand, e.x, e.y + 2);
             } else {
-                e.gc.drawImage(disabledImage, e.x, e.y + 2);
+                e.gc.drawImage(filterExpanded ? disabledImageCollapse : disabledImageExpand, e.x, e.y + 2);
             }
         }
+    }
+
+    private void toggleFilterPanel() {
+        filterExpanded = !filterExpanded;
+
+        GridData gd = (GridData) filtersText.getLayoutData();
+        gd.heightHint = filtersText.getLineHeight() * (filterExpanded ? 5 : 1);
+
+        this.getParent().layout(true);
     }
 
     private class RefreshPanel extends FilterPanel {
@@ -969,7 +1011,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                 }
             });
 
-            GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+            GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.FILL_VERTICAL);
             gd.heightHint = MIN_FILTER_TEXT_HEIGHT;
             gd.widthHint = 10 + enabledImage.getBounds().width + 6;
             setLayoutData(gd);
