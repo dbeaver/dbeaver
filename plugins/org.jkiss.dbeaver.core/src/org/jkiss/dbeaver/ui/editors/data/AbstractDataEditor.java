@@ -239,7 +239,7 @@ public abstract class AbstractDataEditor<OBJECT_TYPE extends DBSObject> extends 
 
     @Override
     public void refreshPart(Object source, boolean force) {
-        if (resultSetView != null && resultSetView.hasData() && !resultSetView.isRefreshInProgress()) {
+        if (force && resultSetView != null && resultSetView.hasData() && !resultSetView.isRefreshInProgress()) {
             resultSetView.refresh();
         }
     }
