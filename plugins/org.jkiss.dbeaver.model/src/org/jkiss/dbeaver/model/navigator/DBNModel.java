@@ -618,6 +618,7 @@ public class DBNModel implements IResourceChangeListener {
 
         @Override
         protected IStatus run(IProgressMonitor monitor) {
+            Thread.currentThread().setName("Database navigator events processor");
             while (!platform.isShuttingDown()) {
                 RuntimeUtils.pause(100);
                 final INavigatorListener[] realListeners;

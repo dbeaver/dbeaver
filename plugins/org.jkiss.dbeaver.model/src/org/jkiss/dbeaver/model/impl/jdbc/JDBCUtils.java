@@ -508,7 +508,7 @@ public class JDBCUtils {
             } catch (SQLException e) {
                 isValid[0] = false;
             }
-        }, "Ping connection " + dataSource.getContainer().getName(), invalidateTimeout + 2000);
+        }, "Ping connection " + dataSource.getContainer().getName(), invalidateTimeout + 2000, true);
         return isValid[0];
     }
 
