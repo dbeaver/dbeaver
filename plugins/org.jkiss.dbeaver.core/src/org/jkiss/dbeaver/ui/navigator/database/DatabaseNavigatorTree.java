@@ -94,9 +94,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
 
         treeViewer.getTree().setCursor(getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
         treeViewer.setUseHashlookup(true);
-        if (rootNode.getParentNode() == null) {
-            //this.treeViewer.setAutoExpandLevel(2);
-        }
+
         DatabaseNavigatorLabelProvider labelProvider = new DatabaseNavigatorLabelProvider(treeViewer);
         treeViewer.setLabelProvider(labelProvider);
         treeViewer.setContentProvider(new DatabaseNavigatorContentProvider(this, showRoot));
@@ -254,8 +252,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
             try {
                 DBRRunnableWithResult<DBNNode> runnable = new DBRRunnableWithResult<DBNNode>() {
                     @Override
-                    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-                    {
+                    public void run(DBRProgressMonitor monitor) throws InvocationTargetException {
                         try {
                             result = findActiveNode(monitor, node);
                         } catch (DBException e) {
@@ -294,7 +291,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         return node;
     }
 
-    Object getViewerObject(DBNNode node)
+    private Object getViewerObject(DBNNode node)
     {
         if (((DatabaseNavigatorContent) treeViewer.getInput()).getRootNode() == node) {
             return treeViewer.getInput();
@@ -303,7 +300,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         }
     }
 
-    public void showNode(DBNNode node) {
+    void showNode(DBNNode node) {
         treeViewer.reveal(node);
         treeViewer.setSelection(new StructuredSelection(node));
     }
@@ -342,8 +339,6 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
 
         private volatile TreeItem curSelection;
         private volatile RenameJob renameJob;
-
-        private volatile boolean doubleClick = false;
 
         @Override
         public synchronized void mouseDoubleClick(MouseEvent e)
@@ -460,6 +455,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         final Rectangle treeBounds = treeViewer.getTree().getBounds();
         treeEditor.minimumWidth = Math.max(itemBounds.width, 50);
         treeEditor.minimumWidth = Math.min(treeEditor.minimumWidth, treeBounds.width - (itemBounds.x - treeBounds.x) - item.getImageBounds(0).width - 4);
+        treeEditor.minimumHeight = text.computeSize(SWT.DEFAULT, SWT.DEFAULT).y;
 
         treeEditor.setEditor(text, item, 0);
     }
@@ -483,8 +479,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         public Object[] filter(Viewer viewer, Object parent, Object[] elements) {
             int size = elements.length;
             ArrayList<Object> out = new ArrayList<>(size);
-            for (int i = 0; i < size; ++i) {
-                Object element = elements[i];
+            for (Object element : elements) {
                 if (select(viewer, parent, element)) {
                     out.add(element);
                 }
