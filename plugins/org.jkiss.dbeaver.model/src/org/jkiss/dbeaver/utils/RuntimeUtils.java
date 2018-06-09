@@ -198,8 +198,18 @@ public class RuntimeUtils {
     }
 
     public static boolean runTask(final DBRRunnableWithProgress task, String taskName, final long waitTime) {
+        return runTask(task, taskName, waitTime, false);
+    }
+
+    public static boolean runTask(final DBRRunnableWithProgress task, String taskName, final long waitTime, boolean hidden) {
         final MonitoringTask monitoringTask = new MonitoringTask(task);
         Job monitorJob = new AbstractJob(taskName) {
+            {
+                if (hidden) {
+                    setSystem(true);
+                    setUser(false);
+                }
+            }
             @Override
             protected IStatus run(DBRProgressMonitor monitor)
             {
