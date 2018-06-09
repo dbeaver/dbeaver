@@ -1587,7 +1587,7 @@ public class ResultSetViewer extends Viewer
     @Override
     public boolean isDirty()
     {
-        return model.isDirty();
+        return model.isDirty() || (activePresentation != null && activePresentation.isDirty());
     }
 
     @Override
@@ -2883,7 +2883,7 @@ public class ResultSetViewer extends Viewer
      */
     private boolean applyChanges(@Nullable final DBRProgressMonitor monitor, @Nullable final ResultSetPersister.DataUpdateListener listener)
     {
-        //getActivePresentation().
+        UIUtils.syncExec(() -> getActivePresentation().applyChanges());
         try {
             final ResultSetPersister persister = createDataPersister(false);
             final ResultSetPersister.DataUpdateListener applyListener = success -> {
