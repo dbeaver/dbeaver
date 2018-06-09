@@ -55,20 +55,12 @@ class FilterSettingsDialog extends HelpEnabledDialog {
 
     private static final String DIALOG_ID = "DBeaver.FilterSettingsDialog";//$NON-NLS-1$
 
-    public final Comparator<DBDAttributeBinding> POSITION_SORTER = new Comparator<DBDAttributeBinding>() {
-        @Override
-        public int compare(DBDAttributeBinding o1, DBDAttributeBinding o2) {
-            final DBDAttributeConstraint c1 = getBindingConstraint(o1);
-            final DBDAttributeConstraint c2 = getBindingConstraint(o2);
-            return c1.getVisualPosition() - c2.getVisualPosition();
-        }
+    private final Comparator<DBDAttributeBinding> POSITION_SORTER = (o1, o2) -> {
+        final DBDAttributeConstraint c1 = getBindingConstraint(o1);
+        final DBDAttributeConstraint c2 = getBindingConstraint(o2);
+        return c1.getVisualPosition() - c2.getVisualPosition();
     };
-    public final Comparator<DBDAttributeBinding> ALPHA_SORTER = new Comparator<DBDAttributeBinding>() {
-        @Override
-        public int compare(DBDAttributeBinding o1, DBDAttributeBinding o2) {
-            return o1.getName().compareTo(o2.getName());
-        }
-    };
+    private final Comparator<DBDAttributeBinding> ALPHA_SORTER = Comparator.comparing(DBDAttributeBinding::getName);
 
     private final ResultSetViewer resultSetViewer;
     private final List<DBDAttributeBinding> attributes;
@@ -85,7 +77,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
     private ToolItem moveBottomButton;
     private Comparator<DBDAttributeBinding> activeSorter = POSITION_SORTER;
 
-    public FilterSettingsDialog(ResultSetViewer resultSetViewer)
+    FilterSettingsDialog(ResultSetViewer resultSetViewer)
     {
         super(resultSetViewer.getControl().getShell(), IHelpContextIds.CTX_DATA_FILTER);
         this.resultSetViewer = resultSetViewer;
@@ -126,7 +118,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
                     if (nestedBindings == null || nestedBindings.isEmpty()) {
                         return null;
                     }
-                    final DBDAttributeBinding[] res = nestedBindings.toArray(new DBDAttributeBinding[nestedBindings.size()]);
+                    final DBDAttributeBinding[] res = nestedBindings.toArray(new DBDAttributeBinding[0]);
                     Arrays.sort(res, activeSorter);
                     return res;
                 }
@@ -206,12 +198,9 @@ class FilterSettingsDialog extends HelpEnabledDialog {
                 }
             };
 
-            columnsViewer.addCheckStateListener(new ICheckStateListener() {
-                @Override
-                public void checkStateChanged(CheckStateChangedEvent event) {
-                    DBDAttributeConstraint constraint = getBindingConstraint((DBDAttributeBinding) event.getElement());
-                    constraint.setVisible(event.getChecked());
-                }
+            columnsViewer.addCheckStateListener(event -> {
+                DBDAttributeConstraint constraint = getBindingConstraint((DBDAttributeBinding) event.getElement());
+                constraint.setVisible(event.getChecked());
             });
 
             {
@@ -220,93 +209,65 @@ class FilterSettingsDialog extends HelpEnabledDialog {
                 gd.verticalIndent = 3;
                 toolbar.setLayoutData(gd);
                 toolbar.setLayout(new FillLayout());
-                moveTopButton = createToolItem(toolbar, "Move to top", UIIcon.ARROW_TOP, new Runnable() {
-                    @Override
-                    public void run() {
-                        int selectionIndex = getSelectionIndex(columnsViewer.getTree());
-                        moveColumns(selectionIndex, 0);
-                    }
+                moveTopButton = createToolItem(toolbar, "Move to top", UIIcon.ARROW_TOP, () -> {
+                    int selectionIndex = getSelectionIndex(columnsViewer.getTree());
+                    moveColumns(selectionIndex, 0);
                 });
                 moveTopButton.setEnabled(false);
-                moveUpButton = createToolItem(toolbar, "Move up", UIIcon.ARROW_UP, new Runnable() {
-                    @Override
-                    public void run() {
-                        int selectionIndex = getSelectionIndex(columnsViewer.getTree());
-                        swapColumns(selectionIndex, selectionIndex - 1);
-                    }
+                moveUpButton = createToolItem(toolbar, "Move up", UIIcon.ARROW_UP, () -> {
+                    int selectionIndex = getSelectionIndex(columnsViewer.getTree());
+                    swapColumns(selectionIndex, selectionIndex - 1);
                 });
                 moveUpButton.setEnabled(false);
-                moveDownButton = createToolItem(toolbar, "Move down", UIIcon.ARROW_DOWN, new Runnable() {
-                    @Override
-                    public void run() {
-                        int selectionIndex = getSelectionIndex(columnsViewer.getTree());
-                        swapColumns(selectionIndex, selectionIndex + 1);
-                    }
+                moveDownButton = createToolItem(toolbar, "Move down", UIIcon.ARROW_DOWN, () -> {
+                    int selectionIndex = getSelectionIndex(columnsViewer.getTree());
+                    swapColumns(selectionIndex, selectionIndex + 1);
                 });
                 moveDownButton.setEnabled(false);
-                moveBottomButton = createToolItem(toolbar, "Move to bottom", UIIcon.ARROW_BOTTOM, new Runnable() {
-                    @Override
-                    public void run() {
-                        int selectionIndex = getSelectionIndex(columnsViewer.getTree());
-                        moveColumns(selectionIndex, getItemsCount() - 1);
-                    }
+                moveBottomButton = createToolItem(toolbar, "Move to bottom", UIIcon.ARROW_BOTTOM, () -> {
+                    int selectionIndex = getSelectionIndex(columnsViewer.getTree());
+                    moveColumns(selectionIndex, getItemsCount() - 1);
                 });
                 moveBottomButton.setEnabled(false);
                 UIUtils.createToolBarSeparator(toolbar, SWT.VERTICAL);
-                createToolItem(toolbar, "Sort", UIIcon.SORT, new Runnable() {
-                    @Override
-                    public void run() {
-                        Collections.sort(attributes, ALPHA_SORTER);
-                        for (int i = 0; i < attributes.size(); i++) {
-                            final DBDAttributeConstraint constraint = getBindingConstraint(attributes.get(i));
-                            constraint.setVisualPosition(i);
-                        }
-                        columnsViewer.refresh();
+                createToolItem(toolbar, "Sort", UIIcon.SORT, () -> {
+                    attributes.sort(ALPHA_SORTER);
+                    for (int i = 0; i < attributes.size(); i++) {
+                        final DBDAttributeConstraint constraint = getBindingConstraint(attributes.get(i));
+                        constraint.setVisualPosition(i);
                     }
+                    columnsViewer.refresh();
                 });
                 UIUtils.createToolBarSeparator(toolbar, SWT.VERTICAL);
-                ToolItem showAllButton = createToolItem(toolbar, "Show All", null, new Runnable() {
-                    @Override
-                    public void run() {
-                        for (DBDAttributeConstraint constraint : constraints) {
-                            constraint.setVisible(true);
-                        }
-                        columnsViewer.refresh();
+                ToolItem showAllButton = createToolItem(toolbar, "Show All", null, () -> {
+                    for (DBDAttributeConstraint constraint : constraints) {
+                        constraint.setVisible(true);
                     }
+                    columnsViewer.refresh();
                 });
                 showAllButton.setImage(UIUtils.getShardImage(ISharedImages.IMG_ETOOL_DEF_PERSPECTIVE));
-                ToolItem showNoneButton = createToolItem(toolbar, "Show None", null, new Runnable() {
-                    @Override
-                    public void run() {
-                        for (DBDAttributeConstraint constraint : constraints) {
-                            constraint.setVisible(false);
-                        }
-                        columnsViewer.refresh();
+                ToolItem showNoneButton = createToolItem(toolbar, "Show None", null, () -> {
+                    for (DBDAttributeConstraint constraint : constraints) {
+                        constraint.setVisible(false);
                     }
+                    columnsViewer.refresh();
                 });
                 showNoneButton.setImage(UIUtils.getShardImage(ISharedImages.IMG_ELCL_REMOVEALL));
-                createToolItem(toolbar, "Reset", UIIcon.REFRESH, new Runnable() {
-                    @Override
-                    public void run() {
-                        dataFilter.reset();
-                        constraints = new ArrayList<>(dataFilter.getConstraints());
-                        refreshData();
-                        //columnsViewer.refresh();
-                        orderText.setText(""); //$NON-NLS-1$
-                        whereText.setText(""); //$NON-NLS-1$
-                    }
+                createToolItem(toolbar, "Reset", UIIcon.REFRESH, () -> {
+                    dataFilter.reset();
+                    constraints = new ArrayList<>(dataFilter.getConstraints());
+                    refreshData();
+                    //columnsViewer.refresh();
+                    orderText.setText(""); //$NON-NLS-1$
+                    whereText.setText(""); //$NON-NLS-1$
                 });
 
-                columnsViewer.addSelectionChangedListener(new ISelectionChangedListener() {
-                    @Override
-                    public void selectionChanged(SelectionChangedEvent event) {
-                        int selectionIndex = getSelectionIndex(columnsViewer.getTree());
-                        moveTopButton.setEnabled(selectionIndex > 0);
-                        moveUpButton.setEnabled(selectionIndex > 0);
-                        moveDownButton.setEnabled(selectionIndex >= 0 && selectionIndex < getItemsCount() - 1);
-                        moveBottomButton.setEnabled(selectionIndex >= 0 && selectionIndex < getItemsCount() - 1);
-                    }
-
+                columnsViewer.addSelectionChangedListener(event -> {
+                    int selectionIndex = getSelectionIndex(columnsViewer.getTree());
+                    moveTopButton.setEnabled(selectionIndex > 0);
+                    moveUpButton.setEnabled(selectionIndex > 0);
+                    moveDownButton.setEnabled(selectionIndex >= 0 && selectionIndex < getItemsCount() - 1);
+                    moveBottomButton.setEnabled(selectionIndex >= 0 && selectionIndex < getItemsCount() - 1);
                 });
 
             }
@@ -323,12 +284,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
         refreshData();
 
         // Pack UI
-        UIUtils.asyncExec(new Runnable() {
-            @Override
-            public void run() {
-                UIUtils.packColumns(columnsViewer.getTree());
-            }
-        });
+        UIUtils.asyncExec(() -> UIUtils.packColumns(columnsViewer.getTree()));
         //UIUtils.packColumns(filterViewer.getTable());
 
         if (criteriaColumn.getWidth() < 200) {
@@ -350,7 +306,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
     }
 
     private void refreshData() {
-        Collections.sort(attributes, activeSorter);
+        attributes.sort(activeSorter);
         columnsViewer.refresh();
         columnsViewer.expandAll();
     }
@@ -522,7 +478,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
                 case 2: {
                     int orderPosition = constraint.getOrderPosition();
                     if (orderPosition > 0) {
-                        return String.valueOf(orderPosition);
+                        return " " + String.valueOf(orderPosition);
                     }
                     return ""; //$NON-NLS-1$
                 }
@@ -568,7 +524,7 @@ class FilterSettingsDialog extends HelpEnabledDialog {
 
     }
 
-    public static ToolItem createToolItem(ToolBar toolBar, String text, DBIcon icon, final Runnable action)
+    private static ToolItem createToolItem(ToolBar toolBar, String text, DBIcon icon, final Runnable action)
     {
         ToolItem item = new ToolItem(toolBar, SWT.PUSH);
         if (icon != null) {
