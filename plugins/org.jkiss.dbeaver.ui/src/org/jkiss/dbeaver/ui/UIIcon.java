@@ -186,6 +186,7 @@ public class UIIcon {
 
     public static final DBIcon SAVE_TO_DATABASE = new DBIcon("save_to_db", "sql/save_to_database.png"); //$NON-NLS-1$ //$NON-NLS-2$
 
+    public static final DBIcon PANEL_CUSTOMIZE = new DBIcon("panel_customize", "sql/panel_customize.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon PANEL_VALUE = new DBIcon("panel_value", "sql/panel_value.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon PANEL_AGGREGATE = new DBIcon("panel_aggregate", "sql/panel_aggregate.png"); //$NON-NLS-1$ //$NON-NLS-2$
     public static final DBIcon PANEL_METADATA = new DBIcon("panel_metadata", "sql/panel_metadata.png"); //$NON-NLS-1$ //$NON-NLS-2$
