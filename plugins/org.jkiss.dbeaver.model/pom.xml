@@ -20,7 +20,7 @@
             <plugin>
                 <groupId>org.eclipse.tycho</groupId>
                 <artifactId>tycho-compiler-plugin</artifactId>
-                <version>0.22.0</version>
+                <version>${tycho-version}</version>
                 <configuration>
                     <compilerArgument>-warn:none</compilerArgument>
                     <compilerArgument>-err:none</compilerArgument>
