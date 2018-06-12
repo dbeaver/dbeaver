@@ -247,6 +247,21 @@ public final class DBUtils {
         return name.toString();
     }
 
+    @NotNull
+    public static String getFullyQualifiedName(@NotNull DBPDataSource dataSource, @NotNull String... names)
+    {
+        SQLDialect dialect = SQLUtils.getDialectFromDataSource(dataSource);
+        StringBuilder name = new StringBuilder(names.length * 16);
+        for (String namePart : names) {
+            if (namePart == null) {
+                continue;
+            }
+            if (name.length() > 0) name.append(dialect.getStructSeparator());
+            name.append(DBUtils.getQuotedIdentifier(dataSource, namePart));
+        }
+        return name.toString();
+    }
+
     /**
      * Checks that object has valid object name.
      * Some DB objects have dummy names (like "" or ".") - we won't use them for certain purposes.

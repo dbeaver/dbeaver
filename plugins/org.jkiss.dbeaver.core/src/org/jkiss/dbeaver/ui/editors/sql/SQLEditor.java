@@ -1811,7 +1811,7 @@ public class SQLEditor extends SQLEditorBase implements
 
     }
 
-    public class QueryResultsContainer implements DBSDataContainer, IResultSetContainer, IResultSetListener, IDataSourceContainerProvider {
+    public class QueryResultsContainer implements DBSDataContainer, IResultSetContainer, IResultSetListener, IDataSourceContainerProvider, SQLQueryContainer {
 
         private final QueryProcessor queryProcessor;
         private final CTabItem tabItem;
@@ -2137,6 +2137,11 @@ public class SQLEditor extends SQLEditorBase implements
         @Override
         public void handleResultSetSelectionChange(SelectionChangedEvent event) {
 
+        }
+
+        @Override
+        public SQLScriptElement getQuery() {
+            return query;
         }
     }
 
