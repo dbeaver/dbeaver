@@ -108,6 +108,13 @@ public class DatabaseConsumerPageLoadSettings extends ActiveWizardPage<DataTrans
                     settings.setOpenTableOnFinish(showTableCheckbox.getSelection());
                 }
             });
+            final Button showFinalMessageCheckbox = UIUtils.createCheckbox(generalSettings, "Show finish message", null, getWizard().getSettings().isShowFinalMessage(), 4);
+            showFinalMessageCheckbox.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    getWizard().getSettings().setShowFinalMessage(showFinalMessageCheckbox.getSelection());
+                }
+            });
         }
 
         setControl(composite);
