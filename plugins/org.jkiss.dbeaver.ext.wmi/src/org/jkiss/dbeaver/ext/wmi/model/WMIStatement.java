@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.wmi.service.WMIConstants;
 import org.jkiss.wmi.service.WMIException;
 import org.jkiss.wmi.service.WMIObject;
@@ -165,7 +166,7 @@ public class WMIStatement implements DBCStatement {
     }
 
     @Override
-    public void cancelBlock() throws DBException
+    public void cancelBlock(@NotNull DBRProgressMonitor monitor, @Nullable Thread blockThread) throws DBException
     {
     }
 

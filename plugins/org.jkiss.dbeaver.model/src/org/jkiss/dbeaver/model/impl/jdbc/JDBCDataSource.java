@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCFactory;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCObjectValueHandler;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCConnectionImpl;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCFactoryDefault;
@@ -721,5 +722,14 @@ public abstract class JDBCDataSource
     @Override
     public DBDValueHandler getDefaultValueHandler() {
         return JDBCObjectValueHandler.INSTANCE;
+    }
+
+    public void cancelStatementExecute(DBRProgressMonitor monitor, JDBCStatement statement) throws DBException {
+        try {
+            statement.cancel();
+        }
+        catch (SQLException e) {
+            throw new DBException(e, this);
+        }
     }
 }

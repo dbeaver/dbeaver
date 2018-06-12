@@ -547,6 +547,26 @@ public class OracleDataSource extends JDBCDataSource
         return super.getAdapter(adapter);
     }
 
+    @Override
+    public void cancelStatementExecute(DBRProgressMonitor monitor, JDBCStatement statement) throws DBException {
+        if (driverSupportsQueryCancel()) {
+            super.cancelStatementExecute(monitor, statement);
+        } else {
+            // Oracle server doesn't support single query cancel?
+            // But we could try to cancel all
+            try {
+                Connection connection = statement.getConnection().getOriginal();
+                BeanUtils.invokeObjectMethod(connection, "cancel");
+            } catch (Throwable e) {
+                throw new DBException("Can't cancel session queries", e, this);
+            }
+        }
+    }
+
+    private boolean driverSupportsQueryCancel() {
+        return true;
+    }
+
     @NotNull
     @Override
     public OracleDataSource getDataSource() {
