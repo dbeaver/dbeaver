@@ -94,15 +94,17 @@ public class StatisticsPresentation extends AbstractPresentation {
     public void refreshData(boolean refreshMetadata, boolean append, boolean keepState) {
         table.removeAll();
 
-        ResultSetRow row = controller.getModel().getRow(0);
-        java.util.List<DBDAttributeBinding> visibleAttributes = controller.getModel().getVisibleAttributes();
-        for (int i = 0; i < visibleAttributes.size(); i++) {
-            DBDAttributeBinding attr = visibleAttributes.get(i);
-            Object value = row.getValues()[i];
-            TableItem item = new TableItem(table, SWT.LEFT);
-            item.setText(0, attr.getName());
-            item.setText(1, DBValueFormatting.getDefaultValueDisplayString(value, DBDDisplayFormat.UI));
-            item.setData(attr);
+        if (controller.getModel().getRowCount() > 0) {
+            ResultSetRow row = controller.getModel().getRow(0);
+            java.util.List<DBDAttributeBinding> visibleAttributes = controller.getModel().getVisibleAttributes();
+            for (int i = 0; i < visibleAttributes.size(); i++) {
+                DBDAttributeBinding attr = visibleAttributes.get(i);
+                Object value = row.getValues()[i];
+                TableItem item = new TableItem(table, SWT.LEFT);
+                item.setText(0, attr.getName());
+                item.setText(1, DBValueFormatting.getDefaultValueDisplayString(value, DBDDisplayFormat.UI));
+                item.setData(attr);
+            }
         }
 
         UIUtils.packColumns(table);
