@@ -402,7 +402,9 @@ class SQLCompletionAnalyzer
                     if (quotes.indexOf(quotePair[1]) == -1) quotes.append('\\').append(quotePair[1]);
                 }
             }
-            String tableNamePattern = "([\\p{L}0-9_$\\.\\-" + quotes.toString() + "]+)";
+            // Use silly pattern with all possible characters
+            // Valid regex for quote identifiers and FQ names is monstrous and very slow
+            String tableNamePattern = "([\\p{L}0-9_$§#@\\.\\-" + quotes.toString() + "]+)";
             String structNamePattern;
             if (CommonUtils.isEmpty(token)) {
                 structNamePattern = "(?:from|update|join|into)\\s*" + tableNamePattern;
