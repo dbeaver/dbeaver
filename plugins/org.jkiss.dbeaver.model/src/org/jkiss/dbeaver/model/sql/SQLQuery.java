@@ -63,11 +63,13 @@ public class SQLQuery implements SQLScriptElement {
     private Object data;
     private int resultsOffset = -1;
     private int resultsMaxRows = -1;
+    @Nullable
+    private List<SQLQueryParameter> parameters;
+
+    private boolean parsed = false;
     @NotNull
     private SQLQueryType type;
-    @Nullable
     private Statement statement;
-    private List<SQLQueryParameter> parameters;
     private SingleTableMeta singleTableMeta;
     private List<SQLSelectItem> selectItems;
     private String queryTitle;
@@ -100,7 +102,21 @@ public class SQLQuery implements SQLScriptElement {
         this.originalText = this.text = text;
         this.offset = offset;
         this.length = length;
+        this.type = SQLQueryType.UNKNOWN;
 
+        // Extract query title
+        queryTitle = null;
+        final Matcher matcher = QUERY_TITLE_PATTERN.matcher(text);
+        if (matcher.find()) {
+            queryTitle = matcher.group(1);
+        }
+    }
+
+    private void parseQuery() {
+        if (parsed) {
+            return;
+        }
+        parsed = true;
         try {
             statement = CCJSqlParserUtil.parse(text);
             if (statement instanceof Select) {
@@ -158,12 +174,6 @@ public class SQLQuery implements SQLScriptElement {
             this.type = SQLQueryType.UNKNOWN;
             //log.debug("Error parsing SQL query [" + query + "]:" + CommonUtils.getRootCause(e).getMessage());
         }
-        // Extract query title
-        queryTitle = null;
-        final Matcher matcher = QUERY_TITLE_PATTERN.matcher(text);
-        if (matcher.find()) {
-            queryTitle = matcher.group(1);
-        }
     }
 
     private void fillSingleSource(Table fromItem) {
@@ -189,6 +199,7 @@ public class SQLQuery implements SQLScriptElement {
      * @return true is this query is a plain select
      */
     public boolean isPlainSelect() {
+        parseQuery();
         if (statement instanceof Select && ((Select) statement).getSelectBody() instanceof PlainSelect) {
             PlainSelect selectBody = (PlainSelect) ((Select) statement).getSelectBody();
             return selectBody.getFromItem() != null &&
@@ -237,6 +248,7 @@ public class SQLQuery implements SQLScriptElement {
 
     @Nullable
     public Statement getStatement() {
+        parseQuery();
         return statement;
     }
 
@@ -267,12 +279,13 @@ public class SQLQuery implements SQLScriptElement {
     }
 
     @NotNull
-    public SQLQueryType getType()
-    {
+    public SQLQueryType getType() {
+        parseQuery();
         return type;
     }
 
     public DBCEntityMetaData getSingleSource() {
+        parseQuery();
         return singleTableMeta;
     }
 
@@ -311,6 +324,7 @@ public class SQLQuery implements SQLScriptElement {
     }
 
     public boolean isDeleteUpdateDangerous() {
+        parseQuery();
         if (statement == null) {
             return false;
         }
