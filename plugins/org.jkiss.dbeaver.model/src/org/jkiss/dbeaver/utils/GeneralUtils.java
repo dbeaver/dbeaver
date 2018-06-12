@@ -460,6 +460,10 @@ public class GeneralUtils {
 
     private static IStatus makeExceptionStatus(int severity, Throwable ex, boolean nested)
     {
+        // Skip chain of nested DBExceptions. Show only last message
+        while (ex instanceof DBException && ex.getCause() instanceof DBException) {
+            ex = ex.getCause();
+        }
         Throwable cause = ex.getCause();
         SQLException nextError = null;
         if (ex instanceof SQLException) {
