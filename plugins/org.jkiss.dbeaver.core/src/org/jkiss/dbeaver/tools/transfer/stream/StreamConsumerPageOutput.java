@@ -44,6 +44,7 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
     private Button execProcessCheckbox;
     private Text execProcessText;
     private Button clipboardCheck;
+    private Button showFinalMessageCheckbox;
 
     public StreamConsumerPageOutput() {
         super(CoreMessages.data_transfer_wizard_output_name);
@@ -190,6 +191,14 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_PROJECT),
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_FILE)
                 }));
+
+            showFinalMessageCheckbox = UIUtils.createCheckbox(resultsSettings, "Show finish message", null, getWizard().getSettings().isShowFinalMessage(), 4);
+            showFinalMessageCheckbox.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    getWizard().getSettings().setShowFinalMessage(showFinalMessageCheckbox.getSelection());
+                }
+            });
         }
 
         setControl(composite);
@@ -239,6 +248,7 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
             clipboardCheck.setSelection(false);
             encodingBOMCheckbox.setSelection(false);
         }
+        showFinalMessageCheckbox.setSelection(getWizard().getSettings().isShowFinalMessage());
 
         updatePageCompletion();
         toggleClipboardOutput();

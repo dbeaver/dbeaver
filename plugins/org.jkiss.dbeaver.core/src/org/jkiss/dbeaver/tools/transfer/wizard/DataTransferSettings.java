@@ -52,8 +52,7 @@ public class DataTransferSettings {
         IDataTransferSettings settings;
         IWizardPage[] pages;
 
-        private NodeSettings(DataTransferNodeDescriptor sourceNode) throws DBException
-        {
+        private NodeSettings(DataTransferNodeDescriptor sourceNode) throws DBException {
             this.sourceNode = sourceNode;
             this.settings = sourceNode.createSettings();
             this.pages = sourceNode.createWizardPages();
@@ -67,7 +66,7 @@ public class DataTransferSettings {
     private DataTransferNodeDescriptor consumer;
 
     private DataTransferProcessorDescriptor processor;
-    private Map<DataTransferProcessorDescriptor, Map<Object,Object>> processorPropsHistory = new HashMap<>();
+    private Map<DataTransferProcessorDescriptor, Map<Object, Object>> processorPropsHistory = new HashMap<>();
 
     private Map<Class, NodeSettings> nodeSettings = new LinkedHashMap<>();
 
@@ -76,8 +75,9 @@ public class DataTransferSettings {
 
     private transient int curPipeNum = 0;
 
-    public DataTransferSettings(@Nullable IDataTransferProducer[] producers, @Nullable IDataTransferConsumer[] consumers)
-    {
+    private boolean showFinalMessage = true;
+
+    public DataTransferSettings(@Nullable IDataTransferProducer[] producers, @Nullable IDataTransferConsumer[] consumers) {
         dataPipes = new ArrayList<>();
         if (!ArrayUtils.isEmpty(producers) && !ArrayUtils.isEmpty(consumers)) {
             if (producers.length != consumers.length) {
@@ -149,8 +149,7 @@ public class DataTransferSettings {
         }
     }
 
-    private void addNodeSettings(DataTransferNodeDescriptor node)
-    {
+    private void addNodeSettings(DataTransferNodeDescriptor node) {
         if (node == null) {
             return;
         }
@@ -165,8 +164,7 @@ public class DataTransferSettings {
         }
     }
 
-    void addWizardPages(DataTransferWizard wizard)
-    {
+    void addWizardPages(DataTransferWizard wizard) {
         for (NodeSettings nodeSettings : this.nodeSettings.values()) {
             if (nodeSettings.pages != null) {
                 for (IWizardPage page : nodeSettings.pages) {
@@ -176,24 +174,20 @@ public class DataTransferSettings {
         }
     }
 
-    public boolean isConsumerOptional()
-    {
+    public boolean isConsumerOptional() {
         return consumerOptional;
     }
 
-    public boolean isPageValid(IWizardPage page)
-    {
+    public boolean isPageValid(IWizardPage page) {
         return isPageValid(page, producer) || isPageValid(page, consumer);
     }
 
-    private boolean isPageValid(IWizardPage page, DataTransferNodeDescriptor node)
-    {
+    private boolean isPageValid(IWizardPage page, DataTransferNodeDescriptor node) {
         NodeSettings nodeSettings = node == null ? null : this.nodeSettings.get(node.getNodeClass());
         return nodeSettings != null && ArrayUtils.contains(nodeSettings.pages, page);
     }
 
-    public Collection<DBSObject> getSourceObjects()
-    {
+    public Collection<DBSObject> getSourceObjects() {
         List<DataTransferPipe> dataPipes = getDataPipes();
         Set<DBSObject> objects = new HashSet<>();
         for (DataTransferPipe transferPipe : dataPipes) {
@@ -204,8 +198,7 @@ public class DataTransferSettings {
         return objects;
     }
 
-    public IDataTransferSettings getNodeSettings(IWizardPage page)
-    {
+    public IDataTransferSettings getNodeSettings(IWizardPage page) {
         for (NodeSettings nodeSettings : this.nodeSettings.values()) {
             if (nodeSettings.pages != null) {
                 for (IWizardPage nodePage : nodeSettings.pages) {
@@ -218,22 +211,19 @@ public class DataTransferSettings {
         return null;
     }
 
-    public IDataTransferSettings getNodeSettings(IDataTransferNode node)
-    {
+    public IDataTransferSettings getNodeSettings(IDataTransferNode node) {
         NodeSettings nodeSettings = this.nodeSettings.get(node.getClass());
         return nodeSettings == null ? null : nodeSettings.settings;
     }
 
-    public Map<Object, Object> getProcessorProperties()
-    {
+    public Map<Object, Object> getProcessorProperties() {
         if (processor == null) {
             throw new IllegalStateException("No processor selected");
         }
         return processorPropsHistory.get(processor);
     }
 
-    public void setProcessorProperties(Map<Object, Object> properties)
-    {
+    public void setProcessorProperties(Map<Object, Object> properties) {
         if (processor == null) {
             throw new IllegalStateException("No processor selected");
         }
@@ -241,13 +231,11 @@ public class DataTransferSettings {
     }
 
 
-    public List<DataTransferPipe> getDataPipes()
-    {
+    public List<DataTransferPipe> getDataPipes() {
         return dataPipes;
     }
 
-    public synchronized DataTransferPipe acquireDataPipe(DBRProgressMonitor monitor)
-    {
+    public synchronized DataTransferPipe acquireDataPipe(DBRProgressMonitor monitor) {
         if (curPipeNum >= dataPipes.size()) {
             // End of transfer
             // Signal last pipe about it
@@ -263,28 +251,23 @@ public class DataTransferSettings {
         return result;
     }
 
-    public DataTransferNodeDescriptor getProducer()
-    {
+    public DataTransferNodeDescriptor getProducer() {
         return producer;
     }
 
-    public DataTransferNodeDescriptor getConsumer()
-    {
+    public DataTransferNodeDescriptor getConsumer() {
         return consumer;
     }
 
-    public DataTransferProcessorDescriptor getProcessor()
-    {
+    public DataTransferProcessorDescriptor getProcessor() {
         return processor;
     }
 
-    private void selectProducer(DataTransferNodeDescriptor producer)
-    {
+    private void selectProducer(DataTransferNodeDescriptor producer) {
         this.producer = producer;
     }
 
-    void selectConsumer(DataTransferNodeDescriptor consumer, DataTransferProcessorDescriptor processor)
-    {
+    void selectConsumer(DataTransferNodeDescriptor consumer, DataTransferProcessorDescriptor processor) {
         this.consumer = consumer;
         this.processor = processor;
         if (consumer != null && processor != null) {
@@ -307,24 +290,32 @@ public class DataTransferSettings {
         }
     }
 
-    public int getMaxJobCount()
-    {
+    public int getMaxJobCount() {
         return maxJobCount;
     }
 
-    public void setMaxJobCount(int maxJobCount)
-    {
+    public void setMaxJobCount(int maxJobCount) {
         if (maxJobCount > 0) {
             this.maxJobCount = maxJobCount;
         }
     }
 
-    void loadFrom(IRunnableContext runnableContext, IDialogSettings dialogSettings)
-    {
+    public boolean isShowFinalMessage() {
+        return showFinalMessage;
+    }
+
+    public void setShowFinalMessage(boolean showFinalMessage) {
+        this.showFinalMessage = showFinalMessage;
+    }
+
+    void loadFrom(IRunnableContext runnableContext, IDialogSettings dialogSettings) {
         try {
             maxJobCount = dialogSettings.getInt("maxJobCount");
         } catch (NumberFormatException e) {
             maxJobCount = DEFAULT_THREADS_NUM;
+        }
+        if (dialogSettings.get("showFinalMessage") != null) {
+            showFinalMessage = dialogSettings.getBoolean("showFinalMessage");
         }
         String producerId = dialogSettings.get("producer");
         if (!CommonUtils.isEmpty(producerId)) {
@@ -387,9 +378,9 @@ public class DataTransferSettings {
 
     }
 
-    void saveTo(IDialogSettings dialogSettings)
-    {
+    void saveTo(IDialogSettings dialogSettings) {
         dialogSettings.put("maxJobCount", maxJobCount);
+        dialogSettings.put("showFinalMessage", showFinalMessage);
         // Save nodes' settings
         for (Map.Entry<Class, NodeSettings> entry : nodeSettings.entrySet()) {
             IDialogSettings nodeSection = DialogSettings.getOrCreateSection(dialogSettings, entry.getKey().getSimpleName());
@@ -414,11 +405,11 @@ public class DataTransferSettings {
             Map<Object, Object> props = processorPropsHistory.get(procDescriptor);
             if (props != null) {
                 StringBuilder propNames = new StringBuilder();
-                for (Map.Entry<Object,Object> prop : props.entrySet()) {
+                for (Map.Entry<Object, Object> prop : props.entrySet()) {
                     propNames.append(prop.getKey()).append(',');
                 }
                 procSettings.put("@propNames", propNames.toString());
-                for (Map.Entry<Object,Object> prop : props.entrySet()) {
+                for (Map.Entry<Object, Object> prop : props.entrySet()) {
                     procSettings.put(CommonUtils.toString(prop.getKey()), CommonUtils.toString(prop.getValue()));
                 }
             }
