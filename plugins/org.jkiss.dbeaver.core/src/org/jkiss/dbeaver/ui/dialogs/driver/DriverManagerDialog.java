@@ -18,12 +18,12 @@ package org.jkiss.dbeaver.ui.dialogs.driver;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -60,7 +60,7 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
     private Button editButton;
     private Button deleteButton;
     private DriverTreeControl treeControl;
-    private Image dialogImage;
+    private ImageDescriptor dialogImage;
     //private Label driverDescription;
     //private ProgressMonitorPart monitorPart;
     private Text descText;
@@ -99,8 +99,8 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
 
         getShell().setText(CoreMessages.dialog_driver_manager_title);
         getShell().setMinimumSize(300, 300);
-        dialogImage = DBeaverIcons.getImage(UIIcon.DRIVER_MANAGER);
-        getShell().setImage(dialogImage);
+        dialogImage = DBeaverIcons.getImageDescriptor(UIIcon.DRIVER_MANAGER);
+        getShell().setImage(dialogImage.createImage());
 
         Composite group = UIUtils.createPlaceholder((Composite) super.createDialogArea(parent), 2);
         group.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -339,7 +339,6 @@ public class DriverManagerDialog extends HelpEnabledDialog implements ISelection
     @Override
     public boolean close()
     {
-        UIUtils.dispose(dialogImage);
         return super.close();
     }
 
