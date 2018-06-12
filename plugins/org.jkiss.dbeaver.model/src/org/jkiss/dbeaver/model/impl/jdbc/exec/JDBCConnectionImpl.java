@@ -63,7 +63,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
 
     @NotNull
     @Override
-    public DBCExecutionContext getExecutionContext() {
+    public JDBCExecutionContext getExecutionContext() {
         return context;
     }
 
@@ -672,7 +672,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
     }
 
     @Override
-    public void cancelBlock()
+    public void cancelBlock(@NotNull DBRProgressMonitor monitor, @Nullable Thread blockThread)
         throws DBException
     {
         try {

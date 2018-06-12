@@ -19,9 +19,11 @@ package org.jkiss.dbeaver.model.exec.jdbc;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.DBCStatementType;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
 
 import java.sql.Connection;
 import java.sql.SQLException;
@@ -37,6 +39,8 @@ public interface JDBCSession extends DBCSession, Connection {
 
     Connection getOriginal()
         throws SQLException;
+
+    JDBCExecutionContext getExecutionContext();
 
     @Override
     @NotNull
