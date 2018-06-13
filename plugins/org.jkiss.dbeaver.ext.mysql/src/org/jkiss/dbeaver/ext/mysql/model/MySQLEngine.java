@@ -30,12 +30,14 @@ import java.sql.SQLException;
  */
 public class MySQLEngine extends MySQLInformation {
 
-    public static enum Support {
+    public enum Support {
         YES,
         NO,
         DEFAULT,
         DISABLED
     }
+
+    public static final String MYISAM = "MyISAM";
 
     private String name;
     private String description;
