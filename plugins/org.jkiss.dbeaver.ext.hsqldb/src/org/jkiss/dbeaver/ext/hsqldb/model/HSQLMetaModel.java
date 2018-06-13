@@ -216,4 +216,35 @@ public class HSQLMetaModel extends GenericMetaModel
         return ((HSQLTrigger)trigger).getStatement();
     }
 
+    @Override
+    public boolean supportsSynonyms(GenericDataSource dataSource) {
+        return true;
+    }
+
+    @Override
+    public List<HSQLSynonym> loadSynonyms(DBRProgressMonitor monitor, GenericStructContainer container) throws DBException {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, container.getDataSource(), "Read triggers")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT * FROM INFORMATION_SCHEMA.SYSTEM_SYNONYMS\n" +
+                    "WHERE SYNONYM_SCHEMA=?\n" +
+                    "ORDER BY SYNONYM_NAME")) {
+                dbStat.setString(1, container.getName());
+
+                List<HSQLSynonym> result = new ArrayList<>();
+
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        HSQLSynonym trigger = new HSQLSynonym(
+                            container,
+                            dbResult);
+                        result.add(trigger);
+                    }
+                }
+                return result;
+
+            }
+        } catch (SQLException e) {
+            throw new DBException(e, container.getDataSource());
+        }
+    }
 }

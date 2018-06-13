@@ -47,7 +47,8 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
     private final PrimaryKeysCache primaryKeysCache;
     private List<GenericPackage> packages;
     protected List<GenericProcedure> procedures;
-    protected List<GenericSequence> sequences;
+    protected List<? extends GenericSequence> sequences;
+    protected List<? extends GenericSynonym> synonyms;
     private List<? extends GenericTrigger> triggers;
 
     protected GenericObjectContainer(@NotNull GenericDataSource dataSource)
@@ -306,11 +307,19 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
     }
 
     @Override
-    public Collection<GenericSequence> getSequences(DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends GenericSequence> getSequences(DBRProgressMonitor monitor) throws DBException {
         if (sequences == null) {
             loadSequences(monitor);
         }
         return sequences;
+    }
+
+    @Override
+    public Collection<? extends GenericSynonym> getSynonyms(DBRProgressMonitor monitor) throws DBException {
+        if (synonyms == null) {
+            loadSynonyms(monitor);
+        }
+        return synonyms;
     }
 
     @Override
@@ -363,6 +372,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
         this.packages = null;
         this.procedures = null;
         this.sequences = null;
+        this.synonyms = null;
         return this;
     }
 
@@ -422,6 +432,19 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
             sequences = new ArrayList<>();
         } else {
             DBUtils.orderObjects(sequences);
+        }
+    }
+
+    private synchronized void loadSynonyms(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        synonyms = dataSource.getMetaModel().loadSynonyms(monitor, this);
+
+        // Order procedures
+        if (synonyms == null) {
+            synonyms = new ArrayList<>();
+        } else {
+            DBUtils.orderObjects(synonyms);
         }
     }
 

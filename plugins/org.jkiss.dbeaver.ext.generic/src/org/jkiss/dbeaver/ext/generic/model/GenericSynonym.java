@@ -69,7 +69,7 @@ public abstract class GenericSynonym implements DBSAlias, DBSObject, DBPQualifie
 
     @NotNull
     @Override
-    public DBPDataSource getDataSource() {
+    public GenericDataSource getDataSource() {
         return container.getDataSource();
     }
 
