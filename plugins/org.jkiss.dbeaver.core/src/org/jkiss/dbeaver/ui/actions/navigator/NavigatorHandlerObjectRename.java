@@ -115,7 +115,7 @@ public class NavigatorHandlerObjectRename extends NavigatorHandlerObjectBase {
                         if (object.isPersisted() && commandTarget.getEditor() == null) {
                             Map<String, Object> options = DBPScriptObject.EMPTY_OPTIONS;
                             if (!showScript(workbenchWindow, commandTarget.getContext(), options, "Rename script")) {
-                                commandTarget.getContext().resetChanges();
+                                commandTarget.getContext().resetChanges(true);
                                 return false;
                             } else {
                                 ObjectSaver renamer = new ObjectSaver(commandTarget.getContext(), options);

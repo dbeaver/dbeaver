@@ -168,7 +168,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         super.dispose();
 
         if (getDatabaseObject() != null && commandContext != null) {
-            commandContext.resetChanges();
+            commandContext.resetChanges(true);
 //            // Remove all non-persisted objects
 //            for (DBPObject object : getCommandContext().getEditedObjects()) {
 //                if (object instanceof DBPPersistedObject && !((DBPPersistedObject)object).isPersisted()) {
@@ -363,7 +363,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
             }
             DBECommandContext commandContext = getCommandContext();
             if (commandContext != null) {
-                commandContext.resetChanges();
+                commandContext.resetChanges(true);
             }
             refreshPart(this, false);
             firePropertyChange(IEditorPart.PROP_DIRTY);
@@ -760,9 +760,8 @@ public class EntityEditor extends MultiPageDatabaseEditor
             // Otherwise just update object's properties
             DBECommandContext commandContext = getCommandContext();
             if (commandContext != null) {
-                // FIXME: resetChanges refreshes editor one more time and eventually leads to node reload/close.
-                // FIXME: maybe already fixed??
-                commandContext.resetChanges();
+                // Just clear command context. Do not undo because object state was already refreshed
+                commandContext.resetChanges(false);
             }
         }
 

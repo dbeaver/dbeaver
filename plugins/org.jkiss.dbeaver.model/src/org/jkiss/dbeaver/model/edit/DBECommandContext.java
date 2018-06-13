@@ -39,7 +39,7 @@ public interface DBECommandContext extends DBPContextProvider {
 
     void saveChanges(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException;
 
-    void resetChanges();
+    void resetChanges(boolean undoCommands);
 
     void undoCommand();
 
