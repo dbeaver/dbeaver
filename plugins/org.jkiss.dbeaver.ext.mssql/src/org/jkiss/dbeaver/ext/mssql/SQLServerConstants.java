@@ -30,6 +30,12 @@ public class SQLServerConstants {
 
     public static final String DEFAULT_SCHEMA_NAME = "dbo";
 
+    public static final String TYPE_DATETIME = "datetime";
+    public static final String TYPE_DATETIME2 = "datetime2";
+    public static final String TYPE_SMALLDATETIME = "smalldatetime";
+    public static final String TYPE_DATETIMEOFFSET = "datetimeoffset";
+
+
     public static final String PROP_CONNECTION_WINDOWS_AUTH = DBConstants.INTERNAL_PROP_PREFIX + "connection-windows-auth@";
     public static final String PROP_SHOW_ALL_SCHEMAS = DBConstants.INTERNAL_PROP_PREFIX + "show-all-schemas@";
     public static final String PROP_CONNECTION_INTEGRATED_SECURITY = "integratedSecurity";

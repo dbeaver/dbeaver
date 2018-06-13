@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
 import org.jkiss.dbeaver.runtime.sql.SQLRuleProvider;
 import org.jkiss.utils.CommonUtils;
 
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -84,6 +85,10 @@ public class SQLServerDialect extends GenericSQLDialect implements SQLRuleProvid
         if (dataKind == DBPDataKind.DATETIME) {
             Integer scale = column.getScale();
             if (scale != null) {
+                if (column.getTypeID() == Types.VARCHAR && scale == 0) {
+                    // Bug in jTDS. Scale is always zero so just ignore it (#3555)
+                    return null;
+                }
                 return "(" + scale + ')';
             }
         }
