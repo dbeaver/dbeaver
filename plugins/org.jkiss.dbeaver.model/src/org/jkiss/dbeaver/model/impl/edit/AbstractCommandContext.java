@@ -261,12 +261,14 @@ public abstract class AbstractCommandContext implements DBECommandContext {
     }
 
     @Override
-    public void resetChanges()
+    public void resetChanges(boolean undoCommands)
     {
         synchronized (commands) {
             try {
-                while (!commands.isEmpty()) {
-                    undoCommand();
+                if (undoCommands) {
+                    while (!commands.isEmpty()) {
+                        undoCommand();
+                    }
                 }
                 clearUndidCommands();
                 clearCommandQueues();
