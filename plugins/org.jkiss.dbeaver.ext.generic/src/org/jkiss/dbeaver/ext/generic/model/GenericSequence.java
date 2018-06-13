@@ -76,7 +76,7 @@ public class GenericSequence implements DBSSequence, DBPQualifiedObject
 
     @NotNull
     @Override
-    public DBPDataSource getDataSource() {
+    public GenericDataSource getDataSource() {
         return container.getDataSource();
     }
 

@@ -356,8 +356,13 @@ public class GenericDataSource extends JDBCDataSource
     }
 
     @Override
-    public Collection<GenericSequence> getSequences(DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends GenericSequence> getSequences(DBRProgressMonitor monitor) throws DBException {
         return structureContainer == null ? null : structureContainer.getSequences(monitor);
+    }
+
+    @Override
+    public Collection<? extends GenericSynonym> getSynonyms(DBRProgressMonitor monitor) throws DBException {
+        return structureContainer == null ? null : structureContainer.getSynonyms(monitor);
     }
 
     @Override
