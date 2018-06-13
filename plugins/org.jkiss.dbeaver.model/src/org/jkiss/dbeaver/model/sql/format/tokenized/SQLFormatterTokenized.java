@@ -161,6 +161,7 @@ public class SQLFormatterTokenized implements SQLFormatter {
         final List<Integer> bracketIndent = new ArrayList<>();
         FormatterToken prev = new FormatterToken(TokenType.SPACE, " "); //$NON-NLS-1$
         boolean encounterBetween = false;
+        int bracketsDepth = 0;
         for (int index = 0; index < argList.size(); index++) {
             token = argList.get(index);
             String tokenString = token.getString().toUpperCase(Locale.ENGLISH);
@@ -168,6 +169,7 @@ public class SQLFormatterTokenized implements SQLFormatter {
                 if (tokenString.equals("(")) { //$NON-NLS-1$
                     functionBracket.add(formatterCfg.isFunction(prev.getString()) ? Boolean.TRUE : Boolean.FALSE);
                     bracketIndent.add(indent);
+                    bracketsDepth++;
                     // Adding indent after ( makes result too verbose and too multiline
 //                    if (!isCompact) {
 //                        indent++;
@@ -179,9 +181,12 @@ public class SQLFormatterTokenized implements SQLFormatter {
 //                        index += insertReturnAndIndent(argList, index, indent);
 //                    }
                     functionBracket.remove(functionBracket.size() - 1);
+                    bracketsDepth--;
                 } else if (tokenString.equals(",")) { //$NON-NLS-1$
                     if (!isCompact) {
-                        index += insertReturnAndIndent(argList, index + 1, indent);
+                        if (bracketsDepth <= 0) {
+                            index += insertReturnAndIndent(argList, index + 1, indent);
+                        }
                     }
                 } else if (statementDelimiters.contains(tokenString)) { //$NON-NLS-1$
                     indent = 0;
