@@ -168,15 +168,16 @@ public class SQLFormatterTokenized implements SQLFormatter {
                 if (tokenString.equals("(")) { //$NON-NLS-1$
                     functionBracket.add(formatterCfg.isFunction(prev.getString()) ? Boolean.TRUE : Boolean.FALSE);
                     bracketIndent.add(indent);
-                    if (!isCompact) {
-                        indent++;
-                        index += insertReturnAndIndent(argList, index + 1, indent);
-                    }
+                    // Adding indent after ( makes result too verbose and too multiline
+//                    if (!isCompact) {
+//                        indent++;
+//                        index += insertReturnAndIndent(argList, index + 1, indent);
+//                    }
                 } else if (tokenString.equals(")") && !bracketIndent.isEmpty() && !functionBracket.isEmpty()) { //$NON-NLS-1$
                     indent = bracketIndent.remove(bracketIndent.size() - 1);
-                    if (!isCompact) {
-                        index += insertReturnAndIndent(argList, index, indent);
-                    }
+//                    if (!isCompact) {
+//                        index += insertReturnAndIndent(argList, index, indent);
+//                    }
                     functionBracket.remove(functionBracket.size() - 1);
                 } else if (tokenString.equals(",")) { //$NON-NLS-1$
                     if (!isCompact) {
@@ -188,12 +189,22 @@ public class SQLFormatterTokenized implements SQLFormatter {
                 }
             } else if (token.getType() == TokenType.KEYWORD) {
                 switch (tokenString) {
+                    case "CREATE":
+                        if (!isCompact) {
+                            int nextIndex = getNextKeyword(argList, index);
+                            if (nextIndex > 0 && "OR".equals(argList.get(nextIndex).getString().toUpperCase(Locale.ENGLISH))) {
+                                nextIndex = getNextKeyword(argList, nextIndex);
+                                if (nextIndex > 0 && "REPLACE".equals(argList.get(nextIndex).getString().toUpperCase(Locale.ENGLISH))) {
+                                    insertReturnAndIndent(argList, nextIndex + 1, indent);
+                                    break;
+                                }
+                            }
+                        }
                     case "DELETE":
                     case "SELECT":
                     case "UPDATE": //$NON-NLS-1$
                     case "INSERT":
                     case "INTO":
-                    case "CREATE":
                     case "DROP":
                     case "TRUNCATE":
                     case "TABLE":
@@ -240,7 +251,7 @@ public class SQLFormatterTokenized implements SQLFormatter {
                         index += insertReturnAndIndent(argList, index, indent);
                         break;
                     case "ON":
-                        //indent++;
+                        indent++;
                         index += insertReturnAndIndent(argList, index + 1, indent);
                         break;
                     case "USING":  //$NON-NLS-1$ //$NON-NLS-2$
@@ -375,6 +386,15 @@ public class SQLFormatterTokenized implements SQLFormatter {
         }
 
         return argList;
+    }
+
+    private static int getNextKeyword(List<FormatterToken> argList, int index) {
+        for (int i = index + 1; i < argList.size(); i++) {
+            if (argList.get(i).getType() == TokenType.KEYWORD) {
+                return i;
+            }
+        }
+        return -1;
     }
 
     private static  boolean isEmbeddedToken(FormatterToken token) {
