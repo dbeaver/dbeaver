@@ -467,6 +467,17 @@ public class GenericMetaModel {
     }
 
     //////////////////////////////////////////////////////
+    // Synonyms
+
+    public boolean supportsSynonyms(@NotNull GenericDataSource dataSource) {
+        return false;
+    }
+
+    public List<? extends GenericSynonym> loadSynonyms(@NotNull DBRProgressMonitor monitor, @NotNull GenericStructContainer container) throws DBException {
+        return new ArrayList<>();
+    }
+
+    //////////////////////////////////////////////////////
     // Triggers
 
     public boolean supportsTriggers(@NotNull GenericDataSource dataSource) {
