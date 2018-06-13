@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -183,7 +184,8 @@ public class MySQLView extends MySQLTableBase
         }
         try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Load table status")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT * FROM " + MySQLConstants.META_TABLE_VIEWS + " WHERE " + MySQLConstants.COL_TABLE_SCHEMA + "=? AND " + MySQLConstants.COL_TABLE_NAME + "=?")) {
+                "SELECT " + MySQLConstants.COL_CHECK_OPTION + "," + MySQLConstants.COL_DEFINER + "," + MySQLConstants.COL_IS_UPDATABLE +
+                    " FROM " + MySQLConstants.META_TABLE_VIEWS + " WHERE " + MySQLConstants.COL_TABLE_SCHEMA + "=? AND " + MySQLConstants.COL_TABLE_NAME + "=?")) {
                 dbStat.setString(1, getContainer().getName());
                 dbStat.setString(2, getName());
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -194,15 +196,29 @@ public class MySQLView extends MySQLTableBase
                             log.warn(e);
                         }
                         additionalInfo.setDefiner(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_DEFINER));
-                        additionalInfo.setDefinition(
-                            SQLUtils.formatSQL(
-                                getDataSource(),
-                                JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_VIEW_DEFINITION)));
                         additionalInfo.setUpdatable("YES".equals(JDBCUtils.safeGetString(dbResult, MySQLConstants.COL_IS_UPDATABLE)));
                     }
-                    additionalInfo.loaded = true;
                 }
             }
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SHOW CREATE VIEW " + getFullyQualifiedName(DBPEvaluationContext.DDL))) {
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    if (dbResult.next()) {
+                        String definition = JDBCUtils.safeGetString(dbResult, "Create View");
+                        if (definition != null) {
+                            int divPos = definition.indexOf(" VIEW `");
+                            if (divPos != -1) {
+                                definition = "CREATE OR REPLACE " + definition.substring(divPos);
+                            }
+                        }
+                        additionalInfo.setDefinition(
+                            SQLUtils.formatSQL(getDataSource(), definition));
+
+                    }
+                }
+
+            }
+            additionalInfo.loaded = true;
         } catch (SQLException e) {
             throw new DBCException(e, getDataSource());
         }
