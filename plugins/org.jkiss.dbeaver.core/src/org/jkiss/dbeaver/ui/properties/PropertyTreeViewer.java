@@ -213,6 +213,9 @@ public class PropertyTreeViewer extends TreeViewer {
             @Override
             public void run() {
                 Tree tree = getTree();
+                if (tree.isDisposed()) {
+                	return;
+                }
                 tree.setRedraw(false);
                 try {
                     PropertyTreeViewer.this.expandAll();
