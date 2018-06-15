@@ -229,9 +229,9 @@ public class DataExporterCSV extends StreamExporterAbstract {
             }
             value = buffer.toString();
         }
-        if (quote) out.write(quoteChar);
+        if (quote && useQuotes) out.write(quoteChar);
         out.write(value);
-        if (quote) out.write(quoteChar);
+        if (quote && useQuotes) out.write(quoteChar);
     }
 
     private void writeCellValue(Reader reader) throws IOException
