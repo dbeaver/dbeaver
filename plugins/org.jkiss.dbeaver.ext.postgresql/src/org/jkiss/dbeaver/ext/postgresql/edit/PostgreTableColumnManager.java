@@ -69,9 +69,9 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
         }
         final PostgreDataType rawType = dataType.getElementType(new VoidProgressMonitor());
         if (rawType != null) {
-            sql.append(rawType.getTypeName());
+            sql.append(rawType.getFullyQualifiedName(DBPEvaluationContext.DDL));
         } else {
-            sql.append(dataType.getTypeName());
+            sql.append(dataType.getFullyQualifiedName(DBPEvaluationContext.DDL));
         }
         switch (dataType.getDataKind()) {
             case STRING:
