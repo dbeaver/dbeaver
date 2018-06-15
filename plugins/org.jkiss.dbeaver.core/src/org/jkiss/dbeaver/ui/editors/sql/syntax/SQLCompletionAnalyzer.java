@@ -359,6 +359,10 @@ class SQLCompletionAnalyzer
     @Nullable
     private DBSObject getTableFromAlias(DBSObjectContainer sc, @Nullable String token)
     {
+        if (token == null) {
+            token = "";
+        }
+
         final DBPDataSource dataSource = request.editor.getDataSource();
         if (!(dataSource instanceof SQLDataSource)) {
             return null;
@@ -371,10 +375,6 @@ class SQLCompletionAnalyzer
         }
         if (request.activeQuery == null) {
             return null;
-        }
-
-        if (token == null) {
-            token = "";
         }
 
         final List<String> nameList = new ArrayList<>();
