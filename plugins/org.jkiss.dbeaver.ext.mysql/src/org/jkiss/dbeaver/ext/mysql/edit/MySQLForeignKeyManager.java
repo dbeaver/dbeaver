@@ -81,9 +81,7 @@ public class MySQLForeignKeyManager extends SQLForeignKeyManager<MySQLTableForei
                     editPage.getOnDeleteRule(),
                     editPage.getOnUpdateRule(),
                     false);
-                foreignKey.setName(DBObjectNameCaseTransformer.transformObjectName(foreignKey,
-                    CommonUtils.escapeIdentifier(table.getName()) + "_" + //$NON-NLS-1$
-                        CommonUtils.escapeIdentifier(editPage.getUniqueConstraint().getParentObject().getName()) + "_FK")); //$NON-NLS-1$
+                foreignKey.setName(getNewConstraintName(monitor, foreignKey));
                 int colIndex = 1;
                 for (EditForeignKeyPage.FKColumnInfo tableColumn : editPage.getColumns()) {
                     foreignKey.addColumn(

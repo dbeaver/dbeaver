@@ -96,15 +96,9 @@ public class DB2ForeignKeyManager extends SQLForeignKeyManager<DB2TableForeignKe
                 DBSForeignKeyModifyRule updateRule = editDialog.getOnUpdateRule();
                 DB2TableUniqueKey ukConstraint = (DB2TableUniqueKey) editDialog.getUniqueConstraint();
 
-                String tableName = CommonUtils.escapeIdentifier(table.getName());
-                String targetTableName = CommonUtils.escapeIdentifier(editDialog.getUniqueConstraint().getParentObject().getName());
-
                 DB2TableForeignKey foreignKey = new DB2TableForeignKey(table, ukConstraint, deleteRule, updateRule);
 
-                String fkBaseName = String.format(CONS_FK_NAME, tableName, targetTableName);
-                String fkName = DBObjectNameCaseTransformer.transformObjectName(foreignKey, fkBaseName);
-
-                foreignKey.setName(fkName);
+                foreignKey.setName(getNewConstraintName(monitor, foreignKey));
 
                 List<DB2TableKeyColumn> columns = new ArrayList<>(editDialog.getColumns().size());
                 DB2TableKeyColumn column;

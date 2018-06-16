@@ -68,9 +68,7 @@ public class OracleForeignKeyManager extends SQLForeignKeyManager<OracleTableFor
                     null,
                     (OracleTableConstraint) editPage.getUniqueConstraint(),
                     editPage.getOnDeleteRule());
-                foreignKey.setName(DBObjectNameCaseTransformer.transformObjectName(foreignKey,
-                    CommonUtils.escapeIdentifier(table.getName()) + "_" + //$NON-NLS-1$
-                        CommonUtils.escapeIdentifier(editPage.getUniqueConstraint().getParentObject().getName()) + "_FK")); //$NON-NLS-1$
+                foreignKey.setName(getNewConstraintName(monitor, foreignKey));
                 int colIndex = 1;
                 for (EditForeignKeyPage.FKColumnInfo tableColumn : editPage.getColumns()) {
                     foreignKey.addColumn(
