@@ -618,9 +618,9 @@ public class SQLQueryJob extends DataSourceJob
             if (scriptContext.hasVariable(paramName)) {
                 Object varValue = scriptContext.getVariable(paramName);
                 String strValue;
-                if (varValue instanceof String) {
+                /*if (varValue instanceof String) {
                     strValue = SQLUtils.quoteString(getExecutionContext().getDataSource(), (String) varValue);
-                } else {
+                } else */{
                     strValue = varValue == null ? null : varValue.toString();
                 }
                 param.setValue(strValue);
@@ -643,7 +643,7 @@ public class SQLQueryJob extends DataSourceJob
             for (SQLQueryParameter param : parameters) {
                 if (param.isNamed() && scriptContext.hasVariable(param.getTitle())) {
                     String strValue = param.getValue();
-                    scriptContext.setVariable(param.getTitle(), SQLUtils.unQuoteString(getExecutionContext().getDataSource(), strValue));
+                    scriptContext.setVariable(param.getTitle(), strValue);
                 }
             }
         }
