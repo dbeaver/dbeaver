@@ -2290,6 +2290,8 @@ public class ResultSetViewer extends Viewer
             constraint.setOperator(DBCLogicalOperator.EQUALS);
             constraint.setValue(keyValue);
         }
+        // Save cur data filter in state
+        curState.filter = new DBDDataFilter(model.getDataFilter());
         navigateEntity(monitor, newWindow, targetEntity, constraints);
     }
 
