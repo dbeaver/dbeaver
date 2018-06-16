@@ -30,10 +30,47 @@ public class HSQLDialect extends GenericSQLDialect {
 
     public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(dataSource, metaData);
+        addDataTypes(
+            Arrays.asList(
+                "NCHAR",
+                "NCLOB"));
+
         addSQLKeywords(
             Arrays.asList(
-                "SYNONYM"));
+                "SYNONYM",
+                "COMPARABLE",
+                "ELSEIF",
+                "END_EXEC",
+                "FIRST_VALUE",
+                "HANDLER",
+                "ITERATE",
+                "LAST_VALUE",
+                "LEAD",
+                "LEAVE",
+                "LIKE_REGEX",
+                "LOOP",
+                "MAX_CARDINALITY",
+                "NTH_VALUE",
+                "NTILE",
+                "OFFSET",
+                "PERIOD",
+                "RESIGNAL",
+                "SIGNAL",
+                "STACKED",
+                "TRIM_ARRAY",
+                "UNTIL",
+                "VALUE"
+            ));
 
+        addFunctions(
+            Arrays.asList(
+                "CURRENT_CATALOG",
+                "CURRENT_SCHEMA",
+                "OCCURRENCES_REGEX",
+                "POSITION_REGEX",
+                "SUBSTRING_REGEX",
+                "TRANSLATE_REGEX"
+                ));
     }
 
 }
