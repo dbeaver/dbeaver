@@ -102,14 +102,11 @@ public class DBeaverVersionChecker extends AbstractJob {
 
     private void showUpdaterDialog(final VersionDescriptor versionDescriptor)
     {
-        UIUtils.asyncExec(new Runnable() {
-            @Override
-            public void run() {
-                VersionUpdateDialog dialog = new VersionUpdateDialog(
-                    UIUtils.getActiveWorkbenchShell(),
-                    versionDescriptor);
-                dialog.open();
-            }
+        UIUtils.asyncExec(() -> {
+            VersionUpdateDialog dialog = new VersionUpdateDialog(
+                UIUtils.getActiveWorkbenchShell(),
+                versionDescriptor);
+            dialog.open();
         });
     }
 }
