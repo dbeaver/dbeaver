@@ -130,6 +130,8 @@ public class PostgreMessages extends NLS {
 	public static String dialog_setting_connection_localClient;
 	public static String dialog_setting_connection_nondefaultDatabase;
 	public static String dialog_setting_connection_nondefaultDatabase_tip;
+	public static String dialog_setting_connection_show_templates;
+	public static String dialog_setting_connection_show_templates_tip;
 	public static String dialog_setting_connection_switchDatabaseOnExpand;
 	public static String dialog_setting_connection_switchDatabaseOnExpand_tip;
 
