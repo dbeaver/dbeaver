@@ -39,10 +39,13 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
 
     private static final String DIALOG_ID = "DBeaver.SQLQueryParameterBindDialog";//$NON-NLS-1$
 
+    private static final String PARAM_HIDE_IF_SET = "PARAM_HIDE_IF_SET";//$NON-NLS-1$
+
     private List<SQLQueryParameter> parameters;
     private final Map<String, List<SQLQueryParameter>> dupParameters = new HashMap<>();
 
     private static Map<String, SQLQueryParameterRegistry.ParameterInfo> savedParamValues = new HashMap<>();
+    private Button hideIfSetCheck;
 
     public SQLQueryParameterBindDialog(Shell shell, List<SQLQueryParameter> parameters)
     {
@@ -73,6 +76,10 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
         return true;
     }
 
+    @Override
+    public boolean isHelpAvailable() {
+        return false;
+    }
 
     @Override
     protected Control createDialogArea(Composite parent)
@@ -149,6 +156,13 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
             }
         };
 
+/*
+        hideIfSetCheck = UIUtils.createCheckbox(composite,
+            "Do not show is all parameters are set",
+            "Do not show this dialog if all parameters were set as script variable",
+            getDialogBoundsSettings().getBoolean(PARAM_HIDE_IF_SET), 1);
+*/
+
         if (!parameters.isEmpty()) {
             UIUtils.asyncExec(() -> {
                 paramTable.select(0);
@@ -168,7 +182,13 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
             registry.setParameter(param.name, param.value);
         }
         registry.save();
+        if (hideIfSetCheck != null) {
+            getDialogBoundsSettings().put(PARAM_HIDE_IF_SET, hideIfSetCheck.getSelection());
+        }
         super.okPressed();
     }
 
+    public static boolean isHideIfSet() {
+        return UIUtils.getDialogSettings(DIALOG_ID).getBoolean(PARAM_HIDE_IF_SET);
+    }
 }

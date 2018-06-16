@@ -629,7 +629,8 @@ public class SQLQueryJob extends DataSourceJob
         if (allSet) {
             return true;
         }
-        boolean okPressed = new UIConfirmation() {
+        boolean okPressed = true;
+        okPressed = new UIConfirmation() {
             @Override
             public Boolean runTask() {
                 SQLQueryParameterBindDialog dialog = new SQLQueryParameterBindDialog(
