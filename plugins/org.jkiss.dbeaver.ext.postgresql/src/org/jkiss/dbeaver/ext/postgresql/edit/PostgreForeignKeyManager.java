@@ -78,9 +78,7 @@ public class PostgreForeignKeyManager extends SQLForeignKeyManager<PostgreTableF
                     editPage.getUniqueConstraint(),
                     editPage.getOnDeleteRule(),
                     editPage.getOnUpdateRule());
-                foreignKey.setName(DBObjectNameCaseTransformer.transformObjectName(foreignKey,
-                    CommonUtils.escapeIdentifier(table.getName()) + "_" + //$NON-NLS-1$
-                        CommonUtils.escapeIdentifier(editPage.getUniqueConstraint().getParentObject().getName()) + "_FK")); //$NON-NLS-1$
+                foreignKey.setName(getNewConstraintName(monitor, foreignKey));
                 int colIndex = 1;
                 for (EditForeignKeyPage.FKColumnInfo tableColumn : editPage.getColumns()) {
                     foreignKey.addColumn(
