@@ -203,7 +203,7 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
         try {
             VoidProgressMonitor monitor = new VoidProgressMonitor();
             if (object instanceof DBSObjectReference) {
-                if (((DBSObjectReference) object).getObjectType() == RelationalObjectType.TYPE_PROCEDURE) {
+                if (DBSProcedure.class.isAssignableFrom(((DBSObjectReference) object).getObjectType().getTypeClass())) {
                     object = ((DBSObjectReference) object).resolveObject(monitor);
                 }
             }
