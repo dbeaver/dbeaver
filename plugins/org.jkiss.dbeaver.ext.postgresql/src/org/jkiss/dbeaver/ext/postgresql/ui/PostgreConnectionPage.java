@@ -225,6 +225,7 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
 
         showNonDefault.setSelection(CommonUtils.getBoolean(connectionInfo.getProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB), true));
         showTemplates.setSelection(CommonUtils.getBoolean(connectionInfo.getProviderProperty(PostgreConstants.PROP_SHOW_TEMPLATES_DB), false));
+        showTemplates.setEnabled(showNonDefault.getSelection());
         switchDatabaseOnExpand.setSelection(CommonUtils.getBoolean(connectionInfo.getProviderProperty(PostgreConstants.PROP_SWITCH_DB_ON_EXPAND), true));
         switchDatabaseOnExpand.setEnabled(showNonDefault.getSelection());
 
