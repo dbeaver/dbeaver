@@ -1,6 +1,6 @@
 language: java
 script: mvn clean verify
-dist: precise
+dist: trusty
 jdk:
   - oraclejdk8
 
