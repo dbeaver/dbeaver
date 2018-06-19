@@ -113,7 +113,7 @@ public class PostgreViewManager extends PostgreTableManagerBase {
             // Source may be empty if it wasn't yet read. Then it definitely wasn't changed
             String sql = view.getSource().trim();
             if (!sql.toLowerCase(Locale.ENGLISH).startsWith("create")) {
-                sql = "CREATE OR REPLACE VIEW " + DBUtils.getObjectFullName(view, DBPEvaluationContext.DDL) + " AS\n" + sql;
+                sql = "CREATE OR REPLACE " + view.getViewType() + " " + DBUtils.getObjectFullName(view, DBPEvaluationContext.DDL) + " AS\n" + sql;
             }
             actions.add(
                 new SQLDatabasePersistAction("Create view", sql));
