@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.editors.sql.indent;
 
 import org.eclipse.jface.text.*;
+import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
@@ -29,9 +30,6 @@ import java.text.BreakIterator;
  * Auto indent strategy for SQL multi-line comments
  */
 public class SQLCommentAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
-
-    private static final int DEFAULT_MARGIN = 5;
-    private static final int DEFAULT_TAB_WIDTH = 4;
 
     private String partitioning;
 
@@ -157,12 +155,7 @@ public class SQLCommentAutoIndentStrategy extends DefaultIndentLineAutoEditStrat
             }
 
             String comment = document.get(partition.getOffset(), partition.getLength());
-            if (comment.indexOf("/*", 2) != -1) //$NON-NLS-1$
-            {
-                return true; // enclosed another comment -> probably a new comment
-            }
-
-            return false;
+            return comment.indexOf("/*", 2) != -1;
 
         }
         catch (BadLocationException e) {
@@ -550,9 +543,8 @@ public class SQLCommentAutoIndentStrategy extends DefaultIndentLineAutoEditStrat
     private static int calculateDisplayedWidth(String string)
     {
 
-        final int tabWidth = DEFAULT_TAB_WIDTH;
-        /*getPreferenceStore().getInt(
-            AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH);*/
+        final int tabWidth = getPreferenceStore().getInt(
+            AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH);
 
         int column = 0;
         for (int i = 0; i < string.length(); i++) {
@@ -630,7 +622,7 @@ public class SQLCommentAutoIndentStrategy extends DefaultIndentLineAutoEditStrat
 
     private static int getMargin()
     {
-        return DEFAULT_MARGIN;//getPreferenceStore().getInt(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_PRINT_MARGIN_COLUMN);
+        return getPreferenceStore().getInt(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_PRINT_MARGIN_COLUMN);
     }
 
     /**
