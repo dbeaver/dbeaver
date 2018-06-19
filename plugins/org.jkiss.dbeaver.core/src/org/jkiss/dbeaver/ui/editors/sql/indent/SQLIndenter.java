@@ -17,9 +17,12 @@
 
 package org.jkiss.dbeaver.ui.editors.sql.indent;
 
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
+import org.eclipse.ui.internal.editors.text.EditorsPlugin;
+import org.eclipse.ui.texteditor.AbstractDecoratedTextEditorPreferenceConstants;
 
 
 public class SQLIndenter {
@@ -55,10 +58,7 @@ public class SQLIndenter {
      * @param scanner  the {@link SQLHeuristicScanner}to be used for scanning the document. It must be installed on the
      *                 same <code>IDocument</code>.
      */
-    public SQLIndenter(IDocument document, SQLHeuristicScanner scanner)
-    {
-        assert (document != null);
-        assert (scanner != null);
+    public SQLIndenter(IDocument document, SQLHeuristicScanner scanner) {
         this.document = document;
         this.scanner = scanner;
     }
@@ -68,10 +68,9 @@ public class SQLIndenter {
      *
      * @param offset the offset in the document
      * @return a String which reflects the indentation at the line in which the reference position to
-     *         <code>offset</code> resides, or <code>null</code> if it cannot be determined
+     * <code>offset</code> resides, or <code>null</code> if it cannot be determined
      */
-    public String getReferenceIndentation(int offset)
-    {
+    public String getReferenceIndentation(int offset) {
         int unit;
         unit = findReferencePosition(offset);
         //   if we were unable to find anything, return null
@@ -87,10 +86,9 @@ public class SQLIndenter {
      *
      * @param offset the offset in the document
      * @return a String which reflects the correct indentation for the line in which offset resides, or
-     *         <code>null</code> if it cannot be determined
+     * <code>null</code> if it cannot be determined
      */
-    public String computeIndentation(int offset)
-    {
+    public String computeIndentation(int offset) {
         return computeIndentation(offset, false);
 
     }
@@ -101,10 +99,9 @@ public class SQLIndenter {
      * @param offset        the offset in the document
      * @param assumeOpening <code>true</code> if an opening statement should be assumed
      * @return a String which reflects the correct indentation for the line in which offset resides, or
-     *         <code>null</code> if it cannot be determined
+     * <code>null</code> if it cannot be determined
      */
-    public String computeIndentation(int offset, boolean assumeOpening)
-    {
+    public String computeIndentation(int offset, boolean assumeOpening) {
 
         indent = 1;
 
@@ -132,8 +129,7 @@ public class SQLIndenter {
      * @param offset the offset in the document
      * @return the indentation (leading whitespace) of the line in which <code>offset</code> is located
      */
-    private String getLeadingWhitespace(int offset)
-    {
+    private String getLeadingWhitespace(int offset) {
         try {
             IRegion line = document.getLineInformationOfOffset(offset);
             int lineOffset = line.getOffset();
@@ -148,8 +144,7 @@ public class SQLIndenter {
             }
 
             return document.get(lineOffset, nonWS - lineOffset);
-        }
-        catch (BadLocationException e) {
+        } catch (BadLocationException e) {
 //            _log.debug(EditorMessages.error_badLocationException, e);
             return "";
         }
@@ -160,8 +155,7 @@ public class SQLIndenter {
      *
      * @param indent the indentation to be modified
      */
-    private void unindent(StringBuilder indent)
-    {
+    private void unindent(StringBuilder indent) {
         CharSequence oneIndent = createIndent();
         int i = indent.lastIndexOf(oneIndent.toString()); //$NON-NLS-1$
         if (i != -1) {
@@ -175,8 +169,7 @@ public class SQLIndenter {
      * @param indent the requested indentation level.
      * @return the indentation specified by <code>indent</code>
      */
-    private StringBuilder createIndent(int indent)
-    {
+    private StringBuilder createIndent(int indent) {
         StringBuilder oneIndent = createIndent();
 
         StringBuilder ret = new StringBuilder();
@@ -192,11 +185,19 @@ public class SQLIndenter {
      *
      * @return one indentation
      */
-    private StringBuilder createIndent()
-    {
-        // get a sensible default when running without the infrastructure for testing
+    private StringBuilder createIndent() {
+        IPreferenceStore preferenceStore = EditorsPlugin.getDefault().getPreferenceStore();
+        boolean useSpaces = preferenceStore.getBoolean(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS);
         StringBuilder oneIndent = new StringBuilder();
-        oneIndent.append('\t');
+        if (!useSpaces) {
+            oneIndent.append('\t');
+        } else {
+            int tabWidth = preferenceStore.getInt(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_TAB_WIDTH);
+            for (int i = 0; i < tabWidth; i++) {
+                oneIndent.append(' ');
+            }
+        }
+
         return oneIndent;
     }
 
@@ -205,10 +206,9 @@ public class SQLIndenter {
      *
      * @param offset the offset for which the reference is computed
      * @return the reference statement relative to which <code>offset</code> should be indented, or
-     *         {@link SQLHeuristicScanner#NOT_FOUND}
+     * {@link SQLHeuristicScanner#NOT_FOUND}
      */
-    public int findReferencePosition(int offset)
-    {
+    public int findReferencePosition(int offset) {
         indent = 0; // the indentation modification
         position = offset;
         nextToken();
@@ -222,10 +222,9 @@ public class SQLIndenter {
      * or simply increase the indentation by a number of standard indents.
      *
      * @return the reference position for a list item: either a previous list item that has its own indentation, or the
-     *         list introduction start.
+     * list introduction start.
      */
-    private int skipToPreviousListItemOrListStart()
-    {
+    private int skipToPreviousListItemOrListStart() {
         int startLine = line;
         int startPosition = position;
         while (true) {
@@ -237,8 +236,7 @@ public class SQLIndenter {
                     int lineOffset = document.getLineOffset(startLine);
                     int bound = Math.min(document.getLength(), startPosition + 1);
                     int align = scanner.findNonWhitespaceForwardInAnyPartition(lineOffset, bound);
-                }
-                catch (BadLocationException e) {
+                } catch (BadLocationException e) {
 //                    _log.debug(EditorMessages.error_badLocationException, e);
                     // ignore and return just the position
                 }
@@ -257,19 +255,16 @@ public class SQLIndenter {
      * Reads the next token in backward direction from the heuristic scanner and sets the fields
      * <code>fToken, fPreviousPosition</code> and <code>fPosition</code> accordingly.
      */
-    private void nextToken()
-    {
+    private void nextToken() {
         nextToken(position);
     }
 
-    public void nextToken(int start)
-    {
+    public void nextToken(int start) {
         token = scanner.previousToken(start - 1, SQLHeuristicScanner.UNBOUND);
         position = scanner.getPosition() + 1;
         try {
             line = document.getLineOfOffset(position);
-        }
-        catch (BadLocationException e) {
+        } catch (BadLocationException e) {
             line = -1;
         }
     }
