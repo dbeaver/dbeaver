@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.exasol.manager.security;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolDataSource;
 import org.jkiss.dbeaver.ext.exasol.model.ExasolSchema;
+import org.jkiss.dbeaver.ext.exasol.tools.ExasolUtils;
 import org.jkiss.dbeaver.model.access.DBAPrivilege;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Property;
@@ -48,7 +49,7 @@ public class ExasolBaseObjectGrant implements DBAPrivilege  {
 	
 	public  ExasolBaseObjectGrant(ExasolDataSource dataSource, ResultSet resultSet) throws DBException
 	{
-		this.type = ExasolTableObjectType.valueOf(JDBCUtils.safeGetString(resultSet, "OBJECT_TYPE"));
+		this.type = ExasolUtils.getTableObjectType(JDBCUtils.safeGetString(resultSet, "OBJECT_TYPE"));
 		this.dataSource = dataSource;
 		this.exasolGrantee = JDBCUtils.safeGetString(resultSet, "GRANTEE") ;
 		String grants = JDBCUtils.safeGetString(resultSet, "PRIVS");
