@@ -37,8 +37,7 @@ public class SQLCommandSet implements SQLControlCommandHandler {
         }
         String varName = parameter.substring(0, divPos).trim();
         String varValue = parameter.substring(divPos + 1).trim();
-        Object varEvaluated = ScriptEvaluateEngine.getEngine(scriptContext).evaluateExpression(varValue);
-        scriptContext.setVariable(varName, varEvaluated);
+        scriptContext.setVariable(varName, varValue);
 
         return true;
     }
