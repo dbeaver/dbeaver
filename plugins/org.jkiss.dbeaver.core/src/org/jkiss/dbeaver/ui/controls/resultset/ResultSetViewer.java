@@ -1007,17 +1007,19 @@ public class ResultSetViewer extends Viewer
     @Override
     public <T> T getAdapter(Class<T> adapter)
     {
-        if (UIUtils.hasFocus(filtersPanel)) {
-            T result = filtersPanel.getAdapter(adapter);
-            if (result != null) {
-                return result;
-            }
-        } else if (UIUtils.hasFocus(panelFolder)) {
-            IResultSetPanel visiblePanel = getVisiblePanel();
-            if (visiblePanel instanceof IAdaptable) {
-                T adapted = ((IAdaptable) visiblePanel).getAdapter(adapter);
-                if (adapted != null) {
-                    return adapted;
+        if (UIUtils.isUIThread()) {
+            if (UIUtils.hasFocus(filtersPanel)) {
+                T result = filtersPanel.getAdapter(adapter);
+                if (result != null) {
+                    return result;
+                }
+            } else if (UIUtils.hasFocus(panelFolder)) {
+                IResultSetPanel visiblePanel = getVisiblePanel();
+                if (visiblePanel instanceof IAdaptable) {
+                    T adapted = ((IAdaptable) visiblePanel).getAdapter(adapter);
+                    if (adapted != null) {
+                        return adapted;
+                    }
                 }
             }
         }
