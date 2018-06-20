@@ -98,6 +98,7 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
 
     @Override
     public List<GenericSequence> loadSequences(@NotNull DBRProgressMonitor monitor, @NotNull GenericStructContainer container) throws DBException {
+        Version databaseVersion = container.getDataSource().getInfo().getDatabaseVersion();
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container.getDataSource(), "Read procedure definition")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT sequence_name FROM information_schema.sequences WHERE sequence_schema=?")) {
                 dbStat.setString(1, container.getName());
@@ -105,7 +106,15 @@ public class PostgreMetaModel extends GenericMetaModel implements DBCQueryTransf
                     List<GenericSequence> result = new ArrayList<>();
                     while (dbResult.next()) {
                         String name = JDBCUtils.safeGetString(dbResult, 1);
-                        try (JDBCPreparedStatement dbSeqStat = session.prepareStatement("SELECT last_value,min_value,max_value,increment_by from " + container.getName() + "." + name)) {
+                        String sequenceSql = "SELECT last_value,min_value,max_value,increment_by from " + container.getName() + "." + name;
+                        if (databaseVersion.getMajor() >= 10) {
+                            sequenceSql = "SELECT last_value, min_value, max_value, increment_by from pg_catalog.pg_sequences where schemaname=? and sequencename=?";
+                        }
+                        try (JDBCPreparedStatement dbSeqStat = session.prepareStatement(sequenceSql)) {
+                            if (databaseVersion.getMajor() >= 10) {
+                                dbSeqStat.setString(1, container.getName());
+                                dbSeqStat.setString(2, dbResult.getString(1));
+                            }
                             try (JDBCResultSet seqResults = dbSeqStat.executeQuery()) {
                                 seqResults.next();
                                 GenericSequence sequence = new GenericSequence(
