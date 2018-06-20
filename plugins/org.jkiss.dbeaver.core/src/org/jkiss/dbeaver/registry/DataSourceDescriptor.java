@@ -750,6 +750,7 @@ public class DataSourceDescriptor
             }
 
             this.dataSource = getDriver().getDataSourceProvider().openDataSource(monitor, this);
+            this.connectTime = new Date();
             monitor.worked(1);
 
             if (initialize) {
@@ -764,8 +765,7 @@ public class DataSourceDescriptor
                 initConnectionState(monitor);
             }
 
-            connectFailed = false;
-            connectTime = new Date();
+            this.connectFailed = false;
 
             processEvents(monitor, DBPConnectionEventType.AFTER_CONNECT);
 
