@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.controls.resultset;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.fieldassist.ContentProposal;
+import org.eclipse.jface.fieldassist.ContentProposalAdapter;
 import org.eclipse.jface.fieldassist.IContentProposal;
 import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.jface.text.Document;
@@ -95,6 +96,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
     private final TextViewer filtersTextViewer;
     private final StyledText filtersText;
+    private final ContentProposalAdapter filtersProposalAdapter;
 
     private final ToolBar filterToolbar;
     private final ToolItem filtersApplyButton;
@@ -188,11 +190,23 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                     filtersClearButton.setEnabled(!CommonUtils.isEmpty(filterText));
                 }
             });
+            this.filtersText.addTraverseListener(e -> {
+                if (e.detail == SWT.TRAVERSE_RETURN) {
+                    if (filterExpanded) {
+                        e.doit = true;
+                        return;
+                    }
+                    e.doit = false;
+                    e.detail = SWT.TRAVERSE_NONE;
+                }
+            });
+
             this.filtersText.addVerifyKeyListener(e -> {
                 if (e.keyCode == SWT.CR) {
                     if (filterExpanded && (e.stateMask & SWT.CTRL) == 0) {
                         return;
                     }
+                    // Suppress Enter handling if filter is not expanded
                     e.doit = false;
                 }
             });
@@ -205,6 +219,9 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                         }
                         historyPanel.showFilterHistoryPopup();
                     } else if (e.keyCode == SWT.CR) {
+                        if (filtersProposalAdapter != null && filtersProposalAdapter.isProposalPopupOpen()) {
+                            return;
+                        }
                         if (filterExpanded && (e.stateMask & SWT.CTRL) == 0) {
                             return;
                         }
@@ -232,7 +249,8 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                     insertControlContents(control, text, cursorPosition);
                 }
             };
-            UIUtils.installContentProposal(filtersText, contentAdapter, this, false, false);
+            filtersProposalAdapter = UIUtils.installContentProposal(
+                filtersText, contentAdapter, this, false, false);
         }
 
         // Handle all shortcuts by filters editor, not by host editor
@@ -303,18 +321,6 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             historyForwardButton.setEnabled(false);
             historyForwardButton.addSelectionListener(new HistoryMenuListener(historyForwardButton, false));
         }
-
-        this.addTraverseListener(e -> {
-            if (e.detail == SWT.TRAVERSE_RETURN) {
-                if (filterExpanded) {
-                    e.doit = true;
-                    return;
-                }
-                setCustomDataFilter();
-                e.doit = false;
-                e.detail = SWT.TRAVERSE_NONE;
-            }
-        });
 
         this.addControlListener(new ControlListener() {
             @Override
