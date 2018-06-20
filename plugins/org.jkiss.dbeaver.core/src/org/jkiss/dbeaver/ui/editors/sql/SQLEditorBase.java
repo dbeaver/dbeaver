@@ -29,11 +29,16 @@ import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.contexts.IContextActivation;
+import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.texteditor.*;
@@ -78,6 +83,8 @@ import java.util.regex.Matcher;
 public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisualizer {
     
     static protected final Log log = Log.getLog(SQLEditorBase.class);
+
+    public static final String SQL_CONTROL_CONTEXT_ID = "org.jkiss.dbeaver.ui.editors.sql.script.focused";
 
     static {
         // SQL editor preferences. Do this here because it initializes display
@@ -236,6 +243,31 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
             if (sourceViewer instanceof ITextViewerExtension) {
                 ((ITextViewerExtension) sourceViewer).prependVerifyKeyListener(symbolInserter);
             }
+        }
+
+        {
+            // Context listener
+            StyledText control = getViewer().getTextWidget();
+            final IContextService contextService = getSite().getService(IContextService.class);
+            if (contextService != null) {
+                control.addFocusListener(new FocusListener() {
+                    IContextActivation activation;
+
+                    @Override
+                    public void focusGained(FocusEvent e) {
+                        if (activation == null) {
+                            activation = contextService.activateContext(SQL_CONTROL_CONTEXT_ID);
+                        }
+                    }
+
+                    @Override
+                    public void focusLost(FocusEvent e) {
+                        contextService.deactivateContext(activation);
+                        activation = null;
+                    }
+                });
+            }
+            control.addDisposeListener(e -> UIUtils.removeFocusTracker(getSite(), control));
         }
     }
 
