@@ -613,17 +613,20 @@ public class ResultSetViewer extends Viewer
         // Activate panels
         if (supportsPanels()) {
             boolean panelsVisible = false;
+            boolean verticalLayout = false;
             int[] panelWeights = new int[]{700, 300};
 
             if (activePresentationDescriptor != null) {
                 PresentationSettings settings = getPresentationSettings();
                 panelsVisible = settings.panelsVisible;
+                verticalLayout = settings.verticalLayout;
                 if (settings.panelRatio > 0) {
                     panelWeights = new int[] {1000 - settings.panelRatio, settings.panelRatio};
                 }
                 activateDefaultPanels(settings);
             }
             showPanels(panelsVisible, false);
+            viewerSash.setOrientation(verticalLayout ? SWT.VERTICAL : SWT.HORIZONTAL);
             viewerSash.setWeights(panelWeights);
         }
 
@@ -716,6 +719,7 @@ public class ResultSetViewer extends Viewer
             settings.activePanelId = pSection.get("activePanelId");
             settings.panelRatio = pSection.getInt("panelRatio");
             settings.panelsVisible = pSection.getBoolean("panelsVisible");
+            settings.verticalLayout = pSection.getBoolean("verticalLayout");
             presentationSettings.put(presentation, settings);
         }
     }
@@ -747,6 +751,7 @@ public class ResultSetViewer extends Viewer
                 pSection.put("activePanelId", settings.activePanelId);
                 pSection.put("panelRatio", settings.panelRatio);
                 pSection.put("panelsVisible", settings.panelsVisible);
+                pSection.put("panelsVisible", settings.verticalLayout);
             }
         }
     }
@@ -923,6 +928,13 @@ public class ResultSetViewer extends Viewer
         if (saveSettings) {
             savePresentationSettings();
         }
+    }
+
+    void toggleVerticalLayout() {
+        PresentationSettings settings = getPresentationSettings();
+        settings.verticalLayout = !settings.verticalLayout;
+        viewerSash.setOrientation(settings.verticalLayout ? SWT.VERTICAL : SWT.HORIZONTAL);
+        savePresentationSettings();
     }
 
     private List<IContributionItem> fillPanelsMenu() {
@@ -1913,6 +1925,7 @@ public class ResultSetViewer extends Viewer
                     "layout"); //$NON-NLS-1$
                 layoutMenu.add(new ToggleModeAction());
                 layoutMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGGLE_PANELS));
+                layoutMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGGLE_LAYOUT));
                 layoutMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_SWITCH_PRESENTATION));
                 {
                     MenuManager panelsMenu = new MenuManager(
@@ -3935,6 +3948,7 @@ public class ResultSetViewer extends Viewer
         String activePanelId;
         int panelRatio;
         boolean panelsVisible;
+        boolean verticalLayout;
     }
 
     private class PanelToggleAction extends Action {
