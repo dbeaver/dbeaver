@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.erd.editor.ERDEditorInput;
 import org.jkiss.dbeaver.ext.erd.editor.ERDEditorStandalone;
 import org.jkiss.dbeaver.ext.erd.model.DiagramLoader;
+import org.jkiss.dbeaver.ext.erd.model.ERDDecoratorDefault;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -146,7 +147,9 @@ public class ERDResourceHandler extends AbstractResourceHandler {
                 public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
                 {
                     try {
-                        EntityDiagram newDiagram = copyFrom == null ? new EntityDiagram(null, "<Diagram>") : copyFrom.copy();
+                        EntityDiagram newDiagram = copyFrom == null ?
+                                new EntityDiagram(new ERDDecoratorDefault(), null, "<Diagram>") :
+                                copyFrom.copy();
                         newDiagram.setName(title);
                         newDiagram.setLayoutManualAllowed(true);
                         newDiagram.setLayoutManualDesired(true);

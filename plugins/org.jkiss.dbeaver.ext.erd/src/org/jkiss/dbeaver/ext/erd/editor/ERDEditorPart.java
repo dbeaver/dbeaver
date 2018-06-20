@@ -73,6 +73,8 @@ import org.jkiss.dbeaver.ext.erd.editor.tools.ChangeZOrderAction;
 import org.jkiss.dbeaver.ext.erd.editor.tools.SetPartColorAction;
 import org.jkiss.dbeaver.ext.erd.export.ERDExportFormatHandler;
 import org.jkiss.dbeaver.ext.erd.export.ERDExportFormatRegistry;
+import org.jkiss.dbeaver.ext.erd.model.ERDDecorator;
+import org.jkiss.dbeaver.ext.erd.model.ERDDecoratorDefault;
 import org.jkiss.dbeaver.ext.erd.model.ERDNote;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
@@ -139,6 +141,10 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
      */
     protected ERDEditorPart()
     {
+    }
+
+    protected ERDDecorator createDecorator() {
+        return new ERDDecoratorDefault();
     }
 
     @Override
@@ -353,7 +359,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         initializeGraphicalViewer();
 
         // Set initial (empty) contents
-        viewer.setContents(new EntityDiagram(null, "empty"));
+        viewer.setContents(new EntityDiagram(createDecorator(), null, "empty"));
 
         // Set context menu
         ContextMenuProvider provider = new ERDEditorContextMenuProvider(this);

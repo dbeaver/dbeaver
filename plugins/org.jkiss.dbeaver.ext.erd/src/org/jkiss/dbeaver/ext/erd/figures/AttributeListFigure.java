@@ -38,17 +38,18 @@ public class AttributeListFigure extends Figure
 
 	public AttributeListFigure(ERDEntity entity, boolean key)
 	{
-		FlowLayout layout = new FlowLayout();
+/*
+		GridLayout layout = new GridLayout(1, false);
+		layout.verticalSpacing = 0;
+		layout.marginHeight = 0;
+		layout.marginWidth = 0;
+*/
+		FlowLayout layout = new FlowLayout(false);
 		layout.setMinorAlignment(FlowLayout.ALIGN_TOPLEFT);
-		layout.setStretchMinorAxis(false);
-		layout.setHorizontal(false);
+		layout.setStretchMinorAxis(true);
+		layout.setMinorSpacing(2);
 		setLayoutManager(layout);
 		setBorder(new ColumnFigureBorder());
-        if (entity.isPrimary()) {
-            //setBackgroundColor(EntityFigure.primaryTableColor);
-        } else {
-		    //setBackgroundColor(ColorConstants.tooltipBackground);
-        }
 		ColorRegistry colorRegistry = UIUtils.getColorRegistry();
         setBackgroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ATTR_BACKGROUND));
 		setForegroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ATTR_FOREGROUND));

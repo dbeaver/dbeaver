@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ext.erd.figures;
 
 import org.eclipse.draw2d.Graphics;
 import org.eclipse.draw2d.Label;
+import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Insets;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
@@ -77,6 +78,11 @@ public class EditableLabel extends Label
 			graphics.setForegroundColor(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_DIAGRAM_BACKGROUND));
 		}
 		super.paintFigure(graphics);
+	}
+
+	@Override
+	public Dimension getPreferredSize(int wHint, int hHint) {
+		return super.getPreferredSize(wHint, hHint);
 	}
 
 	/**
