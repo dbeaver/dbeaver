@@ -44,12 +44,12 @@ import java.beans.PropertyChangeEvent;
 
 /**
  * Represents an editable Column object in the model
+ *
  * @author Serge Rider
  */
-public class AttributePart extends PropertyAwarePart
-{
+public class AttributePart extends PropertyAwarePart {
 
-	protected DirectEditManager manager;
+    protected DirectEditManager manager;
 
     @Override
     public boolean isSelectable() {
@@ -57,23 +57,24 @@ public class AttributePart extends PropertyAwarePart
     }
 
     /**
-	 * @return the ColumnLabel representing the Column
-	 */
-	@Override
-    protected AttributeItemFigure createFigure()
-	{
-		ERDEntityAttribute column = (ERDEntityAttribute) getModel();
-        AttributeItemFigure attributeFigure = new AttributeItemFigure(column);
+     * @return the ColumnLabel representing the Column
+     */
+    @Override
+    protected AttributeItemFigure createFigure() {
+        ERDEntityAttribute column = (ERDEntityAttribute) getModel();
+        AttributeItemFigure attributeFigure = new AttributeItemFigure(this);
 
-        DiagramPart diagramPart = (DiagramPart) getParent().getParent();
-		boolean showNullability = diagramPart.getDiagram().hasAttributeStyle(ERDViewStyle.NULLABILITY);
+        DiagramPart diagramPart = getDiagramPart();
+        boolean showNullability = diagramPart.getDiagram().hasAttributeStyle(ERDViewStyle.NULLABILITY);
         Font columnFont = diagramPart.getNormalFont();
         Color columnColor = diagramPart.getContentPane().getForegroundColor();
         if (column.isInPrimaryKey()) {
             columnFont = diagramPart.getBoldFont();
+/*
             if (showNullability && !column.getObject().isRequired()) {
                 columnFont = diagramPart.getBoldItalicFont();
             }
+*/
 /*
             if (!column.isInForeignKey()) {
                 columnFont = diagramPart.getBoldFont();
@@ -82,9 +83,11 @@ public class AttributePart extends PropertyAwarePart
             }
 */
         } else {
+/*
             if (showNullability && !column.getObject().isRequired()) {
                 columnFont = diagramPart.getItalicFont();
             }
+*/
         }
         if (column.isInForeignKey()) {
             //columnColor = Display.getDefault().getSystemColor(SWT.COLOR_DARK_BLUE);
@@ -94,27 +97,28 @@ public class AttributePart extends PropertyAwarePart
         return attributeFigure;
     }
 
-	@Override
-	public AttributeItemFigure getFigure() {
-		return (AttributeItemFigure)super.getFigure();
-	}
+    public DiagramPart getDiagramPart() {
+        return (DiagramPart) getParent().getParent();
+    }
 
-	/**
-	 * Create EditPolicies for the column label
-	 */
-	@Override
-    protected void createEditPolicies()
-	{
-		//installEditPolicy(EditPolicy.COMPONENT_ROLE, new AttributeEditPolicy());
-		//installEditPolicy(EditPolicy.DIRECT_EDIT_ROLE, new ColumnDirectEditPolicy());
-		//installEditPolicy(EditPolicy.LAYOUT_ROLE, null);
-	}
+    @Override
+    public AttributeItemFigure getFigure() {
+        return (AttributeItemFigure) super.getFigure();
+    }
 
-	@Override
-    public void performRequest(Request request)
-	{
-		if (request.getType() == RequestConstants.REQ_DIRECT_EDIT)
-		{
+    /**
+     * Create EditPolicies for the column label
+     */
+    @Override
+    protected void createEditPolicies() {
+        //installEditPolicy(EditPolicy.COMPONENT_ROLE, new AttributeEditPolicy());
+        //installEditPolicy(EditPolicy.DIRECT_EDIT_ROLE, new ColumnDirectEditPolicy());
+        //installEditPolicy(EditPolicy.LAYOUT_ROLE, null);
+    }
+
+    @Override
+    public void performRequest(Request request) {
+        if (request.getType() == RequestConstants.REQ_DIRECT_EDIT) {
 /*
 			if (request instanceof DirectEditRequest
 					&& !directEditHitTest(((DirectEditRequest) request).getLocation().getCopy()))
@@ -124,98 +128,88 @@ public class AttributePart extends PropertyAwarePart
         } else if (request.getType() == RequestConstants.REQ_OPEN) {
             getAttribute().openEditor();
         }
-	}
+    }
 
-	private boolean directEditHitTest(Point requestLoc)
-	{
-		IFigure figure = getFigure();
-		figure.translateToRelative(requestLoc);
+    private boolean directEditHitTest(Point requestLoc) {
+        IFigure figure = getFigure();
+        figure.translateToRelative(requestLoc);
         return figure.containsPoint(requestLoc);
     }
 
-	protected void performDirectEdit()
-	{
-		if (manager == null)
-		{
-			ERDGraphicalViewer viewer = (ERDGraphicalViewer) getViewer();
-			ValidationMessageHandler handler = viewer.getValidationHandler();
+    protected void performDirectEdit() {
+        if (manager == null) {
+            ERDGraphicalViewer viewer = (ERDGraphicalViewer) getViewer();
+            ValidationMessageHandler handler = viewer.getValidationHandler();
 
-			Label l = getFigure();
-			ColumnNameTypeCellEditorValidator columnNameTypeCellEditorValidator = new ColumnNameTypeCellEditorValidator(
-					handler);
+            Label l = getFigure().getLabel();
+            ColumnNameTypeCellEditorValidator columnNameTypeCellEditorValidator = new ColumnNameTypeCellEditorValidator(
+                    handler);
 
-			manager = new ExtendedDirectEditManager(this, TextCellEditor.class, new LabelCellEditorLocator(l), l,
-					columnNameTypeCellEditorValidator);
-		}
-		manager.show();
-	}
+            manager = new ExtendedDirectEditManager(this, TextCellEditor.class, new LabelCellEditorLocator(l), l,
+                    columnNameTypeCellEditorValidator);
+        }
+        manager.show();
+    }
 
-	/**
-	 * Sets the width of the line when selected
-	 */
-	@Override
-    public void setSelected(int value)
-	{
-		super.setSelected(value);
-		EditableLabel columnLabel = getFigure();
-		if (value != EditPart.SELECTED_NONE)
-			columnLabel.setSelected(true);
-		else
-			columnLabel.setSelected(false);
-		columnLabel.repaint();
-	}
-
-	public void handleNameChange(String textValue)
-	{
-		EditableLabel label = getFigure();
-		label.setVisible(false);
-		setSelected(EditPart.SELECTED_NONE);
-		label.revalidate();
-	}
-
-	/**
-	 * Handles when successfully applying direct edit
-	 */
-	@Override
-    protected void commitNameChange(PropertyChangeEvent evt)
-	{
-		AttributeItemFigure label = getFigure();
-		label.setText(getAttribute().getLabelText());
-		setSelected(EditPart.SELECTED_PRIMARY);
-		label.revalidate();
-	}
-
-
-	/**
-	 * Reverts state back to prior edit state
-	 */
-	public void revertNameChange(String oldValue)
-	{
-		AttributeItemFigure label = getFigure();
-		label.setVisible(true);
-		setSelected(EditPart.SELECTED_PRIMARY);
-		label.revalidate();
-	}
-
-	/**
-	 * We don't need to explicitly handle refresh visuals because the times when
-	 * this needs to be done it is handled by the table e.g. handleNameChange()
-	 */
-	@Override
-    protected void refreshVisuals()
-	{
-		ERDEntityAttribute column = (ERDEntityAttribute) getModel();
-		getFigure().setText(column.getLabelText());
-	}
-	
-	public ERDEntityAttribute getAttribute()
-	{
-		return (ERDEntityAttribute) getModel();
-	}
-	
+    /**
+     * Sets the width of the line when selected
+     */
     @Override
-    public String toString()
-    {
+    public void setSelected(int value) {
+        super.setSelected(value);
+        EditableLabel columnLabel = getFigure().getLabel();
+        if (value != EditPart.SELECTED_NONE)
+            columnLabel.setSelected(true);
+        else
+            columnLabel.setSelected(false);
+        columnLabel.repaint();
+    }
+
+    public void handleNameChange(String textValue) {
+        EditableLabel label = getFigure().getLabel();
+        label.setVisible(false);
+        setSelected(EditPart.SELECTED_NONE);
+        label.revalidate();
+    }
+
+    /**
+     * Handles when successfully applying direct edit
+     */
+    @Override
+    protected void commitNameChange(PropertyChangeEvent evt) {
+        AttributeItemFigure label = getFigure();
+        label.getLabel().setText(getAttribute().getLabelText());
+        setSelected(EditPart.SELECTED_PRIMARY);
+        label.revalidate();
+    }
+
+
+    /**
+     * Reverts state back to prior edit state
+     */
+    public void revertNameChange(String oldValue) {
+        AttributeItemFigure label = getFigure();
+        label.setVisible(true);
+        setSelected(EditPart.SELECTED_PRIMARY);
+        label.revalidate();
+    }
+
+    /**
+     * We don't need to explicitly handle refresh visuals because the times when
+     * this needs to be done it is handled by the table e.g. handleNameChange()
+     */
+    @Override
+    protected void refreshVisuals() {
+        ERDEntityAttribute column = (ERDEntityAttribute) getModel();
+        getFigure().getLabel().setText(column.getLabelText());
+    }
+
+    public ERDEntityAttribute getAttribute() {
+        return (ERDEntityAttribute) getModel();
+    }
+
+    @Override
+    public String toString() {
         return ERDMessages.column_ + getAttribute().getLabelText();
     }
 

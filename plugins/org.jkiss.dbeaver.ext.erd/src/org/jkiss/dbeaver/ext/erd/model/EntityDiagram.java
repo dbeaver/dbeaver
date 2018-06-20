@@ -48,6 +48,7 @@ public class EntityDiagram extends ERDObject<DBSObject>
         public int zOrder = 0;
     }
 
+    private ERDDecorator decorator;
 	private String name;
 	private List<ERDEntity> entities = new ArrayList<>();
 	private boolean layoutManualDesired = true;
@@ -61,9 +62,10 @@ public class EntityDiagram extends ERDObject<DBSObject>
 
     private List<String> errorMessages = new ArrayList<>();
 
-    public EntityDiagram(DBSObject container, String name)
+    public EntityDiagram(ERDDecorator decorator, DBSObject container, String name)
 	{
 		super(container);
+		this.decorator = decorator;
 		if (name == null)
 			throw new IllegalArgumentException("Name cannot be null");
 		this.name = name;
@@ -71,6 +73,10 @@ public class EntityDiagram extends ERDObject<DBSObject>
         this.attributeVisibility = ERDAttributeVisibility.getDefaultVisibility(store);
         this.attributeStyles = ERDViewStyle.getDefaultStyles(store);
 	}
+
+    public ERDDecorator getDecorator() {
+        return decorator;
+    }
 
     public boolean hasAttributeStyle(ERDViewStyle style) {
         return ArrayUtils.contains(attributeStyles, style);
@@ -235,7 +241,7 @@ public class EntityDiagram extends ERDObject<DBSObject>
 
     public EntityDiagram copy()
     {
-        EntityDiagram copy = new EntityDiagram(getObject(), getName());
+        EntityDiagram copy = new EntityDiagram(decorator, getObject(), getName());
         copy.entities.addAll(this.entities);
         copy.tableMap.putAll(this.tableMap);
         copy.layoutManualDesired = this.layoutManualDesired;

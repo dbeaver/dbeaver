@@ -160,7 +160,7 @@ public class ERDEditorStandalone extends ERDEditorPart implements DBPContextProv
         final IFile file = getEditorFile();
 
         final DiagramPart diagramPart = getDiagramPart();
-        EntityDiagram entityDiagram = new EntityDiagram(null, file.getName());
+        EntityDiagram entityDiagram = new EntityDiagram(createDecorator(), null, file.getName());
         entityDiagram.clear();
         entityDiagram.setLayoutManualAllowed(true);
         entityDiagram.setLayoutManualDesired(true);
