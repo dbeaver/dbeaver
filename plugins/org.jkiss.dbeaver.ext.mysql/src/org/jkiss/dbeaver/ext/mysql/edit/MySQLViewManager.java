@@ -96,8 +96,7 @@ public class MySQLViewManager extends MySQLTableManager {
     {
         StringBuilder decl = new StringBuilder(200);
         final String lineSeparator = GeneralUtils.getDefaultLineSeparator();
-        decl.append("CREATE OR REPLACE VIEW ").append(view.getFullyQualifiedName(DBPEvaluationContext.DDL)).append(lineSeparator) //$NON-NLS-1$
-            .append("AS ").append(view.getAdditionalInfo().getDefinition()); //$NON-NLS-1$
+        decl.append(view.getAdditionalInfo().getDefinition()); //$NON-NLS-1$
         final MySQLView.CheckOption checkOption = view.getAdditionalInfo().getCheckOption();
         if (checkOption != null && checkOption != MySQLView.CheckOption.NONE) {
             decl.append(lineSeparator).append("WITH ").append(checkOption.getDefinitionName()).append(" CHECK OPTION"); //$NON-NLS-1$ //$NON-NLS-2$
