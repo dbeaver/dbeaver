@@ -1510,7 +1510,10 @@ public class UIUtils {
 
     public static void asyncExec(Runnable runnable) {
         try {
-            getDisplay().asyncExec(runnable);
+            Display display = getDisplay();
+            if (!display.isDisposed()) {
+                display.asyncExec(runnable);
+            }
         } catch (Exception e) {
             log.debug(e);
         }
@@ -1518,7 +1521,10 @@ public class UIUtils {
 
     public static void syncExec(Runnable runnable) {
         try {
-            getDisplay().syncExec(runnable);
+            Display display = getDisplay();
+            if (!display.isDisposed()) {
+                display.syncExec(runnable);
+            }
         } catch (Exception e) {
             log.debug(e);
         }
