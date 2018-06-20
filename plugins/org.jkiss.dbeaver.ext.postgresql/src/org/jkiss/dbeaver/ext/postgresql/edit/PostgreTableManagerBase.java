@@ -59,7 +59,7 @@ public abstract class PostgreTableManagerBase extends SQLTableManager<PostgreTab
         if (showComments && comment != null) {
             actions.add(new SQLDatabasePersistAction(
                 "Comment table",
-                "COMMENT ON " + (table.isView() ? "VIEW": "TABLE") + " " + table.getFullyQualifiedName(DBPEvaluationContext.DDL) +
+                "COMMENT ON " + (table.isView() ? ((PostgreViewBase)table).getViewType() : "TABLE") + " " + table.getFullyQualifiedName(DBPEvaluationContext.DDL) +
                     " IS " + SQLUtils.quoteString(table, comment)));
         }
         DBRProgressMonitor monitor = new VoidProgressMonitor();
