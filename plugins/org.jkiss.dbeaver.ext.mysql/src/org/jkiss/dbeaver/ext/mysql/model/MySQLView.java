@@ -43,6 +43,8 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * MySQLView
@@ -74,6 +76,7 @@ public class MySQLView extends MySQLTableBase
         private CheckOption checkOption;
         private boolean updatable;
         private String definer;
+        public String algorithm;
 
         public boolean isLoaded() { return loaded; }
 
@@ -88,6 +91,9 @@ public class MySQLView extends MySQLTableBase
         public void setUpdatable(boolean updatable) { this.updatable = updatable; }
         @Property(viewable = true, order = 6) public String getDefiner() { return definer; }
         public void setDefiner(String definer) { this.definer = definer; }
+
+        @Property(viewable = true, order = 7) public String getAlgorithm() { return algorithm; }
+        public void setAlgorithm(String algorithm) { this.algorithm = algorithm; }
     }
 
     public static class AdditionalInfoValidator implements IPropertyCacheValidator<MySQLView> {
@@ -208,6 +214,7 @@ public class MySQLView extends MySQLTableBase
                         if (definition != null) {
                             int divPos = definition.indexOf(" VIEW `");
                             if (divPos != -1) {
+                                additionalInfo.algorithm = parseAlgorithm(definition.substring(0, divPos));
                                 definition = "CREATE OR REPLACE " + definition.substring(divPos);
                             }
                         }
@@ -222,6 +229,11 @@ public class MySQLView extends MySQLTableBase
         } catch (SQLException e) {
             throw new DBCException(e, getDataSource());
         }
+    }
+
+    private String parseAlgorithm(String ddl) {
+        Matcher matcher = Pattern.compile("ALGORITHM\\s*=\\s*([A-Z_]+) ").matcher(ddl);
+        return matcher.find() ? matcher.group(1) : null;
     }
 
     @Override
