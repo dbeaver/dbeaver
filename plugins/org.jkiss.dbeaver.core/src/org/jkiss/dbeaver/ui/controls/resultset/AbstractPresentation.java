@@ -202,6 +202,7 @@ public abstract class AbstractPresentation implements IResultSetPresentation, IS
                 @Override
                 public void focusLost(FocusEvent e) {
                     contextService.deactivateContext(activation);
+                    activation = null;
                 }
             });
         }
