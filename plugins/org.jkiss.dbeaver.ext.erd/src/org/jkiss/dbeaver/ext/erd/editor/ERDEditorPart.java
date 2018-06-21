@@ -138,6 +138,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     private IPropertyChangeListener configPropertyListener;
     private PaletteRoot paletteRoot;
 
+    private String errorMessage;
+
     /**
      * No-arg constructor
      */
@@ -180,6 +182,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             progressControl = new ProgressControl(parent, SWT.SHEET);
             progressControl.setShowDivider(true);
             contentContainer = progressControl.createContentContainer();
+        } else {
+            isLoaded = true;
         }
 
         super.createPartControl(contentContainer);
@@ -361,6 +365,13 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     protected void createGraphicalViewer(Composite parent)
     {
         GraphicalViewer viewer = createViewer(parent);
+
+        viewer.getControl().addPaintListener(e -> {
+            if (!CommonUtils.isEmpty(errorMessage)) {
+                e.gc.setForeground(viewer.getControl().getForeground());
+                UIUtils.drawMessageOverControl(viewer.getControl(), e, errorMessage, 0);
+            }
+        });
 
         // hook the viewer into the EditDomain
         setGraphicalViewer(viewer);
@@ -580,7 +591,6 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
             // the marquee selection tool
             controls.add(new MarqueeToolEntry());
-
 
             if (!isReadOnly()) {
                 // separator
@@ -802,6 +812,10 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     public boolean performSearch(SearchType searchType)
     {
         return progressControl != null && progressControl.performSearch(searchType);
+    }
+
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
     }
 
     protected abstract void loadDiagram(boolean refreshMetadata);

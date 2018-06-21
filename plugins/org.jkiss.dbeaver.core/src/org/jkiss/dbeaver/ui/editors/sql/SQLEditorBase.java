@@ -578,7 +578,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
     }
 
     @Nullable
-    protected SQLScriptElement extractActiveQuery()
+    public SQLScriptElement extractActiveQuery()
     {
         SQLScriptElement element;
         ITextSelection selection = (ITextSelection) getSelectionProvider().getSelection();

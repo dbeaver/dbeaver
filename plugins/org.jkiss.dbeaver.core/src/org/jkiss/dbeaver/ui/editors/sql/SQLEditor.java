@@ -817,6 +817,10 @@ public class SQLEditor extends SQLEditorBase implements
         return resultsSash.getMaximizedControl() != null;
     }
 
+    public SQLEditorPresentation getExtraPresentation() {
+        return extraPresentation;
+    }
+
     public SQLEditorPresentation.ActivationType getExtraPresentationState() {
         if (extraPresentation == null) {
             return SQLEditorPresentation.ActivationType.HIDDEN;
