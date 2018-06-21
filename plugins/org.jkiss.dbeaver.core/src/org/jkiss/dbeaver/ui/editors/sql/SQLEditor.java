@@ -49,6 +49,8 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
 import org.eclipse.ui.actions.CompoundContributionItem;
 import org.eclipse.ui.ide.FileStoreEditorInput;
+import org.eclipse.ui.menus.CommandContributionItem;
+import org.eclipse.ui.menus.IMenuService;
 import org.eclipse.ui.texteditor.DefaultRangeIndicator;
 import org.eclipse.ui.texteditor.ITextEditorActionConstants;
 import org.eclipse.ui.texteditor.rulers.IColumnSupport;
@@ -136,6 +138,8 @@ public class SQLEditor extends SQLEditorBase implements
     private static Image IMG_OUTPUT = DBeaverIcons.getImage(UIIcon.SQL_PAGE_OUTPUT);
     private static Image IMG_OUTPUT_ALERT = DBeaverIcons.getImage(UIIcon.SQL_PAGE_OUTPUT_ALERT);
 
+    private static final String TOOLBAR_CONTRIBUTION_ID = "toolbar:org.jkiss.dbeaver.ui.editors.sql.toolbar.switch";
+
     public static final String VAR_CONNECTION_NAME = "connectionName";
     public static final String VAR_FILE_NAME = "fileName";
     public static final String VAR_FILE_EXT = "fileExt";
@@ -147,7 +151,6 @@ public class SQLEditor extends SQLEditorBase implements
     private SashForm sashForm;
     private Control editorControl;
     private CTabFolder resultTabs;
-    private ToolItem toolOutputItem;
 
     private SQLLogPanel logViewer;
     private SQLEditorOutputViewer outputViewer;
@@ -166,7 +169,7 @@ public class SQLEditor extends SQLEditorBase implements
     private final List<SQLQuery> runningQueries = new ArrayList<>();
     private QueryResultsContainer curResultsContainer;
     private Image editorImage;
-    private ToolItem toolLogItem;
+    private ToolBarManager viewsToolBar;
 
     public SQLEditor()
     {
@@ -568,32 +571,18 @@ public class SQLEditor extends SQLEditorBase implements
 
         //resultTabs.setMRUVisible(true);
         {
-            ToolBar rsToolbar = new ToolBar(resultTabs, SWT.HORIZONTAL | SWT.RIGHT | SWT.WRAP);
+            viewsToolBar = new ToolBarManager(SWT.HORIZONTAL | SWT.RIGHT | SWT.WRAP);
+            viewsToolBar.add(ActionUtils.makeCommandContribution(getSite(), CoreCommands.CMD_SQL_SHOW_OUTPUT, CommandContributionItem.STYLE_CHECK,
+                    CoreMessages.sql_editor_resultset_tool_item_log, null, null, true));
+            viewsToolBar.add(ActionUtils.makeCommandContribution(getSite(), CoreCommands.CMD_SQL_SHOW_LOG, CommandContributionItem.STYLE_CHECK,
+                    CoreMessages.sql_editor_resultset_tool_item_output, null, null, true));
+            final IMenuService menuService = getSite().getService(IMenuService.class);
+            if (menuService != null) {
+                menuService.populateContributionManager(viewsToolBar, TOOLBAR_CONTRIBUTION_ID);
+            }
+            viewsToolBar.update(true);
 
-            toolLogItem = new ToolItem(rsToolbar, SWT.CHECK);
-            toolLogItem.setText(CoreMessages.sql_editor_resultset_tool_item_log);
-            toolLogItem.setToolTipText(ActionUtils.findCommandDescription(CoreCommands.CMD_SQL_SHOW_LOG, getSite(), false));
-            toolLogItem.setImage(IMG_LOG);
-            toolLogItem.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    showExecutionLogPanel();
-                }
-            });
-
-            toolOutputItem = new ToolItem(rsToolbar, SWT.CHECK);
-            toolOutputItem.setText(CoreMessages.sql_editor_resultset_tool_item_output);
-            toolOutputItem.setToolTipText(ActionUtils.findCommandDescription(CoreCommands.CMD_SQL_SHOW_OUTPUT, getSite(), false));
-            toolOutputItem.setImage(IMG_OUTPUT);
-            toolOutputItem.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    toolOutputItem.setImage(IMG_OUTPUT);
-                    showOutputPanel();
-                }
-            });
-
-            resultTabs.setTopRight(rsToolbar);
+            resultTabs.setTopRight(viewsToolBar.createControl(resultTabs));
         }
 
         resultTabs.addMouseListener(new MouseAdapter() {
@@ -681,12 +670,17 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
-    private void showExtraView(final ToolItem toolItem, String name, String toolTip, Image image, Control view) {
+    private void showExtraView(final String commandId, String name, String toolTip, Image image, Control view) {
+        ToolItem viewItem = getViewToolItem(commandId);
+        if (viewItem == null) {
+            log.warn("Tool item for command " + commandId + " not found");
+            return;
+        }
         for (CTabItem item : resultTabs.getItems()) {
             if (item.getData() == view) {
                 if (resultTabs.getSelection() == item) {
                     item.dispose();
-                    toolItem.setSelection(false);
+                    viewItem.setSelection(false);
                     return;
                 } else {
                     resultTabs.setSelection(item);
@@ -700,7 +694,7 @@ public class SQLEditor extends SQLEditorBase implements
             outputViewer.resetNewOutput();
         }
         // Create new tab
-        toolItem.setSelection(true);
+        viewItem.setSelection(true);
 
         CTabItem item = new CTabItem(resultTabs, SWT.CLOSE);
         item.setControl(view);
@@ -709,8 +703,22 @@ public class SQLEditor extends SQLEditorBase implements
         item.setImage(image);
         item.setData(view);
         // De-select tool item on tab close
-        item.addDisposeListener(e -> toolItem.setSelection(false));
+        item.addDisposeListener(e -> viewItem.setSelection(false));
         resultTabs.setSelection(item);
+    }
+
+    private ToolItem getViewToolItem(String commandId) {
+        ToolItem viewItem = null;
+        for (ToolItem item : viewsToolBar.getControl().getItems()) {
+            Object data = item.getData();
+            if (data instanceof CommandContributionItem) {
+                if (((CommandContributionItem) data).getCommand() != null && commandId.equals(((CommandContributionItem) data).getCommand().getId())) {
+                    viewItem = item;
+                    break;
+                }
+            }
+        }
+        return viewItem;
     }
 
     public void closeActiveTab() {
@@ -724,14 +732,14 @@ public class SQLEditor extends SQLEditorBase implements
         if (sashForm.getMaximizedControl() != null) {
             sashForm.setMaximizedControl(null);
         }
-        showExtraView(toolOutputItem, CoreMessages.editors_sql_output, "Database server output log", IMG_OUTPUT, outputViewer);
+        showExtraView(CoreCommands.CMD_SQL_SHOW_OUTPUT, CoreMessages.editors_sql_output, "Database server output log", IMG_OUTPUT, outputViewer);
     }
 
     public void showExecutionLogPanel() {
         if (sashForm.getMaximizedControl() != null) {
             sashForm.setMaximizedControl(null);
         }
-        showExtraView(toolLogItem, CoreMessages.editors_sql_execution_log, "SQL query execution log", IMG_LOG, logViewer);
+        showExtraView(CoreCommands.CMD_SQL_SHOW_LOG, CoreMessages.editors_sql_execution_log, "SQL query execution log", IMG_LOG, logViewer);
     }
 
     public boolean hasMaximizedControl() {
@@ -2447,7 +2455,10 @@ public class SQLEditor extends SQLEditorBase implements
         if (outputItem != null && outputItem != resultTabs.getSelection()) {
             outputItem.setImage(image);
         } else {
-            toolOutputItem.setImage(image);
+            ToolItem viewItem = getViewToolItem(CoreCommands.CMD_SQL_SHOW_OUTPUT);
+            if (viewItem != null) {
+                viewItem.setImage(image);
+            }
         }
     }
 

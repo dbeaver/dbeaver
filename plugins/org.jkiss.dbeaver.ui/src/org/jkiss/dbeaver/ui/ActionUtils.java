@@ -98,7 +98,18 @@ public class ActionUtils
         @Nullable String name,
         @Nullable DBPImage image,
         @Nullable String toolTip,
-        boolean showText)
+        boolean showText) {
+        return makeCommandContribution(serviceLocator, commandId, CommandContributionItem.STYLE_PUSH, name, image, toolTip, showText);
+    }
+
+    public static CommandContributionItem makeCommandContribution(
+            @NotNull IServiceLocator serviceLocator,
+            @NotNull String commandId,
+            int style,
+            @Nullable String name,
+            @Nullable DBPImage image,
+            @Nullable String toolTip,
+            boolean showText)
     {
         final CommandContributionItemParameter contributionParameters = new CommandContributionItemParameter(
             serviceLocator,
@@ -111,7 +122,7 @@ public class ActionUtils
             name,
             null,
             toolTip,
-            CommandContributionItem.STYLE_PUSH,
+            style,
             null,
             false);
         if (showText) {
