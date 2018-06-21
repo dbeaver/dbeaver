@@ -313,4 +313,12 @@ public class ActionUtils
         }
     }
 
+    public static void fireCommandRefresh(final String commandID)
+    {
+        // Update commands
+        final ICommandService commandService = PlatformUI.getWorkbench().getService(ICommandService.class);
+        if (commandService != null) {
+            UIUtils.asyncExec(() -> commandService.refreshElements(commandID, null));
+        }
+    }
 }

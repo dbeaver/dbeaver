@@ -109,6 +109,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
     private boolean hasVerticalRuler = true;
     private SQLTemplatesPage templatesPage;
     private IPropertyChangeListener themeListener;
+    private SQLEditorControl editorControl;
 
     public SQLEditorBase()
     {
@@ -211,7 +212,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
     {
         setRangeIndicator(new DefaultRangeIndicator());
 
-        super.createPartControl(new SQLEditorControl(parent, this));
+        editorControl = new SQLEditorControl(parent, this);
+        super.createPartControl(editorControl);
 
         ProjectionViewer viewer = (ProjectionViewer) getSourceViewer();
         projectionSupport = new ProjectionSupport(
@@ -269,6 +271,10 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
             }
             control.addDisposeListener(e -> UIUtils.removeFocusTracker(getSite(), control));
         }
+    }
+
+    public SQLEditorControl getEditorControlWrapper() {
+        return editorControl;
     }
 
     @Override
