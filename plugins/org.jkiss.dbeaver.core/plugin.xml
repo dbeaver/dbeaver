@@ -395,6 +395,9 @@
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.open.file" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/load.png"/>
         <image commandId="org.jkiss.dbeaver.ui.editors.sql.save.file" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/save_as.png"/>
 
+        <image commandId="org.jkiss.dbeaver.ui.editors.sql.show.output" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/page_output.png"/>
+        <image commandId="org.jkiss.dbeaver.ui.editors.sql.show.log" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/page_error.png"/>
+
         <image commandId="org.jkiss.dbeaver.core.resultset.row.first" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/resultset_first.png"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.row.previous" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/resultset_previous.png"/>
         <image commandId="org.jkiss.dbeaver.core.resultset.row.next" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/resultset_next.png"/>

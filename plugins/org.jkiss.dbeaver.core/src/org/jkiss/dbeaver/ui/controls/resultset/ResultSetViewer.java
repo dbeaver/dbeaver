@@ -118,6 +118,8 @@ public class ResultSetViewer extends Viewer
 
     private static final String SETTINGS_SECTION_PRESENTATIONS = "presentations";
 
+    private static final String TOOLBAR_CONTRIBUTION_ID = "toolbar:org.jkiss.dbeaver.ui.controls.resultset.status";
+
     static final String CONTROL_ID = ResultSetViewer.class.getSimpleName();
 
     private static final DecimalFormat ROW_COUNT_FORMAT = new DecimalFormat("###,###,###,###,###,##0");
@@ -1199,7 +1201,7 @@ public class ResultSetViewer extends Viewer
             addToolbar.add(new Separator(TOOLBAR_GROUP_ADDITIONS));
             final IMenuService menuService = getSite().getService(IMenuService.class);
             if (menuService != null) {
-                menuService.populateContributionManager(addToolbar, "toolbar:org.jkiss.dbeaver.ui.controls.resultset.status");
+                menuService.populateContributionManager(addToolbar, TOOLBAR_CONTRIBUTION_ID);
             }
             addToolbar.update(true);
             addToolbar.createControl(statusBar);
