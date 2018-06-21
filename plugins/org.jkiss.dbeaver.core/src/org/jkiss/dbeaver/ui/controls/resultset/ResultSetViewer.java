@@ -1197,8 +1197,8 @@ public class ResultSetViewer extends Viewer
 
         {
             ToolBarManager addToolbar = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
-            addToolbar.add(new Separator(TOOLBAR_GROUP_PRESENTATIONS));
-            addToolbar.add(new Separator(TOOLBAR_GROUP_ADDITIONS));
+            addToolbar.add(new GroupMarker(TOOLBAR_GROUP_PRESENTATIONS));
+            addToolbar.add(new GroupMarker(TOOLBAR_GROUP_ADDITIONS));
             final IMenuService menuService = getSite().getService(IMenuService.class);
             if (menuService != null) {
                 menuService.populateContributionManager(addToolbar, TOOLBAR_CONTRIBUTION_ID);
