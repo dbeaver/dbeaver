@@ -799,7 +799,7 @@ public class SQLEditor extends SQLEditorBase implements
 
     public boolean isExtraPresentationVisible() {
         return extraPresentation != null &&
-            (presentationSash.getMaximizedControl() == null || presentationSash.getMaximizedControl() == presentationSash.getChildren()[1]);
+            (presentationSash.getMaximizedControl() == null || presentationSash.getMaximizedControl() == getExtraPresentationControl());
     }
 
     public void showExtraPresentation(boolean show, boolean maximize) {
@@ -807,23 +807,32 @@ public class SQLEditor extends SQLEditorBase implements
             return;
         }
         if (!show) {
+            boolean epHasFocus = UIUtils.hasFocus(getExtraPresentationControl());
             presentationSash.setMaximizedControl(editorControl);
+            if (epHasFocus) {
+                editorControl.setFocus();
+            }
         } else {
             if (extraPresentation == null) {
                 // Lazy activation
                 try {
                     extraPresentation = extraPresentationDescriptor.createPresentation();
-                    extraPresentation.createPresentation((Composite) presentationSash.getChildren()[1], this);
+                    extraPresentation.createPresentation((Composite) getExtraPresentationControl(), this);
                 } catch (DBException e) {
                     log.error("Error creating presentation", e);
                 }
             }
             if (maximize) {
-                presentationSash.setMaximizedControl(presentationSash.getChildren()[1]);
+                presentationSash.setMaximizedControl(getExtraPresentationControl());
+                getExtraPresentationControl().setFocus();
             } else {
                 presentationSash.setMaximizedControl(null);
             }
         }
+    }
+
+    private Control getExtraPresentationControl() {
+        return presentationSash.getChildren()[1];
     }
 
     public void toggleResultPanel() {
