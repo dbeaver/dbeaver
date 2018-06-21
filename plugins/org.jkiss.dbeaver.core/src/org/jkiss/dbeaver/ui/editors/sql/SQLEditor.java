@@ -45,6 +45,7 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
 import org.eclipse.ui.actions.CompoundContributionItem;
@@ -142,6 +143,7 @@ public class SQLEditor extends SQLEditorBase implements
     private static Image IMG_OUTPUT_ALERT = DBeaverIcons.getImage(UIIcon.SQL_PAGE_OUTPUT_ALERT);
 
     private static final String TOOLBAR_CONTRIBUTION_ID = "toolbar:org.jkiss.dbeaver.ui.editors.sql.toolbar.side";
+    private static final String TOOLBAR_GROUP_TOP = "top";
     private static final String TOOLBAR_GROUP_ADDITIONS = IWorkbenchActionConstants.MB_ADDITIONS;
 
     public static final String VAR_CONNECTION_NAME = "connectionName";
@@ -561,7 +563,17 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     private void createSideBar(Composite sqlEditorPanel) {
+        Composite ph = new Composite(sqlEditorPanel, SWT.NONE);
+        ph.setLayoutData(new GridData(GridData.FILL_VERTICAL));
+        GridLayout layout = new GridLayout(1, false);
+        layout.horizontalSpacing = 0;
+        layout.verticalSpacing = 0;
+        layout.marginWidth = 3;
+        layout.marginHeight = 3;
+        ph.setLayout(layout);
+
         sideToolBar = new ToolBarManager(SWT.VERTICAL);
+        sideToolBar.add(new Separator(TOOLBAR_GROUP_TOP));
         sideToolBar.add(ActionUtils.makeCommandContribution(getSite(), CoreCommands.CMD_EXECUTE_STATEMENT));
         sideToolBar.add(ActionUtils.makeCommandContribution(getSite(), CoreCommands.CMD_EXECUTE_STATEMENT_NEW));
         sideToolBar.add(ActionUtils.makeCommandContribution(getSite(), CoreCommands.CMD_EXECUTE_SCRIPT));
@@ -577,9 +589,8 @@ public class SQLEditor extends SQLEditorBase implements
         }
         sideToolBar.update(true);
 
-        ToolBar toolBar = sideToolBar.createControl(sqlEditorPanel);
+        ToolBar toolBar = sideToolBar.createControl(ph);
         GridData gd = new GridData(GridData.FILL_VERTICAL | GridData.VERTICAL_ALIGN_BEGINNING);
-        gd.verticalIndent = 5;
         toolBar.setLayoutData(gd);
     }
 

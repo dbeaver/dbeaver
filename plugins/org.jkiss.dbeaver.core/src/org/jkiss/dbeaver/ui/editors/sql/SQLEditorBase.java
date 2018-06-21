@@ -283,6 +283,14 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         super.updatePartControl(input);
     }
 
+    protected IOverviewRuler createOverviewRuler(ISharedTextColors sharedColors) {
+        if (isOverviewRulerVisible()) {
+            return super.createOverviewRuler(sharedColors);
+        } else {
+            return new OverviewRuler(getAnnotationAccess(), 0, sharedColors);
+        }
+    }
+
     @Override
     protected boolean isOverviewRulerVisible() {
         return false;
