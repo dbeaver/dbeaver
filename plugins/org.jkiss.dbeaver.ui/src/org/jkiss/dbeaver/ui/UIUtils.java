@@ -832,7 +832,7 @@ public class UIUtils {
     }
 
     @NotNull
-    public static SashForm createPartDivider(final IWorkbenchPart workbenchPart, Composite parent, int style)
+    public static CustomSashForm createPartDivider(final IWorkbenchPart workbenchPart, Composite parent, int style)
     {
         final CustomSashForm sash = new CustomSashForm(parent, style);
 
