@@ -57,6 +57,7 @@ import org.eclipse.ui.model.WorkbenchAdapter;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.eclipse.ui.views.properties.PropertySheetPage;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.erd.ERDActivator;
@@ -98,6 +99,7 @@ import java.util.*;
 public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     implements DBPDataSourceUser, ISearchContextProvider, IRefreshablePart
 {
+    @Nullable
     protected ProgressControl progressControl;
 
     /**
@@ -173,13 +175,18 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     @Override
     public void createPartControl(Composite parent)
     {
-        progressControl = new ProgressControl(parent, SWT.SHEET);
-        progressControl.setShowDivider(true);
+        Composite contentContainer = parent;
+        if (hasProgressControl()) {
+            progressControl = new ProgressControl(parent, SWT.SHEET);
+            progressControl.setShowDivider(true);
+            contentContainer = progressControl.createContentContainer();
+        }
 
-        Composite contentContainer = progressControl.createContentContainer();
         super.createPartControl(contentContainer);
 
-        progressControl.createProgressPanel();
+        if (hasProgressControl()) {
+            progressControl.createProgressPanel();
+        }
     }
 
     /**
@@ -286,6 +293,10 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     }
 
     public abstract boolean isReadOnly();
+
+    protected boolean hasProgressControl() {
+        return true;
+    }
 
     /**
      * Returns the <code>CommandStack</code> of this editor's
@@ -441,7 +452,9 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             } else {
                 status = String.valueOf(selection.size()) + " objects";
             }
-            progressControl.setInfo(status);
+            if (progressControl != null) {
+                progressControl.setInfo(status);
+            }
 
             updateActions(editPartActionIDs);
         });
