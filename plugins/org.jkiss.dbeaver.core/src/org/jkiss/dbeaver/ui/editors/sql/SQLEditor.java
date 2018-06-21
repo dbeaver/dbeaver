@@ -91,6 +91,7 @@ import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
+import org.jkiss.dbeaver.ui.controls.CustomSashForm;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
@@ -149,9 +150,9 @@ public class SQLEditor extends SQLEditorBase implements
     public static final String DEFAULT_TITLE_PATTERN = "<${" + VAR_CONNECTION_NAME + "}> ${" + VAR_FILE_NAME + "}";
 
     private ResultSetOrientation resultSetOrientation = ResultSetOrientation.HORIZONTAL;
-    private SashForm resultsSash;
+    private CustomSashForm resultsSash;
     @Nullable
-    private SashForm presentationSash;
+    private CustomSashForm presentationSash;
     private Control editorControl;
     private CTabFolder resultTabs;
 
@@ -488,6 +489,7 @@ public class SQLEditor extends SQLEditorBase implements
                 parent,
                 resultSetOrientation.getSashOrientation() | SWT.SMOOTH);
         resultsSash.setSashWidth(5);
+
         UIUtils.setHelp(resultsSash, IHelpContextIds.CTX_SQL_EDITOR);
         SashForm editorSash = resultsSash;
 
@@ -516,6 +518,13 @@ public class SQLEditor extends SQLEditorBase implements
 
         setAction(ITextEditorActionConstants.SHOW_INFORMATION, null);
         //toolTipAction.setEnabled(false);
+
+/*
+        resultsSash.setSashBorders(new boolean[]{true, true});
+        if (presentationSash != null) {
+            presentationSash.setSashBorders(new boolean[]{true, true});
+        }
+*/
 
         CoreFeatures.SQL_EDITOR_OPEN.use();
 
