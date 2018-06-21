@@ -837,7 +837,7 @@ public class SQLEditor extends SQLEditorBase implements
 
     public void toggleResultPanel() {
         if (resultsSash.getMaximizedControl() == null) {
-            resultsSash.setMaximizedControl(editorControl);
+            resultsSash.setMaximizedControl(resultsSash.getChildren()[0]);
             switchFocus(false);
         } else {
             resultsSash.setMaximizedControl(null);
