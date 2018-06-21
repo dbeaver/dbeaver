@@ -66,6 +66,7 @@ public class SQLQuery implements SQLScriptElement {
     @Nullable
     private List<SQLQueryParameter> parameters;
 
+    private Throwable parseError;
     private boolean parsed = false;
     @NotNull
     private SQLQueryType type;
@@ -172,6 +173,7 @@ public class SQLQuery implements SQLScriptElement {
             }
         } catch (Throwable e) {
             this.type = SQLQueryType.UNKNOWN;
+            this.parseError = e;
             //log.debug("Error parsing SQL query [" + query + "]:" + CommonUtils.getRootCause(e).getMessage());
         }
     }
@@ -250,6 +252,10 @@ public class SQLQuery implements SQLScriptElement {
     public Statement getStatement() {
         parseQuery();
         return statement;
+    }
+
+    public Throwable getParseError() {
+        return parseError;
     }
 
     public List<SQLQueryParameter> getParameters() {
