@@ -44,6 +44,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
@@ -82,6 +83,8 @@ import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
+import org.jkiss.dbeaver.registry.sql.SQLPresentationDescriptor;
+import org.jkiss.dbeaver.registry.sql.SQLPresentationRegistry;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryJob;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryListener;
 import org.jkiss.dbeaver.runtime.sql.SQLResultsConsumer;
@@ -174,6 +177,8 @@ public class SQLEditor extends SQLEditorBase implements
     private QueryResultsContainer curResultsContainer;
     private Image editorImage;
     private ToolBarManager viewsToolBar;
+
+    private SQLPresentationDescriptor extraPresentationDescriptor;
     private SQLEditorPresentation extraPresentation;
 
     public SQLEditor()
@@ -494,8 +499,8 @@ public class SQLEditor extends SQLEditorBase implements
         SashForm editorSash = resultsSash;
 
         // divides SQL editor presentations
-        extraPresentation = Adapters.adapt(this, SQLEditorPresentation.class);
-        if (extraPresentation != null) {
+        extraPresentationDescriptor = SQLPresentationRegistry.getInstance().getPresentation(this);
+        if (extraPresentationDescriptor != null) {
             presentationSash = UIUtils.createPartDivider(
                     this,
                     resultsSash,
@@ -506,8 +511,23 @@ public class SQLEditor extends SQLEditorBase implements
 
         super.createPartControl(editorSash);
 
-        if (extraPresentation != null) {
-            extraPresentation.createPresentation(editorSash, this);
+        if (extraPresentationDescriptor != null) {
+            Composite pPlaceholder = new Composite(editorSash, SWT.NONE);
+            pPlaceholder.setLayout(new FillLayout());
+            switch (extraPresentationDescriptor.getActivationType()) {
+                case HIDDEN:
+                    editorSash.setMaximizedControl(editorSash.getChildren()[0]);
+                    break;
+                case MAXIMIZED:
+                case VISIBLE:
+                    extraPresentation.createPresentation(pPlaceholder, this);
+                    if (extraPresentationDescriptor.getActivationType() == SQLPresentationDescriptor.ActivationType.MAXIMIZED) {
+                        if (editorSash.getChildren()[1] != null) {
+                            editorSash.setMaximizedControl(pPlaceholder);
+                        }
+                    }
+                    break;
+            }
         }
 
         editorControl = editorSash.getChildren()[0];
@@ -775,6 +795,35 @@ public class SQLEditor extends SQLEditorBase implements
 
     public boolean hasMaximizedControl() {
         return resultsSash.getMaximizedControl() != null;
+    }
+
+    public boolean isExtraPresentationVisible() {
+        return extraPresentation != null &&
+            (presentationSash.getMaximizedControl() == null || presentationSash.getMaximizedControl() == presentationSash.getChildren()[1]);
+    }
+
+    public void showExtraPresentation(boolean show, boolean maximize) {
+        if (extraPresentationDescriptor == null) {
+            return;
+        }
+        if (!show) {
+            presentationSash.setMaximizedControl(editorControl);
+        } else {
+            if (extraPresentation == null) {
+                // Lazy activation
+                try {
+                    extraPresentation = extraPresentationDescriptor.createPresentation();
+                    extraPresentation.createPresentation((Composite) presentationSash.getChildren()[1], this);
+                } catch (DBException e) {
+                    log.error("Error creating presentation", e);
+                }
+            }
+            if (maximize) {
+                presentationSash.setMaximizedControl(presentationSash.getChildren()[1]);
+            } else {
+                presentationSash.setMaximizedControl(null);
+            }
+        }
     }
 
     public void toggleResultPanel() {
