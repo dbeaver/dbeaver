@@ -139,6 +139,7 @@ public class SQLEditor extends SQLEditorBase implements
     private static Image IMG_OUTPUT_ALERT = DBeaverIcons.getImage(UIIcon.SQL_PAGE_OUTPUT_ALERT);
 
     private static final String TOOLBAR_CONTRIBUTION_ID = "toolbar:org.jkiss.dbeaver.ui.editors.sql.toolbar.switch";
+    private static final String TOOLBAR_GROUP_ADDITIONS = IWorkbenchActionConstants.MB_ADDITIONS;
 
     public static final String VAR_CONNECTION_NAME = "connectionName";
     public static final String VAR_FILE_NAME = "fileName";
@@ -576,6 +577,7 @@ public class SQLEditor extends SQLEditorBase implements
                     CoreMessages.sql_editor_resultset_tool_item_log, null, null, true));
             viewsToolBar.add(ActionUtils.makeCommandContribution(getSite(), CoreCommands.CMD_SQL_SHOW_LOG, CommandContributionItem.STYLE_CHECK,
                     CoreMessages.sql_editor_resultset_tool_item_output, null, null, true));
+            viewsToolBar.add(new GroupMarker(TOOLBAR_GROUP_ADDITIONS));
             final IMenuService menuService = getSite().getService(IMenuService.class);
             if (menuService != null) {
                 menuService.populateContributionManager(viewsToolBar, TOOLBAR_CONTRIBUTION_ID);
