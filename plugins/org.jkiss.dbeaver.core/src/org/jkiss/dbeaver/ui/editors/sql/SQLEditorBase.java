@@ -312,6 +312,11 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         return sourceViewer;
     }
 
+    @Override
+    protected IOverviewRuler createOverviewRuler(ISharedTextColors sharedColors) {
+        return new OverviewRuler(getAnnotationAccess(), 0, sharedColors);
+    }
+
     protected void configureSourceViewerDecorationSupport(SourceViewerDecorationSupport support) {
         char[] matchChars = {'(', ')', '[', ']', '{', '}'}; //which brackets to match
         ICharacterPairMatcher matcher;
