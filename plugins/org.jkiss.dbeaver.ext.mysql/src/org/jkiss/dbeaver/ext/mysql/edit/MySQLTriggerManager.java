@@ -77,14 +77,13 @@ public class MySQLTriggerManager extends SQLTriggerManager<MySQLTrigger, MySQLTa
             );
         }
         MySQLCatalog curCatalog = trigger.getCatalog().getDataSource().getDefaultObject();
-        String ddl;
         if (curCatalog != trigger.getCatalog()) {
             actions.add(new SQLDatabasePersistAction("Set current schema ", "USE " + DBUtils.getQuotedIdentifier(trigger.getCatalog()), false)); //$NON-NLS-2$
         }
 
         actions.add(new SQLDatabasePersistAction("Create trigger", trigger.getBody(), true)); //$NON-NLS-2$
 
-        if (curCatalog != trigger.getCatalog()) {
+        if (curCatalog != null && curCatalog != trigger.getCatalog()) {
             actions.add(new SQLDatabasePersistAction("Set current schema ", "USE " + DBUtils.getQuotedIdentifier(curCatalog), false)); //$NON-NLS-2$
         }
     }
