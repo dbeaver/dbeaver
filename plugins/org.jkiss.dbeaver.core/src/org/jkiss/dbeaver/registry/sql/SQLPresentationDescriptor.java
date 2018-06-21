@@ -22,7 +22,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.registry.AbstractContextDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
-import org.jkiss.dbeaver.runtime.sql.SQLControlCommandHandler;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorPresentation;
 import org.jkiss.utils.CommonUtils;
 
@@ -35,18 +34,12 @@ public class SQLPresentationDescriptor extends AbstractContextDescriptor {
 
     public static final String EXTENSION_ID = "org.jkiss.dbeaver.sqlPresentation"; //$NON-NLS-1$
 
-    public enum ActivationType {
-        HIDDEN,
-        VISIBLE,
-        MAXIMIZED,
-    }
-
     private final String id;
     private final String label;
     private final String description;
     private final ObjectType implClass;
     private final DBPImage icon;
-    private final ActivationType activationType;
+    private final SQLEditorPresentation.ActivationType activationType;
 
     public SQLPresentationDescriptor(IConfigurationElement config)
     {
@@ -58,9 +51,9 @@ public class SQLPresentationDescriptor extends AbstractContextDescriptor {
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
         String activationStr = config.getAttribute("activation");
         if (CommonUtils.isEmpty(activationStr)) {
-            this.activationType = ActivationType.HIDDEN;
+            this.activationType = SQLEditorPresentation.ActivationType.HIDDEN;
         } else {
-            this.activationType = ActivationType.valueOf(activationStr.toUpperCase(Locale.ENGLISH));
+            this.activationType = SQLEditorPresentation.ActivationType.valueOf(activationStr.toUpperCase(Locale.ENGLISH));
         }
     }
 
@@ -80,7 +73,7 @@ public class SQLPresentationDescriptor extends AbstractContextDescriptor {
         return icon;
     }
 
-    public ActivationType getActivationType() {
+    public SQLEditorPresentation.ActivationType getActivationType() {
         return activationType;
     }
 

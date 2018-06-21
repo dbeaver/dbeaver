@@ -22,4 +22,9 @@ public interface SQLEditorPresentation {
 
     void createPresentation(Composite parent, SQLEditor editor);
 
+    enum ActivationType {
+        HIDDEN,
+        VISIBLE,
+        MAXIMIZED,
+    }
 }
