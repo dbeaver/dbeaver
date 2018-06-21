@@ -284,6 +284,25 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
     }
 
     @Override
+    protected boolean isOverviewRulerVisible() {
+        return false;
+    }
+
+    // Most left ruler
+    @Override
+    protected IVerticalRulerColumn createAnnotationRulerColumn(CompositeRuler ruler) {
+        if (isAnnotationRulerVisible()) {
+            return super.createAnnotationRulerColumn(ruler);
+        } else {
+            return new AnnotationRulerColumn(0, getAnnotationAccess());
+        }
+    }
+
+    protected boolean isAnnotationRulerVisible() {
+        return false;
+    }
+
+    @Override
     protected IVerticalRuler createVerticalRuler()
     {
         return hasVerticalRuler ? super.createVerticalRuler() : new VerticalRuler(0);
@@ -310,11 +329,6 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         getSourceViewerDecorationSupport(sourceViewer);
 
         return sourceViewer;
-    }
-
-    @Override
-    protected IOverviewRuler createOverviewRuler(ISharedTextColors sharedColors) {
-        return new OverviewRuler(getAnnotationAccess(), 0, sharedColors);
     }
 
     protected void configureSourceViewerDecorationSupport(SourceViewerDecorationSupport support) {

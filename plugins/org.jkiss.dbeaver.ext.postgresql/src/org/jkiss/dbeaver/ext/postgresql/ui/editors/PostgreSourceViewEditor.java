@@ -67,6 +67,11 @@ public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject
     }
 
     @Override
+    protected boolean isAnnotationRulerVisible() {
+        return getSourceObject() instanceof PostgreProcedure;
+    }
+
+    @Override
     protected void setSourceText(DBRProgressMonitor monitor, String sourceText)
     {
         getEditorInput().getPropertySource().setPropertyValue(monitor, "objectDefinitionText", sourceText);
