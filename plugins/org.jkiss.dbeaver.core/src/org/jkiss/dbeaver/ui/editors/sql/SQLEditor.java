@@ -149,7 +149,9 @@ public class SQLEditor extends SQLEditorBase implements
     public static final String DEFAULT_TITLE_PATTERN = "<${" + VAR_CONNECTION_NAME + "}> ${" + VAR_FILE_NAME + "}";
 
     private ResultSetOrientation resultSetOrientation = ResultSetOrientation.HORIZONTAL;
-    private SashForm sashForm;
+    private SashForm resultsSash;
+    @Nullable
+    private SashForm presentationSash;
     private Control editorControl;
     private CTabFolder resultTabs;
 
@@ -171,6 +173,7 @@ public class SQLEditor extends SQLEditorBase implements
     private QueryResultsContainer curResultsContainer;
     private Image editorImage;
     private ToolBarManager viewsToolBar;
+    private SQLEditorPresentation extraPresentation;
 
     public SQLEditor()
     {
@@ -479,16 +482,33 @@ public class SQLEditor extends SQLEditorBase implements
     {
         setRangeIndicator(new DefaultRangeIndicator());
 
-        sashForm = UIUtils.createPartDivider(
+        // divides editor area and results/panels area
+        resultsSash = UIUtils.createPartDivider(
                 this,
                 parent,
                 resultSetOrientation.getSashOrientation() | SWT.SMOOTH);
-        sashForm.setSashWidth(5);
-        UIUtils.setHelp(sashForm, IHelpContextIds.CTX_SQL_EDITOR);
+        resultsSash.setSashWidth(5);
+        UIUtils.setHelp(resultsSash, IHelpContextIds.CTX_SQL_EDITOR);
+        SashForm editorSash = resultsSash;
 
-        super.createPartControl(sashForm);
+        // divides SQL editor presentations
+        extraPresentation = Adapters.adapt(this, SQLEditorPresentation.class);
+        if (extraPresentation != null) {
+            presentationSash = UIUtils.createPartDivider(
+                    this,
+                    resultsSash,
+                    ((resultSetOrientation.getSashOrientation() == SWT.VERTICAL) ? SWT.HORIZONTAL : SWT.VERTICAL) | SWT.SMOOTH);
+            presentationSash.setSashWidth(5);
+            editorSash = presentationSash;
+        }
 
-        editorControl = sashForm.getChildren()[0];
+        super.createPartControl(editorSash);
+
+        if (extraPresentation != null) {
+            extraPresentation.createPresentation(editorSash, this);
+        }
+
+        editorControl = editorSash.getChildren()[0];
 
         getSite().setSelectionProvider(new DynamicSelectionProvider());
 
@@ -526,7 +546,7 @@ public class SQLEditor extends SQLEditorBase implements
 
     private void createResultTabs()
     {
-        resultTabs = new CTabFolder(sashForm, SWT.TOP | SWT.FLAT);
+        resultTabs = new CTabFolder(resultsSash, SWT.TOP | SWT.FLAT);
         resultTabs.setLayoutData(new GridData(GridData.FILL_BOTH));
         resultTabs.addSelectionListener(new SelectionAdapter() {
             @Override
@@ -538,8 +558,8 @@ public class SQLEditor extends SQLEditorBase implements
             }
         });
         this.resultTabs.addListener(SWT.Resize, event -> {
-            if (!sashForm.isDisposed()) {
-                int[] weights = sashForm.getWeights();
+            if (!resultsSash.isDisposed()) {
+                int[] weights = resultsSash.getWeights();
                 IPreferenceStore prefs = getPreferenceStore();
                 if (prefs != null) {
                     prefs.setValue(SQLPreferenceConstants.RESULTS_PANEL_RATIO, weights[0] + "-" + weights[1]);
@@ -550,7 +570,7 @@ public class SQLEditor extends SQLEditorBase implements
         if (!CommonUtils.isEmpty(resultsPanelRatio)) {
             String[] weights = resultsPanelRatio.split("-");
             if (weights.length > 1) {
-                sashForm.setWeights(new int[] {
+                resultsSash.setWeights(new int[] {
                     Integer.parseInt(weights[0]),
                     Integer.parseInt(weights[1]),
                 });
@@ -731,40 +751,40 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     public void showOutputPanel() {
-        if (sashForm.getMaximizedControl() != null) {
-            sashForm.setMaximizedControl(null);
+        if (resultsSash.getMaximizedControl() != null) {
+            resultsSash.setMaximizedControl(null);
         }
         showExtraView(CoreCommands.CMD_SQL_SHOW_OUTPUT, CoreMessages.editors_sql_output, "Database server output log", IMG_OUTPUT, outputViewer);
     }
 
     public void showExecutionLogPanel() {
-        if (sashForm.getMaximizedControl() != null) {
-            sashForm.setMaximizedControl(null);
+        if (resultsSash.getMaximizedControl() != null) {
+            resultsSash.setMaximizedControl(null);
         }
         showExtraView(CoreCommands.CMD_SQL_SHOW_LOG, CoreMessages.editors_sql_execution_log, "SQL query execution log", IMG_LOG, logViewer);
     }
 
     public boolean hasMaximizedControl() {
-        return sashForm.getMaximizedControl() != null;
+        return resultsSash.getMaximizedControl() != null;
     }
 
     public void toggleResultPanel() {
-        if (sashForm.getMaximizedControl() == null) {
-            sashForm.setMaximizedControl(editorControl);
+        if (resultsSash.getMaximizedControl() == null) {
+            resultsSash.setMaximizedControl(editorControl);
             switchFocus(false);
         } else {
-            sashForm.setMaximizedControl(null);
+            resultsSash.setMaximizedControl(null);
             switchFocus(true);
         }
     }
 
     public void toggleEditorMaximize()
     {
-        if (sashForm.getMaximizedControl() == null) {
-            sashForm.setMaximizedControl(resultTabs);
+        if (resultsSash.getMaximizedControl() == null) {
+            resultsSash.setMaximizedControl(resultTabs);
             switchFocus(true);
         } else {
-            sashForm.setMaximizedControl(null);
+            resultsSash.setMaximizedControl(null);
             switchFocus(false);
         }
     }
@@ -786,7 +806,7 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     public void toggleActivePanel() {
-        if (sashForm.getMaximizedControl() == null) {
+        if (resultsSash.getMaximizedControl() == null) {
             if (UIUtils.hasFocus(resultTabs)) {
                 switchFocus(false);
             } else {
@@ -810,8 +830,8 @@ public class SQLEditor extends SQLEditorBase implements
         } catch (IllegalArgumentException e) {
             resultSetOrientation = ResultSetOrientation.HORIZONTAL;
         }
-        if (sashForm != null) {
-            sashForm.setOrientation(resultSetOrientation.getSashOrientation());
+        if (resultsSash != null) {
+            resultsSash.setOrientation(resultSetOrientation.getSashOrientation());
         }
     }
 
@@ -1133,8 +1153,8 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
 
-        if (sashForm.getMaximizedControl() != null) {
-            sashForm.setMaximizedControl(null);
+        if (resultsSash.getMaximizedControl() != null) {
+            resultsSash.setMaximizedControl(null);
         }
 
         // Save editor
@@ -1233,12 +1253,12 @@ public class SQLEditor extends SQLEditorBase implements
 
     private void onDataSourceChange()
     {
-        if (sashForm == null || sashForm.isDisposed()) {
+        if (resultsSash == null || resultsSash.isDisposed()) {
             reloadSyntaxRules();
             return;
         }
 
-        DatabaseEditorUtils.setPartBackground(this, sashForm);
+        DatabaseEditorUtils.setPartBackground(this, resultsSash);
 
 
         DBCExecutionContext executionContext = getExecutionContext();
@@ -1263,9 +1283,9 @@ public class SQLEditor extends SQLEditorBase implements
         reloadSyntaxRules();
 
         if (getDataSourceContainer() == null) {
-            sashForm.setMaximizedControl(editorControl);
+            resultsSash.setMaximizedControl(editorControl);
         } else {
-            sashForm.setMaximizedControl(null);
+            resultsSash.setMaximizedControl(null);
         }
 
         lastExecutionContext = executionContext;
@@ -2200,7 +2220,7 @@ public class SQLEditor extends SQLEditorBase implements
                         return;
                     }
                     if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE)) {
-                        sashForm.setMaximizedControl(editorControl);
+                        resultsSash.setMaximizedControl(editorControl);
                     }
                 });
             } finally {
@@ -2336,7 +2356,7 @@ public class SQLEditor extends SQLEditorBase implements
                         // Editor closed
                         return;
                     }
-                    sashForm.setMaximizedControl(null);
+                    resultsSash.setMaximizedControl(null);
                     if (!hasErrors) {
                         getSelectionProvider().setSelection(originalSelection);
                     }
@@ -2519,7 +2539,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         @Override
         protected IStatus run(DBRProgressMonitor monitor) {
-            if (!DBeaverCore.isClosing() && sashForm != null && !sashForm.isDisposed()) {
+            if (!DBeaverCore.isClosing() && resultsSash != null && !resultsSash.isDisposed()) {
                 dumpOutput(monitor);
 
                 schedule(200);
