@@ -2798,6 +2798,7 @@ public abstract class LightGrid extends Canvas {
             }
         }
         headerColumnDragStarted = false;
+        rowHeaderDragStarted = false;
 
         GridColumn col = null;
         if (row >= 0) {
