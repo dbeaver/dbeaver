@@ -179,7 +179,7 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
                         tables.add(((EntityPart) child).getTable().getObject());
                     }
                 }
-                Collections.sort(tables, DBUtils.<DBSEntity>nameComparator());
+                tables.sort(DBUtils.nameComparator());
                 Map<PaletteDrawer, List<ToolEntryTable>> toolMap = new LinkedHashMap<>();
                 for (DBSEntity table : tables) {
                     DBPDataSourceContainer container = table.getDataSource().getContainer();
