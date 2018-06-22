@@ -113,6 +113,10 @@ public class SQLQuery implements SQLScriptElement {
         }
     }
 
+    public DBPDataSource getDataSource() {
+        return dataSource;
+    }
+
     private void parseQuery() {
         if (parsed) {
             return;

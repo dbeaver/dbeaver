@@ -181,7 +181,7 @@ class SQLCompletionAnalyzer
                 sqlDialect.getCatalogSeparator(),
                 sqlDialect.getIdentifierQuoteStrings(),
                 false);
-            DBSObject rightTable = findObjectByFQN(sc, dataSource, Arrays.asList(allNames));
+            DBSObject rightTable = SQLSearchUtils.findObjectByFQN(monitor, sc, dataSource, Arrays.asList(allNames), !request.simpleMode, request.wordDetector);
             if (rightTable instanceof DBSEntity) {
                 try {
                     String joinCriteria = SQLUtils.generateTableJoin(monitor, leftTable, leftTable.getName(), (DBSEntity) rightTable, rightTable.getName());
@@ -433,81 +433,7 @@ class SQLCompletionAnalyzer
             }
         }
 
-        return findObjectByFQN(sc, dataSource, nameList);
-    }
-
-    @Nullable
-    private DBSObject findObjectByFQN(DBSObjectContainer sc, DBPDataSource dataSource, List<String> nameList) {
-        if (nameList.isEmpty()) {
-            return null;
-        }
-        {
-            List<String> unquotedNames = new ArrayList<>(nameList.size());
-            for (String name : nameList) {
-                unquotedNames.add(DBUtils.getUnQuotedIdentifier(dataSource, name));
-            }
-
-            DBSObject result = findObjectByPath(sc, unquotedNames);
-            if (result != null) {
-                return result;
-            }
-        }
-        {
-            // Fix names (convert case or remove quotes)
-            for (int i = 0; i < nameList.size(); i++) {
-                String name = nameList.get(i);
-                String unquotedName = DBUtils.getUnQuotedIdentifier(dataSource, name);
-                if (!unquotedName.equals(name)) {
-                    name = unquotedName;
-                } else {
-                    name = DBObjectNameCaseTransformer.transformName(sc.getDataSource(), name);
-                }
-                nameList.set(i, name);
-            }
-            return findObjectByPath(sc, nameList);
-        }
-    }
-
-    private DBSObject findObjectByPath(DBSObjectContainer sc, List<String> nameList) {
-        try {
-            DBSObject childObject = null;
-            while (childObject == null) {
-                childObject = DBUtils.findNestedObject(monitor, sc, nameList);
-                if (childObject == null) {
-                    DBSObjectContainer parentSc = DBUtils.getParentAdapter(DBSObjectContainer.class, sc);
-                    if (parentSc == null) {
-                        break;
-                    }
-                    sc = parentSc;
-                }
-            }
-            if (childObject == null && nameList.size() <= 1) {
-                if (!request.simpleMode) {
-                    // No such object found - may be it's start of table name
-                    DBSStructureAssistant structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, sc);
-                    if (structureAssistant != null) {
-                        String objectNameMask = nameList.get(0);
-                        Collection<DBSObjectReference> tables = structureAssistant.findObjectsByMask(
-                            monitor,
-                            sc,
-                            structureAssistant.getAutoCompleteObjectTypes(),
-                            request.wordDetector.removeQuotes(objectNameMask),
-                            request.wordDetector.isQuoted(objectNameMask),
-                            false,
-                            2);
-                        if (!tables.isEmpty()) {
-                            return tables.iterator().next().resolveObject(monitor);
-                        }
-                    }
-                }
-                return null;
-            } else {
-                return childObject;
-            }
-        } catch (DBException e) {
-            log.error(e);
-            return null;
-        }
+        return SQLSearchUtils.findObjectByFQN(monitor, sc, dataSource, nameList, !request.simpleMode, request.wordDetector);
     }
 
     private void makeProposalsFromChildren(DBPObject parent, @Nullable String startPart)
