@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.ext.erd.part.*;
  *
  * @author Serge Rider
  */
-class ERDEditPartFactory implements EditPartFactory
+public class ERDEditPartFactory implements EditPartFactory
 {
     @Override
     public EditPart createEditPart(EditPart context, Object model) {

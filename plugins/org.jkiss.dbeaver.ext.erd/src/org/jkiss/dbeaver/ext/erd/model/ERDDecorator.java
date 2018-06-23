@@ -16,6 +16,9 @@
  */
 package org.jkiss.dbeaver.ext.erd.model;
 
+import org.eclipse.gef.EditPartFactory;
+import org.eclipse.gef.palette.PaletteRoot;
+
 /**
  * ERD object adapter
  */
@@ -23,4 +26,7 @@ public interface ERDDecorator {
 
     boolean showCheckboxes();
 
+    EditPartFactory createPartFactory();
+
+    void fillPalette(PaletteRoot paletteRoot, boolean readOnly);
 }
