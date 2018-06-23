@@ -54,6 +54,14 @@ public class NoteFigure extends FlowPage {
         ));
     }
 
+    public TextFlow getTextFlow() {
+        return textFlow;
+    }
+
+    public String getText() {
+        return textFlow.getText();
+    }
+
     public void setText(String text)
     {
         textFlow.setText(text);

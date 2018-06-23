@@ -17,21 +17,25 @@
 package org.jkiss.dbeaver.ext.erd.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * Simple text note
  */
 public class ERDNote extends ERDObject<String> {
 
-    public ERDNote(String text)
-    {
-        super(text);
+    public ERDNote(String text) {
+        super(CommonUtils.notEmpty(text));
     }
 
     @NotNull
     @Override
-    public String getName()
-    {
+    public String getName() {
         return getObject();
+    }
+
+    @Override
+    public void setObject(String object) {
+        super.setObject(CommonUtils.notEmpty(object));
     }
 }
