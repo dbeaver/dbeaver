@@ -28,16 +28,14 @@ import org.eclipse.gef.Request;
 import org.eclipse.gef.RequestConstants;
 import org.eclipse.gef.requests.DirectEditRequest;
 import org.eclipse.gef.tools.DirectEditManager;
-import org.eclipse.jface.viewers.TextCellEditor;
 import org.jkiss.dbeaver.ext.erd.directedit.ExtendedDirectEditManager;
 import org.jkiss.dbeaver.ext.erd.directedit.FigureEditorLocator;
-import org.jkiss.dbeaver.ext.erd.directedit.ValidationMessageHandler;
-import org.jkiss.dbeaver.ext.erd.editor.ERDGraphicalViewer;
 import org.jkiss.dbeaver.ext.erd.figures.NoteFigure;
 import org.jkiss.dbeaver.ext.erd.model.ERDNote;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.policy.NoteDirectEditPolicy;
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.ui.controls.MultilineTextCellEditor;
 
 import java.beans.PropertyChangeEvent;
 
@@ -81,13 +79,6 @@ public class NotePart extends NodePart
 	{
 		if (request.getType() == RequestConstants.REQ_OPEN) {
             performDirectEdit();
-/*
-            final String newText = EditTextDialog.editText(getViewer().getControl().getShell(), ERDMessages.part_note_title, getNote().getObject());
-            if (newText != null) {
-                NoteSetTextCommand command = new NoteSetTextCommand(getNote(), (NoteFigure) getFigure(), newText);
-                getViewer().getEditDomain().getCommandStack().execute(command);
-            }
-*/
         } else if (request.getType() == RequestConstants.REQ_DIRECT_EDIT) {
 			if (request instanceof DirectEditRequest
 					&& !directEditHitTest(((DirectEditRequest) request).getLocation().getCopy()))
@@ -104,12 +95,13 @@ public class NotePart extends NodePart
 
     protected void performDirectEdit() {
         if (manager == null) {
-            ERDGraphicalViewer viewer = (ERDGraphicalViewer) getViewer();
-            ValidationMessageHandler handler = viewer.getValidationHandler();
-
             NoteFigure figure = (NoteFigure) getFigure();
-            manager = new ExtendedDirectEditManager(this, TextCellEditor.class, new FigureEditorLocator(figure),
-                figure, value -> null);
+            manager = new ExtendedDirectEditManager(
+                this,
+                MultilineTextCellEditor.class,
+                new FigureEditorLocator(figure),
+                figure,
+                value -> null);
         }
         manager.show();
     }

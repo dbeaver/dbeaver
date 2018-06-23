@@ -51,10 +51,7 @@ public class FigureEditorLocator implements CellEditorLocator {
         Point pref = text.computeSize(SWT.DEFAULT, SWT.DEFAULT);
         Rectangle rect = figure.getBounds().getCopy();
         figure.translateToAbsolute(rect);
-        if (text.getCharCount() > 1)
-            text.setBounds(rect.x - 1, rect.y - 1, pref.x + 1, pref.y + 1);
-        else
-            text.setBounds(rect.x - 1, rect.y - 1, pref.y + 1, pref.y + 1);
+        text.setBounds(rect.x + 1, rect.y + 1, rect.width - 2, rect.height - 2);
 
     }
 
