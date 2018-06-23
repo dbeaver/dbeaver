@@ -22,9 +22,11 @@ package org.jkiss.dbeaver.ext.erd.directedit;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.geometry.Dimension;
+import org.eclipse.gef.EditPolicy;
 import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef.commands.Command;
 import org.eclipse.gef.commands.CommandStack;
+import org.eclipse.gef.editpolicies.DirectEditPolicy;
 import org.eclipse.gef.tools.CellEditorLocator;
 import org.eclipse.gef.tools.DirectEditManager;
 import org.eclipse.jface.viewers.ICellEditorValidator;
@@ -170,10 +172,16 @@ public class ExtendedDirectEditManager extends DirectEditManager {
             getCellEditor().getControl().setVisible(false);
             if (isDirty()) {
                 CommandStack stack = getEditPart().getViewer().getEditDomain().getCommandStack();
-                Command command = getEditPart().getCommand(getDirectEditRequest());
-
-                if (command != null && command.canExecute())
+                EditPolicy editPolicy = getEditPart().getEditPolicy(EditPolicy.DIRECT_EDIT_ROLE);
+                Command command;
+                if (editPolicy != null) {
+                    command = editPolicy.getCommand(getDirectEditRequest());
+                } else {
+                    command = getEditPart().getCommand(getDirectEditRequest());
+                }
+                if (command != null && command.canExecute()) {
                     stack.execute(command);
+                }
             }
         } finally {
             bringDown();
