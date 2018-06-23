@@ -48,7 +48,7 @@ public class EntityAddCommand extends Command
 	{
         Point curLocation = location == null ? null : new Point(location);
         for (ERDEntity entity : entities) {
-		    diagramPart.getDiagram().addTable(entity, true);
+		    diagramPart.getDiagram().addEntity(entity, true);
             //diagramPart.getDiagram().addRelations(monitor, entity, true);
 
             if (curLocation != null) {
@@ -56,7 +56,7 @@ public class EntityAddCommand extends Command
                 for (Object diagramChild : diagramPart.getChildren()) {
                     if (diagramChild instanceof EntityPart) {
                         EntityPart entityPart = (EntityPart) diagramChild;
-                        if (entityPart.getTable() == entity) {
+                        if (entityPart.getEntity() == entity) {
                             final Rectangle newBounds = new Rectangle();
                             final Dimension size = entityPart.getFigure().getPreferredSize();
                             newBounds.x = curLocation.x;

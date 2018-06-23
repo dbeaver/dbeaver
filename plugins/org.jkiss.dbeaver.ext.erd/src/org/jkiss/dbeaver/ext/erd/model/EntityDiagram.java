@@ -38,10 +38,10 @@ import java.util.*;
  * Represents a Schema in the model. Note that this class also includes
  * diagram specific information (layoutManualDesired and layoutManualAllowed fields)
  * although ideally these should be in a separate model hierarchy
+ *
  * @author Serge Rider
  */
-public class EntityDiagram extends ERDObject<DBSObject>
-{
+public class EntityDiagram extends ERDObject<DBSObject> {
     public static class NodeVisualInfo {
         public Rectangle initBounds;
         public Color bgColor;
@@ -49,30 +49,32 @@ public class EntityDiagram extends ERDObject<DBSObject>
     }
 
     private ERDDecorator decorator;
-	private String name;
-	private List<ERDEntity> entities = new ArrayList<>();
-	private boolean layoutManualDesired = true;
-	private boolean layoutManualAllowed = false;
-    private Map<DBSEntity, ERDEntity> tableMap = new IdentityHashMap<>();
-    private Map<ERDObject, NodeVisualInfo> nodeVisuals = new IdentityHashMap<>();
-    private List<ERDNote> notes = new ArrayList<>();
+    private String name;
+    private List<ERDEntity> entities = new ArrayList<>();
+    private boolean layoutManualDesired = true;
+    private boolean layoutManualAllowed = false;
     private boolean needsAutoLayout;
+
+    private Map<DBSEntity, ERDEntity> entityMap = new IdentityHashMap<>();
+    private Map<ERDObject, NodeVisualInfo> nodeVisuals = new IdentityHashMap<>();
+
+    private List<ERDNote> notes = new ArrayList<>();
+
     private ERDAttributeVisibility attributeVisibility = ERDAttributeVisibility.PRIMARY;
-    private ERDViewStyle[] attributeStyles = new ERDViewStyle[] { ERDViewStyle.ICONS };
+    private ERDViewStyle[] attributeStyles = new ERDViewStyle[]{ERDViewStyle.ICONS};
 
     private List<String> errorMessages = new ArrayList<>();
 
-    public EntityDiagram(ERDDecorator decorator, DBSObject container, String name)
-	{
-		super(container);
-		this.decorator = decorator;
-		if (name == null)
-			throw new IllegalArgumentException("Name cannot be null");
-		this.name = name;
+    public EntityDiagram(ERDDecorator decorator, DBSObject container, String name) {
+        super(container);
+        this.decorator = decorator;
+        if (name == null)
+            throw new IllegalArgumentException("Name cannot be null");
+        this.name = name;
         IPreferenceStore store = ERDActivator.getDefault().getPreferenceStore();
         this.attributeVisibility = ERDAttributeVisibility.getDefaultVisibility(store);
         this.attributeStyles = ERDViewStyle.getDefaultStyles(store);
-	}
+    }
 
     public ERDDecorator getDecorator() {
         return decorator;
@@ -82,8 +84,7 @@ public class EntityDiagram extends ERDObject<DBSObject>
         return ArrayUtils.contains(attributeStyles, style);
     }
 
-    public void setAttributeStyle(ERDViewStyle style, boolean enable)
-    {
+    public void setAttributeStyle(ERDViewStyle style, boolean enable) {
         if (enable) {
             attributeStyles = ArrayUtils.add(ERDViewStyle.class, attributeStyles, style);
         } else {
@@ -92,33 +93,29 @@ public class EntityDiagram extends ERDObject<DBSObject>
         ERDViewStyle.setDefaultStyles(ERDActivator.getDefault().getPreferences(), attributeStyles);
     }
 
-    public ERDAttributeVisibility getAttributeVisibility()
-    {
+    public ERDAttributeVisibility getAttributeVisibility() {
         return attributeVisibility;
     }
 
-    public void setAttributeVisibility(ERDAttributeVisibility attributeVisibility)
-    {
+    public void setAttributeVisibility(ERDAttributeVisibility attributeVisibility) {
         this.attributeVisibility = attributeVisibility;
         ERDAttributeVisibility.setDefaultVisibility(ERDActivator.getDefault().getPreferences(), attributeVisibility);
     }
 
-	public synchronized void addTable(ERDEntity entity, boolean reflect)
-	{
-        addTable(entity, -1, reflect);
-	}
+    public synchronized void addEntity(ERDEntity entity, boolean reflect) {
+        addEntity(entity, -1, reflect);
+    }
 
-	public synchronized void addTable(ERDEntity entity, int i, boolean reflect)
-	{
+    public synchronized void addEntity(ERDEntity entity, int i, boolean reflect) {
         if (i < 0) {
             entities.add(entity);
         } else {
-		    entities.add(i, entity);
+            entities.add(i, entity);
         }
-        tableMap.put(entity.getObject(), entity);
+        entityMap.put(entity.getObject(), entity);
 
         if (reflect) {
-		    firePropertyChange(CHILD, null, entity);
+            firePropertyChange(CHILD, null, entity);
 /*
             for (ERDAssociation rel : entity.getPrimaryKeyRelationships()) {
                 entity.firePropertyChange(INPUT, null, rel);
@@ -136,40 +133,35 @@ public class EntityDiagram extends ERDObject<DBSObject>
                 rel.getForeignEntity().firePropertyChange(OUTPUT, null, rel);
             }
         }
-	}
+    }
 
-    private void resolveRelations(boolean reflect)
-    {
+    private void resolveRelations(boolean reflect) {
         // Resolve incomplete relations
         for (ERDEntity erdEntity : getEntities()) {
-            erdEntity.resolveRelations(tableMap, reflect);
+            erdEntity.resolveRelations(entityMap, reflect);
         }
     }
 
-	public synchronized void removeTable(ERDEntity entity, boolean reflect)
-	{
-        tableMap.remove(entity.getObject());
-		entities.remove(entity);
+    public synchronized void removeTable(ERDEntity entity, boolean reflect) {
+        entityMap.remove(entity.getObject());
+        entities.remove(entity);
         if (reflect) {
-		    firePropertyChange(CHILD, entity, null);
+            firePropertyChange(CHILD, entity, null);
         }
-	}
+    }
 
     /**
-	 * @return the Tables for the current schema
-	 */
-	public synchronized List<ERDEntity> getEntities()
-	{
-		return entities;
-	}
+     * @return the Tables for the current schema
+     */
+    public synchronized List<ERDEntity> getEntities() {
+        return entities;
+    }
 
-    public synchronized List<ERDNote> getNotes()
-    {
+    public synchronized List<ERDNote> getNotes() {
         return notes;
     }
 
-    public synchronized void addNote(ERDNote note, boolean reflect)
-    {
+    public synchronized void addNote(ERDNote note, boolean reflect) {
         notes.add(note);
 
         if (reflect) {
@@ -177,8 +169,7 @@ public class EntityDiagram extends ERDObject<DBSObject>
         }
     }
 
-    public synchronized void removeNote(ERDNote note, boolean reflect)
-    {
+    public synchronized void removeNote(ERDNote note, boolean reflect) {
         notes.remove(note);
 
         if (reflect) {
@@ -187,71 +178,61 @@ public class EntityDiagram extends ERDObject<DBSObject>
     }
 
     /**
-	 * @return the name of the schema
-	 */
-	@NotNull
+     * @return the name of the schema
+     */
+    @NotNull
     @Override
-    public String getName()
-	{
-		return name;
-	}
+    public String getName() {
+        return name;
+    }
 
-    public void setName(String name)
-    {
+    public void setName(String name) {
         this.name = name;
     }
 
-	/**
-	 * @param layoutManualAllowed
-	 *            The layoutManualAllowed to set.
-	 */
-	public void setLayoutManualAllowed(boolean layoutManualAllowed)
-	{
-		this.layoutManualAllowed = layoutManualAllowed;
-	}
+    /**
+     * @param layoutManualAllowed The layoutManualAllowed to set.
+     */
+    public void setLayoutManualAllowed(boolean layoutManualAllowed) {
+        this.layoutManualAllowed = layoutManualAllowed;
+    }
 
-	/**
-	 * @return Returns the layoutManualDesired.
-	 */
-	public boolean isLayoutManualDesired()
-	{
-		return layoutManualDesired;
-	}
+    /**
+     * @return Returns the layoutManualDesired.
+     */
+    public boolean isLayoutManualDesired() {
+        return layoutManualDesired;
+    }
 
-	/**
-	 * @param layoutManualDesired
-	 *            The layoutManualDesired to set.
-	 */
-	public void setLayoutManualDesired(boolean layoutManualDesired)
-	{
-		this.layoutManualDesired = layoutManualDesired;
-	}
+    /**
+     * @param layoutManualDesired The layoutManualDesired to set.
+     */
+    public void setLayoutManualDesired(boolean layoutManualDesired) {
+        this.layoutManualDesired = layoutManualDesired;
+    }
 
-	/**
-	 * @return Returns whether we can lay out individual entities manually using the XYLayout
-	 */
-	public boolean isLayoutManualAllowed()
-	{
-		return layoutManualAllowed;
-	}
+    /**
+     * @return Returns whether we can lay out individual entities manually using the XYLayout
+     */
+    public boolean isLayoutManualAllowed() {
+        return layoutManualAllowed;
+    }
 
     public int getEntityCount() {
         return entities.size();
     }
 
-    public EntityDiagram copy()
-    {
+    public EntityDiagram copy() {
         EntityDiagram copy = new EntityDiagram(decorator, getObject(), getName());
         copy.entities.addAll(this.entities);
-        copy.tableMap.putAll(this.tableMap);
+        copy.entityMap.putAll(this.entityMap);
         copy.layoutManualDesired = this.layoutManualDesired;
         copy.layoutManualAllowed = this.layoutManualAllowed;
         copy.nodeVisuals = nodeVisuals;
         return copy;
     }
 
-    public void fillTables(DBRProgressMonitor monitor, Collection<DBSEntity> tables, DBSObject dbObject)
-    {
+    public void fillTables(DBRProgressMonitor monitor, Collection<DBSEntity> tables, DBSObject dbObject) {
         // Load entities
         monitor.beginTask("Load entities metadata", tables.size());
         for (DBSEntity table : tables) {
@@ -259,11 +240,11 @@ public class EntityDiagram extends ERDObject<DBSObject>
                 break;
             }
             monitor.subTask("Load " + table.getName());
-            ERDEntity erdEntity = ERDEntity.fromObject(monitor, this, table);
+            ERDEntity erdEntity = ERDUtils.makeEntityFromObject(monitor, this, table);
             erdEntity.setPrimary(table == dbObject);
 
-            addTable(erdEntity, false);
-            tableMap.put(table, erdEntity);
+            addEntity(erdEntity, false);
+            entityMap.put(table, erdEntity);
 
             monitor.worked(1);
         }
@@ -277,17 +258,16 @@ public class EntityDiagram extends ERDObject<DBSObject>
                 break;
             }
             monitor.subTask("Load " + table.getName());
-            final ERDEntity erdEntity = tableMap.get(table);
+            final ERDEntity erdEntity = entityMap.get(table);
             if (erdEntity != null) {
-                erdEntity.addRelations(monitor, tableMap, false);
+                erdEntity.addRelations(monitor, entityMap, false);
             }
             monitor.worked(1);
         }
         monitor.done();
     }
 
-    public boolean containsTable(DBSEntity table)
-    {
+    public boolean containsTable(DBSEntity table) {
         for (ERDEntity erdEntity : entities) {
             if (erdEntity.getObject() == table) {
                 return true;
@@ -296,30 +276,25 @@ public class EntityDiagram extends ERDObject<DBSObject>
         return false;
     }
 
-    public Map<DBSEntity,ERDEntity> getTableMap()
-    {
-        return tableMap;
+    public Map<DBSEntity, ERDEntity> getEntityMap() {
+        return entityMap;
     }
 
-    public ERDEntity getERDTable(DBSEntity table)
-    {
-        return tableMap.get(table);
+    public ERDEntity getERDTable(DBSEntity table) {
+        return entityMap.get(table);
     }
 
-    public void clear()
-    {
+    public void clear() {
         this.entities.clear();
-        this.tableMap.clear();
+        this.entityMap.clear();
         this.nodeVisuals.clear();
     }
 
-    public NodeVisualInfo getVisualInfo(ERDObject erdObject)
-    {
+    public NodeVisualInfo getVisualInfo(ERDObject erdObject) {
         return getVisualInfo(erdObject, false);
     }
 
-    public NodeVisualInfo getVisualInfo(ERDObject erdObject, boolean create)
-    {
+    public NodeVisualInfo getVisualInfo(ERDObject erdObject, boolean create) {
         NodeVisualInfo visualInfo = nodeVisuals.get(erdObject);
         if (visualInfo == null && create) {
             visualInfo = new NodeVisualInfo();
@@ -328,23 +303,19 @@ public class EntityDiagram extends ERDObject<DBSObject>
         return visualInfo;
     }
 
-    public void addVisualInfo(ERDObject erdTable, NodeVisualInfo visualInfo)
-    {
+    public void addVisualInfo(ERDObject erdTable, NodeVisualInfo visualInfo) {
         nodeVisuals.put(erdTable, visualInfo);
     }
 
-    public boolean isNeedsAutoLayout()
-    {
+    public boolean isNeedsAutoLayout() {
         return needsAutoLayout;
     }
 
-    public void setNeedsAutoLayout(boolean needsAutoLayout)
-    {
+    public void setNeedsAutoLayout(boolean needsAutoLayout) {
         this.needsAutoLayout = needsAutoLayout;
     }
 
-    public void addInitRelationBends(ERDEntity sourceEntity, ERDEntity targetEntity, String relName, List<Point> bends)
-    {
+    public void addInitRelationBends(ERDEntity sourceEntity, ERDEntity targetEntity, String relName, List<Point> bends) {
         for (ERDAssociation rel : sourceEntity.getPrimaryKeyRelationships()) {
             if (rel.getForeignEntity() == targetEntity && relName.equals(rel.getObject().getName())) {
                 rel.setInitBends(bends);
@@ -352,29 +323,24 @@ public class EntityDiagram extends ERDObject<DBSObject>
         }
     }
 
-    public List<ERDObject> getContents()
-    {
+    public List<ERDObject> getContents() {
         List<ERDObject> children = new ArrayList<>(entities.size() + notes.size());
         children.addAll(entities);
         children.addAll(notes);
-        children.sort(new Comparator<ERDObject>() {
-            @Override
-            public int compare(ERDObject o1, ERDObject o2) {
-                NodeVisualInfo vi1 = getVisualInfo(o1);
-                NodeVisualInfo vi2 = getVisualInfo(o2);
-                return vi1 != null && vi2 != null ? vi1.zOrder - vi2.zOrder : 0;
-            }
+        children.sort((o1, o2) -> {
+            NodeVisualInfo vi1 = getVisualInfo(o1);
+            NodeVisualInfo vi2 = getVisualInfo(o2);
+            return vi1 != null && vi2 != null ? vi1.zOrder - vi2.zOrder : 0;
         });
         return children;
     }
 
-    public List<String> getErrorMessages()
-    {
+    public List<String> getErrorMessages() {
         return errorMessages;
     }
 
-    public void addErrorMessage(String message)
-    {
+    public void addErrorMessage(String message) {
         errorMessages.add(message);
     }
+
 }

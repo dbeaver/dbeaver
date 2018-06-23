@@ -20,55 +20,31 @@
 package org.jkiss.dbeaver.ext.erd.model;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.ext.erd.editor.ERDViewStyle;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.utils.CommonUtils;
 
 /**
  * Column entry in model Table
+ *
  * @author Serge Rider
  */
-public class ERDEntityAttribute extends ERDObject<DBSEntityAttribute>
-{
-    private final EntityDiagram diagram;
+public class ERDEntityAttribute extends ERDObject<DBSEntityAttribute> {
+    private ERDEntity entity;
     private boolean inPrimaryKey;
     private boolean inForeignKey;
 
-    public ERDEntityAttribute(EntityDiagram diagram, DBSEntityAttribute attribute, boolean inPrimaryKey) {
+    public ERDEntityAttribute(ERDEntity entity, DBSEntityAttribute attribute, boolean inPrimaryKey) {
         super(attribute);
-        this.diagram = diagram;
+        this.entity = entity;
         this.inPrimaryKey = inPrimaryKey;
     }
 
-	public String getLabelText()
-	{
-        String text;
-        if (diagram.hasAttributeStyle(ERDViewStyle.TYPES)) {
-            text = object.getName() + ": " + object.getFullTypeName();
-        } else {
-            text = object.getName();
-        }
-        if (diagram.hasAttributeStyle(ERDViewStyle.NULLABILITY)) {
-            if (object.isRequired()) {
-                text += " NOT NULL";
-            }
-        }
-        if (diagram.hasAttributeStyle(ERDViewStyle.COMMENTS)) {
-            String comment = object.getDescription();
-            if (!CommonUtils.isEmpty(comment)) {
-                text += " - " + comment;
-            }
-        }
-        return text;
-	}
+    public String getLabelText() {
+        return object.getName();
+    }
 
-    public DBPImage getLabelImage()
-    {
-        if (!diagram.hasAttributeStyle(ERDViewStyle.ICONS)) {
-            return null;
-        }
+    public DBPImage getLabelImage() {
         return DBValueFormatting.getObjectImage(object);
     }
 
@@ -86,8 +62,12 @@ public class ERDEntityAttribute extends ERDObject<DBSEntityAttribute>
 
     @NotNull
     @Override
-    public String getName()
-    {
+    public String getName() {
         return getObject().getName();
+    }
+
+    @Override
+    public String toString() {
+        return getName();
     }
 }

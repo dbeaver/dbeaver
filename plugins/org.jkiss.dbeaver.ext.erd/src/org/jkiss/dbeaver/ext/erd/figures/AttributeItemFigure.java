@@ -22,11 +22,16 @@ package org.jkiss.dbeaver.ext.erd.figures;
 import org.eclipse.draw2d.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ext.erd.editor.ERDViewStyle;
 import org.jkiss.dbeaver.ext.erd.model.ERDDecorator;
 import org.jkiss.dbeaver.ext.erd.model.ERDEntityAttribute;
+import org.jkiss.dbeaver.ext.erd.model.ERDUtils;
+import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.part.AttributePart;
+import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 
@@ -47,15 +52,24 @@ public class AttributeItemFigure extends Figure
 
         setLayoutManager(layout);
 
-        boolean showCheckboxes = part.getDiagramPart().getDiagram().getDecorator().showCheckboxes();
+        EntityDiagram diagram = part.getDiagramPart().getDiagram();
+
+        boolean showCheckboxes = diagram.getDecorator().showCheckboxes();
         if (showCheckboxes) {
             CustomCheckBoxFigure attrCheckbox = new CustomCheckBoxFigure();
             add(attrCheckbox);
         }
-        EditableLabel attrNameLabel = new EditableLabel(part.getAttribute().getName());
-        DBPImage labelImage = part.getAttribute().getLabelImage();
-        if (labelImage != null) {
-            attrNameLabel.setIcon(DBeaverIcons.getImage(labelImage));
+        ERDEntityAttribute attribute = part.getAttribute();
+
+        String attributeLabel = ERDUtils.getAttributeLabel(diagram, attribute);
+
+        EditableLabel attrNameLabel = new EditableLabel(attributeLabel);
+
+        if (diagram.hasAttributeStyle(ERDViewStyle.ICONS)) {
+            DBPImage labelImage = attribute.getLabelImage();
+            if (labelImage != null) {
+                attrNameLabel.setIcon(DBeaverIcons.getImage(labelImage));
+            }
         }
         add(attrNameLabel);
 	}

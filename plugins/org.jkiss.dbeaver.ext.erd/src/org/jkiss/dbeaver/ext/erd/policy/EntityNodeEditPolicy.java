@@ -45,7 +45,7 @@ public class EntityNodeEditPolicy extends GraphicalNodeEditPolicy
 
 		AssociationCreateCommand cmd = new AssociationCreateCommand();
 		EntityPart part = (EntityPart) getHost();
-		cmd.setForeignEntity(part.getTable());
+		cmd.setForeignEntity(part.getEntity());
 		request.setStartCommand(cmd);
 		return cmd;
 	}
@@ -58,7 +58,7 @@ public class EntityNodeEditPolicy extends GraphicalNodeEditPolicy
 	{
 		AssociationCreateCommand cmd = (AssociationCreateCommand) request.getStartCommand();
 		EntityPart part = (EntityPart) request.getTargetEditPart();
-		cmd.setPrimaryEntity(part.getTable());
+		cmd.setPrimaryEntity(part.getEntity());
 		return cmd;
 	}
 
@@ -70,9 +70,9 @@ public class EntityNodeEditPolicy extends GraphicalNodeEditPolicy
 	{
 		
 		AssociationReconnectSourceCommand cmd = new AssociationReconnectSourceCommand();
-		cmd.setRelationship((ERDAssociation) request.getConnectionEditPart().getModel());
+		cmd.setAssociation((ERDAssociation) request.getConnectionEditPart().getModel());
 		EntityPart entityPart = (EntityPart) getHost();
-		cmd.setSourceForeignKey(entityPart.getTable());
+		cmd.setSourceEntity(entityPart.getEntity());
 		return cmd;
 	}
 
@@ -85,7 +85,7 @@ public class EntityNodeEditPolicy extends GraphicalNodeEditPolicy
 		AssociationReconnectTargetCommand cmd = new AssociationReconnectTargetCommand();
 		cmd.setRelationship((ERDAssociation) request.getConnectionEditPart().getModel());
 		EntityPart entityPart = (EntityPart) getHost();
-		cmd.setTargetPrimaryKey(entityPart.getTable());
+		cmd.setTargetPrimaryKey(entityPart.getEntity());
 		return cmd;
 	}
 

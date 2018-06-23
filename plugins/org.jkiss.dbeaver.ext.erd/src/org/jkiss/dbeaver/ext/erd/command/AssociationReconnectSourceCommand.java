@@ -28,136 +28,111 @@ import java.util.List;
 /**
  * Command to change the foreign key we are connecting to a particular primary
  * key
- * 
+ *
  * @author Serge Rider
  */
-public class AssociationReconnectSourceCommand extends Command
-{
+public class AssociationReconnectSourceCommand extends Command {
 
-	/** source Table * */
-	protected ERDEntity sourceForeignKey;
-	/** target Table * */
-	protected ERDEntity targetPrimaryKey;
-	/** Relationship between source and target * */
-	protected ERDAssociation relationship;
-	/** previous source prior to command execution * */
-	protected ERDEntity oldSourceForeignKey;
+    protected ERDEntity sourceEntity;
+    protected ERDEntity targetEntity;
+    protected ERDAssociation association;
+    protected ERDEntity oldSourceEntity;
 
-	/**
-	 * Makes sure that primary key doesn't reconnect to itself or try to create
-	 * a relationship which already exists
-	 */
-	@Override
-    public boolean canExecute()
-	{
+    /**
+     * Makes sure that primary key doesn't reconnect to itself or try to create
+     * a relationship which already exists
+     */
+    @Override
+    public boolean canExecute() {
 
-		boolean returnVal = true;
+        boolean returnVal = true;
 
-		ERDEntity primaryKeyEntity = relationship.getPrimaryEntity();
+        ERDEntity primaryKeyEntity = association.getPrimaryEntity();
 
-		//cannot connect to itself
-		if (primaryKeyEntity.equals(sourceForeignKey))
-		{
-			returnVal = false;
-		}
-		else
-		{
+        //cannot connect to itself
+        if (primaryKeyEntity.equals(sourceEntity)) {
+            returnVal = false;
+        } else {
 
-			List<?> relationships = sourceForeignKey.getForeignKeyRelationships();
-			for (int i = 0; i < relationships.size(); i++)
-			{
+            List<ERDAssociation> relationships = sourceEntity.getForeignKeyRelationships();
+            for (ERDAssociation relationship : relationships) {
+                if (relationship.getPrimaryEntity().equals(targetEntity) &&
+                    relationship.getForeignEntity().equals(sourceEntity)) {
+                    returnVal = false;
+                    break;
+                }
+            }
+        }
 
-				ERDAssociation relationship = ((ERDAssociation) (relationships.get(i)));
-				if (relationship.getPrimaryEntity().equals(targetPrimaryKey)
-						&& relationship.getForeignEntity().equals(sourceForeignKey))
-				{
-					returnVal = false;
-					break;
-				}
-			}
-		}
+        return returnVal;
 
-		return returnVal;
+    }
 
-	}
+    /**
+     * @see org.eclipse.gef.commands.Command#execute()
+     */
+    @Override
+    public void execute() {
+        if (sourceEntity != null) {
+            oldSourceEntity.removeForeignKeyRelationship(association, true);
+            association.setForeignEntity(sourceEntity);
+            sourceEntity.addForeignKeyRelationship(association, true);
+        }
+    }
 
-	/**
-	 * @see org.eclipse.gef.commands.Command#execute()
-	 */
-	@Override
-    public void execute()
-	{
-		if (sourceForeignKey != null)
-		{
-			oldSourceForeignKey.removeForeignKeyRelationship(relationship, true);
-			relationship.setForeignEntity(sourceForeignKey);
-			sourceForeignKey.addForeignKeyRelationship(relationship, true);
-		}
-	}
+    /**
+     * @return Returns the sourceEntity.
+     */
+    public ERDEntity getSourceEntity() {
+        return sourceEntity;
+    }
 
-	/**
-	 * @return Returns the sourceForeignKey.
-	 */
-	public ERDEntity getSourceForeignKey()
-	{
-		return sourceForeignKey;
-	}
+    /**
+     * @param sourceEntity The sourceEntity to set.
+     */
+    public void setSourceEntity(ERDEntity sourceEntity) {
+        this.sourceEntity = sourceEntity;
+    }
 
-	/**
-	 * @param sourceForeignKey
-	 *            The sourceForeignKey to set.
-	 */
-	public void setSourceForeignKey(ERDEntity sourceForeignKey)
-	{
-		this.sourceForeignKey = sourceForeignKey;
-	}
+    /**
+     * @return Returns the targetEntity.
+     */
+    public ERDEntity getTargetEntity() {
+        return targetEntity;
+    }
 
-	/**
-	 * @return Returns the targetPrimaryKey.
-	 */
-	public ERDEntity getTargetPrimaryKey()
-	{
-		return targetPrimaryKey;
-	}
+    /**
+     * @param targetEntity The targetEntity to set.
+     */
+    public void setTargetEntity(ERDEntity targetEntity) {
+        this.targetEntity = targetEntity;
+    }
 
-	/**
-	 * @param targetPrimaryKey
-	 *            The targetPrimaryKey to set.
-	 */
-	public void setTargetPrimaryKey(ERDEntity targetPrimaryKey)
-	{
-		this.targetPrimaryKey = targetPrimaryKey;
-	}
+    /**
+     * @return Returns the relationship.
+     */
+    public ERDAssociation getAssociation() {
+        return association;
+    }
 
-	/**
-	 * @return Returns the relationship.
-	 */
-	public ERDAssociation getRelationship()
-	{
-		return relationship;
-	}
+    /**
+     * Sets the Relationship associated with this
+     *
+     * @param association the Relationship
+     */
+    public void setAssociation(ERDAssociation association) {
+        this.association = association;
+        targetEntity = association.getPrimaryEntity();
+        oldSourceEntity = association.getForeignEntity();
+    }
 
-	/**
-	 * Sets the Relationship associated with this
-	 * 
-	 * @param relationship
-	 *            the Relationship
-	 */
-	public void setRelationship(ERDAssociation relationship)
-	{
-		this.relationship = relationship;
-		targetPrimaryKey = relationship.getPrimaryEntity();
-		oldSourceForeignKey = relationship.getForeignEntity();
-	}
-
-	/**
-	 * @see org.eclipse.gef.commands.Command#undo()
-	 */
-	@Override
-    public void undo()
-	{
-		sourceForeignKey.removeForeignKeyRelationship(relationship, true);
-		relationship.setForeignEntity(oldSourceForeignKey);
-		oldSourceForeignKey.addForeignKeyRelationship(relationship, true);
-	}
+    /**
+     * @see org.eclipse.gef.commands.Command#undo()
+     */
+    @Override
+    public void undo() {
+        sourceEntity.removeForeignKeyRelationship(association, true);
+        association.setForeignEntity(oldSourceEntity);
+        oldSourceEntity.addForeignKeyRelationship(association, true);
+    }
 }

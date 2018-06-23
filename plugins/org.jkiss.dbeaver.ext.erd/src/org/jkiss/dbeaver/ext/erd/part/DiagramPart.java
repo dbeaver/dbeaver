@@ -19,7 +19,8 @@ package org.jkiss.dbeaver.ext.erd.part;
 import org.eclipse.draw2d.*;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.*;
-import org.eclipse.gef.commands.CommandStackListener;
+import org.eclipse.gef.commands.CommandStackEvent;
+import org.eclipse.gef.commands.CommandStackEventListener;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
@@ -38,8 +39,6 @@ import org.jkiss.dbeaver.ext.erd.policy.DiagramContainerEditPolicy;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.beans.PropertyChangeEvent;
-import java.util.EventObject;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -50,11 +49,10 @@ import java.util.List;
  */
 public class DiagramPart extends PropertyAwarePart {
 
-    CommandStackListener stackListener = new CommandStackListener() {
+    CommandStackEventListener stackListener = new CommandStackEventListener() {
 
         @Override
-        public void commandStackChanged(EventObject event)
-        {
+        public void stackChanged(CommandStackEvent commandStackEvent) {
             if (delegatingLayoutManager.getActiveLayoutManager() instanceof GraphLayoutAuto) {
                 if (!GraphAnimation.captureLayout(getFigure())) {
                     return;
@@ -79,7 +77,7 @@ public class DiagramPart extends PropertyAwarePart {
     public void activate()
     {
         super.activate();
-        getViewer().getEditDomain().getCommandStack().addCommandStackListener(stackListener);
+        getViewer().getEditDomain().getCommandStack().addCommandStackEventListener(stackListener);
     }
 
     /**
@@ -89,7 +87,7 @@ public class DiagramPart extends PropertyAwarePart {
     public void deactivate()
     {
         resetFonts();
-        getViewer().getEditDomain().getCommandStack().removeCommandStackListener(stackListener);
+        getViewer().getEditDomain().getCommandStack().removeCommandStackEventListener(stackListener);
         super.deactivate();
     }
 
@@ -213,31 +211,27 @@ public class DiagramPart extends PropertyAwarePart {
     /**
      * Updates the table bounds in the model so that the same bounds can be
      * restored after saving
-     *
-     * @return whether the procedure execute successfully without any omissions.
-     *         The latter occurs if any EntityFigure has no bounds set for any of
-     *         the Table model objects
      */
-    public boolean setTableModelBounds()
+    public void setTableModelBounds()
     {
 
         List<?> entityParts = getChildren();
 
-        for (Iterator<?> iter = entityParts.iterator(); iter.hasNext();) {
-            NodePart entityPart = (NodePart) iter.next();
-            IFigure entityFigure = entityPart.getFigure();
+        for (Object child : entityParts) {
+            if (child instanceof NodePart) {
+                NodePart entityPart = (NodePart) child;
+                IFigure entityFigure = entityPart.getFigure();
 
-            //if we don't find a node for one of the children then we should
-            // continue
-            if (entityFigure == null) {
-                continue;
+                //if we don't find a node for one of the children then we should
+                // continue
+                if (entityFigure == null) {
+                    continue;
+                }
+
+                Rectangle bounds = entityFigure.getBounds().getCopy();
+                entityPart.setBounds(bounds);
             }
-
-            Rectangle bounds = entityFigure.getBounds().getCopy();
-            entityPart.setBounds(bounds);
         }
-
-        return true;
 
     }
 
@@ -251,25 +245,26 @@ public class DiagramPart extends PropertyAwarePart {
      */
     public boolean setTableFigureBounds(boolean updateConstraint)
     {
-        List<?> tableParts = getChildren();
+        List<?> nodeParts = getChildren();
 
-        for (Iterator<?> iter = tableParts.iterator(); iter.hasNext();) {
-            NodePart entityPart = (NodePart) iter.next();
-
-            //now check whether we can find an entry in the tableToNodesMap
-            Rectangle bounds = entityPart.getBounds();
-            if (bounds == null) {
-                //TODO handle this better
-                return false;
-            } else {
-                IFigure entityFigure = entityPart.getFigure();
-                if (entityFigure == null) {
+        for (Object child : nodeParts) {
+            if (child instanceof NodePart) {
+                NodePart entityPart = (NodePart) child;
+                //now check whether we can find an entry in the tableToNodesMap
+                Rectangle bounds = entityPart.getBounds();
+                if (bounds == null) {
+                    //TODO handle this better
                     return false;
                 } else {
-                    if (updateConstraint) {
-                        //pass the constraint information to the xy layout
-                        //setting the width and height so that the preferred size will be applied
-                        delegatingLayoutManager.setXYLayoutConstraint(entityFigure, new Rectangle(bounds.x, bounds.y, -1, -1));
+                    IFigure entityFigure = entityPart.getFigure();
+                    if (entityFigure == null) {
+                        return false;
+                    } else {
+                        if (updateConstraint) {
+                            //pass the constraint information to the xy layout
+                            //setting the width and height so that the preferred size will be applied
+                            delegatingLayoutManager.setXYLayoutConstraint(entityFigure, new Rectangle(bounds.x, bounds.y, -1, -1));
+                        }
                     }
                 }
             }
@@ -286,11 +281,6 @@ public class DiagramPart extends PropertyAwarePart {
         getFigure().setLayoutManager(delegatingLayoutManager);
     }
 
-    /**
-     * Passes on to the delegating layout manager that the layout type has
-     * changed. The delegating layout manager will then decide whether to
-     * delegate layout to the XY or Graph layout
-     */
     /**
      * Sets layout constraint only if XYLayout is active
      */
@@ -328,7 +318,7 @@ public class DiagramPart extends PropertyAwarePart {
     public EntityPart getEntityPart(ERDEntity erdEntity)
     {
         for (Object child : getChildren()) {
-            if (child instanceof EntityPart && ((EntityPart) child).getTable() == erdEntity) {
+            if (child instanceof EntityPart && ((EntityPart) child).getEntity() == erdEntity) {
                 return (EntityPart) child;
             }
         }
@@ -350,4 +340,5 @@ public class DiagramPart extends PropertyAwarePart {
     {
         return ERDMessages.entity_diagram_ + getDiagram().getName();
     }
+
 }
