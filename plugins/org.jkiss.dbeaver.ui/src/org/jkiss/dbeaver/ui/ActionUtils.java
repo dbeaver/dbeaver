@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,9 @@ import org.eclipse.jface.bindings.TriggerSequence;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.*;
+import org.eclipse.ui.commands.ICommandImageService;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.keys.IBindingService;
@@ -163,6 +165,16 @@ public class ActionUtils
             }
         }
         return "???";
+    }
+
+    @Nullable
+    public static ImageDescriptor findCommandImage(String commandId)
+    {
+        ICommandImageService commandService = PlatformUI.getWorkbench().getService(ICommandImageService.class);
+        if (commandService != null) {
+            return commandService.getImageDescriptor(commandId);
+        }
+        return null;
     }
 
     @Nullable
