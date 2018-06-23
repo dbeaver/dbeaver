@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -139,7 +139,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
                 connBends.add(new AbsoluteBendpoint(bend.x, bend.y));
             }
             conn.setRoutingConstraint(connBends);
-        } else if (association.getPrimaryKeyEntity() == association.getForeignKeyEntity()) {
+        } else if (association.getPrimaryEntity() == association.getForeignEntity()) {
             // Self link
             final IFigure entityFigure = ((GraphicalEditPart) getSource()).getFigure();
             //EntityPart entity = (EntityPart) connEdge.source.getParent().data;

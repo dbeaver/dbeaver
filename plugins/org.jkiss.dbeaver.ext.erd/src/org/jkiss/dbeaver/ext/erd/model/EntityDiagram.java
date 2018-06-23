@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -133,7 +133,7 @@ public class EntityDiagram extends ERDObject<DBSObject>
 
         if (reflect) {
             for (ERDAssociation rel : entity.getPrimaryKeyRelationships()) {
-                rel.getForeignKeyEntity().firePropertyChange(OUTPUT, null, rel);
+                rel.getForeignEntity().firePropertyChange(OUTPUT, null, rel);
             }
         }
 	}
@@ -346,7 +346,7 @@ public class EntityDiagram extends ERDObject<DBSObject>
     public void addInitRelationBends(ERDEntity sourceEntity, ERDEntity targetEntity, String relName, List<Point> bends)
     {
         for (ERDAssociation rel : sourceEntity.getPrimaryKeyRelationships()) {
-            if (rel.getForeignKeyEntity() == targetEntity && relName.equals(rel.getObject().getName())) {
+            if (rel.getForeignEntity() == targetEntity && relName.equals(rel.getObject().getName())) {
                 rel.setInitBends(bends);
             }
         }

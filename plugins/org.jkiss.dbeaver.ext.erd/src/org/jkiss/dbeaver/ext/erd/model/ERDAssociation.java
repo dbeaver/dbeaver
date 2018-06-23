@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,9 +13,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
-/*
- * Created on Jul 13, 2004
  */
 package org.jkiss.dbeaver.ext.erd.model;
 
@@ -38,8 +35,11 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
 {
     private static final Log log = Log.getLog(ERDAssociation.class);
 
-    private ERDEntity primaryKeyEntity;
-	private ERDEntity foreignKeyEntity;
+    private ERDEntity primaryEntity;
+	private ERDEntity foreignEntity;
+    private List<ERDEntityAttribute> primaryAttributes;
+    private List<ERDEntityAttribute> foreignAttributes;
+
     private List<Point> initBends;
     private Boolean identifying;
 
@@ -51,15 +51,15 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
      */
     public ERDAssociation(ERDEntity foreignEntity, ERDEntity primaryEntity, boolean reflect)
     {
-        super(new ERDLogicalForeignKey(
+        super(new ERDLogicalAssociation(
             foreignEntity,
             foreignEntity.getObject().getName() + " -> " + primaryEntity.getObject().getName(),
             "",
             new ERDLogicalPrimaryKey(primaryEntity, "Primary key", "")));
-        this.primaryKeyEntity = primaryEntity;
-        this.foreignKeyEntity = foreignEntity;
-        this.primaryKeyEntity.addPrimaryKeyRelationship(this, reflect);
-        this.foreignKeyEntity.addForeignKeyRelationship(this, reflect);
+        this.primaryEntity = primaryEntity;
+        this.foreignEntity = foreignEntity;
+        this.primaryEntity.addPrimaryKeyRelationship(this, reflect);
+        this.foreignEntity.addForeignKeyRelationship(this, reflect);
     }
 
     /**
@@ -72,44 +72,44 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
 	public ERDAssociation(DBSEntityAssociation object, ERDEntity foreignEntity, ERDEntity primaryEntity, boolean reflect)
 	{
 		super(object);
-		this.primaryKeyEntity = primaryEntity;
-		this.foreignKeyEntity = foreignEntity;
-        this.primaryKeyEntity.addPrimaryKeyRelationship(this, reflect);
-        this.foreignKeyEntity.addForeignKeyRelationship(this, reflect);
+		this.primaryEntity = primaryEntity;
+		this.foreignEntity = foreignEntity;
+        this.primaryEntity.addPrimaryKeyRelationship(this, reflect);
+        this.foreignEntity.addForeignKeyRelationship(this, reflect);
 	}
 
     public boolean isLogical()
     {
-        return getObject() instanceof ERDLogicalForeignKey;
+        return getObject() instanceof ERDLogicalAssociation;
     }
 
 	/**
-	 * @return Returns the foreignKeyEntity.
+	 * @return Returns the foreignEntity.
 	 */
-	public ERDEntity getForeignKeyEntity()
+	public ERDEntity getForeignEntity()
 	{
-		return foreignKeyEntity;
+		return foreignEntity;
 	}
 
 	/**
-	 * @return Returns the primaryKeyEntity.
+	 * @return Returns the primaryEntity.
 	 */
-	public ERDEntity getPrimaryKeyEntity()
+	public ERDEntity getPrimaryEntity()
 	{
-		return primaryKeyEntity;
+		return primaryEntity;
 	}
 
-	public void setPrimaryKeyEntity(ERDEntity targetPrimaryKey)
+	public void setPrimaryEntity(ERDEntity targetPrimaryKey)
 	{
-		this.primaryKeyEntity = targetPrimaryKey;
+		this.primaryEntity = targetPrimaryKey;
 	}
 
 	/**
 	 * @param sourceForeignKey the foreign key table you are connecting from
 	 */
-	public void setForeignKeyEntity(ERDEntity sourceForeignKey)
+	public void setForeignEntity(ERDEntity sourceForeignKey)
 	{
-		this.foreignKeyEntity = sourceForeignKey;
+		this.foreignEntity = sourceForeignKey;
 	}
 
     public List<Point> getInitBends()
@@ -129,6 +129,7 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
                 identifying = DBUtils.isIdentifyingAssociation(new VoidProgressMonitor(), getObject());
             } catch (DBException e) {
                 log.debug(e);
+                identifying = false;
             }
         }
         return identifying;
@@ -137,7 +138,7 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
     @Override
     public String toString()
     {
-        return getObject() + " [" + primaryKeyEntity + "->" + foreignKeyEntity + "]";
+        return getObject() + " [" + primaryEntity + "->" + foreignEntity + "]";
     }
 
     @NotNull

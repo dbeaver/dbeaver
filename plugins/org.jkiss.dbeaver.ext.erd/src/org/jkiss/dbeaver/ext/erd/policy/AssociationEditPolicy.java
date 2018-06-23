@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,8 +37,8 @@ public class AssociationEditPolicy extends ComponentEditPolicy
     protected Command createDeleteCommand(GroupRequest request)
 	{
 		ERDAssociation relationship = (ERDAssociation) getHost().getModel();
-		ERDEntity primaryKeyTarget = relationship.getPrimaryKeyEntity();
-		ERDEntity foreignKeySource = relationship.getForeignKeyEntity();
+		ERDEntity primaryKeyTarget = relationship.getPrimaryEntity();
+		ERDEntity foreignKeySource = relationship.getForeignEntity();
 		AssociationDeleteCommand deleteCmd = new AssociationDeleteCommand(foreignKeySource, primaryKeyTarget, relationship);
 		return deleteCmd;
 	}

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -51,8 +51,8 @@ public class AssociationDeleteCommand extends Command
 	{
         primaryKeyTarget.removePrimaryKeyRelationship(relationship, true);
 		foreignKeySource.removeForeignKeyRelationship(relationship, true);
-		relationship.setForeignKeyEntity(null);
-		relationship.setPrimaryKeyEntity(null);
+		relationship.setForeignEntity(null);
+		relationship.setPrimaryEntity(null);
 	}
 
 	/**
@@ -61,8 +61,8 @@ public class AssociationDeleteCommand extends Command
 	@Override
     public void undo()
 	{
-		relationship.setForeignKeyEntity(foreignKeySource);
-		relationship.setForeignKeyEntity(primaryKeyTarget);
+		relationship.setForeignEntity(foreignKeySource);
+		relationship.setForeignEntity(primaryKeyTarget);
 		foreignKeySource.addForeignKeyRelationship(relationship, true);
 		primaryKeyTarget.addPrimaryKeyRelationship(relationship, true);
 	}

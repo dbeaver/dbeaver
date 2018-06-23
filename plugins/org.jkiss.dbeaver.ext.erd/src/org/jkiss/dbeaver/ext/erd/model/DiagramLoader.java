@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -538,22 +538,22 @@ public class DiagramLoader
                         xml.addAttribute(ATTR_FQ_NAME, ((DBPQualifiedObject) association).getFullyQualifiedName(DBPEvaluationContext.UI));
                     }
                     xml.addAttribute(ATTR_TYPE, association.getConstraintType().getId());
-                    TableSaveInfo pkInfo = infoMap.get(rel.getPrimaryKeyEntity());
+                    TableSaveInfo pkInfo = infoMap.get(rel.getPrimaryEntity());
                     if (pkInfo == null) {
-                        log.error("Cannot find PK table '" + DBUtils.getObjectFullName(rel.getPrimaryKeyEntity().getObject(), DBPEvaluationContext.UI) + "' in info map");
+                        log.error("Cannot find PK table '" + DBUtils.getObjectFullName(rel.getPrimaryEntity().getObject(), DBPEvaluationContext.UI) + "' in info map");
                         continue;
                     }
-                    TableSaveInfo fkInfo = infoMap.get(rel.getForeignKeyEntity());
+                    TableSaveInfo fkInfo = infoMap.get(rel.getForeignEntity());
                     if (fkInfo == null) {
-                        log.error("Cannot find FK table '" + DBUtils.getObjectFullName(rel.getForeignKeyEntity().getObject(), DBPEvaluationContext.UI) + "' in info map");
+                        log.error("Cannot find FK table '" + DBUtils.getObjectFullName(rel.getForeignEntity().getObject(), DBPEvaluationContext.UI) + "' in info map");
                         continue;
                     }
                     xml.addAttribute(ATTR_PK_REF, pkInfo.objectId);
                     xml.addAttribute(ATTR_FK_REF, fkInfo.objectId);
 
-                    if (association instanceof ERDLogicalForeignKey) {
+                    if (association instanceof ERDLogicalAssociation) {
                         // Save columns
-                        for (DBSEntityAttributeRef column : ((ERDLogicalForeignKey) association).getAttributeReferences(new VoidProgressMonitor())) {
+                        for (DBSEntityAttributeRef column : ((ERDLogicalAssociation) association).getAttributeReferences(new VoidProgressMonitor())) {
                             xml.startElement(TAG_COLUMN);
                             xml.addAttribute(ATTR_NAME, column.getAttribute().getName());
                             try {
