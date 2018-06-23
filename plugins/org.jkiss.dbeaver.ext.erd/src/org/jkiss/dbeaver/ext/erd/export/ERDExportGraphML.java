@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -223,7 +223,7 @@ public class ERDExportGraphML implements ERDExportFormatHandler
                         xml.startElement("edge");
                         xml.addAttribute("id", edgeId);
                         xml.addAttribute("source", entityMap.get(entity));
-                        xml.addAttribute("target", entityMap.get(association.getPrimaryKeyEntity()));
+                        xml.addAttribute("target", entityMap.get(association.getPrimaryEntity()));
 
                         xml.startElement("data");
                         xml.addAttribute("key", "edgegraph");

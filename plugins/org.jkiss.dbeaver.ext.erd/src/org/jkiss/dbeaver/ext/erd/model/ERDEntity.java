@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -193,7 +193,7 @@ public class ERDEntity extends ERDObject<DBSEntity>
     {
         if (foreignKeyRelationships != null) {
             for (ERDAssociation association : foreignKeyRelationships) {
-                if (association.getPrimaryKeyEntity() == this) {
+                if (association.getPrimaryEntity() == this) {
                     return true;
                 }
             }

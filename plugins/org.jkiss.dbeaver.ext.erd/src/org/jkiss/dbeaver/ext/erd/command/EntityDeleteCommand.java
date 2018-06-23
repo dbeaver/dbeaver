@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,7 +61,7 @@ public class EntityDeleteCommand extends Command
 		for (int i = 0; i < foreignKeyRelationships.size(); i++)
 		{
 			ERDAssociation r = foreignKeyRelationships.get(i);
-			r.getPrimaryKeyEntity().removePrimaryKeyRelationship(r, true);
+			r.getPrimaryEntity().removePrimaryKeyRelationship(r, true);
 			t.removeForeignKeyRelationship(r, true);
 		}
 
@@ -70,7 +70,7 @@ public class EntityDeleteCommand extends Command
 		for (int i = 0; i < primaryKeyRelationships.size(); i++)
 		{
 			ERDAssociation r = primaryKeyRelationships.get(i);
-			r.getForeignKeyEntity().removeForeignKeyRelationship(r, true);
+			r.getForeignEntity().removeForeignKeyRelationship(r, true);
 			t.removePrimaryKeyRelationship(r, true);
 		}
 	}
@@ -115,15 +115,15 @@ public class EntityDeleteCommand extends Command
 		for (int i = 0; i < foreignKeyRelationships.size(); i++)
 		{
 			ERDAssociation r = foreignKeyRelationships.get(i);
-			r.getForeignKeyEntity().addForeignKeyRelationship(r, true);
-			r.getPrimaryKeyEntity().addPrimaryKeyRelationship(r, true);
+			r.getForeignEntity().addForeignKeyRelationship(r, true);
+			r.getPrimaryEntity().addPrimaryKeyRelationship(r, true);
 		}
 		foreignKeyRelationships.clear();
 		for (int i = 0; i < primaryKeyRelationships.size(); i++)
 		{
 			ERDAssociation r = primaryKeyRelationships.get(i);
-			r.getForeignKeyEntity().addForeignKeyRelationship(r, true);
-			r.getPrimaryKeyEntity().addPrimaryKeyRelationship(r, true);
+			r.getForeignEntity().addForeignKeyRelationship(r, true);
+			r.getPrimaryEntity().addPrimaryKeyRelationship(r, true);
 		}
 		primaryKeyRelationships.clear();
 	}
