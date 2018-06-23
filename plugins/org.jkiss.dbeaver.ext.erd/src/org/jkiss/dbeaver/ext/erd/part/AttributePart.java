@@ -34,11 +34,11 @@ import org.jkiss.dbeaver.ext.erd.directedit.ColumnNameTypeCellEditorValidator;
 import org.jkiss.dbeaver.ext.erd.directedit.ExtendedDirectEditManager;
 import org.jkiss.dbeaver.ext.erd.directedit.LabelCellEditorLocator;
 import org.jkiss.dbeaver.ext.erd.directedit.ValidationMessageHandler;
-import org.jkiss.dbeaver.ext.erd.editor.ERDViewStyle;
 import org.jkiss.dbeaver.ext.erd.editor.ERDGraphicalViewer;
 import org.jkiss.dbeaver.ext.erd.figures.AttributeItemFigure;
 import org.jkiss.dbeaver.ext.erd.figures.EditableLabel;
 import org.jkiss.dbeaver.ext.erd.model.ERDEntityAttribute;
+import org.jkiss.dbeaver.ext.erd.model.ERDUtils;
 
 import java.beans.PropertyChangeEvent;
 
@@ -65,40 +65,15 @@ public class AttributePart extends PropertyAwarePart {
         AttributeItemFigure attributeFigure = new AttributeItemFigure(this);
 
         DiagramPart diagramPart = getDiagramPart();
-        boolean showNullability = diagramPart.getDiagram().hasAttributeStyle(ERDViewStyle.NULLABILITY);
         Font columnFont = diagramPart.getNormalFont();
         Color columnColor = diagramPart.getContentPane().getForegroundColor();
         if (column.isInPrimaryKey()) {
             columnFont = diagramPart.getBoldFont();
-/*
-            if (showNullability && !column.getObject().isRequired()) {
-                columnFont = diagramPart.getBoldItalicFont();
-            }
-*/
-/*
-            if (!column.isInForeignKey()) {
-                columnFont = diagramPart.getBoldFont();
-            } else {
-                columnFont = diagramPart.getBoldItalicFont();
-            }
-*/
-        } else {
-/*
-            if (showNullability && !column.getObject().isRequired()) {
-                columnFont = diagramPart.getItalicFont();
-            }
-*/
         }
-        if (column.isInForeignKey()) {
-            //columnColor = Display.getDefault().getSystemColor(SWT.COLOR_DARK_BLUE);
-        }
+
         attributeFigure.setFont(columnFont);
         attributeFigure.setForegroundColor(columnColor);
         return attributeFigure;
-    }
-
-    public DiagramPart getDiagramPart() {
-        return (DiagramPart) getParent().getParent();
     }
 
     @Override
@@ -126,7 +101,7 @@ public class AttributePart extends PropertyAwarePart {
 			performDirectEdit();
 */
         } else if (request.getType() == RequestConstants.REQ_OPEN) {
-            getAttribute().openEditor();
+            ERDUtils.openObjectEditor(getAttribute());
         }
     }
 

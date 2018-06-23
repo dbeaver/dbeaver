@@ -48,7 +48,7 @@ public class EntityDeleteCommand extends Command
     public EntityDeleteCommand(EntityDiagram entityDiagram, EntityPart entityPart, Rectangle originalBounds) {
         this.entityDiagram = entityDiagram;
         this.entityPart = entityPart;
-        this.entity = entityPart.getTable();
+        this.entity = entityPart.getEntity();
         this.bounds = originalBounds;
     }
 
@@ -134,7 +134,7 @@ public class EntityDeleteCommand extends Command
 	@Override
     public void undo()
 	{
-		entityDiagram.addTable(entity, index, true);
+		entityDiagram.addEntity(entity, index, true);
 		restoreRelationships();
 		//entityPart.modifyBounds(bounds);
 	}

@@ -176,7 +176,7 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
                 List<DBSEntity> tables = new ArrayList<>();
                 for (Object child : editpart.getChildren()) {
                     if (child instanceof EntityPart) {
-                        tables.add(((EntityPart) child).getTable().getObject());
+                        tables.add(((EntityPart) child).getEntity().getObject());
                     }
                 }
                 tables.sort(DBUtils.nameComparator());
@@ -365,7 +365,7 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
             final GraphicalViewer viewer = editorPart.getViewer();
             for (Object child : editorPart.getDiagramPart().getChildren()) {
                 if (child instanceof EntityPart) {
-                    if (((EntityPart)child).getTable().getObject() == table) {
+                    if (((EntityPart)child).getEntity().getObject() == table) {
                         viewer.reveal((EditPart) child);
                         viewer.select((EditPart) child);
                         break;

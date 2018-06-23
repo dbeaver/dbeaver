@@ -47,43 +47,43 @@ public abstract class PropertyAwareConnectionPart extends AbstractConnectionEdit
         return getRoot().getContents() instanceof DiagramPart && ((DiagramPart) getRoot().getContents()).getDiagram().isLayoutManualAllowed();
     }
 
-	/**
-	 * @see org.eclipse.gef.EditPart#activate()
-	 */
 	@Override
     public void activate()
 	{
 		super.activate();
 		ERDObject<?> erdObject = (ERDObject<?>) getModel();
-		erdObject.addPropertyChangeListener(this);
+		if (isEditEnabled()) {
+			erdObject.addPropertyChangeListener(this);
+		}
 	}
 
-	/**
-	 * @see org.eclipse.gef.EditPart#deactivate()
-	 */
 	@Override
     public void deactivate()
 	{
 		super.deactivate();
-		ERDObject<?> erdObject = (ERDObject<?>) getModel();
-		erdObject.removePropertyChangeListener(this);
+		if (isEditEnabled()) {
+			ERDObject<?> erdObject = (ERDObject<?>) getModel();
+			erdObject.removePropertyChangeListener(this);
+		}
 	}
 
-	/**
-	 * @see java.beans.PropertyChangeListener#propertyChange(java.beans.PropertyChangeEvent)
-	 */
 	@Override
     public void propertyChange(PropertyChangeEvent evt)
 	{
 
 		String property = evt.getPropertyName();
 
-		if (ERDObject.CHILD.equals(property))
-			refreshChildren();
-		else if (ERDObject.INPUT.equals(property))
-			refreshTargetConnections();
-		else if (ERDObject.OUTPUT.equals(property))
-			refreshSourceConnections();
+		switch (property) {
+			case ERDObject.CHILD:
+				refreshChildren();
+				break;
+			case ERDObject.INPUT:
+				refreshTargetConnections();
+				break;
+			case ERDObject.OUTPUT:
+				refreshSourceConnections();
+				break;
+		}
 
 		/*
 		 * if (FlowElement.CHILDREN.equals(prop)) refreshChildren(); else if

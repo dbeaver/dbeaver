@@ -24,10 +24,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.erd.figures.AttributeListFigure;
 import org.jkiss.dbeaver.ext.erd.figures.EntityFigure;
-import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
-import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
-import org.jkiss.dbeaver.ext.erd.model.ERDEntityAttribute;
-import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
+import org.jkiss.dbeaver.ext.erd.model.*;
 import org.jkiss.dbeaver.ext.erd.part.AssociationPart;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.ext.erd.part.EntityPart;
@@ -176,11 +173,11 @@ public class ERDExportGraphML implements ERDExportFormatHandler
                                 xml.addAttribute("y", attrsBounds.y());
 
                                 StringBuilder attrsString = new StringBuilder();
-                                for (ERDEntityAttribute attr : entity.getColumns()) {
+                                for (ERDEntityAttribute attr : entity.getAttributes()) {
                                     if (attrsString.length() > 0) {
                                         attrsString.append("\n");
                                     }
-                                    attrsString.append(attr.getLabelText());
+                                    attrsString.append(ERDUtils.getAttributeLabel(diagram, attr));
                                 }
 
                                 xml.addText(attrsString.toString());

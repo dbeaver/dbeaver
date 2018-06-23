@@ -22,31 +22,27 @@ package org.jkiss.dbeaver.ext.erd.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.erd.editor.ERDAttributeVisibility;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 
 /**
  * Model object representing a relational database Table
- * Also includes the bounds of the table so that the diagram can be 
+ * Also includes the bounds of the table so that the diagram can be
  * restored following a save, although ideally this should be
  * in a separate diagram specific model hierarchy
- * @author Serge Rider
  */
-public class ERDEntity extends ERDObject<DBSEntity>
-{
-    private static final Log log = Log.getLog(ERDEntity.class);
+public class ERDEntity extends ERDObject<DBSEntity> {
 
-    private List<ERDEntityAttribute> columns;
+    static final Log log = Log.getLog(ERDEntity.class);
 
-	private List<ERDAssociation> primaryKeyRelationships;
-	private List<ERDAssociation> foreignKeyRelationships;
+    private List<ERDEntityAttribute> attributes;
+
+    private List<ERDAssociation> primaryKeyRelationships;
+    private List<ERDAssociation> foreignKeyRelationships;
     private List<DBSEntityAssociation> unresolvedKeys;
 
     private boolean primary = false;
@@ -55,131 +51,105 @@ public class ERDEntity extends ERDObject<DBSEntity>
         super(dbsTable);
     }
 
-    public void addColumn(ERDEntityAttribute column, boolean reflect)
-	{
-        if (columns == null) {
-            columns = new ArrayList<>();
+    public void addAttribute(ERDEntityAttribute attribute, boolean reflect) {
+        if (attributes == null) {
+            attributes = new ArrayList<>();
         }
-		if (columns.contains(column))
-		{
-			throw new IllegalArgumentException("Column already present");
-		}
-		columns.add(column);
+        if (attributes.contains(attribute)) {
+            throw new IllegalArgumentException("Attribute already present");
+        }
+        attributes.add(attribute);
         if (reflect) {
-		    firePropertyChange(CHILD, null, column);
+            firePropertyChange(CHILD, null, attribute);
         }
-	}
+    }
 
-	public void removeColumn(ERDEntityAttribute column, boolean reflect)
-	{
-		columns.remove(column);
+    public void removeAttribute(ERDEntityAttribute attribute, boolean reflect) {
+        attributes.remove(attribute);
         if (reflect) {
-		    firePropertyChange(CHILD, column, null);
+            firePropertyChange(CHILD, attribute, null);
         }
-	}
+    }
 
-	public void switchColumn(ERDEntityAttribute column, int index, boolean reflect)
-	{
-		columns.remove(column);
-		columns.add(index, column);
+    public void switchAttribute(ERDEntityAttribute attribute, int index, boolean reflect) {
+        attributes.remove(attribute);
+        attributes.add(index, attribute);
         if (reflect) {
-		    firePropertyChange(REORDER, this, column);
+            firePropertyChange(REORDER, this, attribute);
         }
-	}
+    }
 
-	/**
-	 * Sets name without firing off any event notifications
-	 * 
-	 * @param name
-	 *            The name to set.
-	 *
-	public void setName(String name)
-	{
-		this.name = name;
-	}*/
-
-	/**
-	 * Adds relationship where the current object is the foreign key table in a relationship
-	 * 
-	 * @param rel
-	 *            the primary key relationship
-	 */
-	public void addForeignKeyRelationship(ERDAssociation rel, boolean reflect)
-	{
+    /**
+     * Adds relationship where the current object is the foreign key table in a relationship
+     *
+     * @param rel the primary key relationship
+     */
+    public void addForeignKeyRelationship(ERDAssociation rel, boolean reflect) {
         if (foreignKeyRelationships == null) {
             foreignKeyRelationships = new ArrayList<>();
         }
-		foreignKeyRelationships.add(rel);
+        foreignKeyRelationships.add(rel);
         if (reflect) {
-		    firePropertyChange(OUTPUT, null, rel);
+            firePropertyChange(OUTPUT, null, rel);
         }
-	}
+    }
 
-	/**
-	 * Adds relationship where the current object is the primary key table in a relationship
-	 * 
-	 * @param table
-	 *            the foreign key relationship
-	 */
-	public void addPrimaryKeyRelationship(ERDAssociation table, boolean reflect)
-	{
+    /**
+     * Adds relationship where the current object is the primary key table in a relationship
+     *
+     * @param table the foreign key relationship
+     */
+    public void addPrimaryKeyRelationship(ERDAssociation table, boolean reflect) {
         if (primaryKeyRelationships == null) {
             primaryKeyRelationships = new ArrayList<>();
         }
-		primaryKeyRelationships.add(table);
+        primaryKeyRelationships.add(table);
         if (reflect) {
-		    firePropertyChange(INPUT, null, table);
+            firePropertyChange(INPUT, null, table);
         }
-	}
+    }
 
-	/**
-	 * Removes relationship where the current object is the foreign key table in a relationship
-	 * 
-	 * @param table
-	 *            the primary key relationship
-	 */
-	public void removeForeignKeyRelationship(ERDAssociation table, boolean reflect)
-	{
-		foreignKeyRelationships.remove(table);
+    /**
+     * Removes relationship where the current object is the foreign key table in a relationship
+     *
+     * @param table the primary key relationship
+     */
+    public void removeForeignKeyRelationship(ERDAssociation table, boolean reflect) {
+        foreignKeyRelationships.remove(table);
         if (reflect) {
-		    firePropertyChange(OUTPUT, table, null);
+            firePropertyChange(OUTPUT, table, null);
         }
-	}
+    }
 
-	/**
-	 * Removes relationship where the current object is the primary key table in a relationship
-	 * 
-	 * @param table
-	 *            the foreign key relationship
-	 */
-	public void removePrimaryKeyRelationship(ERDAssociation table, boolean reflect)
-	{
-		primaryKeyRelationships.remove(table);
+    /**
+     * Removes relationship where the current object is the primary key table in a relationship
+     *
+     * @param table the foreign key relationship
+     */
+    public void removePrimaryKeyRelationship(ERDAssociation table, boolean reflect) {
+        primaryKeyRelationships.remove(table);
         if (reflect) {
-		    firePropertyChange(INPUT, table, null);
+            firePropertyChange(INPUT, table, null);
         }
-	}
+    }
 
-	public List<ERDEntityAttribute> getColumns()
-	{
-		return CommonUtils.safeList(columns);
-	}
+    public List<ERDEntityAttribute> getAttributes() {
+        return CommonUtils.safeList(attributes);
+    }
 
-	/**
-	 * @return Returns the foreignKeyRelationships.
-	 */
-	public List<ERDAssociation> getForeignKeyRelationships()
-	{
-		return CommonUtils.safeList(foreignKeyRelationships);
-	}
+    /**
+     * @return Returns the foreignKeyRelationships.
+     */
+    public List<ERDAssociation> getForeignKeyRelationships() {
+        return CommonUtils.safeList(foreignKeyRelationships);
+    }
 
-	/**
-	 * @return Returns the primaryKeyRelationships.
-	 */
-	public List<ERDAssociation> getPrimaryKeyRelationships()
-	{
-		return CommonUtils.safeList(primaryKeyRelationships);
-	}
+    /**
+     * @return Returns the primaryKeyRelationships.
+     */
+    public List<ERDAssociation> getPrimaryKeyRelationships() {
+        return CommonUtils.safeList(primaryKeyRelationships);
+    }
 
     public boolean isPrimary() {
         return primary;
@@ -189,8 +159,7 @@ public class ERDEntity extends ERDObject<DBSEntity>
         this.primary = primary;
     }
 
-    public boolean hasSelfLinks()
-    {
+    public boolean hasSelfLinks() {
         if (foreignKeyRelationships != null) {
             for (ERDAssociation association : foreignKeyRelationships) {
                 if (association.getPrimaryEntity() == this) {
@@ -201,161 +170,15 @@ public class ERDEntity extends ERDObject<DBSEntity>
         return false;
     }
 
-	public String toString()
-	{
-		return object.getName();
-	}
-
-	/**
-	 * hashcode implementation for use as key in Map
-	 */
-	public int hashCode()
-	{
-		return object.hashCode();
-	}
-
-	/**
-	 * equals implementation for use as key in Map
-	 */
-	public boolean equals(Object o)
-	{
-		if (o == null || !(o instanceof ERDEntity))
-			return false;
-        return object.equals(((ERDEntity)o).object);
-	}
-
-    public static ERDEntity fromObject(DBRProgressMonitor monitor, EntityDiagram diagram, DBSEntity entity)
-    {
-        ERDEntity erdEntity = new ERDEntity(entity);
-        ERDAttributeVisibility attributeVisibility = diagram.getAttributeVisibility();
-        if (attributeVisibility != ERDAttributeVisibility.NONE) {
-            Set<DBSEntityAttribute> keyColumns = null;
-            if (attributeVisibility == ERDAttributeVisibility.KEYS) {
-                keyColumns = new HashSet<>();
-                try {
-                    for (DBSEntityAssociation assoc : CommonUtils.safeCollection(entity.getAssociations(monitor))) {
-                        if (assoc instanceof DBSEntityReferrer) {
-                            keyColumns.addAll(DBUtils.getEntityAttributes(monitor, (DBSEntityReferrer) assoc));
-                        }
-                    }
-                    for (DBSEntityConstraint constraint : CommonUtils.safeCollection(entity.getConstraints(monitor))) {
-                        if (constraint instanceof DBSEntityReferrer) {
-                            keyColumns.addAll(DBUtils.getEntityAttributes(monitor, (DBSEntityReferrer) constraint));
-                        }
-                    }
-                } catch (DBException e) {
-                    log.warn(e);
-                }
-            }
-            Collection<? extends DBSEntityAttribute> idColumns = null;
-            try {
-                idColumns = getBestTableIdentifier(monitor, entity);
-                if (keyColumns != null) {
-                    keyColumns.addAll(idColumns);
-                }
-            } catch (DBException e) {
-                log.error("Error reading table identifier", e);
-            }
-            try {
-
-                DBSObjectFilter columnFilter = entity.getDataSource().getContainer().getObjectFilter(DBSEntityAttribute.class, entity, false);
-                Collection<? extends DBSEntityAttribute> attributes = entity.getAttributes(monitor);
-                if (!CommonUtils.isEmpty(attributes)) {
-                    for (DBSEntityAttribute attribute : attributes) {
-                        if (attribute instanceof DBSEntityAssociation) {
-                            // skip attributes which are associations
-                            // usual thing in some systems like WMI/CIM model
-                            continue;
-                        }
-                        if (DBUtils.isHiddenObject(attribute)) {
-                            // Skip hidden attributes
-                            continue;
-                        }
-                        if (columnFilter != null && !columnFilter.matches(attribute.getName())) {
-                            continue;
-                        }
-
-                        switch (attributeVisibility) {
-                            case PRIMARY:
-                                if (idColumns == null || !idColumns.contains(attribute)) {
-                                    continue;
-                                }
-                                break;
-                            case KEYS:
-                                if (!keyColumns.contains(attribute)) {
-                                    continue;
-                                }
-                                break;
-                            default:
-                                break;
-                        }
-                        ERDEntityAttribute c1 = new ERDEntityAttribute(diagram, attribute, idColumns != null && idColumns.contains(attribute));
-                        erdEntity.addColumn(c1, false);
-                    }
-                }
-            } catch (DBException e) {
-                // just skip this problematic columns
-                log.debug("Can't load table '" + entity.getName() + "'columns", e);
-            }
-        }
-        return erdEntity;
-    }
-
-    @NotNull
-    public static Collection<? extends DBSEntityAttribute> getBestTableIdentifier(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntity entity)
-        throws DBException
-    {
-        if (entity instanceof DBSTable && ((DBSTable) entity).isView()) {
-            return Collections.emptyList();
-        }
-        if (CommonUtils.isEmpty(entity.getAttributes(monitor))) {
-            return Collections.emptyList();
-        }
-
-        // Find PK or unique key
-        DBSEntityConstraint uniqueId = null;
-        //DBSEntityConstraint uniqueIndex = null;
-        for (DBSEntityConstraint id : CommonUtils.safeCollection(entity.getConstraints(monitor))) {
-            if (id instanceof DBSEntityReferrer && id.getConstraintType() == DBSEntityConstraintType.PRIMARY_KEY) {
-                return DBUtils.getEntityAttributes(monitor, (DBSEntityReferrer) id);
-            } else if (id.getConstraintType().isUnique()) {
-                uniqueId = id;
-            } else if (id instanceof DBSTableIndex && ((DBSTableIndex) id).isUnique()) {
-                uniqueId = id;
-            }
-        }
-        if (uniqueId instanceof DBSEntityReferrer) {
-            return DBUtils.getEntityAttributes(monitor, (DBSEntityReferrer) uniqueId);
-        }
-
-        // Check indexes
-        if (entity instanceof DBSTable) {
-            try {
-                Collection<? extends DBSTableIndex> indexes = ((DBSTable)entity).getIndexes(monitor);
-                if (!CommonUtils.isEmpty(indexes)) {
-                    for (DBSTableIndex index : indexes) {
-                        if (DBUtils.isIdentifierIndex(monitor, index)) {
-                            return DBUtils.getEntityAttributes(monitor, index);
-                        }
-                    }
-                }
-            } catch (DBException e) {
-                log.debug(e);
-            }
-        }
-        return Collections.emptyList();
-    }
-
-    public void addRelations(DBRProgressMonitor monitor, Map<DBSEntity, ERDEntity> tableMap, boolean reflect)
-    {
+    public void addRelations(DBRProgressMonitor monitor, Map<DBSEntity, ERDEntity> tableMap, boolean reflect) {
         try {
-            Set<DBSEntityAttribute> fkColumns = new HashSet<>();
+            Set<DBSEntityAttribute> fkAttrs = new HashSet<>();
             // Make associations
             Collection<? extends DBSEntityAssociation> fks = getObject().getAssociations(monitor);
             if (fks != null) {
                 for (DBSEntityAssociation fk : fks) {
                     if (fk instanceof DBSEntityReferrer) {
-                        fkColumns.addAll(DBUtils.getEntityAttributes(monitor, (DBSEntityReferrer) fk));
+                        fkAttrs.addAll(DBUtils.getEntityAttributes(monitor, (DBSEntityReferrer) fk));
                     }
                     ERDEntity entity2 = tableMap.get(fk.getAssociatedEntity());
                     if (entity2 == null) {
@@ -372,10 +195,10 @@ public class ERDEntity extends ERDObject<DBSEntity>
                 }
             }
 
-            // Mark column's fk flag
-            for (ERDEntityAttribute column : this.getColumns()) {
-                if (fkColumns.contains(column.getObject())) {
-                    column.setInForeignKey(true);
+            // Mark attribute's fk flag
+            for (ERDEntityAttribute attribute : this.getAttributes()) {
+                if (fkAttrs.contains(attribute.getObject())) {
+                    attribute.setInForeignKey(true);
                 }
             }
 
@@ -384,8 +207,7 @@ public class ERDEntity extends ERDObject<DBSEntity>
         }
     }
 
-    public void resolveRelations(Map<DBSEntity, ERDEntity> tableMap, boolean reflect)
-    {
+    public void resolveRelations(Map<DBSEntity, ERDEntity> tableMap, boolean reflect) {
         if (CommonUtils.isEmpty(unresolvedKeys)) {
             return;
         }
@@ -403,8 +225,24 @@ public class ERDEntity extends ERDObject<DBSEntity>
 
     @NotNull
     @Override
-    public String getName()
-    {
+    public String getName() {
         return getObject().getName();
     }
+
+    @Override
+    public String toString() {
+        return object.getName();
+    }
+
+    @Override
+    public int hashCode() {
+        return object.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o != null && o instanceof ERDEntity &&
+            object.equals(((ERDEntity) o).object);
+    }
+
 }

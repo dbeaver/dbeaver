@@ -61,8 +61,7 @@ public abstract class NodePart extends PropertyAwarePart implements NodeEditPart
             this.bounds = bounds;
 
             Figure entityFigure = (Figure) getFigure();
-            DiagramPart parent = (DiagramPart) getParent();
-            parent.setLayoutConstraint(this, entityFigure, bounds);
+            getDiagramPart().setLayoutConstraint(this, entityFigure, bounds);
         }
     }
 

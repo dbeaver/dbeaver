@@ -30,6 +30,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
+import org.jkiss.dbeaver.ext.erd.model.ERDUtils;
 import org.jkiss.dbeaver.ext.erd.policy.AssociationBendEditPolicy;
 import org.jkiss.dbeaver.ext.erd.policy.AssociationEditPolicy;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -223,7 +224,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
     public void performRequest(Request request)
     {
         if (request.getType() == RequestConstants.REQ_OPEN) {
-            getAssociation().openEditor();
+            ERDUtils.openObjectEditor(getAssociation());
         }
     }
 

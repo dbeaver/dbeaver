@@ -92,7 +92,7 @@ public class DirectedGraphLayoutVisitor {
     protected void addEntityNode(NodeEditPart nodeEditPart)
     {
         Node entityNode;
-        if (nodeEditPart instanceof EntityPart && ((EntityPart)nodeEditPart).getTable().hasSelfLinks()) {
+        if (nodeEditPart instanceof EntityPart && ((EntityPart)nodeEditPart).getEntity().hasSelfLinks()) {
             entityNode = new Subgraph(nodeEditPart);
         } else {
             entityNode = new Node(nodeEditPart);

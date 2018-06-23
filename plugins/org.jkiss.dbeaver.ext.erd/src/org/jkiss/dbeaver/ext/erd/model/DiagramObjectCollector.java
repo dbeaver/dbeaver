@@ -46,7 +46,7 @@ public class DiagramObjectCollector {
     public DiagramObjectCollector(EntityDiagram diagram)
     {
         this.diagram = diagram;
-        this.tableMap.putAll(diagram.getTableMap());
+        this.tableMap.putAll(diagram.getEntityMap());
     }
 
     public static Collection<DBSEntity> collectTables(
@@ -144,7 +144,7 @@ public class DiagramObjectCollector {
             // Avoid duplicates
             return;
         }
-        ERDEntity erdEntity = ERDEntity.fromObject(monitor, diagram, table);
+        ERDEntity erdEntity = ERDUtils.makeEntityFromObject(monitor, diagram, table);
         if (erdEntity != null) {
             erdEntities.add(erdEntity);
             tableMap.put(table, erdEntity);

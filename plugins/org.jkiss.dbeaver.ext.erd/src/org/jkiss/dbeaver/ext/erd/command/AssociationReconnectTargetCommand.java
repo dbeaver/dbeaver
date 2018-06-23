@@ -96,7 +96,7 @@ public class AssociationReconnectTargetCommand extends Command
 	}
 
 	/**
-	 * @return Returns the sourceForeignKey.
+	 * @return Returns the sourceEntity.
 	 */
 	public ERDEntity getSourceForeignKey()
 	{
@@ -105,7 +105,7 @@ public class AssociationReconnectTargetCommand extends Command
 
 	/**
 	 * @param sourceForeignKey
-	 *            The sourceForeignKey to set.
+	 *            The sourceEntity to set.
 	 */
 	public void setSourceForeignKey(ERDEntity sourceForeignKey)
 	{
@@ -113,7 +113,7 @@ public class AssociationReconnectTargetCommand extends Command
 	}
 
 	/**
-	 * @return Returns the targetPrimaryKey.
+	 * @return Returns the targetEntity.
 	 */
 	public ERDEntity getTargetPrimaryKey()
 	{
@@ -122,7 +122,7 @@ public class AssociationReconnectTargetCommand extends Command
 
 	/**
 	 * @param targetPrimaryKey
-	 *            The targetPrimaryKey to set.
+	 *            The targetEntity to set.
 	 */
 	public void setTargetPrimaryKey(ERDEntity targetPrimaryKey)
 	{
