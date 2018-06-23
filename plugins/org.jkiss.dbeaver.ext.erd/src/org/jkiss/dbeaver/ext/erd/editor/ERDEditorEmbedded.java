@@ -179,9 +179,9 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
         }
         EntityDiagram diagram;
         if (!dbObject.isPersisted()) {
-            diagram = new EntityDiagram(createDecorator(), dbObject, "New Object");
+            diagram = new EntityDiagram(getDecorator(), dbObject, "New Object");
         } else {
-            diagram = new EntityDiagram(createDecorator(), dbObject, dbObject.getName());
+            diagram = new EntityDiagram(getDecorator(), dbObject, dbObject.getName());
 
             diagram.fillTables(
                 monitor,

@@ -63,8 +63,12 @@ public class ERDMessages extends NLS {
 	public static String erd_editor_control_action_print_diagram;
 	public static String erd_editor_control_action_configuration;
 	//ERD editor action item control
-	
-	
+
+	public static String erd_tool_create_connection;
+	public static String erd_tool_create_connection_tip;
+	public static String erd_tool_create_note;
+	public static String erd_tool_create_note_tip;
+	public static String erd_tool_create_default;
 	
 	private ERDMessages() {
 	}

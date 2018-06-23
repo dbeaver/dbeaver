@@ -160,7 +160,7 @@ public class ERDEditorStandalone extends ERDEditorPart implements DBPContextProv
         final IFile file = getEditorFile();
 
         final DiagramPart diagramPart = getDiagramPart();
-        EntityDiagram entityDiagram = new EntityDiagram(createDecorator(), null, file.getName());
+        EntityDiagram entityDiagram = new EntityDiagram(getDecorator(), null, file.getName());
         entityDiagram.clear();
         entityDiagram.setLayoutManualAllowed(true);
         entityDiagram.setLayoutManualDesired(true);
@@ -212,12 +212,8 @@ public class ERDEditorStandalone extends ERDEditorPart implements DBPContextProv
         }
         if (delta.getKind() == IResourceDelta.REMOVED) {
             // Refresh editor
-            UIUtils.asyncExec(new Runnable() {
-                @Override
-                public void run() {
-                    getSite().getWorkbenchWindow().getActivePage().closeEditor(ERDEditorStandalone.this, false);
-                }
-            });
+            UIUtils.asyncExec(() ->
+                getSite().getWorkbenchWindow().getActivePage().closeEditor(ERDEditorStandalone.this, false));
         }
     }
 

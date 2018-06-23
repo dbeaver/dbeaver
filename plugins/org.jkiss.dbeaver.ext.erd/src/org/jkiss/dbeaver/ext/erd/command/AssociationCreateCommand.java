@@ -36,9 +36,9 @@ public class AssociationCreateCommand extends Command {
     protected ERDEntity foreignEntity;
     protected ERDEntity primaryEntity;
 
-    /**
-     * @see org.eclipse.gef.commands.Command#canExecute()
-     */
+    public AssociationCreateCommand() {
+    }
+
     @Override
     public boolean canExecute()
     {
@@ -53,8 +53,7 @@ public class AssociationCreateCommand extends Command {
             } else {
                 // Check for existence of relationship already
                 List<ERDAssociation> relationships = primaryEntity.getPrimaryKeyRelationships();
-                for (int i = 0; i < relationships.size(); i++) {
-                    ERDAssociation currentRelationship = relationships.get(i);
+                for (ERDAssociation currentRelationship : relationships) {
                     if (currentRelationship.getForeignEntity().equals(foreignEntity)) {
                         returnValue = false;
                         break;
@@ -67,44 +66,42 @@ public class AssociationCreateCommand extends Command {
 
     }
 
-    /**
-     * @see org.eclipse.gef.commands.Command#execute()
-     */
     @Override
     public void execute()
     {
         association = new ERDAssociation(foreignEntity, primaryEntity, true);
     }
 
-    /**
-     * @return Returns the foreignEntity.
-     */
     public ERDEntity getForeignEntity()
     {
         return foreignEntity;
     }
 
-    /**
-     * @return Returns the primaryEntity.
-     */
+    public void setForeignEntity(ERDEntity foreignEntity)
+    {
+        this.foreignEntity = foreignEntity;
+    }
+
     public ERDEntity getPrimaryEntity()
     {
         return primaryEntity;
     }
 
-    /**
-     * Returns the Relationship between the primary and foreign tables
-     *
-     * @return the transistion
-     */
+    public void setPrimaryEntity(ERDEntity primaryEntity)
+    {
+        this.primaryEntity = primaryEntity;
+    }
+
     public ERDAssociation getAssociation()
     {
         return association;
     }
 
-    /**
-     * @see org.eclipse.gef.commands.Command#redo()
-     */
+    public void setAssociation(ERDAssociation association)
+    {
+        this.association = association;
+    }
+
     @Override
     public void redo()
     {
@@ -112,33 +109,6 @@ public class AssociationCreateCommand extends Command {
         primaryEntity.addPrimaryKeyRelationship(association, true);
     }
 
-    /**
-     * @param foreignEntity The foreignEntity to set.
-     */
-    public void setForeignEntity(ERDEntity foreignEntity)
-    {
-        this.foreignEntity = foreignEntity;
-    }
-
-    /**
-     * @param primaryEntity The primaryEntity to set.
-     */
-    public void setPrimaryEntity(ERDEntity primaryEntity)
-    {
-        this.primaryEntity = primaryEntity;
-    }
-
-    /**
-     * @param association The relationship to set.
-     */
-    public void setAssociation(ERDAssociation association)
-    {
-        this.association = association;
-    }
-
-    /**
-     * Undo version of command
-     */
     @Override
     public void undo()
     {

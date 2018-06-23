@@ -139,12 +139,20 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     private PaletteRoot paletteRoot;
 
     private String errorMessage;
+    private ERDDecorator decorator;
 
     /**
      * No-arg constructor
      */
     protected ERDEditorPart()
     {
+    }
+
+    public ERDDecorator getDecorator() {
+        if (decorator == null) {
+            decorator = createDecorator();
+        }
+        return decorator;
     }
 
     protected ERDDecorator createDecorator() {
@@ -382,7 +390,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         initializeGraphicalViewer();
 
         // Set initial (empty) contents
-        viewer.setContents(new EntityDiagram(createDecorator(), null, "empty"));
+        viewer.setContents(new EntityDiagram(getDecorator(), null, "empty"));
 
         // Set context menu
         ContextMenuProvider provider = new ERDEditorContextMenuProvider(this);
@@ -405,7 +413,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         viewer.addDropTargetListener(new NodeDropTargetListener(viewer));
 
         // initialize the viewer with input
-        viewer.setEditPartFactory(new ERDEditPartFactory());
+        viewer.setEditPartFactory(getDecorator().createPartFactory());
 
         return viewer;
     }
@@ -445,7 +453,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         zoomManager.setZoomLevelContributions(zoomLevels);
 
         zoomManager.setZoomLevels(
-            new double[]{.1, .25, .5, .75, 1.0, 1.5, 2.0, 2.5, 3, 4}
+            new double[]{.1, .1, .2, .3, .5, .6, .7, .8, .9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.5, 3, 4}
         );
 
         IAction zoomIn = new ZoomInAction(zoomManager);
@@ -576,112 +584,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         PaletteRoot paletteRoot = new PaletteRoot();
         paletteRoot.setLabel("Entity Diagram");
 
-        {
-            // a group of default control tools
-            PaletteDrawer controls = new PaletteDrawer("Tools", DBeaverIcons.getImageDescriptor(UIIcon.CONFIGURATION));
-
-            paletteRoot.add(controls);
-
-            // the selection tool
-            ToolEntry selectionTool = new SelectionToolEntry();
-            controls.add(selectionTool);
-
-            // use selection tool as default entry
-            paletteRoot.setDefaultEntry(selectionTool);
-
-            if (!isReadOnly()) {
-                // separator
-                PaletteSeparator separator = new PaletteSeparator("tools");
-                separator.setUserModificationPermission(PaletteEntry.PERMISSION_NO_MODIFICATION);
-                controls.add(separator);
-
-                final ImageDescriptor connectImage = ERDActivator.getImageDescriptor("icons/connect.png");
-                controls.add(new ConnectionCreationToolEntry("Connection", "Create Connection", null, connectImage, connectImage));
-
-                final ImageDescriptor noteImage = ERDActivator.getImageDescriptor("icons/note.png");
-                controls.add(new CreationToolEntry(
-                    "Note",
-                    "Create Note",
-                    new CreationFactory() {
-                        @Override
-                        public Object getNewObject()
-                        {
-                            return new ERDNote("Note");
-                        }
-                        @Override
-                        public Object getObjectType()
-                        {
-                            return RequestConstants.REQ_CREATE;
-                        }
-                    },
-                    noteImage,
-                    noteImage));
-            }
-        }
-
-/*
-        {
-            //PaletteDrawer controls = new PaletteDrawer("Diagram", ERDActivator.getImageDescriptor("icons/erd.png"));
-            PaletteToolbar controls = new PaletteToolbar("Diagram");
-            paletteRoot.add(controls);
-
-            controls.add(new ActionToolEntry(new ZoomInAction(rootPart.getZoomManager())));
-            controls.add(new ActionToolEntry(new ZoomOutAction(rootPart.getZoomManager())));
-
-            controls.add(new ActionToolEntry(new DiagramLayoutAction(ERDEditorPart.this)));
-            controls.add(new ActionToolEntry(new DiagramToggleGridAction()));
-            controls.add(new ActionToolEntry(new DiagramRefreshAction(ERDEditorPart.this)));
-            controls.add(new PaletteSeparator());
-            {
-                controls.add(new CommandToolEntry(
-                    IWorkbenchCommandConstants.FILE_SAVE_AS,
-                    ERDMessages.erd_editor_control_action_save_external_format,
-                    UIIcon.PICTURE_SAVE));
-                controls.add(new CommandToolEntry(
-                    IWorkbenchCommandConstants.FILE_PRINT,
-                    ERDMessages.erd_editor_control_action_print_diagram,
-                    UIIcon.PRINT));
-            }
-            {
-                Action configAction = new Action(ERDMessages.erd_editor_control_action_configuration) {
-                    @Override
-                    public void run()
-                    {
-                        UIUtils.showPreferencesFor(
-                            getSite().getShell(),
-                            ERDEditorPart.this,
-                            ERDPreferencePage.PAGE_ID);
-                    }
-                };
-                configAction.setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.CONFIGURATION));
-                controls.add(new ActionToolEntry(configAction));
-            }
-        }
-*/
-
-/*
-            PaletteDrawer drawer = new PaletteDrawer("New Component",
-                ERDActivator.getImageDescriptor("icons/connection.gif"));
-
-            List<CombinedTemplateCreationEntry> entries = new ArrayList<CombinedTemplateCreationEntry>();
-
-            CombinedTemplateCreationEntry tableEntry = new CombinedTemplateCreationEntry("New Table", "Create a new table",
-                ERDEntity.class, new DataElementFactory(ERDEntity.class),
-                ERDActivator.getImageDescriptor("icons/table.png"),
-                ERDActivator.getImageDescriptor("icons/table.png"));
-
-            CombinedTemplateCreationEntry columnEntry = new CombinedTemplateCreationEntry("New Column", "Add a new column",
-                ERDEntityAttribute.class, new DataElementFactory(ERDEntityAttribute.class),
-                ERDActivator.getImageDescriptor("icons/column.png"),
-                ERDActivator.getImageDescriptor("icons/column.png"));
-
-            entries.add(tableEntry);
-            entries.add(columnEntry);
-
-            drawer.addAll(entries);
-
-            paletteRoot.add(drawer);
-*/
+        getDecorator().fillPalette(paletteRoot, isReadOnly());
 
         return paletteRoot;
 

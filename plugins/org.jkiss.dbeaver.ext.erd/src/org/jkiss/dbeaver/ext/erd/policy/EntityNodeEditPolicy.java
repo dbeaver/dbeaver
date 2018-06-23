@@ -31,62 +31,43 @@ import org.jkiss.dbeaver.ext.erd.part.EntityPart;
 
 /**
  * Handles manipulation of relationships between tables
- * @author Serge Rider
  */
-public class EntityNodeEditPolicy extends GraphicalNodeEditPolicy
-{
+public class EntityNodeEditPolicy extends GraphicalNodeEditPolicy {
 
-	/**
-	 * @see GraphicalNodeEditPolicy#getConnectionCreateCommand(CreateConnectionRequest)
-	 */
-	@Override
-    protected Command getConnectionCreateCommand(CreateConnectionRequest request)
-	{
+    @Override
+    protected Command getConnectionCreateCommand(CreateConnectionRequest request) {
+        AssociationCreateCommand cmd = new AssociationCreateCommand();
+        EntityPart part = (EntityPart) getHost();
+        cmd.setForeignEntity(part.getEntity());
+        request.setStartCommand(cmd);
+        return cmd;
+    }
 
-		AssociationCreateCommand cmd = new AssociationCreateCommand();
-		EntityPart part = (EntityPart) getHost();
-		cmd.setForeignEntity(part.getEntity());
-		request.setStartCommand(cmd);
-		return cmd;
-	}
+    @Override
+    protected Command getConnectionCompleteCommand(CreateConnectionRequest request) {
+        AssociationCreateCommand cmd = (AssociationCreateCommand) request.getStartCommand();
+        EntityPart part = (EntityPart) request.getTargetEditPart();
+        cmd.setPrimaryEntity(part.getEntity());
+        return cmd;
+    }
 
-	/**
-	 * @see GraphicalNodeEditPolicy#getConnectionCompleteCommand(CreateConnectionRequest)
-	 */
-	@Override
-    protected Command getConnectionCompleteCommand(CreateConnectionRequest request)
-	{
-		AssociationCreateCommand cmd = (AssociationCreateCommand) request.getStartCommand();
-		EntityPart part = (EntityPart) request.getTargetEditPart();
-		cmd.setPrimaryEntity(part.getEntity());
-		return cmd;
-	}
+    @Override
+    protected Command getReconnectSourceCommand(ReconnectRequest request) {
 
-	/**
-	 * @see GraphicalNodeEditPolicy#getReconnectSourceCommand(ReconnectRequest)
-	 */
-	@Override
-    protected Command getReconnectSourceCommand(ReconnectRequest request)
-	{
-		
-		AssociationReconnectSourceCommand cmd = new AssociationReconnectSourceCommand();
-		cmd.setAssociation((ERDAssociation) request.getConnectionEditPart().getModel());
-		EntityPart entityPart = (EntityPart) getHost();
-		cmd.setSourceEntity(entityPart.getEntity());
-		return cmd;
-	}
+        AssociationReconnectSourceCommand cmd = new AssociationReconnectSourceCommand();
+        cmd.setAssociation((ERDAssociation) request.getConnectionEditPart().getModel());
+        EntityPart entityPart = (EntityPart) getHost();
+        cmd.setSourceEntity(entityPart.getEntity());
+        return cmd;
+    }
 
-	/**
-	 * @see GraphicalNodeEditPolicy#getReconnectTargetCommand(ReconnectRequest)
-	 */
-	@Override
-    protected Command getReconnectTargetCommand(ReconnectRequest request)
-	{
-		AssociationReconnectTargetCommand cmd = new AssociationReconnectTargetCommand();
-		cmd.setRelationship((ERDAssociation) request.getConnectionEditPart().getModel());
-		EntityPart entityPart = (EntityPart) getHost();
-		cmd.setTargetPrimaryKey(entityPart.getEntity());
-		return cmd;
-	}
+    @Override
+    protected Command getReconnectTargetCommand(ReconnectRequest request) {
+        AssociationReconnectTargetCommand cmd = new AssociationReconnectTargetCommand();
+        cmd.setRelationship((ERDAssociation) request.getConnectionEditPart().getModel());
+        EntityPart entityPart = (EntityPart) getHost();
+        cmd.setTargetPrimaryKey(entityPart.getEntity());
+        return cmd;
+    }
 
 }
