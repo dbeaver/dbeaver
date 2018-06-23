@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -162,6 +162,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     @Override
     public void init(IEditorSite site, IEditorInput input) throws PartInitException
     {
+        rootPart = new ScalableFreeformRootEditPart();
         editDomain = new DefaultEditDomain(this);
         setEditDomain(editDomain);
 
@@ -397,7 +398,6 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
         // configure the viewer
         viewer.getControl().setBackground(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_DIAGRAM_BACKGROUND));
-        rootPart = new ScalableFreeformRootEditPart();
         viewer.setRootEditPart(rootPart);
         viewer.setKeyHandler(new GraphicalViewerKeyHandler(viewer));
 
@@ -589,9 +589,6 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             // use selection tool as default entry
             paletteRoot.setDefaultEntry(selectionTool);
 
-            // the marquee selection tool
-            controls.add(new MarqueeToolEntry());
-
             if (!isReadOnly()) {
                 // separator
                 PaletteSeparator separator = new PaletteSeparator("tools");
@@ -621,6 +618,46 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                     noteImage));
             }
         }
+
+/*
+        {
+            //PaletteDrawer controls = new PaletteDrawer("Diagram", ERDActivator.getImageDescriptor("icons/erd.png"));
+            PaletteToolbar controls = new PaletteToolbar("Diagram");
+            paletteRoot.add(controls);
+
+            controls.add(new ActionToolEntry(new ZoomInAction(rootPart.getZoomManager())));
+            controls.add(new ActionToolEntry(new ZoomOutAction(rootPart.getZoomManager())));
+
+            controls.add(new ActionToolEntry(new DiagramLayoutAction(ERDEditorPart.this)));
+            controls.add(new ActionToolEntry(new DiagramToggleGridAction()));
+            controls.add(new ActionToolEntry(new DiagramRefreshAction(ERDEditorPart.this)));
+            controls.add(new PaletteSeparator());
+            {
+                controls.add(new CommandToolEntry(
+                    IWorkbenchCommandConstants.FILE_SAVE_AS,
+                    ERDMessages.erd_editor_control_action_save_external_format,
+                    UIIcon.PICTURE_SAVE));
+                controls.add(new CommandToolEntry(
+                    IWorkbenchCommandConstants.FILE_PRINT,
+                    ERDMessages.erd_editor_control_action_print_diagram,
+                    UIIcon.PRINT));
+            }
+            {
+                Action configAction = new Action(ERDMessages.erd_editor_control_action_configuration) {
+                    @Override
+                    public void run()
+                    {
+                        UIUtils.showPreferencesFor(
+                            getSite().getShell(),
+                            ERDEditorPart.this,
+                            ERDPreferencePage.PAGE_ID);
+                    }
+                };
+                configAction.setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.CONFIGURATION));
+                controls.add(new ActionToolEntry(configAction));
+            }
+        }
+*/
 
 /*
             PaletteDrawer drawer = new PaletteDrawer("New Component",
