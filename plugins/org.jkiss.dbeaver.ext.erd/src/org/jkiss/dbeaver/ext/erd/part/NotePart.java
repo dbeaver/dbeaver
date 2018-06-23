@@ -26,6 +26,7 @@ import org.eclipse.gef.ConnectionEditPart;
 import org.eclipse.gef.EditPolicy;
 import org.eclipse.gef.Request;
 import org.eclipse.gef.RequestConstants;
+import org.eclipse.gef.commands.Command;
 import org.eclipse.gef.requests.DirectEditRequest;
 import org.eclipse.gef.tools.DirectEditManager;
 import org.jkiss.dbeaver.ext.erd.directedit.ExtendedDirectEditManager;
@@ -69,6 +70,7 @@ public class NotePart extends NodePart
             //installEditPolicy(EditPolicy.CONTAINER_ROLE, new EntityContainerEditPolicy());
             //installEditPolicy(EditPolicy.COMPONENT_ROLE, new NoteEditPolicy());
             installEditPolicy(EditPolicy.DIRECT_EDIT_ROLE, new NoteDirectEditPolicy());
+            //installEditPolicy(EditPolicy.COMPONENT_ROLE, new NoteDirectEditPolicy());
 
             //installEditPolicy(EditPolicy.SELECTION_FEEDBACK_ROLE, new ResizableEditPolicy());
         }
@@ -86,6 +88,14 @@ public class NotePart extends NodePart
 			performDirectEdit();
         }
 	}
+
+    @Override
+    public Command getCommand(Request request) {
+        if (request.getType() == RequestConstants.REQ_DIRECT_EDIT) {
+            performDirectEdit();
+        }
+        return null;
+    }
 
     private boolean directEditHitTest(Point requestLoc) {
         NoteFigure figure = (NoteFigure) getFigure();
