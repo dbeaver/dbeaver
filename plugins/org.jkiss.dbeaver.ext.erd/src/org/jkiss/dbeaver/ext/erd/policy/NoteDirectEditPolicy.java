@@ -23,65 +23,49 @@ import org.eclipse.gef.commands.Command;
 import org.eclipse.gef.editpolicies.DirectEditPolicy;
 import org.eclipse.gef.requests.DirectEditRequest;
 import org.eclipse.jface.viewers.CellEditor;
+import org.jkiss.dbeaver.ext.erd.command.NoteSetTextCommand;
 import org.jkiss.dbeaver.ext.erd.part.NotePart;
 
 /**
  * EditPolicy for the direct editing of table names
- * 
+ *
  * @author Serge Rider
  */
-public class NoteDirectEditPolicy extends DirectEditPolicy
-{
+public class NoteDirectEditPolicy extends DirectEditPolicy {
 
-	private String oldValue;
+    private String oldValue;
 
-	/**
-	 * @see org.eclipse.gef.editpolicies.DirectEditPolicy#getDirectEditCommand(org.eclipse.gef.requests.DirectEditRequest)
-	 */
-	@Override
-    protected Command getDirectEditCommand(DirectEditRequest request)
-	{
-/*
-		EntityRenameCommand cmd = new EntityRenameCommand();
-		ERDEntity table = (ERDEntity) getHost().getModel();
-		cmd.setTable(table);
-		cmd.setOldName(table.getName());
-		CellEditor cellEditor = request.getCellEditor();
-		cmd.setName((String) cellEditor.getValue());
-		return cmd;
-*/
-        return null;
-	}
+    @Override
+    protected Command getDirectEditCommand(DirectEditRequest request) {
+        CellEditor cellEditor = request.getCellEditor();
+        String newNote = (String) cellEditor.getValue();
 
-	/**
-	 * @see org.eclipse.gef.editpolicies.DirectEditPolicy#showCurrentEditValue(org.eclipse.gef.requests.DirectEditRequest)
-	 */
-	@Override
-    protected void showCurrentEditValue(DirectEditRequest request)
-	{
-		String value = (String) request.getCellEditor().getValue();
-		NotePart notePart = (NotePart) getHost();
-		notePart.handleNameChange(value);
-	}
+        return new NoteSetTextCommand((NotePart) getHost(), newNote);
+    }
 
-	@Override
-    protected void storeOldEditValue(DirectEditRequest request)
-	{
-		
-		CellEditor cellEditor = request.getCellEditor();
-		oldValue = (String) cellEditor.getValue();
-	}
+    @Override
+    protected void showCurrentEditValue(DirectEditRequest request) {
+        String value = (String) request.getCellEditor().getValue();
+        NotePart notePart = (NotePart) getHost();
+        notePart.handleNameChange(value);
+    }
 
-	/**
-	 * @param request
-	 */
-	@Override
-    protected void revertOldEditValue(DirectEditRequest request)
-	{
-		CellEditor cellEditor = request.getCellEditor();
-		cellEditor.setValue(oldValue);
-		NotePart entityPart = (NotePart) getHost();
-		entityPart.revertNameChange();
-	}
+    @Override
+    protected void storeOldEditValue(DirectEditRequest request) {
+
+        CellEditor cellEditor = request.getCellEditor();
+        oldValue = (String) cellEditor.getValue();
+    }
+
+    /**
+     * @param request
+     */
+    @Override
+    protected void revertOldEditValue(DirectEditRequest request) {
+        CellEditor cellEditor = request.getCellEditor();
+        cellEditor.setValue(oldValue);
+        NotePart entityPart = (NotePart) getHost();
+        entityPart.revertNameChange();
+    }
 
 }

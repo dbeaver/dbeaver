@@ -18,36 +18,35 @@ package org.jkiss.dbeaver.ext.erd.command;
 
 import org.eclipse.gef.commands.Command;
 import org.jkiss.dbeaver.ext.erd.figures.NoteFigure;
-import org.jkiss.dbeaver.ext.erd.model.ERDNote;
+import org.jkiss.dbeaver.ext.erd.part.NotePart;
 
 /**
  * Change note text
  */
 public class NoteSetTextCommand extends Command {
 
-    private ERDNote note;
-    private NoteFigure figure;
+    private NotePart note;
     private String newText;
     private String oldText;
 
-    public NoteSetTextCommand(ERDNote note, NoteFigure figure, String newText) {
+    public NoteSetTextCommand(NotePart note, String newText) {
         super("Set note text");
         this.note = note;
-        this.figure = figure;
+
         this.oldText = this.note.getName();
         this.newText = newText;
     }
 
     @Override
     public void execute() {
-        note.setObject(newText);
-        figure.setText(newText);
+        note.getNote().setObject(newText);
+        ((NoteFigure) note.getFigure()).setText(newText);
     }
 
     @Override
     public void undo() {
-        note.setObject(oldText);
-        figure.setText(oldText);
+        note.getNote().setObject(oldText);
+        ((NoteFigure) note.getFigure()).setText(oldText);
     }
 
 }
