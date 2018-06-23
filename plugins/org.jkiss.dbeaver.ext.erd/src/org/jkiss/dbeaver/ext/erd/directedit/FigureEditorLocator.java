@@ -19,13 +19,12 @@
  */
 package org.jkiss.dbeaver.ext.erd.directedit;
 
+import org.eclipse.draw2d.Border;
 import org.eclipse.draw2d.IFigure;
+import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Rectangle;
-import org.eclipse.draw2d.text.TextFlow;
 import org.eclipse.gef.tools.CellEditorLocator;
 import org.eclipse.jface.viewers.CellEditor;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Text;
 
 /**
@@ -37,8 +36,8 @@ public class FigureEditorLocator implements CellEditorLocator {
 
     private IFigure figure;
 
-    public FigureEditorLocator(IFigure label) {
-        this.figure = label;
+    public FigureEditorLocator(IFigure figure) {
+        this.figure = figure;
     }
 
     /**
@@ -46,12 +45,19 @@ public class FigureEditorLocator implements CellEditorLocator {
      */
     @Override
     public void relocate(CellEditor celleditor) {
+        Border border = figure.getBorder();
+        //Insets insets = border.getInsets(figure);
+        Dimension borderSize = border.getPreferredSize(figure);
         Text text = (Text) celleditor.getControl();
 
-        Point pref = text.computeSize(SWT.DEFAULT, SWT.DEFAULT);
         Rectangle rect = figure.getBounds().getCopy();
         figure.translateToAbsolute(rect);
-        text.setBounds(rect.x + 1, rect.y + 1, rect.width - 2, rect.height - 2);
+        text.setBackground(figure.getBackgroundColor());
+        text.setBounds(
+            rect.x + borderSize.width,
+            rect.y + borderSize.height,
+            rect.width - borderSize.width * 2,
+            rect.height - borderSize.height * 2);
 
     }
 
