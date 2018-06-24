@@ -51,6 +51,13 @@ public class ERDDecoratorDefault implements ERDDecorator {
             // a group of default control tools
             PaletteDrawer controls = createToolsDrawer(paletteRoot);
 
+            // the selection tool
+            ToolEntry selectionTool = new SelectionToolEntry();
+            controls.add(selectionTool);
+
+            // use selection tool as default entry
+            paletteRoot.setDefaultEntry(selectionTool);
+
             if (!readOnly) {
                 // separator
                 PaletteSeparator separator = new PaletteSeparator("tools");
@@ -84,12 +91,6 @@ public class ERDDecoratorDefault implements ERDDecorator {
 
         paletteRoot.add(controls);
 
-        // the selection tool
-        ToolEntry selectionTool = new SelectionToolEntry();
-        controls.add(selectionTool);
-
-        // use selection tool as default entry
-        paletteRoot.setDefaultEntry(selectionTool);
         return controls;
     }
 

@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ext.erd.command;
 
 import org.eclipse.gef.commands.Command;
-import org.jkiss.dbeaver.ext.erd.figures.NoteFigure;
 import org.jkiss.dbeaver.ext.erd.part.AttributePart;
 
 /**
@@ -30,7 +29,7 @@ public class AttributeCheckCommand extends Command {
     private boolean oldValue;
 
     public AttributeCheckCommand(AttributePart attr, boolean newValue) {
-        super("Set note text");
+        super("Select attribute");
         this.attr = attr;
 
         this.oldValue = this.attr.getAttribute().isChecked();

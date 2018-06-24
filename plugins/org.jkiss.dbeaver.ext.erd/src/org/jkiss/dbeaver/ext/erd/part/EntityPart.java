@@ -35,14 +35,15 @@ import org.jkiss.dbeaver.ext.erd.editor.ERDViewStyle;
 import org.jkiss.dbeaver.ext.erd.figures.EditableLabel;
 import org.jkiss.dbeaver.ext.erd.figures.EntityFigure;
 import org.jkiss.dbeaver.ext.erd.model.*;
+import org.jkiss.dbeaver.ext.erd.policy.EntityConnectionEditPolicy;
 import org.jkiss.dbeaver.ext.erd.policy.EntityContainerEditPolicy;
 import org.jkiss.dbeaver.ext.erd.policy.EntityEditPolicy;
-import org.jkiss.dbeaver.ext.erd.policy.EntityConnectionEditPolicy;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 
 import java.beans.PropertyChangeEvent;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Represents the editable/resizable table which can have columns added,
@@ -289,8 +290,36 @@ public class EntityPart extends NodePart {
         super.deactivate();
     }
 
+    // Add nested figures to visuals (to make hit test work properly)
     @Override
-    protected void finalize() throws Throwable {
-        super.finalize();
+    protected void registerVisuals() {
+        super.registerVisuals();
+        Map visualPartMap = this.getViewer().getVisualPartMap();
+        visualPartMap.put(getFigure().getNameLabel(), this);
+        visualPartMap.put(getFigure().getKeyFigure(), this);
+        visualPartMap.put(getFigure().getColumnsFigure(), this);
+    }
+
+    // Remove nested figures from visuals
+    @Override
+    protected void unregisterVisuals() {
+        Map visualPartMap = this.getViewer().getVisualPartMap();
+        visualPartMap.remove(getFigure().getColumnsFigure());
+        visualPartMap.remove(getFigure().getKeyFigure());
+        visualPartMap.remove(getFigure().getNameLabel());
+        super.unregisterVisuals();
+    }
+
+    @Override
+    public EditPart getTargetEditPart(Request request) {
+        if (RequestConstants.REQ_MOVE.equals(request.getType()) || RequestConstants.REQ_ADD.equals(request.getType())) {
+            return this;
+        }
+        return super.getTargetEditPart(request);
+    }
+
+    @Override
+    public DragTracker getDragTracker(Request request) {
+        return super.getDragTracker(request);
     }
 }

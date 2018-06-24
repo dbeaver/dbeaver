@@ -22,13 +22,12 @@ package org.jkiss.dbeaver.ext.erd.part;
 import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.geometry.Point;
-import org.eclipse.gef.EditPart;
-import org.eclipse.gef.Request;
-import org.eclipse.gef.RequestConstants;
+import org.eclipse.gef.*;
 import org.eclipse.gef.tools.DirectEditManager;
 import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
+import org.eclipse.wst.xsd.ui.internal.design.editpolicies.DragAndDropEditPolicy;
 import org.jkiss.dbeaver.ext.erd.ERDMessages;
 import org.jkiss.dbeaver.ext.erd.directedit.ColumnNameTypeCellEditorValidator;
 import org.jkiss.dbeaver.ext.erd.directedit.ExtendedDirectEditManager;
@@ -38,10 +37,14 @@ import org.jkiss.dbeaver.ext.erd.editor.ERDGraphicalViewer;
 import org.jkiss.dbeaver.ext.erd.figures.AttributeItemFigure;
 import org.jkiss.dbeaver.ext.erd.figures.EditableLabel;
 import org.jkiss.dbeaver.ext.erd.model.ERDEntityAttribute;
-import org.jkiss.dbeaver.ext.erd.model.ERDObject;
 import org.jkiss.dbeaver.ext.erd.model.ERDUtils;
+import org.jkiss.dbeaver.ext.erd.policy.AttributeContainerEditPolicy;
+import org.jkiss.dbeaver.ext.erd.policy.AttributeDragAndDropEditPolicy;
+import org.jkiss.dbeaver.ext.erd.policy.AttributeEditPolicy;
+import org.jkiss.dbeaver.ext.erd.policy.AttributeDirectEditPolicy;
 
 import java.beans.PropertyChangeEvent;
+import java.util.Map;
 
 /**
  * Represents an editable Column object in the model
@@ -90,9 +93,13 @@ public class AttributePart extends PropertyAwarePart {
      */
     @Override
     protected void createEditPolicies() {
-        //installEditPolicy(EditPolicy.COMPONENT_ROLE, new AttributeEditPolicy());
-        //installEditPolicy(EditPolicy.DIRECT_EDIT_ROLE, new ColumnDirectEditPolicy());
-        //installEditPolicy(EditPolicy.LAYOUT_ROLE, null);
+        if (isEditEnabled()) {
+            installEditPolicy(EditPolicy.COMPONENT_ROLE, new AttributeEditPolicy());
+            installEditPolicy(EditPolicy.CONTAINER_ROLE, new AttributeContainerEditPolicy());
+            installEditPolicy(EditPolicy.DIRECT_EDIT_ROLE, new AttributeDirectEditPolicy());
+            installEditPolicy(EditPolicy.PRIMARY_DRAG_ROLE, new AttributeDragAndDropEditPolicy(this));
+            //installEditPolicy(EditPolicy.LAYOUT_ROLE, null);
+        }
     }
 
     @Override
@@ -184,6 +191,37 @@ public class AttributePart extends PropertyAwarePart {
 
     public ERDEntityAttribute getAttribute() {
         return (ERDEntityAttribute) getModel();
+    }
+
+    @Override
+    public DragTracker getDragTracker(Request request) {
+        return super.getDragTracker(request);
+    }
+
+    @Override
+    public EditPart getTargetEditPart(Request request) {
+        if (RequestConstants.REQ_MOVE.equals(request.getType()) || RequestConstants.REQ_ADD.equals(request.getType())) {
+            return getParent();
+        }
+        return super.getTargetEditPart(request);
+    }
+
+    // Add nested figures to visuals (to make hit test work properly)
+    @Override
+    protected void registerVisuals() {
+        super.registerVisuals();
+        Map visualPartMap = this.getViewer().getVisualPartMap();
+        visualPartMap.put(getFigure().getCheckBox(), this);
+        visualPartMap.put(getFigure().getLabel(), this);
+    }
+
+    // Remove nested figures from visuals
+    @Override
+    protected void unregisterVisuals() {
+        Map visualPartMap = this.getViewer().getVisualPartMap();
+        visualPartMap.remove(getFigure().getLabel());
+        visualPartMap.remove(getFigure().getCheckBox());
+        super.unregisterVisuals();
     }
 
     @Override

@@ -409,13 +409,17 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         viewer.setRootEditPart(rootPart);
         viewer.setKeyHandler(new GraphicalViewerKeyHandler(viewer));
 
-        viewer.addDropTargetListener(new DataEditDropTargetListener(viewer));
-        viewer.addDropTargetListener(new NodeDropTargetListener(viewer));
+        registerDropTargetListeners(viewer);
 
         // initialize the viewer with input
         viewer.setEditPartFactory(getDecorator().createPartFactory());
 
         return viewer;
+    }
+
+    protected void registerDropTargetListeners(GraphicalViewer viewer) {
+        viewer.addDropTargetListener(new DataEditDropTargetListener(viewer));
+        viewer.addDropTargetListener(new NodeDropTargetListener(viewer));
     }
 
     @Override
