@@ -22,6 +22,7 @@ package org.jkiss.dbeaver.ext.erd.figures;
 import org.eclipse.draw2d.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ext.erd.command.AttributeCheckCommand;
 import org.jkiss.dbeaver.ext.erd.editor.ERDViewStyle;
 import org.jkiss.dbeaver.ext.erd.model.ERDDecorator;
 import org.jkiss.dbeaver.ext.erd.model.ERDEntityAttribute;
@@ -48,6 +49,8 @@ public class AttributeItemFigure extends Figure
         super();
         this.part = part;
 
+        ERDEntityAttribute attribute = part.getAttribute();
+
         ToolbarLayout layout = new ToolbarLayout(true);
 
         setLayoutManager(layout);
@@ -57,9 +60,18 @@ public class AttributeItemFigure extends Figure
         boolean showCheckboxes = diagram.getDecorator().showCheckboxes();
         if (showCheckboxes) {
             CustomCheckBoxFigure attrCheckbox = new CustomCheckBoxFigure();
+            attrCheckbox.setSelected(attribute.isChecked());
+            attrCheckbox.addChangeListener(changeEvent -> {
+                boolean oldChecked = attribute.isChecked();
+                boolean newChecked = attrCheckbox.isSelected();
+                if (oldChecked != newChecked) {
+                    part.getDiagramPart().getViewer().getEditDomain().getCommandStack().execute(
+                        new AttributeCheckCommand(part, attrCheckbox.isSelected())
+                    );
+                }
+            });
             add(attrCheckbox);
         }
-        ERDEntityAttribute attribute = part.getAttribute();
 
         String attributeLabel = ERDUtils.getAttributeLabel(diagram, attribute);
 

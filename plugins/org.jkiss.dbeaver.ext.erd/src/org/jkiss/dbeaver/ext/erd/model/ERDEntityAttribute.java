@@ -30,8 +30,10 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
  * @author Serge Rider
  */
 public class ERDEntityAttribute extends ERDObject<DBSEntityAttribute> {
+    private boolean isChecked;
     private boolean inPrimaryKey;
     private boolean inForeignKey;
+    private String alias;
 
     public ERDEntityAttribute(DBSEntityAttribute attribute, boolean inPrimaryKey) {
         super(attribute);
@@ -44,6 +46,22 @@ public class ERDEntityAttribute extends ERDObject<DBSEntityAttribute> {
 
     public DBPImage getLabelImage() {
         return DBValueFormatting.getObjectImage(object);
+    }
+
+    public boolean isChecked() {
+        return isChecked;
+    }
+
+    public void setChecked(boolean checked) {
+        isChecked = checked;
+    }
+
+    public String getAlias() {
+        return alias;
+    }
+
+    public void setAlias(String alias) {
+        this.alias = alias;
     }
 
     public boolean isInPrimaryKey() {

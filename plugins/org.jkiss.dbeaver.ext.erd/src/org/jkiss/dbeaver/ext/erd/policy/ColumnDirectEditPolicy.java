@@ -54,9 +54,6 @@ public class ColumnDirectEditPolicy extends DirectEditPolicy
         return null;
 	}
 
-	/**
-	 * @see DirectEditPolicy#showCurrentEditValue(org.eclipse.gef.requests.DirectEditRequest)
-	 */
 	@Override
     protected void showCurrentEditValue(DirectEditRequest request)
 	{
@@ -65,10 +62,6 @@ public class ColumnDirectEditPolicy extends DirectEditPolicy
 		attributePart.handleNameChange(value);
 	}
 
-	/**
-	 * @param to
-	 *            Revert request
-	 */
 	@Override
     protected void storeOldEditValue(DirectEditRequest request)
 	{
@@ -76,9 +69,6 @@ public class ColumnDirectEditPolicy extends DirectEditPolicy
 		oldValue = (String) cellEditor.getValue();
 	}
 
-	/**
-	 * @param request
-	 */
 	@Override
     protected void revertOldEditValue(DirectEditRequest request)
 	{

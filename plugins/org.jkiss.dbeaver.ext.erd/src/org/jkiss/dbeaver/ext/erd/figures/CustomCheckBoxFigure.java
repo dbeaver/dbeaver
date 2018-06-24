@@ -23,8 +23,8 @@ public final class CustomCheckBoxFigure extends Toggle {
     }
 
     public CustomCheckBoxFigure(String text) {
-        this.label = null;
-        this.setContents(this.label = new Label(text, UNCHECKED));
+        this.label = new Label(text, UNCHECKED);
+        this.setContents(this.label);
     }
 
     protected void handleSelectionChanged() {
@@ -38,13 +38,11 @@ public final class CustomCheckBoxFigure extends Toggle {
 
     protected void init() {
         super.init();
-        this.addChangeListener(new ChangeListener() {
-            public void handleStateChanged(ChangeEvent changeEvent) {
-                if (changeEvent.getPropertyName().equals("selected")) {
-                    CustomCheckBoxFigure.this.handleSelectionChanged();
-                }
-
+        this.addChangeListener(changeEvent -> {
+            if (changeEvent.getPropertyName().equals("selected")) {
+                CustomCheckBoxFigure.this.handleSelectionChanged();
             }
+
         });
     }
 }
