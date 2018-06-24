@@ -35,13 +35,12 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
 {
     private static final Log log = Log.getLog(ERDAssociation.class);
 
-    private ERDEntity targetEntity;
 	private ERDEntity sourceEntity;
-    private List<ERDEntityAttribute> primaryAttributes;
-    private List<ERDEntityAttribute> foreignAttributes;
+    private ERDEntity targetEntity;
+    private List<ERDEntityAttribute> sourceAttributes;
+    private List<ERDEntityAttribute> targetAttributes;
 
     private List<Point> initBends;
-    private Boolean identifying;
 
     /**
      * Constructor for logical association
@@ -122,19 +121,6 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
         this.initBends = bends;
     }
 
-    public boolean isIdentifying() {
-        if (identifying == null) {
-            identifying = false;
-            try {
-                identifying = DBUtils.isIdentifyingAssociation(new VoidProgressMonitor(), getObject());
-            } catch (DBException e) {
-                log.debug(e);
-                identifying = false;
-            }
-        }
-        return identifying;
-    }
-
     @Override
     public String toString()
     {
@@ -147,4 +133,5 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
     {
         return getObject().getName();
     }
+
 }

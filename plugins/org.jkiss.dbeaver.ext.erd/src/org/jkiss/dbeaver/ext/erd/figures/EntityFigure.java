@@ -62,16 +62,19 @@ public class EntityFigure extends Figure {
         layout.setHorizontal(false);
         layout.setStretchMinorAxis(true);
         setLayoutManager(layout);
-        setBorder(new LineBorder(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_ENTITY_NAME_FOREGROUND), 1));
+        setBorder(new LineBorder(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_ENTITY_NAME_FOREGROUND), 2));
         setOpaque(true);
 
         add(nameLabel);
         add(keyFigure);
         add(attributeFigure);
 
+        // Tooltip doesn't make sense and just flicks around
+/*
         Label toolTip = new Label(DBUtils.getObjectFullName(entity.getObject(), DBPEvaluationContext.UI));
         toolTip.setIcon(tableImage);
         setToolTip(toolTip);
+*/
         setColors();
     }
 
@@ -93,9 +96,9 @@ public class EntityFigure extends Figure {
     {
         LineBorder lineBorder = (LineBorder) getBorder();
         if (isSelected) {
-            lineBorder.setWidth(2);
+            lineBorder.setWidth(3);
         } else {
-            lineBorder.setWidth(1);
+            lineBorder.setWidth(2);
         }
     }
 

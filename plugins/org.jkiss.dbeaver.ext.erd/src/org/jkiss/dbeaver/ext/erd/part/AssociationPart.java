@@ -52,6 +52,9 @@ import java.util.*;
  */
 public class AssociationPart extends PropertyAwareConnectionPart {
 
+    // Keep original line width to visualize selection
+    private Integer oldLineWidth;
+
     public AssociationPart()
     {
     }
@@ -86,42 +89,8 @@ public class AssociationPart extends PropertyAwareConnectionPart {
         ERDAssociation association = (ERDAssociation) getModel();
 
         PolylineConnection conn = (PolylineConnection) super.createFigure();
-        //conn.setLineJoin(SWT.JOIN_ROUND);
-        //conn.setConnectionRouter(new BendpointConnectionRouter());
-        //conn.setConnectionRouter(new ShortestPathConnectionRouter(conn));
-        //conn.setToolTip(new TextFlow(association.getObject().getName()));
-        if (association.getObject().getConstraintType() == DBSEntityConstraintType.INHERITANCE) {
-            final PolygonDecoration srcDec = new PolygonDecoration();
-            srcDec.setTemplate(PolygonDecoration.TRIANGLE_TIP);
-            srcDec.setFill(true);
-            srcDec.setBackgroundColor(getParent().getViewer().getControl().getBackground());
-            srcDec.setScale(10, 6);
-            conn.setSourceDecoration(srcDec);
-        }
-        if (association.getObject().getConstraintType() == DBSEntityConstraintType.FOREIGN_KEY) {
-            final CircleDecoration targetDecor = new CircleDecoration();
-            targetDecor.setRadius(3);
-            targetDecor.setFill(true);
-            targetDecor.setBackgroundColor(getParent().getViewer().getControl().getForeground());
-            //dec.setBackgroundColor(getParent().getViewer().getControl().getBackground());
-            conn.setTargetDecoration(targetDecor);
-            if (!association.isIdentifying()) {
-                final RhombusDecoration sourceDecor = new RhombusDecoration();
-                sourceDecor.setBackgroundColor(getParent().getViewer().getControl().getBackground());
-                //dec.setBackgroundColor(getParent().getViewer().getControl().getBackground());
-                conn.setSourceDecoration(sourceDecor);
-            }
-        }
+        setConnectionStyles(association, conn);
 
-        if (!association.isIdentifying() || association.isLogical()) {
-            conn.setLineStyle(SWT.LINE_CUSTOM);
-            conn.setLineDash(new float[] {5} );
-        }
-
-        //ChopboxAnchor sourceAnchor = new ChopboxAnchor(classFigure);
-        //ChopboxAnchor targetAnchor = new ChopboxAnchor(classFigure2);
-        //conn.setSourceAnchor(sourceAnchor);
-        //conn.setTargetAnchor(targetAnchor);
 
 /*
         ConnectionEndpointLocator relationshipLocator = new ConnectionEndpointLocator(conn, true);
@@ -162,17 +131,61 @@ public class AssociationPart extends PropertyAwareConnectionPart {
             }
             conn.setRoutingConstraint(bends);
         }
+        setConnectionToolTip(conn);
 
+        return conn;
+    }
+
+    protected void setConnectionStyles(ERDAssociation association, PolylineConnection conn) {
+        //conn.setLineJoin(SWT.JOIN_ROUND);
+        //conn.setConnectionRouter(new BendpointConnectionRouter());
+        //conn.setConnectionRouter(new ShortestPathConnectionRouter(conn));
+        //conn.setToolTip(new TextFlow(association.getObject().getName()));
+
+        boolean identifying = ERDUtils.isIdentifyingAssociation(association);
+
+        if (association.getObject().getConstraintType() == DBSEntityConstraintType.INHERITANCE) {
+            final PolygonDecoration srcDec = new PolygonDecoration();
+            srcDec.setTemplate(PolygonDecoration.TRIANGLE_TIP);
+            srcDec.setFill(true);
+            srcDec.setBackgroundColor(getParent().getViewer().getControl().getBackground());
+            srcDec.setScale(10, 6);
+            conn.setSourceDecoration(srcDec);
+        }
+        if (association.getObject().getConstraintType() == DBSEntityConstraintType.FOREIGN_KEY) {
+            final CircleDecoration targetDecor = new CircleDecoration();
+            targetDecor.setRadius(3);
+            targetDecor.setFill(true);
+            targetDecor.setBackgroundColor(getParent().getViewer().getControl().getForeground());
+            //dec.setBackgroundColor(getParent().getViewer().getControl().getBackground());
+            conn.setTargetDecoration(targetDecor);
+            if (!identifying) {
+                final RhombusDecoration sourceDecor = new RhombusDecoration();
+                sourceDecor.setBackgroundColor(getParent().getViewer().getControl().getBackground());
+                //dec.setBackgroundColor(getParent().getViewer().getControl().getBackground());
+                conn.setSourceDecoration(sourceDecor);
+            }
+        }
+
+        if (!identifying || association.isLogical()) {
+            conn.setLineStyle(SWT.LINE_CUSTOM);
+            conn.setLineDash(new float[] {5} );
+        }
+
+        //ChopboxAnchor sourceAnchor = new ChopboxAnchor(classFigure);
+        //ChopboxAnchor targetAnchor = new ChopboxAnchor(classFigure2);
+        //conn.setSourceAnchor(sourceAnchor);
+        //conn.setTargetAnchor(targetAnchor);
+
+    }
+
+    protected void setConnectionToolTip(PolylineConnection conn) {
         // Set tool tip
         Label toolTip = new Label(getAssociation().getObject().getName() + " [" + getAssociation().getObject().getConstraintType().getName() + "]");
         toolTip.setIcon(DBeaverIcons.getImage(DBIcon.TREE_FOREIGN_KEY));
         //toolTip.setTextPlacement(PositionConstants.SOUTH);
         //toolTip.setIconTextGap();
         conn.setToolTip(toolTip);
-
-        //conn.setMinimumSize(new Dimension(60, 20));
-
-        return conn;
     }
 
     /**
@@ -180,11 +193,19 @@ public class AssociationPart extends PropertyAwareConnectionPart {
      */
     @Override
     public void setSelected(int value) {
+        if (getSelected() == value) {
+            return;
+        }
         super.setSelected(value);
+
+        if (oldLineWidth == null) {
+            oldLineWidth = ((PolylineConnection) getFigure()).getLineWidth();
+        }
+
         if (value != EditPart.SELECTED_NONE) {
-            ((PolylineConnection) getFigure()).setLineWidth(2);
+            ((PolylineConnection) getFigure()).setLineWidth(oldLineWidth + value);
         } else {
-            ((PolylineConnection) getFigure()).setLineWidth(1);
+            ((PolylineConnection) getFigure()).setLineWidth(oldLineWidth);
         }
         if (getSource() == null || getTarget() == null) {
             // This part seems to be deleted

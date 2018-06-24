@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.ext.erd.editor.ERDViewStyle;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
@@ -183,6 +184,18 @@ public class ERDUtils
             }
         }
         return Collections.emptyList();
+    }
+
+    public static boolean isIdentifyingAssociation(ERDAssociation association) {
+        if (association.isLogical()) {
+            return false;
+        }
+        try {
+            return DBUtils.isIdentifyingAssociation(new VoidProgressMonitor(), association.getObject());
+        } catch (DBException e) {
+            log.debug(e);
+            return false;
+        }
     }
 
     public static void openObjectEditor(@NotNull ERDObject object) {

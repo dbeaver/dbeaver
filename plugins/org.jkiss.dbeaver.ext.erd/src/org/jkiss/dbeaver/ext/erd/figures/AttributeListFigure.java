@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ext.erd.figures;
 
 import org.eclipse.draw2d.*;
 import org.eclipse.draw2d.geometry.Insets;
+import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
@@ -79,7 +80,10 @@ public class AttributeListFigure extends Figure
 		@Override
         public void paint(IFigure figure, Graphics graphics, Insets insets)
 		{
-			graphics.drawLine(getPaintRectangle(figure, insets).getTopLeft(), tempRect.getTopRight());
+			Rectangle rect = getPaintRectangle(figure, insets);
+			graphics.setLineWidth(2);
+			graphics.drawLine(rect.getTopLeft(), tempRect.getTopRight());
+			//graphics.drawLine(rect.getTopLeft().x, rect.getTopLeft().y + 1, tempRect.getTopRight().x, tempRect.getTopRight().y + 1);
 		}
 	}
 }
