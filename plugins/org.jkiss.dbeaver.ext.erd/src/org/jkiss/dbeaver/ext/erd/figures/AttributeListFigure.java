@@ -83,7 +83,6 @@ public class AttributeListFigure extends Figure
 			Rectangle rect = getPaintRectangle(figure, insets);
 			graphics.setLineWidth(2);
 			graphics.drawLine(rect.getTopLeft(), tempRect.getTopRight());
-			//graphics.drawLine(rect.getTopLeft().x, rect.getTopLeft().y + 1, tempRect.getTopRight().x, tempRect.getTopRight().y + 1);
 		}
 	}
 }
