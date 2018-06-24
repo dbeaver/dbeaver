@@ -42,8 +42,10 @@ public class AttributeDragAndDropEditPolicy extends GraphicalEditPolicy {
     public Command getCommand(Request req) {
         if (RequestConstants.REQ_MOVE.equals(req.getType()) ||
             RequestConstants.REQ_CLONE.equals(req.getType()) ||
-            RequestConstants.REQ_ORPHAN.equals(req.getType())) {
-            return new AttributeCheckCommand(part, false);
+            RequestConstants.REQ_ORPHAN.equals(req.getType()))
+        {
+            // We come here if attribute target part is entity
+            return null;//new AttributeCheckCommand(part, false);
         }
         return super.getCommand(req);
     }
