@@ -25,10 +25,8 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.ext.erd.action.DiagramLayoutAction;
-import org.jkiss.dbeaver.ui.ActionUtils;
 
 /**
  * Provides a context menu for the schema diagram editor. A virtual cut and paste from the flow example

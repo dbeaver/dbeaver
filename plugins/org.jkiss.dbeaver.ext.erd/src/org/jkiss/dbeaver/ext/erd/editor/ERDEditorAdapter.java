@@ -45,10 +45,10 @@ public class ERDEditorAdapter implements IAdapterFactory {
     }
 
     @Override
-    public Object getAdapter(Object adaptableObject, Class adapterType) {
+    public <T> T getAdapter(Object adaptableObject, Class<T> adapterType) {
         if (adapterType == ERDEditorPart.class) {
             if (adaptableObject instanceof Control) {
-                return getEditor((Control) adaptableObject);
+                return adapterType.cast(getEditor((Control) adaptableObject));
             }
         }
         return null;

@@ -142,7 +142,7 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
     public void propertyChange(PropertyChangeEvent event)
     {
         if (event.getProperty().equals(IThemeManager.CHANGE_CURRENT_THEME)
-            || event.getProperty().equals("org.jkiss.dbeaver.erd.diagram.font"))
+            || event.getProperty().equals(ERDConstants.PROP_DIAGRAM_FONT))
         {
             applyThemeSettings();
         }
@@ -151,7 +151,7 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
     private void applyThemeSettings()
     {
         ITheme currentTheme = themeManager.getCurrentTheme();
-        Font erdFont = currentTheme.getFontRegistry().get("org.jkiss.dbeaver.erd.diagram.font");
+        Font erdFont = currentTheme.getFontRegistry().get(ERDConstants.PROP_DIAGRAM_FONT);
         if (erdFont != null) {
             this.getControl().setFont(erdFont);
         }
@@ -322,13 +322,8 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
         {
             // Close editor only if it is simple disconnect
             // Workbench shutdown doesn't close editor
-            UIUtils.asyncExec(new Runnable() {
-                @Override
-                public void run() {
-
-                    editor.getSite().getWorkbenchWindow().getActivePage().closeEditor(editor, false);
-                }
-            });
+            UIUtils.asyncExec(() ->
+                editor.getSite().getWorkbenchWindow().getActivePage().closeEditor(editor, false));
         }
     }
 

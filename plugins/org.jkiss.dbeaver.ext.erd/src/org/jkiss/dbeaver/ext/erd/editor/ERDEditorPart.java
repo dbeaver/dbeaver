@@ -28,8 +28,7 @@ import org.eclipse.gef.*;
 import org.eclipse.gef.commands.CommandStack;
 import org.eclipse.gef.editparts.ScalableFreeformRootEditPart;
 import org.eclipse.gef.editparts.ZoomManager;
-import org.eclipse.gef.palette.*;
-import org.eclipse.gef.requests.CreationFactory;
+import org.eclipse.gef.palette.PaletteRoot;
 import org.eclipse.gef.ui.actions.*;
 import org.eclipse.gef.ui.palette.FlyoutPaletteComposite;
 import org.eclipse.gef.ui.palette.FlyoutPaletteComposite.FlyoutPreferences;
@@ -39,7 +38,6 @@ import org.eclipse.gef.ui.parts.GraphicalViewerKeyHandler;
 import org.eclipse.gef.ui.properties.UndoablePropertySheetEntry;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -76,7 +74,6 @@ import org.jkiss.dbeaver.ext.erd.export.ERDExportFormatHandler;
 import org.jkiss.dbeaver.ext.erd.export.ERDExportFormatRegistry;
 import org.jkiss.dbeaver.ext.erd.model.ERDDecorator;
 import org.jkiss.dbeaver.ext.erd.model.ERDDecoratorDefault;
-import org.jkiss.dbeaver.ext.erd.model.ERDNote;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.model.DBPDataSourceUser;
@@ -90,7 +87,10 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.EventObject;
+import java.util.List;
 
 /**
  * Editor implementation based on the the example editor skeleton that is built in <i>Building
@@ -516,8 +516,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     @Override
     protected void updateActions(List actionIds)
     {
-        for (Iterator<?> ids = actionIds.iterator(); ids.hasNext();) {
-            IAction action = getActionRegistry().getAction(ids.next());
+        for (Object actionId : actionIds) {
+            IAction action = getActionRegistry().getAction(actionId);
             if (null != action && action instanceof UpdateAction) {
                 ((UpdateAction) action).update();
             }
