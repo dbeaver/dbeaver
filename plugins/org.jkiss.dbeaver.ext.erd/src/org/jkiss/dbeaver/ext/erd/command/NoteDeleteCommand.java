@@ -14,9 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*
- * Created on Jul 17, 2004
- */
 package org.jkiss.dbeaver.ext.erd.command;
 
 import org.eclipse.draw2d.geometry.Rectangle;

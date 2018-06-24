@@ -37,7 +37,7 @@ import org.jkiss.dbeaver.ext.erd.figures.EntityFigure;
 import org.jkiss.dbeaver.ext.erd.model.*;
 import org.jkiss.dbeaver.ext.erd.policy.EntityContainerEditPolicy;
 import org.jkiss.dbeaver.ext.erd.policy.EntityEditPolicy;
-import org.jkiss.dbeaver.ext.erd.policy.EntityNodeEditPolicy;
+import org.jkiss.dbeaver.ext.erd.policy.EntityConnectionEditPolicy;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 
@@ -87,7 +87,7 @@ public class EntityPart extends NodePart {
     protected void createEditPolicies() {
         final boolean editEnabled = isEditEnabled();
         if (editEnabled) {
-            installEditPolicy(EditPolicy.GRAPHICAL_NODE_ROLE, new EntityNodeEditPolicy());
+            installEditPolicy(EditPolicy.GRAPHICAL_NODE_ROLE, new EntityConnectionEditPolicy());
             //installEditPolicy(EditPolicy.LAYOUT_ROLE, new EntityLayoutEditPolicy());
             installEditPolicy(EditPolicy.CONTAINER_ROLE, new EntityContainerEditPolicy());
             installEditPolicy(EditPolicy.COMPONENT_ROLE, new EntityEditPolicy());

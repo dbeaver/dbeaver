@@ -65,7 +65,7 @@ public class NotePart extends NodePart
 	{
         final boolean editEnabled = isEditEnabled();
         if (editEnabled) {
-            //installEditPolicy(EditPolicy.GRAPHICAL_NODE_ROLE, new EntityNodeEditPolicy());
+            //installEditPolicy(EditPolicy.GRAPHICAL_NODE_ROLE, new EntityConnectionEditPolicy());
             //installEditPolicy(EditPolicy.LAYOUT_ROLE, new EntityLayoutEditPolicy());
             //installEditPolicy(EditPolicy.CONTAINER_ROLE, new EntityContainerEditPolicy());
             //installEditPolicy(EditPolicy.COMPONENT_ROLE, new NoteEditPolicy());

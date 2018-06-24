@@ -14,9 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*
- * Created on Jul 17, 2004
- */
 package org.jkiss.dbeaver.ext.erd.command;
 
 import org.eclipse.gef.commands.Command;
@@ -25,47 +22,43 @@ import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
 
 /**
  * Command to delete relationship
- * 
+ *
  * @author Serge Rider
  */
-public class AssociationDeleteCommand extends Command
-{
+public class AssociationDeleteCommand extends Command {
 
-	private ERDEntity foreignKeySource;
-	private ERDEntity primaryKeyTarget;
-	private ERDAssociation relationship;
+    private ERDEntity sourceEntity;
+    private ERDEntity targetEntity;
+    private ERDAssociation relationship;
 
-	public AssociationDeleteCommand(ERDEntity foreignKeySource, ERDEntity primaryKeyTarget, ERDAssociation relationship)
-	{
-		super();
-		this.foreignKeySource = foreignKeySource;
-		this.primaryKeyTarget = primaryKeyTarget;
-		this.relationship = relationship;
-	}
+    public AssociationDeleteCommand(ERDEntity sourceEntity, ERDEntity targetEntity, ERDAssociation relationship) {
+        super();
+        this.sourceEntity = sourceEntity;
+        this.targetEntity = targetEntity;
+        this.relationship = relationship;
+    }
 
-	/**
-	 * Removes the relationship
-	 */
-	@Override
-    public void execute()
-	{
-        primaryKeyTarget.removePrimaryKeyRelationship(relationship, true);
-		foreignKeySource.removeForeignKeyRelationship(relationship, true);
-		relationship.setForeignEntity(null);
-		relationship.setPrimaryEntity(null);
-	}
+    /**
+     * Removes the relationship
+     */
+    @Override
+    public void execute() {
+        targetEntity.removePrimaryKeyRelationship(relationship, true);
+        sourceEntity.removeForeignKeyRelationship(relationship, true);
+        relationship.setSourceEntity(null);
+        relationship.setTargetEntity(null);
+    }
 
-	/**
-	 * Restores the relationship
-	 */
-	@Override
-    public void undo()
-	{
-		relationship.setForeignEntity(foreignKeySource);
-		relationship.setForeignEntity(primaryKeyTarget);
-		foreignKeySource.addForeignKeyRelationship(relationship, true);
-		primaryKeyTarget.addPrimaryKeyRelationship(relationship, true);
-	}
+    /**
+     * Restores the relationship
+     */
+    @Override
+    public void undo() {
+        relationship.setSourceEntity(sourceEntity);
+        relationship.setSourceEntity(targetEntity);
+        sourceEntity.addForeignKeyRelationship(relationship, true);
+        targetEntity.addPrimaryKeyRelationship(relationship, true);
+    }
 
 }
 

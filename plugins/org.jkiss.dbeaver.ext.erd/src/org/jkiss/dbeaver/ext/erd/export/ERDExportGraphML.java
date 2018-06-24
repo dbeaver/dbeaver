@@ -220,7 +220,7 @@ public class ERDExportGraphML implements ERDExportFormatHandler
                         xml.startElement("edge");
                         xml.addAttribute("id", edgeId);
                         xml.addAttribute("source", entityMap.get(entity));
-                        xml.addAttribute("target", entityMap.get(association.getPrimaryEntity()));
+                        xml.addAttribute("target", entityMap.get(association.getTargetEntity()));
 
                         xml.startElement("data");
                         xml.addAttribute("key", "edgegraph");

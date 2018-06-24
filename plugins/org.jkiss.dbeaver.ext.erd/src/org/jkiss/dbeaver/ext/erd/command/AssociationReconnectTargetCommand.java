@@ -14,9 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*
- * Created on Jul 15, 2004
- */
 package org.jkiss.dbeaver.ext.erd.command;
 
 import org.eclipse.gef.commands.Command;
@@ -28,136 +25,66 @@ import java.util.List;
 /**
  * Command to change the primary key we are connecting to a particular foreign key
  * key
- * 
- * @author Serge Rider
  */
-public class AssociationReconnectTargetCommand extends Command
-{
+public class AssociationReconnectTargetCommand extends Command {
 
-	/** source Table * */
-	protected ERDEntity sourceForeignKey;
-	/** target Table * */
-	protected ERDEntity targetPrimaryKey;
-	/** Relationship between source and target * */
-	protected ERDAssociation relationship;
-	/** previous source prior to command execution * */
-	protected ERDEntity oldTargetPrimaryKey;
+    protected ERDEntity sourceEntity;
+    protected ERDEntity targetEntity;
+    protected ERDAssociation relationship;
+    protected ERDEntity oldTargetEntity;
 
-	/**
-	 * Makes sure that foreign key doesn't reconnect to itself or try to create
-	 * a relationship which already exists
-	 */
-	@Override
-    public boolean canExecute()
-	{
+    /**
+     * Makes sure that foreign key doesn't reconnect to itself or try to create
+     * a relationship which already exists
+     */
+    @Override
+    public boolean canExecute() {
 
-		boolean returnVal = true;
+        boolean returnVal = true;
 
-		ERDEntity foreignKeyEntity = relationship.getForeignEntity();
+        ERDEntity foreignKeyEntity = relationship.getSourceEntity();
 
-		if (foreignKeyEntity.equals(targetPrimaryKey))
-		{
-			returnVal = false;
-		}
-		else
-		{
+        if (foreignKeyEntity.equals(targetEntity)) {
+            returnVal = false;
+        } else {
 
-			List<?> relationships = targetPrimaryKey.getPrimaryKeyRelationships();
-			for (int i = 0; i < relationships.size(); i++)
-			{
+            List<ERDAssociation> relationships = targetEntity.getPrimaryKeyRelationships();
+            for (ERDAssociation relationship : relationships) {
+                if (relationship.getSourceEntity().equals(sourceEntity)
+                    && relationship.getTargetEntity().equals(targetEntity)) {
+                    returnVal = false;
+                    break;
+                }
+            }
+        }
 
-				ERDAssociation relationship = ((ERDAssociation) (relationships.get(i)));
+        return returnVal;
 
-				if (relationship.getForeignEntity().equals(sourceForeignKey)
-						&& relationship.getPrimaryEntity().equals(targetPrimaryKey))
-				{
-					returnVal = false;
-					break;
-				}
-			}
-		}
+    }
 
-		return returnVal;
+    @Override
+    public void execute() {
+        if (targetEntity != null) {
+            oldTargetEntity.removePrimaryKeyRelationship(relationship, true);
+            relationship.setTargetEntity(targetEntity);
+            targetEntity.addPrimaryKeyRelationship(relationship, true);
+        }
+    }
 
-	}
+    public void setTargetEntity(ERDEntity targetEntity) {
+        this.targetEntity = targetEntity;
+    }
 
-	/**
-	 * @see org.eclipse.gef.commands.Command#execute()
-	 */
-	@Override
-    public void execute()
-	{
-		if (targetPrimaryKey != null)
-		{
-			oldTargetPrimaryKey.removePrimaryKeyRelationship(relationship, true);
-			relationship.setPrimaryEntity(targetPrimaryKey);
-			targetPrimaryKey.addPrimaryKeyRelationship(relationship, true);
-		}
-	}
+    public void setRelationship(ERDAssociation relationship) {
+        this.relationship = relationship;
+        oldTargetEntity = relationship.getTargetEntity();
+        sourceEntity = relationship.getSourceEntity();
+    }
 
-	/**
-	 * @return Returns the sourceEntity.
-	 */
-	public ERDEntity getSourceForeignKey()
-	{
-		return sourceForeignKey;
-	}
-
-	/**
-	 * @param sourceForeignKey
-	 *            The sourceEntity to set.
-	 */
-	public void setSourceForeignKey(ERDEntity sourceForeignKey)
-	{
-		this.sourceForeignKey = sourceForeignKey;
-	}
-
-	/**
-	 * @return Returns the targetEntity.
-	 */
-	public ERDEntity getTargetPrimaryKey()
-	{
-		return targetPrimaryKey;
-	}
-
-	/**
-	 * @param targetPrimaryKey
-	 *            The targetEntity to set.
-	 */
-	public void setTargetPrimaryKey(ERDEntity targetPrimaryKey)
-	{
-		this.targetPrimaryKey = targetPrimaryKey;
-	}
-
-	/**
-	 * @return Returns the relationship.
-	 */
-	public ERDAssociation getRelationship()
-	{
-		return relationship;
-	}
-
-	/**
-	 * Sets the Relationship associated with this
-	 * 
-	 * @param relationship
-	 *            the Relationship
-	 */
-	public void setRelationship(ERDAssociation relationship)
-	{
-		this.relationship = relationship;
-		oldTargetPrimaryKey = relationship.getPrimaryEntity();
-		sourceForeignKey = relationship.getForeignEntity();
-	}
-
-	/**
-	 * @see org.eclipse.gef.commands.Command#undo()
-	 */
-	@Override
-    public void undo()
-	{
-		targetPrimaryKey.removePrimaryKeyRelationship(relationship, true);
-		relationship.setPrimaryEntity(oldTargetPrimaryKey);
-		oldTargetPrimaryKey.addPrimaryKeyRelationship(relationship, true);
-	}
+    @Override
+    public void undo() {
+        targetEntity.removePrimaryKeyRelationship(relationship, true);
+        relationship.setTargetEntity(oldTargetEntity);
+        oldTargetEntity.addPrimaryKeyRelationship(relationship, true);
+    }
 }

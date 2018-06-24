@@ -14,9 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*
- * Created on Jul 17, 2004
- */
 package org.jkiss.dbeaver.ext.erd.command;
 
 import org.eclipse.draw2d.geometry.Rectangle;
@@ -61,7 +58,7 @@ public class EntityDeleteCommand extends Command
 		for (int i = 0; i < foreignKeyRelationships.size(); i++)
 		{
 			ERDAssociation r = foreignKeyRelationships.get(i);
-			r.getPrimaryEntity().removePrimaryKeyRelationship(r, true);
+			r.getTargetEntity().removePrimaryKeyRelationship(r, true);
 			t.removeForeignKeyRelationship(r, true);
 		}
 
@@ -70,7 +67,7 @@ public class EntityDeleteCommand extends Command
 		for (int i = 0; i < primaryKeyRelationships.size(); i++)
 		{
 			ERDAssociation r = primaryKeyRelationships.get(i);
-			r.getForeignEntity().removeForeignKeyRelationship(r, true);
+			r.getSourceEntity().removeForeignKeyRelationship(r, true);
 			t.removePrimaryKeyRelationship(r, true);
 		}
 	}
@@ -115,15 +112,15 @@ public class EntityDeleteCommand extends Command
 		for (int i = 0; i < foreignKeyRelationships.size(); i++)
 		{
 			ERDAssociation r = foreignKeyRelationships.get(i);
-			r.getForeignEntity().addForeignKeyRelationship(r, true);
-			r.getPrimaryEntity().addPrimaryKeyRelationship(r, true);
+			r.getSourceEntity().addForeignKeyRelationship(r, true);
+			r.getTargetEntity().addPrimaryKeyRelationship(r, true);
 		}
 		foreignKeyRelationships.clear();
 		for (int i = 0; i < primaryKeyRelationships.size(); i++)
 		{
 			ERDAssociation r = primaryKeyRelationships.get(i);
-			r.getForeignEntity().addForeignKeyRelationship(r, true);
-			r.getPrimaryEntity().addPrimaryKeyRelationship(r, true);
+			r.getSourceEntity().addForeignKeyRelationship(r, true);
+			r.getTargetEntity().addPrimaryKeyRelationship(r, true);
 		}
 		primaryKeyRelationships.clear();
 	}

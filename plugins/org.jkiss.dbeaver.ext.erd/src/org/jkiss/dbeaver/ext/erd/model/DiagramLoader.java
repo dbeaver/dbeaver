@@ -538,14 +538,14 @@ public class DiagramLoader
                         xml.addAttribute(ATTR_FQ_NAME, ((DBPQualifiedObject) association).getFullyQualifiedName(DBPEvaluationContext.UI));
                     }
                     xml.addAttribute(ATTR_TYPE, association.getConstraintType().getId());
-                    TableSaveInfo pkInfo = infoMap.get(rel.getPrimaryEntity());
+                    TableSaveInfo pkInfo = infoMap.get(rel.getTargetEntity());
                     if (pkInfo == null) {
-                        log.error("Cannot find PK table '" + DBUtils.getObjectFullName(rel.getPrimaryEntity().getObject(), DBPEvaluationContext.UI) + "' in info map");
+                        log.error("Cannot find PK table '" + DBUtils.getObjectFullName(rel.getTargetEntity().getObject(), DBPEvaluationContext.UI) + "' in info map");
                         continue;
                     }
-                    TableSaveInfo fkInfo = infoMap.get(rel.getForeignEntity());
+                    TableSaveInfo fkInfo = infoMap.get(rel.getSourceEntity());
                     if (fkInfo == null) {
-                        log.error("Cannot find FK table '" + DBUtils.getObjectFullName(rel.getForeignEntity().getObject(), DBPEvaluationContext.UI) + "' in info map");
+                        log.error("Cannot find FK table '" + DBUtils.getObjectFullName(rel.getSourceEntity().getObject(), DBPEvaluationContext.UI) + "' in info map");
                         continue;
                     }
                     xml.addAttribute(ATTR_PK_REF, pkInfo.objectId);

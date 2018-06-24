@@ -37,8 +37,8 @@ public class AssociationEditPolicy extends ComponentEditPolicy
     protected Command createDeleteCommand(GroupRequest request)
 	{
 		ERDAssociation relationship = (ERDAssociation) getHost().getModel();
-		ERDEntity primaryKeyTarget = relationship.getPrimaryEntity();
-		ERDEntity foreignKeySource = relationship.getForeignEntity();
+		ERDEntity primaryKeyTarget = relationship.getTargetEntity();
+		ERDEntity foreignKeySource = relationship.getSourceEntity();
 		AssociationDeleteCommand deleteCmd = new AssociationDeleteCommand(foreignKeySource, primaryKeyTarget, relationship);
 		return deleteCmd;
 	}

@@ -14,9 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*
- * Created on Jul 17, 2004
- */
 package org.jkiss.dbeaver.ext.erd.command;
 
 import org.eclipse.gef.commands.Command;
@@ -26,35 +23,32 @@ import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
 import java.util.List;
 
 /**
- * Command to delete relationship
- *
- * @author Serge Rider
+ * Command to create association
  */
 public class AssociationCreateCommand extends Command {
 
     protected ERDAssociation association;
-    protected ERDEntity foreignEntity;
-    protected ERDEntity primaryEntity;
+    protected ERDEntity sourceEntity;
+    protected ERDEntity targetEntity;
 
     public AssociationCreateCommand() {
     }
 
     @Override
-    public boolean canExecute()
-    {
+    public boolean canExecute() {
 
         boolean returnValue = true;
-        if (foreignEntity.equals(primaryEntity)) {
+        if (sourceEntity.equals(targetEntity)) {
             returnValue = false;
         } else {
 
-            if (primaryEntity == null) {
+            if (targetEntity == null) {
                 return false;
             } else {
                 // Check for existence of relationship already
-                List<ERDAssociation> relationships = primaryEntity.getPrimaryKeyRelationships();
+                List<ERDAssociation> relationships = targetEntity.getPrimaryKeyRelationships();
                 for (ERDAssociation currentRelationship : relationships) {
-                    if (currentRelationship.getForeignEntity().equals(foreignEntity)) {
+                    if (currentRelationship.getSourceEntity().equals(sourceEntity)) {
                         returnValue = false;
                         break;
                     }
@@ -67,53 +61,48 @@ public class AssociationCreateCommand extends Command {
     }
 
     @Override
-    public void execute()
-    {
-        association = new ERDAssociation(foreignEntity, primaryEntity, true);
+    public void execute() {
+        association = createAssociation(sourceEntity, targetEntity, true);
     }
 
-    public ERDEntity getForeignEntity()
-    {
-        return foreignEntity;
+    public ERDEntity getSourceEntity() {
+        return sourceEntity;
     }
 
-    public void setForeignEntity(ERDEntity foreignEntity)
-    {
-        this.foreignEntity = foreignEntity;
+    public void setSourceEntity(ERDEntity sourceEntity) {
+        this.sourceEntity = sourceEntity;
     }
 
-    public ERDEntity getPrimaryEntity()
-    {
-        return primaryEntity;
+    public ERDEntity getTargetEntity() {
+        return targetEntity;
     }
 
-    public void setPrimaryEntity(ERDEntity primaryEntity)
-    {
-        this.primaryEntity = primaryEntity;
+    public void setTargetEntity(ERDEntity targetEntity) {
+        this.targetEntity = targetEntity;
     }
 
-    public ERDAssociation getAssociation()
-    {
+    public ERDAssociation getAssociation() {
         return association;
     }
 
-    public void setAssociation(ERDAssociation association)
-    {
+    public void setAssociation(ERDAssociation association) {
         this.association = association;
     }
 
     @Override
-    public void redo()
-    {
-        foreignEntity.addForeignKeyRelationship(association, true);
-        primaryEntity.addPrimaryKeyRelationship(association, true);
+    public void redo() {
+        sourceEntity.addForeignKeyRelationship(association, true);
+        targetEntity.addPrimaryKeyRelationship(association, true);
     }
 
     @Override
-    public void undo()
-    {
-        foreignEntity.removeForeignKeyRelationship(association, true);
-        primaryEntity.removePrimaryKeyRelationship(association, true);
+    public void undo() {
+        sourceEntity.removeForeignKeyRelationship(association, true);
+        targetEntity.removePrimaryKeyRelationship(association, true);
+    }
+
+    protected ERDAssociation createAssociation(ERDEntity sourceEntity, ERDEntity targetEntity, boolean reflect) {
+        return new ERDAssociation(sourceEntity, targetEntity, true);
     }
 
 }

@@ -16,8 +16,10 @@
  */
 package org.jkiss.dbeaver.ext.erd.model;
 
+import org.eclipse.gef.EditPart;
 import org.eclipse.gef.EditPartFactory;
 import org.eclipse.gef.palette.PaletteRoot;
+import org.jkiss.dbeaver.ext.erd.part.EntityPart;
 
 /**
  * ERD object adapter
@@ -29,4 +31,5 @@ public interface ERDDecorator {
     EditPartFactory createPartFactory();
 
     void fillPalette(PaletteRoot paletteRoot, boolean readOnly);
+
 }

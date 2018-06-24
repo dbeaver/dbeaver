@@ -130,7 +130,7 @@ public class EntityDiagram extends ERDObject<DBSObject> {
 
         if (reflect) {
             for (ERDAssociation rel : entity.getPrimaryKeyRelationships()) {
-                rel.getForeignEntity().firePropertyChange(OUTPUT, null, rel);
+                rel.getSourceEntity().firePropertyChange(OUTPUT, null, rel);
             }
         }
     }
@@ -317,7 +317,7 @@ public class EntityDiagram extends ERDObject<DBSObject> {
 
     public void addInitRelationBends(ERDEntity sourceEntity, ERDEntity targetEntity, String relName, List<Point> bends) {
         for (ERDAssociation rel : sourceEntity.getPrimaryKeyRelationships()) {
-            if (rel.getForeignEntity() == targetEntity && relName.equals(rel.getObject().getName())) {
+            if (rel.getSourceEntity() == targetEntity && relName.equals(rel.getObject().getName())) {
                 rel.setInitBends(bends);
             }
         }
