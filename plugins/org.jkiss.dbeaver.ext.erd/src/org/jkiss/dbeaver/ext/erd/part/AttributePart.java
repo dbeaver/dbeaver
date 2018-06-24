@@ -24,10 +24,10 @@ import org.eclipse.draw2d.Label;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.gef.*;
 import org.eclipse.gef.tools.DirectEditManager;
+import org.eclipse.gef.tools.DragEditPartsTracker;
 import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
-import org.eclipse.wst.xsd.ui.internal.design.editpolicies.DragAndDropEditPolicy;
 import org.jkiss.dbeaver.ext.erd.ERDMessages;
 import org.jkiss.dbeaver.ext.erd.directedit.ColumnNameTypeCellEditorValidator;
 import org.jkiss.dbeaver.ext.erd.directedit.ExtendedDirectEditManager;
@@ -36,12 +36,11 @@ import org.jkiss.dbeaver.ext.erd.directedit.ValidationMessageHandler;
 import org.jkiss.dbeaver.ext.erd.editor.ERDGraphicalViewer;
 import org.jkiss.dbeaver.ext.erd.figures.AttributeItemFigure;
 import org.jkiss.dbeaver.ext.erd.figures.EditableLabel;
+import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
 import org.jkiss.dbeaver.ext.erd.model.ERDEntityAttribute;
 import org.jkiss.dbeaver.ext.erd.model.ERDUtils;
-import org.jkiss.dbeaver.ext.erd.policy.AttributeContainerEditPolicy;
-import org.jkiss.dbeaver.ext.erd.policy.AttributeDragAndDropEditPolicy;
-import org.jkiss.dbeaver.ext.erd.policy.AttributeEditPolicy;
 import org.jkiss.dbeaver.ext.erd.policy.AttributeDirectEditPolicy;
+import org.jkiss.dbeaver.ext.erd.policy.AttributeEditPolicy;
 
 import java.beans.PropertyChangeEvent;
 import java.util.Map;
@@ -53,7 +52,7 @@ import java.util.Map;
  */
 public class AttributePart extends PropertyAwarePart {
 
-    public static final String PROP_CHECKED = "NAME";
+    public static final String PROP_CHECKED = "CHECKED";
 
     public AttributePart() {
     }
@@ -61,6 +60,14 @@ public class AttributePart extends PropertyAwarePart {
     @Override
     public boolean isSelectable() {
         return true;
+    }
+
+    public ERDEntityAttribute getAttribute() {
+        return (ERDEntityAttribute) getModel();
+    }
+
+    public ERDEntity getEntity() {
+        return (ERDEntity) getParent().getModel();
     }
 
     /**
@@ -95,9 +102,8 @@ public class AttributePart extends PropertyAwarePart {
     protected void createEditPolicies() {
         if (isEditEnabled()) {
             installEditPolicy(EditPolicy.COMPONENT_ROLE, new AttributeEditPolicy());
-            installEditPolicy(EditPolicy.CONTAINER_ROLE, new AttributeContainerEditPolicy());
+            //installEditPolicy(EditPolicy.CONTAINER_ROLE, new AttributeContainerEditPolicy());
             installEditPolicy(EditPolicy.DIRECT_EDIT_ROLE, new AttributeDirectEditPolicy());
-            installEditPolicy(EditPolicy.PRIMARY_DRAG_ROLE, new AttributeDragAndDropEditPolicy(this));
             //installEditPolicy(EditPolicy.LAYOUT_ROLE, null);
         }
     }
@@ -189,19 +195,17 @@ public class AttributePart extends PropertyAwarePart {
         getFigure().getLabel().setText(column.getLabelText());
     }
 
-    public ERDEntityAttribute getAttribute() {
-        return (ERDEntityAttribute) getModel();
-    }
-
     @Override
     public DragTracker getDragTracker(Request request) {
-        return super.getDragTracker(request);
+        DragEditPartsTracker dragTracker = new DragEditPartsTracker(this);
+        dragTracker.setDefaultCursor(SharedCursors.CURSOR_TREE_MOVE);
+        return dragTracker;
     }
 
     @Override
     public EditPart getTargetEditPart(Request request) {
         if (RequestConstants.REQ_MOVE.equals(request.getType()) || RequestConstants.REQ_ADD.equals(request.getType())) {
-            return getParent();
+            return this;
         }
         return super.getTargetEditPart(request);
     }

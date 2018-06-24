@@ -27,26 +27,25 @@ import org.eclipse.gef.requests.GroupRequest;
 
 /**
  * Edit policy for attribute container
- * 
+ *
  * @author Serge Rider
  */
-public class AttributeContainerEditPolicy extends ContainerEditPolicy
-{
-	@Override
-	protected Command getAddCommand(GroupRequest request) {
-		return super.getAddCommand(request);
-	}
+public class AttributeContainerEditPolicy extends ContainerEditPolicy {
 
-	@Override
-	protected Command getCloneCommand(ChangeBoundsRequest request) {
-		return super.getCloneCommand(request);
-	}
+    @Override
+    protected Command getAddCommand(GroupRequest request) {
+        return super.getAddCommand(request);
+    }
 
-	@Override
-    protected Command getCreateCommand(CreateRequest request)
-	{
+    @Override
+    protected Command getCloneCommand(ChangeBoundsRequest request) {
+        return super.getCloneCommand(request);
+    }
+
+    @Override
+    protected Command getCreateCommand(CreateRequest request) {
 /*
-		Object newObject = request.getNewObject();
+        Object newObject = request.getNewObject();
 		if (!(newObject instanceof ERDEntityAttribute))
 		{
 			return null;
@@ -61,6 +60,6 @@ public class AttributeContainerEditPolicy extends ContainerEditPolicy
 		return command;
 */
         return null;
-	}
+    }
 
 }
