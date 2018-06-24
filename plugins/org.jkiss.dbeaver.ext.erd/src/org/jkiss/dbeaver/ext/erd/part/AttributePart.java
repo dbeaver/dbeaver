@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.ext.erd.editor.ERDGraphicalViewer;
 import org.jkiss.dbeaver.ext.erd.figures.AttributeItemFigure;
 import org.jkiss.dbeaver.ext.erd.figures.EditableLabel;
 import org.jkiss.dbeaver.ext.erd.model.ERDEntityAttribute;
+import org.jkiss.dbeaver.ext.erd.model.ERDObject;
 import org.jkiss.dbeaver.ext.erd.model.ERDUtils;
 
 import java.beans.PropertyChangeEvent;
@@ -49,7 +50,10 @@ import java.beans.PropertyChangeEvent;
  */
 public class AttributePart extends PropertyAwarePart {
 
-    protected DirectEditManager manager;
+    public static final String PROP_CHECKED = "NAME";
+
+    public AttributePart() {
+    }
 
     @Override
     public boolean isSelectable() {
@@ -112,17 +116,16 @@ public class AttributePart extends PropertyAwarePart {
     }
 
     protected void performDirectEdit() {
-        if (manager == null) {
-            ERDGraphicalViewer viewer = (ERDGraphicalViewer) getViewer();
-            ValidationMessageHandler handler = viewer.getValidationHandler();
+        ERDGraphicalViewer viewer = (ERDGraphicalViewer) getViewer();
+        ValidationMessageHandler handler = viewer.getValidationHandler();
 
-            Label l = getFigure().getLabel();
-            ColumnNameTypeCellEditorValidator columnNameTypeCellEditorValidator = new ColumnNameTypeCellEditorValidator(
-                    handler);
+        Label l = getFigure().getLabel();
+        ColumnNameTypeCellEditorValidator columnNameTypeCellEditorValidator = new ColumnNameTypeCellEditorValidator(
+                handler);
 
-            manager = new ExtendedDirectEditManager(this, TextCellEditor.class, new LabelCellEditorLocator(l), l,
-                    columnNameTypeCellEditorValidator);
-        }
+        DirectEditManager manager = new ExtendedDirectEditManager(this, TextCellEditor.class, new LabelCellEditorLocator(l), l,
+                columnNameTypeCellEditorValidator);
+
         manager.show();
     }
 

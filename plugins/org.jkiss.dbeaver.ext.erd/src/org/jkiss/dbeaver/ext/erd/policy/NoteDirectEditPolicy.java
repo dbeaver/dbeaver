@@ -57,9 +57,6 @@ public class NoteDirectEditPolicy extends DirectEditPolicy {
         oldValue = (String) cellEditor.getValue();
     }
 
-    /**
-     * @param request
-     */
     @Override
     protected void revertOldEditValue(DirectEditRequest request) {
         CellEditor cellEditor = request.getCellEditor();
