@@ -39,6 +39,7 @@ public class ERDEntity extends ERDObject<DBSEntity> {
 
     static final Log log = Log.getLog(ERDEntity.class);
 
+    private String alias;
     private List<ERDEntityAttribute> attributes;
 
     private List<ERDAssociation> primaryKeyRelationships;
@@ -47,8 +48,16 @@ public class ERDEntity extends ERDObject<DBSEntity> {
 
     private boolean primary = false;
 
-    public ERDEntity(DBSEntity dbsTable) {
-        super(dbsTable);
+    public ERDEntity(DBSEntity entity) {
+        super(entity);
+    }
+
+    public String getAlias() {
+        return alias;
+    }
+
+    public void setAlias(String alias) {
+        this.alias = alias;
     }
 
     public void addAttribute(ERDEntityAttribute attribute, boolean reflect) {
