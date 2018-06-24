@@ -30,13 +30,11 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
  * @author Serge Rider
  */
 public class ERDEntityAttribute extends ERDObject<DBSEntityAttribute> {
-    private ERDEntity entity;
     private boolean inPrimaryKey;
     private boolean inForeignKey;
 
-    public ERDEntityAttribute(ERDEntity entity, DBSEntityAttribute attribute, boolean inPrimaryKey) {
+    public ERDEntityAttribute(DBSEntityAttribute attribute, boolean inPrimaryKey) {
         super(attribute);
-        this.entity = entity;
         this.inPrimaryKey = inPrimaryKey;
     }
 

@@ -136,6 +136,8 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
                 public EntityDiagram evaluate(DBRProgressMonitor monitor)
                     throws InvocationTargetException, InterruptedException
                 {
+                    // Do not refresh actual metadata. It is slow and it may corrupt diagram state
+/*
                     if (refreshMetadata && object instanceof DBPRefreshableObject) {
                         try {
                             getEditorInput().getNavigatorNode().refreshNode(monitor, ERDEditorEmbedded.this);
@@ -143,6 +145,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
                             log.warn("Error refreshing database metadata", e);
                         }
                     }
+*/
                     try {
                         return loadFromDatabase(monitor);
                     } catch (DBException e) {

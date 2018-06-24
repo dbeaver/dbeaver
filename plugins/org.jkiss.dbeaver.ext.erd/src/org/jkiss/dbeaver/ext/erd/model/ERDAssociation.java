@@ -20,9 +20,13 @@ import org.eclipse.draw2d.geometry.Point;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttributeRef;
+import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKeyColumn;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -56,7 +60,7 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
             sourceEntity,
             sourceEntity.getObject().getName() + " -> " + targetEntity.getObject().getName(),
             "",
-            new ERDLogicalPrimaryKey(targetEntity, "Primary key", "")));
+            new ERDLogicalPrimaryKey(targetEntity, "Logical primary key", "")));
         this.targetEntity = targetEntity;
         this.sourceEntity = sourceEntity;
         this.targetEntity.addPrimaryKeyRelationship(this, reflect);
@@ -65,19 +69,58 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
 
     /**
      * Constructor for physical association
-     * @param object physical FK
+     * @param association physical FK
      * @param sourceEntity fk table
      * @param targetEntity pk table
      * @param reflect reflect flag
      */
-	public ERDAssociation(DBSEntityAssociation object, ERDEntity sourceEntity, ERDEntity targetEntity, boolean reflect)
+	public ERDAssociation(DBSEntityAssociation association, ERDEntity sourceEntity, ERDEntity targetEntity, boolean reflect)
 	{
-		super(object);
+		super(association);
 		this.targetEntity = targetEntity;
 		this.sourceEntity = sourceEntity;
+
+		// Resolve association attributes
+        if (association instanceof DBSEntityReferrer) {
+            resolveAttributes((DBSEntityReferrer) association, sourceEntity, targetEntity);
+        }
+
         this.targetEntity.addPrimaryKeyRelationship(this, reflect);
         this.sourceEntity.addForeignKeyRelationship(this, reflect);
 	}
+
+    private void resolveAttributes(DBSEntityReferrer association, ERDEntity sourceEntity, ERDEntity targetEntity) {
+        try {
+            List<? extends DBSEntityAttributeRef> attrRefs = association.getAttributeReferences(new VoidProgressMonitor());
+
+            if (!CommonUtils.isEmpty(attrRefs)) {
+                for (DBSEntityAttributeRef attrRef : attrRefs) {
+                    if (attrRef instanceof DBSTableForeignKeyColumn) {
+                        DBSEntityAttribute sourceAttr = ((DBSTableForeignKeyColumn) attrRef).getReferencedColumn();
+                        DBSEntityAttribute targetAttr = attrRef.getAttribute();
+                        if (sourceAttr != null && targetAttr != null) {
+                            ERDEntityAttribute erdSourceAttr = getAttributeByModel(sourceEntity, sourceAttr);
+                            ERDEntityAttribute erdTargetAttr = getAttributeByModel(targetEntity, targetAttr);
+                            if (erdSourceAttr != null && erdTargetAttr != null) {
+                                addCondition(erdSourceAttr, erdTargetAttr);
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (DBException e) {
+            log.error("Error resolving ERD association attributes", e);
+        }
+    }
+
+    private static ERDEntityAttribute getAttributeByModel(ERDEntity entity, DBSEntityAttribute attr) {
+	    for (ERDEntityAttribute erdAttr : entity.getAttributes()) {
+	        if (erdAttr.getObject() == attr) {
+	            return erdAttr;
+            }
+        }
+        return null;
+    }
 
     public boolean isLogical()
     {
