@@ -67,6 +67,12 @@ public class ERDUtils
 
     public static ERDEntity makeEntityFromObject(DBRProgressMonitor monitor, EntityDiagram diagram, DBSEntity entity) {
         ERDEntity erdEntity = new ERDEntity(entity);
+        fillEntityFromObject(monitor, diagram, erdEntity);
+        return erdEntity;
+    }
+
+    public static void fillEntityFromObject(DBRProgressMonitor monitor, EntityDiagram diagram, ERDEntity erdEntity) {
+        DBSEntity entity = erdEntity.getObject();
         ERDAttributeVisibility attributeVisibility = diagram.getAttributeVisibility();
         if (attributeVisibility != ERDAttributeVisibility.NONE) {
             Set<DBSEntityAttribute> keyColumns = null;
@@ -139,7 +145,6 @@ public class ERDUtils
                 log.debug("Can't load table '" + entity.getName() + "'attributes", e);
             }
         }
-        return erdEntity;
     }
 
     @NotNull
