@@ -68,7 +68,7 @@ public class ERDEditorContextMenuProvider extends ContextMenuProvider {
 
             menu.add(new Separator("org.eclipse.gef.group.undo"));
             menu.add(new Separator("org.eclipse.gef.group.copy"));
-            menu.add(ActionUtils.makeCommandContribution(editor.getSite(), IWorkbenchCommandConstants.EDIT_COPY));
+            //menu.add(ActionUtils.makeCommandContribution(editor.getSite(), IWorkbenchCommandConstants.EDIT_COPY));
 
             menu.add(new Separator("org.eclipse.gef.group.print"));
             menu.add(new Separator("org.eclipse.gef.group.edit"));
