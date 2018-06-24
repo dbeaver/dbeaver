@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -35,7 +36,6 @@ public class ERDLogicalAssociation implements DBSEntityAssociation, DBSEntityRef
     private String name;
     private String description;
     private ERDLogicalPrimaryKey pk;
-    private List<? extends DBSEntityAttributeRef> attributes = new ArrayList<>();
 
     public ERDLogicalAssociation(ERDEntity entity, String name, String description, ERDLogicalPrimaryKey pk)
     {
@@ -102,6 +102,6 @@ public class ERDLogicalAssociation implements DBSEntityAssociation, DBSEntityRef
     @Override
     public List<? extends DBSEntityAttributeRef> getAttributeReferences(DBRProgressMonitor monitor)
     {
-        return attributes;
+        return Collections.emptyList();
     }
 }

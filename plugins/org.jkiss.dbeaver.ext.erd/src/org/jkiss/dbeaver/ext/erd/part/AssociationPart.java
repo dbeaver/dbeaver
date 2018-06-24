@@ -30,6 +30,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
+import org.jkiss.dbeaver.ext.erd.model.ERDEntityAttribute;
 import org.jkiss.dbeaver.ext.erd.model.ERDUtils;
 import org.jkiss.dbeaver.ext.erd.policy.AssociationBendEditPolicy;
 import org.jkiss.dbeaver.ext.erd.policy.AssociationEditPolicy;
@@ -212,33 +213,24 @@ public class AssociationPart extends PropertyAwareConnectionPart {
             return;
         }
 
-        DBSEntityAssociation association = getAssociation().getObject();
-        if (association instanceof DBSEntityReferrer && association.getReferencedConstraint() instanceof DBSEntityReferrer) {
-            List<AttributePart> sourceAttributes = getEntityAttributes(
-                (EntityPart)getSource(),
-                DBUtils.getEntityAttributes(new VoidProgressMonitor(), (DBSEntityReferrer) association.getReferencedConstraint()));
-            List<AttributePart> targetAttributes = getEntityAttributes(
-                (EntityPart)getTarget(),
-                DBUtils.getEntityAttributes(new VoidProgressMonitor(), (DBSEntityReferrer) association));
-            Color columnColor = value != EditPart.SELECTED_NONE ? Display.getDefault().getSystemColor(SWT.COLOR_RED) : getViewer().getControl().getForeground();
-            for (AttributePart attr : sourceAttributes) {
-                attr.getFigure().setForegroundColor(columnColor);
-            }
-            for (AttributePart attr : targetAttributes) {
-                attr.getFigure().setForegroundColor(columnColor);
-            }
+        Color columnColor = value != EditPart.SELECTED_NONE ? Display.getDefault().getSystemColor(SWT.COLOR_RED) : getViewer().getControl().getForeground();
+        for (AttributePart attrPart : getEntityAttributes((EntityPart)getSource(), getAssociation().getSourceAttributes())) {
+            attrPart.getFigure().setForegroundColor(columnColor);
+        }
+        for (AttributePart attrPart : getEntityAttributes((EntityPart)getTarget(), getAssociation().getTargetAttributes())) {
+            attrPart.getFigure().setForegroundColor(columnColor);
         }
     }
 
-    private List<AttributePart> getEntityAttributes(EntityPart source, Collection<? extends DBSEntityAttribute> columns)
+    private List<AttributePart> getEntityAttributes(EntityPart source, List<ERDEntityAttribute> columns)
     {
-        List<AttributePart> erdColumns = new ArrayList<>(source.getChildren());
-        for (Iterator<AttributePart> iter = erdColumns.iterator(); iter.hasNext(); ) {
-            if (!columns.contains(iter.next().getAttribute().getObject())) {
-                iter.remove();
+        List<AttributePart> result = new ArrayList<>();
+        for (AttributePart attrPart : (List<AttributePart>)source.getChildren()) {
+            if (columns.contains(attrPart.getAttribute())) {
+                result.add(attrPart);
             }
         }
-        return erdColumns;
+        return result;
     }
 
     @Override
