@@ -233,13 +233,15 @@ public class ERDExportGraphML implements ERDExportFormatHandler
                             xml.endElement();
                         }
                         xml.endElement();
+
+                        boolean identifying = ERDUtils.isIdentifyingAssociation(association);
                         xml.startElement("y:LineStyle");
                         xml.addAttribute("color", "#000000");
-                        xml.addAttribute("type", !association.isIdentifying() || association.isLogical() ? "dashed" : "line");
+                        xml.addAttribute("type", !identifying || association.isLogical() ? "dashed" : "line");
                         xml.addAttribute("width", "1.0");
                         xml.endElement();
                         xml.startElement("y:Arrows");
-                        String sourceStyle = !association.isIdentifying() ? "white_diamond" : "none";
+                        String sourceStyle = !identifying ? "white_diamond" : "none";
                         xml.addAttribute("source", sourceStyle);
                         xml.addAttribute("target", "circle");
                         xml.endElement();
