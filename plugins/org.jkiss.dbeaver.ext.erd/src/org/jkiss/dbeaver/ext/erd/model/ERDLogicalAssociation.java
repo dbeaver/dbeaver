@@ -35,7 +35,7 @@ public class ERDLogicalAssociation implements DBSEntityAssociation, DBSEntityRef
     private String name;
     private String description;
     private ERDLogicalPrimaryKey pk;
-    private List<? extends DBSEntityAttributeRef> columns = new ArrayList<>();
+    private List<? extends DBSEntityAttributeRef> attributes = new ArrayList<>();
 
     public ERDLogicalAssociation(ERDEntity entity, String name, String description, ERDLogicalPrimaryKey pk)
     {
@@ -102,6 +102,6 @@ public class ERDLogicalAssociation implements DBSEntityAssociation, DBSEntityRef
     @Override
     public List<? extends DBSEntityAttributeRef> getAttributeReferences(DBRProgressMonitor monitor)
     {
-        return columns;
+        return attributes;
     }
 }

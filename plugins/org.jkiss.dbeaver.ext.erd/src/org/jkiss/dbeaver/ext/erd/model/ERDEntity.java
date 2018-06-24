@@ -162,7 +162,7 @@ public class ERDEntity extends ERDObject<DBSEntity> {
     public boolean hasSelfLinks() {
         if (foreignKeyRelationships != null) {
             for (ERDAssociation association : foreignKeyRelationships) {
-                if (association.getPrimaryEntity() == this) {
+                if (association.getTargetEntity() == this) {
                     return true;
                 }
             }

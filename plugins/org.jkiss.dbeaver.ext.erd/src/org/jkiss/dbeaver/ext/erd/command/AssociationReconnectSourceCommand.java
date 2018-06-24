@@ -14,9 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*
- * Created on Jul 15, 2004
- */
 package org.jkiss.dbeaver.ext.erd.command;
 
 import org.eclipse.gef.commands.Command;
@@ -47,17 +44,17 @@ public class AssociationReconnectSourceCommand extends Command {
 
         boolean returnVal = true;
 
-        ERDEntity primaryKeyEntity = association.getPrimaryEntity();
+        ERDEntity primaryEntity = association.getTargetEntity();
 
         //cannot connect to itself
-        if (primaryKeyEntity.equals(sourceEntity)) {
+        if (primaryEntity.equals(sourceEntity)) {
             returnVal = false;
         } else {
 
             List<ERDAssociation> relationships = sourceEntity.getForeignKeyRelationships();
             for (ERDAssociation relationship : relationships) {
-                if (relationship.getPrimaryEntity().equals(targetEntity) &&
-                    relationship.getForeignEntity().equals(sourceEntity)) {
+                if (relationship.getTargetEntity().equals(targetEntity) &&
+                    relationship.getSourceEntity().equals(sourceEntity)) {
                     returnVal = false;
                     break;
                 }
@@ -68,71 +65,33 @@ public class AssociationReconnectSourceCommand extends Command {
 
     }
 
-    /**
-     * @see org.eclipse.gef.commands.Command#execute()
-     */
     @Override
     public void execute() {
         if (sourceEntity != null) {
             oldSourceEntity.removeForeignKeyRelationship(association, true);
-            association.setForeignEntity(sourceEntity);
+            association.setSourceEntity(sourceEntity);
             sourceEntity.addForeignKeyRelationship(association, true);
         }
     }
 
-    /**
-     * @return Returns the sourceEntity.
-     */
-    public ERDEntity getSourceEntity() {
-        return sourceEntity;
-    }
-
-    /**
-     * @param sourceEntity The sourceEntity to set.
-     */
     public void setSourceEntity(ERDEntity sourceEntity) {
         this.sourceEntity = sourceEntity;
     }
 
-    /**
-     * @return Returns the targetEntity.
-     */
-    public ERDEntity getTargetEntity() {
-        return targetEntity;
-    }
-
-    /**
-     * @param targetEntity The targetEntity to set.
-     */
-    public void setTargetEntity(ERDEntity targetEntity) {
-        this.targetEntity = targetEntity;
-    }
-
-    /**
-     * @return Returns the relationship.
-     */
     public ERDAssociation getAssociation() {
         return association;
     }
 
-    /**
-     * Sets the Relationship associated with this
-     *
-     * @param association the Relationship
-     */
     public void setAssociation(ERDAssociation association) {
         this.association = association;
-        targetEntity = association.getPrimaryEntity();
-        oldSourceEntity = association.getForeignEntity();
+        targetEntity = association.getTargetEntity();
+        oldSourceEntity = association.getSourceEntity();
     }
 
-    /**
-     * @see org.eclipse.gef.commands.Command#undo()
-     */
     @Override
     public void undo() {
         sourceEntity.removeForeignKeyRelationship(association, true);
-        association.setForeignEntity(oldSourceEntity);
+        association.setSourceEntity(oldSourceEntity);
         oldSourceEntity.addForeignKeyRelationship(association, true);
     }
 }
