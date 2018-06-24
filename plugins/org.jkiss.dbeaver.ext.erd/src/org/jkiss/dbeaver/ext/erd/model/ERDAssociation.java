@@ -24,6 +24,8 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -110,6 +112,28 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
 	{
 		this.sourceEntity = sourceForeignKey;
 	}
+
+	@NotNull
+    public List<ERDEntityAttribute> getSourceAttributes() {
+        return sourceAttributes == null ? Collections.emptyList() : sourceAttributes;
+    }
+
+    @NotNull
+    public List<ERDEntityAttribute> getTargetAttributes() {
+        return targetAttributes == null ? Collections.emptyList() : targetAttributes;
+    }
+
+    public void addCondition(ERDEntityAttribute sourceAttribute, ERDEntityAttribute targetAttribute) {
+	    if (sourceAttributes == null) {
+            sourceAttributes = new ArrayList<>();
+        }
+        sourceAttributes.add(sourceAttribute);
+
+        if (targetAttributes == null) {
+            targetAttributes = new ArrayList<>();
+        }
+        targetAttributes.add(targetAttribute);
+    }
 
     public List<Point> getInitBends()
     {
