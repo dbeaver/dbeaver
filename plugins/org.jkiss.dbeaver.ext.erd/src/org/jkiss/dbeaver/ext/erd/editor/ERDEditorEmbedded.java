@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.ext.erd.ERDActivator;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -113,7 +112,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
         if (object == null) {
             return null;
         }
-        if (object instanceof DBPDataSourceContainer && object.getDataSource() instanceof DBSObject) {
+        if (object instanceof DBPDataSourceContainer && object.getDataSource() != null) {
             object = object.getDataSource();
         }
         return object;

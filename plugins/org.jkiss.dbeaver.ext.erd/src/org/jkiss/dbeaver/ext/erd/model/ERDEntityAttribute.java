@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
  */
 public class ERDEntityAttribute extends ERDObject<DBSEntityAttribute> {
     private boolean isChecked;
+    private int order = -1;
     private boolean inPrimaryKey;
     private boolean inForeignKey;
     private String alias;
@@ -54,6 +55,14 @@ public class ERDEntityAttribute extends ERDObject<DBSEntityAttribute> {
 
     public void setChecked(boolean checked) {
         isChecked = checked;
+    }
+
+    public int getOrder() {
+        return order;
+    }
+
+    public void setOrder(int order) {
+        this.order = order;
     }
 
     public String getAlias() {
