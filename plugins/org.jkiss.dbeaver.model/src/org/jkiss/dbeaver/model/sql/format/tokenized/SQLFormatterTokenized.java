@@ -263,7 +263,11 @@ public class SQLFormatterTokenized implements SQLFormatter {
                             index += insertReturnAndIndent(argList, index, indent);
                             break;
                         case "ON":
-                            indent++;
+                            {
+                                // FIXME: This produces double indent - #3679. But still needed in some cases?
+                                // Initially was added for proper MySQL views formatting.
+                                //indent++;
+                            }
                             index += insertReturnAndIndent(argList, index + 1, indent);
                             break;
                         case "USING":  //$NON-NLS-1$ //$NON-NLS-2$
