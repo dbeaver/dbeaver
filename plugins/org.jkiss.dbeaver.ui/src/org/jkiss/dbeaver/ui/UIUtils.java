@@ -41,7 +41,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
-import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
@@ -158,7 +157,7 @@ public class UIUtils {
 
     public static void createToolBarSeparator(ToolBar toolBar, int style) {
         Label label = new Label(toolBar, SWT.NONE);
-        label.setImage(DBeaverIcons.getImage(UIIcon.DRAG_HANDLE));
+        label.setImage(DBeaverIcons.getImage(UIIcon.SEPARATOR_V));
         new ToolItem(toolBar, SWT.SEPARATOR).setControl(label);
     }
 
