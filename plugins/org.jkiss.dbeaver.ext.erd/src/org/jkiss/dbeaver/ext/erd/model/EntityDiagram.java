@@ -50,15 +50,15 @@ public class EntityDiagram extends ERDObject<DBSObject> {
 
     private ERDDecorator decorator;
     private String name;
-    private List<ERDEntity> entities = new ArrayList<>();
+    private final List<ERDEntity> entities = new ArrayList<>();
     private boolean layoutManualDesired = true;
     private boolean layoutManualAllowed = false;
     private boolean needsAutoLayout;
 
-    private Map<DBSEntity, ERDEntity> entityMap = new IdentityHashMap<>();
-    private Map<ERDObject, NodeVisualInfo> nodeVisuals = new IdentityHashMap<>();
+    private final Map<DBSEntity, ERDEntity> entityMap = new IdentityHashMap<>();
+    private final Map<ERDObject, NodeVisualInfo> nodeVisuals = new IdentityHashMap<>();
 
-    private List<ERDNote> notes = new ArrayList<>();
+    private final List<ERDNote> notes = new ArrayList<>();
 
     private ERDAttributeVisibility attributeVisibility;
     private ERDViewStyle[] attributeStyles;
@@ -102,17 +102,25 @@ public class EntityDiagram extends ERDObject<DBSObject> {
         ERDAttributeVisibility.setDefaultVisibility(ERDActivator.getDefault().getPreferences(), attributeVisibility);
     }
 
-    public synchronized void addEntity(ERDEntity entity, boolean reflect) {
+    public int getEntityOrder(ERDEntity entity) {
+        synchronized (entities) {
+            return entities.indexOf(entity);
+        }
+    }
+
+    public void addEntity(ERDEntity entity, boolean reflect) {
         addEntity(entity, -1, reflect);
     }
 
-    public synchronized void addEntity(ERDEntity entity, int i, boolean reflect) {
-        if (i < 0) {
-            entities.add(entity);
-        } else {
-            entities.add(i, entity);
+    public void addEntity(ERDEntity entity, int i, boolean reflect) {
+        synchronized (entities) {
+            if (i < 0) {
+                entities.add(entity);
+            } else {
+                entities.add(i, entity);
+            }
+            entityMap.put(entity.getObject(), entity);
         }
-        entityMap.put(entity.getObject(), entity);
 
         if (reflect) {
             firePropertyChange(CHILD, null, entity);
@@ -135,6 +143,7 @@ public class EntityDiagram extends ERDObject<DBSObject> {
         }
     }
 
+
     private void resolveRelations(boolean reflect) {
         // Resolve incomplete relations
         for (ERDEntity erdEntity : getEntities()) {
@@ -142,9 +151,11 @@ public class EntityDiagram extends ERDObject<DBSObject> {
         }
     }
 
-    public synchronized void removeTable(ERDEntity entity, boolean reflect) {
-        entityMap.remove(entity.getObject());
-        entities.remove(entity);
+    public synchronized void removeEntity(ERDEntity entity, boolean reflect) {
+        synchronized (entities) {
+            entityMap.remove(entity.getObject());
+            entities.remove(entity);
+        }
         if (reflect) {
             firePropertyChange(CHILD, entity, null);
         }
@@ -153,24 +164,28 @@ public class EntityDiagram extends ERDObject<DBSObject> {
     /**
      * @return the Tables for the current schema
      */
-    public synchronized List<ERDEntity> getEntities() {
+    public List<ERDEntity> getEntities() {
         return entities;
     }
 
-    public synchronized List<ERDNote> getNotes() {
+    public List<ERDNote> getNotes() {
         return notes;
     }
 
-    public synchronized void addNote(ERDNote note, boolean reflect) {
-        notes.add(note);
+    public void addNote(ERDNote note, boolean reflect) {
+        synchronized (notes) {
+            notes.add(note);
+        }
 
         if (reflect) {
             firePropertyChange(CHILD, null, note);
         }
     }
 
-    public synchronized void removeNote(ERDNote note, boolean reflect) {
-        notes.remove(note);
+    public void removeNote(ERDNote note, boolean reflect) {
+        synchronized (notes) {
+            notes.remove(note);
+        }
 
         if (reflect) {
             firePropertyChange(CHILD, note, null);
@@ -228,7 +243,7 @@ public class EntityDiagram extends ERDObject<DBSObject> {
         copy.entityMap.putAll(this.entityMap);
         copy.layoutManualDesired = this.layoutManualDesired;
         copy.layoutManualAllowed = this.layoutManualAllowed;
-        copy.nodeVisuals = nodeVisuals;
+        copy.nodeVisuals.putAll(this.nodeVisuals);
         return copy;
     }
 

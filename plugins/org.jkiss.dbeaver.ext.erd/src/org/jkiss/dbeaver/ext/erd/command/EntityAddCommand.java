@@ -78,7 +78,7 @@ public class EntityAddCommand extends Command
     public void undo()
     {
         for (ERDEntity entity : entities) {
-            diagramPart.getDiagram().removeTable(entity, true);
+            diagramPart.getDiagram().removeEntity(entity, true);
         }
     }
 
