@@ -138,7 +138,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     private IPropertyChangeListener configPropertyListener;
     private PaletteRoot paletteRoot;
 
-    private String errorMessage;
+    private volatile String errorMessage;
     private ERDDecorator decorator;
 
     /**
@@ -376,9 +376,10 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         GraphicalViewer viewer = createViewer(parent);
 
         viewer.getControl().addPaintListener(e -> {
-            if (!CommonUtils.isEmpty(errorMessage)) {
+            String message = this.errorMessage;
+            if (!CommonUtils.isEmpty(message)) {
                 e.gc.setForeground(viewer.getControl().getForeground());
-                UIUtils.drawMessageOverControl(viewer.getControl(), e, errorMessage, 0);
+                UIUtils.drawMessageOverControl(viewer.getControl(), e, message, 0);
             }
         });
 

@@ -25,8 +25,8 @@ import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.graphics.Color;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.erd.ERDActivator;
-import org.jkiss.dbeaver.ext.erd.editor.ERDViewStyle;
 import org.jkiss.dbeaver.ext.erd.editor.ERDAttributeVisibility;
+import org.jkiss.dbeaver.ext.erd.editor.ERDViewStyle;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -60,8 +60,8 @@ public class EntityDiagram extends ERDObject<DBSObject> {
 
     private List<ERDNote> notes = new ArrayList<>();
 
-    private ERDAttributeVisibility attributeVisibility = ERDAttributeVisibility.PRIMARY;
-    private ERDViewStyle[] attributeStyles = new ERDViewStyle[]{ERDViewStyle.ICONS};
+    private ERDAttributeVisibility attributeVisibility;
+    private ERDViewStyle[] attributeStyles;
 
     private List<String> errorMessages = new ArrayList<>();
 
