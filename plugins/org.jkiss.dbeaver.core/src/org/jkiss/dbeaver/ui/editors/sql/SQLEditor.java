@@ -95,6 +95,7 @@ import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.controls.CustomSashForm;
+import org.jkiss.dbeaver.ui.controls.ToolbarSeparatorContribution;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardDialog;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
@@ -579,18 +580,24 @@ public class SQLEditor extends SQLEditorBase implements
 
         sideToolBar = new ToolBarManager(SWT.VERTICAL);
         sideToolBar.add(new Separator(TOOLBAR_GROUP_TOP));
+        //sideToolBar.add(new GroupMarker(TOOLBAR_GROUP_TOP));
         sideToolBar.add(ActionUtils.makeCommandContribution(getSite(), CoreCommands.CMD_EXECUTE_STATEMENT));
         sideToolBar.add(ActionUtils.makeCommandContribution(getSite(), CoreCommands.CMD_EXECUTE_STATEMENT_NEW));
         sideToolBar.add(ActionUtils.makeCommandContribution(getSite(), CoreCommands.CMD_EXECUTE_SCRIPT));
         sideToolBar.add(ActionUtils.makeCommandContribution(getSite(), CoreCommands.CMD_EXECUTE_SCRIPT_NEW));
         sideToolBar.add(ActionUtils.makeCommandContribution(getSite(), CoreCommands.CMD_EXPLAIN_PLAN));
         sideToolBar.add(new GroupMarker(TOOLBAR_GROUP_ADDITIONS));
-        sideToolBar.add(new Separator());
+        sideToolBar.add(new ToolbarSeparatorContribution(false));
         sideToolBar.add(ActionUtils.makeCommandContribution(getSite(), CoreCommands.CMD_SQL_SHOW_OUTPUT, CommandContributionItem.STYLE_CHECK));
         sideToolBar.add(ActionUtils.makeCommandContribution(getSite(), CoreCommands.CMD_SQL_SHOW_LOG, CommandContributionItem.STYLE_CHECK));
         final IMenuService menuService = getSite().getService(IMenuService.class);
         if (menuService != null) {
+            int prevSize = sideToolBar.getSize();
             menuService.populateContributionManager(sideToolBar, TOOLBAR_CONTRIBUTION_ID);
+            if (prevSize != sideToolBar.getSize()) {
+                // Something was populated
+                sideToolBar.insertBefore(TOOLBAR_GROUP_ADDITIONS, new ToolbarSeparatorContribution(false));
+            }
         }
         sideToolBar.update(true);
 

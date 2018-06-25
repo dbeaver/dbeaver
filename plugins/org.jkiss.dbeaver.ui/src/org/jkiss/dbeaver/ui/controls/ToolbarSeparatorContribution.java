@@ -25,19 +25,22 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 
 /**
- * ToolbarVerticalSeparator
+ * ToolbarSeparatorContribution
  */
-public class ToolbarVerticalSeparator extends WorkbenchWindowControlContribution {
-    public ToolbarVerticalSeparator()
+public class ToolbarSeparatorContribution extends WorkbenchWindowControlContribution {
+    private boolean vertical;
+
+    public ToolbarSeparatorContribution(boolean vertical)
     {
         super();
+        this.vertical = vertical;
     }
 
     @Override
     protected Control createControl(Composite parent)
     {
         Label label = new Label(parent, SWT.NONE);
-        label.setImage(DBeaverIcons.getImage(UIIcon.DRAG_HANDLE));
+        label.setImage(DBeaverIcons.getImage(vertical ? UIIcon.SEPARATOR_V : UIIcon.SEPARATOR_H));
         return label;
     }
 }
