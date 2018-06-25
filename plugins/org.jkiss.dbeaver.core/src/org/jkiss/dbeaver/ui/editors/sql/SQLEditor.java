@@ -83,8 +83,6 @@ import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
-import org.jkiss.dbeaver.ui.editors.sql.registry.SQLPresentationDescriptor;
-import org.jkiss.dbeaver.ui.editors.sql.registry.SQLPresentationRegistry;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryJob;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryListener;
 import org.jkiss.dbeaver.runtime.sql.SQLResultsConsumer;
@@ -105,6 +103,9 @@ import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.INonPersistentEditorInput;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.sql.log.SQLLogPanel;
+import org.jkiss.dbeaver.ui.editors.sql.registry.SQLPresentationDescriptor;
+import org.jkiss.dbeaver.ui.editors.sql.registry.SQLPresentationPanelDescriptor;
+import org.jkiss.dbeaver.ui.editors.sql.registry.SQLPresentationRegistry;
 import org.jkiss.dbeaver.ui.editors.text.ScriptPositionColumn;
 import org.jkiss.dbeaver.ui.views.SQLResultsView;
 import org.jkiss.dbeaver.ui.views.plan.ExplainPlanViewer;
@@ -139,6 +140,8 @@ public class SQLEditor extends SQLEditorBase implements
     private static final int SQL_EDITOR_CONTROL_INDEX = 1;
     private static final int EXTRA_CONTROL_INDEX = 0;
 
+    private static final String PANEL_ITEM_PREFIX = "SQLPanelToggle:";
+
     private static Image IMG_DATA_GRID = DBeaverIcons.getImage(UIIcon.SQL_PAGE_DATA_GRID);
     private static Image IMG_DATA_GRID_LOCKED = DBeaverIcons.getImage(UIIcon.SQL_PAGE_DATA_GRID_LOCKED);
     private static Image IMG_EXPLAIN_PLAN = DBeaverIcons.getImage(UIIcon.SQL_PAGE_EXPLAIN_PLAN);
@@ -149,6 +152,7 @@ public class SQLEditor extends SQLEditorBase implements
     private static final String TOOLBAR_CONTRIBUTION_ID = "toolbar:org.jkiss.dbeaver.ui.editors.sql.toolbar.side";
     private static final String TOOLBAR_GROUP_TOP = "top";
     private static final String TOOLBAR_GROUP_ADDITIONS = IWorkbenchActionConstants.MB_ADDITIONS;
+    private static final String TOOLBAR_GROUP_PANELS = "panelToggles";
 
     public static final String VAR_CONNECTION_NAME = "connectionName";
     public static final String VAR_FILE_NAME = "fileName";
@@ -590,6 +594,7 @@ public class SQLEditor extends SQLEditorBase implements
         sideToolBar.add(new ToolbarSeparatorContribution(false));
         sideToolBar.add(ActionUtils.makeCommandContribution(getSite(), CoreCommands.CMD_SQL_SHOW_OUTPUT, CommandContributionItem.STYLE_CHECK));
         sideToolBar.add(ActionUtils.makeCommandContribution(getSite(), CoreCommands.CMD_SQL_SHOW_LOG, CommandContributionItem.STYLE_CHECK));
+        sideToolBar.add(new GroupMarker(TOOLBAR_GROUP_PANELS));
         final IMenuService menuService = getSite().getService(IMenuService.class);
         if (menuService != null) {
             int prevSize = sideToolBar.getSize();
@@ -753,6 +758,9 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
+    /////////////////////////////////////////////////////////////
+    // Panels
+
     private void showExtraView(final String commandId, String name, String toolTip, Image image, Control view) {
         ToolItem viewItem = getViewToolItem(commandId);
         if (viewItem == null) {
@@ -874,6 +882,29 @@ public class SQLEditor extends SQLEditorBase implements
                 presentationSash.setMaximizedControl(null);
             }
         }
+
+        // Show presentation panels
+        boolean sideBarChanged = false;
+        if (getExtraPresentationState() == SQLEditorPresentation.ActivationType.HIDDEN) {
+            // Remove all presentation panel toggles
+            for (SQLPresentationPanelDescriptor panelDescriptor : extraPresentationDescriptor.getPanels()) {
+                if (sideToolBar.remove(PANEL_ITEM_PREFIX + panelDescriptor.getId()) != null) {
+                    sideBarChanged = true;
+                }
+            }
+        } else {
+            // Check and add presentation panel toggles
+            for (SQLPresentationPanelDescriptor panelDescriptor : extraPresentationDescriptor.getPanels()) {
+                if (sideToolBar.find(PANEL_ITEM_PREFIX + panelDescriptor.getId()) == null) {
+                    sideBarChanged = true;
+                    sideToolBar.insertAfter(TOOLBAR_GROUP_PANELS, new PresentationPanelToggleAction(panelDescriptor));
+                }
+            }
+        }
+        if (sideBarChanged) {
+            sideToolBar.update(true);
+            sideToolBar.getControl().getParent().layout(true);
+        }
     }
 
     private Control getExtraPresentationControl() {
@@ -927,15 +958,6 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
-    @Override
-    public void init(IEditorSite site, IEditorInput editorInput)
-        throws PartInitException
-    {
-        super.init(site, editorInput);
-
-        updateResultSetOrientation();
-    }
-
     private void updateResultSetOrientation() {
         try {
             resultSetOrientation = ResultSetOrientation.valueOf(getActivePreferenceStore().getString(SQLPreferenceConstants.RESULT_SET_ORIENTATION));
@@ -945,6 +967,38 @@ public class SQLEditor extends SQLEditorBase implements
         if (resultsSash != null) {
             resultsSash.setOrientation(resultSetOrientation.getSashOrientation());
         }
+    }
+
+    private class PresentationPanelToggleAction extends Action {
+        private SQLPresentationPanelDescriptor panel;
+        public PresentationPanelToggleAction(SQLPresentationPanelDescriptor panel) {
+            super(panel.getLabel(), Action.AS_CHECK_BOX);
+            setId(PANEL_ITEM_PREFIX + panel.getId());
+            if (panel.getIcon() != null) {
+                setImageDescriptor(DBeaverIcons.getImageDescriptor(panel.getIcon()));
+            }
+            if (panel.getDescription() != null) {
+                setToolTipText(panel.getDescription());
+            }
+            this.panel = panel;
+        }
+
+        @Override
+        public void run() {
+
+        }
+    }
+
+    /////////////////////////////////////////////////////////////
+    // Initialization
+
+    @Override
+    public void init(IEditorSite site, IEditorInput editorInput)
+        throws PartInitException
+    {
+        super.init(site, editorInput);
+
+        updateResultSetOrientation();
     }
 
     @Override
