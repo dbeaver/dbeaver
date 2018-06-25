@@ -43,8 +43,8 @@ public class AssociationDeleteCommand extends Command {
      */
     @Override
     public void execute() {
-        targetEntity.removePrimaryKeyRelationship(relationship, true);
-        sourceEntity.removeForeignKeyRelationship(relationship, true);
+        targetEntity.removeReferenceAssociation(relationship, true);
+        sourceEntity.removeAssociation(relationship, true);
         relationship.setSourceEntity(null);
         relationship.setTargetEntity(null);
     }
@@ -56,8 +56,8 @@ public class AssociationDeleteCommand extends Command {
     public void undo() {
         relationship.setSourceEntity(sourceEntity);
         relationship.setSourceEntity(targetEntity);
-        sourceEntity.addForeignKeyRelationship(relationship, true);
-        targetEntity.addPrimaryKeyRelationship(relationship, true);
+        sourceEntity.addAssociation(relationship, true);
+        targetEntity.addReferenceAssociation(relationship, true);
     }
 
 }

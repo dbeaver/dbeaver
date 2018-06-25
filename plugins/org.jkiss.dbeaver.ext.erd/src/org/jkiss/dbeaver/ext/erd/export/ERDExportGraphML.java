@@ -207,7 +207,7 @@ public class ERDExportGraphML implements ERDExportFormatHandler
                 int edgeNum = 0;
                 for (ERDEntity entity : diagram.getEntities()) {
                     EntityPart entityPart = diagramPart.getEntityPart(entity);
-                    for (ERDAssociation association : entity.getForeignKeyRelationships()) {
+                    for (ERDAssociation association : entity.getAssociations()) {
                         AssociationPart associationPart = entityPart.getConnectionPart(association, true);
                         if (associationPart == null) {
                             log.debug("Association part not found");

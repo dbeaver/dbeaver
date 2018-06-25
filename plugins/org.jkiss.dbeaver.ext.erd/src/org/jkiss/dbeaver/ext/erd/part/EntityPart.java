@@ -71,12 +71,12 @@ public class EntityPart extends NodePart {
 
     @Override
     protected List<ERDAssociation> getModelSourceConnections() {
-        return getEntity().getForeignKeyRelationships();
+        return getEntity().getAssociations();
     }
 
     @Override
     protected List<ERDAssociation> getModelTargetConnections() {
-        return getEntity().getPrimaryKeyRelationships();
+        return getEntity().getReferences();
     }
 
     //******************* Editing related methods *********************/
