@@ -94,7 +94,7 @@ public class NotePart extends NodePart
         if (request.getType() == RequestConstants.REQ_DIRECT_EDIT) {
             performDirectEdit();
         }
-        return null;
+        return super.getCommand(request);
     }
 
     private boolean directEditHitTest(Point requestLoc) {
