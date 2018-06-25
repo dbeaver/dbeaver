@@ -95,7 +95,7 @@ public class EntityDeleteCommand extends Command
         // Delete entity
 		deleteRelationships(entity);
 		index = entityDiagram.getEntities().indexOf(entity);
-		entityDiagram.removeTable(entity, true);
+		entityDiagram.removeEntity(entity, true);
 	}
 
 	/**
@@ -109,16 +109,12 @@ public class EntityDeleteCommand extends Command
 
 	private void restoreRelationships()
 	{
-		for (int i = 0; i < foreignKeyRelationships.size(); i++)
-		{
-			ERDAssociation r = foreignKeyRelationships.get(i);
+		for (ERDAssociation r : foreignKeyRelationships) {
 			r.getSourceEntity().addAssociation(r, true);
 			r.getTargetEntity().addReferenceAssociation(r, true);
 		}
 		foreignKeyRelationships.clear();
-		for (int i = 0; i < primaryKeyRelationships.size(); i++)
-		{
-			ERDAssociation r = primaryKeyRelationships.get(i);
+		for (ERDAssociation r : primaryKeyRelationships) {
 			r.getSourceEntity().addAssociation(r, true);
 			r.getTargetEntity().addReferenceAssociation(r, true);
 		}

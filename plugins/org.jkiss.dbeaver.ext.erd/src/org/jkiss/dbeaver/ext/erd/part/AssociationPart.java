@@ -56,12 +56,10 @@ public class AssociationPart extends PropertyAwareConnectionPart {
     // Keep original line width to visualize selection
     private Integer oldLineWidth;
 
-    public AssociationPart()
-    {
+    public AssociationPart() {
     }
 
-    public ERDAssociation getAssociation()
-    {
+    public ERDAssociation getAssociation() {
         return (ERDAssociation) getModel();
     }
 
@@ -170,7 +168,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
 
         if (!identifying || association.isLogical()) {
             conn.setLineStyle(SWT.LINE_CUSTOM);
-            conn.setLineDash(new float[] {5} );
+            conn.setLineDash(new float[]{5});
         }
 
         //ChopboxAnchor sourceAnchor = new ChopboxAnchor(classFigure);
@@ -214,18 +212,17 @@ public class AssociationPart extends PropertyAwareConnectionPart {
         }
 
         Color columnColor = value != EditPart.SELECTED_NONE ? Display.getDefault().getSystemColor(SWT.COLOR_RED) : getViewer().getControl().getForeground();
-        for (AttributePart attrPart : getEntityAttributes((EntityPart)getSource(), getAssociation().getSourceAttributes())) {
+        for (AttributePart attrPart : getEntityAttributes((EntityPart) getSource(), getAssociation().getSourceAttributes())) {
             attrPart.getFigure().setForegroundColor(columnColor);
         }
-        for (AttributePart attrPart : getEntityAttributes((EntityPart)getTarget(), getAssociation().getTargetAttributes())) {
+        for (AttributePart attrPart : getEntityAttributes((EntityPart) getTarget(), getAssociation().getTargetAttributes())) {
             attrPart.getFigure().setForegroundColor(columnColor);
         }
     }
 
-    private List<AttributePart> getEntityAttributes(EntityPart source, List<ERDEntityAttribute> columns)
-    {
+    private List<AttributePart> getEntityAttributes(EntityPart source, List<ERDEntityAttribute> columns) {
         List<AttributePart> result = new ArrayList<>();
-        for (AttributePart attrPart : (List<AttributePart>)source.getChildren()) {
+        for (AttributePart attrPart : (List<AttributePart>) source.getChildren()) {
             if (columns.contains(attrPart.getAttribute())) {
                 result.add(attrPart);
             }
@@ -234,8 +231,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
     }
 
     @Override
-    public void performRequest(Request request)
-    {
+    public void performRequest(Request request) {
         if (request.getType() == RequestConstants.REQ_OPEN) {
             ERDUtils.openObjectEditor(getAssociation());
         }
@@ -291,8 +287,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
     }
 
     @Override
-    public String toString()
-    {
+    public String toString() {
         return getAssociation().getObject().getConstraintType().getName() + " " + getAssociation().getObject().getName();
     }
 
@@ -305,25 +300,24 @@ public class AssociationPart extends PropertyAwareConnectionPart {
             super();
         }
 
-        public void setRadius(int radius)
-        {
+        public void setRadius(int radius) {
             this.radius = radius;
         }
 
         @Override
         public void setLocation(Point p) {
             location = p;
-            Rectangle bounds = new Rectangle(location.x- radius, location.y- radius, radius *2, radius *2);
+            Rectangle bounds = new Rectangle(location.x - radius, location.y - radius, radius * 2, radius * 2);
             setBounds(bounds);
         }
 
         @Override
         public void setReferencePoint(Point p) {
             // length of line between reference point and location
-            double d = Math.sqrt(Math.pow((location.x-p.x), 2)+Math.pow(location.y-p.y,2));
+            double d = Math.sqrt(Math.pow((location.x - p.x), 2) + Math.pow(location.y - p.y, 2));
 
             // do nothing if link is too short.
-            if(d < radius)
+            if (d < radius)
                 return;
 
             //
@@ -356,40 +350,42 @@ public class AssociationPart extends PropertyAwareConnectionPart {
             //
             // remember that d > radius.
             //
-            double k = (d- radius)/d;
-            double longx = Math.abs(p.x-location.x);
-            double longy = Math.abs(p.y-location.y);
+            double k = (d - radius) / d;
+            double longx = Math.abs(p.x - location.x);
+            double longy = Math.abs(p.y - location.y);
 
-            double shortx = k*longx;
-            double shorty = k*longy;
+            double shortx = k * longx;
+            double shorty = k * longy;
 
             // now create locate the new point using the distances depending on the location of the original points.
             int rx, ry;
-            if(location.x < p.x) {
-                rx = p.x - (int)shortx;
+            if (location.x < p.x) {
+                rx = p.x - (int) shortx;
             } else {
-                rx = p.x + (int)shortx;
+                rx = p.x + (int) shortx;
             }
-            if(location.y > p.y) {
-                ry = p.y + (int)shorty;
+            if (location.y > p.y) {
+                ry = p.y + (int) shorty;
             } else {
-                ry = p.y - (int)shorty;
+                ry = p.y - (int) shorty;
             }
 
             // For reasons that are still unknown to me, I had to increase the radius
             // of the circle for the graphics to look right.
-            setBounds(new Rectangle(rx- radius, ry- radius, (int)(radius *2.5), (int)(radius *2.5)));
+            setBounds(new Rectangle(rx - radius, ry - radius, (int) (radius * 2.5), (int) (radius * 2.5)));
         }
     }
 
     public static class RhombusDecoration extends PolygonDecoration {
         private static PointList GEOMETRY = new PointList();
+
         static {
             GEOMETRY.addPoint(0, 0);
             GEOMETRY.addPoint(-1, 1);
             GEOMETRY.addPoint(-2, 0);
             GEOMETRY.addPoint(-1, -1);
         }
+
         public RhombusDecoration() {
             setTemplate(GEOMETRY);
             setFill(true);
