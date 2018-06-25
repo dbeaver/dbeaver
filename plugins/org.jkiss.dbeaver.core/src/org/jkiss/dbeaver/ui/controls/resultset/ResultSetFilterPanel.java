@@ -202,7 +202,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
             });
 
             this.filtersText.addVerifyKeyListener(e -> {
-                if (e.keyCode == SWT.CR) {
+                if (e.keyCode == SWT.CR || e.keyCode == SWT.LF || e.character == SWT.CR) {
                     if (filterExpanded && (e.stateMask & SWT.CTRL) == 0) {
                         return;
                     }
@@ -218,7 +218,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
                             return;
                         }
                         historyPanel.showFilterHistoryPopup();
-                    } else if (e.keyCode == SWT.CR) {
+                    } else if (e.keyCode == SWT.CR || e.keyCode == SWT.LF || e.character == SWT.CR) {
                         if (filtersProposalAdapter != null && filtersProposalAdapter.isProposalPopupOpen()) {
                             return;
                         }
