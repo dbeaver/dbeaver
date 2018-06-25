@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,61 +14,61 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.registry.sql;
+package org.jkiss.dbeaver.ui.editors.sql.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
-import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-public class SQLPresentationRegistry
+public class SQLCommandsRegistry
 {
-    static final String TAG_PRESENTATION = "presentation"; //$NON-NLS-1$
+    static final String TAG_COMMAND = "command"; //$NON-NLS-1$
 
-    private static SQLPresentationRegistry instance = null;
+    private static SQLCommandsRegistry instance = null;
 
-    public synchronized static SQLPresentationRegistry getInstance()
+    public synchronized static SQLCommandsRegistry getInstance()
     {
         if (instance == null) {
-            instance = new SQLPresentationRegistry();
+            instance = new SQLCommandsRegistry();
             instance.loadExtensions(Platform.getExtensionRegistry());
         }
         return instance;
     }
 
-    private final List<SQLPresentationDescriptor> presentations = new ArrayList<>();
+    private final Map<String, SQLCommandHandlerDescriptor> commandHandlers = new HashMap<>();
 
-    private SQLPresentationRegistry()
+    private SQLCommandsRegistry()
     {
     }
 
     private void loadExtensions(IExtensionRegistry registry)
     {
-        IConfigurationElement[] extConfigs = registry.getConfigurationElementsFor(SQLPresentationDescriptor.EXTENSION_ID);
+        IConfigurationElement[] extConfigs = registry.getConfigurationElementsFor(SQLCommandHandlerDescriptor.EXTENSION_ID);
         for (IConfigurationElement ext : extConfigs) {
             // Load functions
-            if (TAG_PRESENTATION.equals(ext.getName())) {
-                SQLPresentationDescriptor presentationDescriptor = new SQLPresentationDescriptor(ext);
-                this.presentations.add(presentationDescriptor);
+            if (TAG_COMMAND.equals(ext.getName())) {
+                SQLCommandHandlerDescriptor commandDescriptor = new SQLCommandHandlerDescriptor(ext);
+                this.commandHandlers.put(commandDescriptor.getId(), commandDescriptor);
             }
         }
     }
 
     public void dispose()
     {
-        presentations.clear();
+        commandHandlers.clear();
     }
 
-    public List<SQLPresentationDescriptor> getPresentations() {
-        return new ArrayList<>(presentations);
+    public List<SQLCommandHandlerDescriptor> getCommandHandlers() {
+        return new ArrayList<>(commandHandlers.values());
     }
 
-    public SQLPresentationDescriptor getPresentation(SQLEditor editor) {
-        return presentations.isEmpty() ? null : presentations.get(0);
+    public SQLCommandHandlerDescriptor getCommandHandler(String id) {
+        return commandHandlers.get(id);
     }
-
 
 }
