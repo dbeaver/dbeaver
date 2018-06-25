@@ -42,8 +42,8 @@ public class ERDEntity extends ERDObject<DBSEntity> {
     private String alias;
     private List<ERDEntityAttribute> attributes;
 
-    private List<ERDAssociation> primaryKeyRelationships;
-    private List<ERDAssociation> foreignKeyRelationships;
+    private List<ERDAssociation> references;
+    private List<ERDAssociation> associations;
     private List<DBSEntityAssociation> unresolvedKeys;
 
     private boolean primary = false;
@@ -93,11 +93,11 @@ public class ERDEntity extends ERDObject<DBSEntity> {
      *
      * @param rel the primary key relationship
      */
-    public void addForeignKeyRelationship(ERDAssociation rel, boolean reflect) {
-        if (foreignKeyRelationships == null) {
-            foreignKeyRelationships = new ArrayList<>();
+    public void addAssociation(ERDAssociation rel, boolean reflect) {
+        if (associations == null) {
+            associations = new ArrayList<>();
         }
-        foreignKeyRelationships.add(rel);
+        associations.add(rel);
         if (reflect) {
             firePropertyChange(OUTPUT, null, rel);
         }
@@ -108,11 +108,11 @@ public class ERDEntity extends ERDObject<DBSEntity> {
      *
      * @param table the foreign key relationship
      */
-    public void addPrimaryKeyRelationship(ERDAssociation table, boolean reflect) {
-        if (primaryKeyRelationships == null) {
-            primaryKeyRelationships = new ArrayList<>();
+    public void addReferenceAssociation(ERDAssociation table, boolean reflect) {
+        if (references == null) {
+            references = new ArrayList<>();
         }
-        primaryKeyRelationships.add(table);
+        references.add(table);
         if (reflect) {
             firePropertyChange(INPUT, null, table);
         }
@@ -123,8 +123,8 @@ public class ERDEntity extends ERDObject<DBSEntity> {
      *
      * @param table the primary key relationship
      */
-    public void removeForeignKeyRelationship(ERDAssociation table, boolean reflect) {
-        foreignKeyRelationships.remove(table);
+    public void removeAssociation(ERDAssociation table, boolean reflect) {
+        associations.remove(table);
         if (reflect) {
             firePropertyChange(OUTPUT, table, null);
         }
@@ -135,29 +135,43 @@ public class ERDEntity extends ERDObject<DBSEntity> {
      *
      * @param table the foreign key relationship
      */
-    public void removePrimaryKeyRelationship(ERDAssociation table, boolean reflect) {
-        primaryKeyRelationships.remove(table);
+    public void removeReferenceAssociation(ERDAssociation table, boolean reflect) {
+        references.remove(table);
         if (reflect) {
             firePropertyChange(INPUT, table, null);
         }
     }
 
+    @NotNull
     public List<ERDEntityAttribute> getAttributes() {
         return CommonUtils.safeList(attributes);
     }
 
-    /**
-     * @return Returns the foreignKeyRelationships.
-     */
-    public List<ERDAssociation> getForeignKeyRelationships() {
-        return CommonUtils.safeList(foreignKeyRelationships);
+    @NotNull
+    public List<ERDEntityAttribute> getCheckedAttributes() {
+        List<ERDEntityAttribute> result = new ArrayList<>();
+        if (attributes != null) {
+            for (ERDEntityAttribute attr : attributes) {
+                if (attr.isChecked()) {
+                    result.add(attr);
+                }
+            }
+        }
+        return result;
     }
 
     /**
-     * @return Returns the primaryKeyRelationships.
+     * @return Returns the associations.
      */
-    public List<ERDAssociation> getPrimaryKeyRelationships() {
-        return CommonUtils.safeList(primaryKeyRelationships);
+    public List<ERDAssociation> getAssociations() {
+        return CommonUtils.safeList(associations);
+    }
+
+    /**
+     * @return Returns the references.
+     */
+    public List<ERDAssociation> getReferences() {
+        return CommonUtils.safeList(references);
     }
 
     public boolean isPrimary() {
@@ -169,8 +183,8 @@ public class ERDEntity extends ERDObject<DBSEntity> {
     }
 
     public boolean hasSelfLinks() {
-        if (foreignKeyRelationships != null) {
-            for (ERDAssociation association : foreignKeyRelationships) {
+        if (associations != null) {
+            for (ERDAssociation association : associations) {
                 if (association.getTargetEntity() == this) {
                     return true;
                 }

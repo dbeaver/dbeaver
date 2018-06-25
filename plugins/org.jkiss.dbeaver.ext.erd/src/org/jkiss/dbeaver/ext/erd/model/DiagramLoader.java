@@ -530,7 +530,7 @@ public class DiagramLoader
             xml.startElement(TAG_RELATIONS);
 
             for (ERDEntity erdEntity : diagram.getEntities()) {
-                for (ERDAssociation rel : erdEntity.getPrimaryKeyRelationships()) {
+                for (ERDAssociation rel : erdEntity.getReferences()) {
                     xml.startElement(TAG_RELATION);
                     DBSEntityAssociation association = rel.getObject();
                     xml.addAttribute(ATTR_NAME, association.getName());

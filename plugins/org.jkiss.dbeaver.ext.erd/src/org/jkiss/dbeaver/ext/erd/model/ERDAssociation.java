@@ -63,8 +63,8 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
             new ERDLogicalPrimaryKey(targetEntity, "Logical primary key", "")));
         this.targetEntity = targetEntity;
         this.sourceEntity = sourceEntity;
-        this.targetEntity.addPrimaryKeyRelationship(this, reflect);
-        this.sourceEntity.addForeignKeyRelationship(this, reflect);
+        this.targetEntity.addReferenceAssociation(this, reflect);
+        this.sourceEntity.addAssociation(this, reflect);
     }
 
     /**
@@ -85,8 +85,8 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
             resolveAttributes((DBSEntityReferrer) association, sourceEntity, targetEntity);
         }
 
-        this.targetEntity.addPrimaryKeyRelationship(this, reflect);
-        this.sourceEntity.addForeignKeyRelationship(this, reflect);
+        this.targetEntity.addReferenceAssociation(this, reflect);
+        this.sourceEntity.addAssociation(this, reflect);
 	}
 
     private void resolveAttributes(DBSEntityReferrer association, ERDEntity sourceEntity, ERDEntity targetEntity) {

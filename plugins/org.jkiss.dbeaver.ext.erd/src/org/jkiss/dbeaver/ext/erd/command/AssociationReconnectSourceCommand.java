@@ -51,7 +51,7 @@ public class AssociationReconnectSourceCommand extends Command {
             returnVal = false;
         } else {
 
-            List<ERDAssociation> relationships = sourceEntity.getForeignKeyRelationships();
+            List<ERDAssociation> relationships = sourceEntity.getAssociations();
             for (ERDAssociation relationship : relationships) {
                 if (relationship.getTargetEntity().equals(targetEntity) &&
                     relationship.getSourceEntity().equals(sourceEntity)) {
@@ -68,9 +68,9 @@ public class AssociationReconnectSourceCommand extends Command {
     @Override
     public void execute() {
         if (sourceEntity != null) {
-            oldSourceEntity.removeForeignKeyRelationship(association, true);
+            oldSourceEntity.removeAssociation(association, true);
             association.setSourceEntity(sourceEntity);
-            sourceEntity.addForeignKeyRelationship(association, true);
+            sourceEntity.addAssociation(association, true);
         }
     }
 
@@ -90,8 +90,8 @@ public class AssociationReconnectSourceCommand extends Command {
 
     @Override
     public void undo() {
-        sourceEntity.removeForeignKeyRelationship(association, true);
+        sourceEntity.removeAssociation(association, true);
         association.setSourceEntity(oldSourceEntity);
-        oldSourceEntity.addForeignKeyRelationship(association, true);
+        oldSourceEntity.addAssociation(association, true);
     }
 }

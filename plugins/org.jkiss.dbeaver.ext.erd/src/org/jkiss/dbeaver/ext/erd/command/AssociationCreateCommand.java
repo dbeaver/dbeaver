@@ -46,7 +46,7 @@ public class AssociationCreateCommand extends Command {
                 return false;
             } else {
                 // Check for existence of relationship already
-                List<ERDAssociation> relationships = targetEntity.getPrimaryKeyRelationships();
+                List<ERDAssociation> relationships = targetEntity.getReferences();
                 for (ERDAssociation currentRelationship : relationships) {
                     if (currentRelationship.getSourceEntity().equals(sourceEntity)) {
                         returnValue = false;
@@ -91,14 +91,14 @@ public class AssociationCreateCommand extends Command {
 
     @Override
     public void redo() {
-        sourceEntity.addForeignKeyRelationship(association, true);
-        targetEntity.addPrimaryKeyRelationship(association, true);
+        sourceEntity.addAssociation(association, true);
+        targetEntity.addReferenceAssociation(association, true);
     }
 
     @Override
     public void undo() {
-        sourceEntity.removeForeignKeyRelationship(association, true);
-        targetEntity.removePrimaryKeyRelationship(association, true);
+        sourceEntity.removeAssociation(association, true);
+        targetEntity.removeReferenceAssociation(association, true);
     }
 
     protected ERDAssociation createAssociation(ERDEntity sourceEntity, ERDEntity targetEntity, boolean reflect) {

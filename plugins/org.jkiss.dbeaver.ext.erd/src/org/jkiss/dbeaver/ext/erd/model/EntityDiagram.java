@@ -117,10 +117,10 @@ public class EntityDiagram extends ERDObject<DBSObject> {
         if (reflect) {
             firePropertyChange(CHILD, null, entity);
 /*
-            for (ERDAssociation rel : entity.getPrimaryKeyRelationships()) {
+            for (ERDAssociation rel : entity.getReferences()) {
                 entity.firePropertyChange(INPUT, null, rel);
             }
-            for (ERDAssociation rel : entity.getForeignKeyRelationships()) {
+            for (ERDAssociation rel : entity.getAssociations()) {
                 entity.firePropertyChange(OUTPUT, null, rel);
             }
 */
@@ -129,7 +129,7 @@ public class EntityDiagram extends ERDObject<DBSObject> {
         resolveRelations(reflect);
 
         if (reflect) {
-            for (ERDAssociation rel : entity.getPrimaryKeyRelationships()) {
+            for (ERDAssociation rel : entity.getReferences()) {
                 rel.getSourceEntity().firePropertyChange(OUTPUT, null, rel);
             }
         }
@@ -316,7 +316,7 @@ public class EntityDiagram extends ERDObject<DBSObject> {
     }
 
     public void addInitRelationBends(ERDEntity sourceEntity, ERDEntity targetEntity, String relName, List<Point> bends) {
-        for (ERDAssociation rel : sourceEntity.getPrimaryKeyRelationships()) {
+        for (ERDAssociation rel : sourceEntity.getReferences()) {
             if (rel.getSourceEntity() == targetEntity && relName.equals(rel.getObject().getName())) {
                 rel.setInitBends(bends);
             }

@@ -48,7 +48,7 @@ public class AssociationReconnectTargetCommand extends Command {
             returnVal = false;
         } else {
 
-            List<ERDAssociation> relationships = targetEntity.getPrimaryKeyRelationships();
+            List<ERDAssociation> relationships = targetEntity.getReferences();
             for (ERDAssociation relationship : relationships) {
                 if (relationship.getSourceEntity().equals(sourceEntity)
                     && relationship.getTargetEntity().equals(targetEntity)) {
@@ -65,9 +65,9 @@ public class AssociationReconnectTargetCommand extends Command {
     @Override
     public void execute() {
         if (targetEntity != null) {
-            oldTargetEntity.removePrimaryKeyRelationship(relationship, true);
+            oldTargetEntity.removeReferenceAssociation(relationship, true);
             relationship.setTargetEntity(targetEntity);
-            targetEntity.addPrimaryKeyRelationship(relationship, true);
+            targetEntity.addReferenceAssociation(relationship, true);
         }
     }
 
@@ -83,8 +83,8 @@ public class AssociationReconnectTargetCommand extends Command {
 
     @Override
     public void undo() {
-        targetEntity.removePrimaryKeyRelationship(relationship, true);
+        targetEntity.removeReferenceAssociation(relationship, true);
         relationship.setTargetEntity(oldTargetEntity);
-        oldTargetEntity.addPrimaryKeyRelationship(relationship, true);
+        oldTargetEntity.addReferenceAssociation(relationship, true);
     }
 }

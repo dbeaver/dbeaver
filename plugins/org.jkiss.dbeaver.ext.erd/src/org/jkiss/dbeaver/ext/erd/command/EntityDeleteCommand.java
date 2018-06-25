@@ -52,23 +52,23 @@ public class EntityDeleteCommand extends Command
     private void deleteRelationships(ERDEntity t)
 	{
 
-		this.foreignKeyRelationships.addAll(t.getForeignKeyRelationships());
+		this.foreignKeyRelationships.addAll(t.getAssociations());
 
 		//for all relationships where current entity is foreign key
 		for (int i = 0; i < foreignKeyRelationships.size(); i++)
 		{
 			ERDAssociation r = foreignKeyRelationships.get(i);
-			r.getTargetEntity().removePrimaryKeyRelationship(r, true);
-			t.removeForeignKeyRelationship(r, true);
+			r.getTargetEntity().removeReferenceAssociation(r, true);
+			t.removeAssociation(r, true);
 		}
 
 		//for all relationships where current entity is primary key
-		this.primaryKeyRelationships.addAll(t.getPrimaryKeyRelationships());
+		this.primaryKeyRelationships.addAll(t.getReferences());
 		for (int i = 0; i < primaryKeyRelationships.size(); i++)
 		{
 			ERDAssociation r = primaryKeyRelationships.get(i);
-			r.getSourceEntity().removeForeignKeyRelationship(r, true);
-			t.removePrimaryKeyRelationship(r, true);
+			r.getSourceEntity().removeAssociation(r, true);
+			t.removeReferenceAssociation(r, true);
 		}
 	}
 
@@ -112,15 +112,15 @@ public class EntityDeleteCommand extends Command
 		for (int i = 0; i < foreignKeyRelationships.size(); i++)
 		{
 			ERDAssociation r = foreignKeyRelationships.get(i);
-			r.getSourceEntity().addForeignKeyRelationship(r, true);
-			r.getTargetEntity().addPrimaryKeyRelationship(r, true);
+			r.getSourceEntity().addAssociation(r, true);
+			r.getTargetEntity().addReferenceAssociation(r, true);
 		}
 		foreignKeyRelationships.clear();
 		for (int i = 0; i < primaryKeyRelationships.size(); i++)
 		{
 			ERDAssociation r = primaryKeyRelationships.get(i);
-			r.getSourceEntity().addForeignKeyRelationship(r, true);
-			r.getTargetEntity().addPrimaryKeyRelationship(r, true);
+			r.getSourceEntity().addAssociation(r, true);
+			r.getTargetEntity().addReferenceAssociation(r, true);
 		}
 		primaryKeyRelationships.clear();
 	}
