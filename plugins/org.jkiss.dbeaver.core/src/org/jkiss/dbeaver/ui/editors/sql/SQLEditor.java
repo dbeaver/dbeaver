@@ -135,6 +135,9 @@ public class SQLEditor extends SQLEditorBase implements
     private static final long SCRIPT_UI_UPDATE_PERIOD = 100;
     private static final int MAX_PARALLEL_QUERIES_NO_WARN = 10;
 
+    private static final int SQL_EDITOR_CONTROL_INDEX = 1;
+    private static final int EXTRA_CONTROL_INDEX = 0;
+
     private static Image IMG_DATA_GRID = DBeaverIcons.getImage(UIIcon.SQL_PAGE_DATA_GRID);
     private static Image IMG_DATA_GRID_LOCKED = DBeaverIcons.getImage(UIIcon.SQL_PAGE_DATA_GRID_LOCKED);
     private static Image IMG_EXPLAIN_PLAN = DBeaverIcons.getImage(UIIcon.SQL_PAGE_EXPLAIN_PLAN);
@@ -503,6 +506,7 @@ public class SQLEditor extends SQLEditorBase implements
 
         // divides SQL editor presentations
         extraPresentationDescriptor = SQLPresentationRegistry.getInstance().getPresentation(this);
+        Composite pPlaceholder = null;
         if (extraPresentationDescriptor != null) {
             presentationSash = UIUtils.createPartDivider(
                     this,
@@ -511,6 +515,9 @@ public class SQLEditor extends SQLEditorBase implements
             presentationSash.setSashWidth(5);
             presentationSash.setLayoutData(new GridData(GridData.FILL_BOTH));
             editorContainer = presentationSash;
+
+            pPlaceholder = new Composite(presentationSash, SWT.NONE);
+            pPlaceholder.setLayout(new FillLayout());
         } else {
             editorContainer = sqlEditorPanel;
         }
@@ -518,18 +525,16 @@ public class SQLEditor extends SQLEditorBase implements
         super.createPartControl(editorContainer);
         getEditorControlWrapper().setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        if (extraPresentationDescriptor != null) {
-            Composite pPlaceholder = new Composite(presentationSash, SWT.NONE);
-            pPlaceholder.setLayout(new FillLayout());
+        if (pPlaceholder != null) {
             switch (extraPresentationDescriptor.getActivationType()) {
                 case HIDDEN:
-                    presentationSash.setMaximizedControl(presentationSash.getChildren()[0]);
+                    presentationSash.setMaximizedControl(presentationSash.getChildren()[SQL_EDITOR_CONTROL_INDEX]);
                     break;
                 case MAXIMIZED:
                 case VISIBLE:
                     extraPresentation.createPresentation(pPlaceholder, this);
                     if (extraPresentationDescriptor.getActivationType() == SQLEditorPresentation.ActivationType.MAXIMIZED) {
-                        if (presentationSash.getChildren()[1] != null) {
+                        if (presentationSash.getChildren()[EXTRA_CONTROL_INDEX] != null) {
                             presentationSash.setMaximizedControl(pPlaceholder);
                         }
                     }
@@ -841,7 +846,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
         if (!show) {
             boolean epHasFocus = UIUtils.hasFocus(getExtraPresentationControl());
-            presentationSash.setMaximizedControl(presentationSash.getChildren()[0]);
+            presentationSash.setMaximizedControl(presentationSash.getChildren()[SQL_EDITOR_CONTROL_INDEX]);
             if (epHasFocus) {
                 getEditorControlWrapper().setFocus();
             }
@@ -865,7 +870,7 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     private Control getExtraPresentationControl() {
-        return presentationSash.getChildren()[1];
+        return presentationSash.getChildren()[EXTRA_CONTROL_INDEX];
     }
 
     public void toggleResultPanel() {
