@@ -196,11 +196,13 @@ public class ViewerColumnController {
             }
             if (needRefresh && pack) {
                 viewer.refresh();
-                for (ColumnInfo columnInfo : getVisibleColumns()) {
-                    if (columnInfo.column instanceof TreeColumn) {
-                        ((TreeColumn) columnInfo.column).pack();
-                    } else {
-                        ((TableColumn) columnInfo.column).pack();
+                if (!isAllSized()) {
+                    for (ColumnInfo columnInfo : getVisibleColumns()) {
+                        if (columnInfo.column instanceof TreeColumn) {
+                            ((TreeColumn) columnInfo.column).pack();
+                        } else {
+                            ((TableColumn) columnInfo.column).pack();
+                        }
                     }
                 }
             }
