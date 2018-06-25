@@ -14,20 +14,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.registry.sql;
+package org.jkiss.dbeaver.ui.editors.sql;
 
-import org.jkiss.dbeaver.model.sql.format.SQLFormatter;
-import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
+import org.eclipse.swt.widgets.Composite;
 
 /**
- * SQL Formatter configurer
+ * Presentation panel. Displayed in the same tab folder as SQL results and other panels
  */
-public interface SQLFormatterConfigurer {
+public interface SQLEditorPresentationPanel {
 
-    /**
-     * Sets configuration parameters
-     * @return false if formatting was canceled by user
-     */
-    boolean configure(String formatName, SQLFormatter formatter, SQLFormatterConfiguration configuration);
+    void createPanel(Composite parent, SQLEditor editor, SQLEditorPresentation presentation);
+
+    void activatePanel();
+
+    void deactivatePanel();
 
 }

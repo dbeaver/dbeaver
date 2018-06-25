@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,41 +15,46 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.registry.sql;
+package org.jkiss.dbeaver.ui.editors.sql.registry;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
-import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.registry.AbstractContextDescriptor;
 import org.jkiss.dbeaver.registry.RegistryConstants;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorPresentation;
+import org.jkiss.utils.CommonUtils;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Locale;
 
 /**
- * SQLTargetConverterDescriptor
+ * SQLPresentationDescriptor
  */
-public class SQLTargetConverterDescriptor extends AbstractContextDescriptor {
+public class SQLPresentationDescriptor extends AbstractContextDescriptor {
+
+    public static final String EXTENSION_ID = "org.jkiss.dbeaver.sqlPresentation"; //$NON-NLS-1$
 
     private final String id;
     private final String label;
     private final String description;
     private final ObjectType implClass;
     private final DBPImage icon;
-    private List<DBPPropertyDescriptor> properties = new ArrayList<>();
+    private final SQLEditorPresentation.ActivationType activationType;
 
-    SQLTargetConverterDescriptor(IConfigurationElement config) {
+    public SQLPresentationDescriptor(IConfigurationElement config)
+    {
         super(config);
-
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.label = config.getAttribute(RegistryConstants.ATTR_LABEL);
         this.description = config.getAttribute(RegistryConstants.ATTR_DESCRIPTION);
         this.implClass = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
-
-        this.properties.addAll(PropertyDescriptor.extractProperties(config));
+        String activationStr = config.getAttribute("activation");
+        if (CommonUtils.isEmpty(activationStr)) {
+            this.activationType = SQLEditorPresentation.ActivationType.HIDDEN;
+        } else {
+            this.activationType = SQLEditorPresentation.ActivationType.valueOf(activationStr.toUpperCase(Locale.ENGLISH));
+        }
     }
 
     public String getId() {
@@ -68,16 +73,14 @@ public class SQLTargetConverterDescriptor extends AbstractContextDescriptor {
         return icon;
     }
 
-    public List<DBPPropertyDescriptor> getProperties() {
-        return properties;
+    public SQLEditorPresentation.ActivationType getActivationType() {
+        return activationType;
     }
 
-    public <T> T createInstance(Class<T> type) throws DBException {
-        return implClass.createInstance(type);
+    public SQLEditorPresentation createPresentation()
+        throws DBException
+    {
+        return implClass.createInstance(SQLEditorPresentation.class);
     }
 
-    @Override
-    public String toString() {
-        return id;
-    }
 }
