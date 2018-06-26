@@ -16,9 +16,11 @@
  */
 package org.jkiss.dbeaver.ext.erd.command;
 
+import org.eclipse.gef.EditPart;
 import org.eclipse.gef.commands.Command;
 import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
 import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
+import org.jkiss.dbeaver.ext.erd.part.AssociationPart;
 
 /**
  * Command to delete relationship
@@ -27,15 +29,17 @@ import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
  */
 public class AssociationDeleteCommand extends Command {
 
-    private ERDEntity sourceEntity;
-    private ERDEntity targetEntity;
-    private ERDAssociation relationship;
+    private final AssociationPart part;
+    private final ERDEntity sourceEntity;
+    private final ERDEntity targetEntity;
+    private final ERDAssociation association;
 
-    public AssociationDeleteCommand(ERDEntity sourceEntity, ERDEntity targetEntity, ERDAssociation relationship) {
+    public AssociationDeleteCommand(AssociationPart part) {
         super();
-        this.sourceEntity = sourceEntity;
-        this.targetEntity = targetEntity;
-        this.relationship = relationship;
+        this.part = part;
+        association = part.getAssociation();
+        sourceEntity = association.getSourceEntity();
+        targetEntity = association.getTargetEntity();
     }
 
     /**
@@ -43,10 +47,12 @@ public class AssociationDeleteCommand extends Command {
      */
     @Override
     public void execute() {
-        targetEntity.removeReferenceAssociation(relationship, true);
-        sourceEntity.removeAssociation(relationship, true);
-        relationship.setSourceEntity(null);
-        relationship.setTargetEntity(null);
+        part.markAssociatedAttributes(EditPart.SELECTED_NONE);
+
+        targetEntity.removeReferenceAssociation(association, true);
+        sourceEntity.removeAssociation(association, true);
+        association.setSourceEntity(null);
+        association.setTargetEntity(null);
     }
 
     /**
@@ -54,10 +60,10 @@ public class AssociationDeleteCommand extends Command {
      */
     @Override
     public void undo() {
-        relationship.setSourceEntity(sourceEntity);
-        relationship.setSourceEntity(targetEntity);
-        sourceEntity.addAssociation(relationship, true);
-        targetEntity.addReferenceAssociation(relationship, true);
+        association.setSourceEntity(sourceEntity);
+        association.setSourceEntity(targetEntity);
+        sourceEntity.addAssociation(association, true);
+        targetEntity.addReferenceAssociation(association, true);
     }
 
 }
