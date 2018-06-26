@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,7 +34,7 @@ import java.io.PrintWriter;
 import java.io.Writer;
 
 /**
- * SQL content type describer
+ * SQL editor output viewer
  */
 public class SQLEditorOutputViewer extends Composite {
 
@@ -111,22 +111,22 @@ public class SQLEditorOutputViewer extends Composite {
     private void createContextMenu(IWorkbenchPartSite site)
     {
         MenuManager menuMgr = new MenuManager();
-        menuMgr.addMenuListener(new IMenuListener() {
-            @Override
-            public void menuAboutToShow(IMenuManager manager)
-            {
-                StyledTextUtils.fillDefaultStyledTextContextMenu(manager, text);
-                manager.add(new Separator());
-                manager.add(new Action("Clear") {
-                    @Override
-                    public void run() {
-                        text.setText("");
-                    }
-                });
-            }
+        menuMgr.addMenuListener(manager -> {
+            StyledTextUtils.fillDefaultStyledTextContextMenu(manager, text);
+            manager.add(new Separator());
+            manager.add(new Action("Clear") {
+                @Override
+                public void run() {
+                    clearOutput();
+                }
+            });
         });
         menuMgr.setRemoveAllWhenShown(true);
         text.setMenu(menuMgr.createContextMenu(text));
+    }
+
+    void clearOutput() {
+        text.setText("");
     }
 
 }
