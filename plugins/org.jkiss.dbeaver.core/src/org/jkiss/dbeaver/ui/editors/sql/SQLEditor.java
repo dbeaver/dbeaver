@@ -163,6 +163,7 @@ public class SQLEditor extends SQLEditorBase implements
 
     private ResultSetOrientation resultSetOrientation = ResultSetOrientation.HORIZONTAL;
     private CustomSashForm resultsSash;
+    private Composite sqlEditorPanel;
     @Nullable
     private CustomSashForm presentationSash;
     private CTabFolder resultTabs;
@@ -508,7 +509,7 @@ public class SQLEditor extends SQLEditorBase implements
         UIUtils.setHelp(resultsSash, IHelpContextIds.CTX_SQL_EDITOR);
 
         Composite editorContainer;
-        Composite sqlEditorPanel = UIUtils.createPlaceholder(resultsSash, 2, 0);
+        sqlEditorPanel = UIUtils.createPlaceholder(resultsSash, 2, 0);
         createSideBar(sqlEditorPanel);
 
         // divides SQL editor presentations
@@ -517,7 +518,7 @@ public class SQLEditor extends SQLEditorBase implements
         if (extraPresentationDescriptor != null) {
             presentationSash = UIUtils.createPartDivider(
                     this,
-                    sqlEditorPanel,
+                sqlEditorPanel,
                     ((resultSetOrientation.getSashOrientation() == SWT.VERTICAL) ? SWT.HORIZONTAL : SWT.VERTICAL) | SWT.SMOOTH);
             presentationSash.setSashWidth(5);
             presentationSash.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -929,7 +930,7 @@ public class SQLEditor extends SQLEditorBase implements
 
     public void toggleResultPanel() {
         if (resultsSash.getMaximizedControl() == null) {
-            resultsSash.setMaximizedControl(resultsSash.getChildren()[0]);
+            resultsSash.setMaximizedControl(sqlEditorPanel);
             switchFocus(false);
         } else {
             resultsSash.setMaximizedControl(null);
@@ -1513,7 +1514,7 @@ public class SQLEditor extends SQLEditorBase implements
         reloadSyntaxRules();
 
         if (getDataSourceContainer() == null) {
-            resultsSash.setMaximizedControl(getEditorControlWrapper());
+            resultsSash.setMaximizedControl(sqlEditorPanel);
         } else {
             resultsSash.setMaximizedControl(null);
         }
@@ -2450,7 +2451,7 @@ public class SQLEditor extends SQLEditorBase implements
                         return;
                     }
                     if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE)) {
-                        resultsSash.setMaximizedControl(getEditorControlWrapper());
+                        resultsSash.setMaximizedControl(sqlEditorPanel);
                     }
                 });
             } finally {
