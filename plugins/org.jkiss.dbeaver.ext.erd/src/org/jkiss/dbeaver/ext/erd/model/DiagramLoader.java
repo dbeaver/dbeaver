@@ -387,7 +387,7 @@ public class DiagramLoader
         for (TableLoadInfo info : tableInfos) {
             tableList.add(info.table);
         }
-        diagram.fillTables(monitor, tableList, null);
+        diagram.fillEntities(monitor, tableList, null);
 
         // Set initial bounds
         for (TableLoadInfo info : tableInfos) {

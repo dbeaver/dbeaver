@@ -247,10 +247,10 @@ public class EntityDiagram extends ERDObject<DBSObject> {
         return copy;
     }
 
-    public void fillTables(DBRProgressMonitor monitor, Collection<DBSEntity> tables, DBSObject dbObject) {
+    public void fillEntities(DBRProgressMonitor monitor, Collection<DBSEntity> entities, DBSObject dbObject) {
         // Load entities
-        monitor.beginTask("Load entities metadata", tables.size());
-        for (DBSEntity table : tables) {
+        monitor.beginTask("Load entities metadata", entities.size());
+        for (DBSEntity table : entities) {
             if (monitor.isCanceled()) {
                 break;
             }
@@ -267,15 +267,15 @@ public class EntityDiagram extends ERDObject<DBSObject> {
         monitor.done();
 
         // Load relations
-        monitor.beginTask("Load entities' relations", tables.size());
-        for (DBSEntity table : tables) {
+        monitor.beginTask("Load entities' relations", entities.size());
+        for (DBSEntity table : entities) {
             if (monitor.isCanceled()) {
                 break;
             }
             monitor.subTask("Load " + table.getName());
             final ERDEntity erdEntity = entityMap.get(table);
             if (erdEntity != null) {
-                erdEntity.addRelations(monitor, entityMap, false);
+                erdEntity.addModelRelations(monitor, entityMap, true, false);
             }
             monitor.worked(1);
         }

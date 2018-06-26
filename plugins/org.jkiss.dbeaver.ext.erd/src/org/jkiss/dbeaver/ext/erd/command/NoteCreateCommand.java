@@ -45,7 +45,7 @@ public class NoteCreateCommand extends Command
     public void execute()
 	{
         diagramPart.getDiagram().addNote(note, true);
-        //diagramPart.getDiagram().addRelations(monitor, table, true);
+        //diagramPart.getDiagram().addModelRelations(monitor, table, true);
 
         if (location != null) {
             // Set new note location

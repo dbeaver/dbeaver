@@ -96,8 +96,8 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
             if (!CommonUtils.isEmpty(attrRefs)) {
                 for (DBSEntityAttributeRef attrRef : attrRefs) {
                     if (attrRef instanceof DBSTableForeignKeyColumn) {
-                        DBSEntityAttribute sourceAttr = ((DBSTableForeignKeyColumn) attrRef).getReferencedColumn();
-                        DBSEntityAttribute targetAttr = attrRef.getAttribute();
+                        DBSEntityAttribute targetAttr = ((DBSTableForeignKeyColumn) attrRef).getReferencedColumn();
+                        DBSEntityAttribute sourceAttr = attrRef.getAttribute();
                         if (sourceAttr != null && targetAttr != null) {
                             ERDEntityAttribute erdSourceAttr = getAttributeByModel(sourceEntity, sourceAttr);
                             ERDEntityAttribute erdTargetAttr = getAttributeByModel(targetEntity, targetAttr);

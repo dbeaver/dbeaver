@@ -225,7 +225,7 @@ public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implem
         Object newValue = evt.getNewValue();
         Object oldValue = evt.getOldValue();
 
-        if (!((oldValue != null) ^ (newValue != null))) {
+        if ((oldValue != null) == (newValue != null)) {
             throw new IllegalStateException("Exactly one of old or new values must be non-null for CHILD event");
         }
 
