@@ -778,14 +778,10 @@ public class SQLEditor extends SQLEditorBase implements
         }
         for (CTabItem item : resultTabs.getItems()) {
             if (item.getData() == view) {
-                if (resultTabs.getSelection() == item) {
-                    item.dispose();
-                    viewItem.setSelection(false);
-                    return;
-                } else {
-                    resultTabs.setSelection(item);
-                    return;
-                }
+                // Close tab if it is already open
+                item.dispose();
+                viewItem.setSelection(false);
+                return;
             }
         }
 
@@ -903,7 +899,7 @@ public class SQLEditor extends SQLEditorBase implements
             }
             // Close all panels
             for (CTabItem tabItem : resultTabs.getItems()) {
-                if (tabItem instanceof SQLEditorPresentationPanel) {
+                if (tabItem.getData() instanceof SQLEditorPresentationPanel) {
                     tabItem.dispose();
                 }
             }
@@ -913,7 +909,11 @@ public class SQLEditor extends SQLEditorBase implements
             for (SQLPresentationPanelDescriptor panelDescriptor : extraPresentationDescriptor.getPanels()) {
                 if (sideToolBar.find(PANEL_ITEM_PREFIX + panelDescriptor.getId()) == null) {
                     sideBarChanged = true;
-                    sideToolBar.insertAfter(TOOLBAR_GROUP_PANELS, new PresentationPanelToggleAction(panelDescriptor));
+                    PresentationPanelToggleAction toggleAction = new PresentationPanelToggleAction(panelDescriptor);
+                    sideToolBar.insertAfter(TOOLBAR_GROUP_PANELS, toggleAction);
+                    if (panelDescriptor.isAutoActivate()) {
+                        toggleAction.run();
+                    }
                 }
             }
         }

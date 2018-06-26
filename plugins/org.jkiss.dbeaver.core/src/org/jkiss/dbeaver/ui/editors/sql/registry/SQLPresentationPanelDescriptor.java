@@ -39,6 +39,7 @@ public class SQLPresentationPanelDescriptor extends AbstractContextDescriptor {
     private final ObjectType implClass;
     private final DBPImage icon;
     private final boolean isSingleton;
+    private final boolean isAutoActivate;
 
     public SQLPresentationPanelDescriptor(IConfigurationElement config)
     {
@@ -49,6 +50,7 @@ public class SQLPresentationPanelDescriptor extends AbstractContextDescriptor {
         this.implClass = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
         this.isSingleton = CommonUtils.getBoolean(config.getAttribute("singleton"), true);
+        this.isAutoActivate = CommonUtils.getBoolean(config.getAttribute("autoActivate"), true);
     }
 
     public String getId() {
@@ -69,6 +71,10 @@ public class SQLPresentationPanelDescriptor extends AbstractContextDescriptor {
 
     public boolean isSingleton() {
         return isSingleton;
+    }
+
+    public boolean isAutoActivate() {
+        return isAutoActivate;
     }
 
     public SQLEditorPresentationPanel createPanel()
