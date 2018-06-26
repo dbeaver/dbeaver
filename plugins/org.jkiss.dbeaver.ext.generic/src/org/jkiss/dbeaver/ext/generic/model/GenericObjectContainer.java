@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -279,7 +280,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
     }
 
     @Override
-    public synchronized Collection<GenericProcedure> getProcedures(DBRProgressMonitor monitor)
+    public synchronized List<GenericProcedure> getProcedures(DBRProgressMonitor monitor)
         throws DBException
     {
         if (procedures == null) {
@@ -300,10 +301,35 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
     }
 
     @Override
-    public Collection<GenericProcedure> getProcedures(DBRProgressMonitor monitor, String name)
+    public List<GenericProcedure> getProcedures(DBRProgressMonitor monitor, String name)
         throws DBException
     {
         return DBUtils.findObjects(getProcedures(monitor), name);
+    }
+
+    @Override
+    public List<? extends GenericProcedure> getProceduresOnly(DBRProgressMonitor monitor) throws DBException {
+        if (!dataSource.splitProceduresAndFunctions()) {
+            return getProcedures(monitor);
+        }
+        List<GenericProcedure> filteredProcedures = new ArrayList<>();
+        for (GenericProcedure proc : getProcedures(monitor)) {
+            if (proc.getProcedureType() == DBSProcedureType.PROCEDURE) {
+                filteredProcedures.add(proc);
+            }
+        }
+        return filteredProcedures;
+    }
+
+    @Override
+    public Collection<? extends GenericProcedure> getFunctionsOnly(DBRProgressMonitor monitor) throws DBException {
+        List<GenericProcedure> filteredProcedures = new ArrayList<>();
+        for (GenericProcedure proc : getProcedures(monitor)) {
+            if (proc.getProcedureType() == DBSProcedureType.FUNCTION) {
+                filteredProcedures.add(proc);
+            }
+        }
+        return filteredProcedures;
     }
 
     @Override

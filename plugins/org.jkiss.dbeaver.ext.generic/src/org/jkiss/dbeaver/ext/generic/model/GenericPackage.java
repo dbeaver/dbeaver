@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -94,7 +95,7 @@ public class GenericPackage extends GenericObjectContainer implements DBPQualifi
     }
 
     @Override
-    public Collection<GenericProcedure> getProcedures(DBRProgressMonitor monitor)
+    public List<GenericProcedure> getProcedures(DBRProgressMonitor monitor)
         throws DBException
     {
         return procedures;
