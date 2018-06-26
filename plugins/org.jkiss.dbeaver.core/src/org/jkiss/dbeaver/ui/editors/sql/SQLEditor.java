@@ -188,6 +188,8 @@ public class SQLEditor extends SQLEditorBase implements
 
     private SQLPresentationDescriptor extraPresentationDescriptor;
     private SQLEditorPresentation extraPresentation;
+    private Map<SQLPresentationPanelDescriptor, SQLEditorPresentationPanel> extraPresentationPanels = new HashMap<>();
+    private SQLEditorPresentationPanel extraPresentationCurrentPanel;
 
     public SQLEditor()
     {
@@ -634,9 +636,16 @@ public class SQLEditor extends SQLEditorBase implements
         resultTabs.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
+                if (extraPresentationCurrentPanel != null) {
+                    extraPresentationCurrentPanel.deactivatePanel();
+                }
+                extraPresentationCurrentPanel = null;
                 Object data = e.item.getData();
                 if (data instanceof QueryResultsContainer) {
                     setActiveResultsContainer((QueryResultsContainer) data);
+                } else if (data instanceof SQLEditorPresentationPanel) {
+                    extraPresentationCurrentPanel = ((SQLEditorPresentationPanel) data);
+                    extraPresentationCurrentPanel.activatePanel();
                 }
             }
         });
@@ -892,6 +901,13 @@ public class SQLEditor extends SQLEditorBase implements
                     sideBarChanged = true;
                 }
             }
+            // Close all panels
+            for (CTabItem tabItem : resultTabs.getItems()) {
+                if (tabItem instanceof SQLEditorPresentationPanel) {
+                    tabItem.dispose();
+                }
+            }
+            extraPresentationCurrentPanel = null;
         } else {
             // Check and add presentation panel toggles
             for (SQLPresentationPanelDescriptor panelDescriptor : extraPresentationDescriptor.getPanels()) {
@@ -971,6 +987,8 @@ public class SQLEditor extends SQLEditorBase implements
 
     private class PresentationPanelToggleAction extends Action {
         private SQLPresentationPanelDescriptor panel;
+        private CTabItem tabItem;
+
         public PresentationPanelToggleAction(SQLPresentationPanelDescriptor panel) {
             super(panel.getLabel(), Action.AS_CHECK_BOX);
             setId(PANEL_ITEM_PREFIX + panel.getId());
@@ -985,7 +1003,50 @@ public class SQLEditor extends SQLEditorBase implements
 
         @Override
         public void run() {
+            SQLEditorPresentationPanel panelInstance = extraPresentationPanels.get(panel);
+            if (panelInstance != null && !isChecked()) {
+                // Hide panel
+                for (CTabItem tabItem : resultTabs.getItems()) {
+                    if (tabItem.getData() == panelInstance) {
+                        tabItem.dispose();
+                        return;
+                    }
+                }
+            }
+            if (panelInstance == null) {
+                Control panelControl;
+                try {
+                    panelInstance = panel.createPanel();
+                    panelControl = panelInstance.createPanel(resultTabs, SQLEditor.this, extraPresentation);
+                } catch (DBException e) {
+                    DBUserInterface.getInstance().showError("Panel opening error", "Can't create panel " + panel.getLabel(), e);
+                    return;
+                }
+                extraPresentationPanels.put(panel, panelInstance);
+                tabItem = new CTabItem(resultTabs, SWT.CLOSE);
+                tabItem.setControl(panelControl);
+                tabItem.setText(panel.getLabel());
+                tabItem.setToolTipText(panel.getDescription());
+                tabItem.setImage(DBeaverIcons.getImage(panel.getIcon()));
+                tabItem.setData(panelInstance);
 
+                // De-select tool item on tab close
+                tabItem.addDisposeListener(e -> {
+                    PresentationPanelToggleAction.this.setChecked(false);
+                    panelControl.dispose();
+                    extraPresentationPanels.remove(panel);
+                    extraPresentationCurrentPanel = null;
+                });
+                extraPresentationCurrentPanel = panelInstance;
+                resultTabs.setSelection(tabItem);
+            } else {
+                for (CTabItem tabItem : resultTabs.getItems()) {
+                    if (tabItem.getData() == panelInstance) {
+                        resultTabs.setSelection(tabItem);
+                        break;
+                    }
+                }
+            }
         }
     }
 

@@ -17,13 +17,14 @@
 package org.jkiss.dbeaver.ui.editors.sql;
 
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 
 /**
  * Presentation panel. Displayed in the same tab folder as SQL results and other panels
  */
 public interface SQLEditorPresentationPanel {
 
-    void createPanel(Composite parent, SQLEditor editor, SQLEditorPresentation presentation);
+    Control createPanel(Composite parent, SQLEditor editor, SQLEditorPresentation presentation);
 
     void activatePanel();
 
