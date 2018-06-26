@@ -1388,6 +1388,9 @@ public class SQLEditor extends SQLEditorBase implements
         if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE) && isDirty()) {
             doSave(new NullProgressMonitor());
         }
+        if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE)) {
+            outputViewer.clearOutput();
+        }
 
         if (!newTab || !isSingleQuery) {
             // We don't need new tab or we are executing a script - so close all extra tabs

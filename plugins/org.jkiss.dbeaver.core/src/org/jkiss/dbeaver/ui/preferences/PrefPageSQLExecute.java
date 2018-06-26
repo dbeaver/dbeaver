@@ -43,6 +43,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
     private Spinner executeTimeoutText;
     private Button soundOnQueryEnd;
     private Button updateDefaultAfterExecute;
+    private Button clearOutputBeforeExecute;
 
     private Combo commitTypeCombo;
     private Combo errorHandlingCombo;
@@ -96,7 +97,8 @@ public class PrefPageSQLExecute extends TargetPrefPage
             store.contains(SQLPreferenceConstants.RESET_CURSOR_ON_EXECUTE) ||
             store.contains(SQLPreferenceConstants.MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE) ||
             store.contains(SQLPreferenceConstants.BEEP_ON_QUERY_END) ||
-            store.contains(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE)
+            store.contains(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE) ||
+            store.contains(SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE)
         ;
     }
 
@@ -117,7 +119,8 @@ public class PrefPageSQLExecute extends TargetPrefPage
             {
                 invalidateBeforeExecuteCheck = UIUtils.createCheckbox(commonGroup, CoreMessages.pref_page_sql_editor_label_invalidate_before_execute, null, false, 2);
                 soundOnQueryEnd = UIUtils.createCheckbox(commonGroup, CoreMessages.pref_page_sql_editor_label_sound_on_query_end, null, false, 2);
-                updateDefaultAfterExecute = UIUtils.createCheckbox(commonGroup, CoreMessages.pref_page_sql_editor_label_refresh_defaults_after_execute, null, false, 2);
+                updateDefaultAfterExecute = UIUtils.createCheckbox(commonGroup, CoreMessages.pref_page_sql_editor_label_refresh_defaults_after_execute, CoreMessages.pref_page_sql_editor_label_refresh_defaults_after_execute_tip, false, 2);
+                clearOutputBeforeExecute = UIUtils.createCheckbox(commonGroup, CoreMessages.pref_page_sql_editor_label_clear_output_before_execute, CoreMessages.pref_page_sql_editor_label_clear_output_before_execute_tip, false, 2);
 
                 UIUtils.createControlLabel(commonGroup, CoreMessages.pref_page_sql_editor_label_sql_timeout);
                 executeTimeoutText = new Spinner(commonGroup, SWT.BORDER);
@@ -201,6 +204,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
             executeTimeoutText.setSelection(store.getInt(DBeaverPreferences.STATEMENT_TIMEOUT));
             soundOnQueryEnd.setSelection(store.getBoolean(SQLPreferenceConstants.BEEP_ON_QUERY_END));
             updateDefaultAfterExecute.setSelection(store.getBoolean(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE));
+            clearOutputBeforeExecute.setSelection(store.getBoolean(SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE));
 
             commitTypeCombo.select(SQLScriptCommitType.valueOf(store.getString(DBeaverPreferences.SCRIPT_COMMIT_TYPE)).ordinal());
             errorHandlingCombo.select(SQLScriptErrorHandling.valueOf(store.getString(DBeaverPreferences.SCRIPT_ERROR_HANDLING)).ordinal());
@@ -233,6 +237,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
             store.setValue(DBeaverPreferences.STATEMENT_TIMEOUT, executeTimeoutText.getSelection());
             store.setValue(SQLPreferenceConstants.BEEP_ON_QUERY_END, soundOnQueryEnd.getSelection());
             store.setValue(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE, updateDefaultAfterExecute.getSelection());
+            store.setValue(SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE, clearOutputBeforeExecute.getSelection());
 
             store.setValue(DBeaverPreferences.SCRIPT_COMMIT_TYPE, CommonUtils.fromOrdinal(SQLScriptCommitType.class, commitTypeCombo.getSelectionIndex()).name());
             store.setValue(DBeaverPreferences.SCRIPT_COMMIT_LINES, commitLinesText.getSelection());
@@ -286,6 +291,7 @@ public class PrefPageSQLExecute extends TargetPrefPage
         store.setToDefault(ModelPreferences.SQL_NAMED_PARAMETERS_PREFIX);
         store.setToDefault(SQLPreferenceConstants.BEEP_ON_QUERY_END);
         store.setToDefault(SQLPreferenceConstants.REFRESH_DEFAULTS_AFTER_EXECUTE);
+        store.setToDefault(SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE);
     }
 
     @Override
