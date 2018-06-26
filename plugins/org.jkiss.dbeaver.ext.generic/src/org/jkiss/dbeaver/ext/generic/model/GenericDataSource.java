@@ -345,6 +345,11 @@ public class GenericDataSource extends JDBCDataSource
     }
 
     @Override
+    public Collection<? extends GenericProcedure> getProceduresOnly(DBRProgressMonitor monitor) throws DBException {
+        return structureContainer == null ? null : structureContainer.getProceduresOnly(monitor);
+    }
+
+    @Override
     public GenericProcedure getProcedure(DBRProgressMonitor monitor, String uniqueName) throws DBException {
         return structureContainer == null ? null : structureContainer.getProcedure(monitor, uniqueName);
     }
@@ -353,6 +358,11 @@ public class GenericDataSource extends JDBCDataSource
     public Collection<GenericProcedure> getProcedures(DBRProgressMonitor monitor, String name)
         throws DBException {
         return structureContainer == null ? null : structureContainer.getProcedures(monitor, name);
+    }
+
+    @Override
+    public Collection<? extends GenericProcedure> getFunctionsOnly(DBRProgressMonitor monitor) throws DBException {
+        return structureContainer == null ? null : structureContainer.getFunctionsOnly(monitor);
     }
 
     @Override
@@ -832,6 +842,12 @@ public class GenericDataSource extends JDBCDataSource
             return super.resolveDataKind(dataType.getTypeName(), dataType.getTypeID());
         }
         return super.resolveDataKind(typeName, valueType);
+    }
+
+    public boolean splitProceduresAndFunctions() {
+        return CommonUtils.getBoolean(
+            getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_SPLIT_PROCEDURES_AND_FUNCTIONS),
+            false);
     }
 
     // Native formats
