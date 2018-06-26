@@ -185,7 +185,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
         } else {
             diagram = new EntityDiagram(getDecorator(), dbObject, dbObject.getName());
 
-            diagram.fillTables(
+            diagram.fillEntities(
                 monitor,
                 collectDatabaseTables(monitor, dbObject),
                 dbObject);

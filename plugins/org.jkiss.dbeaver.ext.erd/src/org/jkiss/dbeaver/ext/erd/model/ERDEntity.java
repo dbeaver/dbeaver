@@ -193,7 +193,14 @@ public class ERDEntity extends ERDObject<DBSEntity> {
         return false;
     }
 
-    public void addRelations(DBRProgressMonitor monitor, Map<DBSEntity, ERDEntity> tableMap, boolean reflect) {
+    /**
+     * Resolve and create entity associations.
+     * Also caches all unresolved associations (associations with entities which are not present in diagram yet)
+     * @param tableMap all diagram entities map
+     * @param create    if true then creates all found model association. Otherwise only saves unresolved ones.
+     * @param reflect   reflect UI
+     */
+    public void addModelRelations(DBRProgressMonitor monitor, Map<DBSEntity, ERDEntity> tableMap, boolean create, boolean reflect) {
         try {
             Set<DBSEntityAttribute> fkAttrs = new HashSet<>();
             // Make associations
@@ -211,9 +218,9 @@ public class ERDEntity extends ERDObject<DBSEntity> {
                         }
                         unresolvedKeys.add(fk);
                     } else {
-                        //if (table1 != entity2) {
-                        new ERDAssociation(fk, entity2, this, reflect);
-                        //}
+                        if (create) {
+                            new ERDAssociation(fk, this, entity2, reflect);
+                        }
                     }
                 }
             }

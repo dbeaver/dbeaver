@@ -134,7 +134,7 @@ public class DiagramObjectCollector {
 
         // Add new relations
         for (ERDEntity erdEntity : erdEntities) {
-            erdEntity.addRelations(monitor, tableMap, false);
+            erdEntity.addModelRelations(monitor, tableMap, true, false);
         }
     }
 

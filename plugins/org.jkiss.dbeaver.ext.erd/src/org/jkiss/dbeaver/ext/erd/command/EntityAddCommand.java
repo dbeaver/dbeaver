@@ -49,7 +49,7 @@ public class EntityAddCommand extends Command
         Point curLocation = location == null ? null : new Point(location);
         for (ERDEntity entity : entities) {
 		    diagramPart.getDiagram().addEntity(entity, true);
-            //diagramPart.getDiagram().addRelations(monitor, entity, true);
+            //diagramPart.getDiagram().addModelRelations(monitor, entity, true);
 
             if (curLocation != null) {
                 // Put new entities in specified location
