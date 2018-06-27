@@ -84,7 +84,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     private PropertySourceAbstract listPropertySource;
 
     private ObjectViewerRenderer renderer;
-    protected ViewerColumnController columnController;
+    protected ViewerColumnController<ObjectColumn, Object> columnController;
 
     // Sample flag. True only when initial content is packed. Used to provide actual cell data to Tree/Table pack() methods
     // After content is loaded is always false (and all hyperlink cells have empty text)
@@ -262,7 +262,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     }
 
     protected ObjectColumn getColumnByIndex(int index) {
-        return (ObjectColumn) columnController.getColumnData(index);
+        return columnController.getColumnData(index);
     }
 
     public void setFitWidth(boolean fitWidth) {
@@ -393,7 +393,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
                 if (reload) {
                     clearListData();
-                    columnController = new ViewerColumnController(getListConfigId(classList), getItemsViewer());
+                    columnController = new ViewerColumnController<>(getListConfigId(classList), getItemsViewer());
                 }
 
                 // Create columns from classes' annotations
@@ -710,7 +710,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
     protected void createColumn(ObjectPropertyDescriptor prop) {
         ObjectColumn objectColumn = null;
-        for (ObjectColumn col : columnController.getColumnsData(ObjectColumn.class)) {
+        for (ObjectColumn col : columnController.<ObjectColumn>getColumnsData(ObjectColumn.class)) {
             if (CommonUtils.equalObjects(col.id, prop.getId()) || CommonUtils.equalObjects(col.displayName, prop.getDisplayName())) {
                 objectColumn = col;
                 break;

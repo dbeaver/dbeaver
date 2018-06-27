@@ -46,7 +46,7 @@ import java.util.List;
 /**
  * Tree/table viewer column controller
  */
-public class ViewerColumnController<ELEMENT> {
+public class ViewerColumnController<COLUMN, ELEMENT> {
 
     private static final Log log = Log.getLog(ViewerColumnController.class);
 
@@ -395,7 +395,7 @@ public class ViewerColumnController<ELEMENT> {
         }
     }
 
-    public Object getColumnData(int columnIndex) {
+    public COLUMN getColumnData(int columnIndex) {
         final Control control = viewer.getControl();
         ColumnInfo columnInfo;
         if (control instanceof Tree) {
@@ -403,11 +403,11 @@ public class ViewerColumnController<ELEMENT> {
         } else {
             columnInfo = (ColumnInfo) ((Table) control).getColumn(columnIndex).getData();
         }
-        return columnInfo.userData;
+        return (COLUMN) columnInfo.userData;
     }
 
-    public <T> T[] getColumnsData(Class<T> type) {
-        T[] newArray = (T[]) Array.newInstance(type, columns.size());
+    public COLUMN[] getColumnsData(Class<COLUMN> type) {
+        COLUMN[] newArray = (COLUMN[]) Array.newInstance(type, columns.size());
         for (int i = 0; i < columns.size(); i++) {
             newArray[i] = type.cast(columns.get(i).userData);
         }
