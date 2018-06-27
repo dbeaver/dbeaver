@@ -47,6 +47,7 @@ public abstract class ERDObject<OBJECT> implements IAdaptable, DBPNamedObject {
     private transient PropertyChangeSupport listeners = null;//new PropertyChangeSupport(this);
 
     protected OBJECT object;
+    protected Object userData;
 
     protected ERDObject(OBJECT object) {
         this.object = object;
@@ -58,6 +59,14 @@ public abstract class ERDObject<OBJECT> implements IAdaptable, DBPNamedObject {
 
     public void setObject(OBJECT object) {
         this.object = object;
+    }
+
+    public Object getUserData() {
+        return userData;
+    }
+
+    public void setUserData(Object userData) {
+        this.userData = userData;
     }
 
     public void addPropertyChangeListener(PropertyChangeListener l) {
