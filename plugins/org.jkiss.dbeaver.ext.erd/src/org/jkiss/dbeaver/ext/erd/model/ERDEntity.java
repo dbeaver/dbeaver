@@ -281,13 +281,13 @@ public class ERDEntity extends ERDObject<DBSEntity> {
 
     @Override
     public int hashCode() {
-        return object.hashCode();
+        return object == null ? 0 : object.hashCode();
     }
 
     @Override
     public boolean equals(Object o) {
         return o != null && o instanceof ERDEntity &&
-            object.equals(((ERDEntity) o).object);
+            CommonUtils.equalObjects(object, ((ERDEntity) o).object);
     }
 
 }
