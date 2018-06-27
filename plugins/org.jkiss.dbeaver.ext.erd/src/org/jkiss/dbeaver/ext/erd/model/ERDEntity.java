@@ -22,6 +22,7 @@ package org.jkiss.dbeaver.ext.erd.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
@@ -39,6 +40,7 @@ public class ERDEntity extends ERDObject<DBSEntity> {
 
     static final Log log = Log.getLog(ERDEntity.class);
 
+    private DBPDataSource dataSource;
     private String alias;
     private List<ERDEntityAttribute> attributes;
 
@@ -48,8 +50,21 @@ public class ERDEntity extends ERDObject<DBSEntity> {
 
     private boolean primary = false;
 
+    /**
+     * Special constructore for creating lazy entities.
+     * This entity will be initialized at the moment of creation within diagram.
+     */
+    public ERDEntity(DBPDataSource dataSource) {
+        super(null);
+        this.dataSource = dataSource;
+    }
+
     public ERDEntity(DBSEntity entity) {
         super(entity);
+    }
+
+    public DBPDataSource getDataSource() {
+        return dataSource;
     }
 
     public String getAlias() {
