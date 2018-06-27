@@ -46,7 +46,7 @@ import java.util.List;
 /**
  * Tree/table viewer column controller
  */
-public class ViewerColumnController {
+public class ViewerColumnController<ELEMENT> {
 
     private static final Log log = Log.getLog(ViewerColumnController.class);
 
@@ -73,19 +73,16 @@ public class ViewerColumnController {
         control.setData(DATA_KEY, this);
 
         if (control instanceof Tree || control instanceof Table) {
-            menuListener = new Listener() {
-                @Override
-                public void handleEvent(Event event) {
-                    Point pt = control.getDisplay().map(null, control, new Point(event.x, event.y));
-                    Rectangle clientArea = ((Composite) control).getClientArea();
-                    if (RuntimeUtils.isPlatformMacOS()) {
-                        clickOnHeader = pt.y < 0;
+            menuListener = event -> {
+                Point pt = control.getDisplay().map(null, control, new Point(event.x, event.y));
+                Rectangle clientArea = ((Composite) control).getClientArea();
+                if (RuntimeUtils.isPlatformMacOS()) {
+                    clickOnHeader = pt.y < 0;
+                } else {
+                    if (control instanceof Tree) {
+                        clickOnHeader = clientArea.y <= pt.y && pt.y < (clientArea.y + ((Tree) control).getHeaderHeight());
                     } else {
-                        if (control instanceof Tree) {
-                            clickOnHeader = clientArea.y <= pt.y && pt.y < (clientArea.y + ((Tree) control).getHeaderHeight());
-                        } else {
-                            clickOnHeader = clientArea.y <= pt.y && pt.y < (clientArea.y + ((Table) control).getHeaderHeight());
-                        }
+                        clickOnHeader = clientArea.y <= pt.y && pt.y < (clientArea.y + ((Table) control).getHeaderHeight());
                     }
                 }
             };
@@ -118,6 +115,16 @@ public class ViewerColumnController {
                 configureColumns();
             }
         });
+    }
+
+    public void addColumn(String name, String description, int style, boolean defaultVisible, boolean required, IColumnTextProvider<ELEMENT> labelProvider)
+    {
+        addColumn(name, description, style, defaultVisible, required, false, null, new CellLabelProvider() {
+            @Override
+            public void update(ViewerCell cell) {
+                cell.setText(labelProvider.getText((ELEMENT) cell.getElement()));
+            }
+        }, null);
     }
 
     public void addColumn(String name, String description, int style, boolean defaultVisible, boolean required, CellLabelProvider labelProvider)
@@ -317,30 +324,28 @@ public class ViewerColumnController {
             if (columnInfo.labelProvider instanceof ILazyLabelProvider) {
                 hasLazyColumns = true;
             } else if (columnInfo.labelProvider instanceof ILabelProvider) {
-                columnInfo.sortListener = new SortListener(columnInfo);
+                columnInfo.sortListener = new SortListener(viewer, columnInfo);
                 columnInfo.column.addListener(SWT.Selection, columnInfo.sortListener);
             }
         }
         if (hasLazyColumns) {
-            viewer.getControl().addListener(SWT.PaintItem, new Listener() {
-                public void handleEvent(Event event) {
-                    if (viewer instanceof TreeViewer) {
-                        TreeColumn column = ((TreeViewer) viewer).getTree().getColumn(event.index);
-                        if (((ColumnInfo) column.getData()).labelProvider instanceof ILazyLabelProvider &&
-                            CommonUtils.isEmpty(((TreeItem) event.item).getText(event.index))) {
-                            final String lazyText = ((ILazyLabelProvider) ((ColumnInfo) column.getData()).labelProvider).getLazyText(event.item.getData());
-                            if (!CommonUtils.isEmpty(lazyText)) {
-                                ((TreeItem) event.item).setText(event.index, lazyText);
-                            }
+            viewer.getControl().addListener(SWT.PaintItem, event -> {
+                if (viewer instanceof TreeViewer) {
+                    TreeColumn column = ((TreeViewer) viewer).getTree().getColumn(event.index);
+                    if (((ColumnInfo) column.getData()).labelProvider instanceof ILazyLabelProvider &&
+                        CommonUtils.isEmpty(((TreeItem) event.item).getText(event.index))) {
+                        final String lazyText = ((ILazyLabelProvider) ((ColumnInfo) column.getData()).labelProvider).getLazyText(event.item.getData());
+                        if (!CommonUtils.isEmpty(lazyText)) {
+                            ((TreeItem) event.item).setText(event.index, lazyText);
                         }
-                    } else {
-                        TableColumn column = ((TableViewer) viewer).getTable().getColumn(event.index);
-                        if (((ColumnInfo) column.getData()).labelProvider instanceof ILazyLabelProvider &&
-                            CommonUtils.isEmpty(((TableItem) event.item).getText(event.index))) {
-                            final String lazyText = ((ILazyLabelProvider) ((ColumnInfo) column.getData()).labelProvider).getLazyText(event.item.getData());
-                            if (!CommonUtils.isEmpty(lazyText)) {
-                                ((TableItem) event.item).setText(event.index, lazyText);
-                            }
+                    }
+                } else {
+                    TableColumn column = ((TableViewer) viewer).getTable().getColumn(event.index);
+                    if (((ColumnInfo) column.getData()).labelProvider instanceof ILazyLabelProvider &&
+                        CommonUtils.isEmpty(((TableItem) event.item).getText(event.index))) {
+                        final String lazyText = ((ILazyLabelProvider) ((ColumnInfo) column.getData()).labelProvider).getLazyText(event.item.getData());
+                        if (!CommonUtils.isEmpty(lazyText)) {
+                            ((TableItem) event.item).setText(event.index, lazyText);
                         }
                     }
                 }
@@ -357,7 +362,7 @@ public class ViewerColumnController {
                 visibleList.add(column);
             }
         }
-        Collections.sort(visibleList, new ColumnInfoComparator());
+        visibleList.sort(new ColumnInfoComparator());
         return visibleList;
     }
 
@@ -504,17 +509,15 @@ public class ViewerColumnController {
             UIUtils.createControlLabel(composite, "Select columns you want to display");
 
             List<ColumnInfo> orderedList = new ArrayList<>(columns);
-            Collections.sort(orderedList, new ColumnInfoComparator());
+            orderedList.sort(new ColumnInfoComparator());
             colTable = new Table(composite, SWT.BORDER | SWT.CHECK | SWT.H_SCROLL | SWT.V_SCROLL);
             colTable.setLayoutData(new GridData(GridData.FILL_BOTH));
             colTable.setLinesVisible(true);
-            colTable.addListener(SWT.Selection,new Listener() {
-                public void handleEvent(Event event) {
-                    if( event.detail == SWT.CHECK ) {
-                        if (((TableItem)event.item).getGrayed()) {
-                            ((TableItem)event.item).setChecked(true);
-                            event.doit = false;
-                        }
+            colTable.addListener(SWT.Selection, event -> {
+                if( event.detail == SWT.CHECK ) {
+                    if (((TableItem)event.item).getGrayed()) {
+                        ((TableItem)event.item).setChecked(true);
+                        event.doit = false;
                     }
                 }
             });
@@ -594,13 +597,15 @@ public class ViewerColumnController {
         }
     }
 
-    private class SortListener implements Listener
+    private static class SortListener implements Listener
     {
+        ColumnViewer viewer;
         ColumnInfo columnInfo;
         int sortDirection = SWT.DOWN;
         Item prevColumn = null;
 
-        public SortListener(ColumnInfo columnInfo) {
+        public SortListener(ColumnViewer viewer, ColumnInfo columnInfo) {
+            this.viewer = viewer;
             this.columnInfo = columnInfo;
         }
 
