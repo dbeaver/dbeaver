@@ -710,7 +710,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
     protected void createColumn(ObjectPropertyDescriptor prop) {
         ObjectColumn objectColumn = null;
-        for (ObjectColumn col : columnController.<ObjectColumn>getColumnsData(ObjectColumn.class)) {
+        for (ObjectColumn col : columnController.getColumnsData(ObjectColumn.class)) {
             if (CommonUtils.equalObjects(col.id, prop.getId()) || CommonUtils.equalObjects(col.displayName, prop.getDisplayName())) {
                 objectColumn = col;
                 break;
@@ -1174,6 +1174,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     }
 
     protected void addColumnConfigAction(IContributionManager contributionManager) {
+        // Create lazy action here because columnController might be not instantiated yet
         Action configColumnsAction = new Action(
             CoreMessages.obj_editor_properties_control_action_configure_columns,
             DBeaverIcons.getImageDescriptor(UIIcon.CONFIGURATION)) {

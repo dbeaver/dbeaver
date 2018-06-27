@@ -21,8 +21,6 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.dnd.*;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.MenuEvent;
 import org.eclipse.swt.events.MenuListener;
 import org.eclipse.swt.widgets.Control;
@@ -182,71 +180,62 @@ public class NavigatorUtils {
                 }
             }
         });
-        menuMgr.addMenuListener(new IMenuListener() {
-            @Override
-            public void menuAboutToShow(final IMenuManager manager)
-            {
-                ViewerColumnController columnController = ViewerColumnController.getFromControl(control);
-                if (columnController != null && columnController.isClickOnHeader()) {
-                    columnController.fillConfigMenu(manager);
-                    manager.add(new Separator());
-                    return;
-                }
+        menuMgr.addMenuListener(manager -> {
+            ViewerColumnController columnController = ViewerColumnController.getFromControl(control);
+            if (columnController != null && columnController.isClickOnHeader()) {
+                columnController.fillConfigMenu(manager);
+                manager.add(new Separator());
+                return;
+            }
 
-                manager.add(new GroupMarker(CoreCommands.GROUP_NAVIGATOR_ADDITIONS));
+            manager.add(new GroupMarker(CoreCommands.GROUP_NAVIGATOR_ADDITIONS));
 
-                final IStructuredSelection selection = (IStructuredSelection)viewer.getSelection();
-                final DBNNode selectedNode = getSelectedNode(viewer);
-                if (selectedNode != null && !selectedNode.isLocked() && workbenchSite != null) {
-                    // Add "Set active object" menu
-                    if (selectedNode.isPersisted() && selectedNode instanceof DBNDatabaseNode && !(selectedNode instanceof DBNDatabaseFolder) && ((DBNDatabaseNode)selectedNode).getObject() != null) {
-                        final DBSObjectSelector activeContainer = DBUtils.getParentAdapter(
-                            DBSObjectSelector.class, ((DBNDatabaseNode) selectedNode).getObject());
-                        if (activeContainer != null && activeContainer.supportsDefaultChange()) {
-                            DBSObject activeChild;
-                            activeChild = activeContainer.getDefaultObject();
-                            if (activeChild != ((DBNDatabaseNode)selectedNode).getObject()) {
-                                DBNDatabaseNode databaseNode = (DBNDatabaseNode)selectedNode;
-                                if (databaseNode.getObject() != null && (activeChild == null || activeChild.getClass() == databaseNode.getObject().getClass())) {
-                                    manager.add(ActionUtils.makeCommandContribution(workbenchSite, CoreCommands.CMD_OBJECT_SET_ACTIVE));
-                                }
+            final IStructuredSelection selection = (IStructuredSelection)viewer.getSelection();
+            final DBNNode selectedNode = getSelectedNode(viewer);
+            if (selectedNode != null && !selectedNode.isLocked() && workbenchSite != null) {
+                // Add "Set active object" menu
+                if (selectedNode.isPersisted() && selectedNode instanceof DBNDatabaseNode && !(selectedNode instanceof DBNDatabaseFolder) && ((DBNDatabaseNode)selectedNode).getObject() != null) {
+                    final DBSObjectSelector activeContainer = DBUtils.getParentAdapter(
+                        DBSObjectSelector.class, ((DBNDatabaseNode) selectedNode).getObject());
+                    if (activeContainer != null && activeContainer.supportsDefaultChange()) {
+                        DBSObject activeChild;
+                        activeChild = activeContainer.getDefaultObject();
+                        if (activeChild != ((DBNDatabaseNode)selectedNode).getObject()) {
+                            DBNDatabaseNode databaseNode = (DBNDatabaseNode)selectedNode;
+                            if (databaseNode.getObject() != null && (activeChild == null || activeChild.getClass() == databaseNode.getObject().getClass())) {
+                                manager.add(ActionUtils.makeCommandContribution(workbenchSite, CoreCommands.CMD_OBJECT_SET_ACTIVE));
                             }
                         }
                     }
-
-                    manager.add(new Separator());
-
-                    manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
-                    manager.add(new GroupMarker(IActionConstants.MB_ADDITIONS_END));
-
-                    // Add properties button
-                    if (PreferencesUtil.hasPropertiesContributors(selection.getFirstElement())) {
-                        manager.add(ActionUtils.makeCommandContribution(workbenchSite, IWorkbenchCommandConstants.FILE_PROPERTIES));
-                    }
-
-                    if (selectedNode.isPersisted()) {
-                        // Add refresh button
-                        manager.add(ActionUtils.makeCommandContribution(workbenchSite, IWorkbenchCommandConstants.FILE_REFRESH));
-                    }
                 }
 
-                manager.add(new GroupMarker(CoreCommands.GROUP_TOOLS));
-                manager.add(new GroupMarker(CoreCommands.GROUP_TOOLS_END));
+                manager.add(new Separator());
 
-                if (menuListener != null) {
-                    menuListener.menuAboutToShow(manager);
+                manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
+                manager.add(new GroupMarker(IActionConstants.MB_ADDITIONS_END));
+
+                // Add properties button
+                if (PreferencesUtil.hasPropertiesContributors(selection.getFirstElement())) {
+                    manager.add(ActionUtils.makeCommandContribution(workbenchSite, IWorkbenchCommandConstants.FILE_PROPERTIES));
                 }
+
+                if (selectedNode.isPersisted()) {
+                    // Add refresh button
+                    manager.add(ActionUtils.makeCommandContribution(workbenchSite, IWorkbenchCommandConstants.FILE_REFRESH));
+                }
+            }
+
+            manager.add(new GroupMarker(CoreCommands.GROUP_TOOLS));
+            manager.add(new GroupMarker(CoreCommands.GROUP_TOOLS_END));
+
+            if (menuListener != null) {
+                menuListener.menuAboutToShow(manager);
             }
         });
 
         menuMgr.setRemoveAllWhenShown(true);
         control.setMenu(menu);
-        control.addDisposeListener(new DisposeListener() {
-            @Override
-            public void widgetDisposed(DisposeEvent e) {
-                menuMgr.dispose();
-            }
-        });
+        control.addDisposeListener(e -> menuMgr.dispose());
         return menuMgr;
     }
 
@@ -343,7 +332,7 @@ public class NavigatorUtils {
         });
 
         DropTarget dropTarget = new DropTarget(viewer.getControl(), DND.DROP_MOVE);
-        dropTarget.setTransfer(new Transfer[] {TreeNodeTransfer.getInstance()});
+        dropTarget.setTransfer(TreeNodeTransfer.getInstance());
         dropTarget.addDropListener(new DropTargetListener() {
             @Override
             public void dragEnter(DropTargetEvent event)

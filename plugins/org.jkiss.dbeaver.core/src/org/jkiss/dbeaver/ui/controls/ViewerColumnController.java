@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.controls;
 
 import org.eclipse.jface.action.Action;
+import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.*;
@@ -29,10 +30,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.ui.ILabelProviderEx;
-import org.jkiss.dbeaver.ui.ILazyLabelProvider;
-import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -106,9 +104,12 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
         return clickOnHeader;
     }
 
-    public void fillConfigMenu(IMenuManager menuManager)
+    public void fillConfigMenu(IContributionManager menuManager)
     {
-        menuManager.add(new Action("Configure columns ...") {
+        menuManager.add(new Action(CoreMessages.obj_editor_properties_control_action_configure_columns, DBeaverIcons.getImageDescriptor(UIIcon.CONFIGURATION)) {
+            {
+                setDescription(CoreMessages.obj_editor_properties_control_action_configure_columns_description);
+            }
             @Override
             public void run()
             {
@@ -119,7 +120,7 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
 
     public void addColumn(String name, String description, int style, boolean defaultVisible, boolean required, IColumnTextProvider<ELEMENT> labelProvider)
     {
-        addColumn(name, description, style, defaultVisible, required, false, null, new CellLabelProvider() {
+        addColumn(name, description, style, defaultVisible, required, false, null, new ColumnLabelProvider() {
             @Override
             public void update(ViewerCell cell) {
                 cell.setText(labelProvider.getText((ELEMENT) cell.getElement()));
