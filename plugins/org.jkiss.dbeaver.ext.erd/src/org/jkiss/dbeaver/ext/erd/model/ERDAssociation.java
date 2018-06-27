@@ -191,7 +191,7 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
     @Override
     public String toString()
     {
-        return getObject() + " [" + targetEntity + "->" + sourceEntity + "]";
+        return getObject() + " [" + sourceEntity + "->" + targetEntity + "]";
     }
 
     @NotNull
