@@ -220,8 +220,14 @@ public class SQLFormatterTokenized implements SQLFormatter {
                         case "DROP":
                         case "TRUNCATE":
                         case "TABLE":
+                            if (!isCompact) {
+                                indent++;
+                                index += insertReturnAndIndent(argList, index + 1, indent);
+                            }
+                            break;
                         case "CASE":  //$NON-NLS-1$
                             if (!isCompact) {
+                                index += insertReturnAndIndent(argList, index - 1, indent);
                                 indent++;
                                 index += insertReturnAndIndent(argList, index + 1, indent);
                             }
