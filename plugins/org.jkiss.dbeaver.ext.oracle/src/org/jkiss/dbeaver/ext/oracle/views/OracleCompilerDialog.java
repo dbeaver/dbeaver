@@ -18,7 +18,10 @@
 package org.jkiss.dbeaver.ext.oracle.views;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.viewers.*;
+import org.eclipse.jface.viewers.CellLabelProvider;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.jface.viewers.ViewerCell;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -33,15 +36,14 @@ import org.jkiss.dbeaver.ext.oracle.model.source.OracleSourceObject;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.ObjectCompilerLogViewer;
+import org.jkiss.dbeaver.ui.controls.ViewerColumnController;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
@@ -133,24 +135,16 @@ public class OracleCompilerDialog extends BaseDialog
                 }
             });
             columnController.createColumns();
-            unitTable.addSelectionChangedListener(new ISelectionChangedListener() {
-                @Override
-                public void selectionChanged(SelectionChangedEvent event)
-                {
-                    IStructuredSelection selection = (IStructuredSelection) event.getSelection();
-                    getButton(COMPILE_ID).setEnabled(!selection.isEmpty());
+            unitTable.addSelectionChangedListener(event -> {
+                IStructuredSelection selection = (IStructuredSelection) event.getSelection();
+                getButton(COMPILE_ID).setEnabled(!selection.isEmpty());
 
-                }
             });
-            unitTable.addDoubleClickListener(new IDoubleClickListener() {
-                @Override
-                public void doubleClick(DoubleClickEvent event)
-                {
-                    IStructuredSelection selection = (IStructuredSelection) event.getSelection();
-                    if (!selection.isEmpty()) {
-                        OracleSourceObject unit = (OracleSourceObject) selection.getFirstElement();
-                        NavigatorHandlerObjectOpen.openEntityEditor(unit);
-                    }
+            unitTable.addDoubleClickListener(event -> {
+                IStructuredSelection selection = (IStructuredSelection) event.getSelection();
+                if (!selection.isEmpty()) {
+                    OracleSourceObject unit = (OracleSourceObject) selection.getFirstElement();
+                    NavigatorHandlerObjectOpen.openEntityEditor(unit);
                 }
             });
             unitTable.setContentProvider(new ListContentProvider());
@@ -203,13 +197,7 @@ public class OracleCompilerDialog extends BaseDialog
 
         if (!CommonUtils.isEmpty(toCompile)) {
             try {
-                UIUtils.runInProgressService(new DBRRunnableWithProgress() {
-                    @Override
-                    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-                    {
-                        performCompilation(monitor, toCompile);
-                    }
-                });
+                UIUtils.runInProgressService(monitor -> performCompilation(monitor, toCompile));
             } catch (InvocationTargetException e) {
                 DBUserInterface.getInstance().showError("Compile error", null, e.getTargetException());
             } catch (InterruptedException e) {
