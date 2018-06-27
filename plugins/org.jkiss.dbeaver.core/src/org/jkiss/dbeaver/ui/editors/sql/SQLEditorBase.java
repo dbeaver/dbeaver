@@ -58,6 +58,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLCharacterPairMatcher;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleManager;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.rules.SQLVariableRule;
@@ -343,12 +344,12 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         char[] matchChars = {'(', ')', '[', ']', '{', '}'}; //which brackets to match
         ICharacterPairMatcher matcher;
         try {
-            matcher = new DefaultCharacterPairMatcher(matchChars,
+            matcher = new SQLCharacterPairMatcher(this, matchChars,
                 SQLPartitionScanner.SQL_PARTITIONING,
                 true);
         } catch (Throwable e) {
             // If we below Eclipse 4.2.1
-            matcher = new DefaultCharacterPairMatcher(matchChars, SQLPartitionScanner.SQL_PARTITIONING);
+            matcher = new SQLCharacterPairMatcher(this, matchChars, SQLPartitionScanner.SQL_PARTITIONING);
         }
         support.setCharacterPairMatcher(matcher);
         support.setMatchingCharacterPainterPreferenceKeys(SQLPreferenceConstants.MATCHING_BRACKETS, SQLPreferenceConstants.MATCHING_BRACKETS_COLOR);

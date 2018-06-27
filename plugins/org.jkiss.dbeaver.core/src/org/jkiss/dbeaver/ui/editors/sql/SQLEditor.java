@@ -163,6 +163,7 @@ public class SQLEditor extends SQLEditorBase implements
 
     private ResultSetOrientation resultSetOrientation = ResultSetOrientation.HORIZONTAL;
     private CustomSashForm resultsSash;
+    private Composite sqlEditorPanel;
     @Nullable
     private CustomSashForm presentationSash;
     private CTabFolder resultTabs;
@@ -188,6 +189,8 @@ public class SQLEditor extends SQLEditorBase implements
 
     private SQLPresentationDescriptor extraPresentationDescriptor;
     private SQLEditorPresentation extraPresentation;
+    private Map<SQLPresentationPanelDescriptor, SQLEditorPresentationPanel> extraPresentationPanels = new HashMap<>();
+    private SQLEditorPresentationPanel extraPresentationCurrentPanel;
 
     public SQLEditor()
     {
@@ -506,7 +509,7 @@ public class SQLEditor extends SQLEditorBase implements
         UIUtils.setHelp(resultsSash, IHelpContextIds.CTX_SQL_EDITOR);
 
         Composite editorContainer;
-        Composite sqlEditorPanel = UIUtils.createPlaceholder(resultsSash, 2, 0);
+        sqlEditorPanel = UIUtils.createPlaceholder(resultsSash, 2, 0);
         createSideBar(sqlEditorPanel);
 
         // divides SQL editor presentations
@@ -515,7 +518,7 @@ public class SQLEditor extends SQLEditorBase implements
         if (extraPresentationDescriptor != null) {
             presentationSash = UIUtils.createPartDivider(
                     this,
-                    sqlEditorPanel,
+                sqlEditorPanel,
                     ((resultSetOrientation.getSashOrientation() == SWT.VERTICAL) ? SWT.HORIZONTAL : SWT.VERTICAL) | SWT.SMOOTH);
             presentationSash.setSashWidth(5);
             presentationSash.setLayoutData(new GridData(GridData.FILL_BOTH));
@@ -634,9 +637,16 @@ public class SQLEditor extends SQLEditorBase implements
         resultTabs.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
+                if (extraPresentationCurrentPanel != null) {
+                    extraPresentationCurrentPanel.deactivatePanel();
+                }
+                extraPresentationCurrentPanel = null;
                 Object data = e.item.getData();
                 if (data instanceof QueryResultsContainer) {
                     setActiveResultsContainer((QueryResultsContainer) data);
+                } else if (data instanceof SQLEditorPresentationPanel) {
+                    extraPresentationCurrentPanel = ((SQLEditorPresentationPanel) data);
+                    extraPresentationCurrentPanel.activatePanel();
                 }
             }
         });
@@ -769,14 +779,10 @@ public class SQLEditor extends SQLEditorBase implements
         }
         for (CTabItem item : resultTabs.getItems()) {
             if (item.getData() == view) {
-                if (resultTabs.getSelection() == item) {
-                    item.dispose();
-                    viewItem.setSelection(false);
-                    return;
-                } else {
-                    resultTabs.setSelection(item);
-                    return;
-                }
+                // Close tab if it is already open
+                item.dispose();
+                viewItem.setSelection(false);
+                return;
             }
         }
 
@@ -892,12 +898,23 @@ public class SQLEditor extends SQLEditorBase implements
                     sideBarChanged = true;
                 }
             }
+            // Close all panels
+            for (CTabItem tabItem : resultTabs.getItems()) {
+                if (tabItem.getData() instanceof SQLEditorPresentationPanel) {
+                    tabItem.dispose();
+                }
+            }
+            extraPresentationCurrentPanel = null;
         } else {
             // Check and add presentation panel toggles
             for (SQLPresentationPanelDescriptor panelDescriptor : extraPresentationDescriptor.getPanels()) {
                 if (sideToolBar.find(PANEL_ITEM_PREFIX + panelDescriptor.getId()) == null) {
                     sideBarChanged = true;
-                    sideToolBar.insertAfter(TOOLBAR_GROUP_PANELS, new PresentationPanelToggleAction(panelDescriptor));
+                    PresentationPanelToggleAction toggleAction = new PresentationPanelToggleAction(panelDescriptor);
+                    sideToolBar.insertAfter(TOOLBAR_GROUP_PANELS, toggleAction);
+                    if (panelDescriptor.isAutoActivate()) {
+                        toggleAction.run();
+                    }
                 }
             }
         }
@@ -913,7 +930,7 @@ public class SQLEditor extends SQLEditorBase implements
 
     public void toggleResultPanel() {
         if (resultsSash.getMaximizedControl() == null) {
-            resultsSash.setMaximizedControl(resultsSash.getChildren()[0]);
+            resultsSash.setMaximizedControl(sqlEditorPanel);
             switchFocus(false);
         } else {
             resultsSash.setMaximizedControl(null);
@@ -971,6 +988,8 @@ public class SQLEditor extends SQLEditorBase implements
 
     private class PresentationPanelToggleAction extends Action {
         private SQLPresentationPanelDescriptor panel;
+        private CTabItem tabItem;
+
         public PresentationPanelToggleAction(SQLPresentationPanelDescriptor panel) {
             super(panel.getLabel(), Action.AS_CHECK_BOX);
             setId(PANEL_ITEM_PREFIX + panel.getId());
@@ -985,7 +1004,50 @@ public class SQLEditor extends SQLEditorBase implements
 
         @Override
         public void run() {
+            SQLEditorPresentationPanel panelInstance = extraPresentationPanels.get(panel);
+            if (panelInstance != null && !isChecked()) {
+                // Hide panel
+                for (CTabItem tabItem : resultTabs.getItems()) {
+                    if (tabItem.getData() == panelInstance) {
+                        tabItem.dispose();
+                        return;
+                    }
+                }
+            }
+            if (panelInstance == null) {
+                Control panelControl;
+                try {
+                    panelInstance = panel.createPanel();
+                    panelControl = panelInstance.createPanel(resultTabs, SQLEditor.this, extraPresentation);
+                } catch (DBException e) {
+                    DBUserInterface.getInstance().showError("Panel opening error", "Can't create panel " + panel.getLabel(), e);
+                    return;
+                }
+                extraPresentationPanels.put(panel, panelInstance);
+                tabItem = new CTabItem(resultTabs, SWT.CLOSE);
+                tabItem.setControl(panelControl);
+                tabItem.setText(panel.getLabel());
+                tabItem.setToolTipText(panel.getDescription());
+                tabItem.setImage(DBeaverIcons.getImage(panel.getIcon()));
+                tabItem.setData(panelInstance);
 
+                // De-select tool item on tab close
+                tabItem.addDisposeListener(e -> {
+                    PresentationPanelToggleAction.this.setChecked(false);
+                    panelControl.dispose();
+                    extraPresentationPanels.remove(panel);
+                    extraPresentationCurrentPanel = null;
+                });
+                extraPresentationCurrentPanel = panelInstance;
+                resultTabs.setSelection(tabItem);
+            } else {
+                for (CTabItem tabItem : resultTabs.getItems()) {
+                    if (tabItem.getData() == panelInstance) {
+                        resultTabs.setSelection(tabItem);
+                        break;
+                    }
+                }
+            }
         }
     }
 
@@ -1327,6 +1389,9 @@ public class SQLEditor extends SQLEditorBase implements
         if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE) && isDirty()) {
             doSave(new NullProgressMonitor());
         }
+        if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.CLEAR_OUTPUT_BEFORE_EXECUTE)) {
+            outputViewer.clearOutput();
+        }
 
         if (!newTab || !isSingleQuery) {
             // We don't need new tab or we are executing a script - so close all extra tabs
@@ -1449,7 +1514,7 @@ public class SQLEditor extends SQLEditorBase implements
         reloadSyntaxRules();
 
         if (getDataSourceContainer() == null) {
-            resultsSash.setMaximizedControl(getEditorControlWrapper());
+            resultsSash.setMaximizedControl(sqlEditorPanel);
         } else {
             resultsSash.setMaximizedControl(null);
         }
@@ -2386,7 +2451,7 @@ public class SQLEditor extends SQLEditorBase implements
                         return;
                     }
                     if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE)) {
-                        resultsSash.setMaximizedControl(getEditorControlWrapper());
+                        resultsSash.setMaximizedControl(sqlEditorPanel);
                     }
                 });
             } finally {

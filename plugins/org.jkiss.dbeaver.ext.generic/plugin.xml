@@ -78,7 +78,7 @@
                         </folder>
                         <folder type="org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex" label="%tree.indexes.node.name" icon="#indexes" description="Indexes" visibleIf="object.dataSource.info.supportsIndexes()">
                             <items icon="#index" label="%tree.index.node.name" path="index" property="indexes" virtual="true">
-                                <items icon="#column" label="%tree.index_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" virtual="true">
+                                <items icon="#column" label="%tree.index_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" inline="true" navigable="false" virtual="true">
                                 </items>
                             </items>
                         </folder>
@@ -88,8 +88,13 @@
                                     <items label="%tree.procedure_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false" inline="true"/>
                                 </items>
                             </items>
-                            <items label="%tree.procedures.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="procedures" icon="#procedure">
+                            <items label="%tree.procedures.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="proceduresOnly" icon="#procedure">
                                 <items label="%tree.procedure_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false"/>
+                            </items>
+                        </folder>
+                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericProcedure" label="%tree.functions.node.name" icon="#functions" description="Functions" visibleIf="object.dataSource.info.supportsStoredCode() &amp;&amp; object.dataSource.splitProceduresAndFunctions()">
+                            <items label="%tree.functions.node.name" itemLabel="%tree.function.node.name" path="function" property="functionsOnly" icon="#function">
+                                <items label="%tree.function_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false"/>
                             </items>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.generic.model.GenericSequence" label="%tree.sequences.node.name" icon="#sequences" description="Sequences" visibleIf="object.dataSource.metaModel.supportsSequences(object.dataSource)">
@@ -117,6 +122,7 @@
                     <property id="supports-stored-code" label="Driver supports stored code" description="Whether this driver supports stored code (procedures, functions, packages, etc)" type="boolean" required="false" defaultValue="true"/>
                     <property id="supports-references" label="Driver supports references" description="Driver supports table references (foreign keys)" type="boolean" required="false" defaultValue="true"/>
                     <property id="supports-select-count" label="Driver supports SELECT count(*) clause" description="Driver supports SELECT count(*) clause" type="boolean" required="false" defaultValue="true"/>
+                    <property id="split-procedures-and-functions" label="Split procedures and functions" description="Show procedures and functions in different folders" type="boolean" required="false" defaultValue="false"/>
                     <property id="script-delimiter" label="Script delimiter" description="Literal for SQL queries separation in scripts" type="string" required="false" defaultValue=";"/>
                     <property id="script-delimiter-redefiner" label="Script delimiter redefiner" description="SQL clause which redefines script delimiter value" type="string" required="false" defaultValue=";"/>
                     <property id="script-delimiter-after-query" label="Use script delimiter after query" description="Keep SQL script delimiter after each SQL query" type="boolean" required="false" defaultValue="false"/>
@@ -470,6 +476,7 @@
                     <parameter name="query-get-active-db" value="SELECT CURRENT SCHEMA FROM SYSIBM.SYSDUMMY1"/>
                     <parameter name="query-set-active-db" value="SET CURRENT SCHEMA = ?"/>
                     <parameter name="supports-scroll" value="true"/>
+                    <parameter name="split-procedures-and-functions" value="true"/>
                     <parameter name="dual-table" value="SYSIBM.SYSDUMMY1"/>
                 </driver>
                 <driver
@@ -491,6 +498,7 @@
                     <parameter name="query-get-active-db" value="SELECT CURRENT SCHEMA FROM SYSIBM.SYSDUMMY1"/>
                     <parameter name="query-set-active-db" value="SET CURRENT SCHEMA = ?"/>
                     <parameter name="supports-scroll" value="true"/>
+                    <parameter name="split-procedures-and-functions" value="true"/>
                     <parameter name="dual-table" value="SYSIBM.SYSDUMMY1"/>
                 </driver>
                 <driver
@@ -796,6 +804,7 @@
                     description=""
                     webURL="http://scn.sap.com/community/developer-center/hana">
                     <!--<library path="C:\Program Files\Java\lib\jdbc\ngdbc.jar"/>-->
+                    <parameter name="split-procedures-and-functions" value="true"/>
                 </driver>
 
                 <!-- Hadoop -->
