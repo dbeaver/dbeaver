@@ -261,7 +261,7 @@ public class ERDEntity extends ERDObject<DBSEntity> {
             if (fk.getReferencedConstraint() != null) {
                 ERDEntity refEntity = tableMap.get(fk.getReferencedConstraint().getParentObject());
                 if (refEntity != null) {
-                    new ERDAssociation(fk, refEntity, this, reflect);
+                    new ERDAssociation(fk, this, refEntity, reflect);
                     iter.remove();
                 }
             }

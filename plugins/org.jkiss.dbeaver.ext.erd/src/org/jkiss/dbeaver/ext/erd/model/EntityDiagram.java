@@ -140,6 +140,9 @@ public class EntityDiagram extends ERDObject<DBSObject> {
             for (ERDAssociation rel : entity.getReferences()) {
                 rel.getSourceEntity().firePropertyChange(OUTPUT, null, rel);
             }
+            for (ERDAssociation rel : entity.getAssociations()) {
+                rel.getTargetEntity().firePropertyChange(INPUT, null, rel);
+            }
         }
     }
 

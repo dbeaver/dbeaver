@@ -24,11 +24,12 @@ import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
 import org.jkiss.dbeaver.ext.erd.model.ERDUtils;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.ext.erd.part.EntityPart;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
-import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BrowseObjectDialog;
@@ -64,21 +65,24 @@ public class EntityAddCommand extends Command
             if (entity.getObject() == null) {
                 // Entity is not initialized
                 if (entity.getDataSource() != null) {
-                    DBNDatabaseNode dsNode = NavigatorUtils.getNodeByObject(entity.getDataSource().getContainer());
+                    DBSObject selectedObject = DBUtils.getSelectedObject(entity.getDataSource(), true);
+                    DBNDatabaseNode dsNode = NavigatorUtils.getNodeByObject(selectedObject != null ? selectedObject : entity.getDataSource().getContainer());
                     if (dsNode != null) {
                         DBNNode tableNode = BrowseObjectDialog.selectObject(
                                 UIUtils.getActiveWorkbenchShell(),
                                 "Select a table",
                                 dsNode,
                                 null,
-                                new Class[]{DBSTable.class, DBSObjectContainer.class},
+                                new Class[]{DBSTable.class},
                                 new Class[]{DBSTable.class});
                         if (tableNode instanceof DBNDatabaseNode && ((DBNDatabaseNode) tableNode).getObject() instanceof DBSEntity) {
                             entity = ERDUtils.makeEntityFromObject(
                                     monitor,
                                     diagramPart.getDiagram(),
                                     (DBSEntity)((DBNDatabaseNode) tableNode).getObject());
-                            resolveRelations = true;
+                            // This actually only loads unresolved relations.
+                            // This happens only with entities added on diagram during editing
+                            entity.addModelRelations(monitor, diagramPart.getDiagram().getEntityMap(), false, false);
                         }
                     }
                 }
@@ -87,10 +91,6 @@ public class EntityAddCommand extends Command
                 continue;
             }
 		    diagramPart.getDiagram().addEntity(entity, true);
-            //diagramPart.getDiagram().addModelRelations(monitor, entity, true);
-            if (resolveRelations) {
-                entity.addModelRelations(monitor, diagramPart.getDiagram().getEntityMap(), false, true);
-            }
 
             if (curLocation != null) {
                 // Put new entities in specified location
