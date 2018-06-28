@@ -30,6 +30,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -55,6 +56,7 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
     private final List<ColumnInfo> columns = new ArrayList<>();
     private boolean clickOnHeader;
     private boolean isPacking, isInitializing;
+    private DBIcon defaultIcon;
 
     private transient Listener menuListener;
 
@@ -104,6 +106,10 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
         return clickOnHeader;
     }
 
+    public void setDefaultIcon(DBIcon defaultIcon) {
+        this.defaultIcon = defaultIcon;
+    }
+
     public void fillConfigMenu(IContributionManager menuManager)
     {
         menuManager.add(new Action(CoreMessages.obj_editor_properties_control_action_configure_columns, DBeaverIcons.getImageDescriptor(UIIcon.CONFIGURATION)) {
@@ -123,6 +129,11 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
         addColumn(name, description, style, defaultVisible, required, false, null, new ColumnLabelProvider() {
             @Override
             public void update(ViewerCell cell) {
+                if (cell.getColumnIndex() == 0) {
+                    if (defaultIcon != null) {
+                        cell.setImage(DBeaverIcons.getImage(defaultIcon));
+                    }
+                }
                 cell.setText(labelProvider.getText((ELEMENT) cell.getElement()));
             }
         }, null);
