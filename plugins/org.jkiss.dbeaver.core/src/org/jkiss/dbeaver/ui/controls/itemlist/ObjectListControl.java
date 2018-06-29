@@ -172,6 +172,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         itemsViewer.getControl().setLayoutData(gd);
         //PropertiesContributor.getInstance().addLazyListener(this);
 
+        ColumnViewerToolTipSupport.enableFor(itemsViewer);
+
         // Add selection listener
         itemsViewer.addSelectionChangedListener(new ISelectionChangedListener() {
             @Override
@@ -995,6 +997,15 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             } else {
                 return "";
             }
+        }
+
+        @Override
+        public String getToolTipText(Object element) {
+            String text = getText(element, false);
+            if (CommonUtils.isEmpty(text)) {
+                return null;
+            }
+            return text;
         }
     }
 
