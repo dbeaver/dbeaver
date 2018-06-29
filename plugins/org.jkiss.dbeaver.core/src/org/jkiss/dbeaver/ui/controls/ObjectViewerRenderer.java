@@ -171,8 +171,7 @@ public abstract class ObjectViewerRenderer {
     //////////////////////////////////////////////////////
     // List sorter
 
-    public void paintCell(Event event, Object element, Widget item, Class<?> propDataType, int columnIndex, boolean editable, boolean selected) {
-        Object cellValue = getCellValue(element, columnIndex);
+    public void paintCell(Event event, Object element, Object cellValue, Widget item, Class<?> propDataType, int columnIndex, boolean editable, boolean selected) {
         {
             GC gc = event.gc;
             if (Boolean.class == propDataType || Boolean.TYPE == propDataType) {
@@ -359,6 +358,6 @@ public abstract class ObjectViewerRenderer {
     }
 
     @Nullable
-    protected abstract Object getCellValue(Object element, int columnIndex);
+    public abstract Object getCellValue(Object element, int columnIndex);
 
 }
