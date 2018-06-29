@@ -84,7 +84,8 @@ class PostgreDialect extends JDBCSQLDialect {
                 // "MESSAGE", "DETAIL", "HINT", "ERRCODE", //options
 
                 "DATATYPE",
-                "TABLESPACE"
+                "TABLESPACE",
+                "REFRESH"
             ));
 
         addFunctions(
