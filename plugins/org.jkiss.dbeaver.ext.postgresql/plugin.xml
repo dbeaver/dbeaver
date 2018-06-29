@@ -248,7 +248,7 @@
                 <driver
                         id="postgres-timescale-jdbc"
                         label="Timescale"
-                        icon="icons/timescale.png"
+                        icon="icons/timescale_icon.png"
                         class="org.postgresql.Driver"
                         sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                         defaultPort="5432"
@@ -260,7 +260,7 @@
                     <file type="jar" path="drivers/postgresql/postgresql.jar" bundle="drivers.postgresql"/>
                     <file type="jar" path="drivers/postgis/postgis-jdbc.jar" bundle="drivers.postgresql"/>
                     <file type="jar" path="drivers/postgis/postgis-jdbc-jtsparser.jar" bundle="drivers.postgresql"/>
-                    <parameter name="greenplum" value="true"/>
+                    <parameter name="timescale" value="true"/>
                     <property name="loginTimeout" value="20"/>
                     <property name="connectTimeout" value="20"/>
                 </driver>

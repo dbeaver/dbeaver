@@ -59,6 +59,7 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
 
     private static ImageDescriptor PG_LOGO_IMG = PostgreActivator.getImageDescriptor("icons/postgresql_logo.png");
     private static ImageDescriptor GP_LOGO_IMG = PostgreActivator.getImageDescriptor("icons/greenplum_logo.png");
+    private static ImageDescriptor TS_LOGO_IMG = PostgreActivator.getImageDescriptor("icons/timescale_logo.png");
 
 
     @Override
@@ -186,8 +187,13 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
         super.loadSettings();
 
         if (!activated) {
-            setImageDescriptor(
-                PostgreUtils.isGreenplumDriver(getSite().getDriver()) ? GP_LOGO_IMG : PG_LOGO_IMG);
+            ImageDescriptor logo = PG_LOGO_IMG;
+            if (PostgreUtils.isGreenplumDriver(getSite().getDriver())) {
+                logo = GP_LOGO_IMG;
+            } else if (PostgreUtils.isTimescaleDriver(getSite().getDriver())) {
+                logo = TS_LOGO_IMG;
+            }
+            setImageDescriptor(logo);
         }
 
         // Load values from new connection info
