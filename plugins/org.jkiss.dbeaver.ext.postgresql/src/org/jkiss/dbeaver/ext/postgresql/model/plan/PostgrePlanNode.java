@@ -17,12 +17,14 @@
 package org.jkiss.dbeaver.ext.postgresql.model.plan;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanNode;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.xml.XMLUtils;
 import org.w3c.dom.Element;
@@ -45,6 +47,7 @@ public class PostgrePlanNode implements DBCPlanNode, DBPPropertySource {
     public static final String ATTR_STARTUP_COST = "Startup-Cost";
     public static final String ATTR_INDEX_NAME = "Index-Name";
 
+    private PostgreDataSource dataSource;
     private PostgrePlanNode parent;
     private List<PostgrePlanNode> nested;
 
@@ -53,8 +56,9 @@ public class PostgrePlanNode implements DBCPlanNode, DBPPropertySource {
     private String cost;
     private Map<String, String> attributes = new LinkedHashMap<>();
 
-    public PostgrePlanNode(PostgrePlanNode parent, Element element) {
+    public PostgrePlanNode(PostgreDataSource dataSource, PostgrePlanNode parent, Element element) {
         this.parent = parent;
+        this.dataSource = dataSource;
 
         for (Node child = element.getFirstChild(); child != null; child = child.getNextSibling()) {
             if (child instanceof Element && !"Plans".equals(child.getNodeName())) {
@@ -81,7 +85,7 @@ public class PostgrePlanNode implements DBCPlanNode, DBPPropertySource {
                 if (nested == null) {
                     nested = new ArrayList<>();
                 }
-                nested.add(new PostgrePlanNode(null, planElement));
+                nested.add(new PostgrePlanNode(dataSource, null, planElement));
             }
         }
     }
@@ -127,6 +131,9 @@ public class PostgrePlanNode implements DBCPlanNode, DBPPropertySource {
         String cond = attributes.get("Index-Cond");
         if (cond == null) {
             cond = attributes.get("Filter");
+        }
+        if (!CommonUtils.isEmpty(cond)) {
+            //cond = SQLUtils.formatSQL(dataSource, cond);
         }
         return cond;
     }

@@ -1063,7 +1063,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                                     // Do not paint over active editor
                                     return;
                                 }
-                                renderer.paintCell(e, object, e.item, prop.getDataType(), e.index, prop.isEditable(objectValue), (e.detail & SWT.SELECTED) == SWT.SELECTED);
+                                renderer.paintCell(e, object, cellValue, e.item, prop.getDataType(), e.index, prop.isEditable(objectValue), (e.detail & SWT.SELECTED) == SWT.SELECTED);
                             }
                         }
                         break;
@@ -1272,7 +1272,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
         @Nullable
         @Override
-        protected Object getCellValue(Object element, int columnIndex) {
+        public Object getCellValue(Object element, int columnIndex) {
             return ObjectListControl.this.getCellValue(element, columnIndex);
         }
     }
