@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -45,6 +46,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -61,8 +63,7 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
     private final DBCExecutionContext context;
     private DBSObject container;
 
-    public GotoObjectDialog(Shell shell, DBCExecutionContext context, DBSObject container)
-    {
+    public GotoObjectDialog(Shell shell, DBCExecutionContext context, DBSObject container) {
         super(shell, true);
         this.context = context;
         this.container = container;
@@ -73,36 +74,30 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
     }
 
     @Override
-    protected Control createExtendedContentArea(Composite parent)
-    {
+    protected Control createExtendedContentArea(Composite parent) {
         return null;
     }
 
     @Override
-    protected IDialogSettings getDialogSettings()
-    {
+    protected IDialogSettings getDialogSettings() {
         return UIUtils.getDialogSettings(DIALOG_ID);
     }
 
     @Override
-    protected IStatus validateItem(Object item)
-    {
+    protected IStatus validateItem(Object item) {
         return Status.OK_STATUS;
     }
 
     @Override
-    protected ItemsFilter createFilter()
-    {
+    protected ItemsFilter createFilter() {
         return new ObjectFilter();
     }
 
     @Override
-    protected Comparator getItemsComparator()
-    {
+    protected Comparator getItemsComparator() {
         return new Comparator() {
             @Override
-            public int compare(Object o1, Object o2)
-            {
+            public int compare(Object o1, Object o2) {
                 if (o1 instanceof DBPNamedObject && o2 instanceof DBPNamedObject) {
                     return DBUtils.getObjectFullName((DBPNamedObject) o1, DBPEvaluationContext.UI).compareToIgnoreCase(
                         DBUtils.getObjectFullName((DBPNamedObject) o2, DBPEvaluationContext.UI));
@@ -114,13 +109,12 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
 
     @Override
     protected void fillContentProvider(AbstractContentProvider contentProvider, ItemsFilter itemsFilter, IProgressMonitor progressMonitor)
-        throws CoreException
-    {
+        throws CoreException {
         DBSStructureAssistant structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, context.getDataSource());
         if (structureAssistant == null) {
             return;
         }
-        String nameMask = ((ObjectFilter)itemsFilter).getNameMask();
+        String nameMask = ((ObjectFilter) itemsFilter).getNameMask();
         DBRProgressMonitor monitor = RuntimeUtils.makeMonitor(progressMonitor);
         try {
             monitor.beginTask("Search for '" + nameMask + "'", 100);
@@ -133,17 +127,12 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
                 }
                 typesToSearch.add(type);
             }
-            Collection<DBSObjectReference> result = structureAssistant.findObjectsByMask(
-                monitor,
-                container,
-                typesToSearch.toArray(new DBSObjectType[typesToSearch.size()]),
-                nameMask,
-                false,
-                true,
-                1000);
+
+            ObjectFinder objectFinder = new ObjectFinder(structureAssistant, monitor, typesToSearch, nameMask);
+            DBUtils.tryExecuteRecover(monitor, container.getDataSource(), objectFinder);
 
             DBPDataSourceContainer dsContainer = context.getDataSource().getContainer();
-            for (DBSObjectReference ref : result) {
+            for (DBSObjectReference ref : objectFinder.getResult()) {
                 DBSObjectFilter filter = dsContainer.getObjectFilter(ref.getObjectClass(), ref.getContainer(), true);
                 if (filter == null || !filter.isEnabled() || filter.matches(ref.getName())) {
                     contentProvider.add(ref, itemsFilter);
@@ -151,15 +140,13 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
             }
         } catch (DBException e) {
             throw new CoreException(GeneralUtils.makeExceptionStatus(e));
-        }
-        finally {
+        } finally {
             monitor.done();
         }
     }
 
     @Override
-    public String getElementName(Object item)
-    {
+    public String getElementName(Object item) {
         if (item instanceof DBPNamedObject) {
             return DBUtils.getObjectFullName((DBPNamedObject) item, DBPEvaluationContext.UI);
         }
@@ -183,8 +170,7 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
         }
 
         @Override
-        public Image getImage(Object element)
-        {
+        public Image getImage(Object element) {
             if (element instanceof DBSObjectReference) {
                 DBSObjectType objectType = ((DBSObjectReference) element).getObjectType();
                 if (objectType != null) {
@@ -195,10 +181,9 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
         }
 
         @Override
-        public String getText(Object element)
-        {
+        public String getText(Object element) {
             if (element instanceof DBPNamedObject) {
-                return ((DBPNamedObject)element).getName();
+                return ((DBPNamedObject) element).getName();
             }
             return null;
         }
@@ -206,8 +191,7 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
 
     private static class DetailsLabelProvider extends ObjectLabelProvider {
         @Override
-        public String getText(Object element)
-        {
+        public String getText(Object element) {
             if (element instanceof DBPNamedObject) {
                 return DBUtils.getObjectFullName((DBPNamedObject) element, DBPEvaluationContext.UI);
             }
@@ -218,15 +202,14 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
     private class ObjectFilter extends ItemsFilter {
 
         private Pattern namePattern = null;
+
         @Override
-        public int getMatchRule()
-        {
+        public int getMatchRule() {
             return SearchPattern.RULE_PATTERN_MATCH | SearchPattern.RULE_PREFIX_MATCH;
         }
 
         @Override
-        public boolean matchItem(Object item)
-        {
+        public boolean matchItem(Object item) {
             if (item instanceof DBPNamedObject) {
                 String objectName = ((DBPNamedObject) item).getName();
                 if (!getNamePattern().matcher(objectName).matches()) {
@@ -241,13 +224,11 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
         }
 
         @Override
-        public boolean isConsistentItem(Object item)
-        {
+        public boolean isConsistentItem(Object item) {
             return false;
         }
 
-        public String getNameMask()
-        {
+        public String getNameMask() {
             String nameMask = getPattern();
             nameMask = nameMask.replace("*", "%").replace("?", "_");
             int matchRule = getMatchRule();
@@ -257,8 +238,7 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
             return nameMask;
         }
 
-        private Pattern getNamePattern()
-        {
+        private Pattern getNamePattern() {
             if (namePattern == null) {
                 namePattern = Pattern.compile(
                     SQLUtils.makeLikePattern(getNameMask()), Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
@@ -268,4 +248,38 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
 
     }
 
+    private class ObjectFinder implements DBRRunnableParametrized<DBRProgressMonitor> {
+        private final DBSStructureAssistant structureAssistant;
+        private final DBRProgressMonitor monitor;
+        private final List<DBSObjectType> typesToSearch;
+        private final String nameMask;
+        private List<DBSObjectReference> result;
+
+        public ObjectFinder(DBSStructureAssistant structureAssistant, DBRProgressMonitor monitor, List<DBSObjectType> typesToSearch, String nameMask) {
+            this.structureAssistant = structureAssistant;
+            this.monitor = monitor;
+            this.typesToSearch = typesToSearch;
+            this.nameMask = nameMask;
+        }
+
+        public List<DBSObjectReference> getResult() {
+            return result;
+        }
+
+        @Override
+        public void run(DBRProgressMonitor param) throws InvocationTargetException, InterruptedException {
+            try {
+                result = structureAssistant.findObjectsByMask(
+                    monitor,
+                    container,
+                    typesToSearch.toArray(new DBSObjectType[typesToSearch.size()]),
+                    nameMask,
+                    false,
+                    true,
+                    1000);
+            } catch (Exception e) {
+                throw new InvocationTargetException(e);
+            }
+        }
+    }
 }
