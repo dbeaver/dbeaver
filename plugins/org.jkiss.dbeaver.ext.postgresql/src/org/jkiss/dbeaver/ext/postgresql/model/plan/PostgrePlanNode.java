@@ -133,7 +133,7 @@ public class PostgrePlanNode implements DBCPlanNode, DBPPropertySource {
             cond = attributes.get("Filter");
         }
         if (!CommonUtils.isEmpty(cond)) {
-            //cond = SQLUtils.formatSQL(dataSource, cond);
+            cond = SQLUtils.formatSQL(dataSource, cond);
         }
         return cond;
     }
