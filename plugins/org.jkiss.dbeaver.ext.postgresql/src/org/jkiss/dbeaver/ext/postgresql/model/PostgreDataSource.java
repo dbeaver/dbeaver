@@ -285,11 +285,13 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         }
         getDefaultInstance().cacheDataTypes(monitor);
 
+/*
         // Update database name and URL in connection settings and save datasources
         DBPConnectionConfiguration conConfig = getContainer().getConnectionConfiguration();
         conConfig.setDatabaseName(activeDatabaseName);
         conConfig.setUrl(getContainer().getDriver().getDataSourceProvider().getConnectionURL(getContainer().getDriver(), conConfig));
         getContainer().getRegistry().flushConfig();
+*/
 
         try (JDBCSession session = getDefaultContext(false).openSession(monitor, DBCExecutionPurpose.UTIL, "Update object state")) {
             determineDefaultObjects(session);
