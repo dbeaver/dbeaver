@@ -42,7 +42,7 @@ public class OracleSourceDefinitionEditor extends SQLSourceViewer<OracleSourceOb
 
     @Override
     protected void setSourceText(DBRProgressMonitor monitor, String sourceText) {
-        getEditorInput().getPropertySource().setPropertyValue(
+        getInputPropertySource().setPropertyValue(
             monitor,
             OracleConstants.PROP_OBJECT_BODY_DEFINITION,
             sourceText);
