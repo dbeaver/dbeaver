@@ -3,8 +3,8 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: %Bundle-Vendor
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.dbeaver.ui;singleton:=true
-Bundle-Version: 5.1.1
-Bundle-Release-Date: 20180618
+Bundle-Version: 5.1.2
+Bundle-Release-Date: 20180702
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Activator: org.jkiss.dbeaver.bundle.UIActivator
 Bundle-ActivationPolicy: lazy
