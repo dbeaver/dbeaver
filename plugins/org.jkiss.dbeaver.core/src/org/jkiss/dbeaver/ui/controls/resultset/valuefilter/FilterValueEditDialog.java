@@ -131,7 +131,7 @@ public class FilterValueEditDialog extends BaseDialog{
 		
 
 
-        ViewerColumnController columnController = new ViewerColumnController(getClass().getName(), handler.table);
+        ViewerColumnController columnController = new ViewerColumnController(getClass().getName(), handler.tableViewer);
         columnController.addColumn("Value", "Value", SWT.LEFT, true, true, new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
@@ -150,7 +150,7 @@ public class FilterValueEditDialog extends BaseDialog{
 	        new Action("Select &All") {
 	            @Override
 	            public void run() {
-                    for (TableItem item : handler.table.getTable().getItems()) {
+                    for (TableItem item : handler.tableViewer.getTable().getItems()) {
                         item.setChecked(true);
                     }
 	            }
@@ -158,7 +158,7 @@ public class FilterValueEditDialog extends BaseDialog{
 	        new Action("Select &None") {
 	            @Override
 	            public void run() {
-                    for (TableItem item : handler.table.getTable().getItems()) {
+                    for (TableItem item : handler.tableViewer.getTable().getItems()) {
                         item.setChecked(false);
                     }
 	            }
@@ -205,11 +205,11 @@ public class FilterValueEditDialog extends BaseDialog{
     @Override
     protected void okPressed()
     {
-        if (handler.table != null) {
+        if (handler.tableViewer != null) {
             java.util.List<Object> values = new ArrayList<>();
                         
             for (DBDLabelValuePair item : handler.getMultiValues()) {
-                if (  ((TableItem)handler.table.testFindItem(item)).getChecked()) {
+                if (  ((TableItem)handler.tableViewer.testFindItem(item)).getChecked()) {
                     values.add(item.getValue());
                 }
             }
