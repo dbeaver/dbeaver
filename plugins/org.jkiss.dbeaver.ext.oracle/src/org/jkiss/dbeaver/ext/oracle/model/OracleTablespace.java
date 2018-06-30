@@ -20,9 +20,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
@@ -102,6 +103,8 @@ public class OracleTablespace extends OracleGlobalObject implements DBPRefreshab
     private boolean defTableCompression;
     private Retention retention;
     private boolean bigFile;
+    private volatile Long availableSize;
+    private volatile Long usedSize;
 
     final FileCache fileCache = new FileCache();
     final SegmentCache segmentCache = new SegmentCache();
@@ -138,109 +141,125 @@ public class OracleTablespace extends OracleGlobalObject implements DBPRefreshab
         return name;
     }
 
-    @Property(viewable = true, editable = true, order = 2)
+    @Property(viewable = true, order = 4)
+    public Long getAvailableSize(DBRProgressMonitor monitor) throws DBException {
+        if (availableSize == null) {
+            loadSizes(monitor);
+        }
+        return availableSize;
+    }
+
+    @Property(viewable = true, order = 5)
+    public Long getUsedSize(DBRProgressMonitor monitor) throws DBException {
+        if (usedSize == null) {
+            loadSizes(monitor);
+        }
+        return usedSize;
+    }
+
+    @Property(viewable = true, editable = true, order = 22)
     public long getBlockSize()
     {
         return blockSize;
     }
 
-    @Property(editable = true, order = 3)
+    @Property(editable = true, order = 23)
     public long getInitialExtent()
     {
         return initialExtent;
     }
 
-    @Property(editable = true, order = 4)
+    @Property(editable = true, order = 24)
     public long getNextExtent()
     {
         return nextExtent;
     }
 
-    @Property(editable = true, order = 5)
+    @Property(editable = true, order = 25)
     public long getMinExtents()
     {
         return minExtents;
     }
 
-    @Property(editable = true, order = 6)
+    @Property(editable = true, order = 26)
     public long getMaxExtents()
     {
         return maxExtents;
     }
 
-    @Property(editable = true, order = 7)
+    @Property(editable = true, order = 27)
     public long getPctIncrease()
     {
         return pctIncrease;
     }
 
-    @Property(editable = true, order = 8)
+    @Property(editable = true, order = 28)
     public long getMinExtLen()
     {
         return minExtLen;
     }
 
-    @Property(viewable = true, editable = true, order = 9)
+    @Property(viewable = true, editable = true, order = 29)
     public Status getStatus()
     {
         return status;
     }
 
-    @Property(editable = true, order = 10)
+    @Property(editable = true, order = 30)
     public Contents getContents()
     {
         return contents;
     }
 
-    @Property(editable = true, order = 11)
+    @Property(editable = true, order = 31)
     public Logging isLogging()
     {
         return logging;
     }
 
-    @Property(editable = true, order = 12)
+    @Property(editable = true, order = 32)
     public boolean isForceLogging()
     {
         return forceLogging;
     }
 
-    @Property(editable = true, order = 13)
+    @Property(editable = true, order = 33)
     public ExtentManagement getExtentManagement()
     {
         return extentManagement;
     }
 
-    @Property(editable = true, order = 14)
+    @Property(editable = true, order = 34)
     public AllocationType getAllocationType()
     {
         return allocationType;
     }
 
-    @Property(editable = true, order = 15)
+    @Property(editable = true, order = 35)
     public boolean isPluggedIn()
     {
         return pluggedIn;
     }
 
-    @Property(editable = true, order = 16)
+    @Property(editable = true, order = 36)
     public SegmentSpaceManagement getSegmentSpaceManagement()
     {
         return segmentSpaceManagement;
     }
 
-    @Property(editable = true, order = 17)
+    @Property(editable = true, order = 37)
     public boolean isDefTableCompression()
     {
         return defTableCompression;
     }
 
-    @Property(editable = true, order = 18)
+    @Property(editable = true, order = 38)
     public Retention getRetention()
     {
         return retention;
     }
 
-    @Property(editable = true, order = 19)
+    @Property(editable = true, order = 39)
     public boolean isBigFile()
     {
         return bigFile;
@@ -275,6 +294,32 @@ public class OracleTablespace extends OracleGlobalObject implements DBPRefreshab
         segmentCache.clearCache();
         return this;
     }
+
+    private void loadSizes(DBRProgressMonitor monitor) throws DBException {
+        try (final JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Load tablespace '" + getName() + "' statistics")) {
+            try (final JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT SUM(F.BYTES) AVAILABLE_SPACE,SUM(S.BYTES) USED_SPACE\n" +
+                        "FROM SYS.DBA_TABLESPACES T\n" +
+                        "LEFT JOIN SYS.DBA_DATA_FILES F ON T.TABLESPACE_NAME = F.TABLESPACE_NAME\n" +
+                        "LEFT JOIN SYS.DBA_SEGMENTS S ON T.TABLESPACE_NAME = S.TABLESPACE_NAME\n" +
+                        "WHERE T.TABLESPACE_NAME=?"))
+            {
+                dbStat.setString(1, getName());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    if (dbResult.next()) {
+                        availableSize = dbResult.getLong(1);
+                        usedSize = dbResult.getLong(2);
+                    } else {
+                        availableSize = 0L;
+                        usedSize = 0L;
+                    }
+                }
+            } catch (SQLException e) {
+                throw new DBException("Can't read tablespace statistics", e, getDataSource());
+            }
+        }
+    }
+
 
     static class FileCache extends JDBCObjectCache<OracleTablespace, OracleDataFile> {
         @Override
