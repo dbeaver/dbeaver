@@ -865,62 +865,67 @@ public class SQLEditor extends SQLEditorBase implements
         if (extraPresentationDescriptor == null) {
             return;
         }
-        if (!show) {
-            boolean epHasFocus = UIUtils.hasFocus(getExtraPresentationControl());
-            presentationSash.setMaximizedControl(presentationSash.getChildren()[SQL_EDITOR_CONTROL_INDEX]);
-            if (epHasFocus) {
-                getEditorControlWrapper().setFocus();
-            }
-        } else {
-            if (extraPresentation == null) {
-                // Lazy activation
-                try {
-                    extraPresentation = extraPresentationDescriptor.createPresentation();
-                    extraPresentation.createPresentation((Composite) getExtraPresentationControl(), this);
-                } catch (DBException e) {
-                    log.error("Error creating presentation", e);
+        resultsSash.setRedraw(false);
+        try {
+            if (!show) {
+                boolean epHasFocus = UIUtils.hasFocus(getExtraPresentationControl());
+                presentationSash.setMaximizedControl(presentationSash.getChildren()[SQL_EDITOR_CONTROL_INDEX]);
+                if (epHasFocus) {
+                    getEditorControlWrapper().setFocus();
                 }
-            }
-            if (maximize) {
-                presentationSash.setMaximizedControl(getExtraPresentationControl());
-                getExtraPresentationControl().setFocus();
             } else {
-                presentationSash.setMaximizedControl(null);
+                if (extraPresentation == null) {
+                    // Lazy activation
+                    try {
+                        extraPresentation = extraPresentationDescriptor.createPresentation();
+                        extraPresentation.createPresentation((Composite) getExtraPresentationControl(), this);
+                    } catch (DBException e) {
+                        log.error("Error creating presentation", e);
+                    }
+                }
+                if (maximize) {
+                    presentationSash.setMaximizedControl(getExtraPresentationControl());
+                    getExtraPresentationControl().setFocus();
+                } else {
+                    presentationSash.setMaximizedControl(null);
+                }
             }
-        }
 
-        // Show presentation panels
-        boolean sideBarChanged = false;
-        if (getExtraPresentationState() == SQLEditorPresentation.ActivationType.HIDDEN) {
-            // Remove all presentation panel toggles
-            for (SQLPresentationPanelDescriptor panelDescriptor : extraPresentationDescriptor.getPanels()) {
-                if (sideToolBar.remove(PANEL_ITEM_PREFIX + panelDescriptor.getId()) != null) {
-                    sideBarChanged = true;
+            // Show presentation panels
+            boolean sideBarChanged = false;
+            if (getExtraPresentationState() == SQLEditorPresentation.ActivationType.HIDDEN) {
+                // Remove all presentation panel toggles
+                for (SQLPresentationPanelDescriptor panelDescriptor : extraPresentationDescriptor.getPanels()) {
+                    if (sideToolBar.remove(PANEL_ITEM_PREFIX + panelDescriptor.getId()) != null) {
+                        sideBarChanged = true;
+                    }
                 }
-            }
-            // Close all panels
-            for (CTabItem tabItem : resultTabs.getItems()) {
-                if (tabItem.getData() instanceof SQLEditorPresentationPanel) {
-                    tabItem.dispose();
+                // Close all panels
+                for (CTabItem tabItem : resultTabs.getItems()) {
+                    if (tabItem.getData() instanceof SQLEditorPresentationPanel) {
+                        tabItem.dispose();
+                    }
                 }
-            }
-            extraPresentationCurrentPanel = null;
-        } else {
-            // Check and add presentation panel toggles
-            for (SQLPresentationPanelDescriptor panelDescriptor : extraPresentationDescriptor.getPanels()) {
-                if (sideToolBar.find(PANEL_ITEM_PREFIX + panelDescriptor.getId()) == null) {
-                    sideBarChanged = true;
-                    PresentationPanelToggleAction toggleAction = new PresentationPanelToggleAction(panelDescriptor);
-                    sideToolBar.insertAfter(TOOLBAR_GROUP_PANELS, toggleAction);
-                    if (panelDescriptor.isAutoActivate()) {
-                        toggleAction.run();
+                extraPresentationCurrentPanel = null;
+            } else {
+                // Check and add presentation panel toggles
+                for (SQLPresentationPanelDescriptor panelDescriptor : extraPresentationDescriptor.getPanels()) {
+                    if (sideToolBar.find(PANEL_ITEM_PREFIX + panelDescriptor.getId()) == null) {
+                        sideBarChanged = true;
+                        PresentationPanelToggleAction toggleAction = new PresentationPanelToggleAction(panelDescriptor);
+                        sideToolBar.insertAfter(TOOLBAR_GROUP_PANELS, toggleAction);
+                        if (panelDescriptor.isAutoActivate()) {
+                            toggleAction.run();
+                        }
                     }
                 }
             }
-        }
-        if (sideBarChanged) {
-            sideToolBar.update(true);
-            sideToolBar.getControl().getParent().layout(true);
+            if (sideBarChanged) {
+                sideToolBar.update(true);
+                sideToolBar.getControl().getParent().layout(true);
+            }
+        } finally {
+            resultsSash.setRedraw(true);
         }
     }
 
