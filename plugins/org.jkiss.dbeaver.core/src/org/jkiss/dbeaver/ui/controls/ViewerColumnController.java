@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ui.controls;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
-import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
@@ -124,7 +123,7 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
         });
     }
 
-    public void addColumn(String name, String description, int style, boolean defaultVisible, boolean required, IColumnTextProvider<ELEMENT> labelProvider)
+    public void addColumn(String name, String description, int style, boolean defaultVisible, boolean required, IColumnTextProvider<ELEMENT> labelProvider, EditingSupport editingSupport)
     {
         addColumn(name, description, style, defaultVisible, required, false, null, new ColumnLabelProvider() {
             @Override
@@ -136,7 +135,7 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
                 }
                 cell.setText(labelProvider.getText((ELEMENT) cell.getElement()));
             }
-        }, null);
+        }, editingSupport);
     }
 
     public void addColumn(String name, String description, int style, boolean defaultVisible, boolean required, CellLabelProvider labelProvider)
