@@ -761,10 +761,16 @@ public class UIUtils {
         gd.verticalSpan = verticalSpan;
     }
 
-    public static Label createHorizontalLine(Composite parent)
-    {
+    public static Label createHorizontalLine(Composite parent) {
+        return createHorizontalLine(parent, 1, 0);
+    }
+
+    public static Label createHorizontalLine(Composite parent, int hSpan, int vIndent) {
         Label horizontalLine = new Label(parent, SWT.SEPARATOR | SWT.HORIZONTAL);
-        horizontalLine.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, false, 1, 1));
+        GridData gd = new GridData(GridData.FILL, GridData.FILL, true, false, 1, 1);
+        gd.horizontalSpan = hSpan;
+        gd.verticalIndent = vIndent;
+        horizontalLine.setLayoutData(gd);
         return horizontalLine;
     }
 

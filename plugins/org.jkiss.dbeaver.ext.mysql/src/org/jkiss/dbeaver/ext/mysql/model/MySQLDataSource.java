@@ -101,6 +101,11 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
             // Newer MySQL servers/connectors requires explicit SSL disable
             props.put("useSSL", "false");
         }
+
+        String serverTZ = connectionInfo.getProviderProperty(MySQLConstants.PROP_SERVER_TIMEZONE);
+        if (!CommonUtils.isEmpty(serverTZ)) {
+            props.put("serverTimezone", serverTZ);
+        }
 /*
         if (CommonUtils.toBoolean(connectionInfo.getProperty(MySQLConstants.PROP_USE_SSL))) {
             url.append("?useSSL=true&requireSSL=true");

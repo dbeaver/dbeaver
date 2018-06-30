@@ -23,12 +23,14 @@ import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.ext.mysql.Activator;
 import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
+import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -39,7 +41,9 @@ import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
 import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Arrays;
 import java.util.Locale;
+import java.util.TimeZone;
 
 /**
  * MySQLConnectionPage
@@ -56,6 +60,7 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
 
     private static ImageDescriptor MYSQL_LOGO_IMG = Activator.getImageDescriptor("icons/mysql_logo.png");
     private static ImageDescriptor MARIADB_LOGO_IMG = Activator.getImageDescriptor("icons/mariadb_logo.png");
+    private Combo serverTimezoneCombo;
 
 
     @Override
@@ -129,18 +134,25 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
         passwordText.setLayoutData(gd);
         passwordText.addModifyListener(textListener);
 
-        {
-            Composite clientPanel = UIUtils.createPlaceholder(addrGroup, 1);
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.horizontalSpan = 2;
-            clientPanel.setLayoutData(gd);
+            UIUtils.createHorizontalLine(addrGroup, 2, 10);
 
-            UIUtils.createHorizontalLine(clientPanel);
-
-            homesSelector = new ClientHomesSelector(clientPanel, SWT.NONE, "Local Client");
-            gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING);
-            homesSelector.getPanel().setLayoutData(gd);
+        if (!MySQLUtils.isMariaDB(getSite().getDriver())) {
+            serverTimezoneCombo = UIUtils.createLabelCombo(addrGroup, MySQLMessages.dialog_connection_server_timezone, SWT.DROP_DOWN);
+            serverTimezoneCombo.add(MySQLMessages.dialog_connection_auto_detect);
+            {
+                String[] tzList = TimeZone.getAvailableIDs();
+                for (String tzID : tzList) {
+                    //TimeZone timeZone = TimeZone.getTimeZone(tzID);
+                    serverTimezoneCombo.add(tzID);
+                }
+            }
+            serverTimezoneCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
         }
+
+        homesSelector = new ClientHomesSelector(addrGroup, SWT.NONE, MySQLMessages.dialog_connection_local_client);
+        gd = new GridData(GridData.FILL_HORIZONTAL | GridData.HORIZONTAL_ALIGN_BEGINNING);
+        gd.horizontalSpan = 2;
+        homesSelector.getPanel().setLayoutData(gd);
 
         createDriverPanel(addrGroup);
         setControl(addrGroup);
@@ -197,6 +209,15 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
         if (passwordText != null) {
             passwordText.setText(CommonUtils.notEmpty(connectionInfo.getUserPassword()));
         }
+        if (serverTimezoneCombo != null) {
+            String tzProp = connectionInfo.getProviderProperty(MySQLConstants.PROP_SERVER_TIMEZONE);
+            if (CommonUtils.isEmpty(tzProp)) {
+                serverTimezoneCombo.select(0);
+            } else {
+                serverTimezoneCombo.setText(tzProp);
+            }
+        }
+
         homesSelector.populateHomes(site.getDriver(), connectionInfo.getClientHomeId());
 
         activated = true;
@@ -220,6 +241,13 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
         }
         if (passwordText != null) {
             connectionInfo.setUserPassword(passwordText.getText());
+        }
+        if (serverTimezoneCombo != null) {
+            if (serverTimezoneCombo.getSelectionIndex() == 0 || CommonUtils.isEmpty(serverTimezoneCombo.getText())) {
+                connectionInfo.removeProviderProperty(MySQLConstants.PROP_SERVER_TIMEZONE);
+            } else {
+                connectionInfo.setProviderProperty(MySQLConstants.PROP_SERVER_TIMEZONE, serverTimezoneCombo.getText());
+            }
         }
         if (homesSelector != null) {
             connectionInfo.setClientHomeId(homesSelector.getSelectedHome());
