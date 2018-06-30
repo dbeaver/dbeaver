@@ -861,6 +861,15 @@ public class SQLEditor extends SQLEditorBase implements
         }
     }
 
+    public <T> T getExtraPresentationPanel(Class<T> panelClass) {
+        for (CTabItem tabItem : resultTabs.getItems()) {
+            if (tabItem.getData() instanceof SQLEditorPresentationPanel && tabItem.getData().getClass() == panelClass) {
+                return panelClass.cast(tabItem.getData());
+            }
+        }
+        return null;
+    }
+
     public void showExtraPresentation(boolean show, boolean maximize) {
         if (extraPresentationDescriptor == null) {
             return;
