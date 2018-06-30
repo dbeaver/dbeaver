@@ -34,7 +34,7 @@ public class ExasolSourceViewEditor extends SQLSourceViewer<ExasolSourceObject> 
     @Override
     protected void setSourceText(DBRProgressMonitor monitor, String sourceText)
     {
-        getEditorInput().getPropertySource().setPropertyValue(monitor, "objectDefinitionText", sourceText);
+        getInputPropertySource().setPropertyValue(monitor, "objectDefinitionText", sourceText);
     }
 
 }
