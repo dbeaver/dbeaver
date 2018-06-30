@@ -134,7 +134,9 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor> imp
         BaseTextEditor textEditor = getTextEditor();
         if (textEditor != null && ValueViewerPanel.getPanelSettings().getBoolean(PREF_TEXT_EDITOR_AUTO_FORMAT)) {
             try {
-                textEditor.getViewer().doOperation(ISourceViewer.FORMAT);
+                if (textEditor.getViewer().canDoOperation(ISourceViewer.FORMAT)) {
+                    textEditor.getViewer().doOperation(ISourceViewer.FORMAT);
+                }
             } catch (Exception e) {
                 log.debug("Error formatting text", e);
             }
