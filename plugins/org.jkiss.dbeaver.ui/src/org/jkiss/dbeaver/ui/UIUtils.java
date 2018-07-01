@@ -1295,7 +1295,11 @@ public class UIUtils {
         }
         Class<?> propertyType = property.getDataType();
         if (propertyType == null || CharSequence.class.isAssignableFrom(propertyType)) {
-            return new CustomTextCellEditor(parent);
+            if (false/*property instanceof ObjPropDe property.isMultiLine()*/) {
+                return new AdvancedTextCellEditor(parent);
+            } else {
+                return new CustomTextCellEditor(parent);
+            }
         } else if (BeanUtils.isNumericType(propertyType)) {
             return new CustomNumberCellEditor(parent, propertyType);
         } else if (BeanUtils.isBooleanType(propertyType)) {
