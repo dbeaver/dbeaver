@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.sqlite.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.sqlite.SQLiteUtils;
@@ -46,6 +47,7 @@ import java.util.Map;
  */
 public class SQLiteMetaModel extends GenericMetaModel implements DBCQueryTransformProvider
 {
+    private static final Log log = Log.getLog(SQLiteMetaModel.class);
 
     public SQLiteMetaModel() {
         super();
@@ -151,7 +153,9 @@ public class SQLiteMetaModel extends GenericMetaModel implements DBCQueryTransfo
                 return result;
             }
         } catch (SQLException e) {
-            throw new DBException(e, container.getDataSource());
+            // Most likely sqlite_sequence doesn't exist, this means jsut empty sequence list
+            log.debug("Error loading SQLite sequences", e);
+            return new ArrayList<>();
         }
     }
 
