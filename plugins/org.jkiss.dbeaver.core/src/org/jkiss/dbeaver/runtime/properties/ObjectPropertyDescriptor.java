@@ -135,6 +135,10 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         return propType != null && Date.class.isAssignableFrom(propType);
     }
 
+    public boolean isMultiLine() {
+        return propInfo.multiline();
+    }
+
     public boolean supportsPreview()
     {
         return propInfo.supportsPreview();
