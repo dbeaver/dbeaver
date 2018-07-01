@@ -125,6 +125,9 @@ public class AdvancedTextCellEditor extends DialogCellEditor {
 
     @Override
     protected Object openDialogBox(Control cellEditorWindow) {
+        String newValue = textEditor.getText();
+        doSetValue(newValue);
+
         textEditor.removeFocusListener(textFocusListener);
         String value = EditTextDialog.editText(cellEditorWindow.getShell(), "Edit value", (String) getValue());
         textEditor.addFocusListener(textFocusListener);
