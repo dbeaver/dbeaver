@@ -90,7 +90,7 @@ public class InvalidateJob extends DataSourceJob
         DBPDataSourceContainer container = dataSource.getContainer();
         DBWNetworkHandler[] activeHandlers = container.getActiveNetworkHandlers();
         boolean networkOK = true;
-        int goodContextsNumber = 0;
+        int goodContextsNumber = 0, aliveContextsNumber = 0;
         if (activeHandlers != null && activeHandlers.length > 0) {
             for (DBWNetworkHandler nh : activeHandlers) {
                 monitor.subTask("Invalidate network [" + container.getName() + "]");
@@ -114,6 +114,9 @@ public class InvalidateJob extends DataSourceJob
                     if (result != DBCExecutionContext.InvalidateResult.ERROR) {
                         goodContextsNumber++;
                     }
+                    if (result == DBCExecutionContext.InvalidateResult.ALIVE) {
+                        aliveContextsNumber++;
+                    }
                     invalidateResults.add(new ContextInvalidateResult(result, null));
                 } catch (Exception e) {
                     invalidateResults.add(new ContextInvalidateResult(DBCExecutionContext.InvalidateResult.ERROR, e));
@@ -121,6 +124,10 @@ public class InvalidateJob extends DataSourceJob
                     timeSpent += (System.currentTimeMillis() - startTime);
                 }
             }
+        }
+        if (goodContextsNumber > 0 && goodContextsNumber == aliveContextsNumber) {
+            // Nothing to reinit, all contexts are alive. Why we are here??
+            return invalidateResults;
         }
         if (goodContextsNumber == 0 && disconnectOnFailure) {
             // Close whole datasource. Target host seems to be unavailable
