@@ -163,7 +163,7 @@ public class DB2SequenceManager extends SQLObjectEditor<DB2Sequence, DB2Schema> 
         } else {
             sb.append("NO CYCLE ").append(SPACE);
         }
-        if (sequence.getCache() != null) {
+        if (sequence.getCache() != null && sequence.getCache() > 0) {
             sb.append("CACHE ").append(sequence.getCache()).append(SPACE);
         } else {
             sb.append("NO CACHE ").append(SPACE);
