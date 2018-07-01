@@ -57,7 +57,12 @@ public class AdvancedTextCellEditor extends DialogCellEditor {
     @Override
     protected Object doGetValue()
     {
-        final Object value = super.doGetValue();
+        final Object value;
+        if (textEditor == null || textEditor.isDisposed()) {
+            value = super.doGetValue();
+        } else {
+            value = textEditor.getText();
+        }
         if (wasNull && "".equals(value)) {
             return null;
         } else {
@@ -90,16 +95,12 @@ public class AdvancedTextCellEditor extends DialogCellEditor {
             if (e.detail == SWT.TRAVERSE_RETURN) {
                 e.doit = false;
                 e.detail = SWT.TRAVERSE_NONE;
-                String newValue = textEditor.getText();
-                doSetValue(newValue);
                 focusLost();
             }
         });
         textFocusListener = new FocusAdapter() {
             @Override
             public void focusLost(FocusEvent e) {
-                String newValue = textEditor.getText();
-                doSetValue(newValue);
                 UIUtils.asyncExec(() -> {
                     if (!UIUtils.hasFocus(cell)) {
                         AdvancedTextCellEditor.this.focusLost();
@@ -125,12 +126,10 @@ public class AdvancedTextCellEditor extends DialogCellEditor {
 
     @Override
     protected Object openDialogBox(Control cellEditorWindow) {
-        String newValue = textEditor.getText();
-        doSetValue(newValue);
-
         textEditor.removeFocusListener(textFocusListener);
         String value = EditTextDialog.editText(cellEditorWindow.getShell(), "Edit value", (String) getValue());
         textEditor.addFocusListener(textFocusListener);
+
         return value;
     }
 
