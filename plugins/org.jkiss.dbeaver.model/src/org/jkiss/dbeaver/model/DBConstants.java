@@ -93,4 +93,6 @@ public class DBConstants {
 
     public static final String DEFAULT_DRIVERS_FOLDER = ".dbeaver-drivers";
 
+    public static final String MODEL_BUNDLE_ID = "org.jkiss.dbeaver.model";
+
 }
