@@ -373,7 +373,7 @@ public class DB2Routine extends DB2Object<DBSObject>
 
     @Nullable
     @Override
-    @Property(viewable = false)
+    @Property(viewable = false, multiline = true)
     public String getDescription()
     {
         return remarks;

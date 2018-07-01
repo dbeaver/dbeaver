@@ -317,7 +317,7 @@ public class DB2TableColumn extends JDBCTableColumn<DB2TableBase>
 
     @Nullable
     @Override
-    @Property(viewable = true, order = 999, editable = true, updatable = true)
+    @Property(viewable = true, order = 999, editable = true, updatable = true, multiline = true)
     public String getDescription()
     {
         return remarks;

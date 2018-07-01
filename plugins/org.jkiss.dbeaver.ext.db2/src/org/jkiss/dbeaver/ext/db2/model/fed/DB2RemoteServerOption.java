@@ -91,7 +91,7 @@ public class DB2RemoteServerOption extends DB2Object<DB2RemoteServer> {
         return createTime;
     }
 
-    @Property(viewable = true, editable = false, order = 5)
+    @Property(viewable = true, editable = false, multiline = true, order = 5)
     public String getRemarks()
     {
         return remarks;

@@ -255,7 +255,7 @@ public class ExasolDataType extends ExasolObject<DBSObject> implements DBSDataTy
 
     @Nullable
     @Override
-    @Property(viewable = false, editable = false)
+    @Property(viewable = false, editable = false, multiline = true)
     public String getDescription() {
         return null;
     }

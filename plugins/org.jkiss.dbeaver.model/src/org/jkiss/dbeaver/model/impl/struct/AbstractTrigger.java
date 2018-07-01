@@ -86,7 +86,7 @@ public abstract class AbstractTrigger implements DBSTrigger, DBPQualifiedObject,
 
     @Nullable
     @Override
-    @Property(viewable = true, order = 100)
+    @Property(viewable = true, multiline = true, order = 100)
     public String getDescription()
     {
         return description;

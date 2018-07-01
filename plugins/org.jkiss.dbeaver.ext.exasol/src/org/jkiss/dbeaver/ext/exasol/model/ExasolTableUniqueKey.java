@@ -117,7 +117,7 @@ public class ExasolTableUniqueKey extends JDBCTableConstraint<ExasolTable> imple
 
     @Nullable
     @Override
-    @Property(viewable = false, editable = false, order = 4)
+    @Property(viewable = false, editable = false, multiline = true, order = 4)
     public String getDescription() {
         return null;
     }

@@ -113,7 +113,7 @@ public class ExasolFunction
 
     @Nullable
     @Override
-    @Property(viewable = true, editable = true, updatable = true, order = 11)
+    @Property(viewable = true, editable = true, updatable = true, multiline = true, order = 11)
     public String getDescription() {
         return this.remarks;
     }

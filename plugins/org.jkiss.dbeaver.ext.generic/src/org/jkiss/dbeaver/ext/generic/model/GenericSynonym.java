@@ -56,7 +56,7 @@ public abstract class GenericSynonym implements DBSAlias, DBSObject, DBPQualifie
 
     @Nullable
     @Override
-    @Property(viewable = true, order = 10)
+    @Property(viewable = true, multiline = true, order = 10)
     public String getDescription() {
         return description;
     }

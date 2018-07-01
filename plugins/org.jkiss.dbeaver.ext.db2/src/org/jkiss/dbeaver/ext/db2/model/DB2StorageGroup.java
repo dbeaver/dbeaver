@@ -125,7 +125,7 @@ public class DB2StorageGroup extends DB2GlobalObject implements DBPNamedObject {
 
     @Nullable
     @Override
-    @Property(viewable = false)
+    @Property(viewable = false, multiline = true)
     public String getDescription()
     {
         return remarks;

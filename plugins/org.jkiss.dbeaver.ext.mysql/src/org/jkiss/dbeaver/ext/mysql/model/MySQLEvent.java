@@ -110,7 +110,7 @@ public class MySQLEvent extends MySQLInformation implements MySQLSourceObject {
 
     @Nullable
     @Override
-    @Property(viewable = true, category = CAT_DETAILS, order = 100)
+    @Property(viewable = true, multiline = true, category = CAT_DETAILS, order = 100)
     public String getDescription()
     {
         return eventComment;

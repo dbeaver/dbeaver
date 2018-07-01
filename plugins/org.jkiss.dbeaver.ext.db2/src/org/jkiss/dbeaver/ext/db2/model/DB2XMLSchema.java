@@ -178,7 +178,7 @@ public class DB2XMLSchema extends DB2SchemaObject implements DBPRefreshableObjec
 
     @Nullable
     @Override
-    @Property(viewable = false, order = 20, updatable = true)
+    @Property(viewable = false, order = 20, updatable = true, multiline = true)
     public String getDescription()
     {
         return remarks;

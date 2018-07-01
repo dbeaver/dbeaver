@@ -77,7 +77,7 @@ public class ExasolView extends ExasolTableBase implements ExasolSourceObject {
 
 
     @Override
-    @Property(viewable = true, editable = false, updatable = false, order = 40)
+    @Property(viewable = true, editable = false, updatable = false, multiline = true, order = 40)
     public String getDescription() {
         return super.getDescription();
     }
