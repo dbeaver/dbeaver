@@ -124,7 +124,7 @@ public class ExasolConnection
     }
 
 	@Override
-	@Property(viewable = true, editable= true, updatable=true, order = 50)
+	@Property(viewable = true, editable= true, updatable=true, multiline = true, order = 50)
 	public String getDescription()
 	{
 		return this.comment;

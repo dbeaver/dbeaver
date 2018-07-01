@@ -461,7 +461,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
 
     @Nullable
     @Override
-    @Property(viewable = true, editable = true, updatable = true, order = 200)
+    @Property(viewable = true, editable = true, updatable = true, multiline = true, order = 200)
     public String getDescription()
     {
         return super.getDescription();

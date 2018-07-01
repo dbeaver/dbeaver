@@ -194,7 +194,7 @@ public class ExasolBaseObjectGrant implements DBAPrivilege  {
 	}
 	
 	@Override
-    @Property(hidden = true)
+    @Property(hidden = true, multiline = true)
 	public String getDescription()
 	{
 		// No Description available

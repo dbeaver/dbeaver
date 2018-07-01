@@ -291,7 +291,7 @@ public class DataSourceDescriptor
 
     @Nullable
     @Override
-    @Property(viewable = true, order = 2)
+    @Property(viewable = true, multiline = true, order = 2)
     public String getDescription()
     {
         return description;

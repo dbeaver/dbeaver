@@ -253,7 +253,7 @@ public class DB2Index extends JDBCTableIndex<DB2Schema, DB2TableBase> {
 
     @Nullable
     @Override
-    @Property(viewable = false, editable = false)
+    @Property(viewable = false, editable = false, multiline = true)
     public String getDescription()
     {
         return remarks;

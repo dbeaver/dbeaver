@@ -152,7 +152,7 @@ public abstract class OracleTrigger<PARENT extends DBSObject> extends OracleObje
 
     @Nullable
     @Override
-    @Property(order = 11)
+    @Property(multiline = true, order = 11)
     public String getDescription()
     {
         return description;

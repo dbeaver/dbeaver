@@ -52,7 +52,7 @@ public class SQLiteDataType extends JDBCDataType<SQLiteDataSource> {
 
     @Nullable
     @Override
-    @Property(viewable = true, order = 100)
+    @Property(viewable = true, multiline = true, order = 100)
     public String getDescription()
     {
         return super.getDescription();

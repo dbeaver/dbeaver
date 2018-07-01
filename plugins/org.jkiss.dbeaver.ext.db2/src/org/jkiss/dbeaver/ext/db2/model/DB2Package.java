@@ -215,7 +215,7 @@ public class DB2Package extends DB2SchemaObject implements DBPRefreshableObject 
 
     @Nullable
     @Override
-    @Property(viewable = false, order = 9)
+    @Property(viewable = false, multiline = true, order = 9)
     public String getDescription()
     {
         return remarks;

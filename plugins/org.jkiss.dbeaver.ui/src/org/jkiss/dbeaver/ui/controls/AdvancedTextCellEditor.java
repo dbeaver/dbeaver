@@ -75,15 +75,9 @@ public class AdvancedTextCellEditor extends DialogCellEditor {
     }
 
     protected Button createButton(Composite parent) {
-        Button result = new Button(parent, SWT.DOWN);
+        Button result = new Button(parent, SWT.DOWN | SWT.NO_FOCUS);
         //result.setText("..."); //$NON-NLS-1$
         result.setImage(DBeaverIcons.getImage(UIIcon.DOTS_BUTTON)); //$NON-NLS-1$
-        result.addFocusListener(new FocusAdapter() {
-            @Override
-            public void focusGained(FocusEvent e) {
-                super.focusGained(e);
-            }
-        });
         return result;
     }
 
@@ -92,13 +86,22 @@ public class AdvancedTextCellEditor extends DialogCellEditor {
         textEditor = new Text(cell, SWT.LEFT);
         textEditor.setFont(cell.getFont());
         textEditor.setBackground(cell.getBackground());
+        textEditor.addTraverseListener(e -> {
+            if (e.detail == SWT.TRAVERSE_RETURN) {
+                e.doit = false;
+                e.detail = SWT.TRAVERSE_NONE;
+                String newValue = textEditor.getText();
+                doSetValue(newValue);
+                focusLost();
+            }
+        });
         textFocusListener = new FocusAdapter() {
             @Override
             public void focusLost(FocusEvent e) {
                 String newValue = textEditor.getText();
+                doSetValue(newValue);
                 UIUtils.asyncExec(() -> {
                     if (!UIUtils.hasFocus(cell)) {
-                        doSetValue(newValue);
                         AdvancedTextCellEditor.this.focusLost();
                     }
                 });
@@ -116,13 +119,14 @@ public class AdvancedTextCellEditor extends DialogCellEditor {
         }
         if (value != null) {
             textEditor.setText((String)value);
+            textEditor.selectAll();
         }
     }
 
     @Override
     protected Object openDialogBox(Control cellEditorWindow) {
         textEditor.removeFocusListener(textFocusListener);
-        String value = EditTextDialog.editText(cellEditorWindow.getShell(), "Edit text", (String) getValue());
+        String value = EditTextDialog.editText(cellEditorWindow.getShell(), "Edit value", (String) getValue());
         textEditor.addFocusListener(textFocusListener);
         return value;
     }

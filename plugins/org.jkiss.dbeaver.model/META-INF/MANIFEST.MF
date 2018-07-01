@@ -68,6 +68,7 @@ Export-Package: org.jkiss.dbeaver,
  org.jkiss.dbeaver.runtime,
  org.jkiss.dbeaver.runtime.jobs,
  org.jkiss.dbeaver.runtime.net,
+ org.jkiss.dbeaver.runtime.properties,
  org.jkiss.dbeaver.runtime.ui,
  org.jkiss.dbeaver.utils
 Bundle-ClassPath: .

@@ -60,7 +60,7 @@ public class ExasolConnectionGrant
 	}
 
 	@Override
-	@Property(hidden = true)
+	@Property(hidden = true, multiline = true)
 	public String getDescription()
 	{
 		return null;

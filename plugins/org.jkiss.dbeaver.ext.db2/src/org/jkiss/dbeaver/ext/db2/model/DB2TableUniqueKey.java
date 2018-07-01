@@ -141,7 +141,7 @@ public class DB2TableUniqueKey extends JDBCTableConstraint<DB2Table> {
 
     @Nullable
     @Override
-    @Property(viewable = true, editable = false, order = 4)
+    @Property(viewable = true, editable = false, multiline = true, order = 4)
     public String getDescription()
     {
         return remarks;

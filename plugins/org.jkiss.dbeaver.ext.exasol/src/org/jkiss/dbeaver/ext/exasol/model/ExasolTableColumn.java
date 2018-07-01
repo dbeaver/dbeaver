@@ -234,7 +234,7 @@ public class ExasolTableColumn extends JDBCTableColumn<ExasolTableBase>
 
     @Nullable
     @Override
-    @Property(viewable = true, order = 999, editable = true, updatable = true)
+    @Property(viewable = true, order = 999, editable = true, updatable = true, multiline = true)
     public String getDescription() {
         return remarks;
     }
