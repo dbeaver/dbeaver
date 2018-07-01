@@ -53,6 +53,7 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     private String description;
 	private boolean isPartition;
     private Object acl;
+    private String[] relOptions;
 
     protected PostgreTableBase(PostgreSchema catalog)
     {
@@ -71,6 +72,8 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
             getDataSource().isServerVersionAtLeast(10, 0) &&
             JDBCUtils.safeGetBoolean(dbResult, "relispartition");
         this.acl = JDBCUtils.safeGetObject(dbResult, "relacl");
+        this.relOptions = JDBCUtils.safeGetArray(dbResult, "reloptions");
+        //this.reloptions = PostgreUtils.parseObjectString()
     }
 
     // Copy constructor
@@ -100,7 +103,13 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
         return this.oid;
     }
 
-    @Property(viewable = true, editable = true, updatable = true, order = 100)
+    @Property(order = 90)
+    @Nullable
+    public String[] getRelOptions() {
+        return relOptions;
+    }
+
+    @Property(viewable = true, editable = true, updatable = true, multiline = true, order = 100)
     @Nullable
     @Override
     public String getDescription()
