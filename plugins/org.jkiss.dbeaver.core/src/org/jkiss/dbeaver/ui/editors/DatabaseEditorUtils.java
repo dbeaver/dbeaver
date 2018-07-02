@@ -16,36 +16,20 @@
  */
 package org.jkiss.dbeaver.ui.editors;
 
-import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
-import org.eclipse.jface.action.Separator;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchSite;
-import org.eclipse.ui.part.MultiPageEditorPart;
-import org.eclipse.ui.part.MultiPageEditorSite;
-import org.jkiss.dbeaver.core.CoreCommands;
-import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
-import org.jkiss.dbeaver.model.edit.DBEObjectReorderer;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
 import org.jkiss.dbeaver.ui.ActionUtils;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerFilterConfig;
-import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
-
-import java.util.List;
 
 /**
  * DB editor utils
@@ -55,18 +39,17 @@ public class DatabaseEditorUtils {
     public static void setPartBackground(IEditorPart editor, Composite composite)
     {
         CTabFolder tabFolder = null;
-        Composite rootComposite = null;
+        Composite rootComposite = composite;
         for (Composite c = composite; c != null; c = c.getParent()) {
             if (!c.isDisposed() && c.getParent() instanceof CTabFolder) {
                 tabFolder = (CTabFolder) c.getParent();
-                rootComposite = c;
+                //rootComposite = c;
                 break;
             }
         }
-        if (tabFolder == null) {
-            return;
+        if (tabFolder != null) {
+            tabFolder.setBorderVisible(false);
         }
-        tabFolder.setBorderVisible(false);
 
         Color bgColor = null;
         if (editor instanceof IDataSourceContainerProvider) {
