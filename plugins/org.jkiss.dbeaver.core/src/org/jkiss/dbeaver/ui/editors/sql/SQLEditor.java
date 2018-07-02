@@ -1503,7 +1503,7 @@ public class SQLEditor extends SQLEditorBase implements
             return;
         }
 
-        DatabaseEditorUtils.setPartBackground(this, resultsSash);
+        DatabaseEditorUtils.setPartBackground(this, resultTabs);
 
 
         DBCExecutionContext executionContext = getExecutionContext();
