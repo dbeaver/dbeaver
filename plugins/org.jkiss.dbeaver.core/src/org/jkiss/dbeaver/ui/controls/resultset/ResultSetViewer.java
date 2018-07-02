@@ -759,7 +759,7 @@ public class ResultSetViewer extends Viewer
                 pSection.put("activePanelId", settings.activePanelId);
                 pSection.put("panelRatio", settings.panelRatio);
                 pSection.put("panelsVisible", settings.panelsVisible);
-                pSection.put("panelsVisible", settings.verticalLayout);
+                pSection.put("verticalLayout", settings.verticalLayout);
             }
         }
     }
