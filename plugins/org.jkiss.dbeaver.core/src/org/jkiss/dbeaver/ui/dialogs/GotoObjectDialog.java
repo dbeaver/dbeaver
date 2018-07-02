@@ -129,7 +129,7 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
             }
 
             ObjectFinder objectFinder = new ObjectFinder(structureAssistant, monitor, typesToSearch, nameMask);
-            DBUtils.tryExecuteRecover(monitor, container.getDataSource(), objectFinder);
+            DBUtils.tryExecuteRecover(monitor, context.getDataSource(), objectFinder);
 
             DBPDataSourceContainer dsContainer = context.getDataSource().getContainer();
             for (DBSObjectReference ref : objectFinder.getResult()) {
