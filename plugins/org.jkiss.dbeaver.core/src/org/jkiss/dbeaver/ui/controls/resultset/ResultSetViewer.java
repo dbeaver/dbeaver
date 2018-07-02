@@ -593,8 +593,14 @@ public class ResultSetViewer extends Viewer
             child.dispose();
         }
         if (panelFolder != null) {
+            CTabItem curItem = panelFolder.getSelection();
             for (CTabItem panelItem : panelFolder.getItems()) {
-                panelItem.dispose();
+                if (panelItem != curItem) {
+                    panelItem.dispose();
+                }
+            }
+            if (curItem != null) {
+                curItem.dispose();
             }
         }
 
@@ -806,19 +812,24 @@ public class ResultSetViewer extends Viewer
         activePanels.put(id, panel);
 
         // Create control and tab item
-        Control panelControl = panel.createContents(activePresentation, panelFolder);
+        panelFolder.setRedraw(false);
+        try {
+            Control panelControl = panel.createContents(activePresentation, panelFolder);
 
-        boolean firstPanel = panelFolder.getItemCount() == 0;
-        CTabItem panelTab = new CTabItem(panelFolder, SWT.CLOSE);
-        panelTab.setData(id);
-        panelTab.setText(panelDescriptor.getLabel());
-        panelTab.setImage(DBeaverIcons.getImage(panelDescriptor.getIcon()));
-        panelTab.setToolTipText(panelDescriptor.getDescription());
-        panelTab.setControl(panelControl);
-        UIUtils.disposeControlOnItemDispose(panelTab);
+            boolean firstPanel = panelFolder.getItemCount() == 0;
+            CTabItem panelTab = new CTabItem(panelFolder, SWT.CLOSE);
+            panelTab.setData(id);
+            panelTab.setText(panelDescriptor.getLabel());
+            panelTab.setImage(DBeaverIcons.getImage(panelDescriptor.getIcon()));
+            panelTab.setToolTipText(panelDescriptor.getDescription());
+            panelTab.setControl(panelControl);
+            UIUtils.disposeControlOnItemDispose(panelTab);
 
-        if (setActive || firstPanel) {
-            panelFolder.setSelection(panelTab);
+            if (setActive || firstPanel) {
+                panelFolder.setSelection(panelTab);
+            }
+        } finally {
+            panelFolder.setRedraw(true);
         }
 
         presentationSettings.enabledPanelIds.add(id);
