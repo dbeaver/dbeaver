@@ -67,7 +67,6 @@ public class MetaDataPanel implements IResultSetPanel {
     public Control createContents(final IResultSetPresentation presentation, Composite parent) {
         this.presentation = presentation;
         this.colorDisabled = presentation.getControl().getDisplay().getSystemColor(SWT.COLOR_WIDGET_DARK_SHADOW);
-
         this.attributeList = new MetaDataTable(parent);
         this.attributeList.setFitWidth(false);
         this.attributeList.getItemsViewer().addSelectionChangedListener(event -> {

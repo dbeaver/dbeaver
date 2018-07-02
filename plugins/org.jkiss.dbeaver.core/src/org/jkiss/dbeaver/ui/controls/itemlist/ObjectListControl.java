@@ -104,8 +104,11 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     public ObjectListControl(
         Composite parent,
         int style,
-        IContentProvider contentProvider) {
+        IContentProvider contentProvider)
+    {
         super(parent, style);
+
+
         this.isFitWidth = false;
 
         int viewerStyle = getDefaultListStyle();
@@ -114,20 +117,19 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         }
 
         EditorActivationStrategy editorActivationStrategy;
-        final TraverseListener traverseListener = new TraverseListener() {
-            @Override
-            public void keyTraversed(TraverseEvent e) {
-                if (e.detail == SWT.TRAVERSE_RETURN && doubleClickHandler != null) {
-                    doubleClickHandler.doubleClick(new DoubleClickEvent(itemsViewer, itemsViewer.getSelection()));
-                    e.doit = false;
-                }
+        final TraverseListener traverseListener = e -> {
+            if (e.detail == SWT.TRAVERSE_RETURN && doubleClickHandler != null) {
+                doubleClickHandler.doubleClick(new DoubleClickEvent(itemsViewer, itemsViewer.getSelection()));
+                e.doit = false;
             }
         };
+
+
         if (contentProvider instanceof ITreeContentProvider) {
             TreeViewer treeViewer = new TreeViewer(this, viewerStyle);
             final Tree tree = treeViewer.getTree();
-            tree.setLinesVisible(true);
             tree.setHeaderVisible(true);
+            tree.setLinesVisible(true);
             itemsViewer = treeViewer;
             editorActivationStrategy = new EditorActivationStrategy(treeViewer);
             TreeViewerEditor.create(treeViewer, editorActivationStrategy, ColumnViewerEditor.TABBING_CYCLE_IN_ROW);
@@ -143,8 +145,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         } else {
             TableViewer tableViewer = new TableViewer(this, viewerStyle);
             final Table table = tableViewer.getTable();
-            table.setLinesVisible(true);
             table.setHeaderVisible(true);
+            table.setLinesVisible(true);
             itemsViewer = tableViewer;
             //UIUtils.applyCustomTolTips(table);
             //itemsEditor = new TableEditor(table);
@@ -171,31 +173,27 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         GridData gd = new GridData(GridData.FILL_BOTH);
         itemsViewer.getControl().setLayoutData(gd);
         //PropertiesContributor.getInstance().addLazyListener(this);
-
         ColumnViewerToolTipSupport.enableFor(itemsViewer);
 
         // Add selection listener
-        itemsViewer.addSelectionChangedListener(new ISelectionChangedListener() {
-            @Override
-            public void selectionChanged(SelectionChangedEvent event) {
-                IStructuredSelection selection = (IStructuredSelection) event.getSelection();
-                if (selection.isEmpty()) {
-                    setCurListObject(null);
-                } else {
-                    setCurListObject((OBJECT_TYPE) selection.getFirstElement());
-                }
-
-                String status;
-                if (selection.isEmpty()) {
-                    status = ""; //$NON-NLS-1$
-                } else if (selection.size() == 1) {
-                    Object selectedNode = selection.getFirstElement();
-                    status = ObjectViewerRenderer.getCellString(selectedNode, false);
-                } else {
-                    status = NLS.bind(CoreMessages.controls_object_list_status_objects, selection.size());
-                }
-                setInfo(status);
+        itemsViewer.addSelectionChangedListener(event -> {
+            IStructuredSelection selection = (IStructuredSelection) event.getSelection();
+            if (selection.isEmpty()) {
+                setCurListObject(null);
+            } else {
+                setCurListObject((OBJECT_TYPE) selection.getFirstElement());
             }
+
+            String status;
+            if (selection.isEmpty()) {
+                status = ""; //$NON-NLS-1$
+            } else if (selection.size() == 1) {
+                Object selectedNode = selection.getFirstElement();
+                status = ObjectViewerRenderer.getCellString(selectedNode, false);
+            } else {
+                status = NLS.bind(CoreMessages.controls_object_list_status_objects, selection.size());
+            }
+            setInfo(status);
         });
     }
 
