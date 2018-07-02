@@ -365,7 +365,7 @@ public class AggregateColumnsPanel implements IResultSetPanel {
 
         @Override
         public boolean isEnabled() {
-            return aggregateTable.getSelectionCount() > 0;
+            return aggregateTable != null && !aggregateTable.isDisposed() && aggregateTable.getSelectionCount() > 0;
         }
 
         @Override
