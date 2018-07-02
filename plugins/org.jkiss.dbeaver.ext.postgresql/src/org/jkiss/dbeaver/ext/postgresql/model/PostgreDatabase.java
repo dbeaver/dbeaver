@@ -165,6 +165,10 @@ public class PostgreDatabase implements DBSInstance, DBSCatalog, DBPRefreshableO
         return true;
     }
 
+    public boolean isActiveDatabase() {
+        return dataSource.getDefaultInstance() == this;
+    }
+
     ///////////////////////////////////////////////////
     // Properties
 
