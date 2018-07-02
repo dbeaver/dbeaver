@@ -2835,7 +2835,8 @@ public class SQLEditor extends SQLEditorBase implements
                 }
             }
 
-            final String dumpString = dump.toString();
+            final String dumpString = dump.toString()
+                    .replace("\0", ""); // Remove zero characters
             if (!dumpString.isEmpty()) {
                 UIUtils.asyncExec(() -> {
                     if (outputViewer.isDisposed()) {
