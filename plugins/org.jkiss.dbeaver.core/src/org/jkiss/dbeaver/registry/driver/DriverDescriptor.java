@@ -887,7 +887,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                     driverClass = Class.forName(driverClassName, true, classLoader);
                 }
                 catch (Throwable ex) {
-                    throw new DBException("Can't load driver class '" + driverClassName + "'", ex);
+                    throw new DBException("Error creating driver '" + getFullName() + "' instance.\nMost likely required jar files are missing.\nYou should configure jars in driver settings.\n\nReason: can't load driver class '" + driverClassName + "'", ex);
                 }
     
                 // Create driver instance
