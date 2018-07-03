@@ -475,6 +475,9 @@ public class SQLFormatterTokenized implements SQLFormatter {
 
     private int insertReturnAndIndent(final List<FormatterToken> argList, final int argIndex, final int argIndent)
     {
+        if (argIndex >= argList.size()) {
+            return 0;
+        }
         if (functionBracket.contains(Boolean.TRUE))
             return 0;
         try {
