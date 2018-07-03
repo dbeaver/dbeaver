@@ -36,8 +36,12 @@ public class AttributeCheckCommand<PART extends AttributePart> extends Command {
         this.newValue = newValue;
     }
 
-    public boolean isChecked() {
+    public boolean getNewValue() {
         return newValue;
+    }
+
+    public boolean getOldValue() {
+        return oldValue;
     }
 
     @Override
