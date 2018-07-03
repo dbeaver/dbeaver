@@ -79,7 +79,8 @@ public class EntityAddCommand extends Command
                             entity = ERDUtils.makeEntityFromObject(
                                     monitor,
                                     diagramPart.getDiagram(),
-                                    (DBSEntity)((DBNDatabaseNode) tableNode).getObject());
+                                    (DBSEntity)((DBNDatabaseNode) tableNode).getObject(),
+                                null);
                             // This actually only loads unresolved relations.
                             // This happens only with entities added on diagram during editing
                             entity.addModelRelations(monitor, diagramPart.getDiagram().getEntityMap(), false, false);

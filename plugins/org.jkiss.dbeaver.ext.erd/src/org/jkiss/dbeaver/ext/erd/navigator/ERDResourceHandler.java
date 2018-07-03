@@ -142,26 +142,22 @@ public class ERDResourceHandler extends AbstractResourceHandler {
         final IFile file = ContentUtils.getUniqueFile(folder, CommonUtils.escapeFileName(title), ERD_EXT);
 
         try {
-            DBRRunnableWithProgress runnable = new DBRRunnableWithProgress() {
-                @Override
-                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-                {
-                    try {
-                        EntityDiagram newDiagram = copyFrom == null ?
-                                new EntityDiagram(new ERDDecoratorDefault(), null, "<Diagram>") :
-                                copyFrom.copy();
-                        newDiagram.setName(title);
-                        newDiagram.setLayoutManualAllowed(true);
-                        newDiagram.setLayoutManualDesired(true);
+            DBRRunnableWithProgress runnable = monitor1 -> {
+                try {
+                    EntityDiagram newDiagram = copyFrom == null ?
+                            new EntityDiagram(new ERDDecoratorDefault(), null, "<Diagram>") :
+                            copyFrom.copy();
+                    newDiagram.setName(title);
+                    newDiagram.setLayoutManualAllowed(true);
+                    newDiagram.setLayoutManualDesired(true);
 
-                        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-                        DiagramLoader.save(monitor, null, newDiagram, false, buffer);
-                        InputStream data = new ByteArrayInputStream(buffer.toByteArray());
+                    ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+                    DiagramLoader.save(monitor1, null, newDiagram, false, buffer);
+                    InputStream data = new ByteArrayInputStream(buffer.toByteArray());
 
-                        file.create(data, true, RuntimeUtils.getNestedMonitor(monitor));
-                    } catch (Exception e) {
-                        throw new InvocationTargetException(e);
-                    }
+                    file.create(data, true, RuntimeUtils.getNestedMonitor(monitor1));
+                } catch (Exception e) {
+                    throw new InvocationTargetException(e);
                 }
             };
             if (monitor == null) {

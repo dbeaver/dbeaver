@@ -20,6 +20,7 @@ import org.eclipse.gef.EditPart;
 import org.eclipse.gef.EditPartFactory;
 import org.eclipse.gef.palette.PaletteRoot;
 import org.jkiss.dbeaver.ext.erd.part.EntityPart;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
  * ERD object adapter
@@ -31,5 +32,7 @@ public interface ERDDecorator {
     EditPartFactory createPartFactory();
 
     void fillPalette(PaletteRoot paletteRoot, boolean readOnly);
+
+    void fillEntityFromObject(DBRProgressMonitor monitor, EntityDiagram diagram, ERDEntity erdEntity);
 
 }

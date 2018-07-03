@@ -144,7 +144,7 @@ public class DiagramObjectCollector {
             // Avoid duplicates
             return;
         }
-        ERDEntity erdEntity = ERDUtils.makeEntityFromObject(monitor, diagram, table);
+        ERDEntity erdEntity = ERDUtils.makeEntityFromObject(monitor, diagram, table, null);
         if (erdEntity != null) {
             erdEntities.add(erdEntity);
             tableMap.put(table, erdEntity);
