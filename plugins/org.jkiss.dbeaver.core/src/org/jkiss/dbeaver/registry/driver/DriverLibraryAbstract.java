@@ -101,6 +101,15 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary
         }
     }
 
+    protected DriverLibraryAbstract(DriverDescriptor driverDescriptor, DriverLibraryAbstract copyFrom) {
+        this.driver = driverDescriptor;
+        this.type = copyFrom.type;
+        this.system = copyFrom.system;
+        this.path = copyFrom.path;
+        this.custom = copyFrom.custom;
+        this.disabled = copyFrom.disabled;
+    }
+
     protected DriverLibraryAbstract(DriverDescriptor driver, FileType type, String path)
     {
         this.driver = driver;
@@ -273,4 +282,5 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary
         return getDisplayName();
     }
 
+    public abstract DBPDriverLibrary copyLibrary(DriverDescriptor driverDescriptor);
 }
