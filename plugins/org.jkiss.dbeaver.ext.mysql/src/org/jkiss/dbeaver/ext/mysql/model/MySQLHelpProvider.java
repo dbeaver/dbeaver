@@ -83,7 +83,7 @@ public class MySQLHelpProvider implements SQLHelpProvider
                     }
                 }
             } catch (SQLException e) {
-                log.error("Error reading help topics", e);
+                log.debug("Error reading help topics: " + e.getMessage());
             }
         }
         finally {
