@@ -800,7 +800,9 @@ public class SQLEditor extends SQLEditorBase implements
         item.setImage(image);
         item.setData(view);
         // De-select tool item on tab close
-        item.addDisposeListener(e -> viewItem.setSelection(false));
+        item.addDisposeListener(e -> {
+            if (!viewItem.isDisposed()) viewItem.setSelection(false);
+        });
         resultTabs.setSelection(item);
     }
 
