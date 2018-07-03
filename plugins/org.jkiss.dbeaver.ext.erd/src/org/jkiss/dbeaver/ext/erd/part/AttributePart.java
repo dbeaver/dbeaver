@@ -29,6 +29,7 @@ import org.eclipse.jface.viewers.TextCellEditor;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.jkiss.dbeaver.ext.erd.ERDMessages;
+import org.jkiss.dbeaver.ext.erd.command.AttributeCheckCommand;
 import org.jkiss.dbeaver.ext.erd.directedit.ColumnNameTypeCellEditorValidator;
 import org.jkiss.dbeaver.ext.erd.directedit.ExtendedDirectEditManager;
 import org.jkiss.dbeaver.ext.erd.directedit.LabelCellEditorLocator;
@@ -120,6 +121,10 @@ public class AttributePart extends PropertyAwarePart {
         } else if (request.getType() == RequestConstants.REQ_OPEN) {
             ERDUtils.openObjectEditor(getAttribute());
         }
+    }
+
+    public AttributeCheckCommand createAttributeCheckCommand(boolean newChecked) {
+        return new AttributeCheckCommand(this, newChecked);
     }
 
     private boolean directEditHitTest(Point requestLoc) {

@@ -22,30 +22,34 @@ import org.jkiss.dbeaver.ext.erd.part.AttributePart;
 /**
  * Change attribute checked state
  */
-public class AttributeCheckCommand extends Command {
+public class AttributeCheckCommand<PART extends AttributePart> extends Command {
 
-    private AttributePart attr;
+    protected PART part;
     private boolean newValue;
     private boolean oldValue;
 
-    public AttributeCheckCommand(AttributePart attr, boolean newValue) {
+    public AttributeCheckCommand(PART part, boolean newValue) {
         super("Select attribute");
-        this.attr = attr;
+        this.part = part;
 
-        this.oldValue = this.attr.getAttribute().isChecked();
+        this.oldValue = this.part.getAttribute().isChecked();
         this.newValue = newValue;
+    }
+
+    public boolean isChecked() {
+        return newValue;
     }
 
     @Override
     public void execute() {
-        attr.getAttribute().setChecked(newValue);
-        attr.getFigure().getCheckBox().setSelected(newValue);
+        part.getAttribute().setChecked(newValue);
+        part.getFigure().getCheckBox().setSelected(newValue);
     }
 
     @Override
     public void undo() {
-        attr.getAttribute().setChecked(oldValue);
-        attr.getFigure().getCheckBox().setSelected(oldValue);
+        part.getAttribute().setChecked(oldValue);
+        part.getFigure().getCheckBox().setSelected(oldValue);
     }
 
 }

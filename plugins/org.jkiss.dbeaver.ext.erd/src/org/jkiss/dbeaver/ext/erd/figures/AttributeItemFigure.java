@@ -66,7 +66,7 @@ public class AttributeItemFigure extends Figure
                 boolean newChecked = attrCheckbox.isSelected();
                 if (oldChecked != newChecked) {
                     part.getDiagramPart().getViewer().getEditDomain().getCommandStack().execute(
-                        new AttributeCheckCommand(part, attrCheckbox.isSelected())
+                            part.createAttributeCheckCommand(newChecked)
                     );
                 }
             });
