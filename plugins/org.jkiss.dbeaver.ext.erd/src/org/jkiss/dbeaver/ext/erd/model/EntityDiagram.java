@@ -258,7 +258,7 @@ public class EntityDiagram extends ERDObject<DBSObject> {
                 break;
             }
             monitor.subTask("Load " + table.getName());
-            ERDEntity erdEntity = ERDUtils.makeEntityFromObject(monitor, this, table);
+            ERDEntity erdEntity = ERDUtils.makeEntityFromObject(monitor, this, table, null);
             erdEntity.setPrimary(table == dbObject);
 
             addEntity(erdEntity, false);
