@@ -29,6 +29,8 @@ public interface ERDDecorator {
 
     boolean showCheckboxes();
 
+    boolean allowEntityDuplicates();
+
     EditPartFactory createPartFactory();
 
     void fillPalette(PaletteRoot paletteRoot, boolean readOnly);
