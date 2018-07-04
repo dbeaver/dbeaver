@@ -140,7 +140,7 @@ public class DiagramObjectCollector {
 
     private void addDiagramEntity(DBRProgressMonitor monitor, DBSEntity table)
     {
-        if (diagram.containsTable(table)) {
+        if (diagram.containsTable(table) && !diagram.getDecorator().allowEntityDuplicates()) {
             // Avoid duplicates
             return;
         }
@@ -168,18 +168,14 @@ public class DiagramObjectCollector {
         final List<ERDEntity> entities = new ArrayList<>();
 
         try {
-            UIUtils.runInProgressService(new DBRRunnableWithProgress() {
-                @Override
-                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-                {
-                    DiagramObjectCollector collector = new DiagramObjectCollector(diagram);
-                    try {
-                        collector.generateDiagramObjects(monitor, roots);
-                    } catch (DBException e) {
-                        throw new InvocationTargetException(e);
-                    }
-                    entities.addAll(collector.getDiagramEntities());
+            UIUtils.runInProgressService(monitor -> {
+                DiagramObjectCollector collector = new DiagramObjectCollector(diagram);
+                try {
+                    collector.generateDiagramObjects(monitor, roots);
+                } catch (DBException e) {
+                    throw new InvocationTargetException(e);
                 }
+                entities.addAll(collector.getDiagramEntities());
             });
         } catch (InvocationTargetException e) {
             log.error(e.getTargetException());

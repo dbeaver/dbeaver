@@ -57,6 +57,11 @@ public class ERDDecoratorDefault implements ERDDecorator {
     }
 
     @Override
+    public boolean allowEntityDuplicates() {
+        return false;
+    }
+
+    @Override
     public EditPartFactory createPartFactory() {
         return new ERDEditPartFactory();
     }
