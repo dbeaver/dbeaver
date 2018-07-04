@@ -89,7 +89,7 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
         this.sourceEntity.addAssociation(this, reflect);
 	}
 
-    private void resolveAttributes(DBSEntityReferrer association, ERDEntity sourceEntity, ERDEntity targetEntity) {
+    protected void resolveAttributes(DBSEntityReferrer association, ERDEntity sourceEntity, ERDEntity targetEntity) {
         try {
             List<? extends DBSEntityAttributeRef> attrRefs = association.getAttributeReferences(new VoidProgressMonitor());
 

@@ -16,11 +16,12 @@
  */
 package org.jkiss.dbeaver.ext.erd.model;
 
-import org.eclipse.gef.EditPart;
 import org.eclipse.gef.EditPartFactory;
 import org.eclipse.gef.palette.PaletteRoot;
-import org.jkiss.dbeaver.ext.erd.part.EntityPart;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 
 /**
  * ERD object adapter
@@ -31,10 +32,13 @@ public interface ERDDecorator {
 
     boolean allowEntityDuplicates();
 
+    @NotNull
     EditPartFactory createPartFactory();
 
-    void fillPalette(PaletteRoot paletteRoot, boolean readOnly);
+    void fillPalette(@NotNull PaletteRoot paletteRoot, boolean readOnly);
 
-    void fillEntityFromObject(DBRProgressMonitor monitor, EntityDiagram diagram, ERDEntity erdEntity);
+    void fillEntityFromObject(@NotNull DBRProgressMonitor monitor, @NotNull EntityDiagram diagram, @NotNull ERDEntity erdEntity);
 
+    @Nullable
+    ERDAssociation createAutoAssociation(@NotNull DBSEntityAssociation association, @NotNull ERDEntity sourceEntity, @NotNull ERDEntity targetEntity, boolean reflect);
 }

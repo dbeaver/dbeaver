@@ -41,7 +41,7 @@ import java.util.*;
  *
  * @author Serge Rider
  */
-public class EntityDiagram extends ERDObject<DBSObject> {
+public class EntityDiagram extends ERDObject<DBSObject> implements ERDContainer {
     public static class NodeVisualInfo {
         public Rectangle initBounds;
         public Color bgColor;
@@ -150,7 +150,7 @@ public class EntityDiagram extends ERDObject<DBSObject> {
     private void resolveRelations(boolean reflect) {
         // Resolve incomplete relations
         for (ERDEntity erdEntity : getEntities()) {
-            erdEntity.resolveRelations(entityMap, reflect);
+            erdEntity.resolveRelations(this, reflect);
         }
     }
 
@@ -278,7 +278,7 @@ public class EntityDiagram extends ERDObject<DBSObject> {
             monitor.subTask("Load " + table.getName());
             final ERDEntity erdEntity = entityMap.get(table);
             if (erdEntity != null) {
-                erdEntity.addModelRelations(monitor, entityMap, true, false);
+                erdEntity.addModelRelations(monitor, this, true, false);
             }
             monitor.worked(1);
         }
