@@ -140,4 +140,12 @@ public class ERDUtils
         }
     }
 
+    public static ERDEntityAttribute getAttributeByModel(ERDEntity entity, DBSEntityAttribute attr) {
+	    for (ERDEntityAttribute erdAttr : entity.getAttributes()) {
+	        if (erdAttr.getObject() == attr) {
+	            return erdAttr;
+            }
+        }
+        return null;
+    }
 }

@@ -82,7 +82,7 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
 
 		// Resolve association attributes
         if (association instanceof DBSEntityReferrer) {
-            resolveAttributes((DBSEntityReferrer) association, sourceEntity, targetEntity, false);
+            resolveAttributes((DBSEntityReferrer) association, sourceEntity, targetEntity);
         }
 
         this.targetEntity.addReferenceAssociation(this, reflect);
@@ -90,9 +90,8 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
 	}
 
     /**
-     * @param reverseAssoc source and target entities were swaped
      */
-    protected void resolveAttributes(DBSEntityReferrer association, ERDEntity sourceEntity, ERDEntity targetEntity, boolean reverseAssoc) {
+    protected void resolveAttributes(DBSEntityReferrer association, ERDEntity sourceEntity, ERDEntity targetEntity) {
         try {
             List<? extends DBSEntityAttributeRef> attrRefs = association.getAttributeReferences(new VoidProgressMonitor());
 
@@ -102,8 +101,8 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
                         DBSEntityAttribute targetAttr = ((DBSTableForeignKeyColumn) attrRef).getReferencedColumn();
                         DBSEntityAttribute sourceAttr = attrRef.getAttribute();
                         if (sourceAttr != null && targetAttr != null) {
-                            ERDEntityAttribute erdSourceAttr = getAttributeByModel(sourceEntity, reverseAssoc ? targetAttr : sourceAttr);
-                            ERDEntityAttribute erdTargetAttr = getAttributeByModel(targetEntity, reverseAssoc ? sourceAttr : targetAttr);
+                            ERDEntityAttribute erdSourceAttr = ERDUtils.getAttributeByModel(sourceEntity, sourceAttr);
+                            ERDEntityAttribute erdTargetAttr = ERDUtils.getAttributeByModel(targetEntity, targetAttr);
                             if (erdSourceAttr != null && erdTargetAttr != null) {
                                 addCondition(erdSourceAttr, erdTargetAttr);
                             }
@@ -114,15 +113,6 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
         } catch (DBException e) {
             log.error("Error resolving ERD association attributes", e);
         }
-    }
-
-    private static ERDEntityAttribute getAttributeByModel(ERDEntity entity, DBSEntityAttribute attr) {
-	    for (ERDEntityAttribute erdAttr : entity.getAttributes()) {
-	        if (erdAttr.getObject() == attr) {
-	            return erdAttr;
-            }
-        }
-        return null;
     }
 
     public boolean isLogical()
