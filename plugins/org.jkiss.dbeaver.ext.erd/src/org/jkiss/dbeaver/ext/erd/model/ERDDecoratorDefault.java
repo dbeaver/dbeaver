@@ -193,7 +193,7 @@ public class ERDDecoratorDefault implements ERDDecorator {
     }
 
     @Override
-    public ERDAssociation createAutoAssociation(DBSEntityAssociation association, ERDEntity sourceEntity, ERDEntity targetEntity, boolean reflect) {
+    public ERDAssociation createAutoAssociation(ERDContainer diagram, DBSEntityAssociation association, ERDEntity sourceEntity, ERDEntity targetEntity, boolean reflect) {
         // Allow all auto-associations
         return new ERDAssociation(association, sourceEntity, targetEntity, reflect);
     }

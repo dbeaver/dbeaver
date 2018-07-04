@@ -236,7 +236,7 @@ public class ERDEntity extends ERDObject<DBSEntity> {
                         unresolvedKeys.add(fk);
                     } else {
                         if (create) {
-                            diagram.getDecorator().createAutoAssociation(fk, this, entity2, reflect);
+                            diagram.getDecorator().createAutoAssociation(diagram, fk, this, entity2, reflect);
                         }
                     }
                 }
@@ -263,7 +263,7 @@ public class ERDEntity extends ERDObject<DBSEntity> {
             if (fk.getReferencedConstraint() != null) {
                 ERDEntity refEntity = diagram.getEntityMap().get(fk.getReferencedConstraint().getParentObject());
                 if (refEntity != null) {
-                    ERDAssociation erdAssociation = diagram.getDecorator().createAutoAssociation(fk, this, refEntity, reflect);
+                    ERDAssociation erdAssociation = diagram.getDecorator().createAutoAssociation(diagram, fk, this, refEntity, reflect);
                     if (erdAssociation != null) {
                         iter.remove();
                     }
