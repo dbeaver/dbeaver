@@ -37,8 +37,12 @@ public interface ERDDecorator {
 
     void fillPalette(@NotNull PaletteRoot paletteRoot, boolean readOnly);
 
+    /**
+     * Create default entity attributes
+     */
     void fillEntityFromObject(@NotNull DBRProgressMonitor monitor, @NotNull EntityDiagram diagram, @NotNull ERDEntity erdEntity);
 
     @Nullable
     ERDAssociation createAutoAssociation(@NotNull DBSEntityAssociation association, @NotNull ERDEntity sourceEntity, @NotNull ERDEntity targetEntity, boolean reflect);
+
 }

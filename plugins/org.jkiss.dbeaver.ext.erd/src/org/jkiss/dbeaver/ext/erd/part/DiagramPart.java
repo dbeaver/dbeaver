@@ -17,17 +17,22 @@
 package org.jkiss.dbeaver.ext.erd.part;
 
 import org.eclipse.draw2d.*;
+import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.*;
+import org.eclipse.gef.commands.Command;
 import org.eclipse.gef.commands.CommandStackEvent;
 import org.eclipse.gef.commands.CommandStackEventListener;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.widgets.Control;
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.erd.ERDActivator;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.ext.erd.ERDMessages;
+import org.jkiss.dbeaver.ext.erd.command.EntityAddCommand;
 import org.jkiss.dbeaver.ext.erd.figures.EntityDiagramFigure;
 import org.jkiss.dbeaver.ext.erd.layout.DelegatingLayoutManager;
 import org.jkiss.dbeaver.ext.erd.layout.GraphAnimation;
@@ -39,6 +44,7 @@ import org.jkiss.dbeaver.ext.erd.policy.DiagramContainerEditPolicy;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.beans.PropertyChangeEvent;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -49,7 +55,7 @@ import java.util.List;
  */
 public class DiagramPart extends PropertyAwarePart {
 
-    CommandStackEventListener stackListener = new CommandStackEventListener() {
+    private final CommandStackEventListener stackListener = new CommandStackEventListener() {
 
         @Override
         public void stackChanged(CommandStackEvent commandStackEvent) {
@@ -68,6 +74,8 @@ public class DiagramPart extends PropertyAwarePart {
     private DelegatingLayoutManager delegatingLayoutManager;
     private Font normalFont, boldFont, italicFont, boldItalicFont;
 
+    public DiagramPart() {
+    }
 
     /**
      * Adds this EditPart as a command stack listener, which can be used to call
@@ -315,6 +323,7 @@ public class DiagramPart extends PropertyAwarePart {
         return super.getAdapter(key);
     }
 
+    @Nullable
     public EntityPart getEntityPart(ERDEntity erdEntity)
     {
         for (Object child : getChildren()) {
@@ -325,6 +334,7 @@ public class DiagramPart extends PropertyAwarePart {
         return null;
     }
 
+    @Nullable
     public NotePart getNotePart(ERDNote erdNote)
     {
         for (Object child : getChildren()) {
@@ -333,6 +343,11 @@ public class DiagramPart extends PropertyAwarePart {
             }
         }
         return null;
+    }
+
+    @NotNull
+    public Command createEntityAddCommand(List<ERDEntity> entities, Point location) {
+        return new EntityAddCommand(this, entities, location);
     }
 
     @Override

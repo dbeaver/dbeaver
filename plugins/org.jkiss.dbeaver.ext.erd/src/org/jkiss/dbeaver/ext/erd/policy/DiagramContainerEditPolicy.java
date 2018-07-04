@@ -34,8 +34,10 @@ import org.jkiss.dbeaver.ext.erd.model.ERDNote;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * Handles creation of new tables using drag and drop or point and click from the palette
@@ -68,18 +70,18 @@ public class DiagramContainerEditPolicy extends ContainerEditPolicy {
         if (newObject instanceof ERDNote) {
             return new NoteCreateCommand(diagramPart, (ERDNote)newObject, location);
         }
-        Collection<ERDEntity> entities = null;
+        List<ERDEntity> entities = null;
         if (newObject instanceof ERDEntity) {
             entities = Collections.singletonList((ERDEntity) newObject);
         } else if (newObject instanceof Collection) {
-            entities = (Collection<ERDEntity>) newObject;
+            entities = new ArrayList<>((Collection<ERDEntity>)newObject);
         }
         if (CommonUtils.isEmpty(entities)) {
             return null;
         }
         //EditPart host = getTargetEditPart(request);
 
-        return new EntityAddCommand(diagramPart, entities, location);
+        return diagramPart.createEntityAddCommand(entities, location);
     }
 
     /**

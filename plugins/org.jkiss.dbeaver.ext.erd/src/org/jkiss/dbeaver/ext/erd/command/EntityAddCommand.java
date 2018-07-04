@@ -35,7 +35,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BrowseObjectDialog;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
-import java.util.Collection;
+import java.util.List;
 
 /**
  * Add entity to diagram
@@ -44,14 +44,18 @@ public class EntityAddCommand extends Command
 {
 
 	private DiagramPart diagramPart;
-	private Collection<ERDEntity> entities;
+	private List<ERDEntity> entities;
     private Point location;
 
-    public EntityAddCommand(DiagramPart diagram, Collection<ERDEntity> entities, Point location)
+    public EntityAddCommand(DiagramPart diagram, List<ERDEntity> entities, Point location)
     {
         this.diagramPart = diagram;
         this.entities = entities;
         this.location = location;
+    }
+
+    public DiagramPart getDiagram() {
+        return diagramPart;
     }
 
     @Override
@@ -113,6 +117,8 @@ public class EntityAddCommand extends Command
                     }
                 }
             }
+
+            handleEntityChange(entity, false);
         }
 	}
 
@@ -121,7 +127,12 @@ public class EntityAddCommand extends Command
     {
         for (ERDEntity entity : entities) {
             diagramPart.getDiagram().removeEntity(entity, true);
+            handleEntityChange(entity, true);
         }
+    }
+
+    protected void handleEntityChange(ERDEntity entity, boolean remove) {
+        // Nothing special
     }
 
 }

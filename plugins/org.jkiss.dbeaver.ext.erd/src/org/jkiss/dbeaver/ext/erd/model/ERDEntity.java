@@ -178,6 +178,7 @@ public class ERDEntity extends ERDObject<DBSEntity> {
     /**
      * @return Returns the associations.
      */
+    @NotNull
     public List<ERDAssociation> getAssociations() {
         return CommonUtils.safeList(associations);
     }
@@ -185,6 +186,7 @@ public class ERDEntity extends ERDObject<DBSEntity> {
     /**
      * @return Returns the references.
      */
+    @NotNull
     public List<ERDAssociation> getReferences() {
         return CommonUtils.safeList(references);
     }
