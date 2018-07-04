@@ -40,7 +40,7 @@ DBeaver requires Java (JRE) 1.8+ to run.
 
 #### Prerequisites:
 
- 1. Java (JDK) 1.8+
+ 1. Java (JDK) 8 or Java 9.
  2. Apache Maven 3+
  3. Internet access
 
