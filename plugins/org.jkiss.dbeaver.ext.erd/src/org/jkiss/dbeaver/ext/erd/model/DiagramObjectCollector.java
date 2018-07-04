@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -41,12 +40,10 @@ public class DiagramObjectCollector {
 
     private final EntityDiagram diagram;
     private final List<ERDEntity> erdEntities = new ArrayList<>();
-    private final Map<DBSEntity, ERDEntity> tableMap = new HashMap<>();
 
     public DiagramObjectCollector(EntityDiagram diagram)
     {
         this.diagram = diagram;
-        this.tableMap.putAll(diagram.getEntityMap());
     }
 
     public static Collection<DBSEntity> collectTables(
@@ -134,7 +131,7 @@ public class DiagramObjectCollector {
 
         // Add new relations
         for (ERDEntity erdEntity : erdEntities) {
-            erdEntity.addModelRelations(monitor, tableMap, true, false);
+            erdEntity.addModelRelations(monitor, diagram, true, false);
         }
     }
 
@@ -147,7 +144,6 @@ public class DiagramObjectCollector {
         ERDEntity erdEntity = ERDUtils.makeEntityFromObject(monitor, diagram, table, null);
         if (erdEntity != null) {
             erdEntities.add(erdEntity);
-            tableMap.put(table, erdEntity);
         }
     }
 

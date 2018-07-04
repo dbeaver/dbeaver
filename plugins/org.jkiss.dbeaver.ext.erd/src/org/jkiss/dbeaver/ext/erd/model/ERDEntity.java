@@ -211,11 +211,11 @@ public class ERDEntity extends ERDObject<DBSEntity> {
     /**
      * Resolve and create entity associations.
      * Also caches all unresolved associations (associations with entities which are not present in diagram yet)
-     * @param tableMap all diagram entities map
+     * @param diagram all diagram entities map
      * @param create    if true then creates all found model association. Otherwise only saves unresolved ones.
      * @param reflect   reflect UI
      */
-    public void addModelRelations(DBRProgressMonitor monitor, Map<DBSEntity, ERDEntity> tableMap, boolean create, boolean reflect) {
+    public void addModelRelations(DBRProgressMonitor monitor, ERDContainer diagram, boolean create, boolean reflect) {
         try {
             Set<DBSEntityAttribute> fkAttrs = new HashSet<>();
             // Make associations
@@ -225,7 +225,7 @@ public class ERDEntity extends ERDObject<DBSEntity> {
                     if (fk instanceof DBSEntityReferrer) {
                         fkAttrs.addAll(DBUtils.getEntityAttributes(monitor, (DBSEntityReferrer) fk));
                     }
-                    ERDEntity entity2 = tableMap.get(fk.getAssociatedEntity());
+                    ERDEntity entity2 = diagram.getEntityMap().get(fk.getAssociatedEntity());
                     if (entity2 == null) {
                         //log.debug("Table '" + fk.getReferencedKey().getTable().getFullyQualifiedName() + "' not found in ERD");
                         if (unresolvedKeys == null) {
@@ -234,7 +234,7 @@ public class ERDEntity extends ERDObject<DBSEntity> {
                         unresolvedKeys.add(fk);
                     } else {
                         if (create) {
-                            new ERDAssociation(fk, this, entity2, reflect);
+                            diagram.getDecorator().createAutoAssociation(fk, this, entity2, reflect);
                         }
                     }
                 }
@@ -252,17 +252,19 @@ public class ERDEntity extends ERDObject<DBSEntity> {
         }
     }
 
-    public void resolveRelations(Map<DBSEntity, ERDEntity> tableMap, boolean reflect) {
+    public void resolveRelations(ERDContainer diagram, boolean reflect) {
         if (CommonUtils.isEmpty(unresolvedKeys)) {
             return;
         }
         for (Iterator<DBSEntityAssociation> iter = unresolvedKeys.iterator(); iter.hasNext(); ) {
             final DBSEntityAssociation fk = iter.next();
             if (fk.getReferencedConstraint() != null) {
-                ERDEntity refEntity = tableMap.get(fk.getReferencedConstraint().getParentObject());
+                ERDEntity refEntity = diagram.getEntityMap().get(fk.getReferencedConstraint().getParentObject());
                 if (refEntity != null) {
-                    new ERDAssociation(fk, this, refEntity, reflect);
-                    iter.remove();
+                    ERDAssociation erdAssociation = diagram.getDecorator().createAutoAssociation(fk, this, refEntity, reflect);
+                    if (erdAssociation != null) {
+                        iter.remove();
+                    }
                 }
             }
         }
@@ -290,4 +292,14 @@ public class ERDEntity extends ERDObject<DBSEntity> {
             CommonUtils.equalObjects(object, ((ERDEntity) o).object);
     }
 
+    public boolean hasAssociationsWith(ERDEntity entity) {
+        if (associations != null) {
+            for (ERDAssociation assoc : associations) {
+                if (assoc.getTargetEntity() == entity) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 }

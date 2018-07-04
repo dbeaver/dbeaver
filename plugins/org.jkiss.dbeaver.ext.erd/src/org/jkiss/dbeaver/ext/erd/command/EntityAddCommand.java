@@ -83,7 +83,7 @@ public class EntityAddCommand extends Command
                                 null);
                             // This actually only loads unresolved relations.
                             // This happens only with entities added on diagram during editing
-                            entity.addModelRelations(monitor, diagramPart.getDiagram().getEntityMap(), false, false);
+                            entity.addModelRelations(monitor, diagramPart.getDiagram(), false, false);
                         }
                     }
                 }
