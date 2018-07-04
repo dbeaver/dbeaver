@@ -20,6 +20,7 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.draw2d.geometry.Point;
+import org.eclipse.gef.commands.Command;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.ISources;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -67,7 +68,7 @@ public class ERDHandlerPaste extends AbstractHandler {
                 if (!CommonUtils.isEmpty(objects)) {
                     final List<ERDEntity> erdEntities = DiagramObjectCollector.generateEntityList(editor.getDiagram(), objects);
                     if (!CommonUtils.isEmpty(erdEntities)) {
-                        EntityAddCommand command = new EntityAddCommand(editor.getDiagramPart(), erdEntities, new Point(10, 10));
+                        Command command = editor.getDiagramPart().createEntityAddCommand(erdEntities, new Point(10, 10));
                         editor.getCommandStack().execute(command);
                     }
                 }
