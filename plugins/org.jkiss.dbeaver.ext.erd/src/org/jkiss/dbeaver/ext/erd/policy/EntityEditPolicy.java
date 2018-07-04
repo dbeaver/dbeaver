@@ -38,9 +38,7 @@ public class EntityEditPolicy extends ComponentEditPolicy
     protected Command createDeleteCommand(GroupRequest request)
 	{
 		EntityPart entityPart = (EntityPart) getHost();
-		Rectangle bounds = entityPart.getFigure().getBounds().getCopy();
-		EntityDiagram parent = (EntityDiagram) (entityPart.getParent().getModel());
-		return new EntityDeleteCommand(parent, entityPart, bounds);
+		return entityPart.getDiagramPart().createEntityDeleteCommand(entityPart);
 	}
 	
 }

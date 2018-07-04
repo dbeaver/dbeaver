@@ -82,14 +82,17 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
 
 		// Resolve association attributes
         if (association instanceof DBSEntityReferrer) {
-            resolveAttributes((DBSEntityReferrer) association, sourceEntity, targetEntity);
+            resolveAttributes((DBSEntityReferrer) association, sourceEntity, targetEntity, false);
         }
 
         this.targetEntity.addReferenceAssociation(this, reflect);
         this.sourceEntity.addAssociation(this, reflect);
 	}
 
-    protected void resolveAttributes(DBSEntityReferrer association, ERDEntity sourceEntity, ERDEntity targetEntity) {
+    /**
+     * @param reverseAssoc source and target entities were swaped
+     */
+    protected void resolveAttributes(DBSEntityReferrer association, ERDEntity sourceEntity, ERDEntity targetEntity, boolean reverseAssoc) {
         try {
             List<? extends DBSEntityAttributeRef> attrRefs = association.getAttributeReferences(new VoidProgressMonitor());
 
@@ -99,8 +102,8 @@ public class ERDAssociation extends ERDObject<DBSEntityAssociation>
                         DBSEntityAttribute targetAttr = ((DBSTableForeignKeyColumn) attrRef).getReferencedColumn();
                         DBSEntityAttribute sourceAttr = attrRef.getAttribute();
                         if (sourceAttr != null && targetAttr != null) {
-                            ERDEntityAttribute erdSourceAttr = getAttributeByModel(sourceEntity, sourceAttr);
-                            ERDEntityAttribute erdTargetAttr = getAttributeByModel(targetEntity, targetAttr);
+                            ERDEntityAttribute erdSourceAttr = getAttributeByModel(sourceEntity, reverseAssoc ? targetAttr : sourceAttr);
+                            ERDEntityAttribute erdTargetAttr = getAttributeByModel(targetEntity, reverseAssoc ? sourceAttr : targetAttr);
                             if (erdSourceAttr != null && erdTargetAttr != null) {
                                 addCondition(erdSourceAttr, erdTargetAttr);
                             }

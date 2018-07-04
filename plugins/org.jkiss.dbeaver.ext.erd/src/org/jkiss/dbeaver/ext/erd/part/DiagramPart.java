@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.ext.erd.ERDActivator;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.ext.erd.ERDMessages;
 import org.jkiss.dbeaver.ext.erd.command.EntityAddCommand;
+import org.jkiss.dbeaver.ext.erd.command.EntityDeleteCommand;
 import org.jkiss.dbeaver.ext.erd.figures.EntityDiagramFigure;
 import org.jkiss.dbeaver.ext.erd.layout.DelegatingLayoutManager;
 import org.jkiss.dbeaver.ext.erd.layout.GraphAnimation;
@@ -350,10 +351,13 @@ public class DiagramPart extends PropertyAwarePart {
         return new EntityAddCommand(this, entities, location);
     }
 
+    public Command createEntityDeleteCommand(EntityPart entityPart) {
+        return new EntityDeleteCommand(entityPart);
+    }
+
     @Override
     public String toString()
     {
         return ERDMessages.entity_diagram_ + getDiagram().getName();
     }
-
 }
