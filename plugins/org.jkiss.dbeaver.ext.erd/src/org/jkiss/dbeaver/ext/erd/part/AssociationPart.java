@@ -27,24 +27,19 @@ import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.*;
 import org.eclipse.gef.editpolicies.ConnectionEndpointEditPolicy;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
 import org.jkiss.dbeaver.ext.erd.model.ERDEntityAttribute;
 import org.jkiss.dbeaver.ext.erd.model.ERDUtils;
 import org.jkiss.dbeaver.ext.erd.policy.AssociationBendEditPolicy;
 import org.jkiss.dbeaver.ext.erd.policy.AssociationEditPolicy;
 import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
-import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
-import org.jkiss.dbeaver.model.struct.DBSEntityReferrer;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 /**
  * Represents the editable primary key/foreign key relationship
@@ -87,18 +82,16 @@ public class AssociationPart extends PropertyAwareConnectionPart {
     protected IFigure createFigure() {
         ERDAssociation association = (ERDAssociation) getModel();
 
-        PolylineConnection conn = (PolylineConnection) super.createFigure();
+        PolylineConnection conn = new PolylineConnection();
+
         setConnectionStyles(association, conn);
+        setConnectionRouting(association, conn);
+        setConnectionToolTip(conn);
 
+        return conn;
+    }
 
-/*
-        ConnectionEndpointLocator relationshipLocator = new ConnectionEndpointLocator(conn, true);
-        //relationshipLocator.setUDistance(30);
-        //relationshipLocator.setVDistance(-20);
-        Label relationshipLabel = new Label(association.getObject().getName());
-        conn.add(relationshipLabel, relationshipLocator);
-*/
-
+    protected void setConnectionRouting(ERDAssociation association, PolylineConnection conn) {
         // Set router and initial bends
         ConnectionLayer cLayer = (ConnectionLayer) getLayer(LayerConstants.CONNECTION_LAYER);
         conn.setConnectionRouter(cLayer.getConnectionRouter());
@@ -130,16 +123,9 @@ public class AssociationPart extends PropertyAwareConnectionPart {
             }
             conn.setRoutingConstraint(bends);
         }
-        setConnectionToolTip(conn);
-
-        return conn;
     }
 
     protected void setConnectionStyles(ERDAssociation association, PolylineConnection conn) {
-        //conn.setLineJoin(SWT.JOIN_ROUND);
-        //conn.setConnectionRouter(new BendpointConnectionRouter());
-        //conn.setConnectionRouter(new ShortestPathConnectionRouter(conn));
-        //conn.setToolTip(new TextFlow(association.getObject().getName()));
 
         boolean identifying = ERDUtils.isIdentifyingAssociation(association);
 
@@ -170,12 +156,6 @@ public class AssociationPart extends PropertyAwareConnectionPart {
             conn.setLineStyle(SWT.LINE_CUSTOM);
             conn.setLineDash(new float[]{5});
         }
-
-        //ChopboxAnchor sourceAnchor = new ChopboxAnchor(classFigure);
-        //ChopboxAnchor targetAnchor = new ChopboxAnchor(classFigure2);
-        //conn.setSourceAnchor(sourceAnchor);
-        //conn.setTargetAnchor(targetAnchor);
-
     }
 
     protected void setConnectionToolTip(PolylineConnection conn) {
