@@ -174,6 +174,7 @@ public class EntityPart extends NodePart {
         label.setText(getEntity().getObject().getName());
         label.setVisible(true);
         refreshVisuals();
+        entityFigure.refreshColors();
     }
 
     //******************* Layout related methods *********************/

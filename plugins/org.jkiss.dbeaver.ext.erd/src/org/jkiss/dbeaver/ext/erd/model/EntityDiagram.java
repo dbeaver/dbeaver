@@ -167,6 +167,7 @@ public class EntityDiagram extends ERDObject<DBSObject> implements ERDContainer 
     /**
      * @return the Tables for the current schema
      */
+    @Override
     public List<ERDEntity> getEntities() {
         return entities;
     }
@@ -298,7 +299,7 @@ public class EntityDiagram extends ERDObject<DBSObject> implements ERDContainer 
         return entityMap;
     }
 
-    public ERDEntity getERDTable(DBSEntity table) {
+    public ERDEntity getEntity(DBSEntity table) {
         return entityMap.get(table);
     }
 

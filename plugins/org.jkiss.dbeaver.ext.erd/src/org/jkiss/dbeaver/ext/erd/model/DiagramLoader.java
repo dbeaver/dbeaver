@@ -391,7 +391,7 @@ public class DiagramLoader
 
         // Set initial bounds
         for (TableLoadInfo info : tableInfos) {
-            final ERDEntity erdEntity = diagram.getERDTable(info.table);
+            final ERDEntity erdEntity = diagram.getEntity(info.table);
             if (erdEntity != null) {
                 diagram.addVisualInfo(erdEntity, info.visualInfo);
             }
@@ -400,8 +400,8 @@ public class DiagramLoader
         // Add logical relations
         for (RelationLoadInfo info : relInfos) {
             if (info.type.equals(ERDConstants.CONSTRAINT_LOGICAL_FK.getId())) {
-                final ERDEntity sourceEntity = diagram.getERDTable(info.pkTable.table);
-                final ERDEntity targetEntity = diagram.getERDTable(info.fkTable.table);
+                final ERDEntity sourceEntity = diagram.getEntity(info.pkTable.table);
+                final ERDEntity targetEntity = diagram.getEntity(info.fkTable.table);
                 if (sourceEntity != null && targetEntity != null) {
                     new ERDAssociation(targetEntity, sourceEntity, false);
                 }
@@ -410,12 +410,12 @@ public class DiagramLoader
         // Set relations' bends
         for (RelationLoadInfo info : relInfos) {
             if (!CommonUtils.isEmpty(info.bends)) {
-                final ERDEntity sourceEntity = diagram.getERDTable(info.pkTable.table);
+                final ERDEntity sourceEntity = diagram.getEntity(info.pkTable.table);
                 if (sourceEntity == null) {
                     log.warn("Source table " + info.pkTable.table.getName() + " not found");
                     continue;
                 }
-                final ERDEntity targetEntity = diagram.getERDTable(info.fkTable.table);
+                final ERDEntity targetEntity = diagram.getEntity(info.fkTable.table);
                 if (targetEntity == null) {
                     log.warn("Target table " + info.pkTable.table.getName() + " not found");
                     continue;

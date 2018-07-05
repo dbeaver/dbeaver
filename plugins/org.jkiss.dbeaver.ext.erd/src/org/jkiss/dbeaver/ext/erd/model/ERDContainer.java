@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.erd.model;
 
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -26,6 +27,8 @@ import java.util.Map;
 public interface ERDContainer {
 
     ERDDecorator getDecorator();
+
+    List<ERDEntity> getEntities();
 
     Map<DBSEntity, ERDEntity> getEntityMap();
 
