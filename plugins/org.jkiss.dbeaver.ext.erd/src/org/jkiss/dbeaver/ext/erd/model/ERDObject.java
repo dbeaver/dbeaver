@@ -82,7 +82,7 @@ public abstract class ERDObject<OBJECT> implements IAdaptable, DBPNamedObject {
         }
     }
 
-    protected void firePropertyChange(String prop, Object old, Object newValue) {
+    public void firePropertyChange(String prop, Object old, Object newValue) {
         if (listeners != null) {
             listeners.firePropertyChange(prop, old, newValue);
         }

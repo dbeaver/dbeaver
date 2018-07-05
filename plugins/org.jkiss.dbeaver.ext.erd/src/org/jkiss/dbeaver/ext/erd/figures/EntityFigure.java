@@ -75,10 +75,10 @@ public class EntityFigure extends Figure {
         toolTip.setIcon(tableImage);
         setToolTip(toolTip);
 */
-        setColors();
+        refreshColors();
     }
 
-    private void setColors() {
+    public void refreshColors() {
         ColorRegistry colorRegistry = UIUtils.getColorRegistry();
 
         if (entity.isPrimary()) {
