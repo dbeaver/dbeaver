@@ -23,7 +23,9 @@ import org.eclipse.draw2d.*;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
+import org.jkiss.dbeaver.ext.erd.editor.ERDViewStyle;
 import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
+import org.jkiss.dbeaver.ext.erd.part.EntityPart;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityType;
@@ -37,19 +39,23 @@ import org.jkiss.dbeaver.ui.UIUtils;
  */
 public class EntityFigure extends Figure {
 
-    private final ERDEntity entity;
+    private final EntityPart part;
     private AttributeListFigure keyFigure;
     private AttributeListFigure attributeFigure;
     private EditableLabel nameLabel;
 
-    public EntityFigure(ERDEntity entity, boolean useFQN)
+    public EntityFigure(EntityPart part)
     {
-        this.entity = entity;
+        this.part = part;
+
+        ERDEntity entity = part.getEntity();
+        boolean useFQN = part.getDiagram().hasAttributeStyle(ERDViewStyle.ENTITY_FQN);
 
         Image tableImage = DBeaverIcons.getImage(entity.getObject().getEntityType().getIcon());
 
         keyFigure = new AttributeListFigure(entity, true);
         attributeFigure = new AttributeListFigure(entity, false);
+
         nameLabel = new EditableLabel(
             useFQN ?
                 DBUtils.getObjectFullName(entity.getObject(), DBPEvaluationContext.DDL) :
@@ -92,9 +98,9 @@ public class EntityFigure extends Figure {
     public void refreshColors() {
         ColorRegistry colorRegistry = UIUtils.getColorRegistry();
 
-        if (entity.isPrimary()) {
+        if (part.getEntity().isPrimary()) {
             setBackgroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ENTITY_PRIMARY_BACKGROUND));
-        } else if (entity.getObject().getEntityType() == DBSEntityType.ASSOCIATION) {
+        } else if (part.getEntity().getObject().getEntityType() == DBSEntityType.ASSOCIATION) {
             setBackgroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ENTITY_ASSOCIATION_BACKGROUND));
         } else {
             setBackgroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ENTITY_REGULAR_BACKGROUND));
@@ -127,7 +133,7 @@ public class EntityFigure extends Figure {
     }
 
     /**
-     * @return the figure containing the column lables
+     * @return the figure containing the column labels
      */
     public AttributeListFigure getColumnsFigure()
     {
@@ -141,12 +147,10 @@ public class EntityFigure extends Figure {
             figure.setForegroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ATTR_FOREGROUND));
             figure.setBackgroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ATTR_BACKGROUND));
 
-            EditableLabel attrExtra = new EditableLabel("");
-            //attrExtra.setBorder(new LineBorder(1));
-            attrExtra.setTextAlignment(PositionConstants.RIGHT);
+            IFigure attrExtra = createRightPanel();
 
             AttributeItemFigure attributeItemFigure = (AttributeItemFigure) figure;
-            attributeItemFigure.setRightLabel(attrExtra);
+            attributeItemFigure.setRightPanel(attrExtra);
             if (attributeItemFigure.getAttribute().isInPrimaryKey()) {
                 keyFigure.add(figure, new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, true, false));
                 keyFigure.add(attrExtra, new GridData(GridData.HORIZONTAL_ALIGN_END | GridData.VERTICAL_ALIGN_BEGINNING));
@@ -159,4 +163,12 @@ public class EntityFigure extends Figure {
             super.add(figure, constraint, index);
         }
     }
+
+    protected IFigure createRightPanel() {
+        EditableLabel label = new EditableLabel("");
+        //attrExtra.setBorder(new LineBorder(1));
+        label.setTextAlignment(PositionConstants.RIGHT);
+        return label;
+    }
+
 }
