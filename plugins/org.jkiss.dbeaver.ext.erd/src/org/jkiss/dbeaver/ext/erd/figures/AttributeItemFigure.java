@@ -16,7 +16,10 @@
  */
 package org.jkiss.dbeaver.ext.erd.figures;
 
-import org.eclipse.draw2d.*;
+import org.eclipse.draw2d.Figure;
+import org.eclipse.draw2d.IFigure;
+import org.eclipse.draw2d.Label;
+import org.eclipse.draw2d.ToolbarLayout;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
 import org.jkiss.code.NotNull;
@@ -38,7 +41,7 @@ import java.util.List;
 public class AttributeItemFigure extends Figure
 {
     protected final AttributePart part;
-    private EditableLabel rightLabel;
+    private IFigure rightPanel;
 
     public AttributeItemFigure(AttributePart part)
 	{
@@ -108,17 +111,18 @@ public class AttributeItemFigure extends Figure
         return (EditableLabel) children.get(children.size() == 1 ? 0 : 1);
     }
 
-    public EditableLabel getRightLabel() {
-        return rightLabel;
+    public IFigure getRightPanel() {
+        return rightPanel;
     }
 
-    void setRightLabel(EditableLabel attrExtra) {
-        this.rightLabel = attrExtra;
+    void setRightPanel(IFigure attrExtra) {
+        this.rightPanel = attrExtra;
     }
 
     public void updateLabels() {
         getLabel().setText(part.getAttributeLabel());
-        if (rightLabel != null) {
+        if (rightPanel instanceof Label) {
+
             String rightText = "";
             if (part.getDiagram().hasAttributeStyle(ERDViewStyle.TYPES)) {
                 rightText = part.getAttribute().getObject().getFullTypeName();
@@ -128,7 +132,7 @@ public class AttributeItemFigure extends Figure
                     rightText += " NOT NULL";
                 }
             }
-            rightLabel.setText(rightText);
+            ((Label)rightPanel).setText(rightText);
         }
     }
 }

@@ -163,10 +163,10 @@ public class AttributePart extends PropertyAwarePart {
      */
     @Override
     protected void commitNameChange(PropertyChangeEvent evt) {
-        AttributeItemFigure label = getFigure();
-        label.updateLabels();
+        AttributeItemFigure figure = getFigure();
+        figure.updateLabels();
         setSelected(EditPart.SELECTED_PRIMARY);
-        label.revalidate();
+        figure.revalidate();
     }
 
 
@@ -174,10 +174,10 @@ public class AttributePart extends PropertyAwarePart {
      * Reverts state back to prior edit state
      */
     public void revertNameChange(String oldValue) {
-        AttributeItemFigure label = getFigure();
-        label.setVisible(true);
+        AttributeItemFigure figure = getFigure();
+        figure.setVisible(true);
         setSelected(EditPart.SELECTED_PRIMARY);
-        label.revalidate();
+        figure.revalidate();
     }
 
     /**

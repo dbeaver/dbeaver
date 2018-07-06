@@ -31,7 +31,6 @@ import org.jkiss.dbeaver.ext.erd.directedit.LabelCellEditorLocator;
 import org.jkiss.dbeaver.ext.erd.directedit.TableNameCellEditorValidator;
 import org.jkiss.dbeaver.ext.erd.directedit.ValidationMessageHandler;
 import org.jkiss.dbeaver.ext.erd.editor.ERDGraphicalViewer;
-import org.jkiss.dbeaver.ext.erd.editor.ERDViewStyle;
 import org.jkiss.dbeaver.ext.erd.figures.EditableLabel;
 import org.jkiss.dbeaver.ext.erd.figures.EntityFigure;
 import org.jkiss.dbeaver.ext.erd.model.*;
@@ -185,9 +184,8 @@ public class EntityPart extends NodePart {
     @Override
     protected EntityFigure createFigure() {
         final EntityDiagram diagram = getDiagram();
-        boolean useFQN = diagram.hasAttributeStyle(ERDViewStyle.ENTITY_FQN);
 
-        final EntityFigure figure = new EntityFigure(getEntity(), useFQN);
+        final EntityFigure figure = createFigureImpl();
 
         EntityDiagram.NodeVisualInfo visualInfo = diagram.getVisualInfo(getEntity());
         if (visualInfo != null) {
@@ -201,6 +199,10 @@ public class EntityPart extends NodePart {
         }
 
         return figure;
+    }
+
+    protected EntityFigure createFigureImpl() {
+        return new EntityFigure(this);
     }
 
     @Override
