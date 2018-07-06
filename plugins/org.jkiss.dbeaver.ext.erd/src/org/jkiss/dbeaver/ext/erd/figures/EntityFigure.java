@@ -21,7 +21,9 @@ package org.jkiss.dbeaver.ext.erd.figures;
 
 import org.eclipse.draw2d.*;
 import org.eclipse.jface.resource.ColorRegistry;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -70,7 +72,9 @@ public class EntityFigure extends Figure {
         layout.setStretchMinorAxis(true);
         setLayoutManager(layout);
 
-        setBorder(new LineBorder(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_ENTITY_NAME_FOREGROUND), 2));
+        LineBorder border = new LineBorder(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_LINES_FOREGROUND), 2);
+
+        setBorder(border);
         setOpaque(true);
 
         add(nameLabel);
@@ -138,7 +142,7 @@ public class EntityFigure extends Figure {
             figure.setForegroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ATTR_FOREGROUND));
             figure.setBackgroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ATTR_BACKGROUND));
 
-            EditableLabel attrExtra = new EditableLabel("xxx");
+            EditableLabel attrExtra = new EditableLabel("");
 
             if (((AttributeItemFigure) figure).getAttribute().isInPrimaryKey()) {
                 keyFigure.add(figure, new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, true, false));
