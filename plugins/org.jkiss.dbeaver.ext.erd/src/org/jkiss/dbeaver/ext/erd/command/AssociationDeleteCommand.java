@@ -29,10 +29,10 @@ import org.jkiss.dbeaver.ext.erd.part.AssociationPart;
  */
 public class AssociationDeleteCommand extends Command {
 
-    private final AssociationPart part;
-    private final ERDEntity sourceEntity;
-    private final ERDEntity targetEntity;
-    private final ERDAssociation association;
+    protected final AssociationPart part;
+    protected final ERDEntity sourceEntity;
+    protected final ERDEntity targetEntity;
+    protected final ERDAssociation association;
 
     public AssociationDeleteCommand(AssociationPart part) {
         super();
@@ -61,7 +61,7 @@ public class AssociationDeleteCommand extends Command {
     @Override
     public void undo() {
         association.setSourceEntity(sourceEntity);
-        association.setSourceEntity(targetEntity);
+        association.setTargetEntity(targetEntity);
         sourceEntity.addAssociation(association, true);
         targetEntity.addReferenceAssociation(association, true);
     }
