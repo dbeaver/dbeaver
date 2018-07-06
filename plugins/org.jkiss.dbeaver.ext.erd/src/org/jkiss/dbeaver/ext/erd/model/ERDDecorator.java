@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.erd.model;
 
+import org.eclipse.draw2d.geometry.Insets;
 import org.eclipse.gef.EditPartFactory;
 import org.eclipse.gef.palette.PaletteRoot;
 import org.jkiss.code.NotNull;
@@ -31,6 +32,11 @@ public interface ERDDecorator {
     boolean showCheckboxes();
 
     boolean allowEntityDuplicates();
+
+    /**
+     * Margin around entity figure. This affects diagram connections layout
+     */
+    Insets getDefaultEntityInsets();
 
     @NotNull
     EditPartFactory createPartFactory();

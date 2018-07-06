@@ -69,7 +69,7 @@ public class GraphLayoutAuto extends AbstractLayout
 */
 
         // TODO: REPLACE WITH ZEST!
-		new DirectedGraphLayoutVisitor().layoutDiagram(diagram);
+		new DirectedGraphLayoutVisitor(diagram.getDiagram().getDecorator()).layoutDiagram(diagram);
         diagram.setTableModelBounds();
         //new ZestGraphLayout().layoutDiagram(diagram);
 

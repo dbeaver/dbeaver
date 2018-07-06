@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.erd.model;
 
+import org.eclipse.draw2d.geometry.Insets;
 import org.eclipse.gef.EditPartFactory;
 import org.eclipse.gef.RequestConstants;
 import org.eclipse.gef.palette.*;
@@ -59,6 +60,11 @@ public class ERDDecoratorDefault implements ERDDecorator {
     @Override
     public boolean allowEntityDuplicates() {
         return false;
+    }
+
+    @Override
+    public Insets getDefaultEntityInsets() {
+        return new Insets(20, 20, 10, 20);
     }
 
     @Override

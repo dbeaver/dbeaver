@@ -27,7 +27,6 @@ import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.*;
 import org.eclipse.gef.editpolicies.ConnectionEndpointEditPolicy;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
 import org.jkiss.dbeaver.ext.erd.model.ERDEntityAttribute;
@@ -89,14 +88,15 @@ public class AssociationPart extends PropertyAwareConnectionPart {
 
         conn.setForegroundColor(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_LINES_FOREGROUND));
 
-        setConnectionStyles(association, conn);
-        setConnectionRouting(association, conn);
+        setConnectionStyles(conn);
+        setConnectionRouting(conn);
         setConnectionToolTip(conn);
 
         return conn;
     }
 
-    protected void setConnectionRouting(ERDAssociation association, PolylineConnection conn) {
+    protected void setConnectionRouting(PolylineConnection conn) {
+        ERDAssociation association = getAssociation();
         // Set router and initial bends
         ConnectionLayer cLayer = (ConnectionLayer) getLayer(LayerConstants.CONNECTION_LAYER);
         conn.setConnectionRouter(cLayer.getConnectionRouter());
@@ -130,8 +130,9 @@ public class AssociationPart extends PropertyAwareConnectionPart {
         }
     }
 
-    protected void setConnectionStyles(ERDAssociation association, PolylineConnection conn) {
+    protected void setConnectionStyles(PolylineConnection conn) {
 
+        ERDAssociation association = getAssociation();
         boolean identifying = ERDUtils.isIdentifyingAssociation(association);
 
         if (association.getObject().getConstraintType() == DBSEntityConstraintType.INHERITANCE) {
