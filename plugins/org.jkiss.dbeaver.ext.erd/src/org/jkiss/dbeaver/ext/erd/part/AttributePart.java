@@ -26,8 +26,6 @@ import org.eclipse.gef.*;
 import org.eclipse.gef.tools.DirectEditManager;
 import org.eclipse.gef.tools.DragEditPartsTracker;
 import org.eclipse.jface.viewers.TextCellEditor;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Font;
 import org.jkiss.dbeaver.ext.erd.ERDMessages;
 import org.jkiss.dbeaver.ext.erd.command.AttributeCheckCommand;
 import org.jkiss.dbeaver.ext.erd.directedit.ColumnNameTypeCellEditorValidator;
@@ -71,24 +69,16 @@ public class AttributePart extends PropertyAwarePart {
         return (ERDEntity) getParent().getModel();
     }
 
+    public String getAttributeLabel() {
+        return ERDUtils.getFullAttributeLabel(getDiagram(), getAttribute(), false);
+    }
+
     /**
      * @return the ColumnLabel representing the Column
      */
     @Override
     protected AttributeItemFigure createFigure() {
-        ERDEntityAttribute column = (ERDEntityAttribute) getModel();
-        AttributeItemFigure attributeFigure = new AttributeItemFigure(this);
-
-        DiagramPart diagramPart = getDiagramPart();
-        Font columnFont = diagramPart.getNormalFont();
-        Color columnColor = diagramPart.getContentPane().getForegroundColor();
-        if (column.isInPrimaryKey()) {
-            columnFont = diagramPart.getBoldFont();
-        }
-
-        attributeFigure.setFont(columnFont);
-        attributeFigure.setForegroundColor(columnColor);
-        return attributeFigure;
+        return new AttributeItemFigure(this);
     }
 
     @Override
@@ -174,7 +164,7 @@ public class AttributePart extends PropertyAwarePart {
     @Override
     protected void commitNameChange(PropertyChangeEvent evt) {
         AttributeItemFigure label = getFigure();
-        label.getLabel().setText(getAttribute().getLabelText());
+        label.updateLabels();
         setSelected(EditPart.SELECTED_PRIMARY);
         label.revalidate();
     }
@@ -196,8 +186,7 @@ public class AttributePart extends PropertyAwarePart {
      */
     @Override
     protected void refreshVisuals() {
-        ERDEntityAttribute column = (ERDEntityAttribute) getModel();
-        getFigure().getLabel().setText(column.getLabelText());
+        getFigure().updateLabels();
     }
 
     @Override

@@ -20,7 +20,7 @@ public class ERDPreferencesInitializer extends AbstractPreferenceInitializer {
       PrefUtils.setDefaultPreferenceValue(store, ERDConstants.PREF_PRINT_MARGIN_BOTTOM, ERDConstants.PRINT_MARGIN_DEFAULT);
       PrefUtils.setDefaultPreferenceValue(store, ERDConstants.PREF_PRINT_MARGIN_LEFT, ERDConstants.PRINT_MARGIN_DEFAULT);
       PrefUtils.setDefaultPreferenceValue(store, ERDConstants.PREF_PRINT_MARGIN_RIGHT, ERDConstants.PRINT_MARGIN_DEFAULT);
-      PrefUtils.setDefaultPreferenceValue(store, ERDConstants.PREF_GRID_ENABLED, true);
+      PrefUtils.setDefaultPreferenceValue(store, ERDConstants.PREF_GRID_ENABLED, false);
       PrefUtils.setDefaultPreferenceValue(store, ERDConstants.PREF_GRID_SNAP_ENABLED, true);
       PrefUtils.setDefaultPreferenceValue(store, ERDConstants.PREF_GRID_WIDTH, 20);
       PrefUtils.setDefaultPreferenceValue(store, ERDConstants.PREF_GRID_HEIGHT, 20);
