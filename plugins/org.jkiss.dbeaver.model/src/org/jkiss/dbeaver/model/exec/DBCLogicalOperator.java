@@ -95,6 +95,13 @@ public enum DBCLogicalOperator {
                 SQLUtils.matchesLike(srcValue.toString(), arguments[0].toString());
         }
     },
+    NOT_LIKE("NOT LIKE", 1) {
+        @Override
+        public boolean evaluate(Object srcValue, Object[] arguments) {
+            return srcValue != null && !ArrayUtils.isEmpty(arguments) &&
+                !SQLUtils.matchesLike(srcValue.toString(), arguments[0].toString());
+        }
+    },
     REGEX("REGEX", 1) {
         @Override
         public boolean evaluate(Object srcValue, Object[] arguments) {
