@@ -82,8 +82,6 @@ public class AssociationPart extends PropertyAwareConnectionPart {
 
     @Override
     protected IFigure createFigure() {
-        ERDAssociation association = (ERDAssociation) getModel();
-
         PolylineConnection conn = new PolylineConnection();
 
         conn.setForegroundColor(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_LINES_FOREGROUND));
@@ -203,13 +201,17 @@ public class AssociationPart extends PropertyAwareConnectionPart {
     public void markAssociatedAttributes(int value) {
         //Color columnColor = value != EditPart.SELECTED_NONE ? Display.getDefault().getSystemColor(SWT.COLOR_RED) : getViewer().getControl().getForeground();
         boolean isSelected = value != EditPart.SELECTED_NONE;
-        for (AttributePart attrPart : getEntityAttributes((EntityPart) getSource(), getAssociation().getSourceAttributes())) {
-            //attrPart.getFigure().setForegroundColor(columnColor);
-            attrPart.setSelected(value);
+        if (getSource() != null) {
+            for (AttributePart attrPart : getEntityAttributes((EntityPart) getSource(), getAssociation().getSourceAttributes())) {
+                //attrPart.getFigure().setForegroundColor(columnColor);
+                attrPart.setSelected(value);
+            }
         }
-        for (AttributePart attrPart : getEntityAttributes((EntityPart) getTarget(), getAssociation().getTargetAttributes())) {
-            //attrPart.getFigure().setForegroundColor(columnColor);
-            attrPart.setSelected(value);
+        if (getTarget() != null) {
+            for (AttributePart attrPart : getEntityAttributes((EntityPart) getTarget(), getAssociation().getTargetAttributes())) {
+                //attrPart.getFigure().setForegroundColor(columnColor);
+                attrPart.setSelected(value);
+            }
         }
     }
 

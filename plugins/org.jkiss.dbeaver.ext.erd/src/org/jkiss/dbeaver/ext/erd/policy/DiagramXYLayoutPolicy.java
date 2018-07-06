@@ -14,9 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*
- * Created on Jul 20, 2004
- */
 package org.jkiss.dbeaver.ext.erd.policy;
 
 import org.eclipse.draw2d.Figure;
