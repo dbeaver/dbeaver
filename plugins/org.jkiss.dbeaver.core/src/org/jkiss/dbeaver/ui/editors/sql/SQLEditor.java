@@ -879,11 +879,11 @@ public class SQLEditor extends SQLEditorBase implements
         resultsSash.setRedraw(false);
         try {
             if (!show) {
-                boolean epHasFocus = UIUtils.hasFocus(getExtraPresentationControl());
+                //boolean epHasFocus = UIUtils.hasFocus(getExtraPresentationControl());
                 presentationSash.setMaximizedControl(presentationSash.getChildren()[SQL_EDITOR_CONTROL_INDEX]);
-                if (epHasFocus) {
+                //if (epHasFocus) {
                     getEditorControlWrapper().setFocus();
-                }
+                //}
             } else {
                 if (extraPresentation == null) {
                     // Lazy activation
