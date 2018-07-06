@@ -14,25 +14,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*
- * Created on Jul 13, 2004
- */
 package org.jkiss.dbeaver.ext.erd.figures;
 
 import org.eclipse.draw2d.*;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.ext.erd.command.AttributeCheckCommand;
 import org.jkiss.dbeaver.ext.erd.editor.ERDViewStyle;
-import org.jkiss.dbeaver.ext.erd.model.ERDDecorator;
 import org.jkiss.dbeaver.ext.erd.model.ERDEntityAttribute;
-import org.jkiss.dbeaver.ext.erd.model.ERDUtils;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.part.AttributePart;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.List;
 
@@ -42,9 +37,10 @@ import java.util.List;
  */
 public class AttributeItemFigure extends Figure
 {
-    private final AttributePart part;
+    protected final AttributePart part;
+    private EditableLabel rightLabel;
 
-	public AttributeItemFigure(AttributePart part)
+    public AttributeItemFigure(AttributePart part)
 	{
         super();
         this.part = part;
@@ -73,9 +69,7 @@ public class AttributeItemFigure extends Figure
             add(attrCheckbox);
         }
 
-        String attributeLabel = ERDUtils.getAttributeLabel(diagram, attribute);
-
-        EditableLabel attrNameLabel = new EditableLabel(attributeLabel);
+        EditableLabel attrNameLabel = new EditableLabel(part.getAttributeLabel());
 
         if (diagram.hasAttributeStyle(ERDViewStyle.ICONS)) {
             DBPImage labelImage = attribute.getLabelImage();
@@ -84,6 +78,16 @@ public class AttributeItemFigure extends Figure
             }
         }
         add(attrNameLabel);
+
+        DiagramPart diagramPart = part.getDiagramPart();
+        Font columnFont = diagramPart.getNormalFont();
+        Color columnColor = diagramPart.getContentPane().getForegroundColor();
+        if (part.getAttribute().isInPrimaryKey()) {
+            columnFont = diagramPart.getBoldFont();
+        }
+
+        setFont(columnFont);
+        setForegroundColor(columnColor);
 	}
 
     public ERDEntityAttribute getAttribute() {
@@ -104,4 +108,27 @@ public class AttributeItemFigure extends Figure
         return (EditableLabel) children.get(children.size() == 1 ? 0 : 1);
     }
 
+    public EditableLabel getRightLabel() {
+        return rightLabel;
+    }
+
+    void setRightLabel(EditableLabel attrExtra) {
+        this.rightLabel = attrExtra;
+    }
+
+    public void updateLabels() {
+        getLabel().setText(part.getAttributeLabel());
+        if (rightLabel != null) {
+            String rightText = "";
+            if (part.getDiagram().hasAttributeStyle(ERDViewStyle.TYPES)) {
+                rightText = part.getAttribute().getObject().getFullTypeName();
+            }
+            if (part.getDiagram().hasAttributeStyle(ERDViewStyle.NULLABILITY)) {
+                if (part.getAttribute().getObject().isRequired()) {
+                    rightText += " NOT NULL";
+                }
+            }
+            rightLabel.setText(rightText);
+        }
+    }
 }

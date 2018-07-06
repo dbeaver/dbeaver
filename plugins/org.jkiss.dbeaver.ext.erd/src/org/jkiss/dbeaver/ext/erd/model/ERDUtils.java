@@ -41,14 +41,12 @@ public class ERDUtils
 {
     private static final Log log = Log.getLog(ERDUtils.class);
 
-    public static String getAttributeLabel(EntityDiagram diagram, ERDEntityAttribute attribute) {
-        String attributeLabel;
-        if (diagram.hasAttributeStyle(ERDViewStyle.TYPES)) {
-            attributeLabel = attribute.getName() + ": " + attribute.getObject().getFullTypeName();
-        } else {
-            attributeLabel = attribute.getName();
+    public static String getFullAttributeLabel(EntityDiagram diagram, ERDEntityAttribute attribute, boolean includeType) {
+        String attributeLabel = attribute.getName();
+        if (includeType && diagram.hasAttributeStyle(ERDViewStyle.TYPES)) {
+            attributeLabel += ": " + attribute.getObject().getFullTypeName();
         }
-        if (diagram.hasAttributeStyle(ERDViewStyle.NULLABILITY)) {
+        if (includeType && diagram.hasAttributeStyle(ERDViewStyle.NULLABILITY)) {
             if (attribute.getObject().isRequired()) {
                 attributeLabel += " NOT NULL";
             }

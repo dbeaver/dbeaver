@@ -177,7 +177,7 @@ public class ERDExportGraphML implements ERDExportFormatHandler
                                     if (attrsString.length() > 0) {
                                         attrsString.append("\n");
                                     }
-                                    attrsString.append(ERDUtils.getAttributeLabel(diagram, attr));
+                                    attrsString.append(ERDUtils.getFullAttributeLabel(diagram, attr, true));
                                 }
 
                                 xml.addText(attrsString.toString());

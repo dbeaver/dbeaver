@@ -227,7 +227,7 @@
                 label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.lines.foreground.label"
                 categoryId="org.jkiss.dbeaver.ui.presentation.erd"
                 id="org.jkiss.dbeaver.erd.diagram.lines.foreground"
-                value="COLOR_GRAY">
+                value="0, 143, 207">
             <description>%colorDefinition.org.jkiss.dbeaver.erd.diagram.lines.foreground.description</description>
         </colorDefinition>
 

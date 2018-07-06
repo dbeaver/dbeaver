@@ -21,9 +21,7 @@ package org.jkiss.dbeaver.ext.erd.figures;
 
 import org.eclipse.draw2d.*;
 import org.eclipse.jface.resource.ColorRegistry;
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.widgets.Display;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -59,6 +57,7 @@ public class EntityFigure extends Figure {
         if (tableImage != null) {
             nameLabel.setIcon(tableImage);
         }
+        nameLabel.setBorder(new MarginBorder(3));
 
 /*
         GridLayout layout = new GridLayout(1, false);
@@ -143,13 +142,17 @@ public class EntityFigure extends Figure {
             figure.setBackgroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ATTR_BACKGROUND));
 
             EditableLabel attrExtra = new EditableLabel("");
+            //attrExtra.setBorder(new LineBorder(1));
+            attrExtra.setTextAlignment(PositionConstants.RIGHT);
 
-            if (((AttributeItemFigure) figure).getAttribute().isInPrimaryKey()) {
+            AttributeItemFigure attributeItemFigure = (AttributeItemFigure) figure;
+            attributeItemFigure.setRightLabel(attrExtra);
+            if (attributeItemFigure.getAttribute().isInPrimaryKey()) {
                 keyFigure.add(figure, new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, true, false));
-                keyFigure.add(attrExtra, new GridData(GridData.HORIZONTAL_ALIGN_END, GridData.VERTICAL_ALIGN_BEGINNING, false, false));
+                keyFigure.add(attrExtra, new GridData(GridData.HORIZONTAL_ALIGN_END | GridData.VERTICAL_ALIGN_BEGINNING));
             } else {
                 attributeFigure.add(figure, new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, true, false));
-                attributeFigure.add(attrExtra, new GridData(GridData.HORIZONTAL_ALIGN_END, GridData.VERTICAL_ALIGN_BEGINNING, false, false));
+                attributeFigure.add(attrExtra, new GridData(GridData.HORIZONTAL_ALIGN_END | GridData.VERTICAL_ALIGN_BEGINNING));
             }
 
         } else {
