@@ -86,9 +86,9 @@ public class DiagramXYLayoutPolicy extends XYLayoutEditPolicy
 	{
 
 		IFigure fig = child.getFigure();
-		Rectangle rectangle = (Rectangle) fig.getParent().getLayoutManager().getConstraint(fig);
-		if (rectangle == null)
-		{
+		Object constraint = fig.getParent().getLayoutManager().getConstraint(fig);
+		Rectangle rectangle = constraint instanceof Rectangle ? (Rectangle) constraint : null;
+		if (rectangle == null) {
 			rectangle = fig.getBounds();
 		}
 		return rectangle;
