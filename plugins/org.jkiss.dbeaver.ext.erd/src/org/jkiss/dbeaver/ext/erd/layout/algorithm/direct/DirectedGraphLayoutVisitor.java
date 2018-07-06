@@ -97,7 +97,7 @@ public class DirectedGraphLayoutVisitor {
         } else {
             entityNode = new Node(nodeEditPart);
         }
-        Dimension preferredSize = nodeEditPart.getFigure().getPreferredSize(400, 300);
+        Dimension preferredSize = nodeEditPart.getFigure().getPreferredSize(-1, -1);
         entityNode.width = preferredSize.width;
         entityNode.height = preferredSize.height;
         entityNode.setPadding(new Insets(20, 20, 10, 20));
