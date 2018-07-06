@@ -224,6 +224,14 @@
             <description>%colorDefinition.org.jkiss.dbeaver.erd.diagram.entity.name.foreground.description</description>
         </colorDefinition>
         <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.lines.foreground.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd"
+                id="org.jkiss.dbeaver.erd.diagram.lines.foreground"
+                value="COLOR_GRAY">
+            <description>%colorDefinition.org.jkiss.dbeaver.erd.diagram.lines.foreground.description</description>
+        </colorDefinition>
+
+        <colorDefinition
                 label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.attributes.background.label"
                 categoryId="org.jkiss.dbeaver.ui.presentation.erd"
                 id="org.jkiss.dbeaver.erd.diagram.attributes.background"

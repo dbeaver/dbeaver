@@ -40,7 +40,7 @@ public class AttributeListFigure extends Figure
 	public AttributeListFigure(ERDEntity entity, boolean key)
 	{
 		GridLayout layout = new GridLayout(2, false);
-		layout.verticalSpacing = 0;
+		layout.verticalSpacing = 3;
 		layout.marginHeight = 0;
 		layout.marginWidth = 0;
 /*
@@ -80,6 +80,7 @@ public class AttributeListFigure extends Figure
 		@Override
         public void paint(IFigure figure, Graphics graphics, Insets insets)
 		{
+			graphics.setForegroundColor(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_LINES_FOREGROUND));
 			Rectangle rect = getPaintRectangle(figure, insets);
 			graphics.setLineWidth(2);
 			graphics.drawLine(rect.getTopLeft(), tempRect.getTopRight());

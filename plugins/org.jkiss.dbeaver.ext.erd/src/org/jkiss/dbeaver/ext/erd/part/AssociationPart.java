@@ -27,6 +27,8 @@ import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.gef.*;
 import org.eclipse.gef.editpolicies.ConnectionEndpointEditPolicy;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Display;
+import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
 import org.jkiss.dbeaver.ext.erd.model.ERDEntityAttribute;
 import org.jkiss.dbeaver.ext.erd.model.ERDUtils;
@@ -35,6 +37,7 @@ import org.jkiss.dbeaver.ext.erd.policy.AssociationEditPolicy;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.struct.DBSEntityConstraintType;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -83,6 +86,8 @@ public class AssociationPart extends PropertyAwareConnectionPart {
         ERDAssociation association = (ERDAssociation) getModel();
 
         PolylineConnection conn = new PolylineConnection();
+
+        conn.setForegroundColor(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_LINES_FOREGROUND));
 
         setConnectionStyles(association, conn);
         setConnectionRouting(association, conn);
