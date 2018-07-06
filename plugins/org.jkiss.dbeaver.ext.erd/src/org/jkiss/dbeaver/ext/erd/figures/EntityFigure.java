@@ -58,10 +58,18 @@ public class EntityFigure extends Figure {
             nameLabel.setIcon(tableImage);
         }
 
+/*
+        GridLayout layout = new GridLayout(1, false);
+        layout.verticalSpacing = 0;
+        layout.marginHeight = 0;
+        layout.marginWidth = 0;
+*/
+
         ToolbarLayout layout = new ToolbarLayout();
         layout.setHorizontal(false);
         layout.setStretchMinorAxis(true);
         setLayoutManager(layout);
+
         setBorder(new LineBorder(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_ENTITY_NAME_FOREGROUND), 2));
         setOpaque(true);
 
@@ -130,10 +138,14 @@ public class EntityFigure extends Figure {
             figure.setForegroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ATTR_FOREGROUND));
             figure.setBackgroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ATTR_BACKGROUND));
 
+            EditableLabel attrExtra = new EditableLabel("xxx");
+
             if (((AttributeItemFigure) figure).getAttribute().isInPrimaryKey()) {
-                keyFigure.add(figure, constraint, -1);
+                keyFigure.add(figure, new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, true, false));
+                keyFigure.add(attrExtra, new GridData(GridData.HORIZONTAL_ALIGN_END, GridData.VERTICAL_ALIGN_BEGINNING, false, false));
             } else {
-                attributeFigure.add(figure, constraint, -1);
+                attributeFigure.add(figure, new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, true, false));
+                attributeFigure.add(attrExtra, new GridData(GridData.HORIZONTAL_ALIGN_END, GridData.VERTICAL_ALIGN_BEGINNING, false, false));
             }
 
         } else {

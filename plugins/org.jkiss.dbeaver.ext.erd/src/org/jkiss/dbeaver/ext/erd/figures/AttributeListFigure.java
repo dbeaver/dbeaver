@@ -39,16 +39,16 @@ public class AttributeListFigure extends Figure
 
 	public AttributeListFigure(ERDEntity entity, boolean key)
 	{
-/*
-		GridLayout layout = new GridLayout(1, false);
+		GridLayout layout = new GridLayout(2, false);
 		layout.verticalSpacing = 0;
 		layout.marginHeight = 0;
 		layout.marginWidth = 0;
-*/
+/*
 		FlowLayout layout = new FlowLayout(false);
 		layout.setMinorAlignment(FlowLayout.ALIGN_TOPLEFT);
 		layout.setStretchMinorAxis(true);
 		layout.setMinorSpacing(2);
+*/
 		setLayoutManager(layout);
 		setBorder(new ColumnFigureBorder());
 		ColorRegistry colorRegistry = UIUtils.getColorRegistry();
