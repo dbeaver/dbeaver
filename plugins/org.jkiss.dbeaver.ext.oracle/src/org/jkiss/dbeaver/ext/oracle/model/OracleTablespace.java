@@ -297,26 +297,12 @@ public class OracleTablespace extends OracleGlobalObject implements DBPRefreshab
 
     private void loadSizes(DBRProgressMonitor monitor) throws DBException {
         try (final JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Load tablespace '" + getName() + "' statistics")) {
-            try (final JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT SUM(F.BYTES) AVAILABLE_SPACE,SUM(S.BYTES) USED_SPACE\n" +
-                        "FROM SYS.DBA_TABLESPACES T\n" +
-                        "LEFT JOIN SYS.DBA_DATA_FILES F ON T.TABLESPACE_NAME = F.TABLESPACE_NAME\n" +
-                        "LEFT JOIN SYS.DBA_SEGMENTS S ON T.TABLESPACE_NAME = S.TABLESPACE_NAME\n" +
-                        "WHERE T.TABLESPACE_NAME=?"))
-            {
-                dbStat.setString(1, getName());
-                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    if (dbResult.next()) {
-                        availableSize = dbResult.getLong(1);
-                        usedSize = dbResult.getLong(2);
-                    } else {
-                        availableSize = 0L;
-                        usedSize = 0L;
-                    }
-                }
-            } catch (SQLException e) {
-                throw new DBException("Can't read tablespace statistics", e, getDataSource());
-            }
+            availableSize = CommonUtils.toLong(JDBCUtils.queryObject(session,
+                "SELECT SUM(F.BYTES) AVAILABLE_SPACE FROM SYS.DBA_DATA_FILES F WHERE F.TABLESPACE_NAME=?", getName()));
+            usedSize = CommonUtils.toLong(JDBCUtils.queryObject(session,
+                "SELECT SUM(S.BYTES) USED_SPACE FROM SYS.DBA_SEGMENTS S WHERE S.TABLESPACE_NAME=?", getName()));
+        } catch (SQLException e) {
+            throw new DBException("Can't read tablespace statistics", e, getDataSource());
         }
     }
 
