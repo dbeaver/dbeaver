@@ -30,8 +30,9 @@ import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -104,7 +105,7 @@ public class DataExporterSQL extends StreamExporterAbstract {
     {
         columns = getSite().getAttributes();
         DBPNamedObject source = getSite().getSource();
-        if (source instanceof DBSTable) {
+        if (source instanceof DBSEntity) {
             tableName = omitSchema ?
                 DBUtils.getQuotedIdentifier((DBSObject) source) :
                 DBUtils.getObjectFullName(source, DBPEvaluationContext.UI);
@@ -122,6 +123,14 @@ public class DataExporterSQL extends StreamExporterAbstract {
                                 tableName = DBUtils.getFullyQualifiedName(session.getDataSource(), singleSource.getCatalogName(), singleSource.getSchemaName(), singleSource.getEntityName());
                             }
                         }
+                    }
+                }
+                if (tableName == null) {
+                    DBSDataContainer dataContainer = ((IAdaptable) source).getAdapter(DBSDataContainer.class);
+                    if (dataContainer instanceof DBSEntity) {
+                        tableName = omitSchema ?
+                            DBUtils.getQuotedIdentifier(dataContainer) :
+                            DBUtils.getObjectFullName(dataContainer, DBPEvaluationContext.UI);
                     }
                 }
             }
