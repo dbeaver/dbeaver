@@ -2561,12 +2561,14 @@ public class SQLEditor extends SQLEditorBase implements
                 }
                 // Set tab name only if we have just one resultset
                 // If query produced multiple results - leave their names as is
-                if (scriptMode || queryProcessor.getResultContainers().size() == 1) {
+                if (scriptMode || queryProcessor.getResultContainers().size() > 0) {
                     QueryResultsContainer results = queryProcessor.getResults(query);
                     if (results != null) {
                         int queryIndex = queryProcessors.indexOf(queryProcessor);
-                        String resultSetName = getResultsTabName(results.resultSetNumber, queryIndex, result.getResultSetName());
-                        results.updateResultsName(resultSetName, null);
+                        if (queryIndex == 0) {
+                            String resultSetName = getResultsTabName(results.resultSetNumber, queryIndex, result.getResultSetName());
+                            results.updateResultsName(resultSetName, null);
+                        }
                     }
                 }
             }
