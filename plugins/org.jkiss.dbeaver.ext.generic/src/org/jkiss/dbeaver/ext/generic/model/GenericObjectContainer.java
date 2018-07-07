@@ -313,7 +313,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
             return getProcedures(monitor);
         }
         List<GenericProcedure> filteredProcedures = new ArrayList<>();
-        for (GenericProcedure proc : getProcedures(monitor)) {
+        for (GenericProcedure proc : CommonUtils.safeList(getProcedures(monitor))) {
             if (proc.getProcedureType() == DBSProcedureType.PROCEDURE) {
                 filteredProcedures.add(proc);
             }
@@ -324,7 +324,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
     @Override
     public Collection<? extends GenericProcedure> getFunctionsOnly(DBRProgressMonitor monitor) throws DBException {
         List<GenericProcedure> filteredProcedures = new ArrayList<>();
-        for (GenericProcedure proc : getProcedures(monitor)) {
+        for (GenericProcedure proc : CommonUtils.safeList(getProcedures(monitor))) {
             if (proc.getProcedureType() == DBSProcedureType.FUNCTION) {
                 filteredProcedures.add(proc);
             }
