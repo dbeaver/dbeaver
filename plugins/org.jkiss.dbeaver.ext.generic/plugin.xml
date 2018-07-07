@@ -805,6 +805,8 @@
                     webURL="http://scn.sap.com/community/developer-center/hana">
                     <!--<library path="C:\Program Files\Java\lib\jdbc\ngdbc.jar"/>-->
                     <parameter name="split-procedures-and-functions" value="true"/>
+                    <parameter name="query-get-active-db" value="SELECT CURRENT_SCHEMA FROM DUMMY"/>
+                    <parameter name="query-set-active-db" value="SET SCHEMA ?"/>
                 </driver>
 
                 <!-- Hadoop -->
