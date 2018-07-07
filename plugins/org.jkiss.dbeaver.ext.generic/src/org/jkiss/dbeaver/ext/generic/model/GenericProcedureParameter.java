@@ -75,7 +75,7 @@ public class GenericProcedureParameter extends JDBCAttribute implements DBSProce
 
     @NotNull
     @Override
-    @Property(viewable = true, order = 10)
+    @Property(viewable = true, order = 30)
     public DBSProcedureParameterKind getParameterKind()
     {
         return parameterKind;
