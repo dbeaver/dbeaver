@@ -4,7 +4,7 @@
 <plugin>
 
     <extension point="org.jkiss.dbeaver.generic.meta">
-        <meta id="netezza" class="org.jkiss.dbeaver.ext.hana.model.HANAMetaModel" driverClass="com.sap.db.jdbc.Driver"/>
+        <meta id="hana" class="org.jkiss.dbeaver.ext.hana.model.HANAMetaModel" driverClass="com.sap.db.jdbc.Driver"/>
     </extension>
 
 </plugin>
