@@ -176,7 +176,7 @@ public interface SQLDialect {
      * @return block header string or null (not supported)
      */
     @Nullable
-    String getBlockHeaderString();
+    String[] getBlockHeaderStrings();
 
     /**
      * Script block toggle string.

@@ -297,9 +297,11 @@ public class SQLRuleManager extends RuleBasedScanner {
                     wordRule.addWord(type, typeToken);
                 }
             }
-            final String blockHeaderString = dialect.getBlockHeaderString();
-            if (!CommonUtils.isEmpty(blockHeaderString)) {
-                wordRule.addWord(blockHeaderString, blockHeaderToken);
+            final String[] blockHeaderStrings = dialect.getBlockHeaderStrings();
+            if (!ArrayUtils.isEmpty(blockHeaderStrings)) {
+                for (String bhs : blockHeaderStrings) {
+                    wordRule.addWord(bhs, blockHeaderToken);
+                }
             }
             String[][] blockBounds = dialect.getBlockBoundStrings();
             if (blockBounds != null) {
