@@ -106,7 +106,7 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource> imple
         this.encodingId = encoding.getObjectId();
     }
 
-    private void checkDatabaseConnection(DBRProgressMonitor monitor) throws DBException {
+    void checkDatabaseConnection(DBRProgressMonitor monitor) throws DBException {
         if (executionContext == null) {
             initializeMainContext(monitor);
             initializeMetaContext(monitor);

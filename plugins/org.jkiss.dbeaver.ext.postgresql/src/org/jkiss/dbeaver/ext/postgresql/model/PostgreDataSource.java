@@ -119,6 +119,8 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
             throw new DBException("Can't connect ot remote PostgreSQL server", e);
         }
         databaseCache.setCache(dbList);
+        // Initiate default context
+        getDefaultInstance().checkDatabaseConnection(monitor);
     }
 
     @Override
