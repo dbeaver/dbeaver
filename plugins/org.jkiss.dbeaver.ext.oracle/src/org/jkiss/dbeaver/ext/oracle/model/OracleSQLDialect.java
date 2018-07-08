@@ -41,14 +41,20 @@ class OracleSQLDialect extends JDBCSQLDialect {
         BasicSQLDialect.NON_TRANSACTIONAL_KEYWORDS,
         new String[]{
             "CREATE", "ALTER", "DROP",
-            "ANALYZE", "VALIDATE"}
+            "ANALYZE", "VALIDATE",
+        }
     );
 
     public static final String[][] ORACLE_BEGIN_END_BLOCK = new String[][]{
         {SQLConstants.BLOCK_BEGIN, SQLConstants.BLOCK_END},
         {"IF", SQLConstants.BLOCK_END},
         {"LOOP", SQLConstants.BLOCK_END + " LOOP"},
-        {"CASE", SQLConstants.BLOCK_END + " CASE"}
+        {"CASE", SQLConstants.BLOCK_END + " CASE"},
+    };
+
+    public static final String[] ORACLE_BLOCK_HEADERS = new String[]{
+        "DECLARE",
+        //"IS",
     };
 
     public static final String[] ADVANCED_KEYWORDS = {
@@ -318,8 +324,8 @@ class OracleSQLDialect extends JDBCSQLDialect {
     }
 
     @Override
-    public String getBlockHeaderString() {
-        return "DECLARE";
+    public String[] getBlockHeaderStrings() {
+        return ORACLE_BLOCK_HEADERS;
     }
 
     @NotNull
