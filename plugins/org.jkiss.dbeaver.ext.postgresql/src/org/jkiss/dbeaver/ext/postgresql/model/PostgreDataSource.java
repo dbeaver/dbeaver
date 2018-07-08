@@ -119,9 +119,6 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
             throw new DBException("Can't connect ot remote PostgreSQL server", e);
         }
         databaseCache.setCache(dbList);
-
-        // Read databases
-        getDefaultInstance().cacheDataTypes(monitor, true);
     }
 
     @Override
@@ -217,6 +214,9 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         throws DBException
     {
         super.initialize(monitor);
+
+        // Read databases
+        getDefaultInstance().cacheDataTypes(monitor, true);
     }
 
     @Override

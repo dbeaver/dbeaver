@@ -32,10 +32,10 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
-import org.jkiss.dbeaver.ui.navigator.database.CheckboxTreeManager;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.ui.navigator.database.load.TreeLoadNode;
 import org.jkiss.dbeaver.ui.search.AbstractSearchPage;
@@ -63,7 +63,7 @@ public class SearchDataPage extends AbstractSearchPage {
 
     private SearchDataParams params = new SearchDataParams();
     private Set<String> searchHistory = new LinkedHashSet<>();
-    private CheckboxTreeManager checkboxTreeManager;
+    private DatabaseObjectsTreeManager checkboxTreeManager;
     private DBPPreferenceStore store;
 
     public SearchDataPage() {
@@ -149,7 +149,7 @@ public class SearchDataPage extends AbstractSearchPage {
                     return false;
                 }
             });
-            checkboxTreeManager = new CheckboxTreeManager(viewer,
+            checkboxTreeManager = new DatabaseObjectsTreeManager(new RunnableContextDelegate(container.getRunnableContext()), viewer,
                 new Class[]{DBSDataContainer.class});
             viewer.addCheckStateListener(event -> updateEnablement());
         }
@@ -207,7 +207,7 @@ public class SearchDataPage extends AbstractSearchPage {
                 }
             });
         }
-        restoreCheckedNodes();
+        //restoreCheckedNodes();
         updateEnablement();
         dataSourceTree.setEnabled(true);
     }
@@ -288,7 +288,7 @@ public class SearchDataPage extends AbstractSearchPage {
         store.setValue(PROP_FAST_SEARCH, params.fastSearch);
         store.setValue(PROP_SEARCH_NUMBERS, params.searchNumbers);
         store.setValue(PROP_SEARCH_LOBS, params.searchLOBs);
-        saveTreeState(store, PROP_SOURCES, dataSourceTree);
+        //saveTreeState(store, PROP_SOURCES, dataSourceTree);
 
         {
             // Search history

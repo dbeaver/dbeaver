@@ -469,7 +469,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     @Override
     public DBCLogicalOperator[] getSupportedOperators(DBSTypedObject attribute) {
         if (dataKind == DBPDataKind.STRING) {
-            if (typeCategory == PostgreTypeCategory.S || typeCategory == PostgreTypeCategory.E) {
+            if (typeCategory == PostgreTypeCategory.S || typeCategory == PostgreTypeCategory.E || typeCategory == PostgreTypeCategory.X) {
                 return new DBCLogicalOperator[]{
                     DBCLogicalOperator.IS_NULL,
                     DBCLogicalOperator.IS_NOT_NULL,
