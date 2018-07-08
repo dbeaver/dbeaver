@@ -203,7 +203,8 @@ public class SQLEditor extends SQLEditorBase implements
 
     @Override
     public DBPDataSource getDataSource() {
-        return getDataSourceContainer().getDataSource();
+        DBPDataSourceContainer container = getDataSourceContainer();
+        return container == null ? null : container.getDataSource();
     }
 
     @Override

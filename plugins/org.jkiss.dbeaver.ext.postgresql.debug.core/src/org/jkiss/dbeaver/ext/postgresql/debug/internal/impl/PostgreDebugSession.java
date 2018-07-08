@@ -31,9 +31,9 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.debug.PostgreDebugConstants;
 import org.jkiss.dbeaver.ext.postgresql.debug.core.PostgreSqlDebugCore;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedureParameter;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
@@ -47,7 +47,6 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
@@ -75,7 +74,6 @@ import java.util.Map;
  * <br/>
  * 3. when execStepXXX or continue will called session goes in <b>WAITING</b>
  * state until next breakpoint or end of procedure will be reached <br/>
- *
  */
 public class PostgreDebugSession extends DBGJDBCSession {
 
@@ -128,46 +126,46 @@ public class PostgreDebugSession extends DBGJDBCSession {
      * attached to postgres procedure by attach method
      */
     PostgreDebugSession(DBRProgressMonitor monitor, DBGBaseController controller)
-            throws DBGException {
+        throws DBGException {
         super(controller);
-        log.debug("Creating controller session.");      
-        
-        DBPDataSource dataSource = controller.getDataSourceContainer().getDataSource();
+        log.debug("Creating controller session.");
+
+        PostgreDataSource dataSource = (PostgreDataSource) controller.getDataSourceContainer().getDataSource();
         try {
             log.debug("Controller session creating.");
-            DBSInstance instance;
+            PostgreDatabase instance;
             if (isGlobalSession(controller.getDebugConfiguration())) {
                 instance = dataSource.getDefaultInstance();
             } else {
                 PostgreProcedure function = PostgreSqlDebugCore.resolveFunction(monitor, controller.getDataSourceContainer(), controller.getDebugConfiguration());
-                instance = DBUtils.getObjectOwnerInstance(function);
+                instance = function.getDatabase();
             }
             this.controllerConnection = (JDBCExecutionContext) instance.openIsolatedContext(monitor, "Debug controller session");
 
             log.debug("Debug controller session created.");
-            JDBCDataSource src =  this.controllerConnection.getDataSource();
+            JDBCDataSource src = this.controllerConnection.getDataSource();
             if (src instanceof PostgreDataSource) {
                 PostgreDataSource pgSrc = (PostgreDataSource) src;
-                log.debug(String.format("Active user %s",pgSrc.getActiveSchemaName()));
-                log.debug(String.format("Active schema %s",pgSrc.getActiveUser()));
-                if (pgSrc.getInfo() instanceof JDBCDataSourceInfo) {                    
-                    JDBCDataSourceInfo JDBCinfo = (JDBCDataSourceInfo) pgSrc.getInfo();                 
+                log.debug(String.format("Active user %s", instance.getActiveUser()));
+                log.debug(String.format("Active schema %s", instance.getActiveSchemaName()));
+                if (pgSrc.getInfo() instanceof JDBCDataSourceInfo) {
+                    JDBCDataSourceInfo JDBCinfo = (JDBCDataSourceInfo) pgSrc.getInfo();
                     log.debug("------------DATABASE DRIVER INFO---------------");
-                    log.debug(String.format("Database Product Name %s",JDBCinfo.getDatabaseProductName()));
-                    log.debug(String.format("Database Product Version %s",JDBCinfo.getDatabaseProductVersion()));
-                    log.debug(String.format("Database Version %s",JDBCinfo.getDatabaseVersion()));
-                    log.debug(String.format("Driver Name %s",JDBCinfo.getDriverName()));
-                    log.debug(String.format("Driver Version %s",JDBCinfo.getDriverVersion()));                  
+                    log.debug(String.format("Database Product Name %s", JDBCinfo.getDatabaseProductName()));
+                    log.debug(String.format("Database Product Version %s", JDBCinfo.getDatabaseProductVersion()));
+                    log.debug(String.format("Database Version %s", JDBCinfo.getDatabaseVersion()));
+                    log.debug(String.format("Driver Name %s", JDBCinfo.getDriverName()));
+                    log.debug(String.format("Driver Version %s", JDBCinfo.getDriverVersion()));
                     log.debug("-----------------------------------------------");
                 } else {
-                    log.debug("No additional Driver info");             
-                }               
+                    log.debug("No additional Driver info");
+                }
             } else {
                 log.debug("Unknown Driver version");
             }
 
         } catch (DBException e) {
-            log.debug(String.format("Error creating debug session %s",e.getMessage()));
+            log.debug(String.format("Error creating debug session %s", e.getMessage()));
             throw new DBGException(e, dataSource);
         }
     }
@@ -204,7 +202,7 @@ public class PostgreDebugSession extends DBGJDBCSession {
             String notice = warn.getMessage();
 
             log.debug("Start local port waiting....");
-            
+
             while (notice != null) {
 
                 if (notice.startsWith(MAGIC_PORT)) {
@@ -213,7 +211,7 @@ public class PostgreDebugSession extends DBGJDBCSession {
                         localPortNumber = Integer.valueOf(notice.substring(MAGIC_PORT.length() + 1).trim());
                         log.debug(String.format("Catch local port number %d", localPortNumber));
                     } catch (Exception e) {
-                        log.debug(String.format("Error catching local port number %s",e.getMessage()));
+                        log.debug(String.format("Error catching local port number %s", e.getMessage()));
                         return false;
                     }
 
@@ -223,7 +221,7 @@ public class PostgreDebugSession extends DBGJDBCSession {
                 warn = warn.getNextWarning();
 
                 notice = warn == null ? null : warn.getMessage();
-                log.debug(String.format("Next warning %s",(notice == null ? "[NULL]" : notice)));
+                log.debug(String.format("Next warning %s", (notice == null ? "[NULL]" : notice)));
 
             }
         }
@@ -240,7 +238,7 @@ public class PostgreDebugSession extends DBGJDBCSession {
                 try (ResultSet rs = stmt.executeQuery(sql)) {
                     if (rs.next()) {
                         int attResult = rs.getInt(1);
-                        log.debug(String.format("Attached to local port %d",attResult));
+                        log.debug(String.format("Attached to local port %d", attResult));
                         return attResult;
                     }
                     log.debug("Error while attaching to port");
@@ -266,12 +264,12 @@ public class PostgreDebugSession extends DBGJDBCSession {
                         throw new DBGException("Error creating target slot");
                     }
                     String dbgOID = rs.getString(1);
-                    log.debug(String.format("Create slot OID %s",dbgOID));
+                    log.debug(String.format("Create slot OID %s", dbgOID));
                     return dbgOID;
                 }
             }
         } catch (SQLException e) {
-            log.debug(String.format("Error creating target %s",e.getMessage()));
+            log.debug(String.format("Error creating target %s", e.getMessage()));
             throw new DBGException("Error creating target", e);
         }
     }
@@ -283,7 +281,7 @@ public class PostgreDebugSession extends DBGJDBCSession {
 
         int totalWait = 0;
         boolean hasStatement = false;
-        log.debug(String.format("Waiting for port number with timeout %d",LOCAL_TIMEOT));
+        log.debug(String.format("Waiting for port number with timeout %d", LOCAL_TIMEOT));
         while (totalWait < LOCAL_TIMEOT) {
             try {
                 CallableStatement statement = this.localStatement;
@@ -303,7 +301,7 @@ public class PostgreDebugSession extends DBGJDBCSession {
                 log.debug("Thread waked up");
 
             } catch (SQLException | InterruptedException e) {
-                log.debug(String.format("Error rcv port number %s",e.getMessage()));
+                log.debug(String.format("Error rcv port number %s", e.getMessage()));
                 throw new DBGException("Error rcv port number", e);
             }
 
@@ -312,7 +310,7 @@ public class PostgreDebugSession extends DBGJDBCSession {
         }
 
         if (localPortNumber < 0) {
-            log.debug(String.format("Unable to rcv port number %d",localPortNumber));
+            log.debug(String.format("Unable to rcv port number %d", localPortNumber));
             throw new DBGException("Unable to rcv port number");
         }
     }
@@ -321,7 +319,7 @@ public class PostgreDebugSession extends DBGJDBCSession {
         List<PostgreProcedureParameter> parameters = function.getInputParameters();
         log.debug("Run local proc");
         if (parameters.size() != paramValues.size()) {
-            String unmatched =  "Parameter value count (" + paramValues.size() + ") doesn't match actual function parameters (" + parameters.size() + ")";
+            String unmatched = "Parameter value count (" + paramValues.size() + ") doesn't match actual function parameters (" + parameters.size() + ")";
             log.debug(unmatched);
             throw new DBGException(unmatched);
         }
@@ -406,14 +404,14 @@ public class PostgreDebugSession extends DBGJDBCSession {
     private void attachGlobal(DBRProgressMonitor monitor, int oid, int targetPID) throws DBGException {
 
         log.debug("Attaching globally....");
-        
+
         try (JDBCSession session = getControllerConnection().openSession(monitor, DBCExecutionPurpose.UTIL, "Attach global")) {
             try (Statement stmt = session.createStatement()) {
                 try (ResultSet rs = stmt.executeQuery(SQL_LISTEN)) {
 
                     if (rs.next()) {
                         sessionId = rs.getInt("sessionid");
-                        log.debug(String.format("Global session ID %d",sessionId));    
+                        log.debug(String.format("Global session ID %d", sessionId));
                     } else {
                         log.debug("Unable to create debug instance");
                         throw new DBGException("Unable to create debug instance");
@@ -514,14 +512,14 @@ public class PostgreDebugSession extends DBGJDBCSession {
 
     protected void doDetach(DBRProgressMonitor monitor) throws DBGException {
         switch (attachKind) {
-        case GLOBAL:
-            detachGlobal(monitor);
-            break;
-        case LOCAL:
-            detachLocal(monitor, getControllerConnection());
-            break;
-        default:
-            break;
+            case GLOBAL:
+                detachGlobal(monitor);
+                break;
+            case LOCAL:
+                detachLocal(monitor, getControllerConnection());
+                break;
+            default:
+                break;
         }
     }
 
@@ -535,17 +533,17 @@ public class PostgreDebugSession extends DBGJDBCSession {
         String sqlPattern = attachKind == PostgreDebugAttachKind.GLOBAL ? SQL_SET_GLOBAL_BREAKPOINT : SQL_SET_BREAKPOINT;
 
         String sqlCommand = sqlPattern.replaceAll("\\?sessionid", String.valueOf(getSessionId()))
-                .replaceAll("\\?obj", String.valueOf(functionOid))
-                .replaceAll("\\?line", bp.isOnStart() ? "-1" : String.valueOf(bp.getLineNo()))
-                .replaceAll("\\?target", bp.isAll() ? "null" : String.valueOf(bp.getTargetId()));
+            .replaceAll("\\?obj", String.valueOf(functionOid))
+            .replaceAll("\\?line", bp.isOnStart() ? "-1" : String.valueOf(bp.getLineNo()))
+            .replaceAll("\\?target", bp.isAll() ? "null" : String.valueOf(bp.getTargetId()));
         return sqlCommand;
     }
 
     protected String composeRemoveBreakpointCommand(DBGBreakpointDescriptor breakpointDescriptor) {
         PostgreDebugBreakpointDescriptor bp = (PostgreDebugBreakpointDescriptor) breakpointDescriptor;
         String sqlCommand = SQL_DROP_BREAKPOINT.replaceAll("\\?sessionid", String.valueOf(getSessionId()))
-                .replaceAll("\\?obj", String.valueOf(functionOid))
-                .replaceAll("\\?line", bp.isOnStart() ? "-1" : String.valueOf(bp.getLineNo()));
+            .replaceAll("\\?obj", String.valueOf(functionOid))
+            .replaceAll("\\?line", bp.isOnStart() ? "-1" : String.valueOf(bp.getLineNo()));
         return sqlCommand;
     }
 
@@ -591,11 +589,9 @@ public class PostgreDebugSession extends DBGJDBCSession {
     /**
      * Execute step SQL command asynchronously, set debug session name to
      * [sessionID] name [managerPID]
-     * 
-     * @param commandPattern
-     *            - SQL command for execute step
-     * @param nameParameter
-     *            - session 'name' part
+     *
+     * @param commandPattern - SQL command for execute step
+     * @param nameParameter  - session 'name' part
      */
     public void execStep(String commandPattern, String nameParameter, int eventDetail) throws DBGException {
         String sql = commandPattern.replaceAll("\\?sessionid", String.valueOf(sessionId));
@@ -614,7 +610,7 @@ public class PostgreDebugSession extends DBGJDBCSession {
         if (stack != null) {
             selectFrame(stack.getLevel());
         }
-        
+
         log.debug("Get vars values");
         List<DBGVariable<?>> vars = new ArrayList<>();
 
@@ -729,20 +725,20 @@ public class PostgreDebugSession extends DBGJDBCSession {
 
     /**
      * Return source for func OID in debug session
-     * 
+     *
      * @return String
      */
 
     public String getSource(int OID) throws DBGException {
         log.debug("Get source for func OID in debug session");
         String sql = SQL_GET_SRC.replaceAll("\\?sessionid", String.valueOf(sessionId)).replaceAll("\\?oid",
-                String.valueOf(OID));
+            String.valueOf(OID));
         try (JDBCSession session = getControllerConnection().openSession(new VoidProgressMonitor(), DBCExecutionPurpose.UTIL, "Get session source")) {
             try (Statement stmt = session.createStatement()) {
                 try (ResultSet rs = stmt.executeQuery(sql)) {
                     if (rs.next()) {
                         String src = rs.getString(1);
-                        log.debug(String.format("Return %d src char(s)", src.length()));                        
+                        log.debug(String.format("Return %d src char(s)", src.length()));
                         return src;
                     }
                     return null;
@@ -760,11 +756,11 @@ public class PostgreDebugSession extends DBGJDBCSession {
      * of a step/into or step/over), the debugger changes focus to most deeply
      * nested function in the call stack (because that's the function that's
      * executing).
-     *
+     * <p>
      * You can change the debugger focus to other stack frames - once you do
      * that, you can examine the source code for that frame, the variable values
      * in that frame, and the breakpoints in that target.
-     *
+     * <p>
      * The debugger focus remains on the selected frame until you change it or
      * the target stops at another breakpoint.
      */
@@ -772,7 +768,7 @@ public class PostgreDebugSession extends DBGJDBCSession {
     public void selectFrame(int frameNumber) throws DBGException {
         log.debug("Select frame");
         String sql = SQL_SELECT_FRAME.replaceAll("\\?sessionid", String.valueOf(sessionId)).replaceAll("\\?frameno",
-                String.valueOf(frameNumber));
+            String.valueOf(frameNumber));
 
         try (JDBCSession session = getControllerConnection().openSession(new VoidProgressMonitor(), DBCExecutionPurpose.UTIL, "Select debug frame")) {
             try (Statement stmt = session.createStatement()) {
@@ -781,7 +777,7 @@ public class PostgreDebugSession extends DBGJDBCSession {
                         log.debug("Unable to select frame");
                         throw new DBGException("Unable to select frame");
                     }
-                    
+
                     log.debug("Frame selected");
 
                 }
@@ -795,8 +791,8 @@ public class PostgreDebugSession extends DBGJDBCSession {
     @Override
     public String toString() {
         return "PostgreDebugSession " + (isWaiting() ? "WAITING" : "READY") + " [sessionId=" + sessionId
-                + ", breakpoints=" + getBreakpoints() + "targetId=(" + sessionInfo.getID() + ") Session=(" + sessionInfo.toString()
-                + ") " + "]";
+            + ", breakpoints=" + getBreakpoints() + "targetId=(" + sessionInfo.getID() + ") Session=(" + sessionInfo.toString()
+            + ") " + "]";
     }
 
     @Override
@@ -821,7 +817,7 @@ public class PostgreDebugSession extends DBGJDBCSession {
 
     /**
      * Return true if debug session up and running on server
-     * 
+     *
      * @return boolean
      */
     public boolean isAttached() {
@@ -831,7 +827,7 @@ public class PostgreDebugSession extends DBGJDBCSession {
     /**
      * Return true if session waiting target connection (on breakpoint, after
      * step or continue) in debug thread
-     * 
+     *
      * @return boolean
      */
     public boolean isDone() {
