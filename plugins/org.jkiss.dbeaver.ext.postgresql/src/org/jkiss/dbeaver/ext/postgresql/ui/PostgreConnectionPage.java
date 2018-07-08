@@ -54,7 +54,6 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
     private ClientHomesSelector homesSelector;
     private Button showNonDefault;
     private Button showTemplates;
-    private Button switchDatabaseOnExpand;
     private boolean activated = false;
 
     private static ImageDescriptor PG_LOGO_IMG = PostgreActivator.getImageDescriptor("icons/postgresql_logo.png");
@@ -162,11 +161,9 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
                 @Override
                 public void widgetSelected(SelectionEvent e) {
                     showTemplates.setEnabled(showNonDefault.getSelection());
-                    switchDatabaseOnExpand.setEnabled(showNonDefault.getSelection());
                 }
             });
             showTemplates = UIUtils.createCheckbox(secureGroup, PostgreMessages.dialog_setting_connection_show_templates, PostgreMessages.dialog_setting_connection_show_templates_tip, false, 2);
-            switchDatabaseOnExpand = UIUtils.createCheckbox(secureGroup, PostgreMessages.dialog_setting_connection_switchDatabaseOnExpand, PostgreMessages.dialog_setting_connection_switchDatabaseOnExpand_tip, true, 2);
         }
 
         createDriverPanel(addrGroup);
@@ -232,8 +229,6 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
         showNonDefault.setSelection(CommonUtils.getBoolean(connectionInfo.getProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB), true));
         showTemplates.setSelection(CommonUtils.getBoolean(connectionInfo.getProviderProperty(PostgreConstants.PROP_SHOW_TEMPLATES_DB), false));
         showTemplates.setEnabled(showNonDefault.getSelection());
-        switchDatabaseOnExpand.setSelection(CommonUtils.getBoolean(connectionInfo.getProviderProperty(PostgreConstants.PROP_SWITCH_DB_ON_EXPAND), true));
-        switchDatabaseOnExpand.setEnabled(showNonDefault.getSelection());
 
         activated = true;
     }
@@ -263,7 +258,6 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
 
         connectionInfo.setProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB, String.valueOf(showNonDefault.getSelection()));
         connectionInfo.setProviderProperty(PostgreConstants.PROP_SHOW_TEMPLATES_DB, String.valueOf(showTemplates.getSelection()));
-        connectionInfo.setProviderProperty(PostgreConstants.PROP_SWITCH_DB_ON_EXPAND, String.valueOf(switchDatabaseOnExpand.getSelection()));
         super.saveSettings(dataSource);
     }
 
