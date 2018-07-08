@@ -52,7 +52,7 @@ public class PostgreToolVacuum implements IExternalTool
         } else {
             List<PostgreDatabase> databases = CommonUtils.filterCollection(objects, PostgreDatabase.class);
             if (!databases.isEmpty()) {
-                SQLDialog dialog = new SQLDialog(activePart.getSite(), databases.get(0).getDataSource().getDefaultInstance());
+                SQLDialog dialog = new SQLDialog(activePart.getSite(), databases.get(0));
                 dialog.open();
             }
         }

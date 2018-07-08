@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.jdbc;
 
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCResultSetMetaDataImpl;
@@ -40,11 +38,7 @@ public class PostgreResultSetMetaDataImpl extends JDBCResultSetMetaDataImpl
      */
     @Override
     public String getCatalogName(int column) throws SQLException {
-        DBPDataSource dataSource = resultSet.getSession().getDataSource();
-        if (dataSource instanceof PostgreDataSource) {
-            return ((PostgreDataSource)dataSource).getDefaultInstance().getName();
-        }
-        return null;
+        return resultSet.getSession().getExecutionContext().getInstance().getName();
     }
 
     @Override

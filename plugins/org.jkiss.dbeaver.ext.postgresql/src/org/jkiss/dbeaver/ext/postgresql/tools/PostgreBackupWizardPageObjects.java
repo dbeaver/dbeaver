@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -55,7 +56,7 @@ class PostgreBackupWizardPageObjects extends PostgreWizardPageSettings<PostgreBa
     private Map<PostgreSchema, Set<PostgreTableBase>> checkedObjects = new HashMap<>();
 
     private PostgreSchema curSchema;
-    private PostgreDataSource dataSource;
+    private PostgreDatabase dataBase;
 
     PostgreBackupWizardPageObjects(PostgreBackupWizard wizard)
     {
@@ -135,15 +136,15 @@ class PostgreBackupWizardPageObjects extends PostgreWizardPageSettings<PostgreBa
             createCheckButtons(buttonsPanel, tablesTable);
         }
 
-        dataSource = null;
+        dataBase = null;
         Set<PostgreSchema> activeCatalogs = new LinkedHashSet<>();
         for (DBSObject object : wizard.getDatabaseObjects()) {
             if (object instanceof PostgreSchema) {
                 activeCatalogs.add((PostgreSchema) object);
-                dataSource = ((PostgreSchema) object).getDataSource();
+                dataBase = ((PostgreSchema) object).getDatabase();
             } else if (object instanceof PostgreTableBase) {
                 PostgreSchema catalog = ((PostgreTableBase) object).getContainer();
-                dataSource = catalog.getDataSource();
+                dataBase = catalog.getDatabase();
                 activeCatalogs.add(catalog);
                 Set<PostgreTableBase> tables = checkedObjects.computeIfAbsent(catalog, k -> new HashSet<>());
                 tables.add((PostgreTableBase) object);
@@ -152,13 +153,13 @@ class PostgreBackupWizardPageObjects extends PostgreWizardPageSettings<PostgreBa
                     exportViewsCheck.setSelection(true);
                 }
             } else if (object.getDataSource() instanceof PostgreDataSource) {
-                dataSource = (PostgreDataSource) object.getDataSource();
+                dataBase = (PostgreDatabase) DBUtils.getObjectOwnerInstance(object);
             }
         }
-        if (dataSource != null) {
+        if (dataBase != null) {
             boolean tablesLoaded = false;
             try {
-                for (PostgreSchema schema : dataSource.getDefaultInstance().getSchemas(new VoidProgressMonitor())) {
+                for (PostgreSchema schema : dataBase.getSchemas(new VoidProgressMonitor())) {
                     if (schema.isSystem() || schema.isUtility()) {
                         continue;
                     }
@@ -266,7 +267,7 @@ class PostgreBackupWizardPageObjects extends PostgreWizardPageSettings<PostgreBa
                 }
             }
         }
-        PostgreDatabaseBackupInfo info = new PostgreDatabaseBackupInfo(dataSource.getDefaultInstance(), schemas, tables);
+        PostgreDatabaseBackupInfo info = new PostgreDatabaseBackupInfo(dataBase, schemas, tables);
         wizard.objects.add(info);
     }
 

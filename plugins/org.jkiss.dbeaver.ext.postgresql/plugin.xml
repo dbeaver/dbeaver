@@ -441,7 +441,7 @@
                     label="%tools.backup.db.name"
                     icon="#export"
                     singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase" if="object.activeDatabase"/>
+                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
                 <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema"/>
                 <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase"/>
             </tool>
@@ -452,7 +452,7 @@
                     label="%tools.restore.db.name"
                     icon="#import"
                     singleton="true">
-                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase" if="object.activeDatabase"/>
+                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
                 <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema"/>
             </tool>
             <tool
@@ -461,7 +461,7 @@
                     id="org.jkiss.dbeaver.ext.postgresql.tools.PostgreToolScript"
                     label="%tools.execute.script.name"
                     singleton="true">
-                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase" if="object.activeDatabase"/>
+                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
                 <!--<objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema"/>-->
             </tool>
             <tool
@@ -471,7 +471,7 @@
                     group="org.jkiss.dbeaver.ext.postgresql.tools.maintenance"
                     label="%tools.analyze.name"
                     singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase" if="object.activeDatabase"/>
+                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
                 <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase"/>
             </tool>
             <tool
@@ -481,7 +481,7 @@
                     group="org.jkiss.dbeaver.ext.postgresql.tools.maintenance"
                     label="%tools.vacuum.name"
                     singleton="false">
-                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase" if="object.activeDatabase"/>
+                <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreDatabase"/>
                 <objectType name="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase"/>
             </tool>
             <tool
