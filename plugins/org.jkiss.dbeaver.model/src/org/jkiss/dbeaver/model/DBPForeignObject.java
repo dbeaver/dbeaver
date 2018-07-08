@@ -18,13 +18,11 @@
 package org.jkiss.dbeaver.model;
 
 /**
- * Object with order.
- * Supports reordering
+ * Foreign object is an object which is actually lives in some remote database.
+ * Like DBLink or foreign table in PostgreSQL
  */
-public interface DBPOrderedObject
+public interface DBPForeignObject
 {
-    int getOrdinalPosition();
-
-    void setOrdinalPosition(int position);
+    boolean isForeignObject();
 
 }
