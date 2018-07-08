@@ -40,6 +40,7 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.ui.search.AbstractSearchResult;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -99,6 +100,8 @@ public class SearchDataQuery implements ISearchQuery {
 
             DBRProgressMonitor monitor = new DefaultProgressMonitor(m);
 
+            int totalObjects = 0;
+
             monitor.beginTask(
                 "Search \"" + searchString + "\" in " + params.sources.size() + " table(s) / " + dataSources.size() + " database(s)",
                 params.sources.size());
@@ -107,28 +110,33 @@ public class SearchDataQuery implements ISearchQuery {
                     if (monitor.isCanceled()) {
                         break;
                     }
-                    searchDataInContainer(monitor, dbnModel, dataContainer);
+                    if (searchDataInContainer(monitor, dbnModel, dataContainer)) {
+                        totalObjects++;
+                    }
                     monitor.worked(1);
                 }
             } finally {
                 monitor.done();
             }
+
+            searchResult.fireChange(new AbstractSearchResult.DatabaseSearchFinishEvent(searchResult, totalObjects));
+
             return Status.OK_STATUS;
         } catch (Exception e) {
             return GeneralUtils.makeExceptionStatus(e);
         }
     }
 
-    private void searchDataInContainer(DBRProgressMonitor monitor, DBNModel dbnModel, DBSDataContainer dataContainer) {
+    private boolean searchDataInContainer(DBRProgressMonitor monitor, DBNModel dbnModel, DBSDataContainer dataContainer) {
         if (!params.searchForeignObjects && dataContainer instanceof DBPForeignObject && ((DBPForeignObject) dataContainer).isForeignObject()) {
-            return;
+            return false;
         }
 
         String objectName = DBUtils.getObjectFullName(dataContainer, DBPEvaluationContext.DML);
         DBNDatabaseNode node = dbnModel.findNode(dataContainer);
         if (node == null) {
             log.warn("Can't find tree node for object \"" + objectName + "\"");
-            return;
+            return false;
         }
         monitor.subTask("Search in '" + objectName + "'");
         log.debug("Search in '" + objectName + "'");
@@ -146,9 +154,10 @@ public class SearchDataQuery implements ISearchQuery {
             if (dataReceiver.rowCount > 0) {
                 SearchDataObject object = new SearchDataObject(node, dataReceiver.rowCount, dataReceiver.filter);
                 searchResult.addObjects(Collections.singletonList(object));
+                return true;
             }
+            return false;
         }
-
     }
 
     private DBCStatistics findRows(
