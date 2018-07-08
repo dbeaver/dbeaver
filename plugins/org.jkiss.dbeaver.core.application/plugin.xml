@@ -199,7 +199,14 @@
             <separator name="settings" visible="true"/>
             <command commandId="org.eclipse.ui.window.preferences" label="%command.org.jkiss.dbeaver.core.window.preferences.name"/>
         </menuContribution>
+
+        <!-- Main toolbar -->
+
+        <menuContribution allPopups="false" locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
+        </menuContribution>
     </extension>
+
+    <!-- Keybindings. A bit different than standard -->
 
     <extension point="org.eclipse.ui.bindings">
         <scheme description="%productName" id="org.jkiss.dbeaver.defaultKeyScheme" name="%productName" parentId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
