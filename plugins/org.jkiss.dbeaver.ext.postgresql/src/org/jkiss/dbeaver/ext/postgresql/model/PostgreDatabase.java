@@ -46,6 +46,7 @@ import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
 import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.LongKeyMap;
 
 import java.sql.ResultSet;
@@ -84,6 +85,11 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource> imple
     public final SchemaCache schemaCache = new SchemaCache();
     public final LongKeyMap<PostgreDataType> dataTypeCache = new LongKeyMap<>();
 
+    private String activeSchemaName;
+    private final List<String> searchPath = new ArrayList<>();
+    private List<String> defaultSearchPath = new ArrayList<>();
+    private String activeUser;
+
     public PostgreDatabase(DBRProgressMonitor monitor, PostgreDataSource dataSource, ResultSet dbResult)
         throws SQLException, DBException
     {
@@ -104,6 +110,12 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource> imple
         if (executionContext == null) {
             initializeMainContext(monitor);
             initializeMetaContext(monitor);
+
+            try (JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.UTIL, "Detect default schema/user")) {
+                determineDefaultObjects(session);
+            } catch (SQLException e) {
+                throw new DBException(e, getDataSource());
+            }
         }
     }
 
@@ -389,6 +401,60 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource> imple
         return roleCache.getAllObjects(monitor, this);
     }
 
+    ////////////////////////////////////////////////////
+    // Default schema and search path
+
+    public String getActiveUser() {
+        return activeUser;
+    }
+
+    public String getActiveSchemaName() {
+        return activeSchemaName;
+    }
+
+    public void setActiveSchemaName(String activeSchemaName) {
+        this.activeSchemaName = activeSchemaName;
+    }
+
+    public List<String> getSearchPath() {
+        return searchPath;
+    }
+
+    List<String> getDefaultSearchPath() {
+        return defaultSearchPath;
+    }
+
+    public void setSearchPath(String path) {
+        searchPath.clear();
+        searchPath.add(path);
+        if (!path.equals(activeUser)) {
+            searchPath.add(activeUser);
+        }
+    }
+
+    private void determineDefaultObjects(JDBCSession session) throws DBCException, SQLException {
+        try (JDBCPreparedStatement stat = session.prepareStatement("SELECT current_schema(),session_user")) {
+            try (JDBCResultSet rs = stat.executeQuery()) {
+                if (rs.nextRow()) {
+                    activeSchemaName = JDBCUtils.safeGetString(rs, 1);
+                    activeUser = JDBCUtils.safeGetString(rs, 2);
+                }
+            }
+        }
+        String searchPathStr = JDBCUtils.queryString(session, "SHOW search_path");
+        this.searchPath.clear();
+        if (searchPathStr != null) {
+            for (String str : searchPathStr.split(",")) {
+                str = str.trim();
+                this.searchPath.add(DBUtils.getUnQuotedIdentifier(getDataSource(), str));
+            }
+        } else {
+            this.searchPath.add(PostgreConstants.PUBLIC_SCHEMA_NAME);
+        }
+
+        defaultSearchPath = new ArrayList<>(searchPath);
+    }
+
     @Override
     public boolean supportsDefaultChange() {
         return true;
@@ -397,7 +463,7 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource> imple
     @Nullable
     @Override
     public PostgreSchema getDefaultObject() {
-        return schemaCache.getCachedObject(dataSource.getActiveSchemaName());
+        return schemaCache.getCachedObject(activeSchemaName);
     }
     
     @Override
@@ -411,8 +477,8 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource> imple
             for (JDBCExecutionContext context : getAllContexts()) {
                 setSearchPath(monitor, (PostgreSchema)object, context);
             }
-            dataSource.setActiveSchemaName(object.getName());
-            dataSource.setSearchPath(object.getName());
+            activeSchemaName = object.getName();
+            setSearchPath(object.getName());
 
             if (oldActive != null) {
                 DBUtils.fireObjectSelect(oldActive, false);
@@ -423,12 +489,25 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource> imple
 
     @Override
     public boolean refreshDefaultObject(@NotNull DBCSession session) throws DBException {
-        return dataSource.refreshDefaultObject(session);
+        try {
+            String oldDefSchema = activeSchemaName;
+            determineDefaultObjects((JDBCSession) session);
+            if (activeSchemaName != null && !CommonUtils.equalObjects(oldDefSchema, activeSchemaName)) {
+                final PostgreSchema newSchema = getSchema(session.getProgressMonitor(), activeSchemaName);
+                if (newSchema != null) {
+                    setDefaultObject(session.getProgressMonitor(), newSchema);
+                    return true;
+                }
+            }
+            return false;
+        } catch (SQLException e) {
+            throw new DBException(e, getDataSource());
+        }
     }
 
     void setSearchPath(DBRProgressMonitor monitor, PostgreSchema schema, JDBCExecutionContext context) throws DBCException {
         // Construct search path from current search path but put default schema first
-        List<String> newSearchPath = new ArrayList<>(dataSource.getDefaultSearchPath());
+        List<String> newSearchPath = new ArrayList<>(getDefaultSearchPath());
         {
             String defSchemaName = schema.getName();
             int schemaIndex = newSearchPath.indexOf(defSchemaName);
@@ -454,6 +533,9 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource> imple
             throw new DBCException("Error setting search path", e, dataSource);
         }
     }
+
+    /////////////////////////////////////////////////
+    // Procedures
 
     public PostgreProcedure getProcedure(DBRProgressMonitor monitor, long schemaId, long procId)
         throws DBException
@@ -520,7 +602,6 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource> imple
         }
 
         // Check schemas in search path
-        final List<String> searchPath = dataSource.getSearchPath();
         for (String schemaName : searchPath) {
             final PostgreSchema schema = schemaCache.getCachedObject(schemaName);
             if (schema != null) {

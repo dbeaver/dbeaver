@@ -67,10 +67,6 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
 
     private DatabaseCache databaseCache;
     private String activeDatabaseName;
-    private String activeSchemaName;
-    private final List<String> searchPath = new ArrayList<>();
-    private List<String> defaultSearchPath = new ArrayList<>();
-    private String activeUser;
 
     public PostgreDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
@@ -109,6 +105,13 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
                     while (dbResult.next()) {
                         PostgreDatabase database = new PostgreDatabase(monitor, this, dbResult);
                         dbList.add(database);
+                    }
+                }
+            }
+            try (PreparedStatement stat = bootstrapConnection.prepareStatement("SELECT current_database()")) {
+                try (ResultSet rs = stat.executeQuery()) {
+                    if (rs.next()) {
+                        activeDatabaseName = JDBCUtils.safeGetString(rs, 1);
                     }
                 }
             }
@@ -216,33 +219,6 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         super.initialize(monitor);
     }
 
-    private void determineDefaultObjects(JDBCSession session) throws DBCException, SQLException {
-        try (JDBCPreparedStatement stat = session.prepareStatement("SELECT current_database(), current_schema(),session_user")) {
-            try (JDBCResultSet rs = stat.executeQuery()) {
-                if (rs.nextRow()) {
-                    activeDatabaseName = JDBCUtils.safeGetString(rs, 1);
-                    activeSchemaName = JDBCUtils.safeGetString(rs, 2);
-                    activeUser = JDBCUtils.safeGetString(rs, 3);
-                }
-            }
-        }
-        String searchPathStr = JDBCUtils.queryString(session, "SHOW search_path");
-        this.searchPath.clear();
-        if (searchPathStr != null) {
-            for (String str : searchPathStr.split(",")) {
-                str = str.trim();
-                this.searchPath.add(DBUtils.getUnQuotedIdentifier(this, str));
-            }
-        } else {
-            this.searchPath.add(PostgreConstants.PUBLIC_SCHEMA_NAME);
-        }
-
-        if (defaultSearchPath == null) {
-            defaultSearchPath = new ArrayList<>();
-            defaultSearchPath.addAll(searchPath);
-        }
-    }
-
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor)
         throws DBException
@@ -291,10 +267,13 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         return true;
     }
 
+    ////////////////////////////////////////////////////
+    // Default schema and search path
+
     @Override
     public PostgreDatabase getDefaultObject()
     {
-        return activeDatabaseName == null ? null : getDatabase(activeDatabaseName);
+        return getDefaultInstance();
     }
 
     @Override
@@ -311,91 +290,21 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
             return;
         }
 
-        // FIXME: make real target database change
-        // 1. Check active transactions
-        // 2. Reconnect all open contexts
-        // 3. Refresh datasource tree
         activeDatabaseName = object.getName();
-/*
-        for (JDBCExecutionContext context : getAllContexts()) {
-            context.reconnect(monitor);
-        }
-*/
+
         getDefaultInstance().initializeMetaContext(monitor);
         getDefaultInstance().cacheDataTypes(monitor, false);
-
-/*
-        // Update database name and URL in connection settings and save datasources
-        DBPConnectionConfiguration conConfig = getContainer().getConnectionConfiguration();
-        conConfig.setDatabaseName(activeDatabaseName);
-        conConfig.setUrl(getContainer().getDriver().getDataSourceProvider().getConnectionURL(getContainer().getDriver(), conConfig));
-        getContainer().getRegistry().flushConfig();
-*/
-
-        try (JDBCSession session = getDefaultInstance().getDefaultContext(false).openSession(monitor, DBCExecutionPurpose.UTIL, "Update object state")) {
-            determineDefaultObjects(session);
-        } catch (SQLException e) {
-            throw new DBException(e, this);
-        }
 
         // Notify UI
         if (oldDatabase != null) {
             DBUtils.fireObjectSelect(oldDatabase, false);
-            //DBUtils.fireObjectUpdate(oldDatabase, false);
         }
         DBUtils.fireObjectSelect(newDatabase, true);
-        //DBUtils.fireObjectUpdate(newDatabase, true);
     }
 
     @Override
     public boolean refreshDefaultObject(@NotNull DBCSession session) throws DBException {
-        // Check only for schema change. Database cannot be changed by any SQL query
-        final PostgreDatabase activeDatabase = getDefaultObject();
-        if (activeDatabase == null) {
-            return false;
-        }
-        try {
-            String oldDefSchema = activeSchemaName;
-            determineDefaultObjects((JDBCSession) session);
-            if (activeSchemaName != null && !CommonUtils.equalObjects(oldDefSchema, activeSchemaName)) {
-                final PostgreSchema newSchema = activeDatabase.getSchema(session.getProgressMonitor(), activeSchemaName);
-                if (newSchema != null) {
-                    activeDatabase.setDefaultObject(session.getProgressMonitor(), newSchema);
-                    return true;
-                }
-            }
-            return false;
-        } catch (SQLException e) {
-            throw new DBException(e, this);
-        }
-    }
-
-    public String getActiveUser() {
-        return activeUser;
-    }
-
-    public String getActiveSchemaName() {
-        return activeSchemaName;
-    }
-
-    public void setActiveSchemaName(String activeSchemaName) {
-        this.activeSchemaName = activeSchemaName;
-    }
-
-    public List<String> getSearchPath() {
-        return searchPath;
-    }
-
-    List<String> getDefaultSearchPath() {
-        return defaultSearchPath;
-    }
-
-    public void setSearchPath(String path) {
-        searchPath.clear();
-        searchPath.add(path);
-        if (!path.equals(activeUser)) {
-            searchPath.add(activeUser);
-        }
+        return true;
     }
 
     ////////////////////////////////////////////
