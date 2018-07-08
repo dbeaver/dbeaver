@@ -23,6 +23,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.postgresql.edit.PostgreCommandGrantPrivilege;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBPDataKind;
@@ -63,10 +64,10 @@ public class PostgreUtils {
     
     private static final int UNKNOWN_LENGTH = -1;
 
-    public static String getObjectComment(DBRProgressMonitor monitor, DBPDataSource dataSource, String schema, String object)
+    public static String getObjectComment(DBRProgressMonitor monitor, GenericStructContainer container, String schema, String object)
         throws DBException
     {
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Load PostgreSQL description")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Load PostgreSQL description")) {
             return JDBCUtils.queryString(
                 session,
                 "select description from pg_catalog.pg_description\n" +

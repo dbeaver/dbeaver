@@ -296,7 +296,7 @@ public class OracleTablespace extends OracleGlobalObject implements DBPRefreshab
     }
 
     private void loadSizes(DBRProgressMonitor monitor) throws DBException {
-        try (final JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Load tablespace '" + getName() + "' statistics")) {
+        try (final JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load tablespace '" + getName() + "' statistics")) {
             availableSize = CommonUtils.toLong(JDBCUtils.queryObject(session,
                 "SELECT SUM(F.BYTES) AVAILABLE_SPACE FROM SYS.DBA_DATA_FILES F WHERE F.TABLESPACE_NAME=?", getName()));
             usedSize = CommonUtils.toLong(JDBCUtils.queryObject(session,

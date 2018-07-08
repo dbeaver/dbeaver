@@ -97,7 +97,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
             sqlViewer = new SQLEditorBase() {
                 @Override
                 public DBCExecutionContext getExecutionContext() {
-                    return sessionManager.getDataSource().getDefaultContext(false);
+                    return sessionManager.getDataSource().getDefaultInstance().getDefaultContext(false);
                 }
 
                 @Override

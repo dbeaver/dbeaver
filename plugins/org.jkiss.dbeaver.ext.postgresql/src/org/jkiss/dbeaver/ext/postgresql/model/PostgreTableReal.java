@@ -91,7 +91,7 @@ public abstract class PostgreTableReal extends PostgreTableBase
         }
 
         // Query row count
-        try (DBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read row count")) {
+        try (DBCSession session = DBUtils.openMetaSession(monitor, this, "Read row count")) {
             rowCount = countData(new AbstractExecutionSource(this, session.getExecutionContext(), this), session, null);
         } catch (DBException e) {
             log.debug("Can't fetch row count", e);
@@ -115,7 +115,7 @@ public abstract class PostgreTableReal extends PostgreTableBase
         }
 
         // Query row count
-        try (DBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Calculate relation size on disk")) {
+        try (DBCSession session = DBUtils.openMetaSession(monitor, this, "Calculate relation size on disk")) {
             try (JDBCPreparedStatement dbStat = ((JDBCSession)session).prepareStatement("select pg_total_relation_size(?)")) {
                 dbStat.setLong(1, getObjectId());
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {

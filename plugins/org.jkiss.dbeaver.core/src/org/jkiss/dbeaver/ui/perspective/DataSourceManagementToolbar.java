@@ -553,7 +553,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                                 return;
                             }
                         }
-                        DatabaseListReader databaseReader = new DatabaseListReader(dataSource.getDefaultContext(true));
+                        DatabaseListReader databaseReader = new DatabaseListReader(dataSource.getDefaultInstance().getDefaultContext(true));
                         databaseReader.addJobChangeListener(new JobChangeAdapter() {
                             @Override
                             public void done(final IJobChangeEvent event) {

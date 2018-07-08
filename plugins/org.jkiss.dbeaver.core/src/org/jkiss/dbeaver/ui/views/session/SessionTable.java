@@ -118,7 +118,7 @@ class SessionTable<SESSION_TYPE extends DBAServerSession> extends DatabaseObject
             throws InvocationTargetException, InterruptedException
         {
             try {
-                try (DBCExecutionContext isolatedContext = sessionManager.getDataSource().openIsolatedContext(monitor, "View sessions")) {
+                try (DBCExecutionContext isolatedContext = sessionManager.getDataSource().getDefaultInstance().openIsolatedContext(monitor, "View sessions")) {
                     try (DBCSession session = isolatedContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Retrieve server sessions")) {
                         return sessionManager.getSessions(session, getSessionOptions());
                     }
@@ -145,7 +145,7 @@ class SessionTable<SESSION_TYPE extends DBAServerSession> extends DatabaseObject
             throws InvocationTargetException, InterruptedException
         {
             try {
-                try (DBCExecutionContext isolatedContext = sessionManager.getDataSource().openIsolatedContext(monitor, "View sessions")) {
+                try (DBCExecutionContext isolatedContext = sessionManager.getDataSource().getDefaultInstance().openIsolatedContext(monitor, "View sessions")) {
                     try (DBCSession session = isolatedContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Kill server session")) {
                         sessionManager.alterSession(session, this.session, options);
                         return null;

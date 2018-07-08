@@ -116,7 +116,7 @@ public class LockTableDetail extends DatabaseObjectListControl<DBAServerLockItem
             throws InvocationTargetException, InterruptedException
         {
             try {
-                try (DBCExecutionContext isolatedContext = lockManager.getDataSource().openIsolatedContext(monitor, "View Lock item")) {
+                try (DBCExecutionContext isolatedContext = lockManager.getDataSource().getDefaultInstance().openIsolatedContext(monitor, "View Lock item")) {
                     try (DBCSession session = isolatedContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Retrieve server lock detail")) {
                         return lockManager.getLockItems(session, options);
                     }

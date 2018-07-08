@@ -118,7 +118,7 @@ public class GenericProcedure extends AbstractProcedure<GenericDataSource, Gener
         GenericProcedure procedure = null;
 
         final GenericMetaObject pcObject = getDataSource().getMetaObject(GenericConstants.OBJECT_PROCEDURE_COLUMN);
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Load procedure columns")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load procedure columns")) {
             final JDBCResultSet dbResult;
             if (functionResultType == null) {
                 dbResult = session.getMetaData().getProcedureColumns(

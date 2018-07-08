@@ -24,7 +24,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.DBPContextProvider;
-import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.struct.DBSFolder;
@@ -60,10 +60,7 @@ public class NavigatorHandlerObjectGoto extends NavigatorHandlerObjectBase {
                         while (container instanceof DBSFolder) {
                             container = container.getParentObject();
                         }
-                        DBPDataSource dataSource = object.getDataSource();
-                        if (dataSource != null) {
-                            context = dataSource.getDefaultContext(true);
-                        }
+                        context = DBUtils.getDefaultContext(object, true);
                     }
                 }
             }

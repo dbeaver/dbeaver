@@ -302,7 +302,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         String procDDL;
         if (getDataSource().isGreenplum() || CommonUtils.getOption(options, OPTION_DEBUGGER_SOURCE)) {
             if (procSrc == null) {
-                try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read procedure body")) {
+                try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read procedure body")) {
                     procSrc = JDBCUtils.queryString(session, "SELECT prosrc FROM pg_proc where oid = ?", getObjectId());
                 } catch (SQLException e) {
                     throw new DBException("Error reading procedure body", e);
@@ -320,7 +320,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                     // No OID so let's use old (bad) way
                     body = this.procSrc;
                 } else {
-                    try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read procedure body")) {
+                    try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read procedure body")) {
                         body = JDBCUtils.queryString(session, "SELECT pg_get_functiondef(" + getObjectId() + ")");
                     } catch (SQLException e) {
                         if (!CommonUtils.isEmpty(this.procSrc)) {

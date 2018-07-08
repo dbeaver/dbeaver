@@ -117,7 +117,7 @@ public class PostgreSequence extends PostgreTableBase implements DBSSequence, DB
     }
 
     private void loadAdditionalInfo(DBRProgressMonitor monitor) {
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Load sequence additional info")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load sequence additional info")) {
             if (getDataSource().isServerVersionAtLeast(10, 0)) {
                 try (JDBCPreparedStatement dbSeqStat = session.prepareStatement(
                     "SELECT * from pg_catalog.pg_sequences WHERE schemaname=? AND sequencename=?")) {

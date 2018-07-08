@@ -683,7 +683,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             final String ddl = DatabaseTransferConsumer.generateTargetTableDDL(new VoidProgressMonitor(), dataSource, container, mapping);
             ViewSQLDialog dialog = new ViewSQLDialog(
                 UIUtils.getActiveWorkbenchWindow().getActivePage().getActivePart().getSite(),
-                dataSource.getDefaultContext(true),
+                DBUtils.getDefaultContext(container, true),
                 "Target DDL",
                 null,
                 ddl

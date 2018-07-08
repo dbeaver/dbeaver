@@ -71,7 +71,7 @@ public class ExasolUtils {
         StringBuilder ddlOutput = new StringBuilder();
         ddlOutput.append("CREATE TABLE \"").append(exasolTable.getSchema().getName()).append("\".\"").append(exasolTable.getName()).append("\" (");
 
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Get Table DDL")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, exasolTable, "Get Table DDL")) {
             try (JDBCStatement dbStat = session.createStatement()) {
 
 

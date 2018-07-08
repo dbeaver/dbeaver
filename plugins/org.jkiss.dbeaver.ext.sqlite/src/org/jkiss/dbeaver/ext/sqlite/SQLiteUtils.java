@@ -25,8 +25,8 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * SQLiteUtils
@@ -36,8 +36,8 @@ public class SQLiteUtils {
     private static final Log log = Log.getLog(SQLiteUtils.class);
 
 
-    public static String readMasterDefinition(DBRProgressMonitor monitor, JDBCDataSource dataSource, SQLiteObjectType objectType, String sourceObjectName, GenericTable table) {
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Load PostgreSQL description")) {
+    public static String readMasterDefinition(DBRProgressMonitor monitor, DBSObject sourceObject, SQLiteObjectType objectType, String sourceObjectName, GenericTable table) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Load PostgreSQL description")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT sql FROM sqlite_master WHERE type=? AND tbl_name=?" + (sourceObjectName != null ? " AND name=?" : "") + "\n" +
                     "UNION ALL\n" +

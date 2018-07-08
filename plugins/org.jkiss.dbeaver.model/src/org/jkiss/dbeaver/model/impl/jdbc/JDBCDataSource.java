@@ -42,19 +42,14 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.sql.SQLState;
-import org.jkiss.dbeaver.model.struct.DBSDataType;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.net.SocketException;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 /**
  * JDBC data source
@@ -69,6 +64,7 @@ public abstract class JDBCDataSource
         DBDPreferences,
         DBSObject,
         DBSObjectContainer,
+        DBSInstanceContainer,
         DBCQueryTransformProvider,
         IAdaptable
 {
@@ -77,15 +73,10 @@ public abstract class JDBCDataSource
     @NotNull
     private final DBPDataSourceContainer container;
     @NotNull
-    protected JDBCExecutionContext executionContext;
-    @Nullable
-    protected JDBCExecutionContext metaContext;
-    @NotNull
-    private final List<JDBCExecutionContext> allContexts = new ArrayList<>();
-    @NotNull
     protected volatile DBPDataSourceInfo dataSourceInfo;
     protected final SQLDialect sqlDialect;
     protected final JDBCFactory jdbcFactory;
+    private JDBCRemoteInstance defaultRemoteInstance;
 
     private int databaseMajorVersion;
     private int databaseMinorVersion;
@@ -104,16 +95,15 @@ public abstract class JDBCDataSource
         this.jdbcFactory = createJdbcFactory();
         this.container = container;
         if (initContext) {
-            initializeMainContext(monitor);
+            initializeRemoteInstance(monitor);
         }
     }
 
-    protected void initializeMainContext(@NotNull DBRProgressMonitor monitor) throws DBCException {
-        this.executionContext = new JDBCExecutionContext(this, "Main");
-        this.executionContext.connect(monitor, null, null, false, true);
+    protected void initializeRemoteInstance(@NotNull DBRProgressMonitor monitor) throws DBException {
+        this.defaultRemoteInstance = new JDBCRemoteInstance<>(monitor, this, true);
     }
 
-    protected Connection openConnection(@NotNull DBRProgressMonitor monitor, @NotNull String purpose)
+    protected Connection openConnection(@NotNull DBRProgressMonitor monitor, JDBCRemoteInstance remoteInstance, @NotNull String purpose)
         throws DBCException
     {
         // It MUST be a JDBC driver
@@ -266,15 +256,6 @@ public abstract class JDBCDataSource
     }
 */
 
-    @NotNull
-    @Override
-    public DBCExecutionContext openIsolatedContext(@NotNull DBRProgressMonitor monitor, @NotNull String purpose) throws DBException
-    {
-        JDBCExecutionContext context = new JDBCExecutionContext(this, purpose);
-        context.connect(monitor, null, null, true, true);
-        return context;
-    }
-
     protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, boolean setActiveObject) throws DBCException {
 
     }
@@ -319,45 +300,32 @@ public abstract class JDBCDataSource
         return jdbcFactory;
     }
 
-    @NotNull
     @Override
-    public synchronized JDBCExecutionContext getDefaultContext(boolean meta) {
-        if (metaContext != null && meta) {
-            return this.metaContext;
-        }
-        return executionContext;
+    public JDBCRemoteInstance getDefaultInstance() {
+        return defaultRemoteInstance;
     }
 
-    @NotNull
     @Override
-    public JDBCExecutionContext[] getAllContexts() {
-        synchronized (allContexts) {
-            return allContexts.toArray(new JDBCExecutionContext[allContexts.size()]);
-        }
+    public List<? extends JDBCRemoteInstance> getAvailableInstances() {
+        return Collections.singletonList(getDefaultInstance());
     }
 
-    void addContext(JDBCExecutionContext context) {
-        synchronized (allContexts) {
-            allContexts.add(context);
+    @Override
+    public void shutdown(DBRProgressMonitor monitor)
+    {
+        for (JDBCRemoteInstance instance : getAvailableInstances()) {
+            monitor.subTask("Disconnect from '" + instance.getName() + "'");
+            instance.shutdown(monitor);
+            monitor.worked(1);
         }
-    }
-
-    boolean removeContext(JDBCExecutionContext context) {
-        synchronized (allContexts) {
-            return allContexts.remove(context);
-        }
+        defaultRemoteInstance = null;
     }
 
     @Override
     public void initialize(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        if (!container.getDriver().isEmbedded() && container.getPreferenceStore().getBoolean(ModelPreferences.META_SEPARATE_CONNECTION)) {
-            synchronized (allContexts) {
-                this.metaContext = new JDBCExecutionContext(this, "Metadata");
-                this.metaContext.connect(monitor, true, null, false, true);
-            }
-        }
+        getDefaultInstance().initializeMetaContext(monitor);
         try (JDBCSession session = DBUtils.openMetaSession(monitor, this, ModelMessages.model_jdbc_read_database_meta_data)) {
             JDBCDatabaseMetaData metaData = session.getMetaData();
 
@@ -387,21 +355,6 @@ public abstract class JDBCDataSource
             if (dataSourceInfo == null) {
                 log.warn("NULL datasource info was created");
                 dataSourceInfo = new JDBCDataSourceInfo(container);
-            }
-        }
-    }
-
-    @Override
-    public void shutdown(DBRProgressMonitor monitor)
-    {
-        // [JDBC] Need sync here because real connection close could take some time
-        // while UI may invoke callbacks to operate with connection
-        synchronized (allContexts) {
-            List<JDBCExecutionContext> ctxCopy = new ArrayList<>(allContexts);
-            for (JDBCExecutionContext context : ctxCopy) {
-                monitor.subTask("Close context '" + context.getContextName() + "'");
-                context.close();
-                monitor.worked(1);
             }
         }
     }
@@ -700,7 +653,7 @@ public abstract class JDBCDataSource
     @Override
     public <T> T getAdapter(Class<T> adapter) {
         if (adapter == DBCTransactionManager.class) {
-            return adapter.cast(executionContext);
+            return adapter.cast(getDefaultInstance().getDefaultContext(false));
         }
         return null;
     }

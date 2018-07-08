@@ -227,7 +227,7 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException
     {
         if (indexDDL == null && isPersisted()) {
-            try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read index definition")) {
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read index definition")) {
                 indexDDL = JDBCUtils.queryString(session, "SELECT pg_catalog.pg_get_indexdef(?)", indexId);
             } catch (SQLException e) {
                 throw new DBException(e, getDataSource());

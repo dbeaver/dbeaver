@@ -32,7 +32,6 @@ import org.eclipse.swt.widgets.TableItem;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.*;
@@ -267,8 +266,9 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
         Iterator<T> iterator = objects.iterator();
         if (iterator.hasNext()) {
             T object = iterator.next();
-            DBPDataSource dataSource = object.getDataSource();
-            return dataSource == null ? null : dataSource.getDefaultContext(meta);
+            if (object != null) {
+                return DBUtils.getDefaultContext(object, meta);
+            }
         }
         return null;
     }

@@ -493,7 +493,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     {
         try {
             if (extended) {
-                DBPDataSource dataSource = getDataSource();
                 String strValue;
                 Clipboard clipboard = new Clipboard(Display.getCurrent());
                 try {
@@ -510,7 +509,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     return;
                 }
                 boolean overNewRow = controller.getModel().getRow(rowNum).getState() == ResultSetRow.STATE_ADDED;
-                try (DBCSession session = DBUtils.openUtilSession(new VoidProgressMonitor(), dataSource, "Advanced paste")) {
+                try (DBCSession session = DBUtils.openUtilSession(new VoidProgressMonitor(), controller.getDataContainer(), "Advanced paste")) {
 
                     String[][] newLines = parseGridLines(strValue);
                     // Create new rows on demand

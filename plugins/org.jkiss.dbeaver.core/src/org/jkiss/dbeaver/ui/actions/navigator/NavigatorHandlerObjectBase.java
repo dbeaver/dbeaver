@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEStructEditor;
@@ -125,9 +126,9 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
         }
         if (container instanceof DBNDatabaseNode) {
             // No editor found - create new command context
-            DBPDataSource dataSource = ((DBNDatabaseNode) container).getObject().getDataSource();
-            if (dataSource != null) {
-                return new CommandTarget(new SimpleCommandContext(dataSource.getDefaultContext(true), !openEditor));
+            DBSObject object = ((DBNDatabaseNode) container).getObject();
+            if (object != null) {
+                return new CommandTarget(new SimpleCommandContext(DBUtils.getDefaultContext(object, true), !openEditor));
             }
         }
         return new CommandTarget();

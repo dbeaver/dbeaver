@@ -120,7 +120,7 @@ public class DB2IndexColumn extends AbstractTableIndexColumn {
     private DB2View getDependentView(DBRProgressMonitor monitor, DB2DataSource db2DataSource, String indexSchema, String indexName)
         throws DBException
     {
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, db2DataSource, "Read Index view dependency")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read Index view dependency")) {
             try (JDBCPreparedStatement stmtSel = session.prepareStatement(I_DEP)) {
                 stmtSel.setString(1, indexSchema);
                 stmtSel.setString(2, indexName);

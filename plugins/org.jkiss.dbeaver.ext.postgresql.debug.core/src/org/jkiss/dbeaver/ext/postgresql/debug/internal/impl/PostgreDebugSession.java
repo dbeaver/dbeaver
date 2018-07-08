@@ -47,6 +47,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
@@ -134,7 +135,15 @@ public class PostgreDebugSession extends DBGJDBCSession {
         DBPDataSource dataSource = controller.getDataSourceContainer().getDataSource();
         try {
             log.debug("Controller session creating.");
-            this.controllerConnection = (JDBCExecutionContext) dataSource.openIsolatedContext(monitor, "Debug controller session");
+            DBSInstance instance;
+            if (isGlobalSession(controller.getDebugConfiguration())) {
+                instance = dataSource.getDefaultInstance();
+            } else {
+                PostgreProcedure function = PostgreSqlDebugCore.resolveFunction(monitor, controller.getDataSourceContainer(), controller.getDebugConfiguration());
+                instance = DBUtils.getObjectOwnerInstance(function);
+            }
+            this.controllerConnection = (JDBCExecutionContext) instance.openIsolatedContext(monitor, "Debug controller session");
+
             log.debug("Debug controller session created.");
             JDBCDataSource src =  this.controllerConnection.getDataSource();
             if (src instanceof PostgreDataSource) {
@@ -373,7 +382,7 @@ public class PostgreDebugSession extends DBGJDBCSession {
     private void attachLocal(DBRProgressMonitor monitor, PostgreProcedure function, List<String> parameters) throws DBGException {
 
         try {
-            JDBCExecutionContext connection = (JDBCExecutionContext) controllerConnection.getDataSource().openIsolatedContext(monitor, "Debug process session");
+            JDBCExecutionContext connection = (JDBCExecutionContext) controllerConnection.getInstance().openIsolatedContext(monitor, "Debug process session");
             log.debug("Attaching locally....");
             this.sessionInfo = getSessionDescriptor(monitor, connection);
 
@@ -445,9 +454,8 @@ public class PostgreDebugSession extends DBGJDBCSession {
 
         functionOid = CommonUtils.toInt(configuration.get(PostgreDebugConstants.ATTR_FUNCTION_OID));
         log.debug(String.format("Function OID %d", functionOid));
-        
-        String kind = String.valueOf(configuration.get(PostgreDebugConstants.ATTR_ATTACH_KIND));
-        boolean global = PostgreDebugConstants.ATTACH_KIND_GLOBAL.equals(kind);
+
+        boolean global = isGlobalSession(configuration);
 
         if (global) {
             int processId = CommonUtils.toInt(configuration.get(PostgreDebugConstants.ATTR_ATTACH_PROCESS));
@@ -462,6 +470,10 @@ public class PostgreDebugSession extends DBGJDBCSession {
             attachLocal(monitor, function, parameterValues);
             log.debug("Local attached");
         }
+    }
+
+    private boolean isGlobalSession(Map<String, Object> configuration) {
+        return PostgreDebugConstants.ATTACH_KIND_GLOBAL.equals(String.valueOf(configuration.get(PostgreDebugConstants.ATTR_ATTACH_KIND)));
     }
 
     private boolean checkDebugPlagin(DBRProgressMonitor monitor) {

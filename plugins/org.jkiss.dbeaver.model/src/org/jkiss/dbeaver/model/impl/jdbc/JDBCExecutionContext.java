@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -48,13 +47,20 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     // Time to wait for txn level/auto-commit detection
     static final int TXN_INFO_READ_TIMEOUT = 5000;
 
+    @NotNull
+    private volatile JDBCRemoteInstance instance;
     private volatile Connection connection;
     private volatile Boolean autoCommit;
     private volatile Integer transactionIsolationLevel;
 
-    public JDBCExecutionContext(@NotNull JDBCDataSource dataSource, String purpose)
+    public JDBCExecutionContext(@NotNull JDBCRemoteInstance instance, String purpose)
     {
-        super(dataSource, purpose);
+        super(instance.getDataSource(), purpose);
+        this.instance = instance;
+    }
+
+    public JDBCRemoteInstance getInstance() {
+        return instance;
     }
 
     @NotNull
@@ -76,7 +82,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
         boolean connectionReadOnly = dataSource.getContainer().isConnectionReadOnly();
         DBExecUtils.startContextInitiation(this);
         try {
-            this.connection = dataSource.openConnection(monitor, purpose);
+            this.connection = dataSource.openConnection(monitor, instance, purpose);
             if (this.connection == null) {
                 throw new DBCException("Null connection returned");
             }
@@ -142,7 +148,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
 
             if (addContext) {
                 // Add self to context list
-                this.dataSource.addContext(this);
+                this.instance.addContext(this);
             }
         } finally {
             DBExecUtils.finishContextInitiation(this);
@@ -234,7 +240,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
         }
 
         // Remove self from context list
-        this.dataSource.removeContext(this);
+        this.instance.removeContext(this);
     }
 
     //////////////////////////////////////////////////////////////

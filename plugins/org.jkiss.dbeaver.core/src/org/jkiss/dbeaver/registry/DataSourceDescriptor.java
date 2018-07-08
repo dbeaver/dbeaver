@@ -353,20 +353,16 @@ public class DataSourceDescriptor
         if (updateContext != null) {
             final DBCTransactionManager txnManager = DBUtils.getTransactionManager(updateContext);
             if (updateConnection && txnManager != null) {
-                TasksJob.runTask("Set auto-commit mode", new DBRRunnableWithProgress() {
-                    @Override
-                    public void run(DBRProgressMonitor monitor)
-                        throws InvocationTargetException, InterruptedException {
-                        try {
-                            // Change auto-commit mode
-                            txnManager.setAutoCommit(monitor, autoCommit);
-                        } catch (DBCException e) {
-                            throw new InvocationTargetException(e);
-                        } finally {
-                            monitor.done();
-                            if (onFinish != null) {
-                                onFinish.run();
-                            }
+                TasksJob.runTask("Set auto-commit mode", monitor -> {
+                    try {
+                        // Change auto-commit mode
+                        txnManager.setAutoCommit(monitor, autoCommit);
+                    } catch (DBCException e) {
+                        throw new InvocationTargetException(e);
+                    } finally {
+                        monitor.done();
+                        if (onFinish != null) {
+                            onFinish.run();
                         }
                     }
                 });
@@ -385,7 +381,7 @@ public class DataSourceDescriptor
     public DBPTransactionIsolation getActiveTransactionsIsolation()
     {
         if (dataSource != null) {
-            DBCTransactionManager txnManager = DBUtils.getTransactionManager(dataSource.getDefaultContext(false));
+            DBCTransactionManager txnManager = DBUtils.getTransactionManager(dataSource.getDefaultInstance().getDefaultContext(false));
             if (txnManager != null) {
                 try {
                     return txnManager.getTransactionIsolation();
@@ -410,18 +406,15 @@ public class DataSourceDescriptor
         } else {
             connectionInfo.getBootstrap().setDefaultTransactionIsolation(isolationLevel.getCode());
             if (dataSource != null) {
-                TasksJob.runTask("Set transactions isolation level", new DBRRunnableWithProgress() {
-                    @Override
-                    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                        DBCTransactionManager txnManager = DBUtils.getTransactionManager(dataSource.getDefaultContext(false));
-                        if (txnManager != null) {
-                            try {
-                                if (!txnManager.getTransactionIsolation().equals(isolationLevel)) {
-                                    txnManager.setTransactionIsolation(monitor, isolationLevel);
-                                }
-                            } catch (DBCException e) {
-                                throw new InvocationTargetException(e);
+                TasksJob.runTask("Set transactions isolation level", monitor -> {
+                    DBCTransactionManager txnManager = DBUtils.getTransactionManager(dataSource.getDefaultInstance().getDefaultContext(false));
+                    if (txnManager != null) {
+                        try {
+                            if (!txnManager.getTransactionIsolation().equals(isolationLevel)) {
+                                txnManager.setTransactionIsolation(monitor, isolationLevel);
                             }
+                        } catch (DBCException e) {
+                            throw new InvocationTargetException(e);
                         }
                     }
                 });
@@ -898,7 +891,7 @@ public class DataSourceDescriptor
         try {
             releaseDataSourceUsers(monitor);
 
-            monitor.beginTask("Disconnect from '" + getName() + "'", 5 + dataSource.getAllContexts().length);
+            monitor.beginTask("Disconnect from '" + getName() + "'", 5 + dataSource.getAvailableInstances().size());
 
             processEvents(monitor, DBPConnectionEventType.BEFORE_DISCONNECT);
 
@@ -1110,9 +1103,11 @@ public class DataSourceDescriptor
             coll.collectProperties();
             if (dataSource != null) {
                 int conIndex = 0;
-                for (DBCExecutionContext context : dataSource.getAllContexts()) {
-                    conIndex++;
-                    coll.addProperty("Connections", conIndex, String.valueOf(conIndex), new ContextInfo(context));
+                for (DBSInstance instance : dataSource.getAvailableInstances()) {
+                    for (DBCExecutionContext context : instance.getAllContexts()) {
+                        conIndex++;
+                        coll.addProperty("Connections", conIndex, String.valueOf(conIndex), new ContextInfo(context));
+                    }
                 }
             }
             return adapter.cast(coll);

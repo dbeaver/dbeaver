@@ -24,10 +24,7 @@ import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPContextProvider;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
@@ -54,10 +51,7 @@ public abstract class AbstractDataSourceHandler extends AbstractHandler {
         ISelection selection = HandlerUtil.getCurrentSelection(event);
         DBSObject selectedObject = NavigatorUtils.getSelectedObject(selection);
         if (selectedObject != null) {
-            DBPDataSource dataSource = selectedObject.getDataSource();
-            if (dataSource != null) {
-                return dataSource.getDefaultContext(false);
-            }
+            return DBUtils.getDefaultContext(selectedObject, false);
         }
 
         return null;

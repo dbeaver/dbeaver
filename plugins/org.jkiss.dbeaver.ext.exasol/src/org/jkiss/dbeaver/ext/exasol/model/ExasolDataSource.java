@@ -434,7 +434,7 @@ public class ExasolDataSource extends JDBCDataSource
 					"Invalid object type: " + object);
 		}
 
-		for (JDBCExecutionContext context : getAllContexts()) {
+		for (JDBCExecutionContext context : getDefaultInstance().getAllContexts()) {
 			setCurrentSchema(monitor, context, (ExasolSchema) object);
 		}
 

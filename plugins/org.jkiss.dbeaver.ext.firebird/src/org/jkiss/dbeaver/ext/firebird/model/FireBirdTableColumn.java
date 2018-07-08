@@ -62,7 +62,7 @@ public class FireBirdTableColumn extends GenericTableColumn {
     public String getDomainTypeName(DBRProgressMonitor monitor) throws DBException {
 
         if (domainTypeName == null) {
-            try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read column domain type")) {
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read column domain type")) {
                 // Read metadata
                 try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT RF.RDB$FIELD_SOURCE FROM RDB$RELATION_FIELDS RF WHERE RF.RDB$RELATION_NAME=? AND RF.RDB$FIELD_NAME=?")) {
                     dbStat.setString(1, getTable().getName());

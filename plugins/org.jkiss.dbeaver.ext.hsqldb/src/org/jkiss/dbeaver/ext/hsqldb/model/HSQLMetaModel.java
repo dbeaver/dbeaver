@@ -56,7 +56,7 @@ public class HSQLMetaModel extends GenericMetaModel
     @Override
     public String getViewDDL(DBRProgressMonitor monitor, GenericTable sourceObject, Map<String, Object> options) throws DBException {
         GenericDataSource dataSource = sourceObject.getDataSource();
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read HSQLDB view source")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read HSQLDB view source")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT VIEW_DEFINITION FROM INFORMATION_SCHEMA.VIEWS " +
                     "WHERE TABLE_SCHEMA=? AND TABLE_NAME=?"))
@@ -78,7 +78,7 @@ public class HSQLMetaModel extends GenericMetaModel
     @Override
     public void loadProcedures(DBRProgressMonitor monitor, @NotNull GenericObjectContainer container) throws DBException {
         GenericDataSource dataSource = container.getDataSource();
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read HSQLDB procedure source")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Read HSQLDB procedure source")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT * FROM INFORMATION_SCHEMA.ROUTINES WHERE ROUTINE_SCHEMA=?"))
             {
@@ -110,7 +110,7 @@ public class HSQLMetaModel extends GenericMetaModel
     @Override
     public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
         GenericDataSource dataSource = sourceObject.getDataSource();
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read HSQLDB procedure source")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read HSQLDB procedure source")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT ROUTINE_DEFINITION FROM INFORMATION_SCHEMA.ROUTINES " +
                     "WHERE ROUTINE_SCHEMA=? AND ROUTINE_NAME=?"))
@@ -140,7 +140,7 @@ public class HSQLMetaModel extends GenericMetaModel
 
     @Override
     public List<GenericSequence> loadSequences(@NotNull DBRProgressMonitor monitor, @NotNull GenericStructContainer container) throws DBException {
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, container.getDataSource(), "Read sequences")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Read sequences")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT * FROM INFORMATION_SCHEMA.SEQUENCES WHERE SEQUENCE_SCHEMA=?")) {
                 dbStat.setString(1, container.getName());
                 List<GenericSequence> result = new ArrayList<>();
@@ -185,7 +185,7 @@ public class HSQLMetaModel extends GenericMetaModel
         if (table == null) {
             throw new DBException("Database level triggers aren't supported for HSQLDB");
         }
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, container.getDataSource(), "Read triggers")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Read triggers")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                     "SELECT * FROM INFORMATION_SCHEMA.TRIGGERS\n" +
                             "WHERE EVENT_OBJECT_SCHEMA=? AND EVENT_OBJECT_TABLE=?")) {
@@ -229,7 +229,7 @@ public class HSQLMetaModel extends GenericMetaModel
 
     @Override
     public List<HSQLSynonym> loadSynonyms(DBRProgressMonitor monitor, GenericStructContainer container) throws DBException {
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, container.getDataSource(), "Read triggers")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Read triggers")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT * FROM INFORMATION_SCHEMA.SYSTEM_SYNONYMS\n" +
                     "WHERE SYNONYM_SCHEMA=?\n" +

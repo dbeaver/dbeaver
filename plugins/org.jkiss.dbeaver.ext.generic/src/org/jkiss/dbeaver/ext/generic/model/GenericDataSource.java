@@ -103,7 +103,7 @@ public class GenericDataSource extends JDBCDataSource
         nativeFormatTime = makeNativeFormat(GenericConstants.PARAM_NATIVE_FORMAT_TIME);
         nativeFormatDate = makeNativeFormat(GenericConstants.PARAM_NATIVE_FORMAT_DATE);
 
-        initializeMainContext(monitor);
+        initializeRemoteInstance(monitor);
     }
 
     @Override
@@ -120,8 +120,8 @@ public class GenericDataSource extends JDBCDataSource
     }
 
     @Override
-    protected Connection openConnection(@NotNull DBRProgressMonitor monitor, @NotNull String purpose) throws DBCException {
-        Connection jdbcConnection = super.openConnection(monitor, purpose);
+    protected Connection openConnection(@NotNull DBRProgressMonitor monitor, JDBCRemoteInstance remoteInstance, @NotNull String purpose) throws DBCException {
+        Connection jdbcConnection = super.openConnection(monitor, remoteInstance, purpose);
 
         if (populateClientAppName && !getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {
             // Provide client info
@@ -644,7 +644,7 @@ public class GenericDataSource extends JDBCDataSource
             throw new DBException("Bad child object specified as active: " + object);
         }
 
-        for (JDBCExecutionContext context : getAllContexts()) {
+        for (JDBCExecutionContext context : getDefaultInstance().getAllContexts()) {
             setActiveEntityName(monitor, context, object);
         }
 

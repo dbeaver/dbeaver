@@ -188,7 +188,7 @@ public class MySQLView extends MySQLTableBase
             additionalInfo.loaded = true;
             return;
         }
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Load table status")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table status")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT " + MySQLConstants.COL_CHECK_OPTION + "," + MySQLConstants.COL_DEFINER + "," + MySQLConstants.COL_IS_UPDATABLE +
                     " FROM " + MySQLConstants.META_TABLE_VIEWS + " WHERE " + MySQLConstants.COL_TABLE_SCHEMA + "=? AND " + MySQLConstants.COL_TABLE_NAME + "=?")) {
