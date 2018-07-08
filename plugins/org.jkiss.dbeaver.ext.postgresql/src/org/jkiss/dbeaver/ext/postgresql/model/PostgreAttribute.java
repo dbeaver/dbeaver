@@ -296,7 +296,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         @Override
         public PostgreDataType transform(PostgreAttribute object, Object value) {
             if (value instanceof String) {
-                PostgreDataType dataType = object.getDataSource().getDefaultInstance().getDataType(new VoidProgressMonitor(), (String)value);
+                PostgreDataType dataType = object.getDatabase().getDataType(new VoidProgressMonitor(), (String)value);
                 if (dataType == null) {
                     throw new IllegalArgumentException("Bad data type name specified: " + value);
                 }
