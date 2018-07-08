@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
@@ -422,5 +423,13 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     public void reconnect(DBRProgressMonitor monitor) throws DBCException {
         close();
         connect(monitor, null, null, false, true);
+    }
+
+    @Override
+    public String toString() {
+        if (CommonUtils.equalObjects(instance.getName(), dataSource.getName())) {
+            return super.toString();
+        }
+        return dataSource.getName() + " - " + instance.getName() + " - " + getContextName();
     }
 }
