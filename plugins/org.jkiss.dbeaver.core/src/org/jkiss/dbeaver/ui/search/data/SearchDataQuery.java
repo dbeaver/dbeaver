@@ -26,10 +26,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
@@ -123,6 +120,10 @@ public class SearchDataQuery implements ISearchQuery {
     }
 
     private void searchDataInContainer(DBRProgressMonitor monitor, DBNModel dbnModel, DBSDataContainer dataContainer) {
+        if (!params.searchForeignObjects && dataContainer instanceof DBPForeignObject && ((DBPForeignObject) dataContainer).isForeignObject()) {
+            return;
+        }
+
         String objectName = DBUtils.getObjectFullName(dataContainer, DBPEvaluationContext.DML);
         DBNDatabaseNode node = dbnModel.findNode(dataContainer);
         if (node == null) {

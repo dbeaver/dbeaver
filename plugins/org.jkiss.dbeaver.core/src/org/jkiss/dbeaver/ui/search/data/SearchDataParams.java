@@ -32,6 +32,7 @@ public class SearchDataParams {
     boolean fastSearch; // Indexed
     boolean searchNumbers;
     boolean searchLOBs;
+    boolean searchForeignObjects;
     int maxResults;
 
     public SearchDataParams()
@@ -84,6 +85,14 @@ public class SearchDataParams {
 
     public void setSearchLOBs(boolean searchLOBs) {
         this.searchLOBs = searchLOBs;
+    }
+
+    public boolean isSearchForeignObjects() {
+        return searchForeignObjects;
+    }
+
+    public void setSearchForeignObjects(boolean searchForeignObjects) {
+        this.searchForeignObjects = searchForeignObjects;
     }
 
     public int getMaxResults() {

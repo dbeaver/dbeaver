@@ -186,8 +186,14 @@ public class DatabaseObjectsTreeManager implements ICheckStateListener {
                         foundChild = true;
                         break;
                     }
-                } else if (collectChildren(monitor, child, collectInfo, false)) {
-                    foundChild = true;
+                } else {
+                    try {
+                        if (collectChildren(monitor, child, collectInfo, false)) {
+                            foundChild = true;
+                        }
+                    } catch (DBException e) {
+                        log.debug("Error reading child nodes of '" + child.getName() + "'", e);
+                    }
                 }
             }
             if (foundChild) {

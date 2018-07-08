@@ -55,6 +55,7 @@ public class SearchDataPage extends AbstractSearchPage {
     private static final String PROP_FAST_SEARCH = "search.data.fast-search"; //$NON-NLS-1$
     private static final String PROP_SEARCH_NUMBERS = "search.data.search-numbers"; //$NON-NLS-1$
     private static final String PROP_SEARCH_LOBS = "search.data.search-lobs"; //$NON-NLS-1$
+    private static final String PROP_SEARCH_FOREIGN = "search.data.search-foreign"; //$NON-NLS-1$
     private static final String PROP_HISTORY = "search.data.history"; //$NON-NLS-1$
     private static final String PROP_SOURCES = "search.data.object-source"; //$NON-NLS-1$
 
@@ -162,12 +163,11 @@ public class SearchDataPage extends AbstractSearchPage {
                 params.maxResults = 10;
             }
 
-            final Spinner maxResultsSpinner = UIUtils.createLabelSpinner(optionsGroup2, "Sample rows", params.maxResults, 1, Integer.MAX_VALUE);
+            final Spinner maxResultsSpinner = UIUtils.createLabelSpinner(optionsGroup2, "Sample rows", "Maximum number of rows to search. Don't set to a big number, this might greatly reduce search performance.", params.maxResults, 1, Integer.MAX_VALUE);
             maxResultsSpinner.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
             maxResultsSpinner.addModifyListener(e -> params.maxResults = maxResultsSpinner.getSelection());
 
-            final Button caseCheckbox = UIUtils.createLabelCheckbox(optionsGroup2, CoreMessages.dialog_search_objects_case_sensitive, params.caseSensitive);
-            caseCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+            final Button caseCheckbox = UIUtils.createCheckbox(optionsGroup2, CoreMessages.dialog_search_objects_case_sensitive, "Case sensitive search", params.caseSensitive, 2);
             caseCheckbox.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e)
@@ -176,8 +176,7 @@ public class SearchDataPage extends AbstractSearchPage {
                 }
             });
 
-            final Button fastSearchCheckbox = UIUtils.createLabelCheckbox(optionsGroup2, "Fast search (indexed)", params.fastSearch);
-            fastSearchCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+            final Button fastSearchCheckbox = UIUtils.createCheckbox(optionsGroup2, "Fast search (indexed)", "Search only in indexed columns", params.fastSearch, 2);
             fastSearchCheckbox.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e)
@@ -187,8 +186,7 @@ public class SearchDataPage extends AbstractSearchPage {
             });
 
 
-            final Button searchNumbersCheckbox = UIUtils.createLabelCheckbox(optionsGroup2, "Search in numbers", params.searchNumbers);
-            searchNumbersCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+            final Button searchNumbersCheckbox = UIUtils.createCheckbox(optionsGroup2, "Search in numbers", "Search in numeric columns (search value must be a number)", params.searchNumbers, 2);
             searchNumbersCheckbox.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e)
@@ -197,13 +195,21 @@ public class SearchDataPage extends AbstractSearchPage {
                 }
             });
 
-            final Button searchLOBCheckbox = UIUtils.createLabelCheckbox(optionsGroup2, "Search in LOBs", params.searchLOBs);
-            searchLOBCheckbox.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+            final Button searchLOBCheckbox = UIUtils.createCheckbox(optionsGroup2, "Search in LOBs", "Search in BLOB/CLOB/binary columns", params.searchLOBs, 2);
             searchLOBCheckbox.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e)
                 {
                     params.searchLOBs = searchNumbersCheckbox.getSelection();
+                }
+            });
+
+            final Button searchForeignCheckbox = UIUtils.createCheckbox(optionsGroup2, "Search in foreign objects", "Search in foreign tables or DB links. Searching in such tables may cause performance issues.", params.searchForeignObjects, 2);
+            searchForeignCheckbox.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e)
+                {
+                    params.searchForeignObjects = searchForeignCheckbox.getSelection();
                 }
             });
         }
@@ -268,6 +274,7 @@ public class SearchDataPage extends AbstractSearchPage {
         params.fastSearch = store.getBoolean(PROP_FAST_SEARCH);
         params.searchNumbers = store.getString(PROP_SEARCH_NUMBERS) == null || store.getBoolean(PROP_SEARCH_NUMBERS);
         params.searchLOBs = store.getBoolean(PROP_SEARCH_LOBS);
+        params.searchForeignObjects = store.getBoolean(PROP_SEARCH_FOREIGN);
         params.maxResults = store.getInt(PROP_SAMPLE_ROWS);
         for (int i = 0; ;i++) {
             String history = store.getString(PROP_HISTORY + "." + i); //$NON-NLS-1$
@@ -288,6 +295,7 @@ public class SearchDataPage extends AbstractSearchPage {
         store.setValue(PROP_FAST_SEARCH, params.fastSearch);
         store.setValue(PROP_SEARCH_NUMBERS, params.searchNumbers);
         store.setValue(PROP_SEARCH_LOBS, params.searchLOBs);
+        store.setValue(PROP_SEARCH_FOREIGN, params.searchForeignObjects);
         //saveTreeState(store, PROP_SOURCES, dataSourceTree);
 
         {
