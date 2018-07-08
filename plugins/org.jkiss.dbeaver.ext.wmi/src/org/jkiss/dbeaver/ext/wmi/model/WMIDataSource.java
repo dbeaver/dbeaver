@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLDataSource;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.wmi.service.WMIService;
@@ -43,7 +44,7 @@ import java.util.Collections;
 /**
  * WMIDataSource
  */
-public class WMIDataSource implements DBPDataSource, DBCExecutionContext, SQLDataSource, IAdaptable//, DBSObjectContainer, DBSObjectSelector
+public class WMIDataSource implements DBPDataSource, DBSInstance, DBCExecutionContext, SQLDataSource, IAdaptable//, DBSObjectContainer, DBSObjectSelector
 {
     private final DBPDataSourceContainer container;
     private WMINamespace rootNamespace;
@@ -183,6 +184,16 @@ public class WMIDataSource implements DBPDataSource, DBCExecutionContext, SQLDat
         }
 
         QMUtils.getDefaultHandler().handleContextClose(this);
+    }
+
+    @Override
+    public DBSInstance getDefaultInstance() {
+        return this;
+    }
+
+    @Override
+    public Collection<? extends DBSInstance> getAvailableInstances() {
+        return Collections.singletonList(this);
     }
 
     @Override

@@ -174,7 +174,7 @@ public class MySQLCatalog implements DBSCatalog, DBPSaveableObject, DBPRefreshab
     @Property(viewable = true, expensive = true, order = 20)
     public Long getDatabaseSize(DBRProgressMonitor monitor) throws DBException {
         if (databaseSize == null) {
-            try (JDBCSession session = DBUtils.openUtilSession(monitor, getDataSource(), "Read database size")) {
+            try (JDBCSession session = DBUtils.openUtilSession(monitor, this, "Read database size")) {
                 try (JDBCPreparedStatement dbStat = session.prepareStatement(
                     "SELECT SUM((DATA_LENGTH+INDEX_LENGTH))\n" +
                     "FROM INFORMATION_SCHEMA.TABLES \n" +

@@ -70,7 +70,7 @@ public class PostgreTableForeign extends PostgreTable implements DBPImageProvide
         if (foreignServerId > 0) {
             return;
         }
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read foreign table info")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read foreign table info")) {
             try (JDBCPreparedStatement stat = session.prepareStatement("SELECT * FROM pg_catalog.pg_foreign_table WHERE ftrelid=?")) {
                 stat.setLong(1, getObjectId());
                 try (JDBCResultSet result = stat.executeQuery()) {

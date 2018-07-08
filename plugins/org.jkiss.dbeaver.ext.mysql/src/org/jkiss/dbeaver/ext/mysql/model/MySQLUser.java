@@ -169,7 +169,7 @@ public class MySQLUser implements DBAUser, DBPRefreshableObject, DBPSaveableObje
             return this.grants;
         }
 
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read catalog privileges")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read catalog privileges")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW GRANTS FOR " + getFullName())) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     List<MySQLGrant> grants = new ArrayList<>();

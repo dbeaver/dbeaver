@@ -191,7 +191,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             i++;
         }
 
-        DBSObject selectedObject = dataSource == null ? null: DBUtils.getActiveInstanceObject(dataSource);
+        DBSObject selectedObject = dataSource == null ? null: DBUtils.getActiveInstanceObject(dataSource.getDefaultInstance());
         boolean hideDups = editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS) && selectedObject != null;
         if (hideDups) {
             for (int i = 0; i < request.proposals.size(); i++) {

@@ -41,7 +41,7 @@ public class NetezzaMetaModel extends GenericMetaModel
 
     public String getViewDDL(DBRProgressMonitor monitor, GenericTable sourceObject, Map<String, Object> options) throws DBException {
         GenericDataSource dataSource = sourceObject.getDataSource();
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read Netezza view source")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read Netezza view source")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT v.definition " +
                 "FROM _v_view v, _v_objs_owned o " +
@@ -66,7 +66,7 @@ public class NetezzaMetaModel extends GenericMetaModel
     @Override
     public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
         GenericDataSource dataSource = sourceObject.getDataSource();
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read Netezza procedure source")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read Netezza procedure source")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT p.proceduresignature,p.returns,p.proceduresource " +
                 "FROM _v_procedure p " +

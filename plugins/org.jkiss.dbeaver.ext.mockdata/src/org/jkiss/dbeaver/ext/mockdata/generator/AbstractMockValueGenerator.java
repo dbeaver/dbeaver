@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.mockdata.generator;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mockdata.model.MockValueGenerator;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
 import org.jkiss.dbeaver.model.exec.DBCSession;
@@ -84,7 +83,7 @@ public abstract class AbstractMockValueGenerator implements MockValueGenerator {
             isUnique = (DBUtils.checkUnique(monitor, dbsEntity, attribute) == DBUtils.UNIQ_TYPE.SINGLE);
             if (isUnique && (attribute instanceof DBSAttributeEnumerable)) {
                 uniqueValues = new HashSet<>();
-                Collection<DBDLabelValuePair> valuePairs = readColumnValues(monitor, dbsEntity.getDataSource(), (DBSAttributeEnumerable) attribute, UNIQUE_VALUES_SET_SIZE);
+                Collection<DBDLabelValuePair> valuePairs = readColumnValues(monitor, (DBSAttributeEnumerable) attribute, UNIQUE_VALUES_SET_SIZE);
                 for (DBDLabelValuePair pair : valuePairs) {
                     uniqueValues.add(pair.getValue());
                 }
@@ -123,8 +122,8 @@ public abstract class AbstractMockValueGenerator implements MockValueGenerator {
         }
     }
 
-    protected Collection<DBDLabelValuePair> readColumnValues(DBRProgressMonitor monitor, DBPDataSource dataSource, DBSAttributeEnumerable column, int number) throws DBException {
-        DBCSession session = DBUtils.openUtilSession(monitor, dataSource, "Read value enumeration");
+    protected Collection<DBDLabelValuePair> readColumnValues(DBRProgressMonitor monitor, DBSAttributeEnumerable column, int number) throws DBException {
+        DBCSession session = DBUtils.openUtilSession(monitor, dbsEntity, "Read value enumeration");
         return column.getValueEnumeration(session, null, number);
     }
 

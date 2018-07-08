@@ -48,7 +48,7 @@ public class HANAMetaModel extends GenericMetaModel
 
     public String getViewDDL(DBRProgressMonitor monitor, GenericTable sourceObject, Map<String, Object> options) throws DBException {
         GenericDataSource dataSource = sourceObject.getDataSource();
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read HANA view source")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read HANA view source")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT DEFINITION\n" +
                     "FROM SYS.VIEWS\n" +
@@ -73,7 +73,7 @@ public class HANAMetaModel extends GenericMetaModel
     @Override
     public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
         GenericDataSource dataSource = sourceObject.getDataSource();
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read HANA procedure source")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read HANA procedure source")) {
             String procedureType = sourceObject.getProcedureType().name();
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT SCHEMA_NAME,"+ procedureType + "_NAME,DEFINITION FROM SYS."+ procedureType + "S\n" +

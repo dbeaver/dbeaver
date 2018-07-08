@@ -256,7 +256,7 @@ public abstract class JDBCCompositeCache<
         // Load index columns
         DBPDataSource dataSource = owner.getDataSource();
         assert (dataSource != null);
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Load composite objects")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, owner, "Load composite objects")) {
 
             JDBCStatement dbStat = prepareObjectsStatement(session, owner, forParent);
             dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);

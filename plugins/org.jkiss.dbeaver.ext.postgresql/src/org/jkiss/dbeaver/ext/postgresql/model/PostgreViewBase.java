@@ -90,7 +90,7 @@ public abstract class PostgreViewBase extends PostgreTableReal
     {
         if (source == null) {
             if (isPersisted()) {
-                try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read view definition")) {
+                try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read view definition")) {
                     String definition = JDBCUtils.queryString(session, "SELECT pg_get_viewdef(?, true)", getObjectId());
                     this.source = PostgreUtils.getViewDDL(this, definition);
                     String extDefinition = readExtraDefinition(session, options);

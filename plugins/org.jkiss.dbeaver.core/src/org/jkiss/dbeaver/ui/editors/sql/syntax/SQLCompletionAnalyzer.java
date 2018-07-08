@@ -100,7 +100,7 @@ class SQLCompletionAnalyzer
                     }
                 } else if (dataSource instanceof DBSObjectContainer) {
                     // Try to get from active object
-                    DBSObject selectedObject = DBUtils.getActiveInstanceObject(dataSource);
+                    DBSObject selectedObject = DBUtils.getActiveInstanceObject(dataSource.getDefaultInstance());
                     if (selectedObject != null) {
                         makeProposalsFromChildren(selectedObject, null);
                         rootObject = DBUtils.getPublicObject(selectedObject.getParentObject());
@@ -124,7 +124,7 @@ class SQLCompletionAnalyzer
                     // Part of column name
                     // Try to get from active object
                     DBSObjectContainer sc = (DBSObjectContainer) dataSource;
-                    DBSObject selectedObject = DBUtils.getActiveInstanceObject(dataSource);
+                    DBSObject selectedObject = DBUtils.getActiveInstanceObject(dataSource.getDefaultInstance());
                     if (selectedObject instanceof DBSObjectContainer) {
                         sc = (DBSObjectContainer)selectedObject;
                     }
@@ -147,7 +147,7 @@ class SQLCompletionAnalyzer
                 // Add procedures/functions for column proposals
                 DBSStructureAssistant structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, dataSource);
                 DBSObjectContainer sc = (DBSObjectContainer) dataSource;
-                DBSObject selectedObject = DBUtils.getActiveInstanceObject(dataSource);
+                DBSObject selectedObject = DBUtils.getActiveInstanceObject(dataSource.getDefaultInstance());
                 if (selectedObject instanceof DBSObjectContainer) {
                     sc = (DBSObjectContainer)selectedObject;
                 }
@@ -593,7 +593,7 @@ class SQLCompletionAnalyzer
                 if (request.wordDetector.getFullWord().indexOf(request.editor.getSyntaxManager().getStructSeparator()) == -1) {
                     DBSObjectReference structObject = (DBSObjectReference) object;
                     if (structObject.getContainer() != null) {
-                        DBSObject selectedObject = DBUtils.getActiveInstanceObject(dataSource);
+                        DBSObject selectedObject = DBUtils.getActiveInstanceObject(dataSource.getDefaultInstance());
                         if (selectedObject != structObject.getContainer()) {
                             replaceString = DBUtils.getFullQualifiedName(
                                 dataSource,

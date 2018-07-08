@@ -704,7 +704,7 @@ public class JDBCUtils {
         }
     }
 
-    public static void setFilterParameters(JDBCPreparedStatement statement, int paramIndex, DBSObjectFilter filter)
+    public static void setFilterParameters(PreparedStatement statement, int paramIndex, DBSObjectFilter filter)
         throws SQLException
     {
         if (filter.isNotApplicable()) {

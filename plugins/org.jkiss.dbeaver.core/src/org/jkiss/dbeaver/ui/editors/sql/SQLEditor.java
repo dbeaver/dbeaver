@@ -180,7 +180,6 @@ public class SQLEditor extends SQLEditorBase implements
     private volatile DBCExecutionContext lastExecutionContext;
     private SQLScriptContext globalScriptContext;
     private volatile boolean syntaxLoaded = false;
-    private volatile boolean ownContext = false;
     private final FindReplaceTarget findReplaceTarget = new FindReplaceTarget();
     private final List<SQLQuery> runningQueries = new ArrayList<>();
     private QueryResultsContainer curResultsContainer;
@@ -203,8 +202,16 @@ public class SQLEditor extends SQLEditorBase implements
     }
 
     @Override
+    public DBPDataSource getDataSource() {
+        return getDataSourceContainer().getDataSource();
+    }
+
+    @Override
     public DBCExecutionContext getExecutionContext() {
-        return executionContext;
+        if (executionContext != null) {
+            return executionContext;
+        }
+        return DBUtils.getDefaultContext(getDataSource(), false);
     }
 
     @Nullable
@@ -321,35 +328,20 @@ public class SQLEditor extends SQLEditorBase implements
                     });
                     job.schedule();
                 } else {
-                    executionContext = dataSource.getDefaultContext(false);
                     if (onSuccess != null) {
                         onSuccess.run();
                     }
                 }
             }
         }
-        if (this.executionContext != null) {
-            SQLScriptContext oldGlobalContext = globalScriptContext;
-            this.globalScriptContext = new SQLScriptContext(
-                    null,
-                    executionContext,
-                    EditorUtils.getLocalFileFromInput(getEditorInput()),
-                    new OutputLogWriter());
-            if (oldGlobalContext != null) {
-                this.globalScriptContext.copyFrom(oldGlobalContext);
-            }
-        } else {
-            this.globalScriptContext = null;
-        }
     }
 
     private void releaseExecutionContext() {
-        if (ownContext && executionContext != null && executionContext.isConnected()) {
+        if (executionContext != null && executionContext.isConnected()) {
             // Close context in separate job (otherwise it can block UI)
             new CloseContextJob(executionContext).schedule();
         }
         executionContext = null;
-        ownContext = false;
         curDataSource = null;
     }
 
@@ -404,14 +396,13 @@ public class SQLEditor extends SQLEditorBase implements
             try {
                 String title = "SQLEditor <" + getEditorInput().getName() + ">";
                 monitor.subTask("Open context " + title);
-                executionContext = dataSource.openIsolatedContext(monitor, title);
+                executionContext = dataSource.getDefaultInstance().openIsolatedContext(monitor, title);
             } catch (DBException e) {
                 error = e;
                 return Status.OK_STATUS;
             } finally {
                 monitor.done();
             }
-            ownContext = true;
             return Status.OK_STATUS;
         }
     }
@@ -450,7 +441,7 @@ public class SQLEditor extends SQLEditorBase implements
                 return true;
             }
         }
-        if (ownContext && QMUtils.isTransactionActive(executionContext)) {
+        if (executionContext != null && QMUtils.isTransactionActive(executionContext)) {
             return true;
         }
         if (isNonPersistentEditor()) {
@@ -1077,6 +1068,12 @@ public class SQLEditor extends SQLEditorBase implements
         super.init(site, editorInput);
 
         updateResultSetOrientation();
+
+        this.globalScriptContext = new SQLScriptContext(
+            null,
+            this,
+            EditorUtils.getLocalFileFromInput(getEditorInput()),
+            new OutputLogWriter());
     }
 
     @Override
@@ -1244,7 +1241,7 @@ public class SQLEditor extends SQLEditorBase implements
     private void explainPlanFromQuery(final DBCQueryPlanner planner, final SQLQuery sqlQuery) {
         final String[] planQueryString = new String[1];
         DBRRunnableWithProgress queryObtainTask = monitor -> {
-            try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Prepare plan query")) {
+            try (DBCSession session = getExecutionContext().openSession(monitor, DBCExecutionPurpose.UTIL, "Prepare plan query")) {
                 DBCPlan plan = planner.planQueryExecution(session, sqlQuery.getText());
                 planQueryString[0] = plan.getPlanQueryString();
             } catch (Exception e) {
@@ -1716,7 +1713,7 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         // End transaction
-        if (!DataSourceHandler.checkAndCloseActiveTransaction(new DBCExecutionContext[] {executionContext})) {
+        if (executionContext != null && !DataSourceHandler.checkAndCloseActiveTransaction(new DBCExecutionContext[] {executionContext})) {
             return ISaveablePart2.CANCEL;
         }
 
@@ -1974,7 +1971,7 @@ public class SQLEditor extends SQLEditorBase implements
                     executionContext,
                     resultsContainer,
                     queries,
-                    new SQLScriptContext(globalScriptContext, executionContext, localFile, new OutputLogWriter()),
+                    new SQLScriptContext(globalScriptContext, SQLEditor.this, localFile, new OutputLogWriter()),
                     this,
                     listener);
 

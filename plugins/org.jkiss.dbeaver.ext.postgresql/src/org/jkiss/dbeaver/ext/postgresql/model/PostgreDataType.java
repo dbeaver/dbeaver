@@ -496,7 +496,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
             attributeCache.clearCache();
         }
         if (typeCategory == PostgreTypeCategory.E) {
-            try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Refresh enum values")) {
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Refresh enum values")) {
                 readEnumValues(session);
             }
         }

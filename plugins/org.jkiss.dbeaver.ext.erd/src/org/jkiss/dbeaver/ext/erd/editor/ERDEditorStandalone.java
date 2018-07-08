@@ -32,7 +32,7 @@ import org.jkiss.dbeaver.ext.erd.model.ERDObject;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.model.DBPContextProvider;
-import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
@@ -190,8 +190,7 @@ public class ERDEditorStandalone extends ERDEditorPart implements DBPContextProv
                 Object object = model.getObject();
                 if (object instanceof DBSObject) {
                     DBSObject dbObject = (DBSObject) object;
-                    DBPDataSource dataSource = dbObject.getDataSource();
-                    return dataSource.getDefaultContext(true);
+                    return DBUtils.getDefaultContext(dbObject, true);
                 }
             }
         }

@@ -82,7 +82,8 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
         boolean newConnection = settings.isOpenNewConnections();
         boolean forceDataReadTransactions = Boolean.TRUE.equals(dataSource.getDataSourceFeature(FEATURE_FORCE_TRANSACTIONS));
         DBCExecutionContext context = !selectiveExportFromUI && newConnection ?
-            dataSource.openIsolatedContext(monitor, "Data transfer producer") : dataSource.getDefaultContext(false);
+            DBUtils.getObjectOwnerInstance(getSourceObject()).openIsolatedContext(monitor, "Data transfer producer") :
+            DBUtils.getDefaultContext(getSourceObject(), false);
         try (DBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, contextTask)) {
             try {
                 AbstractExecutionSource transferSource = new AbstractExecutionSource(dataContainer, context, consumer);

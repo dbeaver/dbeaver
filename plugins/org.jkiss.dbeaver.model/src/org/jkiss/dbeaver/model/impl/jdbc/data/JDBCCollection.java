@@ -166,7 +166,7 @@ public class JDBCCollection implements DBDCollection, DBDValueCloneable {
             attrs[i] = attr;
         }
         final DBSDataType dataType = getComponentType();
-        try (DBCSession session = DBUtils.openUtilSession(new VoidProgressMonitor(), dataType.getDataSource(), "Create JDBC array")) {
+        try (DBCSession session = DBUtils.openUtilSession(new VoidProgressMonitor(), dataType, "Create JDBC array")) {
             if (session instanceof Connection) {
                 return ((Connection) session).createArrayOf(dataType.getTypeName(), attrs);
             } else {

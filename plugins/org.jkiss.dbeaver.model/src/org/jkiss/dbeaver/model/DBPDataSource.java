@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
+import org.jkiss.dbeaver.model.struct.DBSInstanceContainer;
 
 /**
  * Data Source.
@@ -30,7 +31,7 @@ import org.jkiss.dbeaver.model.struct.DBSInstance;
  * datasource instance may be refreshed at any moment. Obtain references on datasource only
  * from DBSObject or DBPContextProvider interfaces.
  */
-public interface DBPDataSource extends DBSInstance
+public interface DBPDataSource extends DBSInstanceContainer
 {
     /**
      * Datasource container

@@ -271,7 +271,7 @@ public class MySQLTable extends MySQLTableBase
             return;
         }
         MySQLDataSource dataSource = getDataSource();
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Load table status")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table status")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SHOW TABLE STATUS FROM " + DBUtils.getQuotedIdentifier(getContainer()) + " LIKE '" + getName() + "'")) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -321,7 +321,7 @@ public class MySQLTable extends MySQLTableBase
         if (!isPersisted()) {
             return fkList;
         }
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Load table relations")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table relations")) {
             Map<String, MySQLTableForeignKey> fkMap = new HashMap<>();
             Map<String, MySQLTableConstraint> pkMap = new HashMap<>();
             JDBCDatabaseMetaData metaData = session.getMetaData();

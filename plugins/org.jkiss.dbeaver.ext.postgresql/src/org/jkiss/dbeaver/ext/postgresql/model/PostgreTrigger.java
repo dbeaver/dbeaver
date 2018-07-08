@@ -231,7 +231,7 @@ public class PostgreTrigger implements DBSTrigger, DBPQualifiedObject, PostgreOb
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException
     {
         if (body == null) {
-            try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read trigger definition")) {
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read trigger definition")) {
                 body = JDBCUtils.queryString(session, "SELECT pg_catalog.pg_get_triggerdef(?)", objectId);
             } catch (SQLException e) {
                 throw new DBException(e, getDataSource());

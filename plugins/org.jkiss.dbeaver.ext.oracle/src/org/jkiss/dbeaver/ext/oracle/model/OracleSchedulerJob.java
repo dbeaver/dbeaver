@@ -529,7 +529,7 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
 	public void refreshObjectState(DBRProgressMonitor monitor) {
         if (monitor != null) {
         	monitor.beginTask("Load action for '" + this.getName() + "'...", 1);
-        	try (final JDBCSession session = DBUtils.openMetaSession(monitor, this.getDataSource(), "Load action for " + OracleObjectType.JOB + " '" + this.getName() + "'")) {
+        	try (final JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load action for " + OracleObjectType.JOB + " '" + this.getName() + "'")) {
         		try (JDBCPreparedStatement dbStat = session.prepareStatement(
                         "SELECT STATE FROM " + OracleConstants.SCHEMA_SYS + ".ALL_SCHEDULER_JOBS " +
                             "WHERE OWNER=? AND JOB_NAME=? ")) {
@@ -583,7 +583,7 @@ public class OracleSchedulerJob extends OracleSchemaObject implements OracleStat
 	public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
         if (jobAction == null && monitor != null) {
         	monitor.beginTask("Load action for '" + this.getName() + "'...", 1);
-        	try (final JDBCSession session = DBUtils.openMetaSession(monitor, this.getDataSource(), "Load action for " + OracleObjectType.JOB + " '" + this.getName() + "'")) {
+        	try (final JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load action for " + OracleObjectType.JOB + " '" + this.getName() + "'")) {
         		try (JDBCPreparedStatement dbStat = session.prepareStatement(
                         "SELECT JOB_ACTION FROM " + OracleConstants.SCHEMA_SYS + ".ALL_SCHEDULER_JOBS " +
                             "WHERE OWNER=? AND JOB_NAME=? ")) {

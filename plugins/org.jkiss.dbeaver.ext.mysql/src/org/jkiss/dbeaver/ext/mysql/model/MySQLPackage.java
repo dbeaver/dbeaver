@@ -182,7 +182,7 @@ public class MySQLPackage
     }
 
     private String readSource(DBRProgressMonitor monitor, boolean isBody) throws DBCException {
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read package declaration")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read package declaration")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW CREATE PACKAGE" + (isBody ? " BODY" : "") + " " + getFullyQualifiedName(DBPEvaluationContext.DML))) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.next()) {

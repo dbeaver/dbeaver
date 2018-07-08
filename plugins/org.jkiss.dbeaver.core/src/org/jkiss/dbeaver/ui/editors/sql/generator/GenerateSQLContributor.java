@@ -579,28 +579,25 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                     IWorkbenchPage activePage = UIUtils.getActiveWorkbenchWindow().getActivePage();
                     IEditorPart activeEditor = activePage.getActiveEditor();
 
-                    DBPDataSource dataSource = null;
+                    DBCExecutionContext executionContext = null;
                     IWorkbenchPart activePart = activePage.getActivePart();
                     if (activePart != null) {
                         ISelectionProvider selectionProvider = activePart.getSite().getSelectionProvider();
                         if (selectionProvider != null) {
                             DBSObject selectedObject = NavigatorUtils.getSelectedObject(selectionProvider.getSelection());
                             if (selectedObject != null) {
-                                dataSource = selectedObject.getDataSource();
+                                executionContext = DBUtils.getDefaultContext(selectedObject, false);
                             }
                         }
                     }
-                    if (dataSource == null && activeEditor instanceof DBPContextProvider) {
-                        DBCExecutionContext context = ((DBPContextProvider) activeEditor).getExecutionContext();
-                        if (context != null) {
-                            dataSource = context.getDataSource();
-                        }
+                    if (executionContext == null && activeEditor instanceof DBPContextProvider) {
+                        executionContext = ((DBPContextProvider) activeEditor).getExecutionContext();
                     }
 
-                    if (dataSource != null) {
+                    if (executionContext != null) {
                         ViewSQLDialog dialog = new GenerateSQLDialog(
                             activePage.getActivePart().getSite(),
-                            dataSource.getDefaultContext(false),
+                            executionContext,
                             sqlGenerator);
                         dialog.open();
                     }

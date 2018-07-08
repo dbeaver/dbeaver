@@ -235,7 +235,7 @@ public class PrefPageSQLFormat extends TargetPrefPage
                     if (container != null) {
                         final DBPDataSource dataSource = container.getDataSource();
                         if (dataSource != null) {
-                            return dataSource.getDefaultContext(false);
+                            return dataSource.getDefaultInstance().getDefaultContext(false);
                         }
                     }
                     return null;

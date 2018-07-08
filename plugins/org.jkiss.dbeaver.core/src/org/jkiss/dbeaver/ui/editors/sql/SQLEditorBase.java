@@ -156,7 +156,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
     @Nullable
     public abstract DBCExecutionContext getExecutionContext();
 
-    public final DBPDataSource getDataSource() {
+    public DBPDataSource getDataSource() {
         DBCExecutionContext context = getExecutionContext();
         return context == null ? null : context.getDataSource();
     }
