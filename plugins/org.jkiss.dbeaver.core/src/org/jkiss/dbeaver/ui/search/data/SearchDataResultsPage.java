@@ -20,7 +20,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.editors.data.AbstractDataEditor;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.search.AbstractSearchResultsPage;
@@ -44,9 +43,9 @@ public class SearchDataResultsPage extends AbstractSearchResultsPage<SearchDataO
     }
 
     @Override
-    public void populateObjects(DBRProgressMonitor monitor, Collection<SearchDataObject> objects) {
+    public void populateObjects(Collection<SearchDataObject> objects) {
         foundObjects.addAll(objects);
-        super.populateObjects(monitor, objects);
+        super.populateObjects(objects);
     }
 
     private class DataSearchResultsControl extends SearchResultsControl {

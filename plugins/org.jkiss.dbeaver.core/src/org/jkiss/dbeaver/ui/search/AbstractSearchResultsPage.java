@@ -33,8 +33,6 @@ import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
@@ -59,13 +57,17 @@ public abstract class AbstractSearchResultsPage <OBJECT_TYPE> extends Page imple
             List objects = null;
             if (e instanceof AbstractSearchResult.DatabaseSearchResultEvent) {
                 objects = ((AbstractSearchResult.DatabaseSearchResultEvent) e).getObjects();
+            } else if (e instanceof AbstractSearchResult.DatabaseSearchFinishEvent) {
+                UIUtils.asyncExec(() -> {
+                    itemList.setInfo("Found " + ((AbstractSearchResult.DatabaseSearchFinishEvent) e).getTotalObjects() + " objects");
+                });
             } else if (e.getSearchResult() instanceof AbstractSearchResult) {
                 final AbstractSearchResult result = (AbstractSearchResult) e.getSearchResult();
                 objects = result.getObjects();
             }
             if (objects != null) {
                 final List newObjects = objects;
-                UIUtils.syncExec(() -> populateObjects(new VoidProgressMonitor(), newObjects));
+                UIUtils.syncExec(() -> populateObjects(newObjects));
             }
 
         };
@@ -106,7 +108,7 @@ public abstract class AbstractSearchResultsPage <OBJECT_TYPE> extends Page imple
         }
     }
 
-    public void populateObjects(DBRProgressMonitor monitor, Collection<OBJECT_TYPE> objects)
+    public void populateObjects(Collection<OBJECT_TYPE> objects)
     {
         if (itemList != null && !itemList.isDisposed()) {
             List<DBNNode> nodes = new ArrayList<>(objects.size());
@@ -155,7 +157,7 @@ public abstract class AbstractSearchResultsPage <OBJECT_TYPE> extends Page imple
     @Override
     public void setInput(ISearchResult search, Object uiState)
     {
-        itemList.setInfo(search == null ? "Start searching" : "Searching");
+        itemList.setInfo(search == null ? "" : "Searching for '" + search.getLabel() + "'");
 
         if (this.searchResult != null) {
             this.searchResult.removeListener(this.resultListener);
@@ -167,6 +169,8 @@ public abstract class AbstractSearchResultsPage <OBJECT_TYPE> extends Page imple
         }
         if (this.searchResult == null) {
             clearObjects();
+        } else if (searchResult instanceof AbstractSearchResult) {
+            populateObjects(((AbstractSearchResult) searchResult).getObjects());
         }
     }
 
