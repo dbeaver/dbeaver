@@ -1381,7 +1381,11 @@ public final class DBUtils {
     @Nullable
     public static DBSObject getActiveInstanceObject(@NotNull DBSInstance object)
     {
-        return getSelectedObject(object, true);
+        if (object instanceof DBSObjectContainer) {
+            return getSelectedObject(object, true);
+        } else {
+            return getSelectedObject(object.getDataSource(), true);
+        }
     }
 
     @Nullable
