@@ -102,6 +102,8 @@ public class PostgreConstants {
     public static final String TYPE_FLOAT4 = "float4";
     public static final String TYPE_FLOAT8 = "float8";
 
+    public static final String ERROR_ADMIN_SHUTDOWN = "57P01";
+
     static {
         DATA_TYPE_ALIASES.put("integer", TYPE_INT4);
         DATA_TYPE_ALIASES.put("int", TYPE_INT4);
