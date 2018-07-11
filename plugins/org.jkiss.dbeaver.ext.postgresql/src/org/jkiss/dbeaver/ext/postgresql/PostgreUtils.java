@@ -461,6 +461,11 @@ public class PostgreUtils {
             driver.getDriverParameter(PostgreConstants.PROP_TIMESCALE_DRIVER));
     }
 
+    public static boolean isYellowbrickDriver(DBPDriver driver) {
+        return driver != null && CommonUtils.toBoolean(
+            driver.getDriverParameter(PostgreConstants.PROP_YELLOWBRICK_DRIVER));
+    }
+
     public static List<PostgrePermission> extractPermissionsFromACL(DBRProgressMonitor monitor, @NotNull PostgrePermissionsOwner owner, @Nullable Object acl) throws DBException {
         if (!(acl instanceof java.sql.Array)) {
             if (acl == null) {
