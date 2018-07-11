@@ -109,14 +109,6 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
             props.put("serverTimezone", serverTZ);
         }
 
-        //props.put("zeroDateTimeBehavior", "CONVERT_TO_NULL");
-
-/*
-        if (CommonUtils.toBoolean(connectionInfo.getProperty(MySQLConstants.PROP_USE_SSL))) {
-            url.append("?useSSL=true&requireSSL=true");
-        }
-*/
-
         return props;
     }
 
