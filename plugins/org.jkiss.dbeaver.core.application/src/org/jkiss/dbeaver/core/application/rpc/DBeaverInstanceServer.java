@@ -87,7 +87,8 @@ public class DBeaverInstanceServer implements IInstanceController {
 
     @Override
     public void openDatabaseConnection(String connectionSpec) throws RemoteException {
-        log.debug("Open external database connection [" + connectionSpec + "]");
+        // Do not log it (#3788)
+        //log.debug("Open external database connection [" + connectionSpec + "]");
 
         final IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
         DataSourceRegistry dsRegistry = DBeaverCore.getInstance().getProjectRegistry().getActiveDataSourceRegistry();
