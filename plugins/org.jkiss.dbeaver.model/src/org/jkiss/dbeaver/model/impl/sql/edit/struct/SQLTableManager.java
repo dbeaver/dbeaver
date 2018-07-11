@@ -73,7 +73,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
     }
 
     @Override
-    protected void addStructObjectCreateActions(List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options)
+    protected void addStructObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options)
     {
         final OBJECT_TYPE table = command.getObject();
         final NestedObjectCommand tableProps = command.getObjectCommands().get(table);
@@ -120,7 +120,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
                 hasNestedDeclarations = true;
             } else {
                 // This command should be executed separately
-                final DBEPersistAction[] nestedActions = nestedCommand.getPersistActions(options);
+                final DBEPersistAction[] nestedActions = nestedCommand.getPersistActions(monitor, options);
                 if (nestedActions != null) {
                     Collections.addAll(actions, nestedActions);
                 }
@@ -190,7 +190,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
 
         if (isIncludeDropInDDL()) {
             actions.add(new SQLDatabasePersistActionComment(table.getDataSource(), "Drop table"));
-            for (DBEPersistAction delAction : new ObjectDeleteCommand(table, ModelMessages.model_jdbc_delete_object).getPersistActions(options)) {
+            for (DBEPersistAction delAction : new ObjectDeleteCommand(table, ModelMessages.model_jdbc_delete_object).getPersistActions(monitor, options)) {
                 actions.add(
                     new SQLDatabasePersistActionComment(
                         table.getDataSource(),
@@ -251,7 +251,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
                 log.debug(e);
             }
         }
-        Collections.addAll(actions, command.getPersistActions(options));
+        Collections.addAll(actions, command.getPersistActions(monitor, options));
 
         return actions.toArray(new DBEPersistAction[actions.size()]);
     }

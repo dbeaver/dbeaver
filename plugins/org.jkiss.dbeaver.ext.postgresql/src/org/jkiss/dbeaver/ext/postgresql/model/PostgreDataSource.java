@@ -450,8 +450,16 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         }
     }
 
-    boolean isGreenplum() {
+    public boolean isGreenplum() {
         return PostgreUtils.isGreenplumDriver(getContainer().getDriver());
+    }
+
+    public boolean isTimescale() {
+        return PostgreUtils.isTimescaleDriver(getContainer().getDriver());
+    }
+
+    public boolean isYellowbrick() {
+        return PostgreUtils.isYellowbrickDriver(getContainer().getDriver());
     }
 
     class DatabaseCache extends JDBCObjectLookupCache<PostgreDataSource, PostgreDatabase>

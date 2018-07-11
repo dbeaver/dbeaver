@@ -34,7 +34,7 @@ public abstract class SQLStructEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
     implements DBEStructEditor<OBJECT_TYPE>
 {
 
-    protected abstract void addStructObjectCreateActions(List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options);
+    protected abstract void addStructObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options);
 
     @Override
     public StructCreateCommand makeCreateCommand(OBJECT_TYPE object)
@@ -147,10 +147,10 @@ public abstract class SQLStructEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         }
 
         @Override
-        public DBEPersistAction[] getPersistActions(Map<String, Object> options)
+        public DBEPersistAction[] getPersistActions(DBRProgressMonitor monitor, Map<String, Object> options)
         {
             List<DBEPersistAction> actions = new ArrayList<>();
-            addStructObjectCreateActions(actions, this, options);
+            addStructObjectCreateActions(monitor, actions, this, options);
             addObjectExtraActions(actions, this, options);
             return actions.toArray(new DBEPersistAction[actions.size()]);
         }

@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.edit;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.Map;
 
@@ -46,6 +47,6 @@ public interface DBECommand<OBJECT_TYPE extends DBPObject> {
         DBECommand<?> prevCommand,
         Map<Object, Object> userParams);
 
-    DBEPersistAction[] getPersistActions(Map<String, Object> options);
+    DBEPersistAction[] getPersistActions(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException;
 
 }

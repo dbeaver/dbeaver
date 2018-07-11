@@ -260,7 +260,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         }
 
         @Override
-        public DBEPersistAction[] getPersistActions(Map<String, Object> options)
+        public DBEPersistAction[] getPersistActions(DBRProgressMonitor monitor, Map<String, Object> options)
         {
             List<DBEPersistAction> actions = new ArrayList<>();
             addObjectModifyActions(actions, this, options);
@@ -293,7 +293,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         }
 
         @Override
-        public DBEPersistAction[] getPersistActions(Map<String, Object> options)
+        public DBEPersistAction[] getPersistActions(DBRProgressMonitor monitor, Map<String, Object> options)
         {
             List<DBEPersistAction> actions = new ArrayList<>();
             addObjectCreateActions(actions, this, options);
@@ -332,7 +332,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         }
 
         @Override
-        public DBEPersistAction[] getPersistActions(Map<String, Object> options)
+        public DBEPersistAction[] getPersistActions(DBRProgressMonitor monitor, Map<String, Object> options)
         {
             List<DBEPersistAction> actions = new ArrayList<>();
             addObjectDeleteActions(actions, this, options);
@@ -372,7 +372,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         }
 
         @Override
-        public DBEPersistAction[] getPersistActions(Map<String, Object> options)
+        public DBEPersistAction[] getPersistActions(DBRProgressMonitor monitor, Map<String, Object> options)
         {
             List<DBEPersistAction> actions = new ArrayList<>();
             addObjectRenameActions(actions, this, options);
@@ -443,7 +443,7 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         }
 
         @Override
-        public DBEPersistAction[] getPersistActions(Map<String, Object> options)
+        public DBEPersistAction[] getPersistActions(DBRProgressMonitor monitor, Map<String, Object> options)
         {
             List<DBEPersistAction> actions = new ArrayList<>();
             addObjectReorderActions(actions, this, options);
