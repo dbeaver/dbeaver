@@ -139,9 +139,9 @@ public class DB2TableManager extends SQLTableManager<DB2Table, DB2Schema> implem
     }
 
     @Override
-    public void addStructObjectCreateActions(List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options)
+    public void addStructObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options)
     {
-        super.addStructObjectCreateActions(actions, command, options);
+        super.addStructObjectCreateActions(monitor, actions, command, options);
         // Eventually add Comment
         DBEPersistAction commentAction = buildCommentAction(command.getObject());
         if (commentAction != null) {

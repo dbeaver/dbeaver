@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.Map;
 
@@ -52,7 +53,7 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePerm
     }
 
     @Override
-    public DBEPersistAction[] getPersistActions(Map<String, Object> options)
+    public DBEPersistAction[] getPersistActions(DBRProgressMonitor monitor, Map<String, Object> options)
     {
         boolean withGrantOption = false;
         StringBuilder privName = new StringBuilder();

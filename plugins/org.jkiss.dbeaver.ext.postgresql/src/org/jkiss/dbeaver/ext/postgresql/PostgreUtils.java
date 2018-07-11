@@ -27,7 +27,6 @@ import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.postgresql.edit.PostgreCommandGrantPrivilege;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -605,10 +604,10 @@ public class PostgreUtils {
                     if (permission.hasAllPrivileges(object)) {
                         Collections.addAll(actions,
                             new PostgreCommandGrantPrivilege(permission.getOwner(), true, permission, new PostgrePrivilegeType[] { PostgrePrivilegeType.ALL })
-                                .getPersistActions(options));
+                                .getPersistActions(monitor, options));
                     } else {
                         PostgreCommandGrantPrivilege grant = new PostgreCommandGrantPrivilege(permission.getOwner(), true, permission, permission.getPrivileges());
-                        Collections.addAll(actions, grant.getPersistActions(options));
+                        Collections.addAll(actions, grant.getPersistActions(monitor, options));
                     }
                 }
             }

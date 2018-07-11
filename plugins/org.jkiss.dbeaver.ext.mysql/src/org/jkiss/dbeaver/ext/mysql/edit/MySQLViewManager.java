@@ -73,7 +73,7 @@ public class MySQLViewManager extends MySQLTableManager {
     }
 
     @Override
-    protected void addStructObjectCreateActions(List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options)
+    protected void addStructObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options)
     {
         createOrReplaceViewQuery(actions, (MySQLView) command.getObject());
     }

@@ -98,7 +98,7 @@ public class MySQLTableManager extends SQLTableManager<MySQLTableBase, MySQLCata
     }
 
     @Override
-    protected void addStructObjectCreateActions(List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options) {
+    protected void addStructObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options) {
 
         if (CommonUtils.getOption(options, DBPScriptObject.OPTION_INCLUDE_OBJECT_DROP)) {
             final MySQLTableBase table = command.getObject();
@@ -107,7 +107,7 @@ public class MySQLTableManager extends SQLTableManager<MySQLTableBase, MySQLCata
             actions.add( 0, new SQLDatabasePersistAction(ModelMessages.model_jdbc_create_new_table, "DROP TABLE IF EXISTS " + table) );
         }
 
-        super.addStructObjectCreateActions(actions, command, options);
+        super.addStructObjectCreateActions(monitor, actions, command, options);
     }
 
     @Override

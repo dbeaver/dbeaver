@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.edit;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.postgresql.YellowbrickUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -77,6 +78,23 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
         }
 
         return table;
+    }
+
+    @Override
+    protected void addStructObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options) {
+        PostgreTableBase tableBase = command.getObject();
+        if (tableBase.getDataSource().isYellowbrick()) {
+            // Extract main portion from server
+            StringBuilder ddl = new StringBuilder();
+
+            String tableDDL = YellowbrickUtils.extractTableDDL(monitor, tableBase);
+            if (!CommonUtils.isEmpty(tableDDL)) {
+                ddl.append(tableDDL);
+                actions.add( 0, new SQLDatabasePersistAction(ModelMessages.model_jdbc_create_new_table, ddl.toString()) );
+                return;
+            }
+        }
+        super.addStructObjectCreateActions(monitor, actions, command, options);
     }
 
     @Override
