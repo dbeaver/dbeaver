@@ -81,7 +81,7 @@ public class OracleSequenceManager extends SQLObjectEditor<OracleSequence, Oracl
     }
 
     @Override
-    protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
     {
         String sql = buildStatement(command.getObject(), true);
         actionList.add(new SQLDatabasePersistAction("Alter Sequence", sql));

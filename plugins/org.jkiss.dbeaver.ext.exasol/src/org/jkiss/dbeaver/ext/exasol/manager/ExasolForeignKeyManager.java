@@ -110,7 +110,7 @@ public class ExasolForeignKeyManager
     }
 
     @Override
-    protected void addObjectModifyActions(List<DBEPersistAction> actionList,
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList,
                                           ObjectChangeCommand command, Map<String, Object> options) {
         final ExasolTableForeignKey constraint = command.getObject();
 

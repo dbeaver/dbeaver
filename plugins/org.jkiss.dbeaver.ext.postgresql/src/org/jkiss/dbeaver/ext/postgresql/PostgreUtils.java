@@ -25,12 +25,14 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.postgresql.edit.PostgreCommandGrantPrivilege;
+import org.jkiss.dbeaver.ext.postgresql.edit.PostgreViewManager;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.edit.DBERegistry;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -445,9 +447,25 @@ public class PostgreUtils {
         }
     }
 
-    public static String getViewDDL(PostgreViewBase view, String definition) {
-        String createSQL = (view instanceof PostgreView ? "CREATE OR REPLACE " : "CREATE ");
-        return createSQL + view.getViewType() + " " + view.getFullyQualifiedName(DBPEvaluationContext.DDL) + " AS\n" + definition;
+    public static String getViewDDL(DBRProgressMonitor monitor, PostgreViewBase view, String definition) throws DBException {
+        StringBuilder sql = new StringBuilder(view instanceof PostgreView ? "CREATE OR REPLACE " : "CREATE ");
+        sql.append(view.getViewType()).append(" ").append(view.getFullyQualifiedName(DBPEvaluationContext.DDL));
+
+        final DBERegistry editorsRegistry = view.getDataSource().getContainer().getPlatform().getEditorsRegistry();
+        final PostgreViewManager entityEditor = editorsRegistry.getObjectManager(view.getClass(), PostgreViewManager.class);
+        if (entityEditor != null) {
+            entityEditor.appendViewDeclarationPrefix(monitor, sql, view);
+        }
+        definition = definition.trim();
+        while (definition.endsWith(";")) {
+            definition = definition.substring(0, definition.length() - 1);
+        }
+        sql.append("\nAS ").append(definition);
+        if (entityEditor != null) {
+            entityEditor.appendViewDeclarationPostfix(monitor, sql, view);
+        }
+        sql.append(";");
+        return sql.toString();
     }
 
     public static boolean isGreenplumDriver(DBPDriver driver) {

@@ -117,7 +117,7 @@ public class PostgreSchemaManager extends SQLObjectEditor<PostgreSchema, Postgre
         processObjectRename(commandContext, schema, newName);
     }
 
-    protected void addObjectExtraActions(List<DBEPersistAction> actions, NestedObjectCommand<PostgreSchema, PropertyHandler> command, Map<String, Object> options)
+    protected void addObjectExtraActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, NestedObjectCommand<PostgreSchema, PropertyHandler> command, Map<String, Object> options)
     {
         PostgreSchema schema = command.getObject();
         String comment = schema.getDescription();
