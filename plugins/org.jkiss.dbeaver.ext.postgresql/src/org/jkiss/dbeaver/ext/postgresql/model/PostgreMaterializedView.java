@@ -36,6 +36,7 @@ import java.util.Map;
  */
 public class PostgreMaterializedView extends PostgreViewBase
 {
+    private boolean withData;
     private long tablespaceId;
 
     public PostgreMaterializedView(PostgreSchema catalog) {
@@ -47,7 +48,16 @@ public class PostgreMaterializedView extends PostgreViewBase
         ResultSet dbResult)
     {
         super(catalog, dbResult);
+        this.withData = JDBCUtils.safeGetBoolean(dbResult, "relispopulated");
         this.tablespaceId = JDBCUtils.safeGetLong(dbResult, "reltablespace");
+    }
+
+    public boolean isWithData() {
+        return withData;
+    }
+
+    public void setWithData(boolean withData) {
+        this.withData = withData;
     }
 
     @Override

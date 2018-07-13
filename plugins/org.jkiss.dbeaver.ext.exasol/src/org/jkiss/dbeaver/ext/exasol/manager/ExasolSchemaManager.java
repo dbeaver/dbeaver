@@ -150,7 +150,7 @@ public class ExasolSchemaManager
     }
     
     @Override
-    public void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
+    public void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
     {
         ExasolSchema schema = command.getObject();
         

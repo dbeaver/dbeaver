@@ -124,13 +124,11 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
 
     protected abstract void addObjectCreateActions(List<DBEPersistAction> actions, ObjectCreateCommand command, Map<String, Object> options);
 
-    protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
-    {
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) throws DBException {
 
     }
 
-    protected void addObjectExtraActions(List<DBEPersistAction> actions, NestedObjectCommand<OBJECT_TYPE, PropertyHandler> command, Map<String, Object> options)
-    {
+    protected void addObjectExtraActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, NestedObjectCommand<OBJECT_TYPE, PropertyHandler> command, Map<String, Object> options) throws DBException {
 
     }
 
@@ -260,11 +258,10 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         }
 
         @Override
-        public DBEPersistAction[] getPersistActions(DBRProgressMonitor monitor, Map<String, Object> options)
-        {
+        public DBEPersistAction[] getPersistActions(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
             List<DBEPersistAction> actions = new ArrayList<>();
-            addObjectModifyActions(actions, this, options);
-            addObjectExtraActions(actions, this, options);
+            addObjectModifyActions(monitor, actions, this, options);
+            addObjectExtraActions(monitor, actions, this, options);
             return actions.toArray(new DBEPersistAction[actions.size()]);
         }
 
@@ -293,11 +290,10 @@ public abstract class SQLObjectEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
         }
 
         @Override
-        public DBEPersistAction[] getPersistActions(DBRProgressMonitor monitor, Map<String, Object> options)
-        {
+        public DBEPersistAction[] getPersistActions(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException {
             List<DBEPersistAction> actions = new ArrayList<>();
             addObjectCreateActions(actions, this, options);
-            addObjectExtraActions(actions, this, options);
+            addObjectExtraActions(monitor, actions, this, options);
             return actions.toArray(new DBEPersistAction[actions.size()]);
         }
 

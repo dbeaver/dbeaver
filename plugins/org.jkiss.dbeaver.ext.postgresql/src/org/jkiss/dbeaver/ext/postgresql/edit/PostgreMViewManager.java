@@ -17,12 +17,10 @@
 package org.jkiss.dbeaver.ext.postgresql.edit;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreMaterializedView;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreSchema;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableRegular;
-import org.jkiss.dbeaver.ext.postgresql.model.PostgreViewBase;
+import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
@@ -46,14 +44,29 @@ public class PostgreMViewManager extends PostgreViewManager {
     }
 
     @Override
-    protected void createOrReplaceViewQuery(List<DBEPersistAction> actions, PostgreViewBase view)
-    {
-        super.createOrReplaceViewQuery(actions, view);
+    protected void createOrReplaceViewQuery(DBRProgressMonitor monitor, List<DBEPersistAction> actions, PostgreViewBase view) throws DBException {
+        super.createOrReplaceViewQuery(monitor, actions, view);
         // Indexes DDL
     }
 
     @Override
-    protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
+    public void appendViewDeclarationPrefix(DBRProgressMonitor monitor, StringBuilder sqlBuf, PostgreViewBase view) throws DBException {
+        PostgreMaterializedView mview = (PostgreMaterializedView)view;
+        PostgreTablespace tablespace = mview.getTablespace(monitor);
+        if (tablespace  != null) {
+            sqlBuf.append("\nTABLESPACE ").append(DBUtils.getQuotedIdentifier(tablespace));
+        }
+    }
+
+    @Override
+    public void appendViewDeclarationPostfix(DBRProgressMonitor monitor, StringBuilder sqlBuf, PostgreViewBase view) {
+        PostgreMaterializedView mview = (PostgreMaterializedView)view;
+        boolean withData = mview.isWithData();
+        sqlBuf.append("\n").append(withData ? "WITH DATA" : "WITH NO DATA");
+    }
+
+    @Override
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
     {
         if (command.getProperties().size() > 1 || command.getProperty(DBConstants.PROP_ID_DESCRIPTION) == null) {
             try {

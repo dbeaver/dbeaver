@@ -125,8 +125,8 @@ public class ExasolPrimaryKeyManager
 	}
 	
 	@Override
-	protected void addObjectModifyActions(List<DBEPersistAction> actionList,
-										  ObjectChangeCommand command, Map<String, Object> options)
+	protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList,
+                                          ObjectChangeCommand command, Map<String, Object> options)
 	{
 		final ExasolTableUniqueKey constraint = command.getObject();
 		

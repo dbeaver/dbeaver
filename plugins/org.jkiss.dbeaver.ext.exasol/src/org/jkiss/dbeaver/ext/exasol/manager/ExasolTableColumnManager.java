@@ -89,7 +89,7 @@ public class ExasolTableColumnManager extends SQLTableColumnManager<ExasolTableC
     // Alter
     // -----
     @Override
-    protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) {
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) {
         ExasolTableColumn exasolColumn = command.getObject();
 
         if (!command.getProperties().isEmpty()) {
