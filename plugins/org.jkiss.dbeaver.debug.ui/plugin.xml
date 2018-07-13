@@ -35,7 +35,7 @@
                 class="org.jkiss.dbeaver.debug.ui.DatabaseDebugConfigurationTabGroup"
                 description="%launchConfigurationTabGroup.description"
                 type="org.jkiss.dbeaver.debug.launchConfiguration">
-            <launchMode mode="debug" description="%launchConfigurationTabGroup.launchMode.description" perspective="org.jkiss.dbeaver.core.perspective"/>
+            <launchMode mode="debug" description="%launchConfigurationTabGroup.launchMode.description" /> <!-- perspective="org.jkiss.dbeaver.core.perspective" -->
         </launchConfigurationTabGroup>
     </extension>
 
