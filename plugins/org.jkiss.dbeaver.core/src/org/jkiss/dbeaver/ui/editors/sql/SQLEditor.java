@@ -449,6 +449,9 @@ public class SQLEditor extends SQLEditorBase implements
             // Console is never dirty
             return false;
         }
+        if (extraPresentation instanceof ISaveablePart && ((ISaveablePart) extraPresentation).isDirty()) {
+            return true;
+        }
         return super.isDirty();
     }
 
@@ -1676,6 +1679,9 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
 
+        if (extraPresentation instanceof ISaveablePart) {
+            ((ISaveablePart) extraPresentation).doSave(monitor);
+        }
         super.doSave(monitor);
     }
 
