@@ -135,7 +135,7 @@ public class SQLEditor extends SQLEditorBase implements
     DBPPreferenceListener
 {
     private static final long SCRIPT_UI_UPDATE_PERIOD = 100;
-    private static final int MAX_PARALLEL_QUERIES_NO_WARN = 10;
+    private static final int MAX_PARALLEL_QUERIES_NO_WARN = 1;
 
     private static final int SQL_EDITOR_CONTROL_INDEX = 1;
     private static final int EXTRA_CONTROL_INDEX = 0;
