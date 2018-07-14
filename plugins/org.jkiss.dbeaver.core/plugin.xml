@@ -2604,8 +2604,8 @@
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.navigate.object" contextId="org.jkiss.dbeaver.ui.editors.sql.script.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="F4"/>
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.query.next" contextId="org.jkiss.dbeaver.ui.editors.sql.script.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+ARROW_DOWN"/>
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.query.prev" contextId="org.jkiss.dbeaver.ui.editors.sql.script.focused" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="ALT+ARROW_UP"/>
-        <key commandId="org.jkiss.dbeaver.ui.editors.sql.show.output" contextId="org.jkiss.dbeaver.ui.editors.sql.script" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+O"/>
-        <key commandId="org.jkiss.dbeaver.ui.editors.sql.show.log" contextId="org.jkiss.dbeaver.ui.editors.sql.script" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+ALT+P"/>
+        <key commandId="org.jkiss.dbeaver.ui.editors.sql.show.output" contextId="org.jkiss.dbeaver.ui.editors.sql.script" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+O"/>
+        <key commandId="org.jkiss.dbeaver.ui.editors.sql.show.log" contextId="org.jkiss.dbeaver.ui.editors.sql.script" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+P"/>
 
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.toggle.result.panel" contextId="org.jkiss.dbeaver.ui.editors.sql.script" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+6"/>
         <key commandId="org.jkiss.dbeaver.ui.editors.sql.maximize.result.panel" contextId="org.jkiss.dbeaver.ui.editors.sql.script" schemeId="org.eclipse.ui.defaultAcceleratorConfiguration" sequence="CTRL+SHIFT+6"/>
