@@ -16,9 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.search.data;
 
-import org.eclipse.jface.viewers.CheckboxTreeViewer;
-import org.eclipse.jface.viewers.Viewer;
-import org.eclipse.jface.viewers.ViewerFilter;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -214,6 +212,12 @@ public class SearchDataPage extends AbstractSearchPage {
             });
         }
         UIUtils.asyncExec(this::restoreCheckedNodes);
+
+        if (!params.selectedNodes.isEmpty()) {
+            dataSourceTree.getViewer().setSelection(
+                new StructuredSelection(params.selectedNodes), true);
+        }
+
         dataSourceTree.setEnabled(true);
     }
 
@@ -248,6 +252,16 @@ public class SearchDataPage extends AbstractSearchPage {
                 break;
             }
             searchHistory.add(history);
+        }
+
+        params.selectedNodes.clear();
+        ISelection selection = container.getSelection();
+        if (selection instanceof IStructuredSelection) {
+            for (Object selItem : ((IStructuredSelection) selection).toArray()) {
+                if (selItem instanceof DBNNode) {
+                    params.selectedNodes.add((DBNNode) selItem);
+                }
+            }
         }
     }
 
