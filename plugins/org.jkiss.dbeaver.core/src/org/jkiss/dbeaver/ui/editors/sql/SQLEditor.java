@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -191,6 +191,8 @@ public class SQLEditor extends SQLEditorBase implements
     private Map<SQLPresentationPanelDescriptor, SQLEditorPresentationPanel> extraPresentationPanels = new HashMap<>();
     private SQLEditorPresentationPanel extraPresentationCurrentPanel;
 
+    private final List<SQLEditorListener> listeners = new ArrayList<>();
+
     public SQLEditor()
     {
         super();
@@ -354,6 +356,18 @@ public class SQLEditor extends SQLEditorBase implements
             dataSourceContainer.getRegistry().removeDataSourceListener(this);
             dataSourceContainer.release(this);
             dataSourceContainer = null;
+        }
+    }
+
+    public void addListener(SQLEditorListener listener) {
+        synchronized (listeners) {
+            listeners.add(listener);
+        }
+    }
+
+    public void removeListener(SQLEditorListener listener) {
+        synchronized (listeners) {
+            listeners.remove(listener);
         }
     }
 
@@ -1181,6 +1195,13 @@ public class SQLEditor extends SQLEditorBase implements
 
     public void explainQueryPlan()
     {
+        // Notify listeners
+        synchronized (listeners) {
+            for (SQLEditorListener listener : listeners) {
+                listener.beforeQueryPlanExplain();
+            }
+        }
+
         final SQLScriptElement scriptElement = extractActiveQuery();
         if (scriptElement == null) {
             setStatus(CoreMessages.editors_sql_status_empty_query_string, DBPMessageType.ERROR);
@@ -1269,6 +1290,14 @@ public class SQLEditor extends SQLEditorBase implements
             setStatus(CoreMessages.editors_sql_status_cant_obtain_document, DBPMessageType.ERROR);
             return;
         }
+
+        // Notify listeners
+        synchronized (listeners) {
+            for (SQLEditorListener listener : listeners) {
+                listener.beforeQueryExecute(script, newTab);
+            }
+        }
+
         List<SQLScriptElement> elements;
         if (script) {
             // Execute all SQL statements consequently
@@ -1554,6 +1583,10 @@ public class SQLEditor extends SQLEditorBase implements
     @Override
     public void dispose()
     {
+        if (extraPresentation != null) {
+            extraPresentation.dispose();
+            extraPresentation = null;
+        }
         // Release ds container
         releaseContainer();
         closeAllJobs();
