@@ -37,6 +37,7 @@ public class SQLFormatterTokenized implements SQLFormatter {
 
     public static final String FORMATTER_ID = "DEFAULT";
 
+    private static final String[] DML_KEYWORD = { "SELECT", "UPDATE", "INSERT", "DELETE" };
     private static final String[] JOIN_BEGIN = { "LEFT", "RIGHT", "INNER", "OUTER", "JOIN" };
 
     private SQLFormatterConfiguration formatterCfg;
@@ -184,7 +185,7 @@ public class SQLFormatterTokenized implements SQLFormatter {
                     bracketsDepth--;
                 } else if (tokenString.equals(",")) { //$NON-NLS-1$
                     if (!isCompact) {
-                        if (bracketsDepth <= 0) {
+                        /*if (bracketsDepth <= 0 || "SELECT".equals(getPrevDMLKeyword(argList, index)))*/ {
                             index += insertReturnAndIndent(argList, index + 1, indent);
                         }
                     }
@@ -221,6 +222,9 @@ public class SQLFormatterTokenized implements SQLFormatter {
                         case "TRUNCATE":
                         case "TABLE":
                             if (!isCompact) {
+                                if (bracketsDepth > 0) {
+                                    index += insertReturnAndIndent(argList, index, indent);
+                                }
                                 indent++;
                                 index += insertReturnAndIndent(argList, index + 1, indent);
                             }
@@ -409,6 +413,18 @@ public class SQLFormatterTokenized implements SQLFormatter {
         }
 
         return argList;
+    }
+
+    private static String getPrevDMLKeyword(List<FormatterToken> argList, int index) {
+        for (int i = index - 1; i >= 0; i--) {
+            FormatterToken token = argList.get(i);
+            if (token.getType() == TokenType.KEYWORD) {
+                if (ArrayUtils.contains(DML_KEYWORD, token.getString())) {
+                    return token.getString();
+                }
+            }
+        }
+        return null;
     }
 
     private static int getNextKeyword(List<FormatterToken> argList, int index) {
