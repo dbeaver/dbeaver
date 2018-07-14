@@ -100,11 +100,11 @@ class GridColumnRenderer extends AbstractRenderer
         boolean drawSelected = false;
 
         if (flat && (selected || hovering)) {
-            gc.setBackground(grid.getContentProvider().getCellHeaderSelectionBackground());
+            gc.setBackground(grid.getContentProvider().getCellHeaderSelectionBackground(element));
         } else {
-            gc.setBackground(grid.getContentProvider().getCellHeaderBackground());
+            gc.setBackground(grid.getContentProvider().getCellHeaderBackground(element));
         }
-        gc.setForeground(grid.getContentProvider().getCellHeaderForeground());
+        gc.setForeground(grid.getContentProvider().getCellHeaderForeground(element));
 
         gc.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height);
 
