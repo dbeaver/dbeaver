@@ -221,7 +221,7 @@ public class AttributePart extends PropertyAwarePart {
 
     @Override
     public String toString() {
-        return ERDMessages.column_ + getAttribute().getLabelText();
+        return ERDMessages.column_.trim() + " " + getAttribute().getLabelText();
     }
 
 }
