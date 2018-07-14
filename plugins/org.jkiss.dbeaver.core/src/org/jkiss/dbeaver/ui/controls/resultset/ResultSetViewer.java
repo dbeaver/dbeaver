@@ -2829,6 +2829,7 @@ public class ResultSetViewer extends Viewer
                         if (control1.isDisposed()) {
                             return;
                         }
+                        model.setUpdateInProgress(false);
                         final boolean metadataChanged = model.isMetadataChanged();
                         if (error != null) {
                             setStatus(error.getMessage(), DBPMessageType.ERROR);
@@ -2860,7 +2861,6 @@ public class ResultSetViewer extends Viewer
                                 redrawData(true, false);
                             }
                         }
-                        model.setUpdateInProgress(false);
                         if (job.getStatistics() == null || !job.getStatistics().isEmpty()) {
                             if (error == null) {
                                 // Update status (update execution statistics)
