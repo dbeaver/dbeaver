@@ -40,6 +40,7 @@ public class StandardErrorDialog extends ErrorDialog {
 
     private static final String DIALOG_ID = "DBeaver.StandardErrorDialog";//$NON-NLS-1$
     private Text messageText;
+    private boolean detailsVisible = false;
 
     public StandardErrorDialog(
         @NotNull Shell parentShell,
@@ -87,4 +88,28 @@ public class StandardErrorDialog extends ErrorDialog {
         return composite;
     }
 
+    @Override
+    public void create() {
+        super.create();
+        detailsVisible = getDialogBoundsSettings().getBoolean("showDetails");
+        if (detailsVisible) {
+            showDetailsArea();
+        }
+    }
+
+    @Override
+    protected List createDropDownList(Composite parent) {
+        detailsVisible = true;
+        List dropDownList = super.createDropDownList(parent);
+        dropDownList.addDisposeListener(e -> {
+            detailsVisible = false;
+        });
+        return dropDownList;
+    }
+
+    @Override
+    protected void okPressed() {
+        getDialogBoundsSettings().put("showDetails", detailsVisible);
+        super.okPressed();
+    }
 }
