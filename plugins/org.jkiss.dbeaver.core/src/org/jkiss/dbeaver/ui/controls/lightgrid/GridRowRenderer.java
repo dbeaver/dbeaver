@@ -53,7 +53,7 @@ class GridRowRenderer extends AbstractRenderer {
 
         gc.setFont(getDisplay().getSystemFont());
 
-        Color background = selected ? grid.getContentProvider().getCellHeaderSelectionBackground() : grid.getContentProvider().getCellHeaderBackground();
+        Color background = selected ? grid.getContentProvider().getCellHeaderSelectionBackground(element) : grid.getContentProvider().getCellHeaderBackground(element);
         if (background == null) {
             background = DEFAULT_BACKGROUND;
         }
@@ -62,7 +62,7 @@ class GridRowRenderer extends AbstractRenderer {
         gc.fillRectangle(bounds.x, bounds.y, bounds.width, bounds.height + 1);
 
         {
-            gc.setForeground(grid.getContentProvider().getCellHeaderForeground());
+            gc.setForeground(grid.getContentProvider().getCellHeaderForeground(element));
 
             gc.drawLine(
                 bounds.x + bounds.width - 1,
@@ -99,7 +99,7 @@ class GridRowRenderer extends AbstractRenderer {
 
         width -= RIGHT_MARGIN;
 
-        Color foreground = grid.getContentProvider().getCellHeaderForeground();
+        Color foreground = grid.getContentProvider().getCellHeaderForeground(element);
         if (foreground == null) {
             foreground = grid.getLabelProvider().getForeground(element);
         }
