@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.search.data;
 
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 
 import java.util.ArrayList;
@@ -34,6 +35,7 @@ public class SearchDataParams {
     boolean searchLOBs;
     boolean searchForeignObjects;
     int maxResults;
+    List<DBNNode> selectedNodes = new ArrayList<>();
 
     public SearchDataParams()
     {
@@ -101,5 +103,9 @@ public class SearchDataParams {
 
     public void setMaxResults(int maxResults) {
         this.maxResults = maxResults;
+    }
+
+    public List<DBNNode> getSelectedNodes() {
+        return selectedNodes;
     }
 }
