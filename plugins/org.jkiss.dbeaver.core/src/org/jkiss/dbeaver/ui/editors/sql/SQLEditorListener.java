@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,17 +16,25 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql;
 
-import org.eclipse.swt.widgets.Composite;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.sql.SQLQuery;
 
-public interface SQLEditorPresentation {
+/**
+ * SQLEditorListener
+ *
+ * @author Serge Rider
+ */
+public interface SQLEditorListener
+{
+    void onConnect(DBPDataSourceContainer container);
 
-    void createPresentation(Composite parent, SQLEditor editor);
+    void onDisconnect(DBPDataSourceContainer container);
 
-    void dispose();
+    void beforeQueryExecute(boolean script, boolean newTabs);
 
-    enum ActivationType {
-        HIDDEN,
-        VISIBLE,
-        MAXIMIZED,
-    }
+    void afterQueryExecute(boolean script, boolean newTabs);
+
+    void onQueryChange(SQLQuery oldQuery, SQLQuery newQuery);
+
+    void beforeQueryPlanExplain();
 }
