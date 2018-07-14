@@ -17,8 +17,8 @@
 package org.jkiss.dbeaver.ui.data.editors;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
@@ -26,14 +26,14 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.ui.controls.StyledTextUtils;
 import org.jkiss.dbeaver.ui.data.IValueController;
 
 /**
 * StringInlineEditor.
- * TODO: use StyledText instead of Text? with fillDefaultStyledTextContextMenu it works better than Text
- * TODO: however Text is native and has extra features. Can't decide.
+ * Relies on StyledText. After all it is better.
 */
-public class StringInlineEditor extends BaseValueEditor<Text> {
+public class StringInlineEditor extends BaseValueEditor<StyledText> {
 
     private static final int MAX_STRING_LENGTH = 0xffff;
 
@@ -42,13 +42,14 @@ public class StringInlineEditor extends BaseValueEditor<Text> {
     }
 
     @Override
-    protected Text createControl(Composite editPlaceholder)
+    protected StyledText createControl(Composite editPlaceholder)
     {
         final boolean inline = valueController.getEditType() == IValueController.EditType.INLINE;
-        final Text editor = new Text(valueController.getEditPlaceholder(),
+        final StyledText editor = new StyledText(valueController.getEditPlaceholder(),
             (inline ? SWT.BORDER : SWT.MULTI | SWT.WRAP | SWT.V_SCROLL));
         editor.setTextLimit(MAX_STRING_LENGTH);
         editor.setEditable(!valueController.isReadOnly());
+        StyledTextUtils.fillDefaultStyledTextContextMenu(editor);
         return editor;
     }
 
