@@ -19,18 +19,26 @@ package org.jkiss.dbeaver.ui.dialogs;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.dialogs.ErrorDialog;
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.IDialogSettings;
+import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.resource.JFaceResources;
-import org.eclipse.swt.widgets.Shell;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.TextUtils;
+import org.jkiss.dbeaver.ui.UIUtils;
 
 /**
  * StandardErrorDialog
  */
 public class StandardErrorDialog extends ErrorDialog {
 
+    private static final String DIALOG_ID = "DBeaver.StandardErrorDialog";//$NON-NLS-1$
     private Text messageText;
 
     public StandardErrorDialog(
@@ -44,6 +52,39 @@ public class StandardErrorDialog extends ErrorDialog {
         setStatus(status);
         this.message = TextUtils.cutExtraLines(message == null ? status.getMessage()
                 : JFaceResources.format("Reason", message, status.getMessage()), 20); //$NON-NLS-1$
+    }
+
+    @Override
+    protected IDialogSettings getDialogBoundsSettings() {
+        return UIUtils.getDialogSettings(DIALOG_ID);
+    }
+
+    protected Control createDialogArea(Composite parent) {
+        return createMessageArea(parent);
+    }
+
+    protected Control createMessageArea(Composite composite) {
+        // create composite
+        // create image
+        Image image = getImage();
+        if (image != null) {
+            imageLabel = new Label(composite, SWT.NULL);
+            image.setBackground(imageLabel.getBackground());
+            imageLabel.setImage(image);
+            GridDataFactory.fillDefaults().align(SWT.CENTER, SWT.BEGINNING).applyTo(imageLabel);
+        }
+        // create message
+        if (message != null) {
+            messageText = new Text(composite, SWT.READ_ONLY | SWT.BORDER | SWT.WRAP | SWT.V_SCROLL);
+            messageText.setText(message);
+            GridData gd = new GridData(GridData.FILL_BOTH);
+            gd.minimumWidth = IDialogConstants.MINIMUM_MESSAGE_AREA_WIDTH;
+            gd.heightHint = UIUtils.getFontHeight(composite) * 10;
+            gd.grabExcessVerticalSpace = true;
+            gd.grabExcessHorizontalSpace = true;
+            messageText.setLayoutData(gd);
+        }
+        return composite;
     }
 
 }
