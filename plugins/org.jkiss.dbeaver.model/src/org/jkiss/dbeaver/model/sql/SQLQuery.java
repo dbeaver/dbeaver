@@ -59,8 +59,8 @@ public class SQLQuery implements SQLScriptElement {
     private String originalText;
     @NotNull
     private String text;
-    private final int offset;
-    private final int length;
+    private int offset;
+    private int length;
     private Object data;
     private int resultsOffset = -1;
     private int resultsMaxRows = -1;
@@ -277,9 +277,17 @@ public class SQLQuery implements SQLScriptElement {
         return offset;
     }
 
+    public void setOffset(int offset) {
+        this.offset = offset;
+    }
+
     public int getLength()
     {
         return length;
+    }
+
+    public void setLength(int length) {
+        this.length = length;
     }
 
     /**
