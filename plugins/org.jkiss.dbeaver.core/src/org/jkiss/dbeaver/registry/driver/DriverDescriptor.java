@@ -1031,11 +1031,15 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                 List<DriverFileInfo> files = resolvedFiles.get(library);
                 if (files != null) {
                     for (DriverFileInfo file : files) {
-                        result.add(file.file);
+                        if (file.file != null) {
+                            result.add(file.file);
+                        }
                     }
                 }
             } else {
-                result.add(library.getLocalFile());
+                if (library.getLocalFile() != null) {
+                    result.add(library.getLocalFile());
+                }
             }
         }
 
@@ -1044,14 +1048,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             // TODO: implement new version check
             if (false) {
                 try {
-                    UIUtils.runInProgressService(new DBRRunnableWithProgress() {
-                        @Override
-                        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                            try {
-                                checkDriverVersion(monitor);
-                            } catch (IOException e) {
-                                throw new InvocationTargetException(e);
-                            }
+                    UIUtils.runInProgressService(monitor -> {
+                        try {
+                            checkDriverVersion(monitor);
+                        } catch (IOException e) {
+                            throw new InvocationTargetException(e);
                         }
                     });
                 } catch (InvocationTargetException e) {

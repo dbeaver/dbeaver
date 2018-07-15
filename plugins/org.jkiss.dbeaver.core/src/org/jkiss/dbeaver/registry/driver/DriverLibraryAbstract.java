@@ -47,6 +47,7 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary
     protected final FileType type;
     protected final OSDescriptor system;
     protected String path;
+    private boolean optional;
     protected boolean custom;
     protected boolean disabled;
 
@@ -106,6 +107,7 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary
         this.type = copyFrom.type;
         this.system = copyFrom.system;
         this.path = copyFrom.path;
+        this.optional = copyFrom.optional;
         this.custom = copyFrom.custom;
         this.disabled = copyFrom.disabled;
     }
@@ -129,6 +131,7 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary
             osName,
             config.getAttribute(RegistryConstants.ATTR_ARCH));
         this.path = config.getAttribute(RegistryConstants.ATTR_PATH);
+        this.optional = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_OPTIONAL), false);
         this.custom = false;
     }
 
@@ -176,6 +179,11 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary
     public String getDescription()
     {
         return null;
+    }
+
+    @Override
+    public boolean isOptional() {
+        return optional;
     }
 
     @Override
