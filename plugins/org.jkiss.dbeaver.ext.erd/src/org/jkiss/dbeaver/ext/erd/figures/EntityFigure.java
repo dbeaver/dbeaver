@@ -32,6 +32,9 @@ import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Figure used to represent a table in the schema
  *
@@ -171,4 +174,10 @@ public class EntityFigure extends Figure {
         return label;
     }
 
+    public List<AttributeItemFigure> getAttributeFigures() {
+        List<AttributeItemFigure> result = new ArrayList<>();
+        result.addAll(keyFigure.getAttributes());
+        result.addAll(attributeFigure.getAttributes());
+        return result;
+    }
 }

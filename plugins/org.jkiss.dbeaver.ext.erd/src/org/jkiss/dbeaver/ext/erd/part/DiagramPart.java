@@ -45,6 +45,7 @@ import org.jkiss.dbeaver.ext.erd.policy.DiagramContainerEditPolicy;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.beans.PropertyChangeEvent;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -335,6 +336,16 @@ public class DiagramPart extends PropertyAwarePart {
         return null;
     }
 
+    public List<EntityPart> getEntityParts() {
+        List<EntityPart> result = new ArrayList<>();
+        for (Object child : getChildren()) {
+            if (child instanceof EntityPart) {
+                result.add((EntityPart)child);
+            }
+        }
+        return result;
+    }
+
     @Nullable
     public NotePart getNotePart(ERDNote erdNote)
     {
@@ -360,4 +371,6 @@ public class DiagramPart extends PropertyAwarePart {
     {
         return ERDMessages.entity_diagram_ + getDiagram().getName();
     }
+
+
 }
