@@ -324,6 +324,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     @Override
     protected Connection openConnection(@NotNull DBRProgressMonitor monitor, JDBCRemoteInstance remoteInstance, @NotNull String purpose) throws DBCException {
         Connection pgConnection;
+        log.debug("Initiate connection to PostgreSQL database [" + remoteInstance.getName() + "]");
         final DBPConnectionConfiguration conConfig = getContainer().getActualConnectionConfiguration();
         if (remoteInstance instanceof PostgreDatabase && !CommonUtils.equalObjects(remoteInstance.getName(), conConfig.getDatabaseName())) {
             // If database was changed then use new name for connection
