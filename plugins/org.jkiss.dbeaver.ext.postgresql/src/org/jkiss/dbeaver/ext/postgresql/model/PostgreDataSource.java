@@ -117,10 +117,12 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
                     }
                 }
             }
-            try (PreparedStatement stat = bootstrapConnection.prepareStatement("SELECT current_database()")) {
-                try (ResultSet rs = stat.executeQuery()) {
-                    if (rs.next()) {
-                        activeDatabaseName = JDBCUtils.safeGetString(rs, 1);
+            if (activeDatabaseName == null) {
+                try (PreparedStatement stat = bootstrapConnection.prepareStatement("SELECT current_database()")) {
+                    try (ResultSet rs = stat.executeQuery()) {
+                        if (rs.next()) {
+                            activeDatabaseName = JDBCUtils.safeGetString(rs, 1);
+                        }
                     }
                 }
             }
