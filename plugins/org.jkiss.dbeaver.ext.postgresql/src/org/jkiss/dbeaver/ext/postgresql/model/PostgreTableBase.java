@@ -206,6 +206,9 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
 
     @Override
     public Collection<PostgrePermission> getPermissions(DBRProgressMonitor monitor, boolean includeNestedObjects) throws DBException {
+        if (!isPersisted()) {
+            return Collections.emptyList();
+        }
         List<PostgrePermission> tablePermissions = PostgreUtils.extractPermissionsFromACL(monitor, this, acl);
         if (!includeNestedObjects) {
             return tablePermissions;
