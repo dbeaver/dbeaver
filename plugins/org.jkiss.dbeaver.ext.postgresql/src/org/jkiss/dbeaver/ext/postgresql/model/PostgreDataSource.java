@@ -82,8 +82,9 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         databaseCache = new DatabaseCache();
 
         // Make initial connection to read database list
-        final boolean showNDD = CommonUtils.toBoolean(getContainer().getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB));
-        final boolean showTemplates = CommonUtils.toBoolean(getContainer().getActualConnectionConfiguration().getProviderProperty(PostgreConstants.PROP_SHOW_TEMPLATES_DB));
+        DBPConnectionConfiguration configuration = getContainer().getActualConnectionConfiguration();
+        final boolean showNDD = CommonUtils.toBoolean(configuration.getProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB)) && !CommonUtils.isEmpty(configuration.getDatabaseName());
+        final boolean showTemplates = CommonUtils.toBoolean(configuration.getProviderProperty(PostgreConstants.PROP_SHOW_TEMPLATES_DB));
         StringBuilder catalogQuery = new StringBuilder(
             "SELECT db.oid,db.*" +
                 "\nFROM pg_catalog.pg_database db WHERE datallowconn ");
@@ -91,17 +92,23 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
             catalogQuery.append(" AND NOT datistemplate ");
         }
         DBSObjectFilter catalogFilters = getContainer().getObjectFilter(PostgreDatabase.class, null, false);
-        if (showNDD) {
+        if (!showNDD) {
+            catalogQuery.append(" AND db.datname=?");
+        } else {
             if (catalogFilters != null) {
-                JDBCUtils.appendFilterClause(catalogQuery, catalogFilters, "datname", true);
+                JDBCUtils.appendFilterClause(catalogQuery, catalogFilters, "datname", false);
             }
             catalogQuery.append("\nORDER BY db.datname");
         }
         List<PostgreDatabase> dbList = new ArrayList<>();
         try (Connection bootstrapConnection = openConnection(monitor, null, "Read PostgreSQL database list")) {
             try (PreparedStatement dbStat = bootstrapConnection.prepareStatement(catalogQuery.toString())) {
-                if (catalogFilters != null) {
-                    JDBCUtils.setFilterParameters(dbStat, 1, catalogFilters);
+                if (!showNDD) {
+                    dbStat.setString(1, configuration.getDatabaseName());
+                } else {
+                    if (catalogFilters != null) {
+                        JDBCUtils.setFilterParameters(dbStat, 1, catalogFilters);
+                    }
                 }
                 try (ResultSet dbResult = dbStat.executeQuery()) {
                     while (dbResult.next()) {
