@@ -335,7 +335,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
             }
             procDDL = body;
         }
-        if (CommonUtils.getOption(options, PostgreConstants.OPTION_DDL_SHOW_PERMISSIONS)) {
+        if (this.isPersisted() && CommonUtils.getOption(options, PostgreConstants.OPTION_DDL_SHOW_PERMISSIONS)) {
             List<DBEPersistAction> actions = new ArrayList<>();
             PostgreUtils.getObjectGrantPermissionActions(monitor, this, actions, options);
             procDDL += "\n" + SQLUtils.generateScript(getDataSource(), actions.toArray(new DBEPersistAction[actions.size()]), false);

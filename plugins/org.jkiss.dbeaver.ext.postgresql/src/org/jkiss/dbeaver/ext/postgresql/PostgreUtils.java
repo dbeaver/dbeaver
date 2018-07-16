@@ -602,7 +602,7 @@ public class PostgreUtils {
     }
 
     public static void getObjectGrantPermissionActions(DBRProgressMonitor monitor, PostgrePermissionsOwner object, List<DBEPersistAction> actions, Map<String, Object> options) throws DBException {
-        if (CommonUtils.getOption(options, PostgreConstants.OPTION_DDL_SHOW_PERMISSIONS)) {
+        if (object.isPersisted() && CommonUtils.getOption(options, PostgreConstants.OPTION_DDL_SHOW_PERMISSIONS)) {
             actions.add(new SQLDatabasePersistActionComment(object.getDataSource(), "Permissions"));
 
             // Owner
