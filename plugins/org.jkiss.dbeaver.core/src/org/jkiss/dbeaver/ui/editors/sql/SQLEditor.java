@@ -267,7 +267,6 @@ public class SQLEditor extends SQLEditorBase implements
     public boolean setDataSourceContainer(@Nullable DBPDataSourceContainer container)
     {
         if (container == dataSourceContainer) {
-            fireDataSourceChange();
             return true;
         }
 
