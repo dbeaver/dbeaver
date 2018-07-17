@@ -38,6 +38,9 @@ public class DatabaseEditorUtils {
 
     public static void setPartBackground(IEditorPart editor, Composite composite)
     {
+        if (composite == null || composite.isDisposed()) {
+            return;
+        }
         CTabFolder tabFolder = null;
         Composite rootComposite = composite;
         for (Composite c = composite; c != null; c = c.getParent()) {
