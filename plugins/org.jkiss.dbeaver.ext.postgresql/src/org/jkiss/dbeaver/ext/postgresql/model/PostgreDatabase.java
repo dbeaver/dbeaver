@@ -91,10 +91,31 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource> imple
     private String activeUser;
 
     public PostgreDatabase(DBRProgressMonitor monitor, PostgreDataSource dataSource, ResultSet dbResult)
-        throws SQLException, DBException
+        throws DBException
     {
         super(monitor, dataSource, false);
         this.loadInfo(dbResult);
+    }
+
+    public PostgreDatabase(DBRProgressMonitor monitor, PostgreDataSource dataSource, String databaseName)
+        throws DBException
+    {
+        super(monitor, dataSource, true);
+        this.name = databaseName;
+
+        try (JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load database info")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT db.oid,db.*" +
+                    "\nFROM pg_catalog.pg_database db WHERE datname=?")) {
+                dbStat.setString(1, databaseName);
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    if (dbResult.nextRow()) {
+                        loadInfo(dbResult);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBCException(e, getDataSource());
+        }
     }
 
     public PostgreDatabase(DBRProgressMonitor monitor, PostgreDataSource dataSource, String name, PostgreRole owner, String templateName, PostgreTablespace tablespace, PostgreCharset encoding) throws DBException {
@@ -120,7 +141,6 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource> imple
     }
 
     private void loadInfo(ResultSet dbResult)
-        throws SQLException
     {
         this.oid = JDBCUtils.safeGetLong(dbResult, "oid");
         this.name = JDBCUtils.safeGetString(dbResult, "datname");

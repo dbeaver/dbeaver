@@ -81,53 +81,50 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         activeDatabaseName = getContainer().getConnectionConfiguration().getDatabaseName();
         databaseCache = new DatabaseCache();
 
-        // Make initial connection to read database list
         DBPConnectionConfiguration configuration = getContainer().getActualConnectionConfiguration();
         final boolean showNDD = CommonUtils.toBoolean(configuration.getProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB)) && !CommonUtils.isEmpty(configuration.getDatabaseName());
-        final boolean showTemplates = CommonUtils.toBoolean(configuration.getProviderProperty(PostgreConstants.PROP_SHOW_TEMPLATES_DB));
-        StringBuilder catalogQuery = new StringBuilder(
-            "SELECT db.oid,db.*" +
-                "\nFROM pg_catalog.pg_database db WHERE datallowconn ");
-        if (!showTemplates) {
-            catalogQuery.append(" AND NOT datistemplate ");
-        }
-        DBSObjectFilter catalogFilters = getContainer().getObjectFilter(PostgreDatabase.class, null, false);
+        List<PostgreDatabase> dbList = new ArrayList<>();
         if (!showNDD) {
-            catalogQuery.append(" AND db.datname=?");
+            PostgreDatabase defDatabase = new PostgreDatabase(monitor, this, activeDatabaseName);
+            dbList.add(defDatabase);
         } else {
+            // Make initial connection to read database list
+            final boolean showTemplates = CommonUtils.toBoolean(configuration.getProviderProperty(PostgreConstants.PROP_SHOW_TEMPLATES_DB));
+            StringBuilder catalogQuery = new StringBuilder(
+                    "SELECT db.oid,db.*" +
+                            "\nFROM pg_catalog.pg_database db WHERE datallowconn ");
+            if (!showTemplates) {
+                catalogQuery.append(" AND NOT datistemplate ");
+            }
+            DBSObjectFilter catalogFilters = getContainer().getObjectFilter(PostgreDatabase.class, null, false);
             if (catalogFilters != null) {
                 JDBCUtils.appendFilterClause(catalogQuery, catalogFilters, "datname", false);
             }
             catalogQuery.append("\nORDER BY db.datname");
-        }
-        List<PostgreDatabase> dbList = new ArrayList<>();
-        try (Connection bootstrapConnection = openConnection(monitor, null, "Read PostgreSQL database list")) {
-            try (PreparedStatement dbStat = bootstrapConnection.prepareStatement(catalogQuery.toString())) {
-                if (!showNDD) {
-                    dbStat.setString(1, configuration.getDatabaseName());
-                } else {
+            try (Connection bootstrapConnection = openConnection(monitor, null, "Read PostgreSQL database list")) {
+                try (PreparedStatement dbStat = bootstrapConnection.prepareStatement(catalogQuery.toString())) {
                     if (catalogFilters != null) {
                         JDBCUtils.setFilterParameters(dbStat, 1, catalogFilters);
                     }
-                }
-                try (ResultSet dbResult = dbStat.executeQuery()) {
-                    while (dbResult.next()) {
-                        PostgreDatabase database = new PostgreDatabase(monitor, this, dbResult);
-                        dbList.add(database);
-                    }
-                }
-            }
-            if (activeDatabaseName == null) {
-                try (PreparedStatement stat = bootstrapConnection.prepareStatement("SELECT current_database()")) {
-                    try (ResultSet rs = stat.executeQuery()) {
-                        if (rs.next()) {
-                            activeDatabaseName = JDBCUtils.safeGetString(rs, 1);
+                    try (ResultSet dbResult = dbStat.executeQuery()) {
+                        while (dbResult.next()) {
+                            PostgreDatabase database = new PostgreDatabase(monitor, this, dbResult);
+                            dbList.add(database);
                         }
                     }
                 }
+                if (activeDatabaseName == null) {
+                    try (PreparedStatement stat = bootstrapConnection.prepareStatement("SELECT current_database()")) {
+                        try (ResultSet rs = stat.executeQuery()) {
+                            if (rs.next()) {
+                                activeDatabaseName = JDBCUtils.safeGetString(rs, 1);
+                            }
+                        }
+                    }
+                }
+            } catch (SQLException e) {
+                throw new DBException("Can't connect ot remote PostgreSQL server", e);
             }
-        } catch (SQLException e) {
-            throw new DBException("Can't connect ot remote PostgreSQL server", e);
         }
         databaseCache.setCache(dbList);
         // Initiate default context
