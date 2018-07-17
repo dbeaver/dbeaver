@@ -43,9 +43,9 @@ import java.util.List;
 public class EntityAddCommand extends Command
 {
 
-	private DiagramPart diagramPart;
-	private List<ERDEntity> entities;
-    private Point location;
+    protected DiagramPart diagramPart;
+	protected List<ERDEntity> entities;
+    protected Point location;
 
     public EntityAddCommand(DiagramPart diagram, List<ERDEntity> entities, Point location)
     {
