@@ -100,8 +100,10 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource> imple
     public PostgreDatabase(DBRProgressMonitor monitor, PostgreDataSource dataSource, String databaseName)
         throws DBException
     {
-        super(monitor, dataSource, true);
+        super(monitor, dataSource, false);
+        // We need to set name first
         this.name = databaseName;
+        initializeMainContext(monitor);
 
         try (JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load database info")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT db.oid,db.*" +
