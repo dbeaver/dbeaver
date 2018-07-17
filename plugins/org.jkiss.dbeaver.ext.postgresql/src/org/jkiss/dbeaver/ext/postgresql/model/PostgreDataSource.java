@@ -328,7 +328,10 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         if (remoteInstance != null) {
             log.debug("Initiate connection to PostgreSQL database [" + remoteInstance.getName() + "@" + conConfig.getHostName() + "]");
         }
-        if (remoteInstance instanceof PostgreDatabase && !CommonUtils.equalObjects(remoteInstance.getName(), conConfig.getDatabaseName())) {
+        if (remoteInstance instanceof PostgreDatabase &&
+            remoteInstance.getName() != null &&
+            !CommonUtils.equalObjects(remoteInstance.getName(), conConfig.getDatabaseName()))
+        {
             // If database was changed then use new name for connection
             final DBPConnectionConfiguration originalConfig = new DBPConnectionConfiguration(conConfig);
             try {
