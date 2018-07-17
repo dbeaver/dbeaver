@@ -365,7 +365,7 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
 
     }
 
-    private List<ColumnInfo> getVisibleColumns()
+    public List<ColumnInfo> getVisibleColumns()
     {
         List<ColumnInfo> visibleList = new ArrayList<>();
         for (ColumnInfo column : columns) {
@@ -462,6 +462,15 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
         final Control control = viewer.getControl();
         return control instanceof Tree ?
             ((Tree) control).getColumnCount() : ((Table) control).getColumnCount();
+    }
+
+    public int getEditableColumnIndex(Object element) {
+        for (ColumnInfo info : getVisibleColumns()) {
+            if (info.editingSupport != null) {
+                return info.order;
+            }
+        }
+        return -1;
     }
 
     private static class ColumnInfo extends ViewerColumnRegistry.ColumnState {
