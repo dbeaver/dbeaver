@@ -25,8 +25,8 @@ import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -91,6 +91,17 @@ public class StandardErrorDialog extends ErrorDialog {
     @Override
     public void create() {
         super.create();
+        Point prefSize = getContents().computeSize(SWT.DEFAULT, SWT.DEFAULT);
+        Point actualSize = getShell().getSize();
+        if (prefSize.x > actualSize.x || prefSize.y > actualSize.y) {
+            if (prefSize.x > actualSize.x) {
+                actualSize.x = prefSize.x;
+            }
+            if (prefSize.y > actualSize.y) {
+                actualSize.y = prefSize.y;
+            }
+            getShell().setSize(actualSize);
+        }
         detailsVisible = getDialogBoundsSettings().getBoolean("showDetails");
         if (detailsVisible) {
             showDetailsArea();
@@ -108,8 +119,9 @@ public class StandardErrorDialog extends ErrorDialog {
     }
 
     @Override
-    protected void okPressed() {
+    public boolean close() {
         getDialogBoundsSettings().put("showDetails", detailsVisible);
-        super.okPressed();
+        return super.close();
     }
+
 }
