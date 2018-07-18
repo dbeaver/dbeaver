@@ -58,6 +58,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLCharacterPairMatcher;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleManager;
@@ -250,27 +251,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
 
         {
             // Context listener
-            StyledText control = getViewer().getTextWidget();
-            final IContextService contextService = getSite().getService(IContextService.class);
-            if (contextService != null) {
-                control.addFocusListener(new FocusListener() {
-                    IContextActivation activation;
-
-                    @Override
-                    public void focusGained(FocusEvent e) {
-                        if (activation == null) {
-                            activation = contextService.activateContext(SQL_CONTROL_CONTEXT_ID);
-                        }
-                    }
-
-                    @Override
-                    public void focusLost(FocusEvent e) {
-                        contextService.deactivateContext(activation);
-                        activation = null;
-                    }
-                });
-            }
-            control.addDisposeListener(e -> UIUtils.removeFocusTracker(getSite(), control));
+            EditorUtils.trackControlContext(getSite(), getViewer().getTextWidget(), SQL_CONTROL_CONTEXT_ID);
         }
     }
 
