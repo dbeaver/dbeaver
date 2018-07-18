@@ -215,7 +215,8 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         this.isStrict = JDBCUtils.safeGetBoolean(dbResult, "proisstrict");
         this.returnsSet = JDBCUtils.safeGetBoolean(dbResult, "proretset");
         try {
-            this.procVolatile = ProcedureVolatile.valueOf(JDBCUtils.safeGetString(dbResult, "provolatile"));
+            String provolatile = JDBCUtils.safeGetString(dbResult, "provolatile");
+            this.procVolatile = provolatile == null ? null : ProcedureVolatile.valueOf(provolatile);
         } catch (IllegalArgumentException e) {
             log.debug(e);
         }
