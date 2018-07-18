@@ -1267,8 +1267,8 @@ public class SQLEditor extends SQLEditorBase implements
 
             final CTabItem item = new CTabItem(resultTabs, SWT.CLOSE);
             item.setControl(planView.getControl());
-            item.setText("Exec. Plan");
-            item.setToolTipText("Execution plan for\n" + sqlQuery.getText());
+            item.setText(CoreMessages.editors_sql_error_execution_plan_title);
+            item.setToolTipText(CoreMessages.editors_sql_error_execution_plan_title);
             item.setImage(IMG_EXPLAIN_PLAN);
             item.setData(planView);
             UIUtils.disposeControlOnItemDispose(item);

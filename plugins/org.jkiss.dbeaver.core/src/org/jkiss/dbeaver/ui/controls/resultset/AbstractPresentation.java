@@ -25,10 +25,10 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
-import org.eclipse.swt.events.MouseEvent;
-import org.eclipse.swt.events.MouseWheelListener;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.widgets.*;
+import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.contexts.IContextActivation;
 import org.eclipse.ui.contexts.IContextService;
@@ -36,6 +36,7 @@ import org.eclipse.ui.themes.IThemeManager;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.editors.EditorUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -189,24 +190,7 @@ public abstract class AbstractPresentation implements IResultSetPresentation, IS
         UIUtils.addFocusTracker(site, PRESENTATION_CONTROL_ID, control);
 
         // RSV control context
-        final IContextService contextService = site.getService(IContextService.class);
-        if (contextService != null) {
-            control.addFocusListener(new FocusListener() {
-                IContextActivation activation;
-                @Override
-                public void focusGained(FocusEvent e) {
-                    if (activation == null) {
-                        activation = contextService.activateContext(RESULTS_CONTROL_CONTEXT_ID);
-                    }
-                }
-                @Override
-                public void focusLost(FocusEvent e) {
-                    contextService.deactivateContext(activation);
-                    activation = null;
-                }
-            });
-        }
-        control.addDisposeListener(e -> UIUtils.removeFocusTracker(site, control));
+        EditorUtils.trackControlContext(site, control, RESULTS_CONTROL_CONTEXT_ID);
 
         // Enable horizontal scrolling
         control.addMouseWheelListener(e -> {
