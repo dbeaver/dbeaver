@@ -109,9 +109,12 @@ public class PostgreUtils {
         return object != null && object.getClass().getName().equals(PostgreConstants.PG_OBJECT_CLASS);
     }
 
-    public static <T> T extractPGObjectValue(Object pgObject) {
+    public static Object extractPGObjectValue(Object pgObject) {
         if (pgObject == null) {
             return null;
+        }
+        if (!pgObject.getClass().getName().equals(PostgreConstants.PG_OBJECT_CLASS)) {
+            return pgObject;
         }
         if (getValueMethod == null) {
             try {
@@ -122,7 +125,7 @@ public class PostgreUtils {
         }
         if (getValueMethod != null) {
             try {
-                return (T)getValueMethod.invoke(pgObject);
+                return getValueMethod.invoke(pgObject);
             } catch (Exception e) {
                 log.debug(e);
             }
@@ -521,7 +524,10 @@ public class PostgreUtils {
         int itemCount = Array.getLength(itemArray);
         for (int i = 0; i < itemCount; i++) {
             Object aclItem = Array.get(itemArray, i);
-            String aclValue = extractPGObjectValue(aclItem);
+            String aclValue = CommonUtils.toString(extractPGObjectValue(aclItem));
+            if (CommonUtils.isEmpty(aclValue)) {
+                continue;
+            }
             int divPos = aclValue.indexOf('=');
             if (divPos == -1) {
                 log.warn("Bad ACL item: " + aclValue);
