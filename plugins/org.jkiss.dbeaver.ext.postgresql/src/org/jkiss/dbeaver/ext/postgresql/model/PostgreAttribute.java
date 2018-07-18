@@ -111,7 +111,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
                 }
             }
         }
-        setTypeName(dataType.getTypeName());
+        //setTypeName(dataType.getTypeName());
         setValueType(dataType.getTypeID());
         setDefaultValue(JDBCUtils.safeGetString(dbResult, "def_value"));
         int typeMod = JDBCUtils.safeGetInt(dbResult, "atttypmod");
