@@ -128,10 +128,22 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
             char escapeChar = '\\';
             if (prevChar == escapeChar && inString) {
                 switch (ch) {
-                    case 'n': result.append("\n"); break;
-                    case 'r': result.append("\r"); break;
-                    case 't': result.append("\t"); break;
-                    default: result.append(ch); break;
+                    case 'n':
+                        if (!endsWithLF(result)) {
+                            result.append("\n");
+                        }
+                        break;
+                    case 'r':
+                        if (!endsWithLF(result)) {
+                            result.append("\r");
+                        }
+                        break;
+                    case 't':
+                        result.append("\t");
+                        break;
+                    default:
+                        result.append(ch);
+                        break;
                 }
             } else {
                 switch (ch) {
@@ -147,18 +159,7 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
                         } else if (ch == '\n' && result.length() > 0) {
                             // Append linefeed even if it is outside of quotes
                             // (but only if string in quotes doesn't end with linefeed - we don't need doubles)
-                            boolean endsWithLF = false;
-                            for (int k = result.length(); k > 0; k--) {
-                                final char lch = result.charAt(k - 1);
-                                if (!Character.isWhitespace(lch)) {
-                                    break;
-                                }
-                                if (lch == '\n' || lch == '\r') {
-                                    endsWithLF = true;
-                                    break;
-                                }
-                            }
-                            if (!endsWithLF) {
+                            if (!endsWithLF(result)) {
                                 result.append(ch);
                             }
                         }
@@ -180,6 +181,21 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
         command.doit = false;
 
         return true;
+    }
+
+    private boolean endsWithLF(StringBuilder result) {
+        boolean endsWithLF = false;
+        for (int k = result.length(); k > 0; k--) {
+            final char lch = result.charAt(k - 1);
+            if (!Character.isWhitespace(lch)) {
+                break;
+            }
+            if (lch == '\n' || lch == '\r') {
+                endsWithLF = true;
+                break;
+            }
+        }
+        return endsWithLF;
     }
 
     private boolean updateKeywordCase(final IDocument document, DocumentCommand command) throws BadLocationException {
