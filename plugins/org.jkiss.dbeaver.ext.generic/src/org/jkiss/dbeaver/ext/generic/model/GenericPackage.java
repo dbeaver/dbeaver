@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.rdb.DBSPackage;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -34,7 +35,7 @@ import java.util.Map;
 /**
  * GenericPackage
  */
-public class GenericPackage extends GenericObjectContainer implements DBPQualifiedObject, GenericScriptObject
+public class GenericPackage extends GenericObjectContainer implements DBPQualifiedObject, GenericScriptObject, DBSPackage
 {
 
     private GenericStructContainer container;
