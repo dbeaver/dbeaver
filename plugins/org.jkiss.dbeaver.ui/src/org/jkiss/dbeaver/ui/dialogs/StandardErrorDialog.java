@@ -42,6 +42,9 @@ public class StandardErrorDialog extends ErrorDialog {
     private Text messageText;
     private boolean detailsVisible = false;
 
+    private static final int MAX_AUTO_SIZE_X = 500;
+    private static final int MAX_AUTO_SIZE_Y = 300;
+
     public StandardErrorDialog(
         @NotNull Shell parentShell,
         @NotNull String dialogTitle,
@@ -93,7 +96,8 @@ public class StandardErrorDialog extends ErrorDialog {
         super.create();
         Point prefSize = getContents().computeSize(SWT.DEFAULT, SWT.DEFAULT);
         Point actualSize = getShell().getSize();
-        if (prefSize.x > actualSize.x || prefSize.y > actualSize.y) {
+        if ((prefSize.x < MAX_AUTO_SIZE_X && prefSize.x > actualSize.x) ||
+            (prefSize.y < MAX_AUTO_SIZE_Y && prefSize.y > actualSize.y)) {
             if (prefSize.x > actualSize.x) {
                 actualSize.x = prefSize.x;
             }
