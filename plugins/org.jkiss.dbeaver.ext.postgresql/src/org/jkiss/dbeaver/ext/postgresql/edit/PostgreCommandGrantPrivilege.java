@@ -76,8 +76,12 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePerm
             roleName = DBUtils.getQuotedIdentifier(object);
             objectName = ((PostgreRolePermission)permission).getFullObjectName();
         } else {
-            roleName = DBUtils.getQuotedIdentifier(object.getDataSource(), ((PostgreObjectPermission) permission).getGrantee());
+            PostgreObjectPermission permission = (PostgreObjectPermission) this.permission;
+            roleName = permission.getGrantee() == null ? null : DBUtils.getQuotedIdentifier(object.getDataSource(), permission.getGrantee());
             objectName = PostgreUtils.getObjectUniqueName(object);
+        }
+        if (roleName == null) {
+            return new DBEPersistAction[0];
         }
 
         String objectType;
