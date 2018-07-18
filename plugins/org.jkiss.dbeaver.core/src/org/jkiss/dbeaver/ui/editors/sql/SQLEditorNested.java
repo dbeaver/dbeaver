@@ -338,7 +338,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
         String compileCommandId = getCompileCommandId();
         if (compileCommandId != null) {
             toolBarManager.add(new Separator());
-            toolBarManager.add(ActionUtils.makeCommandContribution(getSite().getWorkbenchWindow(), compileCommandId));
+            //toolBarManager.add(ActionUtils.makeCommandContribution(getSite().getWorkbenchWindow(), compileCommandId));
             toolBarManager.add(new ViewLogAction());
         }
     }

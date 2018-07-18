@@ -93,10 +93,4 @@ public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLE
         toolBarManager.add(OPEN_CONSOLE_ACTION);
     }
 
-    @Override
-    public void editorContextMenuAboutToShow(IMenuManager menu) {
-        super.editorContextMenuAboutToShow(menu);
-
-        menu.insertAfter(GROUP_SQL_ADDITIONS, OPEN_CONSOLE_ACTION);
-    }
 }
