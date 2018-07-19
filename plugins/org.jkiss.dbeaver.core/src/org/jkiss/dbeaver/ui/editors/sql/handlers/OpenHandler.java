@@ -63,6 +63,7 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Handler;
 
 public class OpenHandler extends AbstractDataSourceHandler {
 
@@ -111,17 +112,27 @@ public class OpenHandler extends AbstractDataSourceHandler {
         }
     }
 
-    private static boolean openNewEditor(ExecutionEvent event) throws CoreException {
-        IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
-        DBPDataSourceContainer dataSourceContainer = getCurrentConnection(event);
-        IFolder scriptFolder = getCurrentFolder(event);
-
+    public static void openNewEditor(IWorkbenchWindow workbenchWindow, DBPDataSourceContainer dataSourceContainer, ISelection selection) throws CoreException {
         IProject project = dataSourceContainer != null ? dataSourceContainer.getRegistry().getProject() : DBeaverCore.getInstance().getProjectRegistry().getActiveProject();
         checkProjectIsOpen(project);
-        IFile scriptFile = ResourceUtils.createNewScript(project, scriptFolder, dataSourceContainer);
+        IFolder folder = null;
+        if (selection != null && !selection.isEmpty() && selection instanceof IStructuredSelection) {
+            final Object element = ((IStructuredSelection) selection).getFirstElement();
+            if (element instanceof DBNResource && ((DBNResource)element).getResource() instanceof IFolder) {
+                folder = (IFolder) ((DBNResource)element).getResource();
+            }
+        }
+
+        IFile scriptFile = ResourceUtils.createNewScript(project, folder, dataSourceContainer);
 
         NavigatorHandlerObjectOpen.openResource(scriptFile, workbenchWindow);
-        return true;
+    }
+
+    private static void openNewEditor(ExecutionEvent event) throws CoreException {
+        IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
+        DBPDataSourceContainer dataSourceContainer = getCurrentConnection(event);
+
+        openNewEditor(workbenchWindow, dataSourceContainer, HandlerUtil.getCurrentSelection(event));
     }
 
     private static void openRecentEditor(ExecutionEvent event) throws ExecutionException, CoreException {
@@ -161,12 +172,6 @@ public class OpenHandler extends AbstractDataSourceHandler {
     private static IFolder getCurrentFolder(ExecutionEvent event)
     {
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
-        if (selection != null && !selection.isEmpty() && selection instanceof IStructuredSelection) {
-            final Object element = ((IStructuredSelection) selection).getFirstElement();
-            if (element instanceof DBNResource && ((DBNResource)element).getResource() instanceof IFolder) {
-                return (IFolder) ((DBNResource)element).getResource();
-            }
-        }
         return null;
     }
 

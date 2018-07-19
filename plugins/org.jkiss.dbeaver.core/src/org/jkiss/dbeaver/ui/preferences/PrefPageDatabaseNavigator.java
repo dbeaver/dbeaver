@@ -90,7 +90,7 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
             dsDoubleClickBehavior.add(CoreMessages.pref_page_database_general_label_double_click_connection_conn_disconn, NavigatorViewBase.DoubleClickBehavior.CONNECT.ordinal());
             dsDoubleClickBehavior.add(CoreMessages.pref_page_database_general_label_double_click_connection_open_sqleditor, NavigatorViewBase.DoubleClickBehavior.SQL_EDITOR.ordinal());
             dsDoubleClickBehavior.add(CoreMessages.pref_page_database_general_label_double_click_connection_expand_collapse, NavigatorViewBase.DoubleClickBehavior.EXPAND.ordinal());
-
+            dsDoubleClickBehavior.add(CoreMessages.pref_page_database_general_label_double_click_connection_open_new_sqleditor, NavigatorViewBase.DoubleClickBehavior.SQL_EDITOR_NEW.ordinal());
         }
 
         {
