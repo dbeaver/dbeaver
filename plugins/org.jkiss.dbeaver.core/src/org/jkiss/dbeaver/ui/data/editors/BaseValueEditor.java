@@ -25,8 +25,6 @@ import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.events.TraverseEvent;
 import org.eclipse.swt.events.TraverseListener;
 import org.eclipse.swt.widgets.*;
-import org.eclipse.ui.contexts.IContextActivation;
-import org.eclipse.ui.contexts.IContextService;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
@@ -37,6 +35,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.data.IMultiController;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
+import org.jkiss.dbeaver.ui.editors.EditorUtils;
 
 /**
 * BaseValueEditor
@@ -87,25 +86,7 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
 //                inlineControl.setBackground(valueController.getEditPlaceholder().getBackground());
 //            }
 
-        final IContextService contextService = valueController.getValueSite().getService(IContextService.class);
-        inlineControl.addFocusListener(new FocusListener() {
-            private IContextActivation activationEditor;
-            @Override
-            public void focusGained(FocusEvent e) {
-                if (contextService != null) {
-                    activationEditor = contextService.activateContext(RESULTS_EDIT_CONTEXT_ID);
-                }
-            }
-
-            @Override
-            public void focusLost(FocusEvent e) {
-                contextService.deactivateContext(activationEditor);
-                activationEditor = null;
-            }
-        });
-        inlineControl.addDisposeListener(e -> {
-            control = null;
-        });
+        EditorUtils.trackControlContext(valueController.getValueSite(), inlineControl, RESULTS_EDIT_CONTEXT_ID);
 
         if (isInline) {
             inlineControl.setFont(valueController.getEditPlaceholder().getFont());

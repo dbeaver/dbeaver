@@ -849,6 +849,38 @@ public class SQLEditor extends SQLEditorBase implements
         showExtraView(CoreCommands.CMD_SQL_SHOW_LOG, CoreMessages.editors_sql_execution_log, "SQL query execution log", IMG_LOG, logViewer);
     }
 
+    public <T> T getExtraPresentationPanel(Class<T> panelClass) {
+        for (CTabItem tabItem : resultTabs.getItems()) {
+            if (tabItem.getData() instanceof SQLEditorPresentationPanel && tabItem.getData().getClass() == panelClass) {
+                return panelClass.cast(tabItem.getData());
+            }
+        }
+        return null;
+    }
+
+    public boolean showPresentationPanel(SQLEditorPresentationPanel panel) {
+        for (CTabItem item : resultTabs.getItems()) {
+            if (item.getData() == panel) {
+                resultTabs.setSelection(item);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public SQLEditorPresentationPanel showPresentationPanel(String panelID) {
+        for (IContributionItem cItem : sideToolBar.getItems()) {
+            if (cItem instanceof ActionContributionItem) {
+                IAction action = ((ActionContributionItem) cItem).getAction();
+                if (action instanceof PresentationPanelToggleAction && ((PresentationPanelToggleAction) action).panel.getId().equals(panelID)) {
+                    action.run();
+                    return extraPresentationCurrentPanel;
+                }
+            }
+        }
+        return null;
+    }
+
     public boolean hasMaximizedControl() {
         return resultsSash.getMaximizedControl() != null;
     }
@@ -869,15 +901,6 @@ public class SQLEditor extends SQLEditorBase implements
         } else {
             return SQLEditorPresentation.ActivationType.VISIBLE;
         }
-    }
-
-    public <T> T getExtraPresentationPanel(Class<T> panelClass) {
-        for (CTabItem tabItem : resultTabs.getItems()) {
-            if (tabItem.getData() instanceof SQLEditorPresentationPanel && tabItem.getData().getClass() == panelClass) {
-                return panelClass.cast(tabItem.getData());
-            }
-        }
-        return null;
     }
 
     public void showExtraPresentation(boolean show, boolean maximize) {
@@ -1244,8 +1267,8 @@ public class SQLEditor extends SQLEditorBase implements
 
             final CTabItem item = new CTabItem(resultTabs, SWT.CLOSE);
             item.setControl(planView.getControl());
-            item.setText("Exec. Plan");
-            item.setToolTipText("Execution plan for\n" + sqlQuery.getText());
+            item.setText(CoreMessages.editors_sql_error_execution_plan_title);
+            item.setToolTipText(CoreMessages.editors_sql_error_execution_plan_title);
             item.setImage(IMG_EXPLAIN_PLAN);
             item.setData(planView);
             UIUtils.disposeControlOnItemDispose(item);
