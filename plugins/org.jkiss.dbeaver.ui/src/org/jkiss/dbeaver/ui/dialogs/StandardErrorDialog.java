@@ -110,6 +110,12 @@ public class StandardErrorDialog extends ErrorDialog {
         if (detailsVisible) {
             showDetailsArea();
         }
+        UIUtils.asyncExec(() -> {
+            Button okButton = getButton(IDialogConstants.OK_ID);
+            if (okButton != null) {
+                okButton.setFocus();
+            }
+        });
     }
 
     @Override
