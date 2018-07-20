@@ -460,7 +460,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
                 }
             }
         } catch (Exception e) {
-            throw new DBException("Error eading templkate databases", e);
+            throw new DBException("Error reading template databases", e);
         }
     }
 
