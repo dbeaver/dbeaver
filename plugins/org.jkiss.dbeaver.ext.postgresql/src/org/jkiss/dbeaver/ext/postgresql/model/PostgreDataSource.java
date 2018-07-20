@@ -460,7 +460,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
                 }
             }
         } catch (Exception e) {
-            throw new DBException("Error eading templkate databases", e);
+            throw new DBException("Error reading template databases", e);
         }
     }
 
@@ -502,7 +502,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
             DBSObjectFilter catalogFilters = owner.getContainer().getObjectFilter(PostgreDatabase.class, null, false);
             if (showNDD) {
                 if (catalogFilters != null) {
-                    JDBCUtils.appendFilterClause(catalogQuery, catalogFilters, "datname", true);
+                    JDBCUtils.appendFilterClause(catalogQuery, catalogFilters, "datname", false);
                 }
                 catalogQuery.append("\nORDER BY db.datname");
             }
