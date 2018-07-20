@@ -50,7 +50,8 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
         EDIT,
         CONNECT,
         SQL_EDITOR,
-        EXPAND
+        EXPAND,
+        SQL_EDITOR_NEW,
     }
 
     private DBNModel model;
@@ -150,6 +151,13 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
                                         OpenHandler.openRecentScript(getSite().getWorkbenchWindow(), dataSource, null);
                                     } catch (CoreException e) {
                                         DBUserInterface.getInstance().showError("Open SQL editor", "Can't open SQL editor", e);
+                                    }
+                                    break;
+                                case SQL_EDITOR_NEW:
+                                    try {
+                                        OpenHandler.openNewEditor(getSite().getWorkbenchWindow(), dataSource, null);
+                                    } catch (CoreException e) {
+                                        DBUserInterface.getInstance().showError("Open new SQL editor", "Can't open new SQL editor", e);
                                     }
                                     break;
                             }
