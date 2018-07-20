@@ -127,6 +127,11 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
     {
         addColumn(name, description, style, defaultVisible, required, false, null, new ColumnLabelProvider() {
             @Override
+            public String getText(Object element) {
+                return labelProvider.getText((ELEMENT) element);
+            }
+
+            @Override
             public void update(ViewerCell cell) {
                 if (cell.getColumnIndex() == 0) {
                     if (defaultIcon != null) {
