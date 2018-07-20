@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.search.data;
 
+import org.eclipse.search.ui.ISearchResult;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -43,13 +44,19 @@ public class SearchDataResultsPage extends AbstractSearchResultsPage<SearchDataO
     }
 
     @Override
+    public void setInput(ISearchResult search, Object uiState) {
+        foundObjects.clear();
+        super.setInput(search, uiState);
+    }
+
+    @Override
     public void populateObjects(Collection<SearchDataObject> objects) {
         foundObjects.addAll(objects);
         super.populateObjects(objects);
     }
 
     private class DataSearchResultsControl extends SearchResultsControl {
-        public DataSearchResultsControl(Composite resultsGroup)
+        DataSearchResultsControl(Composite resultsGroup)
         {
             super(resultsGroup);
 
