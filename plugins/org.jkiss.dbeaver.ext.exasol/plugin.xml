@@ -333,7 +333,7 @@
                         description="%driver.exasol.description"
                         webURL="https://www.exasol.com/portal/display/DOWNLOAD/EXASOL+Download+Section">
                    <file
-                         path="maven:/com.exasol:exasol-jdbc:{.*5\.0\..*}"
+                         path="maven:/com.exasol:exasol-jdbc:RELEASE"
                          type="jar">
                    </file>
 
