@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*
- * Created on Jul 17, 2004
- */
 package org.jkiss.dbeaver.ext.erd.command;
 
 import org.eclipse.gef.commands.Command;
@@ -26,36 +23,32 @@ import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
 import java.util.List;
 
 /**
- * Command to delete relationship
- *
- * @author Serge Rider
+ * Command to create association
  */
 public class AssociationCreateCommand extends Command {
 
     protected ERDAssociation association;
-    protected ERDEntity foreignEntity;
-    protected ERDEntity primaryEntity;
+    protected ERDEntity sourceEntity;
+    protected ERDEntity targetEntity;
 
-    /**
-     * @see org.eclipse.gef.commands.Command#canExecute()
-     */
+    public AssociationCreateCommand() {
+    }
+
     @Override
-    public boolean canExecute()
-    {
+    public boolean canExecute() {
 
         boolean returnValue = true;
-        if (foreignEntity.equals(primaryEntity)) {
+        if (sourceEntity.equals(targetEntity)) {
             returnValue = false;
         } else {
 
-            if (primaryEntity == null) {
+            if (targetEntity == null) {
                 return false;
             } else {
                 // Check for existence of relationship already
-                List<ERDAssociation> relationships = primaryEntity.getPrimaryKeyRelationships();
-                for (int i = 0; i < relationships.size(); i++) {
-                    ERDAssociation currentRelationship = relationships.get(i);
-                    if (currentRelationship.getForeignKeyEntity().equals(foreignEntity)) {
+                List<ERDAssociation> relationships = targetEntity.getReferences();
+                for (ERDAssociation currentRelationship : relationships) {
+                    if (currentRelationship.getSourceEntity().equals(sourceEntity)) {
                         returnValue = false;
                         break;
                     }
@@ -67,83 +60,49 @@ public class AssociationCreateCommand extends Command {
 
     }
 
-    /**
-     * @see org.eclipse.gef.commands.Command#execute()
-     */
     @Override
-    public void execute()
-    {
-        association = new ERDAssociation(foreignEntity, primaryEntity, true);
+    public void execute() {
+        association = createAssociation(sourceEntity, targetEntity, true);
     }
 
-    /**
-     * @return Returns the foreignEntity.
-     */
-    public ERDEntity getForeignEntity()
-    {
-        return foreignEntity;
+    public ERDEntity getSourceEntity() {
+        return sourceEntity;
     }
 
-    /**
-     * @return Returns the primaryEntity.
-     */
-    public ERDEntity getPrimaryEntity()
-    {
-        return primaryEntity;
+    public void setSourceEntity(ERDEntity sourceEntity) {
+        this.sourceEntity = sourceEntity;
     }
 
-    /**
-     * Returns the Relationship between the primary and foreign tables
-     *
-     * @return the transistion
-     */
-    public ERDAssociation getAssociation()
-    {
+    public ERDEntity getTargetEntity() {
+        return targetEntity;
+    }
+
+    public void setTargetEntity(ERDEntity targetEntity) {
+        this.targetEntity = targetEntity;
+    }
+
+    public ERDAssociation getAssociation() {
         return association;
     }
 
-    /**
-     * @see org.eclipse.gef.commands.Command#redo()
-     */
-    @Override
-    public void redo()
-    {
-        foreignEntity.addForeignKeyRelationship(association, true);
-        primaryEntity.addPrimaryKeyRelationship(association, true);
-    }
-
-    /**
-     * @param foreignEntity The foreignEntity to set.
-     */
-    public void setForeignEntity(ERDEntity foreignEntity)
-    {
-        this.foreignEntity = foreignEntity;
-    }
-
-    /**
-     * @param primaryEntity The primaryEntity to set.
-     */
-    public void setPrimaryEntity(ERDEntity primaryEntity)
-    {
-        this.primaryEntity = primaryEntity;
-    }
-
-    /**
-     * @param association The relationship to set.
-     */
-    public void setAssociation(ERDAssociation association)
-    {
+    public void setAssociation(ERDAssociation association) {
         this.association = association;
     }
 
-    /**
-     * Undo version of command
-     */
     @Override
-    public void undo()
-    {
-        foreignEntity.removeForeignKeyRelationship(association, true);
-        primaryEntity.removePrimaryKeyRelationship(association, true);
+    public void redo() {
+        sourceEntity.addAssociation(association, true);
+        targetEntity.addReferenceAssociation(association, true);
+    }
+
+    @Override
+    public void undo() {
+        sourceEntity.removeAssociation(association, true);
+        targetEntity.removeReferenceAssociation(association, true);
+    }
+
+    protected ERDAssociation createAssociation(ERDEntity sourceEntity, ERDEntity targetEntity, boolean reflect) {
+        return new ERDAssociation(sourceEntity, targetEntity, true);
     }
 
 }

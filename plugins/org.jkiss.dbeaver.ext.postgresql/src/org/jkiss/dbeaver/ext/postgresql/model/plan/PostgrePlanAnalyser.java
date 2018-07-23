@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.postgresql.model.plan;
 
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -87,7 +88,7 @@ public class PostgrePlanAnalyser implements DBCPlan {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.next()) {
                         SQLXML planXML = dbResult.getSQLXML(1);
-                        parsePlan(planXML);
+                        parsePlan(session, planXML);
                     }
                 } catch (XMLException e) {
                     throw new DBCException("Can't parse plan XML", e);
@@ -108,12 +109,12 @@ public class PostgrePlanAnalyser implements DBCPlan {
         }
     }
 
-    private void parsePlan(SQLXML planXML) throws SQLException, XMLException {
+    private void parsePlan(DBCSession session, SQLXML planXML) throws SQLException, XMLException {
         rootNodes = new ArrayList<>();
         Document planDocument = XMLUtils.parseDocument(planXML.getBinaryStream());
         Element queryElement = XMLUtils.getChildElement(planDocument.getDocumentElement(), "Query");
         for (Element planElement : XMLUtils.getChildElementList(queryElement, "Plan")) {
-            rootNodes.add(new PostgrePlanNode(null, planElement));
+            rootNodes.add(new PostgrePlanNode((PostgreDataSource) session.getDataSource(), null, planElement));
         }
     }
 

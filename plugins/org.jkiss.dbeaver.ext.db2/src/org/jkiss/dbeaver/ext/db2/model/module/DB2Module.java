@@ -209,7 +209,7 @@ public class DB2Module extends DB2SchemaObject implements DBSProcedureContainer,
 
     @Nullable
     @Override
-    @Property(viewable = false)
+    @Property(viewable = false, multiline = true)
     public String getDescription()
     {
         return remarks;

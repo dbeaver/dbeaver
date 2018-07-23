@@ -40,7 +40,7 @@ public class SQLQueryTransformerCount implements SQLQueryTransformer {
     static protected final Log log = Log.getLog(SQLQueryTransformerCount.class);
 
     private static final String COUNT_WRAP_PREFIX = "SELECT COUNT(*) FROM (";
-    private static final String COUNT_WRAP_POSTFIX = ") dbvrcnt";
+    private static final String COUNT_WRAP_POSTFIX = "\n) dbvrcnt";
 
     @Override
     public SQLQuery transformQuery(SQLDataSource dataSource, SQLSyntaxManager syntaxManager, SQLQuery query) throws DBException {

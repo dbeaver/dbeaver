@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
@@ -28,8 +29,10 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTable;
 import org.jkiss.dbeaver.model.meta.Association;
+import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -43,11 +46,14 @@ import java.util.*;
  */
 public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, PostgreSchema> implements PostgreClass, PostgreScriptObject, PostgrePermissionsOwner, DBPNamedObject2
 {
+    private static final Log log = Log.getLog(PostgreTableBase.class);
+
     private long oid;
     private long ownerId;
     private String description;
 	private boolean isPartition;
     private Object acl;
+    private String[] relOptions;
 
     protected PostgreTableBase(PostgreSchema catalog)
     {
@@ -66,6 +72,8 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
             getDataSource().isServerVersionAtLeast(10, 0) &&
             JDBCUtils.safeGetBoolean(dbResult, "relispartition");
         this.acl = JDBCUtils.safeGetObject(dbResult, "relacl");
+        this.relOptions = JDBCUtils.safeGetArray(dbResult, "reloptions");
+        //this.reloptions = PostgreUtils.parseObjectString()
     }
 
     // Copy constructor
@@ -95,7 +103,13 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
         return this.oid;
     }
 
-    @Property(viewable = true, editable = true, updatable = true, order = 100)
+    @Property(order = 90)
+    @Nullable
+    public String[] getRelOptions() {
+        return relOptions;
+    }
+
+    @Property(viewable = true, editable = true, updatable = true, multiline = true, order = 100)
     @Nullable
     @Override
     public String getDescription()
@@ -131,7 +145,6 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
     /**
      * Table columns
      * @param monitor progress monitor
-     * @throws DBException
      */
     @Override
     public List<PostgreTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor)
@@ -193,6 +206,9 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
 
     @Override
     public Collection<PostgrePermission> getPermissions(DBRProgressMonitor monitor, boolean includeNestedObjects) throws DBException {
+        if (!isPersisted()) {
+            return Collections.emptyList();
+        }
         List<PostgrePermission> tablePermissions = PostgreUtils.extractPermissionsFromACL(monitor, this, acl);
         if (!includeNestedObjects) {
             return tablePermissions;
@@ -207,6 +223,25 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
 	public boolean isPartition() {
 		return isPartition;
 	}
-    
-    
+
+
+    public static class TablespaceListProvider implements IPropertyValueListProvider<PostgreTableBase> {
+        @Override
+        public boolean allowCustomValue()
+        {
+            return false;
+        }
+        @Override
+        public Object[] getPossibleValues(PostgreTableBase object)
+        {
+            try {
+                Collection<PostgreTablespace> tablespaces = object.getDatabase().getTablespaces(new VoidProgressMonitor());
+                return tablespaces.toArray(new Object[tablespaces.size()]);
+            } catch (DBException e) {
+                log.error(e);
+                return new Object[0];
+            }
+        }
+    }
+
 }

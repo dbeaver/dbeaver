@@ -16,13 +16,16 @@
  */
 package org.jkiss.dbeaver.ui.search.metadata;
 
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.jface.operation.IRunnableWithProgress;
-import org.eclipse.jface.viewers.*;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -33,7 +36,6 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
@@ -57,7 +59,6 @@ public class SearchMetadataPage extends AbstractSearchPage {
     private static final String PROP_MATCH_INDEX = "search.metadata.match-index"; //$NON-NLS-1$
     private static final String PROP_HISTORY = "search.metadata.history"; //$NON-NLS-1$
     private static final String PROP_OBJECT_TYPE = "search.metadata.object-type"; //$NON-NLS-1$
-    private static final String PROP_SOURCES = "search.metadata.object-source"; //$NON-NLS-1$
 
     private Table typesTable;
     private Combo searchText;
@@ -95,13 +96,9 @@ public class SearchMetadataPage extends AbstractSearchPage {
         for (String history : searchHistory) {
             searchText.add(history);
         }
-        searchText.addModifyListener(new ModifyListener() {
-            @Override
-            public void modifyText(ModifyEvent e)
-            {
-                nameMask = searchText.getText();
-                updateEnablement();
-            }
+        searchText.addModifyListener(e -> {
+            nameMask = searchText.getText();
+            updateEnablement();
         });
 
         Composite optionsGroup = new SashForm(searchGroup, SWT.NONE);
@@ -152,36 +149,25 @@ public class SearchMetadataPage extends AbstractSearchPage {
                 }
             });
             dataSourceTree.getViewer().addSelectionChangedListener(
-                new ISelectionChangedListener() {
-                    @Override
-                    public void selectionChanged(SelectionChangedEvent event)
-                    {
-                        fillObjectTypes();
-                        updateEnablement();
-                        IStructuredSelection structSel = (IStructuredSelection) event.getSelection();
-                        Object object = structSel.isEmpty() ? null : structSel.getFirstElement();
-                        if (object instanceof DBNNode) {
-                            for (DBNNode node = (DBNNode)object; node != null; node = node.getParentNode()) {
-                                if (node instanceof DBNDataSource) {
-                                    DBNDataSource dsNode = (DBNDataSource) node;
-                                    dsNode.initializeNode(null, new DBRProgressListener() {
-                                        @Override
-                                        public void onTaskFinished(IStatus status)
-                                        {
-                                            if (status.isOK()) {
-                                                UIUtils.asyncExec(new Runnable() {
-                                                    @Override
-                                                    public void run() {
-                                                        if (!dataSourceTree.isDisposed()) {
-                                                            fillObjectTypes();
-                                                        }
-                                                    }
-                                                });
+                event -> {
+                    fillObjectTypes();
+                    updateEnablement();
+                    IStructuredSelection structSel = (IStructuredSelection) event.getSelection();
+                    Object object = structSel.isEmpty() ? null : structSel.getFirstElement();
+                    if (object instanceof DBNNode) {
+                        for (DBNNode node = (DBNNode)object; node != null; node = node.getParentNode()) {
+                            if (node instanceof DBNDataSource) {
+                                DBNDataSource dsNode = (DBNDataSource) node;
+                                dsNode.initializeNode(null, status -> {
+                                    if (status.isOK()) {
+                                        UIUtils.asyncExec(() -> {
+                                            if (!dataSourceTree.isDisposed()) {
+                                                fillObjectTypes();
                                             }
-                                        }
-                                    });
-                                    break;
-                                }
+                                        });
+                                    }
+                                });
+                                break;
                             }
                         }
                     }
@@ -223,13 +209,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
 
                 final Spinner maxResultsSpinner = UIUtils.createLabelSpinner(settingsGroup, CoreMessages.dialog_search_objects_spinner_max_results, maxResults, 1, 10000);
                 maxResultsSpinner.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-                maxResultsSpinner.addModifyListener(new ModifyListener() {
-                    @Override
-                    public void modifyText(ModifyEvent e)
-                    {
-                        maxResults = maxResultsSpinner.getSelection();
-                    }
-                });
+                maxResultsSpinner.addModifyListener(e -> maxResults = maxResultsSpinner.getSelection());
                 maxResultsSpinner.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
                 final Button caseCheckbox = UIUtils.createLabelCheckbox(settingsGroup, CoreMessages.dialog_search_objects_case_sensitive, caseSensitive);
@@ -277,26 +257,18 @@ public class SearchMetadataPage extends AbstractSearchPage {
             UIUtils.createTableColumn(typesTable, SWT.LEFT, CoreMessages.dialog_search_objects_column_description);
         }
 
-        UIUtils.asyncExec(new Runnable() {
-            @Override
-            public void run() {
-                loadState();
-            }
-        });
+        UIUtils.asyncExec(this::loadState);
     }
 
     private void loadState() {
         try {
-            container.getRunnableContext().run(true, true, new IRunnableWithProgress() {
-                @Override
-                public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                    monitor.beginTask("Load database nodes", 1);
-                    try {
-                        monitor.subTask("Load tree state");
-                        sourceNodes = loadTreeState(new DefaultProgressMonitor(monitor), DBeaverCore.getGlobalPreferenceStore(), PROP_SOURCES);
-                    } finally {
-                        monitor.done();
-                    }
+            container.getRunnableContext().run(true, true, monitor -> {
+                monitor.beginTask("Load database nodes", 1);
+                try {
+                    monitor.subTask("Load tree state");
+                    sourceNodes = loadTreeState(new DefaultProgressMonitor(monitor));
+                } finally {
+                    monitor.done();
                 }
             });
         } catch (InvocationTargetException e) {
@@ -308,10 +280,12 @@ public class SearchMetadataPage extends AbstractSearchPage {
         if (!sourceNodes.isEmpty()) {
             dataSourceTree.getViewer().setSelection(
                 new StructuredSelection(sourceNodes));
-            dataSourceTree.getViewer().reveal(NavigatorUtils.getDataSourceNode(sourceNodes.get(0)));
-        } else {
-            updateEnablement();
+            DBNDataSource node = NavigatorUtils.getDataSourceNode(sourceNodes.get(0));
+            if (node != null) {
+                dataSourceTree.getViewer().reveal(node);
+            }
         }
+        updateEnablement();
     }
 
     private DBNNode getSelectedNode()
@@ -456,7 +430,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
         store.setValue(PROP_CASE_SENSITIVE, caseSensitive);
         store.setValue(PROP_MAX_RESULT, maxResults);
         store.setValue(PROP_MATCH_INDEX, matchTypeIndex);
-        saveTreeState(store, PROP_SOURCES, dataSourceTree);
+        saveTreeState(dataSourceTree);
 
         {
             // Search history
@@ -495,18 +469,4 @@ public class SearchMetadataPage extends AbstractSearchPage {
         container.setPerformActionEnabled(enabled);
     }
 
-    protected static void saveTreeState(DBPPreferenceStore store, String propName, DatabaseNavigatorTree tree)
-    {
-        // Object sources
-        StringBuilder sourcesString = new StringBuilder();
-        Object[] nodes = ((IStructuredSelection)tree.getViewer().getSelection()).toArray();
-        for (Object obj : nodes) {
-            DBNNode node = (DBNNode) obj;
-            if (sourcesString.length() > 0) {
-                sourcesString.append("|"); //$NON-NLS-1$
-            }
-            sourcesString.append(node.getNodeItemPath());
-        }
-        store.setValue(propName, sourcesString.toString());
-    }
 }

@@ -38,7 +38,7 @@ public class PostgreConstants {
     public static final String DEFAULT_DATA_TYPE = "varchar";
 
     public static final String PROP_SHOW_NON_DEFAULT_DB = DBConstants.INTERNAL_PROP_PREFIX + "show-non-default-db@";
-    public static final String PROP_SWITCH_DB_ON_EXPAND = DBConstants.INTERNAL_PROP_PREFIX + "switch-db-on-expand@";
+    public static final String PROP_SHOW_TEMPLATES_DB = DBConstants.INTERNAL_PROP_PREFIX + "show-template-db@";
 
     public static final String PROP_SSL_CLIENT_CERT = "clientCert";
     public static final String PROP_SSL_CLIENT_KEY = "clientKey";
@@ -46,6 +46,8 @@ public class PostgreConstants {
     public static final String PROP_SSL_MODE = "sslMode";
     public static final String PROP_SSL_FACTORY = "sslFactory";
     public static final String PROP_GREENPLUM_DRIVER = "greenplum";
+    public static final String PROP_TIMESCALE_DRIVER = "timescale";
+    public static final String PROP_YELLOWBRICK_DRIVER = "yellowbrick";
 
     public static final String OPTION_DDL_SHOW_PERMISSIONS = "pg.ddl.show.permissions";
     public static final String OPTION_DDL_SHOW_COLUMN_COMMENTS = "pg.ddl.show.column.comments";
@@ -100,6 +102,8 @@ public class PostgreConstants {
     public static final String TYPE_INT8 = "int8";
     public static final String TYPE_FLOAT4 = "float4";
     public static final String TYPE_FLOAT8 = "float8";
+
+    public static final String ERROR_ADMIN_SHUTDOWN = "57P01";
 
     static {
         DATA_TYPE_ALIASES.put("integer", TYPE_INT4);

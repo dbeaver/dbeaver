@@ -21,8 +21,10 @@ import org.jkiss.dbeaver.model.access.DBAUser;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseItem;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.rdb.DBSPackage;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSequence;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
 
 /**
  * Default database navigator filter
@@ -37,6 +39,8 @@ public class DatabaseNavigatorTreeFilter implements IFilter {
         return
             !(object instanceof DBSEntity) &&
             !(object instanceof DBSProcedure) &&
+            !(object instanceof DBSTableIndex) &&
+            !(object instanceof DBSPackage) &&
             !(object instanceof DBSSequence) &&
             !(object instanceof DBAUser);
     }

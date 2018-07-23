@@ -71,7 +71,7 @@ public class InformixMetaModel extends GenericMetaModel
     @Override
     public List<? extends GenericTrigger> loadTriggers(DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTable table) throws DBException {
         assert table != null;
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, container.getDataSource(), "Read triggers")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Read triggers")) {
             String query =
                 "SELECT T1.trigname \n" +
                 "FROM informix.systriggers AS T1, informix.systables AS T2 \n" +

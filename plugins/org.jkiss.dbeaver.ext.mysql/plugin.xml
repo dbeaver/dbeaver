@@ -142,19 +142,36 @@
             </tree>
             <drivers managable="true">
                 <driver
-                    id="mysql5"
-                    label="MySQL"
-                    icon="icons/mysql_icon.png"
-                    class="com.mysql.jdbc.Driver"
-                    sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
-                    defaultPort="3306"
-                    webURL="http://www.mysql.com/products/connector/"
-                    description="MySQL standard driver">
-                    <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE[8.0.11]" bundle="!drivers.mysql"/>
+                        id="mysql5"
+                        label="MySQL"
+                        icon="icons/mysql_icon.png"
+                        class="com.mysql.jdbc.Driver"
+                        sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
+                        defaultPort="3306"
+                        webURL="http://www.mysql.com/products/connector/"
+                        description="Driver for MySQL 4.x-5.7">
+                    <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE[5.1.44]" bundle="!drivers.mysql"/>
                     <file type="license" path="drivers/mysql/LICENSE.txt" bundle="drivers.mysql"/>
                     <file type="jar" path="drivers/mysql/mysql-connector-java.jar" bundle="drivers.mysql"/>
+                    <property name="connectTimeout" value="20000"/>
+                    <!--<property name="zeroDateTimeBehavior" value="convertToNull"/>-->
+                    <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
+                </driver>
+                <driver
+                        id="mysql8"
+                        label="MySQL 8.x"
+                        icon="icons/mysql_icon.png"
+                        class="com.mysql.jdbc.Driver"
+                        sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
+                        defaultPort="3306"
+                        webURL="http://www.mysql.com/products/connector/"
+                        description="Driver for MySQL 8.x and later">
+                    <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE[8.0.11]" bundle="!drivers.mysql"/>
+                    <file type="license" path="drivers/mysql/LICENSE.txt" bundle="drivers.mysql"/>
+                    <file type="jar" path="drivers/mysql/mysql-connector-java-8.jar" bundle="drivers.mysql"/>
                     <file type="jar" path="drivers/mysql/protobuf-java.jar" bundle="drivers.mysql"/>
                     <property name="connectTimeout" value="20000"/>
+                    <!--<property name="zeroDateTimeBehavior" value="CONVERT_TO_NULL"/>-->
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                 </driver>
                 <driver

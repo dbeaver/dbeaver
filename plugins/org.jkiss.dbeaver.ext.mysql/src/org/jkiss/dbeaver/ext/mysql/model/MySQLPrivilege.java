@@ -26,6 +26,8 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
 import java.sql.ResultSet;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * MySQLPrivilege
@@ -36,6 +38,12 @@ public class MySQLPrivilege implements DBAPrivilege
 
     public static final String GRANT_PRIVILEGE = "Grant Option";
     public static final String ALL_PRIVILEGES = "All Privileges";
+
+    public static final Map<String, String> BAD_PRIV_NAME_MAP = new HashMap<>();
+
+    static {
+        BAD_PRIV_NAME_MAP.put("Delete versioning rows", "Delete history");
+    }
 
     public enum Kind {
         OBJECTS,
@@ -76,6 +84,14 @@ public class MySQLPrivilege implements DBAPrivilege
     @Override
     @Property(viewable = true, order = 1)
     public String getName() {
+        return name;
+    }
+
+    public String getFixedPrivilegeName() {
+        String fixedName = BAD_PRIV_NAME_MAP.get(name);
+        if (fixedName != null) {
+            return fixedName;
+        }
         return name;
     }
 

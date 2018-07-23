@@ -155,19 +155,7 @@ public class SQLEditorContributor extends TextEditorActionContributor
     @Override
     public void contributeToToolBar(IToolBarManager manager)
     {
-        if (!isNestedEditor()) {
-            super.contributeToToolBar(manager);
-            if (manager.find(CoreCommands.CMD_EXECUTE_STATEMENT) == null) {
-                manager.add(ActionUtils.makeCommandContribution(getPage().getWorkbenchWindow(), CoreCommands.CMD_EXECUTE_STATEMENT));
-                manager.add(ActionUtils.makeCommandContribution(getPage().getWorkbenchWindow(), CoreCommands.CMD_EXECUTE_STATEMENT_NEW));
-                manager.add(ActionUtils.makeCommandContribution(getPage().getWorkbenchWindow(), CoreCommands.CMD_EXECUTE_SCRIPT));
-                manager.add(ActionUtils.makeCommandContribution(getPage().getWorkbenchWindow(), CoreCommands.CMD_EXECUTE_SCRIPT_NEW));
-                //manager.add(new Separator());
-                manager.add(ActionUtils.makeCommandContribution(getPage().getWorkbenchWindow(), CoreCommands.CMD_EXPLAIN_PLAN));
-                //manager.add(ActionUtils.makeCommandContribution(getPage().getWorkbenchWindow(), CoreCommands.CMD_ANALYSE_STATEMENT));
-                //manager.add(ActionUtils.makeCommandContribution(getPage().getWorkbenchWindow(), CoreCommands.CMD_VALIDATE_STATEMENT));
-            }
-        }
+        // Nothing here. All contributions moved to editor side bar
     }
 
     @Override

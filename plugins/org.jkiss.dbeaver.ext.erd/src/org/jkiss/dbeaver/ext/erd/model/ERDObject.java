@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,6 @@
 package org.jkiss.dbeaver.ext.erd.model;
 
 import org.eclipse.core.runtime.IAdaptable;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
@@ -34,84 +33,66 @@ import java.beans.PropertyChangeSupport;
 
 /**
  * Provides base class support for model objects to participate in event handling framework
+ *
  * @author Serge Rider
  */
-public abstract class ERDObject<OBJECT> implements IAdaptable, DBPNamedObject
-{
-    private static final Log log = Log.getLog(ERDObject.class);
+public abstract class ERDObject<OBJECT> implements IAdaptable, DBPNamedObject {
 
-	public static final String CHILD = "CHILD";
-	public static final String REORDER = "REORDER";
-	public static final String INPUT = "INPUT";
-	public static final String OUTPUT = "OUTPUT";
-	public static final String NAME = "NAME";
+    public static final String CHILD = "CHILD";
+    public static final String REORDER = "REORDER";
+    public static final String INPUT = "INPUT";
+    public static final String OUTPUT = "OUTPUT";
+    public static final String NAME = "NAME";
 
-	private transient PropertyChangeSupport listeners = new PropertyChangeSupport(this);
+    private transient PropertyChangeSupport listeners = null;//new PropertyChangeSupport(this);
 
     protected OBJECT object;
-    private PropertyCollector propertyCollector = null;
+    protected Object userData;
 
-	protected ERDObject(OBJECT object)
-	{
+    protected ERDObject(OBJECT object) {
         this.object = object;
-	}
+    }
 
     public OBJECT getObject() {
         return object;
     }
 
-    public void setObject(OBJECT object)
-    {
+    public void setObject(OBJECT object) {
         this.object = object;
     }
 
-    private PropertyCollector getPropertyCollector()
-    {
-        if (propertyCollector == null) {
-            propertyCollector = new PropertyCollector(object, false);
-            if (object != null) {
-                propertyCollector.collectProperties();
-            }
-        }
-        return propertyCollector;
+    public Object getUserData() {
+        return userData;
     }
 
-    public void addPropertyChangeListener(PropertyChangeListener l)
-	{
-		listeners.addPropertyChangeListener(l);
-	}
+    public void setUserData(Object userData) {
+        this.userData = userData;
+    }
 
-	public void removePropertyChangeListener(PropertyChangeListener l)
-	{
-		listeners.removePropertyChangeListener(l);
-	}
-	
-	protected void firePropertyChange(String prop, Object old, Object newValue)
-	{
-		listeners.firePropertyChange(prop, old, newValue);
-	}
+    public void addPropertyChangeListener(PropertyChangeListener l) {
+        if (listeners == null) {
+            listeners = new PropertyChangeSupport(this);
+        }
+        listeners.addPropertyChangeListener(l);
+    }
 
-    public void openEditor() {
-        if (object instanceof DBSObject) {
-            UIUtils.runUIJob("Open object editor", monitor -> {
-                DBNDatabaseNode node = NavigatorUtils.getNodeByObject(
-                    monitor,
-                    (DBSObject) object,
-                    true
-                );
-                if (node != null) {
-                    NavigatorUtils.openNavigatorNode(node, UIUtils.getActiveWorkbenchWindow());
-                }
-            });
+    public void removePropertyChangeListener(PropertyChangeListener l) {
+        if (listeners != null) {
+            listeners.removePropertyChangeListener(l);
+        }
+    }
+
+    public void firePropertyChange(String prop, Object old, Object newValue) {
+        if (listeners != null) {
+            listeners.firePropertyChange(prop, old, newValue);
         }
     }
 
     @Override
     public <T> T getAdapter(Class<T> adapter) {
         if (adapter == DBPPropertySource.class) {
-            return adapter.cast(getPropertyCollector());
+            return adapter.cast(new PropertyCollector(object, false));
         }
         return null;
     }
 }
-

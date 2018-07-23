@@ -32,6 +32,7 @@ public enum PostgreTypeCategory implements DBPNamedObject
     E("Enum"),
     G("Geometric"),
     I("Network address"),
+    J("JSON"),
     N("Numeric"),
     P("Pseudo"),
     S("String"),

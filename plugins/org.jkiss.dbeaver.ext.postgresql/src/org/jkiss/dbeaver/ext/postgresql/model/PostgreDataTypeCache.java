@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.LongKeyMap;
 
 import java.sql.SQLException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -129,6 +130,15 @@ public class PostgreDataTypeCache extends JDBCObjectCache<PostgreSchema, Postgre
     protected PostgreDataType fetchObject(@NotNull JDBCSession session, @NotNull PostgreSchema owner, @NotNull JDBCResultSet dbResult) throws SQLException, DBException
     {
         return PostgreDataType.readDataType(session, owner, dbResult);
+    }
+
+    @Override
+    protected void invalidateObjects(DBRProgressMonitor monitor, PostgreSchema postgreSchema, Iterator<PostgreDataType> objectIter) {
+        // Resolve value type IDs (#3731)
+        while (objectIter.hasNext()) {
+            PostgreDataType dt = objectIter.next();
+            dt.resolveValueTypeFromBaseType(monitor);
+        }
     }
 
     public PostgreDataType getDataType(long oid) {

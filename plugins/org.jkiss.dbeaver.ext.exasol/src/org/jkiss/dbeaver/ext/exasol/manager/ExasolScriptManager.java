@@ -91,7 +91,7 @@ public class ExasolScriptManager extends SQLObjectEditor<ExasolScript, ExasolSch
     }
     
     @Override
-    protected void addObjectModifyActions(List<DBEPersistAction> actionList,
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList,
                                           ObjectChangeCommand command, Map<String, Object> options)
     {
         if (command.getProperties().size() > 1 || command.getProperty("description") == null )
@@ -101,7 +101,7 @@ public class ExasolScriptManager extends SQLObjectEditor<ExasolScript, ExasolSch
     }
     
     @Override
-    protected void addObjectExtraActions(List<DBEPersistAction> actions,
+    protected void addObjectExtraActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions,
                                          NestedObjectCommand<ExasolScript, PropertyHandler> command, Map<String, Object> options)
     {
         if (command.getProperty("description") != null) {

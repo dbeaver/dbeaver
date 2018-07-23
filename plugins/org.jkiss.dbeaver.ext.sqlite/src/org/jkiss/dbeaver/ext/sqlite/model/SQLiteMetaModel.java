@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.sqlite.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.*;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.ext.sqlite.SQLiteUtils;
@@ -46,19 +47,20 @@ import java.util.Map;
  */
 public class SQLiteMetaModel extends GenericMetaModel implements DBCQueryTransformProvider
 {
+    private static final Log log = Log.getLog(SQLiteMetaModel.class);
 
     public SQLiteMetaModel() {
         super();
     }
 
     public String getViewDDL(DBRProgressMonitor monitor, GenericTable sourceObject, Map<String, Object> options) throws DBException {
-        return SQLiteUtils.readMasterDefinition(monitor, sourceObject.getDataSource(), SQLiteObjectType.view, sourceObject.getName(), sourceObject);
+        return SQLiteUtils.readMasterDefinition(monitor, sourceObject, SQLiteObjectType.view, sourceObject.getName(), sourceObject);
     }
 
     @Override
     public String getTableDDL(DBRProgressMonitor monitor, GenericTable sourceObject, Map<String, Object> options) throws DBException {
-        String tableDDL = SQLiteUtils.readMasterDefinition(monitor, sourceObject.getDataSource(), SQLiteObjectType.table, sourceObject.getName(), sourceObject);
-        String indexesDDL = SQLiteUtils.readMasterDefinition(monitor, sourceObject.getDataSource(), SQLiteObjectType.index, null, sourceObject);
+        String tableDDL = SQLiteUtils.readMasterDefinition(monitor, sourceObject, SQLiteObjectType.table, sourceObject.getName(), sourceObject);
+        String indexesDDL = SQLiteUtils.readMasterDefinition(monitor, sourceObject, SQLiteObjectType.index, null, sourceObject);
         if (CommonUtils.isEmpty(indexesDDL)) {
             return tableDDL;
         }
@@ -67,7 +69,7 @@ public class SQLiteMetaModel extends GenericMetaModel implements DBCQueryTransfo
 
     @Override
     public String getTriggerDDL(@NotNull DBRProgressMonitor monitor, @NotNull GenericTrigger trigger) throws DBException {
-        return SQLiteUtils.readMasterDefinition(monitor, trigger.getDataSource(), SQLiteObjectType.trigger, trigger.getName(), trigger.getTable());
+        return SQLiteUtils.readMasterDefinition(monitor, trigger, SQLiteObjectType.trigger, trigger.getName(), trigger.getTable());
     }
 
     @Override
@@ -85,7 +87,7 @@ public class SQLiteMetaModel extends GenericMetaModel implements DBCQueryTransfo
         if (table == null) {
             return Collections.emptyList();
         }
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, container.getDataSource(), "Read triggers")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Read triggers")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT name FROM sqlite_master WHERE type='trigger' AND tbl_name=?")) {
                 dbStat.setString(1, table.getName());
                 List<GenericTrigger> result = new ArrayList<>();
@@ -138,7 +140,7 @@ public class SQLiteMetaModel extends GenericMetaModel implements DBCQueryTransfo
 
     @Override
     public List<GenericSequence> loadSequences(@NotNull DBRProgressMonitor monitor, @NotNull GenericStructContainer container) throws DBException {
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, container.getDataSource(), "Read sequences")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Read sequences")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT * FROM sqlite_sequence")) {
                 List<GenericSequence> result = new ArrayList<>();
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -151,7 +153,9 @@ public class SQLiteMetaModel extends GenericMetaModel implements DBCQueryTransfo
                 return result;
             }
         } catch (SQLException e) {
-            throw new DBException(e, container.getDataSource());
+            // Most likely sqlite_sequence doesn't exist, this means jsut empty sequence list
+            log.debug("Error loading SQLite sequences", e);
+            return new ArrayList<>();
         }
     }
 

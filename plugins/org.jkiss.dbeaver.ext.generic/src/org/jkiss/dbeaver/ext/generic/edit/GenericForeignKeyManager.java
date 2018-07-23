@@ -69,9 +69,7 @@ public class GenericForeignKeyManager extends SQLForeignKeyManager<GenericTableF
                     editPage.getOnUpdateRule(),
                     DBSForeignKeyDeferability.NOT_DEFERRABLE,
                     false);
-                foreignKey.setName(DBObjectNameCaseTransformer.transformObjectName(foreignKey,
-                    CommonUtils.escapeIdentifier(table.getName()) + "_" +
-                        CommonUtils.escapeIdentifier(editPage.getUniqueConstraint().getParentObject().getName()) + "_FK"));
+                foreignKey.setName(getNewConstraintName(monitor, foreignKey));
                 int colIndex = 1;
                 for (EditForeignKeyPage.FKColumnInfo tableColumn : editPage.getColumns()) {
                     foreignKey.addColumn(

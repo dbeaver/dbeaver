@@ -289,7 +289,7 @@ public class PostgreRole implements PostgreObject, PostgrePermissionsOwner, DBPP
 
     @Override
     public Collection<PostgrePermission> getPermissions(DBRProgressMonitor monitor, boolean includeNestedObjects) throws DBException {
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read role privileges")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read role privileges")) {
             List<PostgrePermission> permissions = new ArrayList<>();
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT * FROM information_schema.table_privileges WHERE table_catalog=? AND grantee=?"))

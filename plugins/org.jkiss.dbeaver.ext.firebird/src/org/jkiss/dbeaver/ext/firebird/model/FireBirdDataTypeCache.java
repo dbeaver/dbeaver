@@ -59,7 +59,7 @@ public class FireBirdDataTypeCache extends JDBCBasicDataTypeCache<GenericStructC
         }
 
         try {
-            try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource.getDataSource(), "Load FireBird domain types")) {
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Load FireBird domain types")) {
                 try (JDBCPreparedStatement dbStat = session.prepareStatement(
                     "SELECT F.* FROM RDB$FIELDS F ORDER BY RDB$FIELD_NAME"))
                 {

@@ -35,6 +35,7 @@ import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.update.Update;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
@@ -58,14 +59,15 @@ public class SQLQuery implements SQLScriptElement {
     private String originalText;
     @NotNull
     private String text;
-    private final int offset;
-    private final int length;
+    private int offset;
+    private int length;
     private Object data;
     private int resultsOffset = -1;
     private int resultsMaxRows = -1;
     @Nullable
     private List<SQLQueryParameter> parameters;
 
+    private Throwable parseError;
     private boolean parsed = false;
     @NotNull
     private SQLQueryType type;
@@ -112,12 +114,21 @@ public class SQLQuery implements SQLScriptElement {
         }
     }
 
+    public DBPDataSource getDataSource() {
+        return dataSource;
+    }
+
     private void parseQuery() {
         if (parsed) {
             return;
         }
         parsed = true;
         try {
+            if (CommonUtils.isEmpty(text)) {
+                this.statement = null;
+                this.parseError = new DBException("Empty query");
+                return;
+            }
             statement = CCJSqlParserUtil.parse(text);
             if (statement instanceof Select) {
                 type = SQLQueryType.SELECT;
@@ -172,6 +183,7 @@ public class SQLQuery implements SQLScriptElement {
             }
         } catch (Throwable e) {
             this.type = SQLQueryType.UNKNOWN;
+            this.parseError = e;
             //log.debug("Error parsing SQL query [" + query + "]:" + CommonUtils.getRootCause(e).getMessage());
         }
     }
@@ -252,6 +264,10 @@ public class SQLQuery implements SQLScriptElement {
         return statement;
     }
 
+    public Throwable getParseError() {
+        return parseError;
+    }
+
     public List<SQLQueryParameter> getParameters() {
         return parameters;
     }
@@ -261,9 +277,17 @@ public class SQLQuery implements SQLScriptElement {
         return offset;
     }
 
+    public void setOffset(int offset) {
+        this.offset = offset;
+    }
+
     public int getLength()
     {
         return length;
+    }
+
+    public void setLength(int length) {
+        this.length = length;
     }
 
     /**

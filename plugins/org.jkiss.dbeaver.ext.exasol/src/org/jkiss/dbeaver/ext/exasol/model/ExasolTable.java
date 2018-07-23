@@ -122,7 +122,7 @@ public class ExasolTable extends ExasolTableBase implements DBPRefreshableObject
 
     private void read(DBRProgressMonitor monitor) throws DBCException
     {
-    	JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), ExasolMessages.read_table_details );
+    	JDBCSession session = DBUtils.openMetaSession(monitor, this, ExasolMessages.read_table_details );
     	try (JDBCStatement stmt = session.createStatement())
     	{
     		String sql = String.format(readAdditionalInfo,

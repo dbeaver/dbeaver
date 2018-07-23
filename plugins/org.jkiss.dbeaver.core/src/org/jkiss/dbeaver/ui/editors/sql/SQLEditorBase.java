@@ -29,11 +29,16 @@ import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.contexts.IContextActivation;
+import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.texteditor.*;
@@ -53,6 +58,8 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.editors.EditorUtils;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLCharacterPairMatcher;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleManager;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.rules.SQLVariableRule;
@@ -79,6 +86,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
     
     static protected final Log log = Log.getLog(SQLEditorBase.class);
 
+    public static final String SQL_CONTROL_CONTEXT_ID = "org.jkiss.dbeaver.ui.editors.sql.script.focused";
+
     static {
         // SQL editor preferences. Do this here because it initializes display
         // (that's why we can't run it in prefs initializer classes which run before workbench creation)
@@ -102,6 +111,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
     private boolean hasVerticalRuler = true;
     private SQLTemplatesPage templatesPage;
     private IPropertyChangeListener themeListener;
+    private SQLEditorControl editorControl;
 
     public SQLEditorBase()
     {
@@ -147,7 +157,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
     @Nullable
     public abstract DBCExecutionContext getExecutionContext();
 
-    public final DBPDataSource getDataSource() {
+    public DBPDataSource getDataSource() {
         DBCExecutionContext context = getExecutionContext();
         return context == null ? null : context.getDataSource();
     }
@@ -204,7 +214,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
     {
         setRangeIndicator(new DefaultRangeIndicator());
 
-        super.createPartControl(new SQLEditorControl(parent, this));
+        editorControl = new SQLEditorControl(parent, this);
+        super.createPartControl(editorControl);
 
         ProjectionViewer viewer = (ProjectionViewer) getSourceViewer();
         projectionSupport = new ProjectionSupport(
@@ -237,12 +248,48 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                 ((ITextViewerExtension) sourceViewer).prependVerifyKeyListener(symbolInserter);
             }
         }
+
+        {
+            // Context listener
+            EditorUtils.trackControlContext(getSite(), getViewer().getTextWidget(), SQL_CONTROL_CONTEXT_ID);
+        }
+    }
+
+    public SQLEditorControl getEditorControlWrapper() {
+        return editorControl;
     }
 
     @Override
     public void updatePartControl(IEditorInput input)
     {
         super.updatePartControl(input);
+    }
+
+    protected IOverviewRuler createOverviewRuler(ISharedTextColors sharedColors) {
+        if (isOverviewRulerVisible()) {
+            return super.createOverviewRuler(sharedColors);
+        } else {
+            return new OverviewRuler(getAnnotationAccess(), 0, sharedColors);
+        }
+    }
+
+    @Override
+    protected boolean isOverviewRulerVisible() {
+        return false;
+    }
+
+    // Most left ruler
+    @Override
+    protected IVerticalRulerColumn createAnnotationRulerColumn(CompositeRuler ruler) {
+        if (isAnnotationRulerVisible()) {
+            return super.createAnnotationRulerColumn(ruler);
+        } else {
+            return new AnnotationRulerColumn(0, getAnnotationAccess());
+        }
+    }
+
+    protected boolean isAnnotationRulerVisible() {
+        return false;
     }
 
     @Override
@@ -278,12 +325,12 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         char[] matchChars = {'(', ')', '[', ']', '{', '}'}; //which brackets to match
         ICharacterPairMatcher matcher;
         try {
-            matcher = new DefaultCharacterPairMatcher(matchChars,
+            matcher = new SQLCharacterPairMatcher(this, matchChars,
                 SQLPartitionScanner.SQL_PARTITIONING,
                 true);
         } catch (Throwable e) {
             // If we below Eclipse 4.2.1
-            matcher = new DefaultCharacterPairMatcher(matchChars, SQLPartitionScanner.SQL_PARTITIONING);
+            matcher = new SQLCharacterPairMatcher(this, matchChars, SQLPartitionScanner.SQL_PARTITIONING);
         }
         support.setCharacterPairMatcher(matcher);
         support.setMatchingCharacterPainterPreferenceKeys(SQLPreferenceConstants.MATCHING_BRACKETS, SQLPreferenceConstants.MATCHING_BRACKETS_COLOR);
@@ -513,7 +560,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
     }
 
     @Nullable
-    protected SQLScriptElement extractActiveQuery()
+    public SQLScriptElement extractActiveQuery()
     {
         SQLScriptElement element;
         ITextSelection selection = (ITextSelection) getSelectionProvider().getSelection();

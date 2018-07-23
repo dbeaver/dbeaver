@@ -199,7 +199,7 @@ public class CompileHandler extends OracleTaskHandler
             return true;
         }
 
-        try (JDBCSession session = DBUtils.openUtilSession(monitor, unit.getDataSource(), "Compile '" + unit.getName() + "'")) {
+        try (JDBCSession session = DBUtils.openUtilSession(monitor, unit, "Compile '" + unit.getName() + "'")) {
             boolean success = true;
             for (DBEPersistAction action : compileActions) {
                 final String script = action.getScript();

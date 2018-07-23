@@ -40,7 +40,7 @@ DBeaver requires Java (JRE) 1.8+ to run.
 
 #### Prerequisites:
 
- 1. Java (JDK) 1.8+
+ 1. Java (JDK) 8 or Java 9.
  2. Apache Maven 3+
  3. Internet access
 
@@ -58,11 +58,12 @@ Binaries are in `product/standalone/target/products`
 - If you have any questions, suggestions, ideas, etc - <a href="mailto:support@jkiss.org">write us</a>.
 - Pull requests are welcome.
 - Visit https://dbeaver.io or https://dbeaver.com for more information.
+- Follow us on Twitter: https://twitter.com/dbeaver_news/
 - Thanks for using DBeaver! Star if you like it.
 
 ## Contribution: help the Beaver!
 
-Hooray, we have reached 4k of stars on GitHub and continue to grow!
+Hooray, we have reached 5k of stars on GitHub and continue to grow!
 That's really cool, we are glad that you like DBeaver.
 
 - We are actively looking for new source code contributors. We have added labels “Good first issue” and “Help wanted” to some tickets. If you want to be a part of our development team just be brave and take a ticket.

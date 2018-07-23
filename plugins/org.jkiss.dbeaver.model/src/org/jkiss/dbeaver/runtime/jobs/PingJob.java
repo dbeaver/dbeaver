@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSInstance;
 
 import java.util.List;
 
@@ -48,14 +49,16 @@ public class PingJob extends AbstractJob
     protected IStatus run(DBRProgressMonitor monitor)
     {
         //log.debug("Ping connection " + dataSource.getContainer().getId());
-        for (final DBCExecutionContext context : dataSource.getAllContexts()) {
-            try {
-                context.checkContextAlive(monitor);
-            } catch (Exception e) {
-                log.debug("Context [" + dataSource.getName() + "::" + context.getContextName() + "] check failed: " + e.getMessage());
-                if (e instanceof DBException) {
-                    final List<InvalidateJob.ContextInvalidateResult> results = InvalidateJob.invalidateDataSource(monitor, dataSource, false);
-                    log.debug("Connection invalidated: " + results);
+        for (final DBSInstance instance : dataSource.getAvailableInstances()) {
+            for (final DBCExecutionContext context : instance.getAllContexts()) {
+                try {
+                    context.checkContextAlive(monitor);
+                } catch (Exception e) {
+                    log.debug("Context [" + dataSource.getName() + "::" + context.getContextName() + "] check failed: " + e.getMessage());
+                    if (e instanceof DBException) {
+                        final List<InvalidateJob.ContextInvalidateResult> results = InvalidateJob.invalidateDataSource(monitor, dataSource, false);
+                        log.debug("Connection invalidated: " + results);
+                    }
                 }
             }
         }

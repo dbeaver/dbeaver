@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ package org.jkiss.dbeaver.ext.erd.figures;
 
 import org.eclipse.draw2d.*;
 import org.eclipse.draw2d.geometry.Insets;
+import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
@@ -38,17 +39,18 @@ public class AttributeListFigure extends Figure
 
 	public AttributeListFigure(ERDEntity entity, boolean key)
 	{
-		FlowLayout layout = new FlowLayout();
+		GridLayout layout = new GridLayout(2, false);
+		layout.verticalSpacing = 3;
+		layout.marginHeight = 0;
+		layout.marginWidth = 0;
+/*
+		FlowLayout layout = new FlowLayout(false);
 		layout.setMinorAlignment(FlowLayout.ALIGN_TOPLEFT);
-		layout.setStretchMinorAxis(false);
-		layout.setHorizontal(false);
+		layout.setStretchMinorAxis(true);
+		layout.setMinorSpacing(2);
+*/
 		setLayoutManager(layout);
 		setBorder(new ColumnFigureBorder());
-        if (entity.isPrimary()) {
-            //setBackgroundColor(EntityFigure.primaryTableColor);
-        } else {
-		    //setBackgroundColor(ColorConstants.tooltipBackground);
-        }
 		ColorRegistry colorRegistry = UIUtils.getColorRegistry();
         setBackgroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ATTR_BACKGROUND));
 		setForegroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ATTR_FOREGROUND));
@@ -78,7 +80,10 @@ public class AttributeListFigure extends Figure
 		@Override
         public void paint(IFigure figure, Graphics graphics, Insets insets)
 		{
-			graphics.drawLine(getPaintRectangle(figure, insets).getTopLeft(), tempRect.getTopRight());
+			graphics.setForegroundColor(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_LINES_FOREGROUND));
+			Rectangle rect = getPaintRectangle(figure, insets);
+			graphics.setLineWidth(2);
+			graphics.drawLine(rect.getTopLeft(), tempRect.getTopRight());
 		}
 	}
 }

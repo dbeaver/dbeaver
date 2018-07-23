@@ -34,8 +34,8 @@ import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.runtime.sql.SQLRuleProvider;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
-import org.jkiss.dbeaver.registry.sql.SQLCommandHandlerDescriptor;
-import org.jkiss.dbeaver.registry.sql.SQLCommandsRegistry;
+import org.jkiss.dbeaver.ui.editors.sql.registry.SQLCommandHandlerDescriptor;
+import org.jkiss.dbeaver.ui.editors.sql.registry.SQLCommandsRegistry;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.rules.*;
@@ -56,7 +56,7 @@ import java.util.*;
  */
 public class SQLRuleManager extends RuleBasedScanner {
 
-    private static final long MAX_FILE_LENGTH_FOR_RULES = 5000000;
+    private static final long MAX_FILE_LENGTH_FOR_RULES = 2000000;
 
     @NotNull
     private final IThemeManager themeManager;
@@ -191,7 +191,7 @@ public class SQLRuleManager extends RuleBasedScanner {
             }
         }
 
-        {
+        if (!minimalRules) {
             final SQLControlToken controlToken = new SQLControlToken(
                     new TextAttribute(getColor(SQLConstants.CONFIG_COLOR_COMMAND), null, keywordStyle));
 
@@ -213,7 +213,7 @@ public class SQLRuleManager extends RuleBasedScanner {
             }
         }
 
-        {
+        if (!minimalRules) {
             // Add rules for delimited identifiers and string literals.
             char escapeChar = syntaxManager.getEscapeChar();
             String[][] quoteStrings = syntaxManager.getQuoteStrings();
@@ -242,10 +242,10 @@ public class SQLRuleManager extends RuleBasedScanner {
             rules.add(new MultiLineRule(multiLineComments.getFirst(), multiLineComments.getSecond(), commentToken, (char) 0, true));
         }
 
-        // Add generic whitespace rule.
-        rules.add(new WhitespaceRule(new TextWhiteSpaceDetector()));
-
         if (!minimalRules) {
+            // Add generic whitespace rule.
+            rules.add(new WhitespaceRule(new TextWhiteSpaceDetector()));
+
             // Add numeric rule
             rules.add(new NumberRule(numberToken));
         }
@@ -264,18 +264,20 @@ public class SQLRuleManager extends RuleBasedScanner {
             }
         }
 
-        final String blockToggleString = dialect.getBlockToggleString();
-        if (!CommonUtils.isEmpty(blockToggleString)) {
-            int divPos = blockToggleString.indexOf(SQLConstants.KEYWORD_PATTERN_CHARS);
-            if (divPos != -1) {
-                String prefix = blockToggleString.substring(0, divPos);
-                String postfix = blockToggleString.substring(divPos + SQLConstants.KEYWORD_PATTERN_CHARS.length());
-                WordPatternRule blockToggleRule = new WordPatternRule(new SQLWordDetector(), prefix, postfix, blockToggleToken);
-                rules.add(blockToggleRule);
-            } else {
-                WordRule blockToggleRule = new WordRule(getWordOrSymbolDetector(blockToggleString), Token.UNDEFINED, true);
-                blockToggleRule.addWord(blockToggleString, blockToggleToken);
-                rules.add(blockToggleRule);
+        if (!minimalRules) {
+            final String blockToggleString = dialect.getBlockToggleString();
+            if (!CommonUtils.isEmpty(blockToggleString)) {
+                int divPos = blockToggleString.indexOf(SQLConstants.KEYWORD_PATTERN_CHARS);
+                if (divPos != -1) {
+                    String prefix = blockToggleString.substring(0, divPos);
+                    String postfix = blockToggleString.substring(divPos + SQLConstants.KEYWORD_PATTERN_CHARS.length());
+                    WordPatternRule blockToggleRule = new WordPatternRule(new SQLWordDetector(), prefix, postfix, blockToggleToken);
+                    rules.add(blockToggleRule);
+                } else {
+                    WordRule blockToggleRule = new WordRule(getWordOrSymbolDetector(blockToggleString), Token.UNDEFINED, true);
+                    blockToggleRule.addWord(blockToggleString, blockToggleToken);
+                    rules.add(blockToggleRule);
+                }
             }
         }
 
@@ -297,9 +299,11 @@ public class SQLRuleManager extends RuleBasedScanner {
                     wordRule.addWord(type, typeToken);
                 }
             }
-            final String blockHeaderString = dialect.getBlockHeaderString();
-            if (!CommonUtils.isEmpty(blockHeaderString)) {
-                wordRule.addWord(blockHeaderString, blockHeaderToken);
+            final String[] blockHeaderStrings = dialect.getBlockHeaderStrings();
+            if (!ArrayUtils.isEmpty(blockHeaderStrings)) {
+                for (String bhs : blockHeaderStrings) {
+                    wordRule.addWord(bhs, blockHeaderToken);
+                }
             }
             String[][] blockBounds = dialect.getBlockBoundStrings();
             if (blockBounds != null) {
@@ -312,9 +316,7 @@ public class SQLRuleManager extends RuleBasedScanner {
                 }
             }
             rules.add(wordRule);
-        }
 
-        if (!minimalRules) {
             // Parameter rule
             rules.add(new SQLParameterRule(syntaxManager, parameterToken));
         }

@@ -24,11 +24,8 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.layout.RowData;
@@ -100,9 +97,11 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
     private final List<DBPDataSourceRegistry> handledRegistries = new ArrayList<>();
     private final List<DatabaseListReader> dbListReads = new ArrayList<>();
     private volatile IFile activeFile;
+    private volatile String currentDatabaseInstanceName;
 
-    private static class DatabaseListReader extends DataSourceJob {
+    private class DatabaseListReader extends DataSourceJob {
         private final List<DBNDatabaseNode> nodeList = new ArrayList<>();
+        // Remote instance node
         private DBSObject active;
         private boolean enabled;
 
@@ -122,16 +121,21 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
             }
             try {
                 monitor.beginTask(CoreMessages.toolbar_datasource_selector_action_read_databases, 1);
+                currentDatabaseInstanceName = null;
                 Class<? extends DBSObject> childType = objectContainer.getChildType(monitor);
                 if (childType == null || !DBSObjectContainer.class.isAssignableFrom(childType)) {
                     enabled = false;
                 } else {
                     enabled = true;
+
+                    DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
+
                     DBSObject defObject = objectSelector.getDefaultObject();
                     if (defObject instanceof DBSObjectContainer) {
                         // Default object can be object container + object selector (e.g. in PG)
                         objectSelector = DBUtils.getAdapter(DBSObjectSelector.class, defObject);
                         if (objectSelector != null && objectSelector.supportsDefaultChange()) {
+                            currentDatabaseInstanceName = defObject.getName();
                             objectContainer = (DBSObjectContainer) defObject;
                             defObject = objectSelector.getDefaultObject();
                         }
@@ -140,7 +144,6 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                     active = defObject;
                     // Cache navigator nodes
                     if (children != null) {
-                        DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
                         for (DBSObject child : children) {
                             if (DBUtils.getAdapter(DBSObjectContainer.class, child) != null) {
                                 DBNDatabaseNode node = navigatorModel.getNodeByObject(monitor, child, false);
@@ -169,19 +172,15 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         this.workbenchWindow = workbenchWindow;
         DBeaverCore.getInstance().getNavigatorModel().addListener(this);
 
-        final ISelectionListener selectionListener = new ISelectionListener() {
-            @Override
-            public void selectionChanged(IWorkbenchPart part, ISelection selection) {
-                if (part == activePart && selection instanceof IStructuredSelection) {
-                    final Object element = ((IStructuredSelection) selection).getFirstElement();
-                    if (element != null) {
-                        if (RuntimeUtils.getObjectAdapter(element, DBSObject.class) != null) {
-                            updateControls(false);
-                        }
+        final ISelectionListener selectionListener = (part, selection) -> {
+            if (part == activePart && selection instanceof IStructuredSelection) {
+                final Object element = ((IStructuredSelection) selection).getFirstElement();
+                if (element != null) {
+                    if (RuntimeUtils.getObjectAdapter(element, DBSObject.class) != null) {
+                        updateControls(false);
                     }
                 }
             }
-
         };
         pageListener = new AbstractPageListener() {
             @Override
@@ -434,6 +433,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                 }
             }
             connectionCombo.select(selectionIndex);
+            connectionCombo.setToolTipText(CoreMessages.toolbar_datasource_selector_combo_datasource_tooltip + "\n" + connectionCombo.getText());
         } finally {
             if (update) {
                 connectionCombo.setRedraw(true);
@@ -453,12 +453,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                 DBUtils.getContainer(event.getObject()) == getDataSourceContainer())
             ) {
             UIUtils.asyncExec(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        updateControls(true);
-                    }
-                }
+                () -> updateControls(true)
             );
         }
         // This is a hack. We need to update main toolbar. By design toolbar should be updated along with command state
@@ -468,13 +463,10 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
             DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_CONNECTED);
             DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_TRANSACTIONAL);
             UIUtils.asyncExec(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
-                        if (workbenchWindow instanceof WorkbenchWindow) {
-                            ((WorkbenchWindow) workbenchWindow).updateActionBars();
-                        }
+                () -> {
+                    IWorkbenchWindow workbenchWindow = UIUtils.getActiveWorkbenchWindow();
+                    if (workbenchWindow instanceof WorkbenchWindow) {
+                        ((WorkbenchWindow) workbenchWindow).updateActionBars();
                     }
                 }
             );
@@ -553,16 +545,11 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                                 return;
                             }
                         }
-                        DatabaseListReader databaseReader = new DatabaseListReader(dataSource.getDefaultContext(true));
+                        DatabaseListReader databaseReader = new DatabaseListReader(dataSource.getDefaultInstance().getDefaultContext(true));
                         databaseReader.addJobChangeListener(new JobChangeAdapter() {
                             @Override
                             public void done(final IJobChangeEvent event) {
-                                UIUtils.syncExec(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        fillDatabaseList((DatabaseListReader) event.getJob());
-                                    }
-                                });
+                                UIUtils.syncExec(() -> fillDatabaseList((DatabaseListReader) event.getJob()));
                             }
                         });
                         dbListReads.add(databaseReader);
@@ -574,6 +561,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
             } else {
                 curDataSourceContainer = null;
                 databaseCombo.removeAll();
+                databaseCombo.setToolTipText(CoreMessages.toolbar_datasource_selector_combo_database_tooltip);
             }
         }
     }
@@ -604,14 +592,14 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
             if (reader.active != null) {
                 int dbCount = databaseCombo.getItemCount();
                 for (int i = 0; i < dbCount; i++) {
-                    String dbName = databaseCombo.getItemText(i);
-                    if (dbName.equals(reader.active.getName())) {
+                    if (databaseCombo.getItem(i) != null && databaseCombo.getItem(i).getObject() == reader.active) {
                         databaseCombo.select(i);
                         break;
                     }
                 }
             }
             databaseCombo.setEnabled(reader.enabled);
+            databaseCombo.setToolTipText(CoreMessages.toolbar_datasource_selector_combo_database_tooltip + "\n" + databaseCombo.getText());
         } finally {
             if (!databaseCombo.isDisposed()) {
                 databaseCombo.setRedraw(true);
@@ -638,12 +626,7 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         updateJob.addJobChangeListener(new JobChangeAdapter() {
             @Override
             public void done(IJobChangeEvent event) {
-                UIUtils.asyncExec(new Runnable() {
-                    @Override
-                    public void run() {
-                        updateControls(false);
-                    }
-                });
+                UIUtils.asyncExec(() -> updateControls(false));
             }
         });
         updateJob.schedule();
@@ -748,7 +731,17 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
         connectionCombo.select(0);
 
         comboWidth = fontHeight * 16;
-        databaseCombo = new CSmartSelector<DBNDatabaseNode>(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.BORDER, new DatabaseLabelProviders.DatabaseLabelProvider()) {
+        databaseCombo = new CSmartSelector<DBNDatabaseNode>(comboGroup, SWT.DROP_DOWN | SWT.READ_ONLY | SWT.BORDER,
+            new DatabaseLabelProviders.DatabaseLabelProvider() {
+                @Override
+                public String getText(Object element) {
+                    if (currentDatabaseInstanceName == null) {
+                        return super.getText(element);
+                    } else {
+                        return super.getText(element) + "@" + currentDatabaseInstanceName;
+                    }
+                }
+            }) {
             @Override
             protected void dropDown(boolean drop) {
                 if (!drop) {
@@ -789,19 +782,11 @@ public class DataSourceManagementToolbar implements DBPRegistryListener, DBPEven
                 changeResultSetSize();
             }
         });
-        comboGroup.addDisposeListener(new DisposeListener() {
-            @Override
-            public void widgetDisposed(DisposeEvent e) {
-                DataSourceManagementToolbar.this.dispose();
-            }
-        });
+        comboGroup.addDisposeListener(e -> DataSourceManagementToolbar.this.dispose());
 
-        UIUtils.asyncExec(new Runnable() {
-            @Override
-            public void run() {
-                if (workbenchWindow != null && workbenchWindow.getActivePage() != null) {
-                    setActivePart(workbenchWindow.getActivePage().getActivePart());
-                }
+        UIUtils.asyncExec(() -> {
+            if (workbenchWindow != null && workbenchWindow.getActivePage() != null) {
+                setActivePart(workbenchWindow.getActivePage().getActivePart());
             }
         });
 

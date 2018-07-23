@@ -78,7 +78,12 @@ public class PostgreDatabaseManager extends SQLObjectEditor<PostgreDatabase, Pos
                 if (dialog.open() != IDialogConstants.OK_ID) {
                     return null;
                 }
-                return new PostgreDatabase(parent, dialog.getName(), dialog.getOwner(), dialog.getTemplateName(), dialog.getTablespace(), dialog.getEncoding());
+                try {
+                    return new PostgreDatabase(monitor, parent, dialog.getName(), dialog.getOwner(), dialog.getTemplateName(), dialog.getTablespace(), dialog.getEncoding());
+                } catch (DBException e) {
+                    // Never be here
+                    return null;
+                }
             }
         }.execute();
     }

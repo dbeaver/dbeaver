@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.runtime.DBeaverNotifications;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 
@@ -60,7 +61,7 @@ public class InvalidateJob extends DataSourceJob
     public InvalidateJob(
         DBPDataSource dataSource)
     {
-        super("Invalidate " + dataSource.getContainer().getName(), dataSource.getDefaultContext(false));
+        super("Invalidate " + dataSource.getContainer().getName(), dataSource.getDefaultInstance().getDefaultContext(false));
     }
 
     public List<ContextInvalidateResult> getInvalidateResults() {
@@ -90,7 +91,7 @@ public class InvalidateJob extends DataSourceJob
         DBPDataSourceContainer container = dataSource.getContainer();
         DBWNetworkHandler[] activeHandlers = container.getActiveNetworkHandlers();
         boolean networkOK = true;
-        int goodContextsNumber = 0;
+        int goodContextsNumber = 0, aliveContextsNumber = 0;
         if (activeHandlers != null && activeHandlers.length > 0) {
             for (DBWNetworkHandler nh : activeHandlers) {
                 monitor.subTask("Invalidate network [" + container.getName() + "]");
@@ -103,24 +104,36 @@ public class InvalidateJob extends DataSourceJob
                 }
             }
         }
-        if (networkOK) {
-            // Invalidate datasource
-            monitor.subTask("Invalidate connections of [" + container.getName() + "]");
-            DBCExecutionContext[] allContexts = dataSource.getAllContexts();
-            for (DBCExecutionContext context : allContexts) {
-                long startTime = System.currentTimeMillis();
-                try {
-                    final DBCExecutionContext.InvalidateResult result = context.invalidateContext(monitor, disconnectOnFailure);
-                    if (result != DBCExecutionContext.InvalidateResult.ERROR) {
-                        goodContextsNumber++;
+        // Invalidate datasource
+        int totalContexts = 0;
+        monitor.subTask("Invalidate connections of [" + container.getName() + "]");
+        for (DBSInstance instance : dataSource.getAvailableInstances()) {
+            for (DBCExecutionContext context : instance.getAllContexts()) {
+                totalContexts++;
+                if (networkOK) {
+                    long startTime = System.currentTimeMillis();
+                    try {
+                        final DBCExecutionContext.InvalidateResult result = context.invalidateContext(monitor, disconnectOnFailure);
+                        if (result != DBCExecutionContext.InvalidateResult.ERROR) {
+                            goodContextsNumber++;
+                        }
+                        if (result == DBCExecutionContext.InvalidateResult.ALIVE) {
+                            aliveContextsNumber++;
+                        }
+                        invalidateResults.add(new ContextInvalidateResult(result, null));
+                    } catch (Exception e) {
+                        invalidateResults.add(new ContextInvalidateResult(DBCExecutionContext.InvalidateResult.ERROR, e));
+                    } finally {
+                        timeSpent += (System.currentTimeMillis() - startTime);
+
                     }
-                    invalidateResults.add(new ContextInvalidateResult(result, null));
-                } catch (Exception e) {
-                    invalidateResults.add(new ContextInvalidateResult(DBCExecutionContext.InvalidateResult.ERROR, e));
-                } finally {
-                    timeSpent += (System.currentTimeMillis() - startTime);
                 }
             }
+        }
+
+        if (goodContextsNumber > 0 && goodContextsNumber == aliveContextsNumber) {
+            // Nothing to reinit, all contexts are alive. Why we are here??
+            return invalidateResults;
         }
         if (goodContextsNumber == 0 && disconnectOnFailure) {
             // Close whole datasource. Target host seems to be unavailable
@@ -150,7 +163,7 @@ public class InvalidateJob extends DataSourceJob
                 dataSource,
                 DBeaverNotifications.NT_RECONNECT,
                 "Datasource was invalidated\n\n" +
-                    "Live connection count: " + goodContextsNumber + "/" + dataSource.getAllContexts().length,
+                    "Live connection count: " + goodContextsNumber + "/" + totalContexts,
                 DBPMessageType.INFORMATION);
         }
 

@@ -45,7 +45,7 @@ public class VerticaUtils {
     private static final Log log = Log.getLog(VerticaUtils.class);
 
     public static String getObjectDDL(DBRProgressMonitor monitor, GenericDataSource dataSource, DBSObject sourceObject) throws DBException {
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read Vertica object definition")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read Vertica object definition")) {
             String objectName = sourceObject instanceof DBPQualifiedObject ?
                     ((DBPQualifiedObject) sourceObject).getFullyQualifiedName(DBPEvaluationContext.DML) :
                     sourceObject.getName();
@@ -129,6 +129,7 @@ public class VerticaUtils {
         }
     }
 
+/*
     public static String getObjectComment(DBRProgressMonitor monitor, DBPDataSource dataSource, VerticaObjectType objectType, String schema, String object)
         throws DBException
     {
@@ -142,5 +143,6 @@ public class VerticaUtils {
             return null;
         }
     }
+*/
 
 }

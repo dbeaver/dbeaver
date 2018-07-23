@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -32,7 +32,7 @@ import org.jkiss.dbeaver.ext.erd.model.ERDObject;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.model.DBPContextProvider;
-import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
@@ -160,7 +160,7 @@ public class ERDEditorStandalone extends ERDEditorPart implements DBPContextProv
         final IFile file = getEditorFile();
 
         final DiagramPart diagramPart = getDiagramPart();
-        EntityDiagram entityDiagram = new EntityDiagram(null, file.getName());
+        EntityDiagram entityDiagram = new EntityDiagram(getDecorator(), null, file.getName());
         entityDiagram.clear();
         entityDiagram.setLayoutManualAllowed(true);
         entityDiagram.setLayoutManualDesired(true);
@@ -190,8 +190,7 @@ public class ERDEditorStandalone extends ERDEditorPart implements DBPContextProv
                 Object object = model.getObject();
                 if (object instanceof DBSObject) {
                     DBSObject dbObject = (DBSObject) object;
-                    DBPDataSource dataSource = dbObject.getDataSource();
-                    return dataSource.getDefaultContext(true);
+                    return DBUtils.getDefaultContext(dbObject, true);
                 }
             }
         }
@@ -212,12 +211,8 @@ public class ERDEditorStandalone extends ERDEditorPart implements DBPContextProv
         }
         if (delta.getKind() == IResourceDelta.REMOVED) {
             // Refresh editor
-            UIUtils.asyncExec(new Runnable() {
-                @Override
-                public void run() {
-                    getSite().getWorkbenchWindow().getActivePage().closeEditor(ERDEditorStandalone.this, false);
-                }
-            });
+            UIUtils.asyncExec(() ->
+                getSite().getWorkbenchWindow().getActivePage().closeEditor(ERDEditorStandalone.this, false));
         }
     }
 

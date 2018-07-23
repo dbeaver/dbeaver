@@ -92,7 +92,7 @@ public class ExasolFunctionManager extends SQLObjectEditor<ExasolFunction, Exaso
     }
     
     @Override
-    protected void addObjectModifyActions(List<DBEPersistAction> actionList,
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList,
                                           ObjectChangeCommand command, Map<String, Object> options)
     {
         if (command.getProperties().size() > 1 || command.getProperty("description") == null )
@@ -102,7 +102,7 @@ public class ExasolFunctionManager extends SQLObjectEditor<ExasolFunction, Exaso
     }
     
     @Override
-    protected void addObjectExtraActions(List<DBEPersistAction> actions,
+    protected void addObjectExtraActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions,
                                          NestedObjectCommand<ExasolFunction, PropertyHandler> command, Map<String, Object> options)
     {
         if (command.getProperty("description") != null) {

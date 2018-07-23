@@ -199,7 +199,7 @@ public class GenericMetaModel {
 
         GenericDataSource dataSource = container.getDataSource();
         GenericMetaObject procObject = dataSource.getMetaObject(GenericConstants.OBJECT_PROCEDURE);
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Load procedures")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Load procedures")) {
             // Read procedures
             JDBCResultSet dbResult = session.getMetaData().getProcedures(
                 container.getCatalog() == null ? null : container.getCatalog().getName(),
@@ -463,6 +463,17 @@ public class GenericMetaModel {
     }
 
     public List<GenericSequence> loadSequences(@NotNull DBRProgressMonitor monitor, @NotNull GenericStructContainer container) throws DBException {
+        return new ArrayList<>();
+    }
+
+    //////////////////////////////////////////////////////
+    // Synonyms
+
+    public boolean supportsSynonyms(@NotNull GenericDataSource dataSource) {
+        return false;
+    }
+
+    public List<? extends GenericSynonym> loadSynonyms(@NotNull DBRProgressMonitor monitor, @NotNull GenericStructContainer container) throws DBException {
         return new ArrayList<>();
     }
 

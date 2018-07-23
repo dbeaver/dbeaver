@@ -261,7 +261,7 @@ public class DB2Tablespace extends DB2GlobalObject implements DBPNamedObject, DB
 
     @Nullable
     @Override
-    @Property(viewable = false)
+    @Property(viewable = false, multiline = true)
     public String getDescription()
     {
         return remarks;

@@ -17,16 +17,6 @@
  */
 package org.jkiss.dbeaver.ext.exasol.model;
 
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
@@ -36,24 +26,14 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.exasol.ExasolConstants;
 import org.jkiss.dbeaver.ext.exasol.ExasolDataSourceProvider;
 import org.jkiss.dbeaver.ext.exasol.ExasolSQLDialect;
-import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolBaseObjectGrant;
-import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolConnectionGrant;
-import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolGrantee;
-import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolRole;
-import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolRoleGrant;
-import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolSchemaGrant;
-import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolScriptGrant;
-import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolSystemGrant;
-import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolTableGrant;
-import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolTableObjectType;
-import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolUser;
-import org.jkiss.dbeaver.ext.exasol.manager.security.ExasolViewGrant;
+import org.jkiss.dbeaver.ext.exasol.manager.security.*;
 import org.jkiss.dbeaver.ext.exasol.model.plan.ExasolPlanAnalyser;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPErrorAssistant;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
@@ -76,6 +56,11 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
 import org.jkiss.utils.CommonUtils;
+
+import java.sql.SQLException;
+import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ExasolDataSource extends JDBCDataSource
 		implements DBSObjectSelector, DBCQueryPlanner, IAdaptable {
@@ -177,8 +162,7 @@ public class ExasolDataSource extends JDBCDataSource
 				+ "order by b.object_name";
 		schemaCache = new JDBCObjectSimpleCache<>(
 				ExasolSchema.class, schemaSQL);
-		
-		
+
 		try {
 			this.dataTypeCache.getAllObjects(monitor, this);
 		} catch (DBException e) {
@@ -357,7 +341,7 @@ public class ExasolDataSource extends JDBCDataSource
 
 	@Override
 	protected Map<String, String> getInternalConnectionProperties(
-        DBRProgressMonitor monitor, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException
+        DBRProgressMonitor monitor, DBPDriver driver, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException
 	{
 		Map<String, String> props = new HashMap<>();
 		props.putAll(ExasolDataSourceProvider.getConnectionsProps());
@@ -437,8 +421,7 @@ public class ExasolDataSource extends JDBCDataSource
 	@Override
 	public ExasolSchema getDefaultObject()
 	{
-		return activeSchemaName == null ? null
-				: schemaCache.getCachedObject(activeSchemaName);
+		return activeSchemaName == null ? null : schemaCache.getCachedObject(activeSchemaName);
 	}
 
 	@Override
@@ -452,7 +435,7 @@ public class ExasolDataSource extends JDBCDataSource
 					"Invalid object type: " + object);
 		}
 
-		for (JDBCExecutionContext context : getAllContexts()) {
+		for (JDBCExecutionContext context : getDefaultInstance().getAllContexts()) {
 			setCurrentSchema(monitor, context, (ExasolSchema) object);
 		}
 
@@ -483,7 +466,7 @@ public class ExasolDataSource extends JDBCDataSource
 				}
 			}
 			return false;
-		} catch (SQLException e) {
+		} catch (Exception e) {
 			throw new DBException(e, this);
 		}
 	}
@@ -515,7 +498,6 @@ public class ExasolDataSource extends JDBCDataSource
 	{
 		return schemaCache.getAllObjects(monitor, this);
 	}
-	
 
 	public ExasolSchema getSchema(DBRProgressMonitor monitor, String name)
 			throws DBException

@@ -115,7 +115,7 @@ public class DB2Wrapper extends DB2GlobalObject implements DBPRefreshableObject 
         return library;
     }
 
-    @Property(viewable = true, order = 5)
+    @Property(viewable = true, multiline = true, order = 5)
     public String getRemarks()
     {
         return remarks;

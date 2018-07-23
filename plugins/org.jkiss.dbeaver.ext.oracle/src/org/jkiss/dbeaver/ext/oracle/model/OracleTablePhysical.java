@@ -40,7 +40,6 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -96,7 +95,7 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
         }
 
         // Query row count
-        try (DBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read row count")) {
+        try (DBCSession session = DBUtils.openMetaSession(monitor, this, "Read row count")) {
             realRowCount = countData(new AbstractExecutionSource(this, session.getExecutionContext(), this), session, null);
         } catch (DBException e) {
             log.debug("Can't fetch row count", e);
@@ -149,7 +148,7 @@ public abstract class OracleTablePhysical extends OracleTableBase implements DBS
     public PartitionInfo getPartitionInfo(DBRProgressMonitor monitor) throws DBException
     {
         if (partitionInfo == null && partitioned) {
-            try (final JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Load partitioning info")) {
+            try (final JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load partitioning info")) {
                 try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT * FROM ALL_PART_TABLES WHERE OWNER=? AND TABLE_NAME=?")) {
                     dbStat.setString(1, getContainer().getName());
                     dbStat.setString(2, getName());

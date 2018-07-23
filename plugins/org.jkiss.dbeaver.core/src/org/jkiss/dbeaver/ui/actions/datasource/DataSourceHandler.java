@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressListener;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.runtime.jobs.ConnectJob;
 import org.jkiss.dbeaver.runtime.jobs.DisconnectJob;
@@ -246,7 +247,12 @@ public class DataSourceHandler
             return true;
         }
 
-        return checkAndCloseActiveTransaction(dataSource.getAllContexts());
+        for (DBSInstance instance : dataSource.getAvailableInstances()) {
+            if (!checkAndCloseActiveTransaction(instance.getAllContexts())) {
+                return false;
+            }
+        }
+        return true;
     }
 
     public static boolean checkAndCloseActiveTransaction(DBCExecutionContext[] contexts)

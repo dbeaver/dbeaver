@@ -47,6 +47,15 @@ public class DriverLibraryLocal extends DriverLibraryAbstract
         super(driver, config);
     }
 
+    public DriverLibraryLocal(DriverDescriptor driverDescriptor, DriverLibraryLocal copyFrom) {
+        super(driverDescriptor, copyFrom);
+    }
+
+    @Override
+    public DBPDriverLibrary copyLibrary(DriverDescriptor driverDescriptor) {
+        return new DriverLibraryLocal(driverDescriptor, this);
+    }
+
     @Override
     public boolean isDownloadable()
     {

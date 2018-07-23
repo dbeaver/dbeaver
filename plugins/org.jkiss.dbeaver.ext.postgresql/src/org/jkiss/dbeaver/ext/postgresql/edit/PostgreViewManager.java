@@ -18,25 +18,16 @@ package org.jkiss.dbeaver.ext.postgresql.edit;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
-import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
-import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
-import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionComment;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
-import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -86,16 +77,14 @@ public class PostgreViewManager extends PostgreTableManagerBase {
     }
 
     @Override
-    protected void addStructObjectCreateActions(List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options)
-    {
-        createOrReplaceViewQuery(actions, (PostgreViewBase) command.getObject());
-        addObjectExtraActions(actions, command, options);
+    protected void addStructObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options) throws DBException {
+        createOrReplaceViewQuery(monitor, actions, (PostgreViewBase) command.getObject());
+        addObjectExtraActions(monitor, actions, command, options);
     }
 
     @Override
-    protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
-    {
-        createOrReplaceViewQuery(actionList, (PostgreViewBase) command.getObject());
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options) throws DBException {
+        createOrReplaceViewQuery(monitor, actionList, (PostgreViewBase) command.getObject());
     }
 
     @Override
@@ -107,17 +96,29 @@ public class PostgreViewManager extends PostgreTableManagerBase {
         );
     }
 
-    protected void createOrReplaceViewQuery(List<DBEPersistAction> actions, PostgreViewBase view)
-    {
+    protected void createOrReplaceViewQuery(DBRProgressMonitor monitor, List<DBEPersistAction> actions, PostgreViewBase view) throws DBException {
         if (!CommonUtils.isEmpty(view.getSource())) {
             // Source may be empty if it wasn't yet read. Then it definitely wasn't changed
             String sql = view.getSource().trim();
             if (!sql.toLowerCase(Locale.ENGLISH).startsWith("create")) {
-                sql = "CREATE OR REPLACE VIEW " + DBUtils.getObjectFullName(view, DBPEvaluationContext.DDL) + " AS\n" + sql;
+                StringBuilder sqlBuf = new StringBuilder();
+                sqlBuf.append("CREATE OR REPLACE ").append(view.getViewType()).append(" ").append(DBUtils.getObjectFullName(view, DBPEvaluationContext.DDL));
+                appendViewDeclarationPrefix(monitor, sqlBuf, view);
+                sqlBuf.append("\nAS ").append(sql);
+                appendViewDeclarationPostfix(monitor, sqlBuf, view);
+                sql = sqlBuf.toString();
             }
             actions.add(
                 new SQLDatabasePersistAction("Create view", sql));
         }
+    }
+
+    public void appendViewDeclarationPrefix(DBRProgressMonitor monitor, StringBuilder sqlBuf, PostgreViewBase view) throws DBException {
+
+    }
+
+    public void appendViewDeclarationPostfix(DBRProgressMonitor monitor, StringBuilder sqlBuf, PostgreViewBase view) {
+
     }
 
 }

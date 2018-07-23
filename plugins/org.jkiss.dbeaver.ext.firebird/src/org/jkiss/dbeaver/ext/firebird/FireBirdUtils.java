@@ -49,7 +49,7 @@ public class FireBirdUtils {
     public static String getProcedureSource(DBRProgressMonitor monitor, GenericProcedure procedure)
         throws DBException
     {
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, procedure.getDataSource(), "Load procedure source code")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, procedure, "Load procedure source code")) {
             DatabaseMetaData fbMetaData = session.getOriginal().getMetaData();
             String source = (String) fbMetaData.getClass().getMethod("getProcedureSourceCode", String.class).invoke(fbMetaData, procedure.getName());
             if (CommonUtils.isEmpty(source)) {
@@ -68,7 +68,7 @@ public class FireBirdUtils {
     public static String getViewSource(DBRProgressMonitor monitor, GenericTable view)
         throws DBException
     {
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, view.getDataSource(), "Load view source code")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, view, "Load view source code")) {
             DatabaseMetaData fbMetaData = session.getOriginal().getMetaData();
             String source = (String) fbMetaData.getClass().getMethod("getViewSourceCode", String.class).invoke(fbMetaData, view.getName());
             if (CommonUtils.isEmpty(source)) {
@@ -87,7 +87,7 @@ public class FireBirdUtils {
     public static String getTriggerSource(DBRProgressMonitor monitor, FireBirdTrigger trigger)
         throws DBException
     {
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, trigger.getDataSource(), "Load trigger source code")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, trigger, "Load trigger source code")) {
             DatabaseMetaData fbMetaData = session.getOriginal().getMetaData();
             String source = (String) fbMetaData.getClass().getMethod("getTriggerSourceCode", String.class).invoke(fbMetaData, trigger.getName());
             if (CommonUtils.isEmpty(source)) {

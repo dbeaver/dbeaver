@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
+import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
@@ -92,7 +93,7 @@ public class DataExporterHTML extends StreamExporterAbstract {
     }
 
     @Override
-    public void exportRow(DBCSession session, Object[] row) throws DBException, IOException
+    public void exportRow(DBCSession session, DBCResultSet resultSet, Object[] row) throws DBException, IOException
     {
         out.write("<tr" + (rowCount++ % 2 == 0 ? " class=\"odd\"" : "") + ">");
         for (int i = 0; i < row.length; i++) {

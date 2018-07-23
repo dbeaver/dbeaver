@@ -120,7 +120,7 @@ public class VerticaMetaModel extends GenericMetaModel implements DBCQueryTransf
     @Override
     public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
         GenericDataSource dataSource = sourceObject.getDataSource();
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read Vertica procedure source")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read Vertica procedure source")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT function_definition FROM v_catalog.user_functions WHERE schema_name=? AND function_name=?")) {
                 dbStat.setString(1, sourceObject.getSchema().getName());
                 dbStat.setString(2, sourceObject.getName());
@@ -144,7 +144,7 @@ public class VerticaMetaModel extends GenericMetaModel implements DBCQueryTransf
 
     @Override
     public List<GenericSequence> loadSequences(DBRProgressMonitor monitor, GenericStructContainer container) throws DBException {
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, container.getDataSource(), "Read system sequences")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Read system sequences")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT * FROM v_catalog.sequences WHERE sequence_schema=? ORDER BY sequence_name")) {
                 dbStat.setString(1, container.getSchema().getName());

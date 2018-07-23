@@ -31,10 +31,8 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.SimpleObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Association;
-import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAssociation;
 import org.jkiss.utils.CommonUtils;
@@ -210,7 +208,7 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
     @NotNull
     public List<PostgreTableInheritance> getSuperInheritance(DBRProgressMonitor monitor) throws DBException {
         if (superTables == null) {
-            try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Load table inheritance info")) {
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table inheritance info")) {
                 try (JDBCPreparedStatement dbStat = session.prepareStatement(
                     "SELECT i.*,c.relnamespace " +
                     "FROM pg_catalog.pg_inherits i,pg_catalog.pg_class c " +
@@ -256,7 +254,7 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
     @NotNull
     public List<PostgreTableInheritance> getSubInheritance(@NotNull DBRProgressMonitor monitor) throws DBException {
         if (subTables == null) {
-            try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Load table inheritance info")) {
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table inheritance info")) {
                 String sql = "SELECT i.*,c.relnamespace " +
                     "FROM pg_catalog.pg_inherits i,pg_catalog.pg_class c " +
                     "WHERE i.inhparent=? AND c.oid=i.inhrelid";
@@ -316,25 +314,6 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
             }
         }
         return result;
-    }
-
-    public static class TablespaceListProvider implements IPropertyValueListProvider<PostgreTable> {
-        @Override
-        public boolean allowCustomValue()
-        {
-            return false;
-        }
-        @Override
-        public Object[] getPossibleValues(PostgreTable object)
-        {
-            try {
-                Collection<PostgreTablespace> tablespaces = object.getDatabase().getTablespaces(new VoidProgressMonitor());
-                return tablespaces.toArray(new Object[tablespaces.size()]);
-            } catch (DBException e) {
-                log.error(e);
-                return new Object[0];
-            }
-        }
     }
 
 }

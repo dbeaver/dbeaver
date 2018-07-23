@@ -107,7 +107,7 @@ public abstract class PostgreTableConstraintBase extends JDBCTableConstraint<Pos
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException
     {
         if (constrDDL == null && isPersisted()) {
-            try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read constraint definition")) {
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read constraint definition")) {
                 constrDDL =
                     "CONSTRAINT " + DBUtils.getQuotedIdentifier(this) + " " +
                     JDBCUtils.queryString(session, "SELECT pg_catalog.pg_get_constraintdef(?)", getObjectId());

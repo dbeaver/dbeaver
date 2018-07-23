@@ -87,6 +87,10 @@ public class JDBCDataType<OWNER extends DBSObject> implements DBSDataType
         return valueType;
     }
 
+    protected void setTypeID(int valueType) {
+        this.valueType = valueType;
+    }
+
     @NotNull
     @Override
     public String getName()

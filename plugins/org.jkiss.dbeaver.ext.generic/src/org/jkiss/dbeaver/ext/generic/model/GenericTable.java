@@ -210,7 +210,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
 
     @Nullable
     @Override
-    @Property(viewable = true, order = 100)
+    @Property(viewable = true, multiline = true, order = 100)
     public String getDescription()
     {
         return description;
@@ -247,7 +247,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         }
         if (rowCount == null) {
             // Query row count
-            try (DBCSession session = DBUtils.openUtilSession(monitor, getDataSource(), "Read row count")) {
+            try (DBCSession session = DBUtils.openUtilSession(monitor, this, "Read row count")) {
                 rowCount = countData(
                     new AbstractExecutionSource(this, session.getExecutionContext(), this), session, null);
             } catch (DBException e) {
@@ -330,7 +330,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         if (!isPersisted() || !getDataSource().getInfo().supportsReferentialIntegrity()) {
             return new ArrayList<>();
         }
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Load table relations")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table relations")) {
             // Read foreign keys in two passes
             // First read entire resultset to prevent recursive metadata requests
             // some drivers don't like it

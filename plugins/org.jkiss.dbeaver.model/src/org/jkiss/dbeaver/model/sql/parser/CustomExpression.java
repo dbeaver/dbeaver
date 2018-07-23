@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.sql.parser;
 import net.sf.jsqlparser.expression.Expression;
 import net.sf.jsqlparser.expression.ExpressionVisitor;
 import net.sf.jsqlparser.expression.StringValue;
+import net.sf.jsqlparser.parser.SimpleNode;
 
 /**
  * CustomExpression
@@ -26,6 +27,7 @@ import net.sf.jsqlparser.expression.StringValue;
 public class CustomExpression implements Expression {
 
     private final String expression;
+    private SimpleNode simpleNode;
 
     public CustomExpression(String expression) {
         this.expression = expression;
@@ -39,5 +41,15 @@ public class CustomExpression implements Expression {
     @Override
     public String toString() {
         return expression;
+    }
+
+    @Override
+    public SimpleNode getASTNode() {
+        return simpleNode;
+    }
+
+    @Override
+    public void setASTNode(SimpleNode simpleNode) {
+        this.simpleNode = simpleNode;
     }
 }

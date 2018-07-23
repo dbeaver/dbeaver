@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,8 +39,7 @@ public class NoteFigure extends FlowPage {
 
     private TextFlow textFlow;
 
-    public NoteFigure(ERDNote note)
-    {
+    public NoteFigure(ERDNote note) {
         //super(note.getObject());
         textFlow = new TextFlow(note.getObject());
         add(textFlow);
@@ -54,20 +53,31 @@ public class NoteFigure extends FlowPage {
         ));
     }
 
-    public void setText(String text)
-    {
+    public TextFlow getTextFlow() {
+        return textFlow;
+    }
+
+    public String getText() {
+        return textFlow.getText();
+    }
+
+    public void setText(String text) {
         textFlow.setText(text);
     }
 
     @Override
-    public Dimension getPreferredSize(int width, int h)
-    {
-        return textFlow.getPreferredSize(width, h);//super.getPreferredSize(width, h);
+    public Dimension getPreferredSize(int width, int h) {
+        // Return current size if it is bigger than text (means it was changed manually)
+        Dimension currentSize = getSize();
+        Dimension textPrefSize = textFlow.getPreferredSize(width, h);
+        if (currentSize.width >= textPrefSize.width && currentSize.height >= textPrefSize.height) {
+            return currentSize;
+        }
+        return textPrefSize;
     }
 
     @Override
-    public void setPreferredSize(Dimension size)
-    {
+    public void setPreferredSize(Dimension size) {
         textFlow.setSize(size);
         textFlow.setPreferredSize(size);
         super.setPreferredSize(size);

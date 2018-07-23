@@ -112,7 +112,7 @@ public class OracleMaterializedView extends OracleSchemaObject implements Oracle
         return refreshMode;
     }
 
-    @Property(viewable = false, order = 18)
+    @Property(viewable = true, order = 18)
     public String getRefreshMethod()
     {
         return refreshMethod;
@@ -130,13 +130,13 @@ public class OracleMaterializedView extends OracleSchemaObject implements Oracle
         return fastRefreshable;
     }
 
-    @Property(viewable = false, order = 21)
+    @Property(viewable = true, order = 21)
     public String getLastRefreshType()
     {
         return lastRefreshType;
     }
 
-    @Property(viewable = false, order = 22)
+    @Property(viewable = true, order = 22)
     public Date getLastRefreshDate()
     {
         return lastRefreshDate;

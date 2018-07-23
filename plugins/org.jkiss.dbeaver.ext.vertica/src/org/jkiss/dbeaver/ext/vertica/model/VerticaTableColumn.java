@@ -62,7 +62,7 @@ public class VerticaTableColumn extends GenericTableColumn
 
     @Nullable
     @Override
-    @Property(viewable = true, editable = true, updatable = true, order = 100)
+    @Property(viewable = true, editable = true, updatable = true, multiline = true, order = 100)
     public String getDescription()
     {
         return super.getDescription();

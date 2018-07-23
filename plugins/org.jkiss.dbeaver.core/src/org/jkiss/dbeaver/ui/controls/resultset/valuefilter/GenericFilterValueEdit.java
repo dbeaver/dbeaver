@@ -18,17 +18,13 @@ package org.jkiss.dbeaver.ui.controls.resultset.valuefilter;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.MenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.TableViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.TableItem;
-import org.eclipse.swt.widgets.Text;
-import org.eclipse.swt.widgets.Widget;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -38,6 +34,7 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDLabelValuePair;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCLogicalOperator;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
@@ -59,7 +56,7 @@ import java.util.regex.Pattern;
 
 
 class GenericFilterValueEdit {
-    TableViewer table;
+    TableViewer tableViewer;
     String filterPattern;
 
     private KeyLoadJob loadJob;
@@ -91,11 +88,12 @@ class GenericFilterValueEdit {
 
     void setupTable(Composite composite, int style, boolean visibleLines, boolean visibleHeader, Object layoutData) {
 
-        table = new TableViewer(composite, style);
-        table.getTable().setLinesVisible(visibleLines);
-        table.getTable().setHeaderVisible(visibleHeader);
-        table.getTable().setLayoutData(layoutData);
-        table.setContentProvider(new ListContentProvider());
+        tableViewer = new TableViewer(composite, style);
+        Table table = this.tableViewer.getTable();
+        table.setLinesVisible(visibleLines);
+        table.setHeaderVisible(visibleHeader);
+        table.setLayoutData(layoutData);
+        this.tableViewer.setContentProvider(new ListContentProvider());
 
         isCheckedTable = (style & SWT.CHECK) == SWT.CHECK;
     }
@@ -103,7 +101,7 @@ class GenericFilterValueEdit {
     void addContextMenu(Action[] actions) {
         MenuManager menuMgr = new MenuManager();
         menuMgr.addMenuListener(manager -> {
-            UIUtils.fillDefaultTableContextMenu(manager, table.getTable());
+            UIUtils.fillDefaultTableContextMenu(manager, tableViewer.getTable());
             manager.add(new Separator());
 
             for (Action act : actions) {
@@ -111,11 +109,11 @@ class GenericFilterValueEdit {
             }
         });
         menuMgr.setRemoveAllWhenShown(true);
-        table.getTable().setMenu(menuMgr.createContextMenu(table.getTable()));
+        tableViewer.getTable().setMenu(menuMgr.createContextMenu(tableViewer.getTable()));
     }
 
     Collection<DBDLabelValuePair> getMultiValues() {
-        return (Collection<DBDLabelValuePair>) table.getInput();
+        return (Collection<DBDLabelValuePair>) tableViewer.getInput();
     }
 
     Text addFilterTextbox(Composite composite) {
@@ -136,10 +134,7 @@ class GenericFilterValueEdit {
 
     void loadValues() {
         if (loadJob != null) {
-            if (loadJob.getState() == Job.RUNNING) {
-                loadJob.cancel();
-            }
-            loadJob.schedule(100);
+            loadJob.schedule(200);
             return;
         }
         // Load values
@@ -196,8 +191,8 @@ class GenericFilterValueEdit {
 
     private void loadAttributeEnum(final DBSAttributeEnumerable attributeEnumerable) {
 
-        if (table.getTable().getColumns().length > 1)
-            table.getTable().getColumn(1).setText("Count");
+        if (tableViewer.getTable().getColumns().length > 1)
+            tableViewer.getTable().getColumn(1).setText("Count");
         loadJob = new KeyLoadJob("Load '" + attr.getName() + "' values") {
             @Override
             Collection<DBDLabelValuePair> readEnumeration(DBCSession session) throws DBException {
@@ -243,7 +238,6 @@ class GenericFilterValueEdit {
         }
 
         java.util.List<DBDLabelValuePair> sortedList = new ArrayList<>(rowData.values());
-        Collections.sort(sortedList);
         if (pattern != null) {
             for (Iterator<DBDLabelValuePair> iter = sortedList.iterator(); iter.hasNext(); ) {
                 final DBDLabelValuePair valuePair = iter.next();
@@ -266,7 +260,7 @@ class GenericFilterValueEdit {
             checkedValues.add(value);
         }
 
-        table.setInput(sortedList);
+        tableViewer.setInput(sortedList);
         DBDLabelValuePair firstVisibleItem = null;
 
         if (isCheckedTable)
@@ -275,24 +269,24 @@ class GenericFilterValueEdit {
 
                 if (checkedValues.contains(cellValue)) {
 
-                    TableItem t = (TableItem) table.testFindItem(row);
+                    TableItem t = (TableItem) tableViewer.testFindItem(row);
 
                     t.setChecked(true);
-                    //((CheckboxTableViewer) table).setChecked(row, true);
+                    //((CheckboxTableViewer) tableViewer).setChecked(row, true);
                     if (firstVisibleItem == null) {
                         firstVisibleItem = row;
                     }
                 }
             }
 
-        ViewerColumnController vcc = ViewerColumnController.getFromControl(table.getTable());
+        ViewerColumnController vcc = ViewerColumnController.getFromControl(tableViewer.getTable());
         if (vcc != null)
             vcc.repackColumns();
         if (firstVisibleItem != null) {
-            final Widget item = table.testFindItem(firstVisibleItem);
+            final Widget item = tableViewer.testFindItem(firstVisibleItem);
             if (item != null) {
-                table.getTable().setSelection((TableItem) item);
-                table.getTable().showItem((TableItem) item);
+                tableViewer.getTable().setSelection((TableItem) item);
+                tableViewer.getTable().showItem((TableItem) item);
             }
         }
     }
@@ -308,7 +302,7 @@ class GenericFilterValueEdit {
             if (executionContext == null) {
                 return Status.OK_STATUS;
             }
-            try (DBCSession session = DBUtils.openUtilSession(monitor, executionContext.getDataSource(), "Read value enumeration")) {
+            try (DBCSession session = executionContext.openSession(monitor, DBCExecutionPurpose.UTIL, "Read value enumeration")) {
                 final Collection<DBDLabelValuePair> valueEnumeration = readEnumeration(session);
                 if (valueEnumeration == null) {
                     return Status.OK_STATUS;
@@ -316,7 +310,7 @@ class GenericFilterValueEdit {
                     populateValues(valueEnumeration);
                 }
             } catch (DBException e) {
-                populateValues(Collections.<DBDLabelValuePair>emptyList());
+                populateValues(Collections.emptyList());
                 return GeneralUtils.makeExceptionStatus(e);
             }
             return Status.OK_STATUS;

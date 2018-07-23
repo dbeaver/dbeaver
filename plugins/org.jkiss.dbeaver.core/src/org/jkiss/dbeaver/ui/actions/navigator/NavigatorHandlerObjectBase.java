@@ -24,9 +24,11 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.core.DBeaverUI;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.edit.DBEStructEditor;
 import org.jkiss.dbeaver.model.navigator.DBNContainer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
@@ -125,9 +127,9 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
         }
         if (container instanceof DBNDatabaseNode) {
             // No editor found - create new command context
-            DBPDataSource dataSource = ((DBNDatabaseNode) container).getObject().getDataSource();
-            if (dataSource != null) {
-                return new CommandTarget(new SimpleCommandContext(dataSource.getDefaultContext(true), !openEditor));
+            DBSObject object = ((DBNDatabaseNode) container).getObject();
+            if (object != null) {
+                return new CommandTarget(new SimpleCommandContext(DBUtils.getDefaultContext(object, true), !openEditor));
             }
         }
         return new CommandTarget();
@@ -193,11 +195,24 @@ public abstract class NavigatorHandlerObjectBase extends AbstractHandler {
     {
         Collection<? extends DBECommand> commands = commandContext.getFinalCommands();
         StringBuilder script = new StringBuilder();
-        for (DBECommand command : commands) {
-            script.append(
-                SQLUtils.generateScript(commandContext.getExecutionContext().getDataSource(),
-                    command.getPersistActions(options),
-                    false));
+        try {
+            UIUtils.runInProgressService(monitor -> {
+                try {
+                    for (DBECommand command : commands) {
+                        DBEPersistAction[] persistActions = command.getPersistActions(monitor, options);
+                        script.append(
+                            SQLUtils.generateScript(commandContext.getExecutionContext().getDataSource(),
+                                persistActions,
+                                false));
+                    }
+                } catch (DBException e) {
+                    throw new InvocationTargetException(e);
+                }
+            });
+        } catch (InvocationTargetException e) {
+            DBeaverUI.getInstance().showError("Script generation error", "Error generating alter script", e.getTargetException());
+        } catch (InterruptedException e) {
+            return false;
         }
         DatabaseNavigatorView view = UIUtils.findView(workbenchWindow, DatabaseNavigatorView.class);
         if (view != null) {

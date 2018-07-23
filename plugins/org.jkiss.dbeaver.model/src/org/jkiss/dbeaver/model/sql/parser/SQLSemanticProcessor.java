@@ -134,7 +134,8 @@ public class SQLSemanticProcessor {
                 select.setOrderByElements(orderByElements);
             }
             for (DBDAttributeConstraint co : filter.getOrderConstraints()) {
-                Expression orderExpr = getConstraintExpression(dataSource, select, co);
+                Expression orderExpr = getOrderConstraintExpression(dataSource, select, co,
+                        filter.hasNameDuplicates(co.getAttribute().getName()));
                 OrderByElement element = new OrderByElement();
                 element.setExpression(orderExpr);
                 if (co.isOrderDescending()) {
@@ -148,10 +149,10 @@ public class SQLSemanticProcessor {
         return true;
     }
 
-    private static Expression getConstraintExpression(DBPDataSource dataSource, PlainSelect select, DBDAttributeConstraint co) throws JSQLParserException {
+    private static Expression getOrderConstraintExpression(DBPDataSource dataSource, PlainSelect select, DBDAttributeConstraint co, boolean forceNumeric) throws JSQLParserException {
         Expression orderExpr;
         String attrName = DBUtils.getQuotedIdentifier(dataSource, co.getAttribute().getName());
-        if (attrName.isEmpty()) {
+        if (forceNumeric || attrName.isEmpty()) {
             orderExpr = new LongValue(co.getAttribute().getOrdinalPosition() + 1);
         } else if (CommonUtils.isJavaIdentifier(attrName)) {
             // Use column table only if there are multiple source tables (joins)

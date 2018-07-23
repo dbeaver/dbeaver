@@ -38,7 +38,6 @@ import org.jkiss.utils.CommonUtils;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * PostgreStructureAssistant
@@ -99,7 +98,7 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant
             nsList.add(0, ownerSchema);
         } else if (!globalSearch) {
             // Limit object search with search path
-            for (String sn : dataSource.getSearchPath()) {
+            for (String sn : database.getSearchPath()) {
                 final PostgreSchema schema = database.getSchema(session.getProgressMonitor(), sn);
                 if (schema != null) {
                     nsList.add(schema);
