@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,56 +20,57 @@
 package org.jkiss.dbeaver.ext.erd.model;
 
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.ext.erd.editor.ERDViewStyle;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
-import org.jkiss.utils.CommonUtils;
 
 /**
  * Column entry in model Table
+ *
  * @author Serge Rider
  */
-public class ERDEntityAttribute extends ERDObject<DBSEntityAttribute>
-{
-    private final EntityDiagram diagram;
+public class ERDEntityAttribute extends ERDObject<DBSEntityAttribute> {
+    private boolean isChecked;
+    private int order = -1;
     private boolean inPrimaryKey;
     private boolean inForeignKey;
+    private String alias;
 
-    public ERDEntityAttribute(EntityDiagram diagram, DBSEntityAttribute attribute, boolean inPrimaryKey) {
+    public ERDEntityAttribute(DBSEntityAttribute attribute, boolean inPrimaryKey) {
         super(attribute);
-        this.diagram = diagram;
         this.inPrimaryKey = inPrimaryKey;
     }
 
-	public String getLabelText()
-	{
-        String text;
-        if (diagram.hasAttributeStyle(ERDViewStyle.TYPES)) {
-            text = object.getName() + ": " + object.getFullTypeName();
-        } else {
-            text = object.getName();
-        }
-        if (diagram.hasAttributeStyle(ERDViewStyle.NULLABILITY)) {
-            if (object.isRequired()) {
-                text += " NOT NULL";
-            }
-        }
-        if (diagram.hasAttributeStyle(ERDViewStyle.COMMENTS)) {
-            String comment = object.getDescription();
-            if (!CommonUtils.isEmpty(comment)) {
-                text += " - " + comment;
-            }
-        }
-        return text;
-	}
+    public String getLabelText() {
+        return object.getName();
+    }
 
-    public DBPImage getLabelImage()
-    {
-        if (!diagram.hasAttributeStyle(ERDViewStyle.ICONS)) {
-            return null;
-        }
+    public DBPImage getLabelImage() {
         return DBValueFormatting.getObjectImage(object);
+    }
+
+    public boolean isChecked() {
+        return isChecked;
+    }
+
+    public void setChecked(boolean checked) {
+        isChecked = checked;
+    }
+
+    public int getOrder() {
+        return order;
+    }
+
+    public void setOrder(int order) {
+        this.order = order;
+    }
+
+    public String getAlias() {
+        return alias;
+    }
+
+    public void setAlias(String alias) {
+        this.alias = alias;
     }
 
     public boolean isInPrimaryKey() {
@@ -86,8 +87,12 @@ public class ERDEntityAttribute extends ERDObject<DBSEntityAttribute>
 
     @NotNull
     @Override
-    public String getName()
-    {
+    public String getName() {
         return getObject().getName();
+    }
+
+    @Override
+    public String toString() {
+        return getName();
     }
 }

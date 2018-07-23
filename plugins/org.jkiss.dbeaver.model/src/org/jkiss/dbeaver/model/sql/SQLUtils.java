@@ -233,8 +233,9 @@ public final class SQLUtils {
         return string;
     }
 
-    public static String getFirstKeyword(String query)
+    public static String getFirstKeyword(SQLDialect dialect, String query)
     {
+        query = stripComments(dialect, query);
         int startPos = 0, endPos = -1;
         for (int i = 0; i < query.length(); i++) {
             if (Character.isLetterOrDigit(query.charAt(i))) {
@@ -654,7 +655,7 @@ public final class SQLUtils {
         // Check for EXEC query
         final String[] executeKeywords = dialect.getExecuteKeywords();
         if (executeKeywords.length > 0) {
-            final String queryStart = getFirstKeyword(query);
+            final String queryStart = getFirstKeyword(dialect, query);
             for (String keyword : executeKeywords) {
                 if (keyword.equalsIgnoreCase(queryStart)) {
                     return true;

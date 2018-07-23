@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -41,12 +40,10 @@ public class DiagramObjectCollector {
 
     private final EntityDiagram diagram;
     private final List<ERDEntity> erdEntities = new ArrayList<>();
-    private final Map<DBSEntity, ERDEntity> tableMap = new HashMap<>();
 
     public DiagramObjectCollector(EntityDiagram diagram)
     {
         this.diagram = diagram;
-        this.tableMap.putAll(diagram.getTableMap());
     }
 
     public static Collection<DBSEntity> collectTables(
@@ -134,20 +131,19 @@ public class DiagramObjectCollector {
 
         // Add new relations
         for (ERDEntity erdEntity : erdEntities) {
-            erdEntity.addRelations(monitor, tableMap, false);
+            erdEntity.addModelRelations(monitor, diagram, true, false);
         }
     }
 
     private void addDiagramEntity(DBRProgressMonitor monitor, DBSEntity table)
     {
-        if (diagram.containsTable(table)) {
+        if (diagram.containsTable(table) && !diagram.getDecorator().allowEntityDuplicates()) {
             // Avoid duplicates
             return;
         }
-        ERDEntity erdEntity = ERDEntity.fromObject(monitor, diagram, table);
+        ERDEntity erdEntity = ERDUtils.makeEntityFromObject(monitor, diagram, table, null);
         if (erdEntity != null) {
             erdEntities.add(erdEntity);
-            tableMap.put(table, erdEntity);
         }
     }
 
@@ -168,18 +164,14 @@ public class DiagramObjectCollector {
         final List<ERDEntity> entities = new ArrayList<>();
 
         try {
-            UIUtils.runInProgressService(new DBRRunnableWithProgress() {
-                @Override
-                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-                {
-                    DiagramObjectCollector collector = new DiagramObjectCollector(diagram);
-                    try {
-                        collector.generateDiagramObjects(monitor, roots);
-                    } catch (DBException e) {
-                        throw new InvocationTargetException(e);
-                    }
-                    entities.addAll(collector.getDiagramEntities());
+            UIUtils.runInProgressService(monitor -> {
+                DiagramObjectCollector collector = new DiagramObjectCollector(diagram);
+                try {
+                    collector.generateDiagramObjects(monitor, roots);
+                } catch (DBException e) {
+                    throw new InvocationTargetException(e);
                 }
+                entities.addAll(collector.getDiagramEntities());
             });
         } catch (InvocationTargetException e) {
             log.error(e.getTargetException());

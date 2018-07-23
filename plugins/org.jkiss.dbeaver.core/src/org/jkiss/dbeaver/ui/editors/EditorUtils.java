@@ -28,7 +28,12 @@ import org.eclipse.core.runtime.QualifiedName;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.swt.events.FocusEvent;
+import org.eclipse.swt.events.FocusListener;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.*;
+import org.eclipse.ui.contexts.IContextActivation;
+import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.ide.FileStoreEditorInput;
 import org.eclipse.ui.ide.IDE;
 import org.eclipse.ui.preferences.ScopedPreferenceStore;
@@ -40,6 +45,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPExternalFileManager;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
@@ -263,4 +269,30 @@ public class EditorUtils {
         return new ScopedPreferenceStore(InstanceScope.INSTANCE, "org.eclipse.ui.editors");
     }
 
+
+    public static void trackControlContext(IWorkbenchSite site, Control control, String contextId) {
+        final IContextService contextService = site.getService(IContextService.class);
+        if (contextService != null) {
+            control.addFocusListener(new FocusListener() {
+                IContextActivation activation;
+
+                @Override
+                public void focusGained(FocusEvent e) {
+                    if (activation == null) {
+                        activation = contextService.activateContext(contextId);
+                    }
+                }
+
+                @Override
+                public void focusLost(FocusEvent e) {
+                    if (activation != null) {
+                        contextService.deactivateContext(activation);
+                        activation = null;
+                    }
+                }
+            });
+        }
+        control.addDisposeListener(e -> UIUtils.removeFocusTracker(site, control));
+
+    }
 }

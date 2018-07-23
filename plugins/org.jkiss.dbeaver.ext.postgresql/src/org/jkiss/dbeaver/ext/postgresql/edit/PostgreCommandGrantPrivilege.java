@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.Map;
 
@@ -52,7 +53,7 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePerm
     }
 
     @Override
-    public DBEPersistAction[] getPersistActions(Map<String, Object> options)
+    public DBEPersistAction[] getPersistActions(DBRProgressMonitor monitor, Map<String, Object> options)
     {
         boolean withGrantOption = false;
         StringBuilder privName = new StringBuilder();
@@ -75,8 +76,12 @@ public class PostgreCommandGrantPrivilege extends DBECommandAbstract<PostgrePerm
             roleName = DBUtils.getQuotedIdentifier(object);
             objectName = ((PostgreRolePermission)permission).getFullObjectName();
         } else {
-            roleName = DBUtils.getQuotedIdentifier(object.getDataSource(), ((PostgreObjectPermission) permission).getGrantee());
+            PostgreObjectPermission permission = (PostgreObjectPermission) this.permission;
+            roleName = permission.getGrantee() == null ? null : DBUtils.getQuotedIdentifier(object.getDataSource(), permission.getGrantee());
             objectName = PostgreUtils.getObjectUniqueName(object);
+        }
+        if (roleName == null) {
+            return new DBEPersistAction[0];
         }
 
         String objectType;

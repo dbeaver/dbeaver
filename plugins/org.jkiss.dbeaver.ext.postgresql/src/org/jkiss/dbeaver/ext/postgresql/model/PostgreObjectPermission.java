@@ -42,7 +42,7 @@ public class PostgreObjectPermission extends PostgrePermission {
     @Property(viewable = true, order = 1)
     @NotNull
     public String getName() {
-        return DBUtils.getQuotedIdentifier(getDataSource(), grantee);
+        return grantee == null ? "": DBUtils.getQuotedIdentifier(getDataSource(), grantee);
     }
 
     @Override

@@ -18,14 +18,8 @@
 package org.jkiss.dbeaver.ext.postgresql.ui.editors;
 
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.ControlContribution;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBIcon;
@@ -33,7 +27,6 @@ import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLSourceViewer;
 import org.jkiss.utils.CommonUtils;
 
@@ -67,9 +60,14 @@ public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject
     }
 
     @Override
+    protected boolean isAnnotationRulerVisible() {
+        return getSourceObject() instanceof PostgreProcedure;
+    }
+
+    @Override
     protected void setSourceText(DBRProgressMonitor monitor, String sourceText)
     {
-        getEditorInput().getPropertySource().setPropertyValue(monitor, "objectDefinitionText", sourceText);
+        getInputPropertySource().setPropertyValue(monitor, "objectDefinitionText", sourceText);
     }
 
     @Override
@@ -88,7 +86,7 @@ public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject
                     }
                     @Override
                     public void run() {
-                        getEditorInput().setAttribute(DBPScriptObject.OPTION_DEBUGGER_SOURCE, !isChecked());
+                        getDatabaseEditorInput().setAttribute(DBPScriptObject.OPTION_DEBUGGER_SOURCE, !isChecked());
                         refreshPart(PostgreSourceViewEditor.this, true);
                     }
                 }, true));
@@ -137,7 +135,7 @@ public class PostgreSourceViewEditor extends SQLSourceViewer<PostgreScriptObject
 
     private boolean isInDebugMode() {
         return CommonUtils.getBoolean(
-                getEditorInput().getAttribute(DBPScriptObject.OPTION_DEBUGGER_SOURCE), false);
+            getDatabaseEditorInput().getAttribute(DBPScriptObject.OPTION_DEBUGGER_SOURCE), false);
     }
 }
 

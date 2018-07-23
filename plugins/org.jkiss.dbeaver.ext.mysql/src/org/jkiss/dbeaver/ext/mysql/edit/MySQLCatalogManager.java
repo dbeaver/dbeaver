@@ -86,7 +86,7 @@ public class MySQLCatalogManager extends SQLObjectEditor<MySQLCatalog, MySQLData
         );
     }
 
-    protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
     {
         final MySQLCatalog catalog = command.getObject();
         final StringBuilder script = new StringBuilder("ALTER DATABASE `" + catalog.getName() + "`");

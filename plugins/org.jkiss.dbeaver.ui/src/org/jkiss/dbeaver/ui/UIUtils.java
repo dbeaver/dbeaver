@@ -41,7 +41,6 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CLabel;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
-import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.dnd.Clipboard;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.eclipse.swt.dnd.Transfer;
@@ -75,6 +74,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.*;
 import org.jkiss.dbeaver.runtime.DummyRunnableContext;
 import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
+import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.controls.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -158,7 +158,7 @@ public class UIUtils {
 
     public static void createToolBarSeparator(ToolBar toolBar, int style) {
         Label label = new Label(toolBar, SWT.NONE);
-        label.setImage(DBeaverIcons.getImage(UIIcon.DRAG_HANDLE));
+        label.setImage(DBeaverIcons.getImage(UIIcon.SEPARATOR_V));
         new ToolItem(toolBar, SWT.SEPARATOR).setControl(label);
     }
 
@@ -762,10 +762,16 @@ public class UIUtils {
         gd.verticalSpan = verticalSpan;
     }
 
-    public static Label createHorizontalLine(Composite parent)
-    {
+    public static Label createHorizontalLine(Composite parent) {
+        return createHorizontalLine(parent, 1, 0);
+    }
+
+    public static Label createHorizontalLine(Composite parent, int hSpan, int vIndent) {
         Label horizontalLine = new Label(parent, SWT.SEPARATOR | SWT.HORIZONTAL);
-        horizontalLine.setLayoutData(new GridData(GridData.FILL, GridData.FILL, true, false, 1, 1));
+        GridData gd = new GridData(GridData.FILL, GridData.FILL, true, false, 1, 1);
+        gd.horizontalSpan = hSpan;
+        gd.verticalIndent = vIndent;
+        horizontalLine.setLayoutData(gd);
         return horizontalLine;
     }
 
@@ -832,7 +838,7 @@ public class UIUtils {
     }
 
     @NotNull
-    public static SashForm createPartDivider(final IWorkbenchPart workbenchPart, Composite parent, int style)
+    public static CustomSashForm createPartDivider(final IWorkbenchPart workbenchPart, Composite parent, int style)
     {
         final CustomSashForm sash = new CustomSashForm(parent, style);
 
@@ -1100,6 +1106,10 @@ public class UIUtils {
         }
     }
 
+    public static boolean isUIThread() {
+        return Display.getDefault().getThread() == Thread.currentThread();
+    }
+
     /**
      * Determine whether this control or any of it's child has focus
      * 
@@ -1286,7 +1296,11 @@ public class UIUtils {
         }
         Class<?> propertyType = property.getDataType();
         if (propertyType == null || CharSequence.class.isAssignableFrom(propertyType)) {
-            return new CustomTextCellEditor(parent);
+            if (property instanceof ObjectPropertyDescriptor && ((ObjectPropertyDescriptor) property).isMultiLine()) {
+                return new AdvancedTextCellEditor(parent);
+            } else {
+                return new CustomTextCellEditor(parent);
+            }
         } else if (BeanUtils.isNumericType(propertyType)) {
             return new CustomNumberCellEditor(parent, propertyType);
         } else if (BeanUtils.isBooleanType(propertyType)) {
@@ -1506,7 +1520,10 @@ public class UIUtils {
 
     public static void asyncExec(Runnable runnable) {
         try {
-            getDisplay().asyncExec(runnable);
+            Display display = getDisplay();
+            if (!display.isDisposed()) {
+                display.asyncExec(runnable);
+            }
         } catch (Exception e) {
             log.debug(e);
         }
@@ -1514,7 +1531,10 @@ public class UIUtils {
 
     public static void syncExec(Runnable runnable) {
         try {
-            getDisplay().syncExec(runnable);
+            Display display = getDisplay();
+            if (!display.isDisposed()) {
+                display.syncExec(runnable);
+            }
         } catch (Exception e) {
             log.debug(e);
         }

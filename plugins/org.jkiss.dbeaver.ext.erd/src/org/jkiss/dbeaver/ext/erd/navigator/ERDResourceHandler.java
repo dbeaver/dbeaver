@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.erd.editor.ERDEditorInput;
 import org.jkiss.dbeaver.ext.erd.editor.ERDEditorStandalone;
 import org.jkiss.dbeaver.ext.erd.model.DiagramLoader;
+import org.jkiss.dbeaver.ext.erd.model.ERDDecoratorDefault;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -141,24 +142,22 @@ public class ERDResourceHandler extends AbstractResourceHandler {
         final IFile file = ContentUtils.getUniqueFile(folder, CommonUtils.escapeFileName(title), ERD_EXT);
 
         try {
-            DBRRunnableWithProgress runnable = new DBRRunnableWithProgress() {
-                @Override
-                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-                {
-                    try {
-                        EntityDiagram newDiagram = copyFrom == null ? new EntityDiagram(null, "<Diagram>") : copyFrom.copy();
-                        newDiagram.setName(title);
-                        newDiagram.setLayoutManualAllowed(true);
-                        newDiagram.setLayoutManualDesired(true);
+            DBRRunnableWithProgress runnable = monitor1 -> {
+                try {
+                    EntityDiagram newDiagram = copyFrom == null ?
+                            new EntityDiagram(new ERDDecoratorDefault(), null, "<Diagram>") :
+                            copyFrom.copy();
+                    newDiagram.setName(title);
+                    newDiagram.setLayoutManualAllowed(true);
+                    newDiagram.setLayoutManualDesired(true);
 
-                        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-                        DiagramLoader.save(monitor, null, newDiagram, false, buffer);
-                        InputStream data = new ByteArrayInputStream(buffer.toByteArray());
+                    ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+                    DiagramLoader.save(monitor1, null, newDiagram, false, buffer);
+                    InputStream data = new ByteArrayInputStream(buffer.toByteArray());
 
-                        file.create(data, true, RuntimeUtils.getNestedMonitor(monitor));
-                    } catch (Exception e) {
-                        throw new InvocationTargetException(e);
-                    }
+                    file.create(data, true, RuntimeUtils.getNestedMonitor(monitor1));
+                } catch (Exception e) {
+                    throw new InvocationTargetException(e);
                 }
             };
             if (monitor == null) {

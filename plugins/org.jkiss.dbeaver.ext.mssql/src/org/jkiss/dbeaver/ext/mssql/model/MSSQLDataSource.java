@@ -179,7 +179,7 @@ public class MSSQLDataSource extends JDBCDataSource implements DBSObjectSelector
         if (!(object instanceof MSSQLDatabase)) {
             throw new DBException("Invalid object type: " + object);
         }
-        for (JDBCExecutionContext context : getAllContexts()) {
+        for (JDBCExecutionContext context : getDefaultInstance().getAllContexts()) {
             useDatabase(monitor, context, (MSSQLDatabase) object);
         }
         activeDatabaseName = object.getName();

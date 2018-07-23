@@ -107,7 +107,7 @@ public class NavigatorHandlerObjectMove extends NavigatorHandlerObjectBase {
             if (object.isPersisted() && commandTarget.getEditor() == null) {
                 Map<String, Object> options = DBPScriptObject.EMPTY_OPTIONS;
                 if (!showScript(HandlerUtil.getActiveWorkbenchWindow(event), commandTarget.getContext(), options, "Reorder script")) {
-                    commandTarget.getContext().resetChanges();
+                    commandTarget.getContext().resetChanges(true);
                     return false;
                 } else {
                     ObjectSaver orderer = new ObjectSaver(commandTarget.getContext(), options);

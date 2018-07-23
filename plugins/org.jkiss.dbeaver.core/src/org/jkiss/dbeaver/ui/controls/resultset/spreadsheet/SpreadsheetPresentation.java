@@ -161,7 +161,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         return activeInlineEditor != null &&
             activeInlineEditor.getControl() != null &&
             !activeInlineEditor.getControl().isDisposed() &&
-            activeInlineEditor.getControl().isVisible();
+            activeInlineEditor.getControl().isVisible() &&
+            !getController().getModel().isAttributeReadOnly(getCurrentAttribute());
     }
 
     @Override
@@ -492,7 +493,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     {
         try {
             if (extended) {
-                DBPDataSource dataSource = getDataSource();
                 String strValue;
                 Clipboard clipboard = new Clipboard(Display.getCurrent());
                 try {
@@ -509,7 +509,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     return;
                 }
                 boolean overNewRow = controller.getModel().getRow(rowNum).getState() == ResultSetRow.STATE_ADDED;
-                try (DBCSession session = DBUtils.openUtilSession(new VoidProgressMonitor(), dataSource, "Advanced paste")) {
+                try (DBCSession session = DBUtils.openUtilSession(new VoidProgressMonitor(), controller.getDataContainer(), "Advanced paste")) {
 
                     String[][] newLines = parseGridLines(strValue);
                     // Create new rows on demand
@@ -1674,17 +1674,20 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         }
 
         @Override
-        public Color getCellHeaderForeground() {
+        public Color getCellHeaderForeground(Object element) {
             return cellHeaderForeground;
         }
 
         @Override
-        public Color getCellHeaderBackground() {
+        public Color getCellHeaderBackground(Object element) {
+            if (element instanceof DBDAttributeBinding && controller.isAttributeReadOnly((DBDAttributeBinding) element)) {
+                return backgroundOdd;
+            }
             return cellHeaderBackground;
         }
 
         @Override
-        public Color getCellHeaderSelectionBackground() {
+        public Color getCellHeaderSelectionBackground(Object element) {
             return cellHeaderSelectionBackground;
         }
 
@@ -1739,7 +1742,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             }
 
 /*
-            ResultSetRow row = (ResultSetRow) (!recordMode ?  element : curRow);
+            boolean recordMode = controller.isRecordMode();
+            ResultSetRow row = (ResultSetRow) (!recordMode ?  element : controller.getCurrentRow());
             boolean odd = row != null && row.getVisualNumber() % 2 == 0;
             if (!recordMode && odd && showOddRows) {
                 return backgroundOdd;
@@ -1808,9 +1812,13 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 final String name = attributeBinding.getName();
                 final String typeName = attributeBinding.getFullTypeName();
                 final String description = attributeBinding.getDescription();
-                return CommonUtils.isEmpty(description) ?
+                String tip = CommonUtils.isEmpty(description) ?
                     name + ": " + typeName :
                     name + ": " + typeName + "\n" + description;
+                if (controller.isAttributeReadOnly(attributeBinding)) {
+                    tip += " (read-only)";
+                }
+                return tip;
             }
             return null;
         }

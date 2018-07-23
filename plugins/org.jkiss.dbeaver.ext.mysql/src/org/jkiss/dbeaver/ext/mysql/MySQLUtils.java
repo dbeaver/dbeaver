@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.mysql;
 
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.connection.DBPClientHome;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -142,6 +143,11 @@ public class MySQLUtils {
         } catch (SQLException e) {
             throw new DBCException(e, session.getDataSource());
         }
+    }
+
+    public static boolean isMariaDB(DBPDriver driver) {
+        return MySQLConstants.DRIVER_CLASS_MARIA_DB.equals(
+                driver.getDriverClassName());
     }
 
 }

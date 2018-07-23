@@ -185,20 +185,16 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
             folderComposite.switchFolder(folderId);
         }
 
-        folderComposite.addFolderListener(new ITabbedFolderListener() {
-            @Override
-            public void folderSelected(String folderId) {
-                if (CommonUtils.equalObjects(curFolderId, folderId)) {
-                    return;
-                }
-                synchronized (folderListeners) {
-                    curFolderId = folderId;
-                    for (ITabbedFolderListener listener : folderListeners) {
-                        listener.folderSelected(folderId);
-                    }
+        folderComposite.addFolderListener(folderId1 -> {
+            if (CommonUtils.equalObjects(curFolderId, folderId1)) {
+                return;
+            }
+            synchronized (folderListeners) {
+                curFolderId = folderId1;
+                for (ITabbedFolderListener listener : folderListeners) {
+                    listener.folderSelected(folderId1);
                 }
             }
-
         });
         return foldersPlaceholder;
     }

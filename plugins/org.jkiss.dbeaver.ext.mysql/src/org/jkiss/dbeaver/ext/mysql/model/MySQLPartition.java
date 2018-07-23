@@ -157,7 +157,7 @@ public class MySQLPartition extends JDBCTableObject<MySQLTable>
 
     @Nullable
     @Override
-    @Property(viewable = true, order = 5)
+    @Property(viewable = true, multiline = true, order = 5)
     public String getDescription()
     {
         return description;
@@ -223,7 +223,7 @@ public class MySQLPartition extends JDBCTableObject<MySQLTable>
         return checksum;
     }
 
-    @Property(viewable = true, order = 16)
+    @Property(viewable = true, multiline = true, order = 16)
     public String getComment()
     {
         return comment;

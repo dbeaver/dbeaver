@@ -41,6 +41,9 @@ public class MySQLMessages extends NLS {
 	public static String dialog_connection_port;
 	public static String dialog_connection_test_connection;
 	public static String dialog_connection_user_name;
+	public static String dialog_connection_server_timezone;
+	public static String dialog_connection_auto_detect;
+	public static String dialog_connection_local_client;
 	public static String edit_catalog_manager_dialog_schema_name;
 	public static String edit_command_change_user_action_create_new_user;
 	public static String edit_command_change_user_action_update_user_record;

@@ -68,7 +68,7 @@ public class DB2RoutineDDLEditor extends SQLSourceViewer<DB2Routine> {
                     {
                         for (DB2DDLFormat format : DB2DDLFormat.values()) {
                             if (format.ordinal() == ddlFormatCombo.getSelectionIndex()) {
-                                getEditorInput().getDatabaseObject().getDataSource().getContainer().getPreferenceStore()
+                                getSourceObject().getDataSource().getContainer().getPreferenceStore()
                                     .setValue(DB2Constants.PREF_KEY_DDL_FORMAT, format.name());
                                 refreshPart(this, true);
                                 break;

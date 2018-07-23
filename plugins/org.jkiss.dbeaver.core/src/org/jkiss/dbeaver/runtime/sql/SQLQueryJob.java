@@ -49,8 +49,8 @@ import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.sql.parser.SQLSemanticProcessor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
-import org.jkiss.dbeaver.registry.sql.SQLCommandHandlerDescriptor;
-import org.jkiss.dbeaver.registry.sql.SQLCommandsRegistry;
+import org.jkiss.dbeaver.ui.editors.sql.registry.SQLCommandHandlerDescriptor;
+import org.jkiss.dbeaver.ui.editors.sql.registry.SQLCommandsRegistry;
 import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.ui.UIConfirmation;
 import org.jkiss.dbeaver.ui.UITask;
@@ -618,9 +618,9 @@ public class SQLQueryJob extends DataSourceJob
             if (scriptContext.hasVariable(paramName)) {
                 Object varValue = scriptContext.getVariable(paramName);
                 String strValue;
-                if (varValue instanceof String) {
+                /*if (varValue instanceof String) {
                     strValue = SQLUtils.quoteString(getExecutionContext().getDataSource(), (String) varValue);
-                } else {
+                } else */{
                     strValue = varValue == null ? null : varValue.toString();
                 }
                 param.setValue(strValue);
@@ -629,7 +629,8 @@ public class SQLQueryJob extends DataSourceJob
         if (allSet) {
             return true;
         }
-        boolean okPressed = new UIConfirmation() {
+        boolean okPressed = true;
+        okPressed = new UIConfirmation() {
             @Override
             public Boolean runTask() {
                 SQLQueryParameterBindDialog dialog = new SQLQueryParameterBindDialog(
@@ -643,7 +644,7 @@ public class SQLQueryJob extends DataSourceJob
             for (SQLQueryParameter param : parameters) {
                 if (param.isNamed() && scriptContext.hasVariable(param.getTitle())) {
                     String strValue = param.getValue();
-                    scriptContext.setVariable(param.getTitle(), SQLUtils.unQuoteString(getExecutionContext().getDataSource(), strValue));
+                    scriptContext.setVariable(param.getTitle(), strValue);
                 }
             }
         }

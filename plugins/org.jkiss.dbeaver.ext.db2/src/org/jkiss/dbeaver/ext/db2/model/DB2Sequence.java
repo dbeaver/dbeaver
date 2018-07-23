@@ -306,7 +306,7 @@ public class DB2Sequence extends DB2SchemaObject implements DBSSequence, DBPRefr
 
     @Nullable
     @Override
-    @Property(viewable = false, editable = true, updatable = true)
+    @Property(viewable = false, editable = true, updatable = true, multiline = true)
     public String getDescription()
     {
         return remarks;

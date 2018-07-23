@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureType;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -47,7 +48,8 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
     private final PrimaryKeysCache primaryKeysCache;
     private List<GenericPackage> packages;
     protected List<GenericProcedure> procedures;
-    protected List<GenericSequence> sequences;
+    protected List<? extends GenericSequence> sequences;
+    protected List<? extends GenericSynonym> synonyms;
     private List<? extends GenericTrigger> triggers;
 
     protected GenericObjectContainer(@NotNull GenericDataSource dataSource)
@@ -278,7 +280,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
     }
 
     @Override
-    public synchronized Collection<GenericProcedure> getProcedures(DBRProgressMonitor monitor)
+    public synchronized List<GenericProcedure> getProcedures(DBRProgressMonitor monitor)
         throws DBException
     {
         if (procedures == null) {
@@ -299,18 +301,51 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
     }
 
     @Override
-    public Collection<GenericProcedure> getProcedures(DBRProgressMonitor monitor, String name)
+    public List<GenericProcedure> getProcedures(DBRProgressMonitor monitor, String name)
         throws DBException
     {
         return DBUtils.findObjects(getProcedures(monitor), name);
     }
 
     @Override
-    public Collection<GenericSequence> getSequences(DBRProgressMonitor monitor) throws DBException {
+    public List<? extends GenericProcedure> getProceduresOnly(DBRProgressMonitor monitor) throws DBException {
+        if (!dataSource.splitProceduresAndFunctions()) {
+            return getProcedures(monitor);
+        }
+        List<GenericProcedure> filteredProcedures = new ArrayList<>();
+        for (GenericProcedure proc : CommonUtils.safeList(getProcedures(monitor))) {
+            if (proc.getProcedureType() == DBSProcedureType.PROCEDURE) {
+                filteredProcedures.add(proc);
+            }
+        }
+        return filteredProcedures;
+    }
+
+    @Override
+    public Collection<? extends GenericProcedure> getFunctionsOnly(DBRProgressMonitor monitor) throws DBException {
+        List<GenericProcedure> filteredProcedures = new ArrayList<>();
+        for (GenericProcedure proc : CommonUtils.safeList(getProcedures(monitor))) {
+            if (proc.getProcedureType() == DBSProcedureType.FUNCTION) {
+                filteredProcedures.add(proc);
+            }
+        }
+        return filteredProcedures;
+    }
+
+    @Override
+    public Collection<? extends GenericSequence> getSequences(DBRProgressMonitor monitor) throws DBException {
         if (sequences == null) {
             loadSequences(monitor);
         }
         return sequences;
+    }
+
+    @Override
+    public Collection<? extends GenericSynonym> getSynonyms(DBRProgressMonitor monitor) throws DBException {
+        if (synonyms == null) {
+            loadSynonyms(monitor);
+        }
+        return synonyms;
     }
 
     @Override
@@ -363,6 +398,7 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
         this.packages = null;
         this.procedures = null;
         this.sequences = null;
+        this.synonyms = null;
         return this;
     }
 
@@ -422,6 +458,19 @@ public abstract class GenericObjectContainer implements GenericStructContainer,D
             sequences = new ArrayList<>();
         } else {
             DBUtils.orderObjects(sequences);
+        }
+    }
+
+    private synchronized void loadSynonyms(DBRProgressMonitor monitor)
+        throws DBException
+    {
+        synonyms = dataSource.getMetaModel().loadSynonyms(monitor, this);
+
+        // Order procedures
+        if (synonyms == null) {
+            synonyms = new ArrayList<>();
+        } else {
+            DBUtils.orderObjects(synonyms);
         }
     }
 

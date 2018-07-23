@@ -135,7 +135,7 @@ public abstract class DB2ViewBase extends DB2TableBase implements DB2SourceObjec
 
     @Nullable
     @Override
-    @Property(viewable = false, editable = false, updatable = false)
+    @Property(viewable = false, editable = false, updatable = false, multiline = true)
     public String getDescription()
     {
         return super.getDescription();

@@ -131,7 +131,7 @@ public class DB2Role extends DB2Grantee implements DBPSaveableObject, DBARole, D
 
     @Nullable
     @Override
-    @Property(viewable = true)
+    @Property(viewable = true, multiline = true)
     public String getDescription()
     {
         return remarks;

@@ -42,7 +42,7 @@ import java.util.Map;
  */
 public abstract class PostgreTableManagerBase extends SQLTableManager<PostgreTableBase, PostgreSchema> {
 
-    protected void addObjectExtraActions(List<DBEPersistAction> actions, NestedObjectCommand<PostgreTableBase, PropertyHandler> command, Map<String, Object> options) {
+    protected void addObjectExtraActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, NestedObjectCommand<PostgreTableBase, PropertyHandler> command, Map<String, Object> options) {
         boolean isDDL = CommonUtils.getOption(options, DBPScriptObject.OPTION_DDL_SOURCE);
         PostgreTableBase table = command.getObject();
         // Add comments
@@ -59,10 +59,9 @@ public abstract class PostgreTableManagerBase extends SQLTableManager<PostgreTab
         if (showComments && comment != null) {
             actions.add(new SQLDatabasePersistAction(
                 "Comment table",
-                "COMMENT ON " + (table.isView() ? "VIEW": "TABLE") + " " + table.getFullyQualifiedName(DBPEvaluationContext.DDL) +
+                "COMMENT ON " + (table.isView() ? ((PostgreViewBase)table).getViewType() : "TABLE") + " " + table.getFullyQualifiedName(DBPEvaluationContext.DDL) +
                     " IS " + SQLUtils.quoteString(table, comment)));
         }
-        DBRProgressMonitor monitor = new VoidProgressMonitor();
         if (isDDL) {
             try {
                 if (showComments) {

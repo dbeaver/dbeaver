@@ -283,4 +283,13 @@ public class DBDDataFilter {
             CommonUtils.equalObjects(this.where, source.where);
     }
 
+    public boolean hasNameDuplicates(String name) {
+        int count = 0;
+        for (DBDAttributeConstraint c : constraints) {
+            if (name.equalsIgnoreCase(c.getAttribute().getName())) {
+                count++;
+            }
+        }
+        return count > 1;
+    }
 }

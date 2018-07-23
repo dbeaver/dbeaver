@@ -178,7 +178,7 @@ public class JobRunHandler extends OracleTaskHandler
             return true;
         }
 
-        try (JDBCSession session = DBUtils.openUtilSession(monitor, job.getDataSource(), "Run '" + job.getName() + "'")) {
+        try (JDBCSession session = DBUtils.openUtilSession(monitor, job, "Run '" + job.getName() + "'")) {
             boolean success = true;
             for (DBEPersistAction action : compileActions) {
                 final String script = action.getScript();

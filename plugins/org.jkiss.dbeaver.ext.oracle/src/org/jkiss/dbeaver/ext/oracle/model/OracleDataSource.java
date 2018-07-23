@@ -26,15 +26,13 @@ import org.jkiss.dbeaver.ext.oracle.model.plan.OraclePlanAnalyser;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanStyle;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceInfo;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCStructCache;
 import org.jkiss.dbeaver.model.meta.Association;
@@ -116,7 +114,7 @@ public class OracleDataSource extends JDBCDataSource
     }
 
     @Override
-    protected Connection openConnection(@NotNull DBRProgressMonitor monitor, @NotNull String purpose) throws DBCException {
+    protected Connection openConnection(@NotNull DBRProgressMonitor monitor, JDBCRemoteInstance remoteInstance, @NotNull String purpose) throws DBCException {
 /*
         // Set tns admin directory
         DBPConnectionConfiguration connectionInfo = getContainer().getActualConnectionConfiguration();
@@ -132,7 +130,7 @@ public class OracleDataSource extends JDBCDataSource
 */
 
         try {
-            Connection connection = super.openConnection(monitor, purpose);
+            Connection connection = super.openConnection(monitor, remoteInstance, purpose);
 
             // Client name is set in connection properties
 /*
@@ -154,7 +152,7 @@ public class OracleDataSource extends JDBCDataSource
                 // This is supported  for thin driver since Oracle 12.2
                 if (changeExpiredPassword(monitor)) {
                     // Retry
-                    return openConnection(monitor, purpose);
+                    return openConnection(monitor, remoteInstance, purpose);
                 }
             }
             throw e;
@@ -271,7 +269,7 @@ public class OracleDataSource extends JDBCDataSource
     }
 
     @Override
-    protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException {
+    protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor, DBPDriver driver, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException {
         Map<String, String> connectionsProps = new HashMap<>();
         if (!getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {
             // Program name
@@ -479,7 +477,7 @@ public class OracleDataSource extends JDBCDataSource
         if (!(object instanceof OracleSchema)) {
             throw new IllegalArgumentException("Invalid object type: " + object);
         }
-        for (JDBCExecutionContext context : getAllContexts()) {
+        for (JDBCExecutionContext context : getDefaultInstance().getAllContexts()) {
             setCurrentSchema(monitor, context, (OracleSchema) object);
         }
         activeSchemaName = object.getName();

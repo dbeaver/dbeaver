@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.IDataSourceContainerProvider;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
@@ -62,9 +63,9 @@ public abstract class DatabaseEditorInput<NODE extends DBNDatabaseNode> implemen
     protected DatabaseEditorInput(@Nullable NODE node, @Nullable DBECommandContext commandContext)
     {
         this.node = node;
-        DBPDataSource dataSource = node == null ? null : node.getDataSource();
-        if (dataSource != null) {
-            this.executionContext = dataSource.getDefaultContext(false);
+        DBSObject object = node == null ? null : node.getObject();
+        if (object != null) {
+            this.executionContext = DBUtils.getDefaultContext(object, false);
             this.commandContext = commandContext != null ?
                 commandContext :
                 new SimpleCommandContext(

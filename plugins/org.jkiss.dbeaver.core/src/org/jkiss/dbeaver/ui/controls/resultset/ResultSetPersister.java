@@ -134,7 +134,6 @@ class ResultSetPersister {
     }
     /**
      * Applies changes.
-     * @throws org.jkiss.dbeaver.DBException
      * @param monitor progress monitor
      * @param listener value listener
      */
@@ -437,32 +436,29 @@ class ResultSetPersister {
 
             if (!generateScript) {
                 // Reflect changes
-                UIUtils.syncExec(new Runnable() {
-                    @Override
-                    public void run() {
-                        boolean rowsChanged = false;
-                        if (DataUpdaterJob.this.autocommit || error == null) {
-                            rowsChanged = reflectChanges();
-                        }
-                        if (!viewer.getControl().isDisposed()) {
-                            //releaseStatements();
-                            viewer.redrawData(false, rowsChanged);
-                            viewer.updateEditControls();
-                            if (error == null) {
-                                viewer.setStatus(
-                                    NLS.bind(
-                                        CoreMessages.controls_resultset_viewer_status_inserted_,
-                                        new Object[]{
-                                            DataUpdaterJob.this.insertStats.getRowsUpdated(),
-                                            DataUpdaterJob.this.deleteStats.getRowsUpdated(),
-                                            DataUpdaterJob.this.updateStats.getRowsUpdated()}));
-                            } else {
-                                DBUserInterface.getInstance().showError("Data error", "Error synchronizing data with database", error);
-                                viewer.setStatus(GeneralUtils.getFirstMessage(error), DBPMessageType.ERROR);
-                            }
-                        }
-                        viewer.fireResultSetChange();
+                UIUtils.syncExec(() -> {
+                    boolean rowsChanged = false;
+                    if (DataUpdaterJob.this.autocommit || error == null) {
+                        rowsChanged = reflectChanges();
                     }
+                    if (!viewer.getControl().isDisposed()) {
+                        //releaseStatements();
+                        viewer.redrawData(false, rowsChanged);
+                        viewer.updateEditControls();
+                        if (error == null) {
+                            viewer.setStatus(
+                                NLS.bind(
+                                    CoreMessages.controls_resultset_viewer_status_inserted_,
+                                    new Object[]{
+                                        DataUpdaterJob.this.insertStats.getRowsUpdated(),
+                                        DataUpdaterJob.this.deleteStats.getRowsUpdated(),
+                                        DataUpdaterJob.this.updateStats.getRowsUpdated()}));
+                        } else {
+                            DBUserInterface.getInstance().showError("Data error", "Error synchronizing data with database", error);
+                            viewer.setStatus(GeneralUtils.getFirstMessage(error), DBPMessageType.ERROR);
+                        }
+                    }
+                    viewer.fireResultSetChange();
                 });
                 if (this.listener != null) {
                     this.listener.onUpdate(error == null);
@@ -845,18 +841,15 @@ class ResultSetPersister {
                 }
 
                 // Ok, now we have refreshed values. Let's update real model
-                UIUtils.syncExec(new Runnable() {
-                    @Override
-                    public void run() {
-                        // Update only if metadata wasn't changed
-                        if (!viewer.getControl().isDisposed() && viewer.getModel().getAttributes() == curAttributes) {
-                            for (int i = 0; i < rows.size(); i++) {
-                                if (refreshValues[i] != null) {
-                                    rows.get(i).values = refreshValues[i];
-                                }
+                UIUtils.syncExec(() -> {
+                    // Update only if metadata wasn't changed
+                    if (!viewer.getControl().isDisposed() && viewer.getModel().getAttributes() == curAttributes) {
+                        for (int i = 0; i < rows.size(); i++) {
+                            if (refreshValues[i] != null) {
+                                rows.get(i).values = refreshValues[i];
                             }
-                            viewer.redrawData(false, true);
                         }
+                        viewer.redrawData(false, true);
                     }
                 });
             } catch (Throwable ex) {

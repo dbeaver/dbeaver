@@ -67,7 +67,7 @@ public class ExasolRole extends ExasolGrantee  implements DBARole, DBPNamedObjec
         return name;
     }
 
-    @Property(viewable = true, updatable=true, editable=true, order = 10)
+    @Property(viewable = true, updatable=true, editable=true, multiline = true, order = 10)
     public String getDescription() {
         return description;
     }

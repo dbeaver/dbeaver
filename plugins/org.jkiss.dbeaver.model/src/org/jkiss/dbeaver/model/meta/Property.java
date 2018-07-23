@@ -81,6 +81,11 @@ public @interface Property
     boolean expensive() default false;
 
     /**
+     * Multiline properties usually contain some big texts
+     */
+    boolean multiline() default false;
+
+    /**
      * Makes sense only for lazy properties. If set to true then this property value can be read
      * in non-lazy way with null progress monitor. In this case it will return "preview" value.
      * @return preview support flag

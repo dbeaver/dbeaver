@@ -49,6 +49,9 @@ public class SQLiteTableManager extends GenericTableManager implements DBEObject
 
     @Override
     public void renameObject(DBECommandContext commandContext, GenericTable object, String newName) throws DBException {
+        if (object.isView()) {
+            throw new DBException("View rename is not supported");
+        }
         processObjectRename(commandContext, object, newName);
     }
 }

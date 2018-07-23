@@ -497,7 +497,7 @@ public class DB2Schema extends DB2GlobalObject implements DBSSchema, DBPRefresha
 
     @Nullable
     @Override
-    @Property(viewable = false, editable = false)
+    @Property(viewable = false, editable = false, multiline = true)
     public String getDescription()
     {
         return remarks;

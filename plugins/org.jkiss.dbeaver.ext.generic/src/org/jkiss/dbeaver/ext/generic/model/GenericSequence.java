@@ -63,7 +63,7 @@ public class GenericSequence implements DBSSequence, DBPQualifiedObject
 
     @Nullable
     @Override
-    @Property(viewable = true, order = 10)
+    @Property(viewable = true, multiline = true, order = 10)
     public String getDescription() {
         return description;
     }
@@ -76,7 +76,7 @@ public class GenericSequence implements DBSSequence, DBPQualifiedObject
 
     @NotNull
     @Override
-    public DBPDataSource getDataSource() {
+    public GenericDataSource getDataSource() {
         return container.getDataSource();
     }
 

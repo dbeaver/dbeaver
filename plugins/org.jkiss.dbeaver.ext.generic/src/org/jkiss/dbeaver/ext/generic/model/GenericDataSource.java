@@ -103,7 +103,7 @@ public class GenericDataSource extends JDBCDataSource
         nativeFormatTime = makeNativeFormat(GenericConstants.PARAM_NATIVE_FORMAT_TIME);
         nativeFormatDate = makeNativeFormat(GenericConstants.PARAM_NATIVE_FORMAT_DATE);
 
-        initializeMainContext(monitor);
+        initializeRemoteInstance(monitor);
     }
 
     @Override
@@ -120,8 +120,8 @@ public class GenericDataSource extends JDBCDataSource
     }
 
     @Override
-    protected Connection openConnection(@NotNull DBRProgressMonitor monitor, @NotNull String purpose) throws DBCException {
-        Connection jdbcConnection = super.openConnection(monitor, purpose);
+    protected Connection openConnection(@NotNull DBRProgressMonitor monitor, JDBCRemoteInstance remoteInstance, @NotNull String purpose) throws DBCException {
+        Connection jdbcConnection = super.openConnection(monitor, remoteInstance, purpose);
 
         if (populateClientAppName && !getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {
             // Provide client info
@@ -345,6 +345,11 @@ public class GenericDataSource extends JDBCDataSource
     }
 
     @Override
+    public Collection<? extends GenericProcedure> getProceduresOnly(DBRProgressMonitor monitor) throws DBException {
+        return structureContainer == null ? null : structureContainer.getProceduresOnly(monitor);
+    }
+
+    @Override
     public GenericProcedure getProcedure(DBRProgressMonitor monitor, String uniqueName) throws DBException {
         return structureContainer == null ? null : structureContainer.getProcedure(monitor, uniqueName);
     }
@@ -356,8 +361,18 @@ public class GenericDataSource extends JDBCDataSource
     }
 
     @Override
-    public Collection<GenericSequence> getSequences(DBRProgressMonitor monitor) throws DBException {
+    public Collection<? extends GenericProcedure> getFunctionsOnly(DBRProgressMonitor monitor) throws DBException {
+        return structureContainer == null ? null : structureContainer.getFunctionsOnly(monitor);
+    }
+
+    @Override
+    public Collection<? extends GenericSequence> getSequences(DBRProgressMonitor monitor) throws DBException {
         return structureContainer == null ? null : structureContainer.getSequences(monitor);
+    }
+
+    @Override
+    public Collection<? extends GenericSynonym> getSynonyms(DBRProgressMonitor monitor) throws DBException {
+        return structureContainer == null ? null : structureContainer.getSynonyms(monitor);
     }
 
     @Override
@@ -629,7 +644,7 @@ public class GenericDataSource extends JDBCDataSource
             throw new DBException("Bad child object specified as active: " + object);
         }
 
-        for (JDBCExecutionContext context : getAllContexts()) {
+        for (JDBCExecutionContext context : getDefaultInstance().getAllContexts()) {
             setActiveEntityName(monitor, context, object);
         }
 
@@ -827,6 +842,12 @@ public class GenericDataSource extends JDBCDataSource
             return super.resolveDataKind(dataType.getTypeName(), dataType.getTypeID());
         }
         return super.resolveDataKind(typeName, valueType);
+    }
+
+    public boolean splitProceduresAndFunctions() {
+        return CommonUtils.getBoolean(
+            getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_SPLIT_PROCEDURES_AND_FUNCTIONS),
+            false);
     }
 
     // Native formats

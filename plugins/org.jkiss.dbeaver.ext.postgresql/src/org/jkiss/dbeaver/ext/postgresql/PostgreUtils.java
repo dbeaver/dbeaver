@@ -23,14 +23,16 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.postgresql.edit.PostgreCommandGrantPrivilege;
+import org.jkiss.dbeaver.ext.postgresql.edit.PostgreViewManager;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.edit.DBERegistry;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -63,10 +65,10 @@ public class PostgreUtils {
     
     private static final int UNKNOWN_LENGTH = -1;
 
-    public static String getObjectComment(DBRProgressMonitor monitor, DBPDataSource dataSource, String schema, String object)
+    public static String getObjectComment(DBRProgressMonitor monitor, GenericStructContainer container, String schema, String object)
         throws DBException
     {
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Load PostgreSQL description")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Load PostgreSQL description")) {
             return JDBCUtils.queryString(
                 session,
                 "select description from pg_catalog.pg_description\n" +
@@ -107,9 +109,12 @@ public class PostgreUtils {
         return object != null && object.getClass().getName().equals(PostgreConstants.PG_OBJECT_CLASS);
     }
 
-    public static <T> T extractPGObjectValue(Object pgObject) {
+    public static Object extractPGObjectValue(Object pgObject) {
         if (pgObject == null) {
             return null;
+        }
+        if (!pgObject.getClass().getName().equals(PostgreConstants.PG_OBJECT_CLASS)) {
+            return pgObject;
         }
         if (getValueMethod == null) {
             try {
@@ -120,7 +125,7 @@ public class PostgreUtils {
         }
         if (getValueMethod != null) {
             try {
-                return (T)getValueMethod.invoke(pgObject);
+                return getValueMethod.invoke(pgObject);
             } catch (Exception e) {
                 log.debug(e);
             }
@@ -445,14 +450,40 @@ public class PostgreUtils {
         }
     }
 
-    public static String getViewDDL(PostgreViewBase view, String definition) {
-        String createSQL = (view instanceof PostgreView ? "CREATE OR REPLACE " : "CREATE ");
-        return createSQL + view.getViewType() + " " + view.getFullyQualifiedName(DBPEvaluationContext.DDL) + " AS\n" + definition;
+    public static String getViewDDL(DBRProgressMonitor monitor, PostgreViewBase view, String definition) throws DBException {
+        StringBuilder sql = new StringBuilder(view instanceof PostgreView ? "CREATE OR REPLACE " : "CREATE ");
+        sql.append(view.getViewType()).append(" ").append(view.getFullyQualifiedName(DBPEvaluationContext.DDL));
+
+        final DBERegistry editorsRegistry = view.getDataSource().getContainer().getPlatform().getEditorsRegistry();
+        final PostgreViewManager entityEditor = editorsRegistry.getObjectManager(view.getClass(), PostgreViewManager.class);
+        if (entityEditor != null) {
+            entityEditor.appendViewDeclarationPrefix(monitor, sql, view);
+        }
+        definition = definition.trim();
+        while (definition.endsWith(";")) {
+            definition = definition.substring(0, definition.length() - 1);
+        }
+        sql.append("\nAS ").append(definition);
+        if (entityEditor != null) {
+            entityEditor.appendViewDeclarationPostfix(monitor, sql, view);
+        }
+        sql.append(";");
+        return sql.toString();
     }
 
     public static boolean isGreenplumDriver(DBPDriver driver) {
         return driver != null && CommonUtils.toBoolean(
             driver.getDriverParameter(PostgreConstants.PROP_GREENPLUM_DRIVER));
+    }
+
+    public static boolean isTimescaleDriver(DBPDriver driver) {
+        return driver != null && CommonUtils.toBoolean(
+            driver.getDriverParameter(PostgreConstants.PROP_TIMESCALE_DRIVER));
+    }
+
+    public static boolean isYellowbrickDriver(DBPDriver driver) {
+        return driver != null && CommonUtils.toBoolean(
+            driver.getDriverParameter(PostgreConstants.PROP_YELLOWBRICK_DRIVER));
     }
 
     public static List<PostgrePermission> extractPermissionsFromACL(DBRProgressMonitor monitor, @NotNull PostgrePermissionsOwner owner, @Nullable Object acl) throws DBException {
@@ -493,7 +524,10 @@ public class PostgreUtils {
         int itemCount = Array.getLength(itemArray);
         for (int i = 0; i < itemCount; i++) {
             Object aclItem = Array.get(itemArray, i);
-            String aclValue = extractPGObjectValue(aclItem);
+            String aclValue = CommonUtils.toString(extractPGObjectValue(aclItem));
+            if (CommonUtils.isEmpty(aclValue)) {
+                continue;
+            }
             int divPos = aclValue.indexOf('=');
             if (divPos == -1) {
                 log.warn("Bad ACL item: " + aclValue);
@@ -574,7 +608,7 @@ public class PostgreUtils {
     }
 
     public static void getObjectGrantPermissionActions(DBRProgressMonitor monitor, PostgrePermissionsOwner object, List<DBEPersistAction> actions, Map<String, Object> options) throws DBException {
-        if (CommonUtils.getOption(options, PostgreConstants.OPTION_DDL_SHOW_PERMISSIONS)) {
+        if (object.isPersisted() && CommonUtils.getOption(options, PostgreConstants.OPTION_DDL_SHOW_PERMISSIONS)) {
             actions.add(new SQLDatabasePersistActionComment(object.getDataSource(), "Permissions"));
 
             // Owner
@@ -594,10 +628,10 @@ public class PostgreUtils {
                     if (permission.hasAllPrivileges(object)) {
                         Collections.addAll(actions,
                             new PostgreCommandGrantPrivilege(permission.getOwner(), true, permission, new PostgrePrivilegeType[] { PostgrePrivilegeType.ALL })
-                                .getPersistActions(options));
+                                .getPersistActions(monitor, options));
                     } else {
                         PostgreCommandGrantPrivilege grant = new PostgreCommandGrantPrivilege(permission.getOwner(), true, permission, permission.getPrivileges());
-                        Collections.addAll(actions, grant.getPersistActions(options));
+                        Collections.addAll(actions, grant.getPersistActions(monitor, options));
                     }
                 }
             }

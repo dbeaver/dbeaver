@@ -375,10 +375,8 @@ public class TabbedFolderComposite extends Composite implements ITabbedFolderCon
                     if (folderPane.folderList.getSelectionIndex() != i) {
                         folderPane.folderList.select(i);
                         lastActiveFolder = folderPane;
-                        return true;
-                    } else {
-                        return false;
                     }
+                    return true;
                 }
             }
         }

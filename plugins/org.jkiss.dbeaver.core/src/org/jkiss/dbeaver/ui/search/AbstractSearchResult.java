@@ -75,7 +75,7 @@ public abstract class AbstractSearchResult<OBJECT_TYPE> implements ISearchResult
         fireChange(new DatabaseSearchResultEvent(objects));
     }
 
-    protected void fireChange(SearchResultEvent e) {
+    public void fireChange(SearchResultEvent e) {
         ISearchResultListener[] copiedListeners;
         synchronized (listeners) {
             copiedListeners = listeners.toArray(new ISearchResultListener[listeners.size()]);
@@ -97,4 +97,18 @@ public abstract class AbstractSearchResult<OBJECT_TYPE> implements ISearchResult
             return objects;
         }
     }
+
+    public static class DatabaseSearchFinishEvent extends SearchResultEvent {
+        private final int totalObjects;
+
+        public DatabaseSearchFinishEvent(ISearchResult searchResult, int totalObjects) {
+            super(searchResult);
+            this.totalObjects = totalObjects;
+        }
+
+        public int getTotalObjects() {
+            return totalObjects;
+        }
+    }
+
 }

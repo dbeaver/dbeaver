@@ -37,6 +37,7 @@ public class SQLFormatterTokenized implements SQLFormatter {
 
     public static final String FORMATTER_ID = "DEFAULT";
 
+    private static final String[] DML_KEYWORD = { "SELECT", "UPDATE", "INSERT", "DELETE" };
     private static final String[] JOIN_BEGIN = { "LEFT", "RIGHT", "INNER", "OUTER", "JOIN" };
 
     private SQLFormatterConfiguration formatterCfg;
@@ -161,6 +162,7 @@ public class SQLFormatterTokenized implements SQLFormatter {
         final List<Integer> bracketIndent = new ArrayList<>();
         FormatterToken prev = new FormatterToken(TokenType.SPACE, " "); //$NON-NLS-1$
         boolean encounterBetween = false;
+        int bracketsDepth = 0;
         for (int index = 0; index < argList.size(); index++) {
             token = argList.get(index);
             String tokenString = token.getString().toUpperCase(Locale.ENGLISH);
@@ -168,108 +170,144 @@ public class SQLFormatterTokenized implements SQLFormatter {
                 if (tokenString.equals("(")) { //$NON-NLS-1$
                     functionBracket.add(formatterCfg.isFunction(prev.getString()) ? Boolean.TRUE : Boolean.FALSE);
                     bracketIndent.add(indent);
-                    if (!isCompact) {
-                        indent++;
-                        index += insertReturnAndIndent(argList, index + 1, indent);
-                    }
+                    bracketsDepth++;
+                    // Adding indent after ( makes result too verbose and too multiline
+//                    if (!isCompact) {
+//                        indent++;
+//                        index += insertReturnAndIndent(argList, index + 1, indent);
+//                    }
                 } else if (tokenString.equals(")") && !bracketIndent.isEmpty() && !functionBracket.isEmpty()) { //$NON-NLS-1$
                     indent = bracketIndent.remove(bracketIndent.size() - 1);
-                    if (!isCompact) {
-                        index += insertReturnAndIndent(argList, index, indent);
-                    }
+//                    if (!isCompact) {
+//                        index += insertReturnAndIndent(argList, index, indent);
+//                    }
                     functionBracket.remove(functionBracket.size() - 1);
+                    bracketsDepth--;
                 } else if (tokenString.equals(",")) { //$NON-NLS-1$
                     if (!isCompact) {
-                        index += insertReturnAndIndent(argList, index + 1, indent);
+                        /*if (bracketsDepth <= 0 || "SELECT".equals(getPrevDMLKeyword(argList, index)))*/ {
+                            index += insertReturnAndIndent(argList, index + 1, indent);
+                        }
                     }
                 } else if (statementDelimiters.contains(tokenString)) { //$NON-NLS-1$
                     indent = 0;
                     index += insertReturnAndIndent(argList, index, indent);
                 }
             } else if (token.getType() == TokenType.KEYWORD) {
-                switch (tokenString) {
-                    case "DELETE":
-                    case "SELECT":
-                    case "UPDATE": //$NON-NLS-1$
-                    case "INSERT":
-                    case "INTO":
-                    case "CREATE":
-                    case "DROP":
-                    case "TRUNCATE":
-                    case "TABLE":
-                    case "CASE":  //$NON-NLS-1$
-                        if (!isCompact) {
-                            indent++;
-                            index += insertReturnAndIndent(argList, index + 1, indent);
-                        }
-                        break;
-                    case "FROM":
-                    case "WHERE":
-                    case "SET":
-                    case "START WITH":
-                    case "CONNECT BY":
-                    case "ORDER BY":
-                    case "GROUP BY":
-                    case "HAVING":  //$NON-NLS-1$
-                        index += insertReturnAndIndent(argList, index, indent - 1);
-                        if (!isCompact) {
-                            index += insertReturnAndIndent(argList, index + 1, indent);
-                        }
-                        break;
-                    case "LEFT":
-                    case "RIGHT":
-                    case "INNER":
-                    case "OUTER":
-                    case "JOIN":
-                        if (isJoinStart(argList, index)) {
+                if (statementDelimiters.contains(tokenString)) { //$NON-NLS-1$
+                    indent = 0;
+                    if (index > 0) {
+                        index += insertReturnAndIndent(argList, index - 1, indent);
+                    }
+                    index += insertReturnAndIndent(argList, index + 1, indent);
+                } else {
+                    switch (tokenString) {
+                        case "CREATE":
+                            if (!isCompact) {
+                                int nextIndex = getNextKeyword(argList, index);
+                                if (nextIndex > 0 && "OR".equals(argList.get(nextIndex).getString().toUpperCase(Locale.ENGLISH))) {
+                                    nextIndex = getNextKeyword(argList, nextIndex);
+                                    if (nextIndex > 0 && "REPLACE".equals(argList.get(nextIndex).getString().toUpperCase(Locale.ENGLISH))) {
+                                        insertReturnAndIndent(argList, nextIndex + 1, indent);
+                                        break;
+                                    }
+                                }
+                            }
+                        case "DELETE":
+                        case "SELECT":
+                        case "UPDATE": //$NON-NLS-1$
+                        case "INSERT":
+                        case "INTO":
+                        case "DROP":
+                        case "TRUNCATE":
+                        case "TABLE":
+                            if (!isCompact) {
+                                if (bracketsDepth > 0) {
+                                    index += insertReturnAndIndent(argList, index, indent);
+                                }
+                                indent++;
+                                index += insertReturnAndIndent(argList, index + 1, indent);
+                            }
+                            break;
+                        case "CASE":  //$NON-NLS-1$
+                            if (!isCompact) {
+                                index += insertReturnAndIndent(argList, index - 1, indent);
+                                indent++;
+                                index += insertReturnAndIndent(argList, index + 1, indent);
+                            }
+                            break;
+                        case "FROM":
+                        case "WHERE":
+                        case "SET":
+                        case "START WITH":
+                        case "CONNECT BY":
+                        case "ORDER BY":
+                        case "GROUP BY":
+                        case "HAVING":  //$NON-NLS-1$
                             index += insertReturnAndIndent(argList, index, indent - 1);
-                        }
-                        if (tokenString.equals("JOIN")) {
-                            //index += insertReturnAndIndent(argList, index + 1, indent);
-                        }
-                        break;
-                    case "VALUES":  //$NON-NLS-1$
-                    case "END":  //$NON-NLS-1$
-                    case "LIMIT":  //$NON-NLS-1$
-                        indent--;
-                        index += insertReturnAndIndent(argList, index, indent);
-                        break;
-                    case "OR":
-                    case "WHEN":
-                    case "ELSE":  //$NON-NLS-1$
-                        index += insertReturnAndIndent(argList, index, indent);
-                        break;
-                    case "ON":
-                        //indent++;
-                        index += insertReturnAndIndent(argList, index + 1, indent);
-                        break;
-                    case "USING":  //$NON-NLS-1$ //$NON-NLS-2$
-                        index += insertReturnAndIndent(argList, index, indent + 1);
-                        break;
-                    case "TOP":  //$NON-NLS-1$ //$NON-NLS-2$
-                        // SQL Server specific
-                        index += insertReturnAndIndent(argList, index, indent);
-                        if (argList.size() < index + 3) {
-                            index += insertReturnAndIndent(argList, index + 3, indent);
-                        }
-                        break;
-                    case "UNION":
-                    case "INTERSECT":
-                    case "EXCEPT": //$NON-NLS-1$
-                        indent -= 2;
-                        index += insertReturnAndIndent(argList, index, indent);
-                        //index += insertReturnAndIndent(argList, index + 1, indent);
-                        indent++;
-                        break;
-                    case "BETWEEN":  //$NON-NLS-1$
-                        encounterBetween = true;
-                        break;
-                    case "AND":  //$NON-NLS-1$
-                        if (!encounterBetween) {
+                            if (!isCompact) {
+                                index += insertReturnAndIndent(argList, index + 1, indent);
+                            }
+                            break;
+                        case "LEFT":
+                        case "RIGHT":
+                        case "INNER":
+                        case "OUTER":
+                        case "JOIN":
+                            if (isJoinStart(argList, index)) {
+                                index += insertReturnAndIndent(argList, index, indent - 1);
+                            }
+                            if (tokenString.equals("JOIN")) {
+                                //index += insertReturnAndIndent(argList, index + 1, indent);
+                            }
+                            break;
+                        case "VALUES":  //$NON-NLS-1$
+                        case "END":  //$NON-NLS-1$
+                        case "LIMIT":  //$NON-NLS-1$
+                            indent--;
                             index += insertReturnAndIndent(argList, index, indent);
-                        }
-                        encounterBetween = false;
-                        break;
+                            break;
+                        case "OR":
+                        case "WHEN":
+                        case "ELSE":  //$NON-NLS-1$
+                            index += insertReturnAndIndent(argList, index, indent);
+                            break;
+                        case "ON":
+                            {
+                                // FIXME: This produces double indent - #3679. But still needed in some cases?
+                                // Initially was added for proper MySQL views formatting.
+                                //indent++;
+                            }
+                            index += insertReturnAndIndent(argList, index + 1, indent);
+                            break;
+                        case "USING":  //$NON-NLS-1$ //$NON-NLS-2$
+                            index += insertReturnAndIndent(argList, index, indent + 1);
+                            break;
+                        case "TOP":  //$NON-NLS-1$ //$NON-NLS-2$
+                            // SQL Server specific
+                            index += insertReturnAndIndent(argList, index, indent);
+                            if (argList.size() < index + 3) {
+                                index += insertReturnAndIndent(argList, index + 3, indent);
+                            }
+                            break;
+                        case "UNION":
+                        case "INTERSECT":
+                        case "EXCEPT": //$NON-NLS-1$
+                            indent -= 2;
+                            index += insertReturnAndIndent(argList, index, indent);
+                            //index += insertReturnAndIndent(argList, index + 1, indent);
+                            indent++;
+                            break;
+                        case "BETWEEN":  //$NON-NLS-1$
+                            encounterBetween = true;
+                            break;
+                        case "AND":  //$NON-NLS-1$
+                            if (!encounterBetween) {
+                                index += insertReturnAndIndent(argList, index, indent);
+                            }
+                            encounterBetween = false;
+                            break;
+                    }
                 }
             } else if (token.getType() == TokenType.COMMENT) {
                 boolean isComment = false;
@@ -377,6 +415,27 @@ public class SQLFormatterTokenized implements SQLFormatter {
         return argList;
     }
 
+    private static String getPrevDMLKeyword(List<FormatterToken> argList, int index) {
+        for (int i = index - 1; i >= 0; i--) {
+            FormatterToken token = argList.get(i);
+            if (token.getType() == TokenType.KEYWORD) {
+                if (ArrayUtils.contains(DML_KEYWORD, token.getString())) {
+                    return token.getString();
+                }
+            }
+        }
+        return null;
+    }
+
+    private static int getNextKeyword(List<FormatterToken> argList, int index) {
+        for (int i = index + 1; i < argList.size(); i++) {
+            if (argList.get(i).getType() == TokenType.KEYWORD) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
     private static  boolean isEmbeddedToken(FormatterToken token) {
         switch (token.getString()) {
             case ":":
@@ -385,6 +444,7 @@ public class SQLFormatterTokenized implements SQLFormatter {
             case "<":
             case "[":
             case "]":
+            case "#":
                 return true;
             default:
                 return false;
@@ -431,6 +491,9 @@ public class SQLFormatterTokenized implements SQLFormatter {
 
     private int insertReturnAndIndent(final List<FormatterToken> argList, final int argIndex, final int argIndent)
     {
+        if (argIndex >= argList.size()) {
+            return 0;
+        }
         if (functionBracket.contains(Boolean.TRUE))
             return 0;
         try {

@@ -26,6 +26,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.qm.QMTransactionState;
 import org.jkiss.dbeaver.model.qm.QMUtils;
+import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
@@ -158,33 +159,35 @@ public class PendingTransactionsDialog extends TransactionInfoDialog {
             if (!dataSource.isConnected() || dataSource.getDataSource() == null) {
                 continue;
             }
-            DBCExecutionContext[] allContexts = dataSource.getDataSource().getAllContexts();
-            if (ArrayUtils.isEmpty(allContexts)) {
-                continue;
-            }
-            List<DBCExecutionContext> txnContexts = new ArrayList<>();
-            for (DBCExecutionContext context : allContexts) {
-                if (showAllContexts || QMUtils.isTransactionActive(context)) {
-                    txnContexts.add(context);
+            for (DBSInstance instance : dataSource.getDataSource().getAvailableInstances()) {
+                DBCExecutionContext[] allContexts = instance.getAllContexts();
+                if (ArrayUtils.isEmpty(allContexts)) {
+                    continue;
                 }
-            }
-            if (txnContexts.isEmpty()) {
-                continue;
-            }
-            TreeItem dsItem = new TreeItem(contextTree, SWT.NONE);
-            dsItem.setText(dataSource.getName());
-            dsItem.setImage(DBeaverIcons.getImage(dataSource.getObjectImage()));
-            dsItem.setData(dataSource);
+                List<DBCExecutionContext> txnContexts = new ArrayList<>();
+                for (DBCExecutionContext context : allContexts) {
+                    if (showAllContexts || QMUtils.isTransactionActive(context)) {
+                        txnContexts.add(context);
+                    }
+                }
+                if (txnContexts.isEmpty()) {
+                    continue;
+                }
+                TreeItem dsItem = new TreeItem(contextTree, SWT.NONE);
+                dsItem.setText(dataSource.getName());
+                dsItem.setImage(DBeaverIcons.getImage(dataSource.getObjectImage()));
+                dsItem.setData(dataSource);
 
-            for (DBCExecutionContext context : txnContexts) {
-                QMTransactionState txnState = QMUtils.getTransactionState(context);
-                TreeItem contextItem = new TreeItem(dsItem, SWT.NONE);
-                contextItem.setText(0, context.getContextName());
-                String stateString = String.valueOf(txnState.getUpdateCount()) + "/" + String.valueOf(txnState.getExecuteCount());
-                contextItem.setText(1, stateString);
-                contextItem.setData(context);
+                for (DBCExecutionContext context : txnContexts) {
+                    QMTransactionState txnState = QMUtils.getTransactionState(context);
+                    TreeItem contextItem = new TreeItem(dsItem, SWT.NONE);
+                    contextItem.setText(0, context.getContextName());
+                    String stateString = String.valueOf(txnState.getUpdateCount()) + "/" + String.valueOf(txnState.getExecuteCount());
+                    contextItem.setText(1, stateString);
+                    contextItem.setData(context);
+                }
+                dsItem.setExpanded(true);
             }
-            dsItem.setExpanded(true);
         }
 
         UIUtils.asyncExec(new Runnable() {

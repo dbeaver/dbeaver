@@ -75,6 +75,9 @@ public class PostgreMessages extends NLS {
 	/* tool analyze */
 	public static String tool_analyze_title_table;
 	public static String tool_analyze_title_database;
+
+	/* tool refresh mat view */
+	public static String tool_refresh_mview_title_table;
 	
 	/* tool vacuum */
 	public static String tool_vacuum_analyze_check_tooltip;
@@ -94,7 +97,12 @@ public class PostgreMessages extends NLS {
 	public static String tool_truncate_checkbox_restart_tooltip;
 	public static String tool_truncate_group_option;
 	public static String tool_truncate_title_table;
-	
+
+	/* tool refresh mat view */
+	public static String tool_refresh_mview_group_option;
+	public static String tool_refresh_mview_with_data;
+	public static String tool_refresh_mview_with_data_tooltip;
+
 	/* dialog create db */
 	public static String dialog_create_db_group_definition;
 	public static String dialog_create_db_group_general;
@@ -130,6 +138,8 @@ public class PostgreMessages extends NLS {
 	public static String dialog_setting_connection_localClient;
 	public static String dialog_setting_connection_nondefaultDatabase;
 	public static String dialog_setting_connection_nondefaultDatabase_tip;
+	public static String dialog_setting_connection_show_templates;
+	public static String dialog_setting_connection_show_templates_tip;
 	public static String dialog_setting_connection_switchDatabaseOnExpand;
 	public static String dialog_setting_connection_switchDatabaseOnExpand_tip;
 

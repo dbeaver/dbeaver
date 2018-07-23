@@ -77,7 +77,7 @@ public class FireBirdMetaModel extends GenericMetaModel
 
     @Override
     public List<GenericSequence> loadSequences(@NotNull DBRProgressMonitor monitor, @NotNull GenericStructContainer container) throws DBException {
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, container.getDataSource(), "Read sequences")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Read sequences")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT RDB$GENERATOR_NAME,RDB$DESCRIPTION FROM RDB$GENERATORS")) {
                 List<GenericSequence> result = new ArrayList<>();
 
@@ -132,7 +132,7 @@ public class FireBirdMetaModel extends GenericMetaModel
 
     @Override
     public List<GenericTrigger> loadTriggers(DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTable table) throws DBException {
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, container.getDataSource(), "Read triggers")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Read triggers")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT RDB$TRIGGER_NAME,RDB$TRIGGER_SEQUENCE,RDB$TRIGGER_TYPE,RDB$DESCRIPTION FROM RDB$TRIGGERS\n" +
                     "WHERE RDB$RELATION_NAME" + (table == null ? " IS NULL" : "=?"))) {

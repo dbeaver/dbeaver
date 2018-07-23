@@ -38,8 +38,8 @@ import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.format.external.SQLFormatterExternal;
-import org.jkiss.dbeaver.registry.sql.SQLFormatterConfigurationRegistry;
-import org.jkiss.dbeaver.registry.sql.SQLFormatterDescriptor;
+import org.jkiss.dbeaver.ui.editors.sql.registry.SQLFormatterConfigurationRegistry;
+import org.jkiss.dbeaver.ui.editors.sql.registry.SQLFormatterDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
@@ -235,7 +235,7 @@ public class PrefPageSQLFormat extends TargetPrefPage
                     if (container != null) {
                         final DBPDataSource dataSource = container.getDataSource();
                         if (dataSource != null) {
-                            return dataSource.getDefaultContext(false);
+                            return dataSource.getDefaultInstance().getDefaultContext(false);
                         }
                     }
                     return null;

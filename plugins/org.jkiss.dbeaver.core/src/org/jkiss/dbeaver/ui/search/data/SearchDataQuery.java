@@ -26,10 +26,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.model.DBConstants;
-import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDAttributeConstraint;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
@@ -37,10 +34,13 @@ import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.ui.search.AbstractSearchResult;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -85,7 +85,7 @@ public class SearchDataQuery implements ISearchQuery {
     }
 
     @Override
-    public IStatus run(IProgressMonitor monitor) throws OperationCanceledException {
+    public IStatus run(IProgressMonitor m) throws OperationCanceledException {
         try {
             String searchString = params.getSearchString();
 
@@ -98,6 +98,10 @@ public class SearchDataQuery implements ISearchQuery {
             // Search
             DBNModel dbnModel = DBeaverCore.getInstance().getNavigatorModel();
 
+            DBRProgressMonitor monitor = new DefaultProgressMonitor(m);
+
+            int totalObjects = 0;
+
             monitor.beginTask(
                 "Search \"" + searchString + "\" in " + params.sources.size() + " table(s) / " + dataSources.size() + " database(s)",
                 params.sources.size());
@@ -106,42 +110,53 @@ public class SearchDataQuery implements ISearchQuery {
                     if (monitor.isCanceled()) {
                         break;
                     }
-                    String objectName = DBUtils.getObjectFullName(dataContainer, DBPEvaluationContext.DML);
-                    DBNDatabaseNode node = dbnModel.findNode(dataContainer);
-                    if (node == null) {
-                        log.warn("Can't find tree node for object \"" + objectName + "\"");
-                        continue;
-                    }
-                    monitor.subTask(objectName);
-                    DBPDataSource dataSource = dataContainer.getDataSource();
-                    if (dataSource == null) {
-                        log.warn("Object \"" + objectName + "\" not connected");
-                        continue;
-                    }
-                    SearchTableMonitor searchMonitor = new SearchTableMonitor();
-                    try (DBCSession session = DBUtils.openUtilSession(searchMonitor, dataSource, "Search rows in " + objectName)) {
-                        TestDataReceiver dataReceiver = new TestDataReceiver(searchMonitor);
-                        try {
-                            findRows(session, dataContainer, dataReceiver);
-                        } catch (DBCException e) {
-                            // Search failed in some container - just write an error in log.
-                            // We don't want to break whole search because of one single table.
-                            log.error("Fulltext search failed in '" + dataContainer.getName() + "'", e);
-                        }
-
-                        if (dataReceiver.rowCount > 0) {
-                            SearchDataObject object = new SearchDataObject(node, dataReceiver.rowCount, dataReceiver.filter);
-                            searchResult.addObjects(Collections.singletonList(object));
-                        }
+                    if (searchDataInContainer(monitor, dbnModel, dataContainer)) {
+                        totalObjects++;
                     }
                     monitor.worked(1);
                 }
             } finally {
                 monitor.done();
             }
+
+            searchResult.fireChange(new AbstractSearchResult.DatabaseSearchFinishEvent(searchResult, totalObjects));
+
             return Status.OK_STATUS;
         } catch (Exception e) {
             return GeneralUtils.makeExceptionStatus(e);
+        }
+    }
+
+    private boolean searchDataInContainer(DBRProgressMonitor monitor, DBNModel dbnModel, DBSDataContainer dataContainer) {
+        if (!params.searchForeignObjects && dataContainer instanceof DBPForeignObject && ((DBPForeignObject) dataContainer).isForeignObject()) {
+            return false;
+        }
+
+        String objectName = DBUtils.getObjectFullName(dataContainer, DBPEvaluationContext.DML);
+        DBNDatabaseNode node = dbnModel.findNode(dataContainer);
+        if (node == null) {
+            log.warn("Can't find tree node for object \"" + objectName + "\"");
+            return false;
+        }
+        monitor.subTask("Search in '" + objectName + "'");
+        log.debug("Search in '" + objectName + "'");
+        SearchTableMonitor searchMonitor = new SearchTableMonitor(monitor);
+        try (DBCSession session = DBUtils.openUtilSession(searchMonitor, dataContainer, "Search rows in " + objectName)) {
+            TestDataReceiver dataReceiver = new TestDataReceiver(searchMonitor);
+            try {
+                findRows(session, dataContainer, dataReceiver);
+            } catch (DBCException e) {
+                // Search failed in some container - just write an error in log.
+                // We don't want to break whole search because of one single table.
+                log.debug("Fulltext search failed in '" + dataContainer.getName() + "'", e);
+            }
+
+            if (dataReceiver.rowCount > 0) {
+                SearchDataObject object = new SearchDataObject(node, dataReceiver.rowCount, dataReceiver.filter);
+                searchResult.addObjects(Collections.singletonList(object));
+                return true;
+            }
+            return false;
         }
     }
 
@@ -268,14 +283,16 @@ public class SearchDataQuery implements ISearchQuery {
 
     private class SearchTableMonitor extends VoidProgressMonitor {
 
+        private DBRProgressMonitor baseMonitor;
         private volatile boolean canceled;
 
-        private SearchTableMonitor() {
+        private SearchTableMonitor(DBRProgressMonitor monitor) {
+            this.baseMonitor = monitor;
         }
 
         @Override
         public boolean isCanceled() {
-            return canceled;
+            return canceled || baseMonitor.isCanceled();
         }
     }
 

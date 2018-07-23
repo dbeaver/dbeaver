@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.erd.part;
 
 import org.eclipse.draw2d.ChopboxAnchor;
 import org.eclipse.draw2d.ConnectionAnchor;
-import org.eclipse.draw2d.IFigure;
 import org.eclipse.draw2d.geometry.Dimension;
 import org.eclipse.draw2d.geometry.Point;
 import org.eclipse.draw2d.geometry.Rectangle;
@@ -27,15 +26,17 @@ import org.eclipse.gef.ConnectionEditPart;
 import org.eclipse.gef.EditPolicy;
 import org.eclipse.gef.Request;
 import org.eclipse.gef.RequestConstants;
-import org.jkiss.dbeaver.ext.erd.ERDMessages;
-import org.jkiss.dbeaver.ext.erd.command.EntityAddCommand;
-import org.jkiss.dbeaver.ext.erd.command.NoteSetTextCommand;
+import org.eclipse.gef.commands.Command;
+import org.eclipse.gef.requests.DirectEditRequest;
+import org.eclipse.gef.tools.DirectEditManager;
+import org.jkiss.dbeaver.ext.erd.directedit.ExtendedDirectEditManager;
+import org.jkiss.dbeaver.ext.erd.directedit.FigureEditorLocator;
 import org.jkiss.dbeaver.ext.erd.figures.NoteFigure;
 import org.jkiss.dbeaver.ext.erd.model.ERDNote;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
-import org.jkiss.dbeaver.ext.erd.policy.NoteEditPolicy;
+import org.jkiss.dbeaver.ext.erd.policy.NoteDirectEditPolicy;
 import org.jkiss.dbeaver.model.DBPNamedObject;
-import org.jkiss.dbeaver.ui.dialogs.EditTextDialog;
+import org.jkiss.dbeaver.ui.controls.MultilineTextCellEditor;
 
 import java.beans.PropertyChangeEvent;
 
@@ -46,6 +47,8 @@ import java.beans.PropertyChangeEvent;
  */
 public class NotePart extends NodePart
 {
+    private DirectEditManager manager;
+
     public NotePart() {
     }
 
@@ -62,11 +65,12 @@ public class NotePart extends NodePart
 	{
         final boolean editEnabled = isEditEnabled();
         if (editEnabled) {
-            //installEditPolicy(EditPolicy.GRAPHICAL_NODE_ROLE, new EntityNodeEditPolicy());
+            //installEditPolicy(EditPolicy.GRAPHICAL_NODE_ROLE, new EntityConnectionEditPolicy());
             //installEditPolicy(EditPolicy.LAYOUT_ROLE, new EntityLayoutEditPolicy());
             //installEditPolicy(EditPolicy.CONTAINER_ROLE, new EntityContainerEditPolicy());
-            installEditPolicy(EditPolicy.COMPONENT_ROLE, new NoteEditPolicy());
-            //installEditPolicy(EditPolicy.DIRECT_EDIT_ROLE, new NoteDirectEditPolicy());
+            //installEditPolicy(EditPolicy.COMPONENT_ROLE, new NoteEditPolicy());
+            installEditPolicy(EditPolicy.DIRECT_EDIT_ROLE, new NoteDirectEditPolicy());
+            //installEditPolicy(EditPolicy.COMPONENT_ROLE, new NoteDirectEditPolicy());
 
             //installEditPolicy(EditPolicy.SELECTION_FEEDBACK_ROLE, new ResizableEditPolicy());
         }
@@ -76,22 +80,46 @@ public class NotePart extends NodePart
     public void performRequest(Request request)
 	{
 		if (request.getType() == RequestConstants.REQ_OPEN) {
-            final String newText = EditTextDialog.editText(getViewer().getControl().getShell(), ERDMessages.part_note_title, getNote().getObject());
-            if (newText != null) {
-                NoteSetTextCommand command = new NoteSetTextCommand(getNote(), (NoteFigure) getFigure(), newText);
-                getViewer().getEditDomain().getCommandStack().execute(command);
-            }
+            performDirectEdit();
+        } else if (request.getType() == RequestConstants.REQ_DIRECT_EDIT) {
+			if (request instanceof DirectEditRequest
+					&& !directEditHitTest(((DirectEditRequest) request).getLocation().getCopy()))
+				return;
+			performDirectEdit();
         }
 	}
 
-	//******************* Miscellaneous stuff *********************/
+    @Override
+    public Command getCommand(Request request) {
+        if (request.getType() == RequestConstants.REQ_DIRECT_EDIT) {
+            performDirectEdit();
+        }
+        return super.getCommand(request);
+    }
+
+    private boolean directEditHitTest(Point requestLoc) {
+        NoteFigure figure = (NoteFigure) getFigure();
+        figure.translateToRelative(requestLoc);
+        return figure.containsPoint(requestLoc);
+    }
+
+    protected void performDirectEdit() {
+        if (manager == null) {
+            NoteFigure figure = (NoteFigure) getFigure();
+            manager = new ExtendedDirectEditManager(
+                this,
+                MultilineTextCellEditor.class,
+                new FigureEditorLocator(figure),
+                figure,
+                value -> null);
+        }
+        manager.show();
+    }
 
 	public String toString()
 	{
 		return getNote().getObject();
 	}
-
-	//******************* Listener related methods *********************/
 
     public void handleNameChange(String value)
     {
@@ -102,7 +130,7 @@ public class NotePart extends NodePart
 
     /**
      * Reverts to existing name in model when exiting from a direct edit
-     * (possibly before a commit which will result in a change in the label
+     * (possibly before a commit which will result in a change in the figure
      * value)
      */
     public void revertNameChange()
@@ -131,7 +159,7 @@ public class NotePart extends NodePart
 	 * Creates a figure which represents the table
 	 */
 	@Override
-    protected IFigure createFigure()
+    protected NoteFigure createFigure()
 	{
         final NoteFigure noteFigure = new NoteFigure(getNote());
         EntityDiagram.NodeVisualInfo visualInfo = ((DiagramPart) getParent()).getDiagram().getVisualInfo(getNote(), true);

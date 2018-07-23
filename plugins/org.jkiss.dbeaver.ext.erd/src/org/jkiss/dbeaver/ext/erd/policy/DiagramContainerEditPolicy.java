@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,9 +13,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
-/*
- * Created on Jul 15, 2004
  */
 package org.jkiss.dbeaver.ext.erd.policy;
 
@@ -34,8 +31,10 @@ import org.jkiss.dbeaver.ext.erd.model.ERDNote;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 
 /**
  * Handles creation of new tables using drag and drop or point and click from the palette
@@ -68,18 +67,22 @@ public class DiagramContainerEditPolicy extends ContainerEditPolicy {
         if (newObject instanceof ERDNote) {
             return new NoteCreateCommand(diagramPart, (ERDNote)newObject, location);
         }
-        Collection<ERDEntity> entities = null;
+        List<ERDEntity> entities = null;
         if (newObject instanceof ERDEntity) {
             entities = Collections.singletonList((ERDEntity) newObject);
         } else if (newObject instanceof Collection) {
-            entities = (Collection<ERDEntity>) newObject;
+            entities = new ArrayList<>((Collection<ERDEntity>)newObject);
         }
         if (CommonUtils.isEmpty(entities)) {
             return null;
         }
         //EditPart host = getTargetEditPart(request);
 
-        return new EntityAddCommand(diagramPart, entities, location);
+        Command entityAddCommand = diagramPart.createEntityAddCommand(entities, location);
+        if (!entityAddCommand.canExecute()) {
+            return null;
+        }
+        return entityAddCommand;
     }
 
     /**

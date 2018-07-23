@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,43 +36,45 @@ import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 /**
  * This is a sample implementation of an outline page showing an
  * overview of a graphical editor.
- * 
+ *
  * @author Gunnar Wagenknecht
  */
-public class ERDOutlinePage extends Page implements IContentOutlinePage
-{
+public class ERDOutlinePage extends Page implements IContentOutlinePage {
 
-    /** the control of the overview */
+    /**
+     * the control of the overview
+     */
     private Canvas overview;
-    /** the root edit part */
+    /**
+     * the root edit part
+     */
     private ScalableFreeformRootEditPart rootEditPart;
 
-    /** the thumbnail */
+    /**
+     * the thumbnail
+     */
     private Thumbnail thumbnail;
 
     /**
      * Creates a new ERDOutlinePage instance.
+     *
      * @param rootEditPart the root edit part to show the overview from
      */
-    public ERDOutlinePage(ScalableFreeformRootEditPart rootEditPart)
-    {
+    public ERDOutlinePage(ScalableFreeformRootEditPart rootEditPart) {
         super();
         this.rootEditPart = rootEditPart;
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.viewers.ISelectionProvider#addSelectionChangedListener(org.eclipse.jface.viewers.ISelectionChangedListener)
-     */
     @Override
-    public void addSelectionChangedListener(ISelectionChangedListener listener)
-    {}
+    public void addSelectionChangedListener(ISelectionChangedListener listener) {
+
+    }
 
     /* (non-Javadoc)
      * @see org.eclipse.ui.part.IPage#createControl(org.eclipse.swt.widgets.Composite)
      */
     @Override
-    public void createControl(Composite parent)
-    {
+    public void createControl(Composite parent) {
         // create canvas and lws
         overview = new Canvas(parent, SWT.NONE);
         LightweightSystem lws = new LightweightSystem(overview);
@@ -90,8 +92,7 @@ public class ERDOutlinePage extends Page implements IContentOutlinePage
      * @see org.eclipse.ui.part.IPage#dispose()
      */
     @Override
-    public void dispose()
-    {
+    public void dispose() {
         if (null != thumbnail)
             thumbnail.deactivate();
 
@@ -102,33 +103,22 @@ public class ERDOutlinePage extends Page implements IContentOutlinePage
      * @see org.eclipse.ui.part.IPage#getControl()
      */
     @Override
-    public Control getControl()
-    {
+    public Control getControl() {
         return overview;
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.viewers.ISelectionProvider#getSelection()
-     */
     @Override
-    public ISelection getSelection()
-    {
+    public ISelection getSelection() {
         return StructuredSelection.EMPTY;
     }
 
-    /* (non-Javadoc)
-     * @see org.eclipse.jface.viewers.ISelectionProvider#removeSelectionChangedListener(org.eclipse.jface.viewers.ISelectionChangedListener)
-     */
     @Override
-    public void removeSelectionChangedListener(ISelectionChangedListener listener)
-    {}
+    public void removeSelectionChangedListener(ISelectionChangedListener listener) {
 
-    /* (non-Javadoc)
-     * @see org.eclipse.ui.part.IPage#setFocus()
-     */
+    }
+
     @Override
-    public void setFocus()
-    {
+    public void setFocus() {
         if (getControl() != null)
             getControl().setFocus();
     }
@@ -137,6 +127,6 @@ public class ERDOutlinePage extends Page implements IContentOutlinePage
      * @see org.eclipse.jface.viewers.ISelectionProvider#setSelection(org.eclipse.jface.viewers.ISelection)
      */
     @Override
-    public void setSelection(ISelection selection)
-    {}
+    public void setSelection(ISelection selection) {
+    }
 }

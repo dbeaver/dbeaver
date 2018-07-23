@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -30,6 +30,7 @@ import org.eclipse.ui.IWorkbench;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.erd.ERDMessages;
 import org.jkiss.dbeaver.ext.erd.model.DiagramObjectCollector;
+import org.jkiss.dbeaver.ext.erd.model.ERDDecoratorDefault;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -49,7 +50,7 @@ import java.util.List;
 public class DiagramCreateWizard extends Wizard implements INewWizard {
 
     private IFolder folder;
-    private EntityDiagram diagram = new EntityDiagram(null, "");
+    private EntityDiagram diagram = new EntityDiagram(new ERDDecoratorDefault(), null, "");
     private DiagramCreateWizardPage pageContent;
 	private String errorMessage;
     private IStructuredSelection entitySelection;
@@ -154,7 +155,7 @@ public class DiagramCreateWizard extends Wizard implements INewWizard {
                 Collection<DBSEntity> tables = DiagramObjectCollector.collectTables(
                     monitor,
                     roots);
-                diagram.fillTables(monitor, tables, null);
+                diagram.fillEntities(monitor, tables, null);
 
                 diagramFile = ERDResourceHandler.createDiagram(diagram, diagram.getName(), folder, monitor);
             } catch (Exception e) {

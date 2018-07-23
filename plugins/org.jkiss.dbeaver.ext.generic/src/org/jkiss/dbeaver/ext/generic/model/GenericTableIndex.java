@@ -80,7 +80,7 @@ public class GenericTableIndex extends JDBCTableIndex<GenericStructContainer, Ge
 
     @Nullable
     @Override
-    @Property(viewable = true, order = 100)
+    @Property(viewable = true, multiline = true, order = 100)
     public String getDescription()
     {
         return null;

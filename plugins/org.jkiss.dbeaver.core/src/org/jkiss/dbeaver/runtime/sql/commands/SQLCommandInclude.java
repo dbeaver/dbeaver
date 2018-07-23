@@ -46,6 +46,11 @@ import java.net.URI;
  */
 public class SQLCommandInclude implements SQLControlCommandHandler {
 
+    public static String getResourceEncoding() {
+        String resourceEncoding = IDEEncoding.getResourceEncoding();
+        return CommonUtils.isEmpty(resourceEncoding) ? GeneralUtils.getDefaultFileEncoding() : resourceEncoding;
+    }
+
     @Override
     public boolean handleCommand(SQLControlCommand command, final SQLScriptContext scriptContext) throws DBException {
         String fileName = command.getParameter();
@@ -66,7 +71,7 @@ public class SQLCommandInclude implements SQLControlCommandHandler {
 
         final String fileContents;
         try (InputStream is = new FileInputStream(incFile)) {
-            Reader reader = new InputStreamReader(is, IDEEncoding.getResourceEncoding());
+            Reader reader = new InputStreamReader(is, getResourceEncoding());
             fileContents = IOUtils.readToString(reader);
         } catch (IOException e) {
             throw new DBException("IO error reading file '" + fileName + "'", e);

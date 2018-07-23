@@ -246,7 +246,7 @@ public class ExasolSchema extends ExasolGlobalObject implements DBSSchema, DBPNa
         return createTime;
     }
 
-    @Property(viewable = true, editable = true, updatable = true, order = 3)
+    @Property(viewable = true, editable = true, updatable = true, multiline = true, order = 3)
     public String getDescription() {
         return remarks;
     }

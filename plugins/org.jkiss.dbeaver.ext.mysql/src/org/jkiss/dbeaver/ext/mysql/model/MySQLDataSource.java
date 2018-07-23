@@ -33,6 +33,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.app.DBACertificateStorage;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
@@ -40,6 +41,7 @@ import org.jkiss.dbeaver.model.exec.plan.DBCPlanStyle;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCBasicDataTypeCache;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
@@ -86,7 +88,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     }
 
     @Override
-    protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor, String purpose, DBPConnectionConfiguration connectionInfo)
+    protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor, DBPDriver driver, String purpose, DBPConnectionConfiguration connectionInfo)
         throws DBCException
     {
         Map<String, String> props = new LinkedHashMap<>(MySQLDataSourceProvider.getConnectionsProps());
@@ -101,11 +103,11 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
             // Newer MySQL servers/connectors requires explicit SSL disable
             props.put("useSSL", "false");
         }
-/*
-        if (CommonUtils.toBoolean(connectionInfo.getProperty(MySQLConstants.PROP_USE_SSL))) {
-            url.append("?useSSL=true&requireSSL=true");
+
+        String serverTZ = connectionInfo.getProviderProperty(MySQLConstants.PROP_SERVER_TIMEZONE);
+        if (!CommonUtils.isEmpty(serverTZ)) {
+            props.put("serverTimezone", serverTZ);
         }
-*/
 
         return props;
     }
@@ -338,7 +340,7 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
         if (!(object instanceof MySQLCatalog)) {
             throw new DBException("Invalid object type: " + object);
         }
-        for (JDBCExecutionContext context : getAllContexts()) {
+        for (JDBCExecutionContext context : getDefaultInstance().getAllContexts()) {
             useDatabase(monitor, context, (MySQLCatalog) object);
         }
         activeCatalogName = object.getName();
@@ -380,8 +382,8 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     }
 
     @Override
-    protected Connection openConnection(@NotNull DBRProgressMonitor monitor, @NotNull String purpose) throws DBCException {
-        Connection mysqlConnection = super.openConnection(monitor, purpose);
+    protected Connection openConnection(@NotNull DBRProgressMonitor monitor, JDBCRemoteInstance remoteInstance, @NotNull String purpose) throws DBCException {
+        Connection mysqlConnection = super.openConnection(monitor, remoteInstance, purpose);
 
         if (!getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {
             // Provide client info

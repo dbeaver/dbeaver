@@ -96,7 +96,7 @@ public class ExasolViewManager
     }
     
     @Override
-    protected void addObjectModifyActions(List<DBEPersistAction> actionList,
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList,
                                           ObjectChangeCommand command, Map<String, Object> options)
     {
         createOrReplaceViewQuery(actionList, command.getObject(), true);

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,9 +14,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*
- * Created on Jul 15, 2004
- */
 package org.jkiss.dbeaver.ext.erd.part;
 
 import org.eclipse.draw2d.IFigure;
@@ -26,6 +23,7 @@ import org.eclipse.gef.GraphicalEditPart;
 import org.eclipse.gef.editparts.AbstractGraphicalEditPart;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.erd.model.ERDObject;
+import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 
 import java.beans.PropertyChangeEvent;
@@ -36,246 +34,234 @@ import java.util.List;
 /**
  * An abstract EditPart implementation which is property aware and responds to
  * PropertyChangeEvents fired from the model
+ *
  * @author Serge Rider
  */
-public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implements PropertyChangeListener, DBPNamedObject
-{
+public abstract class PropertyAwarePart extends AbstractGraphicalEditPart implements PropertyChangeListener, DBPNamedObject {
+
     @NotNull
-	@Override
-    public String getName()
-    {
-        return ((ERDObject)getModel()).getName();
+    @Override
+    public String getName() {
+        return ((ERDObject) getModel()).getName();
     }
 
-    protected boolean isEditEnabled()
-    {
-        return getParent() instanceof DiagramPart && ((DiagramPart) getParent()).getDiagram().isLayoutManualAllowed();
+    @NotNull
+    public DiagramPart getDiagramPart() {
+        for (EditPart part = getParent(); part != null; part = part.getParent()) {
+            if (part instanceof DiagramPart) {
+                return (DiagramPart) part;
+            }
+        }
+        throw new IllegalStateException("Diagram part must be top level part");
     }
 
-	@Override
-    public void activate()
-	{
-		super.activate();
-		ERDObject<?> erdObject = (ERDObject<?>) getModel();
-		erdObject.addPropertyChangeListener(this);
-	}
+    @NotNull
+    public EntityDiagram getDiagram() {
+        return getDiagramPart().getDiagram();
+    }
 
-	@Override
-    public void deactivate()
-	{
-		super.deactivate();
-		ERDObject<?> erdObject = (ERDObject<?>) getModel();
-		erdObject.removePropertyChangeListener(this);
-	}
+    protected boolean isEditEnabled() {
+        return getDiagram().isLayoutManualAllowed();
+    }
 
-	@Override
-    public void propertyChange(PropertyChangeEvent evt)
-	{
+    @Override
+    public void activate() {
+        super.activate();
+        ERDObject<?> erdObject = (ERDObject<?>) getModel();
+        if (isEditEnabled()) {
+            erdObject.addPropertyChangeListener(this);
+        }
+    }
 
-		String property = evt.getPropertyName();
+    @Override
+    public void deactivate() {
+        super.deactivate();
+        if (isEditEnabled()) {
+            ERDObject<?> erdObject = (ERDObject<?>) getModel();
+            erdObject.removePropertyChangeListener(this);
+        }
+    }
 
-		if (ERDObject.CHILD.equals(property))
-		{
-			handleChildChange(evt);
-		}
-		if (ERDObject.REORDER.equals(property))
-		{
-			handleReorderChange(evt);
-		}
-		else if (ERDObject.OUTPUT.equals(property))
-		{
-			handleOutputChange(evt);
-		}
-		else if (ERDObject.INPUT.equals(property))
-		{
-			handleInputChange(evt);
-		}
-		else if (ERDObject.NAME.equals(property))
-		{
-			commitNameChange(evt);
-		}
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
 
-		//we want direct edit name changes to update immediately
-		//not use the Graph animation, if automatic layout is being used
-		if (ERDObject.NAME.equals(property))
-		{
-			GraphicalEditPart graphicalEditPart = (GraphicalEditPart) (getViewer().getContents());
-			IFigure partFigure = graphicalEditPart.getFigure();
-			partFigure.getUpdateManager().performUpdate();
-		}
+        String property = evt.getPropertyName();
 
-	}
+        switch (property) {
+            case ERDObject.CHILD:
+                handleChildChange(evt);
+                break;
+            case ERDObject.REORDER:
+                handleReorderChange(evt);
+                break;
+            case ERDObject.OUTPUT:
+                handleOutputChange(evt);
+                break;
+            case ERDObject.INPUT:
+                handleInputChange(evt);
+                break;
+            case ERDObject.NAME:
+                commitNameChange(evt);
+                break;
+        }
 
-	/**
-	 * Called when change to one of the inputs occurs
-	 */
-	private void handleInputChange(PropertyChangeEvent evt)
-	{
+        //we want direct edit name changes to update immediately
+        //not use the Graph animation, if automatic layout is being used
+        if (ERDObject.NAME.equals(property)) {
+            GraphicalEditPart graphicalEditPart = (GraphicalEditPart) (getViewer().getContents());
+            IFigure partFigure = graphicalEditPart.getFigure();
+            partFigure.getUpdateManager().performUpdate();
+        }
 
-		//this works but is not efficient
-		//refreshTargetConnections();
+    }
 
-		//a more efficient implementation should either remove or add the
-		//relevant target connection
-		//using the removeTargetConnection(ConnectionEditPart connection) or
-		//addTargetConnection(ConnectionEditPart connection, int index)
+    /**
+     * Called when change to one of the inputs occurs
+     */
+    private void handleInputChange(PropertyChangeEvent evt) {
 
-		Object newValue = evt.getNewValue();
-		Object oldValue = evt.getOldValue();
+        //this works but is not efficient
+        //refreshTargetConnections();
 
-		if (!((oldValue != null) ^ (newValue != null)))
-		{
-			throw new IllegalStateException("Exactly one of old or new values must be non-null for INPUT event");
-		}
+        //a more efficient implementation should either remove or add the
+        //relevant target connection
+        //using the removeTargetConnection(ConnectionEditPart connection) or
+        //addTargetConnection(ConnectionEditPart connection, int index)
 
-		if (newValue != null)
-		{
-			//add new connection
-			ConnectionEditPart editPart = createOrFindConnection(newValue);
-			int modelIndex = getModelTargetConnections().indexOf(newValue);
-			addTargetConnection(editPart, modelIndex);
+        Object newValue = evt.getNewValue();
+        Object oldValue = evt.getOldValue();
 
-		}
-		else
-		{
+        if (!((oldValue != null) ^ (newValue != null))) {
+            throw new IllegalStateException("Exactly one of old or new values must be non-null for INPUT event");
+        }
 
-			//remove connection
-			List<?> children = getTargetConnections();
+        if (newValue != null) {
+            //add new connection
+            ConnectionEditPart editPart = createOrFindConnection(newValue);
+            int modelIndex = getModelTargetConnections().indexOf(newValue);
+            addTargetConnection(editPart, modelIndex);
 
-			ConnectionEditPart partToRemove = null;
-			for (Iterator<?> iter = children.iterator(); iter.hasNext();)
-			{
-				ConnectionEditPart part = (ConnectionEditPart) iter.next();
-				if (part.getModel() == oldValue)
-				{
-					partToRemove = part;
-					break;
-				}
-			}
+        } else {
 
-			if (partToRemove != null)
-				removeTargetConnection(partToRemove);
-		}
-		
-		getContentPane().revalidate();
+            //remove connection
+            List<?> children = getTargetConnections();
 
-	}
+            ConnectionEditPart partToRemove = null;
+            for (Iterator<?> iter = children.iterator(); iter.hasNext(); ) {
+                ConnectionEditPart part = (ConnectionEditPart) iter.next();
+                if (part.getModel() == oldValue) {
+                    partToRemove = part;
+                    break;
+                }
+            }
 
-	/**
-	 * Called when change to one of the outputs occurs
-	 */
-	private void handleOutputChange(PropertyChangeEvent evt)
-	{
+            if (partToRemove != null)
+                removeTargetConnection(partToRemove);
+        }
 
-		//this works but is not efficient
-		//refreshSourceConnections();
+        getContentPane().revalidate();
 
-		// a more efficient implementation should either remove or add the
-		// relevant target connect
-		//using the removeSourceConnection(ConnectionEditPart connection) or
-		//addSourceConnection(ConnectionEditPart connection, int index)
+    }
 
-		Object newValue = evt.getNewValue();
-		Object oldValue = evt.getOldValue();
+    /**
+     * Called when change to one of the outputs occurs
+     */
+    private void handleOutputChange(PropertyChangeEvent evt) {
 
-		if (!((oldValue != null) ^ (newValue != null)))
-		{
-			throw new IllegalStateException("Exactly one of old or new values must be non-null for INPUT event");
-		}
+        //this works but is not efficient
+        //refreshSourceConnections();
 
-		if (newValue != null)
-		{
-			//add new connection
-			ConnectionEditPart editPart = createOrFindConnection(newValue);
-			int modelIndex = getModelSourceConnections().indexOf(newValue);
-			addSourceConnection(editPart, modelIndex);
+        // a more efficient implementation should either remove or add the
+        // relevant target connect
+        //using the removeSourceConnection(ConnectionEditPart connection) or
+        //addSourceConnection(ConnectionEditPart connection, int index)
 
-		}
-		else
-		{
+        Object newValue = evt.getNewValue();
+        Object oldValue = evt.getOldValue();
 
-			//remove connection
-			List<?> children = getSourceConnections();
+        if (!((oldValue != null) ^ (newValue != null))) {
+            throw new IllegalStateException("Exactly one of old or new values must be non-null for INPUT event");
+        }
 
-			ConnectionEditPart partToRemove = null;
-			for (Iterator<?> iter = children.iterator(); iter.hasNext();)
-			{
-				ConnectionEditPart part = (ConnectionEditPart) iter.next();
-				if (part.getModel() == oldValue)
-				{
-					partToRemove = part;
-					break;
-				}
-			}
+        if (newValue != null) {
+            //add new connection
+            ConnectionEditPart editPart = createOrFindConnection(newValue);
+            int modelIndex = getModelSourceConnections().indexOf(newValue);
+            addSourceConnection(editPart, modelIndex);
 
-			if (partToRemove != null)
-				removeSourceConnection(partToRemove);
-		}
-		
-		getContentPane().revalidate();
+        } else {
 
-	}
+            //remove connection
+            List<?> children = getSourceConnections();
 
-	/**
-	 * called when child added or removed
-	 */
-	protected void handleChildChange(PropertyChangeEvent evt)
-	{
+            ConnectionEditPart partToRemove = null;
+            for (Iterator<?> iter = children.iterator(); iter.hasNext(); ) {
+                ConnectionEditPart part = (ConnectionEditPart) iter.next();
+                if (part.getModel() == oldValue) {
+                    partToRemove = part;
+                    break;
+                }
+            }
 
-		//we could do this but it is not very efficient
-		//refreshChildren();
+            if (partToRemove != null)
+                removeSourceConnection(partToRemove);
+        }
 
-		Object newValue = evt.getNewValue();
-		Object oldValue = evt.getOldValue();
+        getContentPane().revalidate();
 
-		if (!((oldValue != null) ^ (newValue != null)))
-		{
-			throw new IllegalStateException("Exactly one of old or new values must be non-null for CHILD event");
-		}
+    }
 
-		if (newValue != null)
-		{
-			//add new child
-			EditPart editPart = createChild(newValue);
-			int modelIndex = getModelChildren().indexOf(newValue);
-			addChild(editPart, modelIndex);
+    /**
+     * called when child added or removed
+     */
+    protected void handleChildChange(PropertyChangeEvent evt) {
 
-		}
-		else
-		{
+        //we could do this but it is not very efficient
+        //refreshChildren();
 
-			List<?> children = getChildren();
+        Object newValue = evt.getNewValue();
+        Object oldValue = evt.getOldValue();
 
-			EditPart partToRemove = null;
-			for (Iterator<?> iter = children.iterator(); iter.hasNext();)
-			{
-				EditPart part = (EditPart) iter.next();
-				if (part.getModel() == oldValue)
-				{
-					partToRemove = part;
-					break;
-				}
-			}
+        if ((oldValue != null) == (newValue != null)) {
+            throw new IllegalStateException("Exactly one of old or new values must be non-null for CHILD event");
+        }
 
-			if (partToRemove != null)
-				removeChild(partToRemove);
-		}
+        if (newValue != null) {
+            //add new child
+            EditPart editPart = createChild(newValue);
+            int modelIndex = getModelChildren().indexOf(newValue);
+            addChild(editPart, modelIndex);
 
-		//getContentPane().revalidate();
+        } else {
 
-	}
+            List<?> children = getChildren();
 
-	/**
-	 * Called when columns are re-ordered within
-	 */
-	protected void handleReorderChange(PropertyChangeEvent evt)
-	{
-		refreshChildren();
-		refreshVisuals();
-	}
+            EditPart partToRemove = null;
+            for (Iterator<?> iter = children.iterator(); iter.hasNext(); ) {
+                EditPart part = (EditPart) iter.next();
+                if (part.getModel() == oldValue) {
+                    partToRemove = part;
+                    break;
+                }
+            }
 
-	protected void commitNameChange(PropertyChangeEvent evt)
-	{
-	}
+            if (partToRemove != null)
+                removeChild(partToRemove);
+        }
+
+        //getContentPane().revalidate();
+
+    }
+
+    /**
+     * Called when columns are re-ordered within
+     */
+    protected void handleReorderChange(PropertyChangeEvent evt) {
+        refreshChildren();
+        refreshVisuals();
+    }
+
+    protected void commitNameChange(PropertyChangeEvent evt) {
+    }
 
 }

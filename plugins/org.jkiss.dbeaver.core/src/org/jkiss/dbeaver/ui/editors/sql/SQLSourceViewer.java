@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ui.editors.sql;
 
 import org.eclipse.jface.action.*;
+import org.eclipse.ui.IEditorInput;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPScriptObject;
@@ -59,14 +60,16 @@ public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLE
     }
 
     protected Map<String, Object> getSourceOptions() {
-        IDatabaseEditorInput editorInput = getEditorInput();
-        Collection<String> attributeNames = editorInput.getAttributeNames();
+        IEditorInput editorInput = getEditorInput();
         Map<String, Object> options = new HashMap<>();
-        options.put(DBPScriptObject.OPTION_DDL_SOURCE, true);
-        if (!attributeNames.isEmpty()) {
-            for (String name : attributeNames) {
-                Object attribute = editorInput.getAttribute(name);
-                options.put(name, attribute);
+        if (editorInput instanceof IDatabaseEditorInput) {
+            Collection<String> attributeNames = ((IDatabaseEditorInput)editorInput).getAttributeNames();
+            options.put(DBPScriptObject.OPTION_DDL_SOURCE, true);
+            if (!attributeNames.isEmpty()) {
+                for (String name : attributeNames) {
+                    Object attribute = ((IDatabaseEditorInput)editorInput).getAttribute(name);
+                    options.put(name, attribute);
+                }
             }
         }
         return options;
@@ -90,10 +93,4 @@ public class SQLSourceViewer<T extends DBPScriptObject & DBSObject> extends SQLE
         toolBarManager.add(OPEN_CONSOLE_ACTION);
     }
 
-    @Override
-    public void editorContextMenuAboutToShow(IMenuManager menu) {
-        super.editorContextMenuAboutToShow(menu);
-
-        menu.insertAfter(GROUP_SQL_ADDITIONS, OPEN_CONSOLE_ACTION);
-    }
 }

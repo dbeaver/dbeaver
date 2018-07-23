@@ -126,7 +126,7 @@ public class MySQLProcedure extends AbstractProcedure<MySQLDataSource, MySQLCata
                     "BEGIN" + GeneralUtils.getDefaultLineSeparator() +
                     "END";
             } else {
-                try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read procedure declaration")) {
+                try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read procedure declaration")) {
                     try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW CREATE " + getProcedureType().name() + " " + getFullyQualifiedName(DBPEvaluationContext.DDL))) {
                         try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                             if (dbResult.next()) {

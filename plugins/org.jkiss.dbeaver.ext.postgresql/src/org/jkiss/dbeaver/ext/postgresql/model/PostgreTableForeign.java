@@ -19,10 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
-import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.DBPImageProvider;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -37,7 +34,7 @@ import java.sql.SQLException;
 /**
  * PostgreTableForeign
  */
-public class PostgreTableForeign extends PostgreTable implements DBPImageProvider
+public class PostgreTableForeign extends PostgreTable implements DBPForeignObject, DBPImageProvider
 {
     private long foreignServerId;
     private String[] foreignOptions;
@@ -70,7 +67,7 @@ public class PostgreTableForeign extends PostgreTable implements DBPImageProvide
         if (foreignServerId > 0) {
             return;
         }
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read foreign table info")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read foreign table info")) {
             try (JDBCPreparedStatement stat = session.prepareStatement("SELECT * FROM pg_catalog.pg_foreign_table WHERE ftrelid=?")) {
                 stat.setLong(1, getObjectId());
                 try (JDBCResultSet result = stat.executeQuery()) {
@@ -91,4 +88,8 @@ public class PostgreTableForeign extends PostgreTable implements DBPImageProvide
         return DBIcon.TREE_TABLE_LINK;
     }
 
+    @Override
+    public boolean isForeignObject() {
+        return true;
+    }
 }

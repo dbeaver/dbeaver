@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,8 +28,7 @@ import org.eclipse.gef.*;
 import org.eclipse.gef.commands.CommandStack;
 import org.eclipse.gef.editparts.ScalableFreeformRootEditPart;
 import org.eclipse.gef.editparts.ZoomManager;
-import org.eclipse.gef.palette.*;
-import org.eclipse.gef.requests.CreationFactory;
+import org.eclipse.gef.palette.PaletteRoot;
 import org.eclipse.gef.ui.actions.*;
 import org.eclipse.gef.ui.palette.FlyoutPaletteComposite;
 import org.eclipse.gef.ui.palette.FlyoutPaletteComposite.FlyoutPreferences;
@@ -39,7 +38,6 @@ import org.eclipse.gef.ui.parts.GraphicalViewerKeyHandler;
 import org.eclipse.gef.ui.properties.UndoablePropertySheetEntry;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.IStructuredSelection;
@@ -57,6 +55,7 @@ import org.eclipse.ui.model.WorkbenchAdapter;
 import org.eclipse.ui.views.contentoutline.IContentOutlinePage;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.eclipse.ui.views.properties.PropertySheetPage;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.erd.ERDActivator;
@@ -73,7 +72,8 @@ import org.jkiss.dbeaver.ext.erd.editor.tools.ChangeZOrderAction;
 import org.jkiss.dbeaver.ext.erd.editor.tools.SetPartColorAction;
 import org.jkiss.dbeaver.ext.erd.export.ERDExportFormatHandler;
 import org.jkiss.dbeaver.ext.erd.export.ERDExportFormatRegistry;
-import org.jkiss.dbeaver.ext.erd.model.ERDNote;
+import org.jkiss.dbeaver.ext.erd.model.ERDDecorator;
+import org.jkiss.dbeaver.ext.erd.model.ERDDecoratorDefault;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.model.DBPDataSourceUser;
@@ -87,7 +87,10 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.EventObject;
+import java.util.List;
 
 /**
  * Editor implementation based on the the example editor skeleton that is built in <i>Building
@@ -96,6 +99,7 @@ import java.util.*;
 public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     implements DBPDataSourceUser, ISearchContextProvider, IRefreshablePart
 {
+    @Nullable
     protected ProgressControl progressControl;
 
     /**
@@ -134,11 +138,25 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     private IPropertyChangeListener configPropertyListener;
     private PaletteRoot paletteRoot;
 
+    private volatile String errorMessage;
+    private ERDDecorator decorator;
+
     /**
      * No-arg constructor
      */
     protected ERDEditorPart()
     {
+    }
+
+    public ERDDecorator getDecorator() {
+        if (decorator == null) {
+            decorator = createDecorator();
+        }
+        return decorator;
+    }
+
+    protected ERDDecorator createDecorator() {
+        return new ERDDecoratorDefault();
     }
 
     @Override
@@ -152,6 +170,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     @Override
     public void init(IEditorSite site, IEditorInput input) throws PartInitException
     {
+        rootPart = new ScalableFreeformRootEditPart();
         editDomain = new DefaultEditDomain(this);
         setEditDomain(editDomain);
 
@@ -167,13 +186,20 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     @Override
     public void createPartControl(Composite parent)
     {
-        progressControl = new ProgressControl(parent, SWT.SHEET);
-        progressControl.setShowDivider(true);
+        Composite contentContainer = parent;
+        if (hasProgressControl()) {
+            progressControl = new ProgressControl(parent, SWT.SHEET);
+            progressControl.setShowDivider(true);
+            contentContainer = progressControl.createContentContainer();
+        } else {
+            isLoaded = true;
+        }
 
-        Composite contentContainer = progressControl.createContentContainer();
         super.createPartControl(contentContainer);
 
-        progressControl.createProgressPanel();
+        if (hasProgressControl()) {
+            progressControl.createProgressPanel();
+        }
     }
 
     /**
@@ -281,6 +307,10 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
     public abstract boolean isReadOnly();
 
+    protected boolean hasProgressControl() {
+        return true;
+    }
+
     /**
      * Returns the <code>CommandStack</code> of this editor's
      * <code>EditDomain</code>.
@@ -345,6 +375,14 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     {
         GraphicalViewer viewer = createViewer(parent);
 
+        viewer.getControl().addPaintListener(e -> {
+            String message = this.errorMessage;
+            if (!CommonUtils.isEmpty(message)) {
+                e.gc.setForeground(viewer.getControl().getForeground());
+                UIUtils.drawMessageOverControl(viewer.getControl(), e, message, 0);
+            }
+        });
+
         // hook the viewer into the EditDomain
         setGraphicalViewer(viewer);
 
@@ -353,7 +391,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         initializeGraphicalViewer();
 
         // Set initial (empty) contents
-        viewer.setContents(new EntityDiagram(null, "empty"));
+        viewer.setContents(new EntityDiagram(getDecorator(), null, "empty"));
 
         // Set context menu
         ContextMenuProvider provider = new ERDEditorContextMenuProvider(this);
@@ -369,17 +407,20 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
         // configure the viewer
         viewer.getControl().setBackground(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_DIAGRAM_BACKGROUND));
-        rootPart = new ScalableFreeformRootEditPart();
         viewer.setRootEditPart(rootPart);
         viewer.setKeyHandler(new GraphicalViewerKeyHandler(viewer));
 
-        viewer.addDropTargetListener(new DataEditDropTargetListener(viewer));
-        viewer.addDropTargetListener(new NodeDropTargetListener(viewer));
+        registerDropTargetListeners(viewer);
 
         // initialize the viewer with input
-        viewer.setEditPartFactory(new ERDEditPartFactory());
+        viewer.setEditPartFactory(getDecorator().createPartFactory());
 
         return viewer;
+    }
+
+    protected void registerDropTargetListeners(GraphicalViewer viewer) {
+        viewer.addDropTargetListener(new DataEditDropTargetListener(viewer));
+        viewer.addDropTargetListener(new NodeDropTargetListener(viewer));
     }
 
     @Override
@@ -417,7 +458,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         zoomManager.setZoomLevelContributions(zoomLevels);
 
         zoomManager.setZoomLevels(
-            new double[]{.1, .25, .5, .75, 1.0, 1.5, 2.0, 2.5, 3, 4}
+            new double[]{.1, .1, .2, .3, .5, .6, .7, .8, .9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.5, 1.6, 1.7, 1.8, 1.9, 2.0, 2.5, 3, 4}
         );
 
         IAction zoomIn = new ZoomInAction(zoomManager);
@@ -435,7 +476,9 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
             } else {
                 status = String.valueOf(selection.size()) + " objects";
             }
-            progressControl.setInfo(status);
+            if (progressControl != null) {
+                progressControl.setInfo(status);
+            }
 
             updateActions(editPartActionIDs);
         });
@@ -478,8 +521,8 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     @Override
     protected void updateActions(List actionIds)
     {
-        for (Iterator<?> ids = actionIds.iterator(); ids.hasNext();) {
-            IAction action = getActionRegistry().getAction(ids.next());
+        for (Object actionId : actionIds) {
+            IAction action = getActionRegistry().getAction(actionId);
             if (null != action && action instanceof UpdateAction) {
                 ((UpdateAction) action).update();
             }
@@ -546,76 +589,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         PaletteRoot paletteRoot = new PaletteRoot();
         paletteRoot.setLabel("Entity Diagram");
 
-        {
-            // a group of default control tools
-            PaletteDrawer controls = new PaletteDrawer("Tools", DBeaverIcons.getImageDescriptor(UIIcon.CONFIGURATION));
-
-            paletteRoot.add(controls);
-
-            // the selection tool
-            ToolEntry selectionTool = new SelectionToolEntry();
-            controls.add(selectionTool);
-
-            // use selection tool as default entry
-            paletteRoot.setDefaultEntry(selectionTool);
-
-            // the marquee selection tool
-            controls.add(new MarqueeToolEntry());
-
-
-            if (!isReadOnly()) {
-                // separator
-                PaletteSeparator separator = new PaletteSeparator("tools");
-                separator.setUserModificationPermission(PaletteEntry.PERMISSION_NO_MODIFICATION);
-                controls.add(separator);
-
-                final ImageDescriptor connectImage = ERDActivator.getImageDescriptor("icons/connect.png");
-                controls.add(new ConnectionCreationToolEntry("Connection", "Create Connection", null, connectImage, connectImage));
-
-                final ImageDescriptor noteImage = ERDActivator.getImageDescriptor("icons/note.png");
-                controls.add(new CreationToolEntry(
-                    "Note",
-                    "Create Note",
-                    new CreationFactory() {
-                        @Override
-                        public Object getNewObject()
-                        {
-                            return new ERDNote("Note");
-                        }
-                        @Override
-                        public Object getObjectType()
-                        {
-                            return RequestConstants.REQ_CREATE;
-                        }
-                    },
-                    noteImage,
-                    noteImage));
-            }
-        }
-
-/*
-            PaletteDrawer drawer = new PaletteDrawer("New Component",
-                ERDActivator.getImageDescriptor("icons/connection.gif"));
-
-            List<CombinedTemplateCreationEntry> entries = new ArrayList<CombinedTemplateCreationEntry>();
-
-            CombinedTemplateCreationEntry tableEntry = new CombinedTemplateCreationEntry("New Table", "Create a new table",
-                ERDEntity.class, new DataElementFactory(ERDEntity.class),
-                ERDActivator.getImageDescriptor("icons/table.png"),
-                ERDActivator.getImageDescriptor("icons/table.png"));
-
-            CombinedTemplateCreationEntry columnEntry = new CombinedTemplateCreationEntry("New Column", "Add a new column",
-                ERDEntityAttribute.class, new DataElementFactory(ERDEntityAttribute.class),
-                ERDActivator.getImageDescriptor("icons/column.png"),
-                ERDActivator.getImageDescriptor("icons/column.png"));
-
-            entries.add(tableEntry);
-            entries.add(columnEntry);
-
-            drawer.addAll(entries);
-
-            paletteRoot.add(drawer);
-*/
+        getDecorator().fillPalette(paletteRoot, isReadOnly());
 
         return paletteRoot;
 
@@ -783,6 +757,10 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     public boolean performSearch(SearchType searchType)
     {
         return progressControl != null && progressControl.performSearch(searchType);
+    }
+
+    public void setErrorMessage(String errorMessage) {
+        this.errorMessage = errorMessage;
     }
 
     protected abstract void loadDiagram(boolean refreshMetadata);

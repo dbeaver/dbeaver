@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-/*
- * Created on Jul 15, 2004
- */
 package org.jkiss.dbeaver.ext.erd.policy;
 
 import org.eclipse.gef.commands.Command;
 import org.eclipse.gef.editpolicies.ComponentEditPolicy;
 import org.eclipse.gef.requests.GroupRequest;
 import org.jkiss.dbeaver.ext.erd.command.AssociationDeleteCommand;
-import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
-import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
+import org.jkiss.dbeaver.ext.erd.part.AssociationPart;
 
 /**
  * EditPolicy to handle deletion of relationships
@@ -36,11 +32,7 @@ public class AssociationEditPolicy extends ComponentEditPolicy
 	@Override
     protected Command createDeleteCommand(GroupRequest request)
 	{
-		ERDAssociation relationship = (ERDAssociation) getHost().getModel();
-		ERDEntity primaryKeyTarget = relationship.getPrimaryKeyEntity();
-		ERDEntity foreignKeySource = relationship.getForeignKeyEntity();
-		AssociationDeleteCommand deleteCmd = new AssociationDeleteCommand(foreignKeySource, primaryKeyTarget, relationship);
-		return deleteCmd;
+		return new AssociationDeleteCommand((AssociationPart)getHost());
 	}
 	
 }

@@ -22,10 +22,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Shell;
+import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -44,6 +41,11 @@ class VersionUpdateDialog extends Dialog {
     {
         super(parentShell);
         this.newVersion = newVersion;
+    }
+
+    @Override
+    protected boolean isResizable() {
+        return true;
     }
 
     @Override
@@ -81,10 +83,11 @@ class VersionUpdateDialog extends Dialog {
             gd.horizontalSpan = 2;
             notesLabel.setLayoutData(gd);
 
-            final Label notesText = new Label(propGroup, SWT.NONE);
+            final Text notesText = new Text(propGroup, SWT.READ_ONLY | SWT.WRAP | SWT.V_SCROLL);
             notesText.setText(newVersion.getReleaseNotes());
-            gd = new GridData(GridData.FILL_HORIZONTAL);
+            gd = new GridData(GridData.FILL_BOTH);
             gd.horizontalSpan = 2;
+            gd.heightHint = notesText.getLineHeight() * 20;
             notesText.setLayoutData(gd);
 
             final Label hintLabel = new Label(propGroup, SWT.NONE);

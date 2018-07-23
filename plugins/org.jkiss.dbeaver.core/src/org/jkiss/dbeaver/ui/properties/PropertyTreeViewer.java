@@ -137,7 +137,7 @@ public class PropertyTreeViewer extends TreeViewer {
 
         renderer = new ObjectViewerRenderer(this) {
             @Override
-            protected Object getCellValue(Object element, int columnIndex)
+            public Object getCellValue(Object element, int columnIndex)
             {
                 final TreeNode node = (TreeNode) element;
                 if (columnIndex == 0) {
@@ -213,6 +213,9 @@ public class PropertyTreeViewer extends TreeViewer {
             @Override
             public void run() {
                 Tree tree = getTree();
+                if (tree.isDisposed()) {
+                	return;
+                }
                 tree.setRedraw(false);
                 try {
                     PropertyTreeViewer.this.expandAll();
@@ -1032,7 +1035,9 @@ public class PropertyTreeViewer extends TreeViewer {
                         }
                         final TreeNode node = (TreeNode) event.item.getData();
                         if (node != null && node.property != null) {
-                            renderer.paintCell(event, node, event.item, node.property.getDataType(), event.index, node.isEditable(), (event.detail & SWT.SELECTED) == SWT.SELECTED);
+
+                            Object cellValue = renderer.getCellValue(node, event.index);
+                            renderer.paintCell(event, node, cellValue, event.item, node.property.getDataType(), event.index, node.isEditable(), (event.detail & SWT.SELECTED) == SWT.SELECTED);
                         }
                     }
                     break;

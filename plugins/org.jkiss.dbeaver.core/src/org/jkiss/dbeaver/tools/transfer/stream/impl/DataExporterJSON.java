@@ -19,12 +19,12 @@ package org.jkiss.dbeaver.tools.transfer.stream.impl;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.json.JSONUtils;
+import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
@@ -34,11 +34,8 @@ import org.jkiss.utils.CommonUtils;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.Reader;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
-import java.util.TimeZone;
 
 /**
  * JSON Exporter
@@ -90,7 +87,7 @@ public class DataExporterJSON extends StreamExporterAbstract {
     }
 
     @Override
-    public void exportRow(DBCSession session, Object[] row) throws DBException, IOException
+    public void exportRow(DBCSession session, DBCResultSet resultSet, Object[] row) throws DBException, IOException
     {
         if (rowNum > 0) {
             out.write(",\n");

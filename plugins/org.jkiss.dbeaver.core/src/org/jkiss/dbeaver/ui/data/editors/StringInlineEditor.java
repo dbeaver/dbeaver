@@ -17,7 +17,9 @@
 package org.jkiss.dbeaver.ui.data.editors;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -26,14 +28,14 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
+import org.jkiss.dbeaver.ui.controls.StyledTextUtils;
 import org.jkiss.dbeaver.ui.data.IValueController;
 
 /**
 * StringInlineEditor.
- * TODO: use StyledText instead of Text? with fillDefaultStyledTextContextMenu it works better than Text
- * TODO: however Text is native and has extra features. Can't decide.
+ * Relies on StyledText. After all it is better.
 */
-public class StringInlineEditor extends BaseValueEditor<Text> {
+public class StringInlineEditor extends BaseValueEditor<Control> {
 
     private static final int MAX_STRING_LENGTH = 0xffff;
 
@@ -42,33 +44,54 @@ public class StringInlineEditor extends BaseValueEditor<Text> {
     }
 
     @Override
-    protected Text createControl(Composite editPlaceholder)
+    protected Control createControl(Composite editPlaceholder)
     {
         final boolean inline = valueController.getEditType() == IValueController.EditType.INLINE;
-        final Text editor = new Text(valueController.getEditPlaceholder(),
-            (inline ? SWT.BORDER : SWT.MULTI | SWT.WRAP | SWT.V_SCROLL));
-        editor.setTextLimit(MAX_STRING_LENGTH);
-        editor.setEditable(!valueController.isReadOnly());
-        return editor;
+        if (inline) {
+            final Text editor = new Text(valueController.getEditPlaceholder(), SWT.BORDER);
+            editor.setTextLimit(MAX_STRING_LENGTH);
+            editor.setEditable(!valueController.isReadOnly());
+            return editor;
+        } else {
+            final StyledText editor = new StyledText(valueController.getEditPlaceholder(),
+                SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
+            editor.setTextLimit(MAX_STRING_LENGTH);
+            editor.setEditable(!valueController.isReadOnly());
+            StyledTextUtils.fillDefaultStyledTextContextMenu(editor);
+            return editor;
+        }
     }
 
     @Override
     public void primeEditorValue(@Nullable Object value) throws DBException
     {
         final String strValue = valueController.getValueHandler().getValueDisplayString(valueController.getValueType(), value, DBDDisplayFormat.EDIT);
-        control.setText(strValue);
-        if (valueController.getEditType() == IValueController.EditType.INLINE) {
-            control.selectAll();
+        if (control instanceof Text) {
+            ((Text)control).setText(strValue);
+            if (valueController.getEditType() == IValueController.EditType.INLINE) {
+                ((Text)control).selectAll();
+            }
+        } else {
+            ((StyledText)control).setText(strValue);
+            if (valueController.getEditType() == IValueController.EditType.INLINE) {
+                ((StyledText)control).selectAll();
+            }
         }
     }
 
     @Override
     public Object extractEditorValue() throws DBCException {
         try (DBCSession session = valueController.getExecutionContext().openSession(new VoidProgressMonitor(), DBCExecutionPurpose.UTIL, "Make string value from editor")) {
+            String text;
+            if (control instanceof Text) {
+                text = ((Text) control).getText();
+            } else {
+                text = ((StyledText) control).getText();
+            }
             return valueController.getValueHandler().getValueFromObject(
                 session,
                 valueController.getValueType(),
-                control.getText(),
+                text,
                 false);
         }
     }

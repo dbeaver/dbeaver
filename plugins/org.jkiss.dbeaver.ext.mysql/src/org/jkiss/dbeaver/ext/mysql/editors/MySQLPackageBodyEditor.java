@@ -45,7 +45,7 @@ public class MySQLPackageBodyEditor extends SQLSourceViewer<MySQLSourceObject> {
 
     @Override
     protected void setSourceText(DBRProgressMonitor monitor, String sourceText) {
-        getEditorInput().getPropertySource().setPropertyValue(
+        getInputPropertySource().setPropertyValue(
             monitor,
             "extendedDefinitionText",
             sourceText);

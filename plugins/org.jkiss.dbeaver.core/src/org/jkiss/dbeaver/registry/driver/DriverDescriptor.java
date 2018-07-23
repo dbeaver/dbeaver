@@ -209,7 +209,13 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             for (DriverFileSource fs : copyFrom.fileSources) {
                 this.fileSources.add(new DriverFileSource(fs));
             }
-            this.libraries.addAll(copyFrom.libraries);
+            for (DBPDriverLibrary library : copyFrom.libraries) {
+                if (library instanceof DriverLibraryAbstract) {
+                    this.libraries.add(((DriverLibraryAbstract)library).copyLibrary(this));
+                } else {
+                    this.libraries.add(library);
+                }
+            }
             this.connectionPropertyDescriptors.addAll(copyFrom.connectionPropertyDescriptors);
 
             this.defaultParameters.putAll(copyFrom.defaultParameters);
@@ -439,7 +445,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
     }
 
     @Override
-    @Property(viewable = true, order = 100)
+    @Property(viewable = true, multiline = true, order = 100)
     public String getDescription()
     {
         return description;
@@ -887,7 +893,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                     driverClass = Class.forName(driverClassName, true, classLoader);
                 }
                 catch (Throwable ex) {
-                    throw new DBException("Can't load driver class '" + driverClassName + "'", ex);
+                    throw new DBException("Error creating driver '" + getFullName() + "' instance.\nMost likely required jar files are missing.\nYou should configure jars in driver settings.\n\nReason: can't load driver class '" + driverClassName + "'", ex);
                 }
     
                 // Create driver instance
@@ -1025,11 +1031,15 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
                 List<DriverFileInfo> files = resolvedFiles.get(library);
                 if (files != null) {
                     for (DriverFileInfo file : files) {
-                        result.add(file.file);
+                        if (file.file != null) {
+                            result.add(file.file);
+                        }
                     }
                 }
             } else {
-                result.add(library.getLocalFile());
+                if (library.getLocalFile() != null) {
+                    result.add(library.getLocalFile());
+                }
             }
         }
 
@@ -1038,14 +1048,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
             // TODO: implement new version check
             if (false) {
                 try {
-                    UIUtils.runInProgressService(new DBRRunnableWithProgress() {
-                        @Override
-                        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                            try {
-                                checkDriverVersion(monitor);
-                            } catch (IOException e) {
-                                throw new InvocationTargetException(e);
-                            }
+                    UIUtils.runInProgressService(monitor -> {
+                        try {
+                            checkDriverVersion(monitor);
+                        } catch (IOException e) {
+                            throw new InvocationTargetException(e);
                         }
                     });
                 } catch (InvocationTargetException e) {

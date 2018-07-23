@@ -47,7 +47,7 @@ import java.util.List;
 public abstract class TableToolDialog extends GenerateMultiSQLDialog<PostgreObject>
 {
 
-    public TableToolDialog(IWorkbenchPartSite partSite, String title, Collection<PostgreTableBase> tables) {
+    public TableToolDialog(IWorkbenchPartSite partSite, String title, Collection<? extends PostgreTableBase> tables) {
         super(partSite, title, toObjects(tables), true);
     }
 
@@ -55,7 +55,7 @@ public abstract class TableToolDialog extends GenerateMultiSQLDialog<PostgreObje
         super(partSite, title, Collections.<PostgreObject>singletonList(database), true);
     }
 
-    private static Collection<PostgreObject> toObjects(Collection<PostgreTableBase> tables) {
+    private static Collection<PostgreObject> toObjects(Collection<? extends PostgreTableBase> tables) {
         List<PostgreObject> objectList = new ArrayList<>();
         objectList.addAll(tables);
         return objectList;

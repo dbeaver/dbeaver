@@ -17,7 +17,6 @@
 package org.jkiss.dbeaver.ext.mssql.model;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
 import org.jkiss.dbeaver.model.DBPOverloadedObject;
@@ -51,14 +50,14 @@ public class SQLServerTable extends GenericTable implements DBPOverloadedObject 
         return super.getDescription();
     }
 
-    @Property(viewable = true, order = 100)
+    @Property(viewable = true, multiline = true, order = 100)
     public String getDescription(DBRProgressMonitor monitor) throws DBException {
         String description = getDescription();
         if (description != null || !isSqlServer()) {
             return description;
         }
         // Query row count
-        try (JDBCSession session = DBUtils.openUtilSession(monitor, getDataSource(), "Read table description")) {
+        try (JDBCSession session = DBUtils.openUtilSession(monitor, this, "Read table description")) {
             DBSObject defaultDatabase = getDataSource().getDefaultObject();
             boolean switchSchema = defaultDatabase != null && defaultDatabase != getCatalog();
             try (JDBCPreparedStatement dbStat = session.prepareStatement(

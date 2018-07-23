@@ -20,14 +20,16 @@ import org.eclipse.jface.text.rules.IRule;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
-import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
 import org.jkiss.dbeaver.runtime.sql.SQLRuleProvider;
 import org.jkiss.utils.CommonUtils;
 
+import java.sql.Types;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -79,6 +81,21 @@ public class SQLServerDialect extends GenericSQLDialect implements SQLRuleProvid
     }
 
     @Override
+    public String getColumnTypeModifiers(DBSTypedObject column, String typeName, DBPDataKind dataKind) {
+        if (dataKind == DBPDataKind.DATETIME) {
+            Integer scale = column.getScale();
+            if (scale != null) {
+                if (column.getTypeID() == Types.VARCHAR && scale == 0) {
+                    // Bug in jTDS. Scale is always zero so just ignore it (#3555)
+                    return null;
+                }
+                return "(" + scale + ')';
+            }
+        }
+        return super.getColumnTypeModifiers(column, typeName, dataKind);
+    }
+
+    @Override
     public void extendRules(@NotNull List<IRule> rules, @NotNull RulePosition position) {
     }
 
@@ -88,13 +105,13 @@ public class SQLServerDialect extends GenericSQLDialect implements SQLRuleProvid
         int maxParamLength = getMaxParameterLength(parameters, inParameters);
         String schemaName = proc.getParentObject().getName();
         schemaName = proc.getContainer().getParentObject().getName();
-        sql.append("USE [" + schemaName + "]\n");
+        sql.append("USE [").append(schemaName).append("]\n");
         sql.append("GO\n\n");
         sql.append("DECLARE	@return_value int\n\n");
-        sql.append("EXEC\t@return_value = [" + proc.getContainer().getName() +"].[" + proc.getName() + "]\n");
+        sql.append("EXEC\t@return_value = [").append(proc.getContainer().getName()).append("].[").append(proc.getName()).append("]\n");
         for (int i = 0; i < inParameters.size(); i++) {
             String name = inParameters.get(i).getName();
-            sql.append("\t\t" + name + " = :").append(CommonUtils.escapeIdentifier(name));
+            sql.append("\t\t").append(name).append(" = :").append(CommonUtils.escapeIdentifier(name));
             if (i < (inParameters.size() - 1)) {
                 sql.append(", ");
             } else {

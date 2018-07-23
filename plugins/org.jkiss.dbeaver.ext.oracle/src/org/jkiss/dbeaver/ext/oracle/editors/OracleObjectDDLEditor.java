@@ -63,7 +63,7 @@ public class OracleObjectDDLEditor extends SQLSourceViewer<OracleTable> {
                     public void widgetSelected(SelectionEvent e) {
                         for (OracleDDLFormat format : OracleDDLFormat.values()) {
                             if (format.ordinal() == ddlFormatCombo.getSelectionIndex()) {
-                                getEditorInput().getDatabaseObject().getDataSource().getContainer().getPreferenceStore().setValue(
+                                getSourceObject().getDataSource().getContainer().getPreferenceStore().setValue(
                                     OracleConstants.PREF_KEY_DDL_FORMAT, format.name());
                                 refreshPart(this, true);
                                 break;

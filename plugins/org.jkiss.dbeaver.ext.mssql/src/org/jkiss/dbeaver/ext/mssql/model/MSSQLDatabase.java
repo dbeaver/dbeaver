@@ -23,7 +23,6 @@ import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
@@ -89,7 +88,7 @@ public class MSSQLDatabase implements DBSCatalog, DBPRefreshableObject {
     @Association
     public Collection<MSSQLSchema> getSchemas(DBRProgressMonitor monitor) throws DBException {
         if (schemas == null) {
-            try (JDBCSession session = dataSource.getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.UTIL, "Load schemas")) {
+            try (JDBCSession session = DBUtils.openUtilSession(monitor, this, "Load schemas")) {
                 schemas = loadSchemas(session);
             }
         }

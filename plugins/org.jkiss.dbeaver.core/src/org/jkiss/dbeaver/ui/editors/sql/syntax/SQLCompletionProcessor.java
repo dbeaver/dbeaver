@@ -34,8 +34,8 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
-import org.jkiss.dbeaver.registry.sql.SQLCommandHandlerDescriptor;
-import org.jkiss.dbeaver.registry.sql.SQLCommandsRegistry;
+import org.jkiss.dbeaver.ui.editors.sql.registry.SQLCommandHandlerDescriptor;
+import org.jkiss.dbeaver.ui.editors.sql.registry.SQLCommandsRegistry;
 import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
@@ -191,7 +191,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             i++;
         }
 
-        DBSObject selectedObject = dataSource == null ? null: DBUtils.getActiveInstanceObject(dataSource);
+        DBSObject selectedObject = dataSource == null ? null: DBUtils.getActiveInstanceObject(dataSource.getDefaultInstance());
         boolean hideDups = editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS) && selectedObject != null;
         if (hideDups) {
             for (int i = 0; i < request.proposals.size(); i++) {

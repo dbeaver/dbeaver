@@ -52,7 +52,7 @@ public class TeradataMetaModel extends GenericMetaModel implements DBDValueHandl
     public String getTableDDL(DBRProgressMonitor monitor, GenericTable sourceObject, Map<String, Object> options) throws DBException {
         GenericDataSource dataSource = sourceObject.getDataSource();
         boolean isView = sourceObject.isView();
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read Teradata object DDL")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read Teradata object DDL")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SHOW " + (isView ? "VIEW" : "TABLE") + " " + sourceObject.getFullyQualifiedName(DBPEvaluationContext.DDL))) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -75,7 +75,7 @@ public class TeradataMetaModel extends GenericMetaModel implements DBDValueHandl
     @Override
     public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
         GenericDataSource dataSource = sourceObject.getDataSource();
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read Teradata procedure source")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read Teradata procedure source")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SHOW PROCEDURE " + sourceObject.getFullyQualifiedName(DBPEvaluationContext.DDL))) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {

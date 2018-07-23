@@ -21,10 +21,13 @@ import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
+
+import java.sql.Types;
 
 public class SQLServerDataSource extends GenericDataSource {
 
@@ -49,6 +52,21 @@ public class SQLServerDataSource extends GenericDataSource {
             return true;
         }
         return super.getDataSourceFeature(featureId);
+    }
+
+    @Override
+    public DBPDataKind resolveDataKind(String typeName, int valueType) {
+        if (valueType == Types.VARCHAR) {
+            // Workaround for jTDS driver (#3555)
+            switch (typeName) {
+                case SQLServerConstants.TYPE_DATETIME:
+                case SQLServerConstants.TYPE_DATETIME2:
+                case SQLServerConstants.TYPE_SMALLDATETIME:
+                case SQLServerConstants.TYPE_DATETIMEOFFSET:
+                    return DBPDataKind.DATETIME;
+            }
+        }
+        return super.resolveDataKind(typeName, valueType);
     }
 
     //////////////////////////////////////////////////////////
@@ -78,4 +96,5 @@ public class SQLServerDataSource extends GenericDataSource {
             return super.getConnectionUserPassword(connectionInfo);
         }
     }
+
 }

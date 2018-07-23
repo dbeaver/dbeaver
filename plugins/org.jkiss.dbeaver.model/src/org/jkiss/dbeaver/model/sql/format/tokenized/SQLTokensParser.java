@@ -230,7 +230,8 @@ class SQLTokensParser {
 
                 StringBuilder s = new StringBuilder();
                 s.append(fChar);
-                for (;;) {
+                int posMark = fPos;
+                while (fPos < fBefore.length()) {
                     fChar = fBefore.charAt(fPos);
                     s.append(fChar);
                     fPos++;
@@ -245,6 +246,9 @@ class SQLTokensParser {
                         return new FormatterToken(TokenType.VALUE, s.toString(), start_pos);
                     }
                 }
+                // Bad quoting (no close quote)
+                fPos = posMark;
+                return new FormatterToken(TokenType.SYMBOL, String.valueOf(s.charAt(0)), start_pos);
             }
 
             else if (isSymbol(fChar)) {

@@ -19,11 +19,10 @@ package org.jkiss.dbeaver.ui.editors.sql.syntax;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.formatter.ContextBasedFormattingStrategy;
 import org.eclipse.jface.text.source.ISourceViewer;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatter;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
-import org.jkiss.dbeaver.registry.sql.SQLFormatterConfigurationRegistry;
+import org.jkiss.dbeaver.ui.editors.sql.registry.SQLFormatterConfigurationRegistry;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorSourceViewerConfiguration;
 
 /**

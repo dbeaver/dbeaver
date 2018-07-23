@@ -1340,14 +1340,20 @@ public final class DBUtils {
 
     @SuppressWarnings("unchecked")
     @NotNull
-    public static <T extends DBCSession> T openMetaSession(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, @NotNull String task) {
-        return (T) dataSource.getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, task);
+    public static <T extends DBCSession> T openMetaSession(@NotNull DBRProgressMonitor monitor, @NotNull DBSObject object, @NotNull String task) {
+        return (T) getDefaultContext(object, true).openSession(monitor, DBCExecutionPurpose.META, task);
     }
 
     @SuppressWarnings("unchecked")
     @NotNull
-    public static <T extends DBCSession> T openUtilSession(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, @NotNull String task) {
-        return (T) dataSource.getDefaultContext(false).openSession(monitor, DBCExecutionPurpose.UTIL, task);
+    public static <T extends DBCSession> T openMetaSession(@NotNull DBRProgressMonitor monitor, @NotNull DBPDataSource dataSource, @NotNull String task) {
+        return (T) dataSource.getDefaultInstance().getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, task);
+    }
+
+    @SuppressWarnings("unchecked")
+    @NotNull
+    public static <T extends DBCSession> T openUtilSession(@NotNull DBRProgressMonitor monitor, @NotNull DBSObject object, @NotNull String task) {
+        return (T) getDefaultContext(object, false).openSession(monitor, DBCExecutionPurpose.UTIL, task);
     }
 
     @Nullable
@@ -1375,7 +1381,11 @@ public final class DBUtils {
     @Nullable
     public static DBSObject getActiveInstanceObject(@NotNull DBSInstance object)
     {
-        return getSelectedObject(object, true);
+        if (object instanceof DBSObjectContainer) {
+            return getSelectedObject(object, true);
+        } else {
+            return getSelectedObject(object.getDataSource(), true);
+        }
     }
 
     @Nullable
@@ -1567,6 +1577,28 @@ public final class DBUtils {
             throw new DBException(lastError, dataSource);
         }
         return true;
+    }
+
+
+    public static DBSInstance getObjectOwnerInstance(DBSObject object) {
+        if (object == null) {
+            return null;
+        }
+        for (DBSObject p = object; p != null; p = p.getParentObject()) {
+            if (p instanceof DBSInstance) {
+                return (DBSInstance) p;
+            }
+        }
+        DBPDataSource dataSource = object.getDataSource();
+        return dataSource == null ? null : dataSource.getDefaultInstance();
+    }
+
+    public static DBCExecutionContext getDefaultContext(DBSObject object, boolean meta) {
+        if (object == null) {
+            return null;
+        }
+        DBSInstance instance = getObjectOwnerInstance(object);
+        return instance == null ? null : instance.getDefaultContext(meta);
     }
 
     public enum UNIQ_TYPE {

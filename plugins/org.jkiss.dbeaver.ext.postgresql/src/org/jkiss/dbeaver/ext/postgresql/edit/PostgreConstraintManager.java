@@ -131,7 +131,7 @@ public class PostgreConstraintManager extends SQLConstraintManager<PostgreTableC
     }
 
     @Override
-    protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
     {
         if (command.getProperty(DBConstants.PROP_ID_DESCRIPTION) != null) {
             addConstraintCommentAction(actionList, command.getObject());

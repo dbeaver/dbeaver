@@ -153,7 +153,7 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
     @Override
     public boolean executeProcess(DBRProgressMonitor monitor, DBSDataManipulator dataManipulator) throws IOException {
 
-        DBCExecutionContext context = dataManipulator.getDataSource().getDefaultContext(true);
+        DBCExecutionContext context = DBUtils.getDefaultContext(dataManipulator, false);
         try (DBCSession session = context.openSession(monitor, DBCExecutionPurpose.USER, MockDataMessages.tools_mockdata_wizard_task_generate_data)) {
             DBCTransactionManager txnManager = DBUtils.getTransactionManager(session.getExecutionContext());
             boolean autoCommit;

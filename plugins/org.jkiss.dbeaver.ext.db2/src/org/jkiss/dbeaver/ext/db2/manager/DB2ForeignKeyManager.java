@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.ext.db2.model.dict.DB2DeleteUpdateRule;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
-import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.sql.edit.struct.SQLForeignKeyManager;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -32,7 +31,6 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.rdb.DBSForeignKeyModifyRule;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditForeignKeyPage;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -96,15 +94,9 @@ public class DB2ForeignKeyManager extends SQLForeignKeyManager<DB2TableForeignKe
                 DBSForeignKeyModifyRule updateRule = editDialog.getOnUpdateRule();
                 DB2TableUniqueKey ukConstraint = (DB2TableUniqueKey) editDialog.getUniqueConstraint();
 
-                String tableName = CommonUtils.escapeIdentifier(table.getName());
-                String targetTableName = CommonUtils.escapeIdentifier(editDialog.getUniqueConstraint().getParentObject().getName());
-
                 DB2TableForeignKey foreignKey = new DB2TableForeignKey(table, ukConstraint, deleteRule, updateRule);
 
-                String fkBaseName = String.format(CONS_FK_NAME, tableName, targetTableName);
-                String fkName = DBObjectNameCaseTransformer.transformObjectName(foreignKey, fkBaseName);
-
-                foreignKey.setName(fkName);
+                foreignKey.setName(getNewConstraintName(monitor, foreignKey));
 
                 List<DB2TableKeyColumn> columns = new ArrayList<>(editDialog.getColumns().size());
                 DB2TableKeyColumn column;
@@ -126,7 +118,7 @@ public class DB2ForeignKeyManager extends SQLForeignKeyManager<DB2TableForeignKe
     // ------
 
     @Override
-    protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
     {
         // DF: Throw exception for now
         // Will have to implement it for alter FK query optimisation + TRUST

@@ -7,7 +7,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.osgi.util.NLS;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -22,10 +22,9 @@ public class DatabaseScriptEditor extends SQLEditorBase {
     private final DBCExecutionContext executionContext;
     
     public DatabaseScriptEditor(DBSObject dbsObject, String title) {
-        DBPDataSource dataSource = dbsObject.getDataSource();
         DBCExecutionContext isolatedContext = null;
         try {
-            isolatedContext = dataSource.openIsolatedContext(new VoidProgressMonitor(), title);
+            isolatedContext = DBUtils.getObjectOwnerInstance(dbsObject).openIsolatedContext(new VoidProgressMonitor(), title);
         } catch (DBException e) {
             String message = NLS.bind("Unable to open execution context for {0}", dbsObject);
             log.error(message, e);
