@@ -60,6 +60,14 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
         initArtifactReference(null);
     }
 
+    private DriverLibraryMavenArtifact(DriverDescriptor driver, DriverLibraryMavenArtifact copyFrom) {
+        super(driver, copyFrom);
+        this.reference = copyFrom.reference;
+        this.localVersion = copyFrom.localVersion;
+        this.preferredVersion = copyFrom.preferredVersion;
+        this.ignoreDependencies = copyFrom.ignoreDependencies;
+    }
+
     private void initArtifactReference(String preferredVersion) {
         if (path.endsWith("]")) {
             int divPos = path.lastIndexOf('[');
@@ -274,6 +282,11 @@ public class DriverLibraryMavenArtifact extends DriverLibraryAbstract
             return localVersion.getArtifact().getRepository().getAuthInfo();
         }
         return null;
+    }
+
+    @Override
+    public DBPDriverLibrary copyLibrary(DriverDescriptor driverDescriptor) {
+        return new DriverLibraryMavenArtifact(driver, this);
     }
 
     protected MavenArtifactVersion resolveLocalVersion(DBRProgressMonitor monitor, boolean forceUpdate) throws IOException {

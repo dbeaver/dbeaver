@@ -580,8 +580,7 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
     @Nullable
     @Override
     public DBCExecutionContext getExecutionContext() {
-        DBPDataSource dataSource = getDataSource();
-        return dataSource == null ? null : dataSource.getDefaultContext(true);
+        return DBUtils.getDefaultContext(getObject(), true);
     }
 
     @NotNull

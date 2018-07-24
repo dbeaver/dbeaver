@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.ext.mockdata.MockDataGenerateTool;
+import org.jkiss.dbeaver.ext.mockdata.MockDataMessages;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSObject;
@@ -49,11 +50,11 @@ public class ResultSetMockDataHandler extends AbstractHandler {
         if (resultSet != null) {
             DBSDataContainer dataContainer = resultSet.getDataContainer();
             if (dataContainer == null || dataContainer.getDataSource() == null) {
-                DBeaverUI.getInstance().showError("Mock Data", "Not connected to a database");
+                DBeaverUI.getInstance().showError(MockDataMessages.tools_mockdata_message_title, MockDataMessages.tools_mockdata_error_notconnected);
                 return null;
             }
             if (!(dataContainer instanceof DBSDataManipulator)) {
-                DBeaverUI.getInstance().showError("Mock Data", "Mock Data can be generated for a table only");
+                DBeaverUI.getInstance().showError(MockDataMessages.tools_mockdata_message_title, MockDataMessages.tools_mockdata_error_tableonly);
                 return null;
             }
             selectedObjects = new ArrayList<>();

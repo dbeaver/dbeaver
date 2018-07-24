@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.sql;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPContextProvider;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 
 import java.io.File;
@@ -40,7 +41,7 @@ public class SQLScriptContext {
     @Nullable
     private final SQLScriptContext parentContext;
     @NotNull
-    private final DBCExecutionContext executionContext;
+    private final DBPContextProvider contextProvider;
     @Nullable
     private final File sourceFile;
     @NotNull
@@ -48,18 +49,18 @@ public class SQLScriptContext {
 
     public SQLScriptContext(
             @Nullable SQLScriptContext parentContext,
-            @NotNull DBCExecutionContext executionContext,
+            @NotNull DBPContextProvider contextProvider,
             @Nullable File sourceFile,
             @NotNull Writer outputWriter) {
         this.parentContext = parentContext;
-        this.executionContext = executionContext;
+        this.contextProvider = contextProvider;
         this.sourceFile = sourceFile;
         this.outputWriter = new PrintWriter(outputWriter);
     }
 
     @NotNull
     public DBCExecutionContext getExecutionContext() {
-        return executionContext;
+        return contextProvider.getExecutionContext();
     }
 
     @Nullable

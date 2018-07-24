@@ -275,7 +275,7 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                 }
                 // Add to map
                 permissionMap.put(permission.getName(), permission);
-            } else {
+            } else if (privilegeType != null) {
                 // Check for privilege was already granted for this object
                 boolean hasPriv = permission.getPermission(privilegeType) != PostgrePermission.NONE;
                 if (grant == hasPriv) {

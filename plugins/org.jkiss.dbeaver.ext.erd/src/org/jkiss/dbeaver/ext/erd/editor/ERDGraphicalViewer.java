@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -142,7 +142,7 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
     public void propertyChange(PropertyChangeEvent event)
     {
         if (event.getProperty().equals(IThemeManager.CHANGE_CURRENT_THEME)
-            || event.getProperty().equals("org.jkiss.dbeaver.erd.diagram.font"))
+            || event.getProperty().equals(ERDConstants.PROP_DIAGRAM_FONT))
         {
             applyThemeSettings();
         }
@@ -151,7 +151,7 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
     private void applyThemeSettings()
     {
         ITheme currentTheme = themeManager.getCurrentTheme();
-        Font erdFont = currentTheme.getFontRegistry().get("org.jkiss.dbeaver.erd.diagram.font");
+        Font erdFont = currentTheme.getFontRegistry().get(ERDConstants.PROP_DIAGRAM_FONT);
         if (erdFont != null) {
             this.getControl().setFont(erdFont);
         }
@@ -176,10 +176,10 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
                 List<DBSEntity> tables = new ArrayList<>();
                 for (Object child : editpart.getChildren()) {
                     if (child instanceof EntityPart) {
-                        tables.add(((EntityPart) child).getTable().getObject());
+                        tables.add(((EntityPart) child).getEntity().getObject());
                     }
                 }
-                Collections.sort(tables, DBUtils.<DBSEntity>nameComparator());
+                tables.sort(DBUtils.nameComparator());
                 Map<PaletteDrawer, List<ToolEntryTable>> toolMap = new LinkedHashMap<>();
                 for (DBSEntity table : tables) {
                     DBPDataSourceContainer container = table.getDataSource().getContainer();
@@ -322,13 +322,8 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
         {
             // Close editor only if it is simple disconnect
             // Workbench shutdown doesn't close editor
-            UIUtils.asyncExec(new Runnable() {
-                @Override
-                public void run() {
-
-                    editor.getSite().getWorkbenchWindow().getActivePage().closeEditor(editor, false);
-                }
-            });
+            UIUtils.asyncExec(() ->
+                editor.getSite().getWorkbenchWindow().getActivePage().closeEditor(editor, false));
         }
     }
 
@@ -365,7 +360,7 @@ public class ERDGraphicalViewer extends ScrollingGraphicalViewer implements IPro
             final GraphicalViewer viewer = editorPart.getViewer();
             for (Object child : editorPart.getDiagramPart().getChildren()) {
                 if (child instanceof EntityPart) {
-                    if (((EntityPart)child).getTable().getObject() == table) {
+                    if (((EntityPart)child).getEntity().getObject() == table) {
                         viewer.reveal((EditPart) child);
                         viewer.select((EditPart) child);
                         break;

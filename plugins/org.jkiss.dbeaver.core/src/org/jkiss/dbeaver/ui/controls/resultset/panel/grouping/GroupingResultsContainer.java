@@ -159,6 +159,8 @@ public class GroupingResultsContainer implements IResultSetContainer {
     public void clearGrouping() {
         initDefaultSettings();
         groupingViewer.resetDataFilter(false);
+        groupingViewer.resetHistory();
+        dataContainer.setGroupingQuery(null);
         if (!(groupingViewer.getActivePresentation() instanceof EmptyPresentation)) {
             groupingViewer.setEmptyPresentation();
         }

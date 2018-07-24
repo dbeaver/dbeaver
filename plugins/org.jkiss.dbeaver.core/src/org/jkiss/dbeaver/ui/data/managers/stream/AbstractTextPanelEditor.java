@@ -20,28 +20,66 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.text.IUndoManager;
+import org.eclipse.jface.text.TextViewer;
 import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.ui.IEditorInput;
+import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.PartInitException;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPMessageType;
+import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.impl.StringContentStorage;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.valueviewer.ValueViewerPanel;
 import org.jkiss.dbeaver.ui.data.IStreamValueEditor;
 import org.jkiss.dbeaver.ui.data.IValueController;
+import org.jkiss.dbeaver.ui.editors.StringEditorInput;
+import org.jkiss.dbeaver.ui.editors.SubEditorSite;
+import org.jkiss.dbeaver.ui.editors.content.ContentEditorInput;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 /**
 * AbstractTextPanelEditor
 */
-public abstract class AbstractTextPanelEditor implements IStreamValueEditor<StyledText>, IAdaptable {
+public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor> implements IStreamValueEditor<StyledText>, IAdaptable {
 
     public static final String PREF_TEXT_EDITOR_WORD_WRAP = "content.text.editor.word-wrap";
     public static final String PREF_TEXT_EDITOR_AUTO_FORMAT = "content.text.editor.auto-format";
 
     private static final Log log = Log.getLog(AbstractTextPanelEditor.class);
 
+    private IValueController valueController;
+    private IEditorSite subSite;
+    private EDITOR editor;
+
     @Override
-    public abstract StyledText createControl(IValueController valueController);
+    public StyledText createControl(IValueController valueController) {
+        this.valueController = valueController;
+        this.subSite = new SubEditorSite(valueController.getValueSite());
+        editor = createEditorParty(valueController);
+        try {
+            editor.init(subSite, StringEditorInput.EMPTY_INPUT);
+        } catch (PartInitException e) {
+            valueController.showMessage(e.getMessage(), DBPMessageType.ERROR);
+            return new StyledText(valueController.getEditPlaceholder(), SWT.NONE);
+        }
+        editor.createPartControl(valueController.getEditPlaceholder());
+        StyledText editorControl = editor.getEditorControl();
+        assert editorControl != null;
+        initEditorSettings(editorControl);
+        editorControl.addDisposeListener(e -> editor.releaseEditorInput());
+        return editor.getEditorControl();
+    }
+
+    protected abstract EDITOR createEditorParty(IValueController valueController);
 
     @Override
     public void contributeActions(@NotNull IContributionManager manager, @NotNull final StyledText control) throws DBCException {
@@ -81,22 +119,24 @@ public abstract class AbstractTextPanelEditor implements IStreamValueEditor<Styl
         }
     }
 
-    protected BaseTextEditor getTextEditor() {
-        return null;
+    protected EDITOR getTextEditor() {
+        return editor;
     }
 
-    protected void initEditorSettings(StyledText control) {
+    private void initEditorSettings(StyledText control) {
         boolean wwEnabled = ValueViewerPanel.getPanelSettings().getBoolean(PREF_TEXT_EDITOR_WORD_WRAP);
         if (wwEnabled != control.getWordWrap()) {
             control.setWordWrap(wwEnabled);
         }
     }
 
-    protected void applyEditorStyle() {
+    private void applyEditorStyle() {
         BaseTextEditor textEditor = getTextEditor();
         if (textEditor != null && ValueViewerPanel.getPanelSettings().getBoolean(PREF_TEXT_EDITOR_AUTO_FORMAT)) {
             try {
-                textEditor.getViewer().doOperation(ISourceViewer.FORMAT);
+                if (textEditor.getViewer().canDoOperation(ISourceViewer.FORMAT)) {
+                    textEditor.getViewer().doOperation(ISourceViewer.FORMAT);
+                }
             } catch (Exception e) {
                 log.debug("Error formatting text", e);
             }
@@ -110,8 +150,56 @@ public abstract class AbstractTextPanelEditor implements IStreamValueEditor<Styl
             if (adapter.isAssignableFrom(textEditor.getClass())) {
                 return adapter.cast(textEditor);
             }
+            if (adapter == IUndoManager.class) {
+                TextViewer textViewer = textEditor.getTextViewer();
+                if (textViewer != null && textViewer.getUndoManager() != null) {
+                    return adapter.cast(textViewer.getUndoManager());
+                }
+            }
             return textEditor.getAdapter(adapter);
         }
         return null;
     }
+
+    @Override
+    public void primeEditorValue(@NotNull DBRProgressMonitor monitor, @NotNull StyledText control, @NotNull DBDContent value) throws DBException
+    {
+        monitor.beginTask("Load text", 1);
+        try {
+            monitor.subTask("Loading text value");
+            IEditorInput sqlInput = new ContentEditorInput(valueController, null, null, monitor);
+            editor.setInput(sqlInput);
+            applyEditorStyle();
+        } catch (Exception e) {
+            throw new DBException("Error loading text value", e);
+        } finally {
+            monitor.done();
+        }
+    }
+
+    @Override
+    public void extractEditorValue(@NotNull DBRProgressMonitor monitor, @NotNull StyledText control, @NotNull DBDContent value) throws DBException
+    {
+        if (valueController.getValueType().getDataKind() == DBPDataKind.STRING) {
+            value.updateContents(
+                    monitor,
+                    new StringContentStorage(control.getText()));
+        } else {
+            monitor.beginTask("Extract text", 1);
+            try {
+                monitor.subTask("Extracting text from editor");
+                editor.doSave(RuntimeUtils.getNestedMonitor(monitor));
+                final IEditorInput editorInput = editor.getEditorInput();
+                if (editorInput instanceof ContentEditorInput) {
+                    final ContentEditorInput contentEditorInput = (ContentEditorInput) editorInput;
+                    contentEditorInput.updateContentFromFile(monitor, value);
+                }
+            } catch (Exception e) {
+                throw new DBException("Error extracting text from editor", e);
+            } finally {
+                monitor.done();
+            }
+        }
+    }
+
 }

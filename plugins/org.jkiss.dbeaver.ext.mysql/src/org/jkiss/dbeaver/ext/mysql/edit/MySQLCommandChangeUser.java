@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -68,7 +69,7 @@ public class MySQLCommandChangeUser extends DBECommandComposite<MySQLUser, UserP
     }
 
     @Override
-    public DBEPersistAction[] getPersistActions(Map<String, Object> options)
+    public DBEPersistAction[] getPersistActions(DBRProgressMonitor monitor, Map<String, Object> options)
     {
         List<DBEPersistAction> actions = new ArrayList<>();
         boolean newUser = !getObject().isPersisted();

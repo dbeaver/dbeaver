@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.text.*;
 import org.eclipse.jface.text.contentassist.*;
 import org.eclipse.jface.text.templates.Template;
+import org.eclipse.jface.text.templates.TemplateProposal;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -33,8 +34,8 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
-import org.jkiss.dbeaver.registry.sql.SQLCommandHandlerDescriptor;
-import org.jkiss.dbeaver.registry.sql.SQLCommandsRegistry;
+import org.jkiss.dbeaver.ui.editors.sql.registry.SQLCommandHandlerDescriptor;
+import org.jkiss.dbeaver.ui.editors.sql.registry.SQLCommandsRegistry;
 import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
@@ -152,12 +153,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             List<String> matchedKeywords = editor.getSyntaxManager().getDialect().getMatchedKeywords(request.wordPart);
             if (!request.simpleMode) {
                 // Sort using fuzzy match
-                Collections.sort(matchedKeywords, new Comparator<String>() {
-                    @Override
-                    public int compare(String o1, String o2) {
-                        return TextUtils.fuzzyScore(o1, request.wordPart) - TextUtils.fuzzyScore(o2, request.wordPart);
-                    }
-                });
+                matchedKeywords.sort(Comparator.comparingInt(o -> TextUtils.fuzzyScore(o, request.wordPart)));
             }
             for (String keyWord : matchedKeywords) {
                 DBPKeywordType keywordType = editor.getSyntaxManager().getDialect().getKeywordType(keyWord);
@@ -195,7 +191,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
             i++;
         }
 
-        DBSObject selectedObject = dataSource == null ? null: DBUtils.getActiveInstanceObject(dataSource);
+        DBSObject selectedObject = dataSource == null ? null: DBUtils.getActiveInstanceObject(dataSource.getDefaultInstance());
         boolean hideDups = editor.getActivePreferenceStore().getBoolean(SQLPreferenceConstants.HIDE_DUPLICATE_PROPOSALS) && selectedObject != null;
         if (hideDups) {
             for (int i = 0; i < request.proposals.size(); i++) {
@@ -256,12 +252,7 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                     null));
             }
         }
-        Collections.sort(templateProposals, new Comparator<SQLTemplateCompletionProposal>() {
-            @Override
-            public int compare(SQLTemplateCompletionProposal o1, SQLTemplateCompletionProposal o2) {
-                return o1.getDisplayString().compareTo(o2.getDisplayString());
-            }
-        });
+        templateProposals.sort(Comparator.comparing(TemplateProposal::getDisplayString));
         return templateProposals.toArray(new ICompletionProposal[templateProposals.size()]);
     }
 
@@ -388,17 +379,9 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
                 if (object == null) {
                     continue;
                 }
-                Map<Class, List<SQLCompletionProposal>> typeMap = containerMap.get(container);
-                if (typeMap == null) {
-                    typeMap = new HashMap<>();
-                    containerMap.put(container, typeMap);
-                }
+                Map<Class, List<SQLCompletionProposal>> typeMap = containerMap.computeIfAbsent(container, k -> new HashMap<>());
                 Class objectType = object instanceof DBSObjectReference ? ((DBSObjectReference) object).getObjectClass() : object.getClass();
-                List<SQLCompletionProposal> list = typeMap.get(objectType);
-                if (list == null) {
-                    list = new ArrayList<>();
-                    typeMap.put(objectType, list);
-                }
+                List<SQLCompletionProposal> list = typeMap.computeIfAbsent(objectType, k -> new ArrayList<>());
                 list.add(proposal);
             }
             for (Map.Entry<DBSObject, Map<Class, List<SQLCompletionProposal>>> entry : containerMap.entrySet()) {

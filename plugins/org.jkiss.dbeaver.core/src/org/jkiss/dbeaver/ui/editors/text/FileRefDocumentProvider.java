@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
-import org.jkiss.dbeaver.ui.editors.IPersistentStorage;
+import org.jkiss.dbeaver.runtime.IPersistentStorage;
 import org.jkiss.dbeaver.ui.editors.ProjectFileEditorInput;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;

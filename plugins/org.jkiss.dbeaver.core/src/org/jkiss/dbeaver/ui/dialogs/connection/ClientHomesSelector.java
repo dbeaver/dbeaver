@@ -25,6 +25,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Label;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.connection.DBPClientHome;
@@ -60,7 +61,8 @@ public class ClientHomesSelector
 
         selectorPanel.setLayout(new GridLayout(2, false));
 
-        UIUtils.createControlLabel(selectorPanel, title);
+        Label controlLabel = UIUtils.createControlLabel(selectorPanel, title);
+        controlLabel.setToolTipText("Local client configuration is needed for some administrative tasks like database dump/restore.");
         //label.setFont(UIUtils.makeBoldFont(label.getFont()));
         homesCombo = new Combo(selectorPanel, SWT.READ_ONLY);
         //directoryDialog = new DirectoryDialog(selectorContainer.getShell(), SWT.OPEN);

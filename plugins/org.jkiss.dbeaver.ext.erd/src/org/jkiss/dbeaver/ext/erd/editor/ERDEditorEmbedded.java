@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.ext.erd.ERDActivator;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPRefreshableObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -113,7 +112,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
         if (object == null) {
             return null;
         }
-        if (object instanceof DBPDataSourceContainer && object.getDataSource() instanceof DBSObject) {
+        if (object instanceof DBPDataSourceContainer && object.getDataSource() != null) {
             object = object.getDataSource();
         }
         return object;
@@ -136,6 +135,8 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
                 public EntityDiagram evaluate(DBRProgressMonitor monitor)
                     throws InvocationTargetException, InterruptedException
                 {
+                    // Do not refresh actual metadata. It is slow and it may corrupt diagram state
+/*
                     if (refreshMetadata && object instanceof DBPRefreshableObject) {
                         try {
                             getEditorInput().getNavigatorNode().refreshNode(monitor, ERDEditorEmbedded.this);
@@ -143,6 +144,7 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
                             log.warn("Error refreshing database metadata", e);
                         }
                     }
+*/
                     try {
                         return loadFromDatabase(monitor);
                     } catch (DBException e) {
@@ -179,11 +181,11 @@ public class ERDEditorEmbedded extends ERDEditorPart implements IDatabaseEditor,
         }
         EntityDiagram diagram;
         if (!dbObject.isPersisted()) {
-            diagram = new EntityDiagram(dbObject, "New Object");
+            diagram = new EntityDiagram(getDecorator(), dbObject, "New Object");
         } else {
-            diagram = new EntityDiagram(dbObject, dbObject.getName());
+            diagram = new EntityDiagram(getDecorator(), dbObject, dbObject.getName());
 
-            diagram.fillTables(
+            diagram.fillEntities(
                 monitor,
                 collectDatabaseTables(monitor, dbObject),
                 dbObject);

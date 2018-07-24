@@ -95,7 +95,7 @@ public abstract class JDBCObjectCache<OWNER extends DBSObject, OBJECT extends DB
             throw new DBException("Not connected to database");
         }
         try {
-            try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Load objects from " + owner.getName())) {
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, owner, "Load objects from " + owner.getName())) {
                 try (JDBCStatement dbStat = prepareObjectsStatement(session, owner)) {
                     monitor.subTask("Load " + getCacheName());
                     dbStat.setFetchSize(DBConstants.METADATA_FETCH_SIZE);

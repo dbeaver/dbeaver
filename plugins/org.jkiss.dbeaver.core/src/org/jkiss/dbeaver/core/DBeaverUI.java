@@ -108,6 +108,10 @@ public class DBeaverUI implements DBPPlatformUI {
         this.trayItem = new TrayIconHandler();
         DBUserInterface.setInstance(this);
 
+        if (DBeaverCore.isStandalone()) {
+            //Policy.setErrorSupportProvider(new ApplicationErrorSupportProvider());
+        }
+
         // Register context listener
         UIUtils.asyncExec(() -> contextListener = WorkbenchContextListener.registerInWorkbench());
         

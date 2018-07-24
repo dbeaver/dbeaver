@@ -2,7 +2,7 @@
 <?eclipse version="3.2"?>
 <!--
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -57,6 +57,7 @@
             <adapter type="org.jkiss.dbeaver.model.struct.DBSObject"/>
             <adapter type="org.jkiss.dbeaver.model.struct.DBSEntity"/>
             <adapter type="org.jkiss.dbeaver.model.preferences.DBPPropertySource"/>
+            <adapter type="org.jkiss.dbeaver.model.navigator.DBNNode"/>
         </factory>
         <factory adaptableType="org.eclipse.swt.widgets.Control" class="org.jkiss.dbeaver.ext.erd.editor.ERDEditorAdapter">
            <adapter type="org.jkiss.dbeaver.ext.erd.editor.ERDEditorPart"/>
@@ -222,6 +223,14 @@
                 value="COLOR_INFO_FOREGROUND">
             <description>%colorDefinition.org.jkiss.dbeaver.erd.diagram.entity.name.foreground.description</description>
         </colorDefinition>
+        <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.lines.foreground.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.erd"
+                id="org.jkiss.dbeaver.erd.diagram.lines.foreground"
+                value="0, 143, 207">
+            <description>%colorDefinition.org.jkiss.dbeaver.erd.diagram.lines.foreground.description</description>
+        </colorDefinition>
+
         <colorDefinition
                 label="%colorDefinition.org.jkiss.dbeaver.erd.diagram.attributes.background.label"
                 categoryId="org.jkiss.dbeaver.ui.presentation.erd"

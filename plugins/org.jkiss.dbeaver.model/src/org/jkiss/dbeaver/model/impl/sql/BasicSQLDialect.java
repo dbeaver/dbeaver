@@ -288,7 +288,7 @@ public class BasicSQLDialect implements SQLDialect {
 
     @Nullable
     @Override
-    public String getBlockHeaderString() {
+    public String[] getBlockHeaderStrings() {
         return null;
     }
 

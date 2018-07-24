@@ -17,6 +17,8 @@
 
 package org.jkiss.dbeaver.model.runtime;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 
 /**
@@ -30,7 +32,9 @@ public interface DBRBlockingObject {
      * In actual implementation this object may not block process at the moment of invocation
      * of this method. Implementor should check object's state and cancel blocking on demand.
      * @throws DBException on error
+     * @param monitor monitor
+     * @param blockThread  thread which initiated the block. Can be null.
      */
-    void cancelBlock() throws DBException;
+    void cancelBlock(@NotNull DBRProgressMonitor monitor, @Nullable Thread blockThread) throws DBException;
 
 }

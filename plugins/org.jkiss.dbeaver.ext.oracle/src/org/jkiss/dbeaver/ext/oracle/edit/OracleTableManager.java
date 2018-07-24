@@ -70,7 +70,7 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
     }
 
     @Override
-    protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
     {
         if (command.getProperties().size() > 1 || command.getProperty("comment") == null) {
             StringBuilder query = new StringBuilder("ALTER TABLE "); //$NON-NLS-1$
@@ -81,7 +81,7 @@ public class OracleTableManager extends SQLTableManager<OracleTable, OracleSchem
     }
 
     @Override
-    protected void addObjectExtraActions(List<DBEPersistAction> actions, NestedObjectCommand<OracleTable, PropertyHandler> command, Map<String, Object> options) {
+    protected void addObjectExtraActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, NestedObjectCommand<OracleTable, PropertyHandler> command, Map<String, Object> options) {
         if (command.getProperty("comment") != null) {
             actions.add(new SQLDatabasePersistAction(
                 "Comment table",

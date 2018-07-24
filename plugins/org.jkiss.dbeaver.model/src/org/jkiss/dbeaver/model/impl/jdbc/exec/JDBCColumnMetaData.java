@@ -33,8 +33,11 @@ import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Types;
 
 /**
  * JDBCColumnMetaData
@@ -273,6 +276,25 @@ public class JDBCColumnMetaData implements DBCAttributeMetaData {
     @Override
     public int getTypeID() {
         return typeID;
+    }
+
+    @NotNull
+    @Property(viewable = true, category = PROP_CATEGORY_COLUMN, order = 23)
+    public String getJdbcType() {
+        int typeID = getTypeID();
+        try {
+            for (Field field : Types.class.getFields()) {
+                if ((field.getModifiers() & Modifier.STATIC) != 0 && field.getType() == Integer.TYPE) {
+                    Integer value = (Integer) field.get(null);
+                    if (value != null && typeID == value) {
+                        return field.getName();
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.error(e);
+        }
+        return String.valueOf(typeID);
     }
 
     @Override

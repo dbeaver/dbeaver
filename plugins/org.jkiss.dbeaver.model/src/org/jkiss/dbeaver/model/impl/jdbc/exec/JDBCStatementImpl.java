@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.qm.QMUtils;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.*;
@@ -88,15 +89,10 @@ public class JDBCStatementImpl<STATEMENT extends Statement> implements JDBCState
     }
 
     @Override
-    public void cancelBlock()
+    public void cancelBlock(@NotNull DBRProgressMonitor monitor, @Nullable Thread blockThread)
         throws DBException
     {
-        try {
-            this.cancel();
-        }
-        catch (SQLException e) {
-            throw new DBException(e, connection.getDataSource());
-        }
+        getConnection().getDataSource().cancelStatementExecute(monitor, this);
     }
 
     @NotNull

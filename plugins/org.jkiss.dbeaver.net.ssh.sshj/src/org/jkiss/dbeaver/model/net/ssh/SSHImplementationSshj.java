@@ -64,7 +64,7 @@ public class SSHImplementationSshj extends SSHImplementationAbstract {
                 log.debug("Error loading known hosts", e);
             }
 
-            sshClient.connect(sshHost);
+            sshClient.connect(sshHost, sshPortNum);
 
             if (privKeyFile != null) {
                 if (!CommonUtils.isEmpty(sshPassword)) {

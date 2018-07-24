@@ -139,6 +139,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     private boolean showCelIcons = true;
     private boolean colorizeDataTypes = true;
     private boolean rightJustifyNumbers = true;
+    private IValueEditor activeInlineEditor;
 
     public SpreadsheetPresentation() {
         findReplaceTarget = new SpreadsheetFindReplaceTarget(this);
@@ -153,6 +154,32 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     DBPDataSource getDataSource() {
         DBSDataContainer dataContainer = controller.getDataContainer();
         return dataContainer == null ? null : dataContainer.getDataSource();
+    }
+
+    @Override
+    public boolean isDirty() {
+        return activeInlineEditor != null &&
+            activeInlineEditor.getControl() != null &&
+            !activeInlineEditor.getControl().isDisposed() &&
+            activeInlineEditor.getControl().isVisible() &&
+            !getController().getModel().isAttributeReadOnly(getCurrentAttribute());
+    }
+
+    @Override
+    public void applyChanges() {
+        if (activeInlineEditor != null && activeInlineEditor.getControl() != null && !activeInlineEditor.getControl().isDisposed()) {
+            IValueController valueController = (IValueController) activeInlineEditor.getControl().getData(DATA_VALUE_CONTROLLER);
+            if (valueController != null) {
+                try {
+                    Object value = activeInlineEditor.extractEditorValue();
+                    valueController.updateValue(value, true);
+                } catch (DBException e) {
+                    DBUserInterface.getInstance().showError("Error extracting editor value", null, e);
+                }
+            }
+            spreadsheet.cancelInlineEditor();
+        }
+        super.applyChanges();
     }
 
     @Override
@@ -466,7 +493,6 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     {
         try {
             if (extended) {
-                DBPDataSource dataSource = getDataSource();
                 String strValue;
                 Clipboard clipboard = new Clipboard(Display.getCurrent());
                 try {
@@ -483,7 +509,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                     return;
                 }
                 boolean overNewRow = controller.getModel().getRow(rowNum).getState() == ResultSetRow.STATE_ADDED;
-                try (DBCSession session = DBUtils.openUtilSession(new VoidProgressMonitor(), dataSource, "Advanced paste")) {
+                try (DBCSession session = DBUtils.openUtilSession(new VoidProgressMonitor(), controller.getDataContainer(), "Advanced paste")) {
 
                     String[][] newLines = parseGridLines(strValue);
                     // Create new rows on demand
@@ -820,6 +846,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 return null;
             }
             spreadsheet.cancelInlineEditor();
+            activeInlineEditor = null;
 
             placeholder = new Composite(spreadsheet, SWT.NONE);
             placeholder.setFont(spreadsheet.getFont());
@@ -865,48 +892,50 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         }
 */
 
-        final IValueEditor editor;
         try {
-            editor = valueController.getValueManager().createEditor(valueController);
+            activeInlineEditor = valueController.getValueManager().createEditor(valueController);
         }
         catch (Exception e) {
             DBUserInterface.getInstance().showError("Cannot edit value", null, e);
             return null;
         }
-        if (editor != null) {
-            editor.createControl();
+        if (activeInlineEditor != null) {
+            activeInlineEditor.createControl();
+            if (activeInlineEditor.getControl() != null) {
+                activeInlineEditor.getControl().setData(DATA_VALUE_CONTROLLER, valueController);
+            }
         }
-        if (editor instanceof IValueEditorStandalone) {
-            valueController.registerEditor((IValueEditorStandalone)editor);
-            Control editorControl = editor.getControl();
+        if (activeInlineEditor instanceof IValueEditorStandalone) {
+            valueController.registerEditor((IValueEditorStandalone) activeInlineEditor);
+            Control editorControl = activeInlineEditor.getControl();
             if (editorControl != null) {
-                editorControl.addDisposeListener(e -> valueController.unregisterEditor((IValueEditorStandalone)editor));
+                editorControl.addDisposeListener(e -> valueController.unregisterEditor((IValueEditorStandalone) activeInlineEditor));
             }
             // show dialog in separate job to avoid block
             new UIJob("Open separate editor") {
                 @Override
                 public IStatus runInUIThread(IProgressMonitor monitor)
                 {
-                    ((IValueEditorStandalone)editor).showValueEditor();
+                    ((IValueEditorStandalone) activeInlineEditor).showValueEditor();
                     return Status.OK_STATUS;
                 }
             }.schedule();
             //((IValueEditorStandalone)editor).showValueEditor();
         } else {
             // Set editable value
-            if (editor != null) {
+            if (activeInlineEditor != null) {
                 try {
-                    editor.primeEditorValue(valueController.getValue());
+                    activeInlineEditor.primeEditorValue(valueController.getValue());
                 } catch (DBException e) {
                     log.error(e);
                 }
-                editor.setDirty(false);
+                activeInlineEditor.setDirty(false);
             }
         }
         if (inline) {
-            if (editor != null) {
+            if (activeInlineEditor != null) {
                 spreadsheet.showCellEditor(placeholder);
-                return editor.getControl();
+                return activeInlineEditor.getControl();
             } else {
                 // No editor was created so just drop placeholder
                 placeholder.dispose();
@@ -1645,17 +1674,20 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         }
 
         @Override
-        public Color getCellHeaderForeground() {
+        public Color getCellHeaderForeground(Object element) {
             return cellHeaderForeground;
         }
 
         @Override
-        public Color getCellHeaderBackground() {
+        public Color getCellHeaderBackground(Object element) {
+            if (element instanceof DBDAttributeBinding && controller.isAttributeReadOnly((DBDAttributeBinding) element)) {
+                return backgroundOdd;
+            }
             return cellHeaderBackground;
         }
 
         @Override
-        public Color getCellHeaderSelectionBackground() {
+        public Color getCellHeaderSelectionBackground(Object element) {
             return cellHeaderSelectionBackground;
         }
 
@@ -1710,7 +1742,8 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             }
 
 /*
-            ResultSetRow row = (ResultSetRow) (!recordMode ?  element : curRow);
+            boolean recordMode = controller.isRecordMode();
+            ResultSetRow row = (ResultSetRow) (!recordMode ?  element : controller.getCurrentRow());
             boolean odd = row != null && row.getVisualNumber() % 2 == 0;
             if (!recordMode && odd && showOddRows) {
                 return backgroundOdd;
@@ -1779,9 +1812,13 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 final String name = attributeBinding.getName();
                 final String typeName = attributeBinding.getFullTypeName();
                 final String description = attributeBinding.getDescription();
-                return CommonUtils.isEmpty(description) ?
+                String tip = CommonUtils.isEmpty(description) ?
                     name + ": " + typeName :
                     name + ": " + typeName + "\n" + description;
+                if (controller.isAttributeReadOnly(attributeBinding)) {
+                    tip += " (read-only)";
+                }
+                return tip;
             }
             return null;
         }

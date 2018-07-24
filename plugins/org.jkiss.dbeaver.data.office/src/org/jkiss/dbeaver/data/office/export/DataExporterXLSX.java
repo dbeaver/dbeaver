@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDAttributeBindingMeta;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
+import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
@@ -294,7 +295,10 @@ public class DataExporterXLSX extends StreamExporterAbstract {
 
         columns = getSite().getAttributes();
         showDescription = session.getDataSource().getContainer().getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_SHOW_DESCRIPTION);
+    }
 
+    private void printHeader(DBCResultSet resultSet, Worksheet wsh) throws DBException {
+        boolean hasDescription = false;
         if (showDescription) {
             // Read bindings to extract column descriptions
             boolean bindingsOk = true;
@@ -312,18 +316,9 @@ public class DataExporterXLSX extends StreamExporterAbstract {
                 if (getSite().getSource() instanceof DBSEntity) {
                     sourceEntity = (DBSEntity) getSite().getSource();
                 }
-                ResultSetUtils.bindAttributes(session, sourceEntity, null, bindings, null);
+                ResultSetUtils.bindAttributes(resultSet.getSession(), sourceEntity, resultSet, bindings, null);
             }
-        }
-	        /*if (printHeader) { FIXME
-	            printHeader();
-	        }*/
 
-    }
-
-    private void printHeader(Worksheet wsh) {
-        boolean hasDescription = false;
-        if (showDescription) {
             for (DBDAttributeBinding column : columns) {
                 if (!CommonUtils.isEmpty(column.getDescription())) {
                     hasDescription = true;
@@ -392,23 +387,23 @@ public class DataExporterXLSX extends StreamExporterAbstract {
     }
 
 
-    private Worksheet createSheet(Object colValue) {
+    private Worksheet createSheet(DBCResultSet resultSet, Object colValue) throws DBException {
         Worksheet w = new Worksheet(wb.createSheet(), colValue, 0);
         if (printHeader) {
-            printHeader(w);
+            printHeader(resultSet, w);
         }
         return w;
     }
 
-    private Worksheet getWsh(Object[] row) {
+    private Worksheet getWsh(DBCResultSet resultSet, Object[] row) throws DBException {
         Object colValue = ((splitByCol <= 0) || (splitByCol >= columns.size())) ? "" : row[splitByCol];
         Worksheet w = worksheets.get(colValue);
         if (w == null) {
-            w = createSheet(colValue);
+            w = createSheet(resultSet, colValue);
             worksheets.put(w.getColumnVal(), w);
         } else {
             if (w.getCurrentRow() >= splitByRowCount) {
-                w = createSheet(colValue);
+                w = createSheet(resultSet, colValue);
                 worksheets.put(w.getColumnVal(), w);
             }
         }
@@ -416,10 +411,10 @@ public class DataExporterXLSX extends StreamExporterAbstract {
     }
 
     @Override
-    public void exportRow(DBCSession session, Object[] row)
+    public void exportRow(DBCSession session, DBCResultSet resultSet, Object[] row)
         throws DBException, IOException {
 
-        Worksheet wsh = getWsh(row);
+        Worksheet wsh = getWsh(resultSet, row);
 
         Row rowX = wsh.getSh().createRow(wsh.getCurrentRow());
 
@@ -499,7 +494,7 @@ public class DataExporterXLSX extends StreamExporterAbstract {
         throws DBException, IOException
     {
         if (rowCount == 0) {
-            exportRow(null, new Object[columns.size()]);
+            exportRow(null, null, new Object[columns.size()]);
         }
     }
 

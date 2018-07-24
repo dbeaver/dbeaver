@@ -69,9 +69,9 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
         }
         final PostgreDataType rawType = dataType.getElementType(new VoidProgressMonitor());
         if (rawType != null) {
-            sql.append(rawType.getTypeName());
+            sql.append(rawType.getFullyQualifiedName(DBPEvaluationContext.DDL));
         } else {
-            sql.append(dataType.getTypeName());
+            sql.append(dataType.getFullyQualifiedName(DBPEvaluationContext.DDL));
         }
         switch (dataType.getDataKind()) {
             case STRING:
@@ -192,7 +192,7 @@ public class PostgreTableColumnManager extends SQLTableColumnManager<PostgreTabl
     }
 
     @Override
-    protected void addObjectModifyActions(List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
+    protected void addObjectModifyActions(DBRProgressMonitor monitor, List<DBEPersistAction> actionList, ObjectChangeCommand command, Map<String, Object> options)
     {
         final PostgreAttribute column = command.getObject();
         // PostgreSQL can't perform all changes by one query

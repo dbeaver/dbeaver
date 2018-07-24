@@ -17,8 +17,6 @@
 
 package org.jkiss.dbeaver.model;
 
-import org.jkiss.dbeaver.DBException;
-
 /**
  * Object with order.
  * Supports reordering

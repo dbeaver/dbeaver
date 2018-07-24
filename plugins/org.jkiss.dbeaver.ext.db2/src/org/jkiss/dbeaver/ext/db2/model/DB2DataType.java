@@ -365,7 +365,7 @@ public class DB2DataType extends DB2Object<DBSObject> implements DBSDataType, DB
 
     @Nullable
     @Override
-    @Property(viewable = false, editable = false)
+    @Property(viewable = false, editable = false, multiline = true)
     public String getDescription()
     {
         return remarks;

@@ -28,6 +28,7 @@ import org.eclipse.ui.IStorageEditorInput;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.runtime.IPersistentStorage;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.IOUtils;

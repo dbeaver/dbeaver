@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  * Copyright (C) 2011-2012 Eugene Fradkin (eugene.fradkin@gmail.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -63,8 +63,12 @@ public class ERDMessages extends NLS {
 	public static String erd_editor_control_action_print_diagram;
 	public static String erd_editor_control_action_configuration;
 	//ERD editor action item control
-	
-	
+
+	public static String erd_tool_create_connection;
+	public static String erd_tool_create_connection_tip;
+	public static String erd_tool_create_note;
+	public static String erd_tool_create_note_tip;
+	public static String erd_tool_create_default;
 	
 	private ERDMessages() {
 	}

@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractObjectReference;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -108,20 +109,17 @@ public class OracleStructureAssistant implements DBSStructureAssistant
             }
             // Sort objects. Put ones in the current schema first
             final OracleSchema activeSchema = dataSource.getDefaultObject();
-            Collections.sort(objects, new Comparator<DBSObjectReference>() {
-                @Override
-                public int compare(DBSObjectReference o1, DBSObjectReference o2) {
-                    if (CommonUtils.equalObjects(o1.getContainer(), o2.getContainer())) {
-                        return o1.getName().compareTo(o2.getName());
-                    }
-                    if (o1.getContainer() == null || o1.getContainer() == activeSchema) {
-                        return -1;
-                    }
-                    if (o2.getContainer() == null || o2.getContainer() == activeSchema) {
-                        return 1;
-                    }
-                    return o1.getContainer().getName().compareTo(o2.getContainer().getName());
+            objects.sort((o1, o2) -> {
+                if (CommonUtils.equalObjects(o1.getContainer(), o2.getContainer())) {
+                    return o1.getName().compareTo(o2.getName());
                 }
+                if (o1.getContainer() == null || o1.getContainer() == activeSchema) {
+                    return -1;
+                }
+                if (o2.getContainer() == null || o2.getContainer() == activeSchema) {
+                    return 1;
+                }
+                return o1.getContainer().getName().compareTo(o2.getContainer().getName());
             });
 
             return objects;
@@ -215,6 +213,8 @@ public class OracleStructureAssistant implements DBSStructureAssistant
                     oracleObjectTypes.add(OracleObjectType.VIEW);
                     oracleObjectTypes.add(OracleObjectType.MATERIALIZED_VIEW);
                 }
+            } else if (DBSProcedure.class.isAssignableFrom(objectType.getTypeClass())) {
+                oracleObjectTypes.add(OracleObjectType.FUNCTION);
             }
         }
         for (OracleObjectType objectType : oracleObjectTypes) {

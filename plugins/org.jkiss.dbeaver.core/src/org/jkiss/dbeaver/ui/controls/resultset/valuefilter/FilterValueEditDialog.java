@@ -16,21 +16,14 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.valuefilter;
 
-import java.util.ArrayList;
-
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.ColumnLabelProvider;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.TableItem;
-import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
@@ -48,6 +41,8 @@ import org.jkiss.dbeaver.ui.controls.resultset.ResultSetValueController;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
+
+import java.util.ArrayList;
 
 public class FilterValueEditDialog extends BaseDialog{
 	
@@ -136,7 +131,7 @@ public class FilterValueEditDialog extends BaseDialog{
 		
 
 
-        ViewerColumnController columnController = new ViewerColumnController(getClass().getName(), handler.table);
+        ViewerColumnController columnController = new ViewerColumnController(getClass().getName(), handler.tableViewer);
         columnController.addColumn("Value", "Value", SWT.LEFT, true, true, new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
@@ -155,7 +150,7 @@ public class FilterValueEditDialog extends BaseDialog{
 	        new Action("Select &All") {
 	            @Override
 	            public void run() {
-                    for (TableItem item : handler.table.getTable().getItems()) {
+                    for (TableItem item : handler.tableViewer.getTable().getItems()) {
                         item.setChecked(true);
                     }
 	            }
@@ -163,7 +158,7 @@ public class FilterValueEditDialog extends BaseDialog{
 	        new Action("Select &None") {
 	            @Override
 	            public void run() {
-                    for (TableItem item : handler.table.getTable().getItems()) {
+                    for (TableItem item : handler.tableViewer.getTable().getItems()) {
                         item.setChecked(false);
                     }
 	            }
@@ -210,11 +205,11 @@ public class FilterValueEditDialog extends BaseDialog{
     @Override
     protected void okPressed()
     {
-        if (handler.table != null) {
+        if (handler.tableViewer != null) {
             java.util.List<Object> values = new ArrayList<>();
                         
             for (DBDLabelValuePair item : handler.getMultiValues()) {
-                if (  ((TableItem)handler.table.testFindItem(item)).getChecked()) {
+                if (  ((TableItem)handler.tableViewer.testFindItem(item)).getChecked()) {
                     values.add(item.getValue());
                 }
             }

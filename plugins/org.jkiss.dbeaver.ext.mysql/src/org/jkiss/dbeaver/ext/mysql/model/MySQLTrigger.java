@@ -132,7 +132,7 @@ public class MySQLTrigger extends AbstractTrigger implements MySQLSourceObject, 
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException
     {
         if (body == null) {
-            try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read trigger declaration")) {
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read trigger declaration")) {
                 try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW CREATE TRIGGER " + getFullyQualifiedName(DBPEvaluationContext.DDL))) {
                     try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                         if (dbResult.next()) {

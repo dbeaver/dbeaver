@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -31,7 +31,9 @@ import org.eclipse.jface.bindings.TriggerSequence;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.*;
+import org.eclipse.ui.commands.ICommandImageService;
 import org.eclipse.ui.commands.ICommandService;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.keys.IBindingService;
@@ -98,7 +100,18 @@ public class ActionUtils
         @Nullable String name,
         @Nullable DBPImage image,
         @Nullable String toolTip,
-        boolean showText)
+        boolean showText) {
+        return makeCommandContribution(serviceLocator, commandId, CommandContributionItem.STYLE_PUSH, name, image, toolTip, showText);
+    }
+
+    public static CommandContributionItem makeCommandContribution(
+            @NotNull IServiceLocator serviceLocator,
+            @NotNull String commandId,
+            int style,
+            @Nullable String name,
+            @Nullable DBPImage image,
+            @Nullable String toolTip,
+            boolean showText)
     {
         final CommandContributionItemParameter contributionParameters = new CommandContributionItemParameter(
             serviceLocator,
@@ -111,7 +124,7 @@ public class ActionUtils
             name,
             null,
             toolTip,
-            CommandContributionItem.STYLE_PUSH,
+            style,
             null,
             false);
         if (showText) {
@@ -152,6 +165,16 @@ public class ActionUtils
             }
         }
         return "???";
+    }
+
+    @Nullable
+    public static ImageDescriptor findCommandImage(String commandId)
+    {
+        ICommandImageService commandService = PlatformUI.getWorkbench().getService(ICommandImageService.class);
+        if (commandService != null) {
+            return commandService.getImageDescriptor(commandId);
+        }
+        return null;
     }
 
     @Nullable
@@ -302,4 +325,12 @@ public class ActionUtils
         }
     }
 
+    public static void fireCommandRefresh(final String commandID)
+    {
+        // Update commands
+        final ICommandService commandService = PlatformUI.getWorkbench().getService(ICommandService.class);
+        if (commandService != null) {
+            UIUtils.asyncExec(() -> commandService.refreshElements(commandID, null));
+        }
+    }
 }

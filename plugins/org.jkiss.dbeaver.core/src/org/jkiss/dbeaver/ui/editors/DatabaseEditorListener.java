@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ui.editors;
 
 import org.eclipse.ui.IWorkbenchPage;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.DBNEvent;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -69,7 +68,6 @@ public class DatabaseEditorListener implements INavigatorListener
     public void nodeChanged(final DBNEvent event)
     {
         if (isValuableNode(event.getNode())) {
-            Runnable runner = null;
             boolean closeEditor = false;
             if (event.getAction() == DBNEvent.Action.REMOVE) {
                 closeEditor = true;

@@ -72,7 +72,7 @@ public class MySQLTable extends MySQLTableBase
         @Property(viewable = true, editable = true, updatable = true, order = 4) public long getAutoIncrement() { return autoIncrement; }
         @Property(viewable = false, editable = true, updatable = true, listProvider = CharsetListProvider.class, order = 5) public MySQLCharset getCharset() { return charset; }
         @Property(viewable = false, editable = true, updatable = true, listProvider = CollationListProvider.class, order = 6) public MySQLCollation getCollation() { return collation; }
-        @Property(viewable = true, editable = true, updatable = true, order = 100) public String getDescription() { return description; }
+        @Property(viewable = true, editable = true, updatable = true, multiline = true, order = 100) public String getDescription() { return description; }
 
         @Property(category = CATEGORY_STATISTICS, viewable = true, order = 10) public long getRowCount() { return rowCount; }
         @Property(category = CATEGORY_STATISTICS, viewable = false, order = 11) public long getAvgRowLength() { return avgRowLength; }
@@ -271,7 +271,7 @@ public class MySQLTable extends MySQLTableBase
             return;
         }
         MySQLDataSource dataSource = getDataSource();
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Load table status")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table status")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SHOW TABLE STATUS FROM " + DBUtils.getQuotedIdentifier(getContainer()) + " LIKE '" + getName() + "'")) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
@@ -321,7 +321,7 @@ public class MySQLTable extends MySQLTableBase
         if (!isPersisted()) {
             return fkList;
         }
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Load table relations")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table relations")) {
             Map<String, MySQLTableForeignKey> fkMap = new HashMap<>();
             Map<String, MySQLTableConstraint> pkMap = new HashMap<>();
             JDBCDatabaseMetaData metaData = session.getMetaData();

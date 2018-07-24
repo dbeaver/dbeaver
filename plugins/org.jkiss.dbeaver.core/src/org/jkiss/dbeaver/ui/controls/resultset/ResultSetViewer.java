@@ -30,10 +30,7 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.*;
-import org.eclipse.swt.events.FocusEvent;
-import org.eclipse.swt.events.FocusListener;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.RGB;
@@ -121,6 +118,8 @@ public class ResultSetViewer extends Viewer
 
     private static final String SETTINGS_SECTION_PRESENTATIONS = "presentations";
 
+    private static final String TOOLBAR_CONTRIBUTION_ID = "toolbar:org.jkiss.dbeaver.ui.controls.resultset.status";
+
     static final String CONTROL_ID = ResultSetViewer.class.getSimpleName();
 
     private static final DecimalFormat ROW_COUNT_FORMAT = new DecimalFormat("###,###,###,###,###,##0");
@@ -156,6 +155,7 @@ public class ResultSetViewer extends Viewer
 
     private final Map<ResultSetPresentationDescriptor, PresentationSettings> presentationSettings = new HashMap<>();
     private final Map<String, IResultSetPanel> activePanels = new HashMap<>();
+    private final Map<String, ToolBarManager> activeToolBars = new HashMap<>();
 
     @NotNull
     private final IResultSetContainer container;
@@ -208,18 +208,18 @@ public class ResultSetViewer extends Viewer
 
         loadPresentationSettings();
 
-        this.viewerPanel = UIUtils.createPlaceholder(parent, 1);
-        this.viewerPanel.setData(CONTROL_ID, this);
-        UIUtils.setHelp(this.viewerPanel, IHelpContextIds.CTX_RESULT_SET_VIEWER);
-        this.viewerPanel.setRedraw(false);
-
         {
             IPreferenceStore preferenceStore = EditorUtils.getEditorsPreferenceStore();
             String bgRGB = preferenceStore.getString(AbstractTextEditor.PREFERENCE_COLOR_BACKGROUND);
             String fgRGB = preferenceStore.getString(AbstractTextEditor.PREFERENCE_COLOR_FOREGROUND);
-            defaultBackground = CommonUtils.isEmpty(bgRGB) ? viewerPanel.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND) : UIUtils.getSharedColor(bgRGB);
-            defaultForeground = CommonUtils.isEmpty(fgRGB) ? viewerPanel.getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND) : UIUtils.getSharedColor(fgRGB);
+            defaultBackground = CommonUtils.isEmpty(bgRGB) ? parent.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND) : UIUtils.getSharedColor(bgRGB);
+            defaultForeground = CommonUtils.isEmpty(fgRGB) ? parent.getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND) : UIUtils.getSharedColor(fgRGB);
         }
+
+        this.viewerPanel = UIUtils.createPlaceholder(parent, 1);
+        this.viewerPanel.setData(CONTROL_ID, this);
+        UIUtils.setHelp(this.viewerPanel, IHelpContextIds.CTX_RESULT_SET_VIEWER);
+        this.viewerPanel.setRedraw(false);
 
         try {
             this.autoRefreshControl = new AutoRefreshControl(
@@ -593,8 +593,14 @@ public class ResultSetViewer extends Viewer
             child.dispose();
         }
         if (panelFolder != null) {
+            CTabItem curItem = panelFolder.getSelection();
             for (CTabItem panelItem : panelFolder.getItems()) {
-                panelItem.dispose();
+                if (panelItem != curItem) {
+                    panelItem.dispose();
+                }
+            }
+            if (curItem != null) {
+                curItem.dispose();
             }
         }
 
@@ -615,17 +621,20 @@ public class ResultSetViewer extends Viewer
         // Activate panels
         if (supportsPanels()) {
             boolean panelsVisible = false;
+            boolean verticalLayout = false;
             int[] panelWeights = new int[]{700, 300};
 
             if (activePresentationDescriptor != null) {
                 PresentationSettings settings = getPresentationSettings();
                 panelsVisible = settings.panelsVisible;
+                verticalLayout = settings.verticalLayout;
                 if (settings.panelRatio > 0) {
                     panelWeights = new int[] {1000 - settings.panelRatio, settings.panelRatio};
                 }
                 activateDefaultPanels(settings);
             }
             showPanels(panelsVisible, false);
+            viewerSash.setOrientation(verticalLayout ? SWT.VERTICAL : SWT.HORIZONTAL);
             viewerSash.setWeights(panelWeights);
         }
 
@@ -718,6 +727,7 @@ public class ResultSetViewer extends Viewer
             settings.activePanelId = pSection.get("activePanelId");
             settings.panelRatio = pSection.getInt("panelRatio");
             settings.panelsVisible = pSection.getBoolean("panelsVisible");
+            settings.verticalLayout = pSection.getBoolean("verticalLayout");
             presentationSettings.put(presentation, settings);
         }
     }
@@ -735,19 +745,22 @@ public class ResultSetViewer extends Viewer
     }
 
     private void savePresentationSettings() {
-        IDialogSettings pSections = ResultSetUtils.getViewerSettings(SETTINGS_SECTION_PRESENTATIONS);
-        for (Map.Entry<ResultSetPresentationDescriptor, PresentationSettings> pEntry : presentationSettings.entrySet()) {
-            if (pEntry.getKey() == null) {
-                continue;
-            }
-            String pId = pEntry.getKey().getId();
-            PresentationSettings settings = pEntry.getValue();
-            IDialogSettings pSection = UIUtils.getSettingsSection(pSections, pId);
+        if ((decorator.getDecoratorFeatures() & IResultSetDecorator.FEATURE_PANELS) != 0) {
+            IDialogSettings pSections = ResultSetUtils.getViewerSettings(SETTINGS_SECTION_PRESENTATIONS);
+            for (Map.Entry<ResultSetPresentationDescriptor, PresentationSettings> pEntry : presentationSettings.entrySet()) {
+                if (pEntry.getKey() == null) {
+                    continue;
+                }
+                String pId = pEntry.getKey().getId();
+                PresentationSettings settings = pEntry.getValue();
+                IDialogSettings pSection = UIUtils.getSettingsSection(pSections, pId);
 
-            pSection.put("enabledPanelIds", CommonUtils.joinStrings(",", settings.enabledPanelIds));
-            pSection.put("activePanelId", settings.activePanelId);
-            pSection.put("panelRatio", settings.panelRatio);
-            pSection.put("panelsVisible", settings.panelsVisible);
+                pSection.put("enabledPanelIds", CommonUtils.joinStrings(",", settings.enabledPanelIds));
+                pSection.put("activePanelId", settings.activePanelId);
+                pSection.put("panelRatio", settings.panelRatio);
+                pSection.put("panelsVisible", settings.panelsVisible);
+                pSection.put("verticalLayout", settings.verticalLayout);
+            }
         }
     }
 
@@ -799,19 +812,24 @@ public class ResultSetViewer extends Viewer
         activePanels.put(id, panel);
 
         // Create control and tab item
-        Control panelControl = panel.createContents(activePresentation, panelFolder);
+        panelFolder.setRedraw(false);
+        try {
+            Control panelControl = panel.createContents(activePresentation, panelFolder);
 
-        boolean firstPanel = panelFolder.getItemCount() == 0;
-        CTabItem panelTab = new CTabItem(panelFolder, SWT.CLOSE);
-        panelTab.setData(id);
-        panelTab.setText(panelDescriptor.getLabel());
-        panelTab.setImage(DBeaverIcons.getImage(panelDescriptor.getIcon()));
-        panelTab.setToolTipText(panelDescriptor.getDescription());
-        panelTab.setControl(panelControl);
-        UIUtils.disposeControlOnItemDispose(panelTab);
+            boolean firstPanel = panelFolder.getItemCount() == 0;
+            CTabItem panelTab = new CTabItem(panelFolder, SWT.CLOSE);
+            panelTab.setData(id);
+            panelTab.setText(panelDescriptor.getLabel());
+            panelTab.setImage(DBeaverIcons.getImage(panelDescriptor.getIcon()));
+            panelTab.setToolTipText(panelDescriptor.getDescription());
+            panelTab.setControl(panelControl);
+            UIUtils.disposeControlOnItemDispose(panelTab);
 
-        if (setActive || firstPanel) {
-            panelFolder.setSelection(panelTab);
+            if (setActive || firstPanel) {
+                panelFolder.setSelection(panelTab);
+            }
+        } finally {
+            panelFolder.setRedraw(true);
         }
 
         presentationSettings.enabledPanelIds.add(id);
@@ -925,35 +943,18 @@ public class ResultSetViewer extends Viewer
         }
     }
 
+    void toggleVerticalLayout() {
+        PresentationSettings settings = getPresentationSettings();
+        settings.verticalLayout = !settings.verticalLayout;
+        viewerSash.setOrientation(settings.verticalLayout ? SWT.VERTICAL : SWT.HORIZONTAL);
+        savePresentationSettings();
+    }
+
     private List<IContributionItem> fillPanelsMenu() {
         List<IContributionItem> items = new ArrayList<>();
 
         for (final ResultSetPanelDescriptor panel : availablePanels) {
-            Action panelAction = new Action(panel.getLabel(), Action.AS_CHECK_BOX) {
-                {
-                    setToolTipText(panel.getDescription());
-                    // Icons turns menu into mess - checkboxes are much better
-                    //setImageDescriptor(DBeaverIcons.getImageDescriptor(panel.getIcon()));
-                }
-                @Override
-                public boolean isChecked() {
-                    return activePanels.containsKey(panel.getId());
-                }
-
-                @Override
-                public void run() {
-                    if (isPanelsVisible() && isChecked()) {
-                        CTabItem panelTab = getPanelTab(panel.getId());
-                        if (panelTab != null) {
-                            panelTab.dispose();
-                            removePanel(panel.getId());
-                        }
-                    } else {
-                        activatePanel(panel.getId(), true, true);
-                    }
-                }
-            };
-            items.add(new ActionContributionItem(panelAction));
+            items.add(new ActionContributionItem(new PanelToggleAction(panel)));
         }
         return items;
     }
@@ -1031,6 +1032,22 @@ public class ResultSetViewer extends Viewer
     @Override
     public <T> T getAdapter(Class<T> adapter)
     {
+        if (UIUtils.isUIThread()) {
+            if (UIUtils.hasFocus(filtersPanel)) {
+                T result = filtersPanel.getAdapter(adapter);
+                if (result != null) {
+                    return result;
+                }
+            } else if (UIUtils.hasFocus(panelFolder)) {
+                IResultSetPanel visiblePanel = getVisiblePanel();
+                if (visiblePanel instanceof IAdaptable) {
+                    T adapted = ((IAdaptable) visiblePanel).getAdapter(adapter);
+                    if (adapted != null) {
+                        return adapted;
+                    }
+                }
+            }
+        }
         if (activePresentation != null) {
             if (adapter.isAssignableFrom(activePresentation.getClass())) {
                 return adapter.cast(activePresentation);
@@ -1041,13 +1058,6 @@ public class ResultSetViewer extends Viewer
                 if (adapted != null) {
                     return adapted;
                 }
-            }
-        }
-        IResultSetPanel visiblePanel = getVisiblePanel();
-        if (visiblePanel instanceof IAdaptable) {
-            T adapted = ((IAdaptable) visiblePanel).getAdapter(adapter);
-            if (adapted != null) {
-                return adapted;
             }
         }
         if (adapter == IFindReplaceTarget.class) {
@@ -1198,11 +1208,11 @@ public class ResultSetViewer extends Viewer
 
         {
             ToolBarManager addToolbar = new ToolBarManager(SWT.FLAT | SWT.HORIZONTAL | SWT.RIGHT);
-            addToolbar.add(new Separator(TOOLBAR_GROUP_PRESENTATIONS));
-            addToolbar.add(new Separator(TOOLBAR_GROUP_ADDITIONS));
+            addToolbar.add(new GroupMarker(TOOLBAR_GROUP_PRESENTATIONS));
+            addToolbar.add(new GroupMarker(TOOLBAR_GROUP_ADDITIONS));
             final IMenuService menuService = getSite().getService(IMenuService.class);
             if (menuService != null) {
-                menuService.populateContributionManager(addToolbar, "toolbar:org.jkiss.dbeaver.ui.controls.resultset.status");
+                menuService.populateContributionManager(addToolbar, TOOLBAR_CONTRIBUTION_ID);
             }
             addToolbar.update(true);
             addToolbar.createControl(statusBar);
@@ -1604,7 +1614,7 @@ public class ResultSetViewer extends Viewer
     @Override
     public boolean isDirty()
     {
-        return model.isDirty();
+        return model.isDirty() || (activePresentation != null && activePresentation.isDirty());
     }
 
     @Override
@@ -1679,7 +1689,7 @@ public class ResultSetViewer extends Viewer
         fillFiltersMenu(curAttribute, menuManager);
         showContextMenuAtCursor(menuManager);
     }
-    
+
     @Override
     public void showDistinctFilter(DBDAttributeBinding curAttribute) {
         showFiltersDistinctMenu(curAttribute, false);
@@ -1928,13 +1938,28 @@ public class ResultSetViewer extends Viewer
                     "layout"); //$NON-NLS-1$
                 layoutMenu.add(new ToggleModeAction());
                 layoutMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGGLE_PANELS));
+                layoutMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_TOGGLE_LAYOUT));
                 layoutMenu.add(ActionUtils.makeCommandContribution(site, ResultSetCommandHandler.CMD_SWITCH_PRESENTATION));
                 {
-                    layoutMenu.add(new Separator());
+                    MenuManager panelsMenu = new MenuManager(
+                        "Panels",
+                        DBeaverIcons.getImageDescriptor(UIIcon.PANEL_CUSTOMIZE),
+                        "result_panels"); //$NON-NLS-1$
+                    layoutMenu.add(panelsMenu);
                     for (IContributionItem item : fillPanelsMenu()) {
-                        layoutMenu.add(item);
+                        panelsMenu.add(item);
                     }
                 }
+/*
+                {
+                    MenuManager toolBarsMenu = new MenuManager(
+                        "Toolbars",
+                        null,
+                        "result_toolbars"); //$NON-NLS-1$
+                    layoutMenu.add(toolBarsMenu);
+                    toolBarsMenu.add(new ToolbarToggleAction("sample", "Sample"));
+                }
+*/
                 manager.add(layoutMenu);
 
             }
@@ -2293,6 +2318,8 @@ public class ResultSetViewer extends Viewer
             constraint.setOperator(DBCLogicalOperator.EQUALS);
             constraint.setValue(keyValue);
         }
+        // Save cur data filter in state
+        curState.filter = new DBDDataFilter(model.getDataFilter());
         navigateEntity(monitor, newWindow, targetEntity, constraints);
     }
 
@@ -2569,12 +2596,9 @@ public class ResultSetViewer extends Viewer
 
         if (container.isReadyToRun() && dataContainer != null && dataPumpJob == null) {
             int segmentSize = getSegmentMaxRows();
-            Runnable finalizer = new Runnable() {
-                @Override
-                public void run() {
-                    if (activePresentation.getControl() != null && !activePresentation.getControl().isDisposed()) {
-                        activePresentation.formatData(true);
-                    }
+            Runnable finalizer = () -> {
+                if (activePresentation.getControl() != null && !activePresentation.getControl().isDisposed()) {
+                    activePresentation.formatData(true);
                 }
             };
 
@@ -2805,6 +2829,7 @@ public class ResultSetViewer extends Viewer
                         if (control1.isDisposed()) {
                             return;
                         }
+                        model.setUpdateInProgress(false);
                         final boolean metadataChanged = model.isMetadataChanged();
                         if (error != null) {
                             setStatus(error.getMessage(), DBPMessageType.ERROR);
@@ -2836,13 +2861,12 @@ public class ResultSetViewer extends Viewer
                                 redrawData(true, false);
                             }
                         }
-                        model.setUpdateInProgress(false);
                         if (job.getStatistics() == null || !job.getStatistics().isEmpty()) {
                             if (error == null) {
                                 // Update status (update execution statistics)
                                 updateStatusMessage();
                             }
-                            updateFiltersText(error == null);
+                            updateFiltersText(true);
                             updateToolbar();
                             fireResultSetLoad();
                         }
@@ -2889,6 +2913,7 @@ public class ResultSetViewer extends Viewer
      */
     private boolean applyChanges(@Nullable final DBRProgressMonitor monitor, @Nullable final ResultSetPersister.DataUpdateListener listener)
     {
+        UIUtils.syncExec(() -> getActivePresentation().applyChanges());
         try {
             final ResultSetPersister persister = createDataPersister(false);
             final ResultSetPersister.DataUpdateListener applyListener = success -> {
@@ -3573,15 +3598,15 @@ public class ResultSetViewer extends Viewer
             }
         }
     }
-    
-    
+
+
     private class FilterByValueAction extends Action {
     	private final DBCLogicalOperator operator;
         private final FilterByAttributeType type;
         private final DBDAttributeBinding attribute;
         private final Object value;
-        
-        
+
+
         FilterByValueAction(DBCLogicalOperator operator, FilterByAttributeType type, DBDAttributeBinding attribute, Object value)
         {
             super(attribute.getName() + " = " + CommonUtils.truncateString(String.valueOf(value), 64), null);
@@ -3591,11 +3616,11 @@ public class ResultSetViewer extends Viewer
             this.value = value;
         }
 
-        
+
         @Override
         public void run()
         {
-            
+
             if (operator.getArgumentCount() != 0 && value == null) {
                 return;
             }
@@ -3608,8 +3633,8 @@ public class ResultSetViewer extends Viewer
             }
         }
     }
-    
-    
+
+
 
     private class FilterResetAttributeAction extends Action {
         private final DBDAttributeBinding attribute;
@@ -3936,6 +3961,67 @@ public class ResultSetViewer extends Viewer
         String activePanelId;
         int panelRatio;
         boolean panelsVisible;
+        boolean verticalLayout;
+    }
+
+    private class PanelToggleAction extends Action {
+        private final ResultSetPanelDescriptor panel;
+
+        public PanelToggleAction(ResultSetPanelDescriptor panel) {
+            super(panel.getLabel(), Action.AS_CHECK_BOX);
+            this.panel = panel;
+            setToolTipText(panel.getDescription());
+            // Icons turns menu into mess - checkboxes are much better
+            //setImageDescriptor(DBeaverIcons.getImageDescriptor(panel.getIcon()));
+        }
+
+        @Override
+        public boolean isChecked() {
+            return activePanels.containsKey(panel.getId());
+        }
+
+        @Override
+        public void run() {
+            if (isPanelsVisible() && isChecked()) {
+                CTabItem panelTab = getPanelTab(panel.getId());
+                if (panelTab != null) {
+                    panelTab.dispose();
+                    removePanel(panel.getId());
+                }
+            } else {
+                activatePanel(panel.getId(), true, true);
+            }
+        }
+    }
+
+    private class ToolbarToggleAction extends Action {
+        private final String toolbarId;
+
+        public ToolbarToggleAction(String toolbarId, String toolbarLabel) {
+            super(toolbarLabel, Action.AS_CHECK_BOX);
+            this.toolbarId = toolbarId;
+            //setToolTipText(panel.getDescription());
+        }
+
+        @Override
+        public boolean isChecked() {
+            return activePanels.containsKey(toolbarId);
+        }
+
+        @Override
+        public void run() {
+/*
+            if (isPanelsVisible() && isChecked()) {
+                CTabItem panelTab = getPanelTab(panel.getId());
+                if (panelTab != null) {
+                    panelTab.dispose();
+                    removePanel(panel.getId());
+                }
+            } else {
+                activatePanel(panel.getId(), true, true);
+            }
+*/
+        }
     }
 
     /*

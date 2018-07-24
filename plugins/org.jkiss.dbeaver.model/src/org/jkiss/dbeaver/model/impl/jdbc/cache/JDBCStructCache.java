@@ -89,7 +89,7 @@ public abstract class JDBCStructCache<OWNER extends DBSObject, OBJECT extends DB
         if (dataSource == null) {
             throw new DBException("Not connected to database");
         }
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Load child objects")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, owner, "Load child objects")) {
             Map<OBJECT, List<CHILD>> objectMap = new HashMap<>();
 
             // Load columns

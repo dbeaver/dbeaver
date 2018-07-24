@@ -55,7 +55,7 @@ public class GenericTrigger implements DBSTrigger, GenericScriptObject
 
     @Nullable
     @Override
-    @Property(viewable = true, order = 100)
+    @Property(viewable = true, multiline = true, order = 100)
     public String getDescription()
     {
         return description;

@@ -786,7 +786,7 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
         @Override
         public JDBCStatement prepareLookupStatement(@NotNull JDBCSession session, @NotNull PostgreSchema owner, @Nullable PostgreProcedure object, @Nullable String objectName) throws SQLException {
             JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT p.oid,p.*,d.description\n" +
+                "SELECT p.oid,p.*,pg_catalog.pg_get_expr(p.proargdefaults, 0) as arg_defaults,d.description\n" +
                     "FROM pg_catalog.pg_proc p\n" +
                     "LEFT OUTER JOIN pg_catalog.pg_description d ON d.objoid=p.oid\n" +
                     "WHERE p.pronamespace=?" +

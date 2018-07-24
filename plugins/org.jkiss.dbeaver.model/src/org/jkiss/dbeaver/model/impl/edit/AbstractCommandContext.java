@@ -150,7 +150,7 @@ public abstract class AbstractCommandContext implements DBECommandContext {
                     if (!cmd.executed) {
                         // Persist changes
                         //if (CommonUtils.isEmpty(cmd.persistActions)) {
-                            DBEPersistAction[] persistActions = cmd.command.getPersistActions(options);
+                            DBEPersistAction[] persistActions = cmd.command.getPersistActions(monitor, options);
                             if (!ArrayUtils.isEmpty(persistActions)) {
                                 cmd.persistActions = new ArrayList<>(persistActions.length);
                                 for (DBEPersistAction action : persistActions) {
@@ -261,12 +261,14 @@ public abstract class AbstractCommandContext implements DBECommandContext {
     }
 
     @Override
-    public void resetChanges()
+    public void resetChanges(boolean undoCommands)
     {
         synchronized (commands) {
             try {
-                while (!commands.isEmpty()) {
-                    undoCommand();
+                if (undoCommands) {
+                    while (!commands.isEmpty()) {
+                        undoCommand();
+                    }
                 }
                 clearUndidCommands();
                 clearCommandQueues();

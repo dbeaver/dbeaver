@@ -81,7 +81,7 @@ public class ExasolUser extends ExasolGrantee
 	}
 
 	@Override
-	@Property(viewable = true, updatable=true, editable=true, order = 100)
+	@Property(viewable = true, updatable=true, editable=true, multiline = true, order = 100)
 	public String getDescription()
 	{
 		return this.description;

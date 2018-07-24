@@ -77,7 +77,7 @@ public class ExasolView extends ExasolTableBase implements ExasolSourceObject {
 
 
     @Override
-    @Property(viewable = true, editable = false, updatable = false, order = 40)
+    @Property(viewable = true, editable = false, updatable = false, multiline = true, order = 40)
     public String getDescription() {
         return super.getDescription();
     }
@@ -97,7 +97,7 @@ public class ExasolView extends ExasolTableBase implements ExasolSourceObject {
     {
         if (!hasRead)
         {
-            JDBCSession session = DBUtils.openMetaSession(new VoidProgressMonitor(), getDataSource(), "Read Table Details");
+            JDBCSession session = DBUtils.openMetaSession(new VoidProgressMonitor(), this, "Read Table Details");
             try (JDBCStatement stmt = session.createStatement())
             {
                 String sql = String.format("SELECT VIEW_OWNER,VIEW_TEXT FROM SYS.EXA_ALL_VIEWS WHERE VIEW_SCHEMA = '%s' and VIEW_NAME = '%s'",

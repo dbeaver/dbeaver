@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.model.struct.rdb.DBSPackage;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
 
 import java.sql.ResultSet;
@@ -42,7 +43,7 @@ import java.util.Map;
  * GenericProcedure
  */
 public class MySQLPackage
-    implements DBPScriptObject, DBPScriptObjectExt, DBSObjectContainer, DBPRefreshableObject, DBSProcedureContainer, DBPQualifiedObject
+    implements DBPScriptObject, DBPScriptObjectExt, DBSObjectContainer, DBPRefreshableObject, DBSProcedureContainer, DBSPackage, DBPQualifiedObject
 {
     private MySQLCatalog catalog;
     private String name;
@@ -182,7 +183,7 @@ public class MySQLPackage
     }
 
     private String readSource(DBRProgressMonitor monitor, boolean isBody) throws DBCException {
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read package declaration")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read package declaration")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement("SHOW CREATE PACKAGE" + (isBody ? " BODY" : "") + " " + getFullyQualifiedName(DBPEvaluationContext.DML))) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     if (dbResult.next()) {

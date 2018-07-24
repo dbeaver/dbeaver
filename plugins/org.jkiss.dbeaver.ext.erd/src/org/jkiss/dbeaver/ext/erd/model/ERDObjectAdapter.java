@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,10 +20,12 @@ import org.eclipse.core.runtime.IAdapterFactory;
 import org.eclipse.gef.EditPart;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.DBPQualifiedObject;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 
 /**
  * ERD object adapter
@@ -34,17 +36,28 @@ public class ERDObjectAdapter implements IAdapterFactory {
     }
 
     @Override
-    public Object getAdapter(Object adaptableObject, Class adapterType) {
-        if (DBPObject.class.isAssignableFrom(adapterType)) {
+    public <T> T getAdapter(Object adaptableObject, Class<T> adapterType) {
+        if (DBNNode.class == adapterType) {
+            Object model = ((EditPart) adaptableObject).getModel();
+            if (model instanceof ERDObject) {
+                Object object = ((ERDObject<?>) model).getObject();
+                if (object instanceof DBSObject) {
+                    DBNDatabaseNode node = NavigatorUtils.getNodeByObject((DBSObject) object);
+                    if (node != null) {
+                        return adapterType.cast(node);
+                    }
+                }
+            }
+        } else if (DBPObject.class.isAssignableFrom(adapterType)) {
             if (adaptableObject instanceof EditPart) {
                 Object model = ((EditPart) adaptableObject).getModel();
                 if (model != null && adapterType.isAssignableFrom(model.getClass())) {
-                    return model;
+                    return adapterType.cast(model);
                 }
                 if (model instanceof ERDObject) {
                     Object object = ((ERDObject<?>) model).getObject();
                     if (object != null && adapterType.isAssignableFrom(object.getClass())) {
-                        return object;
+                        return adapterType.cast(object);
                     }
                 }
             }
@@ -52,7 +65,7 @@ public class ERDObjectAdapter implements IAdapterFactory {
             if (adaptableObject instanceof EditPart) {
                 Object model = ((EditPart) adaptableObject).getModel();
                 if (model instanceof ERDObject) {
-                    return ((ERDObject) model).getAdapter(adapterType);
+                    return ((ERDObject<?>) model).getAdapter(adapterType);
                 }
             }
         }

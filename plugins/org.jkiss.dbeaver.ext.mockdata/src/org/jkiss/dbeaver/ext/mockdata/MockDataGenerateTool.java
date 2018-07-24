@@ -54,7 +54,7 @@ public class MockDataGenerateTool implements IExternalTool {
                     return;
                 }
                 if (mockDataSettings.isRemoveOldData()) {
-                    if (!UIUtils.confirmAction(getShell(), MockDataMessages.tools_mockdata_wizard_title, MockDataMessages.tools_mockdata_confirm_delete_old_data_message)) {
+                    if (!UIUtils.confirmAction(getShell(), MockDataMessages.tools_mockdata_wizard_title, MockDataMessages.tools_mockdata_wizard_page_settings_confirm_delete_old_data_message)) {
                         return;
                     }
                 }
@@ -78,7 +78,7 @@ public class MockDataGenerateTool implements IExternalTool {
             private boolean validateProperties(IWizardPage currentPage) {
                 if (currentPage instanceof MockDataWizardPageSettings) {
                     if (!((MockDataWizardPageSettings) currentPage).validateProperties()) {
-                        this.setErrorMessage("All numeric properties should be positive.");
+                        this.setErrorMessage(MockDataMessages.tools_mockdata_wizard_negative_numeric_error);
                         return true;
                     }
                 }

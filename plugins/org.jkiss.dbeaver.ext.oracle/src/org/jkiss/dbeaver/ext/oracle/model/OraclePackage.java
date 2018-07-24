@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.DBSObjectState;
+import org.jkiss.dbeaver.model.struct.rdb.DBSPackage;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureContainer;
 import org.jkiss.utils.CommonUtils;
 
@@ -47,7 +48,7 @@ import java.util.*;
  * GenericProcedure
  */
 public class OraclePackage extends OracleSchemaObject
-    implements OracleSourceObject, DBPScriptObjectExt, DBSObjectContainer, DBPRefreshableObject, DBSProcedureContainer
+    implements OracleSourceObject, DBPScriptObjectExt, DBSObjectContainer, DBSPackage, DBPRefreshableObject, DBSProcedureContainer
 {
     private final ProceduresCache proceduresCache = new ProceduresCache();
     private boolean valid;

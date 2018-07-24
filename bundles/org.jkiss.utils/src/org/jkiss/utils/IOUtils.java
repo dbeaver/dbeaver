@@ -31,6 +31,8 @@ public final class IOUtils {
 
     public static final int DEFAULT_BUFFER_SIZE = 16384;
 
+    private static final boolean USE_NIO_STREAMS = false;
+
     public static void close(Closeable closeable) {
         try {
             closeable.close();
@@ -52,9 +54,13 @@ public final class IOUtils {
     }
 
     public static void fastCopy(final InputStream src, final OutputStream dest, int bufferSize) throws IOException {
-        final ReadableByteChannel inputChannel = Channels.newChannel(src);
-        final WritableByteChannel outputChannel = Channels.newChannel(dest);
-        fastCopy(inputChannel, outputChannel, bufferSize);
+        if (USE_NIO_STREAMS) {
+            final ReadableByteChannel inputChannel = Channels.newChannel(src);
+            final WritableByteChannel outputChannel = Channels.newChannel(dest);
+            fastCopy(inputChannel, outputChannel, bufferSize);
+        } else {
+            copyStream(src, dest, bufferSize);
+        }
     }
 
     public static void fastCopy(final ReadableByteChannel src, final WritableByteChannel dest, int bufferSize) throws IOException {

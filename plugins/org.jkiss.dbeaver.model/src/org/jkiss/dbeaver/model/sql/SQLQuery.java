@@ -35,6 +35,7 @@ import net.sf.jsqlparser.statement.select.SelectItem;
 import net.sf.jsqlparser.statement.update.Update;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
@@ -58,16 +59,19 @@ public class SQLQuery implements SQLScriptElement {
     private String originalText;
     @NotNull
     private String text;
-    private final int offset;
-    private final int length;
+    private int offset;
+    private int length;
     private Object data;
     private int resultsOffset = -1;
     private int resultsMaxRows = -1;
+    @Nullable
+    private List<SQLQueryParameter> parameters;
+
+    private Throwable parseError;
+    private boolean parsed = false;
     @NotNull
     private SQLQueryType type;
-    @Nullable
     private Statement statement;
-    private List<SQLQueryParameter> parameters;
     private SingleTableMeta singleTableMeta;
     private List<SQLSelectItem> selectItems;
     private String queryTitle;
@@ -100,8 +104,31 @@ public class SQLQuery implements SQLScriptElement {
         this.originalText = this.text = text;
         this.offset = offset;
         this.length = length;
+        this.type = SQLQueryType.UNKNOWN;
 
+        // Extract query title
+        queryTitle = null;
+        final Matcher matcher = QUERY_TITLE_PATTERN.matcher(text);
+        if (matcher.find()) {
+            queryTitle = matcher.group(1);
+        }
+    }
+
+    public DBPDataSource getDataSource() {
+        return dataSource;
+    }
+
+    private void parseQuery() {
+        if (parsed) {
+            return;
+        }
+        parsed = true;
         try {
+            if (CommonUtils.isEmpty(text)) {
+                this.statement = null;
+                this.parseError = new DBException("Empty query");
+                return;
+            }
             statement = CCJSqlParserUtil.parse(text);
             if (statement instanceof Select) {
                 type = SQLQueryType.SELECT;
@@ -156,13 +183,8 @@ public class SQLQuery implements SQLScriptElement {
             }
         } catch (Throwable e) {
             this.type = SQLQueryType.UNKNOWN;
+            this.parseError = e;
             //log.debug("Error parsing SQL query [" + query + "]:" + CommonUtils.getRootCause(e).getMessage());
-        }
-        // Extract query title
-        queryTitle = null;
-        final Matcher matcher = QUERY_TITLE_PATTERN.matcher(text);
-        if (matcher.find()) {
-            queryTitle = matcher.group(1);
         }
     }
 
@@ -189,6 +211,7 @@ public class SQLQuery implements SQLScriptElement {
      * @return true is this query is a plain select
      */
     public boolean isPlainSelect() {
+        parseQuery();
         if (statement instanceof Select && ((Select) statement).getSelectBody() instanceof PlainSelect) {
             PlainSelect selectBody = (PlainSelect) ((Select) statement).getSelectBody();
             return selectBody.getFromItem() != null &&
@@ -237,7 +260,12 @@ public class SQLQuery implements SQLScriptElement {
 
     @Nullable
     public Statement getStatement() {
+        parseQuery();
         return statement;
+    }
+
+    public Throwable getParseError() {
+        return parseError;
     }
 
     public List<SQLQueryParameter> getParameters() {
@@ -249,9 +277,17 @@ public class SQLQuery implements SQLScriptElement {
         return offset;
     }
 
+    public void setOffset(int offset) {
+        this.offset = offset;
+    }
+
     public int getLength()
     {
         return length;
+    }
+
+    public void setLength(int length) {
+        this.length = length;
     }
 
     /**
@@ -267,12 +303,13 @@ public class SQLQuery implements SQLScriptElement {
     }
 
     @NotNull
-    public SQLQueryType getType()
-    {
+    public SQLQueryType getType() {
+        parseQuery();
         return type;
     }
 
     public DBCEntityMetaData getSingleSource() {
+        parseQuery();
         return singleTableMeta;
     }
 
@@ -311,6 +348,7 @@ public class SQLQuery implements SQLScriptElement {
     }
 
     public boolean isDeleteUpdateDangerous() {
+        parseQuery();
         if (statement == null) {
             return false;
         }

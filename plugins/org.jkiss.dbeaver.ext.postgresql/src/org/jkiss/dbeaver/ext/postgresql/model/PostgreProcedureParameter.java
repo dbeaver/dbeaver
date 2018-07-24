@@ -35,6 +35,7 @@ public class PostgreProcedureParameter implements DBSProcedureParameter, DBSAttr
     private int ordinalPosition;
     private PostgreDataType dataType;
     private DBSProcedureParameterKind parameterKind;
+    private String defaultValue;
 
     public PostgreProcedureParameter(
         PostgreProcedure procedure,
@@ -145,5 +146,14 @@ public class PostgreProcedureParameter implements DBSProcedureParameter, DBSAttr
     @Override
     public long getMaxLength() {
         return dataType.getMaxLength();
+    }
+
+    @Property(viewable = true, order = 5)
+    public String getDefaultValue() {
+        return defaultValue;
+    }
+
+    public void setDefaultValue(String defaultValue) {
+        this.defaultValue = defaultValue;
     }
 }

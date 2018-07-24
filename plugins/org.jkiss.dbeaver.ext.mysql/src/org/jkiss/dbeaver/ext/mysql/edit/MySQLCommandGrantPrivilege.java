@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.Map;
 
@@ -56,9 +57,9 @@ public class MySQLCommandGrantPrivilege extends DBECommandAbstract<MySQLUser> {
     }
 
     @Override
-    public DBEPersistAction[] getPersistActions(Map<String, Object> options)
+    public DBEPersistAction[] getPersistActions(DBRProgressMonitor monitor, Map<String, Object> options)
     {
-        String privName = privilege.getName();
+        String privName = privilege.getFixedPrivilegeName();
         String grantScript = "GRANT " + privName + //$NON-NLS-1$
             " ON " + getObjectName() + //$NON-NLS-1$
             " TO " + getObject().getFullName() + ""; //$NON-NLS-1$ //$NON-NLS-2$

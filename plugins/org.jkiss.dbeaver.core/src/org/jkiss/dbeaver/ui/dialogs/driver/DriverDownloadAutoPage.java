@@ -18,7 +18,6 @@ package org.jkiss.dbeaver.ui.dialogs.driver;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.jface.dialogs.ErrorDialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.osgi.util.NLS;
@@ -38,6 +37,7 @@ import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.UIConfirmation;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -214,7 +214,7 @@ class DriverDownloadAutoPage extends DriverDownloadPage {
         //DataSourceProviderRegistry.getInstance().saveDrivers();
     }
 
-    public static class DownloadErrorDialog extends ErrorDialog {
+    public static class DownloadErrorDialog extends StandardErrorDialog {
 
         DownloadErrorDialog(
                 Shell parentShell,

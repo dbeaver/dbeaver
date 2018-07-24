@@ -17,8 +17,14 @@
 package org.jkiss.dbeaver.ext.postgresql.model;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
+import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
@@ -30,6 +36,9 @@ import java.util.Map;
  */
 public class PostgreMaterializedView extends PostgreViewBase
 {
+    private boolean withData;
+    private long tablespaceId;
+
     public PostgreMaterializedView(PostgreSchema catalog) {
         super(catalog);
     }
@@ -39,6 +48,16 @@ public class PostgreMaterializedView extends PostgreViewBase
         ResultSet dbResult)
     {
         super(catalog, dbResult);
+        this.withData = JDBCUtils.safeGetBoolean(dbResult, "relispopulated");
+        this.tablespaceId = JDBCUtils.safeGetLong(dbResult, "reltablespace");
+    }
+
+    public boolean isWithData() {
+        return withData;
+    }
+
+    public void setWithData(boolean withData) {
+        this.withData = withData;
     }
 
     @Override
@@ -64,5 +83,18 @@ public class PostgreMaterializedView extends PostgreViewBase
     public String getViewType() {
         return "MATERIALIZED VIEW";
     }
+
+    @Property(viewable = true, editable = true, updatable = true, order = 20, listProvider = PostgreTableBase.TablespaceListProvider.class)
+    public PostgreTablespace getTablespace(DBRProgressMonitor monitor) throws DBException {
+        if (tablespaceId == 0) {
+            return getDatabase().getDefaultTablespace(monitor);
+        }
+        return PostgreUtils.getObjectById(monitor, getDatabase().tablespaceCache, getDatabase(), tablespaceId);
+    }
+
+    public void setTablespace(PostgreTablespace tablespace) {
+        this.tablespaceId = tablespace.getObjectId();
+    }
+
 
 }

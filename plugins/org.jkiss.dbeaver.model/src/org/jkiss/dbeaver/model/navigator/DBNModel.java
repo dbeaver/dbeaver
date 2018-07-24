@@ -231,7 +231,6 @@ public class DBNModel implements IResourceChangeListener {
     /**
      * Find node by path.
      * Deprecated - use getNodeByPath with project parameter
-     * @throws DBException
      */
     @Nullable
     public DBNNode getNodeByPath(@NotNull DBRProgressMonitor monitor, @NotNull String path) throws DBException {
@@ -618,6 +617,7 @@ public class DBNModel implements IResourceChangeListener {
 
         @Override
         protected IStatus run(IProgressMonitor monitor) {
+            Thread.currentThread().setName("Database navigator events processor");
             while (!platform.isShuttingDown()) {
                 RuntimeUtils.pause(100);
                 final INavigatorListener[] realListeners;
@@ -637,13 +637,10 @@ public class DBNModel implements IResourceChangeListener {
                 }
 
                 try {
-                    DBUserInterface.getInstance().executeInUI(new Runnable() {
-                        @Override
-                        public void run() {
-                            for (int i = 0; i < realEvents.length; i++) {
-                                for (INavigatorListener listener : listenersCopy) {
-                                    listener.nodeChanged(realEvents[i]);
-                                }
+                    DBUserInterface.getInstance().executeInUI(() -> {
+                        for (int i = 0; i < realEvents.length; i++) {
+                            for (INavigatorListener listener : listenersCopy) {
+                                listener.nodeChanged(realEvents[i]);
                             }
                         }
                     });

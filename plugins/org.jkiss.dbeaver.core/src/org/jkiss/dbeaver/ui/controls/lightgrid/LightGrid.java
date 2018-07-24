@@ -166,7 +166,7 @@ public abstract class LightGrid extends Canvas {
     private boolean cellRowSelectedOnLastMouseDown;
     private boolean cellColumnSelectedOnLastMouseDown;
 
-    private boolean headerColumnDragStarted;
+    private boolean headerColumnDragStarted, rowHeaderDragStarted;
 
     private GridColumn shiftSelectionAnchorColumn;
 
@@ -225,6 +225,7 @@ public abstract class LightGrid extends Canvas {
     private boolean hoveringOnColumnSorter = false;
     private boolean hoveringOnColumnFilter = false;
     private boolean hoveringOnLink = false;
+    private boolean hoveringOnRowHeader = false;
 
     private GridColumn columnBeingSorted;
     private GridColumn columnBeingFiltered;
@@ -236,6 +237,8 @@ public abstract class LightGrid extends Canvas {
     private int hoveringItem;
     private GridColumn hoveringColumn;
     private GridColumn draggingColumn;
+    private Integer hoveringRow;
+    private Integer draggingRow;
 
     /**
      * String-based detail of what is being hovered over in a cell. This allows
@@ -2039,6 +2042,21 @@ public abstract class LightGrid extends Canvas {
         }
     }
 
+    private void handleHoverOnRowHeader(int x, int y) {
+        hoveringRow = null;
+        draggingRow = null;
+
+        if ((!rowHeaderVisible || y > headerHeight) && x <= rowHeaderWidth) {
+            hoveringOnRowHeader = true;
+            int row = getRow(new Point(x, y));
+            if (row != -1) {
+                hoveringRow = row;
+            }
+        } else {
+            hoveringOnRowHeader = false;
+        }
+    }
+
     /**
      * Returns the cell at the given point in the receiver or null if no such
      * cell exists. The point is in the coordinate system of the receiver.
@@ -2772,9 +2790,15 @@ public abstract class LightGrid extends Canvas {
                         return;
                     }
                 }
+            } else if (hoveringOnRowHeader && hoveringRow != null) {
+                if (e.button == 1 && selectedRows.containsKey(hoveringRow) && dragDetect(e)) {
+                    rowHeaderDragStarted = true;
+                    return;
+                }
             }
         }
         headerColumnDragStarted = false;
+        rowHeaderDragStarted = false;
 
         GridColumn col = null;
         if (row >= 0) {
@@ -3243,6 +3267,9 @@ public abstract class LightGrid extends Canvas {
 
         if (columnHeadersVisible) {
             handleHoverOnColumnHeader(x, y);
+        }
+        if (!hoveringOnHeader && rowHeaderVisible) {
+            handleHoverOnRowHeader(x, y);
         }
     }
 
@@ -4229,7 +4256,7 @@ public abstract class LightGrid extends Canvas {
 
     private void drawEmptyColumnHeader(GC gc, int x, int y, int width, int height)
     {
-        gc.setBackground(getContentProvider().getCellHeaderBackground());
+        gc.setBackground(getContentProvider().getCellHeaderBackground(null));
 
         gc.fillRectangle(
             x, 
@@ -4240,11 +4267,11 @@ public abstract class LightGrid extends Canvas {
 
     private void drawEmptyRowHeader(GC gc, int x, int y, int width, int height)
     {
-        gc.setBackground(getContentProvider().getCellHeaderBackground());
+        gc.setBackground(getContentProvider().getCellHeaderBackground(null));
 
         gc.fillRectangle(x, y, width, height + 1);
 
-        gc.setForeground(getContentProvider().getCellHeaderForeground());
+        gc.setForeground(getContentProvider().getCellHeaderForeground(null));
 
         gc.drawLine(
             x + width - 1,
@@ -4282,7 +4309,7 @@ public abstract class LightGrid extends Canvas {
 
     private void drawTopLeftCell(GC gc, int x, int y, int width, int height) {
         int sortOrder = getContentProvider().getSortOrder(null);
-        gc.setBackground(getContentProvider().getCellHeaderBackground());
+        gc.setBackground(getContentProvider().getCellHeaderBackground(null));
 
         gc.fillRectangle(
             x,
@@ -4290,7 +4317,7 @@ public abstract class LightGrid extends Canvas {
             width - 1,
             height + 1);
 
-        gc.setForeground(getContentProvider().getCellHeaderForeground());
+        gc.setForeground(getContentProvider().getCellHeaderForeground(null));
 
         gc.drawLine(
             x + width - 1,
@@ -4332,13 +4359,21 @@ public abstract class LightGrid extends Canvas {
 
             @Override
             public void dragStart(DragSourceEvent event) {
-                if (hoveringColumn == null || !headerColumnDragStarted ||
-                    (lastDragEndTime > 0 && System.currentTimeMillis() - lastDragEndTime < 100))
-                {
+                if (lastDragEndTime > 0 && System.currentTimeMillis() - lastDragEndTime < 100) {
                     event.doit = false;
                 } else {
-                    draggingColumn = hoveringColumn;
-                    Rectangle columnBounds = hoveringColumn.getBounds();
+                    Rectangle columnBounds;
+                    if (headerColumnDragStarted && hoveringColumn != null) {
+                        draggingColumn = hoveringColumn;
+                        columnBounds = hoveringColumn.getBounds();
+                    } else if (rowHeaderDragStarted && hoveringRow != null) {
+                        draggingRow = hoveringRow;
+                        int rowFromTop = hoveringRow - getTopIndex();
+                        columnBounds = new Rectangle(0, rowFromTop * getItemHeight(), getRowHeaderWidth(), getItemHeight());
+                    } else {
+                        event.doit = false;
+                        return;
+                    }
                     GC gc = new GC(LightGrid.this);
                     dragImage = new Image(Display.getCurrent(), columnBounds.width, columnBounds.height);
                     gc.copyArea(
@@ -4376,11 +4411,45 @@ public abstract class LightGrid extends Canvas {
                             event.data = getLabelProvider().getText(draggingColumn.getElement());
                         }
                     }
+                } else if (draggingRow != null) {
+                    if (GridColumnTransfer.INSTANCE.isSupportedType(event.dataType)) {
+                        List<Object> elements = new ArrayList<>();
+                        if (isDragSingleRow()) {
+                            elements.add(getRowElement(draggingRow));
+                        } else {
+                            for (Integer row : selectedRows.keySet()) {
+                                elements.add(getRowElement(row));
+                            }
+                        }
+                        event.data = elements;
+                    } else if (TextTransfer.getInstance().isSupportedType(event.dataType)) {
+                        List<GridColumn> columns = selectedColumns;
+                        if (columns.isEmpty()) {
+                            columns = LightGrid.this.columns;
+                        }
+                        Set<Integer> rows = selectedRows.keySet();
+                        if (rows.isEmpty()) {
+                            rows = Collections.singleton(draggingRow);
+                        }
+
+                        StringBuilder text = new StringBuilder();
+                        for (Integer row : rows) {
+                            if (text.length() > 0) text.append("\n");
+                            for (int i = 0; i < columns.size(); i++) {
+                                GridColumn column = columns.get(i);
+                                String cellText = getContentProvider().getCellText(column.getElement(), getRowElement(row));
+                                if (i > 0) text.append(", ");
+                                text.append(cellText);
+                            }
+                        }
+                        event.data = text.toString();
+                    }
                 }
             }
             @Override
             public void dragFinished(DragSourceEvent event) {
                 draggingColumn = null;
+                draggingRow = null;
                 if (dragImage != null) {
                     UIUtils.dispose(dragImage);
                     dragImage = null;
@@ -4486,6 +4555,9 @@ public abstract class LightGrid extends Canvas {
         return draggingColumn != null && !selectedColumns.contains(draggingColumn);
     }
 
+    private boolean isDragSingleRow() {
+        return draggingRow != null && !selectedRows.containsKey(draggingRow);
+    }
 
     public final static class GridColumnTransfer extends LocalObjectTransfer<List<Object>> {
 

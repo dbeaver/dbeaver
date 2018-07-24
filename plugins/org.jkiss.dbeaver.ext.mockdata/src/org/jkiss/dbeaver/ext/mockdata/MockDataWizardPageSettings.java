@@ -94,7 +94,7 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
             };
 
             Composite entityPlaceholder = UIUtils.createPlaceholder(composite, 2);
-            this.entityNameText = UIUtils.createLabelText(entityPlaceholder, "Entity", "", SWT.NONE | SWT.READ_ONLY);
+            this.entityNameText = UIUtils.createLabelText(entityPlaceholder, MockDataMessages.tools_mockdata_wizard_page_settings_text_entity, "", SWT.NONE | SWT.READ_ONLY);
             GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
             gd.widthHint = 230;
             gd.verticalIndent = 5;
@@ -115,7 +115,7 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
             removeOldDataCheck.addSelectionListener(changeListener);
 
             this.rowsText = UIUtils.createLabelText(
-                    settingsGroup, "Rows ", String.valueOf(mockDataSettings.getRowsNumber()), SWT.BORDER,
+                    settingsGroup, MockDataMessages.tools_mockdata_wizard_page_settings_combo_rows, String.valueOf(mockDataSettings.getRowsNumber()), SWT.BORDER,
                     new GridData(110, SWT.DEFAULT));
             rowsText.addSelectionListener(changeListener);
             rowsText.addVerifyListener(UIUtils.getLongVerifyListener(rowsText));
@@ -128,7 +128,7 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
         }
 
         {
-            Group generatorsGroup = UIUtils.createControlGroup(composite, "Generators", 5, GridData.FILL_BOTH, 0);
+            Group generatorsGroup = UIUtils.createControlGroup(composite, MockDataMessages.tools_mockdata_wizard_page_settings_group_generators, 5, GridData.FILL_BOTH, 0);
             GridData gd = new GridData(GridData.FILL_BOTH);
             gd.verticalIndent = 5;
             generatorsGroup.setLayoutData(gd);
@@ -139,12 +139,12 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
             placeholder.setLayoutData(gd);
 
             Button autoAssignButton = new Button(placeholder, SWT.PUSH);
-            autoAssignButton.setText("Auto assign generators");
+            autoAssignButton.setText(MockDataMessages.tools_mockdata_wizard_page_settings_button_autoassign);
             autoAssignButton.setImage(DBeaverIcons.getImage(UIIcon.OBJ_REFRESH));
             autoAssignButton.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    if (UIUtils.confirmAction(getShell(), MockDataMessages.tools_mockdata_wizard_title, "The generators will be assigned automatically. Proceed?")) {
+                    if (UIUtils.confirmAction(getShell(), MockDataMessages.tools_mockdata_wizard_title, MockDataMessages.tools_mockdata_wizard_page_settings_button_autoassign_confirm)) {
                         autoAssignGenerators();
                     }
                 }
@@ -207,12 +207,12 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
 
             TableViewerColumn attributeColumn = new TableViewerColumn(generatorsTableViewer, SWT.LEFT);
             attributeColumn.setLabelProvider(labelProvider);
-            attributeColumn.getColumn().setText("Attribute");
+            attributeColumn.getColumn().setText(MockDataMessages.tools_mockdata_wizard_page_settings_generatorselector_attribute);
 
             TableViewerColumn generatorColumn = new TableViewerColumn(generatorsTableViewer, SWT.LEFT);
             generatorColumn.setLabelProvider(labelProvider);
             TableColumn column = generatorColumn.getColumn();
-            column.setText("Generator");
+            column.setText(MockDataMessages.tools_mockdata_wizard_page_settings_generatorselector_generator);
 
             generatorColumn.setEditingSupport(new EditingSupport(generatorsTableViewer) {
                 @Override
@@ -317,7 +317,7 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
             generatorDescriptionLink.setLayoutData(gd);
 
             Button resetButton = new Button(labelCombo, SWT.PUSH);
-            resetButton.setText("Reset");
+            resetButton.setText(MockDataMessages.tools_mockdata_wizard_page_settings_button_reset);
             resetButton.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
@@ -338,7 +338,7 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
             propsEditor.getControl().setLayoutData(gd);
 
             noGeneratorInfoLabel = UIUtils.createInfoLabel(composite,
-                    "Generators for the red highlighted attributes aren't found. So, no data will be generated for them.");
+                    MockDataMessages.tools_mockdata_wizard_page_settings_button_info_notfound);
             //noGeneratorInfoLabel.setForeground(generatorsTableViewer.getDisplay().getSystemColor(SWT.COLOR_RED));
             gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
             gd.horizontalSpan = 2;
@@ -437,7 +437,7 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
             event.type = SWT.Selection;
             table.notifyListeners(SWT.Selection, event);
         } else {
-            noGeneratorInfoLabel.setText("No attributes in the table");
+            noGeneratorInfoLabel.setText(MockDataMessages.tools_mockdata_wizard_page_settings_button_info_noattributes);
             noGeneratorInfoLabel.setVisible(true);
         }
 
@@ -536,8 +536,8 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
                 generatorDescriptionLink.setVisible(true);
             }
         } else {
-            generatorCombo.setItems(new String[] {"Not found"});
-            generatorCombo.setText("Not found");
+            generatorCombo.setItems(new String[] {MockDataMessages.tools_mockdata_wizard_page_settings_notfound});
+            generatorCombo.setText(MockDataMessages.tools_mockdata_wizard_page_settings_notfound);
             generatorCombo.setEnabled(false);
             generatorDescriptionLabel.setText("");
         }

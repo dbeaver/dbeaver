@@ -344,9 +344,11 @@ public class Spreadsheet extends LightGrid implements Listener {
     {
         Control oldEditor = tableEditor.getEditor();
         if (oldEditor != null) {
-            oldEditor.dispose();
+            if (!oldEditor.isDisposed()) {
+                oldEditor.dispose();
+                UIUtils.asyncExec(this::setFocus);
+            }
             tableEditor.setEditor(null);
-            this.setFocus();
         }
     }
 

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,22 +30,19 @@ import org.jkiss.dbeaver.ext.erd.directedit.ExtendedDirectEditManager;
 import org.jkiss.dbeaver.ext.erd.directedit.LabelCellEditorLocator;
 import org.jkiss.dbeaver.ext.erd.directedit.TableNameCellEditorValidator;
 import org.jkiss.dbeaver.ext.erd.directedit.ValidationMessageHandler;
-import org.jkiss.dbeaver.ext.erd.editor.ERDViewStyle;
 import org.jkiss.dbeaver.ext.erd.editor.ERDGraphicalViewer;
 import org.jkiss.dbeaver.ext.erd.figures.EditableLabel;
 import org.jkiss.dbeaver.ext.erd.figures.EntityFigure;
-import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
-import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
-import org.jkiss.dbeaver.ext.erd.model.ERDEntityAttribute;
-import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
+import org.jkiss.dbeaver.ext.erd.model.*;
+import org.jkiss.dbeaver.ext.erd.policy.EntityConnectionEditPolicy;
 import org.jkiss.dbeaver.ext.erd.policy.EntityContainerEditPolicy;
 import org.jkiss.dbeaver.ext.erd.policy.EntityEditPolicy;
-import org.jkiss.dbeaver.ext.erd.policy.EntityNodeEditPolicy;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 
 import java.beans.PropertyChangeEvent;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Represents the editable/resizable table which can have columns added,
@@ -62,26 +59,23 @@ public class EntityPart extends NodePart {
     /**
      * Returns the Table model object represented by this EditPart
      */
-    public ERDEntity getTable() {
+    public ERDEntity getEntity() {
         return (ERDEntity) getModel();
     }
 
-    /**
-     * @return the children Model objects as a new ArrayList
-     */
     @Override
     protected List<ERDEntityAttribute> getModelChildren() {
-        return getTable().getColumns();
+        return getEntity().getAttributes();
     }
 
     @Override
     protected List<ERDAssociation> getModelSourceConnections() {
-        return getTable().getForeignKeyRelationships();
+        return getEntity().getAssociations();
     }
 
     @Override
     protected List<ERDAssociation> getModelTargetConnections() {
-        return getTable().getPrimaryKeyRelationships();
+        return getEntity().getReferences();
     }
 
     //******************* Editing related methods *********************/
@@ -93,7 +87,7 @@ public class EntityPart extends NodePart {
     protected void createEditPolicies() {
         final boolean editEnabled = isEditEnabled();
         if (editEnabled) {
-            installEditPolicy(EditPolicy.GRAPHICAL_NODE_ROLE, new EntityNodeEditPolicy());
+            installEditPolicy(EditPolicy.GRAPHICAL_NODE_ROLE, new EntityConnectionEditPolicy());
             //installEditPolicy(EditPolicy.LAYOUT_ROLE, new EntityLayoutEditPolicy());
             installEditPolicy(EditPolicy.CONTAINER_ROLE, new EntityContainerEditPolicy());
             installEditPolicy(EditPolicy.COMPONENT_ROLE, new EntityEditPolicy());
@@ -116,7 +110,7 @@ public class EntityPart extends NodePart {
 			performDirectEdit();
 */
         } else if (request.getType() == RequestConstants.REQ_OPEN) {
-            getTable().openEditor();
+            ERDUtils.openObjectEditor(getEntity());
         }
     }
 
@@ -155,7 +149,7 @@ public class EntityPart extends NodePart {
     public void revertNameChange() {
         EntityFigure entityFigure = getFigure();
         EditableLabel label = entityFigure.getNameLabel();
-        ERDEntity entity = getTable();
+        ERDEntity entity = getEntity();
         label.setText(entity.getObject().getName());
         label.setVisible(true);
         refreshVisuals();
@@ -164,7 +158,7 @@ public class EntityPart extends NodePart {
     //******************* Miscellaneous stuff *********************/
 
     public String toString() {
-        return DBUtils.getObjectFullName(getTable().getObject(), DBPEvaluationContext.UI);
+        return DBUtils.getObjectFullName(getEntity().getObject(), DBPEvaluationContext.UI);
     }
 
     //******************* Listener related methods *********************/
@@ -176,9 +170,10 @@ public class EntityPart extends NodePart {
     protected void commitNameChange(PropertyChangeEvent evt) {
         EntityFigure entityFigure = getFigure();
         EditableLabel label = entityFigure.getNameLabel();
-        label.setText(getTable().getObject().getName());
+        label.setText(getEntity().getObject().getName());
         label.setVisible(true);
         refreshVisuals();
+        entityFigure.refreshColors();
     }
 
     //******************* Layout related methods *********************/
@@ -188,12 +183,11 @@ public class EntityPart extends NodePart {
      */
     @Override
     protected EntityFigure createFigure() {
-        final EntityDiagram diagram = ((DiagramPart) getParent()).getDiagram();
-        boolean useFQN = diagram.hasAttributeStyle(ERDViewStyle.ENTITY_FQN);
+        final EntityDiagram diagram = getDiagram();
 
-        final EntityFigure figure = new EntityFigure(getTable(), useFQN);
+        final EntityFigure figure = createFigureImpl();
 
-        EntityDiagram.NodeVisualInfo visualInfo = diagram.getVisualInfo(getTable());
+        EntityDiagram.NodeVisualInfo visualInfo = diagram.getVisualInfo(getEntity());
         if (visualInfo != null) {
             if (visualInfo.initBounds != null) {
                 figure.setLocation(visualInfo.initBounds.getLocation());
@@ -205,6 +199,10 @@ public class EntityPart extends NodePart {
         }
 
         return figure;
+    }
+
+    protected EntityFigure createFigureImpl() {
+        return new EntityFigure(this);
     }
 
     @Override
@@ -219,9 +217,8 @@ public class EntityPart extends NodePart {
     protected void refreshVisuals() {
         EntityFigure entityFigure = getFigure();
         Point location = entityFigure.getLocation();
-        DiagramPart parent = (DiagramPart) getParent();
         Rectangle constraint = new Rectangle(location.x, location.y, -1, -1);
-        parent.setLayoutConstraint(this, entityFigure, constraint);
+        getDiagramPart().setLayoutConstraint(this, entityFigure, constraint);
     }
 
     /**
@@ -287,17 +284,45 @@ public class EntityPart extends NodePart {
     @Override
     public void activate() {
         super.activate();
-        getViewer().handleTableActivate(getTable().getObject());
+        getViewer().handleTableActivate(getEntity().getObject());
     }
 
     @Override
     public void deactivate() {
-        getViewer().handleTableDeactivate(getTable().getObject());
+        getViewer().handleTableDeactivate(getEntity().getObject());
         super.deactivate();
     }
 
+    // Add nested figures to visuals (to make hit test work properly)
     @Override
-    protected void finalize() throws Throwable {
-        super.finalize();
+    protected void registerVisuals() {
+        super.registerVisuals();
+        Map visualPartMap = this.getViewer().getVisualPartMap();
+        visualPartMap.put(getFigure().getNameLabel(), this);
+        visualPartMap.put(getFigure().getKeyFigure(), this);
+        visualPartMap.put(getFigure().getColumnsFigure(), this);
+    }
+
+    // Remove nested figures from visuals
+    @Override
+    protected void unregisterVisuals() {
+        Map visualPartMap = this.getViewer().getVisualPartMap();
+        visualPartMap.remove(getFigure().getColumnsFigure());
+        visualPartMap.remove(getFigure().getKeyFigure());
+        visualPartMap.remove(getFigure().getNameLabel());
+        super.unregisterVisuals();
+    }
+
+    @Override
+    public EditPart getTargetEditPart(Request request) {
+        if (RequestConstants.REQ_MOVE.equals(request.getType()) || RequestConstants.REQ_ADD.equals(request.getType())) {
+            return this;
+        }
+        return super.getTargetEditPart(request);
+    }
+
+    @Override
+    public DragTracker getDragTracker(Request request) {
+        return super.getDragTracker(request);
     }
 }

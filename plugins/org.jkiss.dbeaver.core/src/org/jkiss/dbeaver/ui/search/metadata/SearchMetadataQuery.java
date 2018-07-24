@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
 import org.jkiss.dbeaver.model.struct.DBSObjectType;
 import org.jkiss.dbeaver.model.struct.DBSStructureAssistant;
+import org.jkiss.dbeaver.ui.search.AbstractSearchResult;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
@@ -100,6 +101,7 @@ public class SearchMetadataQuery implements ISearchQuery {
                 }
             }
 
+            int totalObjects = 0;
             DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
             DBRProgressMonitor localMonitor = RuntimeUtils.makeMonitor(monitor);
             Collection<DBSObjectReference> objects = structureAssistant.findObjectsByMask(
@@ -120,12 +122,15 @@ public class SearchMetadataQuery implements ISearchQuery {
                         DBNNode node = navigatorModel.getNodeByObject(localMonitor, object, false);
                         if (node != null) {
                             searchResult.addObjects(Collections.singletonList(node));
+                            totalObjects++;
                         }
                     }
                 } catch (DBException e) {
                     log.error(e);
                 }
             }
+            searchResult.fireChange(new AbstractSearchResult.DatabaseSearchFinishEvent(searchResult, totalObjects));
+
             return Status.OK_STATUS;
         } catch (DBException e) {
             return GeneralUtils.makeExceptionStatus(e);

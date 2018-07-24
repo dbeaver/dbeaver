@@ -24,7 +24,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatter;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
-import org.jkiss.dbeaver.registry.sql.SQLFormatterConfigurer;
+import org.jkiss.dbeaver.ui.editors.sql.registry.SQLFormatterConfigurer;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 

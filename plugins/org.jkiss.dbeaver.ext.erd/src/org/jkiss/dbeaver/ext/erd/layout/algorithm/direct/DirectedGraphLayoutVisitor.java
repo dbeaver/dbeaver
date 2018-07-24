@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ package org.jkiss.dbeaver.ext.erd.layout.algorithm.direct;
 import org.jkiss.dbeaver.Log;
 import org.eclipse.draw2d.*;
 import org.eclipse.draw2d.geometry.Dimension;
-import org.eclipse.draw2d.geometry.Insets;
 import org.eclipse.draw2d.geometry.Rectangle;
 import org.eclipse.draw2d.graph.*;
 import org.eclipse.gef.EditPart;
@@ -32,6 +31,7 @@ import org.eclipse.gef.NodeEditPart;
 import org.eclipse.gef.editparts.AbstractConnectionEditPart;
 import org.eclipse.gef.editparts.AbstractGraphicalEditPart;
 import org.jkiss.dbeaver.ext.erd.layout.GraphAnimation;
+import org.jkiss.dbeaver.ext.erd.model.ERDDecorator;
 import org.jkiss.dbeaver.ext.erd.part.EntityPart;
 
 import java.util.ArrayList;
@@ -48,8 +48,13 @@ import java.util.Map;
 public class DirectedGraphLayoutVisitor {
     private static final Log log = Log.getLog(DirectedGraphLayoutVisitor.class);
 
-    Map<EditPart, Object> partToNodesMap;
-    DirectedGraph graph;
+    private final ERDDecorator decorator;
+    private Map<EditPart, Object> partToNodesMap;
+    private DirectedGraph graph;
+
+    public DirectedGraphLayoutVisitor(ERDDecorator decorator) {
+        this.decorator = decorator;
+    }
 
     /**
      * Public method for reading graph nodes
@@ -92,15 +97,15 @@ public class DirectedGraphLayoutVisitor {
     protected void addEntityNode(NodeEditPart nodeEditPart)
     {
         Node entityNode;
-        if (nodeEditPart instanceof EntityPart && ((EntityPart)nodeEditPart).getTable().hasSelfLinks()) {
+        if (nodeEditPart instanceof EntityPart && ((EntityPart)nodeEditPart).getEntity().hasSelfLinks()) {
             entityNode = new Subgraph(nodeEditPart);
         } else {
             entityNode = new Node(nodeEditPart);
         }
-        Dimension preferredSize = nodeEditPart.getFigure().getPreferredSize(400, 300);
+        Dimension preferredSize = nodeEditPart.getFigure().getPreferredSize(-1, -1);
         entityNode.width = preferredSize.width;
         entityNode.height = preferredSize.height;
-        entityNode.setPadding(new Insets(20, 20, 10, 20));
+        entityNode.setPadding(decorator.getDefaultEntityInsets());
         partToNodesMap.put(nodeEditPart, entityNode);
         graph.nodes.add(entityNode);
 

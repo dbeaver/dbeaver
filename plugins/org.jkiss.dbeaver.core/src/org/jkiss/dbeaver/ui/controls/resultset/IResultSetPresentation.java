@@ -71,6 +71,10 @@ public interface IResultSetPresentation {
 
     void updateValueView();
 
+    boolean isDirty();
+
+    void applyChanges();
+
     /**
      * Called by controller to fill context menu.
      * Note: context menu invocation must be initiated by presentation, then it should call controller's

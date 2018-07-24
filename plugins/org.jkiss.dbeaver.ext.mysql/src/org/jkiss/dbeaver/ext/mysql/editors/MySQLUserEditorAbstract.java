@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.mysql.editors;
 
+import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.DBException;
@@ -28,6 +29,7 @@ import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.controls.ObjectEditorPageControl;
 import org.jkiss.dbeaver.ui.editors.AbstractDatabaseObjectEditor;
+import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
@@ -79,6 +81,12 @@ public abstract class MySQLUserEditorAbstract extends AbstractDatabaseObjectEdit
                     processGrants(grants);
                 }
             };
+        }
+
+        @Override
+        protected void fillCustomActions(IContributionManager contributionManager) {
+            super.fillCustomActions(contributionManager);
+            DatabaseEditorUtils.contributeStandardEditorActions(getSite(), contributionManager);
         }
     }
 

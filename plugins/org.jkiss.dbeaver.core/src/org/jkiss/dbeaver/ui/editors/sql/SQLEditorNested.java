@@ -39,6 +39,7 @@ import org.eclipse.swt.events.FocusEvent;
 import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.part.MultiPageEditorSite;
 import org.eclipse.ui.texteditor.IDocumentProvider;
@@ -49,6 +50,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.compile.DBCCompileLog;
 import org.jkiss.dbeaver.model.exec.compile.DBCSourceHost;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
@@ -84,28 +86,31 @@ public abstract class SQLEditorNested<T extends DBSObject>
         //setHasVerticalRuler(false);
     }
 
-    @Override
-    public IDatabaseEditorInput getEditorInput() {
+    public IDatabaseEditorInput getDatabaseEditorInput() {
         return (IDatabaseEditorInput)super.getEditorInput();
     }
 
     @Override
     public T getSourceObject()
     {
-        IDatabaseEditorInput editorInput = getEditorInput();
-        if (editorInput == null) {
+        IEditorInput editorInput = getEditorInput();
+        if (!(editorInput instanceof IDatabaseEditorInput)) {
             return null;
         }
-        return (T) editorInput.getDatabaseObject();
+        return (T) ((IDatabaseEditorInput)editorInput).getDatabaseObject();
     }
 
     @Override
     public DBCExecutionContext getExecutionContext() {
-        IDatabaseEditorInput editorInput = getEditorInput();
-        if (editorInput == null) {
+        IEditorInput editorInput = getEditorInput();
+        if (!(editorInput instanceof IDatabaseEditorInput)) {
             return null;
         }
-        return editorInput.getExecutionContext();
+        return ((IDatabaseEditorInput)editorInput).getExecutionContext();
+    }
+
+    public DBPPropertySource getInputPropertySource() {
+        return getDatabaseEditorInput().getPropertySource();
     }
 
     @Override
@@ -273,8 +278,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
 
         @Override
         protected IAnnotationModel createAnnotationModel(Object element) throws CoreException {
-            IDatabaseEditorInput editorInput = SQLEditorNested.this.getEditorInput();
-            DBSObject databaseObject = editorInput.getDatabaseObject();
+            DBSObject databaseObject = getSourceObject();
             DBNDatabaseNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(databaseObject);
             IResource resource = DBeaverIDECore.resolveWorkspaceResource(databaseObject);
             if (resource != null) {
@@ -334,7 +338,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
         String compileCommandId = getCompileCommandId();
         if (compileCommandId != null) {
             toolBarManager.add(new Separator());
-            toolBarManager.add(ActionUtils.makeCommandContribution(getSite().getWorkbenchWindow(), compileCommandId));
+            //toolBarManager.add(ActionUtils.makeCommandContribution(getSite().getWorkbenchWindow(), compileCommandId));
             toolBarManager.add(new ViewLogAction());
         }
     }

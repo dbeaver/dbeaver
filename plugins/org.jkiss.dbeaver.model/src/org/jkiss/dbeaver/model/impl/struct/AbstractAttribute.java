@@ -93,6 +93,17 @@ public abstract class AbstractAttribute implements DBSAttributeBase, DBPToolTipO
         this.name = columnName;
     }
 
+    @Property(viewable = true, order = 15)
+    public int getOrdinalPosition()
+    {
+        return ordinalPosition;
+    }
+
+    public void setOrdinalPosition(int ordinalPosition)
+    {
+        this.ordinalPosition = ordinalPosition;
+    }
+
     @Override
     @Property(viewable = true, order = 20)
     public String getTypeName()
@@ -108,17 +119,6 @@ public abstract class AbstractAttribute implements DBSAttributeBase, DBPToolTipO
     public void setTypeName(String typeName)
     {
         this.typeName = typeName;
-    }
-
-    @Property(viewable = true, order = 15)
-    public int getOrdinalPosition()
-    {
-        return ordinalPosition;
-    }
-
-    public void setOrdinalPosition(int ordinalPosition)
-    {
-        this.ordinalPosition = ordinalPosition;
     }
 
     @Override

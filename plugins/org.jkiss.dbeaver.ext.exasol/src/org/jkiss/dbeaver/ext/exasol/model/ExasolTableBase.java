@@ -63,7 +63,7 @@ public abstract class ExasolTableBase extends JDBCTable<ExasolDataSource, Exasol
 
     @Nullable
     @Override
-    @Property(viewable = false, order = 99, editable = true, updatable = true)
+    @Property(viewable = false, order = 99, editable = true, updatable = true, multiline = true)
     public String getDescription()
     {
         return remarks;

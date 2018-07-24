@@ -33,14 +33,17 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
+import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
-import org.jkiss.dbeaver.registry.sql.SQLConverterRegistry;
-import org.jkiss.dbeaver.registry.sql.SQLTargetConverterDescriptor;
+import org.jkiss.dbeaver.model.sql.SQLScriptElement;
+import org.jkiss.dbeaver.ui.editors.sql.registry.SQLConverterRegistry;
+import org.jkiss.dbeaver.ui.editors.sql.registry.SQLTargetConverterDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.StyledTextUtils;
@@ -53,7 +56,7 @@ import org.jkiss.utils.CommonUtils;
 import java.util.HashMap;
 import java.util.Map;
 
-public class CopySourceCodeHandler extends AbstractHandler {
+public class CopySourceCodeHandler extends AbstractHandler implements IElementUpdater {
 
     private static final Log log = Log.getLog(CopySourceCodeHandler.class);
 
@@ -70,7 +73,15 @@ public class CopySourceCodeHandler extends AbstractHandler {
             return null;
         }
 
-        TargetFormatDialog dialog = new TargetFormatDialog(editor, (TextSelection)selection);
+        TextSelection textSelection = (TextSelection) selection;
+        if (textSelection.getLength() < 2) {
+            // Use active query
+            SQLScriptElement activeQuery = editor.extractActiveQuery();
+            if (activeQuery != null && activeQuery.getLength() > 1) {
+                textSelection = new TextSelection(editor.getDocument(), activeQuery.getOffset(), activeQuery.getLength());
+            }
+        }
+        TargetFormatDialog dialog = new TargetFormatDialog(editor, textSelection);
         if (dialog.open() != IDialogConstants.OK_ID) {
             return null;
         }
@@ -78,6 +89,12 @@ public class CopySourceCodeHandler extends AbstractHandler {
         UIUtils.setClipboardContents(Display.getCurrent(), TextTransfer.getInstance(), dialog.getConvertedText());
 
         return null;
+    }
+
+    @Override
+    public void updateElement(UIElement element, Map parameters) {
+        element.setText("Copy SQL as a source code");
+        element.setTooltip("Convert selected SQL to a source code in a programming language");
     }
 
     private static class TargetFormatDialog extends BaseSQLDialog {

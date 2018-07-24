@@ -19,8 +19,6 @@ package org.jkiss.dbeaver.ui.actions;
 import org.eclipse.core.expressions.PropertyTester;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.commands.ICommandService;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
@@ -99,20 +97,6 @@ public class DataSourcePropertyTester extends PropertyTester
         ActionUtils.evaluatePropertyState(NAMESPACE + "." + propName);
     }
 
-    public static void fireCommandRefresh(final String commandID)
-    {
-        // Update commands
-        final ICommandService commandService = PlatformUI.getWorkbench().getService(ICommandService.class);
-        if (commandService != null) {
-            UIUtils.asyncExec(new Runnable() {
-                @Override
-                public void run() {
-                    commandService.refreshElements(commandID, null);
-                }
-            });
-        }
-    }
-
     public static class QMService implements IPluginService {
 
         private QMEventsHandler qmHandler;
@@ -146,7 +130,7 @@ public class DataSourcePropertyTester extends PropertyTester
                     // Fire transactional mode change
                     DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_TRANSACTIONAL);
                     DataSourcePropertyTester.firePropertyChange(DataSourcePropertyTester.PROP_TRANSACTION_ACTIVE);
-                    DataSourcePropertyTester.fireCommandRefresh(CoreCommands.CMD_TOGGLE_AUTOCOMMIT);
+                    ActionUtils.fireCommandRefresh(CoreCommands.CMD_TOGGLE_AUTOCOMMIT);
                 }
             });
         }

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,12 +23,17 @@ import org.eclipse.draw2d.*;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.swt.graphics.Image;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
+import org.jkiss.dbeaver.ext.erd.editor.ERDViewStyle;
 import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
+import org.jkiss.dbeaver.ext.erd.part.EntityPart;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Figure used to represent a table in the schema
@@ -37,19 +42,23 @@ import org.jkiss.dbeaver.ui.UIUtils;
  */
 public class EntityFigure extends Figure {
 
-    private final ERDEntity entity;
+    private final EntityPart part;
     private AttributeListFigure keyFigure;
     private AttributeListFigure attributeFigure;
     private EditableLabel nameLabel;
 
-    public EntityFigure(ERDEntity entity, boolean useFQN)
+    public EntityFigure(EntityPart part)
     {
-        this.entity = entity;
+        this.part = part;
+
+        ERDEntity entity = part.getEntity();
+        boolean useFQN = part.getDiagram().hasAttributeStyle(ERDViewStyle.ENTITY_FQN);
 
         Image tableImage = DBeaverIcons.getImage(entity.getObject().getEntityType().getIcon());
 
         keyFigure = new AttributeListFigure(entity, true);
         attributeFigure = new AttributeListFigure(entity, false);
+
         nameLabel = new EditableLabel(
             useFQN ?
                 DBUtils.getObjectFullName(entity.getObject(), DBPEvaluationContext.DDL) :
@@ -57,30 +66,44 @@ public class EntityFigure extends Figure {
         if (tableImage != null) {
             nameLabel.setIcon(tableImage);
         }
+        nameLabel.setBorder(new MarginBorder(3));
+
+/*
+        GridLayout layout = new GridLayout(1, false);
+        layout.verticalSpacing = 0;
+        layout.marginHeight = 0;
+        layout.marginWidth = 0;
+*/
 
         ToolbarLayout layout = new ToolbarLayout();
         layout.setHorizontal(false);
         layout.setStretchMinorAxis(true);
         setLayoutManager(layout);
-        setBorder(new LineBorder(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_ENTITY_NAME_FOREGROUND), 1));
+
+        LineBorder border = new LineBorder(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_LINES_FOREGROUND), 2);
+
+        setBorder(border);
         setOpaque(true);
 
         add(nameLabel);
         add(keyFigure);
         add(attributeFigure);
 
+        // Tooltip doesn't make sense and just flicks around
+/*
         Label toolTip = new Label(DBUtils.getObjectFullName(entity.getObject(), DBPEvaluationContext.UI));
         toolTip.setIcon(tableImage);
         setToolTip(toolTip);
-        setColors();
+*/
+        refreshColors();
     }
 
-    private void setColors() {
+    public void refreshColors() {
         ColorRegistry colorRegistry = UIUtils.getColorRegistry();
 
-        if (entity.isPrimary()) {
+        if (part.getEntity().isPrimary()) {
             setBackgroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ENTITY_PRIMARY_BACKGROUND));
-        } else if (entity.getObject().getEntityType() == DBSEntityType.ASSOCIATION) {
+        } else if (part.getEntity().getObject().getEntityType() == DBSEntityType.ASSOCIATION) {
             setBackgroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ENTITY_ASSOCIATION_BACKGROUND));
         } else {
             setBackgroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ENTITY_REGULAR_BACKGROUND));
@@ -93,9 +116,9 @@ public class EntityFigure extends Figure {
     {
         LineBorder lineBorder = (LineBorder) getBorder();
         if (isSelected) {
-            lineBorder.setWidth(2);
+            lineBorder.setWidth(3);
         } else {
-            lineBorder.setWidth(1);
+            lineBorder.setWidth(2);
         }
     }
 
@@ -113,7 +136,7 @@ public class EntityFigure extends Figure {
     }
 
     /**
-     * @return the figure containing the column lables
+     * @return the figure containing the column labels
      */
     public AttributeListFigure getColumnsFigure()
     {
@@ -127,14 +150,34 @@ public class EntityFigure extends Figure {
             figure.setForegroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ATTR_FOREGROUND));
             figure.setBackgroundColor(colorRegistry.get(ERDConstants.COLOR_ERD_ATTR_BACKGROUND));
 
-            if (((AttributeItemFigure) figure).getAttribute().isInPrimaryKey()) {
-                keyFigure.add(figure, constraint, -1);
+            IFigure attrExtra = createRightPanel();
+
+            AttributeItemFigure attributeItemFigure = (AttributeItemFigure) figure;
+            attributeItemFigure.setRightPanel(attrExtra);
+            if (attributeItemFigure.getAttribute().isInPrimaryKey()) {
+                keyFigure.add(figure, new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, true, false));
+                keyFigure.add(attrExtra, new GridData(GridData.HORIZONTAL_ALIGN_END | GridData.VERTICAL_ALIGN_BEGINNING));
             } else {
-                attributeFigure.add(figure, constraint, -1);
+                attributeFigure.add(figure, new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING, GridData.VERTICAL_ALIGN_BEGINNING, true, false));
+                attributeFigure.add(attrExtra, new GridData(GridData.HORIZONTAL_ALIGN_END | GridData.VERTICAL_ALIGN_BEGINNING));
             }
 
         } else {
             super.add(figure, constraint, index);
         }
+    }
+
+    protected IFigure createRightPanel() {
+        EditableLabel label = new EditableLabel("");
+        //attrExtra.setBorder(new LineBorder(1));
+        label.setTextAlignment(PositionConstants.RIGHT);
+        return label;
+    }
+
+    public List<AttributeItemFigure> getAttributeFigures() {
+        List<AttributeItemFigure> result = new ArrayList<>();
+        result.addAll(keyFigure.getAttributes());
+        result.addAll(attributeFigure.getAttributes());
+        return result;
     }
 }

@@ -157,7 +157,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                 row[i] = value;
             }
             // Export row
-            processor.exportRow(session, row);
+            processor.exportRow(session, resultSet, row);
         } catch (IOException e) {
             throw new DBCException("IO error", e);
         } catch (Throwable e) {

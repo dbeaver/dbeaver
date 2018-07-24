@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.postgresql.ui;
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -32,6 +31,7 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.ui.ICompositeDialogPage;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ClientHomesSelector;
@@ -53,12 +53,13 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
     private Text passwordText;
     private ClientHomesSelector homesSelector;
     private Button showNonDefault;
-    private Button switchDatabaseOnExpand;
+    private Button showTemplates;
     private boolean activated = false;
 
     private static ImageDescriptor PG_LOGO_IMG = PostgreActivator.getImageDescriptor("icons/postgresql_logo.png");
     private static ImageDescriptor GP_LOGO_IMG = PostgreActivator.getImageDescriptor("icons/greenplum_logo.png");
-
+    private static ImageDescriptor TS_LOGO_IMG = PostgreActivator.getImageDescriptor("icons/timescale_logo.png");
+    private static ImageDescriptor YB_LOGO_IMG = PostgreActivator.getImageDescriptor("icons/yellowbrick_logo.png");
 
     @Override
     public void dispose()
@@ -71,14 +72,9 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
     {
         //Composite group = new Composite(composite, SWT.NONE);
         //group.setLayout(new GridLayout(1, true));
-        ModifyListener textListener = new ModifyListener()
-        {
-            @Override
-            public void modifyText(ModifyEvent e)
-            {
-                if (activated) {
-                    site.updateButtons();
-                }
+        ModifyListener textListener = e -> {
+            if (activated) {
+                site.updateButtons();
             }
         };
 
@@ -159,10 +155,10 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
             showNonDefault.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    switchDatabaseOnExpand.setEnabled(showNonDefault.getSelection());
+                    showTemplates.setEnabled(showNonDefault.getSelection());
                 }
             });
-            switchDatabaseOnExpand = UIUtils.createCheckbox(secureGroup, PostgreMessages.dialog_setting_connection_switchDatabaseOnExpand, PostgreMessages.dialog_setting_connection_switchDatabaseOnExpand_tip, true, 2);
+            showTemplates = UIUtils.createCheckbox(secureGroup, PostgreMessages.dialog_setting_connection_show_templates, PostgreMessages.dialog_setting_connection_show_templates_tip, false, 2);
         }
 
         createDriverPanel(addrGroup);
@@ -182,9 +178,18 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
     {
         super.loadSettings();
 
+        final DBPDriver driver = site.getDriver();
+
         if (!activated) {
-            setImageDescriptor(
-                PostgreUtils.isGreenplumDriver(getSite().getDriver()) ? GP_LOGO_IMG : PG_LOGO_IMG);
+            ImageDescriptor logo = PG_LOGO_IMG;
+            if (PostgreUtils.isGreenplumDriver(driver)) {
+                logo = GP_LOGO_IMG;
+            } else if (PostgreUtils.isTimescaleDriver(driver)) {
+                logo = TS_LOGO_IMG;
+            } else if (PostgreUtils.isYellowbrickDriver(driver)) {
+                logo = YB_LOGO_IMG;
+            }
+            setImageDescriptor(logo);
         }
 
         // Load values from new connection info
@@ -199,8 +204,8 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
         if (portText != null) {
             if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
                 portText.setText(String.valueOf(connectionInfo.getHostPort()));
-            } else if (site.getDriver().getDefaultPort() != null) {
-                portText.setText(site.getDriver().getDefaultPort());
+            } else if (driver.getDefaultPort() != null) {
+                portText.setText(driver.getDefaultPort());
             } else {
                 portText.setText("");
             }
@@ -218,12 +223,11 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
         if (passwordText != null) {
             passwordText.setText(CommonUtils.notEmpty(connectionInfo.getUserPassword()));
         }
-        homesSelector.populateHomes(site.getDriver(), connectionInfo.getClientHomeId());
+        homesSelector.populateHomes(driver, connectionInfo.getClientHomeId());
 
         showNonDefault.setSelection(CommonUtils.getBoolean(connectionInfo.getProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB), true));
-
-        switchDatabaseOnExpand.setSelection(CommonUtils.getBoolean(connectionInfo.getProviderProperty(PostgreConstants.PROP_SWITCH_DB_ON_EXPAND), true));
-        switchDatabaseOnExpand.setEnabled(showNonDefault.getSelection());
+        showTemplates.setSelection(CommonUtils.getBoolean(connectionInfo.getProviderProperty(PostgreConstants.PROP_SHOW_TEMPLATES_DB), false));
+        showTemplates.setEnabled(showNonDefault.getSelection());
 
         activated = true;
     }
@@ -252,7 +256,7 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
         }
 
         connectionInfo.setProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB, String.valueOf(showNonDefault.getSelection()));
-        connectionInfo.setProviderProperty(PostgreConstants.PROP_SWITCH_DB_ON_EXPAND, String.valueOf(switchDatabaseOnExpand.getSelection()));
+        connectionInfo.setProviderProperty(PostgreConstants.PROP_SHOW_TEMPLATES_DB, String.valueOf(showTemplates.getSelection()));
         super.saveSettings(dataSource);
     }
 

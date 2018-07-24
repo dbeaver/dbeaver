@@ -84,7 +84,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     private PropertySourceAbstract listPropertySource;
 
     private ObjectViewerRenderer renderer;
-    protected ViewerColumnController columnController;
+    protected ViewerColumnController<ObjectColumn, Object> columnController;
 
     // Sample flag. True only when initial content is packed. Used to provide actual cell data to Tree/Table pack() methods
     // After content is loaded is always false (and all hyperlink cells have empty text)
@@ -104,8 +104,11 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     public ObjectListControl(
         Composite parent,
         int style,
-        IContentProvider contentProvider) {
+        IContentProvider contentProvider)
+    {
         super(parent, style);
+
+
         this.isFitWidth = false;
 
         int viewerStyle = getDefaultListStyle();
@@ -114,20 +117,19 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         }
 
         EditorActivationStrategy editorActivationStrategy;
-        final TraverseListener traverseListener = new TraverseListener() {
-            @Override
-            public void keyTraversed(TraverseEvent e) {
-                if (e.detail == SWT.TRAVERSE_RETURN && doubleClickHandler != null) {
-                    doubleClickHandler.doubleClick(new DoubleClickEvent(itemsViewer, itemsViewer.getSelection()));
-                    e.doit = false;
-                }
+        final TraverseListener traverseListener = e -> {
+            if (e.detail == SWT.TRAVERSE_RETURN && doubleClickHandler != null) {
+                doubleClickHandler.doubleClick(new DoubleClickEvent(itemsViewer, itemsViewer.getSelection()));
+                e.doit = false;
             }
         };
+
+
         if (contentProvider instanceof ITreeContentProvider) {
             TreeViewer treeViewer = new TreeViewer(this, viewerStyle);
             final Tree tree = treeViewer.getTree();
-            tree.setLinesVisible(true);
             tree.setHeaderVisible(true);
+            tree.setLinesVisible(true);
             itemsViewer = treeViewer;
             editorActivationStrategy = new EditorActivationStrategy(treeViewer);
             TreeViewerEditor.create(treeViewer, editorActivationStrategy, ColumnViewerEditor.TABBING_CYCLE_IN_ROW);
@@ -143,8 +145,8 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         } else {
             TableViewer tableViewer = new TableViewer(this, viewerStyle);
             final Table table = tableViewer.getTable();
-            table.setLinesVisible(true);
             table.setHeaderVisible(true);
+            table.setLinesVisible(true);
             itemsViewer = tableViewer;
             //UIUtils.applyCustomTolTips(table);
             //itemsEditor = new TableEditor(table);
@@ -171,29 +173,27 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
         GridData gd = new GridData(GridData.FILL_BOTH);
         itemsViewer.getControl().setLayoutData(gd);
         //PropertiesContributor.getInstance().addLazyListener(this);
+        ColumnViewerToolTipSupport.enableFor(itemsViewer);
 
         // Add selection listener
-        itemsViewer.addSelectionChangedListener(new ISelectionChangedListener() {
-            @Override
-            public void selectionChanged(SelectionChangedEvent event) {
-                IStructuredSelection selection = (IStructuredSelection) event.getSelection();
-                if (selection.isEmpty()) {
-                    setCurListObject(null);
-                } else {
-                    setCurListObject((OBJECT_TYPE) selection.getFirstElement());
-                }
-
-                String status;
-                if (selection.isEmpty()) {
-                    status = ""; //$NON-NLS-1$
-                } else if (selection.size() == 1) {
-                    Object selectedNode = selection.getFirstElement();
-                    status = ObjectViewerRenderer.getCellString(selectedNode, false);
-                } else {
-                    status = NLS.bind(CoreMessages.controls_object_list_status_objects, selection.size());
-                }
-                setInfo(status);
+        itemsViewer.addSelectionChangedListener(event -> {
+            IStructuredSelection selection = (IStructuredSelection) event.getSelection();
+            if (selection.isEmpty()) {
+                setCurListObject(null);
+            } else {
+                setCurListObject((OBJECT_TYPE) selection.getFirstElement());
             }
+
+            String status;
+            if (selection.isEmpty()) {
+                status = ""; //$NON-NLS-1$
+            } else if (selection.size() == 1) {
+                Object selectedNode = selection.getFirstElement();
+                status = ObjectViewerRenderer.getCellString(selectedNode, false);
+            } else {
+                status = NLS.bind(CoreMessages.controls_object_list_status_objects, selection.size());
+            }
+            setInfo(status);
         });
     }
 
@@ -262,7 +262,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     }
 
     protected ObjectColumn getColumnByIndex(int index) {
-        return (ObjectColumn) columnController.getColumnData(index);
+        return columnController.getColumnData(index);
     }
 
     public void setFitWidth(boolean fitWidth) {
@@ -393,7 +393,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
                 if (reload) {
                     clearListData();
-                    columnController = new ViewerColumnController(getListConfigId(classList), getItemsViewer());
+                    columnController = new ViewerColumnController<>(getListConfigId(classList), getItemsViewer());
                 }
 
                 // Create columns from classes' annotations
@@ -996,6 +996,15 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                 return "";
             }
         }
+
+        @Override
+        public String getToolTipText(Object element) {
+            String text = getText(element, false);
+            if (CommonUtils.isEmpty(text)) {
+                return null;
+            }
+            return text;
+        }
     }
 
     public class ObjectsLoadVisualizer extends ProgressVisualizer<Collection<OBJECT_TYPE>> {
@@ -1063,7 +1072,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
                                     // Do not paint over active editor
                                     return;
                                 }
-                                renderer.paintCell(e, object, e.item, prop.getDataType(), e.index, prop.isEditable(objectValue), (e.detail & SWT.SELECTED) == SWT.SELECTED);
+                                renderer.paintCell(e, object, cellValue, e.item, prop.getDataType(), e.index, prop.isEditable(objectValue), (e.detail & SWT.SELECTED) == SWT.SELECTED);
                             }
                         }
                         break;
@@ -1174,6 +1183,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     }
 
     protected void addColumnConfigAction(IContributionManager contributionManager) {
+        // Create lazy action here because columnController might be not instantiated yet
         Action configColumnsAction = new Action(
             CoreMessages.obj_editor_properties_control_action_configure_columns,
             DBeaverIcons.getImageDescriptor(UIIcon.CONFIGURATION)) {
@@ -1271,7 +1281,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
 
         @Nullable
         @Override
-        protected Object getCellValue(Object element, int columnIndex) {
+        public Object getCellValue(Object element, int columnIndex) {
             return ObjectListControl.this.getCellValue(element, columnIndex);
         }
     }

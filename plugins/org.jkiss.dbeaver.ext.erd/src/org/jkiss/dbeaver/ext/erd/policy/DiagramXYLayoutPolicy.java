@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,9 +13,6 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
-/*
- * Created on Jul 20, 2004
  */
 package org.jkiss.dbeaver.ext.erd.policy;
 
@@ -86,9 +83,9 @@ public class DiagramXYLayoutPolicy extends XYLayoutEditPolicy
 	{
 
 		IFigure fig = child.getFigure();
-		Rectangle rectangle = (Rectangle) fig.getParent().getLayoutManager().getConstraint(fig);
-		if (rectangle == null)
-		{
+		Object constraint = fig.getParent().getLayoutManager().getConstraint(fig);
+		Rectangle rectangle = constraint instanceof Rectangle ? (Rectangle) constraint : null;
+		if (rectangle == null) {
 			rectangle = fig.getBounds();
 		}
 		return rectangle;

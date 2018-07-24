@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -61,8 +61,7 @@ public abstract class NodePart extends PropertyAwarePart implements NodeEditPart
             this.bounds = bounds;
 
             Figure entityFigure = (Figure) getFigure();
-            DiagramPart parent = (DiagramPart) getParent();
-            parent.setLayoutConstraint(this, entityFigure, bounds);
+            getDiagramPart().setLayoutConstraint(this, entityFigure, bounds);
         }
     }
 

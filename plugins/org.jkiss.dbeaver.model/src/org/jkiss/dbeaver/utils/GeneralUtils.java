@@ -68,7 +68,7 @@ public class GeneralUtils {
     public static final String[] byteToHex = new String[256];
     public static final char[] nibbleToHex = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
     static final Map<String, byte[]> BOM_MAP = new HashMap<>();
-    static final char[] HEX_CHAR_TABLE = {
+    private static final char[] HEX_CHAR_TABLE = {
       '0', '1', '2', '3',
       '4', '5', '6', '7',
       '8', '9', 'a', 'b',
@@ -153,9 +153,6 @@ public class GeneralUtils {
     /**
      * Converts string to byte array.
      * This is loosy algorithm because it gets only first byte from each char.
-     *
-     * @param strValue
-     * @return
      */
     public static byte[] convertToBytes(String strValue)
     {
@@ -460,6 +457,10 @@ public class GeneralUtils {
 
     private static IStatus makeExceptionStatus(int severity, Throwable ex, boolean nested)
     {
+        // Skip chain of nested DBExceptions. Show only last message
+        while (ex instanceof DBException && ex.getCause() instanceof DBException) {
+            ex = ex.getCause();
+        }
         Throwable cause = ex.getCause();
         SQLException nextError = null;
         if (ex instanceof SQLException) {
@@ -486,7 +487,7 @@ public class GeneralUtils {
                 return new MultiStatus(
                     ModelPreferences.PLUGIN_ID,
                     0,
-                    errorChain.toArray(new IStatus[errorChain.size()]),
+                    errorChain.toArray(new IStatus[0]),
                     getExceptionMessage(ex),
                     ex);
             } else {

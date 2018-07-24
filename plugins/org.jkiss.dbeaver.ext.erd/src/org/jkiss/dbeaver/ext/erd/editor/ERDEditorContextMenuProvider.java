@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,10 +25,8 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.ext.erd.action.DiagramLayoutAction;
-import org.jkiss.dbeaver.ui.ActionUtils;
 
 /**
  * Provides a context menu for the schema diagram editor. A virtual cut and paste from the flow example
@@ -68,7 +66,7 @@ public class ERDEditorContextMenuProvider extends ContextMenuProvider {
 
             menu.add(new Separator("org.eclipse.gef.group.undo"));
             menu.add(new Separator("org.eclipse.gef.group.copy"));
-            menu.add(ActionUtils.makeCommandContribution(editor.getSite(), IWorkbenchCommandConstants.EDIT_COPY));
+            //menu.add(ActionUtils.makeCommandContribution(editor.getSite(), IWorkbenchCommandConstants.EDIT_COPY));
 
             menu.add(new Separator("org.eclipse.gef.group.print"));
             menu.add(new Separator("org.eclipse.gef.group.edit"));

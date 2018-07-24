@@ -63,7 +63,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
 
     @NotNull
     @Override
-    public DBCExecutionContext getExecutionContext() {
+    public JDBCExecutionContext getExecutionContext() {
         return context;
     }
 
@@ -105,6 +105,10 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
                         scrollable ? ResultSet.TYPE_SCROLL_INSENSITIVE : ResultSet.TYPE_FORWARD_ONLY,
                         updatable ? ResultSet.CONCUR_UPDATABLE : ResultSet.CONCUR_READ_ONLY);
                 }
+                catch (SQLSyntaxErrorException e) {
+                    // Call syntax not supported. Let's try t execute it as a regular query
+                    return prepareStatement(DBCStatementType.QUERY, sqlQuery, scrollable, updatable, returnGeneratedKeys);
+                }
                 catch (SQLFeatureNotSupportedException | UnsupportedOperationException | IncompatibleClassChangeError e) {
                     return prepareCall(sqlQuery);
                 }
@@ -145,7 +149,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
                     }
                 }
                 if (statement instanceof JDBCStatementImpl) {
-                    ((JDBCStatementImpl)statement).setQueryString(sqlQuery);
+                    statement.setQueryString(sqlQuery);
                 }
                 return statement;
             } else if (returnGeneratedKeys) {
@@ -668,7 +672,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
     }
 
     @Override
-    public void cancelBlock()
+    public void cancelBlock(@NotNull DBRProgressMonitor monitor, @Nullable Thread blockThread)
         throws DBException
     {
         try {

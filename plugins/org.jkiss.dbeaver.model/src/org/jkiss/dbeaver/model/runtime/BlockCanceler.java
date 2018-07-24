@@ -16,56 +16,21 @@
  */
 package org.jkiss.dbeaver.model.runtime;
 
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.jkiss.dbeaver.DBException;
 
 /**
  * Abstract Database Job
  */
-public class BlockCanceler extends Job
+public class BlockCanceler
 {
-    private static final long INTERRUPT_TIMEOUT = 2000;
-
-    private final Thread thread;
-    private boolean blockCanceled = false;
-
-    public BlockCanceler(Thread thread) {
-        super("Interrupter of " + thread.getName());
-        setSystem(true);
-        setUser(false);
-        this.thread = thread;
-    }
-
-    @Override
-    protected IStatus run(IProgressMonitor monitor) {
-        if (!blockCanceled) {
-            thread.interrupt();
-        }
-
-        return Status.OK_STATUS;
-    }
-
     public static void cancelBlock(DBRProgressMonitor monitor, Thread blockActiveThread) throws DBException {
-        BlockCanceler canceler = null;
-        if (blockActiveThread != null) {
-            // Schedule thread interrupt job
-            canceler = new BlockCanceler(blockActiveThread);
-            canceler.schedule(INTERRUPT_TIMEOUT);
-        }
-
         DBRBlockingObject block = monitor.getActiveBlock();
         if (block != null) {
             final Thread thread = Thread.currentThread();
             final String threadOldName = thread.getName();
             thread.setName("Operation cancel [" + block + "]");
             try {
-                block.cancelBlock();
-                if (canceler != null) {
-                    canceler.blockCanceled = true;
-                }
+                block.cancelBlock(monitor, blockActiveThread);
             } catch (Throwable e) {
                 throw new DBException("Cancel error", e);
             } finally {

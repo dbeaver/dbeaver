@@ -90,9 +90,9 @@ public abstract class PostgreViewBase extends PostgreTableReal
     {
         if (source == null) {
             if (isPersisted()) {
-                try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read view definition")) {
+                try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read view definition")) {
                     String definition = JDBCUtils.queryString(session, "SELECT pg_get_viewdef(?, true)", getObjectId());
-                    this.source = PostgreUtils.getViewDDL(this, definition);
+                    this.source = PostgreUtils.getViewDDL(monitor, this, definition);
                     String extDefinition = readExtraDefinition(session, options);
                     if (extDefinition != null) {
                         this.source += "\n" + extDefinition;
@@ -109,9 +109,9 @@ public abstract class PostgreViewBase extends PostgreTableReal
         if (CommonUtils.getOption(options, PostgreConstants.OPTION_DDL_SHOW_COLUMN_COMMENTS) && getDescription() != null) {
             actions.add(
                 new SQLDatabasePersistAction("Comment",
-                    "COMMENT ON VIEW " + getFullyQualifiedName(DBPEvaluationContext.DDL) + " IS " + SQLUtils.quoteString(this, getDescription())));
+                    "COMMENT ON " + getViewType() + " " + getFullyQualifiedName(DBPEvaluationContext.DDL) + " IS " + SQLUtils.quoteString(this, getDescription())));
         }
-        if (CommonUtils.getOption(options, PostgreConstants.OPTION_DDL_SHOW_PERMISSIONS)) {
+        if (isPersisted() && CommonUtils.getOption(options, PostgreConstants.OPTION_DDL_SHOW_PERMISSIONS)) {
             PostgreUtils.getObjectGrantPermissionActions(monitor, this, actions, options);
         }
 

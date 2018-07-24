@@ -132,10 +132,15 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
             }
         }
 
-        this.dataKind = JDBCDataSource.getDataKind(getName(), valueType);
-        if (this.dataKind == DBPDataKind.OBJECT) {
-            if (PostgreConstants.TYPE_JSONB.equals(name) || PostgreConstants.TYPE_JSON.equals(name)) {
-                this.dataKind = DBPDataKind.CONTENT;
+        if (typeType == PostgreTypeType.e) {
+            // Enums are strings
+            this.dataKind = DBPDataKind.STRING;
+        } else {
+            this.dataKind = JDBCDataSource.getDataKind(getName(), valueType);
+            if (this.dataKind == DBPDataKind.OBJECT) {
+                if (PostgreConstants.TYPE_JSONB.equals(name) || PostgreConstants.TYPE_JSON.equals(name)) {
+                    this.dataKind = DBPDataKind.CONTENT;
+                }
             }
         }
 
@@ -216,6 +221,20 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         this.enumValues = null;
     }
 
+    void resolveValueTypeFromBaseType(DBRProgressMonitor monitor) {
+        if (baseTypeId > 0) {
+            PostgreDataType baseType = getBaseType(monitor);
+            if (baseType == null) {
+                log.debug("Can't find type '" + getFullTypeName() + "' base type " + baseTypeId);
+            } else {
+                if (getTypeID() != baseType.getTypeID()) {
+                    //log.debug(getFullTypeName() + " type ID resolved to " + baseType.getTypeID());
+                    setTypeID(baseType.getTypeID());
+                }
+            }
+        }
+    }
+
     public boolean isAlias() {
         return alias;
     }
@@ -286,6 +305,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     }
 
     @Override
+    @Property(category = CAT_MAIN, viewable = false, order = 9)
     public long getObjectId() {
         return typeId;
     }
@@ -449,7 +469,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     @Override
     public DBCLogicalOperator[] getSupportedOperators(DBSTypedObject attribute) {
         if (dataKind == DBPDataKind.STRING) {
-            if (typeCategory == PostgreTypeCategory.S) {
+            if (typeCategory == PostgreTypeCategory.S || typeCategory == PostgreTypeCategory.E || typeCategory == PostgreTypeCategory.X) {
                 return new DBCLogicalOperator[]{
                     DBCLogicalOperator.IS_NULL,
                     DBCLogicalOperator.IS_NOT_NULL,
@@ -476,7 +496,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
             attributeCache.clearCache();
         }
         if (typeCategory == PostgreTypeCategory.E) {
-            try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Refresh enum values")) {
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Refresh enum values")) {
                 readEnumValues(session);
             }
         }
@@ -492,10 +512,10 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     @Override
     public String getFullyQualifiedName(DBPEvaluationContext context) {
         final PostgreSchema owner = getParentObject();
-        if (owner == null) {
+        if (owner == null || owner.getName().equals(PostgreConstants.PUBLIC_SCHEMA_NAME) || owner.getName().equals(PostgreConstants.CATALOG_SCHEMA_NAME)) {
             return getName();
         } else {
-            return DBUtils.getQuotedIdentifier(owner) + "." + getName();
+            return DBUtils.getQuotedIdentifier(owner) + "." + DBUtils.getQuotedIdentifier(this);
         }
     }
 
@@ -637,12 +657,17 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
                         valueType = Types.STRUCT;
                         break;
                     case D:
-                        if (name.startsWith("timestamp")) {
-                            valueType = Types.TIMESTAMP;
-                        } else if (name.startsWith("date")) {
+                        if (typeLength == 4) {
                             valueType = Types.DATE;
+                        } else if (typeLength == 8) {
+                            if (name.startsWith("timestamp")) {
+                                valueType = Types.TIMESTAMP;
+                            } else {
+                                valueType = Types.TIME;
+                            }
                         } else {
-                            valueType = Types.TIME;
+                            // Weird
+                            valueType = Types.TIMESTAMP;
                         }
                         break;
                     case N:

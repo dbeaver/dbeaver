@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,7 +23,6 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.widgets.Control;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.erd.part.EntityPart;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
@@ -149,7 +148,7 @@ public class ERDEditorViewer extends Viewer
 
         private Object convertObject(Object object) {
             if (object instanceof EntityPart) {
-                final DBSEntity entity = ((EntityPart) object).getTable().getObject();
+                final DBSEntity entity = ((EntityPart) object).getEntity().getObject();
                 return entity == null ? null : NavigatorUtils.getNodeByObject(entity);
             }
             return object;

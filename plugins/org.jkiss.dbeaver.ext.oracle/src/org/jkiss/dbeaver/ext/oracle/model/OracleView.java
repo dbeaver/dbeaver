@@ -175,7 +175,7 @@ public class OracleView extends OracleTableBase implements OracleSourceObject
             return;
         }
         String viewDefinitionText = null; // It is truncated definition text
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Load table status")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table status")) {
             boolean isOracle9 = getDataSource().isAtLeastV9();
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT TEXT,TYPE_TEXT,OID_TEXT,VIEW_TYPE_OWNER,VIEW_TYPE" + (isOracle9 ? ",SUPERVIEW_NAME" : "") + "\n" +

@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,10 +24,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.erd.figures.AttributeListFigure;
 import org.jkiss.dbeaver.ext.erd.figures.EntityFigure;
-import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
-import org.jkiss.dbeaver.ext.erd.model.ERDEntity;
-import org.jkiss.dbeaver.ext.erd.model.ERDEntityAttribute;
-import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
+import org.jkiss.dbeaver.ext.erd.model.*;
 import org.jkiss.dbeaver.ext.erd.part.AssociationPart;
 import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.ext.erd.part.EntityPart;
@@ -176,11 +173,11 @@ public class ERDExportGraphML implements ERDExportFormatHandler
                                 xml.addAttribute("y", attrsBounds.y());
 
                                 StringBuilder attrsString = new StringBuilder();
-                                for (ERDEntityAttribute attr : entity.getColumns()) {
+                                for (ERDEntityAttribute attr : entity.getAttributes()) {
                                     if (attrsString.length() > 0) {
                                         attrsString.append("\n");
                                     }
-                                    attrsString.append(attr.getLabelText());
+                                    attrsString.append(ERDUtils.getFullAttributeLabel(diagram, attr, true));
                                 }
 
                                 xml.addText(attrsString.toString());
@@ -210,7 +207,7 @@ public class ERDExportGraphML implements ERDExportFormatHandler
                 int edgeNum = 0;
                 for (ERDEntity entity : diagram.getEntities()) {
                     EntityPart entityPart = diagramPart.getEntityPart(entity);
-                    for (ERDAssociation association : entity.getForeignKeyRelationships()) {
+                    for (ERDAssociation association : entity.getAssociations()) {
                         AssociationPart associationPart = entityPart.getConnectionPart(association, true);
                         if (associationPart == null) {
                             log.debug("Association part not found");
@@ -223,7 +220,7 @@ public class ERDExportGraphML implements ERDExportFormatHandler
                         xml.startElement("edge");
                         xml.addAttribute("id", edgeId);
                         xml.addAttribute("source", entityMap.get(entity));
-                        xml.addAttribute("target", entityMap.get(association.getPrimaryKeyEntity()));
+                        xml.addAttribute("target", entityMap.get(association.getTargetEntity()));
 
                         xml.startElement("data");
                         xml.addAttribute("key", "edgegraph");
@@ -236,13 +233,15 @@ public class ERDExportGraphML implements ERDExportFormatHandler
                             xml.endElement();
                         }
                         xml.endElement();
+
+                        boolean identifying = ERDUtils.isIdentifyingAssociation(association);
                         xml.startElement("y:LineStyle");
                         xml.addAttribute("color", "#000000");
-                        xml.addAttribute("type", !association.isIdentifying() || association.isLogical() ? "dashed" : "line");
+                        xml.addAttribute("type", !identifying || association.isLogical() ? "dashed" : "line");
                         xml.addAttribute("width", "1.0");
                         xml.endElement();
                         xml.startElement("y:Arrows");
-                        String sourceStyle = !association.isIdentifying() ? "white_diamond" : "none";
+                        String sourceStyle = !identifying ? "white_diamond" : "none";
                         xml.addAttribute("source", sourceStyle);
                         xml.addAttribute("target", "circle");
                         xml.endElement();

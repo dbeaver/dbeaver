@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -76,16 +77,15 @@ public class DataTransferJob extends AbstractJob {
     private void showResult(final long time, final boolean hasErrors)
     {
         // Run async to avoid blocking progress monitor dialog
-        UIUtils.asyncExec(new Runnable() {
-            @Override
-            public void run() {
-                // Make a sound
-                Display.getCurrent().beep();
-                // Notify agent
-                if (time > DBeaverCore.getGlobalPreferenceStore().getLong(DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT) * 1000) {
-                    DBeaverUI.notifyAgent(
-                            "Data transfer completed", !hasErrors ? IStatus.INFO : IStatus.ERROR);
-                }
+        UIUtils.asyncExec(() -> {
+            // Make a sound
+            Display.getCurrent().beep();
+            // Notify agent
+            if (time > DBeaverCore.getGlobalPreferenceStore().getLong(DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT) * 1000) {
+                DBeaverUI.notifyAgent(
+                        "Data transfer completed", !hasErrors ? IStatus.INFO : IStatus.ERROR);
+            }
+            if (settings.isShowFinalMessage()) {
                 // Show message box
                 UIUtils.showMessageBox(
                     null,

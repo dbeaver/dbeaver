@@ -87,7 +87,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     {
         initExporter(session.getProgressMonitor());
 
-        if (settings.isTruncateBeforeLoad() && containerMapping.getMappingType() == DatabaseMappingType.existing) {
+        if (offset == 0 && settings.isTruncateBeforeLoad() && containerMapping.getMappingType() == DatabaseMappingType.existing) {
             // Truncate target tables
             if ((containerMapping.getTarget().getSupportedFeatures() & DBSDataManipulator.DATA_TRUNCATE) != 0) {
                 containerMapping.getTarget().truncateData(
@@ -220,11 +220,12 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         if (containerMapping == null) {
             throw new DBCException("Can't find container mapping for " + DBUtils.getObjectFullName(sourceObject, DBPEvaluationContext.UI));
         }
-        DBPDataSource dataSource = containerMapping.getTarget().getDataSource();
+        DBSDataManipulator targetObject = containerMapping.getTarget();
+        DBPDataSource dataSource = targetObject.getDataSource();
         assert (dataSource != null);
         try {
             targetContext = settings.isOpenNewConnections() ?
-                dataSource.openIsolatedContext(monitor, "Data transfer consumer") : dataSource.getDefaultContext(false);
+                DBUtils.getObjectOwnerInstance(targetObject).openIsolatedContext(monitor, "Data transfer consumer") : DBUtils.getDefaultContext(targetObject, false);
         } catch (DBException e) {
             throw new DBCException("Error opening new connection", e);
         }
@@ -269,8 +270,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             }
 
             boolean hasNewObjects = false;
-            DBPDataSource dataSource = container.getDataSource();
-            try (DBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Create target metadata")) {
+            try (DBCSession session = DBUtils.openMetaSession(monitor, container, "Create target metadata")) {
 
                 for (DatabaseMappingContainer containerMapping : settings.getDataMappings().values()) {
                     switch (containerMapping.getMappingType()) {

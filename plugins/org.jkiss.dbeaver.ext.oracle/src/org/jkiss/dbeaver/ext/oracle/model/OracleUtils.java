@@ -67,12 +67,13 @@ public class OracleUtils {
         final OracleDataSource dataSource = object.getDataSource();
 
         monitor.beginTask("Load sources for " + objectType + " '" + objectFullName + "'...", 1);
-        try (final JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Load source code for " + objectType + " '" + objectFullName + "'")) {
+        try (final JDBCSession session = DBUtils.openMetaSession(monitor, object, "Load source code for " + objectType + " '" + objectFullName + "'")) {
             if (dataSource.isAtLeastV9()) {
                 try {
-                    JDBCUtils.executeProcedure(
-                        session,
-                        "begin DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'SQLTERMINATOR',true); end;");
+                    // Do not add semicolon in the end
+//                    JDBCUtils.executeProcedure(
+//                        session,
+//                        "begin DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'SQLTERMINATOR',true); end;");
                     JDBCUtils.executeProcedure(
                         session,
                         "begin DBMS_METADATA.SET_TRANSFORM_PARAM(DBMS_METADATA.SESSION_TRANSFORM,'STORAGE'," + ddlFormat.isShowStorage() + "); end;");
@@ -207,7 +208,7 @@ public class OracleUtils {
         if (!sourceObject.getDataSource().isViewAvailable(monitor, OracleConstants.SCHEMA_SYS, sysViewName)) {
             sysViewName = OracleConstants.VIEW_ALL_SOURCE;
         }
-        try (final JDBCSession session = DBUtils.openMetaSession(monitor, sourceOwner.getDataSource(), "Load source code for " + sourceType + " '" + sourceObject.getName() + "'")) {
+        try (final JDBCSession session = DBUtils.openMetaSession(monitor, sourceOwner, "Load source code for " + sourceType + " '" + sourceObject.getName() + "'")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT TEXT FROM " + OracleConstants.SCHEMA_SYS + "." + sysViewName + " " +
                     "WHERE TYPE=? AND OWNER=? AND NAME=? " +
@@ -309,7 +310,7 @@ public class OracleUtils {
         OracleObjectType objectType)
         throws DBCException
     {
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, object.getDataSource(), "Refresh state of " + objectType.getTypeName() + " '" + object.getName() + "'")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, object, "Refresh state of " + objectType.getTypeName() + " '" + object.getName() + "'")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT STATUS FROM SYS.ALL_OBJECTS WHERE OBJECT_TYPE=? AND OWNER=? AND OBJECT_NAME=?")) {
                 dbStat.setString(1, objectType.getTypeName());

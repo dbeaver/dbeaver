@@ -240,7 +240,7 @@ public class ResultSetUtils
         }
     }
 
-    private static DBSEntity getEntityFromMetaData(DBRProgressMonitor monitor, DBPDataSource dataSource, DBCEntityMetaData entityMeta) throws DBException {
+    public static DBSEntity getEntityFromMetaData(DBRProgressMonitor monitor, DBPDataSource dataSource, DBCEntityMetaData entityMeta) throws DBException {
         final DBSObjectContainer objectContainer = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
         if (objectContainer != null) {
             DBSEntity entity = getEntityFromMetaData(monitor, objectContainer, entityMeta, false);
@@ -252,7 +252,8 @@ public class ResultSetUtils
             return null;
         }
     }
-    private static DBSEntity getEntityFromMetaData(DBRProgressMonitor monitor, DBSObjectContainer objectContainer, DBCEntityMetaData entityMeta, boolean transformName) throws DBException {
+
+    public static DBSEntity getEntityFromMetaData(DBRProgressMonitor monitor, DBSObjectContainer objectContainer, DBCEntityMetaData entityMeta, boolean transformName) throws DBException {
         final DBPDataSource dataSource = objectContainer.getDataSource();
         String catalogName = entityMeta.getCatalogName();
         String schemaName = entityMeta.getSchemaName();
@@ -395,9 +396,8 @@ public class ResultSetUtils
     @Nullable
     public static Object getAttributeValueFromClipboard(DBDAttributeBinding attribute) throws DBCException
     {
-        DBPDataSource dataSource = attribute.getDataSource();
         Clipboard clipboard = new Clipboard(Display.getCurrent());
-        try (DBCSession session = DBUtils.openUtilSession(new VoidProgressMonitor(), dataSource, "Copy from clipboard")) {
+        try (DBCSession session = DBUtils.openUtilSession(new VoidProgressMonitor(), attribute, "Copy from clipboard")) {
             String strValue = (String) clipboard.getContents(TextTransfer.getInstance());
             return attribute.getValueHandler().getValueFromObject(
                 session, attribute.getAttribute(), strValue, true);

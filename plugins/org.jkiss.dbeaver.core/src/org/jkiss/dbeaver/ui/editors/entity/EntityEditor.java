@@ -20,6 +20,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.text.IUndoManager;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -35,9 +36,11 @@ import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
+import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAdapter;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
@@ -167,7 +170,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
         super.dispose();
 
         if (getDatabaseObject() != null && commandContext != null) {
-            commandContext.resetChanges();
+            commandContext.resetChanges(true);
 //            // Remove all non-persisted objects
 //            for (DBPObject object : getCommandContext().getEditedObjects()) {
 //                if (object instanceof DBPPersistedObject && !((DBPPersistedObject)object).isPersisted()) {
@@ -362,7 +365,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
             }
             DBECommandContext commandContext = getCommandContext();
             if (commandContext != null) {
-                commandContext.resetChanges();
+                commandContext.resetChanges(true);
             }
             refreshPart(this, false);
             firePropertyChange(IEditorPart.PROP_DIRTY);
@@ -371,33 +374,42 @@ public class EntityEditor extends MultiPageDatabaseEditor
 
     public void undoChanges()
     {
-        DBECommandContext commandContext = getCommandContext();
-        if (commandContext != null && commandContext.getUndoCommand() != null) {
-            if (!getDatabaseObject().isPersisted() && commandContext.getUndoCommands().size() == 1) {
-                //getSite().getPage().closeEditor(this, true);
-                //return;
-                // Undo of last command in command context will close editor
-                // Let's ask user about it
-                if (ConfirmationDialog.showConfirmDialog(
-                    null,
-                    DBeaverPreferences.CONFIRM_ENTITY_REJECT,
-                    ConfirmationDialog.QUESTION,
-                    getDatabaseObject().getName()) != IDialogConstants.YES_ID)
-                {
-                    return;
+        IUndoManager undoManager = getAdapter(IUndoManager.class);
+        if (undoManager != null) {
+            undoManager.undo();
+        } else {
+            DBECommandContext commandContext = getCommandContext();
+            if (commandContext != null && commandContext.getUndoCommand() != null) {
+                if (!getDatabaseObject().isPersisted() && commandContext.getUndoCommands().size() == 1) {
+                    //getSite().getPage().closeEditor(this, true);
+                    //return;
+                    // Undo of last command in command context will close editor
+                    // Let's ask user about it
+                    if (ConfirmationDialog.showConfirmDialog(
+                            null,
+                            DBeaverPreferences.CONFIRM_ENTITY_REJECT,
+                            ConfirmationDialog.QUESTION,
+                            getDatabaseObject().getName()) != IDialogConstants.YES_ID) {
+                        return;
+                    }
                 }
+                commandContext.undoCommand();
+                firePropertyChange(IEditorPart.PROP_DIRTY);
             }
-            commandContext.undoCommand();
-            firePropertyChange(IEditorPart.PROP_DIRTY);
         }
     }
 
     public void redoChanges()
     {
-        DBECommandContext commandContext = getCommandContext();
-        if (commandContext != null && commandContext.getRedoCommand() != null) {
-            commandContext.redoCommand();
-            firePropertyChange(IEditorPart.PROP_DIRTY);
+        IUndoManager undoManager = getAdapter(IUndoManager.class);
+        if (undoManager != null) {
+            undoManager.redo();
+        } else {
+            DBECommandContext commandContext = getCommandContext();
+            if (commandContext != null && commandContext.getRedoCommand() != null) {
+                commandContext.redoCommand();
+                firePropertyChange(IEditorPart.PROP_DIRTY);
+            }
         }
     }
 
@@ -422,10 +434,25 @@ public class EntityEditor extends MultiPageDatabaseEditor
             }
             Map<String, Object> options = new HashMap<>();
             options.put(DBPScriptObject.OPTION_OBJECT_SAVE, true);
-            script.append(SQLUtils.generateScript(
-                commandContext.getExecutionContext().getDataSource(),
-                command.getPersistActions(options),
-                false));
+
+            try {
+                UIUtils.runInProgressService(monitor -> {
+                    try {
+                        DBEPersistAction[] persistActions = command.getPersistActions(monitor, options);
+                        script.append(SQLUtils.generateScript(
+                            commandContext.getExecutionContext().getDataSource(),
+                            persistActions,
+                            false));
+                    } catch (DBException e) {
+                        throw new InvocationTargetException(e);
+                    }
+                });
+            } catch (InvocationTargetException e) {
+                DBeaverUI.getInstance().showError("Script generate error", "Couldn't generate alter script", e.getTargetException());
+                return IDialogConstants.CANCEL_ID;
+            } catch (InterruptedException e) {
+                return IDialogConstants.CANCEL_ID;
+            }
         }
         if (script.length() == 0) {
             return IDialogConstants.PROCEED_ID;
@@ -750,9 +777,8 @@ public class EntityEditor extends MultiPageDatabaseEditor
             // Otherwise just update object's properties
             DBECommandContext commandContext = getCommandContext();
             if (commandContext != null) {
-                // FIXME: resetChanges refreshes editor one more time and eventually leads to node reload/close.
-                // FIXME: maybe already fixed??
-                commandContext.resetChanges();
+                // Just clear command context. Do not undo because object state was already refreshed
+                commandContext.resetChanges(false);
             }
         }
 

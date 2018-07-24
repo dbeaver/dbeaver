@@ -56,7 +56,7 @@ public class MySQLCollation extends MySQLInformation {
         this.sortLength = JDBCUtils.safeGetInt(dbResult, MySQLConstants.COL_SORT_LENGTH);
     }
 
-    @Property(viewable = true, order = 1)
+    @Property(viewable = true, order = 2)
     public MySQLCharset getCharset()
     {
         return charset;
@@ -64,7 +64,7 @@ public class MySQLCollation extends MySQLInformation {
 
     @NotNull
     @Override
-    @Property(viewable = true, order = 2)
+    @Property(viewable = true, order = 1)
     public String getName()
     {
         return name;

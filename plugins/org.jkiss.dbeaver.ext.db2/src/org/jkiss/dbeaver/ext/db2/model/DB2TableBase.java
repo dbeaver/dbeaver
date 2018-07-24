@@ -253,7 +253,7 @@ public abstract class DB2TableBase extends JDBCTable<DB2DataSource, DB2Schema>
 
     @Nullable
     @Override
-    @Property(viewable = false, order = 99, editable = true, updatable = true)
+    @Property(viewable = false, order = 99, editable = true, updatable = true, multiline = true)
     public String getDescription()
     {
         return remarks;

@@ -114,7 +114,7 @@ public class DB2RemoteServer extends DB2GlobalObject implements DBPRefreshableOb
         return version;
     }
 
-    @Property(viewable = true, editable = false, order = 5)
+    @Property(viewable = true, editable = false, multiline = true, order = 5)
     public String getRemarks()
     {
         return remarks;

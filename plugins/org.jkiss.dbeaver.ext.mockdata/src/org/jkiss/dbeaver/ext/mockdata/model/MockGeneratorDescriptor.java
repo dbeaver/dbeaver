@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.mockdata.model;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
+import org.jkiss.dbeaver.ext.mockdata.MockDataMessages;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
@@ -43,6 +44,7 @@ public class MockGeneratorDescriptor extends DataTypeAbstractDescriptor<MockValu
     public static final String DATETIME_RANDOM_GENERATOR_ID = "dateRandomGenerator"; //NON-NLS-1
     public static final String NUMERIC_RANDOM_GENERATOR_ID = "numericRandomGenerator"; //NON-NLS-1
     public static final String STRING_TEXT_GENERATOR_ID = "stringTextGenerator"; //NON-NLS-1
+    public static final String ZERO_GENERATOR_ID = "zeroGenerator"; //NON-NLS-1
 
     public static final String TAG_PRESET = "preset"; //NON-NLS-1
 
@@ -65,32 +67,34 @@ public class MockGeneratorDescriptor extends DataTypeAbstractDescriptor<MockValu
         this.url = config.getAttribute(RegistryConstants.ATTR_URL);
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
 
-        properties.add(new PropertyDescriptor(
-                "General", "nulls", "% of NULLs", "NULL values (%)", false,
-                PropertyDescriptor.PropertyType.t_integer.getValueType(), 0, null));
-
-        for (IConfigurationElement prop : config.getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP)) {
-            properties.addAll(PropertyDescriptor.extractProperties(prop));
-        }
-
-        for (IConfigurationElement preset : config.getChildren(TAG_PRESET)) {
-            presets.add(new Preset(
-                    preset.getAttribute("id"),
-                    preset.getAttribute("label"),
-                    preset.getAttribute("mnemonics"),
-                    preset.getAttribute("description"),
-                    PropertyDescriptor.extractProperties(preset),
-                    extractTags(preset)
-            ));
-        }
-
-        if (getSupportedTypes().contains(DBPDataKind.STRING)) {
+        if (!ZERO_GENERATOR_ID.equals(this.getId())) {
             properties.add(new PropertyDescriptor(
-                    "General", "lowercase", "Lower Case", null, false,
-                    PropertyDescriptor.PropertyType.t_boolean.getValueType(), false, null));
-            properties.add(new PropertyDescriptor(
-                    "General", "uppercase", "Upper Case", null, false,
-                    PropertyDescriptor.PropertyType.t_boolean.getValueType(), false, null));
+                    "General", "nulls", MockDataMessages.tools_mockdata_prop_nulls_label, MockDataMessages.tools_mockdata_prop_nulls_description, false,
+                    PropertyDescriptor.PropertyType.t_integer.getValueType(), 0, null));
+
+            for (IConfigurationElement prop : config.getChildren(PropertyDescriptor.TAG_PROPERTY_GROUP)) {
+                properties.addAll(PropertyDescriptor.extractProperties(prop));
+            }
+
+            for (IConfigurationElement preset : config.getChildren(TAG_PRESET)) {
+                presets.add(new Preset(
+                        preset.getAttribute("id"),
+                        preset.getAttribute("label"),
+                        preset.getAttribute("mnemonics"),
+                        preset.getAttribute("description"),
+                        PropertyDescriptor.extractProperties(preset),
+                        extractTags(preset)
+                ));
+            }
+
+            if (getSupportedTypes().contains(DBPDataKind.STRING)) {
+                properties.add(new PropertyDescriptor(
+                        "General", "lowercase", MockDataMessages.tools_mockdata_prop_lowercase_label, null, false,
+                        PropertyDescriptor.PropertyType.t_boolean.getValueType(), false, null));
+                properties.add(new PropertyDescriptor(
+                        "General", "uppercase", MockDataMessages.tools_mockdata_prop_uppercase_label, null, false,
+                        PropertyDescriptor.PropertyType.t_boolean.getValueType(), false, null));
+            }
         }
 
         List<String> tags = extractTags(config);

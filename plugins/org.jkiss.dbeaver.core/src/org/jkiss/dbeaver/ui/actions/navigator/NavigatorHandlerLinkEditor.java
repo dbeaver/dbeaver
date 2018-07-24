@@ -32,8 +32,6 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
@@ -43,8 +41,6 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectExplorerView;
-
-import java.lang.reflect.InvocationTargetException;
 
 public class NavigatorHandlerLinkEditor extends AbstractHandler {
 
@@ -83,29 +79,25 @@ public class NavigatorHandlerLinkEditor extends AbstractHandler {
             if (dsContainer != null) {
                 DBPDataSource dataSource = dsContainer.getDataSource();
                 if (dataSource != null) {
-                    activeObject = DBUtils.getDefaultOrActiveObject(dataSource);
+                    activeObject = DBUtils.getDefaultOrActiveObject(dataSource.getDefaultInstance());
                 } else {
                     activeObject = dsContainer;
                 }
 
                 final NavigatorViewBase view = navigatorView;
-                UIUtils.runInUI(activePage.getWorkbenchWindow(), new DBRRunnableWithProgress() {
-                    @Override
-                    public void run(DBRProgressMonitor monitor)
-                        throws InvocationTargetException, InterruptedException {
-                        DBSObject showObject = activeObject;
-                        if (showObject instanceof DBPDataSource) {
-                            showObject = ((DBPDataSource) showObject).getContainer();
-                        }
+                UIUtils.runInUI(activePage.getWorkbenchWindow(), monitor -> {
+                    DBSObject showObject = activeObject;
+                    if (showObject instanceof DBPDataSource) {
+                        showObject = ((DBPDataSource) showObject).getContainer();
+                    }
 
-                        DBNDatabaseNode objectNode = view.getModel().getNodeByObject(
-                            monitor,
-                            showObject,
-                            true
-                        );
-                        if (objectNode != null) {
-                            view.showNode(objectNode);
-                        }
+                    DBNDatabaseNode objectNode = view.getModel().getNodeByObject(
+                        monitor,
+                        showObject,
+                        true
+                    );
+                    if (objectNode != null) {
+                        view.showNode(objectNode);
                     }
                 });
             }

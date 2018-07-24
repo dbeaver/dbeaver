@@ -71,7 +71,7 @@ public class GenericCatalog extends GenericObjectContainer implements DBSCatalog
         throws DBException
     {
         if (schemas == null && !isInitialized) {
-            try (JDBCSession session = DBUtils.openMetaSession(monitor, this.getDataSource(), "Load catalog schemas")) {
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load catalog schemas")) {
                 this.schemas = this.getDataSource().getMetaModel().loadSchemas(session, getDataSource(), this);
                 this.isInitialized = true;
             }
@@ -185,7 +185,7 @@ public class GenericCatalog extends GenericObjectContainer implements DBSCatalog
         }
 
         GenericDataSource dataSource = getDataSource();
-        for (JDBCExecutionContext context : dataSource.getAllContexts()) {
+        for (JDBCExecutionContext context : dataSource.getDefaultInstance().getAllContexts()) {
             dataSource.setActiveEntityName(monitor, context, object);
         }
 

@@ -74,6 +74,8 @@ public interface DBPDriverLibrary
     @Nullable
     String getDescription();
 
+    boolean isOptional();
+
     boolean isCustom();
 
     boolean isDisabled();

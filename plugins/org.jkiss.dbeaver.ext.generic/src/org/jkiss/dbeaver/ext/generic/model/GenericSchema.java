@@ -71,7 +71,7 @@ public class GenericSchema extends GenericObjectContainer implements DBSSchema
 
     @Nullable
     @Override
-    @Property(viewable = true, order = 100)
+    @Property(viewable = true, multiline = true, order = 100)
     public String getDescription()
     {
         return null;

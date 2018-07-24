@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.ext.mysql;
 
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.struct.rdb.DBSIndexType;
 
 /**
@@ -28,10 +29,13 @@ public class MySQLConstants {
     public static final String DEFAULT_HOST = "localhost";
 
     public static final String DRIVER_ID_MYSQL = "mysql5";
+    public static final String DRIVER_ID_MYSQL8 = "mysql8";
     public static final String DRIVER_ID_MARIA_DB = "mariaDB";
     public static final String DRIVER_CLASS_MARIA_DB = "org.mariadb.jdbc.Driver";
 
     public static final String HANDLER_SSL = "mysql_ssl";
+
+    public static final String PROP_SERVER_TIMEZONE = DBConstants.INTERNAL_PROP_PREFIX + "serverTimezone@";
 
     public static final String PROP_REQUIRE_SSL = "ssl.require";
     public static final String PROP_VERIFY_SERVER_SERT = "ssl.verify.server";

@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.generic.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPNamedObject2;
 import org.jkiss.dbeaver.model.impl.DBPositiveNumberTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCColumnKeyType;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
@@ -31,7 +32,7 @@ import java.util.Collection;
 /**
  * Generic table column
  */
-public class GenericTableColumn extends JDBCTableColumn<GenericTable> implements DBSTableColumn, JDBCColumnKeyType
+public class GenericTableColumn extends JDBCTableColumn<GenericTable> implements DBSTableColumn, DBPNamedObject2, JDBCColumnKeyType
 {
     private int radix;
     private String remarks;
@@ -162,7 +163,7 @@ public class GenericTableColumn extends JDBCTableColumn<GenericTable> implements
 
     @Nullable
     @Override
-    @Property(viewable = true, order = 100)
+    @Property(viewable = true, multiline = true, order = 100)
     public String getDescription()
     {
         return remarks;

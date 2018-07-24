@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -36,8 +36,9 @@ public class ERDConstants {
     public static final int PRINT_MODE_DEFAULT = PrintFigureOperation.TILE;
     public static final int PRINT_MARGIN_DEFAULT = 0;
 
-    public static final String PREF_DIAGRAM_SHOW_VIEWS = "erd.diagram.show.views";
+    public static final String PROP_DIAGRAM_FONT = "org.jkiss.dbeaver.erd.diagram.font";
 
+    public static final String PREF_DIAGRAM_SHOW_VIEWS = "erd.diagram.show.views";
     public static final String PREF_GRID_ENABLED = "erd.grid.enabled";
     public static final String PREF_GRID_SNAP_ENABLED = "erd.grid.snap";
     public static final String PREF_GRID_WIDTH = "erd.grid.width";
@@ -49,6 +50,7 @@ public class ERDConstants {
     public static final String COLOR_ERD_ENTITY_ASSOCIATION_BACKGROUND = "org.jkiss.dbeaver.erd.diagram.entity.association.background";
     public static final String COLOR_ERD_ENTITY_REGULAR_BACKGROUND = "org.jkiss.dbeaver.erd.diagram.entity.regular.background";
     public static final String COLOR_ERD_ENTITY_NAME_FOREGROUND = "org.jkiss.dbeaver.erd.diagram.entity.name.foreground";
+    public static final String COLOR_ERD_LINES_FOREGROUND = "org.jkiss.dbeaver.erd.diagram.lines.foreground";
     public static final String COLOR_ERD_ATTR_BACKGROUND = "org.jkiss.dbeaver.erd.diagram.attributes.background";
     public static final String COLOR_ERD_ATTR_FOREGROUND = "org.jkiss.dbeaver.erd.diagram.attributes.foreground";
     public static final String COLOR_ERD_NOTE_BACKGROUND = "org.jkiss.dbeaver.erd.diagram.notes.background";

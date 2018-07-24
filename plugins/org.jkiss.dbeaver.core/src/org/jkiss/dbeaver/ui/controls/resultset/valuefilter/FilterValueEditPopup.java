@@ -92,9 +92,9 @@ public class FilterValueEditPopup extends Dialog {
         tableComposite.setLayout(new GridLayout(1, false));
 
         filter.setupTable(tableComposite, SWT.BORDER | SWT.SINGLE | SWT.NO_SCROLL | SWT.V_SCROLL, true, false, new GridData(GridData.FILL_BOTH));
-        Table table = filter.table.getTable();
+        Table table = filter.tableViewer.getTable();
 
-        TableViewerColumn resultsetColumn = new TableViewerColumn(filter.table, SWT.NONE);
+        TableViewerColumn resultsetColumn = new TableViewerColumn(filter.tableViewer, SWT.NONE);
         resultsetColumn.setLabelProvider(new ColumnLabelProvider() {
             @Override
             public String getText(Object element) {
@@ -124,15 +124,15 @@ public class FilterValueEditPopup extends Dialog {
         };
         table.addFocusListener(focusListener);
 
-        filter.table.addSelectionChangedListener(event -> {
+        filter.tableViewer.addSelectionChangedListener(event -> {
             ISelection selection = event.getSelection();
             if (selection instanceof IStructuredSelection) {
                 value = ((IStructuredSelection) selection).getFirstElement();
             }
             //okPressed();
         });
-        filter.table.addDoubleClickListener(event -> {
-            value = filter.table.getStructuredSelection().getFirstElement();
+        filter.tableViewer.addDoubleClickListener(event -> {
+            value = filter.tableViewer.getStructuredSelection().getFirstElement();
             okPressed();
         });
 

@@ -93,7 +93,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     @Override
     public String getProcedureDDL(DBRProgressMonitor monitor, GenericProcedure sourceObject) throws DBException {
         if (isSqlServer() && sourceObject.getDataSource().isServerVersionAtLeast(SQLServerConstants.SQL_SERVER_2005_VERSION_MAJOR,0)) {
-            try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject.getDataSource(), "Read routine definition")) {
+            try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read routine definition")) {
                 try (JDBCPreparedStatement dbStat = session.prepareStatement(
                     "SELECT definition FROM " + DBUtils.getQuotedIdentifier(sourceObject.getCatalog()) + ".sys.sql_modules WHERE object_id=OBJECT_ID(?)"
                 )) {
@@ -119,7 +119,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
 
     @Override
     public List<GenericTrigger> loadTriggers(DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTable table) throws DBException {
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, container.getDataSource(), "Read triggers")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Read triggers")) {
             String schema = getSystemSchemaFQN(container.getDataSource(), container.getCatalog());
             StringBuilder query = new StringBuilder("SELECT triggers.name FROM " + schema + ".sysobjects triggers");
             GenericSchema tableSchema = table == null ? null : table.getSchema();
@@ -312,7 +312,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
 
     @Override
     public List<GenericSequence> loadSequences(DBRProgressMonitor monitor, GenericStructContainer container) throws DBException {
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, container.getDataSource(), "Read system sequences")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Read system sequences")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT * FROM " + getSystemSchemaFQN(container.getDataSource(), container.getCatalog()) + ".sequences WHERE schema_name(schema_id)=?")) {
                 dbStat.setString(1, container.getSchema().getName());

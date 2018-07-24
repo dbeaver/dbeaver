@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.impl.struct.AbstractProcedure;
@@ -92,7 +93,6 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     private boolean returnsSet;
     private ProcedureVolatile procVolatile;
     private PostgreDataType returnType;
-    private Object[] argDefaults;
     private int[] transformTypes;
     private String[] config;
     private Object acl;
@@ -143,17 +143,19 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                         log.debug(e);
                     }
                 }
+                DBSProcedureParameterKind parameterKind = mode == null ? DBSProcedureParameterKind.IN : mode.getParameterKind();
                 PostgreProcedureParameter param = new PostgreProcedureParameter(
                     this,
                     paramName,
                     dataType,
-                    mode == null ? DBSProcedureParameterKind.IN : mode.getParameterKind(),
+                    parameterKind,
                     i + 1);
                 params.add(param);
             }
 
         } else {
             long[] inArgTypes = PostgreUtils.getIdVector(JDBCUtils.safeGetObject(dbResult, "proargtypes"));
+
             if (!ArrayUtils.isEmpty(inArgTypes)) {
                 for (int i = 0; i < inArgTypes.length; i++) {
                     Long paramType = inArgTypes[i];
@@ -165,10 +167,36 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                     //String paramName = argNames == null || argNames.length < inArg
                     //String paramName = "$" + (i + 1);
                     String paramName = argNames == null || argNames.length < inArgTypes.length ? "$" + (i + 1) : argNames[i];
-                    PostgreProcedureParameter param = new PostgreProcedureParameter(this, paramName, dataType, DBSProcedureParameterKind.IN, i + 1);
+                    PostgreProcedureParameter param = new PostgreProcedureParameter(
+                        this, paramName, dataType, DBSProcedureParameterKind.IN, i + 1);
                     params.add(param);
                 }
             }
+        }
+
+        try {
+            String argDefaultsString = JDBCUtils.safeGetString(dbResult, "arg_defaults");
+            String[] argDefaults = null;
+            if (!CommonUtils.isEmpty(argDefaultsString)) {
+                try {
+                    argDefaults = PostgreUtils.parseObjectString(argDefaultsString);
+                } catch (DBCException e) {
+                    log.debug("Error parsing function parameters defaults", e);
+                }
+            }
+            if (argDefaults != null && argDefaults.length > 0) {
+                // Assign defaults to last X arguments
+                int paramsAssigned = 0;
+                for (int i = params.size() - 1; i >= 0; i--) {
+                    params.get(i).setDefaultValue(argDefaults[argDefaults.length - 1 - paramsAssigned]);
+                    paramsAssigned++;
+                    if (paramsAssigned >= argDefaults.length) {
+                        break;
+                    }
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error parsing parameters defaults", e);
         }
 
         this.overloadedName = makeOverloadedName(false);
@@ -187,7 +215,8 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         this.isStrict = JDBCUtils.safeGetBoolean(dbResult, "proisstrict");
         this.returnsSet = JDBCUtils.safeGetBoolean(dbResult, "proretset");
         try {
-            this.procVolatile = ProcedureVolatile.valueOf(JDBCUtils.safeGetString(dbResult, "provolatile"));
+            String provolatile = JDBCUtils.safeGetString(dbResult, "provolatile");
+            this.procVolatile = provolatile == null ? null : ProcedureVolatile.valueOf(provolatile);
         } catch (IllegalArgumentException e) {
             log.debug(e);
         }
@@ -274,7 +303,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
         String procDDL;
         if (getDataSource().isGreenplum() || CommonUtils.getOption(options, OPTION_DEBUGGER_SOURCE)) {
             if (procSrc == null) {
-                try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read procedure body")) {
+                try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read procedure body")) {
                     procSrc = JDBCUtils.queryString(session, "SELECT prosrc FROM pg_proc where oid = ?", getObjectId());
                 } catch (SQLException e) {
                     throw new DBException("Error reading procedure body", e);
@@ -292,7 +321,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
                     // No OID so let's use old (bad) way
                     body = this.procSrc;
                 } else {
-                    try (JDBCSession session = DBUtils.openMetaSession(monitor, getDataSource(), "Read procedure body")) {
+                    try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read procedure body")) {
                         body = JDBCUtils.queryString(session, "SELECT pg_get_functiondef(" + getObjectId() + ")");
                     } catch (SQLException e) {
                         if (!CommonUtils.isEmpty(this.procSrc)) {
@@ -307,7 +336,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
             }
             procDDL = body;
         }
-        if (CommonUtils.getOption(options, PostgreConstants.OPTION_DDL_SHOW_PERMISSIONS)) {
+        if (this.isPersisted() && CommonUtils.getOption(options, PostgreConstants.OPTION_DDL_SHOW_PERMISSIONS)) {
             List<DBEPersistAction> actions = new ArrayList<>();
             PostgreUtils.getObjectGrantPermissionActions(monitor, this, actions, options);
             procDDL += "\n" + SQLUtils.generateScript(getDataSource(), actions.toArray(new DBEPersistAction[actions.size()]), false);
@@ -433,7 +462,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
 
     @Nullable
     @Override
-    @Property(viewable = true, editable = true, updatable = true, order = 200)
+    @Property(viewable = true, editable = true, updatable = true, multiline = true, order = 200)
     public String getDescription()
     {
         return super.getDescription();
@@ -454,7 +483,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
 
     @Override
     public Collection<PostgrePermission> getPermissions(DBRProgressMonitor monitor, boolean includeNestedObjects) throws DBException {
-        return PostgreUtils.extractPermissionsFromACL(this, acl);
+        return PostgreUtils.extractPermissionsFromACL(monitor,this, acl);
     }
 
     @Override

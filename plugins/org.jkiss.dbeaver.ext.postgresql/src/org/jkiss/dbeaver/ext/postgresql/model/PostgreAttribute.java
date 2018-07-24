@@ -111,7 +111,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
                 }
             }
         }
-        setTypeName(dataType.getTypeName());
+        //setTypeName(dataType.getTypeName());
         setValueType(dataType.getTypeID());
         setDefaultValue(JDBCUtils.safeGetString(dbResult, "def_value"));
         int typeMod = JDBCUtils.safeGetInt(dbResult, "atttypmod");
@@ -248,7 +248,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
 
     @Nullable
     @Override
-    @Property(viewable = true, editable = true, updatable = true, order = 100)
+    @Property(viewable = true, editable = true, updatable = true, multiline = true, order = 100)
     public String getDescription() {
         return description;
     }
@@ -296,7 +296,7 @@ public abstract class PostgreAttribute<OWNER extends DBSEntity & PostgreObject> 
         @Override
         public PostgreDataType transform(PostgreAttribute object, Object value) {
             if (value instanceof String) {
-                PostgreDataType dataType = object.getDataSource().getDefaultInstance().getDataType(new VoidProgressMonitor(), (String)value);
+                PostgreDataType dataType = object.getDatabase().getDataType(new VoidProgressMonitor(), (String)value);
                 if (dataType == null) {
                     throw new IllegalArgumentException("Bad data type name specified: " + value);
                 }

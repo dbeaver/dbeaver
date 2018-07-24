@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.wmi.model;
 
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.exec.*;
 import org.jkiss.dbeaver.model.impl.AbstractSession;
@@ -56,7 +57,7 @@ public class WMISession extends AbstractSession {
     }
 
     @Override
-    public void cancelBlock() throws DBException
+    public void cancelBlock(@NotNull DBRProgressMonitor monitor, @Nullable Thread blockThread) throws DBException
     {
         // Cancel WMI async call
     }

@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.search;
 
 import org.eclipse.jface.dialogs.DialogPage;
+import org.eclipse.jface.viewers.CheckboxTreeViewer;
 import org.eclipse.search.ui.ISearchPage;
 import org.eclipse.search.ui.ISearchPageContainer;
 import org.eclipse.search.ui.ISearchQuery;
@@ -26,10 +27,13 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
@@ -37,6 +41,8 @@ import java.util.*;
 public abstract class AbstractSearchPage extends DialogPage implements ISearchPage {
 
     static final protected Log log = Log.getLog(AbstractSearchPage.class);
+
+    private static final Map<Class<? extends AbstractSearchPage>, String> searchStateCache = new IdentityHashMap<>();
 
     protected ISearchPageContainer container;
 
@@ -82,10 +88,26 @@ public abstract class AbstractSearchPage extends DialogPage implements ISearchPa
         return true;
     }
 
-    protected static List<DBNNode> loadTreeState(DBRProgressMonitor monitor, DBPPreferenceStore store, String propName)
+    protected void saveTreeState(DatabaseNavigatorTree tree)
+    {
+        // Object sources
+        StringBuilder sourcesString = new StringBuilder();
+        for (Object obj : ((CheckboxTreeViewer) tree.getViewer()).getCheckedElements()) {
+            DBNNode node = (DBNNode) obj;
+            if (node instanceof DBNDatabaseNode && ((DBNDatabaseNode) node).getObject() instanceof DBSDataContainer) {
+                if (sourcesString.length() > 0) {
+                    sourcesString.append("|"); //$NON-NLS-1$
+                }
+                sourcesString.append(node.getNodeItemPath());
+            }
+        }
+        searchStateCache.put(getClass(), sourcesString.toString());
+    }
+
+    protected List<DBNNode> loadTreeState(DBRProgressMonitor monitor)
     {
         final List<DBNNode> result = new ArrayList<>();
-        final String sources = store.getString(propName);
+        final String sources = searchStateCache.get(getClass());
         if (!CommonUtils.isEmpty(sources)) {
             // Keep broken datasources to make connect attempt only once
             Set<DBNDataSource> brokenDataSources = new HashSet<>();

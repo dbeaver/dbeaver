@@ -44,7 +44,7 @@ public class H2MetaModel extends GenericMetaModel
     @Override
     public String getViewDDL(DBRProgressMonitor monitor, GenericTable sourceObject, Map<String, Object> options) throws DBException {
         GenericDataSource dataSource = sourceObject.getDataSource();
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, dataSource, "Read H2 view source")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, sourceObject, "Read H2 view source")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
                 "SELECT VIEW_DEFINITION FROM INFORMATION_SCHEMA.VIEWS " +
                     "WHERE TABLE_SCHEMA=? AND TABLE_NAME=?"))
@@ -70,7 +70,7 @@ public class H2MetaModel extends GenericMetaModel
 
     @Override
     public List<GenericSequence> loadSequences(@NotNull DBRProgressMonitor monitor, @NotNull GenericStructContainer container) throws DBException {
-        try (JDBCSession session = DBUtils.openMetaSession(monitor, container.getDataSource(), "Read sequences")) {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Read sequences")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT * FROM INFORMATION_SCHEMA.SEQUENCES")) {
                 List<GenericSequence> result = new ArrayList<>();
 

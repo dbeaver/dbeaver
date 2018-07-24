@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.registry.driver;
 
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
@@ -33,6 +34,15 @@ public class DriverLibraryRepository extends DriverLibraryLocal
 
     public DriverLibraryRepository(DriverDescriptor driver, IConfigurationElement config) {
         super(driver, config);
+    }
+
+    private DriverLibraryRepository(DriverDescriptor driver, DriverLibraryRepository copyFrom) {
+        super(driver, copyFrom);
+    }
+
+    @Override
+    public DBPDriverLibrary copyLibrary(DriverDescriptor driverDescriptor) {
+        return new DriverLibraryRepository(driver, this);
     }
 
     @Override

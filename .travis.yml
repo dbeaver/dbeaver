@@ -8,10 +8,6 @@ notifications:
   email:
     - serge@jkiss.org
     
-cache:
-  directories:
-  - $HOME/.m2
-
 before_install: echo "MAVEN_OPTS='-Xmx2048m -XX:MaxPermSize=512m'" > ~/.mavenrc
 
 install: true

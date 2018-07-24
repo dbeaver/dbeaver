@@ -24,8 +24,13 @@ import org.eclipse.swt.dnd.DropTargetAdapter;
 import org.eclipse.swt.dnd.DropTargetEvent;
 import org.eclipse.swt.dnd.TextTransfer;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.controls.lightgrid.LightGrid;
 import org.jkiss.dbeaver.ui.controls.resultset.IResultSetDecorator;
@@ -57,7 +62,16 @@ public class GroupingResultsDecorator implements IResultSetDecorator {
 
     @Override
     public String getEmptyDataDescription() {
-        return "Drag-and-drop results column(s) here to create grouping\nPress CONTROL to configure grouping settings";
+        DBPDataSource dataSource = container.getResultSetController().getDataContainer().getDataSource();
+        if (dataSource == null) {
+            return "No connected to database";
+        }
+        SQLDialect dialect = SQLUtils.getDialectFromDataSource(dataSource);
+        if (dialect == null || !dialect.supportsSubqueries()) {
+            return "Grouping is not supported\nby datasource '" + dataSource.getContainer().getDriver().getFullName() + "'";
+        } else {
+            return "Drag-and-drop results column(s) here to create grouping\nPress CONTROL to configure grouping settings";
+        }
     }
 
     @Override

@@ -508,7 +508,7 @@ public class JDBCUtils {
             } catch (SQLException e) {
                 isValid[0] = false;
             }
-        }, "Check connection is alive", invalidateTimeout + 2000);
+        }, "Ping connection " + dataSource.getContainer().getName(), invalidateTimeout + 2000, true);
         return isValid[0];
     }
 
@@ -704,7 +704,7 @@ public class JDBCUtils {
         }
     }
 
-    public static void setFilterParameters(JDBCPreparedStatement statement, int paramIndex, DBSObjectFilter filter)
+    public static void setFilterParameters(PreparedStatement statement, int paramIndex, DBSObjectFilter filter)
         throws SQLException
     {
         if (filter.isNotApplicable()) {

@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.navigator;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
@@ -38,8 +37,6 @@ import java.util.List;
  */
 public class DBNProjectDatabases extends DBNNode implements DBNContainer, DBPEventListener
 {
-    private static final Log log = Log.getLog(DBNProjectDatabases.class);
-
     private List<DBNDataSource> dataSources = new ArrayList<>();
     private DBPDataSourceRegistry dataSourceRegistry;
     private volatile DBNNode[] children;

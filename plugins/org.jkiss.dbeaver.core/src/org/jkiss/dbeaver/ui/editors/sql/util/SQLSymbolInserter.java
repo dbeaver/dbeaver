@@ -133,6 +133,9 @@ public class SQLSymbolInserter implements VerifyKeyListener, ILinkedModeListener
         if (!event.doit) {
             return;
         }
+        if (editor.isBlockSelectionModeEnabled()) {
+            return;
+        }
 
         IDocument document = sourceViewer.getDocument();
 
