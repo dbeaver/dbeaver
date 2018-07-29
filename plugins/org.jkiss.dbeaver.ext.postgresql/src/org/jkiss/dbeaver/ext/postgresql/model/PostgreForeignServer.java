@@ -19,12 +19,18 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCStatement;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectCache;
+import org.jkiss.dbeaver.model.meta.Association;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collection;
 import java.util.Map;
 
 /**
@@ -39,6 +45,7 @@ public class PostgreForeignServer extends PostgreInformation implements PostgreS
     private String[] options;
     private long ownerId;
     private long dataWrapperId;
+    private UserMappingCache userMappingCache = new UserMappingCache();
 
     public PostgreForeignServer(PostgreDatabase database, ResultSet dbResult)
         throws SQLException
@@ -85,6 +92,44 @@ public class PostgreForeignServer extends PostgreInformation implements PostgreS
     @Override
     public long getObjectId() {
         return oid;
+    }
+
+    @Association
+    public Collection<PostgreUserMapping> getUserMappings(DBRProgressMonitor monitor) throws DBException {
+        return userMappingCache.getAllObjects(monitor, this);
+    }
+
+    public PostgreUserMapping getUserMapping(DBRProgressMonitor monitor, long oid) throws DBException {
+        return PostgreUtils.getObjectById(monitor, userMappingCache, this, oid);
+    }
+
+
+    static class UserMappingCache extends JDBCObjectCache<PostgreForeignServer, PostgreUserMapping> {
+
+        @Override
+        protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreForeignServer owner)
+            throws SQLException
+        {
+            return session.prepareStatement(
+                "select distinct " +
+                "\nsrvname, " +
+                "\ncase when rolname is null then 'public' else rolname end rolname, " +
+                "\nsrvoptions,  " +
+                "\numoptions  " +
+                "\nfrom pg_user_mapping um  " +
+                "\njoin pg_foreign_server fs on um.umserver = fs.OID  " +
+                "\nleft join pg_authid pa on um.umuser = pa.OID " +
+                "\nwhere fs.OID = " + owner.getObjectId() +
+                "\nORDER BY srvname"
+            );
+        }
+
+        @Override
+        protected PostgreUserMapping fetchObject(@NotNull JDBCSession session, @NotNull PostgreForeignServer owner, @NotNull JDBCResultSet dbResult)
+            throws SQLException, DBException
+        {
+            return new PostgreUserMapping(owner, dbResult);
+        }
     }
 
     @Property(viewable = false, order = 8)
