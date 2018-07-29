@@ -548,6 +548,11 @@ public class BasicSQLDialect implements SQLDialect {
         return null;
     }
 
+    @Override
+    public String formatStoredProcedureCall(DBPDataSource dataSource, String sqlText) {
+        return sqlText;
+    }
+
     /**
      * @param inParameters empty list to collect IN parameters
      */
