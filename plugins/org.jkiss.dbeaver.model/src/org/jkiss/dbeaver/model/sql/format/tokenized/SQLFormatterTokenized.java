@@ -445,6 +445,7 @@ public class SQLFormatterTokenized implements SQLFormatter {
             case "[":
             case "]":
             case "#":
+            case "-":
                 return true;
             default:
                 return false;
