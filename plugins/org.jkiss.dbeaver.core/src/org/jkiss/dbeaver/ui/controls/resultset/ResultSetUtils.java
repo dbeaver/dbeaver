@@ -281,20 +281,11 @@ public class ResultSetUtils
         throws DBException
     {
         List<DBSEntityReferrer> identifiers = new ArrayList<>(2);
-        // Check for pseudo attrs (ROWID)
-        for (DBDAttributeBindingMeta column : bindings) {
-            DBDPseudoAttribute pseudoAttribute = column.getPseudoAttribute();
-            if (pseudoAttribute != null && pseudoAttribute.getType() == DBDPseudoAttributeType.ROWID) {
-                identifiers.add(new DBDPseudoReferrer(table, column));
-                break;
-            }
-        }
 
         if (table instanceof DBSTable && ((DBSTable) table).isView()) {
             // Skip physical identifiers for views. There are nothing anyway
 
-        } else if (identifiers.isEmpty()) {
-
+        } else {
             // Check indexes first.
             if (table instanceof DBSTable) {
                 try {
@@ -321,7 +312,7 @@ public class ResultSetUtils
                     log.debug(e);
                 }
             }
-            if (identifiers.isEmpty()) {
+            {
                 // Check constraints
                 Collection<? extends DBSEntityConstraint> constraints = table.getConstraints(monitor);
                 if (constraints != null) {
@@ -335,11 +326,23 @@ public class ResultSetUtils
 
         }
         if (CommonUtils.isEmpty(identifiers)) {
-            // No physical identifiers
+            // Check for pseudo attrs (ROWID)
+            // Do this after natural identifiers search (see #3829)
+            for (DBDAttributeBindingMeta column : bindings) {
+                DBDPseudoAttribute pseudoAttribute = column.getPseudoAttribute();
+                if (pseudoAttribute != null && pseudoAttribute.getType() == DBDPseudoAttributeType.ROWID) {
+                    identifiers.add(new DBDPseudoReferrer(table, column));
+                    break;
+                }
+            }
+        }
+        if (CommonUtils.isEmpty(identifiers)) {
+            // No physical identifiers or row ids
             // Make new or use existing virtual identifier
             DBVEntity virtualEntity = DBVUtils.findVirtualEntity(table, true);
             identifiers.add(virtualEntity.getBestIdentifier());
         }
+
         if (!CommonUtils.isEmpty(identifiers)) {
             // Find PK or unique key
             DBSEntityReferrer uniqueId = null;
