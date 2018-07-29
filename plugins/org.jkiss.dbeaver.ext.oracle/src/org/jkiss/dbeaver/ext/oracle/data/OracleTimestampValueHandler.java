@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.oracle.data;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
+import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCDateTimeValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -36,10 +37,10 @@ public class OracleTimestampValueHandler extends JDBCDateTimeValueHandler {
     private static final SimpleDateFormat DEFAULT_DATE_FORMAT = new SimpleDateFormat("'DATE '''yyyy-MM-dd''");
     private static final SimpleDateFormat DEFAULT_TIME_FORMAT = new SimpleDateFormat("'TIME '''HH:mm:ss.SSS''");
 
-    public OracleTimestampValueHandler(DBDDataFormatterProfile formatterProfile)
-    {
+    public OracleTimestampValueHandler(DBDDataFormatterProfile formatterProfile) {
         super(formatterProfile);
     }
+
 
     @Nullable
     @Override
@@ -58,7 +59,18 @@ public class OracleTimestampValueHandler extends JDBCDateTimeValueHandler {
             case Types.DATE:
                 return DEFAULT_DATE_FORMAT;
         }
+        if (type.getMaxLength() == OracleConstants.DATE_TYPE_LENGTH) {
+            return DEFAULT_DATE_FORMAT;
+        }
         return super.getNativeValueFormat(type);
+    }
+
+    protected String getFormatterId(DBSTypedObject column)
+    {
+        if (column.getMaxLength() == OracleConstants.DATE_TYPE_LENGTH) {
+            return DBDDataFormatter.TYPE_NAME_DATE;
+        }
+        return super.getFormatterId(column);
     }
 
 }

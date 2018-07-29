@@ -90,6 +90,11 @@ public class OracleConstants {
     public static final String TYPE_NAME_XML = "XMLTYPE";
     public static final String TYPE_FQ_XML = "SYS.XMLTYPE";
     public static final String TYPE_NAME_BFILE = "BFILE";
+    public static final String TYPE_NAME_DATE = "DATE";
+    public static final String TYPE_NAME_TIMESTAMP = "TIMESTAMP";
+
+    public static final int TIMESTAMP_TYPE_LENGTH = 13;
+    public static final int DATE_TYPE_LENGTH = 7;
 
     public static final DBSIndexType INDEX_TYPE_NORMAL = new DBSIndexType("NORMAL", "Normal");
     public static final DBSIndexType INDEX_TYPE_BITMAP = new DBSIndexType("BITMAP", "Bitmap");

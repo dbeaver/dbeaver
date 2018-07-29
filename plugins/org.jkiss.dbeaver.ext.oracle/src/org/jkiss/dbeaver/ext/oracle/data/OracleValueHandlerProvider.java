@@ -35,27 +35,34 @@ public class OracleValueHandlerProvider implements DBDValueHandlerProvider {
     @Override
     public DBDValueHandler getValueHandler(DBPDataSource dataSource, DBDPreferences preferences, DBSTypedObject typedObject)
     {
+        switch (typedObject.getTypeID()) {
+            case Types.BLOB:
+                return OracleBLOBValueHandler.INSTANCE;
+            case Types.CLOB:
+            case Types.NCLOB:
+                return OracleCLOBValueHandler.INSTANCE;
+            case Types.TIME_WITH_TIMEZONE:
+            case Types.TIMESTAMP_WITH_TIMEZONE:
+            case OracleConstants.DATA_TYPE_TIMESTAMP_WITH_TIMEZONE:
+                if (((OracleDataSource)dataSource).isDriverVersionAtLeast(12, 2)) {
+                    return new OracleTemporalAccessorValueHandler(preferences.getDataFormatterProfile());
+                } else {
+                    return new OracleTimestampValueHandler(preferences.getDataFormatterProfile());
+                }
+            case Types.STRUCT:
+                return OracleObjectValueHandler.INSTANCE;
+        }
+
         final String typeName = typedObject.getTypeName();
-        if (typedObject.getTypeID() == Types.BLOB) {
-            return OracleBLOBValueHandler.INSTANCE;
-        } else if (typedObject.getTypeID() == Types.CLOB || typedObject.getTypeID() == Types.NCLOB) {
-            return OracleCLOBValueHandler.INSTANCE;
-        } else if (OracleConstants.TYPE_NAME_XML.equals(typeName) || OracleConstants.TYPE_FQ_XML.equals(typeName)) {
-            return OracleXMLValueHandler.INSTANCE;
-        } else if (OracleConstants.TYPE_NAME_BFILE.equals(typeName)) {
-            return OracleBFILEValueHandler.INSTANCE;
-        } else if (typedObject.getTypeID() == java.sql.Types.STRUCT) {
-            return OracleObjectValueHandler.INSTANCE;
-        } else if (typedObject.getTypeID() == Types.TIME_WITH_TIMEZONE ||
-            typedObject.getTypeID() == Types.TIMESTAMP_WITH_TIMEZONE ||
-            typedObject.getTypeID() == OracleConstants.DATA_TYPE_TIMESTAMP_WITH_TIMEZONE)
-        {
-            if (((OracleDataSource)dataSource).isDriverVersionAtLeast(12, 2)) {
-                return new OracleTemporalAccessorValueHandler(preferences.getDataFormatterProfile());
-            } else {
-                return new OracleTimestampValueHandler(preferences.getDataFormatterProfile());
-            }
-        } else if (typeName.contains("TIMESTAMP") || typedObject.getDataKind() == DBPDataKind.DATETIME) {
+        switch (typeName) {
+            case OracleConstants.TYPE_NAME_XML:
+            case OracleConstants.TYPE_FQ_XML:
+                return OracleXMLValueHandler.INSTANCE;
+            case OracleConstants.TYPE_NAME_BFILE:
+                return OracleBFILEValueHandler.INSTANCE;
+        }
+
+        if (typeName.contains(OracleConstants.TYPE_NAME_TIMESTAMP) || typedObject.getDataKind() == DBPDataKind.DATETIME) {
             return new OracleTimestampValueHandler(preferences.getDataFormatterProfile());
         } else {
             return null;
