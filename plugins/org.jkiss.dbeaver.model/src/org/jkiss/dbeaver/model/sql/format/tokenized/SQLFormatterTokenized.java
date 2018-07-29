@@ -190,8 +190,8 @@ public class SQLFormatterTokenized implements SQLFormatter {
                         }
                     }
                 } else if (statementDelimiters.contains(tokenString)) { //$NON-NLS-1$
-                    indent = 0;
-                    index += insertReturnAndIndent(argList, index, indent);
+                    indent--;
+                    index += insertReturnAndIndent(argList, index + 1, indent);
                 }
             } else if (token.getType() == TokenType.KEYWORD) {
                 if (statementDelimiters.contains(tokenString)) { //$NON-NLS-1$
@@ -213,14 +213,15 @@ public class SQLFormatterTokenized implements SQLFormatter {
                                     }
                                 }
                             }
-                        case "DELETE":
-                        case "SELECT":
+                        case "DELETE": //$NON-NLS-1$
+                        case "SELECT": //$NON-NLS-1$
                         case "UPDATE": //$NON-NLS-1$
-                        case "INSERT":
-                        case "INTO":
-                        case "DROP":
-                        case "TRUNCATE":
-                        case "TABLE":
+                        case "INSERT": //$NON-NLS-1$
+                        case "INTO": //$NON-NLS-1$
+                        case "DROP": //$NON-NLS-1$
+                        case "TRUNCATE": //$NON-NLS-1$
+                        case "SET":
+                        case "TABLE": //$NON-NLS-1$
                             if (!isCompact) {
                                 if (bracketsDepth > 0) {
                                     index += insertReturnAndIndent(argList, index, indent);
@@ -236,9 +237,9 @@ public class SQLFormatterTokenized implements SQLFormatter {
                                 index += insertReturnAndIndent(argList, index + 1, indent);
                             }
                             break;
+                        case "BEGIN":
                         case "FROM":
                         case "WHERE":
-                        case "SET":
                         case "START WITH":
                         case "CONNECT BY":
                         case "ORDER BY":
