@@ -375,7 +375,7 @@ public class ResultSetCommandHandler extends AbstractHandler {
                         @Override
                         protected IStatus run(DBRProgressMonitor monitor) {
                             try {
-                                rsv.navigateAssociation(monitor, attr, row, false);
+                                rsv.navigateAssociation(monitor, null, attr, row, false);
                             } catch (DBException e) {
                                 return GeneralUtils.makeExceptionStatus(e);
                             }
@@ -444,7 +444,8 @@ public class ResultSetCommandHandler extends AbstractHandler {
                 break;
             }
             case CMD_REFERENCES_MENU: {
-                rsv.showReferencesMenu();
+                boolean shiftPressed = event.getTrigger() instanceof Event && ((((Event) event.getTrigger()).stateMask & SWT.SHIFT) == SWT.SHIFT);
+                rsv.showReferencesMenu(shiftPressed);
                 break;
             }
             case CMD_EXPORT: {

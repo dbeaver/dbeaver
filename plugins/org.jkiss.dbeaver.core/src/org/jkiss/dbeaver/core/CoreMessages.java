@@ -291,6 +291,12 @@ public class CoreMessages extends NLS {
 	public static String controls_resultset_viewer_status_rows_fetched;
 	public static String controls_resultset_viewer_status_rows_size;
 	public static String controls_resultset_viewer_value;
+
+	public static String controls_resultset_ref_menu_no_references;
+	public static String controls_resultset_ref_menu_references;
+	public static String controls_resultset_ref_menu_no_associations;
+	public static String controls_resultset_ref_menu_associations;
+
 	public static String controls_rs_pump_job_context_name;
 	public static String controls_rs_pump_job_name;
 
