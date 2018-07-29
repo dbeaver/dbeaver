@@ -78,17 +78,17 @@ public class FireBirdMetaModel extends GenericMetaModel
     @Override
     public List<GenericSequence> loadSequences(@NotNull DBRProgressMonitor monitor, @NotNull GenericStructContainer container) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Read sequences")) {
-            try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT RDB$GENERATOR_NAME,RDB$DESCRIPTION FROM RDB$GENERATORS")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT * FROM RDB$GENERATORS")) {
                 List<GenericSequence> result = new ArrayList<>();
 
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     while (dbResult.next()) {
-                        String name = JDBCUtils.safeGetString(dbResult, 1);
+                        String name = JDBCUtils.safeGetString(dbResult, "RDB$GENERATOR_NAME");
                         if (name == null) {
                             continue;
                         }
                         name = name.trim();
-                        String description = JDBCUtils.safeGetString(dbResult, 2);
+                        String description = JDBCUtils.safeGetString(dbResult, "RDB$DESCRIPTION");
                         GenericSequence sequence = new GenericSequence(
                             container,
                             name,
@@ -134,7 +134,7 @@ public class FireBirdMetaModel extends GenericMetaModel
     public List<GenericTrigger> loadTriggers(DBRProgressMonitor monitor, @NotNull GenericStructContainer container, @Nullable GenericTable table) throws DBException {
         try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Read triggers")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement(
-                "SELECT RDB$TRIGGER_NAME,RDB$TRIGGER_SEQUENCE,RDB$TRIGGER_TYPE,RDB$DESCRIPTION FROM RDB$TRIGGERS\n" +
+                "SELECT * FROM RDB$TRIGGERS\n" +
                     "WHERE RDB$RELATION_NAME" + (table == null ? " IS NULL" : "=?"))) {
                 if (table != null) {
                     dbStat.setString(1, table.getName());
@@ -143,14 +143,14 @@ public class FireBirdMetaModel extends GenericMetaModel
 
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     while (dbResult.next()) {
-                        String name = JDBCUtils.safeGetString(dbResult, 1);
+                        String name = JDBCUtils.safeGetString(dbResult, "RDB$TRIGGER_NAME");
                         if (name == null) {
                             continue;
                         }
                         name = name.trim();
-                        int sequence = JDBCUtils.safeGetInt(dbResult, 2);
-                        int type = JDBCUtils.safeGetInt(dbResult, 3);
-                        String description = JDBCUtils.safeGetString(dbResult, 4);
+                        int sequence = JDBCUtils.safeGetInt(dbResult, "RDB$TRIGGER_SEQUENCE");
+                        int type = JDBCUtils.safeGetInt(dbResult, "RDB$TRIGGER_TYPE");
+                        String description = JDBCUtils.safeGetString(dbResult, "RDB$DESCRIPTION");
                         FireBirdTrigger trigger = new FireBirdTrigger(
                             container,
                             table,
