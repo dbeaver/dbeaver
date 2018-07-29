@@ -17,14 +17,13 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.driver;
 
-import org.eclipse.jface.viewers.AbstractTreeViewer;
-import org.eclipse.jface.viewers.ITreeContentProvider;
-import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.dialogs.PatternFilter;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
+import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.List;
@@ -76,5 +75,14 @@ public class DriverTreeControl extends FilteredTree {
             }
             return isParentMatch(viewer, element) || isLeafMatch(viewer, element);
         }
+
+        protected boolean isLeafMatch(Viewer viewer, Object element) {
+            if (element instanceof DriverDescriptor) {
+                return wordMatches(((DriverDescriptor) element).getName()) ||
+                    wordMatches(((DriverDescriptor) element).getDescription());
+            }
+            return super.isLeafMatch(viewer, element);
+        }
+
     }
 }
