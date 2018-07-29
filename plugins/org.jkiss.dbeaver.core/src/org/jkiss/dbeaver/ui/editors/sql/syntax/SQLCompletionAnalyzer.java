@@ -142,7 +142,8 @@ class SQLCompletionAnalyzer
 
             if (dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.SHOW_COLUMN_PROCEDURES) &&
                 !request.simpleMode &&
-                request.queryType == SQLCompletionProcessor.QueryType.COLUMN && dataSource instanceof DBSObjectContainer)
+                request.queryType == SQLCompletionProcessor.QueryType.COLUMN && dataSource instanceof DBSObjectContainer &&
+                !request.wordPart.isEmpty())
             {
                 // Add procedures/functions for column proposals
                 DBSStructureAssistant structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, dataSource);
