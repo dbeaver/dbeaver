@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.ext.generic.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.generic.GenericConstants;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
@@ -43,6 +44,7 @@ public class GenericSQLDialect extends JDBCSQLDialect {
     private String testSQL;
     private boolean hasDelimiterAfterQuery;
     private boolean hasDelimiterAfterBlock;
+    private boolean callableQueryInBrackets;
 
     public GenericSQLDialect() {
         super("Generic");
@@ -124,6 +126,14 @@ public class GenericSQLDialect extends JDBCSQLDialect {
     @Override
     public boolean isQuoteReservedWords() {
         return quoteReservedWords;
+    }
+
+    @Override
+    public String formatStoredProcedureCall(DBPDataSource dataSource, String sqlText) {
+        if (callableQueryInBrackets) {
+            return "{" + sqlText + "}";
+        }
+        return super.formatStoredProcedureCall(dataSource, sqlText);
     }
 
     @Override
