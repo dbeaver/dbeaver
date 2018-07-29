@@ -54,13 +54,6 @@ public class PostgreUserMapping extends PostgreInformation implements PostgreScr
         this.name = JDBCUtils.safeGetString(dbResult, "rolname");
         this.serverOptions = JDBCUtils.safeGetArray(dbResult, "srvoptions");
         this.userMappingOptions = JDBCUtils.safeGetArray(dbResult, "umoptions");
-
-        /*this.name = JDBCUtils.safeGetString(dbResult, "srvname");
-        this.ownerId = JDBCUtils.safeGetLong(dbResult, "srvowner");
-        this.dataWrapperId = JDBCUtils.safeGetLong(dbResult, "srvfdw");
-        this.type = JDBCUtils.safeGetString(dbResult, "srvtype");
-        this.version = JDBCUtils.safeGetString(dbResult, "srvversion");
-        this.options = JDBCUtils.safeGetArray(dbResult, "srvoptions");*/
     }
 
     @Override
