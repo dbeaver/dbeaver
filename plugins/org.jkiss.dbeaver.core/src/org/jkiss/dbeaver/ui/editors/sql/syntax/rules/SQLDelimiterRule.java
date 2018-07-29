@@ -101,6 +101,16 @@ public class SQLDelimiterRule implements IRule {
             this.delimiters = this.origDelimiters;
             this.buffer = this.origBuffer;
         } else {
+            for (char[] delim : delimiters) {
+                String delimStr = String.valueOf(delim);
+                if (newDelimiter.equals(delimStr)) {
+                    return;
+                }
+                if (newDelimiter.endsWith(delimStr)) {
+                    // New delimiter ends with old delimiter (as command terminator). Remove it.
+                    newDelimiter = newDelimiter.substring(0, newDelimiter.length() - delimStr.length()).trim();
+                }
+            }
             this.delimiters = new char[1][];
             this.delimiters[0] = newDelimiter.toUpperCase(Locale.ENGLISH).toCharArray();
             this.buffer = new char[newDelimiter.length()];
