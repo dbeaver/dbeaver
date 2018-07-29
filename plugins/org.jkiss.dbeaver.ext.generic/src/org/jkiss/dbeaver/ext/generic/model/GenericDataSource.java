@@ -73,6 +73,7 @@ public class GenericDataSource extends JDBCDataSource
     private String selectedEntityType;
     private String selectedEntityName;
     private boolean selectedEntityFromAPI;
+    private boolean omitSingleCatalog;
     private String allObjectsPattern;
     private boolean supportsStructCache;
     private DBCQueryPlanner queryPlanner;
@@ -88,6 +89,7 @@ public class GenericDataSource extends JDBCDataSource
         this.queryGetActiveDB = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_QUERY_GET_ACTIVE_DB));
         this.querySetActiveDB = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_QUERY_SET_ACTIVE_DB));
         this.selectedEntityType = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_ACTIVE_ENTITY_TYPE));
+        this.omitSingleCatalog = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_OMIT_SINGLE_CATALOG), false);
         if (CommonUtils.isEmpty(this.selectedEntityType)) {
             this.selectedEntityType = null;
         }
@@ -436,7 +438,7 @@ public class GenericDataSource extends JDBCDataSource
                                 break;
                             }
                         }
-                        if (totalCatalogs == 1) {
+                        if (totalCatalogs == 1 && omitSingleCatalog) {
                             // Just one catalog. Looks like DB2 or PostgreSQL
                             // Let's just skip it and use only schemas
                             // It's ok to use "%" instead of catalog name anyway

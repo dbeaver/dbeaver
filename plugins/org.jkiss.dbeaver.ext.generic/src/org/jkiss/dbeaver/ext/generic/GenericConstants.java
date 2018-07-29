@@ -39,6 +39,7 @@ public class GenericConstants {
     public static final String PARAM_SUPPORTS_TRUNCATE = "supports-truncate";
     public static final String PARAM_OMIT_TYPE_CACHE = "omit-type-cache";
     public static final String PARAM_OMIT_CATALOG = "omit-catalog";
+    public static final String PARAM_OMIT_SINGLE_CATALOG = "omit-single-catalog";
     public static final String PARAM_ALL_OBJECTS_PATTERN = "all-objects-pattern";
     public static final String PARAM_SCRIPT_DELIMITER = "script-delimiter";
     public static final String PARAM_SCRIPT_DELIMITER_REDEFINER = "script-delimiter-redefiner";
