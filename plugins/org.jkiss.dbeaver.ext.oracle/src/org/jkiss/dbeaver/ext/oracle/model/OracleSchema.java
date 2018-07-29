@@ -319,6 +319,7 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
     {
         List<DBSObject> children = new ArrayList<>();
         children.addAll(tableCache.getAllObjects(monitor, this));
+        children.addAll(synonymCache.getAllObjects(monitor, this));
         children.addAll(packageCache.getAllObjects(monitor, this));
         return children;
     }
@@ -330,6 +331,10 @@ public class OracleSchema extends OracleGlobalObject implements DBSSchema, DBPRe
         final OracleTableBase table = tableCache.getObject(monitor, this, childName);
         if (table != null) {
             return table;
+        }
+        OracleSynonym synonym = synonymCache.getObject(monitor, this, childName);
+        if (synonym != null) {
+            return synonym;
         }
         return packageCache.getObject(monitor, this, childName);
     }
