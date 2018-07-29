@@ -341,12 +341,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         } else {
             if (settings.isOpenFolderOnFinish()) {
                 // Last one
-                UIUtils.asyncExec(new Runnable() {
-                    @Override
-                    public void run() {
-                        UIUtils.launchProgram(settings.getOutputFolder());
-                    }
-                });
+                UIUtils.asyncExec(() -> UIUtils.launchProgram(settings.getOutputFolder()));
             }
         }
     }
