@@ -29,6 +29,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.RunnableContextDelegate;
@@ -42,10 +43,8 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.LinkedHashSet;
+import java.util.*;
 import java.util.List;
-import java.util.Set;
 
 public class SearchDataPage extends AbstractSearchPage {
 
@@ -64,6 +63,8 @@ public class SearchDataPage extends AbstractSearchPage {
     private SearchDataParams params = new SearchDataParams();
     private Set<String> searchHistory = new LinkedHashSet<>();
     private DatabaseObjectsTreeManager checkboxTreeManager;
+
+    private static final Map<Class<? extends AbstractSearchPage>, String> searchStateCache = new IdentityHashMap<>();
 
     public SearchDataPage() {
 		super("Database objects search");
@@ -311,6 +312,28 @@ public class SearchDataPage extends AbstractSearchPage {
             enabled = true;
         }
         container.setPerformActionEnabled(enabled);
+    }
+
+    protected void saveTreeState(DatabaseNavigatorTree tree)
+    {
+        // Object sources
+        StringBuilder sourcesString = new StringBuilder();
+        for (Object obj : ((CheckboxTreeViewer) tree.getViewer()).getCheckedElements()) {
+            DBNNode node = (DBNNode) obj;
+            if (node instanceof DBNDatabaseNode && ((DBNDatabaseNode) node).getObject() instanceof DBSDataContainer) {
+                if (sourcesString.length() > 0) {
+                    sourcesString.append("|"); //$NON-NLS-1$
+                }
+                sourcesString.append(node.getNodeItemPath());
+            }
+        }
+        searchStateCache.put(getClass(), sourcesString.toString());
+    }
+
+    protected List<DBNNode> loadTreeState(DBRProgressMonitor monitor)
+    {
+        final String sources = searchStateCache.get(getClass());
+        return loadTreeState(monitor, sources);
     }
 
     private void restoreCheckedNodes() {
