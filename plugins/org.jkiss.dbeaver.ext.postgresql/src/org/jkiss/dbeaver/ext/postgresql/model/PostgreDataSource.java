@@ -518,7 +518,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         }
     }
 
-    private Pattern ERROR_POSITION_PATTERN = Pattern.compile("\\n\\s*\\p{L}+: ([0-9]+)");
+    private Pattern ERROR_POSITION_PATTERN = Pattern.compile("\\n\\s*\\p{L}+\\s*: ([0-9]+)");
 
     @Nullable
     @Override
