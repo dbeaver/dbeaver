@@ -59,6 +59,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
     private static final String PROP_MATCH_INDEX = "search.metadata.match-index"; //$NON-NLS-1$
     private static final String PROP_HISTORY = "search.metadata.history"; //$NON-NLS-1$
     private static final String PROP_OBJECT_TYPE = "search.metadata.object-type"; //$NON-NLS-1$
+    private static final String PROP_SOURCES = "search.metadata.object-source"; //$NON-NLS-1$
 
     private Table typesTable;
     private Combo searchText;
@@ -266,7 +267,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
                 monitor.beginTask("Load database nodes", 1);
                 try {
                     monitor.subTask("Load tree state");
-                    sourceNodes = loadTreeState(new DefaultProgressMonitor(monitor));
+                    sourceNodes = loadTreeState(new DefaultProgressMonitor(monitor), DBeaverCore.getGlobalPreferenceStore().getString(PROP_SOURCES));
                 } finally {
                     monitor.done();
                 }
@@ -430,7 +431,7 @@ public class SearchMetadataPage extends AbstractSearchPage {
         store.setValue(PROP_CASE_SENSITIVE, caseSensitive);
         store.setValue(PROP_MAX_RESULT, maxResults);
         store.setValue(PROP_MATCH_INDEX, matchTypeIndex);
-        saveTreeState(dataSourceTree);
+        saveTreeState(store, PROP_SOURCES, dataSourceTree);
 
         {
             // Search history
@@ -467,6 +468,21 @@ public class SearchMetadataPage extends AbstractSearchPage {
         }
 
         container.setPerformActionEnabled(enabled);
+    }
+
+    protected static void saveTreeState(DBPPreferenceStore store, String propName, DatabaseNavigatorTree tree)
+    {
+        // Object sources
+        StringBuilder sourcesString = new StringBuilder();
+        Object[] nodes = ((IStructuredSelection)tree.getViewer().getSelection()).toArray();
+        for (Object obj : nodes) {
+            DBNNode node = (DBNNode) obj;
+            if (sourcesString.length() > 0) {
+                sourcesString.append("|"); //$NON-NLS-1$
+            }
+            sourcesString.append(node.getNodeItemPath());
+        }
+        store.setValue(propName, sourcesString.toString());
     }
 
 }
