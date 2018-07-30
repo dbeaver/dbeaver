@@ -106,8 +106,12 @@ public abstract class AbstractSearchPage extends DialogPage implements ISearchPa
 
     protected List<DBNNode> loadTreeState(DBRProgressMonitor monitor)
     {
-        final List<DBNNode> result = new ArrayList<>();
         final String sources = searchStateCache.get(getClass());
+        return loadTreeState(monitor, sources);
+    }
+
+    protected List<DBNNode> loadTreeState(DBRProgressMonitor monitor, String sources) {
+        final List<DBNNode> result = new ArrayList<>();
         if (!CommonUtils.isEmpty(sources)) {
             // Keep broken datasources to make connect attempt only once
             Set<DBNDataSource> brokenDataSources = new HashSet<>();
