@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
+import org.jkiss.dbeaver.ext.snowflake.model.SnowflakeMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
@@ -87,7 +88,7 @@ public class SnowflakeDataSourceProvider extends JDBCDataSourceProvider {
         @NotNull DBPDataSourceContainer container)
         throws DBException
     {
-        return new SnowflakeDataSource(monitor, container, new GenericMetaModel());
+        return new SnowflakeDataSource(monitor, container, new SnowflakeMetaModel());
     }
 
 }
