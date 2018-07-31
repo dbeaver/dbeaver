@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.ui.ICompositeDialogPage;
 import org.jkiss.dbeaver.ui.IDataSourceConnectionTester;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
+import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -291,7 +292,7 @@ public class SnowflakeConnectionPage extends ConnectionPageAbstract implements I
             if (!result.contains("")) {
                 result.add(0, "");
             }
-            combo.setItems(result.toArray(new String[result.size()]));
+            combo.setItems(result.toArray(new String[0]));
             combo.setText(oldText);
         });
     }
@@ -300,7 +301,7 @@ public class SnowflakeConnectionPage extends ConnectionPageAbstract implements I
     public IDialogPage[] getSubPages()
     {
         return new IDialogPage[] {
-            //new DriverPropertiesDialogPage(this)
+            new DriverPropertiesDialogPage(this)
         };
     }
 

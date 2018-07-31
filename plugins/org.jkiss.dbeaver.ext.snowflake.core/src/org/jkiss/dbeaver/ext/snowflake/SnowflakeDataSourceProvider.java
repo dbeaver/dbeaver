@@ -52,11 +52,6 @@ public class SnowflakeDataSourceProvider extends JDBCDataSourceProvider {
     }
 
     @Override
-    public DBPPropertyDescriptor[] getConnectionProperties(DBRProgressMonitor monitor, DBPDriver driver, DBPConnectionConfiguration connectionInfo) throws DBException {
-        return null;
-    }
-
-    @Override
     public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo)
     {
         StringBuilder url = new StringBuilder();
