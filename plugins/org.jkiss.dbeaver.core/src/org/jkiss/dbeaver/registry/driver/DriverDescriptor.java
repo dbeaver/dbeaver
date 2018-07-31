@@ -496,6 +496,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
         return custom;
     }
 
+    public void setCustom(boolean custom) {
+        this.custom = custom;
+    }
+
     public boolean isModified()
     {
         return modified;
@@ -686,7 +690,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver
 
     @NotNull
     @Override
-    public Collection<? extends DBPDriverLibrary> getDriverLibraries()
+    public List<? extends DBPDriverLibrary> getDriverLibraries()
     {
         return libraries;
     }
