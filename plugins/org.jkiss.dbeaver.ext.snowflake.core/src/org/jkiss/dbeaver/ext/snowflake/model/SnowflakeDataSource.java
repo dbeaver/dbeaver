@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 public class SnowflakeDataSource extends GenericDataSource {
 
-    public SnowflakeDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, GenericMetaModel metaModel)
+    public SnowflakeDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, SnowflakeMetaModel metaModel)
         throws DBException
     {
         super(monitor, container, metaModel, new GenericSQLDialect());
