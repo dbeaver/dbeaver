@@ -29,7 +29,7 @@ DBeaver requires Java (JRE) 1.8+ to run.
 
 * <b>Windows</b> and <b>MacOS X</b> installers include JRE so just use them and don't think about internals.
 * On <b>Linux</b> you may need to install Java manually (usually by running `sudo apt-get install default-jre` or something similar).
-* If you don't use installer (on Windows or Mac OS X) you may need to download Java (JDK) from <a href="http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html">Oracle web site</a>.
+* If you don't use installer (on Windows or Mac OS X) you may need to download Java (JDK) from <a href="http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html" target = "blank">Oracle web site</a>.
 
 ## Documentation
 
@@ -55,7 +55,7 @@ Binaries are in `product/standalone/target/products`
 
 ## Notes
 
-- If you have any questions, suggestions, ideas, etc - <a href="mailto:support@jkiss.org">write us</a>.
+- If you have any questions, suggestions, ideas, etc - <a href="mailto:support@jkiss.org" target = "blank">write us</a>.
 - Pull requests are welcome.
 - Visit https://dbeaver.io or https://dbeaver.com for more information.
 - Follow us on Twitter: https://twitter.com/dbeaver_news/
@@ -68,7 +68,7 @@ That's really cool, we are glad that you like DBeaver.
 
 - We are actively looking for new source code contributors. We have added labels “Good first issue” and “Help wanted” to some tickets. If you want to be a part of our development team just be brave and take a ticket.
 - You can buy <a href="https://dbeaver.com/download">DBeaver EE</a> version. It includes all features of CE + NoSQL databases support + EE extensions + official online support. Also, licensed users have priorities in bug fixes and new features development.
-Those who read up to this point - you can use community discounts (check our <a href="https://github.com/dbeaver/dbeaver/wiki/Enterprise-Edition">WIKI</a>).
+Those who read up to this point - you can use community discounts (check our <a href="https://github.com/dbeaver/dbeaver/wiki/Enterprise-Edition" target= "blank">WIKI</a>).
 
 Save wild animals :) Thank you!  
 
