@@ -125,6 +125,15 @@ public class DriverEditDialog extends HelpEnabledDialog {
         this.provider = provider;
         this.driver = provider.createDriver(driver);
         this.driver.setName(this.driver.getName() + " Copy");
+        this.driver.setModified(true);
+
+        // Mark driver and all its libraries as custom (#3867)
+        this.driver.setCustom(true);
+        for (DBPDriverLibrary library : this.driver.getDriverLibraries()) {
+            if (library instanceof DriverLibraryAbstract) {
+                ((DriverLibraryAbstract) library).setCustom(true);
+            }
+        }
 
         this.defaultCategory = driver.getCategory();
         this.newDriver = true;
