@@ -43,6 +43,11 @@ public class VerticaDataSource extends GenericDataSource {
         super(monitor, container, metaModel, new VerticaSQLDialect());
     }
 
+    @Override
+    protected boolean isOmitCatalog() {
+        return true;
+    }
+
     @NotNull
     public DBPDataKind resolveDataKind(@NotNull String typeName, int valueType)
     {
