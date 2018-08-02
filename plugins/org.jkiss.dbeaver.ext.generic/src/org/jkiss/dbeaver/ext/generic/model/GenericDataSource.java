@@ -391,7 +391,7 @@ public class GenericDataSource extends JDBCDataSource
     public void initialize(@NotNull DBRProgressMonitor monitor)
         throws DBException {
         super.initialize(monitor);
-        Object omitCatalog = getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_OMIT_CATALOG);
+        boolean omitCatalog = isOmitCatalog();
         Object omitTypeCache = getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_OMIT_TYPE_CACHE);
         if (omitTypeCache == null || !CommonUtils.toBoolean(omitTypeCache)) {
             // Cache data types
@@ -408,7 +408,7 @@ public class GenericDataSource extends JDBCDataSource
             // Read metadata
             JDBCDatabaseMetaData metaData = session.getMetaData();
             boolean catalogsFiltered = false;
-            if (omitCatalog == null || !CommonUtils.toBoolean(omitCatalog)) {
+            if (!omitCatalog) {
                 // Read catalogs
                 monitor.subTask("Extract catalogs");
                 monitor.worked(1);
@@ -480,6 +480,10 @@ public class GenericDataSource extends JDBCDataSource
         } catch (SQLException ex) {
             throw new DBException("Error reading metadata", ex, this);
         }
+    }
+
+    protected boolean isOmitCatalog() {
+        return CommonUtils.getBoolean(getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_OMIT_CATALOG), false);
     }
 
     @Override
