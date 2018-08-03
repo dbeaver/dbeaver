@@ -9,9 +9,9 @@
    <launcherArgs>
       <programArgs>-showsplash
       </programArgs>
-      <programArgsLin>--launcher.GTK_version 2
+      <programArgsLin>
       </programArgsLin>
-      <programArgsSol>--launcher.GTK_version 2
+      <programArgsSol>
       </programArgsSol>
       <vmArgs>-XX:+IgnoreUnrecognizedVMOptions --add-modules=ALL-SYSTEM -Xms64m -Xmx1024m
       </vmArgs>
