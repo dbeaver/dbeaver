@@ -28,6 +28,8 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionAtomic;
@@ -120,7 +122,7 @@ public class PostgreDatabaseManager extends SQLObjectEditor<PostgreDatabase, Pos
     protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
     {
         actions.add(
-            new SQLDatabasePersistActionAtomic("Drop database", "DROP DATABASE " + DBUtils.getQuotedIdentifier(command.getObject())) //$NON-NLS-2$
+            new DeleteDatabaseAction(command)
         );
     }
 
@@ -141,5 +143,20 @@ public class PostgreDatabaseManager extends SQLObjectEditor<PostgreDatabase, Pos
         );
     }
 
+    private static class DeleteDatabaseAction extends SQLDatabasePersistActionAtomic {
+
+        private final PostgreDatabase database;
+
+        public DeleteDatabaseAction(ObjectDeleteCommand command) {
+            super("Drop database", "DROP DATABASE " + DBUtils.getQuotedIdentifier(command.getObject()));
+            database = command.getObject();
+        }
+
+        @Override
+        public void beforeExecute(DBCSession session) throws DBCException {
+            super.beforeExecute(session);
+            database.shutdown(session.getProgressMonitor());
+        }
+    }
 }
 
