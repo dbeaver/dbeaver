@@ -880,7 +880,9 @@ public class UIUtils {
 
     public static void setHelp(Control control, String pluginId, String helpContextID)
     {
-        PlatformUI.getWorkbench().getHelpSystem().setHelp(control, pluginId + "." + helpContextID); //$NON-NLS-1$
+        if (control != null && !control.isDisposed()) {
+            PlatformUI.getWorkbench().getHelpSystem().setHelp(control, pluginId + "." + helpContextID); //$NON-NLS-1$
+        }
     }
 
     public static void setHelp(Control control, String helpContextID)
