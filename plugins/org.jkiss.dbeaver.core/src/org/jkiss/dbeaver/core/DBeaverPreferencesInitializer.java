@@ -79,6 +79,8 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
 
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NAVIGATOR_SHOW_OBJECT_TIPS, true);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.TOOLBARS_SHOW_GENERAL_ALWAYS, false);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.TOOLBARS_DATABASE_SELECTOR_WIDTH, 20);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.TOOLBARS_SCHEMA_SELECTOR_WIDTH, 18);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.ENTITY_EDITOR_DETACH_INFO, true);
 
         // Common

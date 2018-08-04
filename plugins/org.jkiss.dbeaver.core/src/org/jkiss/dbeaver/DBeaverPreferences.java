@@ -41,6 +41,8 @@ public final class DBeaverPreferences
     public static final String NAVIGATOR_SHOW_OBJECT_TIPS = "navigator.show.objects.tips"; //$NON-NLS-1$
 
     public static final String TOOLBARS_SHOW_GENERAL_ALWAYS = "toolbars.show.general.always"; //$NON-NLS-1$
+    public static final String TOOLBARS_DATABASE_SELECTOR_WIDTH = "toolbars.database.selector.width"; //$NON-NLS-1$
+    public static final String TOOLBARS_SCHEMA_SELECTOR_WIDTH = "toolbars.schema.selector.width"; //$NON-NLS-1$
 
     public static final String ENTITY_EDITOR_DETACH_INFO = "entity.editor.info.detach"; //$NON-NLS-1$
     public static final String ENTITY_EDITOR_INFO_SASH_STATE = "entity.editor.info.sash.state"; //$NON-NLS-1$
