@@ -204,6 +204,10 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
         return statistics;
     }
 
+    protected int getNextUsedParamIndex(Object[] attributeValues, int paramIndex) {
+        return paramIndex + 1;
+    }
+
     private String formatQueryParameters(DBCSession session, String queryString, DBDValueHandler[] handlers, Object[] rowValues) {
         if (handlers.length == 0) {
             return queryString;
@@ -213,11 +217,13 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
         }
         int length = queryString.length();
         StringBuilder formatted = new StringBuilder(length * 2);
-        int paramIndex = 0;
+        int paramIndex = -1;
+
         for (int i = 0; i < length; i++) {
             char c = queryString.charAt(i);
             switch (c) {
                 case '?': {
+                    paramIndex = getNextUsedParamIndex(rowValues, paramIndex);
                     if (paramIndex >= handlers.length) {
                         log.error("Parameter index out of range (" + paramIndex + " > " + handlers.length + ")");
                         continue;
@@ -228,7 +234,6 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
                         handlers[paramIndex],
                         rowValues[paramIndex]);
                     formatted.append(paramValue);
-                    paramIndex++;
                     continue;
                 }
                 case ':': {

@@ -42,6 +42,9 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.ArrayUtils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * JDBC abstract table implementation
  */
@@ -310,6 +313,15 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         return new ExecuteBatchImpl(attributes, keysReceiver, true) {
 
             private boolean allNulls;
+
+            protected int getNextUsedParamIndex(Object[] attributeValues, int paramIndex) {
+                paramIndex++;
+                DBSAttributeBase attribute = attributes[paramIndex];
+                while (DBUtils.isPseudoAttribute(attribute) || (!allNulls && DBUtils.isNullValue(attributeValues[paramIndex]))) {
+                    paramIndex++;
+                }
+                return paramIndex;
+            }
 
             @NotNull
             @Override
