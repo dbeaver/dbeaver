@@ -223,12 +223,7 @@ public class DataSourceHandler
                 }
             });
             // Run in UI thread to update actions (some Eclipse magic)
-            UIUtils.asyncExec(new Runnable() {
-                @Override
-                public void run() {
-                    disconnectJob.schedule();
-                }
-            });
+            UIUtils.asyncExec(disconnectJob::schedule);
         }
     }
 
