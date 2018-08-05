@@ -25,6 +25,7 @@ public class SnowflakeConstants
 {
     public static final String PROP_SCHEMA = DBConstants.INTERNAL_PROP_PREFIX + "schema@";
     public static final String PROP_ROLE = DBConstants.INTERNAL_PROP_PREFIX + "role@";
+    public static final String PROP_AUTHENTICATOR = DBConstants.INTERNAL_PROP_PREFIX + "authenticator@";
 
     public static final String DEFAULT_HOST_PREFIX = ".snowflakecomputing.com";
     public static final String DEFAULT_DB_NAME = "TEST_DB";
