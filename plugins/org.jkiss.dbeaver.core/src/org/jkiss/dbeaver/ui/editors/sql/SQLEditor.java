@@ -1141,6 +1141,7 @@ public class SQLEditor extends SQLEditorBase implements
             log.error("Error loading input SQL file", e);
         }
         syntaxLoaded = false;
+        dataSourceContainer = null;
         DBPDataSourceContainer inputDataSource = EditorUtils.getInputDataSource(editorInput);
         if (inputDataSource == null) {
             // No datasource. Try to get one from active part
