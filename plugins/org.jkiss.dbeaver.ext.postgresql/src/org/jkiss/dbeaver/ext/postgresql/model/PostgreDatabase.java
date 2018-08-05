@@ -125,7 +125,7 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource> imple
         this.name = name;
         this.ownerId = owner.getObjectId();
         this.templateName = templateName;
-        this.tablespaceId = tablespace.getObjectId();
+        this.tablespaceId = tablespace == null ? 0 : tablespace.getObjectId();
         this.encodingId = encoding.getObjectId();
     }
 
