@@ -184,7 +184,7 @@ public class DBeaverUI implements DBPPlatformUI {
         Runnable runnable = () -> {
             // Display the dialog
             StandardErrorDialog dialog = new StandardErrorDialog(UIUtils.getActiveWorkbenchShell(),
-                    title, message, RuntimeUtils.stripStack(status), IStatus.ERROR);
+                    title, message, status, IStatus.ERROR);
             dialog.open();
         };
         UIUtils.syncExec(runnable);
