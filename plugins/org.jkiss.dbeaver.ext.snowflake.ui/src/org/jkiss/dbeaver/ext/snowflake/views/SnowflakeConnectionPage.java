@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.snowflake.views;
 
-import org.jkiss.dbeaver.ext.snowflake.SnowflakeConstants;
-import org.jkiss.dbeaver.ext.snowflake.Activator;
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
@@ -32,6 +30,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.snowflake.Activator;
+import org.jkiss.dbeaver.ext.snowflake.SnowflakeConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.*;
@@ -59,6 +59,7 @@ public class SnowflakeConnectionPage extends ConnectionPageAbstract implements I
     private Combo warehouseText;
     private Combo schemaText;
     private Combo roleText;
+    private Combo authTypeCombo;
     private Text usernameText;
     private Text passwordText;
 
@@ -170,6 +171,15 @@ public class SnowflakeConnectionPage extends ConnectionPageAbstract implements I
             gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL);
             roleText.setLayoutData(gd);
             roleText.addModifyListener(textListener);
+
+            UIUtils.createControlLabel(addrGroup, "Authenticator");
+            authTypeCombo = new Combo(addrGroup, SWT.BORDER | SWT.DROP_DOWN);
+            authTypeCombo.add("");
+            authTypeCombo.add("snowflake");
+            authTypeCombo.add("externalbrowser");
+            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL);
+            authTypeCombo.setLayoutData(gd);
+            authTypeCombo.addModifyListener(textListener);
         }
 
         createDriverPanel(control);
@@ -225,6 +235,9 @@ public class SnowflakeConnectionPage extends ConnectionPageAbstract implements I
         if (roleText != null) {
             roleText.setText(CommonUtils.notEmpty(connectionInfo.getProviderProperty(SnowflakeConstants.PROP_ROLE)));
         }
+        if (authTypeCombo != null) {
+            roleText.setText(CommonUtils.notEmpty(connectionInfo.getProviderProperty(SnowflakeConstants.PROP_AUTHENTICATOR)));
+        }
         if (passwordText != null) {
             passwordText.setText(CommonUtils.notEmpty(connectionInfo.getUserPassword()));
         }
@@ -254,6 +267,9 @@ public class SnowflakeConnectionPage extends ConnectionPageAbstract implements I
         }
         if (roleText != null) {
             connectionInfo.setProviderProperty(SnowflakeConstants.PROP_ROLE, roleText.getText().trim());
+        }
+        if (authTypeCombo != null) {
+            connectionInfo.setProviderProperty(SnowflakeConstants.PROP_AUTHENTICATOR, authTypeCombo.getText().trim());
         }
         if (passwordText != null) {
             connectionInfo.setUserPassword(passwordText.getText());
