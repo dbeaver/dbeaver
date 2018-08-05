@@ -112,6 +112,7 @@ public class PostgreMessages extends NLS {
 	public static String dialog_create_db_label_tablesapce;
 	public static String dialog_create_db_label_template_db;
 	public static String dialog_create_db_title;
+	public static String dialog_create_db_tablespace_default;
 	
 	/* dialog create schema */
 	public static String dialog_create_schema_name;
