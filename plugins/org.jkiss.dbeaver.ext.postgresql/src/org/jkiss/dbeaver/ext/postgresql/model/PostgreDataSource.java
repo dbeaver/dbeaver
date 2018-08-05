@@ -234,10 +234,12 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         throws DBException
     {
         super.refreshObject(monitor);
+        shutdown(monitor);
 
         this.databaseCache.clearCache();
         this.activeDatabaseName = null;
 
+        this.initializeRemoteInstance(monitor);
         this.initialize(monitor);
 
         return this;
@@ -435,7 +437,8 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         if (defDatabase == null) {
             final List<PostgreDatabase> allDatabases = databaseCache.getCachedObjects();
             if (allDatabases.isEmpty()) {
-                throw new IllegalStateException("No default database");
+                // Looks like we are not connected or in connection process right now - no instance then
+                return null;
             }
             defDatabase = allDatabases.get(0);
         }
