@@ -35,7 +35,6 @@ import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistActionAtomic;
 import org.jkiss.dbeaver.model.impl.sql.edit.SQLObjectEditor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
@@ -96,34 +95,26 @@ public class PostgreDatabaseManager extends SQLObjectEditor<PostgreDatabase, Pos
         final PostgreDatabase database = command.getObject();
         StringBuilder sql = new StringBuilder();
         sql.append("CREATE DATABASE ").append(DBUtils.getQuotedIdentifier(database));
-        try {
-            VoidProgressMonitor monitor = new VoidProgressMonitor();
-            if (database.getDBA(monitor) != null) {
-                sql.append("\nOWNER = ").append(database.getDBA(monitor).getName());
-            }
-            if (!CommonUtils.isEmpty(database.getTemplateName())) {
-                sql.append("\nTEMPLATE = ").append(database.getTemplateName());
-            }
-            if (database.getDefaultEncoding(monitor) != null) {
-                sql.append("\nENCODING = '").append(database.getDefaultEncoding(monitor).getName()).append("'");
-            }
-            if (database.getDefaultTablespace(monitor) != null) {
-                sql.append("\nTABLESPACE = ").append(database.getDefaultTablespace(monitor).getName());
-            }
-        } catch (DBException e) {
-            log.error(e);
+
+        if (database.getInitialOwner() != null) {
+            sql.append("\nOWNER = ").append(database.getInitialOwner().getName());
         }
-        actions.add(
-            new SQLDatabasePersistActionAtomic("Create database", sql.toString())
-        );
+        if (!CommonUtils.isEmpty(database.getTemplateName())) {
+            sql.append("\nTEMPLATE = ").append(database.getTemplateName());
+        }
+        if (database.getInitialEncoding() != null) {
+            sql.append("\nENCODING = '").append(database.getInitialEncoding().getName()).append("'");
+        }
+        if (database.getInitialTablespace() != null) {
+            sql.append("\nTABLESPACE = ").append(database.getInitialTablespace().getName());
+        }
+        actions.add(new CreateDatabaseAction(database, sql));
     }
 
     @Override
     protected void addObjectDeleteActions(List<DBEPersistAction> actions, ObjectDeleteCommand command, Map<String, Object> options)
     {
-        actions.add(
-            new DeleteDatabaseAction(command)
-        );
+        actions.add(new DeleteDatabaseAction(command));
     }
 
     @Override
@@ -156,6 +147,26 @@ public class PostgreDatabaseManager extends SQLObjectEditor<PostgreDatabase, Pos
         public void beforeExecute(DBCSession session) throws DBCException {
             super.beforeExecute(session);
             database.shutdown(session.getProgressMonitor());
+        }
+    }
+
+    private static class CreateDatabaseAction extends SQLDatabasePersistActionAtomic {
+        private final PostgreDatabase database;
+        public CreateDatabaseAction(PostgreDatabase database, StringBuilder sql) {
+            super("Create database", sql.toString());
+            this.database = database;
+        }
+
+        @Override
+        public void afterExecute(DBCSession session, Throwable error) throws DBCException {
+            super.afterExecute(session, error);
+            if (error == null) {
+                try {
+                    database.initializeMetaContext(session.getProgressMonitor());
+                } catch (DBException e) {
+                    log.error("Can't connect to the new database");
+                }
+            }
         }
     }
 }
