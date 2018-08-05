@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.impl.struct.RelationalObjectType;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
 import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -35,6 +36,7 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -43,8 +45,7 @@ import java.util.regex.PatternSyntaxException;
 /**
  * Completion utils
  */
-class SQLCompletionAnalyzer 
-{
+class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonitor> {
     private static final Log log = Log.getLog(SQLCompletionAnalyzer.class);
 
     private static final String MATCH_ANY_PATTERN = "%";
@@ -68,16 +69,25 @@ class SQLCompletionAnalyzer
         }
     }
 
-    private final DBRProgressMonitor monitor;
     private final CompletionRequest request;
+    private DBRProgressMonitor monitor;
 
-    SQLCompletionAnalyzer(DBRProgressMonitor monitor, CompletionRequest request) {
-        this.monitor = monitor;
+    SQLCompletionAnalyzer(CompletionRequest request) {
         this.request = request;
     }
 
-    void runAnalyzer()
-    {
+    @Override
+    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+        try {
+            this.monitor = monitor;
+            runAnalyzer();
+        } catch (DBException e) {
+            throw new InvocationTargetException(e);
+        }
+    }
+
+
+    void runAnalyzer() throws DBException {
         DBPDataSource dataSource = request.editor.getDataSource();
         if (dataSource == null) {
             return;
@@ -189,7 +199,7 @@ class SQLCompletionAnalyzer
                     request.proposals.add(createCompletionProposal(request, joinCriteria, joinCriteria, DBPKeywordType.OTHER, "Join condition"));
                     return true;
                 } catch (DBException e) {
-                    log.error("Error generating joinb condition", e);
+                    log.error("Error generating join condition", e);
                 }
             }
         }
@@ -232,8 +242,7 @@ class SQLCompletionAnalyzer
         }
     }
 
-    private void makeDataSourceProposals()
-    {
+    private void makeDataSourceProposals() throws DBException {
         DBPDataSource dataSource = request.editor.getDataSource();
         final DBSObjectContainer rootContainer = DBUtils.getAdapter(DBSObjectContainer.class, dataSource);
         if (rootContainer == null) {
@@ -266,58 +275,53 @@ class SQLCompletionAnalyzer
                 break;
             }
             // Get next structure container
-            try {
-                final String objectName =
-                    request.wordDetector.isQuoted(token) ? request.wordDetector.removeQuotes(token) :
-                    DBObjectNameCaseTransformer.transformName(dataSource, token);
-                childObject = objectName == null ? null : sc.getChild(monitor, objectName);
-                if (childObject == null && i == 0 && objectName != null) {
-                    for (int k = 0; k < selectedContainers.length; k++) {
-                        if (selectedContainers[k] != null) {
-                            // Probably it is from selected object, let's try it
-                            childObject = selectedContainers[k].getChild(monitor, objectName);
-                            if (childObject != null) {
-                                sc = selectedContainers[k];
-                                break;
-                            }
+            final String objectName =
+                request.wordDetector.isQuoted(token) ? request.wordDetector.removeQuotes(token) :
+                DBObjectNameCaseTransformer.transformName(dataSource, token);
+            childObject = objectName == null ? null : sc.getChild(monitor, objectName);
+            if (childObject == null && i == 0 && objectName != null) {
+                for (int k = 0; k < selectedContainers.length; k++) {
+                    if (selectedContainers[k] != null) {
+                        // Probably it is from selected object, let's try it
+                        childObject = selectedContainers[k].getChild(monitor, objectName);
+                        if (childObject != null) {
+                            sc = selectedContainers[k];
+                            break;
                         }
                     }
                 }
-                if (childObject == null) {
-                    if (i == 0) {
-                        // Assume it's a table alias ?
-                        childObject = getTableFromAlias(sc, token);
-                        if (childObject == null && !request.simpleMode) {
-                            // Search using structure assistant
-                            DBSStructureAssistant structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, sc);
-                            if (structureAssistant != null) {
-                                Collection<DBSObjectReference> references = structureAssistant.findObjectsByMask(
-                                    monitor,
-                                    null,
-                                    structureAssistant.getAutoCompleteObjectTypes(),
-                                    request.wordDetector.removeQuotes(token),
-                                    request.wordDetector.isQuoted(token),
-                                    false,
-                                    2);
-                                if (!references.isEmpty()) {
-                                    childObject = references.iterator().next().resolveObject(monitor);
-                                }
+            }
+            if (childObject == null) {
+                if (i == 0) {
+                    // Assume it's a table alias ?
+                    childObject = getTableFromAlias(sc, token);
+                    if (childObject == null && !request.simpleMode) {
+                        // Search using structure assistant
+                        DBSStructureAssistant structureAssistant = DBUtils.getAdapter(DBSStructureAssistant.class, sc);
+                        if (structureAssistant != null) {
+                            Collection<DBSObjectReference> references = structureAssistant.findObjectsByMask(
+                                monitor,
+                                null,
+                                structureAssistant.getAutoCompleteObjectTypes(),
+                                request.wordDetector.removeQuotes(token),
+                                request.wordDetector.isQuoted(token),
+                                false,
+                                2);
+                            if (!references.isEmpty()) {
+                                childObject = references.iterator().next().resolveObject(monitor);
                             }
                         }
-                    } else {
-                        // Path element not found. Damn - can't do anything.
-                        return;
                     }
-                }
-
-                if (childObject instanceof DBSObjectContainer) {
-                    sc = (DBSObjectContainer) childObject;
                 } else {
-                    sc = null;
+                    // Path element not found. Damn - can't do anything.
+                    return;
                 }
-            } catch (DBException e) {
-                log.error(e);
-                return;
+            }
+
+            if (childObject instanceof DBSObjectContainer) {
+                sc = (DBSObjectContainer) childObject;
+            } else {
+                sc = null;
             }
         }
         if (childObject == null) {
@@ -437,8 +441,7 @@ class SQLCompletionAnalyzer
         return SQLSearchUtils.findObjectByFQN(monitor, sc, dataSource, nameList, !request.simpleMode, request.wordDetector);
     }
 
-    private void makeProposalsFromChildren(DBPObject parent, @Nullable String startPart)
-    {
+    private void makeProposalsFromChildren(DBPObject parent, @Nullable String startPart) throws DBException {
         if (startPart != null) {
             startPart = request.wordDetector.removeQuotes(startPart).toUpperCase(Locale.ENGLISH);
             int divPos = startPart.lastIndexOf(request.editor.getSyntaxManager().getStructSeparator());
@@ -446,89 +449,86 @@ class SQLCompletionAnalyzer
                 startPart = startPart.substring(divPos + 1);
             }
         }
-        try {
-            DBPDataSource dataSource = request.editor.getDataSource();
-            boolean matchContains = dataSource != null && dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.PROPOSALS_MATCH_CONTAINS);
-            Collection<? extends DBSObject> children = null;
-            if (parent instanceof DBSObjectContainer) {
-                children = ((DBSObjectContainer)parent).getChildren(monitor);
-            } else if (parent instanceof DBSEntity) {
-                children = ((DBSEntity)parent).getAttributes(monitor);
-            }
-            if (children != null && !children.isEmpty()) {
-                //boolean isJoin = SQLConstants.KEYWORD_JOIN.equals(request.wordDetector.getPrevKeyWord());
 
-                List<DBSObject> matchedObjects = new ArrayList<>();
-                final Map<String, Integer> scoredMatches = new HashMap<>();
-                boolean simpleMode = request.simpleMode;
-                boolean allObjects = !simpleMode && SQLCompletionProcessor.ALL_COLUMNS_PATTERN.equals(startPart);
-                String objPrefix = null;
+        DBPDataSource dataSource = request.editor.getDataSource();
+        boolean matchContains = dataSource != null && dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.PROPOSALS_MATCH_CONTAINS);
+        Collection<? extends DBSObject> children = null;
+        if (parent instanceof DBSObjectContainer) {
+            children = ((DBSObjectContainer)parent).getChildren(monitor);
+        } else if (parent instanceof DBSEntity) {
+            children = ((DBSEntity)parent).getAttributes(monitor);
+        }
+        if (children != null && !children.isEmpty()) {
+            //boolean isJoin = SQLConstants.KEYWORD_JOIN.equals(request.wordDetector.getPrevKeyWord());
+
+            List<DBSObject> matchedObjects = new ArrayList<>();
+            final Map<String, Integer> scoredMatches = new HashMap<>();
+            boolean simpleMode = request.simpleMode;
+            boolean allObjects = !simpleMode && SQLCompletionProcessor.ALL_COLUMNS_PATTERN.equals(startPart);
+            String objPrefix = null;
+            if (allObjects) {
+                if (!CommonUtils.isEmpty(request.wordDetector.getPrevWords())) {
+                    String prevWord = request.wordDetector.getPrevWords().get(0);
+                    if (prevWord.length() > 0 && prevWord.charAt(prevWord.length() - 1) == request.editor.getSyntaxManager().getStructSeparator()) {
+                        objPrefix = prevWord;
+                    }
+                }
+            }
+            StringBuilder combinedMatch = new StringBuilder();
+            for (DBSObject child : children) {
+                if (DBUtils.isHiddenObject(child)) {
+                    // Skip hidden
+                    continue;
+                }
                 if (allObjects) {
-                    if (!CommonUtils.isEmpty(request.wordDetector.getPrevWords())) {
-                        String prevWord = request.wordDetector.getPrevWords().get(0);
-                        if (prevWord.length() > 0 && prevWord.charAt(prevWord.length() - 1) == request.editor.getSyntaxManager().getStructSeparator()) {
-                            objPrefix = prevWord;
-                        }
+                    if (combinedMatch.length() > 0) {
+                        combinedMatch.append(", ");
+                        if (objPrefix != null) combinedMatch.append(objPrefix);
                     }
-                }
-                StringBuilder combinedMatch = new StringBuilder();
-                for (DBSObject child : children) {
-                    if (DBUtils.isHiddenObject(child)) {
-                        // Skip hidden
-                        continue;
+                    combinedMatch.append(DBUtils.getQuotedIdentifier(child));
+                } else if (simpleMode) {
+                    if (startPart == null || objectNameMatches(startPart, child, matchContains)) {
+                        matchedObjects.add(child);
                     }
-                    if (allObjects) {
-                        if (combinedMatch.length() > 0) {
-                            combinedMatch.append(", ");
-                            if (objPrefix != null) combinedMatch.append(objPrefix);
-                        }
-                        combinedMatch.append(DBUtils.getQuotedIdentifier(child));
-                    } else if (simpleMode) {
-                        if (startPart == null || objectNameMatches(startPart, child, matchContains)) {
-                            matchedObjects.add(child);
-                        }
-                    } else {
-                        int score = CommonUtils.isEmpty(startPart) ? 1 : TextUtils.fuzzyScore(child.getName(), startPart);
-                        if (score > 0) {
-                            matchedObjects.add(child);
-                            scoredMatches.put(child.getName(), score);
-                        }
-                    }
-                }
-                if (combinedMatch.length() > 0) {
-                    String replaceString = combinedMatch.toString();
-
-                    request.proposals.add(createCompletionProposal(
-                        request,
-                        replaceString,
-                        replaceString,
-                        DBPKeywordType.OTHER,
-                        "All objects"));
-                } else if (!matchedObjects.isEmpty()) {
-                    if (startPart != null) {
-                        if (simpleMode) {
-                            matchedObjects.sort(Comparator.comparing(DBPNamedObject::getName));
-                        } else {
-                            matchedObjects.sort((o1, o2) -> {
-                                int score1 = scoredMatches.get(o1.getName());
-                                int score2 = scoredMatches.get(o2.getName());
-                                if (score1 == score2) {
-                                    if (o1 instanceof DBSAttributeBase) {
-                                        return ((DBSAttributeBase) o1).getOrdinalPosition() - ((DBSAttributeBase) o2).getOrdinalPosition();
-                                    }
-                                    return o1.getName().compareTo(o2.getName());
-                                }
-                                return score2 - score1;
-                            });
-                        }
-                    }
-                    for (DBSObject child : matchedObjects) {
-                        request.proposals.add(makeProposalsFromObject(child));
+                } else {
+                    int score = CommonUtils.isEmpty(startPart) ? 1 : TextUtils.fuzzyScore(child.getName(), startPart);
+                    if (score > 0) {
+                        matchedObjects.add(child);
+                        scoredMatches.put(child.getName(), score);
                     }
                 }
             }
-        } catch (DBException e) {
-            log.error(e);
+            if (combinedMatch.length() > 0) {
+                String replaceString = combinedMatch.toString();
+
+                request.proposals.add(createCompletionProposal(
+                    request,
+                    replaceString,
+                    replaceString,
+                    DBPKeywordType.OTHER,
+                    "All objects"));
+            } else if (!matchedObjects.isEmpty()) {
+                if (startPart != null) {
+                    if (simpleMode) {
+                        matchedObjects.sort(Comparator.comparing(DBPNamedObject::getName));
+                    } else {
+                        matchedObjects.sort((o1, o2) -> {
+                            int score1 = scoredMatches.get(o1.getName());
+                            int score2 = scoredMatches.get(o2.getName());
+                            if (score1 == score2) {
+                                if (o1 instanceof DBSAttributeBase) {
+                                    return ((DBSAttributeBase) o1).getOrdinalPosition() - ((DBSAttributeBase) o2).getOrdinalPosition();
+                                }
+                                return o1.getName().compareTo(o2.getName());
+                            }
+                            return score2 - score1;
+                        });
+                    }
+                }
+                for (DBSObject child : matchedObjects) {
+                    request.proposals.add(makeProposalsFromObject(child));
+                }
+            }
         }
     }
 
@@ -542,22 +542,18 @@ class SQLCompletionAnalyzer
             DBSStructureAssistant assistant,
             @Nullable DBSObjectContainer rootSC,
             DBSObjectType[] objectTypes,
-            String objectName)
+            String objectName) throws DBException
     {
-        try {
-            Collection<DBSObjectReference> references = assistant.findObjectsByMask(
-                monitor,
-                rootSC,
-                objectTypes == null ? assistant.getAutoCompleteObjectTypes() : objectTypes,
-                makeObjectNameMask(dataSource, request.wordDetector.removeQuotes(objectName)),
-                request.wordDetector.isQuoted(objectName),
-                dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.USE_GLOBAL_ASSISTANT),
-                100);
-            for (DBSObjectReference reference : references) {
-                request.proposals.add(makeProposalsFromObject(reference, reference.getObjectType().getImage()));
-            }
-        } catch (DBException e) {
-            log.error(e);
+        Collection<DBSObjectReference> references = assistant.findObjectsByMask(
+            monitor,
+            rootSC,
+            objectTypes == null ? assistant.getAutoCompleteObjectTypes() : objectTypes,
+            makeObjectNameMask(dataSource, request.wordDetector.removeQuotes(objectName)),
+            request.wordDetector.isQuoted(objectName),
+            dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.USE_GLOBAL_ASSISTANT),
+            100);
+        for (DBSObjectReference reference : references) {
+            request.proposals.add(makeProposalsFromObject(reference, reference.getObjectType().getImage()));
         }
     }
 
