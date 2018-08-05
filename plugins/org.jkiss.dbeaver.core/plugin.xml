@@ -219,6 +219,7 @@
         <command id="org.jkiss.dbeaver.core.migrate.connection" name="%command.org.jkiss.dbeaver.core.migrate.connection.name" description="%command.org.jkiss.dbeaver.core.migrate.connection.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.core.navigator.view.configure" name="%command.org.jkiss.dbeaver.core.navigator.view.configure.name" description="%command.org.jkiss.dbeaver.core.navigator.view.configure.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.core.navigator.linkeditor" name="%command.org.jkiss.dbeaver.core.navigator.linkeditor.name" description="%command.org.jkiss.dbeaver.core.navigator.linkeditor.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
+        <command id="org.jkiss.dbeaver.core.navigator.preferences" name="%command.org.jkiss.dbeaver.core.navigator.preferences.name" description="%command.org.jkiss.dbeaver.core.navigator.preferences.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.core.navigator.set.active" name="%command.org.jkiss.dbeaver.core.navigator.set.active.name" description="%command.org.jkiss.dbeaver.core.navigator.set.active.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.core.navigator.bookmark.add" name="%command.org.jkiss.dbeaver.core.navigator.bookmark.add.name" description="%command.org.jkiss.dbeaver.core.navigator.bookmark.add.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
 
@@ -356,6 +357,7 @@
         <image commandId="org.jkiss.dbeaver.core.new.folder" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/folder_add.png"/>
         <image commandId="org.jkiss.dbeaver.core.navigator.view.configure" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/configuration.png"/>
         <image commandId="org.jkiss.dbeaver.core.navigator.linkeditor" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/link_to_editor.png"/>
+        <image commandId="org.jkiss.dbeaver.core.navigator.preferences" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/configuration.png"/>
         <image commandId="org.jkiss.dbeaver.core.navigator.bookmark.add" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/bookmark.png"/>
 
         <image commandId="org.jkiss.dbeaver.core.connect" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/connect.png"/>
@@ -696,6 +698,7 @@
                 </with>
             </enabledWhen>
         </handler>
+        <handler commandId="org.jkiss.dbeaver.core.navigator.preferences" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerPreferences"/>
         <handler commandId="org.jkiss.dbeaver.core.navigator.set.active" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerSetActiveObject">
             <enabledWhen>
                 <with variable="selection">
@@ -1866,14 +1869,11 @@
             <menu label="%menu.org.jkiss.dbeaver.core.project.select.label" commandId="org.jkiss.dbeaver.core.project.select">
                 <dynamic id="org.jkiss.dbeaver.core.menu.project.active" class="org.jkiss.dbeaver.ui.actions.navigator.NavigatorActiveProjectContributor"/>
             </menu>
-            <command
-                  commandId="org.jkiss.dbeaver.core.new.folder"
-                  label="%command.org.jkiss.dbeaver.core.new.folder.name"
-                  tooltip="%command.org.jkiss.dbeaver.core.new.folder.description"/>
+            <command commandId="org.jkiss.dbeaver.core.new.folder" label="%command.org.jkiss.dbeaver.core.new.folder.name" tooltip="%command.org.jkiss.dbeaver.core.new.folder.description"/>
             <separator name="additions" visible="true"/>
             <command commandId="org.eclipse.ui.navigate.collapseAll" label="%command.org.eclipse.ui.navigate.collapseAll.name"/>
-            <command commandId="org.jkiss.dbeaver.core.navigator.linkeditor" label="%command.org.jkiss.dbeaver.core.navigator.linkeditor.name"
-                  tooltip="%command.org.jkiss.dbeaver.core.navigator.linkeditor.description"/>
+            <command commandId="org.jkiss.dbeaver.core.navigator.linkeditor" label="%command.org.jkiss.dbeaver.core.navigator.linkeditor.name" tooltip="%command.org.jkiss.dbeaver.core.navigator.linkeditor.description"/>
+            <command commandId="org.jkiss.dbeaver.core.navigator.preferences" label="%command.org.jkiss.dbeaver.core.navigator.preferences.name" tooltip="%command.org.jkiss.dbeaver.core.navigator.preferences.description"/>
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.core.databaseNavigator">
@@ -1886,54 +1886,28 @@
 
         <!-- Project Navigator menu & toolbar -->
         <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.projectNavigator">
-            <command
-                  commandId="org.jkiss.dbeaver.core.project.create"
-                  label="%command.org.jkiss.dbeaver.core.project.create.name"
-                  tooltip="%command.org.jkiss.dbeaver.core.project.create.description"/>
-            <command
-                  commandId="org.jkiss.dbeaver.core.project.refresh"
-                  label="%command.org.jkiss.dbeaver.core.project.refresh.name"
-                  tooltip="%command.org.jkiss.dbeaver.core.project.refresh.description"/>
+            <command commandId="org.jkiss.dbeaver.core.project.create" label="%command.org.jkiss.dbeaver.core.project.create.name" tooltip="%command.org.jkiss.dbeaver.core.project.create.description"/>
+            <command commandId="org.jkiss.dbeaver.core.project.refresh" label="%command.org.jkiss.dbeaver.core.project.refresh.name" tooltip="%command.org.jkiss.dbeaver.core.project.refresh.description"/>
             <separator name="additions" visible="true"/>
-            <command
-                  commandId="org.eclipse.ui.navigate.collapseAll"
-                  label="%command.org.eclipse.ui.navigate.collapseAll.name"
-                  tooltip="%command.org.eclipse.ui.navigate.collapseAll.description"/>
-            <command
-                  commandId="org.jkiss.dbeaver.core.navigator.linkeditor"
-                  label="%command.org.jkiss.dbeaver.core.navigator.linkeditor.name"
-                  tooltip="%command.org.jkiss.dbeaver.core.navigator.linkeditor.description"/>
+            <command commandId="org.eclipse.ui.navigate.collapseAll" label="%command.org.eclipse.ui.navigate.collapseAll.name" tooltip="%command.org.eclipse.ui.navigate.collapseAll.description"/>
+            <command commandId="org.jkiss.dbeaver.core.navigator.linkeditor" label="%command.org.jkiss.dbeaver.core.navigator.linkeditor.name" tooltip="%command.org.jkiss.dbeaver.core.navigator.linkeditor.description"/>
+            <command commandId="org.jkiss.dbeaver.core.navigator.preferences" label="%command.org.jkiss.dbeaver.core.navigator.preferences.name" tooltip="%command.org.jkiss.dbeaver.core.navigator.preferences.description"/>
         </menuContribution>
 
         <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.core.projectNavigator">
-            <command
-                  commandId="org.jkiss.dbeaver.core.project.create"
-                  label="%command.org.jkiss.dbeaver.core.project.create.name"/>
+            <command commandId="org.jkiss.dbeaver.core.project.create" label="%command.org.jkiss.dbeaver.core.project.create.name"/>
             <separator name="additions" visible="true"/>
-            <command
-                  commandId="org.eclipse.ui.navigate.collapseAll"
-                  label="%command.org.eclipse.ui.navigate.collapseAll.name"/>
-            <command
-                  commandId="org.jkiss.dbeaver.core.navigator.linkeditor"
-                  label="%command.org.jkiss.dbeaver.core.navigator.linkeditor.name"
-                  tooltip="%command.org.jkiss.dbeaver.core.navigator.linkeditor.description"/>
+            <command commandId="org.eclipse.ui.navigate.collapseAll" label="%command.org.eclipse.ui.navigate.collapseAll.name"/>
+            <command commandId="org.jkiss.dbeaver.core.navigator.linkeditor" label="%command.org.jkiss.dbeaver.core.navigator.linkeditor.name" tooltip="%command.org.jkiss.dbeaver.core.navigator.linkeditor.description"/>
+            <command commandId="org.jkiss.dbeaver.core.navigator.preferences" label="%command.org.jkiss.dbeaver.core.navigator.preferences.name" tooltip="%command.org.jkiss.dbeaver.core.navigator.preferences.description"/>
         </menuContribution>
 
         <!-- Project explorer menu & toolbar -->
         <menuContribution allPopups="false" locationURI="toolbar:org.jkiss.dbeaver.core.projectExplorer">
-            <command
-                  commandId="org.jkiss.dbeaver.core.navigator.view.configure"
-                  label="%command.org.jkiss.dbeaver.core.navigator.view.configure.name"
-                  tooltip="%command.org.jkiss.dbeaver.core.navigator.view.configure.description"/>
-            <command
-                  commandId="org.eclipse.ui.navigate.collapseAll"
-                  label="%command.org.eclipse.ui.navigate.collapseAll.name "/>
-            <command
-                  commandId="org.eclipse.ui.navigate.expandAll"
-                  label="%command.org.eclipse.ui.navigate.expandAll.name "/>
-            <command
-                  commandId="org.jkiss.dbeaver.core.navigator.linkeditor"
-                  label="%command.org.jkiss.dbeaver.core.navigator.linkeditor.name"/>
+            <command commandId="org.jkiss.dbeaver.core.navigator.view.configure" label="%command.org.jkiss.dbeaver.core.navigator.view.configure.name" tooltip="%command.org.jkiss.dbeaver.core.navigator.view.configure.description"/>
+            <command commandId="org.eclipse.ui.navigate.collapseAll" label="%command.org.eclipse.ui.navigate.collapseAll.name "/>
+            <command commandId="org.eclipse.ui.navigate.expandAll" label="%command.org.eclipse.ui.navigate.expandAll.name "/>
+            <command commandId="org.jkiss.dbeaver.core.navigator.linkeditor" label="%command.org.jkiss.dbeaver.core.navigator.linkeditor.name"/>
         </menuContribution>
 
         <!-- All Context menus -->
@@ -2853,9 +2827,17 @@
               <instanceof value="org.jkiss.dbeaver.ui.views.qm.QueryManagerView"/>
            </enabledWhen>
         </page>
+        <page class="org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseNavigator" id="org.jkiss.dbeaver.preferences.navigator" name="%page.org.jkiss.dbeaver.preferences.databaseNavigator.name">
+            <enabledWhen>
+                <instanceof value="org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase"/>
+            </enabledWhen>
+        </page>
         <page class="org.jkiss.dbeaver.ui.preferences.PrefPageConnectionTypes" id="org.jkiss.dbeaver.preferences.connectionTypes" name="%page.org.jkiss.dbeaver.preferences.connectionTypes.name">
             <enabledWhen>
-                <instanceof value="org.jkiss.dbeaver.model.connection.DBPConnectionType"/>
+                <or>
+                    <instanceof value="org.jkiss.dbeaver.model.connection.DBPConnectionType"/>
+                    <instanceof value="org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase"/>
+                </or>
             </enabledWhen>
         </page>
         <page class="org.jkiss.dbeaver.ui.preferences.PrefPageProjectSettings" id="org.jkiss.dbeaver.preferences.projectSettings" name="%page.org.jkiss.dbeaver.preferences.projectSettings.name">
