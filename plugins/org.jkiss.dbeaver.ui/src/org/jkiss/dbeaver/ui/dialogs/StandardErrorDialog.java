@@ -125,6 +125,11 @@ public class StandardErrorDialog extends ErrorDialog {
         dropDownList.addDisposeListener(e -> {
             detailsVisible = false;
         });
+        int itemCount = dropDownList.getItemCount();
+        if (itemCount > 1) {
+            // Remove last list item (dup)
+            dropDownList.remove(itemCount - 1);
+        }
         return dropDownList;
     }
 
