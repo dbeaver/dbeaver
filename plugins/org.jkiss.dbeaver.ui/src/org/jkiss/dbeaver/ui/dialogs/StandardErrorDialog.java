@@ -65,6 +65,12 @@ public class StandardErrorDialog extends ErrorDialog {
                         lastMessage = e.getMessage();
                     }
                 }
+                if (CommonUtils.isEmpty(lastMessage)) {
+                    lastMessage = rootStatus.getMessage();
+                    if (CommonUtils.isEmpty(lastMessage)) {
+                        lastMessage = status.getMessage();
+                    }
+                }
                 this.message = TextUtils.cutExtraLines(lastMessage, 20);
             } else {
                 this.message = TextUtils.cutExtraLines(rootStatus.getMessage(), 20);
