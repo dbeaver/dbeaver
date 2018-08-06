@@ -1851,10 +1851,7 @@
                 </command>
                 <separator name="additions" visible="false"/>
             </toolbar>
-        </menuContribution>
 
-<!--
-        <menuContribution allPopups="false" locationURI="toolbar:org.eclipse.ui.main.toolbar?after=additions">
             <toolbar id="dbeaver-edit" label="%toolbar.dbeaver-edit.label">
                 <command commandId="org.eclipse.ui.file.save"/>
                 <command commandId="org.eclipse.ui.file.revert" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/reset.png"/>
@@ -1864,7 +1861,6 @@
             </toolbar>
 
         </menuContribution>
--->
 
         <!-- Database Navigator menu & toolbar -->
         <menuContribution allPopups="false" locationURI="menu:org.jkiss.dbeaver.core.databaseNavigator">
