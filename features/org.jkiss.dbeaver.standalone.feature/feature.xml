@@ -55,11 +55,11 @@
     <plugin id="org.eclipse.ui.ide.application" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 
     <!-- EGit and other requirements -->
-    <import plugin="org.eclipse.ui.net"/>
-    <import plugin="org.eclipse.jsch.core"/>
-    <import plugin="org.eclipse.jsch.ui"/>
-    <import plugin="org.eclipse.core.variables"/>
-    <import plugin="org.eclipse.ui.cheatsheets"/>
+    <plugin id="org.eclipse.ui.net" download-size="0" install-size="0" version="0.0.0"/>
+    <plugin id="org.eclipse.jsch.core" download-size="0" install-size="0" version="0.0.0"/>
+    <plugin id="org.eclipse.jsch.ui" download-size="0" install-size="0" version="0.0.0"/>
+    <plugin id="org.eclipse.core.variables" download-size="0" install-size="0" version="0.0.0"/>
+    <plugin id="org.eclipse.ui.cheatsheets" download-size="0" install-size="0" version="0.0.0"/>
 
     <!-- Include org.eclipse.ui.themes because it was added only in 4.4 -->
     <plugin id="org.eclipse.ui.themes" download-size="0" install-size="0" version="0.0.0"/>
