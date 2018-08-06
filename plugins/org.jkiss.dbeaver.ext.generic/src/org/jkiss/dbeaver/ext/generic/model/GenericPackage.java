@@ -90,7 +90,7 @@ public class GenericPackage extends GenericObjectContainer implements DBPQualifi
     }
 
     @Override
-    public DBSObject getObject()
+    public GenericStructContainer getObject()
     {
         return this;
     }

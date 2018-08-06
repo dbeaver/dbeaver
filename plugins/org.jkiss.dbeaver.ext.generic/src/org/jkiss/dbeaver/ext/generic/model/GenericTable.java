@@ -95,7 +95,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
     }
 
     @Override
-    public DBSObject getParentObject()
+    public GenericStructContainer getParentObject()
     {
         return getContainer().getObject();
     }
