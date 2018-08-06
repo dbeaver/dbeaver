@@ -271,8 +271,8 @@ public class GenericDataSource extends JDBCDataSource
     }
 
     @Override
-    public DBSObject getObject() {
-        return getContainer();
+    public GenericStructContainer getObject() {
+        return this;
     }
 
     @Override
@@ -916,8 +916,8 @@ public class GenericDataSource extends JDBCDataSource
         }
 
         @Override
-        public DBSObject getObject() {
-            return GenericDataSource.this.getContainer();
+        public GenericStructContainer getObject() {
+            return GenericDataSource.this;
         }
 
         @Override

@@ -22,7 +22,6 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityType;
-import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 
@@ -95,7 +94,7 @@ public abstract class AbstractTable<
     }
 
     @Override
-    public DBSObject getParentObject()
+    public CONTAINER getParentObject()
     {
         return container;
     }
