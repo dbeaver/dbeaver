@@ -22,6 +22,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
@@ -80,7 +81,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
         }
 
         boolean newConnection = settings.isOpenNewConnections();
-        boolean forceDataReadTransactions = Boolean.TRUE.equals(dataSource.getDataSourceFeature(FEATURE_FORCE_TRANSACTIONS));
+        boolean forceDataReadTransactions = Boolean.TRUE.equals(dataSource.getDataSourceFeature(DBConstants.FEATURE_LOB_REQUIRE_TRANSACTIONS));
         DBCExecutionContext context = !selectiveExportFromUI && newConnection ?
             DBUtils.getObjectOwnerInstance(getSourceObject()).openIsolatedContext(monitor, "Data transfer producer") :
             DBUtils.getDefaultContext(getSourceObject(), false);

@@ -48,7 +48,6 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLState;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.net.DefaultCallbackHandler;
-import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.Connection;
@@ -175,7 +174,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
 
     @Override
     public Object getDataSourceFeature(String featureId) {
-        if (IDataTransferProducer.FEATURE_FORCE_TRANSACTIONS.equals(featureId)) {
+        if (DBConstants.FEATURE_LOB_REQUIRE_TRANSACTIONS.equals(featureId)) {
             return true;
         }
         return super.getDataSourceFeature(featureId);

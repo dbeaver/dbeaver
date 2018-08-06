@@ -26,8 +26,6 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
  */
 public interface IDataTransferProducer<SETTINGS extends IDataTransferSettings> extends IDataTransferNode<SETTINGS> {
 
-    String FEATURE_FORCE_TRANSACTIONS = "data-transfer.force-transactions";
-
     DBSObject getSourceObject();
 
     void transferData(
