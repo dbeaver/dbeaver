@@ -692,6 +692,13 @@ public class CoreMessages extends NLS {
 	public static String dialog_view_sql_button_copy;
 	public static String dialog_view_sql_button_persist;
 
+	public static String dialog_sql_param_title;
+	public static String dialog_sql_param_column_name;
+	public static String dialog_sql_param_column_value;
+	public static String dialog_sql_param_hide_checkbox;
+	public static String dialog_sql_param_hide_checkbox_tip;
+	public static String dialog_sql_param_hint;
+
 	public static String editor_binary_hex_default_font;
 	public static String editor_binary_hex_font_style_bold;
 	public static String editor_binary_hex_font_style_bold_italic;

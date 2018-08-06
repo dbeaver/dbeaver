@@ -19,8 +19,11 @@ package org.jkiss.dbeaver.runtime.sql;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.StatusDialog;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.sql.SQLQueryParameter;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -46,6 +49,7 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
 
     private static Map<String, SQLQueryParameterRegistry.ParameterInfo> savedParamValues = new HashMap<>();
     private Button hideIfSetCheck;
+    private Table paramTable;
 
     public SQLQueryParameterBindDialog(Shell shell, List<SQLQueryParameter> parameters)
     {
@@ -84,10 +88,10 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
     @Override
     protected Control createDialogArea(Composite parent)
     {
-        getShell().setText("Bind parameter(s)");
+        getShell().setText(CoreMessages.dialog_sql_param_title);
         final Composite composite = (Composite)super.createDialogArea(parent);
 
-        final Table paramTable = new Table(composite, SWT.SINGLE | SWT.FULL_SELECTION | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
+        paramTable = new Table(composite, SWT.SINGLE | SWT.FULL_SELECTION | SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL);
         final GridData gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 400;
         gd.heightHint = 200;
@@ -97,25 +101,12 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
 
         final TableColumn indexColumn = UIUtils.createTableColumn(paramTable, SWT.LEFT, "#");
         indexColumn.setWidth(40);
-        final TableColumn nameColumn = UIUtils.createTableColumn(paramTable, SWT.LEFT, "Name");
+        final TableColumn nameColumn = UIUtils.createTableColumn(paramTable, SWT.LEFT, CoreMessages.dialog_sql_param_column_name);
         nameColumn.setWidth(100);
-        final TableColumn valueColumn = UIUtils.createTableColumn(paramTable, SWT.LEFT, "Value");
+        final TableColumn valueColumn = UIUtils.createTableColumn(paramTable, SWT.LEFT, CoreMessages.dialog_sql_param_column_value);
         valueColumn.setWidth(200);
 
-        for (SQLQueryParameter param : parameters) {
-            if (param.getPrevious() != null) {
-                // Skip duplicates
-                List<SQLQueryParameter> dups = dupParameters.computeIfAbsent(param.getName(), k -> new ArrayList<>());
-                dups.add(param);
-                continue;
-            }
-            TableItem item = new TableItem(paramTable, SWT.NONE);
-            item.setData(param);
-            item.setImage(DBeaverIcons.getImage(DBIcon.TREE_ATTRIBUTE));
-            item.setText(0, String.valueOf(param.getOrdinalPosition() + 1));
-            item.setText(1, param.getTitle());
-            item.setText(2, CommonUtils.notEmpty(param.getValue()));
-        }
+        fillParameterList(isHideIfSet());
 
         final CustomTableEditor tableEditor = new CustomTableEditor(paramTable) {
             {
@@ -156,13 +147,6 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
             }
         };
 
-/*
-        hideIfSetCheck = UIUtils.createCheckbox(composite,
-            "Do not show is all parameters are set",
-            "Do not show this dialog if all parameters were set as script variable",
-            getDialogBoundsSettings().getBoolean(PARAM_HIDE_IF_SET), 1);
-*/
-
         if (!parameters.isEmpty()) {
             UIUtils.asyncExec(() -> {
                 paramTable.select(0);
@@ -170,8 +154,41 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
             });
         }
 
-        updateStatus(GeneralUtils.makeInfoStatus("Use Tab to switch. String values must be quoted. You can use expressions in values"));
+        hideIfSetCheck = UIUtils.createCheckbox(composite,
+            CoreMessages.dialog_sql_param_hide_checkbox, CoreMessages.dialog_sql_param_hide_checkbox_tip,
+            isHideIfSet(),
+            1);
+        hideIfSetCheck.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                fillParameterList(hideIfSetCheck.getSelection());
+            }
+        });
+
+        updateStatus(GeneralUtils.makeInfoStatus(CoreMessages.dialog_sql_param_hint));
         return composite;
+    }
+
+    private void fillParameterList(boolean hideVariables) {
+        paramTable.removeAll();
+
+        for (SQLQueryParameter param : parameters) {
+            if (hideVariables && param.isVariableSet()) {
+                continue;
+            }
+            if (param.getPrevious() != null) {
+                // Skip duplicates
+                List<SQLQueryParameter> dups = dupParameters.computeIfAbsent(param.getName(), k -> new ArrayList<>());
+                dups.add(param);
+                continue;
+            }
+            TableItem item = new TableItem(paramTable, SWT.NONE);
+            item.setData(param);
+            item.setImage(DBeaverIcons.getImage(DBIcon.TREE_ATTRIBUTE));
+            item.setText(0, String.valueOf(param.getOrdinalPosition() + 1));
+            item.setText(1, param.getTitle());
+            item.setText(2, CommonUtils.notEmpty(param.getValue()));
+        }
     }
 
     @Override
@@ -191,4 +208,5 @@ public class SQLQueryParameterBindDialog extends StatusDialog {
     public static boolean isHideIfSet() {
         return UIUtils.getDialogSettings(DIALOG_ID).getBoolean(PARAM_HIDE_IF_SET);
     }
+
 }

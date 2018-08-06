@@ -609,36 +609,37 @@ public class SQLQueryJob extends DataSourceJob
 
     private boolean fillStatementParameters(final List<SQLQueryParameter> parameters)
     {
-        boolean allSet = true;
         for (SQLQueryParameter param : parameters) {
-            if (param.getValue() == null) {
-                allSet = false;
-            }
             String paramName = param.getTitle();
             if (scriptContext.hasVariable(paramName)) {
                 Object varValue = scriptContext.getVariable(paramName);
-                String strValue;
-                /*if (varValue instanceof String) {
-                    strValue = SQLUtils.quoteString(getExecutionContext().getDataSource(), (String) varValue);
-                } else */{
-                    strValue = varValue == null ? null : varValue.toString();
-                }
+                String strValue = varValue == null ? null : varValue.toString();
                 param.setValue(strValue);
+                param.setVariableSet(true);
+            } else {
+                param.setVariableSet(false);
+            }
+        }
+        boolean allSet = true;
+        for (SQLQueryParameter param : parameters) {
+            if (!param.isVariableSet()) {
+                allSet = false;
             }
         }
         if (allSet) {
             return true;
         }
-        boolean okPressed = true;
-        okPressed = new UIConfirmation() {
-            @Override
-            public Boolean runTask() {
+
+        boolean okPressed = new UIConfirmation() {
+                @Override
+                public Boolean runTask() {
                 SQLQueryParameterBindDialog dialog = new SQLQueryParameterBindDialog(
-                        partSite.getShell(),
-                        parameters);
+                    partSite.getShell(),
+                    parameters);
                 return (dialog.open() == IDialogConstants.OK_ID);
             }
         }.execute();
+
         if (okPressed) {
             // Save values back to script context
             for (SQLQueryParameter param : parameters) {

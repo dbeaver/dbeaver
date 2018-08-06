@@ -25,6 +25,7 @@ public class SQLQueryParameter {
     private int ordinalPosition;
     private String name;
     private String value;
+    private boolean variableSet;
     private final int tokenOffset;
     private final int tokenLength;
     private SQLQueryParameter previous;
@@ -86,6 +87,14 @@ public class SQLQueryParameter {
     public void setValue(String value)
     {
         this.value = value;
+    }
+
+    public boolean isVariableSet() {
+        return variableSet;
+    }
+
+    public void setVariableSet(boolean variableSet) {
+        this.variableSet = variableSet;
     }
 
     public String getTitle() {
