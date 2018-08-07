@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.app.DBPDataFormatterRegistry;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.impl.preferences.SimplePreferenceStore;
 import org.jkiss.dbeaver.registry.RegistryConstants;
@@ -41,7 +42,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class DataFormatterRegistry
+public class DataFormatterRegistry implements DBPDataFormatterRegistry
 {
     private static final Log log = Log.getLog(DataFormatterRegistry.class);
 
@@ -95,6 +96,7 @@ public class DataFormatterRegistry
         return dataFormatterMap.get(typeId);
     }
 
+    @Override
     public synchronized DBDDataFormatterProfile getGlobalProfile()
     {
         if (globalProfile == null) {
@@ -105,6 +107,7 @@ public class DataFormatterRegistry
         return globalProfile;
     }
 
+    @Override
     @Nullable
     public DBDDataFormatterProfile getCustomProfile(String name)
     {
@@ -116,6 +119,7 @@ public class DataFormatterRegistry
         return null;
     }
 
+    @Override
     public synchronized List<DBDDataFormatterProfile> getCustomProfiles()
     {
         if (customProfiles == null) {

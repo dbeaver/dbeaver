@@ -57,7 +57,6 @@ public final class DBeaverPreferences
     public static final String STATEMENT_INVALIDATE_BEFORE_EXECUTE = "statement.invalidate.before.execute"; //$NON-NLS-1$
     public static final String STATEMENT_TIMEOUT = "statement.timeout"; //$NON-NLS-1$
     public static final String MEMORY_CONTENT_MAX_SIZE = "content.memory.maxsize"; //$NON-NLS-1$
-    public static final String READ_EXPENSIVE_PROPERTIES = "database.props.expensive"; //$NON-NLS-1$
     public static final String EDITOR_SEPARATE_CONNECTION = "database.editor.separate.connection"; //$NON-NLS-1$
     public static final String EDITOR_CONNECT_ON_ACTIVATE = "database.editor.connect.on.activate"; //$NON-NLS-1$
     public static final String EDITOR_CONNECT_ON_EXECUTE = "database.editor.connect.on.execute"; //$NON-NLS-1$

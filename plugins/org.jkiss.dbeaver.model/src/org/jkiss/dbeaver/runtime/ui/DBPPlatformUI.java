@@ -18,12 +18,18 @@
 package org.jkiss.dbeaver.runtime.ui;
 
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.jobs.Job;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.access.DBAAuthInfo;
 import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
+import org.jkiss.dbeaver.model.runtime.load.ILoadService;
+import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 
 /**
  * User interface interactions
@@ -68,9 +74,18 @@ public interface DBPPlatformUI {
      */
     DBNNode selectObject(Object parentShell, String title, DBNNode rootNode, DBNNode selectedNode, Class<?>[] allowedTypes, Class<?>[] resultTypes);
 
+    void openEntityEditor(DBSObject object);
+    void openEntityEditor(DBNNode selectedNode, @Nullable String defaultPageId);
+    void openSQLViewer(@Nullable DBCExecutionContext context, String title, @Nullable DBPImage image, String text);
+
     // Process execution
     void executeProcess(DBRProcessDescriptor processDescriptor);
 
     void executeInUI(Runnable runnable);
+
+    <RESULT> Job createLoadingService(
+        ILoadService<RESULT> loadingService,
+        ILoadVisualizer<RESULT> visualizer);
+
 
 }

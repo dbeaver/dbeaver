@@ -39,8 +39,10 @@ public interface DBSDataContainer extends DBSObject {
     int DATA_FILTER         = 2 << 1;
     int DATA_SEARCH         = 4 << 2;
 
-    long FLAG_NONE               = 0;
-    long FLAG_READ_PSEUDO        = 1 << 1;
+    long FLAG_NONE                  = 0;
+    long FLAG_READ_PSEUDO           = 1 << 1;
+    long FLAG_USE_SELECTED_ROWS     = 1 << 2;
+    long FLAG_USE_SELECTED_COLUMNS  = 1 << 2;
 
     @Nullable
     DBPDataSource getDataSource();
@@ -81,13 +83,15 @@ public interface DBSDataContainer extends DBSObject {
      * @param source execution source
      * @param session session
      * @param dataFilter data filter (may be null)
+     * @param flags read flags. See FLAG_ constants
      * @return number of rows in container. May return negative values if count feature is not available
      * @throws DBCException on any error
      */
     long countData(
         @NotNull DBCExecutionSource source,
         @NotNull DBCSession session,
-        @Nullable DBDDataFilter dataFilter)
+        @Nullable DBDDataFilter dataFilter,
+        long flags)
         throws DBCException;
 
 }
