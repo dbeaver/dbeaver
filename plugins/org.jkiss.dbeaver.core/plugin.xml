@@ -2861,6 +2861,13 @@
     </extension>
 
     <extension point="org.eclipse.core.runtime.adapters">
+        <factory adaptableType="org.jkiss.dbeaver.model.DBWorkbench" class="org.jkiss.dbeaver.core.DBeaverCoreAdapterFactory">
+            <adapter type="org.jkiss.dbeaver.model.app.DBPPlatform"/>
+            <adapter type="org.jkiss.dbeaver.runtime.ui.DBPPlatformUI"/>
+        </factory>
+        <factory adaptableType="org.jkiss.dbeaver.model.struct.DBSObject" class="org.jkiss.dbeaver.core.DBeaverCoreAdapterFactory">
+            <adapter type="org.jkiss.dbeaver.runtime.ide.core.WorkspaceResourceResolver"/>
+        </factory>
         <factory adaptableType="org.jkiss.dbeaver.model.DBPObject" class="org.jkiss.dbeaver.ui.navigator.NavigatorAdapterFactory">
             <adapter type="org.jkiss.dbeaver.model.DBPNamedObject"/>
             <adapter type="org.jkiss.dbeaver.model.DBPQualifiedObject"/>
@@ -2885,10 +2892,6 @@
             <adapter type="org.jkiss.dbeaver.model.struct.DBSEntity"/>
             <adapter type="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
             <adapter type="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
-        </factory>
-        <factory adaptableType="org.eclipse.ui.IEditorInput" class="org.jkiss.dbeaver.ui.editors.DatabaseEditorAdapterFactory">
-            <adapter type="org.jkiss.dbeaver.model.struct.DBSObject"/>
-            <adapter type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
         </factory>
     </extension>
 
@@ -3873,16 +3876,6 @@
             label="%search.result.view.page.data.result.name"
             searchResultClass="org.jkiss.dbeaver.ui.search.data.SearchDataResult">
         </viewPage>
-    </extension>
-    <extension
-          point="org.eclipse.core.runtime.adapters">
-       <factory
-             adaptableType="org.jkiss.dbeaver.model.struct.DBSObject"
-             class="org.jkiss.dbeaver.core.DBeaverCoreAdapterFactory">
-          <adapter
-                type="org.jkiss.dbeaver.runtime.ide.core.WorkspaceResourceResolver">
-          </adapter>
-       </factory>
     </extension>
 
     <!-- Perspective -->

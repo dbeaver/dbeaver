@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,7 +20,7 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
-import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.model.DBWorkbench;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -55,9 +55,9 @@ public class DataImportHandler extends DataTransferHandler implements IElementUp
     @Override
     protected IDataTransferProducer chooseProducer(ExecutionEvent event, IDataTransferConsumer consumer)
     {
-        final DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
-        final DBNNode rootNode = DBeaverCore.getInstance().getLiveProjects().size() == 1 ?
-            navigatorModel.getRoot().getProject(DBeaverCore.getInstance().getProjectRegistry().getActiveProject()) : navigatorModel.getRoot();
+        final DBNModel navigatorModel = DBWorkbench.getPlatform().getNavigatorModel();
+        final DBNNode rootNode = DBWorkbench.getPlatform().getLiveProjects().size() == 1 ?
+            navigatorModel.getRoot().getProject(DBWorkbench.getPlatform().getProjectManager().getActiveProject()) : navigatorModel.getRoot();
         DBNNode node = DBUserInterface.getInstance().selectObject(
             HandlerUtil.getActiveShell(event),
             "Select source container for '" + consumer.getTargetName() + "'",
