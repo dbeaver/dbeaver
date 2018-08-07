@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,10 +22,10 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.DBWorkbench;
 import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
@@ -181,7 +181,7 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
                 if (consumer instanceof DatabaseTransferConsumer) {
                     final DBSDataManipulator targetObject = ((DatabaseTransferConsumer) consumer).getTargetObject();
                     if (targetObject != null) {
-                        containerNode = DBeaverCore.getInstance().getNavigatorModel().findNode(
+                        containerNode = DBWorkbench.getPlatform().getNavigatorModel().findNode(
                             targetObject.getParentObject()
                         );
                     }
@@ -233,7 +233,7 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
                 try {
                     runnableContext.run(true, true, monitor -> {
                         try {
-                            DBNNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByPath(
+                            DBNNode node = DBWorkbench.getPlatform().getNavigatorModel().getNodeByPath(
                                 new DefaultProgressMonitor(monitor),
                                 containerNodePath);
                             if (node instanceof DBNDatabaseNode) {

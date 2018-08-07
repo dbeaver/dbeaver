@@ -18,41 +18,45 @@
 
 package org.jkiss.dbeaver.core;
 
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IAdapterFactory;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.DBWorkbench;
+import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.runtime.ide.core.WorkspaceResourceResolver;
+import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 
 //FIXME: AF: we can rework this after "org.jkiss.dbeaver.core" bundle will be split for parts
 public class DBeaverCoreAdapterFactory implements IAdapterFactory {
 
-    private static final Class<?>[] CLASSES = new Class[] { WorkspaceResourceResolver.class };
+    private static final Class<?>[] CLASSES = new Class[] { WorkspaceResourceResolver.class, DBPPlatform.class, DBPPlatformUI.class };
     
-    private final WorkspaceResourceResolver workspaceResourceResolver = new WorkspaceResourceResolver() {
-
-        @Override
-        public IResource resolveResource(DBSObject databaseObject) {
-            if (databaseObject != null) {
-                DBPDataSource dataSource = databaseObject.getDataSource();
-                if (dataSource != null) {
-                    DBPDataSourceContainer container = dataSource.getContainer();
-                    if (container != null) {
-                        return container.getRegistry().getProject();
-                    }
+    private final WorkspaceResourceResolver workspaceResourceResolver = databaseObject -> {
+        if (databaseObject != null) {
+            DBPDataSource dataSource = databaseObject.getDataSource();
+            if (dataSource != null) {
+                DBPDataSourceContainer container = dataSource.getContainer();
+                if (container != null) {
+                    return container.getRegistry().getProject();
                 }
             }
-            // FIXME:AF: for now it looks like reasonable default
-            return DBeaverCore.getInstance().getProjectManager().getActiveProject();
         }
-        
+        // FIXME:AF: for now it looks like reasonable default
+        return DBeaverCore.getInstance().getProjectManager().getActiveProject();
     };
 
     @Override
     public <T> T getAdapter(Object adaptableObject, Class<T> adapterType) {
-        if (adapterType == WorkspaceResourceResolver.class) {
-            return adapterType.cast(workspaceResourceResolver);
+        if (adaptableObject instanceof DBWorkbench) {
+            if (adapterType == DBPPlatform.class) {
+                return adapterType.cast(DBeaverCore.getInstance());
+            } else if (adapterType == DBPPlatformUI.class) {
+                return adapterType.cast(DBeaverUI.getInstance());
+            }
+        } else {
+            if (adapterType == WorkspaceResourceResolver.class) {
+                return adapterType.cast(workspaceResourceResolver);
+            }
         }
         return null;
     }

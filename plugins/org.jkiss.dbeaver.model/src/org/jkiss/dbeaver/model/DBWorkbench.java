@@ -15,23 +15,25 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.runtime.ui;
+package org.jkiss.dbeaver.model;
 
-import org.jkiss.dbeaver.runtime.ui.console.ConsoleUserInterface;
+import org.eclipse.core.runtime.Adapters;
+import org.jkiss.dbeaver.model.app.DBPPlatform;
+import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 
 /**
- * User interface interactions
+ * Workbench
  */
-public class DBUserInterface {
+public class DBWorkbench {
 
-    private static DBPPlatformUI instance = new ConsoleUserInterface();
+    private static DBWorkbench instance = new DBWorkbench();
 
-    public static DBPPlatformUI getInstance() {
-        return instance;
+    public static DBPPlatform getPlatform() {
+        return Adapters.adapt(instance, DBPPlatform.class);
     }
 
-    public static void setInstance(DBPPlatformUI instance) {
-        DBUserInterface.instance = instance;
+    public static DBPPlatformUI getPlatformUI() {
+        return Adapters.adapt(instance, DBPPlatformUI.class);
     }
 
 }
