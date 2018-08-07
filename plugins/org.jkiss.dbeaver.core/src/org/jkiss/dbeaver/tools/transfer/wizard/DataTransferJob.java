@@ -21,12 +21,11 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Display;
-import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBWorkbench;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
@@ -80,8 +79,9 @@ public class DataTransferJob extends AbstractJob {
             // Make a sound
             Display.getCurrent().beep();
             // Notify agent
-            if (time > DBWorkbench.getPlatform().getPreferenceStore().getLong(DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT) * 1000) {
-                DBeaverUI.notifyAgent(
+            DBPPlatformUI platformUI = DBWorkbench.getPlatformUI();
+            if (time > platformUI.getLongOperationTimeout() * 1000) {
+                platformUI.notifyAgent(
                         "Data transfer completed", !hasErrors ? IStatus.INFO : IStatus.ERROR);
             }
             if (settings.isShowFinalMessage()) {

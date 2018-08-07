@@ -29,11 +29,19 @@ public class DBWorkbench {
     private static DBWorkbench instance = new DBWorkbench();
 
     public static DBPPlatform getPlatform() {
-        return Adapters.adapt(instance, DBPPlatform.class);
+        DBPPlatform platform = Adapters.adapt(instance, DBPPlatform.class);
+        if (platform == null) {
+            throw new IllegalStateException("Internal configuration error. Platform not instantiated.");
+        }
+        return platform;
     }
 
     public static DBPPlatformUI getPlatformUI() {
-        return Adapters.adapt(instance, DBPPlatformUI.class);
+        DBPPlatformUI platformUI = Adapters.adapt(instance, DBPPlatformUI.class);
+        if (platformUI == null) {
+            throw new IllegalStateException("Internal configuration error. Platform UI not instantiated.");
+        }
+        return platformUI;
     }
 
 }

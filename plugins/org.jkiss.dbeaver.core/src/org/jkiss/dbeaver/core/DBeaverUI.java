@@ -52,7 +52,6 @@ import org.jkiss.dbeaver.ui.dialogs.driver.DriverEditDialog;
 import org.jkiss.dbeaver.ui.views.process.ProcessPropertyTester;
 import org.jkiss.dbeaver.ui.views.process.ShellProcessView;
 import org.jkiss.dbeaver.utils.GeneralUtils;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -157,7 +156,8 @@ public class DBeaverUI implements DBPPlatformUI {
     }
 */
 
-    public static void notifyAgent(String message, int status) {
+    @Override
+    public void notifyAgent(String message, int status) {
         if (!ModelPreferences.getPreferences().getBoolean(DBeaverPreferences.AGENT_LONG_OPERATION_NOTIFY)) {
             // Notifications disabled
             return;
@@ -203,6 +203,11 @@ public class DBeaverUI implements DBPPlatformUI {
     @Override
     public UserResponse showError(@NotNull String title, @Nullable String message) {
         return showError(title, null, new Status(IStatus.ERROR, DBeaverCore.PLUGIN_ID, message));
+    }
+
+    @Override
+    public long getLongOperationTimeout() {
+        return DBeaverCore.getGlobalPreferenceStore().getLong(DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT);
     }
 
     private static UserResponse showDatabaseError(String message, DBException error)
