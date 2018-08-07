@@ -92,7 +92,7 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
     public boolean isCompleted(Collection<DataTransferPipe> pipes) {
         for (DataTransferPipe pipe : pipes) {
             if (pipe.getProducer() != null) {
-                DBSDataContainer sourceObject = (DBSDataContainer) pipe.getProducer().getSourceObject();
+                DBSDataContainer sourceObject = (DBSDataContainer) pipe.getProducer().getDatabaseObject();
                 DatabaseMappingContainer containerMapping = dataMappings.get(sourceObject);
                 if (containerMapping == null ||
                     containerMapping.getMappingType() == DatabaseMappingType.unspecified ||

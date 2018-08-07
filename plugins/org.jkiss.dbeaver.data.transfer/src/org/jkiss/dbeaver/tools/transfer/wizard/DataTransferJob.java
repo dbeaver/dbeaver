@@ -103,11 +103,11 @@ public class DataTransferJob extends AbstractJob {
         IDataTransferSettings consumerSettings = settings.getNodeSettings(consumer);
 
         setName(NLS.bind(DTMessages.data_transfer_wizard_job_container_name,
-            CommonUtils.truncateString(producer.getSourceObject().getName(), 200)));
+            CommonUtils.truncateString(producer.getDatabaseObject().getName(), 200)));
 
         IDataTransferSettings nodeSettings = settings.getNodeSettings(producer);
         try {
-            //consumer.initTransfer(producer.getSourceObject(), consumerSettings, );
+            //consumer.initTransfer(producer.getDatabaseObject(), consumerSettings, );
 
             producer.transferData(
                 monitor,

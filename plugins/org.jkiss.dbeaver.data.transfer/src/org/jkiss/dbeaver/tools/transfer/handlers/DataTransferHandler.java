@@ -56,17 +56,6 @@ public abstract class DataTransferHandler extends AbstractHandler {
             }
         }
 
-        if (!consumers.isEmpty()) {
-            // We need to choose producer for consumers
-            for (IDataTransferConsumer consumer : consumers) {
-                IDataTransferProducer producer = chooseProducer(event, consumer);
-                if (producer == null) {
-                    return null;
-                }
-                producers.add(producer);
-            }
-        }
-
         // Run transfer wizard
         if (!producers.isEmpty() || !consumers.isEmpty()) {
             ActiveWizardDialog dialog = new ActiveWizardDialog(
@@ -77,11 +66,6 @@ public abstract class DataTransferHandler extends AbstractHandler {
             dialog.open();
         }
 
-        return null;
-    }
-
-    protected IDataTransferProducer chooseProducer(ExecutionEvent event, IDataTransferConsumer consumer)
-    {
         return null;
     }
 

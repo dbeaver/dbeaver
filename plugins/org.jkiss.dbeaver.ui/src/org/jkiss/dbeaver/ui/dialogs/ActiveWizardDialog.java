@@ -52,17 +52,13 @@ public class ActiveWizardDialog extends WizardDialog
             }
             ((IWorkbenchWizard)wizard).init(window.getWorkbench(), selection);
         }
-        addPageChangingListener(new IPageChangingListener() {
-            @Override
-            public void handlePageChanging(PageChangingEvent event)
-            {
-                if (event.getCurrentPage() instanceof ActiveWizardPage) {
-                    ((ActiveWizardPage) event.getCurrentPage()).deactivatePage();
-                }
+        addPageChangingListener(event -> {
+            if (event.getCurrentPage() instanceof ActiveWizardPage) {
+                ((ActiveWizardPage) event.getCurrentPage()).deactivatePage();
+            }
 //                if (event.getTargetPage() instanceof ActiveWizardPage) {
 //                    ((ActiveWizardPage) event.getTargetPage()).activatePage();
 //                }
-            }
         });
     }
 

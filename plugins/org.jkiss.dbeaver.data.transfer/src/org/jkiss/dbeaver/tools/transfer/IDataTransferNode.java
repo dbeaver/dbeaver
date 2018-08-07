@@ -16,8 +16,13 @@
  */
 package org.jkiss.dbeaver.tools.transfer;
 
+import org.jkiss.dbeaver.model.struct.DBSObject;
+
 /**
  * Abstract node
  */
 public interface IDataTransferNode<SETTINGS extends IDataTransferSettings> {
+
+    DBSObject getDatabaseObject();
+
 }

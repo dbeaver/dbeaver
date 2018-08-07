@@ -52,10 +52,10 @@ public class DataTransferSettings {
         IDataTransferSettings settings;
         IWizardPage[] pages;
 
-        private NodeSettings(DataTransferNodeDescriptor sourceNode) throws DBException {
+        private NodeSettings(DataTransferNodeDescriptor sourceNode, boolean consumerOptional, boolean producerOptional) throws DBException {
             this.sourceNode = sourceNode;
             this.settings = sourceNode.createSettings();
-            this.pages = sourceNode.createWizardPages();
+            this.pages = sourceNode.createWizardPages(consumerOptional, producerOptional);
         }
 
     }
@@ -71,6 +71,7 @@ public class DataTransferSettings {
     private Map<Class, NodeSettings> nodeSettings = new LinkedHashMap<>();
 
     private boolean consumerOptional;
+    private boolean producerOptional;
     private int maxJobCount = DEFAULT_THREADS_NUM;
 
     private transient int curPipeNum = 0;
@@ -111,11 +112,12 @@ public class DataTransferSettings {
             Class<? extends IDataTransferConsumer> consumerType = dataPipes.get(0).getConsumer().getClass();
             DataTransferNodeDescriptor consumerDesc = DataTransferRegistry.getInstance().getNodeByType(consumerType);
             if (consumerDesc != null) {
-                selectConsumer(consumerDesc, null);
+                selectConsumer(consumerDesc, null, false);
                 consumerOptional = false;
             } else {
                 DBUserInterface.getInstance().showError("Can't find producer", "Can't find data propducer descriptor in registry");
             }
+            producerOptional = true;
         } else {
             throw new IllegalArgumentException("Producers or consumers must be specified");
         }
@@ -158,7 +160,7 @@ public class DataTransferSettings {
             return;
         }
         try {
-            nodeSettings.put(nodeClass, new NodeSettings(node));
+            nodeSettings.put(nodeClass, new NodeSettings(node, consumerOptional, producerOptional));
         } catch (DBException e) {
             log.error("Can't add node '" + node.getId() + "'", e);
         }
@@ -178,6 +180,10 @@ public class DataTransferSettings {
         return consumerOptional;
     }
 
+    public boolean isProducerOptional() {
+        return producerOptional;
+    }
+
     public boolean isPageValid(IWizardPage page) {
         return isPageValid(page, producer) || isPageValid(page, consumer);
     }
@@ -191,8 +197,14 @@ public class DataTransferSettings {
         List<DataTransferPipe> dataPipes = getDataPipes();
         Set<DBSObject> objects = new HashSet<>();
         for (DataTransferPipe transferPipe : dataPipes) {
+            DBSObject dbObject = null;
             if (transferPipe.getProducer() != null) {
-                objects.add(transferPipe.getProducer().getSourceObject());
+                dbObject = transferPipe.getProducer().getDatabaseObject();
+            } else if (transferPipe.getConsumer() != null) {
+                dbObject = transferPipe.getConsumer().getDatabaseObject();
+            }
+            if (dbObject != null) {
+                objects.add(dbObject);
             }
         }
         return objects;
@@ -267,7 +279,7 @@ public class DataTransferSettings {
         this.producer = producer;
     }
 
-    void selectConsumer(DataTransferNodeDescriptor consumer, DataTransferProcessorDescriptor processor) {
+    void selectConsumer(DataTransferNodeDescriptor consumer, DataTransferProcessorDescriptor processor, boolean rewrite) {
         this.consumer = consumer;
         this.processor = processor;
         if (consumer != null && processor != null) {
@@ -277,6 +289,9 @@ public class DataTransferSettings {
         }
         // Configure pipes
         for (DataTransferPipe pipe : dataPipes) {
+            if (!rewrite && pipe.getConsumer() != null) {
+                continue;
+            }
             if (consumer != null) {
                 try {
                     pipe.setConsumer((IDataTransferConsumer) consumer.createNode());
@@ -286,6 +301,32 @@ public class DataTransferSettings {
                 }
             } else {
                 pipe.setConsumer(null);
+            }
+        }
+    }
+
+    void selectProducer(DataTransferNodeDescriptor producer, DataTransferProcessorDescriptor processor, boolean rewrite) {
+        this.producer = producer;
+        this.processor = processor;
+        if (producer != null && processor != null) {
+            if (!processorPropsHistory.containsKey(processor)) {
+                processorPropsHistory.put(processor, new HashMap<>());
+            }
+        }
+        // Configure pipes
+        for (DataTransferPipe pipe : dataPipes) {
+            if (!rewrite && pipe.getProducer() != null) {
+                continue;
+            }
+            if (producer != null) {
+                try {
+                    pipe.setProducer((IDataTransferProducer) producer.createNode());
+                } catch (DBException e) {
+                    log.error(e);
+                    pipe.setProducer(null);
+                }
+            } else {
+                pipe.setProducer(null);
             }
         }
     }
@@ -343,7 +384,7 @@ public class DataTransferSettings {
                 }
             }
             if (savedConsumer != null) {
-                selectConsumer(savedConsumer, savedProcessor);
+                selectConsumer(savedConsumer, savedProcessor, false);
             }
         }
 
