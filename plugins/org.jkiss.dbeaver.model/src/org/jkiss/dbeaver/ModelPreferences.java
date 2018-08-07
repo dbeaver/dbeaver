@@ -100,6 +100,8 @@ public final class ModelPreferences
     //public final static String SQL_FORMAT_EXTERNAL_DIR = "sql.format.external.dir";
     public final static String SQL_FORMAT_EXTERNAL_TIMEOUT = "sql.format.external.timeout";
 
+    public static final String READ_EXPENSIVE_PROPERTIES = "database.props.expensive"; //$NON-NLS-1$
+
     public static final String PLUGIN_ID = "org.jkiss.dbeaver.model";
 
     private static Bundle mainBundle;
@@ -191,5 +193,7 @@ public final class ModelPreferences
         PrefUtils.setDefaultPreferenceValue(store, SQL_FORMAT_EXTERNAL_CMD, "");
         PrefUtils.setDefaultPreferenceValue(store, SQL_FORMAT_EXTERNAL_FILE, false);
         PrefUtils.setDefaultPreferenceValue(store, SQL_FORMAT_EXTERNAL_TIMEOUT, 2000);
+
+        PrefUtils.setDefaultPreferenceValue(store, READ_EXPENSIVE_PROPERTIES, false);
     }
 }

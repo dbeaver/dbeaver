@@ -231,7 +231,7 @@ public class CursorViewDialog extends ValueViewDialog implements IResultSetConta
         }
 
         @Override
-        public long countData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, DBDDataFilter dataFilter)
+        public long countData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, DBDDataFilter dataFilter, long flags)
         {
             return -1;
         }

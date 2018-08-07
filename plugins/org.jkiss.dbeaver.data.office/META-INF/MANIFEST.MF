@@ -12,5 +12,6 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.ui.workbench,
  org.jkiss.bundle.apache.poi,
  org.jkiss.dbeaver.model,
- org.jkiss.dbeaver.core
+ org.jkiss.dbeaver.core,
+ org.jkiss.dbeaver.data.transfer
 Bundle-ClassPath: .

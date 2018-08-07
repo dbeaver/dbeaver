@@ -2365,11 +2365,11 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         @Override
-        public long countData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, DBDDataFilter dataFilter)
+        public long countData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, DBDDataFilter dataFilter, long flags)
             throws DBCException
         {
             if (dataContainer != null) {
-                return dataContainer.countData(source, session, dataFilter);
+                return dataContainer.countData(source, session, dataFilter, DBSDataContainer.FLAG_NONE);
             }
             DBPDataSource dataSource = getDataSource();
             if (!(dataSource instanceof SQLDataSource)) {

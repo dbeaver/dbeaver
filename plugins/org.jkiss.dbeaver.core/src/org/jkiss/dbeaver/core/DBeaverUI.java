@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.core;
 
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IWorkbenchPage;
@@ -32,23 +33,31 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPErrorAssistant;
+import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.access.DBAAuthInfo;
 import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
+import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProcessListener;
+import org.jkiss.dbeaver.model.runtime.load.ILoadService;
+import org.jkiss.dbeaver.model.runtime.load.ILoadVisualizer;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.TrayIconHandler;
 import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceInvalidateHandler;
+import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.dialogs.BrowseObjectDialog;
 import org.jkiss.dbeaver.ui.dialogs.StandardErrorDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.BaseAuthDialog;
 import org.jkiss.dbeaver.ui.dialogs.connection.PasswordChangeDialog;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverEditDialog;
+import org.jkiss.dbeaver.ui.dialogs.sql.ViewSQLDialog;
 import org.jkiss.dbeaver.ui.views.process.ProcessPropertyTester;
 import org.jkiss.dbeaver.ui.views.process.ShellProcessView;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -276,6 +285,28 @@ public class DBeaverUI implements DBPPlatformUI {
     }
 
     @Override
+    public void openEntityEditor(DBSObject object) {
+        NavigatorHandlerObjectOpen.openEntityEditor(object);
+    }
+
+    @Override
+    public void openEntityEditor(DBNNode selectedNode, String defaultPageId) {
+        NavigatorHandlerObjectOpen.openEntityEditor(selectedNode, defaultPageId, UIUtils.getActiveWorkbenchWindow());
+    }
+
+    @Override
+    public void openSQLViewer(DBCExecutionContext context, String title, DBPImage image, String text) {
+        ViewSQLDialog dialog = new ViewSQLDialog(
+            UIUtils.getActiveWorkbenchWindow().getActivePage().getActivePart().getSite(),
+            context,
+            title,
+            image,
+            text
+        );
+        dialog.open();
+    }
+
+    @Override
     public void executeProcess(final DBRProcessDescriptor processDescriptor) {
         processDescriptor.setProcessListener(new DBRProcessListener() {
             @Override
@@ -314,5 +345,10 @@ public class DBeaverUI implements DBPPlatformUI {
     @Override
     public void executeInUI(Runnable runnable) {
         UIUtils.syncExec(runnable);
+    }
+
+    @Override
+    public <RESULT> Job createLoadingService(ILoadService<RESULT> loadingService, ILoadVisualizer<RESULT> visualizer) {
+        return LoadingJob.createService(loadingService, visualizer);
     }
 }

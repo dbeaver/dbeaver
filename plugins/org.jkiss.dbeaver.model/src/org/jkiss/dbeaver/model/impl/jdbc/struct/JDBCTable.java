@@ -42,9 +42,6 @@ import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.ArrayUtils;
 
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * JDBC abstract table implementation
  */
@@ -255,7 +252,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     // Count
 
     @Override
-    public long countData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @Nullable DBDDataFilter dataFilter) throws DBCException
+    public long countData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @Nullable DBDDataFilter dataFilter, long flags) throws DBCException
     {
         DBRProgressMonitor monitor = session.getProgressMonitor();
 

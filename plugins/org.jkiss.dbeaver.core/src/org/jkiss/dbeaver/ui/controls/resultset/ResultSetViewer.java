@@ -2666,7 +2666,8 @@ public class ResultSetViewer extends Viewer
             long rowCount = dataContainer.countData(
                 new AbstractExecutionSource(dataContainer, executionContext, this),
                 session,
-                model.getDataFilter());
+                model.getDataFilter(),
+                DBSDataContainer.FLAG_NONE);
             model.setTotalRowCount(rowCount);
             return rowCount;
         }
