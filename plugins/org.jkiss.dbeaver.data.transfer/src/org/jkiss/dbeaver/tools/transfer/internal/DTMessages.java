@@ -75,6 +75,12 @@ public class DTMessages extends NLS {
 	public static String data_transfer_wizard_settings_listbox_formatting_item_default;
 	public static String data_transfer_wizard_settings_name;
 	public static String data_transfer_wizard_settings_title;
+	public static String data_transfer_wizard_page_input_files_name;
+	public static String data_transfer_wizard_page_input_files_title;
+	public static String data_transfer_wizard_page_input_files_description;
+	public static String data_transfer_wizard_producers_title;
+	public static String data_transfer_wizard_producers_description;
+	public static String data_transfer_wizard_mappings_name;
 
 	static {
 		// initialize resource bundle

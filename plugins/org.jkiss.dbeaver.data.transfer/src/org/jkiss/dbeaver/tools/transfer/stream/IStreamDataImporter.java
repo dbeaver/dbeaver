@@ -15,21 +15,18 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.tools.transfer;
+package org.jkiss.dbeaver.tools.transfer.stream;
 
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 
 /**
- * Data transfer
+ * IStreamDataImporter
  */
-public interface IDataTransferProducer<SETTINGS extends IDataTransferSettings> extends IDataTransferNode<SETTINGS> {
+public interface IStreamDataImporter extends IDataTransferProcessor {
 
-    void transferData(
-        DBRProgressMonitor monitor,
-        IDataTransferConsumer consumer,
-        SETTINGS settings)
-        throws DBException;
+    void init(IStreamDataImporterSite site) throws DBException;
+
+    void dispose();
 
 }

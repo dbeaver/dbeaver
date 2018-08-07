@@ -26,6 +26,7 @@ import org.eclipse.swt.widgets.TableItem;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
@@ -85,7 +86,11 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
         DataTransferSettings settings = getWizard().getSettings();
         List<DataTransferPipe> dataPipes = settings.getDataPipes();
         for (DataTransferPipe pipe : dataPipes) {
-            IDataTransferSettings consumerSettings = settings.getNodeSettings(pipe.getConsumer());
+            IDataTransferConsumer consumer = pipe.getConsumer();
+            if (consumer == null || pipe.getProducer() == null) {
+                continue;
+            }
+            IDataTransferSettings consumerSettings = settings.getNodeSettings(consumer);
             DataTransferProcessorDescriptor processorDescriptor = settings.getProcessor();
             IDataTransferProcessor processor = null;
             if (processorDescriptor != null) {
@@ -97,8 +102,8 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
                     continue;
                 }
             }
-            pipe.getConsumer().initTransfer(
-                pipe.getProducer().getSourceObject(),
+            consumer.initTransfer(
+                pipe.getProducer().getDatabaseObject(),
                 consumerSettings,
                 processorDescriptor != null && processorDescriptor.isBinaryFormat(),
                 processor,
@@ -106,11 +111,11 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
                     null :
                     settings.getProcessorProperties());
             TableItem item = new TableItem(resultTable, SWT.NONE);
-            item.setText(0, DBUtils.getObjectFullName(pipe.getProducer().getSourceObject(), DBPEvaluationContext.UI));
+            item.setText(0, DBUtils.getObjectFullName(pipe.getProducer().getDatabaseObject(), DBPEvaluationContext.UI));
             if (settings.getProducer() != null && settings.getProducer().getIcon() != null) {
                 item.setImage(0, DBeaverIcons.getImage(settings.getProducer().getIcon()));
             }
-            item.setText(1, pipe.getConsumer().getTargetName());
+            item.setText(1, consumer.getTargetName());
             if (processorDescriptor != null && processorDescriptor.getIcon() != null) {
                 item.setImage(1, DBeaverIcons.getImage(processorDescriptor.getIcon()));
             } else if (settings.getConsumer() != null && settings.getConsumer().getIcon() != null) {

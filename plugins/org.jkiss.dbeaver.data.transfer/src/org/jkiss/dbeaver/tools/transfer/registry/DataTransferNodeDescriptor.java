@@ -56,7 +56,7 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
     private final ObjectType implType;
     private final ObjectType settingsType;
     private final List<ObjectType> sourceTypes = new ArrayList<>();
-    private final List<ObjectType> pageTypes = new ArrayList<>();
+    private final List<DataTransferPageDescriptor> pageTypes = new ArrayList<>();
     private final List<DataTransferProcessorDescriptor> processors = new ArrayList<>();
 
     public DataTransferNodeDescriptor(IConfigurationElement config)
@@ -79,7 +79,7 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
             sourceTypes.add(new ObjectType(typeCfg.getAttribute("type")));
         }
         for (IConfigurationElement pageConfig : ArrayUtils.safeArray(config.getChildren("page"))) {
-            pageTypes.add(new ObjectType(pageConfig.getAttribute("class")));
+            pageTypes.add(new DataTransferPageDescriptor(pageConfig));
         }
         for (IConfigurationElement processorConfig : ArrayUtils.safeArray(config.getChildren("processor"))) {
             processors.add(new DataTransferProcessorDescriptor(this, processorConfig));
@@ -133,11 +133,14 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
         }
     }
 
-    public IWizardPage[] createWizardPages()
+    public IWizardPage[] createWizardPages(boolean consumerOptional, boolean producerOptional)
     {
         List<IWizardPage> pages = new ArrayList<>();
-        for (ObjectType type : pageTypes) {
+        for (DataTransferPageDescriptor page : pageTypes) {
+            if (page.isConsumerSelector() && !consumerOptional) continue;
+            if (page.isProducerSelector() && !producerOptional) continue;
             try {
+                ObjectType type = page.getPageType();
                 type.checkObjectClass(IWizardPage.class);
                 pages.add(type.getObjectClass(IWizardPage.class).newInstance());
             } catch (Throwable e) {
@@ -210,4 +213,8 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
         return null;
     }
 
+    @Override
+    public String toString() {
+        return id;
+    }
 }

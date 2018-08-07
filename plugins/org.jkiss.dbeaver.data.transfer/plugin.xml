@@ -63,7 +63,39 @@
               description="%dataTransfer.producer.database.description"
               settings="org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings">
             <sourceType type="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
+            <page class="org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerPageInputObjects" producerSelector="true"/>
             <page class="org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerPageExtractSettings"/>
+        </node>
+
+        <node type="producer"
+              id="stream_producer"
+              class="org.jkiss.dbeaver.tools.transfer.stream.StreamTransferProducer"
+              icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/file/file.png"
+              label="%dataTransfer.producer.stream.name"
+              description="%dataTransfer.producer.stream.description"
+              settings="org.jkiss.dbeaver.tools.transfer.stream.StreamProducerSettings">
+            <page class="org.jkiss.dbeaver.tools.transfer.stream.StreamProducerPageInputFiles"/>
+
+            <processor
+                    id="stream.csv"
+                    class="org.jkiss.dbeaver.tools.transfer.stream.impl.DataImporterCSV"
+                    description="%dataTransfer.producer.stream.processor.csv.description"
+                    icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/csv.png"
+                    label="%dataTransfer.producer.stream.processor.csv.name">
+<!--
+                <propertyGroup label="%dataTransfer.processor.csv.propertyGroup.general.label">
+                    <property id="extension" label="%dataTransfer.processor.csv.property.extension.label" defaultValue="csv"/>
+                    <property id="delimiter" label="%dataTransfer.processor.csv.property.delimiter.name" type="string" description="%dataTransfer.processor.csv.property.delimiter.description" defaultValue="," required="true"/>
+                    <property id="header" label="%dataTransfer.processor.csv.property.header.name" type="string" description="%dataTransfer.processor.csv.property.header.description" defaultValue="top" required="true" validValues="none,top,bottom,both"/>
+                    <property id="escape" label="%dataTransfer.processor.csv.property.escape.name" type="string" description="%dataTransfer.processor.csv.property.escape.description" defaultValue="quotes" required="true" validValues="quotes,escape"/>
+                    <property id="quoteChar" label="%dataTransfer.processor.csv.property.quoteChar.name" type="string" description="%dataTransfer.processor.csv.property.quoteChar.description" defaultValue="&quot;" required="false"/>
+                    <property id="quoteAlways" label="%dataTransfer.processor.csv.property.quoteAlways.name" type="boolean" description="%dataTransfer.processor.csv.property.quoteAlways.description" defaultValue="false" required="false"/>
+                    <property id="quoteNever" label="%dataTransfer.processor.csv.property.quoteNever.name" type="boolean" description="%dataTransfer.processor.csv.property.quoteNever.description" defaultValue="false" required="false"/>
+                    <property id="nullString" label="%dataTransfer.processor.csv.property.nullString.name" type="string" description="%dataTransfer.processor.csv.property.nullString.description" defaultValue="" required="false"/>
+                    <property id="formatNumbers" label="%dataTransfer.processor.csv.property.formatNumbers.name" type="boolean" description="%dataTransfer.processor.csv.property.formatNumbers.description" defaultValue="false" required="false"/>
+                </propertyGroup>
+-->
+            </processor>
         </node>
 
         <node type="consumer"

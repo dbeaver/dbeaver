@@ -245,6 +245,7 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
         if (isBinary) {
             clipboardCheck.setSelection(false);
             encodingBOMCheckbox.setSelection(false);
+            settings.setOutputClipboard(false);
         }
         showFinalMessageCheckbox.setSelection(getWizard().getSettings().isShowFinalMessage());
 

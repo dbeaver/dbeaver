@@ -41,23 +41,21 @@ import java.util.List;
 
 class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
 
-    private TableViewer consumersTable;
+    private TableViewer nodesTable;
 
     private static class TransferTarget {
-        DataTransferNodeDescriptor consumer;
+        DataTransferNodeDescriptor node;
         DataTransferProcessorDescriptor processor;
 
-        private TransferTarget(DataTransferNodeDescriptor consumer, DataTransferProcessorDescriptor processor)
+        private TransferTarget(DataTransferNodeDescriptor node, DataTransferProcessorDescriptor processor)
         {
-            this.consumer = consumer;
+            this.node = node;
             this.processor = processor;
         }
     }
 
     DataTransferPagePipes() {
         super(DTMessages.data_transfer_wizard_init_name);
-        setTitle(DTMessages.data_transfer_wizard_init_title);
-        setDescription(DTMessages.data_transfer_wizard_init_description);
         setPageComplete(false);
     }
 
@@ -69,10 +67,10 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
         composite.setLayout(new GridLayout());
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        consumersTable = new TableViewer(composite, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
-        consumersTable.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
-        consumersTable.getTable().setLinesVisible(true);
-        consumersTable.setContentProvider(new IStructuredContentProvider() {
+        nodesTable = new TableViewer(composite, SWT.BORDER | SWT.SINGLE | SWT.FULL_SELECTION);
+        nodesTable.getTable().setLayoutData(new GridData(GridData.FILL_BOTH));
+        nodesTable.getTable().setLinesVisible(true);
+        nodesTable.setContentProvider(new IStructuredContentProvider() {
             @Override
             public void dispose()
             {
@@ -101,45 +99,62 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
                         cell.setImage(DBeaverIcons.getImage(element.processor.getIcon()));
                         cell.setText(element.processor.getName());
                     } else {
-                        cell.setImage(DBeaverIcons.getImage(element.consumer.getIcon()));
-                        cell.setText(element.consumer.getName());
+                        cell.setImage(DBeaverIcons.getImage(element.node.getIcon()));
+                        cell.setText(element.node.getName());
                     }
                 } else {
                     if (element.processor != null) {
                         cell.setText(element.processor.getDescription());
                     } else {
-                        cell.setText(element.consumer.getDescription());
+                        cell.setText(element.node.getDescription());
                     }
                 }
             }
         };
         {
-            TableViewerColumn columnName = new TableViewerColumn(consumersTable, SWT.LEFT);
+            TableViewerColumn columnName = new TableViewerColumn(nodesTable, SWT.LEFT);
             columnName.setLabelProvider(labelProvider);
             columnName.getColumn().setText(DTMessages.data_transfer_wizard_init_column_exported);
 
-            TableViewerColumn columnDesc = new TableViewerColumn(consumersTable, SWT.LEFT);
+            TableViewerColumn columnDesc = new TableViewerColumn(nodesTable, SWT.LEFT);
             columnDesc.setLabelProvider(labelProvider);
             columnDesc.getColumn().setText(DTMessages.data_transfer_wizard_init_column_description);
         }
 
-        loadConsumers();
+        if (getWizard().getSettings().isConsumerOptional()) {
+            setTitle(DTMessages.data_transfer_wizard_init_title);
+            setDescription(DTMessages.data_transfer_wizard_init_description);
 
-        consumersTable.getTable().addSelectionListener(new SelectionListener() {
+            loadConsumers();
+        } else {
+            setTitle(DTMessages.data_transfer_wizard_producers_title);
+            setDescription(DTMessages.data_transfer_wizard_producers_description);
+
+            loadProducers();
+        }
+
+        nodesTable.getTable().addSelectionListener(new SelectionListener() {
             @Override
             public void widgetSelected(SelectionEvent e)
             {
-                final IStructuredSelection selection = (IStructuredSelection) consumersTable.getSelection();
+                final IStructuredSelection selection = (IStructuredSelection) nodesTable.getSelection();
                 TransferTarget target;
                 if (!selection.isEmpty()) {
                     target = (TransferTarget) selection.getFirstElement();
                 } else {
                     target = null;
                 }
+                DataTransferSettings settings = getWizard().getSettings();
                 if (target == null) {
-                    getWizard().getSettings().selectConsumer(null, null);
+                    settings.selectConsumer(null, null, true);
                 } else {
-                    getWizard().getSettings().selectConsumer(target.consumer, target.processor);
+                    if (settings.isConsumerOptional()) {
+                        settings.selectConsumer(target.node, target.processor, true);
+                    } else if (settings.isProducerOptional()) {
+                        settings.selectProducer(target.node, target.processor, true);
+                    } else {
+                        // no optional nodes
+                    }
                 }
                 updatePageCompletion();
             }
@@ -153,24 +168,25 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
                 }
             }
         });
-        consumersTable.getTable().addControlListener(new ControlAdapter() {
+        nodesTable.getTable().addControlListener(new ControlAdapter() {
             @Override
             public void controlResized(ControlEvent e)
             {
-                UIUtils.packColumns(consumersTable.getTable());
-                UIUtils.maxTableColumnsWidth(consumersTable.getTable());
-                consumersTable.getTable().removeControlListener(this);
+                UIUtils.packColumns(nodesTable.getTable());
+                UIUtils.maxTableColumnsWidth(nodesTable.getTable());
+                nodesTable.getTable().removeControlListener(this);
             }
         });
         setControl(composite);
 
         DataTransferNodeDescriptor consumer = getWizard().getSettings().getConsumer();
+        DataTransferNodeDescriptor producer = getWizard().getSettings().getProducer();
         DataTransferProcessorDescriptor processor = getWizard().getSettings().getProcessor();
-        if (consumer != null) {
-            Collection<TransferTarget> targets = (Collection<TransferTarget>) consumersTable.getInput();
+        if (consumer != null || producer != null) {
+            Collection<TransferTarget> targets = (Collection<TransferTarget>) nodesTable.getInput();
             for (TransferTarget target : targets) {
-                if (target.consumer == consumer && target.processor == processor) {
-                    consumersTable.setSelection(new StructuredSelection(target));
+                if ((target.node == consumer || target.node == producer) && target.processor == processor) {
+                    nodesTable.setSelection(new StructuredSelection(target));
                     break;
                 }
             }
@@ -194,7 +210,26 @@ class DataTransferPagePipes extends ActiveWizardPage<DataTransferWizard> {
                 }
             }
         }
-        consumersTable.setInput(transferTargets);
+        nodesTable.setInput(transferTargets);
+    }
+
+    private void loadProducers()
+    {
+        DataTransferSettings settings = getWizard().getSettings();
+        Collection<DBSObject> objects = settings.getSourceObjects();
+
+        List<TransferTarget> transferTargets = new ArrayList<>();
+        for (DataTransferNodeDescriptor producer : DataTransferRegistry.getInstance().getAvailableProducers(objects)) {
+            Collection<DataTransferProcessorDescriptor> processors = producer.getAvailableProcessors(objects);
+            if (CommonUtils.isEmpty(processors)) {
+                transferTargets.add(new TransferTarget(producer, null));
+            } else {
+                for (DataTransferProcessorDescriptor processor : processors) {
+                    transferTargets.add(new TransferTarget(producer, processor));
+                }
+            }
+        }
+        nodesTable.setInput(transferTargets);
     }
 
     @Override

@@ -443,6 +443,11 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         return result.toString();
     }
 
+    @Override
+    public DBSObject getDatabaseObject() {
+        return null;
+    }
+
     private class StreamExportSite implements IStreamDataExporterSite {
         @Override
         public DBPNamedObject getSource()

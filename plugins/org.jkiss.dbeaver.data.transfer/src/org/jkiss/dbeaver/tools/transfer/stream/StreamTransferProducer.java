@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.tools.transfer.database;
+package org.jkiss.dbeaver.tools.transfer.stream;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -31,29 +31,30 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
+import org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 
 /**
  * Data container transfer producer
  */
-public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseProducerSettings> {
+public class StreamTransferProducer implements IDataTransferProducer<DatabaseProducerSettings> {
 
-    private static final Log log = Log.getLog(DatabaseTransferProducer.class);
+    private static final Log log = Log.getLog(StreamTransferProducer.class);
 
     @NotNull
     private DBSDataContainer dataContainer;
     @Nullable
     private DBDDataFilter dataFilter;
 
-    public DatabaseTransferProducer() {
+    public StreamTransferProducer() {
     }
 
-    public DatabaseTransferProducer(@NotNull DBSDataContainer dataContainer)
+    public StreamTransferProducer(@NotNull DBSDataContainer dataContainer)
     {
         this.dataContainer = dataContainer;
     }
 
-    public DatabaseTransferProducer(@NotNull DBSDataContainer dataContainer, @Nullable DBDDataFilter dataFilter)
+    public StreamTransferProducer(@NotNull DBSDataContainer dataContainer, @Nullable DBDDataFilter dataFilter)
     {
         this.dataContainer = dataContainer;
         this.dataFilter = dataFilter;

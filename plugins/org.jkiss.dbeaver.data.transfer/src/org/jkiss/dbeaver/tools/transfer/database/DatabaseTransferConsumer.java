@@ -83,6 +83,11 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     }
 
     @Override
+    public DBSObject getDatabaseObject() {
+        return targetObject;
+    }
+
+    @Override
     public void fetchStart(DBCSession session, DBCResultSet resultSet, long offset, long maxRows) throws DBCException
     {
         initExporter(session.getProgressMonitor());
