@@ -4,6 +4,33 @@
 
     <extension-point id="org.jkiss.dbeaver.dataTransfer" name="%extension-point.org.jkiss.dbeaver.dataTransfer.name" schema="schema/org.jkiss.dbeaver.dataTransfer.exsd"/>
 
+    <extension point="org.eclipse.ui.commands">
+        <command id="org.jkiss.dbeaver.core.export.data" name="%command.org.jkiss.dbeaver.core.export.data.name" description="%command.org.jkiss.dbeaver.core.export.data.description" categoryId="org.jkiss.dbeaver.core.util"/>
+        <command id="org.jkiss.dbeaver.core.import.data" name="%command.org.jkiss.dbeaver.core.import.data.name" description="%command.org.jkiss.dbeaver.core.import.data.description" categoryId="org.jkiss.dbeaver.core.util"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.commandImages">
+        <image commandId="org.jkiss.dbeaver.core.export.data" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/table_export.png"/>
+        <image commandId="org.jkiss.dbeaver.core.import.data" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/table_import.png"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.menus">
+
+        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=export_import">
+            <command
+                    commandId="org.jkiss.dbeaver.core.export.data"
+                    label="%command.org.jkiss.dbeaver.core.export.data.name">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <command
+                    commandId="org.jkiss.dbeaver.core.import.data"
+                    label="%command.org.jkiss.dbeaver.core.import.data.name">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+        </menuContribution>
+
+    </extension>
+
     <extension point="org.eclipse.ui.handlers">
         <handler commandId="org.jkiss.dbeaver.core.export.data" class="org.jkiss.dbeaver.tools.transfer.handlers.DataExportHandler">
             <enabledWhen>
