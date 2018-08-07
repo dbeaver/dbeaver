@@ -52,7 +52,6 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CustomComboBoxCellEditor;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
-import org.jkiss.dbeaver.ui.dialogs.BrowseObjectDialog;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
 import org.jkiss.dbeaver.ui.dialogs.sql.ViewSQLDialog;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
@@ -141,7 +140,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                                 }
                             }
                         }
-                        DBNNode node = BrowseObjectDialog.selectObject(
+                        DBNNode node = DBUserInterface.getInstance().selectObject(
                             getShell(),
                             "Choose container",
                             rootNode.getDatabases(),
@@ -605,7 +604,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
             if (mapping.getTarget() != null) {
                 selectedNode = NavigatorUtils.getNodeByObject(mapping.getTarget());
             }
-            DBNNode node = BrowseObjectDialog.selectObject(
+            DBNNode node = DBUserInterface.getInstance().selectObject(
                 getShell(),
                 "Choose target table",
                 rootNode,
