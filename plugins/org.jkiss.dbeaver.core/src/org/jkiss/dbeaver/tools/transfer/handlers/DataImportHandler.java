@@ -28,12 +28,12 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
-import org.jkiss.dbeaver.ui.dialogs.BrowseObjectDialog;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
@@ -58,7 +58,7 @@ public class DataImportHandler extends DataTransferHandler implements IElementUp
         final DBNModel navigatorModel = DBeaverCore.getInstance().getNavigatorModel();
         final DBNNode rootNode = DBeaverCore.getInstance().getLiveProjects().size() == 1 ?
             navigatorModel.getRoot().getProject(DBeaverCore.getInstance().getProjectRegistry().getActiveProject()) : navigatorModel.getRoot();
-        DBNNode node = BrowseObjectDialog.selectObject(
+        DBNNode node = DBUserInterface.getInstance().selectObject(
             HandlerUtil.getActiveShell(event),
             "Select source container for '" + consumer.getTargetName() + "'",
             rootNode,

@@ -23,6 +23,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.access.DBAAuthInfo;
 import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
+import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 
 /**
@@ -69,6 +70,11 @@ public class DBUserInterface {
 
         @Override
         public DBAPasswordChangeInfo promptUserPasswordChange(String prompt, String userName, String oldPassword) {
+            return null;
+        }
+
+        @Override
+        public DBNNode selectObject(Object parentShell, String title, DBNNode rootNode, DBNNode selectedNode, Class<?>[] allowedTypes, Class<?>[] resultTypes) {
             return null;
         }
 
