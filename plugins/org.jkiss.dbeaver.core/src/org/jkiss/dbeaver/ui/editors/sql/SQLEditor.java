@@ -2654,8 +2654,8 @@ public class SQLEditor extends SQLEditorBase implements
                 Display.getCurrent().beep();
             }
             // Notify agent
-            if (result.getQueryTime() > DBeaverCore.getGlobalPreferenceStore().getLong(DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT) * 1000) {
-                DBeaverUI.notifyAgent(
+            if (result.getQueryTime() > DBWorkbench.getPlatformUI().getLongOperationTimeout() * 1000) {
+                DBWorkbench.getPlatformUI().notifyAgent(
                         "Query completed [" + getEditorInput().getName() + "]" + GeneralUtils.getDefaultLineSeparator() +
                                 CommonUtils.truncateString(query.getText(), 200), !result.hasError() ? IStatus.INFO : IStatus.ERROR);
             }

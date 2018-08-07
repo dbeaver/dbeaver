@@ -30,6 +30,10 @@ import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
  */
 public interface DBPPlatformUI {
 
+    /**
+     * Error boxes
+     */
+
     enum UserResponse {
         OK,
         CANCEL,
@@ -43,6 +47,13 @@ public interface DBPPlatformUI {
     UserResponse showError(@NotNull final String title, @Nullable final String message);
 
     /**
+     * Notification agent
+     */
+    long getLongOperationTimeout();
+    void notifyAgent(String message, int status);
+
+
+    /**
      * Asks for user credentials. Returns null if user canceled this action.
      */
     DBAAuthInfo promptUserCredentials(String prompt, String userName, String userPassword, boolean passwordOnly);
@@ -52,8 +63,12 @@ public interface DBPPlatformUI {
      */
     DBAPasswordChangeInfo promptUserPasswordChange(String prompt, @Nullable String userName, @Nullable String oldPassword);
 
+    /**
+     * UI utilities
+     */
     DBNNode selectObject(Object parentShell, String title, DBNNode rootNode, DBNNode selectedNode, Class<?>[] allowedTypes, Class<?>[] resultTypes);
 
+    // Process execution
     void executeProcess(DBRProcessDescriptor processDescriptor);
 
     void executeInUI(Runnable runnable);
