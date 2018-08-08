@@ -19,10 +19,15 @@ package org.jkiss.dbeaver.tools.transfer.stream.importer;
 import au.com.bytecode.opencsv.CSVReader;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.impl.local.LocalResultSet;
+import org.jkiss.dbeaver.model.impl.local.LocalStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
+import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataImporterSite;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamDataImporterColumnInfo;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamProducerSettings;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferSession;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -51,9 +56,9 @@ public class DataImporterCSV extends StreamImporterAbstract {
     }
 
     @Override
-    public List<StreamDataImporterColumnInfo> readColumnsInfo(InputStream inputStream, StreamProducerSettings settings, Map<Object, Object> processorProperties) throws DBException {
+    public List<StreamDataImporterColumnInfo> readColumnsInfo(InputStream inputStream) throws DBException {
         List<StreamDataImporterColumnInfo> columnsInfo = new ArrayList<>();
-
+        Map<Object, Object> processorProperties = getSite().getProcessorProperties();
         HeaderPosition headerPosition = getHeaderPosition(processorProperties);
 
         try (Reader reader = openStreamReader(inputStream, processorProperties)) {
@@ -104,36 +109,46 @@ public class DataImporterCSV extends StreamImporterAbstract {
     }
 
     @Override
-    public void runImport(DBRProgressMonitor monitor, InputStream inputStream, StreamProducerSettings.EntityMapping mapping, Map<Object, Object> properties, int rowCount, IDataTransferConsumer consumer) throws DBException {
+    public void runImport(DBRProgressMonitor monitor, InputStream inputStream, int rowCount, IDataTransferConsumer consumer) throws DBException {
+        IStreamDataImporterSite site = getSite();
+        StreamProducerSettings.EntityMapping entityMapping = site.getSettings().getEntityMapping(site.getSourceObject());
+        Map<Object, Object> properties = site.getProcessorProperties();
         HeaderPosition headerPosition = getHeaderPosition(properties);
 
-        try (Reader reader = openStreamReader(inputStream, properties)) {
-            try (CSVReader csvReader = openCSVReader(reader, properties)) {
-                boolean headerRead = false;
-                for (int lineNum = 0; rowCount > 0 && lineNum < rowCount; lineNum++) {
-                    String[] line = csvReader.readNext();
-                    if (line == null) {
-                        break;
-                    }
-                    if (line.length == 0) {
-                        continue;
-                    }
-                    if (headerPosition != HeaderPosition.none && !headerRead) {
-                        // First line is a header
-                        headerRead = true;
-                        continue;
-                    }
-                    for (int i = 0; i < line.length; i++) {
-                        String column = line[i];
-                        if (headerPosition == HeaderPosition.none) {
-                            column = null;
+        try (StreamTransferSession session = new StreamTransferSession(monitor, DBCExecutionPurpose.UTIL, "Transfer stream data")) {
+            LocalStatement localStatement = new LocalStatement(session, "SELECT * FROM Stream");
+            LocalResultSet resultSet = new LocalResultSet<>(session, localStatement);
+
+            consumer.fetchStart(session, resultSet, -1, -1);
+
+            try (Reader reader = openStreamReader(inputStream, properties)) {
+                try (CSVReader csvReader = openCSVReader(reader, properties)) {
+
+                    boolean headerRead = false;
+                    for (int lineNum = 0; rowCount > 0 && lineNum < rowCount; lineNum++) {
+                        String[] line = csvReader.readNext();
+                        if (line == null) {
+                            break;
                         }
+                        if (line.length == 0) {
+                            continue;
+                        }
+                        if (headerPosition != HeaderPosition.none && !headerRead) {
+                            // First line is a header
+                            headerRead = true;
+                            continue;
+                        }
+                        if (site.getMaxRows() > 0 && lineNum >= site.getMaxRows()) {
+                            break;
+                        }
+                        consumer.fetchRow(session, resultSet);
                     }
-                    break;
                 }
+            } catch (IOException e) {
+                throw new DBException("IO error reading CSV", e);
+            } finally {
+                consumer.fetchEnd(session, resultSet);
             }
-        } catch (IOException e) {
-            throw new DBException("IO error reading CSV", e);
         }
     }
 

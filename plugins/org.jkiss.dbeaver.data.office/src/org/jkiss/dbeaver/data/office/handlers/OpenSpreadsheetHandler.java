@@ -92,7 +92,7 @@ public class OpenSpreadsheetHandler extends AbstractHandler
                     producerSettings.setExtractType(DatabaseProducerSettings.ExtractType.SINGLE_QUERY);
                     producerSettings.setQueryRowCount(false);
 
-                    producer.transferData(monitor, consumer, producerSettings);
+                    producer.transferData(monitor, consumer, null, producerSettings);
 
                     consumer.finishTransfer(monitor, false);
 

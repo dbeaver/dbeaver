@@ -16,11 +16,20 @@
  */
 package org.jkiss.dbeaver.tools.transfer.stream;
 
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+
+import java.util.Map;
+
 /**
  * IStreamDataImporterSite
  */
 public interface IStreamDataImporterSite {
 
+    StreamProducerSettings getSettings();
 
+    DBSEntity getSourceObject();
 
+    Map<Object,Object> getProcessorProperties();
+
+    int getMaxRows();
 }

@@ -16,6 +16,41 @@
  */
 package org.jkiss.dbeaver.tools.transfer.stream;
 
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+
+import java.util.Map;
+
 class StreamDataImporterSite implements IStreamDataImporterSite {
 
+    private StreamProducerSettings settings;
+    private DBSEntity sourceObject;
+    private Map<Object, Object> processorProperties;
+    private int maxRows;
+
+    public StreamDataImporterSite(StreamProducerSettings settings, DBSEntity sourceObject, Map<Object, Object> processorProperties, int maxRows) {
+        this.settings = settings;
+        this.sourceObject = sourceObject;
+        this.processorProperties = processorProperties;
+        this.maxRows = maxRows;
+    }
+
+    @Override
+    public StreamProducerSettings getSettings() {
+        return settings;
+    }
+
+    @Override
+    public DBSEntity getSourceObject() {
+        return sourceObject;
+    }
+
+    @Override
+    public Map<Object, Object> getProcessorProperties() {
+        return processorProperties;
+    }
+
+    @Override
+    public int getMaxRows() {
+        return maxRows;
+    }
 }

@@ -20,15 +20,19 @@ package org.jkiss.dbeaver.tools.transfer.stream;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.impl.local.LocalResultSet;
+import org.jkiss.dbeaver.model.impl.local.LocalStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
-import org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings;
-import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
-import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferSettings;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 /**
  * Data container transfer producer
@@ -45,11 +49,6 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
 
     public StreamTransferProducer(File file) {
         this.inputFile = file;
-    }
-
-    public StreamTransferProducer(@NotNull File inputFile, DataTransferSettings settings)
-    {
-        this.inputFile = inputFile;
     }
 
     @Override
@@ -71,10 +70,16 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
     public void transferData(
         DBRProgressMonitor monitor,
         IDataTransferConsumer consumer,
+        IDataTransferProcessor processor,
         StreamProducerSettings settings)
         throws DBException
     {
-        throw new DBException("Stream import not supported");
+        IStreamDataImporter importer = (IStreamDataImporter) processor;
+        try (InputStream is = new FileInputStream(inputFile)) {
+            importer.runImport(monitor, is,  1, consumer);
+        } catch (IOException e) {
+            throw new DBException("IO error", e);
+        }
     }
 
 }

@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.impl.AbstractExecutionSource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 
@@ -75,6 +76,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
     public void transferData(
         DBRProgressMonitor monitor,
         IDataTransferConsumer consumer,
+        IDataTransferProcessor processor,
         DatabaseProducerSettings settings)
         throws DBException {
         String contextTask = DTMessages.data_transfer_wizard_job_task_export;

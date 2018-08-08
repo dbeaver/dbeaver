@@ -25,15 +25,21 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.DBValueFormatting;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCResultSet;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferPipe;
@@ -217,7 +223,7 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
                     // Load header and mappings
                     monitor.subTask("Load attribute mappings");
                     if (importer instanceof IStreamDataImporter) {
-                        loadStreamMappings((IStreamDataImporter)importer, entityMapping, currentProducer);
+                        loadStreamMappings((IStreamDataImporter)importer, entity, currentProducer);
                     }
 
                     UIUtils.syncExec(() -> updateAttributeMappings(entityMapping));
@@ -226,7 +232,7 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
                     // Load preview
                     monitor.subTask("Load import preview");
                     if (importer instanceof IStreamDataImporter) {
-                        loadImportPreview(monitor, (IStreamDataImporter)importer, entityMapping, currentProducer);
+                        loadImportPreview(monitor, (IStreamDataImporter)importer, entity, currentProducer);
                     }
                     monitor.worked(1);
 
@@ -275,7 +281,7 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
         return pipeList.get(tableList.getSelectionIndex());
     }
 
-    private void loadStreamMappings(IStreamDataImporter importer, StreamProducerSettings.EntityMapping entityMapping, StreamTransferProducer currentProducer) throws DBException {
+    private void loadStreamMappings(IStreamDataImporter importer, DBSEntity entity, StreamTransferProducer currentProducer) throws DBException {
         File inputFile = currentProducer.getInputFile();
 
         final StreamProducerSettings settings = getWizard().getPageSettings(this, StreamProducerSettings.class);
@@ -283,14 +289,15 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
 
         List<StreamDataImporterColumnInfo> columnInfos;
         try (InputStream is = new FileInputStream(inputFile)) {
-            importer.init(new StreamDataImporterSite());
-            columnInfos = importer.readColumnsInfo(is, settings, processorProperties);
+            importer.init(new StreamDataImporterSite(settings, entity, processorProperties, 1));
+            columnInfos = importer.readColumnsInfo(is);
             importer.dispose();
         } catch (IOException e) {
             throw new DBException("IO error", e);
         }
 
         // Map source columns
+        StreamProducerSettings.EntityMapping entityMapping = settings.getEntityMapping(entity);
         List<StreamProducerSettings.AttributeMapping> attributeMappings = entityMapping.getAttributeMappings();
         for (StreamDataImporterColumnInfo columnInfo : columnInfos) {
             boolean mappingFound = false;
@@ -323,20 +330,19 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
         }
     }
 
-    private void loadImportPreview(DBRProgressMonitor monitor, IStreamDataImporter importer, StreamProducerSettings.EntityMapping entityMapping, StreamTransferProducer currentProducer) throws DBException {
-        File inputFile = currentProducer.getInputFile();
-
+    private void loadImportPreview(DBRProgressMonitor monitor, IStreamDataImporter importer, DBSEntity entity, StreamTransferProducer currentProducer) throws DBException {
         final StreamProducerSettings settings = getWizard().getPageSettings(this, StreamProducerSettings.class);
         final Map<Object, Object> processorProperties = getWizard().getSettings().getProcessorProperties();
 
-        try (InputStream is = new FileInputStream(inputFile)) {
-            importer.init(new StreamDataImporterSite());
-            //importer.runImport(monitor, is, entityMapping, processorProperties, 10, );
-            importer.dispose();
-        } catch (IOException e) {
-            throw new DBException("IO error", e);
-        }
+        PreviewConsumer previewConsumer = new PreviewConsumer(entity);
 
+        try {
+            importer.init(new StreamDataImporterSite(settings, entity, processorProperties, 10));
+            currentProducer.transferData(monitor, previewConsumer, importer, settings);
+            importer.dispose();
+        } finally {
+            previewConsumer.close();
+        }
     }
 
     @Override
@@ -360,6 +366,65 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
             }
         }
         return true;
+    }
+
+    private static class PreviewConsumer implements IDataTransferConsumer {
+
+        private List<Object[]> rows = new ArrayList<>();
+        private DBSObject sampleObject;
+
+        public PreviewConsumer(DBSObject sampleObject) {
+            this.sampleObject = sampleObject;
+        }
+
+        public List<Object[]> getRows() {
+            return rows;
+        }
+
+        @Override
+        public void initTransfer(DBSObject sourceObject, IDataTransferSettings settings, boolean isBinary, IDataTransferProcessor processor, Map processorProperties) {
+
+        }
+
+        @Override
+        public void startTransfer(DBRProgressMonitor monitor) throws DBException {
+
+        }
+
+        @Override
+        public void finishTransfer(DBRProgressMonitor monitor, boolean last) {
+
+        }
+
+        @Override
+        public void fetchStart(DBCSession session, DBCResultSet resultSet, long offset, long maxRows) throws DBCException {
+
+        }
+
+        @Override
+        public void fetchRow(DBCSession session, DBCResultSet resultSet) throws DBCException {
+
+        }
+
+        @Override
+        public void fetchEnd(DBCSession session, DBCResultSet resultSet) throws DBCException {
+
+        }
+
+        @Override
+        public void close() {
+
+        }
+
+        @Override
+        public DBSObject getDatabaseObject() {
+            return sampleObject;
+        }
+
+        @Override
+        public String getObjectName() {
+            return DBUtils.getObjectFullName(sampleObject, DBPEvaluationContext.DML);
+        }
     }
 
 }
