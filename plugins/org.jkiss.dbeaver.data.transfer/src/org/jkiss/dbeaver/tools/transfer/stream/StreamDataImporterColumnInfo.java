@@ -16,11 +16,25 @@
  */
 package org.jkiss.dbeaver.tools.transfer.stream;
 
-/**
- * IStreamDataImporterSite
- */
-public interface IStreamDataImporterSite {
+public class StreamDataImporterColumnInfo {
+    private int columnIndex;
+    private String columnName;
 
+    public StreamDataImporterColumnInfo(int columnIndex, String columnName) {
+        this.columnIndex = columnIndex;
+        this.columnName = columnName;
+    }
 
+    public int getColumnIndex() {
+        return columnIndex;
+    }
 
+    public String getColumnName() {
+        return columnName;
+    }
+
+    @Override
+    public String toString() {
+        return columnName + " (" + columnIndex + ")";
+    }
 }

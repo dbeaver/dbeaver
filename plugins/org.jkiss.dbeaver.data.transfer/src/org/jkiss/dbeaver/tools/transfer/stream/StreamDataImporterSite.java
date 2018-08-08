@@ -16,11 +16,6 @@
  */
 package org.jkiss.dbeaver.tools.transfer.stream;
 
-/**
- * IStreamDataImporterSite
- */
-public interface IStreamDataImporterSite {
-
-
+class StreamDataImporterSite implements IStreamDataImporterSite {
 
 }

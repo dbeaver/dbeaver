@@ -20,12 +20,19 @@ package org.jkiss.dbeaver.tools.transfer.stream;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 
+import java.io.File;
+import java.io.InputStream;
+import java.util.List;
+import java.util.Map;
+
 /**
  * IStreamDataImporter
  */
 public interface IStreamDataImporter extends IDataTransferProcessor {
 
     void init(IStreamDataImporterSite site) throws DBException;
+
+    List<StreamDataImporterColumnInfo> readColumnsInfo(InputStream inputStream, StreamProducerSettings settings, Map<Object, Object> processorProperties) throws DBException;
 
     void dispose();
 

@@ -71,18 +71,55 @@ public class StreamProducerSettings implements IDataTransferSettings {
             attributeMappings.add(am);
             return am;
         }
+
+        public boolean isComplete() {
+            for (AttributeMapping am : attributeMappings) {
+                if (am.getMappingType() == AttributeMapping.MappingType.NONE) {
+                    return false;
+                }
+            }
+            return true;
+        }
     }
 
     public static class AttributeMapping {
+
+        public static enum MappingType {
+            NONE("none"),
+            IMPORT("import"),
+            DEFAULT_VALUE("default"),
+            SKIP("skip");
+
+            private final String title;
+
+            MappingType(String title) {
+                this.title = title;
+            }
+
+            public String getTitle() {
+                return title;
+            }
+        }
+
         private DBSEntityAttribute targetAttribute;
         private String targetAttributeName;
         private String sourceAttributeName;
+        private int sourceAttributeIndex = -1;
         private boolean skip;
         private String defaultValue;
+        private MappingType mappingType = MappingType.NONE;
 
         public AttributeMapping(DBSEntityAttribute attr) {
             this.targetAttribute = attr;
             this.targetAttributeName = attr.getName();
+        }
+
+        public MappingType getMappingType() {
+            return mappingType;
+        }
+
+        public void setMappingType(MappingType mappingType) {
+            this.mappingType = mappingType;
         }
 
         public DBSEntityAttribute getTargetAttribute() {
@@ -95,6 +132,14 @@ public class StreamProducerSettings implements IDataTransferSettings {
 
         public void setSourceAttributeName(String sourceAttributeName) {
             this.sourceAttributeName = sourceAttributeName;
+        }
+
+        public int getSourceAttributeIndex() {
+            return sourceAttributeIndex;
+        }
+
+        public void setSourceAttributeIndex(int sourceAttributeIndex) {
+            this.sourceAttributeIndex = sourceAttributeIndex;
         }
 
         public String getTargetAttributeName() {

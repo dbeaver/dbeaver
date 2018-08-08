@@ -63,6 +63,10 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
         return inputFile == null ? null : inputFile.getAbsolutePath();
     }
 
+    public File getInputFile() {
+        return inputFile;
+    }
+
     @Override
     public void transferData(
         DBRProgressMonitor monitor,
