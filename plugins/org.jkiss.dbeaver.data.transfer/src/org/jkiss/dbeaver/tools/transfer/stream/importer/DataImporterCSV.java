@@ -14,17 +14,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.tools.transfer;
-
-import org.jkiss.dbeaver.model.struct.DBSObject;
+package org.jkiss.dbeaver.tools.transfer.stream.importer;
 
 /**
- * Abstract node
+ * CSV importer
  */
-public interface IDataTransferNode<SETTINGS extends IDataTransferSettings> {
+public class DataImporterCSV extends StreamImporterAbstract {
 
-    DBSObject getDatabaseObject();
-
-    String getObjectName();
+    public DataImporterCSV() {
+    }
 
 }

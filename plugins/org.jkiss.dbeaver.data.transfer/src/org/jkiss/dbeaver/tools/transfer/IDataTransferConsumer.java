@@ -41,6 +41,4 @@ public interface IDataTransferConsumer<SETTINGS extends IDataTransferSettings, P
      */
     void finishTransfer(DBRProgressMonitor monitor, boolean last);
 
-    String getTargetName();
-
 }

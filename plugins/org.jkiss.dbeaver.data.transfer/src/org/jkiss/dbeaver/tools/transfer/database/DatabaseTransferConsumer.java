@@ -459,7 +459,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     }
 
     @Override
-    public String getTargetName()
+    public String getObjectName()
     {
         if (targetObject != null) {
             return DBUtils.getObjectFullName(targetObject, DBPEvaluationContext.UI);

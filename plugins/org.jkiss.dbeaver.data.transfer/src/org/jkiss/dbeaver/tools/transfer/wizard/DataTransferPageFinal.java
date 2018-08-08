@@ -111,11 +111,11 @@ class DataTransferPageFinal extends ActiveWizardPage<DataTransferWizard> {
                     null :
                     settings.getProcessorProperties());
             TableItem item = new TableItem(resultTable, SWT.NONE);
-            item.setText(0, DBUtils.getObjectFullName(pipe.getProducer().getDatabaseObject(), DBPEvaluationContext.UI));
+            item.setText(0, pipe.getProducer().getObjectName());
             if (settings.getProducer() != null && settings.getProducer().getIcon() != null) {
                 item.setImage(0, DBeaverIcons.getImage(settings.getProducer().getIcon()));
             }
-            item.setText(1, consumer.getTargetName());
+            item.setText(1, consumer.getObjectName());
             if (processorDescriptor != null && processorDescriptor.getIcon() != null) {
                 item.setImage(1, DBeaverIcons.getImage(processorDescriptor.getIcon()));
             } else if (settings.getConsumer() != null && settings.getConsumer().getIcon() != null) {
