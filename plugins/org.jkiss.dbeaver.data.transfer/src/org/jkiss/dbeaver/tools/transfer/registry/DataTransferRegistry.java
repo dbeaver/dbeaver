@@ -20,6 +20,7 @@ package org.jkiss.dbeaver.tools.transfer.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtensionRegistry;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
@@ -127,4 +128,16 @@ public class DataTransferRegistry {
         }
         return null;
     }
+
+    public DataTransferPageDescriptor getPageDescriptor(IWizardPage page) {
+        for (DataTransferNodeDescriptor nd : nodes) {
+            for (DataTransferPageDescriptor pd : nd.patPageDescriptors()) {
+                if (pd.getPageType().getImplName().equals(page.getClass().getName())) {
+                    return pd;
+                }
+            }
+        }
+        return null;
+    }
+
 }

@@ -40,7 +40,7 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
 {
     private static final Log log = Log.getLog(DataTransferNodeDescriptor.class);
 
-    enum NodeType {
+    public enum NodeType {
         PRODUCER,
         CONSUMER
     }
@@ -131,6 +131,19 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
         } catch (Throwable e) {
             throw new DBException("Can't create node settings", e);
         }
+    }
+
+    public List<DataTransferPageDescriptor> patPageDescriptors() {
+        return pageTypes;
+    }
+
+    public DataTransferPageDescriptor getPageDescriptor(IWizardPage page) {
+        for (DataTransferPageDescriptor pd : pageTypes) {
+            if (pd.getPageType().getImplName().equals(page.getClass().getName())) {
+                return pd;
+            }
+        }
+        return null;
     }
 
     public IWizardPage[] createWizardPages(boolean consumerOptional, boolean producerOptional)

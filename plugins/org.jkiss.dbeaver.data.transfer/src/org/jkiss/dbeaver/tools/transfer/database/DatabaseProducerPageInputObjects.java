@@ -80,11 +80,6 @@ public class DatabaseProducerPageInputObjects extends ActiveWizardPage<DataTrans
             for (DataTransferPipe pipe : settings.getDataPipes()) {
                 TableItem item = new TableItem(mappingTable, SWT.NONE);
                 item.setData(pipe);
-                if (settings.getProducer() != null) {
-                    item.setImage(DBeaverIcons.getImage(settings.getProducer().getIcon()));
-                } else if (settings.getConsumer() != null) {
-                    item.setImage(DBeaverIcons.getImage(settings.getConsumer().getIcon()));
-                }
                 updateItemData(item, pipe);
             }
 
@@ -115,14 +110,20 @@ public class DatabaseProducerPageInputObjects extends ActiveWizardPage<DataTrans
     }
 
     private void updateItemData(TableItem item, DataTransferPipe pipe) {
+        DataTransferSettings settings = getWizard().getSettings();
+
         if (pipe.getProducer() == null || pipe.getProducer().getDatabaseObject() == null) {
+            item.setImage(0, null);
             item.setText(0, "<none>");
         } else {
+            item.setImage(0, DBeaverIcons.getImage(settings.getProducer().getIcon()));
             item.setText(0, DBUtils.getObjectFullName(pipe.getProducer().getDatabaseObject(), DBPEvaluationContext.DML));
         }
         if (pipe.getConsumer() == null || pipe.getConsumer().getObjectName() == null) {
+            item.setImage(1, null);
             item.setText(1, "<none>");
         } else {
+            item.setImage(1, DBeaverIcons.getImage(settings.getConsumer().getIcon()));
             item.setText(1, pipe.getConsumer().getObjectName());
         }
     }
