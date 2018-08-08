@@ -59,8 +59,14 @@ public class StreamProducerSettings implements IDataTransferSettings {
             return attributeMappings;
         }
 
-        public void setAttributeMappings(List<AttributeMapping> attributeMappings) {
-            this.attributeMappings = attributeMappings;
+        public List<AttributeMapping> getValuableAttributeMappings() {
+            List<AttributeMapping> result = new ArrayList<>();
+            for (AttributeMapping am : attributeMappings) {
+                if (am.isValuable()) {
+                    result.add(am);
+                }
+            }
+            return result;
         }
 
         public AttributeMapping getAttributeMapping(DBSEntityAttribute attr) {
@@ -191,6 +197,10 @@ public class StreamProducerSettings implements IDataTransferSettings {
 
         public void setSourceColumn(StreamDataImporterColumnInfo sourceColumn) {
             this.sourceColumn = sourceColumn;
+        }
+
+        public boolean isValuable() {
+            return mappingType == MappingType.IMPORT || mappingType == MappingType.DEFAULT_VALUE;
         }
 
     }
