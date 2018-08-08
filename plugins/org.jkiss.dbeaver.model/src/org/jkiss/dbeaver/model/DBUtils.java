@@ -572,6 +572,7 @@ public final class DBUtils {
             }
         }
         // Get handler provider from registry
+
         handlerProvider = dataSource.getContainer().getPlatform().getValueHandlerRegistry().getValueHandlerProvider(
             dataSource, column);
         if (handlerProvider != null) {
