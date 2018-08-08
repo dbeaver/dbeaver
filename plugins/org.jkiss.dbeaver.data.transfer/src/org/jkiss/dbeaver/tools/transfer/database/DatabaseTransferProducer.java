@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.exec.*;
@@ -63,6 +64,11 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
     public DBSDataContainer getDatabaseObject()
     {
         return dataContainer;
+    }
+
+    @Override
+    public String getObjectName() {
+        return DBUtils.getObjectFullName(dataContainer, DBPEvaluationContext.DML);
     }
 
     @Override

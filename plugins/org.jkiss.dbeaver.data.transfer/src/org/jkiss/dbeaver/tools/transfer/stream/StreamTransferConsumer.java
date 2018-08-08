@@ -360,7 +360,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     }
 
     @Override
-    public String getTargetName()
+    public String getObjectName()
     {
         return settings.isOutputClipboard() ? "Clipboard" : makeOutputFile().getAbsolutePath();
     }

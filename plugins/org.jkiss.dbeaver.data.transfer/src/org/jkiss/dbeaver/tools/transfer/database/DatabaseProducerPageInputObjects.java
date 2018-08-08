@@ -17,8 +17,6 @@
 package org.jkiss.dbeaver.tools.transfer.database;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.MouseAdapter;
-import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -27,6 +25,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
 import org.eclipse.swt.widgets.Table;
 import org.eclipse.swt.widgets.TableItem;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.DBWorkbench;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
@@ -61,13 +61,9 @@ public class DatabaseProducerPageInputObjects extends ActiveWizardPage<DataTrans
         initializeDialogUnits(parent);
 
         Composite composite = new Composite(parent, SWT.NULL);
-        GridLayout gl = new GridLayout();
-        gl.marginHeight = 0;
-        gl.marginWidth = 0;
-        composite.setLayout(gl);
+        composite.setLayout(new GridLayout());
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        //final DatabaseProducerSettings settings = getWizard().getPageSettings(this, DatabaseProducerSettings.class);
         DataTransferSettings settings = getWizard().getSettings();
 
         {
@@ -122,12 +118,12 @@ public class DatabaseProducerPageInputObjects extends ActiveWizardPage<DataTrans
         if (pipe.getProducer() == null || pipe.getProducer().getDatabaseObject() == null) {
             item.setText(0, "<none>");
         } else {
-            item.setText(0, pipe.getProducer().getDatabaseObject().getName());
+            item.setText(0, DBUtils.getObjectFullName(pipe.getProducer().getDatabaseObject(), DBPEvaluationContext.DML));
         }
-        if (pipe.getConsumer() == null || pipe.getConsumer().getTargetName() == null) {
+        if (pipe.getConsumer() == null || pipe.getConsumer().getObjectName() == null) {
             item.setText(1, "<none>");
         } else {
-            item.setText(1, pipe.getConsumer().getTargetName());
+            item.setText(1, pipe.getConsumer().getObjectName());
         }
     }
 
@@ -162,7 +158,7 @@ public class DatabaseProducerPageInputObjects extends ActiveWizardPage<DataTrans
             UIUtils.getActiveWorkbenchShell(),
             chooseConsumer ?
                 "Select target entity for '" + pipe.getProducer().getDatabaseObject().getName()  + "'" :
-                "Select source container for '" + pipe.getConsumer().getTargetName() + "'",
+                "Select source container for '" + pipe.getConsumer().getObjectName() + "'",
             rootNode,
             lastSelection,
             new Class[] {DBSObjectContainer.class, DBSDataContainer.class},

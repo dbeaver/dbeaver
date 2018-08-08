@@ -81,6 +81,8 @@ public class DTMessages extends NLS {
 	public static String data_transfer_wizard_producers_title;
 	public static String data_transfer_wizard_producers_description;
 	public static String data_transfer_wizard_mappings_name;
+	public static String data_transfer_wizard_settings_group_input_files;
+	public static String data_transfer_wizard_settings_group_importer;
 
 	static {
 		// initialize resource bundle
