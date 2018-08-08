@@ -222,15 +222,13 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     private void initExporter(DBRProgressMonitor monitor) throws DBCException
     {
         containerMapping = settings.getDataMapping(sourceObject);
-        if (containerMapping == null) {
-            throw new DBCException("Can't find container mapping for " + DBUtils.getObjectFullName(sourceObject, DBPEvaluationContext.UI));
-        }
-        DBSDataManipulator targetObject = containerMapping.getTarget();
-        DBPDataSource dataSource = targetObject.getDataSource();
+
+        DBSDataManipulator target = containerMapping == null ? getTargetObject() : containerMapping.getTarget();
+        DBPDataSource dataSource = target.getDataSource();
         assert (dataSource != null);
         try {
             targetContext = settings.isOpenNewConnections() ?
-                DBUtils.getObjectOwnerInstance(targetObject).openIsolatedContext(monitor, "Data transfer consumer") : DBUtils.getDefaultContext(targetObject, false);
+                DBUtils.getObjectOwnerInstance(target).openIsolatedContext(monitor, "Data transfer consumer") : DBUtils.getDefaultContext(target, false);
         } catch (DBException e) {
             throw new DBCException("Error opening new connection", e);
         }

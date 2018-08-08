@@ -25,13 +25,11 @@ class StreamDataImporterSite implements IStreamDataImporterSite {
     private StreamProducerSettings settings;
     private DBSEntity sourceObject;
     private Map<Object, Object> processorProperties;
-    private int maxRows;
 
-    public StreamDataImporterSite(StreamProducerSettings settings, DBSEntity sourceObject, Map<Object, Object> processorProperties, int maxRows) {
+    public StreamDataImporterSite(StreamProducerSettings settings, DBSEntity sourceObject, Map<Object, Object> processorProperties) {
         this.settings = settings;
         this.sourceObject = sourceObject;
         this.processorProperties = processorProperties;
-        this.maxRows = maxRows;
     }
 
     @Override
@@ -49,8 +47,4 @@ class StreamDataImporterSite implements IStreamDataImporterSite {
         return processorProperties;
     }
 
-    @Override
-    public int getMaxRows() {
-        return maxRows;
-    }
 }

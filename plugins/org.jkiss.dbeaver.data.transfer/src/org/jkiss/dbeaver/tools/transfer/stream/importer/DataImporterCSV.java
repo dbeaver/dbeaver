@@ -24,14 +24,12 @@ import org.jkiss.dbeaver.model.impl.local.LocalResultSet;
 import org.jkiss.dbeaver.model.impl.local.LocalStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
-import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataImporterSite;
-import org.jkiss.dbeaver.tools.transfer.stream.StreamDataImporterColumnInfo;
-import org.jkiss.dbeaver.tools.transfer.stream.StreamProducerSettings;
-import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferSession;
+import org.jkiss.dbeaver.tools.transfer.stream.*;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.*;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -109,7 +107,7 @@ public class DataImporterCSV extends StreamImporterAbstract {
     }
 
     @Override
-    public void runImport(DBRProgressMonitor monitor, InputStream inputStream, int rowCount, IDataTransferConsumer consumer) throws DBException {
+    public void runImport(DBRProgressMonitor monitor, InputStream inputStream, IDataTransferConsumer consumer) throws DBException {
         IStreamDataImporterSite site = getSite();
         StreamProducerSettings.EntityMapping entityMapping = site.getSettings().getEntityMapping(site.getSourceObject());
         Map<Object, Object> properties = site.getProcessorProperties();
@@ -117,15 +115,17 @@ public class DataImporterCSV extends StreamImporterAbstract {
 
         try (StreamTransferSession session = new StreamTransferSession(monitor, DBCExecutionPurpose.UTIL, "Transfer stream data")) {
             LocalStatement localStatement = new LocalStatement(session, "SELECT * FROM Stream");
-            LocalResultSet resultSet = new LocalResultSet<>(session, localStatement);
+            StreamTransferResultSet resultSet = new StreamTransferResultSet(session, localStatement, entityMapping);
 
             consumer.fetchStart(session, resultSet, -1, -1);
 
             try (Reader reader = openStreamReader(inputStream, properties)) {
                 try (CSVReader csvReader = openCSVReader(reader, properties)) {
 
+                    int maxRows = site.getSettings().getMaxRows();
+                    int targetAttrSize = entityMapping.getStreamColumns().size();
                     boolean headerRead = false;
-                    for (int lineNum = 0; rowCount > 0 && lineNum < rowCount; lineNum++) {
+                    for (int lineNum = 0; ; ) {
                         String[] line = csvReader.readNext();
                         if (line == null) {
                             break;
@@ -138,10 +138,23 @@ public class DataImporterCSV extends StreamImporterAbstract {
                             headerRead = true;
                             continue;
                         }
-                        if (site.getMaxRows() > 0 && lineNum >= site.getMaxRows()) {
+                        if (maxRows > 0 && lineNum >= maxRows) {
                             break;
                         }
+
+                        if (line.length < targetAttrSize) {
+                            // Stream row may be shorter than header
+                            String[] newLine = new String[targetAttrSize];
+                            System.arraycopy(line, 0, newLine, 0, line.length);
+                            for (int i = line.length; i < targetAttrSize - line.length; i++) {
+                                newLine[i] = null;
+                            }
+                            line = newLine;
+                        }
+
+                        resultSet.setStreamRow(line);
                         consumer.fetchRow(session, resultSet);
+                        lineNum++;
                     }
                 }
             } catch (IOException e) {

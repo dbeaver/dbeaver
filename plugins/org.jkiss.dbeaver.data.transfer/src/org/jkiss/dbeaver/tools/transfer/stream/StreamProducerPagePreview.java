@@ -28,8 +28,10 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.DBValueFormatting;
+import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
+import org.jkiss.dbeaver.model.exec.DBCResultSetMetaData;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
@@ -204,6 +206,7 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
         DataTransferPipe currentPipe = getCurrentPipe();
         StreamTransferProducer currentProducer = (StreamTransferProducer) currentPipe.getProducer();
 
+        Throwable error = null;
         try {
             getWizard().getContainer().run(true, true, mon -> {
                 IDataTransferProcessor importer = processor.getInstance();
@@ -243,16 +246,18 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
                 }
             });
         } catch (InvocationTargetException e) {
-            DBUserInterface.getInstance().showError("Load entity meta", "Can't load entity attributes", e.getTargetException());
-            return;
+            error = e.getTargetException();
         } catch (InterruptedException e) {
-            return;
+            // Ignore
         }
-
-
+        Throwable finalError = error;
         UIUtils.asyncExec(() -> {
             UIUtils.packColumns(mappingsTable, true);
             UIUtils.packColumns(previewTable, false);
+
+            if (finalError != null) {
+                DBUserInterface.getInstance().showError("Load entity meta", "Can't load entity attributes", finalError);
+            }
         });
     }
 
@@ -286,18 +291,19 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
 
         final StreamProducerSettings settings = getWizard().getPageSettings(this, StreamProducerSettings.class);
         final Map<Object, Object> processorProperties = getWizard().getSettings().getProcessorProperties();
+        StreamProducerSettings.EntityMapping entityMapping = settings.getEntityMapping(entity);
 
         List<StreamDataImporterColumnInfo> columnInfos;
         try (InputStream is = new FileInputStream(inputFile)) {
-            importer.init(new StreamDataImporterSite(settings, entity, processorProperties, 1));
+            importer.init(new StreamDataImporterSite(settings, entity, processorProperties));
             columnInfos = importer.readColumnsInfo(is);
             importer.dispose();
         } catch (IOException e) {
             throw new DBException("IO error", e);
         }
+        entityMapping.setStreamColumns(columnInfos);
 
         // Map source columns
-        StreamProducerSettings.EntityMapping entityMapping = settings.getEntityMapping(entity);
         List<StreamProducerSettings.AttributeMapping> attributeMappings = entityMapping.getAttributeMappings();
         for (StreamDataImporterColumnInfo columnInfo : columnInfos) {
             boolean mappingFound = false;
@@ -309,6 +315,7 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
                             attr.setSourceAttributeName(columnInfo.getColumnName());
                             attr.setSourceAttributeIndex(columnInfo.getColumnIndex());
                             attr.setMappingType(StreamProducerSettings.AttributeMapping.MappingType.IMPORT);
+                            attr.setSourceColumn(columnInfo);
                         }
                         mappingFound = true;
                         break;
@@ -324,6 +331,7 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
                         }
                         attr.setSourceAttributeIndex(columnInfo.getColumnIndex());
                         attr.setMappingType(StreamProducerSettings.AttributeMapping.MappingType.IMPORT);
+                        attr.setSourceColumn(columnInfo);
                     }
                 }
             }
@@ -334,21 +342,55 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
         final StreamProducerSettings settings = getWizard().getPageSettings(this, StreamProducerSettings.class);
         final Map<Object, Object> processorProperties = getWizard().getSettings().getProcessorProperties();
 
-        PreviewConsumer previewConsumer = new PreviewConsumer(entity);
+        PreviewConsumer previewConsumer = new PreviewConsumer(settings, entity);
+
+        settings.setProcessorProperties(getWizard().getSettings().getProcessorProperties());
+        settings.setMaxRows(10);
 
         try {
-            importer.init(new StreamDataImporterSite(settings, entity, processorProperties, 10));
             currentProducer.transferData(monitor, previewConsumer, importer, settings);
-            importer.dispose();
         } finally {
             previewConsumer.close();
+            settings.setMaxRows(-1);
         }
+
+        List<Object[]> rows = previewConsumer.getRows();
+        List<String[]> strRows = new ArrayList<>(rows.size());
+        try (DBCSession session = DBUtils.openUtilSession(monitor, previewConsumer.getEntityMapping().getEntity(), "Generate preview values")) {
+            List<StreamProducerSettings.AttributeMapping> attributeMappings = previewConsumer.getEntityMapping().getAttributeMappings();
+            for (Object[] row : rows) {
+                String[] strRow = new String[row.length];
+                for (int i = 0; i < attributeMappings.size(); i++) {
+                    StreamProducerSettings.AttributeMapping attr = attributeMappings.get(i);
+                    Object value = attr.getTargetValueHandler().getValueFromObject(session, attr.getTargetAttribute(), row[i], false);
+                    String valueStr = attr.getTargetValueHandler().getValueDisplayString(attr.getTargetAttribute(), value, DBDDisplayFormat.UI);
+                    strRow[i] = valueStr;
+                }
+                strRows.add(strRow);
+            }
+        }
+
+        UIUtils.asyncExec(() -> {
+            previewTable.removeAll();
+            for (String[] row : strRows) {
+                TableItem previewItem = new TableItem(previewTable, SWT.NONE);
+                for (int i = 0; i < row.length; i++) {
+                    if (row[i] != null) {
+                        previewItem.setText(i, row[i]);
+                    }
+                }
+            }
+        });
     }
 
     @Override
     public void deactivatePage()
     {
         super.deactivatePage();
+
+        // Pass properties to producer settings
+        final StreamProducerSettings settings = getWizard().getPageSettings(this, StreamProducerSettings.class);
+        settings.setProcessorProperties(getWizard().getSettings().getProcessorProperties());
     }
 
     @Override
@@ -371,10 +413,19 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
     private static class PreviewConsumer implements IDataTransferConsumer {
 
         private List<Object[]> rows = new ArrayList<>();
-        private DBSObject sampleObject;
+        private StreamProducerSettings settings;
+        private DBSEntity sampleObject;
+        private final StreamProducerSettings.EntityMapping entityMapping;
+        private DBCResultSetMetaData meta;
 
-        public PreviewConsumer(DBSObject sampleObject) {
+        public PreviewConsumer(StreamProducerSettings settings, DBSEntity sampleObject) {
+            this.settings = settings;
             this.sampleObject = sampleObject;
+            this.entityMapping = this.settings.getEntityMapping(sampleObject);
+        }
+
+        public StreamProducerSettings.EntityMapping getEntityMapping() {
+            return entityMapping;
         }
 
         public List<Object[]> getRows() {
@@ -398,12 +449,20 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
 
         @Override
         public void fetchStart(DBCSession session, DBCResultSet resultSet, long offset, long maxRows) throws DBCException {
-
+            meta = resultSet.getMeta();
+            if (meta.getAttributes().size() != entityMapping.getAttributeMappings().size()) {
+                throw new DBCException("Corrupted stream source metadata. Attribute number (" + meta.getAttributes().size() + ") doesn't match target entity attribute number (" + entityMapping.getAttributeMappings().size() + ")");
+            }
         }
 
         @Override
         public void fetchRow(DBCSession session, DBCResultSet resultSet) throws DBCException {
-
+            List<StreamProducerSettings.AttributeMapping> attrs = entityMapping.getAttributeMappings();
+            Object[] row = new Object[attrs.size()];
+            for (int i = 0; i < attrs.size(); i++) {
+                row[i] = resultSet.getAttributeValue(i);
+            }
+            rows.add(row);
         }
 
         @Override
