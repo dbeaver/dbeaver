@@ -112,6 +112,7 @@ public class DataTransferJob extends AbstractJob {
             producer.transferData(
                 monitor,
                 consumer,
+                settings.getProcessor().getInstance(),
                 nodeSettings);
             consumer.finishTransfer(monitor, false);
             return true;

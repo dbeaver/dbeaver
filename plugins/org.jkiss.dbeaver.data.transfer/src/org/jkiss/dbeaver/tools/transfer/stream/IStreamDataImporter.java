@@ -24,7 +24,6 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 
 import java.io.InputStream;
 import java.util.List;
-import java.util.Map;
 
 /**
  * IStreamDataImporter
@@ -33,9 +32,9 @@ public interface IStreamDataImporter extends IDataTransferProcessor {
 
     void init(IStreamDataImporterSite site) throws DBException;
 
-    List<StreamDataImporterColumnInfo> readColumnsInfo(InputStream inputStream, StreamProducerSettings settings, Map<Object, Object> processorProperties) throws DBException;
+    List<StreamDataImporterColumnInfo> readColumnsInfo(InputStream inputStream) throws DBException;
 
-    void runImport(DBRProgressMonitor monitor, InputStream inputStream, StreamProducerSettings.EntityMapping mapping, Map<Object, Object> properties, int rowCount, IDataTransferConsumer consumer) throws DBException;
+    void runImport(DBRProgressMonitor monitor, InputStream inputStream, int rowCount, IDataTransferConsumer consumer) throws DBException;
 
     void dispose();
 
