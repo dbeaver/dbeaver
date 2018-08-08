@@ -196,22 +196,41 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
         final DBSEntity entity = (DBSEntity) currentObject;
         StreamProducerSettings.EntityMapping entityMapping = settings.getEntityMapping(entity);
         DataTransferPipe currentPipe = getCurrentPipe();
+        StreamTransferProducer currentProducer = (StreamTransferProducer) currentPipe.getProducer();
 
         try {
             getWizard().getContainer().run(true, true, mon -> {
+                IDataTransferProcessor importer = processor.getInstance();
+
                 DBRProgressMonitor monitor = new DefaultProgressMonitor(mon);
+                monitor.beginTask("Load mappings", 3);
                 try {
+                    monitor.subTask("Load attributes form target object");
                     for (DBSEntityAttribute attr : CommonUtils.safeCollection(entity.getAttributes(monitor))) {
                         if (DBUtils.isPseudoAttribute(attr) || DBUtils.isHiddenObject(attr)) {
                             continue;
                         }
                         entityMapping.getAttributeMapping(attr);
                     }
+                    monitor.worked(1);
 
-                    IDataTransferProcessor importer = processor.getInstance();
+                    // Load header and mappings
+                    monitor.subTask("Load attribute mappings");
                     if (importer instanceof IStreamDataImporter) {
-                        loadStreamMappings((IStreamDataImporter)importer, entityMapping, currentPipe);
+                        loadStreamMappings((IStreamDataImporter)importer, entityMapping, currentProducer);
                     }
+
+                    UIUtils.syncExec(() -> updateAttributeMappings(entityMapping));
+                    monitor.worked(1);
+
+                    // Load preview
+                    monitor.subTask("Load import preview");
+                    if (importer instanceof IStreamDataImporter) {
+                        loadImportPreview(monitor, (IStreamDataImporter)importer, entityMapping, currentProducer);
+                    }
+                    monitor.worked(1);
+
+                    monitor.done();
 
                 } catch (DBException e) {
                     throw new InvocationTargetException(e);
@@ -224,6 +243,14 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
             return;
         }
 
+
+        UIUtils.asyncExec(() -> {
+            UIUtils.packColumns(mappingsTable, true);
+            UIUtils.packColumns(previewTable, false);
+        });
+    }
+
+    private void updateAttributeMappings(StreamProducerSettings.EntityMapping entityMapping) {
         for (StreamProducerSettings.AttributeMapping am : entityMapping.getAttributeMappings()) {
             // Create mapping item
             TableItem mappingItem = new TableItem(mappingsTable, SWT.NONE);
@@ -242,19 +269,13 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
             // Create preview column
             UIUtils.createTableColumn(previewTable, SWT.LEFT, am.getTargetAttributeName());
         }
-
-        UIUtils.asyncExec(() -> {
-            UIUtils.packColumns(mappingsTable, true);
-            UIUtils.packColumns(previewTable, false);
-        });
     }
 
     public DataTransferPipe getCurrentPipe() {
         return pipeList.get(tableList.getSelectionIndex());
     }
 
-    private void loadStreamMappings(IStreamDataImporter importer, StreamProducerSettings.EntityMapping entityMapping, DataTransferPipe currentPipe) throws DBException {
-        StreamTransferProducer currentProducer = (StreamTransferProducer) currentPipe.getProducer();
+    private void loadStreamMappings(IStreamDataImporter importer, StreamProducerSettings.EntityMapping entityMapping, StreamTransferProducer currentProducer) throws DBException {
         File inputFile = currentProducer.getInputFile();
 
         final StreamProducerSettings settings = getWizard().getPageSettings(this, StreamProducerSettings.class);
@@ -272,26 +293,50 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
         // Map source columns
         List<StreamProducerSettings.AttributeMapping> attributeMappings = entityMapping.getAttributeMappings();
         for (StreamDataImporterColumnInfo columnInfo : columnInfos) {
+            boolean mappingFound = false;
             if (columnInfo.getColumnName() != null) {
                 for (StreamProducerSettings.AttributeMapping attr : attributeMappings) {
                     if (CommonUtils.equalObjects(attr.getTargetAttributeName(), columnInfo.getColumnName())) {
                         if (attr.getMappingType() == StreamProducerSettings.AttributeMapping.MappingType.NONE) {
                             // Set source name only if it wasn't set
                             attr.setSourceAttributeName(columnInfo.getColumnName());
+                            attr.setSourceAttributeIndex(columnInfo.getColumnIndex());
                             attr.setMappingType(StreamProducerSettings.AttributeMapping.MappingType.IMPORT);
                         }
+                        mappingFound = true;
                         break;
                     }
                 }
-            } else {
+            }
+            if (!mappingFound) {
                 if (columnInfo.getColumnIndex() >= 0 && columnInfo.getColumnIndex() < attributeMappings.size()) {
                     StreamProducerSettings.AttributeMapping attr = attributeMappings.get(columnInfo.getColumnIndex());
                     if (attr.getMappingType() == StreamProducerSettings.AttributeMapping.MappingType.NONE) {
+                        if (!CommonUtils.isEmpty(columnInfo.getColumnName())) {
+                            attr.setSourceAttributeName(columnInfo.getColumnName());
+                        }
                         attr.setSourceAttributeIndex(columnInfo.getColumnIndex());
+                        attr.setMappingType(StreamProducerSettings.AttributeMapping.MappingType.IMPORT);
                     }
                 }
             }
         }
+    }
+
+    private void loadImportPreview(DBRProgressMonitor monitor, IStreamDataImporter importer, StreamProducerSettings.EntityMapping entityMapping, StreamTransferProducer currentProducer) throws DBException {
+        File inputFile = currentProducer.getInputFile();
+
+        final StreamProducerSettings settings = getWizard().getPageSettings(this, StreamProducerSettings.class);
+        final Map<Object, Object> processorProperties = getWizard().getSettings().getProcessorProperties();
+
+        try (InputStream is = new FileInputStream(inputFile)) {
+            importer.init(new StreamDataImporterSite());
+            //importer.runImport(monitor, is, entityMapping, processorProperties, 10, );
+            importer.dispose();
+        } catch (IOException e) {
+            throw new DBException("IO error", e);
+        }
+
     }
 
     @Override

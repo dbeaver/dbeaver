@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.tools.transfer.stream.importer;
 import au.com.bytecode.opencsv.CSVReader;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamDataImporterColumnInfo;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamProducerSettings;
 import org.jkiss.dbeaver.utils.GeneralUtils;
@@ -52,16 +54,10 @@ public class DataImporterCSV extends StreamImporterAbstract {
     public List<StreamDataImporterColumnInfo> readColumnsInfo(InputStream inputStream, StreamProducerSettings settings, Map<Object, Object> processorProperties) throws DBException {
         List<StreamDataImporterColumnInfo> columnsInfo = new ArrayList<>();
 
-        String encoding = CommonUtils.toString(processorProperties.get(PROP_ENCODING), GeneralUtils.UTF8_ENCODING);
-        String header = CommonUtils.toString(processorProperties.get(PROP_HEADER), HeaderPosition.top.name());
-        HeaderPosition headerPosition = HeaderPosition.none;
-        try {
-            headerPosition = HeaderPosition.valueOf(header);
-        } catch (IllegalArgumentException e) {
-            log.warn("Invalid header position: " + header);
-        }
-        try (Reader reader = new InputStreamReader(inputStream, encoding)) {
-            try (CSVReader csvReader = new CSVReader(reader)) {
+        HeaderPosition headerPosition = getHeaderPosition(processorProperties);
+
+        try (Reader reader = openStreamReader(inputStream, processorProperties)) {
+            try (CSVReader csvReader = openCSVReader(reader, processorProperties)) {
                 for (;;) {
                     String[] line = csvReader.readNext();
                     if (line == null) {
@@ -86,4 +82,59 @@ public class DataImporterCSV extends StreamImporterAbstract {
 
         return columnsInfo;
     }
+
+    private HeaderPosition getHeaderPosition(Map<Object, Object> processorProperties) {
+        String header = CommonUtils.toString(processorProperties.get(PROP_HEADER), HeaderPosition.top.name());
+        HeaderPosition headerPosition = HeaderPosition.none;
+        try {
+            headerPosition = HeaderPosition.valueOf(header);
+        } catch (IllegalArgumentException e) {
+            log.warn("Invalid header position: " + header);
+        }
+        return headerPosition;
+    }
+
+    private CSVReader openCSVReader(Reader reader, Map<Object, Object> processorProperties) {
+        return new CSVReader(reader);
+    }
+
+    private InputStreamReader openStreamReader(InputStream inputStream, Map<Object, Object> processorProperties) throws UnsupportedEncodingException {
+        String encoding = CommonUtils.toString(processorProperties.get(PROP_ENCODING), GeneralUtils.UTF8_ENCODING);
+        return new InputStreamReader(inputStream, encoding);
+    }
+
+    @Override
+    public void runImport(DBRProgressMonitor monitor, InputStream inputStream, StreamProducerSettings.EntityMapping mapping, Map<Object, Object> properties, int rowCount, IDataTransferConsumer consumer) throws DBException {
+        HeaderPosition headerPosition = getHeaderPosition(properties);
+
+        try (Reader reader = openStreamReader(inputStream, properties)) {
+            try (CSVReader csvReader = openCSVReader(reader, properties)) {
+                boolean headerRead = false;
+                for (int lineNum = 0; rowCount > 0 && lineNum < rowCount; lineNum++) {
+                    String[] line = csvReader.readNext();
+                    if (line == null) {
+                        break;
+                    }
+                    if (line.length == 0) {
+                        continue;
+                    }
+                    if (headerPosition != HeaderPosition.none && !headerRead) {
+                        // First line is a header
+                        headerRead = true;
+                        continue;
+                    }
+                    for (int i = 0; i < line.length; i++) {
+                        String column = line[i];
+                        if (headerPosition == HeaderPosition.none) {
+                            column = null;
+                        }
+                    }
+                    break;
+                }
+            }
+        } catch (IOException e) {
+            throw new DBException("IO error reading CSV", e);
+        }
+    }
+
 }
