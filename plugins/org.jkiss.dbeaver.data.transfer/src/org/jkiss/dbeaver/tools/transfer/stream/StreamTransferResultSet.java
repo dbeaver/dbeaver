@@ -36,12 +36,13 @@ public class StreamTransferResultSet implements DBCResultSet {
     private StreamProducerSettings.EntityMapping entityMapping;
     private List<DBCAttributeMetaData> metaAttrs;
     private Object[] streamRow;
+    private final List<StreamProducerSettings.AttributeMapping> attributeMappings;
 
     public StreamTransferResultSet(StreamTransferSession session, DBCStatement statement, StreamProducerSettings.EntityMapping entityMapping) {
         this.session = session;
         this.statement = statement;
         this.entityMapping = entityMapping;
-        List<StreamProducerSettings.AttributeMapping> attributeMappings = this.entityMapping.getAttributeMappings();
+        this.attributeMappings = this.entityMapping.getValuableAttributeMappings();
         this.metaAttrs = new ArrayList<>(attributeMappings.size());
         for (int i = 0; i < attributeMappings.size(); i++) {
             StreamProducerSettings.AttributeMapping attr = attributeMappings.get(i);
@@ -65,7 +66,7 @@ public class StreamTransferResultSet implements DBCResultSet {
 
     @Override
     public Object getAttributeValue(int index) throws DBCException {
-        StreamProducerSettings.AttributeMapping attr = entityMapping.getAttributeMappings().get(index);
+        StreamProducerSettings.AttributeMapping attr = this.attributeMappings.get(index);
         StreamDataImporterColumnInfo sourceColumn = attr.getSourceColumn();
         if (sourceColumn != null) {
             return streamRow[sourceColumn.getColumnIndex()];

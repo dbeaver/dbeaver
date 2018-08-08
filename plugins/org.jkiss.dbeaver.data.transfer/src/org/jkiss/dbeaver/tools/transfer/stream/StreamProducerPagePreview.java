@@ -48,6 +48,7 @@ import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferPipe;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.CustomTableEditor;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.utils.CommonUtils;
 
@@ -124,6 +125,56 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
                 UIUtils.createTableColumn(mappingsTable, SWT.LEFT, DTMessages.data_transfer_wizard_final_column_target);
                 UIUtils.createTableColumn(mappingsTable, SWT.LEFT, DTMessages.data_transfer_wizard_final_column_source);
                 UIUtils.createTableColumn(mappingsTable, SWT.LEFT, DTMessages.data_transfer_wizard_settings_column_mapping_type);
+
+                final CustomTableEditor tableEditor = new CustomTableEditor(mappingsTable) {
+                    @Override
+                    protected Control createEditor(Table table, final int index, final TableItem item) {
+                        if (index == 2) {
+                            StreamProducerSettings.AttributeMapping am = (StreamProducerSettings.AttributeMapping) item.getData();
+
+                            final Combo mappingCombo = new Combo(table, SWT.DROP_DOWN | SWT.READ_ONLY);
+                            for (StreamProducerSettings.AttributeMapping.MappingType mapping : StreamProducerSettings.AttributeMapping.MappingType.values()) {
+                                mappingCombo.add(mapping.getTitle());
+                            }
+                            mappingCombo.setText(am.getMappingType().getTitle());
+                            return mappingCombo;
+                        }
+                        return null;
+                    }
+
+                    @Override
+                    protected void saveEditorValue(Control control, int index, TableItem item) {
+                        StreamProducerSettings.AttributeMapping am = (StreamProducerSettings.AttributeMapping) item.getData();
+                        if (index == 2) {
+                            final Combo mappingCombo = (Combo) control;
+                            StreamProducerSettings.AttributeMapping.MappingType newMapping = null;
+                            String newTypeTitle = mappingCombo.getText();
+                            for (StreamProducerSettings.AttributeMapping.MappingType mapping : StreamProducerSettings.AttributeMapping.MappingType.values()) {
+                                if (newTypeTitle.equals(mapping.getTitle())) {
+                                    newMapping = mapping;
+                                    break;
+                                }
+                            }
+                            if (newMapping != null && newMapping != am.getMappingType()) {
+                                item.setText(2, newMapping.getTitle());
+                                am.setMappingType(newMapping);
+                                updatePageCompletion();
+
+                                if (currentObject instanceof DBSEntity) {
+                                    final DBSEntity entity = (DBSEntity) currentObject;
+                                    final StreamProducerSettings settings = getWizard().getPageSettings(StreamProducerPagePreview.this, StreamProducerSettings.class);
+                                    StreamProducerSettings.EntityMapping entityMapping = settings.getEntityMapping(entity);
+
+                                    UIUtils.asyncExec(() -> {
+                                        refreshPreviewTable(entityMapping);
+                                    });
+                                }
+                            }
+
+                        }
+                    }
+                };
+
             }
 
             mapSash.setWeights(new int[] { 300, 700 } );
@@ -241,7 +292,7 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
 
                     monitor.done();
 
-                } catch (DBException e) {
+                } catch (Throwable e) {
                     throw new InvocationTargetException(e);
                 }
             });
@@ -257,6 +308,58 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
 
             if (finalError != null) {
                 DBUserInterface.getInstance().showError("Load entity meta", "Can't load entity attributes", finalError);
+            }
+        });
+    }
+
+    private void refreshPreviewTable(StreamProducerSettings.EntityMapping entityMapping) {
+        previewTable.removeAll();
+        for (TableColumn column : previewTable.getColumns()) {
+            column.dispose();
+        }
+        for (StreamProducerSettings.AttributeMapping am : entityMapping.getAttributeMappings()) {
+            if (!am.isValuable()) {
+                continue;
+            }
+            // Create preview column
+            UIUtils.createTableColumn(previewTable, SWT.LEFT, am.getTargetAttributeName());
+        }
+
+        DataTransferProcessorDescriptor processor = getWizard().getSettings().getProcessor();
+        final DBSEntity entity = (DBSEntity) currentObject;
+        StreamTransferProducer currentProducer = (StreamTransferProducer) getCurrentPipe().getProducer();
+
+        Throwable error = null;
+        try {
+            getWizard().getContainer().run(true, true, mon -> {
+                try {
+                    IDataTransferProcessor importer = processor.getInstance();
+
+                    DBRProgressMonitor monitor = new DefaultProgressMonitor(mon);
+                    monitor.beginTask("Load preview", 1);
+
+                    // Load preview
+                    monitor.subTask("Load import preview");
+                    if (importer instanceof IStreamDataImporter) {
+                        loadImportPreview(monitor, (IStreamDataImporter)importer, entity, currentProducer);
+                    }
+                    monitor.worked(1);
+
+                    monitor.done();
+                } catch (Throwable e) {
+                    throw new InvocationTargetException(e);
+                }
+            });
+        } catch (InvocationTargetException e) {
+            error = e.getTargetException();
+        } catch (InterruptedException e) {
+            // Ignore
+        }
+        Throwable finalError = error;
+        UIUtils.asyncExec(() -> {
+            UIUtils.packColumns(previewTable, false);
+            if (finalError != null) {
+                DBUserInterface.getInstance().showError("OReview data", "Can't load preview data", finalError);
             }
         });
     }
@@ -277,8 +380,10 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
             mappingItem.setText(1, sourceName);
             mappingItem.setText(2, am.getMappingType().getTitle());
 
-            // Create preview column
-            UIUtils.createTableColumn(previewTable, SWT.LEFT, am.getTargetAttributeName());
+            if (am.isValuable()) {
+                // Create preview column
+                UIUtils.createTableColumn(previewTable, SWT.LEFT, am.getTargetAttributeName());
+            }
         }
     }
 
@@ -340,7 +445,6 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
 
     private void loadImportPreview(DBRProgressMonitor monitor, IStreamDataImporter importer, DBSEntity entity, StreamTransferProducer currentProducer) throws DBException {
         final StreamProducerSettings settings = getWizard().getPageSettings(this, StreamProducerSettings.class);
-        final Map<Object, Object> processorProperties = getWizard().getSettings().getProcessorProperties();
 
         PreviewConsumer previewConsumer = new PreviewConsumer(settings, entity);
 
@@ -360,11 +464,16 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
             List<StreamProducerSettings.AttributeMapping> attributeMappings = previewConsumer.getEntityMapping().getAttributeMappings();
             for (Object[] row : rows) {
                 String[] strRow = new String[row.length];
+                int columnIndex = 0;
                 for (int i = 0; i < attributeMappings.size(); i++) {
                     StreamProducerSettings.AttributeMapping attr = attributeMappings.get(i);
-                    Object value = attr.getTargetValueHandler().getValueFromObject(session, attr.getTargetAttribute(), row[i], false);
+                    if (!attr.isValuable()) {
+                        continue;
+                    }
+                    Object value = attr.getTargetValueHandler().getValueFromObject(session, attr.getTargetAttribute(), row[columnIndex], false);
                     String valueStr = attr.getTargetValueHandler().getValueDisplayString(attr.getTargetAttribute(), value, DBDDisplayFormat.UI);
-                    strRow[i] = valueStr;
+                    strRow[columnIndex] = valueStr;
+                    columnIndex++;
                 }
                 strRows.add(strRow);
             }
@@ -417,11 +526,13 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
         private DBSEntity sampleObject;
         private final StreamProducerSettings.EntityMapping entityMapping;
         private DBCResultSetMetaData meta;
+        private final List<StreamProducerSettings.AttributeMapping> attributes;
 
         public PreviewConsumer(StreamProducerSettings settings, DBSEntity sampleObject) {
             this.settings = settings;
             this.sampleObject = sampleObject;
             this.entityMapping = this.settings.getEntityMapping(sampleObject);
+            this.attributes = entityMapping.getValuableAttributeMappings();
         }
 
         public StreamProducerSettings.EntityMapping getEntityMapping() {
@@ -450,16 +561,15 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
         @Override
         public void fetchStart(DBCSession session, DBCResultSet resultSet, long offset, long maxRows) throws DBCException {
             meta = resultSet.getMeta();
-            if (meta.getAttributes().size() != entityMapping.getAttributeMappings().size()) {
+            if (meta.getAttributes().size() != entityMapping.getValuableAttributeMappings().size()) {
                 throw new DBCException("Corrupted stream source metadata. Attribute number (" + meta.getAttributes().size() + ") doesn't match target entity attribute number (" + entityMapping.getAttributeMappings().size() + ")");
             }
         }
 
         @Override
         public void fetchRow(DBCSession session, DBCResultSet resultSet) throws DBCException {
-            List<StreamProducerSettings.AttributeMapping> attrs = entityMapping.getAttributeMappings();
-            Object[] row = new Object[attrs.size()];
-            for (int i = 0; i < attrs.size(); i++) {
+            Object[] row = new Object[attributes.size()];
+            for (int i = 0; i < attributes.size(); i++) {
                 row[i] = resultSet.getAttributeValue(i);
             }
             rows.add(row);
