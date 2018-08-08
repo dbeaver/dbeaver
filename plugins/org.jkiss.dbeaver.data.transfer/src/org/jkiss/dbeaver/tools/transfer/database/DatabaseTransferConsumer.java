@@ -92,10 +92,10 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     {
         initExporter(session.getProgressMonitor());
 
-        if (offset == 0 && settings.isTruncateBeforeLoad() && containerMapping.getMappingType() == DatabaseMappingType.existing) {
+        if (offset == 0 && settings.isTruncateBeforeLoad() && (containerMapping == null || containerMapping.getMappingType() == DatabaseMappingType.existing)) {
             // Truncate target tables
-            if ((containerMapping.getTarget().getSupportedFeatures() & DBSDataManipulator.DATA_TRUNCATE) != 0) {
-                containerMapping.getTarget().truncateData(
+            if ((targetObject.getSupportedFeatures() & DBSDataManipulator.DATA_TRUNCATE) != 0) {
+                targetObject.truncateData(
                     targetSession,
                     new AbstractExecutionSource(sourceObject, targetContext, this));
             } else {
@@ -109,23 +109,48 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         targetAttributes = new ArrayList<>(columnMappings.length);
         for (int i = 0; i < rsAttributes.size(); i++) {
             ColumnMapping columnMapping = new ColumnMapping(rsAttributes.get(i));
-            columnMapping.targetAttr = containerMapping.getAttributeMapping(columnMapping.sourceAttr);
-            if (columnMapping.targetAttr == null) {
-                throw new DBCException("Can't find target attribute [" + columnMapping.sourceAttr.getName() + "]");
+            if (containerMapping == null) {
+                // No explicit mappings. Mapping must be provided by data producer
+                // Map all attributes directly.
+                if (targetObject instanceof DBSEntity) {
+                    try {
+                        DBSEntityAttribute attribute = ((DBSEntity) targetObject).getAttribute(session.getProgressMonitor(), columnMapping.sourceAttr.getName());
+                        if (attribute != null) {
+                            columnMapping.targetAttr = new DatabaseMappingAttribute(null, columnMapping.sourceAttr);
+                            columnMapping.targetAttr.target = attribute;
+                            columnMapping.targetAttr.mappingType = DatabaseMappingType.existing;
+                        }
+                    } catch (DBException e) {
+                        log.error("Error getting target attribute");
+                    }
+                }
+                if (columnMapping.targetAttr == null) {
+                    throw new DBCException("Can't resolve target attribute for [" + columnMapping.sourceAttr.getName() + "]");
+                }
+            } else {
+                columnMapping.targetAttr = containerMapping.getAttributeMapping(columnMapping.sourceAttr);
+                if (columnMapping.targetAttr == null) {
+                    throw new DBCException("Can't find target attribute [" + columnMapping.sourceAttr.getName() + "]");
+                }
             }
-            columnMapping.sourceValueHandler = DBUtils.findValueHandler(session, columnMapping.sourceAttr);
-            columnMappings[i] = columnMapping;
-            if (columnMapping.targetAttr.getMappingType() == DatabaseMappingType.skip) {
+            if (columnMapping.targetAttr.mappingType == DatabaseMappingType.skip) {
                 continue;
             }
-            if (columnMapping.targetAttr.getTarget() == null) {
+            if (columnMapping.targetAttr.target == null) {
                 throw new DBCException("Target attribute for [" + columnMapping.sourceAttr.getName() + "] wasn't resolved");
             }
-            columnMapping.targetValueHandler = DBUtils.findValueHandler(session, columnMapping.targetAttr.getTarget());
+            if (session.getDataSource() != null) {
+                columnMapping.sourceValueHandler = DBUtils.findValueHandler(session.getDataSource(), columnMapping.sourceAttr);
+            }
+            columnMapping.targetValueHandler = DBUtils.findValueHandler(columnMapping.targetAttr.target.getDataSource(), columnMapping.targetAttr.target);
             columnMapping.targetIndex = targetAttributes.size();
-            targetAttributes.add(columnMappings[i].targetAttr.getTarget());
+
+            columnMappings[i] = columnMapping;
+
+            targetAttributes.add(columnMapping.targetAttr.target);
         }
-        executeBatch = containerMapping.getTarget().insertData(
+
+        executeBatch = targetObject.insertData(
             targetSession,
             targetAttributes.toArray(new DBSAttributeBase[targetAttributes.size()]),
             null,
@@ -141,7 +166,13 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             if (column.targetIndex < 0) {
                 continue;
             }
-            final Object attrValue = column.sourceValueHandler.fetchValueObject(session, resultSet, column.sourceAttr, i);
+            final Object attrValue;
+            if (column.sourceValueHandler != null) {
+                attrValue = column.sourceValueHandler.fetchValueObject(session, resultSet, column.sourceAttr, i);
+            } else {
+                // No value handler - get raw value
+                attrValue = resultSet.getAttributeValue(i);
+            }
             rowValues[column.targetIndex] = column.targetValueHandler.getValueFromObject(
                 session,
                 column.targetAttr.getTarget(),
@@ -168,7 +199,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                     log.error("Error inserting row", e);
                     if (!ignoreErrors) {
                         ExecutionQueueErrorResponse response = ExecutionQueueErrorJob.showError(
-                            DBUtils.getObjectFullName(containerMapping.getTarget(), DBPEvaluationContext.UI) + " data load",
+                            DBUtils.getObjectFullName(targetObject, DBPEvaluationContext.UI) + " data load",
                             e,
                             true);
                         switch (response) {
@@ -221,14 +252,13 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
 
     private void initExporter(DBRProgressMonitor monitor) throws DBCException
     {
-        containerMapping = settings.getDataMapping(sourceObject);
+        containerMapping = sourceObject == null ? null : settings.getDataMapping(sourceObject);
 
-        DBSDataManipulator target = containerMapping == null ? getTargetObject() : containerMapping.getTarget();
-        DBPDataSource dataSource = target.getDataSource();
-        assert (dataSource != null);
+        DBPDataSource dataSource = targetObject.getDataSource();
+
         try {
             targetContext = settings.isOpenNewConnections() ?
-                DBUtils.getObjectOwnerInstance(target).openIsolatedContext(monitor, "Data transfer consumer") : DBUtils.getDefaultContext(target, false);
+                DBUtils.getObjectOwnerInstance(targetObject).openIsolatedContext(monitor, "Data transfer consumer") : DBUtils.getDefaultContext(targetObject, false);
         } catch (DBException e) {
             throw new DBCException("Error opening new connection", e);
         }
@@ -273,22 +303,24 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
             }
 
             boolean hasNewObjects = false;
-            try (DBCSession session = DBUtils.openMetaSession(monitor, container, "Create target metadata")) {
+            if (containerMapping != null) {
+                try (DBCSession session = DBUtils.openMetaSession(monitor, container, "Create target metadata")) {
 
-                for (DatabaseMappingContainer containerMapping : settings.getDataMappings().values()) {
-                    switch (containerMapping.getMappingType()) {
-                        case create:
-                            createTargetTable(session, containerMapping);
-                            hasNewObjects = true;
-                            break;
-                        case existing:
-                            for (DatabaseMappingAttribute attr : containerMapping.getAttributeMappings(monitor)) {
-                                if (attr.getMappingType() == DatabaseMappingType.create) {
-                                    createTargetAttribute(session, attr);
-                                    hasNewObjects = true;
+                    for (DatabaseMappingContainer containerMapping : settings.getDataMappings().values()) {
+                        switch (containerMapping.getMappingType()) {
+                            case create:
+                                createTargetTable(session, containerMapping);
+                                hasNewObjects = true;
+                                break;
+                            case existing:
+                                for (DatabaseMappingAttribute attr : containerMapping.getAttributeMappings(monitor)) {
+                                    if (attr.getMappingType() == DatabaseMappingType.create) {
+                                        createTargetAttribute(session, attr);
+                                        hasNewObjects = true;
+                                    }
                                 }
-                            }
-                            break;
+                                break;
+                        }
                     }
                 }
             }
