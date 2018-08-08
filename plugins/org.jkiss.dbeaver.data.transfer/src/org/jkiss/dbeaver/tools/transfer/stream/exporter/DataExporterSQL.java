@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.tools.transfer.stream.impl;
+package org.jkiss.dbeaver.tools.transfer.stream.exporter;
 
 import org.eclipse.core.runtime.IAdaptable;
 import org.jkiss.dbeaver.DBException;

@@ -15,8 +15,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.tools.transfer.stream.impl;
+package org.jkiss.dbeaver.tools.transfer.stream.exporter;
 
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
@@ -31,7 +32,6 @@ import org.jkiss.utils.CommonUtils;
 
 import javax.imageio.ImageIO;
 import java.awt.*;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -39,15 +39,13 @@ import java.io.Reader;
 import java.util.List;
 
 /**
- * HTML Exporter
+ * XML Exporter
  */
-public class DataExporterHTML extends StreamExporterAbstract {
-
-    private static final int IMAGE_FRAME_SIZE = 200;
+public class DataExporterXML extends StreamExporterAbstract {
 
     private PrintWriter out;
     private List<DBDAttributeBinding> columns;
-    private int rowCount = 0;
+    private String tableName;
 
     @Override
     public void init(IStreamDataExporterSite site) throws DBException
@@ -72,93 +70,84 @@ public class DataExporterHTML extends StreamExporterAbstract {
 
     private void printHeader()
     {
-        out.write("<html>");
-        out.write("<head><style>" +
-                "table {font-family:\"Lucida Sans Unicode\", \"Lucida Grande\", Sans-Serif;font-size:12px;text-align:left;border-collapse:collapse;margin:10px;} " +
-                "th{font-size:14px;font-weight:normal;color:#039;padding:10px 8px;} " +
-                "td{color:#669;padding:8px;}" +
-                ".odd{background:#e8edff;}" +
-                "img{padding:5px; border:solid; border-color: #dddddd #aaaaaa #aaaaaa #dddddd; border-width: 1px 2px 2px 1px; background-color:white;}" +
-                "</style></head>");
-        out.write("<body><table>");
-        out.write("<tr>");
-        for (int i = 0, columnsSize = columns.size(); i < columnsSize; i++) {
+        out.write("<?xml version=\"1.0\" ?>\n");
+        tableName = escapeXmlElementName(getSite().getSource().getName());
+        out.write("<!DOCTYPE " + tableName + " [\n");
+        out.write("  <!ELEMENT " + tableName + " (DATA_RECORD*)>\n");
+        out.write("  <!ELEMENT DATA_RECORD (");
+        int columnsSize = columns.size();
+        for (int i = 0; i < columnsSize; i++) {
             String colName = columns.get(i).getLabel();
             if (CommonUtils.isEmpty(colName)) {
                 colName = columns.get(i).getName();
             }
-            writeTextCell(colName, true);
+            out.write(escapeXmlElementName(colName) + "?");
+            if (i < columnsSize - 1) {
+                out.write(",");
+            }
         }
-        out.write("</tr>");
+        out.write(")+>\n");
+        for (int i = 0; i < columnsSize; i++) {
+            out.write("  <!ELEMENT " + escapeXmlElementName(columns.get(i).getName()) + " (#PCDATA)>\n");
+        }
+        out.write("]>\n");
+        out.write("<" + tableName + ">\n");
     }
 
     @Override
     public void exportRow(DBCSession session, DBCResultSet resultSet, Object[] row) throws DBException, IOException
     {
-        out.write("<tr" + (rowCount++ % 2 == 0 ? " class=\"odd\"" : "") + ">");
+        out.write("  <DATA_RECORD>\n");
         for (int i = 0; i < row.length; i++) {
             DBDAttributeBinding column = columns.get(i);
+            String columnName = escapeXmlElementName(column.getName());
+            out.write("    <" + columnName + ">");
             if (DBUtils.isNullValue(row[i])) {
-                writeTextCell(null, false);
+                writeTextCell(null);
             } else if (row[i] instanceof DBDContent) {
                 // Content
                 // Inline textual content and handle binaries in some special way
                 DBDContent content = (DBDContent)row[i];
                 try {
                     DBDContentStorage cs = content.getContents(session.getProgressMonitor());
-                    out.write("<td>");
                     if (cs != null) {
                         if (ContentUtils.isTextContent(content)) {
-                            writeCellValue(cs.getContentReader());
+                            try (Reader reader = cs.getContentReader()) {
+                                writeCellValue(reader);
+                            }
                         } else {
                             getSite().writeBinaryData(cs);
                         }
                     }
-                    out.write("</td>");
                 }
                 finally {
                     content.release();
                 }
             } else {
-                String stringValue = super.getValueDisplayString(column, row[i]);
-                boolean isImage = row[i] instanceof File && stringValue != null && stringValue.endsWith(".jpg");
-                if (isImage) {
-                    writeImageCell((File) row[i]);
-                }
-                else {
-                    writeTextCell(stringValue, false);
-                }
+                writeTextCell(super.getValueDisplayString(column, row[i]));
             }
+            out.write("</" + columnName + ">\n");
         }
-        out.write("</tr>\n");
+        out.write("  </DATA_RECORD>\n");
     }
 
     @Override
     public void exportFooter(DBRProgressMonitor monitor) throws IOException
     {
-        out.write("</table></body></html>");
+        out.write("</" + tableName + ">\n");
     }
 
-    private void writeTextCell(String value, boolean header)
+    private void writeTextCell(@Nullable String value)
     {
-        out.write(header ? "<th>" : "<td>");
-        if (value == null) {
-            out.write("&nbsp;");
-        }
-        else {
+        if (value != null) {
             value = value.replace("<", "&lt;").replace(">", "&gt;").replace("&", "&amp;");
             out.write(value);
         }
-        out.write(header ? "</th>" : "</td>");
     }
 
     private void writeImageCell(File file) throws DBException
     {
-        out.write("<td>");
-        if (file == null || !file.exists()) {
-            out.write("&nbsp;");
-        }
-        else {
+        if (file != null && file.exists()) {
             Image image = null;
             try {
                 image = ImageIO.read(file);
@@ -169,64 +158,36 @@ public class DataExporterHTML extends StreamExporterAbstract {
             if (image != null) {
                 String imagePath = file.getAbsolutePath();
                 imagePath = "files/" + imagePath.substring(imagePath.lastIndexOf(File.separator));
-
-                int width = ((BufferedImage) image).getWidth();
-                int height = ((BufferedImage) image).getHeight();
-                int rwidth = width;
-                int rheight = height;
-
-                if (width > IMAGE_FRAME_SIZE || height > IMAGE_FRAME_SIZE) {
-                    float scale = 1;
-                    if (width > height) {
-                        scale = IMAGE_FRAME_SIZE /(float)width;
-                    }
-                    else {
-                        scale = IMAGE_FRAME_SIZE /(float)height;
-                    }
-                    rwidth = (int) (rwidth * scale);
-                    rheight = (int) (rheight * scale);
-                }
-                out.write("<a href=\"" + imagePath + "\">");
-                out.write("<img src=\"" + imagePath + "\" width=\"" + rwidth + "\" height=\"" + rheight + "\" />");
-                out.write("</a>");
-            }
-            else {
-                out.write("&nbsp;");
+                out.write(imagePath);
             }
         }
-        out.write("</td>");
     }
 
     private void writeCellValue(Reader reader) throws IOException
     {
-        try {
-            // Copy reader
-            char buffer[] = new char[2000];
-            for (;;) {
-                int count = reader.read(buffer);
-                if (count <= 0) {
-                    break;
+        // Copy reader
+        char buffer[] = new char[2000];
+        for (;;) {
+            int count = reader.read(buffer);
+            if (count <= 0) {
+                break;
+            }
+            for (int i = 0; i < count; i++) {
+                if (buffer[i] == '<') {
+                    out.write("&lt;");
                 }
-                for (int i = 0; i < count; i++) {
-                    if (buffer[i] == '<') {
-                        out.write("&lt;");
-                    }
-                    else if (buffer[i] == '>') {
-                        out.write("&gt;");
-                    }
-                    if (buffer[i] == '&') {
-                        out.write("&amp;");
-                    }
+                else if (buffer[i] == '>') {
+                    out.write("&gt;");
+                } else if (buffer[i] == '&') {
+                    out.write("&amp;");
+                } else {
                     out.write(buffer[i]);
                 }
             }
-        } finally {
-            ContentUtils.close(reader);
         }
     }
 
-    public boolean saveBinariesAsImages()
-    {
-        return true;
+    private String escapeXmlElementName(String name) {
+        return name.replaceAll("[^\\p{Alpha}\\p{Digit}]+","_");
     }
 }
