@@ -104,7 +104,7 @@
 
             <processor
                     id="stream.xml"
-                    class="org.jkiss.dbeaver.tools.transfer.stream.impl.DataExporterXML"
+                    class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterXML"
                     description="%dataTransfer.processor.xml.description"
                     icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/xml.png"
                     label="%dataTransfer.processor.xml.name">
@@ -114,7 +114,7 @@
             </processor>
             <processor
                     id="stream.dbunit"
-                    class="org.jkiss.dbeaver.tools.transfer.stream.impl.DataExporterDbUnit"
+                    class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterDbUnit"
                     description="%dataTransfer.processor.dbunit.description"
                     icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/xml.png"
                     label="%dataTransfer.processor.dbunit.name">
@@ -128,7 +128,7 @@
             </processor>
             <processor
                     id="stream.json"
-                    class="org.jkiss.dbeaver.tools.transfer.stream.impl.DataExporterJSON"
+                    class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterJSON"
                     description="%dataTransfer.processor.json.description"
                     icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/json.png"
                     label="%dataTransfer.processor.json.name">
@@ -140,7 +140,7 @@
             </processor>
             <processor
                     id="stream.html"
-                    class="org.jkiss.dbeaver.tools.transfer.stream.impl.DataExporterHTML"
+                    class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterHTML"
                     description="%dataTransfer.processor.html.description"
                     icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/html.png"
                     label="%dataTransfer.processor.html.name">
@@ -151,7 +151,7 @@
             </processor>
             <processor
                     id="stream.csv"
-                    class="org.jkiss.dbeaver.tools.transfer.stream.impl.DataExporterCSV"
+                    class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterCSV"
                     description="%dataTransfer.processor.csv.description"
                     icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/csv.png"
                     label="%dataTransfer.processor.csv.name">
@@ -169,7 +169,7 @@
             </processor>
             <processor
                     id="stream.markdown.table"
-                    class="org.jkiss.dbeaver.tools.transfer.stream.impl.DataExporterMarkdownTable"
+                    class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterMarkdownTable"
                     description="%dataTransfer.processor.markdownTable.description"
                     icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/markdown.png"
                     label="%dataTransfer.processor.markdownTable.name">
@@ -183,7 +183,7 @@
             </processor>
             <processor
                     id="stream.sql"
-                    class="org.jkiss.dbeaver.tools.transfer.stream.impl.DataExporterSQL"
+                    class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterSQL"
                     description="%dataTransfer.processor.sql.description"
                     icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/misc/sql.png"
                     label="%dataTransfer.processor.sql.name">
