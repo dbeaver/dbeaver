@@ -20,11 +20,10 @@ package org.jkiss.dbeaver.tools.transfer.stream;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.impl.local.LocalResultSet;
-import org.jkiss.dbeaver.model.impl.local.LocalStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
+import org.jkiss.dbeaver.model.struct.DBSEntity;
+import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
@@ -33,6 +32,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Map;
 
 /**
  * Data container transfer producer
@@ -74,11 +74,23 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
         StreamProducerSettings settings)
         throws DBException
     {
+        // Initialize importer
+        DBSObject databaseObject = consumer.getDatabaseObject();
+        if (!(databaseObject instanceof DBSEntity)) {
+            throw new DBException("Wrong consumer object for stream producer: " + databaseObject);
+        }
+        Map<Object, Object> processorProperties = settings.getProcessorProperties();
+        StreamDataImporterSite site = new StreamDataImporterSite(settings, (DBSEntity) databaseObject, processorProperties);
         IStreamDataImporter importer = (IStreamDataImporter) processor;
+        importer.init(site);
+
+        // Perform transfer
         try (InputStream is = new FileInputStream(inputFile)) {
-            importer.runImport(monitor, is,  1, consumer);
+            importer.runImport(monitor, is, consumer);
         } catch (IOException e) {
             throw new DBException("IO error", e);
+        } finally {
+            importer.dispose();
         }
     }
 

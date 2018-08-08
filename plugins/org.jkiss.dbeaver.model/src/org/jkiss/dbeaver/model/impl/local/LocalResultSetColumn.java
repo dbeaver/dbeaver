@@ -23,6 +23,7 @@ import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCEntityMetaData;
+import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
@@ -31,13 +32,13 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
  */
 public class LocalResultSetColumn implements DBCAttributeMetaData
 {
-    private final LocalResultSet resultSet;
+    private final DBCResultSet resultSet;
     private final int index;
     private final String label;
     private final DBPDataKind dataKind;
     private final DBSTypedObject typedObject;
 
-    public LocalResultSetColumn(LocalResultSet resultSet, int index, String label, DBPDataKind dataKind)
+    public LocalResultSetColumn(DBCResultSet resultSet, int index, String label, DBPDataKind dataKind)
     {
         this.resultSet = resultSet;
         this.index = index;
@@ -46,7 +47,7 @@ public class LocalResultSetColumn implements DBCAttributeMetaData
         this.typedObject = null;
     }
 
-    public LocalResultSetColumn(LocalResultSet resultSet, int index, String label, DBSTypedObject typedObject)
+    public LocalResultSetColumn(DBCResultSet resultSet, int index, String label, DBSTypedObject typedObject)
     {
         this.resultSet = resultSet;
         this.index = index;

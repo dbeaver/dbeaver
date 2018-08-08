@@ -20,6 +20,7 @@ import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
@@ -39,6 +40,7 @@ public class StreamProducerSettings implements IDataTransferSettings {
         private String entityName;
         private DBSEntity entity;
         private List<AttributeMapping> attributeMappings = new ArrayList<>();
+        private List<StreamDataImporterColumnInfo> streamColumns = new ArrayList<>();
 
         public EntityMapping(DBSEntity entity) {
             this.entity = entity;
@@ -80,9 +82,20 @@ public class StreamProducerSettings implements IDataTransferSettings {
             }
             return true;
         }
+
+        public List<StreamDataImporterColumnInfo> getStreamColumns() {
+            return streamColumns;
+        }
+
+        public void setStreamColumns(List<StreamDataImporterColumnInfo> streamColumns) {
+            this.streamColumns.clear();
+            this.streamColumns.addAll(streamColumns);
+        }
     }
 
     public static class AttributeMapping {
+
+        private final DBDValueHandler targetValueHandler;
 
         public static enum MappingType {
             NONE("none"),
@@ -108,10 +121,12 @@ public class StreamProducerSettings implements IDataTransferSettings {
         private boolean skip;
         private String defaultValue;
         private MappingType mappingType = MappingType.NONE;
+        private StreamDataImporterColumnInfo sourceColumn;
 
         public AttributeMapping(DBSEntityAttribute attr) {
             this.targetAttribute = attr;
             this.targetAttributeName = attr.getName();
+            this.targetValueHandler = DBUtils.findValueHandler(attr.getDataSource(), attr);
         }
 
         public MappingType getMappingType() {
@@ -124,6 +139,10 @@ public class StreamProducerSettings implements IDataTransferSettings {
 
         public DBSEntityAttribute getTargetAttribute() {
             return targetAttribute;
+        }
+
+        public DBDValueHandler getTargetValueHandler() {
+            return targetValueHandler;
         }
 
         public String getSourceAttributeName() {
@@ -165,9 +184,20 @@ public class StreamProducerSettings implements IDataTransferSettings {
         public void setDefaultValue(String defaultValue) {
             this.defaultValue = defaultValue;
         }
+
+        public StreamDataImporterColumnInfo getSourceColumn() {
+            return sourceColumn;
+        }
+
+        public void setSourceColumn(StreamDataImporterColumnInfo sourceColumn) {
+            this.sourceColumn = sourceColumn;
+        }
+
     }
 
     private Map<String, EntityMapping> entityMapping = new HashMap<>();
+    private Map<Object, Object> processorProperties;
+    private int maxRows;
 
     public EntityMapping getEntityMapping(DBSEntity entity) {
         String fullName = DBUtils.getObjectFullName(entity, DBPEvaluationContext.DML);
@@ -177,6 +207,22 @@ public class StreamProducerSettings implements IDataTransferSettings {
             entityMapping.put(fullName, mapping);
         }
         return mapping;
+    }
+
+    public Map<Object, Object> getProcessorProperties() {
+        return processorProperties;
+    }
+
+    public void setProcessorProperties(Map<Object, Object> processorProperties) {
+        this.processorProperties = processorProperties;
+    }
+
+    public int getMaxRows() {
+        return maxRows;
+    }
+
+    public void setMaxRows(int maxRows) {
+        this.maxRows = maxRows;
     }
 
     @Override

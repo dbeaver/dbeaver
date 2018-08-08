@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.data.DBDValueMeta;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.impl.local.LocalResultSetMeta;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
@@ -219,18 +220,16 @@ public class ResultSetDataContainer implements DBSDataContainer, IAdaptable {
 
         @Override
         public DBCResultSetMetaData getMeta() throws DBCException {
-            return () -> {
-                List<DBDAttributeBinding> attributes = model.getVisibleAttributes();
-                List<DBCAttributeMetaData> meta = new ArrayList<>(attributes.size());
-                boolean selectedColumnsOnly = proceedSelectedColumnsOnly(flags);
-                for (DBDAttributeBinding attribute : attributes) {
-                    DBCAttributeMetaData metaAttribute = attribute.getMetaAttribute();
-                    if (!selectedColumnsOnly || options.getSelectedColumns().contains(metaAttribute.getName())) {
-                        meta.add(metaAttribute);
-                    }
+            List<DBDAttributeBinding> attributes = model.getVisibleAttributes();
+            List<DBCAttributeMetaData> meta = new ArrayList<>(attributes.size());
+            boolean selectedColumnsOnly = proceedSelectedColumnsOnly(flags);
+            for (DBDAttributeBinding attribute : attributes) {
+                DBCAttributeMetaData metaAttribute = attribute.getMetaAttribute();
+                if (!selectedColumnsOnly || options.getSelectedColumns().contains(metaAttribute.getName())) {
+                    meta.add(metaAttribute);
                 }
-                return meta;
-            };
+            }
+            return new LocalResultSetMeta(meta);
         }
 
         @Override

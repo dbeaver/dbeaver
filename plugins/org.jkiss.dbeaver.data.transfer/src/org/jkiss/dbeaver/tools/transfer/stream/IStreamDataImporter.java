@@ -34,7 +34,7 @@ public interface IStreamDataImporter extends IDataTransferProcessor {
 
     List<StreamDataImporterColumnInfo> readColumnsInfo(InputStream inputStream) throws DBException;
 
-    void runImport(DBRProgressMonitor monitor, InputStream inputStream, int rowCount, IDataTransferConsumer consumer) throws DBException;
+    void runImport(DBRProgressMonitor monitor, InputStream inputStream, IDataTransferConsumer consumer) throws DBException;
 
     void dispose();
 

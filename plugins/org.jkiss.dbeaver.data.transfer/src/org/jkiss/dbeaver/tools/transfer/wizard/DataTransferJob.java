@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
@@ -103,16 +104,17 @@ public class DataTransferJob extends AbstractJob {
         IDataTransferSettings consumerSettings = settings.getNodeSettings(consumer);
 
         setName(NLS.bind(DTMessages.data_transfer_wizard_job_container_name,
-            CommonUtils.truncateString(producer.getDatabaseObject().getName(), 200)));
+            CommonUtils.truncateString(producer.getObjectName(), 200)));
 
         IDataTransferSettings nodeSettings = settings.getNodeSettings(producer);
         try {
             //consumer.initTransfer(producer.getDatabaseObject(), consumerSettings, );
 
+            IDataTransferProcessor processor = settings.getProcessor().getInstance();
             producer.transferData(
                 monitor,
                 consumer,
-                settings.getProcessor().getInstance(),
+                processor,
                 nodeSettings);
             consumer.finishTransfer(monitor, false);
             return true;

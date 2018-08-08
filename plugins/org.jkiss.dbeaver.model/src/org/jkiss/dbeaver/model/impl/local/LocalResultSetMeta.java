@@ -14,21 +14,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.tools.transfer.stream;
 
-import org.jkiss.dbeaver.model.struct.DBSEntity;
+package org.jkiss.dbeaver.model.impl.local;
 
-import java.util.Map;
+import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
+import org.jkiss.dbeaver.model.exec.DBCResultSetMetaData;
+
+import java.util.List;
 
 /**
- * IStreamDataImporterSite
+ * LocalResultSetMeta
  */
-public interface IStreamDataImporterSite {
+public class LocalResultSetMeta implements DBCResultSetMetaData {
 
-    StreamProducerSettings getSettings();
+    private final List<DBCAttributeMetaData> attributes;
 
-    DBSEntity getSourceObject();
+    public LocalResultSetMeta(List<DBCAttributeMetaData> attributes) {
+        this.attributes = attributes;
+    }
 
-    Map<Object,Object> getProcessorProperties();
-
+    @Override
+    public List<DBCAttributeMetaData> getAttributes() {
+        return attributes;
+    }
 }
