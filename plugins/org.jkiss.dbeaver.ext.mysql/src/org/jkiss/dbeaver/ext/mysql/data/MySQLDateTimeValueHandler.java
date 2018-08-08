@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ext.mysql.data;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ext.mysql.MySQLConstants;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -31,6 +32,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.SQLException;
 import java.sql.Types;
+import java.util.Calendar;
 import java.util.Date;
 
 /**
@@ -64,6 +66,20 @@ public class MySQLDateTimeValueHandler extends JDBCDateTimeValueHandler {
                     dbStat.setString(index + 1, ZERO_DATE_STRING);
                 } else {
                     dbStat.setString(index + 1, ZERO_TIMESTAMP_STRING);
+                }
+            }
+            catch (SQLException e) {
+                throw new DBCException(ModelMessages.model_jdbc_exception_could_not_bind_statement_parameter, e);
+            }
+        } else if (MySQLConstants.TYPE_YEAR.equals(type.getTypeName())) {
+            try {
+                JDBCPreparedStatement dbStat = (JDBCPreparedStatement)statement;
+                if (value instanceof Number) {
+                    dbStat.setInt(index + 1, ((Number) value).intValue());
+                } else if (value instanceof Date) {
+                    Calendar cal = Calendar.getInstance();
+                    cal.setTime((Date) value);
+                    dbStat.setInt(index + 1, cal.get(Calendar.YEAR));
                 }
             }
             catch (SQLException e) {
