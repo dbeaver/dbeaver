@@ -29,6 +29,8 @@ public class DataTransferPageDescriptor extends AbstractDescriptor
     private final String id;
     private final boolean producerSelector;
     private final boolean consumerSelector;
+    private final String producerType;
+    private final String consumerType;
     private final ObjectType pageType;
 
     DataTransferPageDescriptor(IConfigurationElement config)
@@ -38,6 +40,8 @@ public class DataTransferPageDescriptor extends AbstractDescriptor
         this.pageType = new ObjectType(config.getAttribute("class"));
         this.producerSelector = CommonUtils.toBoolean(config.getAttribute("producerSelector"));
         this.consumerSelector = CommonUtils.toBoolean(config.getAttribute("consumerSelector"));
+        this.producerType = config.getAttribute("producerType");
+        this.consumerType = config.getAttribute("consumerType");
     }
 
     public String getId()
@@ -55,5 +59,18 @@ public class DataTransferPageDescriptor extends AbstractDescriptor
 
     public boolean isConsumerSelector() {
         return consumerSelector;
+    }
+
+    public String getProducerType() {
+        return producerType;
+    }
+
+    public String getConsumerType() {
+        return consumerType;
+    }
+
+    @Override
+    public String toString() {
+        return id;
     }
 }

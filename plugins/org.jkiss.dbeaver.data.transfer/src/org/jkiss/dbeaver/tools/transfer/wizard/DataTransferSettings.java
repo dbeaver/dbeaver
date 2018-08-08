@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferPageDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
@@ -190,7 +191,25 @@ public class DataTransferSettings {
 
     private boolean isPageValid(IWizardPage page, DataTransferNodeDescriptor node) {
         NodeSettings nodeSettings = node == null ? null : this.nodeSettings.get(node.getNodeClass());
-        return nodeSettings != null && ArrayUtils.contains(nodeSettings.pages, page);
+        if (nodeSettings != null && ArrayUtils.contains(nodeSettings.pages, page)) {
+            // Check does page matches consumer and producer
+            for (NodeSettings ns : this.nodeSettings.values()) {
+                DataTransferPageDescriptor pd = ns.sourceNode.getPageDescriptor(page);
+                if (pd != null) {
+                    if (pd.getProducerType() != null && producer != null && !producer.getId().equals(pd.getProducerType())) {
+                        // Producer doesn't match
+                        return false;
+                    }
+                    if (pd.getConsumerType() != null && consumer != null && !consumer.getId().equals(pd.getConsumerType())) {
+                        // Consumer doesn't match
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+        return false;
     }
 
     public Collection<DBSObject> getSourceObjects() {
@@ -358,11 +377,13 @@ public class DataTransferSettings {
         if (dialogSettings.get("showFinalMessage") != null) {
             showFinalMessage = dialogSettings.getBoolean("showFinalMessage");
         }
-        String producerId = dialogSettings.get("producer");
-        if (!CommonUtils.isEmpty(producerId)) {
-            DataTransferNodeDescriptor producerNode = DataTransferRegistry.getInstance().getNodeById(producerId);
-            if (producerNode != null) {
-                this.producer = producerNode;
+        if (producerOptional) {
+            String producerId = dialogSettings.get("producer");
+            if (!CommonUtils.isEmpty(producerId)) {
+                DataTransferNodeDescriptor producerNode = DataTransferRegistry.getInstance().getNodeById(producerId);
+                if (producerNode != null) {
+                    this.producer = producerNode;
+                }
             }
         }
 

@@ -132,21 +132,23 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
 
     private void updateItemData(TableItem item, DataTransferPipe pipe) {
         if (pipe.getProducer() == null || pipe.getProducer().getObjectName() == null) {
+            item.setImage(0, null);
             item.setText(0, "<none>");
         } else {
+            item.setImage(0, DBeaverIcons.getImage(getWizard().getSettings().getProcessor().getIcon()));
             item.setText(0, pipe.getProducer().getObjectName());
         }
         if (pipe.getConsumer() == null || pipe.getConsumer().getDatabaseObject() == null) {
+            item.setImage(1, null);
             item.setText(1, "<none>");
         } else {
+            item.setImage(1, DBeaverIcons.getImage(getWizard().getSettings().getConsumer().getIcon()));
             item.setText(1, DBUtils.getObjectFullName(pipe.getConsumer().getDatabaseObject(), DBPEvaluationContext.DML));
         }
     }
 
     @Override
     public void activatePage() {
-        final StreamProducerSettings producerSettings = getWizard().getPageSettings(this, StreamProducerSettings.class);
-
         DataTransferProcessorDescriptor processor = getWizard().getSettings().getProcessor();
         propertySource = new PropertySourceCustom(
             processor.getProperties(),
@@ -159,7 +161,6 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
             for (DataTransferPipe pipe : settings.getDataPipes()) {
                 TableItem item = new TableItem(filesTable, SWT.NONE);
                 item.setData(pipe);
-                item.setImage(DBeaverIcons.getImage(settings.getProcessor().getIcon()));
                 updateItemData(item, pipe);
             }
         }
@@ -170,6 +171,10 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
     @Override
     public void deactivatePage()
     {
+        //final StreamProducerSettings producerSettings = getWizard().getPageSettings(this, StreamProducerSettings.class);
+
+        getWizard().getSettings().setProcessorProperties(propertySource.getPropertiesWithDefaults());
+
         super.deactivatePage();
     }
 
