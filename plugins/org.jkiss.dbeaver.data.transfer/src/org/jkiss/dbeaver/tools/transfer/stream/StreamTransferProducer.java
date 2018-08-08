@@ -25,23 +25,31 @@ import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
+import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferSettings;
+
+import java.io.File;
 
 /**
  * Data container transfer producer
  */
-public class StreamTransferProducer implements IDataTransferProducer<DatabaseProducerSettings> {
+public class StreamTransferProducer implements IDataTransferProducer<StreamProducerSettings> {
 
     private static final Log log = Log.getLog(StreamTransferProducer.class);
 
     @NotNull
-    private String filePath;
+    private File inputFile;
 
     public StreamTransferProducer() {
     }
 
-    public StreamTransferProducer(@NotNull String filePath)
+    public StreamTransferProducer(File file) {
+        this.inputFile = file;
+    }
+
+    public StreamTransferProducer(@NotNull File inputFile, DataTransferSettings settings)
     {
-        this.filePath = filePath;
+        this.inputFile = inputFile;
     }
 
     @Override
@@ -52,14 +60,14 @@ public class StreamTransferProducer implements IDataTransferProducer<DatabasePro
 
     @Override
     public String getObjectName() {
-        return filePath;
+        return inputFile == null ? null : inputFile.getAbsolutePath();
     }
 
     @Override
     public void transferData(
         DBRProgressMonitor monitor,
         IDataTransferConsumer consumer,
-        DatabaseProducerSettings settings)
+        StreamProducerSettings settings)
         throws DBException
     {
         throw new DBException("Stream import not supported");

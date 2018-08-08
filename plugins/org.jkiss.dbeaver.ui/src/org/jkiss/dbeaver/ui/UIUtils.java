@@ -203,23 +203,24 @@ public class UIUtils {
                         totalWidth += column.getWidth();
                     }
                 }
-                int extraSpace = totalWidth - clientArea.width;
+                if (totalWidth < clientArea.width) {
+                    int extraSpace = totalWidth - clientArea.width;
 
-                GC gc = new GC(table);
-                try {
-                    for (TableColumn tc : columns) {
-                        double ratio = (double) tc.getWidth() / totalWidth;
-                        int newWidth = (int) (tc.getWidth() - extraSpace * ratio);
-                        int minWidth = gc.stringExtent(tc.getText()).x;
-                        minWidth += 5;
-                        if (newWidth < minWidth) {
-                            newWidth = minWidth;
+                    GC gc = new GC(table);
+                    try {
+                        for (TableColumn tc : columns) {
+                            double ratio = (double) tc.getWidth() / totalWidth;
+                            int newWidth = (int) (tc.getWidth() - extraSpace * ratio);
+                            int minWidth = gc.stringExtent(tc.getText()).x;
+                            minWidth += 5;
+                            if (newWidth < minWidth) {
+                                newWidth = minWidth;
+                            }
+                            tc.setWidth(newWidth);
                         }
-                        tc.setWidth(newWidth);
+                    } finally {
+                        gc.dispose();
                     }
-                }
-                finally {
-                    gc.dispose();
                 }
             }
             if (fit && totalWidth < clientArea.width) {

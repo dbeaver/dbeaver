@@ -86,6 +86,11 @@ public class DTMessages extends NLS {
 	public static String data_transfer_wizard_mappings_name;
 	public static String data_transfer_wizard_settings_group_input_files;
 	public static String data_transfer_wizard_settings_group_importer;
+	public static String data_transfer_wizard_settings_group_column_mappings;
+	public static String data_transfer_wizard_settings_group_preview;
+	public static String data_transfer_wizard_settings_group_preview_table;
+	public static String data_transfer_wizard_settings_group_preview_columns;
+	public static String data_transfer_wizard_settings_column_mapping_type;
 
 	static {
 		// initialize resource bundle
