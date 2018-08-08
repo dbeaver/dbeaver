@@ -25,6 +25,7 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
@@ -32,6 +33,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferPipe;
@@ -41,13 +43,21 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.utils.CommonUtils;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWizard> {
 
     private static final Log log = Log.getLog(StreamProducerPagePreview.class);
 
-    private org.eclipse.swt.widgets.List tableList;
+    private List<DataTransferPipe> pipeList = new ArrayList<>();
+    private Table tableList;
     private Table mappingsTable;
     private Table previewTable;
 
@@ -69,8 +79,10 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
         composite.setLayout(new GridLayout());
         composite.setLayoutData(new GridData(GridData.FILL_BOTH));
 
+        SashForm previewSash = new SashForm(composite, SWT.VERTICAL);
+        previewSash.setLayoutData(new GridData(GridData.FILL_BOTH));
         {
-            Group mappingGroup = new Group(composite, SWT.NONE);
+            Group mappingGroup = new Group(previewSash, SWT.NONE);
             mappingGroup.setText(DTMessages.data_transfer_wizard_settings_group_column_mappings);
             mappingGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
             mappingGroup.setLayout(new GridLayout(1, false));
@@ -83,7 +95,7 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
                 tableComposite.setLayoutData(new GridData(GridData.FILL_VERTICAL));
                 UIUtils.createControlLabel(tableComposite, DTMessages.data_transfer_wizard_settings_group_preview_table);
 
-                tableList = new org.eclipse.swt.widgets.List(tableComposite, SWT.BORDER | SWT.SINGLE | SWT.READ_ONLY);
+                tableList = new Table(tableComposite, SWT.BORDER | SWT.SINGLE);
                 tableList.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
@@ -110,7 +122,7 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
         }
 
         {
-            Group previewGroup = new Group(composite, SWT.NONE);
+            Group previewGroup = new Group(previewSash, SWT.NONE);
             previewGroup.setText(DTMessages.data_transfer_wizard_settings_group_preview);
             previewGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
             previewGroup.setLayout(new GridLayout(1, false));
@@ -127,9 +139,14 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
     @Override
     public void activatePage() {
         tableList.removeAll();
+        pipeList.clear();
         for (DataTransferPipe pipe : getWizard().getSettings().getDataPipes()) {
             if (pipe.getConsumer() != null && pipe.getConsumer().getDatabaseObject() != null) {
-                tableList.add(pipe.getConsumer().getObjectName());
+                pipeList.add(pipe);
+                TableItem tableItem = new TableItem(tableList, SWT.NONE);
+                tableItem.setData(pipe);
+                tableItem.setImage(DBeaverIcons.getImage(getWizard().getSettings().getConsumer().getIcon()));
+                tableItem.setText(pipe.getConsumer().getObjectName());
                 if (currentObject != null && currentObject == pipe.getConsumer().getDatabaseObject()) {
                     tableList.select(tableList.getItemCount() - 1);
                 }
@@ -145,19 +162,17 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
     }
 
     private void loadEntityMappingPreview() {
-        String objectName = tableList.getItem(tableList.getSelectionIndex());
-        DBSObject newCurrentObject = null;
-        for (DataTransferPipe pipe : getWizard().getSettings().getDataPipes()) {
-            if (pipe.getConsumer() != null && objectName.equals(pipe.getConsumer().getObjectName())) {
-                if (currentObject == pipe.getConsumer().getDatabaseObject()) {
-                    // No changes
-                    return;
-                }
-                newCurrentObject = pipe.getConsumer().getDatabaseObject();
-                break;
+        TableItem tableItem = tableList.getItem(tableList.getSelectionIndex());
+        String objectName = tableItem.getText();
+
+        DataTransferPipe pipe = (DataTransferPipe) tableItem.getData();
+        if (pipe.getConsumer() != null && objectName.equals(pipe.getConsumer().getObjectName())) {
+            if (currentObject == pipe.getConsumer().getDatabaseObject()) {
+                // No changes
+                return;
             }
+            currentObject = pipe.getConsumer().getDatabaseObject();
         }
-        currentObject = newCurrentObject;
 
         previewTable.removeAll();
         for (TableColumn column : previewTable.getColumns()) {
@@ -180,13 +195,22 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
 
         final DBSEntity entity = (DBSEntity) currentObject;
         StreamProducerSettings.EntityMapping entityMapping = settings.getEntityMapping(entity);
+        DataTransferPipe currentPipe = getCurrentPipe();
 
         try {
             getWizard().getContainer().run(true, true, mon -> {
                 DBRProgressMonitor monitor = new DefaultProgressMonitor(mon);
                 try {
                     for (DBSEntityAttribute attr : CommonUtils.safeCollection(entity.getAttributes(monitor))) {
-                        StreamProducerSettings.AttributeMapping am = entityMapping.getAttributeMapping(attr);
+                        if (DBUtils.isPseudoAttribute(attr) || DBUtils.isHiddenObject(attr)) {
+                            continue;
+                        }
+                        entityMapping.getAttributeMapping(attr);
+                    }
+
+                    IDataTransferProcessor importer = processor.getInstance();
+                    if (importer instanceof IStreamDataImporter) {
+                        loadStreamMappings((IStreamDataImporter)importer, entityMapping, currentPipe);
                     }
 
                 } catch (DBException e) {
@@ -194,7 +218,7 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
                 }
             });
         } catch (InvocationTargetException e) {
-            DBUserInterface.getInstance().showError("Load entity meta", "Can't load entity attributes", e);
+            DBUserInterface.getInstance().showError("Load entity meta", "Can't load entity attributes", e.getTargetException());
             return;
         } catch (InterruptedException e) {
             return;
@@ -206,7 +230,14 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
             mappingItem.setData(am);
             mappingItem.setImage(DBeaverIcons.getImage(DBValueFormatting.getObjectImage(am.getTargetAttribute())));
             mappingItem.setText(0, am.getTargetAttributeName());
-            mappingItem.setText(1, CommonUtils.isEmpty(am.getSourceAttributeName()) ? "<none>" : am.getSourceAttributeName());
+            String sourceName = "<none>";
+            if (!CommonUtils.isEmpty(am.getSourceAttributeName())) {
+                sourceName = am.getSourceAttributeName();
+            } else if (am.getSourceAttributeIndex() >= 0) {
+                sourceName = String.valueOf(am.getSourceAttributeIndex());
+            }
+            mappingItem.setText(1, sourceName);
+            mappingItem.setText(2, am.getMappingType().getTitle());
 
             // Create preview column
             UIUtils.createTableColumn(previewTable, SWT.LEFT, am.getTargetAttributeName());
@@ -218,6 +249,51 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
         });
     }
 
+    public DataTransferPipe getCurrentPipe() {
+        return pipeList.get(tableList.getSelectionIndex());
+    }
+
+    private void loadStreamMappings(IStreamDataImporter importer, StreamProducerSettings.EntityMapping entityMapping, DataTransferPipe currentPipe) throws DBException {
+        StreamTransferProducer currentProducer = (StreamTransferProducer) currentPipe.getProducer();
+        File inputFile = currentProducer.getInputFile();
+
+        final StreamProducerSettings settings = getWizard().getPageSettings(this, StreamProducerSettings.class);
+        final Map<Object, Object> processorProperties = getWizard().getSettings().getProcessorProperties();
+
+        List<StreamDataImporterColumnInfo> columnInfos;
+        try (InputStream is = new FileInputStream(inputFile)) {
+            importer.init(new StreamDataImporterSite());
+            columnInfos = importer.readColumnsInfo(is, settings, processorProperties);
+            importer.dispose();
+        } catch (IOException e) {
+            throw new DBException("IO error", e);
+        }
+
+        // Map source columns
+        List<StreamProducerSettings.AttributeMapping> attributeMappings = entityMapping.getAttributeMappings();
+        for (StreamDataImporterColumnInfo columnInfo : columnInfos) {
+            if (columnInfo.getColumnName() != null) {
+                for (StreamProducerSettings.AttributeMapping attr : attributeMappings) {
+                    if (CommonUtils.equalObjects(attr.getTargetAttributeName(), columnInfo.getColumnName())) {
+                        if (attr.getMappingType() == StreamProducerSettings.AttributeMapping.MappingType.NONE) {
+                            // Set source name only if it wasn't set
+                            attr.setSourceAttributeName(columnInfo.getColumnName());
+                            attr.setMappingType(StreamProducerSettings.AttributeMapping.MappingType.IMPORT);
+                        }
+                        break;
+                    }
+                }
+            } else {
+                if (columnInfo.getColumnIndex() >= 0 && columnInfo.getColumnIndex() < attributeMappings.size()) {
+                    StreamProducerSettings.AttributeMapping attr = attributeMappings.get(columnInfo.getColumnIndex());
+                    if (attr.getMappingType() == StreamProducerSettings.AttributeMapping.MappingType.NONE) {
+                        attr.setSourceAttributeIndex(columnInfo.getColumnIndex());
+                    }
+                }
+            }
+        }
+    }
+
     @Override
     public void deactivatePage()
     {
@@ -227,7 +303,17 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
     @Override
     protected boolean determinePageCompletion()
     {
-
+        final StreamProducerSettings settings = getWizard().getPageSettings(this, StreamProducerSettings.class);
+        for (DataTransferPipe pipe : getWizard().getSettings().getDataPipes()) {
+            DBSObject databaseObject = pipe.getConsumer().getDatabaseObject();
+            if (!(databaseObject instanceof DBSEntity)) {
+                return false;
+            }
+            StreamProducerSettings.EntityMapping entityMapping = settings.getEntityMapping((DBSEntity) databaseObject);
+            if (!entityMapping.isComplete()) {
+                return false;
+            }
+        }
         return true;
     }
 

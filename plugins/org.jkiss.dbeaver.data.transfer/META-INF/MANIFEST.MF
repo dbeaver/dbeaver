@@ -24,5 +24,6 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.ui.workbench,
  org.eclipse.ui.workbench.texteditor,
  org.jkiss.dbeaver.model,
- org.jkiss.dbeaver.ui
+ org.jkiss.dbeaver.ui,
+ net.sf.opencsv
 Bundle-ClassPath: .
