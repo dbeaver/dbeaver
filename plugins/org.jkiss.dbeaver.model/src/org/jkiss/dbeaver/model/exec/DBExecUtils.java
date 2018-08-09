@@ -16,7 +16,10 @@
  */
 package org.jkiss.dbeaver.model.exec;
 
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
+import org.jkiss.dbeaver.model.net.DBWTunnel;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -30,43 +33,48 @@ public class DBExecUtils {
     /**
      * Current execution context. Used by global authenticators and network handlers
      */
-    private static final ThreadLocal<DBCExecutionContext> ACTIVE_CONTEXT = new ThreadLocal<>();
-    private static final List<DBCExecutionContext> ACTIVE_CONTEXTS = new ArrayList<>();
+    private static final ThreadLocal<DBPDataSourceContainer> ACTIVE_CONTEXT = new ThreadLocal<>();
+    private static final List<DBPDataSourceContainer> ACTIVE_CONTEXTS = new ArrayList<>();
 
-    public static DBCExecutionContext getCurrentThreadContext() {
+    public static DBPDataSourceContainer getCurrentThreadContext() {
         return ACTIVE_CONTEXT.get();
     }
 
-    public static List<DBCExecutionContext> getActiveContexts() {
+    public static List<DBPDataSourceContainer> getActiveContexts() {
         synchronized (ACTIVE_CONTEXTS) {
             return new ArrayList<>(ACTIVE_CONTEXTS);
         }
     }
 
-    public static void startContextInitiation(DBCExecutionContext context) {
+    public static void startContextInitiation(DBPDataSourceContainer context) {
         ACTIVE_CONTEXT.set(context);
         synchronized (ACTIVE_CONTEXTS) {
             ACTIVE_CONTEXTS.add(context);
         }
     }
 
-    public static void finishContextInitiation(DBCExecutionContext context) {
+    public static void finishContextInitiation(DBPDataSourceContainer context) {
         ACTIVE_CONTEXT.remove();
         synchronized (ACTIVE_CONTEXTS) {
             ACTIVE_CONTEXTS.remove(context);
         }
     }
 
-    public static DBCExecutionContext findConnectionContext(String host, int port, String path) {
-        DBCExecutionContext curContext = getCurrentThreadContext();
+    public static DBPDataSourceContainer findConnectionContext(String host, int port, String path) {
+        DBPDataSourceContainer curContext = getCurrentThreadContext();
         if (curContext != null) {
             return curContext;
         }
         synchronized (ACTIVE_CONTEXTS) {
-            for (DBCExecutionContext ctx : ACTIVE_CONTEXTS) {
-                DBPConnectionConfiguration cfg = ctx.getDataSource().getContainer().getConnectionConfiguration();
+            for (DBPDataSourceContainer ctx : ACTIVE_CONTEXTS) {
+                DBPConnectionConfiguration cfg = ctx.getActualConnectionConfiguration();
                 if (CommonUtils.equalObjects(cfg.getHostName(), host) && String.valueOf(port).equals(cfg.getHostPort())) {
                     return ctx;
+                }
+                for (DBWNetworkHandler networkHandler : ctx.getActiveNetworkHandlers()) {
+                    if (networkHandler instanceof DBWTunnel && ((DBWTunnel) networkHandler).matchesParameters(host, port)) {
+                        return ctx;
+                    }
                 }
             }
         }

@@ -42,4 +42,6 @@ public interface DBWTunnel extends DBWNetworkHandler {
     void closeTunnel(DBRProgressMonitor monitor)
         throws DBException, IOException;
 
+    boolean matchesParameters(String host, int port);
+
 }

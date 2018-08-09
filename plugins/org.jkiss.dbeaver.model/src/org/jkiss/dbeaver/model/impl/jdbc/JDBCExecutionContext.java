@@ -28,11 +28,9 @@ import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCSavepointImpl;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLFeatureNotSupportedException;
@@ -81,7 +79,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
             close();
         }
         boolean connectionReadOnly = dataSource.getContainer().isConnectionReadOnly();
-        DBExecUtils.startContextInitiation(this);
+        DBExecUtils.startContextInitiation(dataSource.getContainer());
         try {
             this.connection = dataSource.openConnection(monitor, instance, purpose);
             if (this.connection == null) {
@@ -152,7 +150,7 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
                 this.instance.addContext(this);
             }
         } finally {
-            DBExecUtils.finishContextInitiation(this);
+            DBExecUtils.finishContextInitiation(dataSource.getContainer());
         }
     }
 
@@ -253,15 +251,12 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
         throws DBCException
     {
         if (transactionIsolationLevel == null) {
-            if (!RuntimeUtils.runTask(new DBRRunnableWithProgress() {
-                @Override
-                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                    try {
-                        transactionIsolationLevel = getConnection().getTransactionIsolation();
-                    } catch (Throwable e) {
-                        transactionIsolationLevel = Connection.TRANSACTION_NONE;
-                        log.error("Error getting transaction isolation level", e);
-                    }
+            if (!RuntimeUtils.runTask(monitor -> {
+                try {
+                    transactionIsolationLevel = getConnection().getTransactionIsolation();
+                } catch (Throwable e) {
+                    transactionIsolationLevel = Connection.TRANSACTION_NONE;
+                    log.error("Error getting transaction isolation level", e);
                 }
             }, "Get transaction isolation level", TXN_INFO_READ_TIMEOUT)) {
                 throw new DBCException("Can't determine transaction isolation - timeout");
@@ -296,14 +291,11 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
     {
         if (autoCommit == null) {
             // Run in task with timeout
-            if (!RuntimeUtils.runTask(new DBRRunnableWithProgress() {
-                @Override
-                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                    try {
-                        autoCommit = getConnection().getAutoCommit();
-                    } catch (Exception e) {
-                        log.error("Error getting auto commit state", e);
-                    }
+            if (!RuntimeUtils.runTask(monitor -> {
+                try {
+                    autoCommit = getConnection().getAutoCommit();
+                } catch (Exception e) {
+                    log.error("Error getting auto commit state", e);
                 }
             }, "Get auto commit state", TXN_INFO_READ_TIMEOUT)) {
                 throw new DBCException("Can't determine auto-commit state - timeout");
