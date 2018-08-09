@@ -59,17 +59,23 @@ public class OracleTimestampValueHandler extends JDBCDateTimeValueHandler {
             case Types.DATE:
                 return DEFAULT_DATE_FORMAT;
         }
+        // Have to revert DATE format. I can't realize what is difference between TIMESTAMP and DATE without time part.
+        // Column types and lengths are the same. Data type name is the same. Oh, Oracle...
+/*
         if (type.getMaxLength() == OracleConstants.DATE_TYPE_LENGTH) {
             return DEFAULT_DATE_FORMAT;
         }
+*/
         return super.getNativeValueFormat(type);
     }
 
     protected String getFormatterId(DBSTypedObject column)
     {
+/*
         if (column.getMaxLength() == OracleConstants.DATE_TYPE_LENGTH) {
             return DBDDataFormatter.TYPE_NAME_DATE;
         }
+*/
         return super.getFormatterId(column);
     }
 
