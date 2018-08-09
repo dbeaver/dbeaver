@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.navigator;
 
 import org.eclipse.core.expressions.PropertyTester;
+import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.ui.IWorkbenchPart;
 import org.jkiss.dbeaver.ui.controls.folders.ITabbedFolderContainer;
 import org.jkiss.dbeaver.ui.editors.MultiPageAbstractEditor;
@@ -42,7 +43,8 @@ public class NavigatorPropertyTester extends PropertyTester
             case PROP_ACTIVE:
                 return true;
             case PROP_FOCUSED:
-                return rsv.getNavigatorViewer().getControl().isFocusControl();
+                Viewer viewer = rsv.getNavigatorViewer();
+                return viewer != null && viewer.getControl() != null && viewer.getControl().isFocusControl();
         }
         return false;
     }

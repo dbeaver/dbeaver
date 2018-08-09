@@ -48,6 +48,7 @@ import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.ObjectViewerRenderer;
 import org.jkiss.dbeaver.ui.controls.TreeContentProvider;
+import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditor;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
@@ -63,7 +64,7 @@ import java.util.Set;
  * NodeListControl
  */
 public abstract class NodeListControl extends ObjectListControl<DBNNode> implements IDataSourceContainerProvider, INavigatorModelView, INavigatorListener {
-    static final Log log = Log.getLog(NodeListControl.class);
+    private static final Log log = Log.getLog(NodeListControl.class);
 
     private final IWorkbenchSite workbenchSite;
     private DBNNode rootNode;
@@ -95,6 +96,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
 
         // Add drag and drop support
         NavigatorUtils.addDragAndDropSupport(getItemsViewer());
+        EditorUtils.trackControlContext(workbenchSite, this.getItemsViewer().getControl(), INavigatorModelView.NAVIGATOR_CONTEXT_ID);
 
         DBeaverCore.getInstance().getNavigatorModel().addListener(this);
     }
@@ -106,18 +108,18 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         NavigatorUtils.executeNodeAction(DBXTreeNodeHandler.Action.open, node, serviceLocator);
     }
 
-    public NodeListControl(
-        Composite parent,
-        int style,
-        final IWorkbenchSite workbenchSite,
-        DBNNode rootNode,
-        DBXTreeNode nodeMeta)
+    NodeListControl(
+            Composite parent,
+            int style,
+            final IWorkbenchSite workbenchSite,
+            DBNNode rootNode,
+            DBXTreeNode nodeMeta)
     {
         this(parent, style, workbenchSite, rootNode, createContentProvider(rootNode, nodeMeta));
         this.nodeMeta = nodeMeta;
     }
 
-    public IWorkbenchSite getWorkbenchSite() {
+    IWorkbenchSite getWorkbenchSite() {
         return workbenchSite;
     }
 
@@ -229,7 +231,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
                 }
             }
             // Collect base types for inline children
-            return CommonUtils.isEmpty(baseTypes) ? null : baseTypes.toArray(new Class<?>[baseTypes.size()]);
+            return CommonUtils.isEmpty(baseTypes) ? null : baseTypes.toArray(new Class<?>[0]);
         } else {
             return null;
         }
@@ -379,7 +381,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         public DBPPropertyDescriptor[] getPropertyDescriptors2()
         {
             Set<DBPPropertyDescriptor> props = getAllProperties();
-            return props.toArray(new DBPPropertyDescriptor[props.size()]);
+            return props.toArray(new DBPPropertyDescriptor[0]);
         }
 
     }
@@ -391,7 +393,7 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
         private final List<ISelectionChangedListener> listeners = new ArrayList<>();
         private final StructuredSelection defaultSelection;
 
-        public NodeSelectionProvider(ISelectionProvider original)
+        NodeSelectionProvider(ISelectionProvider original)
         {
             this.original = original;
             this.defaultSelection = new StructuredSelection(rootNode);
