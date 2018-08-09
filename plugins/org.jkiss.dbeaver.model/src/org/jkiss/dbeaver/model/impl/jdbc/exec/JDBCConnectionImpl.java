@@ -23,7 +23,10 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPErrorAssistant;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
-import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCSavepoint;
+import org.jkiss.dbeaver.model.exec.DBCStatementType;
 import org.jkiss.dbeaver.model.exec.jdbc.*;
 import org.jkiss.dbeaver.model.impl.AbstractSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
@@ -151,6 +154,7 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
                 if (statement instanceof JDBCStatementImpl) {
                     statement.setQueryString(sqlQuery);
                 }
+                disableStatementEscapeProcessing(statement);
                 return statement;
             } else if (returnGeneratedKeys) {
                 // Return keys
@@ -170,27 +174,41 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
                     }
                 }
             } else {
+                JDBCPreparedStatement dbStat;
                 try {
                     // Generic prepared statement
-                    return prepareStatement(
+                    dbStat = prepareStatement(
                         sqlQuery,
                         scrollable ? ResultSet.TYPE_SCROLL_INSENSITIVE : ResultSet.TYPE_FORWARD_ONLY,
                         updatable ? ResultSet.CONCUR_UPDATABLE : ResultSet.CONCUR_READ_ONLY);
                 }
                 catch (SQLFeatureNotSupportedException | UnsupportedOperationException | IncompatibleClassChangeError e) {
-                    return prepareStatement(sqlQuery);
+                    dbStat =  prepareStatement(sqlQuery);
                 }
                 catch (SQLException e) {
                     if (DBUtils.discoverErrorType(getDataSource(), e) == DBPErrorAssistant.ErrorType.FEATURE_UNSUPPORTED) {
-                        return prepareStatement(sqlQuery);
+                        dbStat = prepareStatement(sqlQuery);
                     } else {
                         throw e;
                     }
                 }
+                disableStatementEscapeProcessing(dbStat);
+                return dbStat;
             }
         }
         catch (SQLException e) {
             throw new JDBCException(e, getDataSource());
+        }
+    }
+
+    // Disable escaping (#3512)
+    private void disableStatementEscapeProcessing(JDBCStatement statement) {
+        if (statement != null) {
+            try {
+                statement.setEscapeProcessing(false);
+            } catch (Throwable e) {
+                log.debug(e);
+            }
         }
     }
 
