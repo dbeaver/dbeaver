@@ -59,6 +59,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
     private long rowsExported = 0;
     private boolean ignoreErrors = false;
     private List<DBSEntityAttribute> targetAttributes;
+    private boolean useIsolatedConnection;
 
     private static class ColumnMapping {
         DBCAttributeMetaData sourceAttr;
@@ -252,13 +253,12 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
 
     private void initExporter(DBRProgressMonitor monitor) throws DBCException
     {
-        containerMapping = sourceObject == null ? null : settings.getDataMapping(sourceObject);
-
-        DBPDataSource dataSource = targetObject.getDataSource();
+        DBSObject targetDB = checkTargetContainer();
 
         try {
-            targetContext = settings.isOpenNewConnections() ?
-                DBUtils.getObjectOwnerInstance(targetObject).openIsolatedContext(monitor, "Data transfer consumer") : DBUtils.getDefaultContext(targetObject, false);
+            useIsolatedConnection = settings.isOpenNewConnections() && !targetDB.getDataSource().getContainer().getDriver().isEmbedded();
+            targetContext = useIsolatedConnection ?
+                DBUtils.getObjectOwnerInstance(targetDB).openIsolatedContext(monitor, "Data transfer consumer") : DBUtils.getDefaultContext(targetDB, false);
         } catch (DBException e) {
             throw new DBCException("Error opening new connection", e);
         }
@@ -272,13 +272,22 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         }
     }
 
+    private DBSObject checkTargetContainer() throws DBCException {
+        if (targetObject == null && settings.getContainer() == null) {
+            throw new DBCException("Can't initialize database consumer. No target object and no taregt container");
+        }
+        containerMapping = sourceObject == null ? null : settings.getDataMapping(sourceObject);
+
+        return targetObject == null ? settings.getContainer() : targetObject;
+    }
+
     private void closeExporter()
     {
         if (targetSession != null) {
             targetSession.close();
             targetSession = null;
         }
-        if (targetContext != null && settings.isOpenNewConnections()) {
+        if (targetContext != null && useIsolatedConnection) {
             targetContext.close();
             targetContext = null;
         }
@@ -297,14 +306,17 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
         // Create all necessary database objects
         monitor.beginTask("Create necessary database objects", 1);
         try {
-            DBSObjectContainer container = settings.getContainer();
-            if (container == null) {
-                throw new DBException("No target datasource");
-            }
+            DBSObject dbObject = checkTargetContainer();
 
             boolean hasNewObjects = false;
             if (containerMapping != null) {
-                try (DBCSession session = DBUtils.openMetaSession(monitor, container, "Create target metadata")) {
+                DBSObjectContainer container = settings.getContainer();
+                if (container == null) {
+                    throw new DBException("No target datasource - can't create target objects");
+                }
+                targetObject = containerMapping.getTarget();
+
+                try (DBCSession session = DBUtils.openMetaSession(monitor, dbObject, "Create target metadata")) {
 
                     for (DatabaseMappingContainer containerMapping : settings.getDataMappings().values()) {
                         switch (containerMapping.getMappingType()) {
@@ -323,36 +335,38 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                         }
                     }
                 }
-            }
-            if (hasNewObjects) {
-                // Refresh node
-                monitor.subTask("Refresh navigator model");
-                settings.getContainerNode().refreshNode(monitor, this);
 
-                // Reflect database changes in mappings
-                for (DatabaseMappingContainer containerMapping : settings.getDataMappings().values()) {
-                    switch (containerMapping.getMappingType()) {
-                        case create:
-                            DBSObject newTarget = container.getChild(monitor, containerMapping.getTargetName());
-                            if (newTarget == null) {
-                                throw new DBCException("New table " + containerMapping.getTargetName() + " not found in container " + DBUtils.getObjectFullName(container, DBPEvaluationContext.UI));
-                            } else if (!(newTarget instanceof DBSDataManipulator)) {
-                                throw new DBCException("New table " + DBUtils.getObjectFullName(newTarget, DBPEvaluationContext.UI) + " doesn't support data manipulation");
-                            }
-                            containerMapping.setTarget((DBSDataManipulator) newTarget);
-                            containerMapping.setMappingType(DatabaseMappingType.existing);
-                            // ! Fall down is ok here
-                        case existing:
-                            for (DatabaseMappingAttribute attr : containerMapping.getAttributeMappings(monitor)) {
-                                if (attr.getMappingType() == DatabaseMappingType.create) {
-                                    attr.updateMappingType(monitor);
-                                    if (attr.getTarget() == null) {
-                                        throw new DBCException("Can't find target attribute '" + attr.getTargetName() + "' in '" + containerMapping.getTargetName() + "'");
+                if (hasNewObjects) {
+                    // Refresh node
+                    monitor.subTask("Refresh navigator model");
+                    settings.getContainerNode().refreshNode(monitor, this);
 
+                    // Reflect database changes in mappings
+                    for (DatabaseMappingContainer containerMapping : settings.getDataMappings().values()) {
+                        switch (containerMapping.getMappingType()) {
+                            case create:
+                                DBSObject newTarget = container.getChild(monitor, containerMapping.getTargetName());
+                                if (newTarget == null) {
+                                    throw new DBCException("New table " + containerMapping.getTargetName() + " not found in container " + DBUtils.getObjectFullName(container, DBPEvaluationContext.UI));
+                                } else if (!(newTarget instanceof DBSDataManipulator)) {
+                                    throw new DBCException("New table " + DBUtils.getObjectFullName(newTarget, DBPEvaluationContext.UI) + " doesn't support data manipulation");
+                                }
+                                containerMapping.setTarget((DBSDataManipulator) newTarget);
+                                containerMapping.setMappingType(DatabaseMappingType.existing);
+                                targetObject = (DBSDataManipulator) newTarget;
+                                // ! Fall down is ok here
+                            case existing:
+                                for (DatabaseMappingAttribute attr : containerMapping.getAttributeMappings(monitor)) {
+                                    if (attr.getMappingType() == DatabaseMappingType.create) {
+                                        attr.updateMappingType(monitor);
+                                        if (attr.getTarget() == null) {
+                                            throw new DBCException("Can't find target attribute '" + attr.getTargetName() + "' in '" + containerMapping.getTargetName() + "'");
+
+                                        }
                                     }
                                 }
-                            }
-                            break;
+                                break;
+                        }
                     }
                 }
             }
