@@ -564,7 +564,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
 
     @Override
     public DBNNode getRootNode() {
-        ITabbedFolder activeFolder = folderComposite.getActiveFolder();
+        ITabbedFolder activeFolder = folderComposite == null ? null : folderComposite.getActiveFolder();
         if (activeFolder instanceof INavigatorModelView) {
             return ((INavigatorModelView) activeFolder).getRootNode();
         }
@@ -574,7 +574,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
     @Nullable
     @Override
     public Viewer getNavigatorViewer() {
-        ITabbedFolder activeFolder = folderComposite.getActiveFolder();
+        ITabbedFolder activeFolder = folderComposite == null ? null : folderComposite.getActiveFolder();
         if (activeFolder instanceof INavigatorModelView) {
             return ((INavigatorModelView) activeFolder).getNavigatorViewer();
         }

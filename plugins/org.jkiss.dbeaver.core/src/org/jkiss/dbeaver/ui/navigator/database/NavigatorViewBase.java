@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.datasource.DataSourceHandler;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.PropertyPageStandard;
+import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenHandler;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
@@ -100,6 +101,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
         this.tree = createNavigatorTree(parent, getRootNode());
 
         getViewSite().setSelectionProvider(tree.getViewer());
+        EditorUtils.trackControlContext(getSite(), this.tree.getViewer().getControl(), INavigatorModelView.NAVIGATOR_CONTEXT_ID);
     }
 
     private DatabaseNavigatorTree createNavigatorTree(Composite parent, DBNNode rootNode)
