@@ -69,6 +69,13 @@ public class StandardErrorDialog extends ErrorDialog {
                     lastMessage = rootStatus.getMessage();
                     if (CommonUtils.isEmpty(lastMessage)) {
                         lastMessage = status.getMessage();
+                        if (CommonUtils.isEmpty(lastMessage)) {
+                            // No message at all. This may happen in case of NPE and other messageless errors.
+                            // Let's use exception name then
+                            if (rootStatus.getException() != null) {
+                                lastMessage = rootStatus.getException().getClass().getName();
+                            }
+                        }
                     }
                 }
                 this.message = TextUtils.cutExtraLines(lastMessage, 20);

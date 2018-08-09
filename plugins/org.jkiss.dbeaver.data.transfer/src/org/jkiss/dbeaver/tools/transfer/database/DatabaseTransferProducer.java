@@ -94,7 +94,7 @@ public class DatabaseTransferProducer implements IDataTransferProducer<DatabaseP
             readFlags |= DBSDataContainer.FLAG_USE_SELECTED_ROWS;
         }
 
-        boolean newConnection = settings.isOpenNewConnections();
+        boolean newConnection = settings.isOpenNewConnections() && !getDatabaseObject().getDataSource().getContainer().getDriver().isEmbedded();
         boolean forceDataReadTransactions = Boolean.TRUE.equals(dataSource.getDataSourceFeature(DBConstants.FEATURE_LOB_REQUIRE_TRANSACTIONS));
         DBCExecutionContext context = !selectiveExportFromUI && newConnection ?
             DBUtils.getObjectOwnerInstance(getDatabaseObject()).openIsolatedContext(monitor, "Data transfer producer") :
