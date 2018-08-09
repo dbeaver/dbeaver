@@ -20,7 +20,6 @@ import au.com.bytecode.opencsv.CSVReader;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
-import org.jkiss.dbeaver.model.impl.local.LocalResultSet;
 import org.jkiss.dbeaver.model.impl.local.LocalStatement;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferConsumer;
@@ -29,7 +28,6 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.*;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -41,8 +39,11 @@ public class DataImporterCSV extends StreamImporterAbstract {
 
     private static final Log log = Log.getLog(DataImporterCSV.class);
 
-    public static final String PROP_ENCODING = "encoding";
-    public static final String PROP_HEADER = "header";
+    private static final String PROP_ENCODING = "encoding";
+    private static final String PROP_HEADER = "header";
+    private static final String PROP_DELIMITER = "delimiter";
+    private static final String PROP_QUOTE_CHAR = "quoteChar";
+    private static final String PROP_EMPTY_STRING_NULL = "emptyStringNull";
 
     enum HeaderPosition {
         none,
@@ -98,7 +99,12 @@ public class DataImporterCSV extends StreamImporterAbstract {
     }
 
     private CSVReader openCSVReader(Reader reader, Map<Object, Object> processorProperties) {
-        return new CSVReader(reader);
+        String delimiter = StreamTransferUtils.getDelimiterString(processorProperties, PROP_DELIMITER);
+        String quoteChar = CommonUtils.toString(processorProperties.get(PROP_QUOTE_CHAR));
+        if (CommonUtils.isEmpty(quoteChar)) {
+            quoteChar = "'";
+        }
+        return new CSVReader(reader, delimiter.charAt(0), quoteChar.charAt(0));
     }
 
     private InputStreamReader openStreamReader(InputStream inputStream, Map<Object, Object> processorProperties) throws UnsupportedEncodingException {
@@ -112,6 +118,7 @@ public class DataImporterCSV extends StreamImporterAbstract {
         StreamProducerSettings.EntityMapping entityMapping = site.getSettings().getEntityMapping(site.getSourceObject());
         Map<Object, Object> properties = site.getProcessorProperties();
         HeaderPosition headerPosition = getHeaderPosition(properties);
+        boolean emptyStringNull = CommonUtils.getBoolean(properties.get(PROP_EMPTY_STRING_NULL), false);
 
         try (StreamTransferSession producerSession = new StreamTransferSession(monitor, DBCExecutionPurpose.UTIL, "Transfer stream data")) {
             LocalStatement localStatement = new LocalStatement(producerSession, "SELECT * FROM Stream");
@@ -150,6 +157,13 @@ public class DataImporterCSV extends StreamImporterAbstract {
                                 newLine[i] = null;
                             }
                             line = newLine;
+                        }
+                        if (emptyStringNull) {
+                            for (int i = 0; i < line.length; i++) {
+                                if (line[i].equals("")) {
+                                    line[i] = null;
+                                }
+                            }
                         }
 
                         resultSet.setStreamRow(line);

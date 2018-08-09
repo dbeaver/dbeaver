@@ -70,6 +70,7 @@ public class DataTransferSettings {
     private Map<DataTransferProcessorDescriptor, Map<Object, Object>> processorPropsHistory = new HashMap<>();
 
     private Map<Class, NodeSettings> nodeSettings = new LinkedHashMap<>();
+    private List<DBSObject> initObjects = new ArrayList<>();
 
     private boolean consumerOptional;
     private boolean producerOptional;
@@ -87,12 +88,14 @@ public class DataTransferSettings {
             }
             // Make pipes
             for (int i = 0; i < producers.length; i++) {
+                if (producers[i].getDatabaseObject() != null) initObjects.add(producers[i].getDatabaseObject());
                 dataPipes.add(new DataTransferPipe(producers[i], consumers[i]));
             }
             consumerOptional = false;
         } else if (!ArrayUtils.isEmpty(producers)) {
             // Make pipes
             for (IDataTransferProducer source : producers) {
+                if (source.getDatabaseObject() != null) initObjects.add(source.getDatabaseObject());
                 dataPipes.add(new DataTransferPipe(source, null));
             }
             // Set default producer
@@ -107,6 +110,7 @@ public class DataTransferSettings {
         } else if (!ArrayUtils.isEmpty(consumers)) {
             // Make pipes
             for (IDataTransferConsumer target : consumers) {
+                if (target.getDatabaseObject() != null) initObjects.add(target.getDatabaseObject());
                 dataPipes.add(new DataTransferPipe(null, target));
             }
             // Set default consumer
@@ -212,21 +216,8 @@ public class DataTransferSettings {
         return false;
     }
 
-    public Collection<DBSObject> getSourceObjects() {
-        List<DataTransferPipe> dataPipes = getDataPipes();
-        Set<DBSObject> objects = new HashSet<>();
-        for (DataTransferPipe transferPipe : dataPipes) {
-            DBSObject dbObject = null;
-            if (transferPipe.getProducer() != null) {
-                dbObject = transferPipe.getProducer().getDatabaseObject();
-            } else if (transferPipe.getConsumer() != null) {
-                dbObject = transferPipe.getConsumer().getDatabaseObject();
-            }
-            if (dbObject != null) {
-                objects.add(dbObject);
-            }
-        }
-        return objects;
+    public List<DBSObject> getSourceObjects() {
+        return initObjects;
     }
 
     public IDataTransferSettings getNodeSettings(IWizardPage page) {
@@ -377,35 +368,42 @@ public class DataTransferSettings {
         if (dialogSettings.get("showFinalMessage") != null) {
             showFinalMessage = dialogSettings.getBoolean("showFinalMessage");
         }
-        if (producerOptional) {
-            String producerId = dialogSettings.get("producer");
-            if (!CommonUtils.isEmpty(producerId)) {
-                DataTransferNodeDescriptor producerNode = DataTransferRegistry.getInstance().getNodeById(producerId);
-                if (producerNode != null) {
-                    this.producer = producerNode;
-                }
-            }
-        }
 
-        if (consumerOptional) {
-            DataTransferNodeDescriptor savedConsumer = null;
-            String consumerId = dialogSettings.get("consumer");
-            if (!CommonUtils.isEmpty(consumerId)) {
-                DataTransferNodeDescriptor consumerNode = DataTransferRegistry.getInstance().getNodeById(consumerId);
-                if (consumerNode != null) {
-                    savedConsumer = consumerNode;
+        if (consumerOptional || producerOptional) {
+            DataTransferNodeDescriptor savedConsumer = null, savedProducer = null, savedNode = null;
+            {
+                if (consumerOptional) {
+                    String consumerId = dialogSettings.get("consumer");
+                    if (!CommonUtils.isEmpty(consumerId)) {
+                        DataTransferNodeDescriptor consumerNode = DataTransferRegistry.getInstance().getNodeById(consumerId);
+                        if (consumerNode != null) {
+                            savedNode = savedConsumer = this.consumer = consumerNode;
+                        }
+                    }
+                }
+                if (producerOptional) {
+                    String producerId = dialogSettings.get("producer");
+                    if (!CommonUtils.isEmpty(producerId)) {
+                        DataTransferNodeDescriptor producerNode = DataTransferRegistry.getInstance().getNodeById(producerId);
+                        if (producerNode != null) {
+                            savedNode = savedProducer = this.producer = producerNode;
+                        }
+                    }
                 }
             }
 
             DataTransferProcessorDescriptor savedProcessor = null;
-            if (savedConsumer != null) {
+            if (savedNode != null) {
                 String processorId = dialogSettings.get("processor");
                 if (!CommonUtils.isEmpty(processorId)) {
-                    savedProcessor = savedConsumer.getProcessor(processorId);
+                    savedProcessor = savedNode.getProcessor(processorId);
                 }
             }
             if (savedConsumer != null) {
                 selectConsumer(savedConsumer, savedProcessor, false);
+            }
+            if (savedProducer != null) {
+                selectProducer(savedProducer, savedProcessor, false);
             }
         }
 
