@@ -129,7 +129,7 @@
             class="org.jkiss.dbeaver.ui.navigator.NavigatorPropertyTester"
             id="org.jkiss.dbeaver.ui.navigator.NavigatorPropertyTester"
             namespace="org.jkiss.dbeaver.core.navigator"
-            properties="active"
+            properties="active,focused"
             type="org.eclipse.ui.IWorkbenchPart"/>
         <propertyTester
             class="org.jkiss.dbeaver.ui.editors.entity.EntityEditorPropertyTester"
@@ -467,7 +467,7 @@
         </definition>
         <definition id="org.jkiss.dbeaver.core.ui.navigator.part.active">
             <with variable="activePart">
-                <instanceof value="org.jkiss.dbeaver.ui.navigator.INavigatorModelView"/>
+                <test property="org.jkiss.dbeaver.core.navigator.focused" forcePluginActivation="true"/>
             </with>
         </definition>
         <definition id="org.jkiss.dbeaver.core.ui.datasource.part">

@@ -28,6 +28,7 @@ public class NavigatorPropertyTester extends PropertyTester
 {
     public static final String NAMESPACE = "org.jkiss.dbeaver.core.navigator";
     public static final String PROP_ACTIVE = "active";
+    public static final String PROP_FOCUSED = "focused";
 
     @Override
     public boolean test(Object receiver, String property, Object[] args, Object expectedValue) {
@@ -37,8 +38,11 @@ public class NavigatorPropertyTester extends PropertyTester
 
     private boolean checkNavigatorProperty(INavigatorModelView rsv, String property, Object expectedValue)
     {
-        if (PROP_ACTIVE.equals(property)) {
-            return true;
+        switch (property) {
+            case PROP_ACTIVE:
+                return true;
+            case PROP_FOCUSED:
+                return rsv.getNavigatorViewer().getControl().isFocusControl();
         }
         return false;
     }
