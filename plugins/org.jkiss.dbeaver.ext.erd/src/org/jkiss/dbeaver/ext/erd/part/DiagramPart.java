@@ -46,7 +46,6 @@ import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.beans.PropertyChangeEvent;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 /**
@@ -369,7 +368,7 @@ public class DiagramPart extends PropertyAwarePart {
     @Override
     public String toString()
     {
-        return ERDMessages.entity_diagram_ + getDiagram().getName();
+        return ERDMessages.entity_diagram_ + " " + getDiagram().getName();
     }
 
 
