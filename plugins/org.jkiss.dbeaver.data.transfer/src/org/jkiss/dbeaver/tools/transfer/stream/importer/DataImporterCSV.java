@@ -113,11 +113,11 @@ public class DataImporterCSV extends StreamImporterAbstract {
         Map<Object, Object> properties = site.getProcessorProperties();
         HeaderPosition headerPosition = getHeaderPosition(properties);
 
-        try (StreamTransferSession session = new StreamTransferSession(monitor, DBCExecutionPurpose.UTIL, "Transfer stream data")) {
-            LocalStatement localStatement = new LocalStatement(session, "SELECT * FROM Stream");
-            StreamTransferResultSet resultSet = new StreamTransferResultSet(session, localStatement, entityMapping);
+        try (StreamTransferSession producerSession = new StreamTransferSession(monitor, DBCExecutionPurpose.UTIL, "Transfer stream data")) {
+            LocalStatement localStatement = new LocalStatement(producerSession, "SELECT * FROM Stream");
+            StreamTransferResultSet resultSet = new StreamTransferResultSet(producerSession, localStatement, entityMapping);
 
-            consumer.fetchStart(session, resultSet, -1, -1);
+            consumer.fetchStart(producerSession, resultSet, -1, -1);
 
             try (Reader reader = openStreamReader(inputStream, properties)) {
                 try (CSVReader csvReader = openCSVReader(reader, properties)) {
@@ -153,14 +153,14 @@ public class DataImporterCSV extends StreamImporterAbstract {
                         }
 
                         resultSet.setStreamRow(line);
-                        consumer.fetchRow(session, resultSet);
+                        consumer.fetchRow(producerSession, resultSet);
                         lineNum++;
                     }
                 }
             } catch (IOException e) {
                 throw new DBException("IO error reading CSV", e);
             } finally {
-                consumer.fetchEnd(session, resultSet);
+                consumer.fetchEnd(producerSession, resultSet);
             }
         }
     }

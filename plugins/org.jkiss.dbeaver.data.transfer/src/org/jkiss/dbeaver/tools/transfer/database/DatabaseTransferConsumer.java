@@ -175,7 +175,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 attrValue = resultSet.getAttributeValue(i);
             }
             rowValues[column.targetIndex] = column.targetValueHandler.getValueFromObject(
-                session,
+                targetSession,
                 column.targetAttr.getTarget(),
                 attrValue,
                 false);
