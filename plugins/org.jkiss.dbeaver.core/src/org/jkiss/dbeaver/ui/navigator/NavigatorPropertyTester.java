@@ -44,7 +44,8 @@ public class NavigatorPropertyTester extends PropertyTester
                 return true;
             case PROP_FOCUSED:
                 Viewer viewer = rsv.getNavigatorViewer();
-                return viewer != null && viewer.getControl() != null && viewer.getControl().isFocusControl();
+                return viewer != null && viewer.getControl() != null &&
+                        !viewer.getControl().isDisposed() && viewer.getControl().isFocusControl();
         }
         return false;
     }

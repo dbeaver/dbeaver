@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
@@ -37,6 +38,7 @@ import java.io.PrintWriter;
 import java.io.Reader;
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 
 /**
  * CSV Exporter
@@ -51,7 +53,6 @@ public class DataExporterCSV extends StreamExporterAbstract {
     private static final String PROP_NULL_STRING = "nullString";
     private static final String PROP_FORMAT_NUMBERS = "formatNumbers";
 
-    private static final char DEF_DELIMITER = ',';
     private static final String DEF_QUOTE_CHAR = "\"";
 
     enum HeaderPosition {
@@ -76,32 +77,25 @@ public class DataExporterCSV extends StreamExporterAbstract {
     public void init(IStreamDataExporterSite site) throws DBException
     {
         super.init(site);
-        String delimString = String.valueOf(site.getProperties().get(PROP_DELIMITER));
-        if (delimString == null || delimString.isEmpty()) {
-            delimiter = String.valueOf(DEF_DELIMITER);
-        } else {
-            delimiter = delimString
-                    .replace("\\t", "\t")
-                    .replace("\\n", "\n")
-                    .replace("\\r", "\r");
-        }
-        Object quoteProp = site.getProperties().get(PROP_QUOTE_CHAR);
+        Map<Object, Object> properties = site.getProperties();
+        this.delimiter = StreamTransferUtils.getDelimiterString(properties, PROP_DELIMITER);
+        Object quoteProp = properties.get(PROP_QUOTE_CHAR);
         String quoteStr = quoteProp == null ? DEF_QUOTE_CHAR : quoteProp.toString();
         if (!CommonUtils.isEmpty(quoteStr)) {
             quoteChar = quoteStr.charAt(0);
         }
-        if (CommonUtils.toBoolean(site.getProperties().get(PROP_QUOTE_NEVER))) {
+        if (CommonUtils.toBoolean(properties.get(PROP_QUOTE_NEVER))) {
             quoteChar = ' ';
         }
 
-        Object nullStringProp = site.getProperties().get(PROP_NULL_STRING);
+        Object nullStringProp = properties.get(PROP_NULL_STRING);
         nullString = nullStringProp == null ? null : nullStringProp.toString();
         useQuotes = quoteChar != ' ';
-        quoteAlways = CommonUtils.toBoolean(site.getProperties().get(PROP_QUOTE_ALWAYS));
+        quoteAlways = CommonUtils.toBoolean(properties.get(PROP_QUOTE_ALWAYS));
         out = site.getWriter();
         rowDelimiter = GeneralUtils.getDefaultLineSeparator();
         try {
-            headerPosition = HeaderPosition.valueOf(String.valueOf(site.getProperties().get(PROP_HEADER)));
+            headerPosition = HeaderPosition.valueOf(String.valueOf(properties.get(PROP_HEADER)));
         } catch (Exception e) {
             headerPosition = HeaderPosition.top;
         }
