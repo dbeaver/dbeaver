@@ -71,6 +71,7 @@ import org.jkiss.utils.LongKeyMap;
 
 import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.List;
@@ -89,6 +90,8 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
     public static final String COLOR_UNCOMMITTED = "org.jkiss.dbeaver.txn.color.committed.background";  //= new RGB(0xBD, 0xFE, 0xBF);
     public static final String COLOR_REVERTED = "org.jkiss.dbeaver.txn.color.reverted.background";  // = new RGB(0xFF, 0x63, 0x47);
     public static final String COLOR_TRANSACTION = "org.jkiss.dbeaver.txn.color.transaction.background";  // = new RGB(0xFF, 0xE4, 0xB5);
+
+    private static NumberFormat NUMBER_FORMAT = NumberFormat.getInstance();
 
     private static abstract class LogColumn {
         private final String id;
@@ -171,7 +174,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             return ""; //$NON-NLS-1$
         }
     };
-    private static LogColumn COLUMN_DURATION = new LogColumn("duration", CoreMessages.controls_querylog_column_duration_name, CoreMessages.controls_querylog_column_duration_tooltip, 100) {
+    private static LogColumn COLUMN_DURATION = new LogColumn("duration", CoreMessages.controls_querylog_column_duration_name + " (" + CoreMessages.controls_querylog__ms + ")", CoreMessages.controls_querylog_column_duration_tooltip, 100) {
         @Override
         String getText(QMMetaEvent event)
         {
@@ -181,7 +184,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
                 if (exec.isClosed()) {
                     final long execTime = exec.getCloseTime() - exec.getOpenTime();
                     final long fetchTime = exec.isFetching() ? 0 : exec.getFetchEndTime() - exec.getFetchBeginTime();
-                    return String.valueOf(execTime + fetchTime) + CoreMessages.controls_querylog__ms;
+                    return NUMBER_FORMAT.format(execTime + fetchTime);
                 } else {
                     return ""; //$NON-NLS-1$
                 }
