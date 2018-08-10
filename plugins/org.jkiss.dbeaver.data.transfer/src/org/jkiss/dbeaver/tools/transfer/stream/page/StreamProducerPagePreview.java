@@ -293,7 +293,11 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
     }
 
     private void loadEntityMappingPreview() {
-        TableItem tableItem = tableList.getItem(tableList.getSelectionIndex());
+        int selectionIndex = tableList.getSelectionIndex();
+        if (selectionIndex < 0) {
+            return;
+        }
+        TableItem tableItem = tableList.getItem(selectionIndex);
         String objectName = tableItem.getText();
 
         DataTransferPipe pipe = (DataTransferPipe) tableItem.getData();

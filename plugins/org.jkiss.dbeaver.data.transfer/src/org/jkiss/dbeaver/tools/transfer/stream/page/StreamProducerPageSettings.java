@@ -136,7 +136,7 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
             item.setImage(0, null);
             item.setText(0, "<none>");
         } else {
-            item.setImage(0, DBeaverIcons.getImage(getWizard().getSettings().getProcessor().getIcon()));
+            item.setImage(0, DBeaverIcons.getImage(getProducerProcessor().getIcon()));
             item.setText(0, pipe.getProducer().getObjectName());
         }
         if (pipe.getConsumer() == null || pipe.getConsumer().getDatabaseObject() == null) {
@@ -150,7 +150,7 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
 
     @Override
     public void activatePage() {
-        DataTransferProcessorDescriptor processor = getWizard().getSettings().getProcessor();
+        DataTransferProcessorDescriptor processor = getProducerProcessor();
         propertySource = new PropertySourceCustom(
             processor.getProperties(),
             getWizard().getSettings().getProcessorProperties());
@@ -167,6 +167,11 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
         }
 
         updatePageCompletion();
+    }
+
+    private DataTransferProcessorDescriptor getProducerProcessor() {
+        //getWizard().getSettings().getDataPipes()
+        return getWizard().getSettings().getProcessor();
     }
 
     @Override

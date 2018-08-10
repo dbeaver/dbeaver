@@ -49,13 +49,21 @@ public class DataImportHandler extends DataTransferHandler implements IElementUp
         } else {
             IFile file = RuntimeUtils.getObjectAdapter(object, IFile.class);
             if (file != null) {
-                return importDataFromFile(file);
+                return getNodeByFile(file);
             }
             return null;
         }
     }
 
-    private IDataTransferNode importDataFromFile(IFile file) {
+    private IDataTransferNode getNodeByFile(IFile file) {
+        DataTransferProcessorDescriptor processor = getProcessorByFile(file);
+        if (processor != null) {
+            return new StreamTransferProducer(file.getFullPath().toFile(), processor);
+        }
+        return null;
+    }
+
+    private DataTransferProcessorDescriptor getProcessorByFile(IFile file) {
         String extension = file.getFileExtension();
         if (CommonUtils.isEmpty(extension)) {
             return null;
@@ -70,16 +78,13 @@ public class DataImportHandler extends DataTransferHandler implements IElementUp
                 }
                 String[] defExtensions = CommonUtils.toString(extList.getDefaultValue()).split(",");
                 if (ArrayUtils.contains(defExtensions, extension)) {
-                    return importDataFromFile(file, producerDesc, processor);
+                    return processor;
                 }
             }
         }
         return null;
     }
 
-    private IDataTransferNode importDataFromFile(IFile file, DataTransferNodeDescriptor producer, DataTransferProcessorDescriptor processor) {
-        return new StreamTransferProducer(file.getFullPath().toFile());
-    }
 
     @Override
     public void updateElement(UIElement element, Map parameters)
@@ -88,7 +93,7 @@ public class DataImportHandler extends DataTransferHandler implements IElementUp
         if (selectionProvider != null && selectionProvider.getSelection() instanceof IStructuredSelection) {
             Object selectedObject = ((IStructuredSelection)selectionProvider.getSelection()).getFirstElement();
             if (selectedObject instanceof DBNNode) {
-                element.setText("Import " + ((DBNNode) selectedObject).getNodeType() + " Data");
+                element.setText("Import Data from " + ((DBNNode) selectedObject).getNodeType());
             }
         }
     }

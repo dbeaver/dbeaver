@@ -60,6 +60,7 @@
                     <iterate operator="and">
                         <or>
                             <adapt type="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
+<!--
                             <adapt type="org.eclipse.core.resources.IFile">
                                 <or>
                                     <test property="org.eclipse.core.resources.extension" value="csv"/>
@@ -67,6 +68,7 @@
                                     <test property="org.eclipse.core.resources.extension" value="txt"/>
                                 </or>
                             </adapt>
+-->
                         </or>
                     </iterate>
                 </with>
