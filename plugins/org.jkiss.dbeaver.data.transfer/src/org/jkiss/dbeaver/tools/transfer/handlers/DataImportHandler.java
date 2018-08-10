@@ -17,11 +17,6 @@
 package org.jkiss.dbeaver.tools.transfer.handlers;
 
 import org.eclipse.core.resources.IFile;
-import org.eclipse.jface.viewers.ISelectionProvider;
-import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.ui.commands.IElementUpdater;
-import org.eclipse.ui.menus.UIElement;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
@@ -30,15 +25,13 @@ import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
 import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferProducer;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Locale;
-import java.util.Map;
 
-public class DataImportHandler extends DataTransferHandler implements IElementUpdater {
+public class DataImportHandler extends DataTransferHandler {
 
     @Override
     protected IDataTransferNode adaptTransferNode(Object object)
@@ -83,19 +76,6 @@ public class DataImportHandler extends DataTransferHandler implements IElementUp
             }
         }
         return null;
-    }
-
-
-    @Override
-    public void updateElement(UIElement element, Map parameters)
-    {
-        ISelectionProvider selectionProvider = UIUtils.getSelectionProvider(element.getServiceLocator());
-        if (selectionProvider != null && selectionProvider.getSelection() instanceof IStructuredSelection) {
-            Object selectedObject = ((IStructuredSelection)selectionProvider.getSelection()).getFirstElement();
-            if (selectedObject instanceof DBNNode) {
-                element.setText("Import Data from " + ((DBNNode) selectedObject).getNodeType());
-            }
-        }
     }
 
 }
