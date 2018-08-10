@@ -94,6 +94,15 @@ public class DataTransferProcessorDescriptor extends AbstractDescriptor implemen
         return properties;
     }
 
+    public DBPPropertyDescriptor getProperty(String name) {
+        for (DBPPropertyDescriptor prop : properties) {
+            if (prop.getId().equals(name)) {
+                return prop;
+            }
+        }
+        return null;
+    }
+
     boolean appliesToType(Class objectType)
     {
         if (sourceTypes.isEmpty()) {

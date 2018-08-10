@@ -41,6 +41,8 @@ public class StreamTransferProducer implements IDataTransferProducer<StreamProdu
 
     private static final Log log = Log.getLog(StreamTransferProducer.class);
 
+    public static final String NODE_ID = "stream_producer";
+
     @NotNull
     private File inputFile;
 

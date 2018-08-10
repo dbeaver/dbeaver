@@ -185,6 +185,10 @@ public class DataTransferNodeDescriptor extends AbstractDescriptor
         return false;
     }
 
+    public List<DataTransferProcessorDescriptor> getProcessors() {
+        return processors;
+    }
+
     /**
      * Returns data exporter which supports ALL specified object types
      * @param sourceObjects object types

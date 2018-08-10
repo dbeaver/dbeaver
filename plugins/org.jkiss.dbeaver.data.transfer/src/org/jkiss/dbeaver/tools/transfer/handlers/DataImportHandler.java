@@ -16,17 +16,26 @@
  */
 package org.jkiss.dbeaver.tools.transfer.handlers;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferConsumer;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferNodeDescriptor;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
+import org.jkiss.dbeaver.tools.transfer.registry.DataTransferRegistry;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferProducer;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.ArrayUtils;
+import org.jkiss.utils.CommonUtils;
 
+import java.util.Locale;
 import java.util.Map;
 
 public class DataImportHandler extends DataTransferHandler implements IElementUpdater {
@@ -38,8 +47,38 @@ public class DataImportHandler extends DataTransferHandler implements IElementUp
         if (adapted != null) {
             return new DatabaseTransferConsumer(adapted);
         } else {
+            IFile file = RuntimeUtils.getObjectAdapter(object, IFile.class);
+            if (file != null) {
+                return importDataFromFile(file);
+            }
             return null;
         }
+    }
+
+    private IDataTransferNode importDataFromFile(IFile file) {
+        String extension = file.getFileExtension();
+        if (CommonUtils.isEmpty(extension)) {
+            return null;
+        }
+        extension = extension.toLowerCase(Locale.ENGLISH);
+        DataTransferNodeDescriptor producerDesc = DataTransferRegistry.getInstance().getNodeById(StreamTransferProducer.NODE_ID);
+        if (producerDesc != null) {
+            for (DataTransferProcessorDescriptor processor :  producerDesc.getProcessors()) {
+                DBPPropertyDescriptor extList = processor.getProperty("extension");
+                if (extList == null) {
+                    continue;
+                }
+                String[] defExtensions = CommonUtils.toString(extList.getDefaultValue()).split(",");
+                if (ArrayUtils.contains(defExtensions, extension)) {
+                    return importDataFromFile(file, producerDesc, processor);
+                }
+            }
+        }
+        return null;
+    }
+
+    private IDataTransferNode importDataFromFile(IFile file, DataTransferNodeDescriptor producer, DataTransferProcessorDescriptor processor) {
+        return new StreamTransferProducer(file.getFullPath().toFile());
     }
 
     @Override
