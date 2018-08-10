@@ -51,16 +51,13 @@ import org.jkiss.utils.Base64;
 import org.jkiss.utils.IOUtils;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipOutputStream;
 
 /**
-* Stream transfer consumer
-*/
+ * Stream transfer consumer
+ */
 public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsumerSettings, IStreamDataExporter> {
 
     private static final Log log = Log.getLog(StreamTransferConsumer.class);
@@ -93,13 +90,11 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     private boolean isBinary;
     private boolean initialized = false;
 
-    public StreamTransferConsumer()
-    {
+    public StreamTransferConsumer() {
     }
 
     @Override
-    public void fetchStart(DBCSession session, DBCResultSet resultSet, long offset, long maxRows) throws DBCException
-    {
+    public void fetchStart(DBCSession session, DBCResultSet resultSet, long offset, long maxRows) throws DBCException {
         if (!initialized) {
             // Can be invoked multiple times in case of per-segment transfer
             initExporter(session);
@@ -129,8 +124,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     }
 
     @Override
-    public void fetchRow(DBCSession session, DBCResultSet resultSet) throws DBCException
-    {
+    public void fetchRow(DBCSession session, DBCResultSet resultSet) throws DBCException {
         try {
             // Get values
             for (int i = 0; i < metaColumns.size(); i++) {
@@ -138,7 +132,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                 Object value = column.getValueHandler().fetchValueObject(session, resultSet, column.getAttribute(), column.getOrdinalPosition());
                 if (value instanceof DBDContent && !settings.isOutputClipboard()) {
                     // Check for binary type export
-                    if (!ContentUtils.isTextContent((DBDContent)value)) {
+                    if (!ContentUtils.isTextContent((DBDContent) value)) {
                         switch (settings.getLobExtractType()) {
                             case SKIP:
                                 // Set it it null
@@ -149,7 +143,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
                                 break;
                             case FILES:
                                 // Save content to file and pass file reference to exporter
-                                value = saveContentToFile(session.getProgressMonitor(), (DBDContent)value);
+                                value = saveContentToFile(session.getProgressMonitor(), (DBDContent) value);
                                 break;
                         }
                     }
@@ -166,20 +160,17 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     }
 
     @Override
-    public void fetchEnd(DBCSession session, DBCResultSet resultSet) throws DBCException
-    {
+    public void fetchEnd(DBCSession session, DBCResultSet resultSet) throws DBCException {
     }
 
     @Override
-    public void close()
-    {
+    public void close() {
         metaColumns = null;
         row = null;
     }
 
     private File saveContentToFile(DBRProgressMonitor monitor, DBDContent content)
-        throws IOException, DBCException
-    {
+        throws IOException, DBCException {
         DBDContentStorage contents = content.getContents(monitor);
         if (contents == null) {
             log.warn("Null value content");
@@ -203,8 +194,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         return lobFile;
     }
 
-    private void initExporter(DBCSession session) throws DBCException
-    {
+    private void initExporter(DBCSession session) throws DBCException {
         if (settings.getFormatterProfile() != null) {
             session.setDataFormatterProfile(settings.getFormatterProfile());
         }
@@ -253,8 +243,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         }
     }
 
-    private void closeExporter()
-    {
+    private void closeExporter() {
         if (exportSite != null) {
             try {
                 exportSite.flush();
@@ -294,8 +283,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     }
 
     @Override
-    public void initTransfer(DBSObject sourceObject, StreamConsumerSettings settings, boolean isBinary, IStreamDataExporter processor, Map<Object, Object> processorProperties)
-    {
+    public void initTransfer(DBSObject sourceObject, StreamConsumerSettings settings, boolean isBinary, IStreamDataExporter processor, Map<Object, Object> processorProperties) {
         this.sourceObject = sourceObject;
         this.isBinary = isBinary;
         this.processor = processor;
@@ -304,14 +292,12 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     }
 
     @Override
-    public void startTransfer(DBRProgressMonitor monitor)
-    {
+    public void startTransfer(DBRProgressMonitor monitor) {
         // do nothing
     }
 
     @Override
-    public void finishTransfer(DBRProgressMonitor monitor, boolean last)
-    {
+    public void finishTransfer(DBRProgressMonitor monitor, boolean last) {
         if (!last) {
             try {
                 processor.exportFooter(monitor);
@@ -360,13 +346,11 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
     }
 
     @Override
-    public String getObjectName()
-    {
+    public String getObjectName() {
         return settings.isOutputClipboard() ? "Clipboard" : makeOutputFile().getAbsolutePath();
     }
 
-    public String getOutputFileName()
-    {
+    public String getOutputFileName() {
         Object extension = processorProperties.get(StreamConsumerSettings.PROP_FILE_EXTENSION);
         String fileName = translatePattern(
             settings.getOutputFilePattern(),
@@ -378,8 +362,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         }
     }
 
-    public File makeOutputFile()
-    {
+    public File makeOutputFile() {
         File dir = new File(settings.getOutputFolder());
         if (!dir.exists() && !dir.mkdirs()) {
             log.error("Can't create output directory '" + dir.getAbsolutePath() + "'");
@@ -391,8 +374,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         return new File(dir, fileName);
     }
 
-    private String translatePattern(String pattern, final File targetFile)
-    {
+    private String translatePattern(String pattern, final File targetFile) {
         return GeneralUtils.replaceVariables(pattern, name -> {
             switch (name) {
                 case VARIABLE_DATASOURCE: {
@@ -423,8 +405,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         });
     }
 
-    private static String stripObjectName(String name)
-    {
+    private static String stripObjectName(String name) {
         StringBuilder result = new StringBuilder();
         boolean lastUnd = false;
         for (int i = 0; i < name.length(); i++) {
@@ -450,14 +431,12 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
 
     private class StreamExportSite implements IStreamDataExporterSite {
         @Override
-        public DBPNamedObject getSource()
-        {
+        public DBPNamedObject getSource() {
             return sourceObject;
         }
 
         @Override
-        public DBDDisplayFormat getExportFormat()
-        {
+        public DBDDisplayFormat getExportFormat() {
             DBDDisplayFormat format = DBDDisplayFormat.UI;
             Object formatProp = processorProperties.get(StreamConsumerSettings.PROP_FORMAT);
             if (formatProp != null) {
@@ -467,32 +446,27 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         }
 
         @Override
-        public Map<Object, Object> getProperties()
-        {
+        public Map<Object, Object> getProperties() {
             return processorProperties;
         }
 
         @Override
-        public List<DBDAttributeBinding> getAttributes()
-        {
+        public List<DBDAttributeBinding> getAttributes() {
             return metaColumns;
         }
 
         @Override
-        public OutputStream getOutputStream()
-        {
+        public OutputStream getOutputStream() {
             return outputStream;
         }
 
         @Override
-        public PrintWriter getWriter()
-        {
+        public PrintWriter getWriter() {
             return writer;
         }
 
         @Override
-        public void flush() throws IOException
-        {
+        public void flush() throws IOException {
             if (writer != null) {
                 writer.flush();
             }
@@ -502,8 +476,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         }
 
         @Override
-        public void writeBinaryData(@NotNull DBDContentStorage cs) throws IOException
-        {
+        public void writeBinaryData(@NotNull DBDContentStorage cs) throws IOException {
             if (isBinary) {
                 try (final InputStream stream = cs.getContentStream()) {
                     IOUtils.copyStream(stream, exportSite.getOutputStream());

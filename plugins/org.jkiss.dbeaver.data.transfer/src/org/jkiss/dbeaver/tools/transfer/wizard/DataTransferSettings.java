@@ -304,7 +304,16 @@ public class DataTransferSettings {
             }
             if (consumer != null) {
                 try {
-                    pipe.setConsumer((IDataTransferConsumer) consumer.createNode());
+                    IDataTransferConsumer consumerNode = (IDataTransferConsumer) consumer.createNode();
+                    if (pipe.getProducer() != null) {
+                        consumerNode.initTransfer(
+                            pipe.getProducer().getDatabaseObject(),
+                            getNodeSettings(consumerNode),
+                            processor != null && processor.isBinaryFormat(),
+                            processor != null ? processor.getInstance() : null,
+                            processor != null ? getProcessorProperties() : null);
+                    }
+                    pipe.setConsumer(consumerNode);
                 } catch (DBException e) {
                     log.error(e);
                     pipe.setConsumer(null);

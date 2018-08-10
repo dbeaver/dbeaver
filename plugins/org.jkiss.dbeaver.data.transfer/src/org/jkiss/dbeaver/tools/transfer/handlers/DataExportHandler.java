@@ -49,7 +49,7 @@ public class DataExportHandler extends DataTransferHandler implements IElementUp
         if (selectionProvider != null && selectionProvider.getSelection() instanceof IStructuredSelection) {
             Object selectedObject = ((IStructuredSelection)selectionProvider.getSelection()).getFirstElement();
             if (selectedObject instanceof DBNNode) {
-                element.setText("Export " + ((DBNNode) selectedObject).getNodeType() + " Data");
+                element.setText("Export Data from " + ((DBNNode) selectedObject).getNodeType());
             }
         }
     }

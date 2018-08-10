@@ -47,6 +47,10 @@ public class StreamProducerSettings implements IDataTransferSettings {
             this.entityName = DBUtils.getObjectFullName(entity, DBPEvaluationContext.DML);
         }
 
+        public EntityMapping(String entityName) {
+            this.entityName = entityName;
+        }
+
         public String getEntityName() {
             return entityName;
         }
