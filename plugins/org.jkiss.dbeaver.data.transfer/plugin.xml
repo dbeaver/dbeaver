@@ -14,6 +14,17 @@
         <image commandId="org.jkiss.dbeaver.core.import.data" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/table_import.png"/>
     </extension>
 
+<!--
+    <extension point="org.eclipse.core.expressions.propertyTesters">
+        <propertyTester
+                class="org.jkiss.dbeaver.tools.transfer.handlers.DataTransferPropertyTester"
+                id="org.jkiss.dbeaver.tools.transfer.handlers.DataTransferPropertyTester"
+                namespace="org.jkiss.dbeaver.tools.transfer"
+                properties="supportsImportFrom"
+                type="java.lang.Object"/>
+    </extension>
+-->
+
     <extension point="org.eclipse.ui.menus">
 
         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=export_import">
@@ -47,7 +58,16 @@
                 <with variable="selection">
                     <count value="1"/>
                     <iterate operator="and">
-                        <adapt type="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
+                        <or>
+                            <adapt type="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
+                            <adapt type="org.eclipse.core.resources.IFile">
+                                <or>
+                                    <test property="org.eclipse.core.resources.extension" value="csv"/>
+                                    <test property="org.eclipse.core.resources.extension" value="tsv"/>
+                                    <test property="org.eclipse.core.resources.extension" value="txt"/>
+                                </or>
+                            </adapt>
+                        </or>
                     </iterate>
                 </with>
             </enabledWhen>
