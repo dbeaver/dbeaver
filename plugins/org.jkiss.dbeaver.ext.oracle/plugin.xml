@@ -284,6 +284,8 @@
                     <property name="loginTimeout" value="20"/>
                     <property name="useFetchSizeWithLongColumn" value="true"/>
 
+                    <!--<file path="maven:/com.oracle.jdbc:ojdbc8:RELEASE" type="jar"/>-->
+
                     <fileSource url="http://www.oracle.com/technetwork/apps-tech/jdbc-112010-090769.html" name="Oracle 11g drivers">
                         <file name="ojdbc6.jar" description="JDBC driver"/>
                         <file name="orai18n.jar" optional="true" description="NLS classes"/>
@@ -605,5 +607,13 @@
             <description>Oracle SQL Developer</description>
         </wizard>
     </extension>
+
+<!--
+    <extension point="org.jkiss.dbeaver.mavenRepository">
+        <repository id="oracle-maven-repo" name="Oracle Repository" url="https://maven.oracle.com/" order="10">
+            <scope group="com.oracle.jdbc"/>
+        </repository>
+    </extension>
+-->
 
 </plugin>
