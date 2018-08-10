@@ -16,20 +16,12 @@
  */
 package org.jkiss.dbeaver.tools.transfer.handlers;
 
-import org.eclipse.jface.viewers.ISelectionProvider;
-import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.ui.commands.IElementUpdater;
-import org.eclipse.ui.menus.UIElement;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferNode;
 import org.jkiss.dbeaver.tools.transfer.database.DatabaseTransferProducer;
-import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 
-import java.util.Map;
-
-public class DataExportHandler extends DataTransferHandler implements IElementUpdater {
+public class DataExportHandler extends DataTransferHandler {
 
     @Override
     protected IDataTransferNode adaptTransferNode(Object object)
@@ -39,18 +31,6 @@ public class DataExportHandler extends DataTransferHandler implements IElementUp
             return new DatabaseTransferProducer(adapted);
         } else {
             return null;
-        }
-    }
-
-    @Override
-    public void updateElement(UIElement element, Map parameters)
-    {
-        ISelectionProvider selectionProvider = UIUtils.getSelectionProvider(element.getServiceLocator());
-        if (selectionProvider != null && selectionProvider.getSelection() instanceof IStructuredSelection) {
-            Object selectedObject = ((IStructuredSelection)selectionProvider.getSelection()).getFirstElement();
-            if (selectedObject instanceof DBNNode) {
-                element.setText("Export Data from " + ((DBNNode) selectedObject).getNodeType());
-            }
         }
     }
 
