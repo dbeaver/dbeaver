@@ -51,6 +51,12 @@ public class StreamTransferResultSet implements DBCResultSet {
     }
 
     public void setStreamRow(Object[] streamRow) {
+        for (int i = 0; i < attributeMappings.size(); i++) {
+            StreamProducerSettings.AttributeMapping attr = attributeMappings.get(i);
+            if (attr.getMappingType() == StreamProducerSettings.AttributeMapping.MappingType.DEFAULT_VALUE) {
+                streamRow[attr.getSourceColumn().getColumnIndex()] = attr.getDefaultValue();
+            }
+        }
         this.streamRow = streamRow;
     }
 
