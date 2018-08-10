@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.resources;
 
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.ui.IEditorDescriptor;
@@ -42,6 +43,8 @@ public class DefaultResourceHandlerImpl extends AbstractResourceHandler {
     {
         if (resource instanceof IFile) {
             return FEATURE_OPEN | FEATURE_DELETE | FEATURE_RENAME;
+        } else if (resource instanceof IFolder) {
+            return FEATURE_DELETE | FEATURE_RENAME | FEATURE_CREATE_FOLDER | FEATURE_MOVE_INTO;
         }
         return super.getFeatures(resource);
     }
