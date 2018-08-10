@@ -63,8 +63,8 @@
               description="%dataTransfer.producer.database.description"
               settings="org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerSettings">
             <sourceType type="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
-            <page id="database_producer_input_objects" class="org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerPageInputObjects" producerSelector="true"/>
-            <page id="database_producer_extract_settings" class="org.jkiss.dbeaver.tools.transfer.database.DatabaseProducerPageExtractSettings"/>
+            <page id="database_producer_input_objects" class="org.jkiss.dbeaver.tools.transfer.database.page.DatabaseProducerPageInputObjects" producerSelector="true"/>
+            <page id="database_producer_extract_settings" class="org.jkiss.dbeaver.tools.transfer.database.page.DatabaseProducerPageExtractSettings"/>
         </node>
 
         <node type="producer"
@@ -74,8 +74,8 @@
               label="%dataTransfer.producer.stream.name"
               description="%dataTransfer.producer.stream.description"
               settings="org.jkiss.dbeaver.tools.transfer.stream.StreamProducerSettings">
-            <page id="stream_producer_settings" class="org.jkiss.dbeaver.tools.transfer.stream.StreamProducerPageSettings"/>
-            <page id="stream_producer_preview" class="org.jkiss.dbeaver.tools.transfer.stream.StreamProducerPagePreview"/>
+            <page id="stream_producer_settings" class="org.jkiss.dbeaver.tools.transfer.stream.page.StreamProducerPageSettings"/>
+            <page id="stream_producer_preview" class="org.jkiss.dbeaver.tools.transfer.stream.page.StreamProducerPagePreview"/>
 
             <processor
                     id="stream.csv"
@@ -101,8 +101,8 @@
               label="%dataTransfer.consumer.stream.name"
               description="%dataTransfer.consumer.stream.description"
               settings="org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings">
-            <page id="stream_consumer_settings" class="org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerPageSettings"/>
-            <page id="stream_consumer_output" class="org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerPageOutput"/>
+            <page id="stream_consumer_settings" class="org.jkiss.dbeaver.tools.transfer.stream.page.StreamConsumerPageSettings"/>
+            <page id="stream_consumer_output" class="org.jkiss.dbeaver.tools.transfer.stream.page.StreamConsumerPageOutput"/>
 
             <processor
                     id="stream.xml"
@@ -207,8 +207,8 @@
               description="%dataTransfer.consumer.database.description"
               settings="org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerSettings">
             <sourceType type="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
-            <page id="database_consumer_mappings" class="org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerPageMapping" producerType="database_producer"/>
-            <page id="database_consumer_settings" class="org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerPageLoadSettings"/>
+            <page id="database_consumer_mappings" class="org.jkiss.dbeaver.tools.transfer.database.page.DatabaseConsumerPageMapping" producerType="database_producer"/>
+            <page id="database_consumer_settings" class="org.jkiss.dbeaver.tools.transfer.database.page.DatabaseConsumerPageLoadSettings"/>
         </node>
     </extension>
 

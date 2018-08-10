@@ -30,7 +30,7 @@ import java.util.List;
 /**
 * DatabaseMappingAttribute
 */
-class DatabaseMappingAttribute implements DatabaseMappingObject {
+public class DatabaseMappingAttribute implements DatabaseMappingObject {
 
     public static final String TARGET_NAME_SKIP = "[skip]";
     final DatabaseMappingContainer parent;
@@ -108,7 +108,7 @@ class DatabaseMappingAttribute implements DatabaseMappingObject {
         }
     }
 
-    void updateMappingType(DBRProgressMonitor monitor) throws DBException
+    public void updateMappingType(DBRProgressMonitor monitor) throws DBException
     {
         switch (parent.getMappingType()) {
             case existing:

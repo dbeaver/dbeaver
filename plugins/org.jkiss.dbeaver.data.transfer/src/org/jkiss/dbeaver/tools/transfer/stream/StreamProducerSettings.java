@@ -97,6 +97,15 @@ public class StreamProducerSettings implements IDataTransferSettings {
             this.streamColumns.clear();
             this.streamColumns.addAll(streamColumns);
         }
+
+        public StreamDataImporterColumnInfo getStreamColumn(String name) {
+            for (StreamDataImporterColumnInfo col : streamColumns) {
+                if (name.equals(col.getColumnName())) {
+                    return col;
+                }
+            }
+            return null;
+        }
     }
 
     public static class AttributeMapping {
@@ -106,7 +115,7 @@ public class StreamProducerSettings implements IDataTransferSettings {
         public static enum MappingType {
             NONE("none"),
             IMPORT("import"),
-            DEFAULT_VALUE("default"),
+            DEFAULT_VALUE("custom value"),
             SKIP("skip");
 
             private final String title;
