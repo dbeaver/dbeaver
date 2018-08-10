@@ -413,6 +413,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                 continue;
             }
             if (!mappedAttrs.isEmpty()) sql.append(",\n");
+            sql.append("\t");
             appendAttributeClause(dataSource, sql, attr);
             mappedAttrs.put(attr.getSource(), attr);
         }
@@ -428,7 +429,7 @@ public class DatabaseTransferConsumer implements IDataTransferConsumer<DatabaseC
                     }
                 }
                 if (idMapped) {
-                    sql.append(",\nPRIMARY KEY (");
+                    sql.append(",\n\tPRIMARY KEY (");
                     boolean hasAttr = false;
                     for (DBSEntityAttribute idAttr : identifier) {
                         DatabaseMappingAttribute mappedAttr = mappedAttrs.get(idAttr);

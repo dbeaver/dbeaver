@@ -279,34 +279,27 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                     }
                 }
             });
-            mappingViewer.addSelectionChangedListener(new ISelectionChangedListener() {
-                @Override
-                public void selectionChanged(SelectionChangedEvent event) {
-                    DatabaseMappingObject mapping = getSelectedMapping();
-                    mapTableButton.setEnabled(mapping instanceof DatabaseMappingContainer);
-                    createNewButton.setEnabled(mapping instanceof DatabaseMappingContainer && settings.getContainerNode() != null);
-                    final boolean hasMappings =
-                        (mapping instanceof DatabaseMappingContainer && mapping.getMappingType() != DatabaseMappingType.unspecified) ||
-                        (mapping instanceof DatabaseMappingAttribute && ((DatabaseMappingAttribute) mapping).getParent().getMappingType() != DatabaseMappingType.unspecified);
-                    columnsButton.setEnabled(hasMappings);
-                    ddlButton.setEnabled(hasMappings);
-                }
+            mappingViewer.addSelectionChangedListener(event -> {
+                DatabaseMappingObject mapping = getSelectedMapping();
+                mapTableButton.setEnabled(mapping instanceof DatabaseMappingContainer);
+                createNewButton.setEnabled(mapping instanceof DatabaseMappingContainer && settings.getContainerNode() != null);
+                final boolean hasMappings =
+                    (mapping instanceof DatabaseMappingContainer && mapping.getMappingType() != DatabaseMappingType.unspecified) ||
+                    (mapping instanceof DatabaseMappingAttribute && ((DatabaseMappingAttribute) mapping).getParent().getMappingType() != DatabaseMappingType.unspecified);
+                columnsButton.setEnabled(hasMappings);
+                ddlButton.setEnabled(hasMappings);
             });
-            mappingViewer.addDoubleClickListener(new IDoubleClickListener() {
-                @Override
-                public void doubleClick(DoubleClickEvent event)
-                {
-                    DatabaseMappingObject selectedMapping = getSelectedMapping();
-                    if (selectedMapping != null) {
-                        if (selectedMapping instanceof DatabaseMappingContainer){
+            mappingViewer.addDoubleClickListener(event -> {
+                DatabaseMappingObject selectedMapping = getSelectedMapping();
+                if (selectedMapping != null) {
+                    if (selectedMapping instanceof DatabaseMappingContainer){
 /*
-                            if (selectedMapping.getMappingType() == DatabaseMappingType.unspecified) {
-                                mapExistingTable((DatabaseMappingContainer) selectedMapping);
-                            } else {
-                                mapColumns((DatabaseMappingContainer) selectedMapping);
-                            }
-*/
+                        if (selectedMapping.getMappingType() == DatabaseMappingType.unspecified) {
+                            mapExistingTable((DatabaseMappingContainer) selectedMapping);
+                        } else {
+                            mapColumns((DatabaseMappingContainer) selectedMapping);
                         }
+*/
                     }
                 }
             });
@@ -410,9 +403,10 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                         name = DBObjectNameCaseTransformer.transformName(dataSource, name);
                     }
                     setMappingTarget((DatabaseMappingObject) element, name);
-                    //mappingViewer.setSelection(mappingViewer.getSelection());
                     mappingViewer.update(element, null);
+                    mappingViewer.setSelection(mappingViewer.getSelection());
                     updatePageCompletion();
+
                 } catch (DBException e) {
                     DBUserInterface.getInstance().showError("Mapping error", "Error setting target table", e);
                 }
