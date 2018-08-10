@@ -145,7 +145,7 @@ public class DatabaseConsumerSettings implements IDataTransferSettings {
     }
 
     @Nullable
-    DBPDataSource getTargetDataSource(DatabaseMappingObject attrMapping) {
+    public DBPDataSource getTargetDataSource(DatabaseMappingObject attrMapping) {
         DBSObjectContainer container = getContainer();
         if (container != null) {
             return container.getDataSource();

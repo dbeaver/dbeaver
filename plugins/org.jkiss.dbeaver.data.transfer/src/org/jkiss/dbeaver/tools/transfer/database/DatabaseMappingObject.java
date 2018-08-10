@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 /**
 * DatabaseMappingContainer
 */
-interface DatabaseMappingObject {
+public interface DatabaseMappingObject {
 
     DBPImage getIcon();
 

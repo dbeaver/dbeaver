@@ -38,7 +38,7 @@ import java.util.List;
 /**
 * DatabaseMappingContainer
 */
-class DatabaseMappingContainer implements DatabaseMappingObject {
+public class DatabaseMappingContainer implements DatabaseMappingObject {
     private DatabaseConsumerSettings settings;
     private DBSDataContainer source;
     private DBSDataManipulator target;
@@ -82,7 +82,7 @@ class DatabaseMappingContainer implements DatabaseMappingObject {
         return mappingType;
     }
 
-    void refreshMappingType(IRunnableContext context, DatabaseMappingType mappingType) throws DBException
+    public void refreshMappingType(IRunnableContext context, DatabaseMappingType mappingType) throws DBException
     {
         this.mappingType = mappingType;
         final Collection<DatabaseMappingAttribute> mappings = getAttributeMappings(context);

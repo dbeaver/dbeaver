@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.tools.transfer.stream;
+package org.jkiss.dbeaver.tools.transfer.stream.page;
 
 import org.eclipse.jface.preference.PreferenceDialog;
 import org.eclipse.swt.SWT;
@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
+import org.jkiss.dbeaver.tools.transfer.stream.StreamConsumerSettings;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
@@ -149,10 +150,10 @@ public class StreamConsumerPageSettings extends ActiveWizardPage<DataTransferWiz
 
                 lobEncodingLabel = UIUtils.createControlLabel(generalSettings, DTMessages.data_transfer_wizard_settings_label_encoding);
                 lobEncodingCombo = new Combo(generalSettings, SWT.DROP_DOWN | SWT.READ_ONLY);
-                lobEncodingCombo.setItems(new String[] {
+                lobEncodingCombo.setItems(
                     "Base64", //$NON-NLS-1$
                     "Hex", //$NON-NLS-1$
-                    "Binary" }); //$NON-NLS-1$
+                    "Binary"); //$NON-NLS-1$
                 lobEncodingCombo.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {

@@ -20,7 +20,7 @@ import org.jkiss.dbeaver.model.struct.DBSEntity;
 
 import java.util.Map;
 
-class StreamDataImporterSite implements IStreamDataImporterSite {
+public class StreamDataImporterSite implements IStreamDataImporterSite {
 
     private StreamProducerSettings settings;
     private DBSEntity sourceObject;

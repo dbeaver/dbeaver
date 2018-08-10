@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.tools.transfer.database;
 /**
 * Mapping type
 */
-enum DatabaseMappingType {
+public enum DatabaseMappingType {
     unspecified,
     existing,
     create,

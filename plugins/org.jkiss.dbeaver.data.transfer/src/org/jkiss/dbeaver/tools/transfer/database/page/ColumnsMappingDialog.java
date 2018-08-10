@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.tools.transfer.database;
+package org.jkiss.dbeaver.tools.transfer.database.page;
 
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.StatusDialog;
@@ -38,6 +38,10 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataType;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.tools.transfer.database.DatabaseConsumerSettings;
+import org.jkiss.dbeaver.tools.transfer.database.DatabaseMappingAttribute;
+import org.jkiss.dbeaver.tools.transfer.database.DatabaseMappingContainer;
+import org.jkiss.dbeaver.tools.transfer.database.DatabaseMappingType;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.SharedTextColors;
@@ -163,7 +167,7 @@ public class ColumnsMappingDialog extends StatusDialog {
                 {
                     DatabaseMappingAttribute mapping = (DatabaseMappingAttribute) cell.getElement();
                     cell.setText(mapping.getTargetName());
-                    if (mapping.mappingType == DatabaseMappingType.unspecified) {
+                    if (mapping.getMappingType() == DatabaseMappingType.unspecified) {
                         cell.setBackground(UIUtils.getSharedTextColors().getColor(SharedTextColors.COLOR_WARNING));
                     } else {
                         cell.setBackground(null);

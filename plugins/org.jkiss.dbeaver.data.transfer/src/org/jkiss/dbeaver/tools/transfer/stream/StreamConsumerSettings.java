@@ -31,13 +31,13 @@ import org.jkiss.utils.StandardConstants;
  */
 public class StreamConsumerSettings implements IDataTransferSettings {
 
-    enum LobExtractType {
+    public enum LobExtractType {
         SKIP,
         FILES,
         INLINE
     }
 
-    enum LobEncoding {
+    public enum LobEncoding {
         BASE64,
         HEX,
         BINARY

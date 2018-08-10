@@ -14,7 +14,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.tools.transfer.stream;
+package org.jkiss.dbeaver.tools.transfer.stream.page;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
@@ -44,6 +44,7 @@ import org.jkiss.dbeaver.tools.transfer.IDataTransferProcessor;
 import org.jkiss.dbeaver.tools.transfer.IDataTransferSettings;
 import org.jkiss.dbeaver.tools.transfer.internal.DTMessages;
 import org.jkiss.dbeaver.tools.transfer.registry.DataTransferProcessorDescriptor;
+import org.jkiss.dbeaver.tools.transfer.stream.*;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferPipe;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferWizard;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -77,6 +78,16 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
         setTitle(DTMessages.data_transfer_wizard_page_preview_title);
         setDescription(DTMessages.data_transfer_wizard_page_preview_description);
         setPageComplete(false);
+    }
+
+    private StreamProducerSettings getProducerSettings() {
+        return getWizard().getPageSettings(StreamProducerPagePreview.this, StreamProducerSettings.class);
+    }
+
+    private StreamProducerSettings.EntityMapping getCurrentEntityMappings() {
+        final DBSEntity entity = (DBSEntity) currentObject;
+        final StreamProducerSettings settings = getProducerSettings();
+        return settings.getEntityMapping(entity);
     }
 
     @Override
@@ -129,14 +140,50 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
                 final CustomTableEditor tableEditor = new CustomTableEditor(mappingsTable) {
                     @Override
                     protected Control createEditor(Table table, final int index, final TableItem item) {
-                        if (index == 2) {
-                            StreamProducerSettings.AttributeMapping am = (StreamProducerSettings.AttributeMapping) item.getData();
+                        StreamProducerSettings.AttributeMapping am = (StreamProducerSettings.AttributeMapping) item.getData();
+                        StreamProducerSettings.EntityMapping entityMappings = getCurrentEntityMappings();
+
+                        if (index == 1) {
+                            // Source column
+                            if (am.getMappingType() == StreamProducerSettings.AttributeMapping.MappingType.DEFAULT_VALUE) {
+                                Text textValue = new Text(table, SWT.BORDER);
+                                textValue.setText(CommonUtils.notEmpty(am.getDefaultValue()));
+                                return textValue;
+                            } else {
+                                final Combo sourceCombo = new Combo(table, SWT.DROP_DOWN | SWT.READ_ONLY);
+                                sourceCombo.add("");
+                                for (StreamDataImporterColumnInfo ci : entityMappings.getStreamColumns()) {
+                                    String columnName = ci.getColumnName();
+                                    if (CommonUtils.isEmpty(columnName)) {
+                                        columnName = String.valueOf(ci.getColumnIndex());
+                                    }
+                                    sourceCombo.add(columnName);
+                                }
+                                if (!CommonUtils.isEmpty(am.getSourceAttributeName())) {
+                                    sourceCombo.setText(am.getSourceAttributeName());
+                                } else if (am.getSourceAttributeIndex() >= 0) {
+                                    sourceCombo.setText(String.valueOf(am.getSourceAttributeIndex()));
+                                } else {
+                                    sourceCombo.select(0);
+                                }
+
+                                return sourceCombo;
+                            }
+                        } else if (index == 2) {
+                            // Mapping type
 
                             final Combo mappingCombo = new Combo(table, SWT.DROP_DOWN | SWT.READ_ONLY);
                             for (StreamProducerSettings.AttributeMapping.MappingType mapping : StreamProducerSettings.AttributeMapping.MappingType.values()) {
+                                if (mapping == StreamProducerSettings.AttributeMapping.MappingType.NONE) {
+                                    continue;
+                                }
                                 mappingCombo.add(mapping.getTitle());
                             }
-                            mappingCombo.setText(am.getMappingType().getTitle());
+                            if (am.getMappingType() == StreamProducerSettings.AttributeMapping.MappingType.NONE) {
+                                mappingCombo.setText(StreamProducerSettings.AttributeMapping.MappingType.SKIP.getTitle());
+                            } else {
+                                mappingCombo.setText(am.getMappingType().getTitle());
+                            }
                             return mappingCombo;
                         }
                         return null;
@@ -145,7 +192,40 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
                     @Override
                     protected void saveEditorValue(Control control, int index, TableItem item) {
                         StreamProducerSettings.AttributeMapping am = (StreamProducerSettings.AttributeMapping) item.getData();
-                        if (index == 2) {
+                        if (index == 1) {
+                            if (am.getMappingType() == StreamProducerSettings.AttributeMapping.MappingType.DEFAULT_VALUE) {
+                                String newValue = ((Text)control).getText();
+                                if (CommonUtils.equalObjects(newValue, am.getDefaultValue())) {
+                                    return;
+                                }
+                                am.setDefaultValue(newValue);
+                            } else {
+                                final Combo sourceCombo = (Combo) control;
+                                if (sourceCombo.getSelectionIndex() == 0) {
+                                    if (am.getMappingType() == StreamProducerSettings.AttributeMapping.MappingType.SKIP) {
+                                        return;
+                                    }
+                                    am.setSourceAttributeIndex(-1);
+                                    am.setSourceAttributeName(null);
+                                    am.setMappingType(StreamProducerSettings.AttributeMapping.MappingType.SKIP);
+                                } else {
+                                    String srcAttrName = sourceCombo.getText();
+                                    StreamDataImporterColumnInfo streamColumn = getCurrentEntityMappings().getStreamColumn(srcAttrName);
+                                    if (streamColumn == null) {
+                                        // Index?
+                                        streamColumn = getCurrentEntityMappings().getStreamColumns().get(sourceCombo.getSelectionIndex() - 1);
+                                    }
+                                    if (CommonUtils.equalObjects(am.getSourceAttributeName(), streamColumn.getColumnName()) &&
+                                        am.getSourceAttributeIndex() == streamColumn.getColumnIndex()) {
+                                        return;
+                                    }
+                                    am.setSourceAttributeName(streamColumn.getColumnName());
+                                    am.setSourceAttributeIndex(streamColumn.getColumnIndex());
+                                    am.setMappingType(StreamProducerSettings.AttributeMapping.MappingType.IMPORT);
+                                }
+                            }
+
+                        } else if (index == 2) {
                             final Combo mappingCombo = (Combo) control;
                             StreamProducerSettings.AttributeMapping.MappingType newMapping = null;
                             String newTypeTitle = mappingCombo.getText();
@@ -156,22 +236,14 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
                                 }
                             }
                             if (newMapping != null && newMapping != am.getMappingType()) {
-                                item.setText(2, newMapping.getTitle());
                                 am.setMappingType(newMapping);
-                                updatePageCompletion();
-
-                                if (currentObject instanceof DBSEntity) {
-                                    final DBSEntity entity = (DBSEntity) currentObject;
-                                    final StreamProducerSettings settings = getWizard().getPageSettings(StreamProducerPagePreview.this, StreamProducerSettings.class);
-                                    StreamProducerSettings.EntityMapping entityMapping = settings.getEntityMapping(entity);
-
-                                    UIUtils.asyncExec(() -> {
-                                        refreshPreviewTable(entityMapping);
-                                    });
-                                }
                             }
-
                         }
+                        updateAttributeMappingItem(am, item);
+                        updatePageCompletion();
+                        UIUtils.asyncExec(() -> {
+                            refreshPreviewTable(getCurrentEntityMappings());
+                        });
                     }
                 };
 
@@ -250,10 +322,9 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
         }
 
         DataTransferProcessorDescriptor processor = getWizard().getSettings().getProcessor();
-        final StreamProducerSettings settings = getWizard().getPageSettings(this, StreamProducerSettings.class);
 
         final DBSEntity entity = (DBSEntity) currentObject;
-        StreamProducerSettings.EntityMapping entityMapping = settings.getEntityMapping(entity);
+        StreamProducerSettings.EntityMapping entityMapping = getCurrentEntityMappings();
         DataTransferPipe currentPipe = getCurrentPipe();
         StreamTransferProducer currentProducer = (StreamTransferProducer) currentPipe.getProducer();
 
@@ -367,24 +438,43 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
     private void updateAttributeMappings(StreamProducerSettings.EntityMapping entityMapping) {
         for (StreamProducerSettings.AttributeMapping am : entityMapping.getAttributeMappings()) {
             // Create mapping item
+
             TableItem mappingItem = new TableItem(mappingsTable, SWT.NONE);
             mappingItem.setData(am);
             mappingItem.setImage(DBeaverIcons.getImage(DBValueFormatting.getObjectImage(am.getTargetAttribute())));
-            mappingItem.setText(0, am.getTargetAttributeName());
-            String sourceName = "<none>";
-            if (!CommonUtils.isEmpty(am.getSourceAttributeName())) {
-                sourceName = am.getSourceAttributeName();
-            } else if (am.getSourceAttributeIndex() >= 0) {
-                sourceName = String.valueOf(am.getSourceAttributeIndex());
-            }
-            mappingItem.setText(1, sourceName);
-            mappingItem.setText(2, am.getMappingType().getTitle());
+            updateAttributeMappingItem(am, mappingItem);
 
             if (am.isValuable()) {
                 // Create preview column
                 UIUtils.createTableColumn(previewTable, SWT.LEFT, am.getTargetAttributeName());
             }
         }
+    }
+
+    private void updateAttributeMappingItem(StreamProducerSettings.AttributeMapping am, TableItem mappingItem) {
+        mappingItem.setText(0, am.getTargetAttributeName());
+        StreamProducerSettings.AttributeMapping.MappingType mappingType = am.getMappingType();
+        String sourceName = "";
+        switch (mappingType) {
+            case IMPORT: {
+                if (!CommonUtils.isEmpty(am.getSourceAttributeName())) {
+                    sourceName = am.getSourceAttributeName();
+                } else if (am.getSourceAttributeIndex() >= 0) {
+                    sourceName = String.valueOf(am.getSourceAttributeIndex());
+                }
+                break;
+            }
+            case DEFAULT_VALUE: {
+                sourceName = CommonUtils.notEmpty(am.getDefaultValue());
+                break;
+            }
+            case SKIP: {
+                sourceName = "-";
+                break;
+            }
+        }
+        mappingItem.setText(1, sourceName);
+        mappingItem.setText(2, mappingType.getTitle());
     }
 
     public DataTransferPipe getCurrentPipe() {
@@ -394,7 +484,7 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
     private void loadStreamMappings(IStreamDataImporter importer, DBSEntity entity, StreamTransferProducer currentProducer) throws DBException {
         File inputFile = currentProducer.getInputFile();
 
-        final StreamProducerSettings settings = getWizard().getPageSettings(this, StreamProducerSettings.class);
+        final StreamProducerSettings settings = getProducerSettings();
         final Map<Object, Object> processorProperties = getWizard().getSettings().getProcessorProperties();
         StreamProducerSettings.EntityMapping entityMapping = settings.getEntityMapping(entity);
 
@@ -444,7 +534,7 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
     }
 
     private void loadImportPreview(DBRProgressMonitor monitor, IStreamDataImporter importer, DBSEntity entity, StreamTransferProducer currentProducer) throws DBException {
-        final StreamProducerSettings settings = getWizard().getPageSettings(this, StreamProducerSettings.class);
+        final StreamProducerSettings settings = getProducerSettings();
 
         PreviewConsumer previewConsumer = new PreviewConsumer(settings, entity);
 
@@ -498,14 +588,14 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
         super.deactivatePage();
 
         // Pass properties to producer settings
-        final StreamProducerSettings settings = getWizard().getPageSettings(this, StreamProducerSettings.class);
+        final StreamProducerSettings settings = getProducerSettings();
         settings.setProcessorProperties(getWizard().getSettings().getProcessorProperties());
     }
 
     @Override
     protected boolean determinePageCompletion()
     {
-        final StreamProducerSettings settings = getWizard().getPageSettings(this, StreamProducerSettings.class);
+        final StreamProducerSettings settings = getProducerSettings();
         for (DataTransferPipe pipe : getWizard().getSettings().getDataPipes()) {
             DBSObject databaseObject = pipe.getConsumer().getDatabaseObject();
             if (!(databaseObject instanceof DBSEntity)) {
@@ -570,7 +660,18 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
         public void fetchRow(DBCSession session, DBCResultSet resultSet) throws DBCException {
             Object[] row = new Object[attributes.size()];
             for (int i = 0; i < attributes.size(); i++) {
-                row[i] = resultSet.getAttributeValue(i);
+                switch (attributes.get(i).getMappingType()) {
+                    case DEFAULT_VALUE:
+                        row[i] = attributes.get(i).getDefaultValue();
+                        break;
+                    case IMPORT:
+                        row[i] = resultSet.getAttributeValue(i);
+                        break;
+                    default:
+                        // Shouldn't be here
+                        row[i] = null;
+                        break;
+                }
             }
             rows.add(row);
         }
