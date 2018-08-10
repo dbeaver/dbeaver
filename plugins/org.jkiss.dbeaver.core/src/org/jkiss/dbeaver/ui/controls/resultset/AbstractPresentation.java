@@ -57,6 +57,7 @@ public abstract class AbstractPresentation implements IResultSetPresentation, IS
     private final List<ISelectionChangedListener> selectionChangedListenerList = new ArrayList<>();
     protected IThemeManager themeManager;
     private IPropertyChangeListener themeChangeListener;
+    private long lastThemeUpdateTime;
 
     @Override
     @NotNull
@@ -84,8 +85,15 @@ public abstract class AbstractPresentation implements IResultSetPresentation, IS
 
         this.themeManager = controller.getSite().getWorkbenchWindow().getWorkbench().getThemeManager();
         this.themeChangeListener = event -> {
-            if (event.getProperty().startsWith(ThemeConstants.RESULTS_PROP_PREFIX)) {
-                applyThemeSettings();
+            if (event.getProperty().equals(IThemeManager.CHANGE_CURRENT_THEME) ||
+                event.getProperty().startsWith(ThemeConstants.RESULTS_PROP_PREFIX))
+            {
+                if (lastThemeUpdateTime > 0 && System.currentTimeMillis() - lastThemeUpdateTime < 500) {
+                    // Do not update too often (theme change may trigger this hundreds of times)
+                    return;
+                }
+                lastThemeUpdateTime = System.currentTimeMillis();
+                UIUtils.asyncExec(this::applyThemeSettings);
             }
         };
         this.themeManager.addPropertyChangeListener(themeChangeListener);
