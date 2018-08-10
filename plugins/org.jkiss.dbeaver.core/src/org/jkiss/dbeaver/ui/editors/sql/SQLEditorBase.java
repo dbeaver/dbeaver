@@ -123,9 +123,11 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                         return;
                     }
                     lastUpdateTime = System.currentTimeMillis();
-                    reloadSyntaxRules();
-                    // Reconfigure to let comments/strings colors to take effect
-                    getSourceViewer().configure(getSourceViewerConfiguration());
+                    UIUtils.asyncExec(() -> {
+                        reloadSyntaxRules();
+                        // Reconfigure to let comments/strings colors to take effect
+                        getSourceViewer().configure(getSourceViewerConfiguration());
+                    });
                 }
             }
         };
