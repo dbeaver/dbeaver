@@ -196,13 +196,8 @@ public class ResultSetViewer extends Viewer
 
         loadPresentationSettings();
 
-        {
-            IPreferenceStore preferenceStore = EditorUtils.getEditorsPreferenceStore();
-            String bgRGB = preferenceStore.getString(AbstractTextEditor.PREFERENCE_COLOR_BACKGROUND);
-            String fgRGB = preferenceStore.getString(AbstractTextEditor.PREFERENCE_COLOR_FOREGROUND);
-            defaultBackground = CommonUtils.isEmpty(bgRGB) ? parent.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND) : UIUtils.getSharedColor(bgRGB);
-            defaultForeground = CommonUtils.isEmpty(fgRGB) ? parent.getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND) : UIUtils.getSharedColor(fgRGB);
-        }
+        this.defaultBackground = EditorUtils.getDefaultTextBackground();
+        this.defaultForeground = EditorUtils.getDefaultTextForeground();
 
         this.viewerPanel = UIUtils.createPlaceholder(parent, 1);
         this.viewerPanel.setData(CONTROL_ID, this);
