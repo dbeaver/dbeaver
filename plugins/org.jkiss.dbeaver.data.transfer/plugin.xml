@@ -219,6 +219,19 @@
                     <property id="rowsInStatement" label="%dataTransfer.processor.sql.property.rowsInStatement.name" type="integer" description="%dataTransfer.processor.sql.property.rowsInStatement.description" defaultValue="10" required="true"/>
                 </propertyGroup>
             </processor>
+            <processor
+                    id="stream.txt"
+                    class="org.jkiss.dbeaver.tools.transfer.stream.exporter.DataExporterTXT"
+                    description="%dataTransfer.processor.txt.description"
+                    icon="platform:/plugin/org.jkiss.dbeaver.model/icons/types/text.png"
+                    label="%dataTransfer.processor.txt.name">
+                <propertyGroup label="%dataTransfer.processor.txt.propertyGroup.general.label">
+                    <property id="maxColumnLength" label="%dataTransfer.processor.txt.property.maxColumnLength.label" defaultValue="100"/>
+                    <property id="showNulls" label="%dataTransfer.processor.txt.property.showNulls.label" type="boolean" defaultValue="false"/>
+                    <property id="delimLeading" label="%dataTransfer.processor.txt.property.delimLeading.label" type="boolean" defaultValue="true"/>
+                    <property id="delimTrailing" label="%dataTransfer.processor.txt.property.delimTrailing.label" type="boolean" defaultValue="true"/>
+                </propertyGroup>
+            </processor>
         </node>
 
         <node type="consumer"
