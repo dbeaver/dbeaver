@@ -17,6 +17,8 @@
         <maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
         <eclipse-p2-repo.url>http://download.eclipse.org/releases/photon/</eclipse-p2-repo.url>
         <local-p2-repo.url>https://dbeaver.io/eclipse-repo</local-p2-repo.url>
+        <key.storage.path>/etc/</key.storage.path>
+        <tsa/>
     </properties>
 
     <modules>
@@ -151,6 +153,7 @@
 
     <profiles>
         <profile>
+            <!-- Profile used to sign jars -->
             <id>sign-code</id>
             <activation>
                 <activeByDefault>false</activeByDefault>
@@ -160,9 +163,11 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-jarsigner-plugin</artifactId>
-                        <version>1.2</version>
+                        <version>1.4</version>
                         <configuration>
                             <keystore>${key.storage.path}/jar-sign.keystore</keystore>
+                            <tsa>${tsa}</tsa>
+                            <tsacert>dbeaver</tsacert>
                             <storepass>dbeaver</storepass>
                             <alias>dbeaver</alias>
                             <keypass>dbeaver</keypass>
