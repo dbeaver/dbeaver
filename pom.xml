@@ -146,28 +146,39 @@
                     <target>1.8</target>
                 </configuration>
             </plugin>
-
-            <!-- Signing -->
-            <!--plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jarsigner-plugin</artifactId>
-                <version>1.2</version>
-                <configuration>
-                    <keystore>file://C:\tmp\eclipse-signing.keystore </keystore>
-                    <storepass>dbeaver</storepass>
-                    <alias>dbeaver</alias>
-                    <keypass>dbeaver</keypass>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>sign</id>
-                        <goals>
-                            <goal>sign</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin-->
-
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>sign-code</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-jarsigner-plugin</artifactId>
+                        <version>1.2</version>
+                        <configuration>
+                            <keystore>${key.storage.path}/jar-sign.keystore</keystore>
+                            <storepass>dbeaver</storepass>
+                            <alias>dbeaver</alias>
+                            <keypass>dbeaver</keypass>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>sign</id>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
 </project>

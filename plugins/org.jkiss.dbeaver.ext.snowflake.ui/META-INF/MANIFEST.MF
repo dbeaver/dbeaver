@@ -15,5 +15,5 @@ Require-Bundle: org.eclipse.ui,
  org.jkiss.dbeaver.ext.snowflake.core
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Bundle-Vendor: Rider Soft
+Bundle-Vendor: JKISS
 Bundle-Localization: plugin
