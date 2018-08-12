@@ -298,11 +298,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 
     @Override
     public boolean openSettingsPage(String pageId) {
-        final IWizardPage page = wizard.getPage(pageId);
-        if (page != null) {
-            wizard.getContainer().showPage(page);
-        }
-        return false;
+        return wizard.openSettingsPage(pageId);
     }
 
     @Override

@@ -352,6 +352,7 @@ public class CoreMessages extends NLS {
 
 	public static String dialog_connection_wizard_connection_init;
 	public static String dialog_connection_wizard_connection_init_description;
+	public static String dialog_connection_wizard_final_group_other;
 
 	public static String dialog_connection_wizard_start_connection_monitor_close;
 	public static String dialog_connection_wizard_start_connection_monitor_start;

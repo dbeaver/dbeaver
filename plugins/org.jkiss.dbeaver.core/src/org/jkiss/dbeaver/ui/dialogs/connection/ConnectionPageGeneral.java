@@ -36,7 +36,6 @@ import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CSmartCombo;
-import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.preferences.PrefPageConnectionTypes;
 import org.jkiss.utils.CommonUtils;
 
@@ -47,7 +46,7 @@ import java.util.StringTokenizer;
 /**
  * General connection page (common for all connection types)
  */
-class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
+class ConnectionPageGeneral extends ConnectionWizardPage {
 
     private ConnectionWizard wizard;
     private DataSourceDescriptor dataSourceDescriptor;
@@ -233,20 +232,46 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
         }
 
         {
-            Composite optionsGroup = new Composite(group, SWT.NONE);
-            gl = new GridLayout(2, true);
-            gl.verticalSpacing = 0;
-            gl.horizontalSpacing = 5;
-            gl.marginHeight = 0;
-            gl.marginWidth = 0;
-            optionsGroup.setLayout(gl);
-            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.horizontalSpan = 2;
-            optionsGroup.setLayoutData(gd);
-            Composite leftSide = UIUtils.createPlaceholder(optionsGroup, 1, 5);
-            leftSide.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING));
-            Composite rightSide = UIUtils.createPlaceholder(optionsGroup, 1, 5);
-            rightSide.setLayoutData(new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING));
+            Group linkGroup = UIUtils.createControlGroup(group, CoreMessages.dialog_connection_wizard_final_group_other, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            ((GridData)linkGroup.getLayoutData()).horizontalSpan = 2;
+
+            Link initConfigLink = new Link(linkGroup, SWT.NONE);
+            initConfigLink.setText("<a>" + CoreMessages.dialog_connection_wizard_connection_init_description + "</a>");
+            initConfigLink.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    if (getWizard().isNew()) {
+                        DataSourceDescriptor dataSource = getActiveDataSource();
+                        EditWizardPageDialog dialog = new EditWizardPageDialog(
+                            getWizard(),
+                            new ConnectionPageInitialization(dataSource),
+                            dataSource);
+                        dialog.open();
+                    } else {
+                        getWizard().openSettingsPage(ConnectionPageShellCommands.PAGE_NAME);
+                    }
+                }
+            });
+            initConfigLink.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+
+            Link shellConfigLink = new Link(linkGroup, SWT.NONE);
+            shellConfigLink.setText("<a>" + CoreMessages.dialog_connection_edit_wizard_shell_cmd + "</a>");
+            shellConfigLink.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    if (getWizard().isNew()) {
+                        DataSourceDescriptor dataSource = getActiveDataSource();
+                        EditWizardPageDialog dialog = new EditWizardPageDialog(
+                            getWizard(),
+                            new ConnectionPageShellCommands(dataSource),
+                            dataSource);
+                        dialog.open();
+                    } else {
+                        getWizard().openSettingsPage(ConnectionPageShellCommands.PAGE_NAME);
+                    }
+                }
+            });
+            shellConfigLink.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
         }
 
         setControl(group);
@@ -293,8 +318,8 @@ class ConnectionPageGeneral extends ActiveWizardPage<ConnectionWizard> {
             !CommonUtils.isEmpty(connectionNameText.getText());
     }
 
-    void saveSettings(DataSourceDescriptor dataSource)
-    {
+    @Override
+    public void saveSettings(DataSourceDescriptor dataSource) {
         if (dataSourceDescriptor != null && !activated) {
             // No changes anyway
             return;

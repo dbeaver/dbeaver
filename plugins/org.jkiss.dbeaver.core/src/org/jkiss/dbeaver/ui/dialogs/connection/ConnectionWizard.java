@@ -296,4 +296,13 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
             listener.propertyChange(new PropertyChangeEvent(this, property, oldValue, newValue));
         }
     }
+
+    public boolean openSettingsPage(String pageId) {
+        final IWizardPage page = getPage(pageId);
+        if (page != null) {
+            getContainer().showPage(page);
+        }
+        return false;
+    }
+
 }
