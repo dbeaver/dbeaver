@@ -48,7 +48,7 @@ public class NewConnectionWizard extends ConnectionWizard
     private Map<DataSourceProviderDescriptor, ConnectionPageSettings> settingsPages = new HashMap<>();
     private ConnectionPageGeneral pageGeneral;
     private ConnectionPageNetwork pageNetwork;
-
+    private ConnectionPageInitialization pageInit;
 
     public NewConnectionWizard()
     {
@@ -114,8 +114,10 @@ public class NewConnectionWizard extends ConnectionWizard
 
         pageGeneral = new ConnectionPageGeneral(this);
         pageNetwork = new ConnectionPageNetwork(this);
+        pageInit = new ConnectionPageInitialization();
         addPage(pageGeneral);
         addPage(pageNetwork);
+        addPage(pageInit);
 
         // Initial settings
         if (selection != null && !selection.isEmpty()) {

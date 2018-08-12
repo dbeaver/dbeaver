@@ -22,6 +22,8 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.osgi.util.NLS;
@@ -52,7 +54,9 @@ import org.jkiss.utils.CommonUtils;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -60,10 +64,14 @@ import java.util.Map;
  */
 
 public abstract class ConnectionWizard extends Wizard implements INewWizard {
+
+    public static final String PROP_CONNECTION_TYPE = "connection-type";
+
     private static final Log log = Log.getLog(ConnectionWizard.class);
 
     // protected final IProject project;
     private final Map<DriverDescriptor, DataSourceDescriptor> infoMap = new HashMap<>();
+    private final List<IPropertyChangeListener> propertyListeners = new ArrayList<>();
     private boolean resized = false;
 
     protected ConnectionWizard()
@@ -276,6 +284,16 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
             }
             monitor.done();
             return Status.OK_STATUS;
+        }
+    }
+
+    public void addPropertyChangeListener(IPropertyChangeListener listener) {
+        propertyListeners.add(listener);
+    }
+
+    public void firePropertyChangeEvent(String property, Object oldValue, Object newValue) {
+        for (IPropertyChangeListener listener : propertyListeners) {
+            listener.propertyChange(new PropertyChangeEvent(this, property, oldValue, newValue));
         }
     }
 }
