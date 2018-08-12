@@ -248,7 +248,7 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
                             dataSource);
                         dialog.open();
                     } else {
-                        getWizard().openSettingsPage(ConnectionPageShellCommands.PAGE_NAME);
+                        getWizard().openSettingsPage(ConnectionPageInitialization.PAGE_NAME);
                     }
                 }
             });

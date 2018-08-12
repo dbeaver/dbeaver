@@ -113,7 +113,7 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
                         enableTexts();
                     }
                 });
-                createEmptyLabel(settingsGroup, 1);
+                UIUtils.createEmptyLabel(settingsGroup, 2, 1);
             }
 
             userNameLabel = new Label(settingsGroup, SWT.NONE);
@@ -125,7 +125,7 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
             gd.grabExcessHorizontalSpace = true;
             userNameText.setLayoutData(gd);
 
-            createEmptyLabel(settingsGroup, 1);
+            UIUtils.createEmptyLabel(settingsGroup, 2, 1);
 
             passwordLabel = new Label(settingsGroup, SWT.NONE);
             passwordLabel.setText(SQLServerMessages.dialog_connection_password_label);
@@ -136,7 +136,7 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
             gd.grabExcessHorizontalSpace = true;
             passwordText.setLayoutData(gd);
 
-            createEmptyLabel(settingsGroup, 1);
+            UIUtils.createEmptyLabel(settingsGroup, 2, 1);
         }
 
         {
@@ -145,8 +145,9 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 4;
             secureGroup.setLayoutData(gd);
-            secureGroup.setLayout(new GridLayout(2, false));
+            secureGroup.setLayout(new GridLayout(1, false));
 
+            createSavePasswordButton(secureGroup);
             showAllSchemas = UIUtils.createCheckbox(secureGroup, SQLServerMessages.dialog_setting_show_all_schemas, SQLServerMessages.dialog_setting_show_all_schemas_tip, true, 2);
         }
 
@@ -160,16 +161,7 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
         userNameText.setEnabled(!isWindowsAuth);
         passwordLabel.setEnabled(!isWindowsAuth);
         passwordText.setEnabled(!isWindowsAuth);
-    }
-
-    private void createEmptyLabel(Composite parent, int verticalSpan)
-    {
-        Label emptyLabel = new Label(parent, SWT.NONE);
-        GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
-        gd.horizontalSpan = 2;
-        gd.verticalSpan = verticalSpan;
-        gd.widthHint = 0;
-        emptyLabel.setLayoutData(gd);
+        savePasswordCheck.setEnabled(!isWindowsAuth);
     }
 
     @Override

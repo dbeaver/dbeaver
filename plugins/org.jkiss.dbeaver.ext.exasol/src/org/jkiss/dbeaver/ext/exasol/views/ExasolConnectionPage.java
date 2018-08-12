@@ -155,11 +155,14 @@ public class ExasolConnectionPage extends ConnectionPageAbstract implements ICom
             Label passwordLabel = UIUtils.createControlLabel(addrGroup, ExasolMessages.dialog_connection_password);
             passwordLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
-            passwordText = new Text(addrGroup, SWT.BORDER | SWT.PASSWORD);
+            Composite passPH = UIUtils.createPlaceholder(addrGroup, 2, 5);
+            passwordText = new Text(passPH, SWT.BORDER | SWT.PASSWORD);
             gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
             gd.widthHint = 200;
             passwordText.setLayoutData(gd);
             passwordText.addModifyListener(textListener);
+
+            createSavePasswordButton(passPH);
         }
 
         createDriverPanel(control);

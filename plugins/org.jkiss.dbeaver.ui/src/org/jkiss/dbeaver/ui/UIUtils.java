@@ -1688,4 +1688,14 @@ public class UIUtils {
         return getColorRegistry().get(colorName);
     }
 
+    public static Control createEmptyLabel(Composite parent, int horizontalSpan, int verticalSpan)
+    {
+        Label emptyLabel = new Label(parent, SWT.NONE);
+        GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
+        gd.horizontalSpan = horizontalSpan;
+        gd.verticalSpan = verticalSpan;
+        gd.widthHint = 0;
+        emptyLabel.setLayoutData(gd);
+        return emptyLabel;
+    }
 }

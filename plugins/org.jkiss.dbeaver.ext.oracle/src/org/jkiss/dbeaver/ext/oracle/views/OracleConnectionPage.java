@@ -303,8 +303,11 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
                 boolean osAuth = osAuthCheck.getSelection();
                 userNameText.setEnabled(!osAuth);
                 passwordText.setEnabled(!osAuth);
+                savePasswordCheck.setEnabled(!osAuth);
             }
         });
+
+        createSavePasswordButton(parent, 4);
 
         parent.setTabList(new Control[]{userNameText, passwordText, userRoleCombo, osAuthCheck});
     }
@@ -417,6 +420,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
         if (CommonUtils.toBoolean(connectionInfo.getProviderProperty(OracleConstants.OS_AUTH_PROP))) {
             userNameText.setEnabled(false);
             passwordText.setEnabled(false);
+            savePasswordCheck.setEnabled(false);
             osAuthCheck.setSelection(true);
         } else {
             userNameText.setText(CommonUtils.notEmpty(connectionInfo.getUserName()));
