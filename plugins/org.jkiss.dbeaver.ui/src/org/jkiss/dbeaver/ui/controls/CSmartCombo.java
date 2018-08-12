@@ -60,9 +60,6 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
     private Listener listener, filter;
     private Font font;
     private Point sizeHint;
-    // Size of Text with border. Needed for calc of height in computeSize
-    // On MacOS edit with border is much higher
-    private final Point borderTextSize;
 
     public CSmartCombo(Composite parent, int style, ILabelProvider labelProvider)
     {
@@ -80,12 +77,6 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         gridLayout.horizontalSpacing = 3;
         gridLayout.verticalSpacing = 0;
         this.setLayout(gridLayout);
-
-        {
-            Text sampleText = new Text(this, SWT.BORDER);
-            borderTextSize = sampleText.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-            sampleText.dispose();
-        }
 
         this.imageLabel = new Label(this, SWT.NONE);
         this.imageLabel.setLayoutData(new GridData(GridData.FILL_VERTICAL | GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_CENTER));
@@ -272,7 +263,6 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         }
 
         height = Math.max (height, arrowSize.y);
-        height = Math.max (height, borderTextSize.y);
 
         return new Point (width, height);
     }
