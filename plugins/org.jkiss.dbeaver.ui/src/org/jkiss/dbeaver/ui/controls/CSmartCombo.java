@@ -82,6 +82,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         this.imageLabel.setLayoutData(new GridData(GridData.FILL_VERTICAL | GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING));
 
         this.text = new StyledText(this, SWT.SINGLE | SWT.READ_ONLY);
+        this.text.setCaret(null);
         this.text.setLayoutData(new GridData(GridData.FILL_BOTH | GridData.VERTICAL_ALIGN_CENTER));
 
         this.setCursor(getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
@@ -195,7 +196,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         }
         super.setBackground(background);
         this.imageLabel.setBackground(background);
-        //this.text.setBackground(background);
+        this.text.setBackground(background);
         this.arrow.setBackground(background);
     }
 
