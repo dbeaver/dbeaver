@@ -30,7 +30,6 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.INewWizard;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -46,6 +45,7 @@ import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.jobs.ConnectJob;
 import org.jkiss.dbeaver.runtime.jobs.DisconnectJob;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.ui.IDataSourceConnectionEditor;
 import org.jkiss.dbeaver.ui.IDataSourceConnectionTester;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -187,6 +187,16 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
             }
         } finally {
             testDataSource.dispose();
+        }
+        // Update save password option
+        if (!dataSource.isSavePassword() && testDataSource.isSavePassword()) {
+            ConnectionPageSettings settingsPage = getPageSettings();
+            if (settingsPage != null) {
+                IDataSourceConnectionEditor connectionEditor = settingsPage.getConnectionEditor();
+                if (connectionEditor instanceof ConnectionPageAbstract) {
+                    ((ConnectionPageAbstract) connectionEditor).savePasswordCheck.setSelection(true);
+                }
+            }
         }
     }
 

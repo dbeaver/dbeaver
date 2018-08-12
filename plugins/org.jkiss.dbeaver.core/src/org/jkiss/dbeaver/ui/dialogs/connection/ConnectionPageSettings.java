@@ -55,6 +55,8 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 {
     private static final Log log = Log.getLog(DriverDescriptor.class);
 
+    public static final String PAGE_NAME = ConnectionPageSettings.class.getSimpleName();
+
     @NotNull
     private final ConnectionWizard wizard;
     @NotNull
@@ -74,7 +76,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         @NotNull ConnectionWizard wizard,
         @NotNull DataSourceViewDescriptor viewDescriptor)
     {
-        super("newConnectionSettings");
+        super(PAGE_NAME + "." + viewDescriptor.getId());
         this.wizard = wizard;
         this.viewDescriptor = viewDescriptor;
 
@@ -92,6 +94,10 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     {
         this(wizard, viewDescriptor);
         this.dataSource = dataSource;
+    }
+
+    IDataSourceConnectionEditor getConnectionEditor() {
+        return connectionEditor;
     }
 
     @Override
@@ -362,5 +368,10 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         if (connectionEditor instanceof IDataSourceConnectionTester) {
             ((IDataSourceConnectionTester) connectionEditor).testConnection(session);
         }
+    }
+
+    @Override
+    public String toString() {
+        return getName();
     }
 }
