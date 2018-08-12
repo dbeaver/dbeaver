@@ -673,7 +673,7 @@ public class DataSourceDescriptor
 
         //final String oldName = getConnectionConfiguration().getUserName();
         //final String oldPassword = getConnectionConfiguration().getUserPassword();
-        if (!isSavePassword()) {
+        if (!isSavePassword() && !getDriver().isAnonymousAccess()) {
             // Ask for password
             if (!DataSourceHandler.askForPassword(this, null, false)) {
                 DataSourceHandler.updateDataSourceObject(this);
