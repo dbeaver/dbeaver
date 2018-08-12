@@ -79,7 +79,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         this.setLayout(gridLayout);
 
         this.imageLabel = new Label(this, SWT.NONE);
-        this.imageLabel.setLayoutData(new GridData(GridData.FILL_VERTICAL | GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_CENTER));
+        this.imageLabel.setLayoutData(new GridData(GridData.FILL_VERTICAL | GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING));
 
         this.text = new StyledText(this, SWT.SINGLE | SWT.READ_ONLY);
         this.text.setLayoutData(new GridData(GridData.FILL_BOTH | GridData.VERTICAL_ALIGN_CENTER));
@@ -91,7 +91,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
             arrowStyle |= SWT.FLAT;
         }
         this.arrow = new Button(this, arrowStyle);
-        this.arrow.setLayoutData(new GridData(GridData.FILL_VERTICAL | GridData.HORIZONTAL_ALIGN_END | GridData.VERTICAL_ALIGN_CENTER));
+        this.arrow.setLayoutData(new GridData(GridData.FILL_VERTICAL | GridData.HORIZONTAL_ALIGN_END | GridData.VERTICAL_ALIGN_BEGINNING));
 
         setEnabled(true, true);
 
@@ -161,6 +161,14 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
             super.setEnabled(enabled);
             imageLabel.setEnabled(enabled);
             text.setEnabled(enabled);
+
+            if (!enabled) {
+                this.setBackground(getParent().getBackground());
+            } else {
+                if (selectedItem != null && labelProvider instanceof IColorProvider) {
+                    this.setBackground(((IColorProvider) labelProvider).getBackground(selectedItem));
+                }
+            }
         }
     }
 
@@ -187,7 +195,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         }
         super.setBackground(background);
         this.imageLabel.setBackground(background);
-        this.text.setBackground(background);
+        //this.text.setBackground(background);
         this.arrow.setBackground(background);
     }
 
