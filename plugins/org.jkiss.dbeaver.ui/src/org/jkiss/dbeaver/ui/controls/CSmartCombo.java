@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.controls;
 import org.eclipse.jface.viewers.IColorProvider;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
@@ -48,7 +49,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
     private TableFilter<ITEM_TYPE> tableFilter = null;
     private ITEM_TYPE selectedItem;
     private Label imageLabel;
-    private Text text;
+    private StyledText text;
     private Table dropDownControl;
     private int visibleItemCount = 10;
     private int widthHint = SWT.DEFAULT;
@@ -89,7 +90,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         this.imageLabel = new Label(this, SWT.NONE);
         this.imageLabel.setLayoutData(new GridData(GridData.FILL_VERTICAL | GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_CENTER));
 
-        this.text = new Text(this, SWT.SINGLE | SWT.READ_ONLY);
+        this.text = new StyledText(this, SWT.SINGLE | SWT.READ_ONLY);
         this.text.setLayoutData(new GridData(GridData.FILL_BOTH | GridData.VERTICAL_ALIGN_CENTER));
 
         this.setCursor(getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
