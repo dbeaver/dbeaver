@@ -155,7 +155,7 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
                             throw new InvocationTargetException(op.getConnectError());
                         }
                         if (op.getConnectStatus() == Status.CANCEL_STATUS) {
-                            throw new InterruptedException();
+                            throw new InterruptedException("cancel");
                         }
                     }
                 });
@@ -175,8 +175,10 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
                 MessageDialog.openInformation(getShell(), CoreMessages.dialog_connection_wizard_start_connection_monitor_success,
                     message);
             } catch (InterruptedException ex) {
-                DBUserInterface.getInstance().showError(CoreMessages.dialog_connection_wizard_start_dialog_interrupted_title,
-                    CoreMessages.dialog_connection_wizard_start_dialog_interrupted_message);
+                if (!"cancel".equals(ex.getMessage())) {
+                    DBUserInterface.getInstance().showError(CoreMessages.dialog_connection_wizard_start_dialog_interrupted_title,
+                        CoreMessages.dialog_connection_wizard_start_dialog_interrupted_message);
+                }
             } catch (InvocationTargetException ex) {
                 DBUserInterface.getInstance().showError(
                         CoreMessages.dialog_connection_wizard_start_dialog_error_title,
