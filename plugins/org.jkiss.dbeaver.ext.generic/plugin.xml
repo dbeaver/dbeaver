@@ -646,6 +646,7 @@
                     defaultPort=""
                     webURL="https://github.com/xerial/sqlite-jdbc"
                     embedded="true"
+                    anonymous="true"
                     description="SQLite JDBC driver by Taro L. Saito (extension of Zentus driver)">
                     <replace provider="generic" driver="sqlite_zentus"/>
                     <replace provider="generic" driver="sqlite_xerial"/>
