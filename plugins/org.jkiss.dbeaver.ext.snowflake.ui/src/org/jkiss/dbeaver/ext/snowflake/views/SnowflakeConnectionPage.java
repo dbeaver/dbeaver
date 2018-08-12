@@ -158,6 +158,8 @@ public class SnowflakeConnectionPage extends ConnectionPageAbstract implements I
             usernameText.setLayoutData(gd);
             usernameText.addModifyListener(textListener);
 
+            UIUtils.createEmptyLabel(addrGroup, 2, 1);
+
             UIUtils.createControlLabel(addrGroup, "Password");
 
             passwordText = new Text(addrGroup, SWT.BORDER | SWT.PASSWORD);
@@ -165,12 +167,16 @@ public class SnowflakeConnectionPage extends ConnectionPageAbstract implements I
             passwordText.setLayoutData(gd);
             passwordText.addModifyListener(textListener);
 
+            createSavePasswordButton(addrGroup, 2);
+
             UIUtils.createControlLabel(addrGroup, "Role");
 
             roleText = new Combo(addrGroup, SWT.BORDER | SWT.DROP_DOWN);
             gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL);
             roleText.setLayoutData(gd);
             roleText.addModifyListener(textListener);
+
+            //UIUtils.createEmptyLabel(addrGroup, 2, 1);
 
             UIUtils.createControlLabel(addrGroup, "Authenticator");
             authTypeCombo = new Combo(addrGroup, SWT.BORDER | SWT.DROP_DOWN);

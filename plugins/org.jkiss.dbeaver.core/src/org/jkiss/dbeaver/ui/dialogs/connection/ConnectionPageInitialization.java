@@ -14,6 +14,22 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+/*
+ * DBeaver - Universal Database Manager
+ * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.core.runtime.IStatus;
@@ -28,7 +44,6 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -37,7 +52,6 @@ import org.jkiss.dbeaver.model.DBPDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.model.connection.DBPConnectionEventType;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -69,7 +83,6 @@ class ConnectionPageInitialization extends ConnectionWizardPage {
 
     private DataSourceDescriptor dataSourceDescriptor;
 
-    private Button savePasswordCheck;
     private Button autocommit;
     private Combo isolationLevel;
     private Combo defaultSchema;
@@ -78,7 +91,6 @@ class ConnectionPageInitialization extends ConnectionWizardPage {
     private Button showSystemObjects;
     private Button showUtilityObjects;
     private Button readOnlyConnection;
-    private Button eventsButton;
     private Font boldFont;
 
     private List<FilterInfo> filters = new ArrayList<>();
@@ -136,7 +148,6 @@ class ConnectionPageInitialization extends ConnectionWizardPage {
             if (!activated) {
                 // Get settings from data source descriptor
                 final DBPConnectionConfiguration conConfig = dataSourceDescriptor.getConnectionConfiguration();
-                savePasswordCheck.setSelection(dataSourceDescriptor.isSavePassword());
                 autocommit.setSelection(dataSourceDescriptor.isDefaultAutoCommit());
                 showSystemObjects.setSelection(dataSourceDescriptor.isShowSystemObjects());
                 showUtilityObjects.setSelection(dataSourceDescriptor.isShowUtilityObjects());
@@ -169,26 +180,12 @@ class ConnectionPageInitialization extends ConnectionWizardPage {
                 activated = true;
             }
         } else {
-            if (eventsButton != null) {
-                eventsButton.setFont(getFont());
-                DataSourceDescriptor dataSource = getActiveDataSource();
-                for (DBPConnectionEventType eventType : dataSource.getConnectionConfiguration().getDeclaredEvents()) {
-                    if (dataSource.getConnectionConfiguration().getEvent(eventType).isEnabled()) {
-                        eventsButton.setFont(boldFont);
-                        break;
-                    }
-                }
-            }
             // Default settings
-            savePasswordCheck.setSelection(true);
             showSystemObjects.setSelection(true);
             showUtilityObjects.setSelection(false);
             readOnlyConnection.setSelection(false);
             isolationLevel.setEnabled(false);
             defaultSchema.setText("");
-        }
-        if (savePasswordCheck != null) {
-            //savePasswordCheck.setEnabled();
         }
         long features = getWizard().getSelectedDriver().getDataSourceProvider().getFeatures();
 
@@ -202,12 +199,6 @@ class ConnectionPageInitialization extends ConnectionWizardPage {
             }
         }
         filtersGroup.layout();
-    }
-
-    @NotNull
-    private DataSourceDescriptor getActiveDataSource() {
-        ConnectionPageSettings pageSettings = getWizard().getPageSettings();
-        return pageSettings == null ? getWizard().getActiveDataSource() : pageSettings.getActiveDataSource();
     }
 
     private void enableFilter(FilterInfo filterInfo, boolean enable) {
@@ -248,13 +239,6 @@ class ConnectionPageInitialization extends ConnectionWizardPage {
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
             optionsGroup.setLayoutData(gd);
-
-            {
-                Group securityGroup = UIUtils.createControlGroup(optionsGroup, CoreMessages.dialog_connection_wizard_final_group_security, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
-
-                savePasswordCheck = UIUtils.createCheckbox(securityGroup, CoreMessages.dialog_connection_wizard_final_checkbox_save_password_locally, dataSourceDescriptor == null || dataSourceDescriptor.isSavePassword());
-                savePasswordCheck.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-            }
 
             {
                 Group txnGroup = UIUtils.createControlGroup(optionsGroup, CoreMessages.dialog_connection_wizard_final_label_connection, 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
@@ -337,8 +321,7 @@ class ConnectionPageInitialization extends ConnectionWizardPage {
                     group,
                     CoreMessages.dialog_connection_wizard_final_group_filters,
                     2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
-                for (int i = 0; i < filters.size(); i++) {
-                    final FilterInfo filterInfo = filters.get(i);
+                for (final FilterInfo filterInfo : filters) {
                     filterInfo.link = UIUtils.createLink(filtersGroup, "<a>" + filterInfo.title + "</a>", new SelectionAdapter() {
                         @Override
                         public void widgetSelected(SelectionEvent e) {
@@ -378,7 +361,6 @@ class ConnectionPageInitialization extends ConnectionWizardPage {
             // No changes anyway
             return;
         }
-        dataSource.setSavePassword(savePasswordCheck.getSelection());
         try {
             dataSource.setDefaultAutoCommit(autocommit.getSelection(), null, true, null);
             if (dataSource.isConnected()) {

@@ -123,6 +123,8 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
         usernameText.setLayoutData(gd);
         usernameText.addModifyListener(textListener);
 
+        UIUtils.createEmptyLabel(addrGroup, 2, 1);
+
         Label passwordLabel = UIUtils.createControlLabel(addrGroup, PostgreMessages.dialog_setting_connection_password);
         passwordLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
@@ -131,6 +133,8 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
         gd.grabExcessHorizontalSpace = true;
         passwordText.setLayoutData(gd);
         passwordText.addModifyListener(textListener);
+
+        createSavePasswordButton(addrGroup, 2);
 
         {
             Composite buttonsGroup = new Composite(addrGroup, SWT.NONE);

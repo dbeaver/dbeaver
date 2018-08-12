@@ -128,13 +128,17 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
         Label passwordLabel = UIUtils.createControlLabel(addrGroup, MySQLMessages.dialog_connection_password);
         passwordLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
-        passwordText = new Text(addrGroup, SWT.BORDER | SWT.PASSWORD);
+        Composite passPH = UIUtils.createPlaceholder(addrGroup, 2, 5);
+        passPH.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+        passwordText = new Text(passPH, SWT.BORDER | SWT.PASSWORD);
         gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
         gd.widthHint = fontHeight * 20;
         passwordText.setLayoutData(gd);
         passwordText.addModifyListener(textListener);
 
-            UIUtils.createHorizontalLine(addrGroup, 2, 10);
+        createSavePasswordButton(passPH);
+
+        UIUtils.createHorizontalLine(addrGroup, 2, 10);
 
         if (!MySQLUtils.isMariaDB(getSite().getDriver())) {
             serverTimezoneCombo = UIUtils.createLabelCombo(addrGroup, MySQLMessages.dialog_connection_server_timezone, SWT.DROP_DOWN);

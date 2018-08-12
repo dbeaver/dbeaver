@@ -154,7 +154,7 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
             serverText.setLayoutData(gd);
             serverText.addModifyListener(textListener);
 
-            Control emptyLabel = createEmptyLabel(settingsGroup, 1);
+            Control emptyLabel = UIUtils.createEmptyLabel(settingsGroup, 2, 1);
 
             addControlToGroup(GROUP_SERVER, serverLabel);
             addControlToGroup(GROUP_SERVER, serverText);
@@ -174,7 +174,7 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
             dbText.setLayoutData(gd);
             dbText.addModifyListener(textListener);
 
-            Control emptyLabel = createEmptyLabel(settingsGroup, 1);
+            Control emptyLabel = UIUtils.createEmptyLabel(settingsGroup, 2, 1);
 
             addControlToGroup(GROUP_DB, dbLabel);
             addControlToGroup(GROUP_DB, dbText);
@@ -269,7 +269,7 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
             userNameText.setLayoutData(gd);
             userNameText.addModifyListener(textListener);
 
-            Control emptyLabel = createEmptyLabel(settingsGroup, 2);
+            Control emptyLabel = UIUtils.createEmptyLabel(settingsGroup, 2, 1);
 
             Label passwordLabel = new Label(settingsGroup, SWT.NONE);
             passwordLabel.setText(GenericMessages.dialog_connection_password_label);
@@ -281,26 +281,18 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
             passwordText.setLayoutData(gd);
             passwordText.addModifyListener(textListener);
 
+            createSavePasswordButton(settingsGroup, 2);
+
             addControlToGroup(GROUP_LOGIN, userNameLabel);
             addControlToGroup(GROUP_LOGIN, userNameText);
             addControlToGroup(GROUP_LOGIN, emptyLabel);
             addControlToGroup(GROUP_LOGIN, passwordLabel);
             addControlToGroup(GROUP_LOGIN, passwordText);
+            addControlToGroup(GROUP_LOGIN, savePasswordCheck);
         }
 
         createDriverPanel(settingsGroup);
         setControl(settingsGroup);
-    }
-
-    private Control createEmptyLabel(Composite parent, int verticalSpan)
-    {
-        Label emptyLabel = new Label(parent, SWT.NONE);
-        GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
-        gd.horizontalSpan = 2;
-        gd.verticalSpan = verticalSpan;
-        gd.widthHint = 0;
-        emptyLabel.setLayoutData(gd);
-        return emptyLabel;
     }
 
     @Override
