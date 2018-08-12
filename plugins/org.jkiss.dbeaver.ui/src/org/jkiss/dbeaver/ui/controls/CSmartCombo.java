@@ -74,6 +74,8 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         GridLayout gridLayout = new GridLayout(3, false);
         gridLayout.marginHeight = 0;
         gridLayout.marginWidth = 0;
+        gridLayout.marginTop = 0;
+        gridLayout.marginBottom = 0;
         gridLayout.horizontalSpacing = 3;
         gridLayout.verticalSpacing = 0;
         this.setLayout(gridLayout);
@@ -87,7 +89,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         this.imageLabel = new Label(this, SWT.NONE);
         this.imageLabel.setLayoutData(new GridData(GridData.FILL_VERTICAL | GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_CENTER));
 
-        this.text = new Text(this, SWT.SINGLE);
+        this.text = new Text(this, SWT.SINGLE | SWT.READ_ONLY);
         this.text.setLayoutData(new GridData(GridData.FILL_BOTH | GridData.VERTICAL_ALIGN_CENTER));
 
         this.setCursor(getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
@@ -150,14 +152,6 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         for (int arrowEvent : arrowEvents) {
             this.arrow.addListener(arrowEvent, this.listener);
         }
-
-        // Update default bg color in async mode to let Eclipse set appropriate styles
-        UIUtils.asyncExec(() -> {
-            if (isDisposed()) {
-                return;
-            }
-            text.setEditable(false);
-        });
     }
 
     public void setWidthHint(int widthHint)
