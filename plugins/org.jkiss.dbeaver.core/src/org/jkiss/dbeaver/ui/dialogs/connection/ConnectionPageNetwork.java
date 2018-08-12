@@ -48,9 +48,9 @@ import java.util.Map;
 /**
  * Network handlers edit dialog page
  */
-public class ConnectionPageNetwork extends ActiveWizardPage<ConnectionWizard> {
+public class ConnectionPageNetwork extends ConnectionWizardPage {
 
-    public static final String PAGE_NAME = "networkHandlersSettings";
+    public static final String PAGE_NAME = ConnectionPageNetwork.class.getSimpleName();
 
     private static final Log log = Log.getLog(ConnectionPageNetwork.class);
     private TabFolder handlersFolder;
@@ -202,8 +202,8 @@ public class ConnectionPageNetwork extends ActiveWizardPage<ConnectionWizard> {
         }
     }
 
-    void saveConfigurations(DataSourceDescriptor dataSource)
-    {
+    @Override
+    public void saveSettings(DataSourceDescriptor dataSource) {
         boolean foundHandlers = false;
         java.util.List<DBWHandlerConfiguration> handlers = new ArrayList<>();
         for (HandlerBlock handlerBlock : configurations.values()) {

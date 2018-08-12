@@ -53,7 +53,6 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -63,7 +62,9 @@ import java.util.List;
 /**
  * Initialization connection page (common for all connection types)
  */
-class ConnectionPageInitialization extends ActiveWizardPage<ConnectionWizard> {
+class ConnectionPageInitialization extends ConnectionWizardPage {
+    public static final String PAGE_NAME = ConnectionPageInitialization.class.getSimpleName();
+
     private static final Log log = Log.getLog(ConnectionPageInitialization.class);
 
     private DataSourceDescriptor dataSourceDescriptor;
@@ -100,7 +101,7 @@ class ConnectionPageInitialization extends ActiveWizardPage<ConnectionWizard> {
     }
 
     ConnectionPageInitialization() {
-        super(ConnectionPageInitialization.class.getSimpleName()); //$NON-NLS-1$
+        super(PAGE_NAME); //$NON-NLS-1$
         setTitle(CoreMessages.dialog_connection_wizard_connection_init);
         setDescription(CoreMessages.dialog_connection_wizard_connection_init_description);
 
@@ -276,6 +277,7 @@ class ConnectionPageInitialization extends ActiveWizardPage<ConnectionWizard> {
                     CoreMessages.dialog_connection_wizard_final_label_isolation_level_tooltip, SWT.DROP_DOWN | SWT.READ_ONLY);
                 defaultSchema = UIUtils.createLabelCombo(txnGroup, CoreMessages.dialog_connection_wizard_final_label_default_schema,
                     CoreMessages.dialog_connection_wizard_final_label_default_schema_tooltip, SWT.DROP_DOWN);
+                ((GridData)defaultSchema.getLayoutData()).widthHint = UIUtils.getFontHeight(defaultSchema) * 20;
                 keepAliveInterval = UIUtils.createLabelSpinner(txnGroup, CoreMessages.dialog_connection_wizard_final_label_keepalive,
                     CoreMessages.dialog_connection_wizard_final_label_keepalive_tooltip, 0, 0, Short.MAX_VALUE);
 
@@ -298,20 +300,6 @@ class ConnectionPageInitialization extends ActiveWizardPage<ConnectionWizard> {
                                 bootstrapQueries = dialog.getQueries();
                                 ignoreBootstrapErrors = dialog.isIgnoreErrors();
                             }
-                        }
-                    });
-                }
-
-                if (getWizard().isNew()) {
-                    UIUtils.createControlLabel(txnGroup, CoreMessages.dialog_connection_wizard_final_label_shell_command);
-                    eventsButton = new Button(txnGroup, SWT.PUSH);
-                    eventsButton.setText(CoreMessages.dialog_connection_wizard_configure);
-                    eventsButton.setImage(DBeaverIcons.getImage(UIIcon.EVENT));
-                    eventsButton.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-                    eventsButton.addSelectionListener(new SelectionAdapter() {
-                        @Override
-                        public void widgetSelected(SelectionEvent e) {
-                            configureEvents();
                         }
                     });
                 }
@@ -384,7 +372,8 @@ class ConnectionPageInitialization extends ActiveWizardPage<ConnectionWizard> {
         return true;
     }
 
-    void saveSettings(DataSourceDescriptor dataSource) {
+    @Override
+    public void saveSettings(DataSourceDescriptor dataSource) {
         if (dataSourceDescriptor != null && !activated) {
             // No changes anyway
             return;
@@ -425,26 +414,10 @@ class ConnectionPageInitialization extends ActiveWizardPage<ConnectionWizard> {
         confConfig.setKeepAliveInterval(keepAliveInterval.getSelection());
     }
 
-    private void configureEvents() {
-        DataSourceDescriptor dataSource = getActiveDataSource();
-        EditShellCommandsDialog dialog = new EditShellCommandsDialog(
-            getShell(),
-            dataSource);
-        if (dialog.open() == IDialogConstants.OK_ID) {
-            eventsButton.setFont(getFont());
-            for (DBPConnectionEventType eventType : dataSource.getConnectionConfiguration().getDeclaredEvents()) {
-                if (dataSource.getConnectionConfiguration().getEvent(eventType).isEnabled()) {
-                    eventsButton.setFont(boldFont);
-                    break;
-                }
-            }
-        }
-    }
-
     @Override
     public void setWizard(IWizard newWizard) {
         super.setWizard(newWizard);
-        if (newWizard instanceof ConnectionWizard) {
+        if (newWizard instanceof ConnectionWizard && !((ConnectionWizard) newWizard).isNew()) {
             // Listen for connection type change
             ((ConnectionWizard) newWizard).addPropertyChangeListener(event -> {
                 if (ConnectionWizard.PROP_CONNECTION_TYPE.equals(event.getProperty())) {
