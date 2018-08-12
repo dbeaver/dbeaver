@@ -34,7 +34,9 @@ public class TextWithOpenFolder extends TextWithOpen
 
     protected void openBrowser() {
         DirectoryDialog dialog = new DirectoryDialog(getShell(), SWT.NONE);
-        dialog.setText(title);
+        if (title != null) {
+            dialog.setText(title);
+        }
         dialog.setFilterPath(getText());
         String selected = dialog.open();
         if (selected != null) {
