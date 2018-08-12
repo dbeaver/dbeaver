@@ -21,11 +21,11 @@ import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.ui.part.FileEditorInput;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.ext.erd.editor.ERDEditorInput;
 import org.jkiss.dbeaver.ext.erd.editor.ERDEditorStandalone;
 import org.jkiss.dbeaver.ext.erd.model.DiagramLoader;
 import org.jkiss.dbeaver.ext.erd.model.ERDDecoratorDefault;
@@ -114,7 +114,7 @@ public class ERDResourceHandler extends AbstractResourceHandler {
             return;
         }
 
-        ERDEditorInput erdInput = new ERDEditorInput((IFile)resource);
+        FileEditorInput erdInput = new FileEditorInput((IFile)resource);
         UIUtils.getActiveWorkbenchWindow().getActivePage().openEditor(
             erdInput,
             ERDEditorStandalone.class.getName());
