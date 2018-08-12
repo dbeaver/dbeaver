@@ -49,8 +49,7 @@ public class GlobalProxyAuthenticator extends Authenticator {
             // 1. Check for drivers download proxy
             final String proxyHost = store.getString(DBeaverPreferences.UI_PROXY_HOST);
             if (!CommonUtils.isEmpty(proxyHost) && proxyHost.equalsIgnoreCase(getRequestingHost()) &&
-                store.getInt(DBeaverPreferences.UI_PROXY_PORT) == getRequestingPort())
-            {
+                store.getInt(DBeaverPreferences.UI_PROXY_PORT) == getRequestingPort()) {
                 String userName = store.getString(DBeaverPreferences.UI_PROXY_USER);
                 String userPassword = decryptPassword(store.getString(DBeaverPreferences.UI_PROXY_PASSWORD));
                 if (CommonUtils.isEmpty(userName) || CommonUtils.isEmpty(userPassword)) {
@@ -132,9 +131,8 @@ public class GlobalProxyAuthenticator extends Authenticator {
         }
     }
 
-    private DBAAuthInfo readCredentialsInUI(String prompt, String userName, String userPassword)
-    {
-        return DBUserInterface.getInstance().promptUserCredentials(prompt, userName, userPassword, false);
+    private DBAAuthInfo readCredentialsInUI(String prompt, String userName, String userPassword) {
+        return DBUserInterface.getInstance().promptUserCredentials(prompt, userName, userPassword, false, true);
     }
 
 }

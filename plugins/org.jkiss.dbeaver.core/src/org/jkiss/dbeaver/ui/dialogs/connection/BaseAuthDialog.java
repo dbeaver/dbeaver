@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
@@ -23,6 +24,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.access.DBAAuthInfo;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.utils.CommonUtils;
 
@@ -31,17 +33,26 @@ import org.jkiss.utils.CommonUtils;
  */
 public class BaseAuthDialog extends BaseDialog
 {
+    private static final String DIALOG_ID = "DBeaver.BaseAuthDialog";//$NON-NLS-1$
+
     private boolean passwordOnly;
+    private boolean showSavePassword;
     private DBAAuthInfo authInfo = new DBAAuthInfo();
 
     private Text usernameText;
     private Text passwordText;
     private Button savePasswordCheck;
 
-    public BaseAuthDialog(Shell parentShell, String title, boolean passwordOnly)
+    public BaseAuthDialog(Shell parentShell, String title, boolean passwordOnly, boolean showSavePassword)
     {
         super(parentShell, title, DBIcon.TREE_USER);
         this.passwordOnly = passwordOnly;
+        this.showSavePassword = showSavePassword;
+    }
+
+    @Override
+    protected IDialogSettings getDialogBoundsSettings() {
+        return UIUtils.getDialogSettings(DIALOG_ID);
     }
 
     public DBAAuthInfo getAuthInfo()
@@ -122,11 +133,14 @@ public class BaseAuthDialog extends BaseDialog
             }
         }
 
-        savePasswordCheck = new Button(addrGroup, SWT.CHECK);
-        savePasswordCheck.setText(CoreMessages.dialog_connection_auth_checkbox_save_password);
-        gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-        savePasswordCheck.setLayoutData(gd);
-        savePasswordCheck.setSelection(authInfo.isSavePassword());
+        {
+            savePasswordCheck = new Button(addrGroup, SWT.CHECK);
+            savePasswordCheck.setEnabled(showSavePassword);
+            savePasswordCheck.setText(CoreMessages.dialog_connection_auth_checkbox_save_password);
+            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+            savePasswordCheck.setLayoutData(gd);
+            savePasswordCheck.setSelection(authInfo.isSavePassword());
+        }
 
         if (passwordOnly || !CommonUtils.isEmpty(usernameText.getText())) {
             passwordText.setFocus();
@@ -141,7 +155,9 @@ public class BaseAuthDialog extends BaseDialog
             authInfo.setUserName(usernameText.getText());
         }
         authInfo.setUserPassword(passwordText.getText());
-        authInfo.setSavePassword(savePasswordCheck.getSelection());
+        if (showSavePassword) {
+            authInfo.setSavePassword(savePasswordCheck.getSelection());
+        }
 
         super.okPressed();
     }

@@ -123,7 +123,9 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
     {
         DataSourceDescriptor dataSource = getPageSettings().getActiveDataSource();
         DataSourceDescriptor testDataSource = new DataSourceDescriptor(dataSource);
+
         saveSettings(testDataSource);
+        testDataSource.setTemporary(true);
 
         // Generate new ID to avoid session conflicts in QM
         testDataSource.setId(DataSourceDescriptor.generateNewId(dataSource.getDriver()));
@@ -134,29 +136,26 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
             final ConnectionTester op = new ConnectionTester(testDataSource);
 
             try {
-                getContainer().run(true, true, new IRunnableWithProgress() {
-                    @Override
-                    public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                        // Wait for job to finish
-                        op.ownerMonitor = RuntimeUtils.makeMonitor(monitor);
-                        op.schedule();
-                        while (op.getState() == Job.WAITING || op.getState() == Job.RUNNING) {
-                            if (monitor.isCanceled()) {
-                                op.cancel();
-                                throw new InterruptedException();
-                            }
-                            try {
-                                Thread.sleep(50);
-                            } catch (InterruptedException e) {
-                                break;
-                            }
+                getContainer().run(true, true, monitor -> {
+                    // Wait for job to finish
+                    op.ownerMonitor = RuntimeUtils.makeMonitor(monitor);
+                    op.schedule();
+                    while (op.getState() == Job.WAITING || op.getState() == Job.RUNNING) {
+                        if (monitor.isCanceled()) {
+                            op.cancel();
+                            throw new InterruptedException();
                         }
-                        if (op.getConnectError() != null) {
-                            throw new InvocationTargetException(op.getConnectError());
+                        try {
+                            Thread.sleep(50);
+                        } catch (InterruptedException e) {
+                            break;
                         }
-                        if (op.getConnectStatus() == Status.CANCEL_STATUS) {
-                            throw new InterruptedException("cancel");
-                        }
+                    }
+                    if (op.getConnectError() != null) {
+                        throw new InvocationTargetException(op.getConnectError());
+                    }
+                    if (op.getConnectStatus() == Status.CANCEL_STATUS) {
+                        throw new InterruptedException("cancel");
                     }
                 });
 
@@ -187,16 +186,6 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
             }
         } finally {
             testDataSource.dispose();
-        }
-        // Update save password option
-        if (!dataSource.isSavePassword() && testDataSource.isSavePassword()) {
-            ConnectionPageSettings settingsPage = getPageSettings();
-            if (settingsPage != null) {
-                IDataSourceConnectionEditor connectionEditor = settingsPage.getConnectionEditor();
-                if (connectionEditor instanceof ConnectionPageAbstract) {
-                    ((ConnectionPageAbstract) connectionEditor).savePasswordCheck.setSelection(true);
-                }
-            }
         }
     }
 

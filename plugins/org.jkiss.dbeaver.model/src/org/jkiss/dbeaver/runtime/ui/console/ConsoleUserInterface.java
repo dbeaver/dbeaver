@@ -76,7 +76,7 @@ public class ConsoleUserInterface implements DBPPlatformUI {
     }
 
     @Override
-    public DBAAuthInfo promptUserCredentials(String prompt, String userName, String userPassword, boolean passwordOnly) {
+    public DBAAuthInfo promptUserCredentials(String prompt, String userName, String userPassword, boolean passwordOnly, boolean showSavePassword) {
         return null;
     }
 
