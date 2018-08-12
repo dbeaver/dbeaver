@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Button;
@@ -27,6 +28,7 @@ import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.MultiPageWizardDialog;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * CreateConnectionDialog
@@ -60,6 +62,12 @@ public class EditConnectionDialog extends MultiPageWizardDialog
         DataSourceDescriptor activeDataSource = getWizard().getActiveDataSource();
         getShell().setText(NLS.bind( CoreMessages.dialog_connection_edit_title, activeDataSource.getName()));
         getShell().setImage(DBeaverIcons.getImage(activeDataSource.getObjectImage()));
+
+        String activePage = getDialogBoundsSettings().get("activePage");
+        if (!CommonUtils.isEmpty(activePage)) {
+            getWizard().openSettingsPage(activePage);
+        }
+
         return contents;
     }
 
@@ -78,6 +86,14 @@ public class EditConnectionDialog extends MultiPageWizardDialog
         if (buttonId == TEST_BUTTON_ID) {
             testConnection();
             return;
+        }
+        if (buttonId == IDialogConstants.OK_ID || buttonId == IDialogConstants.CANCEL_ID) {
+            if (getCurrentPage() != null) {
+                String currentPageName = getCurrentPage().getName();
+                if (!CommonUtils.isEmptyTrimmed(currentPageName)) {
+                    getDialogBoundsSettings().put("activePage", currentPageName);
+                }
+            }
         }
         super.buttonPressed(buttonId);
     }
