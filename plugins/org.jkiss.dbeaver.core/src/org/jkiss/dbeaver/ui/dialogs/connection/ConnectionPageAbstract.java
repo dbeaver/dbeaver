@@ -114,7 +114,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
                 infoLabel.setToolTipText("You can use OS environment variables in connection parameters.\nUse ${variable} patterns.");
             }
 
-            if (!site.isNew() && !site.getDriver().isEmbedded()) {
+            if (!site.getDriver().isEmbedded()) {
 
                 Link netConfigLink = new Link(placeholder, SWT.NONE);
                 netConfigLink.setText("<a>" + CoreMessages.dialog_connection_edit_wizard_conn_conf_network_link + "</a>");

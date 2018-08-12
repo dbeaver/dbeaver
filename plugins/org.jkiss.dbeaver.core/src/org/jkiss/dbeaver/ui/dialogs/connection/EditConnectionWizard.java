@@ -61,6 +61,7 @@ public class EditConnectionWizard extends ConnectionWizard
     private ConnectionPageSettings pageSettings;
     private ConnectionPageGeneral pageGeneral;
     private ConnectionPageNetwork pageNetwork;
+    private ConnectionPageInitialization pageInit;
     private EditShellCommandsDialogPage pageEvents;
     private List<WizardPrefPage> prefPages = new ArrayList<>();
     private PrefPageConnections pageClientSettings;
@@ -127,6 +128,7 @@ public class EditConnectionWizard extends ConnectionWizard
         if (!embedded) {
             pageNetwork = new ConnectionPageNetwork(this);
         }
+        pageInit = new ConnectionPageInitialization(dataSource);
         pageEvents = new EditShellCommandsDialogPage(dataSource);
 
         addPage(pageGeneral);
@@ -134,6 +136,7 @@ public class EditConnectionWizard extends ConnectionWizard
             if (!embedded) {
                 pageSettings.addSubPage(pageNetwork);
             }
+            pageSettings.addSubPage(pageInit);
             pageSettings.addSubPage(pageEvents);
         }
 
@@ -289,6 +292,7 @@ public class EditConnectionWizard extends ConnectionWizard
         if (isPageActive(pageNetwork)) {
             pageNetwork.saveConfigurations(dataSource);
         }
+        pageInit.saveSettings(dataSource);
         pageEvents.saveConfigurations(dataSource);
         for (WizardPrefPage prefPage : prefPages) {
             savePageSettings(prefPage);

@@ -350,6 +350,9 @@ public class CoreMessages extends NLS {
 	public static String dialog_connection_wizard_final_filter_link_not_supported_tooltip;
 	public static String dialog_connection_wizard_final_button_tunneling;
 
+	public static String dialog_connection_wizard_connection_init;
+	public static String dialog_connection_wizard_connection_init_description;
+
 	public static String dialog_connection_wizard_start_connection_monitor_close;
 	public static String dialog_connection_wizard_start_connection_monitor_start;
 	public static String dialog_connection_wizard_start_connection_monitor_subtask_test;

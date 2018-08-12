@@ -356,6 +356,9 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
         } else {
             extraPages = ArrayUtils.concatArrays(extraPages, new IDialogPage[] { page });
         }
+        if (page instanceof IWizardPage) {
+            ((IWizardPage) page).setWizard(getWizard());
+        }
     }
 
     @Override
