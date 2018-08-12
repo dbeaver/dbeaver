@@ -38,7 +38,7 @@ public class WizardPrefPage extends WizardPage implements ICompositeDialogPage {
 
     public WizardPrefPage(IPreferencePage preferencePage, String title, String description)
     {
-        super(preferencePage.getTitle());
+        super(preferencePage.getClass().getName());
         this.preferencePage = preferencePage;
         setTitle(title);
         setDescription(description);
