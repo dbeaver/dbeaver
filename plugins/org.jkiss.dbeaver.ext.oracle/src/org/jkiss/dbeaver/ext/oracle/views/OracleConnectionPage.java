@@ -149,7 +149,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
 
         portText = new Text(targetContainer, SWT.BORDER);
         gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
-        gd.widthHint = 40;
+        gd.widthHint = UIUtils.getFontHeight(portText) * 5;
         portText.setLayoutData(gd);
         portText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
         portText.addModifyListener(controlModifyListener);
@@ -277,7 +277,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
 
         userRoleCombo = new Combo(parent, SWT.DROP_DOWN | SWT.READ_ONLY);
         gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
-        gd.widthHint = 60;
+        gd.widthHint = UIUtils.getFontHeight(userRoleCombo) * 10;
         userRoleCombo.setLayoutData(gd);
         userRoleCombo.add(OracleConnectionRole.NORMAL.getTitle());
         userRoleCombo.add(OracleConnectionRole.SYSDBA.getTitle());
@@ -322,7 +322,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
             }
         };
         GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-        gd.widthHint = 300;
+        gd.widthHint = UIUtils.getFontHeight(bottomControls) * 30;
         oraHomeSelector.getPanel().setLayoutData(gd);
 
         Label ph = new Label(bottomControls, SWT.NONE);
