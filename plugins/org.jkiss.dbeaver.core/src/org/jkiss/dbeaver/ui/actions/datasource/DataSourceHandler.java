@@ -158,7 +158,7 @@ public class DataSourceHandler
         DBAAuthInfo authInfo = new UITask<DBAAuthInfo>() {
             @Override
             protected DBAAuthInfo runTask() {
-                return DBUserInterface.getInstance().promptUserCredentials(prompt, user, password, passwordOnly);
+                return DBUserInterface.getInstance().promptUserCredentials(prompt, user, password, passwordOnly, !dataSourceContainer.isTemporary());
             }
         }.execute();
         if (authInfo == null) {

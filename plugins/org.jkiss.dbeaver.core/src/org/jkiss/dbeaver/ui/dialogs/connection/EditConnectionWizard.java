@@ -244,7 +244,7 @@ public class EditConnectionWizard extends ConnectionWizard
     }
 
     private boolean checkLockPassword() {
-        BaseAuthDialog dialog = new BaseAuthDialog(getShell(), CoreMessages.dialog_connection_edit_wizard_lock_pwd_title, true);
+        BaseAuthDialog dialog = new BaseAuthDialog(getShell(), CoreMessages.dialog_connection_edit_wizard_lock_pwd_title, true, false);
         if (dialog.open() == IDialogConstants.OK_ID) {
             final String userPassword = dialog.getUserPassword();
             if (!CommonUtils.isEmpty(userPassword)) {

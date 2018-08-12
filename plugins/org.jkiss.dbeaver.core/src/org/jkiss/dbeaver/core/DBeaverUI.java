@@ -240,14 +240,14 @@ public class DBeaverUI implements DBPPlatformUI {
     }
 
     @Override
-    public DBAAuthInfo promptUserCredentials(final String prompt, final String userName, final String userPassword, final boolean passwordOnly) {
+    public DBAAuthInfo promptUserCredentials(final String prompt, final String userName, final String userPassword, final boolean passwordOnly, boolean showSavePassword) {
 
         // Ask user
         return new UITask<DBAAuthInfo>() {
             @Override
             public DBAAuthInfo runTask() {
                 final Shell shell = UIUtils.getActiveWorkbenchShell();
-                final BaseAuthDialog authDialog = new BaseAuthDialog(shell, prompt, passwordOnly);
+                final BaseAuthDialog authDialog = new BaseAuthDialog(shell, prompt, passwordOnly, showSavePassword);
                 if (!passwordOnly) {
                     authDialog.setUserName(userName);
                 }

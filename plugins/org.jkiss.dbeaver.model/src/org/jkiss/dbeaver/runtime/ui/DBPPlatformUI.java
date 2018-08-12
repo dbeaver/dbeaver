@@ -62,7 +62,7 @@ public interface DBPPlatformUI {
     /**
      * Asks for user credentials. Returns null if user canceled this action.
      */
-    DBAAuthInfo promptUserCredentials(String prompt, String userName, String userPassword, boolean passwordOnly);
+    DBAAuthInfo promptUserCredentials(String prompt, String userName, String userPassword, boolean passwordOnly, boolean showSavePassword);
 
     /**
      * Asks for password change. Returns null if user canceled this action.
