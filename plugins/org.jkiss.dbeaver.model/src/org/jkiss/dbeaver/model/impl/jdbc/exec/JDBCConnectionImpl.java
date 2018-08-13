@@ -192,7 +192,6 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
                         throw e;
                     }
                 }
-                disableStatementEscapeProcessing(dbStat);
                 return dbStat;
             }
         }
