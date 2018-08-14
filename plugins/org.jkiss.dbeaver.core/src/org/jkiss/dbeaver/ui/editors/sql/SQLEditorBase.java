@@ -29,16 +29,11 @@ import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.viewers.ISelectionProvider;
-import org.eclipse.swt.custom.StyledText;
-import org.eclipse.swt.events.FocusEvent;
-import org.eclipse.swt.events.FocusListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.contexts.IContextActivation;
-import org.eclipse.ui.contexts.IContextService;
 import org.eclipse.ui.dialogs.PreferencesUtil;
 import org.eclipse.ui.editors.text.EditorsUI;
 import org.eclipse.ui.texteditor.*;
@@ -86,8 +81,6 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
     
     static protected final Log log = Log.getLog(SQLEditorBase.class);
 
-    public static final String SQL_CONTROL_CONTEXT_ID = "org.jkiss.dbeaver.ui.editors.sql.script.focused";
-
     static {
         // SQL editor preferences. Do this here because it initializes display
         // (that's why we can't run it in prefs initializer classes which run before workbench creation)
@@ -130,9 +123,11 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                         return;
                     }
                     lastUpdateTime = System.currentTimeMillis();
-                    reloadSyntaxRules();
-                    // Reconfigure to let comments/strings colors to take effect
-                    getSourceViewer().configure(getSourceViewerConfiguration());
+                    UIUtils.asyncExec(() -> {
+                        reloadSyntaxRules();
+                        // Reconfigure to let comments/strings colors to take effect
+                        getSourceViewer().configure(getSourceViewerConfiguration());
+                    });
                 }
             }
         };
@@ -251,7 +246,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
 
         {
             // Context listener
-            EditorUtils.trackControlContext(getSite(), getViewer().getTextWidget(), SQL_CONTROL_CONTEXT_ID);
+            EditorUtils.trackControlContext(getSite(), getViewer().getTextWidget(), SQLEditorContributions.SQL_EDITOR_CONTROL_CONTEXT);
         }
     }
 

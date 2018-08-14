@@ -20,20 +20,24 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBIcon;
-import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.DBPImageProvider;
-import org.jkiss.dbeaver.model.DBPScriptObject;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttribute;
 import org.jkiss.dbeaver.model.data.DBDPseudoAttributeContainer;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 import org.jkiss.dbeaver.model.meta.Association;
+import org.jkiss.dbeaver.model.meta.LazyProperty;
 import org.jkiss.dbeaver.model.meta.Property;
+import org.jkiss.dbeaver.model.meta.PropertyGroup;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -53,7 +57,64 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
     private boolean secondary;
     private boolean nested;
 
-    public static class AdditionalInfo extends TableAdditionalInfo {
+    public class AdditionalInfo extends TableAdditionalInfo {
+        private int pctFree;
+        private int pctUsed;
+        private int iniTrans;
+        private int maxTrans;
+        private int initialExtent;
+        private int nextExtent;
+        private int minExtents;
+        private int maxExtents;
+        private int pctIncrease;
+        private int freelists;
+        private int freelistGroups;
+
+        private int blocks;
+        private int emptyBlocks;
+        private int avgSpace;
+        private int chainCount;
+
+        private int avgRowLen;
+        private int avgSpaceFreelistBlocks;
+        private int numFreelistBlocks;
+
+        @Property(category = CAT_STATISTICS, order = 31)
+        public int getPctFree() { return pctFree; }
+        @Property(category = CAT_STATISTICS, order = 32)
+        public int getPctUsed() { return pctUsed; }
+        @Property(category = CAT_STATISTICS, order = 33)
+        public int getIniTrans() { return iniTrans; }
+        @Property(category = CAT_STATISTICS, order = 34)
+        public int getMaxTrans() { return maxTrans; }
+        @Property(category = CAT_STATISTICS, order = 35)
+        public int getInitialExtent() { return initialExtent; }
+        @Property(category = CAT_STATISTICS, order = 36)
+        public int getNextExtent() { return nextExtent; }
+        @Property(category = CAT_STATISTICS, order = 37)
+        public int getMinExtents() { return minExtents; }
+        @Property(category = CAT_STATISTICS, order = 38)
+        public int getMaxExtents() { return maxExtents; }
+        @Property(category = CAT_STATISTICS, order = 39)
+        public int getPctIncrease() { return pctIncrease; }
+        @Property(category = CAT_STATISTICS, order = 40)
+        public int getFreelists() { return freelists; }
+        @Property(category = CAT_STATISTICS, order = 41)
+        public int getFreelistGroups() { return freelistGroups; }
+        @Property(category = CAT_STATISTICS, order = 42)
+        public int getBlocks() { return blocks; }
+        @Property(category = CAT_STATISTICS, order = 43)
+        public int getEmptyBlocks() { return emptyBlocks; }
+        @Property(category = CAT_STATISTICS, order = 44)
+        public int getAvgSpace() { return avgSpace; }
+        @Property(category = CAT_STATISTICS, order = 45)
+        public int getChainCount() { return chainCount; }
+        @Property(category = CAT_STATISTICS, order = 46)
+        public int getAvgRowLen() { return avgRowLen; }
+        @Property(category = CAT_STATISTICS, order = 47)
+        public int getAvgSpaceFreelistBlocks() { return avgSpaceFreelistBlocks; }
+        @Property(category = CAT_STATISTICS, order = 48)
+        public int getNumFreelistBlocks() { return numFreelistBlocks; }
     }
 
     private final AdditionalInfo additionalInfo = new AdditionalInfo();
@@ -91,6 +152,18 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
     public TableAdditionalInfo getAdditionalInfo()
     {
         return additionalInfo;
+    }
+
+    @PropertyGroup()
+    @LazyProperty(cacheValidator = AdditionalInfoValidator.class)
+    public AdditionalInfo getAdditionalInfo(DBRProgressMonitor monitor) throws DBException
+    {
+        synchronized (additionalInfo) {
+            if (!additionalInfo.loaded && monitor != null) {
+                loadAdditionalInfo(monitor);
+            }
+            return additionalInfo;
+        }
     }
 
     @Override
@@ -243,6 +316,52 @@ public class OracleTable extends OracleTablePhysical implements DBPScriptObject,
         } else {
             return DBIcon.TREE_TABLE_INDEX;
         }
+    }
+
+    private void loadAdditionalInfo(DBRProgressMonitor monitor) throws DBException
+    {
+        if (!isPersisted()) {
+            additionalInfo.loaded = true;
+            return;
+        }
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table status")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT * FROM SYS.ALL_TABLES WHERE OWNER=? AND TABLE_NAME=?")) {
+                dbStat.setString(1, getContainer().getName());
+                dbStat.setString(2, getName());
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    if (dbResult.next()) {
+                        additionalInfo.pctFree = JDBCUtils.safeGetInt(dbResult, "PCT_FREE");
+                        additionalInfo.pctUsed = JDBCUtils.safeGetInt(dbResult, "PCT_USED");
+                        additionalInfo.iniTrans = JDBCUtils.safeGetInt(dbResult, "INI_TRANS");
+                        additionalInfo.maxTrans = JDBCUtils.safeGetInt(dbResult, "MAX_TRANS");
+                        additionalInfo.initialExtent = JDBCUtils.safeGetInt(dbResult, "INITIAL_EXTENT");
+                        additionalInfo.nextExtent = JDBCUtils.safeGetInt(dbResult, "NEXT_EXTENT");
+                        additionalInfo.minExtents = JDBCUtils.safeGetInt(dbResult, "MIN_EXTENTS");
+                        additionalInfo.maxExtents = JDBCUtils.safeGetInt(dbResult, "MAX_EXTENTS");
+                        additionalInfo.pctIncrease = JDBCUtils.safeGetInt(dbResult, "PCT_INCREASE");
+                        additionalInfo.freelists = JDBCUtils.safeGetInt(dbResult, "FREELISTS");
+                        additionalInfo.freelistGroups = JDBCUtils.safeGetInt(dbResult, "FREELIST_GROUPS");
+
+                        additionalInfo.blocks = JDBCUtils.safeGetInt(dbResult, "BLOCKS");
+                        additionalInfo.emptyBlocks = JDBCUtils.safeGetInt(dbResult, "EMPTY_BLOCKS");
+                        additionalInfo.avgSpace = JDBCUtils.safeGetInt(dbResult, "AVG_SPACE");
+                        additionalInfo.chainCount = JDBCUtils.safeGetInt(dbResult, "CHAIN_CNT");
+
+                        additionalInfo.avgRowLen = JDBCUtils.safeGetInt(dbResult, "AVG_ROW_LEN");
+                        additionalInfo.avgSpaceFreelistBlocks = JDBCUtils.safeGetInt(dbResult, "AVG_SPACE_FREELIST_BLOCKS");
+                        additionalInfo.numFreelistBlocks = JDBCUtils.safeGetInt(dbResult, "NUM_FREELIST_BLOCKS");
+                    } else {
+                        log.warn("Cannot find table '" + getFullyQualifiedName(DBPEvaluationContext.UI) + "' metadata");
+                    }
+                    additionalInfo.loaded = true;
+                }
+            }
+        }
+        catch (SQLException e) {
+            throw new DBCException(e, getDataSource());
+        }
+
     }
 
 }

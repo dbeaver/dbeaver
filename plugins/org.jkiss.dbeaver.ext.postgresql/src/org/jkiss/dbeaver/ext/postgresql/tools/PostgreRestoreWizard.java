@@ -103,6 +103,9 @@ class PostgreRestoreWizard extends PostgreBackupRestoreWizard<PostgreDatabaseRes
             cmd.add("--format=" + format.getId());
         }
         cmd.add("--dbname=" + arg.getDatabase().getName());
+        if (format == ExportFormat.DIRECTORY) {
+            cmd.add(inputFile);
+        }
 
         return cmd;
     }
@@ -115,7 +118,9 @@ class PostgreRestoreWizard extends PostgreBackupRestoreWizard<PostgreDatabaseRes
     @Override
     protected void startProcessHandler(DBRProgressMonitor monitor, final PostgreDatabaseRestoreInfo arg, ProcessBuilder processBuilder, Process process) {
         super.startProcessHandler(monitor, arg, processBuilder, process);
-        new BinaryFileTransformerJob(monitor, new File(inputFile), process.getOutputStream()).start();
+        if (format != ExportFormat.DIRECTORY) {
+            new BinaryFileTransformerJob(monitor, new File(inputFile), process.getOutputStream()).start();
+        }
     }
 
 }

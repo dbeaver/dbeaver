@@ -5,11 +5,11 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.jkiss.dbeaver</groupId>
     <artifactId>dbeaver</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.0-SNAPSHOT</version>
     <packaging>pom</packaging>
 
     <properties>
-        <dbeaver-version>5.1.4</dbeaver-version>
+        <dbeaver-version>5.1.5</dbeaver-version>
         <dbeaver-product>DBeaver</dbeaver-product>
         <tycho-version>1.1.0</tycho-version>
         <tycho-versions-version>0.26.0</tycho-versions-version>
@@ -17,6 +17,8 @@
         <maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
         <eclipse-p2-repo.url>http://download.eclipse.org/releases/photon/</eclipse-p2-repo.url>
         <local-p2-repo.url>https://dbeaver.io/eclipse-repo</local-p2-repo.url>
+        <key.storage.path>/etc/</key.storage.path>
+        <tsa/>
     </properties>
 
     <modules>
@@ -146,28 +148,42 @@
                     <target>1.8</target>
                 </configuration>
             </plugin>
-
-            <!-- Signing -->
-            <!--plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jarsigner-plugin</artifactId>
-                <version>1.2</version>
-                <configuration>
-                    <keystore>file://C:\tmp\eclipse-signing.keystore </keystore>
-                    <storepass>dbeaver</storepass>
-                    <alias>dbeaver</alias>
-                    <keypass>dbeaver</keypass>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>sign</id>
-                        <goals>
-                            <goal>sign</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin-->
-
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <!-- Profile used to sign jars -->
+            <id>sign-code</id>
+            <activation>
+                <activeByDefault>false</activeByDefault>
+            </activation>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-jarsigner-plugin</artifactId>
+                        <version>1.4</version>
+                        <configuration>
+                            <keystore>${key.storage.path}/jar-sign.keystore</keystore>
+                            <tsa>${tsa}</tsa>
+                            <tsacert>dbeaver</tsacert>
+                            <storepass>dbeaver</storepass>
+                            <alias>dbeaver</alias>
+                            <keypass>dbeaver</keypass>
+                        </configuration>
+                        <executions>
+                            <execution>
+                                <id>sign</id>
+                                <goals>
+                                    <goal>sign</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
 </project>

@@ -1141,6 +1141,7 @@ public class SQLEditor extends SQLEditorBase implements
             log.error("Error loading input SQL file", e);
         }
         syntaxLoaded = false;
+        dataSourceContainer = null;
         DBPDataSourceContainer inputDataSource = EditorUtils.getInputDataSource(editorInput);
         if (inputDataSource == null) {
             // No datasource. Try to get one from active part
@@ -2364,11 +2365,11 @@ public class SQLEditor extends SQLEditorBase implements
         }
 
         @Override
-        public long countData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, DBDDataFilter dataFilter)
+        public long countData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, DBDDataFilter dataFilter, long flags)
             throws DBCException
         {
             if (dataContainer != null) {
-                return dataContainer.countData(source, session, dataFilter);
+                return dataContainer.countData(source, session, dataFilter, DBSDataContainer.FLAG_NONE);
             }
             DBPDataSource dataSource = getDataSource();
             if (!(dataSource instanceof SQLDataSource)) {
@@ -2632,7 +2633,7 @@ public class SQLEditor extends SQLEditorBase implements
                     QueryResultsContainer results = queryProcessor.getResults(query);
                     if (results != null) {
                         int queryIndex = queryProcessors.indexOf(queryProcessor);
-                        if (queryIndex == 0) {
+                        if (queryIndex == 0 || queryProcessor.getResultContainers().size() == 1) {
                             String resultSetName = getResultsTabName(results.resultSetNumber, queryIndex, result.getResultSetName());
                             results.updateResultsName(resultSetName, null);
                         }
@@ -2653,8 +2654,8 @@ public class SQLEditor extends SQLEditorBase implements
                 Display.getCurrent().beep();
             }
             // Notify agent
-            if (result.getQueryTime() > DBeaverCore.getGlobalPreferenceStore().getLong(DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT) * 1000) {
-                DBeaverUI.notifyAgent(
+            if (result.getQueryTime() > DBWorkbench.getPlatformUI().getLongOperationTimeout() * 1000) {
+                DBWorkbench.getPlatformUI().notifyAgent(
                         "Query completed [" + getEditorInput().getName() + "]" + GeneralUtils.getDefaultLineSeparator() +
                                 CommonUtils.truncateString(query.getText(), 200), !result.hasError() ? IStatus.INFO : IStatus.ERROR);
             }

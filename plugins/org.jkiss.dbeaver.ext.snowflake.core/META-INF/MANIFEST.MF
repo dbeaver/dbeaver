@@ -1,8 +1,8 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
-Bundle-SymbolicName: org.jkiss.dbeaver.ext.snowflake.core
-Bundle-Version: 1.0.13
+Bundle-SymbolicName: org.jkiss.dbeaver.ext.snowflake.core;singleton:=true
+Bundle-Version: 1.0.13.qualifier
 Bundle-Vendor: %Bundle-Vendor
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Require-Bundle: org.eclipse.core.runtime,

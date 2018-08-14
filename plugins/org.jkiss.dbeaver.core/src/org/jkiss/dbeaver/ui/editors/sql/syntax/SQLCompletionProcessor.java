@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -34,12 +34,12 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
-import org.jkiss.dbeaver.ui.editors.sql.registry.SQLCommandHandlerDescriptor;
-import org.jkiss.dbeaver.ui.editors.sql.registry.SQLCommandsRegistry;
 import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
+import org.jkiss.dbeaver.ui.editors.sql.registry.SQLCommandHandlerDescriptor;
+import org.jkiss.dbeaver.ui.editors.sql.registry.SQLCommandsRegistry;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLContext;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplateCompletionProposal;
 import org.jkiss.dbeaver.ui.editors.sql.templates.SQLTemplatesRegistry;
@@ -350,11 +350,11 @@ public class SQLCompletionProcessor implements IContentAssistProcessor
         @Override
         protected IStatus run(DBRProgressMonitor monitor) {
             try {
-                monitor.beginTask("Seeking for completion proposals", 1);
+                monitor.beginTask("Seeking for SQL completion proposals", 1);
                 try {
-                    monitor.subTask("Make structure proposals");
-                    SQLCompletionAnalyzer analyzer = new SQLCompletionAnalyzer(monitor, request);
-                    analyzer.runAnalyzer();
+                    monitor.subTask("Find proposals");
+                    SQLCompletionAnalyzer analyzer = new SQLCompletionAnalyzer(request);
+                    DBUtils.tryExecuteRecover(monitor, editor.getDataSource(), analyzer);
                 } finally {
                     monitor.done();
                 }

@@ -143,7 +143,10 @@ public interface IResultSetController extends DBPContextProvider {
     ////////////////////////////////////////
     // Navigation & history
 
-    void navigateAssociation(@NotNull DBRProgressMonitor monitor, @NotNull DBDAttributeBinding attr, @NotNull ResultSetRow row, boolean newWindow)
+    /**
+     * Navigates to association. One of @association OR @attr must be specified.
+     */
+    void navigateAssociation(@NotNull DBRProgressMonitor monitor, @Nullable DBSEntityAssociation association, @Nullable DBDAttributeBinding attr, @NotNull ResultSetRow row, boolean newWindow)
         throws DBException;
 
     void navigateReference(@NotNull DBRProgressMonitor monitor, @NotNull DBSEntityAssociation association, @NotNull ResultSetRow row, boolean newWindow)

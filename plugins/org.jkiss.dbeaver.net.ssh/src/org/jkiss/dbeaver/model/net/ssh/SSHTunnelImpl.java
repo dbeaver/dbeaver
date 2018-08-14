@@ -41,6 +41,7 @@ public class SSHTunnelImpl implements DBWTunnel {
     private static final Log log = Log.getLog(SSHTunnelImpl.class);
     private static final String DEF_IMPLEMENTATION = "jsch";
 
+    private DBWHandlerConfiguration configuration;
     private SSHImplementation implementation;
 
     public SSHImplementation getImplementation() {
@@ -51,6 +52,7 @@ public class SSHTunnelImpl implements DBWTunnel {
     public DBPConnectionConfiguration initializeTunnel(DBRProgressMonitor monitor, DBPPlatform platform, DBWHandlerConfiguration configuration, DBPConnectionConfiguration connectionInfo)
         throws DBException, IOException
     {
+        this.configuration = configuration;
         Map<String,String> properties = configuration.getProperties();
         String implId = properties.get(SSHConstants.PROP_IMPLEMENTATION);
         if (CommonUtils.isEmpty(implId)) {
@@ -77,6 +79,15 @@ public class SSHTunnelImpl implements DBWTunnel {
             implementation.closeTunnel(monitor);
             implementation = null;
         }
+    }
+
+    @Override
+    public boolean matchesParameters(String host, int port) {
+        if (host.equals(configuration.getProperties().get(SSHConstants.PROP_HOST))) {
+            int sshPort = CommonUtils.toInt(configuration.getProperties().get(SSHConstants.PROP_PORT));
+            return sshPort == port;
+        }
+        return false;
     }
 
     @Override
@@ -112,7 +123,7 @@ public class SSHTunnelImpl implements DBWTunnel {
                 try {
                     implementation.invalidateTunnel(monitor1);
                 } catch (Exception e) {
-                    log.error("Error invalidating SSH tunnel", e);
+                    log.debug("Error invalidating SSH tunnel", e);
                 }
             },
             "Ping SSH tunnel " + dataSource.getContainer().getName(),

@@ -815,6 +815,9 @@ public final class SQLUtils {
                 }
 
                 String delimiter = sqlDialect.getScriptDelimiter();
+                if (!delimiter.isEmpty() && Character.isLetterOrDigit(delimiter.charAt(0))) {
+                    delimiter = ' ' + delimiter;
+                }
                 if (action.isComplex() && redefiner != null) {
                     script.append(lineSeparator).append(redefiner).append(" ").append(DBEAVER_SCRIPT_DELIMITER).append(lineSeparator);
                     delimiter = DBEAVER_SCRIPT_DELIMITER;
@@ -836,10 +839,6 @@ public final class SQLUtils {
                 }
                 script.append(scriptLine);
                 if (action.getType() != DBEPersistAction.ActionType.COMMENT) {
-                    char lastChar = scriptLine.charAt(scriptLine.length() - 1);
-                    if (!Character.isWhitespace(lastChar) && !Character.isLetterOrDigit(lastChar)) {
-                        script.append(" ");
-                    }
                     script.append(delimiter);
                 } else {
                     script.append(lineSeparator);

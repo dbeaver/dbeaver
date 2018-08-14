@@ -79,6 +79,8 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
 
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NAVIGATOR_SHOW_OBJECT_TIPS, true);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.TOOLBARS_SHOW_GENERAL_ALWAYS, false);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.TOOLBARS_DATABASE_SELECTOR_WIDTH, 20);
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.TOOLBARS_SCHEMA_SELECTOR_WIDTH, 18);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.ENTITY_EDITOR_DETACH_INFO, true);
 
         // Common
@@ -92,7 +94,6 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
 
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.STATEMENT_INVALIDATE_BEFORE_EXECUTE, false);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.STATEMENT_TIMEOUT, 0);
-        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.READ_EXPENSIVE_PROPERTIES, false);
         // Disable separate connection by default. Otherwise many people don't understand what happens (data editor and SQL editor have different contexts)
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.EDITOR_SEPARATE_CONNECTION, false);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.EDITOR_CONNECT_ON_ACTIVATE, true);

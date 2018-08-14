@@ -17,13 +17,15 @@
 
 package  org.jkiss.dbeaver.ui.controls.lightgrid;
 
+import org.jkiss.dbeaver.model.data.DBDCellValue;
+
 import java.util.Comparator;
 
 /**
  * Grid position. Tuple of x/y coordinates.
  * Pos comparator orders positions in tree in natural order (first ordered by rows then by columns).
  */
-public class GridPos
+public class GridPos implements DBDCellValue
 {
     public int col;
     public int row;

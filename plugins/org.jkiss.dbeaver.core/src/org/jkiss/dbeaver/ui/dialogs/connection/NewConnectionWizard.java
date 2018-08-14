@@ -49,7 +49,6 @@ public class NewConnectionWizard extends ConnectionWizard
     private ConnectionPageGeneral pageGeneral;
     private ConnectionPageNetwork pageNetwork;
 
-
     public NewConnectionWizard()
     {
         setWindowTitle(CoreMessages.dialog_new_connection_wizard_title);
@@ -180,7 +179,7 @@ public class NewConnectionWizard extends ConnectionWizard
             pageSettings.saveSettings(dataSource);
         }
         pageGeneral.saveSettings(dataSource);
-        pageNetwork.saveConfigurations(dataSource);
+        pageNetwork.saveSettings(dataSource);
     }
 
     @Override

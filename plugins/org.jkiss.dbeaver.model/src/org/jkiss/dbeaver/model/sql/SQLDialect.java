@@ -313,5 +313,11 @@ public interface SQLDialect {
     @Nullable
     String getColumnTypeModifiers(@NotNull DBSTypedObject column, @NotNull String typeName, @NotNull DBPDataKind dataKind);
 
+    /**
+     * Formats stored procedure call. By default returns @sqlText.
+     */
+    String formatStoredProcedureCall(DBPDataSource dataSource, String sqlText);
+
     void generateStoredProcedureCall(StringBuilder sql, DBSProcedure proc, Collection<? extends DBSProcedureParameter> parameters);
+
 }

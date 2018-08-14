@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCTransactionManager;
+import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
@@ -672,7 +673,7 @@ public class DataSourceDescriptor
 
         //final String oldName = getConnectionConfiguration().getUserName();
         //final String oldPassword = getConnectionConfiguration().getUserPassword();
-        if (!isSavePassword()) {
+        if (!isSavePassword() && !getDriver().isAnonymousAccess()) {
             // Ask for password
             if (!DataSourceHandler.askForPassword(this, null, false)) {
                 DataSourceHandler.updateDataSourceObject(this);
@@ -728,7 +729,12 @@ public class DataSourceDescriptor
                         tunnelConfiguration = new DBWHandlerConfiguration(tunnelConfiguration);
                         tunnelConfiguration.resolveSystemEnvironmentVariables();
                     }
-                    tunnelConnectionInfo = tunnel.initializeTunnel(monitor, registry.getPlatform(), tunnelConfiguration, connectionInfo);
+                    DBExecUtils.startContextInitiation(this);
+                    try {
+                        tunnelConnectionInfo = tunnel.initializeTunnel(monitor, registry.getPlatform(), tunnelConfiguration, connectionInfo);
+                    } finally {
+                        DBExecUtils.finishContextInitiation(this);
+                    }
                 } catch (Exception e) {
                     throw new DBCException("Can't initialize tunnel", e);
                 }

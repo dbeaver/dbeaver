@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.ui.data.managers;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.swt.widgets.Shell;
+import org.eclipse.ui.PlatformUI;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -27,13 +29,17 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPMessageType;
+import org.jkiss.dbeaver.model.DBWorkbench;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentCached;
+import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.impl.ExternalContentStorage;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyManager;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
 import org.jkiss.dbeaver.ui.data.editors.ContentInlineEditor;
@@ -43,6 +49,12 @@ import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.dialogs.data.TextViewDialog;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditor;
 import org.jkiss.dbeaver.utils.ContentUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
+
+import java.io.File;
+import java.io.InputStream;
+import java.io.Reader;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * JDBC Content value handler.
@@ -63,14 +75,14 @@ public class ContentValueManager extends BaseValueManager {
             manager.add(new Action(CoreMessages.model_jdbc_save_to_file_, DBeaverIcons.getImageDescriptor(UIIcon.SAVE_AS)) {
                 @Override
                 public void run() {
-                    DialogUtils.saveToFile(controller);
+                    saveToFile(controller);
                 }
             });
         }
         manager.add(new Action(CoreMessages.model_jdbc_load_from_file_, DBeaverIcons.getImageDescriptor(UIIcon.LOAD)) {
             @Override
             public void run() {
-                if (DialogUtils.loadFromFile(controller)) {
+                if (loadFromFile(controller)) {
                     if (activeEditor != null) {
                         try {
                             activeEditor.primeEditorValue(controller.getValue());
@@ -100,6 +112,83 @@ public class ContentValueManager extends BaseValueManager {
         } else {
             controller.showMessage(CoreMessages.model_jdbc_unsupported_content_value_type_, DBPMessageType.ERROR);
             return null;
+        }
+    }
+
+    public static boolean loadFromFile(final IValueController controller)
+    {
+        if (!(controller.getValue() instanceof DBDContent)) {
+            log.error(CoreMessages.model_jdbc_bad_content_value_ + controller.getValue());
+            return false;
+        }
+
+        Shell shell = UIUtils.getShell(controller.getValueSite());
+        final File openFile = DialogUtils.openFile(shell);
+        if (openFile == null) {
+            return false;
+        }
+        final DBDContent value = (DBDContent)controller.getValue();
+        UIUtils.runInUI(PlatformUI.getWorkbench().getActiveWorkbenchWindow(), monitor -> {
+            try {
+                DBDContentStorage storage;
+                if (ContentUtils.isTextContent(value)) {
+                    storage = new ExternalContentStorage(DBWorkbench.getPlatform(), openFile, GeneralUtils.UTF8_ENCODING);
+                } else {
+                    storage = new ExternalContentStorage(DBWorkbench.getPlatform(), openFile);
+                }
+                value.updateContents(monitor, storage);
+                controller.updateValue(value, true);
+            } catch (Exception e) {
+                throw new InvocationTargetException(e);
+            }
+        });
+        return true;
+    }
+
+    public static void saveToFile(IValueController controller)
+    {
+        if (!(controller.getValue() instanceof DBDContent)) {
+            log.error(CoreMessages.model_jdbc_bad_content_value_ + controller.getValue());
+            return;
+        }
+
+        Shell shell = UIUtils.getShell(controller.getValueSite());
+        final File saveFile = DialogUtils.selectFileForSave(shell, controller.getValueName());
+        if (saveFile == null) {
+            return;
+        }
+        final DBDContent value = (DBDContent)controller.getValue();
+        try {
+            UIUtils.runInProgressService(monitor -> {
+                try {
+                    DBDContentStorage storage = value.getContents(monitor);
+                    if (ContentUtils.isTextContent(value)) {
+                        try (Reader cr = storage.getContentReader()) {
+                            ContentUtils.saveContentToFile(
+                                cr,
+                                saveFile,
+                                GeneralUtils.UTF8_ENCODING,
+                                monitor
+                            );
+                        }
+                    } else {
+                        try (InputStream cs = storage.getContentStream()) {
+                            ContentUtils.saveContentToFile(cs, saveFile, monitor);
+                        }
+                    }
+                } catch (Exception e) {
+                    throw new InvocationTargetException(e);
+                }
+            });
+        }
+        catch (InvocationTargetException e) {
+            DBUserInterface.getInstance().showError(
+                    CoreMessages.model_jdbc_could_not_save_content,
+                CoreMessages.model_jdbc_could_not_save_content_to_file_ + saveFile.getAbsolutePath() + "'", //$NON-NLS-2$
+                e.getTargetException());
+        }
+        catch (InterruptedException e) {
+            // do nothing
         }
     }
 

@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.controls;
 import org.eclipse.jface.viewers.IColorProvider;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.*;
 import org.eclipse.swt.layout.GridData;
@@ -48,7 +49,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
     private TableFilter<ITEM_TYPE> tableFilter = null;
     private ITEM_TYPE selectedItem;
     private Label imageLabel;
-    private Text text;
+    private StyledText text;
     private Table dropDownControl;
     private int visibleItemCount = 10;
     private int widthHint = SWT.DEFAULT;
@@ -74,7 +75,10 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         GridLayout gridLayout = new GridLayout(3, false);
         gridLayout.marginHeight = 0;
         gridLayout.marginWidth = 0;
+        gridLayout.marginTop = 0;
+        gridLayout.marginBottom = 0;
         gridLayout.horizontalSpacing = 3;
+        gridLayout.verticalSpacing = 0;
         this.setLayout(gridLayout);
 
         {
@@ -84,9 +88,10 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         }
 
         this.imageLabel = new Label(this, SWT.NONE);
-        this.imageLabel.setLayoutData(new GridData(GridData.FILL_VERTICAL | GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_CENTER));
+        this.imageLabel.setLayoutData(new GridData(GridData.FILL_VERTICAL | GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING));
 
-        this.text = new Text(this, SWT.NONE);
+        this.text = new StyledText(this, SWT.SINGLE | SWT.READ_ONLY);
+        this.text.setCaret(null);
         this.text.setLayoutData(new GridData(GridData.FILL_BOTH | GridData.VERTICAL_ALIGN_CENTER));
 
         this.setCursor(getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
@@ -96,7 +101,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
             arrowStyle |= SWT.FLAT;
         }
         this.arrow = new Button(this, arrowStyle);
-        this.arrow.setLayoutData(new GridData(GridData.FILL_VERTICAL | GridData.HORIZONTAL_ALIGN_END | GridData.VERTICAL_ALIGN_CENTER));
+        this.arrow.setLayoutData(new GridData(GridData.FILL_VERTICAL | GridData.HORIZONTAL_ALIGN_END | GridData.VERTICAL_ALIGN_BEGINNING));
 
         setEnabled(true, true);
 
@@ -149,14 +154,6 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         for (int arrowEvent : arrowEvents) {
             this.arrow.addListener(arrowEvent, this.listener);
         }
-
-        // Update default bg color in async mode to let Eclipse set appropriate styles
-        UIUtils.asyncExec(() -> {
-            if (isDisposed()) {
-                return;
-            }
-            text.setEditable(false);
-        });
     }
 
     public void setWidthHint(int widthHint)
@@ -174,6 +171,14 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
             super.setEnabled(enabled);
             imageLabel.setEnabled(enabled);
             text.setEnabled(enabled);
+
+            if (!enabled) {
+                this.setBackground(getParent().getBackground());
+            } else {
+                if (selectedItem != null && labelProvider instanceof IColorProvider) {
+                    this.setBackground(((IColorProvider) labelProvider).getBackground(selectedItem));
+                }
+            }
         }
     }
 

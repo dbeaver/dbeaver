@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.dialogs.data;
 
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CTabFolder;
 import org.eclipse.swt.custom.CTabItem;
@@ -117,6 +118,7 @@ public class TextViewDialog extends ValueViewDialog {
                 style |= SWT.BORDER;
             }
             textEdit = new StyledText(useHex ? editorContainer : dialogGroup, style);
+            textEdit.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
             textEdit.setMargins(3, 3, 3, 3);
             if (maxSize > 0 && valueType.getDataKind() == DBPDataKind.STRING) {
                 textEdit.setTextLimit((int) maxSize);

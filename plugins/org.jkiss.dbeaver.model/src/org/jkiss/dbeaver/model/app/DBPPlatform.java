@@ -66,6 +66,9 @@ public interface DBPPlatform
     DBERegistry getEditorsRegistry();
 
     @NotNull
+    DBPDataFormatterRegistry getDataFormatterRegistry();
+
+    @NotNull
     SQLFormatterRegistry getSQLFormatterRegistry();
 
     @NotNull

@@ -37,7 +37,7 @@ public class DefaultCallbackHandler implements CallbackHandler {
         for (Callback callback : callbacks) {
             if (callback instanceof PasswordCallback) {
                 if (password == null) {
-                    final DBAAuthInfo authInfo = DBUserInterface.getInstance().promptUserCredentials("Enter password", null, null, true);
+                    final DBAAuthInfo authInfo = DBUserInterface.getInstance().promptUserCredentials("Enter password", null, null, true, true);
                     if (authInfo != null) {
                         if (authInfo.isSavePassword()) {
                             password = authInfo.getUserPassword().toCharArray();

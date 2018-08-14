@@ -25,12 +25,11 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
-import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBWorkbench;
 import org.jkiss.dbeaver.model.connection.DBPClientHome;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -38,6 +37,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.ProgressStreamReader;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
@@ -230,8 +230,8 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
         // Make a sound
         Display.getCurrent().beep();
         // Notify agent
-        if (workTime > DBeaverCore.getGlobalPreferenceStore().getLong(DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT) * 1000) {
-            DBeaverUI.notifyAgent(toolName, IStatus.INFO);
+        if (workTime > DBWorkbench.getPlatformUI().getLongOperationTimeout() * 1000) {
+            DBWorkbench.getPlatformUI().notifyAgent(toolName, IStatus.INFO);
         }
     }
 
@@ -437,6 +437,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
             try {
                 try (InputStream scriptStream = new ProgressStreamReader(
                     monitor,
+                    task,
                     new FileInputStream(inputFile),
                     inputFile.length()))
                 {
@@ -483,6 +484,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
         {
             try (InputStream scriptStream = new ProgressStreamReader(
                 monitor,
+                task,
                 new FileInputStream(inputFile),
                 inputFile.length()))
             {
@@ -509,77 +511,6 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
                 monitor.done();
                 transferFinished = true;
             }
-        }
-    }
-
-    private class ProgressStreamReader extends InputStream {
-
-        static final int BUFFER_SIZE = 10000;
-
-        private final DBRProgressMonitor monitor;
-        private final InputStream original;
-        private final long streamLength;
-        private long totalRead;
-
-        private ProgressStreamReader(DBRProgressMonitor monitor, InputStream original, long streamLength)
-        {
-            this.monitor = monitor;
-            this.original = original;
-            this.streamLength = streamLength;
-            this.totalRead = 0;
-
-            monitor.beginTask(task, (int)streamLength);
-        }
-
-        @Override
-        public int read() throws IOException
-        {
-            int res = original.read();
-            showProgress(res);
-            return res;
-        }
-
-        @Override
-        public int read(byte[] b) throws IOException
-        {
-            int res = original.read(b);
-            showProgress(res);
-            return res;
-        }
-
-        @Override
-        public int read(byte[] b, int off, int len) throws IOException
-        {
-            int res = original.read(b, off, len);
-            showProgress(res);
-            return res;
-        }
-
-        @Override
-        public long skip(long n) throws IOException
-        {
-            long res = original.skip(n);
-            showProgress(res);
-            return res;
-        }
-
-        @Override
-        public int available() throws IOException
-        {
-            return original.available();
-        }
-
-        @Override
-        public void close() throws IOException
-        {
-            monitor.done();
-            original.close();
-        }
-
-        private void showProgress(long length)
-        {
-            totalRead += length;
-            monitor.worked((int)length);
         }
     }
 

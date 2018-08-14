@@ -19,16 +19,33 @@ package org.jkiss.dbeaver.ext.snowflake.model;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
-import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
+import org.jkiss.dbeaver.ext.snowflake.SnowflakeConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class SnowflakeDataSource extends GenericDataSource {
 
-    public SnowflakeDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, GenericMetaModel metaModel)
+    public SnowflakeDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, SnowflakeMetaModel metaModel)
         throws DBException
     {
         super(monitor, container, metaModel, new GenericSQLDialect());
     }
 
+    @Override
+    protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor, DBPDriver driver, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException {
+        Map<String, String> props = new HashMap<>();
+        String authProp = connectionInfo.getProviderProperty(SnowflakeConstants.PROP_AUTHENTICATOR);
+        if (!CommonUtils.isEmpty(authProp)) {
+            props.put("authenticator", authProp);
+        }
+
+        return props;
+    }
 }

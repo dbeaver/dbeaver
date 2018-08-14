@@ -263,7 +263,12 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                 UIUtils.runInProgressService(runnable);
                 if (runnable.getResult() != null) {
                     showNode(runnable.getResult());
-                    treeViewer.expandToLevel(runnable.getResult(), 1);
+                    // TODO: it is a bug in Eclipse.
+                    try {
+                        treeViewer.expandToLevel(runnable.getResult(), 1, true);
+                    } catch (Throwable e) {
+                        treeViewer.expandToLevel(runnable.getResult(), 1);
+                    }
                 }
             } catch (InvocationTargetException e) {
                 log.error("Can't expand node", e.getTargetException());

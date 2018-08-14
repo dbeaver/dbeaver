@@ -78,7 +78,7 @@ public class ExasolWizardPageSettings<WIZARD extends AbstractToolWizard> extends
             authButton.addSelectionListener(new SelectionAdapter() {
                 @Override
                 public void widgetSelected(SelectionEvent e) {
-                    BaseAuthDialog authDialog = new BaseAuthDialog(getShell(), "Authentication", false);
+                    BaseAuthDialog authDialog = new BaseAuthDialog(getShell(), "Authentication", false, true);
                     authDialog.setUserName(wizard.getToolUserName());
                     authDialog.setUserPassword(wizard.getToolUserPassword());
                     authDialog.setSavePassword(savePassword);

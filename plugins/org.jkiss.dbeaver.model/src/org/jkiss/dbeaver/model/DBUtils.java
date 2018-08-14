@@ -572,6 +572,7 @@ public final class DBUtils {
             }
         }
         // Get handler provider from registry
+
         handlerProvider = dataSource.getContainer().getPlatform().getValueHandlerRegistry().getValueHandlerProvider(
             dataSource, column);
         if (handlerProvider != null) {
@@ -1026,10 +1027,13 @@ public final class DBUtils {
         @NotNull String query,
         boolean scrollable) throws DBCException
     {
+        SQLDialect dialect = SQLUtils.getDialectFromObject(session.getDataSource());
+
         DBCStatementType statementType = DBCStatementType.SCRIPT;
         query = SQLUtils.makeUnifiedLineFeeds(session.getDataSource(), query);
-        if (SQLUtils.isExecQuery(SQLUtils.getDialectFromObject(session.getDataSource()), query)) {
+        if (SQLUtils.isExecQuery(dialect, query)) {
             statementType = DBCStatementType.EXEC;
+            query = dialect.formatStoredProcedureCall(session.getDataSource(), query);
         }
         return session.prepareStatement(
             statementType,

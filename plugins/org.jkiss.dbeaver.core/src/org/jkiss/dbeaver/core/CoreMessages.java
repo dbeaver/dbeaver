@@ -291,6 +291,12 @@ public class CoreMessages extends NLS {
 	public static String controls_resultset_viewer_status_rows_fetched;
 	public static String controls_resultset_viewer_status_rows_size;
 	public static String controls_resultset_viewer_value;
+
+	public static String controls_resultset_ref_menu_no_references;
+	public static String controls_resultset_ref_menu_references;
+	public static String controls_resultset_ref_menu_no_associations;
+	public static String controls_resultset_ref_menu_associations;
+
 	public static String controls_rs_pump_job_context_name;
 	public static String controls_rs_pump_job_name;
 
@@ -343,6 +349,10 @@ public class CoreMessages extends NLS {
 	public static String dialog_connection_wizard_final_filter_link_not_supported_text;
 	public static String dialog_connection_wizard_final_filter_link_not_supported_tooltip;
 	public static String dialog_connection_wizard_final_button_tunneling;
+
+	public static String dialog_connection_wizard_connection_init;
+	public static String dialog_connection_wizard_connection_init_description;
+	public static String dialog_connection_wizard_final_group_other;
 
 	public static String dialog_connection_wizard_start_connection_monitor_close;
 	public static String dialog_connection_wizard_start_connection_monitor_start;
@@ -420,60 +430,6 @@ public class CoreMessages extends NLS {
 	public static String dialog_edit_driver_title_create_driver;
 	public static String dialog_edit_driver_title_edit_driver;
 
-    public static String data_transfer_wizard_name;
-    public static String data_transfer_wizard_final_column_source;
-	public static String data_transfer_wizard_final_column_target;
-	public static String data_transfer_wizard_final_description;
-	public static String data_transfer_wizard_final_group_tables;
-	public static String data_transfer_wizard_final_name;
-	public static String data_transfer_wizard_final_title;
-	public static String data_transfer_wizard_init_column_description;
-	public static String data_transfer_wizard_init_column_exported;
-	public static String data_transfer_wizard_init_description;
-	public static String data_transfer_wizard_init_name;
-	public static String data_transfer_wizard_init_title;
-	public static String data_transfer_wizard_job_container_name;
-	public static String data_transfer_wizard_job_name;
-	public static String data_transfer_wizard_job_task_export;
-	public static String data_transfer_wizard_job_task_export_table_data;
-	public static String data_transfer_wizard_job_task_retrieve;
-	public static String data_transfer_wizard_output_checkbox_compress;
-	public static String data_transfer_wizard_output_checkbox_new_connection;
-	public static String data_transfer_wizard_output_checkbox_open_folder;
-	public static String data_transfer_wizard_output_checkbox_select_row_count;
-	public static String data_transfer_wizard_output_checkbox_selected_columns_only;
-	public static String data_transfer_wizard_output_checkbox_selected_rows_only;
-	public static String data_transfer_wizard_output_combo_extract_type_item_by_segments;
-	public static String data_transfer_wizard_output_combo_extract_type_item_single_query;
-	public static String data_transfer_wizard_output_description;
-	public static String data_transfer_wizard_output_dialog_directory_message;
-	public static String data_transfer_wizard_output_dialog_directory_text;
-	public static String data_transfer_wizard_output_group_general;
-	public static String data_transfer_wizard_output_group_progress;
-	public static String data_transfer_wizard_output_label_directory;
-	public static String data_transfer_wizard_output_label_encoding;
-	public static String data_transfer_wizard_output_label_extract_type;
-	public static String data_transfer_wizard_output_label_file_name_pattern;
-	public static String data_transfer_wizard_output_label_insert_bom;
-	public static String data_transfer_wizard_output_label_insert_bom_tooltip;
-	public static String data_transfer_wizard_output_label_max_threads;
-	public static String data_transfer_wizard_output_label_segment_size;
-	public static String data_transfer_wizard_output_name;
-	public static String data_transfer_wizard_output_title;
-	public static String data_transfer_wizard_settings_binaries_item_inline;
-	public static String data_transfer_wizard_settings_binaries_item_save_to_file;
-	public static String data_transfer_wizard_settings_binaries_item_set_to_null;
-	public static String data_transfer_wizard_settings_button_edit;
-	public static String data_transfer_wizard_settings_description;
-	public static String data_transfer_wizard_settings_group_exporter;
-	public static String data_transfer_wizard_settings_group_general;
-	public static String data_transfer_wizard_settings_label_binaries;
-	public static String data_transfer_wizard_settings_label_encoding;
-	public static String data_transfer_wizard_settings_label_formatting;
-	public static String data_transfer_wizard_settings_listbox_formatting_item_default;
-	public static String data_transfer_wizard_settings_name;
-	public static String data_transfer_wizard_settings_title;
-	
 	public static String dialog_filter_button_add;
 	public static String dialog_filter_button_enable;
 	public static String dialog_filter_button_remove;
@@ -685,6 +641,13 @@ public class CoreMessages extends NLS {
 	public static String dialog_view_classpath_title;
 	public static String dialog_view_sql_button_copy;
 	public static String dialog_view_sql_button_persist;
+
+	public static String dialog_sql_param_title;
+	public static String dialog_sql_param_column_name;
+	public static String dialog_sql_param_column_value;
+	public static String dialog_sql_param_hide_checkbox;
+	public static String dialog_sql_param_hide_checkbox_tip;
+	public static String dialog_sql_param_hint;
 
 	public static String editor_binary_hex_default_font;
 	public static String editor_binary_hex_font_style_bold;
@@ -969,11 +932,6 @@ public class CoreMessages extends NLS {
 	public static String ui_properties_name;
 	public static String ui_properties_task_add_folder;
 	public static String ui_properties_task_add_node;
-	public static String ui_properties_tree_viewer__to_default;
-	public static String ui_properties_tree_viewer_action_copy_name;
-	public static String ui_properties_tree_viewer_action_copy_value;
-	public static String ui_properties_tree_viewer_action_reset_value;
-	public static String ui_properties_tree_viewer_category_general;
 	public static String ui_properties_value;
 	
 	public static String dialog_connection_edit_driver_button;
@@ -1203,6 +1161,10 @@ public class CoreMessages extends NLS {
 	public static String pref_page_database_general_group_toolbars;
 	public static String pref_page_database_general_label_show_general_toolbar_everywhere;
 	public static String pref_page_database_general_label_show_general_toolbar_everywhere_tip;
+	public static String pref_page_database_general_label_database_selector_width;
+	public static String pref_page_database_general_label_database_selector_width_tip;
+	public static String pref_page_database_general_label_schema_selector_width;
+	public static String pref_page_database_general_label_schema_selector_width_tip;
 
 	// ConnectionTypes
 	public static String pref_page_connection_types_label_table_column_name;
@@ -1281,6 +1243,8 @@ public class CoreMessages extends NLS {
 	public static String dialog_edit_driver_setting;
 	public static String dialog_edit_driver_type_label;
 	public static String dialog_edit_driver_embedded_label;
+	public static String dialog_edit_driver_anonymous_label;
+	public static String dialog_edit_driver_anonymous_tip;
 	public static String dialog_edit_driver_description;
 	public static String dialog_edit_driver_edit_maven_title;
 	public static String dialog_edit_driver_edit_maven_group_id_label;

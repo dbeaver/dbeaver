@@ -73,6 +73,7 @@ public class GenericDataSource extends JDBCDataSource
     private String selectedEntityType;
     private String selectedEntityName;
     private boolean selectedEntityFromAPI;
+    private boolean omitSingleCatalog;
     private String allObjectsPattern;
     private boolean supportsStructCache;
     private DBCQueryPlanner queryPlanner;
@@ -88,6 +89,7 @@ public class GenericDataSource extends JDBCDataSource
         this.queryGetActiveDB = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_QUERY_GET_ACTIVE_DB));
         this.querySetActiveDB = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_QUERY_SET_ACTIVE_DB));
         this.selectedEntityType = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_ACTIVE_ENTITY_TYPE));
+        this.omitSingleCatalog = CommonUtils.getBoolean(driver.getDriverParameter(GenericConstants.PARAM_OMIT_SINGLE_CATALOG), false);
         if (CommonUtils.isEmpty(this.selectedEntityType)) {
             this.selectedEntityType = null;
         }
@@ -269,8 +271,8 @@ public class GenericDataSource extends JDBCDataSource
     }
 
     @Override
-    public DBSObject getObject() {
-        return getContainer();
+    public GenericStructContainer getObject() {
+        return this;
     }
 
     @Override
@@ -389,7 +391,7 @@ public class GenericDataSource extends JDBCDataSource
     public void initialize(@NotNull DBRProgressMonitor monitor)
         throws DBException {
         super.initialize(monitor);
-        Object omitCatalog = getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_OMIT_CATALOG);
+        boolean omitCatalog = isOmitCatalog();
         Object omitTypeCache = getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_OMIT_TYPE_CACHE);
         if (omitTypeCache == null || !CommonUtils.toBoolean(omitTypeCache)) {
             // Cache data types
@@ -406,7 +408,7 @@ public class GenericDataSource extends JDBCDataSource
             // Read metadata
             JDBCDatabaseMetaData metaData = session.getMetaData();
             boolean catalogsFiltered = false;
-            if (omitCatalog == null || !CommonUtils.toBoolean(omitCatalog)) {
+            if (!omitCatalog) {
                 // Read catalogs
                 monitor.subTask("Extract catalogs");
                 monitor.worked(1);
@@ -436,7 +438,7 @@ public class GenericDataSource extends JDBCDataSource
                                 break;
                             }
                         }
-                        if (totalCatalogs == 1) {
+                        if (totalCatalogs == 1 && omitSingleCatalog) {
                             // Just one catalog. Looks like DB2 or PostgreSQL
                             // Let's just skip it and use only schemas
                             // It's ok to use "%" instead of catalog name anyway
@@ -478,6 +480,10 @@ public class GenericDataSource extends JDBCDataSource
         } catch (SQLException ex) {
             throw new DBException("Error reading metadata", ex, this);
         }
+    }
+
+    protected boolean isOmitCatalog() {
+        return CommonUtils.getBoolean(getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_OMIT_CATALOG), false);
     }
 
     @Override
@@ -910,8 +916,8 @@ public class GenericDataSource extends JDBCDataSource
         }
 
         @Override
-        public DBSObject getObject() {
-            return GenericDataSource.this.getContainer();
+        public GenericStructContainer getObject() {
+            return GenericDataSource.this;
         }
 
         @Override

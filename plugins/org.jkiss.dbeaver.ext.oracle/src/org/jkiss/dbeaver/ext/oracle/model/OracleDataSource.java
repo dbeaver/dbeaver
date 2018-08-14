@@ -668,6 +668,8 @@ public class OracleDataSource extends JDBCDataSource
     }
 
     private Pattern ERROR_POSITION_PATTERN = Pattern.compile(".+\\s+line ([0-9]+), column ([0-9]+)");
+    private Pattern ERROR_POSITION_PATTERN_2 = Pattern.compile(".+\\s+at line ([0-9]+)");
+    private Pattern ERROR_POSITION_PATTERN_3 = Pattern.compile(".+\\s+at position\\: ([0-9]+)");
 
     @Nullable
     @Override
@@ -680,8 +682,8 @@ public class OracleDataSource extends JDBCDataSource
         }
         String message = error.getMessage();
         if (!CommonUtils.isEmpty(message)) {
-            Matcher matcher = ERROR_POSITION_PATTERN.matcher(message);
             List<ErrorPosition> positions = new ArrayList<>();
+            Matcher matcher = ERROR_POSITION_PATTERN.matcher(message);
             while (matcher.find()) {
                 DBPErrorAssistant.ErrorPosition pos = new DBPErrorAssistant.ErrorPosition();
                 pos.info = matcher.group(1);
@@ -689,6 +691,25 @@ public class OracleDataSource extends JDBCDataSource
                 pos.position = Integer.parseInt(matcher.group(2)) - 1;
                 positions.add(pos);
             }
+            if (positions.isEmpty()) {
+                matcher = ERROR_POSITION_PATTERN_2.matcher(message);
+                while (matcher.find()) {
+                    DBPErrorAssistant.ErrorPosition pos = new DBPErrorAssistant.ErrorPosition();
+                    pos.info = matcher.group(1);
+                    pos.line = Integer.parseInt(matcher.group(1)) - 1;
+                    positions.add(pos);
+                }
+            }
+            if (positions.isEmpty()) {
+                matcher = ERROR_POSITION_PATTERN_3.matcher(message);
+                while (matcher.find()) {
+                    DBPErrorAssistant.ErrorPosition pos = new DBPErrorAssistant.ErrorPosition();
+                    pos.info = matcher.group(1);
+                    pos.position = Integer.parseInt(matcher.group(1)) - 1;
+                    positions.add(pos);
+                }
+            }
+
             if (!positions.isEmpty()) {
                 return positions.toArray(new ErrorPosition[positions.size()]);
             }
