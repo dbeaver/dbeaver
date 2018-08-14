@@ -104,27 +104,33 @@ public class AssociationPart extends PropertyAwareConnectionPart {
                 connBends.add(new AbsoluteBendpoint(bend.x, bend.y));
             }
             conn.setRoutingConstraint(connBends);
-        } else if (association.getTargetEntity() == association.getSourceEntity()) {
-            // Self link
-            final IFigure entityFigure = ((GraphicalEditPart) getSource()).getFigure();
-            //EntityPart entity = (EntityPart) connEdge.source.getParent().data;
-            //final Dimension entitySize = entity.getFigure().getSize();
-            final Dimension figureSize = entityFigure.getMinimumSize();
-            int entityWidth = figureSize.width;
-            int entityHeight = figureSize.height;
+        } else if (association.getTargetEntity() != null && association.getTargetEntity() == association.getSourceEntity()) {
+            EditPart entityPart = getSource();
+            if (entityPart == null) {
+                entityPart = getTarget();
+            }
+            if (entityPart instanceof GraphicalEditPart) {
+                // Self link
+                final IFigure entityFigure = ((GraphicalEditPart) entityPart).getFigure();
+                //EntityPart entity = (EntityPart) connEdge.source.getParent().data;
+                //final Dimension entitySize = entity.getFigure().getSize();
+                final Dimension figureSize = entityFigure.getMinimumSize();
+                int entityWidth = figureSize.width;
+                int entityHeight = figureSize.height;
 
-            List<RelativeBendpoint> bends = new ArrayList<>();
-            {
-                RelativeBendpoint bp1 = new RelativeBendpoint(conn);
-                bp1.setRelativeDimensions(new Dimension(entityWidth, entityHeight / 2), new Dimension(entityWidth / 2, entityHeight / 2));
-                bends.add(bp1);
+                List<RelativeBendpoint> bends = new ArrayList<>();
+                {
+                    RelativeBendpoint bp1 = new RelativeBendpoint(conn);
+                    bp1.setRelativeDimensions(new Dimension(entityWidth, entityHeight / 2), new Dimension(entityWidth / 2, entityHeight / 2));
+                    bends.add(bp1);
+                }
+                {
+                    RelativeBendpoint bp2 = new RelativeBendpoint(conn);
+                    bp2.setRelativeDimensions(new Dimension(-entityWidth, entityHeight / 2), new Dimension(entityWidth, entityHeight));
+                    bends.add(bp2);
+                }
+                conn.setRoutingConstraint(bends);
             }
-            {
-                RelativeBendpoint bp2 = new RelativeBendpoint(conn);
-                bp2.setRelativeDimensions(new Dimension(-entityWidth, entityHeight / 2), new Dimension(entityWidth, entityHeight));
-                bends.add(bp2);
-            }
-            conn.setRoutingConstraint(bends);
         }
     }
 

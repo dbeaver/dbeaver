@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.generic.views;
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -33,7 +32,6 @@ import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
@@ -85,14 +83,9 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
     @Override
     public void createControl(Composite composite)
     {
-        ModifyListener textListener = new ModifyListener()
-        {
-            @Override
-            public void modifyText(ModifyEvent e)
-            {
-                if (activated) {
-                    saveAndUpdate();
-                }
+        ModifyListener textListener = e -> {
+            if (activated) {
+                saveAndUpdate();
             }
         };
 
@@ -116,13 +109,7 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
             gd.grabExcessHorizontalSpace = true;
             //gd.widthHint = 355;
             urlText.setLayoutData(gd);
-            urlText.addModifyListener(new ModifyListener() {
-                @Override
-                public void modifyText(ModifyEvent e)
-                {
-                    site.updateButtons();
-                }
-            });
+            urlText.addModifyListener(e -> site.updateButtons());
 
             addControlToGroup(GROUP_URL, urlLabel);
             addControlToGroup(GROUP_URL, urlText);
@@ -167,7 +154,7 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
             serverText.setLayoutData(gd);
             serverText.addModifyListener(textListener);
 
-            Control emptyLabel = createEmptyLabel(settingsGroup, 1);
+            Control emptyLabel = UIUtils.createEmptyLabel(settingsGroup, 2, 1);
 
             addControlToGroup(GROUP_SERVER, serverLabel);
             addControlToGroup(GROUP_SERVER, serverText);
@@ -187,7 +174,7 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
             dbText.setLayoutData(gd);
             dbText.addModifyListener(textListener);
 
-            Control emptyLabel = createEmptyLabel(settingsGroup, 1);
+            Control emptyLabel = UIUtils.createEmptyLabel(settingsGroup, 2, 1);
 
             addControlToGroup(GROUP_DB, dbLabel);
             addControlToGroup(GROUP_DB, dbText);
@@ -207,12 +194,7 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
             gd.horizontalSpan = 2;
             pathText.setLayoutData(gd);
             pathText.addModifyListener(textListener);
-            pathText.addModifyListener(new ModifyListener() {
-                @Override
-                public void modifyText(ModifyEvent e) {
-                    updateCreateButton(site.getDriver());
-                }
-            });
+            pathText.addModifyListener(e -> updateCreateButton(site.getDriver()));
 
             Composite buttonsPanel = new Composite(settingsGroup, SWT.NONE);
             gl = new GridLayout(2, true);
@@ -287,7 +269,7 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
             userNameText.setLayoutData(gd);
             userNameText.addModifyListener(textListener);
 
-            Control emptyLabel = createEmptyLabel(settingsGroup, 2);
+            Control emptyLabel = UIUtils.createEmptyLabel(settingsGroup, 2, 1);
 
             Label passwordLabel = new Label(settingsGroup, SWT.NONE);
             passwordLabel.setText(GenericMessages.dialog_connection_password_label);
@@ -299,26 +281,18 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
             passwordText.setLayoutData(gd);
             passwordText.addModifyListener(textListener);
 
+            createSavePasswordButton(settingsGroup, 2);
+
             addControlToGroup(GROUP_LOGIN, userNameLabel);
             addControlToGroup(GROUP_LOGIN, userNameText);
             addControlToGroup(GROUP_LOGIN, emptyLabel);
             addControlToGroup(GROUP_LOGIN, passwordLabel);
             addControlToGroup(GROUP_LOGIN, passwordText);
+            addControlToGroup(GROUP_LOGIN, savePasswordCheck);
         }
 
         createDriverPanel(settingsGroup);
         setControl(settingsGroup);
-    }
-
-    private Control createEmptyLabel(Composite parent, int verticalSpan)
-    {
-        Label emptyLabel = new Label(parent, SWT.NONE);
-        GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_END);
-        gd.horizontalSpan = 2;
-        gd.verticalSpan = verticalSpan;
-        gd.widthHint = 0;
-        emptyLabel.setLayoutData(gd);
-        return emptyLabel;
     }
 
     @Override
@@ -403,6 +377,13 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
         }
 
         if (urlText != null) {
+            if (CommonUtils.isEmpty(connectionInfo.getUrl())) {
+                try {
+                    saveSettings(site.getActiveDataSource());
+                } catch (Exception e) {
+                    setMessage(e.getMessage());
+                }
+            }
             if (connectionInfo.getUrl() != null) {
                 urlText.setText(CommonUtils.notEmpty(connectionInfo.getUrl()));
             } else {
@@ -412,23 +393,20 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
 
         activated = true;
 
-        UIUtils.asyncExec(new Runnable() {
-            @Override
-            public void run() {
-                // Set first control
-                if (CommonUtils.isEmpty(site.getDriver().getSampleURL())) {
-                    urlText.setFocus();
-                } else  if (hostText != null && hostText.isVisible()) {
-                    hostText.setFocus();
-                } else  if (serverText != null && serverText.isVisible()) {
-                    serverText.setFocus();
-                } else  if (dbText != null && dbText.isVisible()) {
-                    dbText.setFocus();
-                } else  if (pathText != null && pathText.isVisible()) {
-                    pathText.setFocus();
-                } else  if (userNameText != null && userNameText.isVisible()) {
-                    userNameText.setFocus();
-                }
+        UIUtils.asyncExec(() -> {
+            // Set first control
+            if (CommonUtils.isEmpty(site.getDriver().getSampleURL())) {
+                urlText.setFocus();
+            } else  if (hostText != null && hostText.isVisible()) {
+                hostText.setFocus();
+            } else  if (serverText != null && serverText.isVisible()) {
+                serverText.setFocus();
+            } else  if (dbText != null && dbText.isVisible()) {
+                dbText.setFocus();
+            } else  if (pathText != null && pathText.isVisible()) {
+                pathText.setFocus();
+            } else  if (userNameText != null && userNameText.isVisible()) {
+                userNameText.setFocus();
             }
         });
 
@@ -438,7 +416,7 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
     public void saveSettings(DBPDataSourceContainer dataSource)
     {
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
-        final Set<String> properties = metaURL == null ? Collections.<String>emptySet() : metaURL.getAvailableProperties();
+        final Set<String> properties = metaURL == null ? Collections.emptySet() : metaURL.getAvailableProperties();
 
         if (hostText != null && properties.contains(DriverDescriptor.PROP_HOST)) {
             connectionInfo.setHostName(hostText.getText().trim());
@@ -539,14 +517,11 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
         }
 
         try {
-            site.getRunnableContext().run(true, true, new DBRRunnableWithProgress() {
-                @Override
-                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                    try {
-                        createEmbeddedDatabase(monitor, testDataSource);
-                    } catch (DBException e1) {
-                        throw new InvocationTargetException(e1);
-                    }
+            site.getRunnableContext().run(true, true, monitor -> {
+                try {
+                    createEmbeddedDatabase(monitor, testDataSource);
+                } catch (DBException e1) {
+                    throw new InvocationTargetException(e1);
                 }
             });
             MessageDialog.openInformation(getShell(), "Database Create", "Database '" + databaseName + "' created!");

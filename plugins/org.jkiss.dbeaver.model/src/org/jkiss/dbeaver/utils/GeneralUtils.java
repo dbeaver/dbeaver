@@ -458,7 +458,7 @@ public class GeneralUtils {
     private static IStatus makeExceptionStatus(int severity, Throwable ex, boolean nested)
     {
         // Skip chain of nested DBExceptions. Show only last message
-        while (ex instanceof DBException && ex.getCause() instanceof DBException) {
+        while (ex.getCause() != null && ex.getMessage().equals(ex.getCause().getMessage())) {
             ex = ex.getCause();
         }
         Throwable cause = ex.getCause();
@@ -498,7 +498,7 @@ public class GeneralUtils {
                     0,
                     new IStatus[]{makeExceptionStatus(severity, cause, true)},
                     getExceptionMessage(ex),
-                    nested ? null : ex);
+                    !nested ? null : ex);
             }
         }
     }

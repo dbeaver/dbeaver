@@ -25,6 +25,7 @@ import org.eclipse.ui.actions.ActionFactory.IWorkbenchAction;
 import org.eclipse.ui.actions.ContributionItemFactory;
 import org.eclipse.ui.application.ActionBarAdvisor;
 import org.eclipse.ui.application.IActionBarConfigurer;
+import org.eclipse.ui.ide.IDEActionFactory;
 import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.internal.registry.ActionSetRegistry;
 import org.eclipse.ui.internal.registry.IActionSetDescriptor;
@@ -62,6 +63,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
     protected CheckForUpdateAction checkUpdatesAction;
     protected IWorkbenchAction showHelpAction;
     protected IWorkbenchAction newWindowAction;
+    private IWorkbenchAction openWorkspaceAction;
 
     public ApplicationActionBarAdvisor(IActionBarConfigurer configurer)
     {
@@ -123,6 +125,10 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         newWindowAction = ActionFactory.OPEN_NEW_WINDOW.create(window);
         register(newWindowAction);
 
+        openWorkspaceAction = IDEActionFactory.OPEN_WORKSPACE.create(window);
+        register(openWorkspaceAction);
+
+
 //        historyBackAction = ActionFactory.BACKWARD_HISTORY.create(window);
 //        register(historyBackAction);
 //        historyForwardAction = ActionFactory.FORWARD_HISTORY.create(window);
@@ -169,13 +175,20 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             fileMenu.add(new Separator());
             fileMenu.add(new GroupMarker(IWorkbenchActionConstants.SAVE_EXT));
             fileMenu.add(new Separator());
+
+            MenuManager recentEditors = new MenuManager("Recent editors");
+            recentEditors.add(ContributionItemFactory.REOPEN_EDITORS.create(getActionBarConfigurer().getWindowConfigurer().getWindow()));
+            recentEditors.add(new GroupMarker(IWorkbenchActionConstants.MRU));
+            fileMenu.add(recentEditors);
+
             fileMenu.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
-            fileMenu.add(ContributionItemFactory.REOPEN_EDITORS.create(getActionBarConfigurer().getWindowConfigurer().getWindow()));
-            fileMenu.add(new GroupMarker(IWorkbenchActionConstants.MRU));
+
+            fileMenu.add(openWorkspaceAction);
+
             fileMenu.add(new Separator());
+            fileMenu.add(ActionUtils.makeAction(emergentExitAction, null, null, CoreMessages.actions_menu_exit_emergency, null, null));
 
             fileMenu.add(new GroupMarker(IWorkbenchActionConstants.FILE_END));
-            fileMenu.add(ActionUtils.makeAction(emergentExitAction, null, null, CoreMessages.actions_menu_exit_emergency, null, null));
         }
 
         {

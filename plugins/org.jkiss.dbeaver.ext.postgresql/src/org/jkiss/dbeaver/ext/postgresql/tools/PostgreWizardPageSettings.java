@@ -82,7 +82,7 @@ public abstract class PostgreWizardPageSettings<WIZARD extends AbstractToolWizar
                 @Override
                 public void widgetSelected(SelectionEvent e)
                 {
-                    BaseAuthDialog authDialog = new BaseAuthDialog(getShell(), PostgreMessages.wizard_backup_page_setting_group_security_btn_authentication, false);
+                    BaseAuthDialog authDialog = new BaseAuthDialog(getShell(), PostgreMessages.wizard_backup_page_setting_group_security_btn_authentication, false, true);
                     authDialog.setUserName(wizard.getToolUserName());
                     authDialog.setUserPassword(wizard.getToolUserPassword());
                     authDialog.setSavePassword(savePassword);

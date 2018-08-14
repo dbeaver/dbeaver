@@ -41,6 +41,8 @@ public final class DBeaverPreferences
     public static final String NAVIGATOR_SHOW_OBJECT_TIPS = "navigator.show.objects.tips"; //$NON-NLS-1$
 
     public static final String TOOLBARS_SHOW_GENERAL_ALWAYS = "toolbars.show.general.always"; //$NON-NLS-1$
+    public static final String TOOLBARS_DATABASE_SELECTOR_WIDTH = "toolbars.database.selector.width"; //$NON-NLS-1$
+    public static final String TOOLBARS_SCHEMA_SELECTOR_WIDTH = "toolbars.schema.selector.width"; //$NON-NLS-1$
 
     public static final String ENTITY_EDITOR_DETACH_INFO = "entity.editor.info.detach"; //$NON-NLS-1$
     public static final String ENTITY_EDITOR_INFO_SASH_STATE = "entity.editor.info.sash.state"; //$NON-NLS-1$
@@ -55,7 +57,6 @@ public final class DBeaverPreferences
     public static final String STATEMENT_INVALIDATE_BEFORE_EXECUTE = "statement.invalidate.before.execute"; //$NON-NLS-1$
     public static final String STATEMENT_TIMEOUT = "statement.timeout"; //$NON-NLS-1$
     public static final String MEMORY_CONTENT_MAX_SIZE = "content.memory.maxsize"; //$NON-NLS-1$
-    public static final String READ_EXPENSIVE_PROPERTIES = "database.props.expensive"; //$NON-NLS-1$
     public static final String EDITOR_SEPARATE_CONNECTION = "database.editor.separate.connection"; //$NON-NLS-1$
     public static final String EDITOR_CONNECT_ON_ACTIVATE = "database.editor.connect.on.activate"; //$NON-NLS-1$
     public static final String EDITOR_CONNECT_ON_EXECUTE = "database.editor.connect.on.execute"; //$NON-NLS-1$

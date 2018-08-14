@@ -346,6 +346,42 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     }
 
     @Override
+    public boolean supportsSynonyms(GenericDataSource dataSource) {
+        return true;
+    }
+
+    @Override
+    public List<? extends GenericSynonym> loadSynonyms(DBRProgressMonitor monitor, GenericStructContainer container) throws DBException {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, container, "Read system synonyms")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                "SELECT * FROM " + getSystemSchemaFQN(container.getDataSource(), container.getCatalog()) + ".synonyms WHERE schema_name(schema_id)=?")) {
+                dbStat.setString(1, container.getSchema().getName());
+                List<GenericSynonym> result = new ArrayList<>();
+
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    while (dbResult.next()) {
+                        String name = JDBCUtils.safeGetString(dbResult, "name");
+                        if (name == null) {
+                            continue;
+                        }
+                        name = name.trim();
+                        SQLServerSynonym synonym = new SQLServerSynonym(
+                            container,
+                            name,
+                            null,
+                            JDBCUtils.safeGetString(dbResult, "base_object_name"));
+                        result.add(synonym);
+                    }
+                }
+                return result;
+
+            }
+        } catch (SQLException e) {
+            throw new DBException(e, container.getDataSource());
+        }
+    }
+
+    @Override
     public SQLServerTable createTableImpl(GenericStructContainer container, String tableName, String tableType, JDBCResultSet dbResult) {
         return new SQLServerTable(container, tableName, tableType, dbResult);
     }

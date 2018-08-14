@@ -158,7 +158,7 @@ public class DataSourceHandler
         DBAAuthInfo authInfo = new UITask<DBAAuthInfo>() {
             @Override
             protected DBAAuthInfo runTask() {
-                return DBUserInterface.getInstance().promptUserCredentials(prompt, user, password, passwordOnly);
+                return DBUserInterface.getInstance().promptUserCredentials(prompt, user, password, passwordOnly, !dataSourceContainer.isTemporary());
             }
         }.execute();
         if (authInfo == null) {
@@ -223,12 +223,7 @@ public class DataSourceHandler
                 }
             });
             // Run in UI thread to update actions (some Eclipse magic)
-            UIUtils.asyncExec(new Runnable() {
-                @Override
-                public void run() {
-                    disconnectJob.schedule();
-                }
-            });
+            UIUtils.asyncExec(disconnectJob::schedule);
         }
     }
 

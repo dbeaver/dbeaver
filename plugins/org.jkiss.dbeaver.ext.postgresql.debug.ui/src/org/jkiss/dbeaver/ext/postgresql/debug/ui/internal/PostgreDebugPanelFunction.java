@@ -32,7 +32,8 @@ import org.jkiss.dbeaver.debug.ui.DBGConfigurationPanel;
 import org.jkiss.dbeaver.debug.ui.DBGConfigurationPanelContainer;
 import org.jkiss.dbeaver.ext.postgresql.debug.PostgreDebugConstants;
 import org.jkiss.dbeaver.ext.postgresql.debug.core.PostgreSqlDebugCore;
-import org.jkiss.dbeaver.ext.postgresql.model.*;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedure;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreProcedureParameter;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
@@ -41,12 +42,12 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedureParameter;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.CSmartCombo;
 import org.jkiss.dbeaver.ui.controls.CSmartSelector;
 import org.jkiss.dbeaver.ui.controls.CustomTableEditor;
-import org.jkiss.dbeaver.ui.dialogs.BrowseObjectDialog;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -118,7 +119,7 @@ public class PostgreDebugPanelFunction implements DBGConfigurationPanel {
                     DBNDatabaseNode dsNode = navigatorModel.getNodeByObject(container.getDataSource());
                     if (dsNode != null) {
                         DBNNode curNode = selectedFunction == null ? null : navigatorModel.getNodeByObject(selectedFunction);
-                        DBNNode node = BrowseObjectDialog.selectObject(
+                        DBNNode node = DBUserInterface.getInstance().selectObject(
                             parent.getShell(),
                             "Select function to debug",
                             dsNode,

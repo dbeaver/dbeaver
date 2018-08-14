@@ -128,6 +128,7 @@ public class WMIConnectionPage extends ConnectionPageAbstract
             usernameText.setLayoutData(gd);
             usernameText.addModifyListener(textListener);
 
+            UIUtils.createEmptyLabel(addrGroup, 2, 1);
 
             Label passwordLabel = UIUtils.createControlLabel(addrGroup, "Password");
             passwordLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
@@ -137,6 +138,8 @@ public class WMIConnectionPage extends ConnectionPageAbstract
             gd.grabExcessHorizontalSpace = true;
             passwordText.setLayoutData(gd);
             passwordText.addModifyListener(textListener);
+
+            createSavePasswordButton(addrGroup, 2);
         }
 
         setControl(addrGroup);
@@ -177,6 +180,7 @@ public class WMIConnectionPage extends ConnectionPageAbstract
         if (namespaceCombo != null) {
             namespaceCombo.setText(CommonUtils.notEmpty(connectionInfo.getDatabaseName()));
         }
+        super.loadSettings();
     }
 
     @Override

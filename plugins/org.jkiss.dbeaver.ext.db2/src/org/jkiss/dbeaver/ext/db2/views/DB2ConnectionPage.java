@@ -126,11 +126,15 @@ public class DB2ConnectionPage extends ConnectionPageAbstract implements ICompos
             Label passwordLabel = UIUtils.createControlLabel(addrGroup, DB2Messages.dialog_connection_password);
             passwordLabel.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
 
-            passwordText = new Text(addrGroup, SWT.BORDER | SWT.PASSWORD);
+            Composite passPH = UIUtils.createPlaceholder(addrGroup, 2, 5);
+            passPH.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            passwordText = new Text(passPH, SWT.BORDER | SWT.PASSWORD);
             gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
             gd.widthHint = 200;
             passwordText.setLayoutData(gd);
             passwordText.addModifyListener(textListener);
+
+            createSavePasswordButton(passPH);
         }
 
         createDriverPanel(control);

@@ -252,7 +252,7 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
     // Count
 
     @Override
-    public long countData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @Nullable DBDDataFilter dataFilter) throws DBCException
+    public long countData(@NotNull DBCExecutionSource source, @NotNull DBCSession session, @Nullable DBDDataFilter dataFilter, long flags) throws DBCException
     {
         DBRProgressMonitor monitor = session.getProgressMonitor();
 
@@ -310,6 +310,15 @@ public abstract class JDBCTable<DATASOURCE extends DBPDataSource, CONTAINER exte
         return new ExecuteBatchImpl(attributes, keysReceiver, true) {
 
             private boolean allNulls;
+
+            protected int getNextUsedParamIndex(Object[] attributeValues, int paramIndex) {
+                paramIndex++;
+                DBSAttributeBase attribute = attributes[paramIndex];
+                while (DBUtils.isPseudoAttribute(attribute) || (!allNulls && DBUtils.isNullValue(attributeValues[paramIndex]))) {
+                    paramIndex++;
+                }
+                return paramIndex;
+            }
 
             @NotNull
             @Override

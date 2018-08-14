@@ -175,7 +175,7 @@ public class OracleTableColumn extends JDBCTableColumn<OracleTableBase> implemen
         }
     }
 
-    @Property(viewable = true, editable = true, updatable = true, order = 100)
+    @Property(viewable = true, editable = true, updatable = true, multiline = true, order = 100)
     @LazyProperty(cacheValidator = CommentLoadValidator.class)
     public String getComment(DBRProgressMonitor monitor)
     {

@@ -6,10 +6,10 @@
     <parent>
         <groupId>org.jkiss.dbeaver</groupId>
         <artifactId>dbeaver</artifactId>
-        <version>1.0.0</version>
+        <version>1.0.0-SNAPSHOT</version>
         <relativePath>../</relativePath>
     </parent>
-    <version>1.0.0</version>
+    <version>1.0.0-SNAPSHOT</version>
     <artifactId>dbeaver-nls</artifactId>
     <packaging>pom</packaging>
     <name>DBeaver NLS plugins and features</name>

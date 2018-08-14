@@ -81,7 +81,7 @@ public abstract class MySQLWizardPageSettings<WIZARD extends AbstractToolWizard>
                 @Override
                 public void widgetSelected(SelectionEvent e)
                 {
-                    BaseAuthDialog authDialog = new BaseAuthDialog(getShell(), "Authentication", false);
+                    BaseAuthDialog authDialog = new BaseAuthDialog(getShell(), "Authentication", false, true);
                     authDialog.setUserName(wizard.getToolUserName());
                     authDialog.setUserPassword(wizard.getToolUserPassword());
                     authDialog.setSavePassword(savePassword);

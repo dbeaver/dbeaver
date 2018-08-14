@@ -131,6 +131,7 @@
                     <property id="meta-model" label="Meta model type" description="Type of metadata reading model - standard or indexed" type="string" required="false" defaultValue="" validValues="standard,indexed"/>
                     <property id="all-objects-pattern" label="All Objects Pattern" description="SQL pattern for all metadata objects" type="string" required="false" defaultValue="%" validValues="null,%"/>
                     <property id="omit-catalog" label="Omit catalog(s)" description="Do not read and use catalog (aka database) information" type="boolean" required="false" defaultValue="false"/>
+                    <property id="omit-single-catalog" label="Omit single catalog" description="Hide catalog (database) is there is only one catalog on server" type="boolean" required="false" defaultValue="false"/>
                     <property id="omit-type-cache" label="Omit type cache" description="Do not use data types provided by driver" type="boolean" required="false" defaultValue="false"/>
                     <property id="shutdown-url-param" label="Shutdown parameter" description="Database shutdown URL parameter" type="string" required="false" defaultValue=""/>
                     <property id="create-url-param" label="Create database parameter" description="Database create URL parameter" type="string" required="false" defaultValue=""/>
@@ -558,6 +559,7 @@
                 <driver
                     id="cache"
                     label="Cache"
+                    icon="icons/cache_icon.png"
                     class="com.intersys.jdbc.CacheDriver"
                     sampleURL="jdbc:Cache://{host}:{port}/{database}"
                     defaultPort="1972"
@@ -645,6 +647,7 @@
                     defaultPort=""
                     webURL="https://github.com/xerial/sqlite-jdbc"
                     embedded="true"
+                    anonymous="true"
                     description="SQLite JDBC driver by Taro L. Saito (extension of Zentus driver)">
                     <replace provider="generic" driver="sqlite_zentus"/>
                     <replace provider="generic" driver="sqlite_xerial"/>
@@ -855,9 +858,7 @@
                     webURL="https://cwiki.apache.org/confluence/display/Hive/Home"
                     category="Hadoop">
 
-                    <file type="jar" path="maven:/org.apache.hive:hive-jdbc:RELEASE" bundle="!drivers.hive"/>
-                    <file type="jar" path="maven:/org.apache.hadoop:hadoop-core:RELEASE" bundle="!drivers.hive"/>
-
+                    <file type="jar" path="https://github.com/timveil/hive-jdbc-uber-jar/releases/download/v1.8-2.6.3/hive-jdbc-uber-2.6.3.0-235.jar" bundle="!drivers.hive"/>
                     <file type="jar" path="drivers/hive/hive-jdbc-uber.jar" bundle="drivers.hive"/>
 
                     <parameter name="supports-limits" value="false"/>
@@ -909,23 +910,36 @@
                 <driver
                     id="aws_redshift"
                     label="Redshift (JDBC 4.1)"
+                    category="AWS"
                     class="com.amazon.redshift.jdbc41.Driver"
                     sampleURL="jdbc:redshift://{host}:{port}/{database}"
                     defaultPort="5439"
-                    description="Amazon Redshift JDBC driver"
+                    description="AWS Redshift JDBC driver"
                     webURL="http://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-connection.html">
                     <file type="jar" path="https://s3.amazonaws.com/redshift-downloads/drivers/jdbc/1.2.12.1017/1.2.15.1025/RedshiftJDBC41-1.2.15.1025.jar"/>
                 </driver>
                 <driver
                     id="aws_redshift_42"
                     label="Redshift"
+                    category="AWS"
                     class="com.amazon.redshift.jdbc42.Driver"
                     sampleURL="jdbc:redshift://{host}:{port}/{database}"
                     defaultPort="5439"
-                    description="Amazon Redshift JDBC driver"
+                    description="AWS Redshift JDBC driver"
                     webURL="http://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-connection.html">
                     <replace provider="generic" driver="aws_redshift"/>
                     <file type="jar" path="https://s3.amazonaws.com/redshift-downloads/drivers/jdbc/1.2.15.1025/RedshiftJDBC42-1.2.15.1025.jar"/>
+                </driver>
+                <driver
+                    id="aws_athena_42"
+                    label="Athena"
+                    category="AWS"
+                    class="com.simba.athena.jdbc.Driver"
+                    sampleURL=" jdbc:awsathena://AwsRegion=us-east-1;"
+                    defaultPort="5439"
+                    description="AWS Athena JDBC driver"
+                    webURL="https://docs.aws.amazon.com/athena/latest/ug/connect-with-jdbc.html">
+                    <file type="jar" path="https://s3.amazonaws.com/athena-downloads/drivers/JDBC/SimbaAthenaJDBC_2.0.2/AthenaJDBC42_2.0.2.jar"/>
                 </driver>
 
                 <!-- Virtuoso  -->
@@ -960,6 +974,7 @@
                     class="ru.yandex.clickhouse.ClickHouseDriver"
                     sampleURL="jdbc:clickhouse://{host}:{port}[/{database}]"
                     defaultPort="8123"
+                    icon="icons/clickhouse_icon.png"
                     description="Yandex ClickHouse"
                     webURL="https://github.com/yandex/clickhouse-jdbc">
                     <file type="jar" path="maven:/ru.yandex.clickhouse:clickhouse-jdbc:RELEASE"/>

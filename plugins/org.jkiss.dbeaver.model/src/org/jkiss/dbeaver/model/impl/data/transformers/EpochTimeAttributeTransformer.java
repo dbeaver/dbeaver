@@ -20,7 +20,6 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
@@ -31,6 +30,7 @@ import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.data.ProxyValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.utils.time.ExtendedDateFormat;
 
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -46,7 +46,9 @@ public class EpochTimeAttributeTransformer implements DBDAttributeTransformer {
     private static final Log log = Log.getLog(EpochTimeAttributeTransformer.class);
     private static final String PROP_UNIT = "unit";
 
-    private static final SimpleDateFormat DEFAULT_TIME_FORMAT = new SimpleDateFormat(DBConstants.DEFAULT_TIMESTAMP_FORMAT, Locale.ENGLISH);
+    private static final SimpleDateFormat FORMAT_MILLIS = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS", Locale.ENGLISH);
+    private static final SimpleDateFormat FORMAT_SECONDS = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ENGLISH);
+    private static final SimpleDateFormat FORMAT_NANOS = new ExtendedDateFormat("yyyy-MM-dd HH:mm:ss.ffffff",Locale.ENGLISH);
 
     enum EpochUnit {
         seconds,
@@ -83,10 +85,13 @@ public class EpochTimeAttributeTransformer implements DBDAttributeTransformer {
             if (value instanceof Number) {
                 long dateValue = ((Number) value).longValue();
                 switch (unit) {
-                    case seconds: dateValue *= 1000; break;
-                    case nanoseconds: dateValue /= 1000; break;
+                    case seconds:
+                        return FORMAT_SECONDS.format(new Date(dateValue * 1000));
+                    case nanoseconds:
+                        return FORMAT_NANOS.format(new Date(dateValue / 1000));
+                    default:
+                        return FORMAT_MILLIS.format(new Date(dateValue));
                 }
-                return DEFAULT_TIME_FORMAT.format(new Date(dateValue));
             }
             return DBValueFormatting.getDefaultValueDisplayString(value, format);
         }
@@ -96,7 +101,14 @@ public class EpochTimeAttributeTransformer implements DBDAttributeTransformer {
         public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, @Nullable Object object, boolean copy) throws DBCException {
             if (object instanceof String) {
                 try {
-                    return DEFAULT_TIME_FORMAT.parse((String) object).getTime();
+                    switch (unit) {
+                        case seconds:
+                            return FORMAT_SECONDS.parse((String) object).getTime() / 1000;
+                        case milliseconds:
+                            return FORMAT_MILLIS.parse((String) object).getTime();
+                        case nanoseconds:
+                            return FORMAT_NANOS.parse((String) object).getTime() * 1000;
+                    }
                 } catch (Exception e) {
                     log.debug("Error parsing time value", e);
                 }

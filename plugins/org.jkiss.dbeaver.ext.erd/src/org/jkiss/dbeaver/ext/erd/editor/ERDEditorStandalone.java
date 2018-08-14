@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ext.erd.editor;
 
 import org.eclipse.core.resources.*;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.jobs.IJobChangeEvent;
 import org.eclipse.core.runtime.jobs.JobChangeAdapter;
@@ -25,6 +26,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.PartInitException;
+import org.eclipse.ui.part.FileEditorInput;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.erd.model.DiagramLoader;
@@ -210,9 +212,17 @@ public class ERDEditorStandalone extends ERDEditorPart implements DBPContextProv
             return;
         }
         if (delta.getKind() == IResourceDelta.REMOVED) {
-            // Refresh editor
-            UIUtils.asyncExec(() ->
-                getSite().getWorkbenchWindow().getActivePage().closeEditor(ERDEditorStandalone.this, false));
+            if ((IResourceDelta.MOVED_TO & delta.getFlags()) != 0) {
+                // Renamed
+                IWorkspace workspace = ResourcesPlugin.getWorkspace();
+                IFile newFile = workspace.getRoot().getFile(delta.getMovedToPath());
+                setInput(new FileEditorInput(newFile));
+                setPartName(getEditorInput().getName());
+            } else {
+                // Deleted
+                UIUtils.asyncExec(() ->
+                    getSite().getWorkbenchWindow().getActivePage().closeEditor(ERDEditorStandalone.this, false));
+            }
         }
     }
 

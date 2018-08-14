@@ -99,7 +99,10 @@ public class JDBCDataSourceInfo implements DBPDataSourceInfo
             this.databaseProductVersion = "?"; //$NON-NLS-1$
         }
         try {
-            this.driverName = metaData.getDriverName();
+            String name = metaData.getDriverName();
+            if (name != null) {
+                this.driverName = name;
+            }
         } catch (Throwable e) {
             log.debug(e.getMessage());
             this.driverName = "?"; //$NON-NLS-1$

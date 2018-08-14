@@ -16,18 +16,17 @@
  */
 package org.jkiss.dbeaver.ext.snowflake;
 
-import org.jkiss.dbeaver.ext.snowflake.model.SnowflakeDataSource;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
+import org.jkiss.dbeaver.ext.snowflake.model.SnowflakeDataSource;
+import org.jkiss.dbeaver.ext.snowflake.model.SnowflakeMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
-import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
@@ -51,11 +50,6 @@ public class SnowflakeDataSourceProvider extends JDBCDataSourceProvider {
     }
 
     @Override
-    public DBPPropertyDescriptor[] getConnectionProperties(DBRProgressMonitor monitor, DBPDriver driver, DBPConnectionConfiguration connectionInfo) throws DBException {
-        return null;
-    }
-
-    @Override
     public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo)
     {
         StringBuilder url = new StringBuilder();
@@ -68,6 +62,7 @@ public class SnowflakeDataSourceProvider extends JDBCDataSourceProvider {
         hasParam = addParameter(url, "warehouse", connectionInfo.getServerName(), hasParam);
         hasParam = addParameter(url, "schema", connectionInfo.getProviderProperty(SnowflakeConstants.PROP_SCHEMA), hasParam);
         addParameter(url, "role", connectionInfo.getProviderProperty(SnowflakeConstants.PROP_ROLE), hasParam);
+
         return url.toString();
     }
 
@@ -87,7 +82,7 @@ public class SnowflakeDataSourceProvider extends JDBCDataSourceProvider {
         @NotNull DBPDataSourceContainer container)
         throws DBException
     {
-        return new SnowflakeDataSource(monitor, container, new GenericMetaModel());
+        return new SnowflakeDataSource(monitor, container, new SnowflakeMetaModel());
     }
 
 }

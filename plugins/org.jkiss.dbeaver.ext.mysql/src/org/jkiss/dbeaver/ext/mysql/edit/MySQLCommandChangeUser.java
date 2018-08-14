@@ -88,7 +88,7 @@ public class MySQLCommandChangeUser extends DBECommandComposite<MySQLUser, UserP
         StringBuilder script = new StringBuilder();
         boolean hasSet;
         final MySQLDataSource dataSource = getObject().getDataSource();
-        if (!dataSource.isMariaDB() && dataSource.isServerVersionAtLeast(5, 7)) {
+        if (dataSource.isMariaDB() || dataSource.isServerVersionAtLeast(5, 7)) {
             hasSet = generateAlterScript(script);
         } else {
             hasSet = generateUpdateScript(script);
@@ -131,14 +131,14 @@ public class MySQLCommandChangeUser extends DBECommandComposite<MySQLUser, UserP
         StringBuilder resOptions = new StringBuilder();
         for (Map.Entry<Object, Object> entry : getProperties().entrySet()) {
             switch (UserPropertyHandler.valueOf((String) entry.getKey())) {
-                case MAX_QUERIES: resOptions.append(" MAX_QUERIES_PER_HOUR ").append(CommonUtils.toInt(entry.getValue())); hasResOptions = true; break; //$NON-NLS-1$
-                case MAX_UPDATES: resOptions.append(" MAX_UPDATES_PER_HOUR ").append(CommonUtils.toInt(entry.getValue())); hasResOptions = true; break; //$NON-NLS-1$
-                case MAX_CONNECTIONS: resOptions.append(" MAX_CONNECTIONS_PER_HOUR ").append(CommonUtils.toInt(entry.getValue())); hasResOptions = true; break; //$NON-NLS-1$
-                case MAX_USER_CONNECTIONS: resOptions.append(" MAX_USER_CONNECTIONS ").append(CommonUtils.toInt(entry.getValue())); hasResOptions = true; break; //$NON-NLS-1$
+                case MAX_QUERIES: resOptions.append("\n\tMAX_QUERIES_PER_HOUR ").append(CommonUtils.toInt(entry.getValue())); hasResOptions = true; break; //$NON-NLS-1$
+                case MAX_UPDATES: resOptions.append("\n\tMAX_UPDATES_PER_HOUR ").append(CommonUtils.toInt(entry.getValue())); hasResOptions = true; break; //$NON-NLS-1$
+                case MAX_CONNECTIONS: resOptions.append("\n\tMAX_CONNECTIONS_PER_HOUR ").append(CommonUtils.toInt(entry.getValue())); hasResOptions = true; break; //$NON-NLS-1$
+                case MAX_USER_CONNECTIONS: resOptions.append("\n\tMAX_USER_CONNECTIONS ").append(CommonUtils.toInt(entry.getValue())); hasResOptions = true; break; //$NON-NLS-1$
             }
         }
         if (resOptions.length() > 0) {
-            script.append("\nWITH ").append(resOptions);
+            script.append("\nWITH").append(resOptions);
         }
         return hasSet || hasResOptions;
     }

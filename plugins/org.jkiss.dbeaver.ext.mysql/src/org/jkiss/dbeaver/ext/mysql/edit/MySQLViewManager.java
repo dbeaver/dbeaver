@@ -23,8 +23,11 @@ import org.jkiss.dbeaver.ext.mysql.model.MySQLCatalog;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLTableBase;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLView;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.DBSObjectCache;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -107,7 +110,21 @@ public class MySQLViewManager extends MySQLTableManager {
         if (checkOption != null && checkOption != MySQLView.CheckOption.NONE) {
             decl.append(lineSeparator).append("WITH ").append(checkOption.getDefinitionName()).append(" CHECK OPTION"); //$NON-NLS-1$ //$NON-NLS-2$
         }
-        actions.add(new SQLDatabasePersistAction("Create view", decl.toString()));
+        actions.add(new SQLDatabasePersistAction("Create view", decl.toString()) {
+            @Override
+            public void beforeExecute(DBCSession session) throws DBCException {
+                MySQLView schemaView;
+                try {
+                    schemaView = DBUtils.findObject(view.getParentObject().getViews(session.getProgressMonitor()), view.getName());
+                } catch (DBException e) {
+                    throw new DBCException(e, view.getDataSource());
+                }
+                if (schemaView != view) {
+                    throw new DBCException("View with name '" + view.getName() + "' already exists. Choose another name");
+                }
+                super.beforeExecute(session);
+            }
+        });
     }
 
 }

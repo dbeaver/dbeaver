@@ -63,7 +63,7 @@ public abstract class GenericSynonym implements DBSAlias, DBSObject, DBPQualifie
 
     @Nullable
     @Override
-    public DBSObject getParentObject() {
+    public GenericStructContainer getParentObject() {
         return container;
     }
 

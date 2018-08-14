@@ -16,8 +16,6 @@
  */
 package org.jkiss.dbeaver.ext.snowflake.views;
 
-import org.jkiss.dbeaver.ext.snowflake.SnowflakeConstants;
-import org.jkiss.dbeaver.ext.snowflake.Activator;
 import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.swt.SWT;
@@ -32,6 +30,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.snowflake.Activator;
+import org.jkiss.dbeaver.ext.snowflake.SnowflakeConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.exec.*;
@@ -39,6 +39,7 @@ import org.jkiss.dbeaver.ui.ICompositeDialogPage;
 import org.jkiss.dbeaver.ui.IDataSourceConnectionTester;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.connection.ConnectionPageAbstract;
+import org.jkiss.dbeaver.ui.dialogs.connection.DriverPropertiesDialogPage;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
@@ -58,6 +59,7 @@ public class SnowflakeConnectionPage extends ConnectionPageAbstract implements I
     private Combo warehouseText;
     private Combo schemaText;
     private Combo roleText;
+    private Combo authTypeCombo;
     private Text usernameText;
     private Text passwordText;
 
@@ -156,6 +158,8 @@ public class SnowflakeConnectionPage extends ConnectionPageAbstract implements I
             usernameText.setLayoutData(gd);
             usernameText.addModifyListener(textListener);
 
+            UIUtils.createEmptyLabel(addrGroup, 2, 1);
+
             UIUtils.createControlLabel(addrGroup, "Password");
 
             passwordText = new Text(addrGroup, SWT.BORDER | SWT.PASSWORD);
@@ -163,12 +167,25 @@ public class SnowflakeConnectionPage extends ConnectionPageAbstract implements I
             passwordText.setLayoutData(gd);
             passwordText.addModifyListener(textListener);
 
+            createSavePasswordButton(addrGroup, 2);
+
             UIUtils.createControlLabel(addrGroup, "Role");
 
             roleText = new Combo(addrGroup, SWT.BORDER | SWT.DROP_DOWN);
             gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL);
             roleText.setLayoutData(gd);
             roleText.addModifyListener(textListener);
+
+            //UIUtils.createEmptyLabel(addrGroup, 2, 1);
+
+            UIUtils.createControlLabel(addrGroup, "Authenticator");
+            authTypeCombo = new Combo(addrGroup, SWT.BORDER | SWT.DROP_DOWN);
+            authTypeCombo.add("");
+            authTypeCombo.add("snowflake");
+            authTypeCombo.add("externalbrowser");
+            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL);
+            authTypeCombo.setLayoutData(gd);
+            authTypeCombo.addModifyListener(textListener);
         }
 
         createDriverPanel(control);
@@ -224,6 +241,9 @@ public class SnowflakeConnectionPage extends ConnectionPageAbstract implements I
         if (roleText != null) {
             roleText.setText(CommonUtils.notEmpty(connectionInfo.getProviderProperty(SnowflakeConstants.PROP_ROLE)));
         }
+        if (authTypeCombo != null) {
+            roleText.setText(CommonUtils.notEmpty(connectionInfo.getProviderProperty(SnowflakeConstants.PROP_AUTHENTICATOR)));
+        }
         if (passwordText != null) {
             passwordText.setText(CommonUtils.notEmpty(connectionInfo.getUserPassword()));
         }
@@ -253,6 +273,9 @@ public class SnowflakeConnectionPage extends ConnectionPageAbstract implements I
         }
         if (roleText != null) {
             connectionInfo.setProviderProperty(SnowflakeConstants.PROP_ROLE, roleText.getText().trim());
+        }
+        if (authTypeCombo != null) {
+            connectionInfo.setProviderProperty(SnowflakeConstants.PROP_AUTHENTICATOR, authTypeCombo.getText().trim());
         }
         if (passwordText != null) {
             connectionInfo.setUserPassword(passwordText.getText());
@@ -291,7 +314,7 @@ public class SnowflakeConnectionPage extends ConnectionPageAbstract implements I
             if (!result.contains("")) {
                 result.add(0, "");
             }
-            combo.setItems(result.toArray(new String[result.size()]));
+            combo.setItems(result.toArray(new String[0]));
             combo.setText(oldText);
         });
     }
@@ -300,7 +323,7 @@ public class SnowflakeConnectionPage extends ConnectionPageAbstract implements I
     public IDialogPage[] getSubPages()
     {
         return new IDialogPage[] {
-            //new DriverPropertiesDialogPage(this)
+            new DriverPropertiesDialogPage(this)
         };
     }
 

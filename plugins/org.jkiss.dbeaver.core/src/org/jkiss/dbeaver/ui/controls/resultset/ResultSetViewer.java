@@ -85,7 +85,6 @@ import org.jkiss.dbeaver.ui.editors.object.struct.EditConstraintPage;
 import org.jkiss.dbeaver.ui.editors.object.struct.EditDictionaryPage;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDataFormat;
 import org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseGeneral;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -98,8 +97,6 @@ import java.util.List;
 /**
  * ResultSetViewer
  *
- * TODO: fix copy multiple cells - tabulation broken
- * TODO: links in both directions, multiple links support (context menu)
  * TODO: not-editable cells (struct owners in record mode)
  * TODO: PROBLEM. Multiple occurrences of the same struct type in a single table.
  * Need to make wrapper over DBSAttributeBase or something. Or maybe it is not a problem
@@ -182,15 +179,6 @@ public class ResultSetViewer extends Viewer
 
     private Color defaultBackground, defaultForeground;
 
-    private static Action NOREFS_ACTION, REFS_TITLE_ACTION;
-
-    static {
-        NOREFS_ACTION = new Action("<No References>") {};
-        NOREFS_ACTION.setEnabled(false);
-        REFS_TITLE_ACTION = new Action("<Table References>") {};
-        REFS_TITLE_ACTION.setEnabled(false);
-    }
-
     public ResultSetViewer(@NotNull Composite parent, @NotNull IWorkbenchPartSite site, @NotNull IResultSetContainer container)
     {
         super();
@@ -208,13 +196,8 @@ public class ResultSetViewer extends Viewer
 
         loadPresentationSettings();
 
-        {
-            IPreferenceStore preferenceStore = EditorUtils.getEditorsPreferenceStore();
-            String bgRGB = preferenceStore.getString(AbstractTextEditor.PREFERENCE_COLOR_BACKGROUND);
-            String fgRGB = preferenceStore.getString(AbstractTextEditor.PREFERENCE_COLOR_FOREGROUND);
-            defaultBackground = CommonUtils.isEmpty(bgRGB) ? parent.getDisplay().getSystemColor(SWT.COLOR_LIST_BACKGROUND) : UIUtils.getSharedColor(bgRGB);
-            defaultForeground = CommonUtils.isEmpty(fgRGB) ? parent.getDisplay().getSystemColor(SWT.COLOR_LIST_FOREGROUND) : UIUtils.getSharedColor(fgRGB);
-        }
+        this.defaultBackground = EditorUtils.getDefaultTextBackground();
+        this.defaultForeground = EditorUtils.getDefaultTextForeground();
 
         this.viewerPanel = UIUtils.createPlaceholder(parent, 1);
         this.viewerPanel.setData(CONTROL_ID, this);
@@ -1724,12 +1707,12 @@ public class ResultSetViewer extends Viewer
         }
     }
 
-    void showReferencesMenu() {
+    void showReferencesMenu(boolean openInNewWindow) {
         ResultSetRow currentRow = getCurrentRow();
         if (currentRow == null || currentRow.getRowNumber() < 0) {
             return;
         }
-        MenuManager menuManager = createRefTablesMenu(currentRow);
+        MenuManager menuManager = createRefTablesMenu(currentRow, openInNewWindow);
         if (menuManager != null) {
             showContextMenuAtCursor(menuManager);
         }
@@ -1901,7 +1884,7 @@ public class ResultSetViewer extends Viewer
                 }
                 if (model.isSingleSource()) {
                     // Add menu for referencing tables
-                    MenuManager refTablesMenu = createRefTablesMenu(row);
+                    MenuManager refTablesMenu = createRefTablesMenu(row, false);
                     if (refTablesMenu != null) {
                         navigateMenu.add(refTablesMenu);
                         hasNavTables = true;
@@ -1985,7 +1968,7 @@ public class ResultSetViewer extends Viewer
     }
 
     @Nullable
-    private MenuManager createRefTablesMenu(ResultSetRow row) {
+    private MenuManager createRefTablesMenu(ResultSetRow row, boolean openInNewWindow) {
         DBSEntity singleSource = model.getSingleSource();
         if (singleSource == null) {
             return null;
@@ -1994,81 +1977,12 @@ public class ResultSetViewer extends Viewer
 
         MenuManager refTablesMenu = new MenuManager(menuName, null, "ref-tables");
         refTablesMenu.setActionDefinitionId(ResultSetCommandHandler.CMD_REFERENCES_MENU);
-        refTablesMenu.add(NOREFS_ACTION);
-        refTablesMenu.addMenuListener(manager -> fillRefTablesActions(row, singleSource, manager));
+        refTablesMenu.add(ResultSetReferenceMenu.NOREFS_ACTION);
+        refTablesMenu.addMenuListener(manager -> ResultSetReferenceMenu.fillRefTablesActions(this, row, singleSource, manager, openInNewWindow));
 
         return refTablesMenu;
     }
 
-    private void fillRefTablesActions(ResultSetRow row, DBSEntity singleSource, IMenuManager manager) {
-
-        DBRRunnableWithResult<List<DBSEntityAssociation>> refCollector = new DBRRunnableWithResult<List<DBSEntityAssociation>>() {
-            @Override
-            public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                try {
-                    result = new ArrayList<>();
-                    Collection<? extends DBSEntityAssociation> refs = singleSource.getReferences(monitor);
-                    if (refs != null) {
-                        for (DBSEntityAssociation ref : refs) {
-                            boolean allMatch = true;
-                            DBSEntityConstraint ownConstraint = ref.getReferencedConstraint();
-                            if (ownConstraint instanceof DBSEntityReferrer) {
-                                for (DBSEntityAttributeRef ownAttrRef : ((DBSEntityReferrer) ownConstraint).getAttributeReferences(monitor)) {
-                                    if (model.getAttributeBinding(ownAttrRef.getAttribute()) == null) {
-                                        // Attribute is not in the list - skip this association
-                                        allMatch = false;
-                                        break;
-                                    }
-                                }
-                            }
-                            if (allMatch) {
-                                result.add(ref);
-                            }
-                        }
-                    }
-                } catch (DBException e) {
-                    throw new InvocationTargetException(e);
-                }
-            }
-        };
-        try {
-            UIUtils.runInProgressService(refCollector);
-        } catch (InvocationTargetException e) {
-            log.error("Error reading referencing tables for '" + singleSource.getName() + "'", e.getTargetException());
-        } catch (InterruptedException e) {
-            // Do nothing
-        }
-        manager.removeAll();
-        if (CommonUtils.isEmpty(refCollector.getResult())) {
-            manager.add(NOREFS_ACTION);
-            return;
-        }
-
-        manager.add(REFS_TITLE_ACTION);
-        manager.add(new Separator());
-        for (DBSEntityAssociation refAssociation : refCollector.getResult()) {
-            DBSEntity refTable = refAssociation.getParentObject();
-            manager.add(new Action(
-                DBUtils.getObjectFullName(refTable, DBPEvaluationContext.UI),
-                DBeaverIcons.getImageDescriptor(DBSEntityType.TABLE.getIcon()))
-            {
-                @Override
-                public void run() {
-                    new AbstractJob("Navigate reference") {
-                        @Override
-                        protected IStatus run(DBRProgressMonitor monitor) {
-                            try {
-                                navigateReference(new VoidProgressMonitor(), refAssociation, row, false);
-                            } catch (DBException e) {
-                                return GeneralUtils.makeExceptionStatus(e);
-                            }
-                            return Status.OK_STATUS;
-                        }
-                    }.schedule();
-                }
-            });
-        }
-    }
 
     @Nullable
     private DBPDataSource getDataSource() {
@@ -2247,7 +2161,7 @@ public class ResultSetViewer extends Viewer
     }
 
     @Override
-    public void navigateAssociation(@NotNull DBRProgressMonitor monitor, @NotNull DBDAttributeBinding attr, @NotNull ResultSetRow row, boolean newWindow)
+    public void navigateAssociation(@NotNull DBRProgressMonitor monitor, @Nullable DBSEntityAssociation association, @Nullable DBDAttributeBinding attr, @NotNull ResultSetRow row, boolean newWindow)
         throws DBException
     {
         if (!confirmProceed()) {
@@ -2260,18 +2174,19 @@ public class ResultSetViewer extends Viewer
         if (getExecutionContext() == null) {
             throw new DBException("Not connected");
         }
-        DBSEntityAssociation association = null;
-        List<DBSEntityReferrer> referrers = attr.getReferrers();
-        if (referrers != null) {
-            for (final DBSEntityReferrer referrer : referrers) {
-                if (referrer instanceof DBSEntityAssociation) {
-                    association = (DBSEntityAssociation) referrer;
-                    break;
+        if (association == null) {
+            List<DBSEntityReferrer> referrers = attr.getReferrers();
+            if (referrers != null) {
+                for (final DBSEntityReferrer referrer : referrers) {
+                    if (referrer instanceof DBSEntityAssociation) {
+                        association = (DBSEntityAssociation) referrer;
+                        break;
+                    }
                 }
             }
-        }
-        if (association == null) {
-            throw new DBException("Association not found in attribute [" + attr.getName() + "]");
+            if (association == null) {
+                throw new DBException("Association not found in attribute [" + attr.getName() + "]");
+            }
         }
 
         DBSEntityConstraint refConstraint = association.getReferencedConstraint();
@@ -2746,7 +2661,8 @@ public class ResultSetViewer extends Viewer
             long rowCount = dataContainer.countData(
                 new AbstractExecutionSource(dataContainer, executionContext, this),
                 session,
-                model.getDataFilter());
+                model.getDataFilter(),
+                DBSDataContainer.FLAG_NONE);
             model.setTotalRowCount(rowCount);
             return rowCount;
         }

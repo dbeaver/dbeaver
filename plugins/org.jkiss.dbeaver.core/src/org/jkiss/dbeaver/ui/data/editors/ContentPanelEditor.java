@@ -31,10 +31,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.DBPDataKind;
-import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBPMessageType;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentCached;
@@ -99,11 +96,12 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
         }
         if (isStringValue()) {
             // It is a string
+            DBPDataSource dataSource = valueController.getExecutionContext() == null ? null : valueController.getExecutionContext().getDataSource();
             streamEditor.primeEditorValue(
                 new VoidProgressMonitor(),
                 control,
                 new StringContent(
-                    valueController.getExecutionContext().getDataSource(), (String) content));
+                    dataSource, (String) content));
         } else if (content instanceof DBDContent) {
             DBRRunnableWithProgress runnable = monitor -> {
                 try {

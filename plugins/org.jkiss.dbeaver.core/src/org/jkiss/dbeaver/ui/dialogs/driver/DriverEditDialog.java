@@ -95,6 +95,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
     private PropertySourceCustom connectionPropertySource;
     private ClientHomesPanel clientHomesPanel;
     private Button embeddedDriverCheck;
+    private Button anonymousDriverCheck;
 
     private boolean showAddFiles = false;
 
@@ -125,6 +126,15 @@ public class DriverEditDialog extends HelpEnabledDialog {
         this.provider = provider;
         this.driver = provider.createDriver(driver);
         this.driver.setName(this.driver.getName() + " Copy");
+        this.driver.setModified(true);
+
+        // Mark driver and all its libraries as custom (#3867)
+        this.driver.setCustom(true);
+        for (DBPDriverLibrary library : this.driver.getDriverLibraries()) {
+            if (library instanceof DriverLibraryAbstract) {
+                ((DriverLibraryAbstract) library).setCustom(true);
+            }
+        }
 
         this.defaultCategory = driver.getCategory();
         this.newDriver = true;
@@ -234,10 +244,11 @@ public class DriverEditDialog extends HelpEnabledDialog {
             driverPortText.setLayoutData(new GridData(SWT.NONE));
             driverPortText.addModifyListener(e -> onChangeProperty());
 
-            gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.horizontalSpan = 2;
             embeddedDriverCheck = UIUtils.createCheckbox(propsGroup, CoreMessages.dialog_edit_driver_embedded_label, driver.isEmbedded());
-            embeddedDriverCheck.setLayoutData(gd);
+            embeddedDriverCheck.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+            anonymousDriverCheck = UIUtils.createCheckbox(propsGroup, CoreMessages.dialog_edit_driver_anonymous_label, CoreMessages.dialog_edit_driver_anonymous_tip, driver.isAnonymousAccess(), 1);
+            anonymousDriverCheck.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         }
 
         {
@@ -720,6 +731,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
             (driver.getDefaultPort() == null ? "" : driver.getDefaultPort())); //$NON-NLS-1$
 
         embeddedDriverCheck.setSelection(driver.isEmbedded());
+        anonymousDriverCheck.setSelection(driver.isAnonymousAccess());
 
         if (original) {
             resetLibraries(true);
@@ -778,6 +790,8 @@ public class DriverEditDialog extends HelpEnabledDialog {
         driver.setSampleURL(driverURLText.getText());
         driver.setDriverDefaultPort(driverPortText.getText());
         driver.setEmbedded(embeddedDriverCheck.getSelection());
+        driver.setAnonymousAccess(anonymousDriverCheck.getSelection());
+
 //        driver.setAnonymousAccess(anonymousCheck.getSelection());
         driver.setModified(true);
 

@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.IDataSourceConnectionEditor;
 import org.jkiss.dbeaver.ui.IDataSourceConnectionEditorSite;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -45,6 +46,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
     protected IDataSourceConnectionEditorSite site;
     // Driver name
     protected Text driverText;
+    protected Button savePasswordCheck;
 
     public IDataSourceConnectionEditorSite getSite() {
         return site;
@@ -72,12 +74,24 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
         if (driver != null && driverText != null) {
             driverText.setText(CommonUtils.toString(driver.getFullName()));
         }
+
+        if (savePasswordCheck != null) {
+            DataSourceDescriptor dataSource = (DataSourceDescriptor) getSite().getActiveDataSource();
+            if (dataSource != null) {
+                savePasswordCheck.setSelection(dataSource.isSavePassword());
+            } else {
+                savePasswordCheck.setSelection(true);
+            }
+        }
     }
 
     @Override
     public void saveSettings(DBPDataSourceContainer dataSource)
     {
         saveConnectionURL(dataSource.getConnectionConfiguration());
+        if (savePasswordCheck != null) {
+            ((DataSourceDescriptor)dataSource).setSavePassword(savePasswordCheck.getSelection());
+        }
     }
 
     protected void saveConnectionURL(DBPConnectionConfiguration connectionInfo)
@@ -114,7 +128,7 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
                 infoLabel.setToolTipText("You can use OS environment variables in connection parameters.\nUse ${variable} patterns.");
             }
 
-            if (!site.isNew() && !site.getDriver().isEmbedded()) {
+            if (!site.getDriver().isEmbedded()) {
 
                 Link netConfigLink = new Link(placeholder, SWT.NONE);
                 netConfigLink.setText("<a>" + CoreMessages.dialog_connection_edit_wizard_conn_conf_network_link + "</a>");
@@ -168,6 +182,22 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
 
     protected void updateDriverInfo(DBPDriver driver) {
 
+    }
+
+    protected void createSavePasswordButton(Composite parent) {
+        createSavePasswordButton(parent, 1);
+    }
+
+    protected void createSavePasswordButton(Composite parent, int hSpan) {
+        DataSourceDescriptor dataSource = (DataSourceDescriptor)getSite().getActiveDataSource();
+        savePasswordCheck = UIUtils.createCheckbox(parent,
+            CoreMessages.dialog_connection_wizard_final_checkbox_save_password_locally,
+            dataSource == null || dataSource.isSavePassword());
+        GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+        if (hSpan > 1) {
+            gd.horizontalSpan = hSpan;
+        }
+        savePasswordCheck.setLayoutData(gd);
     }
 
 }

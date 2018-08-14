@@ -160,9 +160,10 @@ public abstract class AbstractDescriptor {
 
         public boolean matchesType(Class<?> clazz)
         {
-            if (!forceCheck && getContributorBundle().getState() != Bundle.ACTIVE) {
-                return false;
-            }
+            // Don't remember why we check this. With this check contributions aren't loaded
+//            if (!forceCheck && getContributorBundle().getState() != Bundle.ACTIVE) {
+//                return false;
+//            }
             getObjectClass();
             return implClass != null && implClass.isAssignableFrom(clazz);
         }

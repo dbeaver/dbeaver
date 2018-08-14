@@ -107,7 +107,11 @@ public class PostgreCreateDatabaseDialog extends BaseDialog
         tablespaceCombo.addSelectionListener(new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
-                tablespace = allTablespaces.get(tablespaceCombo.getSelectionIndex());
+                if (tablespaceCombo.getSelectionIndex() == 0) {
+                    tablespace = null;
+                } else {
+                    tablespace = allTablespaces.get(tablespaceCombo.getSelectionIndex());
+                }
             }
         });
 
@@ -153,6 +157,7 @@ public class PostgreCreateDatabaseDialog extends BaseDialog
                             }
                             encodingCombo.setText(defCharset.getName());
 
+                            tablespaceCombo.add(PostgreMessages.dialog_create_db_tablespace_default);
                             for (PostgreTablespace ts : allTablespaces) {
                                 tablespaceCombo.add(ts.getName());
                                 if (ts == defTablespace) {

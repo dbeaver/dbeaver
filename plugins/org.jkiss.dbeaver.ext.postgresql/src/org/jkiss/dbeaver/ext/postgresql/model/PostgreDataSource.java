@@ -48,7 +48,6 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLState;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.net.DefaultCallbackHandler;
-import org.jkiss.dbeaver.tools.transfer.IDataTransferProducer;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.Connection;
@@ -175,7 +174,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
 
     @Override
     public Object getDataSourceFeature(String featureId) {
-        if (IDataTransferProducer.FEATURE_FORCE_TRANSACTIONS.equals(featureId)) {
+        if (DBConstants.FEATURE_LOB_REQUIRE_TRANSACTIONS.equals(featureId)) {
             return true;
         }
         return super.getDataSourceFeature(featureId);
@@ -234,10 +233,12 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         throws DBException
     {
         super.refreshObject(monitor);
+        shutdown(monitor);
 
         this.databaseCache.clearCache();
         this.activeDatabaseName = null;
 
+        this.initializeRemoteInstance(monitor);
         this.initialize(monitor);
 
         return this;
@@ -435,7 +436,8 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         if (defDatabase == null) {
             final List<PostgreDatabase> allDatabases = databaseCache.getCachedObjects();
             if (allDatabases.isEmpty()) {
-                throw new IllegalStateException("No default database");
+                // Looks like we are not connected or in connection process right now - no instance then
+                return null;
             }
             defDatabase = allDatabases.get(0);
         }
@@ -518,7 +520,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         }
     }
 
-    private Pattern ERROR_POSITION_PATTERN = Pattern.compile("\\n\\s*\\p{L}+: ([0-9]+)");
+    private Pattern ERROR_POSITION_PATTERN = Pattern.compile("\\n\\s*\\p{L}+\\s*: ([0-9]+)");
 
     @Nullable
     @Override

@@ -29,6 +29,7 @@ import java.util.Locale;
 public class DBConstants {
 
     public static final String FEATURE_LIMIT_AFFECTS_DML = "datasource.limit-affects-dml";
+    public static final String FEATURE_LOB_REQUIRE_TRANSACTIONS = "datasource.lob-require-transactions";
 
     public static final int METADATA_FETCH_SIZE = 1000;
 

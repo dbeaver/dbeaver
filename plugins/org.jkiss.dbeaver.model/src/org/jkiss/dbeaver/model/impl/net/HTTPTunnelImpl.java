@@ -49,6 +49,11 @@ public class HTTPTunnelImpl implements DBWTunnel {
     }
 
     @Override
+    public boolean matchesParameters(String host, int port) {
+        return false;
+    }
+
+    @Override
     public void invalidateHandler(DBRProgressMonitor monitor, DBPDataSource dataSource) throws DBException, IOException {
 
     }

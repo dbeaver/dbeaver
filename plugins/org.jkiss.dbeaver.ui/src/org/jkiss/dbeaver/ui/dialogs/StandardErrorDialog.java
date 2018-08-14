@@ -32,6 +32,8 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * StandardErrorDialog
@@ -54,8 +56,35 @@ public class StandardErrorDialog extends ErrorDialog {
     {
         super(parentShell, dialogTitle, message, status, displayMask);
         setStatus(status);
-        this.message = TextUtils.cutExtraLines(message == null ? status.getMessage()
-                : JFaceResources.format("Reason", message, status.getMessage()), 20); //$NON-NLS-1$
+        if (message == null) {
+            IStatus rootStatus = GeneralUtils.getRootStatus(status);
+            if (rootStatus.getException() != null) {
+                String lastMessage = null;
+                for (Throwable e = rootStatus.getException(); e != null; e = e.getCause()) {
+                    if (e.getMessage() != null) {
+                        lastMessage = e.getMessage();
+                    }
+                }
+                if (CommonUtils.isEmpty(lastMessage)) {
+                    lastMessage = rootStatus.getMessage();
+                    if (CommonUtils.isEmpty(lastMessage)) {
+                        lastMessage = status.getMessage();
+                        if (CommonUtils.isEmpty(lastMessage)) {
+                            // No message at all. This may happen in case of NPE and other messageless errors.
+                            // Let's use exception name then
+                            if (rootStatus.getException() != null) {
+                                lastMessage = rootStatus.getException().getClass().getName();
+                            }
+                        }
+                    }
+                }
+                this.message = TextUtils.cutExtraLines(lastMessage, 20);
+            } else {
+                this.message = TextUtils.cutExtraLines(rootStatus.getMessage(), 20);
+            }
+        } else {
+            this.message = TextUtils.cutExtraLines(JFaceResources.format("Reason", message, status.getMessage()), 20); //$NON-NLS-1$
+        }
     }
 
     @Override
@@ -125,6 +154,11 @@ public class StandardErrorDialog extends ErrorDialog {
         dropDownList.addDisposeListener(e -> {
             detailsVisible = false;
         });
+        int itemCount = dropDownList.getItemCount();
+        if (itemCount > 1) {
+            // Remove last list item (dup)
+            dropDownList.remove(itemCount - 1);
+        }
         return dropDownList;
     }
 

@@ -18,10 +18,8 @@ package org.jkiss.dbeaver.core;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
-import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.access.DBAAuthInfo;
-import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
 import org.jkiss.dbeaver.model.impl.net.SocksConstants;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
@@ -51,8 +49,7 @@ public class GlobalProxyAuthenticator extends Authenticator {
             // 1. Check for drivers download proxy
             final String proxyHost = store.getString(DBeaverPreferences.UI_PROXY_HOST);
             if (!CommonUtils.isEmpty(proxyHost) && proxyHost.equalsIgnoreCase(getRequestingHost()) &&
-                store.getInt(DBeaverPreferences.UI_PROXY_PORT) == getRequestingPort())
-            {
+                store.getInt(DBeaverPreferences.UI_PROXY_PORT) == getRequestingPort()) {
                 String userName = store.getString(DBeaverPreferences.UI_PROXY_USER);
                 String userPassword = decryptPassword(store.getString(DBeaverPreferences.UI_PROXY_PASSWORD));
                 if (CommonUtils.isEmpty(userName) || CommonUtils.isEmpty(userPassword)) {
@@ -77,10 +74,9 @@ public class GlobalProxyAuthenticator extends Authenticator {
             // 2. Check for connections' proxies
             String requestingProtocol = getRequestingProtocol();
             if (SocksConstants.PROTOCOL_SOCKS5.equals(requestingProtocol) || SocksConstants.PROTOCOL_SOCKS4.equals(requestingProtocol)) {
-                DBCExecutionContext activeContext = DBExecUtils.findConnectionContext(getRequestingHost(), getRequestingPort(), getRequestingScheme());
+                DBPDataSourceContainer activeContext = DBExecUtils.findConnectionContext(getRequestingHost(), getRequestingPort(), getRequestingScheme());
                 if (activeContext != null) {
-                    DBPDataSourceContainer container = activeContext.getDataSource().getContainer();
-                    for (DBWHandlerConfiguration networkHandler : container.getConnectionConfiguration().getDeclaredHandlers()) {
+                    for (DBWHandlerConfiguration networkHandler : activeContext.getConnectionConfiguration().getDeclaredHandlers()) {
                         if (networkHandler.isEnabled() && networkHandler.getType() == DBWHandlerType.PROXY) {
                             String userName = networkHandler.getUserName();
                             String userPassword = networkHandler.getPassword();
@@ -94,7 +90,7 @@ public class GlobalProxyAuthenticator extends Authenticator {
                                         networkHandler.setUserName(userName);
                                         networkHandler.setPassword(userPassword);
                                         networkHandler.setSavePassword(true);
-                                        container.getRegistry().flushConfig();
+                                        activeContext.getRegistry().flushConfig();
                                     }
                                 }
                             }
@@ -135,9 +131,8 @@ public class GlobalProxyAuthenticator extends Authenticator {
         }
     }
 
-    private DBAAuthInfo readCredentialsInUI(String prompt, String userName, String userPassword)
-    {
-        return DBUserInterface.getInstance().promptUserCredentials(prompt, userName, userPassword, false);
+    private DBAAuthInfo readCredentialsInUI(String prompt, String userName, String userPassword) {
+        return DBUserInterface.getInstance().promptUserCredentials(prompt, userName, userPassword, false, true);
     }
 
 }

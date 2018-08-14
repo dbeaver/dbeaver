@@ -131,7 +131,7 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
         String fullWord = wordDetector.getFullWord();
         int curOffset = wordDetector.getCursorOffset() - wordDetector.getStartOffset();
         char structSeparator = syntaxManager.getStructSeparator();
-        int startOffset = fullWord.lastIndexOf(structSeparator, curOffset);
+        int startOffset = fullWord.indexOf(structSeparator);
         int endOffset = fullWord.indexOf(structSeparator, curOffset);
         if (endOffset == startOffset) {
             startOffset = -1;
@@ -154,10 +154,11 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
             }
         }
         replacementOffset = startOffset;
-        if (curOffset < fullWord.length() && Character.isLetterOrDigit(fullWord.charAt(curOffset))) {
+        /*if (curOffset < fullWord.length() && Character.isLetterOrDigit(fullWord.charAt(curOffset)) && false) {
             // Do not replace full word if we are in the middle of word
             replacementLength = curOffset;
-        } else {
+        } else */
+        {
             replacementLength = endOffset - startOffset;
         }
     }

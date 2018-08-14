@@ -63,6 +63,10 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource> imple
 
     private static final Log log = Log.getLog(PostgreDatabase.class);
 
+    private transient PostgreRole initialOwner;
+    private transient PostgreTablespace initialTablespace;
+    private transient PostgreCharset initialEncoding;
+
     private long oid;
     private String name;
     private long ownerId;
@@ -103,7 +107,7 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource> imple
         super(monitor, dataSource, false);
         // We need to set name first
         this.name = databaseName;
-        initializeMainContext(monitor);
+        checkDatabaseConnection(monitor);
 
         try (JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load database info")) {
             try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT db.oid,db.*" +
@@ -121,12 +125,28 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource> imple
     }
 
     public PostgreDatabase(DBRProgressMonitor monitor, PostgreDataSource dataSource, String name, PostgreRole owner, String templateName, PostgreTablespace tablespace, PostgreCharset encoding) throws DBException {
-        super(monitor, dataSource, true);
+        super(monitor, dataSource, false);
         this.name = name;
+        this.initialOwner = owner;
+        this.initialTablespace = tablespace;
+        this.initialEncoding = encoding;
+
         this.ownerId = owner.getObjectId();
         this.templateName = templateName;
-        this.tablespaceId = tablespace.getObjectId();
+        this.tablespaceId = tablespace == null ? 0 : tablespace.getObjectId();
         this.encodingId = encoding.getObjectId();
+    }
+
+    public PostgreRole getInitialOwner() {
+        return initialOwner;
+    }
+
+    public PostgreTablespace getInitialTablespace() {
+        return initialTablespace;
+    }
+
+    public PostgreCharset getInitialEncoding() {
+        return initialEncoding;
     }
 
     void checkDatabaseConnection(DBRProgressMonitor monitor) throws DBException {
