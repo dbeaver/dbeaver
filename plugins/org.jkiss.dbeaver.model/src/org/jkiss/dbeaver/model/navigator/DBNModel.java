@@ -26,6 +26,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIconComposite;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
@@ -140,6 +141,9 @@ public class DBNModel implements IResourceChangeListener {
     {
         if (object instanceof DBNDatabaseNode) {
             return (DBNDatabaseNode)object;
+        }
+        if (object instanceof DBPDataSource) {
+            object = ((DBPDataSource) object).getContainer();
         }
         Object obj;
         synchronized (nodeMap) {
