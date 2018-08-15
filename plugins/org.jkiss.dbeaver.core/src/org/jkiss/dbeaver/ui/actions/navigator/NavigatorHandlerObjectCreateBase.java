@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.ui.actions.navigator;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -168,7 +170,14 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
                 }
 
                 // Open object in UI thread
-                UIUtils.syncExec(this::openNewObject);
+                addJobChangeListener(new JobChangeAdapter() {
+                    @Override
+                    public void done(IJobChangeEvent event) {
+                        UIUtils.syncExec(() -> {
+                            openNewObject();
+                        });
+                    }
+                });
 
                 return Status.OK_STATUS;
             } catch (Exception e) {
