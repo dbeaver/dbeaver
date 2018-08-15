@@ -96,7 +96,9 @@ public abstract class NodeListControl extends ObjectListControl<DBNNode> impleme
 
         // Add drag and drop support
         NavigatorUtils.addDragAndDropSupport(getItemsViewer());
-        EditorUtils.trackControlContext(workbenchSite, this.getItemsViewer().getControl(), INavigatorModelView.NAVIGATOR_CONTEXT_ID);
+        if (workbenchSite != null) {
+            EditorUtils.trackControlContext(workbenchSite, this.getItemsViewer().getControl(), INavigatorModelView.NAVIGATOR_CONTEXT_ID);
+        }
 
         DBeaverCore.getInstance().getNavigatorModel().addListener(this);
     }
