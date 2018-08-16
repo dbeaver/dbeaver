@@ -466,6 +466,9 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
                 @Override
                 public void completeLoading(Collection<PostgrePermission> privs) {
                     super.completeLoading(privs);
+                    if (privs == null) {
+                        return;
+                    }
                     permissionMap.clear();
                     for (PostgrePermission perm : privs) {
                         permissionMap.put(perm.getName(), perm);
