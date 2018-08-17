@@ -18,25 +18,39 @@ package org.jkiss.dbeaver.ext.sqlite.model.data;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.model.data.DBDContent;
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBValueFormatting;
+import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCContentAbstract;
-import org.jkiss.dbeaver.model.impl.jdbc.data.JDBCContentBytes;
+import org.jkiss.dbeaver.model.impl.data.formatters.DefaultDataFormatter;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCAbstractValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.SQLException;
+import java.util.Date;
 
 
 /**
  * SQLiteValueHandler
  */
 public class SQLiteValueHandler extends JDBCAbstractValueHandler {
-    public static final SQLiteValueHandler INSTANCE = new SQLiteValueHandler();
+
+    private static final Log log = Log.getLog(SQLiteValueHandler.class);
+
+    private final DBDDataFormatterProfile formatterProfile;
+    private final DBSTypedObject type;
+    private DBDDataFormatter numberFormatter;
+    private DBDDataFormatter timestampFormatter;
+
+    public SQLiteValueHandler(DBSTypedObject type, DBDDataFormatterProfile formatterProfile)
+    {
+        this.formatterProfile = formatterProfile;
+        this.type = type;
+    }
 
     @Nullable
     @Override
@@ -60,6 +74,39 @@ public class SQLiteValueHandler extends JDBCAbstractValueHandler {
     @Override
     public Object getValueFromObject(@NotNull DBCSession session, @NotNull DBSTypedObject type, @Nullable Object object, boolean copy) throws DBCException {
         return object;
+    }
+
+    public synchronized String getValueDisplayString(@NotNull DBSTypedObject column, @Nullable Object value, @NotNull DBDDisplayFormat format)
+    {
+        if (value instanceof Number) {
+            if (format == DBDDisplayFormat.NATIVE || format == DBDDisplayFormat.EDIT) {
+                return DBValueFormatting.convertNumberToNativeString((Number) value);
+            } else {
+
+                if (numberFormatter == null) {
+                    try {
+                        numberFormatter = formatterProfile.createFormatter(DBDDataFormatter.TYPE_NAME_NUMBER, type);
+                    } catch (Exception e) {
+                        log.error("Can't create numberFormatter for number value handler", e); //$NON-NLS-1$
+                        numberFormatter = DefaultDataFormatter.INSTANCE;
+                    }
+                }
+                return numberFormatter.formatValue(value);
+            }
+        } else if (value instanceof Date) {
+
+            if (timestampFormatter == null) {
+                try {
+                    timestampFormatter = formatterProfile.createFormatter(DBDDataFormatter.TYPE_NAME_TIMESTAMP, type);
+                } catch (Exception e) {
+                    log.error("Can't create timestampFormatter for timestamp value handler", e); //$NON-NLS-1$
+                    timestampFormatter = DefaultDataFormatter.INSTANCE;
+                }
+            }
+
+            return timestampFormatter.formatValue(value);
+        }
+        return super.getValueDisplayString(column, value, format);
     }
 
 }
