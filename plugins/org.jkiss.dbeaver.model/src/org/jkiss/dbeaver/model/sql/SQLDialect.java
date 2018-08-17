@@ -320,4 +320,6 @@ public interface SQLDialect {
 
     void generateStoredProcedureCall(StringBuilder sql, DBSProcedure proc, Collection<? extends DBSProcedureParameter> parameters);
 
+    boolean isDisableScriptEscapeProcessing();
+
 }

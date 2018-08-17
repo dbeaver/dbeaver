@@ -78,6 +78,12 @@
             properties="connected,transactional,transactionActive"
             type="org.jkiss.dbeaver.model.DBPContextProvider"/>
         <propertyTester
+            class="org.jkiss.dbeaver.ui.actions.DataSourceContainerPropertyTester"
+            id="org.jkiss.dbeaver.ui.actions.DataSourceContainerPropertyTester"
+            namespace="org.jkiss.dbeaver.core.datasourceContainer"
+            properties="driverId,driverClass,connected"
+            type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
+        <propertyTester
             class="org.jkiss.dbeaver.ui.actions.ObjectPropertyTester"
             id="org.jkiss.dbeaver.ui.actions.ObjectPropertyTester"
             namespace="org.jkiss.dbeaver.core.object"
