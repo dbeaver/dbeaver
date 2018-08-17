@@ -593,4 +593,9 @@ public class BasicSQLDialect implements SQLDialect {
         }
         sql.append(");\n\n");
     }
+
+    @Override
+    public boolean isDisableScriptEscapeProcessing() {
+        return false;
+    }
 }
