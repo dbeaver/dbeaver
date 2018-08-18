@@ -29,17 +29,61 @@ import java.util.List;
  */
 public class SQLQueryResult
 {
+    public static class ExecuteResult {
+        private boolean resultSet;
+        private Long rowCount;
+        private Long updateCount;
+        private String resultSetName;
+
+        public ExecuteResult(boolean resultSet) {
+            this.resultSet = resultSet;
+        }
+
+        public boolean isResultSet() {
+            return resultSet;
+        }
+
+        @Nullable
+        public Long getRowCount()
+        {
+            return rowCount;
+        }
+
+        public void setRowCount(Long rowCount)
+        {
+            this.rowCount = rowCount;
+        }
+
+        @Nullable
+        public Long getUpdateCount()
+        {
+            return updateCount;
+        }
+
+        public void setUpdateCount(Long updateCount)
+        {
+            this.updateCount = updateCount;
+        }
+
+        @Nullable
+        public String getResultSetName()
+        {
+            return resultSetName;
+        }
+
+        public void setResultSetName(String resultSetName)
+        {
+            this.resultSetName = resultSetName;
+        }
+    }
+
     private SQLQuery statement;
-    //private DBCResultSetMetaData metaData;
-    //private List<Object[]> rows;
     private Long rowOffset;
-    private Long rowCount;
-    private Long updateCount;
     private boolean hasResultSet;
     private Throwable error;
     private long queryTime;
-    private String resultSetName;
     private List<Throwable> warnings;
+    private List<ExecuteResult> executeResults = new ArrayList<>();
 
     public SQLQueryResult(@NotNull SQLQuery statement)
     {
@@ -57,28 +101,6 @@ public class SQLQueryResult
 
     public void setRowOffset(Long rowOffset) {
         this.rowOffset = rowOffset;
-    }
-
-    @Nullable
-    public Long getRowCount()
-    {
-        return rowCount;
-    }
-
-    public void setRowCount(Long rowCount)
-    {
-        this.rowCount = rowCount;
-    }
-
-    @Nullable
-    public Long getUpdateCount()
-    {
-        return updateCount;
-    }
-
-    public void setUpdateCount(Long updateCount)
-    {
-        this.updateCount = updateCount;
     }
 
     public boolean hasResultSet()
@@ -117,17 +139,6 @@ public class SQLQueryResult
         this.queryTime = queryTime;
     }
 
-    @Nullable
-    public String getResultSetName()
-    {
-        return resultSetName;
-    }
-
-    public void setResultSetName(String resultSetName)
-    {
-        this.resultSetName = resultSetName;
-    }
-
     public List<Throwable> getWarnings() {
         return warnings;
     }
@@ -141,4 +152,29 @@ public class SQLQueryResult
         }
         Collections.addAll(this.warnings, warnings);
     }
+
+    public ExecuteResult addExecuteResult(boolean resultSet) {
+        ExecuteResult executeResult = new ExecuteResult(resultSet);
+        executeResults.add(executeResult);
+        return executeResult;
+    }
+
+    public List<ExecuteResult> getExecuteResults() {
+        return executeResults;
+    }
+
+    public ExecuteResult getExecuteResults(int order, boolean resultSets) {
+        int rsIndex = -1;
+        for (int i = 0; i < executeResults.size(); i++) {
+            if (resultSets && !executeResults.get(i).isResultSet()) {
+                continue;
+            }
+            rsIndex++;
+            if (rsIndex == order) {
+                return executeResults.get(i);
+            }
+        }
+        return null;
+    }
+
 }
