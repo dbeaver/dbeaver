@@ -148,7 +148,7 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
     @Override
     public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format)
     {
-        if (value != null && format == DBDDisplayFormat.NATIVE) {
+        if (value instanceof Date && format == DBDDisplayFormat.NATIVE) {
             Format nativeFormat = getNativeValueFormat(column);
             if (nativeFormat != null) {
                 try {

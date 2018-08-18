@@ -66,7 +66,7 @@ public abstract class DateTimeCustomValueHandler extends DateTimeValueHandler {
                     return result;
                 } catch (Exception e1) {
                     //log.debug("Can't parse string value [" + strValue + "] to date/time value", e);
-                    return null;
+                    return object;
                 }
             }
         } else {
@@ -79,6 +79,9 @@ public abstract class DateTimeCustomValueHandler extends DateTimeValueHandler {
     @Override
     public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format)
     {
+        if (value instanceof String) {
+            return (String) value;
+        }
         if (value == null) {
             return super.getValueDisplayString(column, null, format);
         }
