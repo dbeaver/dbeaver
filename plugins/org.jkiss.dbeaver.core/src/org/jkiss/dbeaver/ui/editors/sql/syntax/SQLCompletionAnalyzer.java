@@ -526,7 +526,8 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
                     }
                 }
                 for (DBSObject child : matchedObjects) {
-                    request.proposals.add(makeProposalsFromObject(child));
+                    request.proposals.add(
+                        makeProposalsFromObject(child, !(parent instanceof DBPDataSource)));
                 }
             }
         }
@@ -553,7 +554,10 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
             dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.USE_GLOBAL_ASSISTANT),
             100);
         for (DBSObjectReference reference : references) {
-            request.proposals.add(makeProposalsFromObject(reference, reference.getObjectType().getImage()));
+            request.proposals.add(makeProposalsFromObject(
+                reference,
+                !(rootSC instanceof DBPDataSource),
+                reference.getObjectType().getImage()));
         }
     }
 
@@ -565,17 +569,20 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
         }
     }
 
-    private SQLCompletionProposal makeProposalsFromObject(DBSObject object)
+    private SQLCompletionProposal makeProposalsFromObject(DBSObject object, boolean useShortName)
     {
         DBNNode node = NavigatorUtils.getNodeByObject(monitor, object, false);
-        return makeProposalsFromObject(object, node == null ? null : node.getNodeIconDefault());
+        return makeProposalsFromObject(object, useShortName, node == null ? null : node.getNodeIconDefault());
     }
 
     private SQLCompletionProposal makeProposalsFromObject(
         DBPNamedObject object,
+        boolean useShortName,
         @Nullable DBPImage objectIcon)
     {
-        String objectName = DBUtils.getObjectFullName(object, DBPEvaluationContext.DML);
+        String objectName = useShortName ?
+            DBUtils.getQuotedIdentifier(object) :
+            DBUtils.getObjectFullName(object, DBPEvaluationContext.DML);
 
         boolean isSingleObject = true;
         String replaceString = null;

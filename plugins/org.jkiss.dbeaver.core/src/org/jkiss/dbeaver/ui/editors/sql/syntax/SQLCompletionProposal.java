@@ -131,35 +131,62 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
         String fullWord = wordDetector.getFullWord();
         int curOffset = wordDetector.getCursorOffset() - wordDetector.getStartOffset();
         char structSeparator = syntaxManager.getStructSeparator();
-        int startOffset = fullWord.indexOf(structSeparator);
-        int endOffset = fullWord.indexOf(structSeparator, curOffset);
-        if (endOffset == startOffset) {
-            startOffset = -1;
-        }
-        if (startOffset != -1) {
-            startOffset += wordDetector.getStartOffset() + 1;
+
+        if (!fullWord.equals(replacementString) && !replacementString.contains(String.valueOf(structSeparator))) {
+            // Replace only last part
+            int startOffset = fullWord.lastIndexOf(structSeparator, curOffset);
+            if (startOffset == -1) {
+                startOffset = 0;
+            } else if (startOffset > curOffset) {
+                startOffset = fullWord.lastIndexOf(structSeparator, curOffset);
+                if (startOffset == -1) {
+                    startOffset = curOffset;
+                } else {
+                    startOffset++;
+                }
+            } else {
+                startOffset++;
+            }
+            // End offset - number of character which to the right from replacement which we don't touch (e.g. in complex identifiers like xxx.zzz.yyy)
+            int endOffset = fullWord.indexOf(structSeparator, curOffset);
+            if (endOffset != -1) {
+                endOffset = fullWord.length() - endOffset;
+            } else {
+                endOffset = 0;
+            }
+            replacementOffset = wordDetector.getStartOffset() + startOffset;
+            replacementLength = wordDetector.getEndOffset() - replacementOffset - endOffset;
         } else {
-            startOffset = wordDetector.getStartOffset();
-        }
-        if (endOffset != -1) {
-            // Replace from identifier start till next struct separator
-            endOffset += wordDetector.getStartOffset();
-        } else {
-            // Replace from identifier start to the end of current identifier
-            if (wordDetector.getWordPart().isEmpty()) {
-                endOffset = wordDetector.getCursorOffset();
+            int startOffset = fullWord.indexOf(structSeparator);
+            int endOffset = fullWord.indexOf(structSeparator, curOffset);
+            if (endOffset == startOffset) {
+                startOffset = -1;
+            }
+            if (startOffset != -1) {
+                startOffset += wordDetector.getStartOffset() + 1;
+            } else {
+                startOffset = wordDetector.getStartOffset();
+            }
+            if (endOffset != -1) {
+                // Replace from identifier start till next struct separator
+                endOffset += wordDetector.getStartOffset();
             } else {
                 // Replace from identifier start to the end of current identifier
-                endOffset = wordDetector.getEndOffset();
+                if (wordDetector.getWordPart().isEmpty()) {
+                    endOffset = wordDetector.getCursorOffset();
+                } else {
+                    // Replace from identifier start to the end of current identifier
+                    endOffset = wordDetector.getEndOffset();
+                }
             }
-        }
-        replacementOffset = startOffset;
-        /*if (curOffset < fullWord.length() && Character.isLetterOrDigit(fullWord.charAt(curOffset)) && false) {
-            // Do not replace full word if we are in the middle of word
-            replacementLength = curOffset;
-        } else */
-        {
-            replacementLength = endOffset - startOffset;
+            replacementOffset = startOffset;
+            /*if (curOffset < fullWord.length() && Character.isLetterOrDigit(fullWord.charAt(curOffset)) && false) {
+                // Do not replace full word if we are in the middle of word
+                replacementLength = curOffset;
+            } else */
+            {
+                replacementLength = endOffset - startOffset;
+            }
         }
     }
 

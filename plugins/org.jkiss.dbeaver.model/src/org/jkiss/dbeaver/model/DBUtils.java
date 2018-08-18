@@ -51,6 +51,12 @@ public final class DBUtils {
     private static final Log log = Log.getLog(DBUtils.class);
 
     @NotNull
+    public static String getQuotedIdentifier(@NotNull DBPNamedObject object)
+    {
+        return object instanceof DBSObject ? getQuotedIdentifier(((DBSObject) object).getDataSource(), object.getName()) : object.getName();
+    }
+
+    @NotNull
     public static String getQuotedIdentifier(@NotNull DBSObject object)
     {
         return getQuotedIdentifier(object.getDataSource(), object.getName());
