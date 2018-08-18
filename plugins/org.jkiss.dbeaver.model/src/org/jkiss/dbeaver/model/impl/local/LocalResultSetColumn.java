@@ -161,4 +161,8 @@ public class LocalResultSetColumn implements DBCAttributeMetaData
         return typedObject == null ? 0 : typedObject.getMaxLength();
     }
 
+    @Override
+    public String toString() {
+        return getName();
+    }
 }
