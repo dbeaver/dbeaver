@@ -134,7 +134,7 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
 
         if (!fullWord.equals(replacementString) && !replacementString.contains(String.valueOf(structSeparator))) {
             // Replace only last part
-            int startOffset = fullWord.lastIndexOf(structSeparator, curOffset);
+            int startOffset = fullWord.lastIndexOf(structSeparator, curOffset - 1);
             if (startOffset == -1) {
                 startOffset = 0;
             } else if (startOffset > curOffset) {
