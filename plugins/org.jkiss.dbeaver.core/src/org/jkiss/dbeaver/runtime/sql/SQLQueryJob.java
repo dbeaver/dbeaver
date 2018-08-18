@@ -694,7 +694,6 @@ public class SQLQueryJob extends DataSourceJob
                             }
                         }
                     }
-    /*
                     if (CommonUtils.isEmpty(sourceName)) {
                         try {
                             sourceName = resultSet.getResultSetName();
@@ -702,7 +701,6 @@ public class SQLQueryJob extends DataSourceJob
                             log.debug(e);
                         }
                     }
-    */
                 }
                 if (CommonUtils.isEmpty(sourceName)) {
                     sourceName = "Result";
