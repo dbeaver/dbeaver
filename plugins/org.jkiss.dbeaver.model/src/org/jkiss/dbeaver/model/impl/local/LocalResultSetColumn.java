@@ -32,7 +32,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
  */
 public class LocalResultSetColumn implements DBCAttributeMetaData
 {
-    private final DBCResultSet resultSet;
+    protected final DBCResultSet resultSet;
     private final int index;
     private final String label;
     private final DBPDataKind dataKind;
