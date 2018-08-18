@@ -844,7 +844,7 @@ public class ResultSetViewer extends Viewer
                 if (!CommonUtils.isEmpty(panelId)) {
                     if (!activatePanel(panelId, panelId.equals(settings.activePanelId), false)) {
                         settings.enabledPanelIds.remove(panelId);
-                        savePresentationSettings();
+
                     }
                 }
             }
