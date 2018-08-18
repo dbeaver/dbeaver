@@ -2633,7 +2633,7 @@ public class SQLEditor extends SQLEditorBase implements
                     QueryResultsContainer results = queryProcessor.getResults(query);
                     if (results != null) {
                         int queryIndex = queryProcessors.indexOf(queryProcessor);
-                        if (queryIndex == 0 || queryProcessor.getResultContainers().size() == 1) {
+                        {
                             String resultSetName = getResultsTabName(results.resultSetNumber, queryIndex, result.getResultSetName());
                             results.updateResultsName(resultSetName, null);
                         }
