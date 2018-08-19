@@ -412,6 +412,11 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
         }
     }
 
+    @Override
+    public boolean isEnabled() {
+        return instance.getDataSource().getInfo().supportsTransactions();
+    }
+
     public void reconnect(DBRProgressMonitor monitor) throws DBCException {
         close();
         connect(monitor, null, null, false, true);
