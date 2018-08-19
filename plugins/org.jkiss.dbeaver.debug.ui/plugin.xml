@@ -159,7 +159,8 @@
     <extension point="org.eclipse.ui.perspectiveExtensions">
         <!-- Extension to default DBeaver perspectiver -->
         <perspectiveExtension targetID="org.jkiss.dbeaver.core.perspective">
-            <!-- Bottom Left -->
+<!--
+            &lt;!&ndash; Bottom Left &ndash;&gt;
             <view
                     closeable="true"
                     standalone="false"
@@ -179,7 +180,7 @@
                     relative="org.jkiss.dbeaver.core.projectExplorer"
                     id="org.eclipse.debug.ui.BreakpointView"/>
 
-            <!-- Bottom Right -->
+            &lt;!&ndash; Bottom Right &ndash;&gt;
             <view
                     closeable="true"
                     standalone="false"
@@ -190,10 +191,11 @@
                     relative="org.eclipse.ui.views.PropertySheet"
                     id="org.eclipse.debug.ui.VariableView"/>
 
-            <!-- Add View Shortcuts !-->
+            &lt;!&ndash; Add View Shortcuts !&ndash;&gt;
             <viewShortcut id="org.eclipse.debug.ui.DebugView" />
             <viewShortcut id="org.eclipse.debug.ui.VariableView" />
             <viewShortcut id="org.eclipse.debug.ui.BreakpointView" />
+-->
 
         </perspectiveExtension>
 
