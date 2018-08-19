@@ -699,7 +699,7 @@ public class SQLQueryJob extends DataSourceJob
                     if (CommonUtils.isEmpty(sourceName)) {
                         try {
                             sourceName = resultSet.getResultSetName();
-                        } catch (DBCException e) {
+                        } catch (Exception e) {
                             log.debug(e);
                         }
                     }
