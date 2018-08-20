@@ -904,6 +904,7 @@
                     <parameter name="query-get-active-db" value="select current_database()"/>
                     <parameter name="query-set-active-db" value="use [?]"/>
                     <parameter name="string-escape-char" value="\"/>
+                    <parameter name="omit-catalog" value="true"/>
                 </driver>
 
                 <!-- AWS -->

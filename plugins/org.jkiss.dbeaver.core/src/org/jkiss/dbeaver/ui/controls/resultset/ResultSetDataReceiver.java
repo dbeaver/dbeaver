@@ -94,6 +94,9 @@ class ResultSetDataReceiver implements DBDDataReceiver {
         if (!nextSegmentRead) {
             // Get columns metadata
             DBCResultSetMetaData metaData = resultSet.getMeta();
+            if (metaData == null) {
+                throw new DBCException("Null resultset metadata");
+            }
 
             List<DBCAttributeMetaData> rsAttributes = metaData.getAttributes();
             columnsCount = rsAttributes.size();

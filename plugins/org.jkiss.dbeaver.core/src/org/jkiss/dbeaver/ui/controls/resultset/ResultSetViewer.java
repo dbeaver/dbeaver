@@ -22,7 +22,6 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.StringConverter;
 import org.eclipse.jface.text.IFindReplaceTarget;
@@ -47,7 +46,6 @@ import org.eclipse.ui.actions.CompoundContributionItem;
 import org.eclipse.ui.menus.CommandContributionItem;
 import org.eclipse.ui.menus.CommandContributionItemParameter;
 import org.eclipse.ui.menus.IMenuService;
-import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
@@ -757,9 +755,9 @@ public class ResultSetViewer extends Viewer
     }
 
     @Override
-    public void activatePanel(String id, boolean setActive, boolean showPanels) {
+    public boolean activatePanel(String id, boolean setActive, boolean showPanels) {
         if (!supportsPanels()) {
-            return;
+            return false;
         }
         if (showPanels && !isPanelsVisible()) {
             showPanels(true, false);
@@ -775,22 +773,22 @@ public class ResultSetViewer extends Viewer
                     panelFolder.setSelection(panelTab);
                     presentationSettings.activePanelId = id;
                 }
-                return;
+                return true;
             } else {
-                log.warn("Panel '" + id + "' tab not found");
+                log.debug("Panel '" + id + "' tab not found");
             }
         }
         // Create panel
         ResultSetPanelDescriptor panelDescriptor = getPanelDescriptor(id);
         if (panelDescriptor == null) {
-            log.error("Panel '" + id + "' not found");
-            return;
+            log.debug("Panel '" + id + "' not found");
+            return false;
         }
         try {
             panel = panelDescriptor.createInstance();
         } catch (DBException e) {
             DBUserInterface.getInstance().showError("Can't show panel", "Can't create panel '" + id + "'", e);
-            return;
+            return false;
         }
         activePanels.put(id, panel);
 
@@ -819,6 +817,7 @@ public class ResultSetViewer extends Viewer
         if (setActive) {
             setActivePanel(id);
         }
+        return true;
     }
 
     private void activateDefaultPanels(PresentationSettings settings) {
@@ -841,9 +840,12 @@ public class ResultSetViewer extends Viewer
                 // Set first panel active
                 settings.activePanelId = settings.enabledPanelIds.iterator().next();
             }
-            for (String panelId : settings.enabledPanelIds) {
+            for (String panelId : new ArrayList<>(settings.enabledPanelIds)) {
                 if (!CommonUtils.isEmpty(panelId)) {
-                    activatePanel(panelId, panelId.equals(settings.activePanelId), false);
+                    if (!activatePanel(panelId, panelId.equals(settings.activePanelId), false)) {
+                        settings.enabledPanelIds.remove(panelId);
+
+                    }
                 }
             }
         }

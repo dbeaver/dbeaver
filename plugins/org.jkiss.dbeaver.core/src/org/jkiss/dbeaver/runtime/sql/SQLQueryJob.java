@@ -459,7 +459,7 @@ public class SQLQueryJob extends DataSourceJob
                         } else {
                             DBDDataReceiver dataReceiver = resultsConsumer.getDataReceiver(sqlQuery, resultSetNumber);
                             if (dataReceiver != null) {
-                                hasResultSet = fetchQueryData(session, resultSet, curResult, dataReceiver, true);
+                                hasResultSet = fetchQueryData(session, resultSet, curResult, curResult.addExecuteResult(true), dataReceiver, true);
                             }
                         }
                     }
@@ -468,7 +468,7 @@ public class SQLQueryJob extends DataSourceJob
                     try {
                         updateCount = dbcStatement.getUpdateRowCount();
                         if (updateCount >= 0) {
-                            curResult.setUpdateCount(updateCount);
+                            curResult.addExecuteResult(false).setUpdateCount(updateCount);
                             statistics.addRowsUpdated(updateCount);
                         }
                     } catch (DBCException e) {
@@ -549,6 +549,8 @@ public class SQLQueryJob extends DataSourceJob
         // Fetch fake result set
         StatResultSet fakeResultSet = new StatResultSet(session, curStatement);
         SQLQueryResult resultInfo = new SQLQueryResult(query);
+        SQLQueryResult.ExecuteResult executeResult = resultInfo.addExecuteResult(true);
+
         if (statistics.getStatementsCount() > 1) {
             // Multiple statements - show script statistics
             fakeResultSet.addColumn("Queries", DBPDataKind.NUMERIC);
@@ -564,7 +566,7 @@ public class SQLQueryJob extends DataSourceJob
                 statistics.getFetchTime(),
                 statistics.getTotalTime(),
                 new Date());
-            resultInfo.setResultSetName("Statistics");
+            executeResult.setResultSetName("Statistics");
         } else {
             // Single statement
             long updateCount = statistics.getRowsUpdated();
@@ -576,9 +578,9 @@ public class SQLQueryJob extends DataSourceJob
             } else {
                 fakeResultSet.addColumn("Result", DBPDataKind.NUMERIC);
             }
-            resultInfo.setResultSetName("Result");
+            executeResult.setResultSetName("Result");
         }
-        fetchQueryData(session, fakeResultSet, resultInfo, dataReceiver, false);
+        fetchQueryData(session, fakeResultSet, resultInfo, executeResult, dataReceiver, false);
     }
 
     private boolean prepareStatementParameters(SQLQuery sqlStatement) {
@@ -652,7 +654,7 @@ public class SQLQueryJob extends DataSourceJob
         return okPressed;
     }
 
-    private boolean fetchQueryData(DBCSession session, DBCResultSet resultSet, SQLQueryResult result, DBDDataReceiver dataReceiver, boolean updateStatistics)
+    private boolean fetchQueryData(DBCSession session, DBCResultSet resultSet, SQLQueryResult result, SQLQueryResult.ExecuteResult executeResult, DBDDataReceiver dataReceiver, boolean updateStatistics)
         throws DBCException
     {
         if (dataReceiver == null) {
@@ -694,20 +696,18 @@ public class SQLQueryJob extends DataSourceJob
                             }
                         }
                     }
-    /*
                     if (CommonUtils.isEmpty(sourceName)) {
                         try {
                             sourceName = resultSet.getResultSetName();
-                        } catch (DBCException e) {
+                        } catch (Exception e) {
                             log.debug(e);
                         }
                     }
-    */
                 }
                 if (CommonUtils.isEmpty(sourceName)) {
                     sourceName = "Result";
                 }
-                result.setResultSetName(sourceName);
+                executeResult.setResultSetName(sourceName);
             }
             long fetchStartTime = System.currentTimeMillis();
 
@@ -746,7 +746,7 @@ public class SQLQueryJob extends DataSourceJob
         }
 
         if (result != null) {
-            result.setRowCount(rowCount);
+            executeResult.setRowCount(rowCount);
         }
         if (updateStatistics) {
             statistics.setRowsFetched(rowCount);

@@ -92,4 +92,9 @@ public class AbstractTransactionManager implements DBCTransactionManager {
     {
         throw new DBCException("Transactions not supported");
     }
+
+    @Override
+    public boolean isEnabled() {
+        return false;
+    }
 }

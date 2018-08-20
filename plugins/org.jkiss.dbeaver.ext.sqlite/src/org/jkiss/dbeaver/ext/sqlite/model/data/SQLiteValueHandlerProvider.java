@@ -39,7 +39,7 @@ public class SQLiteValueHandlerProvider implements DBDValueHandlerProvider {
             return JDBCContentValueHandler.INSTANCE;
         }
         // All types must be handled by unified SQLite handler
-        return SQLiteValueHandler.INSTANCE;
+        return new SQLiteValueHandler(typedObject, preferences.getDataFormatterProfile());
     }
 
 }

@@ -60,7 +60,7 @@ public class SQLEditorPropertyTester extends PropertyTester
         switch (property) {
             case PROP_CAN_EXECUTE:
                 // Do not check hasActiveQuery - sometimes jface don't update action enablement after cursor change/typing
-                return hasConnection;/* && (!"statement".equals(expectedValue) || editor.hasActiveQuery())*/
+                return true;/* && (!"statement".equals(expectedValue) || editor.hasActiveQuery())*/
             case PROP_CAN_EXPLAIN:
                 return hasConnection && DBUtils.getAdapter(DBCQueryPlanner.class, editor.getDataSource()) != null;
             case PROP_CAN_NAVIGATE: {

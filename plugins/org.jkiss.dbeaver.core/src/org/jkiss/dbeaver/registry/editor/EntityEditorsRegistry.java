@@ -54,6 +54,7 @@ public class EntityEditorsRegistry implements DBERegistry {
     private Map<String, List<EntityEditorDescriptor>> positionsMap = new HashMap<String, List<EntityEditorDescriptor>>();
     private List<EntityManagerDescriptor> entityManagers = new ArrayList<EntityManagerDescriptor>();
     private Map<String, EntityManagerDescriptor> entityManagerMap = new HashMap<>();
+    private Map<String, Boolean> nullEntityManagerMap = new HashMap<>();
 
     public EntityEditorsRegistry(IExtensionRegistry registry)
     {
@@ -90,6 +91,7 @@ public class EntityEditorsRegistry implements DBERegistry {
         }
         entityManagers.clear();
         entityManagerMap.clear();
+        nullEntityManagerMap.clear();
     }
 
     public EntityEditorDescriptor getMainEntityEditor(DBPObject object, IEntityEditorContext context)
@@ -119,17 +121,25 @@ public class EntityEditorsRegistry implements DBERegistry {
 
     private EntityManagerDescriptor getEntityManager(Class objectType)
     {
+        String targetTypeName = objectType.getName();
+
         // 1. Try exact match
-        EntityManagerDescriptor manager = entityManagerMap.get(objectType.getName());
+        EntityManagerDescriptor manager = entityManagerMap.get(targetTypeName);
         if (manager != null) {
             return manager;
+        }
+        if (nullEntityManagerMap.containsKey(targetTypeName)) {
+            return null;
         }
         // 2. Find first applicable
         for (EntityManagerDescriptor descriptor : entityManagers) {
             if (descriptor.appliesToType(objectType)) {
+                entityManagerMap.put(targetTypeName, descriptor);
                 return descriptor;
             }
         }
+        // TODO: need to re-validate. Maybe cache will break some lazy loaded bundles?
+        nullEntityManagerMap.put(targetTypeName, Boolean.TRUE);
         return null;
     }
 

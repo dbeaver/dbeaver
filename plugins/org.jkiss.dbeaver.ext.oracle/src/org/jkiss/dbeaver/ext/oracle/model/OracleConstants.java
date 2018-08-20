@@ -125,6 +125,7 @@ public class OracleConstants {
     public static final String PREF_SUPPORT_ROWID = "oracle.support.rowid";
     public static final String PREF_DBMS_OUTPUT = "oracle.dbms.output";
     public static final String PREF_DBMS_READ_ALL_SYNONYMS = "oracle.read.all.synonyms";
+    public static final String PREF_DISABLE_SCRIPT_ESCAPE_PROCESSING = "oracle.disable.script.escape";
 
     public static final String NLS_DEFAULT_VALUE = "Default";
     public static final String PREF_KEY_DDL_FORMAT = "oracle.ddl.format";
