@@ -1161,6 +1161,8 @@ public class CoreMessages extends NLS {
 	public static String pref_page_database_general_group_toolbars;
 	public static String pref_page_database_general_label_show_general_toolbar_everywhere;
 	public static String pref_page_database_general_label_show_general_toolbar_everywhere_tip;
+	public static String pref_page_database_general_label_show_edit_toolbar;
+	public static String pref_page_database_general_label_show_edit_toolbar_tip;
 	public static String pref_page_database_general_label_database_selector_width;
 	public static String pref_page_database_general_label_database_selector_width_tip;
 	public static String pref_page_database_general_label_schema_selector_width;
