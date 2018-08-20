@@ -131,10 +131,10 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource> imple
         this.initialTablespace = tablespace;
         this.initialEncoding = encoding;
 
-        this.ownerId = owner.getObjectId();
+        this.ownerId = owner == null ? 0 : owner.getObjectId();
         this.templateName = templateName;
         this.tablespaceId = tablespace == null ? 0 : tablespace.getObjectId();
-        this.encodingId = encoding.getObjectId();
+        this.encodingId = encoding == null ? 0 : encoding.getObjectId();
     }
 
     public PostgreRole getInitialOwner() {
