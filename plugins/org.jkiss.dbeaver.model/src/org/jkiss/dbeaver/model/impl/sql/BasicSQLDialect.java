@@ -299,7 +299,12 @@ public class BasicSQLDialect implements SQLDialect {
     }
 
     @Override
-    public boolean validUnquotedCharacter(char c)
+    public boolean validIdentifierStart(char c) {
+        return Character.isLetter(c);
+    }
+
+    @Override
+    public boolean validIdentifierPart(char c)
     {
         return Character.isLetter(c) || Character.isDigit(c) || c == '_';
     }
@@ -483,6 +488,9 @@ public class BasicSQLDialect implements SQLDialect {
 
         for (String executeKeyword : ArrayUtils.safeArray(getExecuteKeywords())) {
             addSQLKeyword(executeKeyword);
+        }
+        for (String ddlKeyword : ArrayUtils.safeArray(getDDLKeywords())) {
+            addSQLKeyword(ddlKeyword);
         }
 
         if (isStandardSQL()) {
