@@ -145,11 +145,11 @@ public final class DBUtils {
             sqlDialect.isQuoteReservedWords();
 
         if (!hasBadChars && !str.isEmpty()) {
-            hasBadChars = Character.isDigit(str.charAt(0));
+            hasBadChars = !sqlDialect.validIdentifierStart(str.charAt(0));
         }
-        if (caseSensitiveNames) {
+        if (!hasBadChars && caseSensitiveNames) {
             // Check for case of quoted idents. Do not check for unquoted case - we don't need to quote em anyway
-            if (!hasBadChars && sqlDialect.supportsQuotedMixedCase()) {
+            if (sqlDialect.supportsQuotedMixedCase()) {
                 // See how unquoted idents are stored
                 // If passed identifier case differs from unquoted then we need to escape it
                 if (sqlDialect.storesUnquotedCase() == DBPIdentifierCase.UPPER) {
@@ -162,14 +162,10 @@ public final class DBUtils {
 
         // Check for bad characters
         if (!hasBadChars && !str.isEmpty()) {
-            if (str.charAt(0) == '_') {
-                hasBadChars = true;
-            } else {
-                for (int i = 0; i < str.length(); i++) {
-                    if (!sqlDialect.validUnquotedCharacter(str.charAt(i))) {
-                        hasBadChars = true;
-                        break;
-                    }
+            for (int i = 0; i < str.length(); i++) {
+                if (!sqlDialect.validIdentifierPart(str.charAt(i))) {
+                    hasBadChars = true;
+                    break;
                 }
             }
         }
