@@ -3566,9 +3566,6 @@
             <supports kind="ANY"/>
             <supports typeName="REFCURSOR"/>
         </manager>
-        <manager class="org.jkiss.dbeaver.ui.data.managers.BitStringValueManager" id="org.jkiss.dbeaver.ui.data.managers.BitStringValueManager">
-            <supports typeName="BIT"/>
-        </manager>
         <manager class="org.jkiss.dbeaver.ui.data.managers.UUIDValueManager" id="org.jkiss.dbeaver.ui.data.managers.UUIDValueManager">
             <supports type="java.util.UUID"/>
         </manager>
