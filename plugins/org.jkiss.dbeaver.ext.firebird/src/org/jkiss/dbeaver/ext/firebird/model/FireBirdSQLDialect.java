@@ -34,6 +34,11 @@ public class FireBirdSQLDialect extends GenericSQLDialect {
     }
 
     @Override
+    public boolean validIdentifierPart(char c) {
+        return super.validIdentifierPart(c) || c == '$';
+    }
+
+    @Override
     protected String getStoredProcedureCallInitialClause(DBSProcedure proc) {
         return "select * from " + proc.getFullyQualifiedName(DBPEvaluationContext.DML);
     }

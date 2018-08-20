@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.impl.data.formatters.BinaryFormatterHex;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCSQLDialect;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.utils.ArrayUtils;
@@ -82,6 +83,7 @@ class OracleSQLDialect extends JDBCSQLDialect {
         "EXIT",
     };
     private boolean crlfBroken;
+    private DBPPreferenceStore preferenceStore;
 
     public OracleSQLDialect() {
         super("Oracle");
@@ -90,6 +92,7 @@ class OracleSQLDialect extends JDBCSQLDialect {
     public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super.initDriverSettings(dataSource, metaData);
         crlfBroken = !dataSource.isServerVersionAtLeast(11, 0);
+        preferenceStore = dataSource.getContainer().getPreferenceStore();
 
         addFunctions(
             Arrays.asList(
@@ -382,6 +385,11 @@ class OracleSQLDialect extends JDBCSQLDialect {
     protected String getStoredProcedureCallInitialClause(DBSProcedure proc) {
         String schemaName = proc.getParentObject().getName();
         return "CALL " + schemaName + "." + proc.getName();
+    }
+
+    @Override
+    public boolean isDisableScriptEscapeProcessing() {
+        return preferenceStore.getBoolean(OracleConstants.PREF_DISABLE_SCRIPT_ESCAPE_PROCESSING);
     }
 
     @Override

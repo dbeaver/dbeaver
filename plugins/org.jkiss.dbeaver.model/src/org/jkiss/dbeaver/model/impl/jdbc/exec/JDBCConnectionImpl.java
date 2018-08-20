@@ -154,7 +154,9 @@ public class JDBCConnectionImpl extends AbstractSession implements JDBCSession, 
                 if (statement instanceof JDBCStatementImpl) {
                     statement.setQueryString(sqlQuery);
                 }
-                disableStatementEscapeProcessing(statement);
+                if (context.getDataSource().getSQLDialect().isDisableScriptEscapeProcessing()) {
+                    disableStatementEscapeProcessing(statement);
+                }
                 return statement;
             } else if (returnGeneratedKeys) {
                 // Return keys

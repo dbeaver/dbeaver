@@ -2627,16 +2627,21 @@ public class SQLEditor extends SQLEditorBase implements
                 for (QueryResultsContainer cr : queryProcessor.resultContainers) {
                     cr.viewer.updateFiltersText(false);
                 }
-                // Set tab name only if we have just one resultset
-                // If query produced multiple results - leave their names as is
+                // Set tab names by query results names
                 if (scriptMode || queryProcessor.getResultContainers().size() > 0) {
-                    QueryResultsContainer results = queryProcessor.getResults(query);
-                    if (results != null) {
-                        int queryIndex = queryProcessors.indexOf(queryProcessor);
-                        if (queryIndex == 0 || queryProcessor.getResultContainers().size() == 1) {
-                            String resultSetName = getResultsTabName(results.resultSetNumber, queryIndex, result.getResultSetName());
+
+                    int queryIndex = queryProcessors.indexOf(queryProcessor);
+                    int resultsIndex = 0;
+                    for (QueryResultsContainer results : queryProcessor.resultContainers) {
+                        if (results.query != query) {
+                            continue;
+                        }
+                        if (resultsIndex < result.getExecuteResults().size()) {
+                            SQLQueryResult.ExecuteResult executeResult = result.getExecuteResults(resultsIndex, true);
+                            String resultSetName = getResultsTabName(results.resultSetNumber, queryIndex, executeResult.getResultSetName());
                             results.updateResultsName(resultSetName, null);
                         }
+                        resultsIndex++;
                     }
                 }
             }

@@ -42,6 +42,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.function.ToIntFunction;
 
 /**
  * DBUtils
@@ -49,6 +50,12 @@ import java.util.*;
 public final class DBUtils {
 
     private static final Log log = Log.getLog(DBUtils.class);
+
+    @NotNull
+    public static String getQuotedIdentifier(@NotNull DBPNamedObject object)
+    {
+        return object instanceof DBSObject ? getQuotedIdentifier(((DBSObject) object).getDataSource(), object.getName()) : object.getName();
+    }
 
     @NotNull
     public static String getQuotedIdentifier(@NotNull DBSObject object)
@@ -139,11 +146,11 @@ public final class DBUtils {
             sqlDialect.isQuoteReservedWords();
 
         if (!hasBadChars && !str.isEmpty()) {
-            hasBadChars = Character.isDigit(str.charAt(0));
+            hasBadChars = !sqlDialect.validIdentifierStart(str.charAt(0));
         }
-        if (caseSensitiveNames) {
+        if (!hasBadChars && caseSensitiveNames) {
             // Check for case of quoted idents. Do not check for unquoted case - we don't need to quote em anyway
-            if (!hasBadChars && sqlDialect.supportsQuotedMixedCase()) {
+            if (sqlDialect.supportsQuotedMixedCase()) {
                 // See how unquoted idents are stored
                 // If passed identifier case differs from unquoted then we need to escape it
                 if (sqlDialect.storesUnquotedCase() == DBPIdentifierCase.UPPER) {
@@ -156,14 +163,10 @@ public final class DBUtils {
 
         // Check for bad characters
         if (!hasBadChars && !str.isEmpty()) {
-            if (str.charAt(0) == '_') {
-                hasBadChars = true;
-            } else {
-                for (int i = 0; i < str.length(); i++) {
-                    if (!sqlDialect.validUnquotedCharacter(str.charAt(i))) {
-                        hasBadChars = true;
-                        break;
-                    }
+            for (int i = 0; i < str.length(); i++) {
+                if (!sqlDialect.validIdentifierPart(str.charAt(i))) {
+                    hasBadChars = true;
+                    break;
                 }
             }
         }
@@ -1475,9 +1478,12 @@ public final class DBUtils {
         return attr instanceof DBDAttributeBinding && ((DBDAttributeBinding) attr).isPseudoAttribute();
     }
 
-    public static <TYPE extends DBPNamedObject> Comparator<TYPE> nameComparator()
-    {
+    public static <TYPE extends DBPNamedObject> Comparator<TYPE> nameComparator() {
         return Comparator.comparing(DBPNamedObject::getName);
+    }
+
+    public static <TYPE extends DBPNamedObject> Comparator<DBPNamedObject> nameComparatorIgnoreCase() {
+        return (o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName());
     }
 
     public static Comparator<? super DBSAttributeBase> orderComparator() {

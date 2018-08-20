@@ -202,12 +202,13 @@ public interface SQLDialect {
     @NotNull
     SQLStateType getSQLStateType();
 
+    boolean validIdentifierStart(char c);
     /**
      * Checks that specified character is a valid identifier part. Non-valid characters should be quoted in queries.
      * @param c character
      * @return true or false
      */
-    boolean validUnquotedCharacter(char c);
+    boolean validIdentifierPart(char c);
 
     boolean supportsUnquotedMixedCase();
 
@@ -319,5 +320,7 @@ public interface SQLDialect {
     String formatStoredProcedureCall(DBPDataSource dataSource, String sqlText);
 
     void generateStoredProcedureCall(StringBuilder sql, DBSProcedure proc, Collection<? extends DBSProcedureParameter> parameters);
+
+    boolean isDisableScriptEscapeProcessing();
 
 }
