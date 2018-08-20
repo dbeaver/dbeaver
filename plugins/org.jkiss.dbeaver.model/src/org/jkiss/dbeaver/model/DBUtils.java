@@ -42,6 +42,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.function.ToIntFunction;
 
 /**
  * DBUtils
@@ -1477,9 +1478,12 @@ public final class DBUtils {
         return attr instanceof DBDAttributeBinding && ((DBDAttributeBinding) attr).isPseudoAttribute();
     }
 
-    public static <TYPE extends DBPNamedObject> Comparator<TYPE> nameComparator()
-    {
+    public static <TYPE extends DBPNamedObject> Comparator<TYPE> nameComparator() {
         return Comparator.comparing(DBPNamedObject::getName);
+    }
+
+    public static <TYPE extends DBPNamedObject> Comparator<DBPNamedObject> nameComparatorIgnoreCase() {
+        return (o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName());
     }
 
     public static Comparator<? super DBSAttributeBase> orderComparator() {
