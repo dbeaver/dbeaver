@@ -64,32 +64,27 @@ public class VerticaMetaModel extends GenericMetaModel implements DBCQueryTransf
 
     @Override
     public JDBCStatement prepareTableLoadStatement(JDBCSession session, GenericStructContainer owner, GenericTable object, String objectName) throws SQLException {
-        if (owner.getName().startsWith("v_")) {
-            return super.prepareTableLoadStatement(session, owner, object, objectName);
+        // Read flex table names. Avoid complex queries and read just names (#3981)
+        try (JDBCPreparedStatement dbStat = session.prepareStatement(
+            "SELECT table_name FROM v_catalog.tables WHERE is_flextable AND table_schema=?"))
+        {
+            dbStat.setString(1, owner.getName());
+            try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                VerticaSchema schema = (VerticaSchema) owner;
+                while (dbResult.next()) {
+                    schema.cacheFlexTableName(JDBCUtils.safeGetString(dbResult, 1));
+                }
+            }
+        } catch (Throwable e) {
+            log.error("Can't read flex table list", e);
         }
-        JDBCPreparedStatement dbStat = session.prepareStatement(
-        "SELECT tv.*,c.comment as REMARKS FROM (\n" +
-            "SELECT NULL as TABLE_CAT, t.table_schema as TABLE_SCHEM, t.table_name as TABLE_NAME, (CASE t.is_flextable WHEN true THEN 'FLEXTABLE' ELSE 'TABLE' END) as TABLE_TYPE, NULL as TYPE_CAT,\n" +
-            "\tt.owner_name, t.table_definition as DEFINITION \n" +
-            "FROM v_catalog.tables t\n" +
-            "UNION ALL\n" +
-            "SELECT NULL as TABLE_CAT, v.table_schema as TABLE_SCHEM, v.table_name as TABLE_NAME, 'VIEW' as TABLE_TYPE, NULL as TYPE_CAT,\n" +
-            "\tv.owner_name, v.view_definition as DEFINITION \n" +
-            "FROM v_catalog.views v) tv\n" +
-            "LEFT OUTER JOIN v_catalog.comments c ON c.object_type = tv.TABLE_TYPE AND c.object_schema = tv.table_schem AND c.object_name = tv.table_name \n" +
-            "WHERE tv.table_schem=?" +
-                (object == null && objectName == null ? "" : " AND tv.table_name LIKE ?") + "\n" +
-            "ORDER BY 2, 3");
-        dbStat.setString(1, owner.getName());
-        if (object != null || objectName != null) {
-            dbStat.setString(2, object != null ? object.getName() : objectName);
-        }
-        return dbStat;
+
+        return super.prepareTableLoadStatement(session, owner, object, objectName);
     }
 
     @Override
     public GenericTable createTableImpl(GenericStructContainer container, String tableName, String tableType, JDBCResultSet dbResult) {
-        return new VerticaTable(container, tableName, tableType, dbResult);
+        return new VerticaTable((VerticaSchema)container, tableName, tableType, dbResult);
     }
 
     @Override
