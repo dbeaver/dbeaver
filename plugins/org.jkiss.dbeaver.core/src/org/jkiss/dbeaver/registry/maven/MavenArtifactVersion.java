@@ -222,7 +222,7 @@ public class MavenArtifactVersion implements IMavenIdentifier {
             return;
         }
         String pomURL = getRemotePOMLocation();
-        try (InputStream is = WebUtils.openConnection(pomURL, artifact.getRepository().getAuthInfo()).getInputStream()) {
+        try (InputStream is = WebUtils.openConnection(pomURL, artifact.getRepository().getAuthInfo(), null).getInputStream()) {
             File folder = localPOM.getParentFile();
             if (!folder.exists() && !folder.mkdirs()) {
                 throw new IOException("Can't create cache folder '" + folder.getAbsolutePath() + "'");

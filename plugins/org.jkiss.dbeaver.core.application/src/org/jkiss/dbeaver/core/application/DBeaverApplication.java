@@ -67,8 +67,6 @@ public class DBeaverApplication implements IApplication, DBPApplication {
     public static final String WORKSPACE_DIR_CURRENT = WORKSPACE_DIR_4;
     public static final String WORKSPACE_DIR_PREVIOUS[] = { WORKSPACE_DIR_LEGACY };
 
-    public static final String WORKSPACE_PROPS_FILE = "dbeaver-workspace.properties"; //$NON-NLS-1$
-
     static final String VERSION_PROP_PRODUCT_NAME = "product-name";
     static final String VERSION_PROP_PRODUCT_VERSION = "product-version";
     static boolean WORKSPACE_MIGRATED = false;
@@ -126,16 +124,12 @@ public class DBeaverApplication implements IApplication, DBPApplication {
                 bundleContext.addBundleListener(new BundleLoadListener());
             }
         }
-        Log.addListener(new Log.Listener() {
-            @Override
-            public void loggedMessage(Object message, Throwable t) {
-                DBeaverSplashHandler.showMessage(CommonUtils.toString(message));
-            }
-        });
+        Log.addListener((message, t) -> DBeaverSplashHandler.showMessage(CommonUtils.toString(message)));
 
         final Runtime runtime = Runtime.getRuntime();
 
         // Init Core plugin and mark it as standalone version
+
         DBeaverCore.setApplication(this);
 
         initDebugWriter();
@@ -261,37 +255,12 @@ public class DBeaverApplication implements IApplication, DBPApplication {
         return true;
     }
 
-    private void writeWorkspaceInfo() {
+    public static void writeWorkspaceInfo() {
         final File metadataFolder = GeneralUtils.getMetadataFolder();
-        writeWorkspaceInfo(metadataFolder);
-    }
-
-    private void writeWorkspaceInfo(File metadataFolder) {
-        File versionFile = new File(metadataFolder, WORKSPACE_PROPS_FILE);
-
-        Properties props = new Properties();
+        Properties props = DBeaverCore.readWorkspaceInfo(metadataFolder);
         props.setProperty(VERSION_PROP_PRODUCT_NAME, GeneralUtils.getProductName());
         props.setProperty(VERSION_PROP_PRODUCT_VERSION, GeneralUtils.getProductVersion().toString());
-
-        try (OutputStream os = new FileOutputStream(versionFile)) {
-            props.store(os, "DBeaver workspace version");
-        } catch (Exception e) {
-            log.error(e);
-        }
-    }
-
-    Properties readWorkspaceInfo(File metadataFolder) {
-        Properties props = new Properties();
-
-        File versionFile = new File(metadataFolder, WORKSPACE_PROPS_FILE);
-        if (versionFile.exists()) {
-            try (InputStream is = new FileInputStream(versionFile)) {
-                props.load(is);
-            } catch (Exception e) {
-                log.error(e);
-            }
-        }
-        return props;
+        DBeaverCore.writeWorkspaceInfo(metadataFolder, props);
     }
 
     @NotNull
@@ -305,12 +274,9 @@ public class DBeaverApplication implements IApplication, DBPApplication {
         if (workbench == null)
             return;
         final Display display = workbench.getDisplay();
-        display.syncExec(new Runnable() {
-            @Override
-            public void run() {
-                if (!display.isDisposed())
-                    workbench.close();
-            }
+        display.syncExec(() -> {
+            if (!display.isDisposed())
+                workbench.close();
         });
     }
 
@@ -369,7 +335,7 @@ public class DBeaverApplication implements IApplication, DBPApplication {
         }
     }
 
-    public IInstanceController getInstanceServer() {
+    IInstanceController getInstanceServer() {
         return instanceServer;
     }
 
@@ -390,7 +356,7 @@ public class DBeaverApplication implements IApplication, DBPApplication {
         return DefaultSecureStorage.INSTANCE;
     }
 
-    int showMessageBox(String title, String message, int style) {
+    private int showMessageBox(String title, String message, int style) {
         // Can't lock specified path
         Shell shell = new Shell(getDisplay(), SWT.ON_TOP);
         shell.setText(GeneralUtils.getProductTitle());
@@ -422,7 +388,7 @@ public class DBeaverApplication implements IApplication, DBPApplication {
         private final OutputStream debugWriter;
         private final OutputStream stdOut;
 
-        public ProxyPrintStream(OutputStream debugWriter, OutputStream stdOut) {
+        ProxyPrintStream(OutputStream debugWriter, OutputStream stdOut) {
             this.debugWriter = debugWriter;
             this.stdOut = stdOut;
         }

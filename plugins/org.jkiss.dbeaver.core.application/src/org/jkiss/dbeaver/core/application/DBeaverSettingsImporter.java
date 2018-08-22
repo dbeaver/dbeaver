@@ -25,6 +25,7 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.runtime.BaseProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -75,7 +76,7 @@ class DBeaverSettingsImporter {
     }
 
     boolean migrateFromPreviousVersion(final File oldDir, final File newDir) {
-        final Properties oldProps = application.readWorkspaceInfo(GeneralUtils.getMetadataFolder(oldDir));
+        final Properties oldProps = DBeaverCore.readWorkspaceInfo(GeneralUtils.getMetadataFolder(oldDir));
         String oldVersion = oldProps.getProperty(DBeaverApplication.VERSION_PROP_PRODUCT_VERSION);
         if (oldVersion == null) {
             oldVersion = "3.x";

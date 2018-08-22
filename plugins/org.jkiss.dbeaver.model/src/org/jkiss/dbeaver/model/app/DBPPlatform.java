@@ -41,14 +41,13 @@ public interface DBPPlatform
     @NotNull
     DBPApplication getApplication();
 
+    DBPWorkspace getWorkspace();
+
     @NotNull
     DBPPlatformLanguage getLanguage();
 
     @NotNull
     DBNModel getNavigatorModel();
-
-    @NotNull
-    IWorkspace getWorkspace();
 
     @NotNull
     DBPProjectManager getProjectManager();

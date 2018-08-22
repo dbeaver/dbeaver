@@ -96,4 +96,5 @@ public class DBConstants {
 
     public static final String MODEL_BUNDLE_ID = "org.jkiss.dbeaver.model";
 
+    public static final String WORKSPACE_PROPS_FILE = "dbeaver-workspace.properties"; //$NON-NLS-1$
 }
