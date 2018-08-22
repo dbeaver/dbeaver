@@ -392,24 +392,25 @@
 
                 </driver>
             </drivers>
-
-            <views>
-                <view
-                    id="org.jkiss.dbeaver.ext.db2.dataSourceWizardView"
-                    targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
-                    label="%dialog.connection.header"
-                    class="org.jkiss.dbeaver.ext.db2.views.DB2ConnectionPage"
-                    icon="icons/db2_icon.png">
-                </view>
-                <view
-                    id="org.jkiss.dbeaver.ext.db2.dataSourceEditorView"
-                    targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog"
-                    label="%dialog.connection.header"
-                    class="org.jkiss.dbeaver.ext.db2.views.DB2ConnectionPage">
-                </view>
-            </views>
-            
         </datasource>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataSourceView">
+        <view
+                id="org.jkiss.dbeaver.ext.db2.dataSourceWizardView"
+                dataSource="db2"
+                targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
+                label="%dialog.connection.header"
+                class="org.jkiss.dbeaver.ext.db2.views.DB2ConnectionPage"
+                icon="icons/db2_icon.png">
+        </view>
+        <view
+                id="org.jkiss.dbeaver.ext.db2.dataSourceEditorView"
+                dataSource="db2"
+                targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog"
+                label="%dialog.connection.header"
+                class="org.jkiss.dbeaver.ext.db2.views.DB2ConnectionPage">
+        </view>
     </extension>
 
     <extension point="org.jkiss.dbeaver.databaseEditor">
