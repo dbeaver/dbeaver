@@ -494,20 +494,16 @@ public class PostgreUtils {
                 String granteeName = objectOwner == null ? null : objectOwner.getName();
 
                 List<PostgrePrivilege> privileges = new ArrayList<>();
-                for (PostgrePrivilegeType pt : PostgrePrivilegeType.values()) {
-                    if (pt.supportsType(owner.getClass())) {
-                        privileges.add(
-                            new PostgrePrivilege(
-                                granteeName,
-                                granteeName,
-                                owner.getDatabase().getName(),
-                                owner.getSchema().getName(),
-                                owner.getName(),
-                                pt,
-                                false,
-                                false));
-                    }
-                }
+                privileges.add(
+                    new PostgrePrivilege(
+                        granteeName,
+                        granteeName,
+                        owner.getDatabase().getName(),
+                        owner.getSchema().getName(),
+                        owner.getName(),
+                        PostgrePrivilegeType.ALL,
+                        false,
+                        false));
                 PostgreObjectPermission permission = new PostgreObjectPermission(owner, objectOwner == null ? null : objectOwner.getName(), privileges);
                 return Collections.singletonList(permission);
             }

@@ -215,8 +215,12 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
         }
         tablePermissions = new ArrayList<>(tablePermissions);
         for (PostgreTableColumn column : CommonUtils.safeCollection(getAttributes(monitor))) {
+            if (column.getAcl() == null || column.isHidden()) {
+                continue;
+            }
             tablePermissions.addAll(column.getPermissions(monitor, true));
         }
+
         return tablePermissions;
     }
 
