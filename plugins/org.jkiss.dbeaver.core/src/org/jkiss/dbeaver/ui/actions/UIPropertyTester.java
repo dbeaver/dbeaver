@@ -39,6 +39,8 @@ public class UIPropertyTester extends PropertyTester {
             case PROP_TOOLBAR_VISIBLE:
                 if (IActionConstants.TOOLBAR_DATABASE.equals(expectedValue)) {
                     return DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.TOOLBARS_SHOW_GENERAL_ALWAYS);
+                } else if (IActionConstants.TOOLBAR_EDIT.equals(expectedValue)) {
+                    return DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.TOOLBARS_SHOW_EDIT);
                 }
         }
         return false;
