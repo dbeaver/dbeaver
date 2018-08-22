@@ -49,6 +49,7 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
     private Combo dsDoubleClickBehavior;
     private Combo objDoubleClickBehavior;
     private Button showGeneralToolbarEverywhere;
+    private Button showEditToolbar;
     private Spinner toolbarDatabaseSelectorWidth;
     private Spinner toolbarSchemaSelectorWidth;
 
@@ -99,6 +100,7 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
             Group toolbarsGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_database_general_group_toolbars, 2, SWT.NONE, 0);
 
             showGeneralToolbarEverywhere = UIUtils.createCheckbox(toolbarsGroup, CoreMessages.pref_page_database_general_label_show_general_toolbar_everywhere, CoreMessages.pref_page_database_general_label_show_general_toolbar_everywhere_tip, false, 2);
+            showEditToolbar = UIUtils.createCheckbox(toolbarsGroup, CoreMessages.pref_page_database_general_label_show_edit_toolbar, CoreMessages.pref_page_database_general_label_show_edit_toolbar_tip, false, 2);
             toolbarDatabaseSelectorWidth = UIUtils.createLabelSpinner(toolbarsGroup, CoreMessages.pref_page_database_general_label_database_selector_width, CoreMessages.pref_page_database_general_label_database_selector_width_tip, 20, 10, 200);
             toolbarSchemaSelectorWidth = UIUtils.createLabelSpinner(toolbarsGroup, CoreMessages.pref_page_database_general_label_schema_selector_width, CoreMessages.pref_page_database_general_label_schema_selector_width_tip, 20, 10, 200);
         }
@@ -125,6 +127,7 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
             NavigatorViewBase.DoubleClickBehavior.valueOf(store.getString(DBeaverPreferences.NAVIGATOR_CONNECTION_DOUBLE_CLICK)).ordinal());
 
         showGeneralToolbarEverywhere.setSelection(store.getBoolean(DBeaverPreferences.TOOLBARS_SHOW_GENERAL_ALWAYS));
+        showEditToolbar.setSelection(store.getBoolean(DBeaverPreferences.TOOLBARS_SHOW_EDIT));
         toolbarDatabaseSelectorWidth.setSelection(store.getInt(DBeaverPreferences.TOOLBARS_DATABASE_SELECTOR_WIDTH));
         toolbarSchemaSelectorWidth.setSelection(store.getInt(DBeaverPreferences.TOOLBARS_SCHEMA_SELECTOR_WIDTH));
     }
@@ -149,6 +152,7 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
             CommonUtils.fromOrdinal(NavigatorViewBase.DoubleClickBehavior.class, dsDoubleClickBehavior.getSelectionIndex()).name());
 
         store.setValue(DBeaverPreferences.TOOLBARS_SHOW_GENERAL_ALWAYS, showGeneralToolbarEverywhere.getSelection());
+        store.setValue(DBeaverPreferences.TOOLBARS_SHOW_EDIT, showEditToolbar.getSelection());
         store.setValue(DBeaverPreferences.TOOLBARS_DATABASE_SELECTOR_WIDTH, toolbarDatabaseSelectorWidth.getSelection());
         store.setValue(DBeaverPreferences.TOOLBARS_SCHEMA_SELECTOR_WIDTH, toolbarSchemaSelectorWidth.getSelection());
 
