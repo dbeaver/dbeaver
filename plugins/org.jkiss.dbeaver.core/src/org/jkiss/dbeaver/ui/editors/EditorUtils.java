@@ -143,7 +143,7 @@ public class EditorUtils {
     {
         if (editorInput instanceof IDatabaseEditorInput) {
             final DBSObject object = ((IDatabaseEditorInput) editorInput).getDatabaseObject();
-            if (object != null) {
+            if (object != null && object.getDataSource() != null) {
                 return object.getDataSource().getContainer();
             }
             return null;
