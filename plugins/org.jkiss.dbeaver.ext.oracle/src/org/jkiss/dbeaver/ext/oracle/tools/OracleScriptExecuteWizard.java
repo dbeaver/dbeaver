@@ -69,7 +69,7 @@ class OracleScriptExecuteWizard extends AbstractScriptExecuteWizard<OracleDataSo
     }
 
     @Override
-    public OracleHomeDescriptor findServerHome(String clientHomeId)
+    public OracleHomeDescriptor findNativeClientHome(String clientHomeId)
     {
         return OCIUtils.getOraHome(clientHomeId);
     }

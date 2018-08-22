@@ -57,7 +57,7 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
 
     MockDataExecuteWizard(MockDataSettings mockDataSettings, Collection<DBSDataManipulator> dbObjects, String task) {
         super(dbObjects, task);
-        this.clientHomeRequired = false;
+        this.nativeClientHomeRequired = false;
         this.mockDataSettings = mockDataSettings;
     }
 
@@ -121,10 +121,6 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                 CommonUtils.truncateString(NLS.bind(MockDataMessages.tools_mockdata_wizard_message_process_completed, getObjectsName()), 255),
                 SWT.ICON_INFORMATION);
 */
-    }
-
-    public DBPClientHome findServerHome(String clientHomeId) {
-        return null;
     }
 
     @Override

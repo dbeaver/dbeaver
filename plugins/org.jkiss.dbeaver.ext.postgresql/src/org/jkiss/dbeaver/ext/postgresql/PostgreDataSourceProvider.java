@@ -23,19 +23,18 @@ import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPClientHome;
-import org.jkiss.dbeaver.model.connection.DBPClientManager;
+import org.jkiss.dbeaver.model.connection.DBPNativeClientLocationManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
-import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.WinRegistry;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.*;
 
-public class PostgreDataSourceProvider extends JDBCDataSourceProvider implements DBPClientManager {
+public class PostgreDataSourceProvider extends JDBCDataSourceProvider implements DBPNativeClientLocationManager {
 
     private static Map<String,String> connectionsProps;
 
@@ -95,7 +94,7 @@ public class PostgreDataSourceProvider extends JDBCDataSourceProvider implements
     private static Map<String,PostgreServerHome> localServers = null;
 
     @Override
-    public Collection<String> findClientHomeIds()
+    public Collection<String> findNativeClientHomeIds()
     {
         findLocalClients();
         Set<String> homes = new LinkedHashSet<>();
@@ -106,14 +105,14 @@ public class PostgreDataSourceProvider extends JDBCDataSourceProvider implements
     }
 
     @Override
-    public String getDefaultClientHomeId()
+    public String getDefaultNativeClientHomeId()
     {
         findLocalClients();
         return localServers.isEmpty() ? null : localServers.values().iterator().next().getHomeId();
     }
 
     @Override
-    public DBPClientHome getClientHome(String homeId)
+    public DBPClientHome getNativeClientHome(String homeId)
     {
         return getServerHome(homeId);
     }

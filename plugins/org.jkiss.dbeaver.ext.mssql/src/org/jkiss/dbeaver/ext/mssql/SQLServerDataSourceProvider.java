@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.ext.mssql.model.SQLServerDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPClientHome;
-import org.jkiss.dbeaver.model.connection.DBPClientManager;
+import org.jkiss.dbeaver.model.connection.DBPNativeClientLocationManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
@@ -35,7 +35,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SQLServerDataSourceProvider extends JDBCDataSourceProvider implements DBPClientManager {
+public class SQLServerDataSourceProvider extends JDBCDataSourceProvider implements DBPNativeClientLocationManager {
 
     private static Map<String,String> connectionsProps;
 
@@ -124,17 +124,17 @@ public class SQLServerDataSourceProvider extends JDBCDataSourceProvider implemen
     }
 
     @Override
-    public Collection<String> findClientHomeIds() {
+    public Collection<String> findNativeClientHomeIds() {
         return Collections.emptyList();
     }
 
     @Override
-    public String getDefaultClientHomeId() {
+    public String getDefaultNativeClientHomeId() {
         return null;
     }
 
     @Override
-    public DBPClientHome getClientHome(String homeId) {
+    public DBPClientHome getNativeClientHome(String homeId) {
         return null;
     }
 }

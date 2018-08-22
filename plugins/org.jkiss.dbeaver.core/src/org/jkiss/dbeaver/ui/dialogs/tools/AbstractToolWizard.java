@@ -68,7 +68,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
     private String toolUserName;
     private String toolUserPassword;
     private String extraCommandArgs;
-    protected boolean clientHomeRequired = true;
+    protected boolean nativeClientHomeRequired = true;
 
     protected String task;
     protected final DatabaseWizardPageLog logPage;
@@ -166,7 +166,9 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
         }
     }
 
-    public abstract DBPClientHome findServerHome(String clientHomeId);
+    public DBPClientHome findNativeClientHome(String clientHomeId) {
+        return null;
+    }
 
     public abstract Collection<PROCESS_ARG> getRunInfo();
 
@@ -177,14 +179,14 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
 
         WizardPage currentPage = (WizardPage) getStartingPage();
 
-        if (clientHomeRequired) {
+        if (nativeClientHomeRequired) {
             String clientHomeId = connectionInfo.getClientHomeId();
             if (clientHomeId == null) {
                 currentPage.setErrorMessage(CoreMessages.tools_wizard_message_no_client_home);
                 getContainer().updateMessage();
                 return;
             }
-            clientHome = findServerHome(clientHomeId);//MySQLDataSourceProvider.getServerHome(clientHomeId);
+            clientHome = findNativeClientHome(clientHomeId);//MySQLDataSourceProvider.getServerHome(clientHomeId);
             if (clientHome == null) {
                 currentPage.setErrorMessage(NLS.bind(CoreMessages.tools_wizard_message_client_home_not_found, clientHomeId));
                 getContainer().updateMessage();

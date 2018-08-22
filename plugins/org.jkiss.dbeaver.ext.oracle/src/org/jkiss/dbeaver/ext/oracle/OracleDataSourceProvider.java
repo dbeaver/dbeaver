@@ -27,7 +27,7 @@ import org.jkiss.dbeaver.ext.oracle.oci.OracleHomeDescriptor;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPClientHome;
-import org.jkiss.dbeaver.model.connection.DBPClientManager;
+import org.jkiss.dbeaver.model.connection.DBPNativeClientLocationManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
@@ -40,7 +40,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-public class OracleDataSourceProvider extends JDBCDataSourceProvider implements DBPClientManager {
+public class OracleDataSourceProvider extends JDBCDataSourceProvider implements DBPNativeClientLocationManager {
 
     public OracleDataSourceProvider()
     {
@@ -135,7 +135,7 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
     // Client manager
 
     @Override
-    public Collection<String> findClientHomeIds()
+    public Collection<String> findNativeClientHomeIds()
     {
         List<String> homeIds = new ArrayList<>();
         for (OracleHomeDescriptor home : OCIUtils.getOraHomes()) {
@@ -145,7 +145,7 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
     }
 
     @Override
-    public String getDefaultClientHomeId()
+    public String getDefaultNativeClientHomeId()
     {
         List<OracleHomeDescriptor> oraHomes = OCIUtils.getOraHomes();
         if (!oraHomes.isEmpty()) {
@@ -155,7 +155,7 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
     }
 
     @Override
-    public DBPClientHome getClientHome(String homeId)
+    public DBPClientHome getNativeClientHome(String homeId)
     {
         return new OracleHomeDescriptor(homeId);
     }
