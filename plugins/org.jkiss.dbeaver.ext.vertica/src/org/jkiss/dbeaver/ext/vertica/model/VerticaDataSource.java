@@ -44,7 +44,7 @@ public class VerticaDataSource extends GenericDataSource {
     }
 
     @Override
-    protected boolean isOmitCatalog() {
+    public boolean isOmitCatalog() {
         return true;
     }
 

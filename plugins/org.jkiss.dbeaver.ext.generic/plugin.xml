@@ -132,6 +132,7 @@
                     <property id="all-objects-pattern" label="All Objects Pattern" description="SQL pattern for all metadata objects" type="string" required="false" defaultValue="%" validValues="null,%"/>
                     <property id="omit-catalog" label="Omit catalog(s)" description="Do not read and use catalog (aka database) information" type="boolean" required="false" defaultValue="false"/>
                     <property id="omit-single-catalog" label="Omit single catalog" description="Hide catalog (database) is there is only one catalog on server" type="boolean" required="false" defaultValue="false"/>
+                    <property id="omit-single-schema" label="Omit single schema" description="Hide schema is there is only one schema on server" type="boolean" required="false" defaultValue="false"/>
                     <property id="omit-type-cache" label="Omit type cache" description="Do not use data types provided by driver" type="boolean" required="false" defaultValue="false"/>
                     <property id="shutdown-url-param" label="Shutdown parameter" description="Database shutdown URL parameter" type="string" required="false" defaultValue=""/>
                     <property id="create-url-param" label="Create database parameter" description="Database create URL parameter" type="string" required="false" defaultValue=""/>
