@@ -45,7 +45,7 @@ public interface DBPDriver extends DBPNamedObject
      * Client manager or null
      */
     @Nullable
-    DBPClientManager getClientManager();
+    DBPNativeClientLocationManager getClientManager();
 
     @NotNull
     String getId();

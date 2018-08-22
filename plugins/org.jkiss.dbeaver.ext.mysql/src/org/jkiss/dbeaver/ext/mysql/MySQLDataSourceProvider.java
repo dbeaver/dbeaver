@@ -24,7 +24,7 @@ import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPClientHome;
-import org.jkiss.dbeaver.model.connection.DBPClientManager;
+import org.jkiss.dbeaver.model.connection.DBPNativeClientLocationManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
@@ -38,7 +38,7 @@ import org.jkiss.utils.StandardConstants;
 import java.io.File;
 import java.util.*;
 
-public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements DBPClientManager {
+public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements DBPNativeClientLocationManager {
 
     private static final Log log = Log.getLog(MySQLDataSourceProvider.class);
 
@@ -127,7 +127,7 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
     // Client manager
 
     @Override
-    public Collection<String> findClientHomeIds()
+    public Collection<String> findNativeClientHomeIds()
     {
         findLocalClients();
         Set<String> homes = new LinkedHashSet<>();
@@ -138,14 +138,14 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
     }
 
     @Override
-    public String getDefaultClientHomeId()
+    public String getDefaultNativeClientHomeId()
     {
         findLocalClients();
         return localServers.isEmpty() ? null : localServers.values().iterator().next().getHomeId();
     }
 
     @Override
-    public DBPClientHome getClientHome(String homeId)
+    public DBPClientHome getNativeClientHome(String homeId)
     {
         return getServerHome(homeId);
     }

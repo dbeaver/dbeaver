@@ -33,7 +33,6 @@ import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.registry.*;
 import org.jkiss.dbeaver.registry.maven.MavenArtifactReference;
@@ -387,10 +386,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     @Nullable
     @Override
-    public DBPClientManager getClientManager() {
+    public DBPNativeClientLocationManager getClientManager() {
         DBPDataSourceProvider provider = getDataSourceProvider();
-        if (provider instanceof DBPClientManager) {
-            return (DBPClientManager) provider;
+        if (provider instanceof DBPNativeClientLocationManager) {
+            return (DBPNativeClientLocationManager) provider;
         } else {
             return null;
         }
@@ -1228,17 +1227,17 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     @Nullable
     @Override
     public DBPClientHome getClientHome(String homeId) {
-        DBPClientManager clientManager = getClientManager();
+        DBPNativeClientLocationManager clientManager = getClientManager();
         if (clientManager != null) {
-            return clientManager.getClientHome(homeId);
+            return clientManager.getNativeClientHome(homeId);
         }
         return null;
     }
 
     public String getDefaultClientHomeId() {
-        DBPClientManager clientManager = getClientManager();
+        DBPNativeClientLocationManager clientManager = getClientManager();
         if (clientManager != null) {
-            return clientManager.getDefaultClientHomeId();
+            return clientManager.getDefaultNativeClientHomeId();
         }
         return null;
     }

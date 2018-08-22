@@ -29,7 +29,7 @@ import org.eclipse.swt.widgets.Label;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.connection.DBPClientHome;
-import org.jkiss.dbeaver.model.connection.DBPClientManager;
+import org.jkiss.dbeaver.model.connection.DBPNativeClientLocationManager;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.ui.UIUtils;
 
@@ -109,10 +109,10 @@ public class ClientHomesSelector
         this.homesCombo.removeAll();
         this.homeIds.clear();
 
-        DBPClientManager clientManager = driver.getClientManager();
+        DBPNativeClientLocationManager clientManager = driver.getClientManager();
         if (clientManager != null) {
             Set<String> homes = new LinkedHashSet<>(
-                clientManager.findClientHomeIds());
+                clientManager.findNativeClientHomeIds());
             homes.addAll(driver.getClientHomeIds());
 
             for (String homeId : homes) {
@@ -133,7 +133,7 @@ public class ClientHomesSelector
     private void displayClientVersion()
     {
 /*
-        DBPClientHome clientHome = currentHomeId == null ? null : driver.getClientHome(currentHomeId);
+        DBPClientHome clientHome = currentHomeId == null ? null : driver.getNativeClientHome(currentHomeId);
         if (clientHome != null) {
             try {
                 // display client version
