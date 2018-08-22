@@ -38,17 +38,25 @@ public class WebUtils {
     private static final int MAX_RETRY_COUNT = 10;
 
     @NotNull
-    public static URLConnection openConnection(String urlString) throws IOException {
-        return openConnection(urlString, null);
+    public static URLConnection openConnection(String urlString, String referrer) throws IOException {
+        return openConnection(urlString, null, referrer);
     }
 
     @NotNull
-    public static URLConnection openConnection(String urlString, DBAAuthInfo authInfo) throws IOException {
-        return openURLConnection(urlString, authInfo, 1);
+    public static URLConnection openConnection(String urlString, DBAAuthInfo authInfo, String referrer) throws IOException {
+        return openURLConnection(urlString, authInfo, referrer, 1);
     }
 
+    /**
+     * Opens URL connection
+     * @param urlString   URL
+     * @param authInfo    authenticate info.
+     * @param referrer    Referrer (who opens the URL?)
+     * @param retryNumber retry number
+     * @return  URL connection
+     */
     @NotNull
-    private static URLConnection openURLConnection(String urlString, DBAAuthInfo authInfo, int retryNumber) throws IOException {
+    private static URLConnection openURLConnection(String urlString, DBAAuthInfo authInfo, String referrer, int retryNumber) throws IOException {
         if (retryNumber > MAX_RETRY_COUNT) {
             throw new IOException("Too many redirects (" + retryNumber + ")");
         } else if (retryNumber > 1) {
@@ -79,6 +87,11 @@ public class WebUtils {
             connection.setRequestProperty(
                 "User-Agent",  //$NON-NLS-1$
                 GeneralUtils.getProductTitle());
+            if (referrer != null) {
+                connection.setRequestProperty(
+                        "X-Referrer",  //$NON-NLS-1$
+                        referrer);
+            }
             if (authInfo != null && !CommonUtils.isEmpty(authInfo.getUserName())) {
                 // Set auth info
                 String encoded = Base64.getEncoder().encodeToString(
@@ -93,7 +106,7 @@ public class WebUtils {
             if (responseCode != 200) {
                 if (responseCode == HttpURLConnection.HTTP_MOVED_TEMP || responseCode == HttpURLConnection.HTTP_MOVED_PERM || responseCode == HttpURLConnection.HTTP_SEE_OTHER) {
                     String newUrl = connection.getHeaderField("Location");
-                    return openURLConnection(newUrl, authInfo, retryNumber + 1);
+                    return openURLConnection(newUrl, authInfo, referrer, retryNumber + 1);
                 }
                 throw new IOException("Can't open '" + urlString + "': " + httpConnection.getResponseMessage());
             }

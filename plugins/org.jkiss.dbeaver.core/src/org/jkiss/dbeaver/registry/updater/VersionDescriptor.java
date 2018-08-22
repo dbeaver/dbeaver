@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.registry.updater;
 
+import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.utils.xml.SAXListener;
 import org.jkiss.utils.xml.SAXReader;
@@ -44,10 +45,10 @@ public class VersionDescriptor {
     private final List<DistributionDescriptor> distributions = new ArrayList<>();
     private final List<UpdateSiteDescriptor> updateSites = new ArrayList<>();
 
-    public VersionDescriptor(String fileAddr)
+    public VersionDescriptor(DBPPlatform platform, String fileAddr)
         throws IOException
     {
-        try (InputStream inputStream = WebUtils.openConnection(fileAddr).getInputStream()) {
+        try (InputStream inputStream = WebUtils.openConnection(fileAddr, platform.getWorkspace().getWorkspaceId()).getInputStream()) {
             parseVersionInfo(inputStream);
         } catch (XMLException e) {
             throw new IOException("XML parse error", e);

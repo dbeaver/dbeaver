@@ -208,7 +208,7 @@ class ProjectImportWizardPageFile extends WizardPage {
     private boolean checkProjectItem(TableItem item)
     {
         String projectName = item.getText(1);
-        IProject project = DBeaverCore.getInstance().getWorkspace().getRoot().getProject(projectName);
+        IProject project = DBeaverCore.getInstance().getWorkspace().getEclipseWorkspace().getRoot().getProject(projectName);
         if (!project.isAccessible()) {
             item.setForeground(1, null);
             return true;

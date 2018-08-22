@@ -86,7 +86,7 @@ public class DBeaverVersionChecker extends AbstractJob {
         }
         VersionDescriptor versionDescriptor = null;
         try {
-            versionDescriptor = new VersionDescriptor(updateURL);
+            versionDescriptor = new VersionDescriptor(DBeaverCore.getInstance(), updateURL);
         } catch (IOException e) {
             log.debug(e);
         }

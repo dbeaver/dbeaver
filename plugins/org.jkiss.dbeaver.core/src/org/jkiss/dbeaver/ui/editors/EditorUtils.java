@@ -162,7 +162,7 @@ public class EditorUtils {
                     if (CommonUtils.isEmpty(dataSourceId) || CommonUtils.isEmpty(projectName)) {
                         return null;
                     }
-                    final IProject project = DBeaverCore.getInstance().getWorkspace().getRoot().getProject(projectName);
+                    final IProject project = DBeaverCore.getInstance().getWorkspace().getEclipseWorkspace().getRoot().getProject(projectName);
                     if (project == null || !project.exists()) {
                         log.error("Can't locate project '" + projectName + "' in workspace");
                         return null;
@@ -189,7 +189,7 @@ public class EditorUtils {
             if (dataSourceId != null) {
                 IProject project = file.getProject();
                 if (projectId != null) {
-                    final IProject fileProject = DBeaverCore.getInstance().getWorkspace().getRoot().getProject(projectId);
+                    final IProject fileProject = DBeaverCore.getInstance().getWorkspace().getEclipseWorkspace().getRoot().getProject(projectId);
                     if (fileProject != null && fileProject.exists()) {
                         project = fileProject;
                     }

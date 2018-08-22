@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.utils;
 
 import org.eclipse.core.runtime.*;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.bundle.ModelActivator;

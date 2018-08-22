@@ -235,7 +235,7 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary
             throw new IOException("Unresolved file reference: " + getPath());
         }
 
-        final URLConnection connection = WebUtils.openConnection(externalURL, getAuthInfo(monitor));
+        final URLConnection connection = WebUtils.openConnection(externalURL, getAuthInfo(monitor), null);
 
         int contentLength = connection.getContentLength();
         if (contentLength < 0) {

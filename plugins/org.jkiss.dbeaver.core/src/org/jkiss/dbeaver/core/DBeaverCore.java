@@ -18,9 +18,7 @@
 package org.jkiss.dbeaver.core;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Platform;
@@ -30,6 +28,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPExternalFileManager;
 import org.jkiss.dbeaver.model.app.*;
 import org.jkiss.dbeaver.model.data.DBDRegistry;
@@ -42,18 +41,19 @@ import org.jkiss.dbeaver.model.qm.QMController;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterRegistry;
 import org.jkiss.dbeaver.registry.*;
 import org.jkiss.dbeaver.registry.datatype.DataTypeProviderRegistry;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
 import org.jkiss.dbeaver.registry.formatter.DataFormatterRegistry;
 import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
-import org.jkiss.dbeaver.ui.editors.sql.registry.SQLFormatterConfigurationRegistry;
 import org.jkiss.dbeaver.runtime.IPluginService;
 import org.jkiss.dbeaver.runtime.jobs.KeepAliveJob;
 import org.jkiss.dbeaver.runtime.net.GlobalProxySelector;
 import org.jkiss.dbeaver.runtime.qm.QMControllerImpl;
 import org.jkiss.dbeaver.runtime.qm.QMLogFileWriter;
+import org.jkiss.dbeaver.ui.editors.sql.registry.SQLFormatterConfigurationRegistry;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -61,8 +61,7 @@ import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.StandardConstants;
 import org.osgi.framework.Bundle;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.net.Authenticator;
 import java.net.ProxySelector;
 import java.nio.file.AccessDeniedException;
@@ -71,6 +70,7 @@ import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Properties;
 
 /**
  * DBeaverCore
@@ -94,7 +94,7 @@ public class DBeaverCore implements DBPPlatform {
     private static volatile boolean isClosing = false;
 
     private File tempFolder;
-    private IWorkspace workspace;
+    private DBeaverWorkspace workspace;
     private DBPPlatformLanguage language;
     private OSDescriptor localSystem;
 
@@ -202,7 +202,7 @@ public class DBeaverCore implements DBPPlatform {
         });
 
         // Register properties adapter
-        this.workspace = ResourcesPlugin.getWorkspace();
+        this.workspace = new DBeaverWorkspace(this, ResourcesPlugin.getWorkspace());
 
         this.localSystem = new OSDescriptor(Platform.getOS(), Platform.getOSArch());
         {
@@ -227,7 +227,7 @@ public class DBeaverCore implements DBPPlatform {
             new File(DBeaverActivator.getInstance().getStateLocation().toFile(), "security"));
 
         // Init project registry
-        this.projectRegistry = new ProjectRegistry(workspace);
+        this.projectRegistry = new ProjectRegistry(workspace.getEclipseWorkspace());
 
         // Projects registry
         initializeProjects();
@@ -306,9 +306,8 @@ public class DBeaverCore implements DBPPlatform {
 
         if (isStandalone() && workspace != null) {
             try {
-                IProgressMonitor monitor = new NullProgressMonitor();
-                workspace.save(true, monitor);
-            } catch (CoreException ex) {
+                workspace.save(new VoidProgressMonitor());
+            } catch (DBException ex) {
                 log.error("Can't save workspace", ex); //$NON-NLS-1$
             }
         }
@@ -331,7 +330,7 @@ public class DBeaverCore implements DBPPlatform {
 
     @NotNull
     @Override
-    public IWorkspace getWorkspace()
+    public DBPWorkspace getWorkspace()
     {
         return workspace;
     }
@@ -539,12 +538,36 @@ public class DBeaverCore implements DBPPlatform {
     public List<IProject> getLiveProjects()
     {
         List<IProject> result = new ArrayList<>();
-        for (IProject project : workspace.getRoot().getProjects()) {
+        for (IProject project : workspace.getEclipseWorkspace().getRoot().getProjects()) {
             if (project.exists() && !project.isHidden()) {
                 result.add(project);
             }
         }
         return result;
+    }
+
+    public static void writeWorkspaceInfo(File metadataFolder, Properties props) {
+        File versionFile = new File(metadataFolder, DBConstants.WORKSPACE_PROPS_FILE);
+
+        try (OutputStream os = new FileOutputStream(versionFile)) {
+            props.store(os, "DBeaver workspace version");
+        } catch (Exception e) {
+            log.error(e);
+        }
+    }
+
+    public static Properties readWorkspaceInfo(File metadataFolder) {
+        Properties props = new Properties();
+
+        File versionFile = new File(metadataFolder, DBConstants.WORKSPACE_PROPS_FILE);
+        if (versionFile.exists()) {
+            try (InputStream is = new FileInputStream(versionFile)) {
+                props.load(is);
+            } catch (Exception e) {
+                log.error(e);
+            }
+        }
+        return props;
     }
 
 }
