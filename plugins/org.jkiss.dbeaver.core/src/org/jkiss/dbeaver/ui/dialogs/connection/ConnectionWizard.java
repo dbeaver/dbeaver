@@ -54,6 +54,7 @@ import org.jkiss.utils.CommonUtils;
 import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.DatabaseMetaData;
+import java.sql.Driver;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -264,6 +265,22 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
                                 log.error("Can't obtain connection metadata", e);
                             }
                         }
+                    }
+                }
+                if (driverName == null || driverVersion == null) {
+                    try {
+                        if (driverName == null) {
+                            driverName = container.getDriver().getDriverClassName();
+                        }
+                        if (driverVersion == null) {
+                            // Try to get driver version from driver instance
+                            Object driverInstance = container.getDriver().getDriverInstance(monitor);
+                            if (driverInstance instanceof Driver) {
+                                driverVersion = ((Driver) driverInstance).getMajorVersion() + "." + ((Driver) driverInstance).getMinorVersion();
+                            }
+                        }
+                    } catch (DBException e) {
+                        e.printStackTrace();
                     }
                 }
                 monitor.worked(1);
