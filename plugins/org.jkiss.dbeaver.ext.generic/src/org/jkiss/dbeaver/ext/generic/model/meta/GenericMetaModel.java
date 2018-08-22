@@ -110,7 +110,7 @@ public class GenericMetaModel {
 
             final List<GenericSchema> tmpSchemas = new ArrayList<>();
             JDBCResultSet dbResult = null;
-            boolean catalogSchemas = false;
+            boolean catalogSchemas = false, schemasFiltered = false;
             if (catalog != null) {
                 try {
                     dbResult = session.getMetaData().getSchemas(
@@ -142,6 +142,7 @@ public class GenericMetaModel {
                     }
                     if (schemaFilters != null && !schemaFilters.matches(schemaName)) {
                         // Doesn't match filter
+                        schemasFiltered = true;
                         continue;
                     }
                     String catalogName = GenericUtils.safeGetString(schemaObject, dbResult, JDBCConstants.TABLE_CATALOG);
@@ -167,7 +168,11 @@ public class GenericMetaModel {
             } finally {
                 dbResult.close();
             }
-            if (catalog == null && tmpSchemas.size() == 1 && (schemaFilters == null || schemaFilters.isNotApplicable())) {
+            if (tmpSchemas.isEmpty() && catalogSchemas && !schemasFiltered && dataSource.getCatalogs().size() == 1) {
+                // There is just one catalog and empty schema list. Try to read global schemas
+                return loadSchemas(session, dataSource, null);
+            }
+            if (dataSource.isOmitSingleSchema() && catalog == null && tmpSchemas.size() == 1 && (schemaFilters == null || schemaFilters.isNotApplicable())) {
                 // Only one schema and no catalogs
                 // Most likely it is a fake one, let's skip it
                 // Anyway using "%" instead is ok

@@ -482,7 +482,11 @@ public class GenericDataSource extends JDBCDataSource
         }
     }
 
-    protected boolean isOmitCatalog() {
+    public boolean isOmitSingleSchema() {
+        return CommonUtils.getBoolean(getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_OMIT_SINGLE_SCHEMA), false);
+    }
+
+    public boolean isOmitCatalog() {
         return CommonUtils.getBoolean(getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_OMIT_CATALOG), false);
     }
 
