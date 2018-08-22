@@ -31,24 +31,26 @@
 
             </drivers>
 
-            <views>
-                <view
-                        id="org.jkiss.dbeaver.ext.snowflake.dataSourceWizardView"
-                        targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
-                        label="%snowflake.dialog.connection.header"
-                        class="org.jkiss.dbeaver.ext.snowflake.views.SnowflakeConnectionPage"
-                        icon="icons/snowflake_icon.png">
-                </view>
-                <view
-                        class="org.jkiss.dbeaver.ext.snowflake.views.SnowflakeConnectionPage"
-                        icon="icons/snowflake_icon.png"
-                        id="org.jkiss.dbeaver.ext.snowflake.dataSourceEditorView"
-                        label="%snowflake.dialog.connection.header"
-                        targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog">
-                </view>
-            </views>
-
         </datasource>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataSourceView">
+        <view
+                id="org.jkiss.dbeaver.ext.snowflake.dataSourceWizardView"
+                targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
+                dataSource="snowflake"
+                label="%snowflake.dialog.connection.header"
+                class="org.jkiss.dbeaver.ext.snowflake.views.SnowflakeConnectionPage"
+                icon="icons/snowflake_icon.png">
+        </view>
+        <view
+                class="org.jkiss.dbeaver.ext.snowflake.views.SnowflakeConnectionPage"
+                icon="icons/snowflake_icon.png"
+                id="org.jkiss.dbeaver.ext.snowflake.dataSourceEditorView"
+                dataSource="snowflake"
+                label="%snowflake.dialog.connection.header"
+                targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog">
+        </view>
     </extension>
 
 </plugin>

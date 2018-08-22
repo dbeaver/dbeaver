@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceViewDescriptor;
+import org.jkiss.dbeaver.registry.DataSourceViewRegistry;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.IActionConstants;
@@ -116,7 +117,9 @@ public class EditConnectionWizard extends ConnectionWizard
     @Override
     public void addPages()
     {
-        DataSourceViewDescriptor view = dataSource.getDriver().getProviderDescriptor().getView(IActionConstants.EDIT_CONNECTION_POINT);
+        DataSourceViewDescriptor view = DataSourceViewRegistry.getInstance().findView(
+            dataSource.getDriver().getProviderDescriptor(),
+            IActionConstants.EDIT_CONNECTION_POINT);
         if (view != null) {
             pageSettings = new ConnectionPageSettings(this, view, dataSource);
             addPage(pageSettings);
