@@ -21,6 +21,7 @@ import org.eclipse.jface.dialogs.IPageChangingListener;
 import org.eclipse.jface.dialogs.PageChangingEvent;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizard;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.jface.wizard.WizardDialog;
 import org.eclipse.ui.ISelectionService;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -66,6 +67,12 @@ public class ActiveWizardDialog extends WizardDialog
     protected IDialogSettings getDialogBoundsSettings()
     {
         return UIUtils.getDialogSettings("DBeaver.ActiveWizardDialog." + getWizard().getClass().getSimpleName());
+    }
+
+    @Override
+    public void showPage(IWizardPage page) {
+        super.showPage(page);
+        UIUtils.resizeShell(getWizard().getContainer().getShell());
     }
 
 }

@@ -256,7 +256,7 @@ public class MultiPageWizardDialog extends TitleAreaDialog implements IWizardCon
             prevPage = page;
             pageArea.layout();
             if (pageCreated) {
-                //UIUtils.resizeShell(getWizard().getContainer().getShell());
+                UIUtils.resizeShell(getWizard().getContainer().getShell());
             }
         } finally {
             pageArea.setRedraw(true);
