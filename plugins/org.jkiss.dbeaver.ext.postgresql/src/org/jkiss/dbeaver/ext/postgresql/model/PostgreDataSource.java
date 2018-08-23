@@ -49,8 +49,11 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLState;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.net.DefaultCallbackHandler;
+import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -522,6 +525,22 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     @Nullable
     @Override
     public ErrorPosition[] getErrorPosition(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext context, @NotNull String query, @NotNull Throwable error) {
+        Throwable rootCause = GeneralUtils.getRootCause(error);
+        if (rootCause != null && PostgreConstants.PSQL_EXCEPTION_CLASS_NAME.equals(rootCause.getClass().getName())) {
+            try {
+                Object serverErrorMessage = BeanUtils.readObjectProperty(rootCause, "serverErrorMessage");
+                if (serverErrorMessage != null) {
+                    Object position = BeanUtils.readObjectProperty(serverErrorMessage, "position");
+                    if (position instanceof Number) {
+                        ErrorPosition pos = new ErrorPosition();
+                        pos.position = ((Number) position).intValue();
+                        return new ErrorPosition[] {pos};
+                    }
+                }
+            } catch (Throwable e) {
+                // Something went wrong. Doesn't matter, ignore it as we are already in error handling routine
+            }
+        }
         String message = error.getMessage();
         if (!CommonUtils.isEmpty(message)) {
             Matcher matcher = ERROR_POSITION_PATTERN.matcher(message);

@@ -102,6 +102,7 @@ public class PostgreConstants {
     public static final String TYPE_FLOAT8 = "float8";
 
     public static final String ERROR_ADMIN_SHUTDOWN = "57P01";
+    public static final String PSQL_EXCEPTION_CLASS_NAME = "org.postgresql.util.PSQLException";
 
     static {
         DATA_TYPE_ALIASES.put("integer", TYPE_INT4);
