@@ -25,10 +25,7 @@ import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
-import org.jkiss.dbeaver.ext.postgresql.PostgreActivator;
-import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
-import org.jkiss.dbeaver.ext.postgresql.PostgreMessages;
-import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
+import org.jkiss.dbeaver.ext.postgresql.*;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -60,6 +57,7 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
     private static ImageDescriptor GP_LOGO_IMG = PostgreActivator.getImageDescriptor("icons/greenplum_logo.png");
     private static ImageDescriptor TS_LOGO_IMG = PostgreActivator.getImageDescriptor("icons/timescale_logo.png");
     private static ImageDescriptor YB_LOGO_IMG = PostgreActivator.getImageDescriptor("icons/yellowbrick_logo.png");
+    private static ImageDescriptor RS_LOGO_IMG = PostgreActivator.getImageDescriptor("icons/redshift_logo.png");
 
     @Override
     public void dispose()
@@ -185,13 +183,24 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
         final DBPDriver driver = site.getDriver();
 
         if (!activated) {
-            ImageDescriptor logo = PG_LOGO_IMG;
-            if (PostgreUtils.isGreenplumDriver(driver)) {
-                logo = GP_LOGO_IMG;
-            } else if (PostgreUtils.isTimescaleDriver(driver)) {
-                logo = TS_LOGO_IMG;
-            } else if (PostgreUtils.isYellowbrickDriver(driver)) {
-                logo = YB_LOGO_IMG;
+            ImageDescriptor logo;
+            PostgreServerType serverType = PostgreUtils.getServerType(driver);
+            switch (serverType) {
+                case GREENPLUM:
+                    logo = GP_LOGO_IMG;
+                    break;
+                case TIMESCALE:
+                    logo = TS_LOGO_IMG;
+                    break;
+                case YELLOWBRICK:
+                    logo = YB_LOGO_IMG;
+                    break;
+                case REDSHIFT:
+                    logo = RS_LOGO_IMG;
+                    break;
+                default:
+                    logo = PG_LOGO_IMG;
+                    break;
             }
             setImageDescriptor(logo);
         }

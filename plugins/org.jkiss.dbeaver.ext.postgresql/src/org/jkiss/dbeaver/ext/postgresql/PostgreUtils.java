@@ -471,19 +471,18 @@ public class PostgreUtils {
         return sql.toString();
     }
 
-    public static boolean isGreenplumDriver(DBPDriver driver) {
-        return driver != null && CommonUtils.toBoolean(
-            driver.getDriverParameter(PostgreConstants.PROP_GREENPLUM_DRIVER));
-    }
-
-    public static boolean isTimescaleDriver(DBPDriver driver) {
-        return driver != null && CommonUtils.toBoolean(
-            driver.getDriverParameter(PostgreConstants.PROP_TIMESCALE_DRIVER));
-    }
-
-    public static boolean isYellowbrickDriver(DBPDriver driver) {
-        return driver != null && CommonUtils.toBoolean(
-            driver.getDriverParameter(PostgreConstants.PROP_YELLOWBRICK_DRIVER));
+    public static PostgreServerType getServerType(DBPDriver driver) {
+        if (driver != null) {
+            String serverTypeName = CommonUtils.toString(
+                driver.getDriverParameter(PostgreConstants.PROP_SERVER_TYPE))
+                    .toUpperCase();
+            try {
+                return PostgreServerType.valueOf(serverTypeName);
+            } catch (IllegalArgumentException e) {
+                log.debug("Bad PostgreSQL server type: " + serverTypeName);
+            }
+        }
+        return PostgreServerType.POSTGRESQL;
     }
 
     public static List<PostgrePermission> extractPermissionsFromACL(DBRProgressMonitor monitor, @NotNull PostgrePermissionsOwner owner, @Nullable Object acl) throws DBException {

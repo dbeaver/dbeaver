@@ -14,28 +14,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.postgresql.model;
 
-import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceInfo;
+package org.jkiss.dbeaver.ext.postgresql;
 
 /**
- * PostgreDataSourceInfo
+ * Database type
  */
-class PostgreDataSourceInfo extends JDBCDataSourceInfo {
+public enum PostgreServerType {
 
-    public PostgreDataSourceInfo(JDBCDatabaseMetaData metaData) {
-        super(metaData);
+    POSTGRESQL("PostgreSQL"),
+    GREENPLUM("Greenplum"),
+    REDSHIFT("Redshift"),
+    TIMESCALE("Timescale"),
+    YELLOWBRICK("YellowBrick"),
+    OTHER("Postgre");
+
+    private String name;
+
+    PostgreServerType(String name) {
+        this.name = name;
     }
 
-    @Override
-    public boolean supportsResultSetLimit() {
-        // Disable maxRows for data transfer - it turns cursors off ?
-        return true;
-    }
-
-    @Override
-    protected boolean isIgnoreReadOnlyFlag() {
-        return true;
+    public String getName() {
+        return name;
     }
 }
