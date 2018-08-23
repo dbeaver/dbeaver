@@ -209,7 +209,7 @@ class MySQLExportWizard extends AbstractImportExportWizard<MySQLDatabaseExportIn
     }
 
     @Override
-    public MySQLServerHome findServerHome(String clientHomeId)
+    public MySQLServerHome findNativeClientHome(String clientHomeId)
     {
         return MySQLDataSourceProvider.getServerHome(clientHomeId);
     }

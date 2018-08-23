@@ -72,23 +72,26 @@
                     <file type="lib" os="win32" arch="x86_64" path="platform:/plugin/org.jkiss.wmi/native/x64/jkiss_wmi.dll"/>
                 </driver>
             </drivers>
-            <views>
-                <view
-                    id="org.jkiss.dbeaver.ext.wmi.dataSourceWizardView"
-                    targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
-                    label="WMI Connection"
-                    class="org.jkiss.dbeaver.ext.wmi.views.WMIConnectionPage"
-                    icon="icons/wmi_icon.png">
-                </view>
-                <view
-                    id="org.jkiss.dbeaver.ext.wmi.dataSourceEditorView"
-                    targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog"
-                    label="WMI Connection"
-                    class="org.jkiss.dbeaver.ext.wmi.views.WMIConnectionPage"
-                    icon="icons/wmi_icon.png">
-                </view>
-            </views>
         </datasource>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataSourceView">
+        <view
+                id="org.jkiss.dbeaver.ext.wmi.dataSourceWizardView"
+                dataSource="wmi"
+                targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
+                label="WMI Connection"
+                class="org.jkiss.dbeaver.ext.wmi.views.WMIConnectionPage"
+                icon="icons/wmi_icon.png">
+        </view>
+        <view
+                id="org.jkiss.dbeaver.ext.wmi.dataSourceEditorView"
+                dataSource="wmi"
+                targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog"
+                label="WMI Connection"
+                class="org.jkiss.dbeaver.ext.wmi.views.WMIConnectionPage"
+                icon="icons/wmi_icon.png">
+        </view>
     </extension>
 
     <extension point="org.jkiss.dbeaver.databaseEditor">
