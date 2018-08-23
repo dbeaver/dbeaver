@@ -128,7 +128,7 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
 
     @Override
     public DBDPseudoAttribute[] getPseudoAttributes() throws DBException {
-        if (this.hasOids) {
+        if (this.hasOids && getDataSource().getServerType().supportsOids()) {
             return new DBDPseudoAttribute[]{PostgreConstants.PSEUDO_ATTR_OID};
         } else {
             return null;

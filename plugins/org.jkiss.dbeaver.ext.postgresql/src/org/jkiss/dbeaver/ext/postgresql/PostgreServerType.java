@@ -24,18 +24,28 @@ public enum PostgreServerType {
 
     POSTGRESQL("PostgreSQL"),
     GREENPLUM("Greenplum"),
-    REDSHIFT("Redshift"),
+    REDSHIFT("Redshift", false),
     TIMESCALE("Timescale"),
     YELLOWBRICK("YellowBrick"),
     OTHER("Postgre");
 
     private String name;
+    private boolean supportsOids;
 
     PostgreServerType(String name) {
+        this(name, true);
+    }
+
+    PostgreServerType(String name, boolean supportsOids) {
         this.name = name;
+        this.supportsOids = supportsOids;
     }
 
     public String getName() {
         return name;
+    }
+
+    public boolean supportsOids() {
+        return supportsOids;
     }
 }

@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSetMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCFactoryDefault;
+import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCResultSetMetaDataImpl;
 
 import java.sql.SQLException;
 
@@ -30,6 +31,11 @@ public class PostgreJdbcFactory extends JDBCFactoryDefault
 {
     @Override
     public JDBCResultSetMetaData createResultSetMetaData(@NotNull JDBCResultSet resultSet) throws SQLException {
-        return new PostgreResultSetMetaDataImpl(resultSet);
+        if (resultSet.getSession().getDataSource().isDriverVersionAtLeast(9, 0)) {
+            // Only for real PG driver
+            return new PostgreResultSetMetaDataImpl(resultSet);
+        } else {
+            return new JDBCResultSetMetaDataImpl(resultSet);
+        }
     }
 }
