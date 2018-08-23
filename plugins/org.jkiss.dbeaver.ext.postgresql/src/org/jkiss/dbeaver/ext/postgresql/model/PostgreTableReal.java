@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ext.postgresql.PostgreServerType;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -110,7 +111,7 @@ public abstract class PostgreTableReal extends PostgreTableBase
         if (diskSpace != null) {
             return diskSpace;
         }
-        if (!isPersisted() || this instanceof PostgreView) {
+        if (!isPersisted() || this instanceof PostgreView || getDataSource().getServerType() == PostgreServerType.REDSHIFT) {
             // Do not count rows for views
             return null;
         }

@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
+import org.jkiss.dbeaver.ext.postgresql.PostgreServerType;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
@@ -301,7 +302,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
     public String getObjectDefinitionText(DBRProgressMonitor monitor, Map<String, Object> options) throws DBException
     {
         String procDDL;
-        if (getDataSource().isGreenplum() || CommonUtils.getOption(options, OPTION_DEBUGGER_SOURCE)) {
+        if (getDataSource().getServerType() == PostgreServerType.GREENPLUM || CommonUtils.getOption(options, OPTION_DEBUGGER_SOURCE)) {
             if (procSrc == null) {
                 try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Read procedure body")) {
                     procSrc = JDBCUtils.queryString(session, "SELECT prosrc FROM pg_proc where oid = ?", getObjectId());

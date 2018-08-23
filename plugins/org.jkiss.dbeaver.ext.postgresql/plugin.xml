@@ -142,14 +142,14 @@
                                 <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreCollation" label="%tree.collations.node.name" icon="#collations" description="Collations">
                                     <items label="%tree.collation.node.name" path="collation" property="collations" icon="#collation"/>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreExtension" label="%tree.extensions.node.name" icon="#extensions" description="Extensions">
+                                <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreExtension" label="%tree.extensions.node.name" icon="#extensions" description="Extensions"  if="object.dataSource.isServerVersionAtLeast(9, 1)">
                                     <items label="%tree.extension.node.name" path="extension" property="extensions" icon="#extension"/>
                                 </folder>
                             </folder>
                         </items>
                     </folder>
 
-                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreRole" label="%tree.roles.node.name" icon="#folder_user" description="Roles and users">
+                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreRole" label="%tree.roles.node.name" icon="#folder_user" description="Roles and users"  if="object.dataSource.isServerVersionAtLeast(8, 1)">
                         <items label="%tree.role.node.name" path="users" property="authIds" icon="#user">
                             <icon if="!object.canLogin" icon="#user_group"/>
                             <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreRoleMember" label="%tree.role.members.node.name" icon="#folder_user" description="Members" visibleIf="!object.canLogin"  navigable="false">
@@ -223,6 +223,7 @@
                     <file type="jar" path="drivers/postgis/postgis-jdbc.jar" bundle="drivers.postgresql"/>
                     <file type="jar" path="drivers/postgis/postgis-jdbc-jtsparser.jar" bundle="drivers.postgresql"/>
 
+                    <parameter name="serverType" value="postgresql"/>
                     <property name="loginTimeout" value="20"/>
                     <property name="connectTimeout" value="20"/>
                 </driver>
@@ -244,7 +245,7 @@
                     <file type="jar" path="drivers/postgresql/postgresql.jar" bundle="drivers.postgresql"/>
                     <file type="jar" path="drivers/postgis/postgis-jdbc.jar" bundle="drivers.postgresql"/>
                     <file type="jar" path="drivers/postgis/postgis-jdbc-jtsparser.jar" bundle="drivers.postgresql"/>
-                    <parameter name="greenplum" value="true"/>
+                    <parameter name="serverType" value="greenplum"/>
                     <property name="loginTimeout" value="20"/>
                     <property name="connectTimeout" value="20"/>
                 </driver>
@@ -264,7 +265,7 @@
                     <file type="jar" path="drivers/postgresql/postgresql.jar" bundle="drivers.postgresql"/>
                     <file type="jar" path="drivers/postgis/postgis-jdbc.jar" bundle="drivers.postgresql"/>
                     <file type="jar" path="drivers/postgis/postgis-jdbc-jtsparser.jar" bundle="drivers.postgresql"/>
-                    <parameter name="timescale" value="true"/>
+                    <parameter name="serverType" value="timescale"/>
                     <property name="loginTimeout" value="20"/>
                     <property name="connectTimeout" value="20"/>
                 </driver>
@@ -282,7 +283,25 @@
 
                     <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
                     <file type="jar" path="drivers/postgresql/postgresql.jar" bundle="drivers.postgresql"/>
-                    <parameter name="yellowbrick" value="true"/>
+                    <parameter name="serverType" value="yellowbrick"/>
+                    <property name="loginTimeout" value="20"/>
+                    <property name="connectTimeout" value="20"/>
+                </driver>
+
+                <driver
+                        id="postgres-redshift-jdbc"
+                        label="Redshift"
+                        icon="icons/redshift_icon.png"
+                        category="AWS"
+                        class="com.amazon.redshift.jdbc42.Driver"
+                        sampleURL="jdbc:redshift://{host}:{port}/{database}"
+                        defaultPort="5439"
+                        description="AWS Redshift JDBC driver"
+                        webURL="http://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-connection.html">
+                    <replace provider="generic" driver="aws_redshift"/>
+                    <replace provider="generic" driver="aws_redshift_42"/>
+                    <file type="jar" path="https://s3.amazonaws.com/redshift-downloads/drivers/jdbc/1.2.15.1025/RedshiftJDBC42-1.2.15.1025.jar"/>
+                    <parameter name="serverType" value="redshift"/>
                     <property name="loginTimeout" value="20"/>
                     <property name="connectTimeout" value="20"/>
                 </driver>

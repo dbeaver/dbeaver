@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.edit;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ext.postgresql.PostgreServerType;
 import org.jkiss.dbeaver.ext.postgresql.YellowbrickUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -83,7 +84,7 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
     @Override
     protected void addStructObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options) throws DBException {
         PostgreTableBase tableBase = command.getObject();
-        if (tableBase.getDataSource().isYellowbrick()) {
+        if (tableBase.getDataSource().getServerType() == PostgreServerType.YELLOWBRICK) {
             // Extract main portion from server
             StringBuilder ddl = new StringBuilder();
 

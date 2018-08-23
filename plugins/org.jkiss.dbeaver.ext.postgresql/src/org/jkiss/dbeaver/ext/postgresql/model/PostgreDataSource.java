@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider;
+import org.jkiss.dbeaver.ext.postgresql.PostgreServerType;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.jdbc.PostgreJdbcFactory;
 import org.jkiss.dbeaver.ext.postgresql.model.plan.PostgrePlanAnalyser;
@@ -68,6 +69,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
 
     private DatabaseCache databaseCache;
     private String activeDatabaseName;
+    private PostgreServerType serverType;
 
     public PostgreDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
@@ -327,7 +329,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
 
         Connection pgConnection;
         if (remoteInstance != null) {
-            log.debug("Initiate connection to PostgreSQL database [" + remoteInstance.getName() + "@" + conConfig.getHostName() + "]");
+            log.debug("Initiate connection to " + getServerType().getName() + " database [" + remoteInstance.getName() + "@" + conConfig.getHostName() + "]");
         }
         if (remoteInstance instanceof PostgreDatabase &&
             remoteInstance.getName() != null &&
@@ -350,8 +352,8 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
             pgConnection = super.openConnection(monitor, remoteInstance, purpose);
         }
 
-        if (!getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {
-            // Provide client info
+        if (getServerType() != PostgreServerType.REDSHIFT && !getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {
+            // Provide client info. Not supported by Redshift?
             try {
                 pgConnection.setClientInfo("ApplicationName", DBUtils.getClientApplicationName(getContainer(), purpose));
             } catch (Throwable e) {
@@ -466,16 +468,11 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         }
     }
 
-    public boolean isGreenplum() {
-        return PostgreUtils.isGreenplumDriver(getContainer().getDriver());
-    }
-
-    public boolean isTimescale() {
-        return PostgreUtils.isTimescaleDriver(getContainer().getDriver());
-    }
-
-    public boolean isYellowbrick() {
-        return PostgreUtils.isYellowbrickDriver(getContainer().getDriver());
+    public PostgreServerType getServerType() {
+        if (serverType == null) {
+            serverType = PostgreUtils.getServerType(getContainer().getDriver());
+        }
+        return serverType;
     }
 
     class DatabaseCache extends JDBCObjectLookupCache<PostgreDataSource, PostgreDatabase>

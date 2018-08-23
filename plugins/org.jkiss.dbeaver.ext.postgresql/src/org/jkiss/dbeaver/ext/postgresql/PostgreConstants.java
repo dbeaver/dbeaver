@@ -45,9 +45,7 @@ public class PostgreConstants {
     public static final String PROP_SSL_ROOT_CERT = "rootCert";
     public static final String PROP_SSL_MODE = "sslMode";
     public static final String PROP_SSL_FACTORY = "sslFactory";
-    public static final String PROP_GREENPLUM_DRIVER = "greenplum";
-    public static final String PROP_TIMESCALE_DRIVER = "timescale";
-    public static final String PROP_YELLOWBRICK_DRIVER = "yellowbrick";
+    public static final String PROP_SERVER_TYPE = "serverType";
 
     public static final String OPTION_DDL_SHOW_PERMISSIONS = "pg.ddl.show.permissions";
     public static final String OPTION_DDL_SHOW_COLUMN_COMMENTS = "pg.ddl.show.column.comments";
