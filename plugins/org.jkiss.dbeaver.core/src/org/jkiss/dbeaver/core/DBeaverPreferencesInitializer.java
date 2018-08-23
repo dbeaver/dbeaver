@@ -64,6 +64,8 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.AGENT_LONG_OPERATION_NOTIFY, isWindows);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.AGENT_LONG_OPERATION_TIMEOUT, 30);
 
+        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.SECURITY_USE_BOUNCY_CASTLE, true);
+
         // Navigator
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NAVIGATOR_EXPAND_ON_CONNECT, false);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.NAVIGATOR_SORT_ALPHABETICALLY, false);

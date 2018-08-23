@@ -35,7 +35,6 @@ import org.jkiss.dbeaver.model.data.DBDRegistry;
 import org.jkiss.dbeaver.model.edit.DBERegistry;
 import org.jkiss.dbeaver.model.impl.app.DefaultCertificateStorage;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
-import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.qm.QMController;
 import org.jkiss.dbeaver.model.qm.QMUtils;
@@ -49,6 +48,7 @@ import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
 import org.jkiss.dbeaver.registry.formatter.DataFormatterRegistry;
 import org.jkiss.dbeaver.registry.language.PlatformLanguageRegistry;
 import org.jkiss.dbeaver.runtime.IPluginService;
+import org.jkiss.dbeaver.runtime.SecurityProviderUtils;
 import org.jkiss.dbeaver.runtime.jobs.KeepAliveJob;
 import org.jkiss.dbeaver.runtime.net.GlobalProxySelector;
 import org.jkiss.dbeaver.runtime.qm.QMControllerImpl;
@@ -108,8 +108,7 @@ public class DBeaverCore implements DBPPlatform {
 
     private static boolean disposed = false;
 
-    public static DBeaverCore getInstance()
-    {
+    public static DBeaverCore getInstance() {
         if (instance == null) {
             synchronized (DBeaverCore.class) {
                 if (disposed) {
@@ -124,8 +123,7 @@ public class DBeaverCore implements DBPPlatform {
         return instance;
     }
 
-    private static DBeaverCore createInstance()
-    {
+    private static DBeaverCore createInstance() {
         log.debug("Initializing " + GeneralUtils.getProductTitle());
         if (Platform.getProduct() != null) {
             Bundle definingBundle = Platform.getProduct().getDefiningBundle();
@@ -146,23 +144,19 @@ public class DBeaverCore implements DBPPlatform {
         }
     }
 
-    public static String getCorePluginID()
-    {
+    public static String getCorePluginID() {
         return DBeaverActivator.getInstance().getBundle().getSymbolicName();
     }
 
-    public static boolean isStandalone()
-    {
+    public static boolean isStandalone() {
         return application.isStandalone();
     }
 
-    public static void setApplication(@NotNull DBPApplication app)
-    {
+    public static void setApplication(@NotNull DBPApplication app) {
         application = app;
     }
 
-    public static boolean isClosing()
-    {
+    public static boolean isClosing() {
         if (isClosing) {
             return true;
         }
@@ -170,36 +164,34 @@ public class DBeaverCore implements DBPPlatform {
         return workbench == null || workbench.isClosing();
     }
 
-    public static void setClosing(boolean closing)
-    {
+    public static void setClosing(boolean closing) {
         isClosing = closing;
     }
 
-    public static DBPPreferenceStore getGlobalPreferenceStore()
-    {
+    public static DBPPreferenceStore getGlobalPreferenceStore() {
         return DBeaverActivator.getInstance().getPreferences();
     }
 
-    DBeaverCore()
-    {
+    DBeaverCore() {
     }
 
-    private void initialize()
-    {
+    private void initialize() {
         long startTime = System.currentTimeMillis();
         log.debug("Initialize Core...");
 
         DBPPreferenceStore prefsStore = getGlobalPreferenceStore();
         //' Global pref events forwarder
-        prefsStore.addPropertyChangeListener(new DBPPreferenceListener() {
-            @Override
-            public void preferenceChange(PreferenceChangeEvent event) {
-                // Forward event to all data source preferences
-                for (DataSourceDescriptor ds : DataSourceRegistry.getAllDataSources()) {
-                    ds.getPreferenceStore().firePropertyChangeEvent(event.getProperty(), event.getOldValue(), event.getNewValue());
-                }
+        prefsStore.addPropertyChangeListener(event -> {
+            // Forward event to all data source preferences
+            for (DataSourceDescriptor ds : DataSourceRegistry.getAllDataSources()) {
+                ds.getPreferenceStore().firePropertyChangeEvent(event.getProperty(), event.getOldValue(), event.getNewValue());
             }
         });
+
+        if (prefsStore.getBoolean(DBeaverPreferences.SECURITY_USE_BOUNCY_CASTLE)) {
+            // Register BC security provider
+            SecurityProviderUtils.registerSecurityProvider();
+        }
 
         // Register properties adapter
         this.workspace = new DBeaverWorkspace(this, ResourcesPlugin.getWorkspace());
@@ -252,8 +244,7 @@ public class DBeaverCore implements DBPPlatform {
         log.debug("Core initialized (" + (System.currentTimeMillis() - startTime) + "ms)");
     }
 
-    private void initializeProjects()
-    {
+    private void initializeProjects() {
         final IProgressMonitor monitor = new NullProgressMonitor();
         try {
             projectRegistry.loadProjects(monitor);
@@ -262,8 +253,7 @@ public class DBeaverCore implements DBPPlatform {
         }
     }
 
-    public synchronized void dispose()
-    {
+    public synchronized void dispose() {
         long startTime = System.currentTimeMillis();
         log.debug("Shutdown Core...");
 
@@ -330,8 +320,7 @@ public class DBeaverCore implements DBPPlatform {
 
     @NotNull
     @Override
-    public DBPWorkspace getWorkspace()
-    {
+    public DBPWorkspace getWorkspace() {
         return workspace;
     }
 
@@ -342,8 +331,7 @@ public class DBeaverCore implements DBPPlatform {
     }
 
     @Override
-    public OSDescriptor getLocalSystem()
-    {
+    public OSDescriptor getLocalSystem() {
         return localSystem;
     }
 
@@ -439,14 +427,12 @@ public class DBeaverCore implements DBPPlatform {
 
     @NotNull
     @Override
-    public DBNModel getNavigatorModel()
-    {
+    public DBNModel getNavigatorModel() {
         return navigatorModel;
     }
 
     @NotNull
-    public QMController getQueryManager()
-    {
+    public QMController getQueryManager() {
         return queryManager;
     }
 
@@ -490,8 +476,7 @@ public class DBeaverCore implements DBPPlatform {
         return application.getSecureStorage();
     }
 
-    public ProjectRegistry getProjectRegistry()
-    {
+    public ProjectRegistry getProjectRegistry() {
         return projectRegistry;
     }
 
@@ -511,13 +496,13 @@ public class DBeaverCore implements DBPPlatform {
                 final String sysTempFolder = System.getProperty(StandardConstants.ENV_TMP_DIR);
                 if (!CommonUtils.isEmpty(sysTempFolder)) {
                     tempFolder = new File(sysTempFolder, TEMP_PROJECT_NAME);
-                    if (!tempFolder.mkdirs()){
+                    if (!tempFolder.mkdirs()) {
                         final String sysUserFolder = System.getProperty(StandardConstants.ENV_USER_HOME);
                         if (!CommonUtils.isEmpty(sysUserFolder)) {
                             tempFolder = new File(sysUserFolder, TEMP_PROJECT_NAME);
-                            if (!tempFolder.mkdirs()){
+                            if (!tempFolder.mkdirs()) {
                                 tempFolder = new File(TEMP_PROJECT_NAME);
-                                if (!tempFolder.mkdirs()){
+                                if (!tempFolder.mkdirs()) {
                                     log.error("Can't create temp directory!");
                                 }
                             }
@@ -536,8 +521,7 @@ public class DBeaverCore implements DBPPlatform {
     }
 
     @NotNull
-    public List<IProject> getLiveProjects()
-    {
+    public List<IProject> getLiveProjects() {
         List<IProject> result = new ArrayList<>();
         for (IProject project : workspace.getEclipseWorkspace().getRoot().getProjects()) {
             if (project.exists() && !project.isHidden()) {
