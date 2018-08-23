@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.model.access.DBAAuthInfo;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
-import org.jkiss.dbeaver.registry.ProductBundleRegistry;
 import org.jkiss.dbeaver.registry.RegistryConstants;
 import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.utils.CommonUtils;
@@ -72,22 +71,10 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary
             return null;
         }
 
-        // Check bundle
-        String bundle = config.getAttribute(RegistryConstants.ATTR_BUNDLE);
-        if (!CommonUtils.isEmpty(bundle)) {
-            boolean not = false;
-            if (bundle.startsWith("!")) {
-                not = true;
-                bundle = bundle.substring(1);
-            }
-            boolean hasBundle = ProductBundleRegistry.getInstance().hasBundle(bundle);
-            if ((!hasBundle && !not) || (hasBundle && not)) {
-                // This file is in bundle which is not included in the product.
-                // Or it is marked as exclusive and bundle exists.
-                // Skip it in both cases.
-                return null;
-            }
+        if (!DriverUtils.matchesBundle(config)) {
+            return null;
         }
+
 
         if (path.startsWith(DriverLibraryRepository.PATH_PREFIX)) {
             return new DriverLibraryRepository(driver, config);
