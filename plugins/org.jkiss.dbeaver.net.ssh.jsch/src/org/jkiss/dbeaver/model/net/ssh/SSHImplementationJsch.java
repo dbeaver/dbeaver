@@ -206,6 +206,14 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
         }
 
         @Override
+        public String[] promptKeyboardInteractive(String destination, String name, String instruction, String[] prompt, boolean[] echo) {
+            if (configuration.isSavePassword()) {
+                setPassword(configuration.getPassword());
+            }
+            return super.promptKeyboardInteractive(destination, name, instruction, prompt, echo);
+        }
+
+        @Override
         public boolean promptPassword(String message) {
             if (configuration.isSavePassword()) {
                 setPassword(configuration.getPassword());
