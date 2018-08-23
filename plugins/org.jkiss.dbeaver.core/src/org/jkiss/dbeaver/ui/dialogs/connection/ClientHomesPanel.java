@@ -32,7 +32,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.connection.DBPClientHome;
-import org.jkiss.dbeaver.model.connection.DBPClientManager;
+import org.jkiss.dbeaver.model.connection.DBPNativeClientLocationManager;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -180,7 +180,7 @@ public class ClientHomesPanel extends Composite
             return;
         }
         lastHomeDirectory = homeId;
-        DBPClientManager clientManager = driver.getClientManager();
+        DBPNativeClientLocationManager clientManager = driver.getClientManager();
         if (clientManager != null) {
             createHomeItem(clientManager, homeId, false);
         }
@@ -219,13 +219,13 @@ public class ClientHomesPanel extends Composite
         selectHome(null);
 
         this.driver = driver;
-        DBPClientManager clientManager = this.driver.getClientManager();
+        DBPNativeClientLocationManager clientManager = this.driver.getClientManager();
         if (clientManager == null) {
             log.error("Client manager is not supported by driver '" + driver.getName() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
             return;
         }
         Set<String> providedHomes = new LinkedHashSet<>(
-            clientManager.findClientHomeIds());
+            clientManager.findNativeClientHomeIds());
         Set<String> allHomes = new LinkedHashSet<>(providedHomes);
         allHomes.addAll(driver.getClientHomeIds());
 
@@ -241,11 +241,11 @@ public class ClientHomesPanel extends Composite
         }
     }
 
-    private TableItem createHomeItem(DBPClientManager clientManager, String homeId, boolean provided)
+    private TableItem createHomeItem(DBPNativeClientLocationManager clientManager, String homeId, boolean provided)
     {
         DBPClientHome home;
         try {
-            home = clientManager.getClientHome(homeId);
+            home = clientManager.getNativeClientHome(homeId);
             if (home == null) {
                 log.warn("Home '" + homeId + "' is not supported"); //$NON-NLS-1$ //$NON-NLS-2$
                 return null;
@@ -256,7 +256,7 @@ public class ClientHomesPanel extends Composite
         }
         HomeInfo homeInfo = new HomeInfo(home);
         homeInfo.isProvided = provided;
-        homeInfo.isDefault = home.getHomeId().equals(clientManager.getDefaultClientHomeId());
+        homeInfo.isDefault = home.getHomeId().equals(clientManager.getDefaultNativeClientHomeId());
         TableItem homeItem = new TableItem(homesTable, SWT.NONE);
         homeItem.setText(home.getDisplayName());
         homeItem.setImage(DBeaverIcons.getImage(UIIcon.HOME));

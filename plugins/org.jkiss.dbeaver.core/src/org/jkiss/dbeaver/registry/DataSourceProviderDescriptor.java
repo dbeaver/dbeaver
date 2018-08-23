@@ -62,7 +62,6 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
     private boolean driversManagable;
     private final List<DBPPropertyDescriptor> driverProperties = new ArrayList<>();
     private final List<DriverDescriptor> drivers = new ArrayList<>();
-    private final List<DataSourceViewDescriptor> views = new ArrayList<>();
 
     public DataSourceProviderDescriptor(DataSourceProviderRegistry registry, IConfigurationElement config)
     {
@@ -131,21 +130,6 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
                 }
             }
         }
-
-        // Load views
-        {
-            for (IConfigurationElement viewsElement : config.getChildren(RegistryConstants.TAG_VIEWS)) {
-                for (IConfigurationElement viewElement : viewsElement.getChildren(RegistryConstants.TAG_VIEW)) {
-                    this.views.add(
-                        new DataSourceViewDescriptor(this, viewElement));
-                }
-            }
-            if (this.views.isEmpty()) {
-                if (parentProvider != null) {
-                    this.views.addAll(parentProvider.views);
-                }
-            }
-        }
     }
 
     public void dispose()
@@ -157,6 +141,10 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
     public DataSourceProviderRegistry getRegistry()
     {
         return registry;
+    }
+
+    public DataSourceProviderDescriptor getParentProvider() {
+        return parentProvider;
     }
 
     public String getId()
@@ -285,16 +273,6 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
         } else {
             return this.drivers.remove(driver);
         }
-    }
-
-    public DataSourceViewDescriptor getView(String targetID)
-    {
-        for (DataSourceViewDescriptor view : views) {
-            if (view.getTargetID().equals(targetID)) {
-                return view;
-            }
-        }
-        return null;
     }
 
     private DBXTreeItem loadTreeInfo(IConfigurationElement config)

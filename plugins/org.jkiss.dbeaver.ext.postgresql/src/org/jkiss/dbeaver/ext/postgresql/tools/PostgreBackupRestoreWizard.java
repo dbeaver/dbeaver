@@ -80,7 +80,7 @@ abstract class PostgreBackupRestoreWizard<PROCESS_ARG extends PostgreDatabaseBac
     }
 
     @Override
-    public PostgreServerHome findServerHome(String clientHomeId)
+    public PostgreServerHome findNativeClientHome(String clientHomeId)
     {
         return PostgreDataSourceProvider.getServerHome(clientHomeId);
     }

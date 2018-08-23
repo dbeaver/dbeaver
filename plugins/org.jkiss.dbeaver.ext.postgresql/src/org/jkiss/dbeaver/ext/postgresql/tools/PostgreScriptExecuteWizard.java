@@ -78,7 +78,7 @@ class PostgreScriptExecuteWizard extends AbstractScriptExecuteWizard<PostgreData
     }
 
     @Override
-    public PostgreServerHome findServerHome(String clientHomeId)
+    public PostgreServerHome findNativeClientHome(String clientHomeId)
     {
         return PostgreDataSourceProvider.getServerHome(clientHomeId);
     }

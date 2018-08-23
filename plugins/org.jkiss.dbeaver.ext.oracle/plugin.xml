@@ -308,25 +308,28 @@
 
                 </driver>
             </drivers>
-            <views>
-                <view
-                    id="org.jkiss.dbeaver.ext.oracle.dataSourceWizardView"
-                    targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
-                    label="%dialog.connection.header"
-                    class="org.jkiss.dbeaver.ext.oracle.views.OracleConnectionPage"
-                    icon="icons/oracle_icon.png">
-                </view>
-                <view
-                    id="org.jkiss.dbeaver.ext.oracle.dataSourceEditorView"
-                    targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog"
-                    label="%dialog.connection.header"
-                    class="org.jkiss.dbeaver.ext.oracle.views.OracleConnectionPage">
-                </view>
-            </views>
             <templates>
                 <resolver type="orauser" class="org.jkiss.dbeaver.ext.oracle.model.resolvers.OracleUserResolver" description="Current Oracle user"/>
             </templates>
         </datasource>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataSourceView">
+        <view
+                id="org.jkiss.dbeaver.ext.oracle.dataSourceWizardView"
+                dataSource="oracle"
+                targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
+                label="%dialog.connection.header"
+                class="org.jkiss.dbeaver.ext.oracle.views.OracleConnectionPage"
+                icon="icons/oracle_icon.png">
+        </view>
+        <view
+                id="org.jkiss.dbeaver.ext.oracle.dataSourceEditorView"
+                dataSource="oracle"
+                targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog"
+                label="%dialog.connection.header"
+                class="org.jkiss.dbeaver.ext.oracle.views.OracleConnectionPage">
+        </view>
     </extension>
 
     <extension point="org.jkiss.dbeaver.databaseEditor">
