@@ -214,7 +214,7 @@ public abstract class AbstractDescriptor {
         }
         intCache = new HashMap<>();
         classInfoCache.put(clazz.getName(), intCache);
-        for (Class sc = clazz; sc != Object.class; sc = sc.getSuperclass()) {
+        for (Class sc = clazz; sc != null && sc != Object.class; sc = sc.getSuperclass()) {
             collectInterface(sc, intCache);
         }
 
