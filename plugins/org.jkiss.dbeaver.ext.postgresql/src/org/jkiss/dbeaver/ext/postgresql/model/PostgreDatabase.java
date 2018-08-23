@@ -98,7 +98,15 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource> imple
         throws DBException
     {
         super(monitor, dataSource, false);
+        this.initCaches();
         this.loadInfo(dbResult);
+    }
+
+    private void initCaches() {
+        if (!getDataSource().isServerVersionAtLeast(8, 1)) {
+            // Roles not supported
+            roleCache.setCache(Collections.emptyList());
+        }
     }
 
     public PostgreDatabase(DBRProgressMonitor monitor, PostgreDataSource dataSource, String databaseName)
@@ -107,6 +115,7 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource> imple
         super(monitor, dataSource, false);
         // We need to set name first
         this.name = databaseName;
+        this.initCaches();
         checkDatabaseConnection(monitor);
 
         try (JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load database info")) {
@@ -135,6 +144,7 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource> imple
         this.templateName = templateName;
         this.tablespaceId = tablespace == null ? 0 : tablespace.getObjectId();
         this.encodingId = encoding == null ? 0 : encoding.getObjectId();
+        this.initCaches();
     }
 
     public PostgreRole getInitialOwner() {
@@ -684,7 +694,6 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource> imple
     // Caches
 
     class RoleCache extends JDBCObjectCache<PostgreDatabase, PostgreRole> {
-
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull PostgreDatabase owner)
             throws SQLException
