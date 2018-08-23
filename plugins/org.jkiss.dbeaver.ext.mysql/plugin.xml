@@ -154,7 +154,7 @@
                     <file type="license" path="drivers/mysql/LICENSE.txt" bundle="drivers.mysql"/>
                     <file type="jar" path="drivers/mysql/mysql-connector-java.jar" bundle="drivers.mysql"/>
                     <property name="connectTimeout" value="20000"/>
-                    <!--<property name="zeroDateTimeBehavior" value="convertToNull"/>-->
+                    <property name="zeroDateTimeBehavior" value="convertToNull"/>
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                 </driver>
                 <driver
@@ -171,7 +171,7 @@
                     <file type="jar" path="drivers/mysql/mysql-connector-java-8.jar" bundle="drivers.mysql"/>
                     <file type="jar" path="drivers/mysql/protobuf-java.jar" bundle="drivers.mysql"/>
                     <property name="connectTimeout" value="20000"/>
-                    <!--<property name="zeroDateTimeBehavior" value="CONVERT_TO_NULL"/>-->
+                    <property name="zeroDateTimeBehavior" value="CONVERT_TO_NULL"/>
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                 </driver>
                 <driver
@@ -187,6 +187,18 @@
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                 </driver>
             </drivers>
+
+            <nativeClients>
+                <client id="mysql_client" label="MySQL Binaries">
+                    <dist os="win32" targetPath="clients/mysql/win">
+                        <file type="exec" path="drivers/mysql/client/win/mysql.exe" os="win32" bundle="drivers.mysql"/>
+                        <file type="exec" path="drivers/mysql/client/win/mysqldump.exe" os="win32" bundle="drivers.mysql"/>
+
+                        <file type="exec" path="repo:/drivers/mysql/client/win/mysql.exe" os="win32" bundle="!drivers.mysql"/>
+                        <file type="exec" path="repo:/drivers/mysql/client/win/mysqldump.exe" os="win32" bundle="!drivers.mysql"/>
+                    </dist>
+                </client>
+            </nativeClients>
         </datasource>
     </extension>
 
