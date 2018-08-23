@@ -62,6 +62,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
     private boolean driversManagable;
     private final List<DBPPropertyDescriptor> driverProperties = new ArrayList<>();
     private final List<DriverDescriptor> drivers = new ArrayList<>();
+    private final List<NativeClientDescriptor> nativeClients = new ArrayList<>();
 
     public DataSourceProviderDescriptor(DataSourceProviderRegistry registry, IConfigurationElement config)
     {
@@ -127,6 +128,15 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
                     } catch (Exception e) {
                         log.error("Error loading driver", e);
                     }
+                }
+            }
+        }
+
+        // Load native clients
+        {
+            for (IConfigurationElement nativeClientsElement : config.getChildren("nativeClients")) {
+                for (IConfigurationElement clientElement : nativeClientsElement.getChildren("client")) {
+                    this.nativeClients.add(new NativeClientDescriptor(clientElement));
                 }
             }
         }

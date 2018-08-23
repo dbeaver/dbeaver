@@ -341,6 +341,7 @@ public class DBeaverCore implements DBPPlatform {
         return getProjectRegistry();
     }
 
+    @Override
     public OSDescriptor getLocalSystem()
     {
         return localSystem;

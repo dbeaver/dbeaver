@@ -16,8 +16,12 @@
  */
 package org.jkiss.dbeaver.registry.driver;
 
+import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.registry.ProductBundleRegistry;
+import org.jkiss.dbeaver.registry.RegistryConstants;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
 import java.util.StringTokenizer;
@@ -80,5 +84,25 @@ public class DriverUtils
         } else {
             return 0;
         }
+    }
+
+    public static boolean matchesBundle(IConfigurationElement config) {
+        // Check bundle
+        String bundle = config.getAttribute(RegistryConstants.ATTR_BUNDLE);
+        if (!CommonUtils.isEmpty(bundle)) {
+            boolean not = false;
+            if (bundle.startsWith("!")) {
+                not = true;
+                bundle = bundle.substring(1);
+            }
+            boolean hasBundle = ProductBundleRegistry.getInstance().hasBundle(bundle);
+            if ((!hasBundle && !not) || (hasBundle && not)) {
+                // This file is in bundle which is not included in the product.
+                // Or it is marked as exclusive and bundle exists.
+                // Skip it in both cases.
+                return false;
+            }
+        }
+        return true;
     }
 }
