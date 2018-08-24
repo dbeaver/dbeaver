@@ -57,8 +57,8 @@ public class NativeClientDistributionDescriptor {
         return targetPath;
     }
 
-    public void downloadFiles(DBRProgressMonitor monitor) throws DBException {
-
+    public boolean downloadFiles(DBRProgressMonitor monitor) throws DBException {
+        return true;
     }
 
     @Override
