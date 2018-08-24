@@ -151,7 +151,7 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
             PostgreTableRegular table = (PostgreTableRegular) tableBase;
             try {
                 if (!alter) {
-                    if (table.isHasOids()) {
+                    if (table.getDataSource().getServerType().supportsOids() && table.isHasOids()) {
                         ddl.append("\nWITH (\n\tOIDS=").append(table.isHasOids() ? "TRUE" : "FALSE");
                         ddl.append("\n)");
                     }
