@@ -20,6 +20,8 @@ package org.jkiss.dbeaver.registry;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 
+import java.io.File;
+
 /**
  * NativeClientDistributionDescriptor
  */
@@ -30,6 +32,9 @@ public class NativeClientFileDescriptor {
     public NativeClientFileDescriptor(IConfigurationElement config) {
         this.type = config.getAttribute(RegistryConstants.ATTR_TYPE);
         this.path = config.getAttribute(RegistryConstants.ATTR_PATH);
+        while (path.endsWith("/")) {
+            path = path.substring(0, path.length() - 1);
+        }
     }
 
     public String getType() {
@@ -44,4 +49,10 @@ public class NativeClientFileDescriptor {
     public String toString() {
         return path;
     }
+
+    public String getFileName() {
+        int divPos = path.lastIndexOf('/');
+        return divPos == -1 ? path : path.substring(divPos + 1);
+    }
+
 }

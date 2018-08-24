@@ -209,8 +209,9 @@ public class ClientHomesPanel extends Composite {
         }
         Set<DBPNativeClientLocation> providedHomes = new LinkedHashSet<>(
             clientManager.findLocalClientLocations());
-        Set<DBPNativeClientLocation> allHomes = new LinkedHashSet<>(providedHomes);
+        Set<DBPNativeClientLocation> allHomes = new LinkedHashSet<>();
         allHomes.addAll(driver.getNativeClientLocations());
+        allHomes.addAll(providedHomes);
 
         for (DBPNativeClientLocation home : allHomes) {
             TableItem item = createHomeItem(clientManager, home, providedHomes.contains(home));

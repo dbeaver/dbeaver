@@ -1266,7 +1266,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return pathList.toArray(new String[0]);
     }
 
-    static String getDriversPrimarySource() {
+    public static String getDriversPrimarySource() {
         String sourcesString = DBeaverCore.getGlobalPreferenceStore().getString(DBeaverPreferences.UI_DRIVERS_SOURCES);
         int divPos = sourcesString.indexOf('|');
         return divPos == -1 ? sourcesString : sourcesString.substring(0, divPos);

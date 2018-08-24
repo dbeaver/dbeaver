@@ -35,6 +35,6 @@ public interface DBPNativeClientLocation extends DBPNamedObject {
     @NotNull
     String getDisplayName();
 
-    boolean validateFilesPresence(DBRProgressMonitor progressMonitor) throws DBException;
+    boolean validateFilesPresence(DBRProgressMonitor progressMonitor) throws DBException, InterruptedException;
 
 }
