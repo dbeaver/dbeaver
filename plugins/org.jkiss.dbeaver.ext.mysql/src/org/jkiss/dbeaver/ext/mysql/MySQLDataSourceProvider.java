@@ -33,9 +33,12 @@ import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.WinRegistry;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 import org.jkiss.utils.StandardConstants;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.InputStreamReader;
 import java.util.*;
 
 public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements DBPNativeClientLocationManager {
@@ -127,27 +130,27 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
     // Client manager
 
     @Override
-    public Collection<String> findNativeClientHomeIds()
+    public List<DBPNativeClientLocation> findLocalClientLocations()
     {
         findLocalClients();
-        Set<String> homes = new LinkedHashSet<>();
-        for (MySQLServerHome home : localServers.values()) {
-            homes.add(home.getHomeId());
-        }
-        return homes;
+        return new ArrayList<>(localServers.values());
     }
 
     @Override
-    public String getDefaultNativeClientHomeId()
+    public DBPNativeClientLocation getDefaultLocalClientLocation()
     {
         findLocalClients();
-        return localServers.isEmpty() ? null : localServers.values().iterator().next().getHomeId();
+        return localServers.isEmpty() ? null : localServers.values().iterator().next();
     }
 
     @Override
-    public DBPNativeClientLocation getNativeClientHome(String homeId)
-    {
-        return getServerHome(homeId);
+    public String getProductName(DBPNativeClientLocation location) throws DBException {
+        return null;
+    }
+
+    @Override
+    public String getProductVersion(DBPNativeClientLocation location) throws DBException {
+        return getFullServerVersion(location.getPath());
     }
 
     public static MySQLServerHome getServerHome(String homeId)
@@ -224,6 +227,45 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
                 log.warn("Error reading Windows registry", e);
             }
         }
+    }
+
+    static String getFullServerVersion(File path)
+    {
+        File binPath = path;
+        File binSubfolder = new File(binPath, "bin");
+        if (binSubfolder.exists()) {
+            binPath = binSubfolder;
+        }
+
+        String cmd = new File(
+            binPath,
+            MySQLUtils.getMySQLConsoleBinaryName()).getAbsolutePath();
+
+        try {
+            Process p = Runtime.getRuntime().exec(new String[] {cmd, "-V"});
+            try {
+                BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                try {
+                    String line;
+                    while ((line = input.readLine()) != null) {
+                        int pos = line.indexOf("Distrib ");
+                        if (pos != -1) {
+                            pos += 8;
+                            int pos2 = line.indexOf(",", pos);
+                            return line.substring(pos, pos2);
+                        }
+                    }
+                } finally {
+                    IOUtils.close(input);
+                }
+            } finally {
+                p.destroy();
+            }
+        }
+        catch (Exception ex) {
+            log.warn("Error reading MySQL server version from " + cmd, ex);
+        }
+        return null;
     }
 
 }

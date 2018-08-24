@@ -22,20 +22,16 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
-import org.jkiss.dbeaver.model.connection.DBPNativeClientLocationManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SQLServerDataSourceProvider extends JDBCDataSourceProvider implements DBPNativeClientLocationManager {
+public class SQLServerDataSourceProvider extends JDBCDataSourceProvider {
 
     private static Map<String,String> connectionsProps;
 
@@ -123,18 +119,4 @@ public class SQLServerDataSourceProvider extends JDBCDataSourceProvider implemen
         return new SQLServerDataSource(monitor, container);
     }
 
-    @Override
-    public Collection<String> findNativeClientHomeIds() {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public String getDefaultNativeClientHomeId() {
-        return null;
-    }
-
-    @Override
-    public DBPNativeClientLocation getNativeClientHome(String homeId) {
-        return null;
-    }
 }

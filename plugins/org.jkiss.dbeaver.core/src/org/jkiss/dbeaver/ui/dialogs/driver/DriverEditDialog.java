@@ -314,7 +314,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
             createConnectionPropertiesTab(tabFolder);
             createParametersTab(tabFolder);
             // Client homes
-            if (driver.getClientManager() != null) {
+            if (driver.getNativeClientManager() != null) {
                 createClientHomesTab(tabFolder);
             }
 
@@ -800,7 +800,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
 
         // Store client homes
         if (clientHomesPanel != null) {
-            driver.setClientHomeIds(clientHomesPanel.getHomeIds());
+            driver.setNativeClientLocations(clientHomesPanel.getHomeIds());
         }
 
         DriverDescriptor oldDriver = provider.getDriverByName(driver.getCategory(), driver.getName());

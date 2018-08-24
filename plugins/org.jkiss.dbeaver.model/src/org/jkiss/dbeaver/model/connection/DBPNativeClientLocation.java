@@ -17,25 +17,21 @@
 
 package org.jkiss.dbeaver.model.connection;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPNamedObject;
 
 import java.io.File;
 
 /**
  * Native client home descriptor
  */
-public interface DBPNativeClientLocation {
+public interface DBPNativeClientLocation extends DBPNamedObject {
 
-    String getHomeId();
+    @NotNull
+    File getPath();
 
-    File getHomePath();
-
+    @NotNull
     String getDisplayName();
-
-    String getProductName()
-        throws DBException;
-
-    String getProductVersion()
-        throws DBException;
 
 }

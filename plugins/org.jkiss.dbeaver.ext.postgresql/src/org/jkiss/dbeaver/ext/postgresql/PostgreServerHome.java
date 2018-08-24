@@ -16,14 +16,13 @@
  */
 package org.jkiss.dbeaver.ext.postgresql;
 
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCNativeClientLocation;
+import org.jkiss.dbeaver.model.impl.local.LocalNativeClientLocation;
 
 /**
  * PostgreServerHome
  */
-public class PostgreServerHome extends JDBCNativeClientLocation {
+public class PostgreServerHome extends LocalNativeClientLocation {
 
     private static final Log log = Log.getLog(PostgreServerHome.class);
 
@@ -32,8 +31,7 @@ public class PostgreServerHome extends JDBCNativeClientLocation {
     private String branding;
     private String dataDirectory;
 
-    protected PostgreServerHome(String id, String path, String version, String branding, String dataDirectory)
-    {
+    protected PostgreServerHome(String id, String path, String version, String branding, String dataDirectory) {
         super(id, path);
         this.name = branding == null ? id : branding;
         this.version = version;
@@ -42,20 +40,15 @@ public class PostgreServerHome extends JDBCNativeClientLocation {
     }
 
     @Override
-    public String getDisplayName()
-    {
+    public String getDisplayName() {
         return name;
     }
 
-    @Override
-    public String getProductName() throws DBException
-    {
+    public String getProductName() {
         return branding;
     }
 
-    @Override
-    public String getProductVersion() throws DBException
-    {
+    public String getProductVersion() {
         return version;
     }
 

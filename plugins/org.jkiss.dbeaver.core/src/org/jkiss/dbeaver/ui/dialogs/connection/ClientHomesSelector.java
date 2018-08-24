@@ -26,7 +26,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
@@ -43,8 +42,6 @@ import java.util.Set;
  */
 public class ClientHomesSelector
 {
-    private static final Log log = Log.getLog(ClientHomesSelector.class);
-
     private Composite selectorPanel;
     private Combo homesCombo;
     //private Label versionLabel;
@@ -109,22 +106,19 @@ public class ClientHomesSelector
         this.homesCombo.removeAll();
         this.homeIds.clear();
 
-        Set<String> homes = new LinkedHashSet<>();
+        Set<DBPNativeClientLocation> homes = new LinkedHashSet<>();
 
-        DBPNativeClientLocationManager clientManager = driver.getClientManager();
+        DBPNativeClientLocationManager clientManager = driver.getNativeClientManager();
         if (clientManager != null) {
-            homes.addAll(clientManager.findNativeClientHomeIds());
-            homes.addAll(driver.getClientHomeIds());
+            homes.addAll(clientManager.findLocalClientLocations());
+            homes.addAll(driver.getNativeClientLocations());
         }
 
-        for (String homeId : homes) {
-            DBPNativeClientLocation home = driver.getClientHome(homeId);
-            if (home != null) {
-                homesCombo.add(home.getDisplayName());
-                homeIds.add(home.getHomeId());
-                if (currentHomeId != null && home.getHomeId().equals(currentHomeId)) {
-                    homesCombo.select(homesCombo.getItemCount() - 1);
-                }
+        for (DBPNativeClientLocation location : homes) {
+            homesCombo.add(location.getDisplayName());
+            homeIds.add(location.getName());
+            if (currentHomeId != null && location.getName().equals(currentHomeId)) {
+                homesCombo.select(homesCombo.getItemCount() - 1);
             }
         }
         this.homesCombo.add(CoreMessages.controls_client_home_selector_browse);

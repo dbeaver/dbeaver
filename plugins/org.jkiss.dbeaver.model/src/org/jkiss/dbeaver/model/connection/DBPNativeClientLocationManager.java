@@ -17,7 +17,10 @@
 
 package org.jkiss.dbeaver.model.connection;
 
+import org.jkiss.dbeaver.DBException;
+
 import java.util.Collection;
+import java.util.List;
 
 /**
  * Native client manager.
@@ -25,10 +28,14 @@ import java.util.Collection;
  */
 public interface DBPNativeClientLocationManager {
 
-    Collection<String> findNativeClientHomeIds();
+    List<DBPNativeClientLocation> findLocalClientLocations();
 
-    String getDefaultNativeClientHomeId();
+    DBPNativeClientLocation getDefaultLocalClientLocation();
 
-    DBPNativeClientLocation getNativeClientHome(String homeId);
+    String getProductName(DBPNativeClientLocation location)
+            throws DBException;
+
+    String getProductVersion(DBPNativeClientLocation location)
+            throws DBException;
 
 }

@@ -22,10 +22,10 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
-import org.jkiss.dbeaver.model.connection.DBPNativeClientLocationManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
+import org.jkiss.dbeaver.model.connection.DBPNativeClientLocationManager;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
@@ -36,29 +36,26 @@ import java.util.*;
 
 public class PostgreDataSourceProvider extends JDBCDataSourceProvider implements DBPNativeClientLocationManager {
 
-    private static Map<String,String> connectionsProps;
+    private static Map<String, String> connectionsProps;
 
     static {
         connectionsProps = new HashMap<>();
     }
 
-    public static Map<String,String> getConnectionsProps() {
+    public static Map<String, String> getConnectionsProps() {
         return connectionsProps;
     }
 
-    public PostgreDataSourceProvider()
-    {
+    public PostgreDataSourceProvider() {
     }
 
     @Override
-    public long getFeatures()
-    {
+    public long getFeatures() {
         return FEATURE_CATALOGS | FEATURE_SCHEMAS;
     }
 
     @Override
-    public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo)
-    {
+    public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo) {
         StringBuilder url = new StringBuilder();
         url.append("jdbc:postgresql://")
             .append(connectionInfo.getHostName());
@@ -83,49 +80,50 @@ public class PostgreDataSourceProvider extends JDBCDataSourceProvider implements
     public DBPDataSource openDataSource(
         @NotNull DBRProgressMonitor monitor,
         @NotNull DBPDataSourceContainer container)
-        throws DBException
-    {
+        throws DBException {
         return new PostgreDataSource(monitor, container);
     }
 
     ////////////////////////////////////////////////////////////////
     // Local client
 
-    private static Map<String,PostgreServerHome> localServers = null;
+    private static Map<String, PostgreServerHome> localServers = null;
 
     @Override
-    public Collection<String> findNativeClientHomeIds()
-    {
+    public List<DBPNativeClientLocation> findLocalClientLocations() {
         findLocalClients();
-        Set<String> homes = new LinkedHashSet<>();
-        for (PostgreServerHome home : localServers.values()) {
-            homes.add(home.getHomeId());
+        return new ArrayList<>(localServers.values());
+    }
+
+    @Override
+    public DBPNativeClientLocation getDefaultLocalClientLocation() {
+        findLocalClients();
+        return localServers.isEmpty() ? null : localServers.values().iterator().next();
+    }
+
+    @Override
+    public String getProductName(DBPNativeClientLocation location) throws DBException {
+        if (location instanceof PostgreServerHome) {
+            return ((PostgreServerHome) location).getProductName();
         }
-        return homes;
+        return "PostgreSQL";
     }
 
     @Override
-    public String getDefaultNativeClientHomeId()
-    {
-        findLocalClients();
-        return localServers.isEmpty() ? null : localServers.values().iterator().next().getHomeId();
+    public String getProductVersion(DBPNativeClientLocation location) throws DBException {
+        if (location instanceof PostgreServerHome) {
+            return ((PostgreServerHome) location).getProductVersion();
+        }
+        return null;
     }
 
-    @Override
-    public DBPNativeClientLocation getNativeClientHome(String homeId)
-    {
-        return getServerHome(homeId);
-    }
-
-    public static PostgreServerHome getServerHome(String homeId)
-    {
+    public static PostgreServerHome getServerHome(String homeId) {
         findLocalClients();
         PostgreServerHome home = localServers.get(homeId);
         return home == null ? new PostgreServerHome(homeId, homeId, null, null, null) : home;
     }
 
-    public synchronized static void findLocalClients()
-    {
+    public synchronized static void findLocalClients() {
         if (localServers != null) {
             return;
         }
