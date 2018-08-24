@@ -14,9 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.impl.local;
+package org.jkiss.dbeaver.registry.driver;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.io.File;
 
@@ -45,6 +47,11 @@ public class LocalNativeClientLocation implements DBPNativeClientLocation {
     @Override
     public String getDisplayName() {
         return path.getAbsolutePath();
+    }
+
+    @Override
+    public boolean validateFilesPresence(DBRProgressMonitor progressMonitor) throws DBException {
+        return true;
     }
 
 }

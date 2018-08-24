@@ -28,7 +28,6 @@ import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.connection.*;
 import org.jkiss.dbeaver.model.impl.AbstractDescriptor;
 import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
-import org.jkiss.dbeaver.model.impl.local.LocalNativeClientLocation;
 import org.jkiss.dbeaver.model.meta.Property;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -634,7 +633,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     public List<DBPNativeClientLocation> getNativeClientLocations() {
         List<DBPNativeClientLocation> ids = new ArrayList<>();
         for (NativeClientDescriptor nc : getProviderDescriptor().getNativeClients()) {
-            //ids.add(nc);
+            ids.add(new RemoteNativeClientLocation(nc));
         }
         ids.addAll(nativeClientHomes);
 

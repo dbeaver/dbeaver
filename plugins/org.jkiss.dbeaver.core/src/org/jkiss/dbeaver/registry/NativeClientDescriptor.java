@@ -34,7 +34,7 @@ public class NativeClientDescriptor extends AbstractDescriptor {
     private String id;
     private String label;
 
-    public NativeClientDescriptor(IConfigurationElement config) {
+    NativeClientDescriptor(IConfigurationElement config) {
         super(config.getContributor().getName());
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.label = config.getAttribute(RegistryConstants.ATTR_LABEL);
@@ -54,7 +54,7 @@ public class NativeClientDescriptor extends AbstractDescriptor {
     public NativeClientDistributionDescriptor findDistribution() {
         OSDescriptor localSystem = DBWorkbench.getPlatform().getLocalSystem();
         for (NativeClientDistributionDescriptor distr : distributions) {
-            if (localSystem.matches(distr.getOs())) {
+            if (distr.getOs().matches(localSystem)) {
                 return distr;
             }
         }
@@ -65,4 +65,5 @@ public class NativeClientDescriptor extends AbstractDescriptor {
     public String toString() {
         return id;
     }
+
 }

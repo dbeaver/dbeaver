@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.ext.oracle.oci;
 
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.oracle.OracleDataSourceProvider;
-import org.jkiss.dbeaver.model.impl.local.LocalNativeClientLocation;
+import org.jkiss.dbeaver.registry.driver.LocalNativeClientLocation;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;

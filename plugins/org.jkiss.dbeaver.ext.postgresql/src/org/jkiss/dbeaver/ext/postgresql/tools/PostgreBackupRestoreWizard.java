@@ -64,7 +64,7 @@ abstract class PostgreBackupRestoreWizard<PROCESS_ARG extends PostgreDatabaseBac
     @Override
     public void fillProcessParameters(List<String> cmd, PROCESS_ARG arg) throws IOException
     {
-        File dumpBinary = RuntimeUtils.getHomeBinary(getClientHome(), PostgreConstants.BIN_FOLDER,
+        File dumpBinary = RuntimeUtils.getNativeClientBinary(getClientHome(), PostgreConstants.BIN_FOLDER,
             isExportWizard() ? "pg_dump" : "pg_restore"); //$NON-NLS-1$
         String dumpPath = dumpBinary.getAbsolutePath();
         cmd.add(dumpPath);
