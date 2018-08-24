@@ -145,7 +145,7 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
 
     @Override
     public String getProductName(DBPNativeClientLocation location) throws DBException {
-        return null;
+        return "MySQL/MariaDB";
     }
 
     @Override
@@ -197,8 +197,9 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
                                 for (String key : valuesMap.keySet()) {
                                     if (SERER_LOCATION_KEY.equalsIgnoreCase(key)) {
                                         String serverPath = CommonUtils.removeTrailingSlash(valuesMap.get(key));
-                                        localServers.put(serverPath, new MySQLServerHome(serverPath, homeKey));
-                                        break;
+                                        if (new File(serverPath, "bin").exists()) {
+                                            localServers.put(serverPath, new MySQLServerHome(serverPath, homeKey));
+                                        }
                                     }
                                 }
                             }
@@ -215,8 +216,9 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
                                 for (String key : valuesMap.keySet()) {
                                     if (INSTALLDIR_KEY.equalsIgnoreCase(key)) {
                                         String serverPath = CommonUtils.removeTrailingSlash(valuesMap.get(key));
-                                        localServers.put(serverPath, new MySQLServerHome(serverPath, homeKey));
-                                        break;
+                                        if (new File(serverPath, "bin").exists()) {
+                                            localServers.put(serverPath, new MySQLServerHome(serverPath, homeKey));
+                                        }
                                     }
                                 }
                             }

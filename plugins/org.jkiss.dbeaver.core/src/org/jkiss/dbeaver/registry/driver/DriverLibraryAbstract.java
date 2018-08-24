@@ -30,8 +30,6 @@ import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.*;
-import java.net.URLConnection;
-import java.text.NumberFormat;
 import java.util.Collection;
 import java.util.Collections;
 
@@ -222,49 +220,7 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary
             throw new IOException("Unresolved file reference: " + getPath());
         }
 
-        final URLConnection connection = WebUtils.openConnection(externalURL, getAuthInfo(monitor), null);
-
-        int contentLength = connection.getContentLength();
-        if (contentLength < 0) {
-            contentLength = 0;
-        }
-        int bufferLength = contentLength / 10;
-        if (bufferLength > 1000000) {
-            bufferLength = 1000000;
-        }
-        if (bufferLength < 50000) {
-            bufferLength = 50000;
-        }
-        monitor.beginTask(taskName + " - " + externalURL, contentLength);
-        boolean success = false;
-        try (final OutputStream outputStream = new FileOutputStream(localFile)) {
-            try (final InputStream inputStream = connection.getInputStream()) {
-                final NumberFormat numberFormat = NumberFormat.getNumberInstance();
-                byte[] buffer = new byte[bufferLength];
-                int totalRead = 0;
-                for (;;) {
-                    if (monitor.isCanceled()) {
-                        throw new InterruptedException();
-                    }
-                    //monitor.subTask(numberFormat.format(totalRead) + "/" + numberFormat.format(contentLength));
-                    final int count = inputStream.read(buffer);
-                    if (count <= 0) {
-                        success = true;
-                        break;
-                    }
-                    outputStream.write(buffer, 0, count);
-                    monitor.worked(count);
-                    totalRead += count;
-                }
-            }
-        } finally {
-            if (!success) {
-                if (!localFile.delete()) {
-                    log.warn("Can't delete local driver file '" + localFile.getAbsolutePath() + "'");
-                }
-            }
-            monitor.done();
-        }
+        WebUtils.downloadRemoteFile(monitor, taskName, externalURL, localFile, getAuthInfo(monitor));
     }
 
     @Nullable

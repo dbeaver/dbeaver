@@ -18,9 +18,7 @@
 package org.jkiss.dbeaver.ui.dialogs.tools;
 
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.osgi.util.NLS;
@@ -34,18 +32,16 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.DBWorkbench;
-import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
-import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.ProgressStreamReader;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
@@ -210,18 +206,16 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
 
     private void validateClientFiles(WizardPage currentPage) {
         try {
-            UIUtils.run(getContainer(), true, true, new DBRRunnableWithProgress() {
-                @Override
-                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                    try {
-                        clientHome.validateFilesPresence(monitor);
-                    } catch (DBException e) {
-                        throw new InvocationTargetException(e);
-                    }
+            UIUtils.run(getContainer(), true, true, monitor -> {
+                try {
+                    clientHome.validateFilesPresence(monitor);
+                } catch (DBException e) {
+                    throw new InvocationTargetException(e);
                 }
             });
         } catch (InvocationTargetException e) {
-            currentPage.setErrorMessage("Error loading native client files: " + e.getTargetException().getMessage());
+            DBUserInterface.getInstance().showError("Download native client file(s)", "Error downloading client file(s)", e.getTargetException());
+            currentPage.setErrorMessage("Error downloading native client file(s)");
             getContainer().updateMessage();
         } catch (InterruptedException e) {
             // ignore

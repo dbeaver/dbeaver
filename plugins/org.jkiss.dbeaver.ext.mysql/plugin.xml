@@ -191,11 +191,11 @@
             <nativeClients>
                 <client id="mysql_client" label="MySQL Binaries">
                     <dist os="win32" targetPath="clients/mysql/win">
-                        <file type="exec" path="drivers/mysql/client/win/mysql.exe" bundle="drivers.mysql"/>
-                        <file type="exec" path="drivers/mysql/client/win/mysqldump.exe" bundle="drivers.mysql"/>
+                        <file type="exec" path="drivers/mysql/client/win/mysql.exe" bundle="drivers.mysql2"/>
+                        <file type="exec" path="drivers/mysql/client/win/mysqldump.exe" bundle="drivers.mysql2"/>
 
-                        <file type="exec" path="repo:/drivers/mysql/client/win/mysql.exe" bundle="!drivers.mysql"/>
-                        <file type="exec" path="repo:/drivers/mysql/client/win/mysqldump.exe" bundle="!drivers.mysql"/>
+                        <file type="exec" path="repo:/drivers/mysql/client/win/mysql.exe" bundle="!drivers.mysql2"/>
+                        <file type="exec" path="repo:/drivers/mysql/client/win/mysqldump.exe" bundle="!drivers.mysql2"/>
                     </dist>
                 </client>
             </nativeClients>

@@ -55,10 +55,10 @@ public class RemoteNativeClientLocation implements DBPNativeClientLocation {
     }
 
     @Override
-    public boolean validateFilesPresence(DBRProgressMonitor progressMonitor) throws DBException {
+    public boolean validateFilesPresence(DBRProgressMonitor progressMonitor) throws DBException, InterruptedException {
         NativeClientDistributionDescriptor distribution = clientDescriptor.findDistribution();
         if (distribution != null) {
-            return distribution.downloadFiles(progressMonitor);
+            return distribution.downloadFiles(progressMonitor, this);
         }
         return false;
     }
