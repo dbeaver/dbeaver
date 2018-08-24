@@ -42,12 +42,6 @@ public interface DBPDriver extends DBPNamedObject
     @NotNull
     DBPDataSourceProvider getDataSourceProvider();
 
-    /**
-     * Client manager or null
-     */
-    @Nullable
-    DBPNativeClientLocationManager getClientManager();
-
     @NotNull
     String getId();
 
@@ -105,11 +99,14 @@ public interface DBPDriver extends DBPNamedObject
 
     boolean isSupportedByLocalSystem();
 
-    @NotNull
-    List<String> getClientHomeIds();
-
+    /**
+     * Client manager or null
+     */
     @Nullable
-    DBPNativeClientLocation getClientHome(String homeId);
+    DBPNativeClientLocationManager getNativeClientManager();
+
+    @NotNull
+    List<DBPNativeClientLocation> getNativeClientLocations();
 
     @Nullable
     ClassLoader getClassLoader();

@@ -124,7 +124,7 @@ public class OracleDataSource extends JDBCDataSource
         } else {
             DBPNativeClientLocation clientHome = getContainer().getNativeClientHome();
             if (clientHome != null) {
-                System.setProperty(OracleConstants.VAR_ORACLE_NET_TNS_ADMIN, new File(clientHome.getHomePath(), OCIUtils.TNSNAMES_FILE_PATH).getAbsolutePath());
+                System.setProperty(OracleConstants.VAR_ORACLE_NET_TNS_ADMIN, new File(clientHome.getPath(), OCIUtils.TNSNAMES_FILE_PATH).getAbsolutePath());
             }
         }
 */

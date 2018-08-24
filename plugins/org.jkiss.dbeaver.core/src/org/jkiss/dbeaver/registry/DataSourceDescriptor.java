@@ -533,7 +533,7 @@ public class DataSourceDescriptor
     public DBPNativeClientLocation getClientHome()
     {
         if (clientHome == null && !CommonUtils.isEmpty(connectionInfo.getClientHomeId())) {
-            this.clientHome = driver.getClientHome(connectionInfo.getClientHomeId());
+            this.clientHome = DBUtils.findObject(driver.getNativeClientLocations(), connectionInfo.getClientHomeId());
         }
         return clientHome;
     }
@@ -1229,7 +1229,7 @@ public class DataSourceDescriptor
         return connectionInfo.getConnectionType().getName();
     }
 
-    public void addChildProcess(DBRProcessDescriptor process)
+    private void addChildProcess(DBRProcessDescriptor process)
     {
         synchronized (childProcesses) {
             childProcesses.add(process);

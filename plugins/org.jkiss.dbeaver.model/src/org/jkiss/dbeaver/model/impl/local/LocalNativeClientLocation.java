@@ -14,36 +14,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.model.impl.jdbc;
+package org.jkiss.dbeaver.model.impl.local;
 
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 
 import java.io.File;
 
 /**
- * JDBCNativeClientLocation
+ * LocalNativeClientLocation
  */
-public abstract class JDBCNativeClientLocation implements DBPNativeClientLocation
-{
+public class LocalNativeClientLocation implements DBPNativeClientLocation {
     private final String id;
     private final File path;
 
-    protected JDBCNativeClientLocation(String id, String path)
-    {
+    public LocalNativeClientLocation(String id, String path) {
         this.id = id;
-        this.path = new File(path);
+        this.path = new File(path != null ? path : id);
     }
 
     @Override
-    public String getHomeId()
-    {
+    public String getName() {
         return id;
     }
 
     @Override
-    public File getHomePath()
-    {
+    public File getPath() {
         return path;
+    }
+
+    @Override
+    public String getDisplayName() {
+        return path.getAbsolutePath();
     }
 
 }

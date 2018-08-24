@@ -121,10 +121,10 @@ public class RuntimeUtils {
     public static File getHomeBinary(@NotNull DBPNativeClientLocation home, @Nullable String binFolder, @NotNull String binName) throws IOException
     {
         binName = getNativeBinaryName(binName);
-        File dumpBinary = new File(home.getHomePath(),
+        File dumpBinary = new File(home.getPath(),
             binFolder == null ? binName : binFolder + "/" + binName);
         if (!dumpBinary.exists()) {
-            dumpBinary = new File(home.getHomePath(), binName);
+            dumpBinary = new File(home.getPath(), binName);
             if (!dumpBinary.exists()) {
                 throw new IOException("Utility '" + binName + "' not found in client home '" + home.getDisplayName() + "'");
             }
