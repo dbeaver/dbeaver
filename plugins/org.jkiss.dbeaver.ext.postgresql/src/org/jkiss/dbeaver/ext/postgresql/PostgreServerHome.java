@@ -18,12 +18,12 @@ package org.jkiss.dbeaver.ext.postgresql;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCClientHome;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCNativeClientLocation;
 
 /**
  * PostgreServerHome
  */
-public class PostgreServerHome extends JDBCClientHome {
+public class PostgreServerHome extends JDBCNativeClientLocation {
 
     private static final Log log = Log.getLog(PostgreServerHome.class);
 

@@ -14,21 +14,36 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package org.jkiss.dbeaver.model.impl.jdbc;
 
-package org.jkiss.dbeaver.model.connection;
+import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 
-import java.util.Collection;
+import java.io.File;
 
 /**
- * Native client manager.
- * This interface can be implemented by data source provider to support native client functions.
+ * JDBCNativeClientLocation
  */
-public interface DBPNativeClientLocationManager {
+public abstract class JDBCNativeClientLocation implements DBPNativeClientLocation
+{
+    private final String id;
+    private final File path;
 
-    Collection<String> findNativeClientHomeIds();
+    protected JDBCNativeClientLocation(String id, String path)
+    {
+        this.id = id;
+        this.path = new File(path);
+    }
 
-    String getDefaultNativeClientHomeId();
+    @Override
+    public String getHomeId()
+    {
+        return id;
+    }
 
-    DBPNativeClientLocation getNativeClientHome(String homeId);
+    @Override
+    public File getHomePath()
+    {
+        return path;
+    }
 
 }

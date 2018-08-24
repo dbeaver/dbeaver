@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -105,16 +106,16 @@ public interface DBPDriver extends DBPNamedObject
     boolean isSupportedByLocalSystem();
 
     @NotNull
-    Collection<String> getClientHomeIds();
+    List<String> getClientHomeIds();
 
     @Nullable
-    DBPClientHome getClientHome(String homeId);
+    DBPNativeClientLocation getClientHome(String homeId);
 
     @Nullable
     ClassLoader getClassLoader();
 
     @NotNull
-    Collection<? extends DBPDriverLibrary> getDriverLibraries();
+    List<? extends DBPDriverLibrary> getDriverLibraries();
 
     @NotNull
     Object getDriverInstance(@NotNull DBRProgressMonitor monitor) throws DBException;

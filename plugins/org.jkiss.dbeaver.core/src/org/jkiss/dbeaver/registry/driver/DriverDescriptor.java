@@ -631,8 +631,14 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     @NotNull
     @Override
-    public Collection<String> getClientHomeIds() {
-        return clientHomeIds;
+    public List<String> getClientHomeIds() {
+        List<String> ids = new ArrayList<>();
+        for (NativeClientDescriptor nc : getProviderDescriptor().getNativeClients()) {
+            ids.add(nc.getId());
+        }
+        ids.addAll(clientHomeIds);
+
+        return ids;
     }
 
     public void setClientHomeIds(Collection<String> homeIds) {
@@ -1226,7 +1232,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     @Nullable
     @Override
-    public DBPClientHome getClientHome(String homeId) {
+    public DBPNativeClientLocation getClientHome(String homeId) {
         DBPNativeClientLocationManager clientManager = getClientManager();
         if (clientManager != null) {
             return clientManager.getNativeClientHome(homeId);

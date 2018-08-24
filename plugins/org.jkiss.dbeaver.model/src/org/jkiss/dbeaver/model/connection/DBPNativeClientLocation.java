@@ -17,18 +17,25 @@
 
 package org.jkiss.dbeaver.model.connection;
 
-import java.util.Collection;
+import org.jkiss.dbeaver.DBException;
+
+import java.io.File;
 
 /**
- * Native client manager.
- * This interface can be implemented by data source provider to support native client functions.
+ * Native client home descriptor
  */
-public interface DBPNativeClientLocationManager {
+public interface DBPNativeClientLocation {
 
-    Collection<String> findNativeClientHomeIds();
+    String getHomeId();
 
-    String getDefaultNativeClientHomeId();
+    File getHomePath();
 
-    DBPNativeClientLocation getNativeClientHome(String homeId);
+    String getDisplayName();
+
+    String getProductName()
+        throws DBException;
+
+    String getProductVersion()
+        throws DBException;
 
 }

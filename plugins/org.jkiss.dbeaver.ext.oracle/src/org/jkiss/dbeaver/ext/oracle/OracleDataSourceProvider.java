@@ -26,7 +26,7 @@ import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
 import org.jkiss.dbeaver.ext.oracle.oci.OracleHomeDescriptor;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.connection.DBPClientHome;
+import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocationManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -155,7 +155,7 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
     }
 
     @Override
-    public DBPClientHome getNativeClientHome(String homeId)
+    public DBPNativeClientLocation getNativeClientHome(String homeId)
     {
         return new OracleHomeDescriptor(homeId);
     }

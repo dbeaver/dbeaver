@@ -31,7 +31,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.model.connection.DBPClientHome;
+import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocationManager;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
@@ -68,11 +68,11 @@ public class ClientHomesPanel extends Composite
     private DBPDriver driver;
 
     static class HomeInfo {
-        DBPClientHome home;
+        DBPNativeClientLocation home;
         boolean isProvided;
         boolean isDefault;
 
-        HomeInfo(DBPClientHome home)
+        HomeInfo(DBPNativeClientLocation home)
         {
             this.home = home;
         }
@@ -243,7 +243,7 @@ public class ClientHomesPanel extends Composite
 
     private TableItem createHomeItem(DBPNativeClientLocationManager clientManager, String homeId, boolean provided)
     {
-        DBPClientHome home;
+        DBPNativeClientLocation home;
         try {
             home = clientManager.getNativeClientHome(homeId);
             if (home == null) {

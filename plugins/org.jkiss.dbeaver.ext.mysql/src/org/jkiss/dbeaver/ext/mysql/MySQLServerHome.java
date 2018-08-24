@@ -18,7 +18,7 @@ package org.jkiss.dbeaver.ext.mysql;
 
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCClientHome;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCNativeClientLocation;
 import org.jkiss.utils.IOUtils;
 
 import java.io.BufferedReader;
@@ -28,7 +28,7 @@ import java.io.InputStreamReader;
 /**
  * MySQLServerHome
  */
-public class MySQLServerHome extends JDBCClientHome {
+public class MySQLServerHome extends JDBCNativeClientLocation {
 
     private static final Log log = Log.getLog(MySQLServerHome.class);
 

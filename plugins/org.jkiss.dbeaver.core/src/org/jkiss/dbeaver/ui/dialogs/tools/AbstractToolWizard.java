@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBWorkbench;
-import org.jkiss.dbeaver.model.connection.DBPClientHome;
+import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -62,7 +62,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
     private final String PROP_NAME_EXTRA_ARGS = "tools.wizard." + getClass().getSimpleName() + ".extraArgs";
 
     private final List<BASE_OBJECT> databaseObjects;
-    private DBPClientHome clientHome;
+    private DBPNativeClientLocation clientHome;
     private DBPDataSourceContainer dataSourceContainer;
     private DBPConnectionConfiguration connectionInfo;
     private String toolUserName;
@@ -127,7 +127,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
         return connectionInfo;
     }
 
-    public DBPClientHome getClientHome()
+    public DBPNativeClientLocation getClientHome()
     {
         return clientHome;
     }
@@ -166,7 +166,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
         }
     }
 
-    public DBPClientHome findNativeClientHome(String clientHomeId) {
+    public DBPNativeClientLocation findNativeClientHome(String clientHomeId) {
         return null;
     }
 
