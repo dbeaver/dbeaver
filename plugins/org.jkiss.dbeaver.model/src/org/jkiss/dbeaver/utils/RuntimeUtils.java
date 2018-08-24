@@ -21,7 +21,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.connection.DBPClientHome;
+import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -118,7 +118,7 @@ public class RuntimeUtils {
         return Platform.getOS().equals("win32") ? binName + ".exe" : binName;
     }
 
-    public static File getHomeBinary(@NotNull DBPClientHome home, @Nullable String binFolder, @NotNull String binName) throws IOException
+    public static File getHomeBinary(@NotNull DBPNativeClientLocation home, @Nullable String binFolder, @NotNull String binName) throws IOException
     {
         binName = getNativeBinaryName(binName);
         File dumpBinary = new File(home.getHomePath(),

@@ -17,7 +17,7 @@
 package org.jkiss.dbeaver.ext.oracle.oci;
 
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCClientHome;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCNativeClientLocation;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class OracleHomeDescriptor extends JDBCClientHome
+public class OracleHomeDescriptor extends JDBCNativeClientLocation
 {
     private static final Log log = Log.getLog(OracleHomeDescriptor.class);
 

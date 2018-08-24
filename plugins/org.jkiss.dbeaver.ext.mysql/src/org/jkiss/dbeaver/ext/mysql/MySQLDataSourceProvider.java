@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.connection.DBPClientHome;
+import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocationManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -145,7 +145,7 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
     }
 
     @Override
-    public DBPClientHome getNativeClientHome(String homeId)
+    public DBPNativeClientLocation getNativeClientHome(String homeId)
     {
         return getServerHome(homeId);
     }

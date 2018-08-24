@@ -28,9 +28,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.model.connection.DBPClientHome;
-import org.jkiss.dbeaver.model.connection.DBPNativeClientLocationManager;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
+import org.jkiss.dbeaver.model.connection.DBPNativeClientLocationManager;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.ArrayList;
@@ -109,31 +109,33 @@ public class ClientHomesSelector
         this.homesCombo.removeAll();
         this.homeIds.clear();
 
+        Set<String> homes = new LinkedHashSet<>();
+
         DBPNativeClientLocationManager clientManager = driver.getClientManager();
         if (clientManager != null) {
-            Set<String> homes = new LinkedHashSet<>(
-                clientManager.findNativeClientHomeIds());
+            homes.addAll(clientManager.findNativeClientHomeIds());
             homes.addAll(driver.getClientHomeIds());
+        }
 
-            for (String homeId : homes) {
-                DBPClientHome home = driver.getClientHome(homeId);
-                if (home != null) {
-                    homesCombo.add(home.getDisplayName());
-                    homeIds.add(home.getHomeId());
-                    if (currentHomeId != null && home.getHomeId().equals(currentHomeId)) {
-                        homesCombo.select(homesCombo.getItemCount() - 1);
-                    }
+        for (String homeId : homes) {
+            DBPNativeClientLocation home = driver.getClientHome(homeId);
+            if (home != null) {
+                homesCombo.add(home.getDisplayName());
+                homeIds.add(home.getHomeId());
+                if (currentHomeId != null && home.getHomeId().equals(currentHomeId)) {
+                    homesCombo.select(homesCombo.getItemCount() - 1);
                 }
             }
-            this.homesCombo.add(CoreMessages.controls_client_home_selector_browse);
         }
+        this.homesCombo.add(CoreMessages.controls_client_home_selector_browse);
+
         displayClientVersion();
     }
 
     private void displayClientVersion()
     {
 /*
-        DBPClientHome clientHome = currentHomeId == null ? null : driver.getNativeClientHome(currentHomeId);
+        DBPNativeClientLocation clientHome = currentHomeId == null ? null : driver.getNativeClientHome(currentHomeId);
         if (clientHome != null) {
             try {
                 // display client version

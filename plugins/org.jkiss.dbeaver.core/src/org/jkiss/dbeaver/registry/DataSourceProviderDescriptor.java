@@ -196,14 +196,13 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
         return instance;
     }
 
-    private void initProviderBundle(DriverDescriptor driver)
-    {
-    }
-
     public DBXTreeNode getTreeDescriptor()
     {
         return treeDescriptor;
     }
+
+    //////////////////////////////////////
+    // Drivers
 
     public boolean isDriversManagable()
     {
@@ -283,6 +282,21 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
         } else {
             return this.drivers.remove(driver);
         }
+    }
+
+    //////////////////////////////////////
+    // Native clients
+
+    public List<NativeClientDescriptor> getNativeClients() {
+        return nativeClients;
+    }
+
+    //////////////////////////////////////
+    // Internal
+
+
+    private void initProviderBundle(DriverDescriptor driver)
+    {
     }
 
     private DBXTreeItem loadTreeInfo(IConfigurationElement config)
