@@ -54,4 +54,14 @@ public class LocalNativeClientLocation implements DBPNativeClientLocation {
         return true;
     }
 
+    @Override
+    public String toString() {
+        File path = getPath();
+        return "Local: " + (path == null ? id : path.getAbsolutePath());
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return obj instanceof DBPNativeClientLocation && ((DBPNativeClientLocation) obj).getName().equals(getName());
+    }
 }

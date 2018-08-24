@@ -107,11 +107,15 @@ public class ClientHomesSelector
         this.homeIds.clear();
 
         Set<DBPNativeClientLocation> homes = new LinkedHashSet<>();
+        homes.addAll(driver.getNativeClientLocations());
 
         DBPNativeClientLocationManager clientManager = driver.getNativeClientManager();
         if (clientManager != null) {
-            homes.addAll(clientManager.findLocalClientLocations());
-            homes.addAll(driver.getNativeClientLocations());
+            for (DBPNativeClientLocation location : clientManager.findLocalClientLocations()) {
+                if (!homes.contains(location)) {
+                    homes.add(location);
+                }
+            }
         }
 
         for (DBPNativeClientLocation location : homes) {

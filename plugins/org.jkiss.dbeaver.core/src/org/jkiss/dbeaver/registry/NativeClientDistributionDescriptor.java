@@ -58,7 +58,7 @@ public class NativeClientDistributionDescriptor {
     }
 
     public boolean downloadFiles(DBRProgressMonitor monitor) throws DBException {
-        return true;
+        throw new DBException("Not implemented yet");
     }
 
     @Override
