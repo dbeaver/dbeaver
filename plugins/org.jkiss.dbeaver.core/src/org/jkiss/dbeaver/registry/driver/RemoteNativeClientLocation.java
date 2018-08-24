@@ -63,4 +63,8 @@ public class RemoteNativeClientLocation implements DBPNativeClientLocation {
         return false;
     }
 
+    @Override
+    public String toString() {
+        return "Remote: " + clientDescriptor.getId();
+    }
 }

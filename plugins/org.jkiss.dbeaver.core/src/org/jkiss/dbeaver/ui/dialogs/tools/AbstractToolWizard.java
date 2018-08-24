@@ -18,17 +18,21 @@
 package org.jkiss.dbeaver.ui.dialogs.tools;
 
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
+import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.wizard.Wizard;
 import org.eclipse.jface.wizard.WizardPage;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.DBWorkbench;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -36,10 +40,12 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
+import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.runtime.ProgressStreamReader;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
@@ -186,11 +192,39 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
                 getContainer().updateMessage();
                 return;
             }
-            clientHome = findNativeClientHome(clientHomeId);//MySQLDataSourceProvider.getServerHome(clientHomeId);
+            clientHome = DBUtils.findObject(dataSourceContainer.getDriver().getNativeClientLocations(), clientHomeId);
+            if (clientHome == null) {
+                clientHome = findNativeClientHome(clientHomeId);
+            }
             if (clientHome == null) {
                 currentPage.setErrorMessage(NLS.bind(CoreMessages.tools_wizard_message_client_home_not_found, clientHomeId));
                 getContainer().updateMessage();
             }
+        }
+        UIUtils.asyncExec(() -> {
+            validateClientFiles(currentPage);
+        });
+
+
+    }
+
+    private void validateClientFiles(WizardPage currentPage) {
+        try {
+            UIUtils.run(getContainer(), true, true, new DBRRunnableWithProgress() {
+                @Override
+                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+                    try {
+                        clientHome.validateFilesPresence(monitor);
+                    } catch (DBException e) {
+                        throw new InvocationTargetException(e);
+                    }
+                }
+            });
+        } catch (InvocationTargetException e) {
+            currentPage.setErrorMessage("Error loading native client files: " + e.getTargetException().getMessage());
+            getContainer().updateMessage();
+        } catch (InterruptedException e) {
+            // ignore
         }
     }
 
