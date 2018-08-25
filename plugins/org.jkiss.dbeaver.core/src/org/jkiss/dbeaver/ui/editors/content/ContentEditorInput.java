@@ -344,7 +344,7 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider,
             } else if (storage instanceof DBDContentCached) {
                 // Create new storage and pass it to content
                 try (FileInputStream is = new FileInputStream(contentFile)) {
-                    if (storage instanceof StringContentStorage) {
+                    if (ContentUtils.isTextContent(content)) {
                         try (Reader reader = new InputStreamReader(is, fileCharset)) {
                             storage = StringContentStorage.createFromReader(reader);
                         }
