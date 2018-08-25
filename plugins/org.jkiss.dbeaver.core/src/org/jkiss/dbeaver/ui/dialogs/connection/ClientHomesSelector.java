@@ -125,6 +125,10 @@ public class ClientHomesSelector
                 homesCombo.select(homesCombo.getItemCount() - 1);
             }
         }
+        if (homesCombo.getItemCount() > 0 && homesCombo.getSelectionIndex() == -1) {
+            // Select first
+            homesCombo.select(0);
+        }
         this.homesCombo.add(CoreMessages.controls_client_home_selector_browse);
 
         displayClientVersion();

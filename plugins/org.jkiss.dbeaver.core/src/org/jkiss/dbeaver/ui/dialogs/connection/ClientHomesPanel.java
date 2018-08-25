@@ -250,6 +250,12 @@ public class ClientHomesPanel extends Composite {
 
     private TableItem createHomeItem(@NotNull DBPNativeClientLocationManager clientManager, @NotNull DBPNativeClientLocation clientLocation, boolean provided) {
         DBPNativeClientLocation defaultLocalClientLocation = clientManager.getDefaultLocalClientLocation();
+        if (defaultLocalClientLocation == null) {
+            List<DBPNativeClientLocation> driverLocations = driver.getNativeClientLocations();
+            if (!CommonUtils.isEmpty(driverLocations)) {
+                defaultLocalClientLocation = driverLocations.get(0);
+            }
+        }
         HomeInfo homeInfo = new HomeInfo(clientLocation);
         homeInfo.isProvided = provided;
         homeInfo.isDefault = defaultLocalClientLocation != null && clientLocation.getName().equals(defaultLocalClientLocation.getName());
