@@ -27,13 +27,13 @@ import java.io.File;
  */
 public class NativeClientFileDescriptor {
     private String type;
-    private String path;
+    private String name;
 
     public NativeClientFileDescriptor(IConfigurationElement config) {
         this.type = config.getAttribute(RegistryConstants.ATTR_TYPE);
-        this.path = config.getAttribute(RegistryConstants.ATTR_PATH);
-        while (path.endsWith("/")) {
-            path = path.substring(0, path.length() - 1);
+        this.name = config.getAttribute(RegistryConstants.ATTR_NAME);
+        while (name.startsWith("/")) {
+            name = name.substring(1);
         }
     }
 
@@ -41,18 +41,13 @@ public class NativeClientFileDescriptor {
         return type;
     }
 
-    public String getPath() {
-        return path;
+    public String getName() {
+        return name;
     }
 
     @Override
     public String toString() {
-        return path;
-    }
-
-    public String getFileName() {
-        int divPos = path.lastIndexOf('/');
-        return divPos == -1 ? path : path.substring(divPos + 1);
+        return name;
     }
 
 }
