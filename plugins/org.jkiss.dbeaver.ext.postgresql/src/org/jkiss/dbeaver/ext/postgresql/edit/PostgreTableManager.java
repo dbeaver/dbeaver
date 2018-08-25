@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreServerType;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.YellowbrickUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBConstants;
@@ -179,11 +180,7 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
                 }
                 String[] foreignOptions = table.getForeignOptions(monitor);
                 if (!ArrayUtils.isEmpty(foreignOptions)) {
-                    ddl.append("\nOPTIONS ");
-                    for (int i = 0; i < foreignOptions.length; i++) {
-                        if (i > 0) ddl.append(", ");
-                        ddl.append(foreignOptions[i]);
-                    }
+                    ddl.append("\nOPTIONS ").append(PostgreUtils.getOptionsString(foreignOptions));
                 }
             } catch (DBException e) {
                 log.error(e);
