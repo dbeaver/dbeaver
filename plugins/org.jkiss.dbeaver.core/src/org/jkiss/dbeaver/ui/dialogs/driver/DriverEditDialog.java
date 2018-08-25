@@ -629,13 +629,21 @@ public class DriverEditDialog extends HelpEnabledDialog {
 
     private void createClientHomesTab(TabFolder group) {
         clientHomesPanel = new ClientHomesPanel(group, SWT.NONE);
-        clientHomesPanel.loadHomes(driver);
         clientHomesPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         TabItem paramsTab = new TabItem(group, SWT.NONE);
         paramsTab.setText(CoreMessages.dialog_edit_driver_tab_name_client_homes);
         paramsTab.setToolTipText(CoreMessages.dialog_edit_driver_tab_name_client_homes);
         paramsTab.setControl(clientHomesPanel);
+        group.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                if (e.item == paramsTab) {
+                    clientHomesPanel.loadHomes(driver);
+                    group.removeSelectionListener(this);
+                }
+            }
+        });
     }
 
     private void createLicenseTab(TabFolder group, String license) {
@@ -744,9 +752,6 @@ public class DriverEditDialog extends HelpEnabledDialog {
 
         parametersEditor.loadProperties(driverPropertySource);
         connectionPropertiesEditor.loadProperties(connectionPropertySource);
-        if (clientHomesPanel != null) {
-            clientHomesPanel.loadHomes(driver);
-        }
     }
 
     @Override
@@ -800,7 +805,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
 
         // Store client homes
         if (clientHomesPanel != null) {
-            driver.setNativeClientLocations(clientHomesPanel.getHomeIds());
+            driver.setNativeClientLocations(clientHomesPanel.getLocalLocations());
         }
 
         DriverDescriptor oldDriver = provider.getDriverByName(driver.getCategory(), driver.getName());
