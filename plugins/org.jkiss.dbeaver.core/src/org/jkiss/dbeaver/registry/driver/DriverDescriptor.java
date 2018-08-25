@@ -646,7 +646,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     }
 
     void addNativeClientLocation(DBPNativeClientLocation location) {
-        nativeClientHomes.add(location);
+        if (!nativeClientHomes.contains(location)) {
+            nativeClientHomes.add(location);
+        }
     }
 
     @NotNull

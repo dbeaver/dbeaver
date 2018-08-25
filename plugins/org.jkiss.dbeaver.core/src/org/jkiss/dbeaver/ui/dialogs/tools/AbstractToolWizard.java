@@ -197,14 +197,9 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
                 getContainer().updateMessage();
             }
         }
-        UIUtils.asyncExec(() -> {
-            validateClientFiles(currentPage);
-        });
-
-
     }
 
-    private void validateClientFiles(WizardPage currentPage) {
+    private boolean validateClientFiles() {
         try {
             UIUtils.run(getContainer(), true, true, monitor -> {
                 try {
@@ -215,11 +210,14 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
             });
         } catch (InvocationTargetException e) {
             DBUserInterface.getInstance().showError("Download native client file(s)", "Error downloading client file(s)", e.getTargetException());
-            currentPage.setErrorMessage("Error downloading native client file(s)");
+            ((WizardPage)getContainer().getCurrentPage()).setErrorMessage("Error downloading native client file(s)");
             getContainer().updateMessage();
+            return false;
         } catch (InterruptedException e) {
             // ignore
+            return false;
         }
+        return true;
     }
 
     @Override
@@ -231,6 +229,11 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
         if (getContainer().getCurrentPage() != logPage) {
             getContainer().showPage(logPage);
         }
+
+        if (!validateClientFiles()) {
+            return false;
+        }
+
         long startTime = System.currentTimeMillis();
         try {
             UIUtils.run(getContainer(), true, true, this);

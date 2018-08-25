@@ -35,15 +35,19 @@ import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocationManager;
 import org.jkiss.dbeaver.registry.driver.LocalNativeClientLocation;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
+import org.jkiss.dbeaver.registry.driver.RemoteNativeClientLocation;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Set;
 
 /**
@@ -70,6 +74,7 @@ public class ClientHomesPanel extends Composite {
         DBPNativeClientLocation location;
         boolean isProvided;
         boolean isDefault;
+        public boolean isValidated;
 
         HomeInfo(DBPNativeClientLocation location) {
             this.location = location;
@@ -177,6 +182,20 @@ public class ClientHomesPanel extends Composite {
         idText.setText(home == null ? "" : CommonUtils.notEmpty(home.location.getName())); //$NON-NLS-1$
         pathText.setText(home == null ? "" : home.location.getPath().getAbsolutePath()); //$NON-NLS-1$
         nameText.setText(home == null ? "" : CommonUtils.notEmpty(home.location.getDisplayName())); //$NON-NLS-1$
+        if (home != null && !home.isValidated) {
+            try {
+                UIUtils.runInProgressDialog(monitor -> {
+                    try {
+                        home.location.validateFilesPresence(monitor);
+                        home.isValidated = true;
+                    } catch (DBException e) {
+                        throw new InvocationTargetException(e);
+                    }
+                });
+            } catch (InvocationTargetException e) {
+                DBUserInterface.getInstance().showError("Client download", "Failed to download client files", e.getTargetException());
+            }
+        }
         try {
             productNameText.setText(home == null ? "" : CommonUtils.notEmpty(driver.getNativeClientManager().getProductName(home.location))); //$NON-NLS-1$
         } catch (DBException e) {
@@ -189,10 +208,13 @@ public class ClientHomesPanel extends Composite {
         }
     }
 
-    public Collection<DBPNativeClientLocation> getHomeIds() {
-        java.util.List<DBPNativeClientLocation> homes = new ArrayList<>();
+    public Collection<DBPNativeClientLocation> getLocalLocations() {
+        List<DBPNativeClientLocation> homes = new ArrayList<>();
         for (TableItem item : homesTable.getItems()) {
-            homes.add(((HomeInfo) item.getData()).location);
+            HomeInfo homeInfo = (HomeInfo) item.getData();
+            if (!homeInfo.isProvided) {
+                homes.add(homeInfo.location);
+            }
         }
         return homes;
     }
@@ -204,17 +226,18 @@ public class ClientHomesPanel extends Composite {
         this.driver = driver;
         DBPNativeClientLocationManager clientManager = this.driver.getNativeClientManager();
         if (clientManager == null) {
-            log.error("Client manager is not supported by driver '" + driver.getName() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
-            return;
+            log.debug("Client manager is not supported by driver '" + driver.getName() + "'"); //$NON-NLS-1$ //$NON-NLS-2$
         }
-        Set<DBPNativeClientLocation> providedHomes = new LinkedHashSet<>(
-            clientManager.findLocalClientLocations());
+        Set<DBPNativeClientLocation> providedHomes = new LinkedHashSet<>();
+        if (clientManager != null) {
+            providedHomes.addAll(clientManager.findLocalClientLocations());
+        }
         Set<DBPNativeClientLocation> allHomes = new LinkedHashSet<>();
         allHomes.addAll(driver.getNativeClientLocations());
         allHomes.addAll(providedHomes);
 
         for (DBPNativeClientLocation home : allHomes) {
-            TableItem item = createHomeItem(clientManager, home, providedHomes.contains(home));
+            TableItem item = createHomeItem(clientManager, home, home instanceof RemoteNativeClientLocation || providedHomes.contains(home));
             if (item != null) {
                 HomeInfo homeInfo = (HomeInfo) item.getData();
                 if (homeInfo.isDefault) {
@@ -286,7 +309,7 @@ public class ClientHomesPanel extends Composite {
             if (IDialogConstants.OK_ID == buttonId) {
                 selectedHome = panel.getSelectedHome();
                 if (driver instanceof DriverDescriptor) {
-                    ((DriverDescriptor) driver).setNativeClientLocations(panel.getHomeIds());
+                    ((DriverDescriptor) driver).setNativeClientLocations(panel.getLocalLocations());
                     ((DriverDescriptor) driver).getProviderDescriptor().getRegistry().saveDrivers();
                 }
             }
