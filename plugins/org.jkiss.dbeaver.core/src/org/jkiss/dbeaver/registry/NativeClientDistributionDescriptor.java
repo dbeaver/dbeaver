@@ -29,7 +29,6 @@ import org.jkiss.dbeaver.registry.driver.DriverLibraryRepository;
 import org.jkiss.dbeaver.registry.driver.DriverUtils;
 import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.dbeaver.utils.ContentUtils;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
 
 import java.io.*;
 import java.net.URL;
@@ -45,6 +44,8 @@ public class NativeClientDistributionDescriptor {
     private final List<NativeClientFileDescriptor> files = new ArrayList<>();
     private OSDescriptor os;
     private String targetPath;
+    private String remotePath;
+    private String resourcePath;
 
     public NativeClientDistributionDescriptor(IConfigurationElement config) {
         String osName = config.getAttribute(RegistryConstants.ATTR_OS);
@@ -53,6 +54,8 @@ public class NativeClientDistributionDescriptor {
             config.getAttribute(RegistryConstants.ATTR_ARCH));
 
         this.targetPath = config.getAttribute("targetPath");
+        this.remotePath = config.getAttribute("remotePath");
+        this.resourcePath = config.getAttribute("resourcePath");
         for (IConfigurationElement fileElement : config.getChildren("file")) {
             if (DriverUtils.matchesBundle(fileElement)) {
                 this.files.add(new NativeClientFileDescriptor(fileElement));
@@ -68,11 +71,19 @@ public class NativeClientDistributionDescriptor {
         return targetPath;
     }
 
+    public String getRemotePath() {
+        return remotePath;
+    }
+
+    public String getResourcePath() {
+        return resourcePath;
+    }
+
     public boolean downloadFiles(DBRProgressMonitor monitor, DBPNativeClientLocation location) throws DBException, InterruptedException {
         File targetPath = location.getPath();
         List<NativeClientFileDescriptor> filesToDownload = new ArrayList<>();
         for (NativeClientFileDescriptor file : files) {
-            String fileName = file.getFileName();
+            String fileName = file.getName();
             File targetFile = new File(targetPath, fileName);
             if (!targetFile.exists()) {
                 filesToDownload.add(file);
@@ -93,10 +104,40 @@ public class NativeClientDistributionDescriptor {
                 throw new InterruptedException();
             }
             NativeClientFileDescriptor file = filesToDownload.get(i);
-            String fileName = file.getFileName();
+            String fileName = file.getName();
             File targetFile = new File(targetPath, fileName);
 
-            String fileRemotePath = file.getPath();
+            String fileRemotePath = remotePath + "/" + file.getName();
+            String localResourcePath = resourcePath + "/" + file.getName();
+
+            {
+                // Try to extract local resource file
+                URL url = DataSourceProviderRegistry.getInstance().findResourceURL(localResourcePath);
+                if (url != null) {
+                    try {
+                        url = FileLocator.toFileURL(url);
+                        File localFile = new File(url.getFile());
+                        if (localFile.exists()) {
+                            try (InputStream is = new FileInputStream(localFile)) {
+                                try (OutputStream os = new FileOutputStream(targetFile)) {
+                                    ContentUtils.copyStreams(is, localFile.length(), os, monitor);
+                                }
+                                return true;
+                            } catch (IOException e) {
+                                if (targetFile.exists()) {
+                                    if (!targetFile.delete()) {
+                                        log.debug("Error deleting client file '" + targetFile.getAbsolutePath() + "'");
+                                    }
+                                }
+                                log.debug("IO error copying resource file '" + localResourcePath + "'", e);
+                            }
+                        }
+                    } catch (IOException ex) {
+                        log.debug("Error locating resource file '" + localResourcePath + "'", ex);
+                    }
+                }
+            }
+            // Try to download remote file
             if (fileRemotePath.startsWith(DriverLibraryRepository.PATH_PREFIX)) {
                 // Repository file
                 fileRemotePath = fileRemotePath.substring(DriverLibraryRepository.PATH_PREFIX.length());
@@ -116,30 +157,6 @@ public class NativeClientDistributionDescriptor {
                 } catch (IOException e) {
                     log.debug("Error downloading file '" + fileName + "'", e);
                     throw new DBException("Error downloading file '" + fileName + "': " + e.getMessage());
-                }
-            } else {
-                // Seems to be some local file from a bundle
-                URL url = DataSourceProviderRegistry.getInstance().findResourceURL(fileRemotePath);
-                if (url == null) {
-                    throw new DBException("Resource file '" + fileRemotePath + "' not found");
-                }
-                try {
-                    url = FileLocator.toFileURL(url);
-                } catch (IOException ex) {
-                    throw new DBException("Error locating resource file '" + fileRemotePath + "'", ex);
-                }
-                File localFile = new File(url.getFile());
-                try (InputStream is = new FileInputStream(localFile)) {
-                    try (OutputStream os = new FileOutputStream(targetFile)) {
-                        ContentUtils.copyStreams(is, localFile.length(), os, monitor);
-                    }
-                } catch (IOException e) {
-                    if (targetFile.exists()) {
-                        if (!targetFile.delete()) {
-                            log.debug("Error deleting client file '" + targetFile.getAbsolutePath() + "'");
-                        }
-                    }
-                    throw new DBException("IO error copying resource file '" + fileRemotePath + "'", e);
                 }
             }
         }

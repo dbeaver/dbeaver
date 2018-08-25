@@ -29,9 +29,14 @@ import org.jkiss.dbeaver.model.connection.DBPNativeClientLocationManager;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
+import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.dbeaver.utils.WinRegistry;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.InputStreamReader;
 import java.util.*;
 
 public class PostgreDataSourceProvider extends JDBCDataSourceProvider implements DBPNativeClientLocationManager {
@@ -111,10 +116,7 @@ public class PostgreDataSourceProvider extends JDBCDataSourceProvider implements
 
     @Override
     public String getProductVersion(DBPNativeClientLocation location) throws DBException {
-        if (location instanceof PostgreServerHome) {
-            return ((PostgreServerHome) location).getProductVersion();
-        }
-        return null;
+        return getFullServerVersion(location.getPath());
     }
 
     public static PostgreServerHome getServerHome(String homeId) {
@@ -156,4 +158,39 @@ public class PostgreDataSourceProvider extends JDBCDataSourceProvider implements
             }
         }
     }
+
+    static String getFullServerVersion(File path)
+    {
+        File binPath = path;
+        File binSubfolder = new File(binPath, "bin");
+        if (binSubfolder.exists()) {
+            binPath = binSubfolder;
+        }
+
+        String cmd = new File(
+            binPath,
+            RuntimeUtils.getNativeBinaryName("psql")).getAbsolutePath();
+
+        try {
+            Process p = Runtime.getRuntime().exec(new String[] {cmd, "--version"});
+            try {
+                BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                try {
+                    String line;
+                    if ((line = input.readLine()) != null) {
+                        return line;
+                    }
+                } finally {
+                    IOUtils.close(input);
+                }
+            } finally {
+                p.destroy();
+            }
+        }
+        catch (Exception ex) {
+            log.warn("Error reading PostgreSQL native client version from " + cmd, ex);
+        }
+        return null;
+    }
+
 }
