@@ -633,7 +633,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     public List<DBPNativeClientLocation> getNativeClientLocations() {
         List<DBPNativeClientLocation> ids = new ArrayList<>();
         for (NativeClientDescriptor nc : getProviderDescriptor().getNativeClients()) {
-            ids.add(new RemoteNativeClientLocation(nc));
+            if (nc.findDistribution() != null) {
+                ids.add(new RemoteNativeClientLocation(nc));
+            }
         }
         ids.addAll(nativeClientHomes);
 
