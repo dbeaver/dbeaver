@@ -21,7 +21,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.connection.DBPClientHome;
+import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
@@ -47,29 +47,25 @@ public class RuntimeUtils {
     private static final Log log = Log.getLog(RuntimeUtils.class);
 
     @SuppressWarnings("unchecked")
-    public static <T> T getObjectAdapter(Object adapter, Class<T> objectType)
-    {
+    public static <T> T getObjectAdapter(Object adapter, Class<T> objectType) {
         return Platform.getAdapterManager().getAdapter(adapter, objectType);
     }
 
-    public static DBRProgressMonitor makeMonitor(IProgressMonitor monitor)
-    {
+    public static DBRProgressMonitor makeMonitor(IProgressMonitor monitor) {
         if (monitor instanceof DBRProgressMonitor) {
             return (DBRProgressMonitor) monitor;
         }
         return new DefaultProgressMonitor(monitor);
     }
 
-    public static IProgressMonitor getNestedMonitor(DBRProgressMonitor monitor)
-    {
+    public static IProgressMonitor getNestedMonitor(DBRProgressMonitor monitor) {
         if (monitor instanceof IProgressMonitor) {
             return (IProgressMonitor) monitor;
         }
         return monitor.getNestedMonitor();
     }
 
-    public static File getUserHomeDir()
-    {
+    public static File getUserHomeDir() {
         String userHome = System.getProperty(StandardConstants.ENV_USER_HOME); //$NON-NLS-1$
         if (userHome == null) {
             userHome = ".";
@@ -77,8 +73,7 @@ public class RuntimeUtils {
         return new File(userHome);
     }
 
-    public static String getCurrentDate()
-    {
+    public static String getCurrentDate() {
         return new SimpleDateFormat(GeneralUtils.DEFAULT_DATE_PATTERN, Locale.ENGLISH).format(new Date()); //$NON-NLS-1$
 /*
         Calendar c = Calendar.getInstance();
@@ -89,8 +84,7 @@ public class RuntimeUtils {
 */
     }
 
-    public static String getCurrentTimeStamp()
-    {
+    public static String getCurrentTimeStamp() {
         return new SimpleDateFormat(GeneralUtils.DEFAULT_TIMESTAMP_PATTERN, Locale.ENGLISH).format(new Date()); //$NON-NLS-1$
 /*
         Calendar c = Calendar.getInstance();
@@ -100,8 +94,7 @@ public class RuntimeUtils {
 */
     }
 
-    public static boolean isTypeSupported(Class<?> type, Class[] supportedTypes)
-    {
+    public static boolean isTypeSupported(Class<?> type, Class[] supportedTypes) {
         if (type == null || ArrayUtils.isEmpty(supportedTypes)) {
             return false;
         }
@@ -113,18 +106,16 @@ public class RuntimeUtils {
         return false;
     }
 
-    public static String getNativeBinaryName(String binName)
-    {
+    public static String getNativeBinaryName(String binName) {
         return Platform.getOS().equals("win32") ? binName + ".exe" : binName;
     }
 
-    public static File getHomeBinary(@NotNull DBPClientHome home, @Nullable String binFolder, @NotNull String binName) throws IOException
-    {
+    public static File getNativeClientBinary(@NotNull DBPNativeClientLocation home, @Nullable String binFolder, @NotNull String binName) throws IOException {
         binName = getNativeBinaryName(binName);
-        File dumpBinary = new File(home.getHomePath(),
+        File dumpBinary = new File(home.getPath(),
             binFolder == null ? binName : binFolder + "/" + binName);
         if (!dumpBinary.exists()) {
-            dumpBinary = new File(home.getHomePath(), binName);
+            dumpBinary = new File(home.getPath(), binName);
             if (!dumpBinary.exists()) {
                 throw new IOException("Utility '" + binName + "' not found in client home '" + home.getDisplayName() + "'");
             }
@@ -154,8 +145,7 @@ public class RuntimeUtils {
         return status;
     }
 
-    public static void pause(int ms)
-    {
+    public static void pause(int ms) {
         try {
             Thread.sleep(ms);
         } catch (InterruptedException e) {
@@ -163,8 +153,7 @@ public class RuntimeUtils {
         }
     }
 
-    public static String formatExecutionTime(long ms)
-    {
+    public static String formatExecutionTime(long ms) {
         if (ms < 1000) {
             // Less than a second, show just ms
             return String.valueOf(ms) + "ms";
@@ -179,8 +168,7 @@ public class RuntimeUtils {
         return String.valueOf(min) + "m " + String.valueOf(sec) + "s";
     }
 
-    public static File getPlatformFile(String platformURL) throws IOException
-    {
+    public static File getPlatformFile(String platformURL) throws IOException {
         URL url = new URL(platformURL);
         URL fileURL = FileLocator.toFileURL(url);
         return getLocalFileFromURL(fileURL);
@@ -210,9 +198,9 @@ public class RuntimeUtils {
                     setUser(false);
                 }
             }
+
             @Override
-            protected IStatus run(DBRProgressMonitor monitor)
-            {
+            protected IStatus run(DBRProgressMonitor monitor) {
                 try {
                     monitoringTask.run(monitor);
                 } catch (InvocationTargetException e) {

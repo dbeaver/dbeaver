@@ -29,7 +29,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
-import org.jkiss.dbeaver.model.connection.DBPClientHome;
+import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPConnectionEventType;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
@@ -134,7 +134,7 @@ public class DataSourceDescriptor
     private final Map<String, FilterMapping> filterMap = new HashMap<>();
     private DBDDataFormatterProfile formatterProfile;
     @Nullable
-    private DBPClientHome clientHome;
+    private DBPNativeClientLocation clientHome;
     @Nullable
     private String lockPasswordHash;
     @Nullable
@@ -530,10 +530,10 @@ public class DataSourceDescriptor
     }
 
     @Override
-    public DBPClientHome getClientHome()
+    public DBPNativeClientLocation getClientHome()
     {
         if (clientHome == null && !CommonUtils.isEmpty(connectionInfo.getClientHomeId())) {
-            this.clientHome = driver.getClientHome(connectionInfo.getClientHomeId());
+            this.clientHome = DBUtils.findObject(driver.getNativeClientLocations(), connectionInfo.getClientHomeId());
         }
         return clientHome;
     }
@@ -1229,7 +1229,7 @@ public class DataSourceDescriptor
         return connectionInfo.getConnectionType().getName();
     }
 
-    public void addChildProcess(DBRProcessDescriptor process)
+    private void addChildProcess(DBRProcessDescriptor process)
     {
         synchronized (childProcesses) {
             childProcesses.add(process);

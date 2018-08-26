@@ -62,6 +62,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
     private boolean driversManagable;
     private final List<DBPPropertyDescriptor> driverProperties = new ArrayList<>();
     private final List<DriverDescriptor> drivers = new ArrayList<>();
+    private final List<NativeClientDescriptor> nativeClients = new ArrayList<>();
 
     public DataSourceProviderDescriptor(DataSourceProviderRegistry registry, IConfigurationElement config)
     {
@@ -130,6 +131,15 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
                 }
             }
         }
+
+        // Load native clients
+        {
+            for (IConfigurationElement nativeClientsElement : config.getChildren("nativeClients")) {
+                for (IConfigurationElement clientElement : nativeClientsElement.getChildren("client")) {
+                    this.nativeClients.add(new NativeClientDescriptor(clientElement));
+                }
+            }
+        }
     }
 
     public void dispose()
@@ -186,14 +196,13 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
         return instance;
     }
 
-    private void initProviderBundle(DriverDescriptor driver)
-    {
-    }
-
     public DBXTreeNode getTreeDescriptor()
     {
         return treeDescriptor;
     }
+
+    //////////////////////////////////////
+    // Drivers
 
     public boolean isDriversManagable()
     {
@@ -273,6 +282,21 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
         } else {
             return this.drivers.remove(driver);
         }
+    }
+
+    //////////////////////////////////////
+    // Native clients
+
+    public List<NativeClientDescriptor> getNativeClients() {
+        return nativeClients;
+    }
+
+    //////////////////////////////////////
+    // Internal
+
+
+    private void initProviderBundle(DriverDescriptor driver)
+    {
     }
 
     private DBXTreeItem loadTreeInfo(IConfigurationElement config)

@@ -143,7 +143,7 @@ class MySQLExportWizard extends AbstractImportExportWizard<MySQLDatabaseExportIn
     @Override
     public void fillProcessParameters(List<String> cmd, MySQLDatabaseExportInfo arg) throws IOException
     {
-        File dumpBinary = RuntimeUtils.getHomeBinary(getClientHome(), MySQLConstants.BIN_FOLDER, "mysqldump"); //$NON-NLS-1$
+        File dumpBinary = RuntimeUtils.getNativeClientBinary(getClientHome(), MySQLConstants.BIN_FOLDER, "mysqldump"); //$NON-NLS-1$
         String dumpPath = dumpBinary.getAbsolutePath();
         cmd.add(dumpPath);
         switch (method) {

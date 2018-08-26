@@ -16,12 +16,18 @@
  */
 package org.jkiss.dbeaver.ui.data.managers.stream;
 
+import org.eclipse.jface.text.source.ISourceViewer;
+import org.eclipse.jface.text.source.IVerticalRuler;
+import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.texteditor.ITextEditorExtension3;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.editors.text.BaseTextEditor;
 import org.jkiss.dbeaver.ui.editors.text.FileRefDocumentProvider;
+import org.jkiss.dbeaver.ui.editors.xml.XMLSourceViewerConfiguration;
 
 /**
  * CONTENT text editor
@@ -29,6 +35,7 @@ import org.jkiss.dbeaver.ui.editors.text.FileRefDocumentProvider;
 public class TextEditorPart extends BaseTextEditor implements IEditorPart {
 
     public TextEditorPart() {
+        configureInsertMode(ITextEditorExtension3.SMART_INSERT, false);
         setDocumentProvider(new FileRefDocumentProvider());
     }
 
@@ -42,6 +49,17 @@ public class TextEditorPart extends BaseTextEditor implements IEditorPart {
     public Image getTitleImage()
     {
         return DBeaverIcons.getImage(DBIcon.TYPE_TEXT);
+    }
+
+    @Override
+    public void createPartControl(Composite parent) {
+        super.createPartControl(parent);
+        setSourceViewerConfiguration(new PlainTextViewerConfiguration(this));
+    }
+
+    @Override
+    protected ISourceViewer createSourceViewer(Composite parent, IVerticalRuler ruler, int styles) {
+        return new ProjectionViewer(parent, ruler, null, false, styles);
     }
 
 }

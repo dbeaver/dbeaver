@@ -103,10 +103,12 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource> imple
     }
 
     private void initCaches() {
+/*
         if (!getDataSource().isServerVersionAtLeast(8, 1)) {
             // Roles not supported
             roleCache.setCache(Collections.emptyList());
         }
+*/
     }
 
     public PostgreDatabase(DBRProgressMonitor monitor, PostgreDataSource dataSource, String databaseName)

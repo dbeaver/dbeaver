@@ -87,7 +87,7 @@ class MySQLScriptExecuteWizard extends AbstractScriptExecuteWizard<MySQLCatalog,
     @Override
     public void fillProcessParameters(List<String> cmd, MySQLCatalog arg) throws IOException
     {
-        String dumpPath = RuntimeUtils.getHomeBinary(getClientHome(), MySQLConstants.BIN_FOLDER, "mysql").getAbsolutePath(); //$NON-NLS-1$
+        String dumpPath = RuntimeUtils.getNativeClientBinary(getClientHome(), MySQLConstants.BIN_FOLDER, "mysql").getAbsolutePath(); //$NON-NLS-1$
         cmd.add(dumpPath);
         if (logLevel == LogLevel.Debug) {
             cmd.add("--debug-info"); //$NON-NLS-1$

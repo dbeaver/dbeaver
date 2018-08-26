@@ -17,25 +17,24 @@
 
 package org.jkiss.dbeaver.model.connection;
 
+import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
-import java.util.Collection;
-import java.util.List;
+import java.io.File;
 
 /**
- * Native client manager.
- * This interface can be implemented by data source provider to support native client functions.
+ * Native client home descriptor
  */
-public interface DBPNativeClientLocationManager {
+public interface DBPNativeClientLocation extends DBPNamedObject {
 
-    List<DBPNativeClientLocation> findLocalClientLocations();
+    @NotNull
+    File getPath();
 
-    DBPNativeClientLocation getDefaultLocalClientLocation();
+    @NotNull
+    String getDisplayName();
 
-    String getProductName(DBPNativeClientLocation location)
-            throws DBException;
-
-    String getProductVersion(DBPNativeClientLocation location)
-            throws DBException;
+    boolean validateFilesPresence(DBRProgressMonitor progressMonitor) throws DBException, InterruptedException;
 
 }

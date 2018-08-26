@@ -48,7 +48,6 @@ import org.jkiss.utils.StandardConstants;
 import org.jkiss.utils.xml.SAXListener;
 import org.jkiss.utils.xml.SAXReader;
 import org.jkiss.utils.xml.XMLBuilder;
-import org.jkiss.utils.xml.XMLException;
 import org.xml.sax.Attributes;
 
 import java.io.File;
@@ -136,7 +135,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private boolean custom;
     private boolean modified;
     private boolean disabled;
-    private final List<String> clientHomeIds = new ArrayList<>();
+    private final List<DBPNativeClientLocation> nativeClientHomes = new ArrayList<>();
     private final List<DriverFileSource> fileSources = new ArrayList<>();
     private final List<DBPDriverLibrary> libraries = new ArrayList<>();
     private final List<DBPDriverLibrary> origFiles = new ArrayList<>();
@@ -203,7 +202,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             this.supportsDriverProperties = copyFrom.supportsDriverProperties;
             this.anonymousAccess = copyFrom.anonymousAccess;
             this.customDriverLoader = copyFrom.customDriverLoader;
-            this.clientHomeIds.addAll(copyFrom.clientHomeIds);
+            this.nativeClientHomes.addAll(copyFrom.nativeClientHomes);
             for (DriverFileSource fs : copyFrom.fileSources) {
                 this.fileSources.add(new DriverFileSource(fs));
             }
@@ -386,7 +385,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     @Nullable
     @Override
-    public DBPNativeClientLocationManager getClientManager() {
+    public DBPNativeClientLocationManager getNativeClientManager() {
         DBPDataSourceProvider provider = getDataSourceProvider();
         if (provider instanceof DBPNativeClientLocationManager) {
             return (DBPNativeClientLocationManager) provider;
@@ -614,7 +613,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         return providerDescriptor.getTreeDescriptor();
     }
 
-    void setCustomDriverLoader(boolean customDriverLoader) {
+    private void setCustomDriverLoader(boolean customDriverLoader) {
         this.customDriverLoader = customDriverLoader;
     }
 
@@ -631,17 +630,25 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
 
     @NotNull
     @Override
-    public Collection<String> getClientHomeIds() {
-        return clientHomeIds;
+    public List<DBPNativeClientLocation> getNativeClientLocations() {
+        List<DBPNativeClientLocation> ids = new ArrayList<>();
+        for (NativeClientDescriptor nc : getProviderDescriptor().getNativeClients()) {
+            ids.add(new RemoteNativeClientLocation(nc));
+        }
+        ids.addAll(nativeClientHomes);
+
+        return ids;
     }
 
-    public void setClientHomeIds(Collection<String> homeIds) {
-        clientHomeIds.clear();
-        clientHomeIds.addAll(homeIds);
+    public void setNativeClientLocations(Collection<DBPNativeClientLocation> locations) {
+        nativeClientHomes.clear();
+        nativeClientHomes.addAll(locations);
     }
 
-    void addClientHomeId(String homeId) {
-        clientHomeIds.add(homeId);
+    void addNativeClientLocation(DBPNativeClientLocation location) {
+        if (!nativeClientHomes.contains(location)) {
+            nativeClientHomes.add(location);
+        }
     }
 
     @NotNull
@@ -1196,9 +1203,12 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             }
 
             // Client homes
-            for (String homeId : clientHomeIds) {
+            for (DBPNativeClientLocation location : nativeClientHomes) {
                 try (XMLBuilder.Element e1 = xml.startElement(RegistryConstants.TAG_CLIENT_HOME)) {
-                    xml.addAttribute(RegistryConstants.ATTR_ID, homeId);
+                    xml.addAttribute(RegistryConstants.ATTR_ID, location.getName());
+                    if (location.getPath() != null) {
+                        xml.addAttribute(RegistryConstants.ATTR_PATH, location.getPath().getAbsolutePath());
+                    }
                 }
             }
 
@@ -1224,20 +1234,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         }
     }
 
-    @Nullable
-    @Override
-    public DBPClientHome getClientHome(String homeId) {
-        DBPNativeClientLocationManager clientManager = getClientManager();
+    public DBPNativeClientLocation getDefaultClientLocation() {
+        DBPNativeClientLocationManager clientManager = getNativeClientManager();
         if (clientManager != null) {
-            return clientManager.getNativeClientHome(homeId);
-        }
-        return null;
-    }
-
-    public String getDefaultClientHomeId() {
-        DBPNativeClientLocationManager clientManager = getClientManager();
-        if (clientManager != null) {
-            return clientManager.getDefaultNativeClientHomeId();
+            return clientManager.getDefaultLocalClientLocation();
         }
         return null;
     }
@@ -1265,10 +1265,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     public static String[] getDriversSources() {
         String sourcesString = DBeaverCore.getGlobalPreferenceStore().getString(DBeaverPreferences.UI_DRIVERS_SOURCES);
         List<String> pathList = CommonUtils.splitString(sourcesString, '|');
-        return pathList.toArray(new String[pathList.size()]);
+        return pathList.toArray(new String[0]);
     }
 
-    static String getDriversPrimarySource() {
+    public static String getDriversPrimarySource() {
         String sourcesString = DBeaverCore.getGlobalPreferenceStore().getString(DBeaverPreferences.UI_DRIVERS_SOURCES);
         int divPos = sourcesString.indexOf('|');
         return divPos == -1 ? sourcesString : sourcesString.substring(0, divPos);
@@ -1370,8 +1370,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         DBPDriverLibrary curLibrary;
 
         @Override
-        public void saxStartElement(SAXReader reader, String namespaceURI, String localName, Attributes atts)
-                throws XMLException {
+        public void saxStartElement(SAXReader reader, String namespaceURI, String localName, Attributes atts) {
             switch (localName) {
                 case RegistryConstants.TAG_PROVIDER: {
                     curProvider = null;
@@ -1491,7 +1490,10 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                 }
                 case RegistryConstants.TAG_CLIENT_HOME:
                     if (curDriver != null) {
-                        curDriver.addClientHomeId(atts.getValue(RegistryConstants.ATTR_ID));
+                        curDriver.addNativeClientLocation(
+                            new LocalNativeClientLocation(
+                                atts.getValue(RegistryConstants.ATTR_ID),
+                                atts.getValue(RegistryConstants.ATTR_PATH)));
                     }
                     break;
                 case RegistryConstants.TAG_PARAMETER: {
