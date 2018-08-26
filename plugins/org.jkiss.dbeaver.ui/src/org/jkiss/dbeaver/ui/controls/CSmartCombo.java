@@ -95,7 +95,9 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         this.text = new StyledText(this, SWT.SINGLE | SWT.READ_ONLY);
         this.text.setIndent(3);
         this.text.setCaret(null);
-        this.text.setLayoutData(new GridData(GridData.FILL_BOTH | GridData.VERTICAL_ALIGN_CENTER));
+        GridData gd = new GridData(GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_CENTER);
+        gd.heightHint = heightHint;
+        this.text.setLayoutData(gd);
 
         this.setCursor(getDisplay().getSystemCursor(SWT.CURSOR_ARROW));
 
@@ -104,7 +106,7 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
             arrowStyle |= SWT.FLAT;
         }
         this.arrow = new Button(this, arrowStyle);
-        GridData gd = new GridData(GridData.FILL_VERTICAL | GridData.HORIZONTAL_ALIGN_END | GridData.VERTICAL_ALIGN_CENTER);
+        gd = new GridData(GridData.FILL_VERTICAL | GridData.HORIZONTAL_ALIGN_END | GridData.VERTICAL_ALIGN_CENTER);
         gd.heightHint = heightHint;
         this.arrow.setLayoutData(gd);
 
