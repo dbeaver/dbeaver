@@ -59,15 +59,19 @@ public class QueryTransformerLimit implements DBCQueryTransformer {
     @Override
     public String transformQueryString(SQLQuery query) throws DBCException {
         String newQuery;
+        String testQuery = query.getText().toUpperCase().trim();
         boolean plainSelect = query.isPlainSelect();
         if (!plainSelect && query.getType() == SQLQueryType.UNKNOWN) {
             // Not parsed. Try to check with simple matcher
-            String testQuery = query.getText().toUpperCase().trim();
-            plainSelect = testQuery.startsWith("SELECT") &&
+            plainSelect = testQuery.startsWith("SELECT");
+        }
+        if (plainSelect) {
+            plainSelect =
                 !testQuery.contains("LIMIT") &&
                 !testQuery.contains("INTO") &&
                 !testQuery.contains("UPDATE") &&
-                !testQuery.contains("PROCEDURE");
+                !testQuery.contains("PROCEDURE") &&
+                !testQuery.contains("FETCH");
         }
         if (!plainSelect) {
             // Do not use limit if it is not a select or it already has LIMIT or it is SELECT INTO statement
