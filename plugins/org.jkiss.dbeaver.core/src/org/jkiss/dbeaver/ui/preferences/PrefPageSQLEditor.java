@@ -125,11 +125,11 @@ public class PrefPageSQLEditor extends TargetPrefPage
             UIUtils.installContentProposal(
                     scriptTitlePattern,
                     new TextContentAdapter(),
-                    new SimpleContentProposalProvider(
+                    new SimpleContentProposalProvider(new String[] {
                         GeneralUtils.variablePattern(SQLEditor.VAR_CONNECTION_NAME),
                         GeneralUtils.variablePattern(SQLEditor.VAR_DRIVER_NAME),
                         GeneralUtils.variablePattern(SQLEditor.VAR_FILE_NAME),
-                        GeneralUtils.variablePattern(SQLEditor.VAR_FILE_EXT)));
+                        GeneralUtils.variablePattern(SQLEditor.VAR_FILE_EXT)}));
             UIUtils.setContentProposalToolTip(scriptTitlePattern, "Output file name patterns",
                     SQLEditor.VAR_CONNECTION_NAME, SQLEditor.VAR_DRIVER_NAME, SQLEditor.VAR_FILE_NAME, SQLEditor.VAR_FILE_EXT);
         }
