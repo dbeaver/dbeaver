@@ -38,7 +38,7 @@ public class SecurityProviderUtils {
                 if (securityProvider == null) {
                     registerSecurityProvider(BC_SECURITY_PROVIDER_CLASS);
                     if (securityProvider == null) {
-                        log.info("BouncyCastle not registered, using the default JCE provider");
+                        log.debug("BouncyCastle not registered, using the default JCE provider");
                     }
                 }
             } finally {
