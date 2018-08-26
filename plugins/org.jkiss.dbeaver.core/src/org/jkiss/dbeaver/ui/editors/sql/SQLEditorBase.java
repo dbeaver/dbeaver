@@ -139,7 +139,11 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
     }
 
     protected String[] getKeyBindingContexts() {
-        return new String[]{TEXT_EDITOR_CONTEXT, SQLEditorContributions.SQL_EDITOR_CONTEXT};
+        return new String[]{
+            TEXT_EDITOR_CONTEXT,
+            SQLEditorContributions.SQL_EDITOR_CONTEXT,
+            SQLEditorContributions.SQL_EDITOR_SCRIPT_CONTEXT,
+            SQLEditorContributions.SQL_EDITOR_CONTROL_CONTEXT};
     }
 
     @Override

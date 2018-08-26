@@ -31,6 +31,8 @@ import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverUIConstants;
 import org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer;
 import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorContributions;
 
 /**
  * WorkbenchContextListener.
@@ -45,6 +47,7 @@ class WorkbenchContextListener implements IWindowListener, IPageListener, IPartL
     private static final String RESULTS_CONTEXT_ID = "org.jkiss.dbeaver.ui.context.resultset";
     private static final String PERSPECTIVE_CONTEXT_ID = "org.jkiss.dbeaver.ui.perspective";
 
+    private IContextActivation activationSQL;
     private IContextActivation activationResults;
     private CommandExecutionListener commandExecutionListener;
 
@@ -167,6 +170,13 @@ class WorkbenchContextListener implements IWindowListener, IPageListener, IPartL
         }
         try {
             contextService.deferUpdates(true);
+            if (part.getAdapter(SQLEditorBase.class) != null) {
+                if (activationSQL != null) {
+                    //log.debug("Double activation of SQL context");
+                    contextService.deactivateContext(activationSQL);
+                }
+                activationSQL = contextService.activateContext(SQLEditorContributions.SQL_EDITOR_CONTEXT);
+            }
             if (part.getAdapter(ResultSetViewer.class) != null || (
                 part instanceof EntityEditor && ((EntityEditor) part).getDatabaseObject() instanceof DBSDataContainer))
             {
@@ -196,6 +206,10 @@ class WorkbenchContextListener implements IWindowListener, IPageListener, IPartL
         }
         try {
             contextService.deferUpdates(true);
+            if (activationSQL != null) {
+                contextService.deactivateContext(activationSQL);
+                activationSQL = null;
+            }
             if (activationResults != null) {
                 contextService.deactivateContext(activationResults);
                 activationResults = null;
