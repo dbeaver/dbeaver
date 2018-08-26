@@ -50,7 +50,7 @@
                                         </items>
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey" label="%tree.references.node.name" icon="#references" description="Table references" virtual="true">
+                                <folder label="%tree.references.node.name" icon="#references" description="Table references" virtual="true">
                                     <items label="%tree.reference_key.node.name" path="referenceKey" property="references" icon="#reference" virtual="true">
                                         <items label="%tree.reference_key_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true" virtual="true">
                                         </items>
