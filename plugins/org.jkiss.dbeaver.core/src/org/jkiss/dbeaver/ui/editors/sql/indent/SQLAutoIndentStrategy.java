@@ -39,6 +39,12 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
     private Map<Integer, String> autoCompletionMap = new HashMap<>();
     private String[] delimiters;
 
+    private enum CommentType {
+    	Unknown,
+    	Block,
+    	EndOfLine
+    }
+
     /**
      * Creates a new SQL auto indent strategy for the given document partitioning.
      */
@@ -122,49 +128,82 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
         }
         StringBuilder result = new StringBuilder(sourceCode.length());
         char prevChar = (char)-1;
-        boolean inString = true;
-        for (int i = quoteStart + 1; i < quoteEnd; i++) {
+        char escapeChar = '\\';
+        boolean inString = false;
+        boolean inComment = false;
+        CommentType commentType = CommentType.Unknown; 
+        
+        for (int i = quoteStart; i < quoteEnd; i++) {
             final char ch = sourceCode.charAt(i);
-            char escapeChar = '\\';
-            if (prevChar == escapeChar && inString) {
-                switch (ch) {
-                    case 'n':
-                        if (!endsWithLF(result)) {
-                            result.append("\n");
-                        }
-                        break;
-                    case 'r':
-                        if (!endsWithLF(result)) {
-                            result.append("\r");
-                        }
-                        break;
-                    case 't':
-                        result.append("\t");
-                        break;
-                    default:
-                        result.append(ch);
-                        break;
-                }
-            } else {
-                switch (ch) {
-                    case '"':
-                        inString = !inString;
-                        break;
-                    default:
-                        if (ch == escapeChar) {
-                            break;
-                        }
-                        if (inString) {
-                            result.append(ch);
-                        } else if (ch == '\n' && result.length() > 0) {
-                            // Append linefeed even if it is outside of quotes
-                            // (but only if string in quotes doesn't end with linefeed - we don't need doubles)
-                            if (!endsWithLF(result)) {
-                                result.append(ch);
-                            }
-                        }
-                }
+            
+	        if (inString) {
+	        	if (prevChar == escapeChar) {
+		            switch (ch) {
+	                case 'n':
+	                    if (!endsWithLF(result)) {
+	                        result.append("\n");
+	                    }
+	                    break;
+	                case 'r':
+	                    if (!endsWithLF(result)) {
+	                        result.append("\r");
+	                    }
+	                    break;
+	                case 't':
+	                    result.append("\t");
+	                    break;
+	                default:
+	                    result.append(ch);
+	                    break;
+		            }
+	        	}
+	        	else {
+		            switch (ch) {
+	                case '"':
+	                    inString = false;
+	                    break;
+	                default:
+	                    if (ch == escapeChar) {
+	                        break;
+	                    }
+	                    if (inString) {
+	                        result.append(ch);
+	                    } else if (ch == '\n' && result.length() > 0) {
+	                        // Append linefeed even if it is outside of quotes
+	                        // (but only if string in quotes doesn't end with linefeed - we don't need doubles)
+	                        if (!endsWithLF(result)) {
+	                            result.append(ch);
+	                        }
+	                    }
+		            }
+		        }
+	        } 
+            else if (inComment) {
+        		if (commentType == CommentType.Unknown && prevChar == '/' && ch == '*') {
+        			commentType = CommentType.Block;
+        		}
+        		else if (commentType == CommentType.Unknown && prevChar == '/' && ch == '/') {
+        			commentType = CommentType.EndOfLine;
+        		}
+        		else if (commentType == CommentType.Block && prevChar == '*' && ch == '/' ) {
+    				inComment = false;
+        		}
+        		else if (commentType == CommentType.EndOfLine && ch == '\n') {
+    				inComment = false;
+        		}
+        	}
+            else {
+            	switch (ch) {
+            	case '/':
+            		inComment = true;
+            		commentType = CommentType.Unknown;
+            		break;
+            	case '"':
+            		inString = true;
+            		break;
+            	}
             }
+            
             prevChar = ch;
         }
 
