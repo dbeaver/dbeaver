@@ -83,9 +83,10 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
 
         int heightHint = 0;
         {
-            Text sampleText = new Text(this, SWT.BORDER);
+            Text sampleText = new Text(this, SWT.NONE);
+            sampleText.setText("X");
             borderTextSize = sampleText.computeSize(SWT.DEFAULT, SWT.DEFAULT);
-            heightHint = borderTextSize.y - sampleText.getBorderWidth() * 2;
+            heightHint = borderTextSize.y + 2;
             sampleText.dispose();
         }
 
