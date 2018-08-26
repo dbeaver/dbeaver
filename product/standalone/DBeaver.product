@@ -9,7 +9,7 @@
    <launcherArgs>
       <programArgs>-showsplash
       </programArgs>
-      <programArgsLin>
+      <programArgsLin>--launcher.GTK_version 2
       </programArgsLin>
       <programArgsSol>
       </programArgsSol>
