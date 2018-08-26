@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.qm.meta.QMMStatementExecuteInfo;
 import org.jkiss.dbeaver.model.qm.meta.QMMTransactionSavepointInfo;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.querylog.QueryLogViewer;
+import org.jkiss.utils.CommonUtils;
 
 public abstract class TransactionInfoDialog extends Dialog {
 
@@ -108,10 +109,10 @@ public abstract class TransactionInfoDialog extends Dialog {
             QMMObject object = event.getObject();
             if (object instanceof QMMStatementExecuteInfo) {
                 QMMStatementExecuteInfo exec = (QMMStatementExecuteInfo) object;
-                if (!showPrevious && exec.getSavepoint() != currentSP) {
+                if (!showPrevious && !CommonUtils.equalObjects(exec.getSavepoint(), currentSP)) {
                     return false;
                 }
-                if (exec.getStatement().getSession() != currentSession) {
+                if (!showAll && !CommonUtils.equalObjects(exec.getStatement().getSession(), currentSession)) {
                     return false;
                 }
                 DBCExecutionPurpose purpose = exec.getStatement().getPurpose();
