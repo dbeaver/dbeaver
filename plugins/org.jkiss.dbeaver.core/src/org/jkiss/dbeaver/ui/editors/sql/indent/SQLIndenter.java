@@ -137,11 +137,6 @@ public class SQLIndenter {
             if (nonWS < 0) {
                 return "";
             }
-            int indentLength = nonWS - lineOffset;
-            StringBuilder indent = createIndent();
-            if (indentLength > indent.length() && scanner.endsWithDelimiter(lineOffset, lineOffset + line.getLength())) {
-                nonWS -= indent.length();
-            }
 
             return document.get(lineOffset, nonWS - lineOffset);
         } catch (BadLocationException e) {
