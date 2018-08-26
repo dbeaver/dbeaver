@@ -106,14 +106,15 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
             UIUtils.installContentProposal(
                 fileNameText,
                 new TextContentAdapter(),
-                new SimpleContentProposalProvider(
+                new SimpleContentProposalProvider(new String[] {
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_DATASOURCE),
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_CATALOG),
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_SCHEMA),
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_TABLE),
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_TIMESTAMP),
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_DATE),
-                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_PROJECT)));
+                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_PROJECT)
+                }));
 
             {
                 UIUtils.createControlLabel(generalSettings, DTMessages.data_transfer_wizard_output_label_encoding);
@@ -185,12 +186,12 @@ public class StreamConsumerPageOutput extends ActiveWizardPage<DataTransferWizar
             UIUtils.installContentProposal(
                 execProcessText,
                 new TextContentAdapter(),
-                new SimpleContentProposalProvider(
+                new SimpleContentProposalProvider(new String[] {
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_TABLE),
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_TIMESTAMP),
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_DATE),
                     GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_PROJECT),
-                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_FILE)));
+                    GeneralUtils.variablePattern(StreamTransferConsumer.VARIABLE_FILE)}));
 
             showFinalMessageCheckbox = UIUtils.createCheckbox(resultsSettings, "Show finish message", null, getWizard().getSettings().isShowFinalMessage(), 4);
             showFinalMessageCheckbox.addSelectionListener(new SelectionAdapter() {
