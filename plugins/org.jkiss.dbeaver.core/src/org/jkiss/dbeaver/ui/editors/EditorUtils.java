@@ -293,9 +293,11 @@ public class EditorUtils {
 
                 @Override
                 public void focusGained(FocusEvent e) {
-                    if (activation == null) {
-                        activation = contextService.activateContext(contextId);
+                    if (activation != null) {
+                        contextService.deactivateContext(activation);
+                        activation = null;
                     }
+                    activation = contextService.activateContext(contextId);
                 }
 
                 @Override

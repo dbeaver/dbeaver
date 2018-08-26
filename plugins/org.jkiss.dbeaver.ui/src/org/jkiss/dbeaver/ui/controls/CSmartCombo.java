@@ -77,20 +77,23 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
         gridLayout.marginWidth = 0;
         gridLayout.marginTop = 0;
         gridLayout.marginBottom = 0;
-        gridLayout.horizontalSpacing = 3;
+        gridLayout.horizontalSpacing = 0;
         gridLayout.verticalSpacing = 0;
         this.setLayout(gridLayout);
 
+        int heightHint = 0;
         {
             Text sampleText = new Text(this, SWT.BORDER);
             borderTextSize = sampleText.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+            heightHint = borderTextSize.y - sampleText.getBorderWidth() * 2;
             sampleText.dispose();
         }
 
         this.imageLabel = new Label(this, SWT.NONE);
-        this.imageLabel.setLayoutData(new GridData(GridData.FILL_VERTICAL | GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING));
+        this.imageLabel.setLayoutData(new GridData(GridData.FILL_VERTICAL | GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_CENTER));
 
         this.text = new StyledText(this, SWT.SINGLE | SWT.READ_ONLY);
+        this.text.setIndent(3);
         this.text.setCaret(null);
         this.text.setLayoutData(new GridData(GridData.FILL_BOTH | GridData.VERTICAL_ALIGN_CENTER));
 
@@ -101,7 +104,9 @@ public class CSmartCombo<ITEM_TYPE> extends Composite {
             arrowStyle |= SWT.FLAT;
         }
         this.arrow = new Button(this, arrowStyle);
-        this.arrow.setLayoutData(new GridData(GridData.FILL_VERTICAL | GridData.HORIZONTAL_ALIGN_END | GridData.VERTICAL_ALIGN_BEGINNING));
+        GridData gd = new GridData(GridData.FILL_VERTICAL | GridData.HORIZONTAL_ALIGN_END | GridData.VERTICAL_ALIGN_CENTER);
+        gd.heightHint = heightHint;
+        this.arrow.setLayoutData(gd);
 
         setEnabled(true, true);
 

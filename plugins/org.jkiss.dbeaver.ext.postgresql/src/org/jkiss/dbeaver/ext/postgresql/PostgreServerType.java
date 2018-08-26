@@ -24,21 +24,27 @@ public enum PostgreServerType {
 
     POSTGRESQL("PostgreSQL"),
     GREENPLUM("Greenplum"),
-    REDSHIFT("Redshift", false),
+    REDSHIFT("Redshift", false, false, false, false),
     TIMESCALE("Timescale"),
     YELLOWBRICK("YellowBrick"),
     OTHER("Postgre");
 
     private String name;
     private boolean supportsOids;
+    private boolean supportsIndexes;
+    private boolean supportsInheritance;
+    private boolean supportsTriggers;
 
     PostgreServerType(String name) {
-        this(name, true);
+        this(name, true, true, true, true);
     }
 
-    PostgreServerType(String name, boolean supportsOids) {
+    PostgreServerType(String name, boolean supportsOids, boolean supportsIndexes, boolean supportsInheritance, boolean supportsTriggers) {
         this.name = name;
         this.supportsOids = supportsOids;
+        this.supportsIndexes = supportsIndexes;
+        this.supportsInheritance = supportsInheritance;
+        this.supportsTriggers = supportsTriggers;
     }
 
     public String getName() {
@@ -47,5 +53,17 @@ public enum PostgreServerType {
 
     public boolean supportsOids() {
         return supportsOids;
+    }
+
+    public boolean supportsIndexes() {
+        return supportsIndexes;
+    }
+
+    public boolean supportsInheritance() {
+        return supportsInheritance;
+    }
+
+    public boolean supportsTriggers() {
+        return supportsTriggers;
     }
 }

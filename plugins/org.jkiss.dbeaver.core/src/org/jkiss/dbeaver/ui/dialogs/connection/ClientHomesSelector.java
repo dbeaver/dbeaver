@@ -26,11 +26,10 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
-import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.model.connection.DBPClientHome;
-import org.jkiss.dbeaver.model.connection.DBPNativeClientLocationManager;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
+import org.jkiss.dbeaver.model.connection.DBPNativeClientLocationManager;
 import org.jkiss.dbeaver.ui.UIUtils;
 
 import java.util.ArrayList;
@@ -43,8 +42,6 @@ import java.util.Set;
  */
 public class ClientHomesSelector
 {
-    private static final Log log = Log.getLog(ClientHomesSelector.class);
-
     private Composite selectorPanel;
     private Combo homesCombo;
     //private Label versionLabel;
@@ -109,31 +106,38 @@ public class ClientHomesSelector
         this.homesCombo.removeAll();
         this.homeIds.clear();
 
-        DBPNativeClientLocationManager clientManager = driver.getClientManager();
-        if (clientManager != null) {
-            Set<String> homes = new LinkedHashSet<>(
-                clientManager.findNativeClientHomeIds());
-            homes.addAll(driver.getClientHomeIds());
+        Set<DBPNativeClientLocation> homes = new LinkedHashSet<>();
+        homes.addAll(driver.getNativeClientLocations());
 
-            for (String homeId : homes) {
-                DBPClientHome home = driver.getClientHome(homeId);
-                if (home != null) {
-                    homesCombo.add(home.getDisplayName());
-                    homeIds.add(home.getHomeId());
-                    if (currentHomeId != null && home.getHomeId().equals(currentHomeId)) {
-                        homesCombo.select(homesCombo.getItemCount() - 1);
-                    }
+        DBPNativeClientLocationManager clientManager = driver.getNativeClientManager();
+        if (clientManager != null) {
+            for (DBPNativeClientLocation location : clientManager.findLocalClientLocations()) {
+                if (!homes.contains(location)) {
+                    homes.add(location);
                 }
             }
-            this.homesCombo.add(CoreMessages.controls_client_home_selector_browse);
         }
+
+        for (DBPNativeClientLocation location : homes) {
+            homesCombo.add(location.getDisplayName());
+            homeIds.add(location.getName());
+            if (currentHomeId != null && location.getName().equals(currentHomeId)) {
+                homesCombo.select(homesCombo.getItemCount() - 1);
+            }
+        }
+        if (homesCombo.getItemCount() > 0 && homesCombo.getSelectionIndex() == -1) {
+            // Select first
+            homesCombo.select(0);
+        }
+        this.homesCombo.add(CoreMessages.controls_client_home_selector_browse);
+
         displayClientVersion();
     }
 
     private void displayClientVersion()
     {
 /*
-        DBPClientHome clientHome = currentHomeId == null ? null : driver.getNativeClientHome(currentHomeId);
+        DBPNativeClientLocation clientHome = currentHomeId == null ? null : driver.getNativeClientHome(currentHomeId);
         if (clientHome != null) {
             try {
                 // display client version

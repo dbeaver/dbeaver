@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.model.edit.DBERegistry;
 import org.jkiss.dbeaver.model.navigator.DBNModel;
 import org.jkiss.dbeaver.model.qm.QMController;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterRegistry;
 
 import java.io.File;
@@ -48,6 +49,9 @@ public interface DBPPlatform
 
     @NotNull
     DBNModel getNavigatorModel();
+
+    @NotNull
+    OSDescriptor getLocalSystem();
 
     @NotNull
     DBPProjectManager getProjectManager();

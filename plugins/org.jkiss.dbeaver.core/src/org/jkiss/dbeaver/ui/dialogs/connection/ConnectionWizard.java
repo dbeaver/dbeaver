@@ -16,12 +16,10 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
-import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.dialogs.MessageDialog;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.jface.wizard.IWizardPage;
@@ -38,6 +36,7 @@ import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
@@ -45,7 +44,6 @@ import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.jobs.ConnectJob;
 import org.jkiss.dbeaver.runtime.jobs.DisconnectJob;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
-import org.jkiss.dbeaver.ui.IDataSourceConnectionEditor;
 import org.jkiss.dbeaver.ui.IDataSourceConnectionTester;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -66,14 +64,13 @@ import java.util.Map;
 
 public abstract class ConnectionWizard extends Wizard implements INewWizard {
 
-    public static final String PROP_CONNECTION_TYPE = "connection-type";
+    static final String PROP_CONNECTION_TYPE = "connection-type";
 
     private static final Log log = Log.getLog(ConnectionWizard.class);
 
     // protected final IProject project;
     private final Map<DriverDescriptor, DataSourceDescriptor> infoMap = new HashMap<>();
     private final List<IPropertyChangeListener> propertyListeners = new ArrayList<>();
-    private boolean resized = false;
 
     protected ConnectionWizard()
     {
@@ -109,7 +106,10 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
                 DataSourceDescriptor.generateNewId(getSelectedDriver()),
                 getSelectedDriver(),
                 connectionInfo);
-            info.getConnectionConfiguration().setClientHomeId(driver.getDefaultClientHomeId());
+            DBPNativeClientLocation defaultClientLocation = driver.getDefaultClientLocation();
+            if (defaultClientLocation != null) {
+                info.getConnectionConfiguration().setClientHomeId(defaultClientLocation.getName());
+            }
             infoMap.put(driver, info);
         }
         return info;

@@ -25,13 +25,15 @@ import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.DBWorkbench;
-import org.jkiss.dbeaver.model.connection.DBPClientHome;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -62,7 +64,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
     private final String PROP_NAME_EXTRA_ARGS = "tools.wizard." + getClass().getSimpleName() + ".extraArgs";
 
     private final List<BASE_OBJECT> databaseObjects;
-    private DBPClientHome clientHome;
+    private DBPNativeClientLocation clientHome;
     private DBPDataSourceContainer dataSourceContainer;
     private DBPConnectionConfiguration connectionInfo;
     private String toolUserName;
@@ -127,7 +129,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
         return connectionInfo;
     }
 
-    public DBPClientHome getClientHome()
+    public DBPNativeClientLocation getClientHome()
     {
         return clientHome;
     }
@@ -166,7 +168,7 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
         }
     }
 
-    public DBPClientHome findNativeClientHome(String clientHomeId) {
+    public DBPNativeClientLocation findNativeClientHome(String clientHomeId) {
         return null;
     }
 
@@ -186,12 +188,36 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
                 getContainer().updateMessage();
                 return;
             }
-            clientHome = findNativeClientHome(clientHomeId);//MySQLDataSourceProvider.getServerHome(clientHomeId);
+            clientHome = DBUtils.findObject(dataSourceContainer.getDriver().getNativeClientLocations(), clientHomeId);
+            if (clientHome == null) {
+                clientHome = findNativeClientHome(clientHomeId);
+            }
             if (clientHome == null) {
                 currentPage.setErrorMessage(NLS.bind(CoreMessages.tools_wizard_message_client_home_not_found, clientHomeId));
                 getContainer().updateMessage();
             }
         }
+    }
+
+    private boolean validateClientFiles() {
+        try {
+            UIUtils.run(getContainer(), true, true, monitor -> {
+                try {
+                    clientHome.validateFilesPresence(monitor);
+                } catch (DBException e) {
+                    throw new InvocationTargetException(e);
+                }
+            });
+        } catch (InvocationTargetException e) {
+            DBUserInterface.getInstance().showError("Download native client file(s)", "Error downloading client file(s)", e.getTargetException());
+            ((WizardPage)getContainer().getCurrentPage()).setErrorMessage("Error downloading native client file(s)");
+            getContainer().updateMessage();
+            return false;
+        } catch (InterruptedException e) {
+            // ignore
+            return false;
+        }
+        return true;
     }
 
     @Override
@@ -203,6 +229,11 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
         if (getContainer().getCurrentPage() != logPage) {
             getContainer().showPage(logPage);
         }
+
+        if (!validateClientFiles()) {
+            return false;
+        }
+
         long startTime = System.currentTimeMillis();
         try {
             UIUtils.run(getContainer(), true, true, this);
