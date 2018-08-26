@@ -15,7 +15,7 @@
         <tycho-versions-version>0.26.0</tycho-versions-version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
-        <eclipse-p2-repo.url>http://download.eclipse.org/releases/photon/</eclipse-p2-repo.url>
+        <eclipse-p2-repo.url>http://download.eclipse.org/releases/oxygen/</eclipse-p2-repo.url>
         <local-p2-repo.url>https://dbeaver.io/eclipse-repo</local-p2-repo.url>
         <key.storage.path>/etc/</key.storage.path>
         <tsa/>
