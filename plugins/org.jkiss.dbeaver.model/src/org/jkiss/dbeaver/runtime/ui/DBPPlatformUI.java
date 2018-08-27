@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.jobs.Job;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.access.DBAAuthInfo;
 import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
@@ -77,6 +78,7 @@ public interface DBPPlatformUI {
     void openEntityEditor(DBSObject object);
     void openEntityEditor(DBNNode selectedNode, @Nullable String defaultPageId);
     void openSQLViewer(@Nullable DBCExecutionContext context, String title, @Nullable DBPImage image, String text);
+    void openConnectionEditor(DBPDataSourceContainer dataSourceContainer);
 
     // Process execution
     void executeProcess(DBRProcessDescriptor processDescriptor);

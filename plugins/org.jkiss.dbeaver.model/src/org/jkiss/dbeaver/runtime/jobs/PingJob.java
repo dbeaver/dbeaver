@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSInstance;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 
 import java.util.List;
 
@@ -56,7 +57,8 @@ public class PingJob extends AbstractJob
                 } catch (Exception e) {
                     log.debug("Context [" + dataSource.getName() + "::" + context.getContextName() + "] check failed: " + e.getMessage());
                     if (e instanceof DBException) {
-                        final List<InvalidateJob.ContextInvalidateResult> results = InvalidateJob.invalidateDataSource(monitor, dataSource, false);
+                        final List<InvalidateJob.ContextInvalidateResult> results = InvalidateJob.invalidateDataSource(monitor, dataSource, false,
+                            () -> DBUserInterface.getInstance().openConnectionEditor(dataSource.getContainer()));
                         log.debug("Connection invalidated: " + results);
                     }
                 }
