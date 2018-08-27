@@ -37,7 +37,7 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
     private static final Log log = Log.getLog(SSHImplementationJsch.class);
 
     private static transient JSch jsch;
-    private transient Session session;
+    private transient volatile Session session;
 
     @Override
     protected void setupTunnel(DBRProgressMonitor monitor, DBWHandlerConfiguration configuration, String dbHost, String sshHost, String aliveInterval, int sshPortNum, File privKeyFile, int connectTimeout, int dbPort, int localPort) throws DBException, IOException {
@@ -86,10 +86,12 @@ public class SSHImplementationJsch extends SSHImplementationAbstract {
     public void closeTunnel(DBRProgressMonitor monitor) throws DBException, IOException {
         if (session != null) {
             RuntimeUtils.runTask(monitor1 -> {
-                try {
-                    session.disconnect();
-                } catch (Exception e) {
-                    throw new InvocationTargetException(e);
+                if (session != null) {
+                    try {
+                        session.disconnect();
+                    } catch (Exception e) {
+                        throw new InvocationTargetException(e);
+                    }
                 }
             }, "Close SSH session", 1000);
             session = null;
