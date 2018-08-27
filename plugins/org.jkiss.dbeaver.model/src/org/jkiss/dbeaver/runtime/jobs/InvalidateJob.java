@@ -57,6 +57,7 @@ public class InvalidateJob extends DataSourceJob
 
     private long timeSpent;
     private List<ContextInvalidateResult> invalidateResults = new ArrayList<>();
+    private Runnable feedbackHandler;
 
     public InvalidateJob(
         DBPDataSource dataSource)
@@ -72,6 +73,14 @@ public class InvalidateJob extends DataSourceJob
         return timeSpent;
     }
 
+    public Runnable getFeedbackHandler() {
+        return feedbackHandler;
+    }
+
+    public void setFeedbackHandler(Runnable feedbackHandler) {
+        this.feedbackHandler = feedbackHandler;
+    }
+
     @Override
     protected IStatus run(DBRProgressMonitor monitor)
     {
@@ -79,12 +88,12 @@ public class InvalidateJob extends DataSourceJob
 
         // Disable disconnect on failure. It is the worst case anyway.
         // Not sure that we should force disconnect even here.
-        this.invalidateResults = invalidateDataSource(monitor, dataSource, false);
+        this.invalidateResults = invalidateDataSource(monitor, dataSource, false, feedbackHandler);
 
         return Status.OK_STATUS;
     }
 
-    public static List<ContextInvalidateResult> invalidateDataSource(DBRProgressMonitor monitor, DBPDataSource dataSource, boolean disconnectOnFailure) {
+    public static List<ContextInvalidateResult> invalidateDataSource(DBRProgressMonitor monitor, DBPDataSource dataSource, boolean disconnectOnFailure, Runnable feedback) {
         long timeSpent = 0;
         List<ContextInvalidateResult> invalidateResults = new ArrayList<>();
 
@@ -157,7 +166,8 @@ public class InvalidateJob extends DataSourceJob
                 dataSource,
                 DBeaverNotifications.NT_RECONNECT,
                 "Datasource invalidate failed",
-                DBPMessageType.ERROR);
+                DBPMessageType.ERROR,
+                feedback);
         } else {
             DBeaverNotifications.showNotification(
                 dataSource,

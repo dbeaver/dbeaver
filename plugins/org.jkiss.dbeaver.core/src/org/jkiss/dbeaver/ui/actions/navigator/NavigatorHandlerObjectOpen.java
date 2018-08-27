@@ -249,7 +249,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
         });
     }
 
-    private static void openConnectionEditor(IWorkbenchWindow workbenchWindow, DataSourceDescriptor dataSourceContainer) {
+    public static void openConnectionEditor(IWorkbenchWindow workbenchWindow, DataSourceDescriptor dataSourceContainer) {
         EditConnectionDialog dialog = new EditConnectionDialog(
             workbenchWindow,
             new EditConnectionWizard(dataSourceContainer));
