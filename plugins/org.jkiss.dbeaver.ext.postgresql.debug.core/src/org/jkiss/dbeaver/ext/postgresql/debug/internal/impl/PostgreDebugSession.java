@@ -380,7 +380,7 @@ public class PostgreDebugSession extends DBGJDBCSession {
     private void attachLocal(DBRProgressMonitor monitor, PostgreProcedure function, List<String> parameters) throws DBGException {
 
         try {
-            JDBCExecutionContext connection = (JDBCExecutionContext) controllerConnection.getInstance().openIsolatedContext(monitor, "Debug process session");
+            JDBCExecutionContext connection = (JDBCExecutionContext) controllerConnection.getOwnerInstance().openIsolatedContext(monitor, "Debug process session");
             log.debug("Attaching locally....");
             this.sessionInfo = getSessionDescriptor(monitor, connection);
 
