@@ -146,6 +146,9 @@ public class ProgressLoaderVisualizer<RESULT> implements ILoadVisualizer<RESULT>
             painListener = new PaintListener() {
                 @Override
                 public void paintControl(PaintEvent e) {
+                    if (cancelButton.isDisposed()) {
+                        return;
+                    }
                     Image image = DBeaverIcons.getImage(PROGRESS_IMAGES[drawCount % PROGRESS_IMAGES.length]);
                     Rectangle buttonBounds = cancelButton.getBounds();
                     Rectangle imageBounds = image.getBounds();
