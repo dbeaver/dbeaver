@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.StringContentStorage;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.resultset.panel.valueviewer.ValueViewerPanel;
 import org.jkiss.dbeaver.ui.data.IStreamValueEditor;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -167,9 +168,11 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor> imp
         monitor.beginTask("Load text", 1);
         try {
             monitor.subTask("Loading text value");
-            IEditorInput sqlInput = new ContentEditorInput(valueController, null, null, monitor);
-            editor.setInput(sqlInput);
-            applyEditorStyle();
+            final IEditorInput sqlInput = new ContentEditorInput(valueController, null, null, monitor);
+            UIUtils.syncExec(() -> {
+                editor.setInput(sqlInput);
+                applyEditorStyle();
+            });
         } catch (Exception e) {
             throw new DBException("Error loading text value", e);
         } finally {

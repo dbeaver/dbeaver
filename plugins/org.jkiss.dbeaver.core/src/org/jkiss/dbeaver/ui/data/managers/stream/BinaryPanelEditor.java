@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.model.preferences.DBPPreferenceListener.PreferenceChang
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.data.IStreamValueEditor;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.editors.binary.BinaryContent;
@@ -91,7 +92,8 @@ public class BinaryPanelEditor implements IStreamValueEditor<HexEditControl> {
             } else {
                 charset = DBValueFormatting.getDefaultBinaryFileEncoding(value.getDataSource());
             }
-            control.setContent(buffer.toByteArray(), charset);
+            String finalCharset = charset;
+            UIUtils.syncExec(() -> control.setContent(buffer.toByteArray(), finalCharset));
         } catch (IOException e) {
             throw new DBException("Error reading stream value", e);
         } finally {
