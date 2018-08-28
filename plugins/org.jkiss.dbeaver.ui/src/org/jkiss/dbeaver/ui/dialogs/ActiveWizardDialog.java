@@ -17,8 +17,6 @@
 package org.jkiss.dbeaver.ui.dialogs;
 
 import org.eclipse.jface.dialogs.IDialogSettings;
-import org.eclipse.jface.dialogs.IPageChangingListener;
-import org.eclipse.jface.dialogs.PageChangingEvent;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.wizard.IWizard;
 import org.eclipse.jface.wizard.IWizardPage;
@@ -28,11 +26,17 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.IWorkbenchWizard;
 import org.jkiss.dbeaver.ui.UIUtils;
 
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * ActiveWizardDialog
  */
 public class ActiveWizardDialog extends WizardDialog
 {
+
+    private Set<String> resizedShells = new HashSet<>();
+    private boolean adaptContainerSizeToPages = false;
 
     public ActiveWizardDialog(IWorkbenchWindow window, IWizard wizard)
     {
@@ -69,10 +73,17 @@ public class ActiveWizardDialog extends WizardDialog
         return UIUtils.getDialogSettings("DBeaver.ActiveWizardDialog." + getWizard().getClass().getSimpleName());
     }
 
+    public void setAdaptContainerSizeToPages(boolean adaptContainerSizeToPages) {
+        this.adaptContainerSizeToPages = adaptContainerSizeToPages;
+    }
+
     @Override
     public void showPage(IWizardPage page) {
         super.showPage(page);
-        UIUtils.resizeShell(getWizard().getContainer().getShell());
+        if (adaptContainerSizeToPages && !resizedShells.contains(page.getName())) {
+            UIUtils.resizeShell(getWizard().getContainer().getShell());
+            resizedShells.add(page.getName());
+        }
     }
 
 }
