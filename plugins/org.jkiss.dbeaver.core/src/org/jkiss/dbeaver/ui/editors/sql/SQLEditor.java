@@ -62,7 +62,10 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.ModelPreferences;
-import org.jkiss.dbeaver.core.*;
+import org.jkiss.dbeaver.core.CoreCommands;
+import org.jkiss.dbeaver.core.CoreFeatures;
+import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
@@ -309,10 +312,15 @@ public class SQLEditor extends SQLEditorBase implements
             final DBPDataSource dataSource = dataSourceContainer.getDataSource();
             if (dataSource == null) {
                 releaseExecutionContext();
-            } else if (curDataSource != dataSource) {
+            } else if (curDataSource != dataSource ||
+                (curDataSource.getContainer().getPreferenceStore().getBoolean(DBeaverPreferences.EDITOR_SEPARATE_CONNECTION) &&
+                executionContext != null &&
+                curDataSource.getDefaultInstance() != executionContext.getOwnerInstance()))
+            {
+                // Datasource was changed or instance was changed (PG)
                 releaseExecutionContext();
                 curDataSource = dataSource;
-                if (curDataSource.getContainer().getPreferenceStore().getBoolean(DBeaverPreferences.EDITOR_SEPARATE_CONNECTION)) {
+                if (dataSource.getContainer().getPreferenceStore().getBoolean(DBeaverPreferences.EDITOR_SEPARATE_CONNECTION)) {
                     final OpenContextJob job = new OpenContextJob(dataSource);
                     job.addJobChangeListener(new JobChangeAdapter() {
                         @Override
