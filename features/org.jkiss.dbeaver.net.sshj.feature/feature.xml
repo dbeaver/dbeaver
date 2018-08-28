@@ -2,7 +2,7 @@
 <feature
       id="org.jkiss.dbeaver.net.sshj.feature"
       label="%featureName"
-      version="1.0.12.qualifier"
+      version="1.0.13.qualifier"
       provider-name="%providerName">
 
    <description>

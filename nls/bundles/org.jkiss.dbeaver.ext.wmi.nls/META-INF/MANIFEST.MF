@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.wmi.nls
-Bundle-Version: 1.0.23.qualifier
-Bundle-Release-Date: 20180827
+Bundle-Version: 1.0.24.qualifier
+Bundle-Release-Date: 20180911
 Fragment-Host: org.jkiss.dbeaver.ext.wmi
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Vendor: JKISS
