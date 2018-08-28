@@ -339,7 +339,8 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider,
             DBDContent content = (DBDContent) value;
             DBDContentStorage storage = content.getContents(monitor);
             if (storage instanceof DBDContentStorageLocal) {
-                // Nothing to update - we user content's storage
+                // Nothing to update - we use content's storage
+                content.updateContents(monitor, storage);
                 contentDetached = true;
             } else if (storage instanceof DBDContentCached) {
                 // Create new storage and pass it to content
