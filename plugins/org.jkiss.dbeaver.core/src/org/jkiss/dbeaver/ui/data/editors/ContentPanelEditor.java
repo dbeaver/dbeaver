@@ -32,27 +32,27 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
-import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.model.data.DBDContent;
-import org.jkiss.dbeaver.model.data.DBDContentCached;
+import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.impl.data.StringContent;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
+import org.jkiss.dbeaver.model.runtime.load.AbstractLoadService;
+import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.LoadingJob;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.controls.ProgressLoaderVisualizer;
 import org.jkiss.dbeaver.ui.data.IStreamValueEditor;
 import org.jkiss.dbeaver.ui.data.IStreamValueManager;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.registry.StreamValueManagerDescriptor;
 import org.jkiss.dbeaver.ui.data.registry.ValueManagerRegistry;
 import org.jkiss.dbeaver.utils.MimeTypes;
-import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
@@ -91,7 +91,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
     {
         final Object content = valueController.getValue();
         if (streamEditor == null) {
-            valueController.showMessage("NULL content editor.", DBPMessageType.ERROR);
+            // Editor not yet initialized
             return;
         }
         if (isStringValue()) {
@@ -173,9 +173,15 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
                     DBUserInterface.getInstance().showError("No string editor", "Can't load string content managers", e);
                 }
             } else if (content instanceof DBDContent) {
-                detectStreamManager((DBDContent) content);
+                //UIUtils.createLabel(editPlaceholder, UIIcon.REFRESH);
+                runSreamManagerDetector((DBDContent) content, editPlaceholder);
+                return editPlaceholder;
             }
         }
+        return createStreamManagerControl(editPlaceholder);
+    }
+
+    private Control createStreamManagerControl(Composite editPlaceholder) {
         if (curStreamManager != null) {
             try {
                 streamEditor = curStreamManager.getInstance().createPanelEditor(valueController);
@@ -215,9 +221,13 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
         }
     }
 
-    private void detectStreamManager(final DBDContent content) {
-        StreamManagerDetectJob detectJob = new StreamManagerDetectJob(content);
-        RuntimeUtils.runTask(detectJob, "Detect stream editor", 5000);
+    private void runSreamManagerDetector(final DBDContent content, Composite editPlaceholder) {
+        StreamManagerDetectService loadingService = new StreamManagerDetectService(content);
+
+        LoadingJob.createService(
+            loadingService,
+            new StreamManagerDetectVisualizer(loadingService, editPlaceholder))
+            .schedule();
     }
 
     private void setStreamManager(StreamValueManagerDescriptor newManager) {
@@ -360,20 +370,33 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
         }
     }
 
-    private class StreamManagerDetectJob implements DBRRunnableWithProgress {
-        private final DBDContent content;
+    abstract class ContentLoaderService extends AbstractLoadService<DBDContent> {
 
-        StreamManagerDetectJob(DBDContent content) {
+        protected DBDContent content;
+
+        protected ContentLoaderService(DBDContent content) {
+            super("Load LOB value");
             this.content = content;
         }
 
         @Override
-        public void run(DBRProgressMonitor monitor) {
+        public Object getFamily() {
+            return valueController.getExecutionContext();
+        }
+
+    }
+
+    private class StreamManagerDetectService extends ContentLoaderService {
+
+        public StreamManagerDetectService(DBDContent content) {
+            super(content);
+        }
+
+        @Override
+        public DBDContent evaluate(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
             monitor.beginTask("Detect appropriate editor", 1);
             try {
-                if (content == null) {
-                    throw new DBException("Null content value");
-                }
+                monitor.subTask("Load LOB value");
                 streamManagers = ValueManagerRegistry.getInstance().getApplicableStreamManagers(monitor, valueController.getValueType(), content);
                 String savedManagerId = valueToManagerMap.get(makeValueId());
                 detectCurrentStreamManager(savedManagerId);
@@ -382,7 +405,37 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
             } finally {
                 monitor.done();
             }
+            return content;
+        }
+    }
+
+
+    private class StreamManagerDetectVisualizer extends ProgressLoaderVisualizer<DBDContent> {
+        private Composite editPlaceholder;
+        public StreamManagerDetectVisualizer(ContentLoaderService loadingService, Composite parent) {
+            super(loadingService, parent);
+            this.editPlaceholder = parent;
         }
 
+        @Override
+        public void completeLoading(DBDContent result) {
+            super.completeLoading(result);
+            super.visualizeLoading();
+            // Clear placeholder
+            for (Control child : this.editPlaceholder.getChildren()) {
+                child.dispose();
+            }
+            // Create and layout new editor
+            Control editorControl = createStreamManagerControl(this.editPlaceholder);
+            this.editPlaceholder.layout(true);
+            setControl(editorControl);
+            try {
+                primeEditorValue(result);
+            } catch (Exception e) {
+                valueController.showMessage(CommonUtils.notEmpty(e.getMessage()), DBPMessageType.ERROR);
+            }
+        }
     }
+
+
 }

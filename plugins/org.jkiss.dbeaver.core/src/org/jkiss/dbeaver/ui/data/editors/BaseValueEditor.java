@@ -55,16 +55,21 @@ public abstract class BaseValueEditor<T extends Control> implements IValueEditor
     }
 
     public void createControl() {
-        this.control = createControl(valueController.getEditPlaceholder());
-        if (this.control != null) {
-            initInlineControl(this.control);
-        }
+        T control = createControl(valueController.getEditPlaceholder());
+        setControl(control);
     }
 
     @Override
     public Control getControl()
     {
         return control;
+    }
+
+    public void setControl(T control) {
+        this.control = control;
+        if (this.control != null && control != valueController.getEditPlaceholder()) {
+            initInlineControl(this.control);
+        }
     }
 
     @Override
