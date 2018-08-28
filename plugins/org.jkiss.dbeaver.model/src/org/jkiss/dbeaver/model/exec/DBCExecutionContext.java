@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.DBPCloseableObject;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSInstance;
 
 /**
  * Execution context.
@@ -54,6 +55,8 @@ public interface DBCExecutionContext extends DBPObject,DBPCloseableObject
      */
     @NotNull
     DBPDataSource getDataSource();
+
+    DBSInstance getOwnerInstance();
 
     /**
      * Checks this context is really connected to remote database.
