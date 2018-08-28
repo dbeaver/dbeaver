@@ -35,6 +35,7 @@ public class CreateConnectionDialog extends ActiveWizardDialog
     public CreateConnectionDialog(IWorkbenchWindow window, ConnectionWizard wizard)
     {
         super(window, wizard);
+        setAdaptContainerSizeToPages(true);
     }
 
     @Override
