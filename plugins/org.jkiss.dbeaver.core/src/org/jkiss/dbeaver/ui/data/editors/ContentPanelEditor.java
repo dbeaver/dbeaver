@@ -89,6 +89,11 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
     @Override
     public void primeEditorValue(@Nullable final Object value) throws DBException
     {
+        primeEditorValue(value, true);
+    }
+
+    protected void primeEditorValue(@Nullable final Object value, boolean loadInService) throws DBException
+    {
         final Object content = valueController.getValue();
         if (streamEditor == null) {
             // Editor not yet initialized
@@ -103,26 +108,18 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
                 new StringContent(
                     dataSource, (String) content));
         } else if (content instanceof DBDContent) {
-            DBRRunnableWithProgress runnable = monitor -> {
-                try {
-                    streamEditor.primeEditorValue(monitor, control, (DBDContent) content);
-                } catch (Throwable e) {
-                    log.debug(e);
-                    valueController.showMessage(e.getMessage(), DBPMessageType.ERROR);
-                }
-            };
-            if (content instanceof DBDContentCached) {
-                try {
-                    runnable.run(new VoidProgressMonitor());
-                } catch (InvocationTargetException e) {
-                    log.debug(e);
-                    valueController.showMessage(e.getMessage(), DBPMessageType.ERROR);
-                } catch (InterruptedException e) {
-                    // ignore
-                }
+            if (loadInService) {
+                StreamValueLoadService loadingService = new StreamValueLoadService((DBDContent) content);
+
+                Composite ph = control instanceof Composite ? (Composite) control : valueController.getEditPlaceholder();
+                LoadingJob.createService(
+                    loadingService,
+                    new StreamValueLoadVisualizer(loadingService, ph))
+                    .schedule();
             } else {
-                UIUtils.runInUI(valueController.getValueSite().getWorkbenchWindow(), runnable);
+                streamEditor.primeEditorValue(new VoidProgressMonitor(), control, (DBDContent) content);
             }
+
         } else if (content == null) {
             valueController.showMessage("NULL content value. Must be DBDContent.", DBPMessageType.ERROR);
         } else {
@@ -383,7 +380,20 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
         public Object getFamily() {
             return valueController.getExecutionContext();
         }
+    }
 
+    private class ContentLoadVisualizer extends ProgressLoaderVisualizer<DBDContent> {
+        protected Composite editPlaceholder;
+        public ContentLoadVisualizer(ContentLoaderService loadingService, Composite parent) {
+            super(loadingService, parent);
+            this.editPlaceholder = parent;
+        }
+
+        @Override
+        public void completeLoading(DBDContent result) {
+            super.completeLoading(result);
+            super.visualizeLoading();
+        }
     }
 
     private class StreamManagerDetectService extends ContentLoaderService {
@@ -410,17 +420,14 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
     }
 
 
-    private class StreamManagerDetectVisualizer extends ProgressLoaderVisualizer<DBDContent> {
-        private Composite editPlaceholder;
-        public StreamManagerDetectVisualizer(ContentLoaderService loadingService, Composite parent) {
+    private class StreamManagerDetectVisualizer extends ContentLoadVisualizer {
+        public StreamManagerDetectVisualizer(StreamManagerDetectService loadingService, Composite parent) {
             super(loadingService, parent);
-            this.editPlaceholder = parent;
         }
 
         @Override
         public void completeLoading(DBDContent result) {
             super.completeLoading(result);
-            super.visualizeLoading();
             // Clear placeholder
             for (Control child : this.editPlaceholder.getChildren()) {
                 child.dispose();
@@ -430,12 +437,45 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
             this.editPlaceholder.layout(true);
             setControl(editorControl);
             try {
-                primeEditorValue(result);
+                primeEditorValue(result, false);
             } catch (Exception e) {
                 valueController.showMessage(CommonUtils.notEmpty(e.getMessage()), DBPMessageType.ERROR);
             }
         }
     }
 
+
+    private class StreamValueLoadService extends ContentLoaderService {
+
+        public StreamValueLoadService(DBDContent content) {
+            super(content);
+        }
+
+        @Override
+        public DBDContent evaluate(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+            monitor.beginTask("Detect appropriate editor", 1);
+            try {
+                monitor.subTask("Prime LOB value");
+                streamEditor.primeEditorValue(monitor, control, content);
+            } catch (Exception e) {
+                valueController.showMessage(e.getMessage(), DBPMessageType.ERROR);
+            } finally {
+                monitor.done();
+            }
+            return content;
+        }
+    }
+
+
+    private class StreamValueLoadVisualizer extends ContentLoadVisualizer {
+        public StreamValueLoadVisualizer(StreamValueLoadService loadingService, Composite parent) {
+            super(loadingService, parent);
+        }
+
+        @Override
+        public void completeLoading(DBDContent result) {
+            super.completeLoading(result);
+        }
+    }
 
 }
