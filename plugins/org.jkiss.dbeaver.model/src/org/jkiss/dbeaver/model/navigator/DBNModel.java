@@ -142,9 +142,8 @@ public class DBNModel implements IResourceChangeListener {
         if (object instanceof DBNDatabaseNode) {
             return (DBNDatabaseNode)object;
         }
-        if (object instanceof DBPDataSource) {
-            object = ((DBPDataSource) object).getContainer();
-        }
+        object = DBUtils.getPublicObjectContainer(object);
+
         Object obj;
         synchronized (nodeMap) {
             obj = nodeMap.get(object);

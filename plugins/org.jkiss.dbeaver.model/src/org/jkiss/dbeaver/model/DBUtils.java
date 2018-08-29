@@ -513,10 +513,12 @@ public final class DBUtils {
         int depth = 0;
         final DBSObject root = includeSelf ? object : object.getParentObject();
         for (DBSObject obj = root; obj != null; obj = obj.getParentObject()) {
+            obj = getPublicObjectContainer(obj);
             depth++;
         }
         DBSObject[] path = new DBSObject[depth];
         for (DBSObject obj = root; obj != null; obj = obj.getParentObject()) {
+            obj = getPublicObjectContainer(obj);
             path[depth-- - 1] = obj;
         }
         return path;
@@ -1177,6 +1179,18 @@ public final class DBUtils {
     {
         if (object instanceof DBPDataSourceContainer) {
             return ((DBPDataSourceContainer) object).getDataSource();
+        } else {
+            return object;
+        }
+    }
+
+    /**
+     * Returns DBPDataSourceContainer fro DBPDataSource or object itself otherwise
+     */
+    public static DBSObject getPublicObjectContainer(@NotNull DBSObject object)
+    {
+        if (object instanceof DBPDataSource) {
+            return ((DBPDataSource) object).getContainer();
         } else {
             return object;
         }
