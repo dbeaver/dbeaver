@@ -17,6 +17,7 @@
  */
 package org.jkiss.dbeaver.ext.mockdata;
 
+import org.eclipse.emf.common.util.CommonUtil;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
@@ -228,7 +229,12 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
                         return textCellEditor;
                     } else {
                         for (String generatorId : attributeGenerators.getGenerators()) {
-                            generators.add(mockDataSettings.getGeneratorDescriptor(generatorId).getLabel());
+                            if (!CommonUtils.isEmpty(generatorId)) {
+                                MockGeneratorDescriptor generatorDescriptor = mockDataSettings.getGeneratorDescriptor(generatorId);
+                                if (generatorDescriptor != null) {
+                                    generators.add(generatorDescriptor.getLabel());
+                                }
+                            }
                         }
 
                         CustomComboBoxCellEditor customComboBoxCellEditor = new CustomComboBoxCellEditor(
