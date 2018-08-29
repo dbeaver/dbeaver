@@ -17,7 +17,6 @@
  */
 package org.jkiss.dbeaver.ext.mockdata;
 
-import org.eclipse.emf.common.util.CommonUtil;
 import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
