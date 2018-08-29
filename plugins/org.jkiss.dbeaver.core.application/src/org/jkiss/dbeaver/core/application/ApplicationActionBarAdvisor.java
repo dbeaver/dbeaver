@@ -226,13 +226,13 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             helpMenu.add(ActionUtils.makeAction(aboutAction, null, null, CoreMessages.actions_menu_about, null, null));
             helpMenu.add(showHelpAction);
             helpMenu.add(new Separator());
+            helpMenu.add(ActionUtils.makeCommandContribution(getActionBarConfigurer().getWindowConfigurer().getWindow(), "org.eclipse.ui.help.installationDialog"));
             if (showAltHelp) {
                 //helpMenu.add(searchHelpAction);
                 //helpMenu.add(dynamicHelpAction);
                 helpMenu.add(ActionUtils.makeCommandContribution(getActionBarConfigurer().getWindowConfigurer().getWindow(), IWorkbenchCommandConstants.WINDOW_SHOW_KEY_ASSIST, CoreMessages.action_menu_showKeyAssist, null));
                 helpMenu.add(new Separator());
-                helpMenu.add(ActionUtils.makeCommandContribution(getActionBarConfigurer().getWindowConfigurer().getWindow(), "org.eclipse.equinox.p2.ui.sdk.install", CoreMessages.action_menu_installNewSoftware, null));
-                helpMenu.add(ActionUtils.makeCommandContribution(getActionBarConfigurer().getWindowConfigurer().getWindow(), "org.eclipse.ui.help.installationDialog", CoreMessages.action_menu_installInfo, null));
+                helpMenu.add(ActionUtils.makeCommandContribution(getActionBarConfigurer().getWindowConfigurer().getWindow(), "org.eclipse.equinox.p2.ui.sdk.install"));
 
                 helpMenu.add(new Separator());
                 helpMenu.add(checkUpdatesAction);

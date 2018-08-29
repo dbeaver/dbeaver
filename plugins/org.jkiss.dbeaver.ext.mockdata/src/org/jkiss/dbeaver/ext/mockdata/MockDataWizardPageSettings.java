@@ -228,7 +228,12 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
                         return textCellEditor;
                     } else {
                         for (String generatorId : attributeGenerators.getGenerators()) {
-                            generators.add(mockDataSettings.getGeneratorDescriptor(generatorId).getLabel());
+                            if (!CommonUtils.isEmpty(generatorId)) {
+                                MockGeneratorDescriptor generatorDescriptor = mockDataSettings.getGeneratorDescriptor(generatorId);
+                                if (generatorDescriptor != null) {
+                                    generators.add(generatorDescriptor.getLabel());
+                                }
+                            }
                         }
 
                         CustomComboBoxCellEditor customComboBoxCellEditor = new CustomComboBoxCellEditor(

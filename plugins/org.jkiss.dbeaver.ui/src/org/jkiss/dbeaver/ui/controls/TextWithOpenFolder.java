@@ -16,32 +16,16 @@
  */
 package org.jkiss.dbeaver.ui.controls;
 
-import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.DirectoryDialog;
 
 /**
  * TextWithOpenFolder
  */
-public class TextWithOpenFolder extends TextWithOpen
+public class TextWithOpenFolder extends TextWithOpenFile
 {
-    private String title;
-
     public TextWithOpenFolder(Composite parent, String title) {
-        super(parent);
-        this.title = title;
-    }
-
-    protected void openBrowser() {
-        DirectoryDialog dialog = new DirectoryDialog(getShell(), SWT.NONE);
-        if (title != null) {
-            dialog.setText(title);
-        }
-        dialog.setFilterPath(getText());
-        String selected = dialog.open();
-        if (selected != null) {
-            setText(selected);
-        }
+        super(parent, title, new String[] { "*" });
+        setOpenFolder(true);
     }
 
 }
