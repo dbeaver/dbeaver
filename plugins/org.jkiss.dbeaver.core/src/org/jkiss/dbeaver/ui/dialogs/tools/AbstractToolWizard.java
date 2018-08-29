@@ -200,6 +200,9 @@ public abstract class AbstractToolWizard<BASE_OBJECT extends DBSObject, PROCESS_
     }
 
     private boolean validateClientFiles() {
+        if (!nativeClientHomeRequired || clientHome == null) {
+            return true;
+        }
         try {
             UIUtils.run(getContainer(), true, true, monitor -> {
                 try {
