@@ -25,6 +25,7 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.core.DBeaverUI;
 import org.jkiss.dbeaver.data.office.export.DataExporterXLSX;
+import org.jkiss.dbeaver.model.data.DBDDataFilter;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
@@ -87,7 +88,8 @@ public class OpenSpreadsheetHandler extends AbstractHandler
                     Map<Object, Object> properties = DataExporterXLSX.getDefaultProperties();
                     consumer.initTransfer(dataContainer, settings, true, exporter, properties);
 
-                    DatabaseTransferProducer producer = new DatabaseTransferProducer(dataContainer);
+                    DBDDataFilter dataFilter = resultSet.getModel().getDataFilter();
+                    DatabaseTransferProducer producer = new DatabaseTransferProducer(dataContainer, dataFilter);
                     DatabaseProducerSettings producerSettings = new DatabaseProducerSettings();
                     producerSettings.setExtractType(DatabaseProducerSettings.ExtractType.SINGLE_QUERY);
                     producerSettings.setQueryRowCount(false);
