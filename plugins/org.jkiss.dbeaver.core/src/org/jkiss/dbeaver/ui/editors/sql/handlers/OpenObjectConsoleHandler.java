@@ -36,6 +36,7 @@ import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.generator.GenerateSQLContributor;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -70,7 +71,7 @@ public class OpenObjectConsoleHandler extends AbstractHandler {
     protected void openConsole(IWorkbenchWindow workbenchWindow, DBRRunnableWithResult<String> generator,
                                DBPDataSourceContainer ds, String title, boolean doRun) {
         UIUtils.runInUI(workbenchWindow, generator);
-        String sql = generator.getResult();
+        String sql = CommonUtils.notEmpty(generator.getResult());
         SQLEditor editor = OpenHandler.openSQLConsole(workbenchWindow, ds, title, sql);
         if (editor != null) {
             AbstractJob execJob = new AbstractJob("Execute SQL in console") {
