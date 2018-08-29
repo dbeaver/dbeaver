@@ -1180,7 +1180,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                     if (pos.line < 0) {
                         if (pos.position >= 0) {
                             // Only position
-                            getSelectionProvider().setSelection(new TextSelection(queryStartOffset + pos.position, 1));
+                            getSelectionProvider().setSelection(new TextSelection(queryStartOffset + pos.position, 0));
                             scrolled = true;
                         }
                     } else {
