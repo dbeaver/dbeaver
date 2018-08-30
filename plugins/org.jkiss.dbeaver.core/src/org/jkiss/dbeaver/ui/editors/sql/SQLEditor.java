@@ -86,6 +86,7 @@ import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectSelector;
+import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryJob;
 import org.jkiss.dbeaver.runtime.sql.SQLQueryListener;
 import org.jkiss.dbeaver.runtime.sql.SQLResultsConsumer;
@@ -459,7 +460,7 @@ public class SQLEditor extends SQLEditorBase implements
     public boolean isDirty()
     {
         for (QueryProcessor queryProcessor : queryProcessors) {
-            if (queryProcessor.isDirty()) {
+            if (queryProcessor.isDirty() || queryProcessor.curJobRunning.get() > 0) {
                 return true;
             }
         }
@@ -1775,11 +1776,15 @@ public class SQLEditor extends SQLEditorBase implements
         int jobsRunning = getTotalQueryRunning();
         if (jobsRunning > 0) {
             log.warn("There are " + jobsRunning + " SQL job(s) still running in the editor");
-//            MessageBox messageBox = new MessageBox(getSite().getShell(), SWT.ICON_WARNING | SWT.OK);
-//            messageBox.setMessage(CoreMessages.editors_sql_save_on_close_message);
-//            messageBox.setText(CoreMessages.editors_sql_save_on_close_text);
-//            messageBox.open();
-//            return ISaveablePart2.CANCEL;
+
+            if (ConfirmationDialog.showConfirmDialog(
+                null,
+                DBeaverPreferences.CONFIRM_RUNNING_QUERY_CLOSE,
+                ConfirmationDialog.QUESTION,
+                jobsRunning) != IDialogConstants.YES_ID)
+            {
+                return ISaveablePart2.CANCEL;
+            }
         }
 
         for (QueryProcessor queryProcessor : queryProcessors) {
@@ -1796,9 +1801,20 @@ public class SQLEditor extends SQLEditorBase implements
             return ISaveablePart2.CANCEL;
         }
 
+        // That's fine
         if (isNonPersistentEditor()) {
             return ISaveablePart2.NO;
         }
+
+        // Cancel running jobs (if any) and close results tabs
+        for (QueryProcessor queryProcessor : queryProcessors) {
+            queryProcessor.cancelJob();
+            // FIXME: it is a hack (to avoid asking "Save script?" because editor is marked as dirty while queries are running)
+            // FIXME: make it better
+            queryProcessor.curJobRunning.set(0);
+        }
+        updateDirtyFlag();
+
         if (getActivePreferenceStore().getBoolean(SQLPreferenceConstants.AUTO_SAVE_ON_CLOSE)) {
             return ISaveablePart2.YES;
         }
@@ -2013,6 +2029,21 @@ public class SQLEditor extends SQLEditorBase implements
             }
         }
 
+        public void cancelJob() {
+            for (QueryResultsContainer rc : resultContainers) {
+                DataSourceJob dataReadJob = rc.viewer.getDataReadJob();
+                if (dataReadJob != null && !dataReadJob.isFinished()) {
+                    dataReadJob.cancel();
+                }
+            }
+            final SQLQueryJob job = curJob;
+            if (job != null) {
+                if (job.getState() == Job.RUNNING) {
+                    job.cancel();
+                }
+            }
+        }
+
         void processQueries(final List<SQLScriptElement> queries, final boolean fetchResults, boolean export, boolean closeTabOnError, SQLQueryListener queryListener)
         {
             if (queries.isEmpty()) {
@@ -2161,7 +2192,6 @@ public class SQLEditor extends SQLEditorBase implements
             ResultSetViewer rsv = resultsProvider.getResultSetController();
             return rsv == null ? null : rsv.getDataReceiver();
         }
-
     }
 
     public class QueryResultsContainer implements DBSDataContainer, IResultSetContainer, IResultSetListener, IDataSourceContainerProvider, SQLQueryContainer {
@@ -2556,8 +2586,10 @@ public class SQLEditor extends SQLEditorBase implements
             try {
                 boolean isInExecute = getTotalQueryRunning() > 0;
                 if (!isInExecute) {
-                    UIUtils.asyncExec(() ->
-                        setTitleImage(DBeaverIcons.getImage(UIIcon.SQL_SCRIPT_EXECUTE)));
+                    UIUtils.asyncExec(() -> {
+                        setTitleImage(DBeaverIcons.getImage(UIIcon.SQL_SCRIPT_EXECUTE));
+                        updateDirtyFlag();
+                    });
                 }
                 queryProcessor.curJobRunning.incrementAndGet();
                 synchronized (runningQueries) {
@@ -2589,8 +2621,10 @@ public class SQLEditor extends SQLEditorBase implements
                 }
                 queryProcessor.curJobRunning.decrementAndGet();
                 if (getTotalQueryRunning() <= 0) {
-                    UIUtils.asyncExec(() ->
-                        setTitleImage(editorImage));
+                    UIUtils.asyncExec(() -> {
+                        setTitleImage(editorImage);
+                        updateDirtyFlag();
+                    });
                 }
 
                 if (isDisposed()) {

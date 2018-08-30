@@ -69,6 +69,7 @@ import org.jkiss.dbeaver.model.runtime.load.ILoadService;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.virtual.*;
+import org.jkiss.dbeaver.runtime.jobs.DataSourceJob;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.autorefresh.AutoRefreshControl;
@@ -1657,7 +1658,10 @@ public class ResultSetViewer extends Viewer
         return dataPumpJob != null;
     }
 
-    ///////////////////////////////////////////////////////
+    public DataSourceJob getDataReadJob() {
+        return dataPumpJob;
+    }
+///////////////////////////////////////////////////////
     // Context menu & filters
 
     @NotNull
