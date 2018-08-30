@@ -145,7 +145,13 @@ public class SQLReconcilingStrategy implements IReconcilingStrategy, IReconcilin
         if (annotationModel == null) {
             return;
         }
-        List<SQLScriptElement> queries = editor.extractScriptQueries(regionOffset, document.getLength() - regionOffset, false, true, false);
+        List<SQLScriptElement> queries;
+        try {
+            queries = editor.extractScriptQueries(regionOffset, document.getLength() - regionOffset, false, true, false);
+        } catch (Exception e) {
+            log.error("Error parsing script queries", e);
+            return;
+        }
 
         {
             List<SQLScriptPosition> removedPositions = new ArrayList<>();
