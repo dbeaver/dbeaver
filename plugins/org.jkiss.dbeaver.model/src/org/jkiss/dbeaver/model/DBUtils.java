@@ -1445,6 +1445,24 @@ public final class DBUtils {
         return new DBSObject[0];
     }
 
+    public static DBSObjectContainer getSchemaContainer(DBSObjectContainer root) {
+        DBSObjectContainer schemaContainer = root;
+        if (root instanceof DBSObjectSelector) {
+            DBSObject defaultObject = ((DBSObjectSelector) root).getDefaultObject();
+            if (defaultObject instanceof DBSCatalog) {
+                try {
+                    Class<? extends DBSObject> childType = ((DBSCatalog) defaultObject).getChildType(new VoidProgressMonitor());
+                    if (childType != null && DBSObjectContainer.class.isAssignableFrom(childType)) {
+                        schemaContainer = (DBSObjectContainer) defaultObject;
+                    }
+                } catch (DBException e) {
+                    log.debug(e);
+                }
+            }
+        }
+        return schemaContainer;
+    }
+
     public static boolean isHiddenObject(Object object) {
         return object instanceof DBPHiddenObject && ((DBPHiddenObject) object).isHidden();
     }
