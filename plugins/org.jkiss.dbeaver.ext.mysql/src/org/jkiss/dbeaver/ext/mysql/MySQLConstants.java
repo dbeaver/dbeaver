@@ -37,6 +37,7 @@ public class MySQLConstants {
 
     public static final String PROP_SERVER_TIMEZONE = DBConstants.INTERNAL_PROP_PREFIX + "serverTimezone@";
 
+    public static final String PROP_ZERO_DATETIME_BEHAVIOR = "zeroDateTimeBehavior";
     public static final String PROP_REQUIRE_SSL = "ssl.require";
     public static final String PROP_VERIFY_SERVER_SERT = "ssl.verify.server";
     public static final String PROP_SSL_CIPHER_SUITES = "ssl.cipher.suites";

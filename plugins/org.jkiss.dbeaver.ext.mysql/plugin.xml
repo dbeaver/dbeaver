@@ -154,7 +154,6 @@
                     <file type="license" path="drivers/mysql/LICENSE.txt" bundle="drivers.mysql"/>
                     <file type="jar" path="drivers/mysql/mysql-connector-java.jar" bundle="drivers.mysql"/>
                     <property name="connectTimeout" value="20000"/>
-                    <property name="zeroDateTimeBehavior" value="convertToNull"/>
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                 </driver>
                 <driver
@@ -171,7 +170,6 @@
                     <file type="jar" path="drivers/mysql/mysql-connector-java-8.jar" bundle="drivers.mysql"/>
                     <file type="jar" path="drivers/mysql/protobuf-java.jar" bundle="drivers.mysql"/>
                     <property name="connectTimeout" value="20000"/>
-                    <property name="zeroDateTimeBehavior" value="CONVERT_TO_NULL"/>
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                 </driver>
                 <driver

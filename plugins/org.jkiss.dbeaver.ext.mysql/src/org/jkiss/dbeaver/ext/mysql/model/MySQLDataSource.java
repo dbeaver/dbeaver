@@ -58,6 +58,7 @@ import org.jkiss.utils.IOUtils;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.sql.Connection;
+import java.sql.Driver;
 import java.sql.SQLException;
 import java.util.*;
 import java.util.regex.Matcher;
@@ -107,6 +108,25 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
         String serverTZ = connectionInfo.getProviderProperty(MySQLConstants.PROP_SERVER_TIMEZONE);
         if (!CommonUtils.isEmpty(serverTZ)) {
             props.put("serverTimezone", serverTZ);
+        }
+
+        if (!isMariaDB()) {
+            // Hacking different MySQL drivers zeroDateTimeBehavior property (#4103)
+            String zeroDateTimeBehavior = connectionInfo.getProperty(MySQLConstants.PROP_ZERO_DATETIME_BEHAVIOR);
+            if (zeroDateTimeBehavior == null) {
+                try {
+                    Driver driverInstance = (Driver) driver.getDriverInstance(monitor);
+                    if (driverInstance != null) {
+                        if (driverInstance.getMajorVersion() >= 8) {
+                            props.put(MySQLConstants.PROP_ZERO_DATETIME_BEHAVIOR, "CONVERT_TO_NULL");
+                        } else {
+                            props.put(MySQLConstants.PROP_ZERO_DATETIME_BEHAVIOR, "convertToNull");
+                        }
+                    }
+                } catch (Exception e) {
+                    log.debug("Error setting MySQL " + MySQLConstants.PROP_ZERO_DATETIME_BEHAVIOR + " property default");
+                }
+            }
         }
 
         return props;
