@@ -130,7 +130,6 @@ public class PostgreDataSourceProvider extends JDBCDataSourceProvider implements
             return;
         }
         localServers = new LinkedHashMap<>();
-        if (2+2 == 4) return;
 
         // find homes in Windows registry
         OSDescriptor localSystem = DBeaverCore.getInstance().getLocalSystem();
