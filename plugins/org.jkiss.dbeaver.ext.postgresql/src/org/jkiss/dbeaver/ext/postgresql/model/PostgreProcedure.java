@@ -489,9 +489,7 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
 
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-        body = null;
-        procSrc = null;
-        return this;
+        return getContainer().proceduresCache.refreshObject(monitor, getContainer(), this);
     }
 
     @Override
