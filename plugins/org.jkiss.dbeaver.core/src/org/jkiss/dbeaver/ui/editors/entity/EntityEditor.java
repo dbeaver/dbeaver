@@ -297,6 +297,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
             log.warn("Null command context");
             return true;
         }
+        boolean isNewObject = getDatabaseObject() == null || !getDatabaseObject().isPersisted();
         try {
             commandContext.saveChanges(monitor, options);
         } catch (DBException e) {
@@ -319,7 +320,8 @@ public class EntityEditor extends MultiPageDatabaseEditor
             try {
                 UIUtils.runInProgressService(monitor1 -> {
                     try {
-                        treeNode.refreshNode(monitor1, DBNEvent.FORCE_REFRESH);
+                        treeNode.refreshNode(monitor1,
+                            isNewObject ? DBNEvent.FORCE_REFRESH : DBNEvent.UPDATE_ON_SAVE);
                     } catch (DBException e) {
                         throw new InvocationTargetException(e);
                     }
