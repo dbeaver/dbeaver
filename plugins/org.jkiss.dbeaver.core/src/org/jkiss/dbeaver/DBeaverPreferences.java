@@ -79,6 +79,7 @@ public final class DBeaverPreferences
     public static final String CONFIRM_ENTITY_REVERT = "entity_revert"; //$NON-NLS-1$
     //public static final String CONFIRM_ENTITY_RENAME = "entity_rename"; //$NON-NLS-1$
     public static final String CONFIRM_EDITOR_CLOSE = "close_editor_edit"; //$NON-NLS-1$
+    public static final String CONFIRM_RUNNING_QUERY_CLOSE = "close_running_query"; //$NON-NLS-1$
     public static final String CONFIRM_DRIVER_DOWNLOAD = "driver_download"; //$NON-NLS-1$
     public static final String CONFIRM_MANUAL_DOWNLOAD = "driver_download_manual"; //$NON-NLS-1$
     public static final String CONFIRM_VERSION_CHECK = "version_check"; //$NON-NLS-1$

@@ -141,6 +141,10 @@ public class CoreMessages extends NLS {
 	public static String confirm_close_editor_edit_message;
 	public static String confirm_close_editor_edit_toggleMessage;
 
+	public static String confirm_close_running_query_title;
+	public static String confirm_close_running_query_message;
+	public static String confirm_close_running_query_toggleMessage;
+
 	public static String confirm_driver_download_title;
 	public static String confirm_driver_download_message;
 	public static String confirm_driver_download_toggleMessage;
