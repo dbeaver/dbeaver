@@ -3374,6 +3374,11 @@ public class ResultSetViewer extends Viewer
         {
             new FilterSettingsDialog(ResultSetViewer.this).open();
         }
+
+        @Override
+        public boolean isEnabled() {
+            return getModel().hasData();
+        }
     }
 
     private class ToggleServerSideOrderingAction extends Action {
