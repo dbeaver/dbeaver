@@ -236,7 +236,7 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
         if (passwordText != null) {
             passwordText.setText(CommonUtils.notEmpty(connectionInfo.getUserPassword()));
         }
-        homesSelector.populateHomes(driver, connectionInfo.getClientHomeId());
+        homesSelector.populateHomes(driver, connectionInfo.getClientHomeId(), site.isNew());
 
         showNonDefault.setSelection(CommonUtils.getBoolean(connectionInfo.getProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB), true));
         showTemplates.setSelection(CommonUtils.getBoolean(connectionInfo.getProviderProperty(PostgreConstants.PROP_SHOW_TEMPLATES_DB), false));

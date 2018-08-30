@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocationManager;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -95,10 +96,10 @@ public class ClientHomesSelector
         if (newHomeId != null) {
             currentHomeId = newHomeId;
         }
-        populateHomes(driver, currentHomeId);
+        populateHomes(driver, currentHomeId, false);
     }
 
-    public void populateHomes(DBPDriver driver, String currentHome)
+    public void populateHomes(DBPDriver driver, String currentHome, boolean selectDefault)
     {
         this.driver = driver;
         this.currentHomeId = currentHome;
@@ -118,6 +119,8 @@ public class ClientHomesSelector
             }
         }
 
+        this.homesCombo.add("");
+        this.homeIds.add(null);
         for (DBPNativeClientLocation location : homes) {
             homesCombo.add(location.getDisplayName());
             homeIds.add(location.getName());
@@ -125,9 +128,9 @@ public class ClientHomesSelector
                 homesCombo.select(homesCombo.getItemCount() - 1);
             }
         }
-        if (homesCombo.getItemCount() > 0 && homesCombo.getSelectionIndex() == -1) {
+        if (selectDefault && homesCombo.getItemCount() > 1 && homesCombo.getSelectionIndex() == -1) {
             // Select first
-            homesCombo.select(0);
+            homesCombo.select(1);
         }
         this.homesCombo.add(CoreMessages.controls_client_home_selector_browse);
 
@@ -162,6 +165,7 @@ public class ClientHomesSelector
 
     public String getSelectedHome()
     {
-        return currentHomeId;
+        return CommonUtils.isEmpty(currentHomeId) ? null : currentHomeId;
     }
+
 }
