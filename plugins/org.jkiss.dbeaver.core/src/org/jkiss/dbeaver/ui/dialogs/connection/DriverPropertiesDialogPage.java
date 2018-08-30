@@ -17,6 +17,8 @@
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -26,6 +28,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
+import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -126,8 +129,19 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
     @Override
     public void createControl(Composite parent)
     {
-        propsControl = new ConnectionPropertiesControl(parent, SWT.NONE);
-        setControl(propsControl.getControl());
+        Composite ph = UIUtils.createPlaceholder(parent, 1);
+        if (parent.getLayout() instanceof GridLayout) {
+            ph.setLayoutData(new GridData(GridData.FILL_BOTH));
+        }
+        propsControl = new ConnectionPropertiesControl(ph, SWT.NONE);
+        Object layoutData = propsControl.getTree().getLayoutData();
+        if (layoutData == null) {
+            layoutData = new GridData(GridData.FILL_BOTH);
+        }
+        if (layoutData instanceof GridData) {
+            ((GridData) layoutData).heightHint = 200;
+        }
+        setControl(ph);
     }
 
 }
