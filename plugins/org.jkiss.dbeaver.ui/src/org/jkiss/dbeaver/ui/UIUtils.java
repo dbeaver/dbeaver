@@ -1652,7 +1652,7 @@ public class UIUtils {
 
     public static void resizeShell(Shell shell) {
         Point shellSize = shell.getSize();
-        Point compSize = shell.computeSize(SWT.DEFAULT, SWT.DEFAULT);
+        Point compSize = shell.computeSize(SWT.DEFAULT, SWT.DEFAULT, true);
         //compSize.y += 20;
         //compSize.x += 20;
         if (shellSize.y < compSize.y || shellSize.x < compSize.x) {
