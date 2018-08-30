@@ -817,18 +817,21 @@ public class DataSourceDescriptor
         }
 
         // Set active object
-        if (dataSource instanceof DBSObjectSelector && dataSource instanceof DBSObjectContainer) {
+        if (dataSource instanceof DBSObjectContainer) {
             String activeObject = getConnectionConfiguration().getBootstrap().getDefaultObjectName();
             if (!CommonUtils.isEmptyTrimmed(activeObject)) {
-                DBSObject child = ((DBSObjectContainer) dataSource).getChild(monitor, activeObject);
-                if (child != null) {
-                    try {
-                        ((DBSObjectSelector) dataSource).setDefaultObject(monitor, child);
-                    } catch (DBException e) {
-                        log.warn("Can't select active object", e);
+                DBSObjectContainer schemaContainer = DBUtils.getSchemaContainer((DBSObjectContainer) dataSource);
+                if (schemaContainer != null && schemaContainer instanceof DBSObjectSelector) {
+                    DBSObject child = schemaContainer.getChild(monitor, activeObject);
+                    if (child != null) {
+                        try {
+                            ((DBSObjectSelector) schemaContainer).setDefaultObject(monitor, child);
+                        } catch (DBException e) {
+                            log.warn("Can't select active object", e);
+                        }
+                    } else {
+                        log.debug("Object '" + activeObject + "' not found");
                     }
-                } else {
-                    log.debug("Object '" + activeObject + "' not found");
                 }
             }
         }
