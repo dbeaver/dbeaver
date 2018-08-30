@@ -16,7 +16,9 @@
  */
 package org.jkiss.dbeaver.core.application;
 
+import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExtension;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.action.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.ui.*;
@@ -29,6 +31,7 @@ import org.eclipse.ui.ide.IDEActionFactory;
 import org.eclipse.ui.internal.WorkbenchPlugin;
 import org.eclipse.ui.internal.registry.ActionSetRegistry;
 import org.eclipse.ui.internal.registry.IActionSetDescriptor;
+import org.eclipse.ui.menus.CommandContributionItem;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.application.about.AboutBoxAction;
@@ -43,6 +46,8 @@ import org.jkiss.dbeaver.ui.controls.StatusLineContributionItemEx;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectExplorerView;
 import org.jkiss.dbeaver.ui.navigator.project.ProjectNavigatorView;
+import org.jkiss.utils.CommonUtils;
+import org.osgi.framework.Bundle;
 
 import java.util.Locale;
 import java.util.TimeZone;
@@ -157,6 +162,7 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
         menuBar.add(windowMenu);
         menuBar.add(helpMenu);
 
+        IWorkbenchWindow workbenchWindow = getActionBarConfigurer().getWindowConfigurer().getWindow();
         {
             // File
             //MenuManager recentMenu = new MenuManager("Recent editors");
@@ -173,11 +179,11 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             fileMenu.add(new Separator());
             fileMenu.add(new GroupMarker(IWorkbenchActionConstants.IMPORT_EXT));
             fileMenu.add(new Separator());
-            fileMenu.add(new GroupMarker(IWorkbenchActionConstants.SAVE_EXT));
-            fileMenu.add(new Separator());
+            //fileMenu.add(new GroupMarker(IWorkbenchActionConstants.SAVE_EXT));
+            //fileMenu.add(new Separator());
 
             MenuManager recentEditors = new MenuManager("Recent editors");
-            recentEditors.add(ContributionItemFactory.REOPEN_EDITORS.create(getActionBarConfigurer().getWindowConfigurer().getWindow()));
+            recentEditors.add(ContributionItemFactory.REOPEN_EDITORS.create(workbenchWindow));
             recentEditors.add(new GroupMarker(IWorkbenchActionConstants.MRU));
             fileMenu.add(recentEditors);
 
@@ -189,6 +195,28 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             fileMenu.add(ActionUtils.makeAction(emergentExitAction, null, null, CoreMessages.actions_menu_exit_emergency, null, null));
 
             fileMenu.add(new GroupMarker(IWorkbenchActionConstants.FILE_END));
+        }
+
+        {
+            // Edit
+            ActionSetRegistry asr = WorkbenchPlugin.getDefault().getActionSetRegistry();
+            IActionSetDescriptor actionSet = asr.findActionSet("org.eclipse.ui.edit.text.actionSet.convertLineDelimitersTo");
+            if (actionSet != null) {
+                MenuManager convertLDMenu = new MenuManager(actionSet.getLabel());
+                for (IConfigurationElement action : actionSet.getConfigurationElement().getChildren("action")) {
+                    String actionClassName = action.getAttribute("class");
+                    if (!CommonUtils.isEmpty(actionClassName)) {
+                        try {
+                            Bundle actionBundle = Platform.getBundle(action.getContributor().getName());
+                            Class<?> actionClass = actionBundle.loadClass(actionClassName);
+                            convertLDMenu.add((IAction)actionClass.newInstance());
+                        } catch (Throwable e) {
+                            log.error(e);
+                        }
+                    }
+                }
+                editMenu.add(convertLDMenu);
+            }
         }
 
         {
@@ -226,13 +254,13 @@ public class ApplicationActionBarAdvisor extends ActionBarAdvisor
             helpMenu.add(ActionUtils.makeAction(aboutAction, null, null, CoreMessages.actions_menu_about, null, null));
             helpMenu.add(showHelpAction);
             helpMenu.add(new Separator());
-            helpMenu.add(ActionUtils.makeCommandContribution(getActionBarConfigurer().getWindowConfigurer().getWindow(), "org.eclipse.ui.help.installationDialog"));
+            helpMenu.add(ActionUtils.makeCommandContribution(workbenchWindow, "org.eclipse.ui.help.installationDialog"));
             if (showAltHelp) {
                 //helpMenu.add(searchHelpAction);
                 //helpMenu.add(dynamicHelpAction);
-                helpMenu.add(ActionUtils.makeCommandContribution(getActionBarConfigurer().getWindowConfigurer().getWindow(), IWorkbenchCommandConstants.WINDOW_SHOW_KEY_ASSIST, CoreMessages.action_menu_showKeyAssist, null));
+                helpMenu.add(ActionUtils.makeCommandContribution(workbenchWindow, IWorkbenchCommandConstants.WINDOW_SHOW_KEY_ASSIST, CoreMessages.action_menu_showKeyAssist, null));
                 helpMenu.add(new Separator());
-                helpMenu.add(ActionUtils.makeCommandContribution(getActionBarConfigurer().getWindowConfigurer().getWindow(), "org.eclipse.equinox.p2.ui.sdk.install"));
+                helpMenu.add(ActionUtils.makeCommandContribution(workbenchWindow, "org.eclipse.equinox.p2.ui.sdk.install"));
 
                 helpMenu.add(new Separator());
                 helpMenu.add(checkUpdatesAction);
