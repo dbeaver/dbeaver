@@ -53,7 +53,7 @@ public class SQLFormattingStrategy extends ContextBasedFormattingStrategy
     public String format(String content, boolean isLineStart, String indentation, int[] positions)
     {
         final String[] indentPrefixes = svConfig.getIndentPrefixes(sourceViewer, IDocument.DEFAULT_CONTENT_TYPE);
-        SQLFormatterConfiguration configuration = new SQLFormatterConfiguration(sqlSyntax);
+        SQLFormatterConfiguration configuration = new SQLFormatterConfiguration(svConfig.getSQLEditor().getDataSource(), sqlSyntax);
         configuration.setIndentString(indentPrefixes[0]);
 
         SQLFormatter formatter = SQLFormatterConfigurationRegistry.getInstance().createFormatter(configuration);

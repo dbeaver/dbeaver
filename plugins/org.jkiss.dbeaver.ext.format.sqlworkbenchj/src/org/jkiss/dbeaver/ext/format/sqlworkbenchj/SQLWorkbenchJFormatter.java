@@ -24,9 +24,6 @@ import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
 
 /**
  * External SQL formatter
@@ -37,26 +34,15 @@ public class SQLWorkbenchJFormatter implements SQLFormatter {
 
     @Override
     public String format(String source, SQLFormatterConfiguration configuration) {
-
         String workbenchPath = CommonUtils.toString(configuration.getPreferenceStore().getString(SQLWorkbenchJConstants.PROP_WORKBENCH_PATH));
         if (CommonUtils.isEmpty(workbenchPath)) {
             workbenchPath = "C:\\Java\\SQLWorkbenchJ\\";
-            //DBUserInterface.getInstance().showError("Workbench not configure", "Empty SQL Workbench/J path");
-            //return source;
         }
 
         try {
-            File wbJar = new File(workbenchPath, "sqlworkbench.jar");
+            SQLWorkbenchJManager.initManager(new File(workbenchPath));
 
-            URLClassLoader cl = new URLClassLoader(new URL[] { wbJar.toURI().toURL() });
-            Class<?> wbFormatterClass = cl.loadClass("workbench.sql.formatter.WbSqlFormatter");
-            Object wbFormatterInstance = wbFormatterClass.getConstructor(CharSequence.class, String.class).newInstance(source, "mysql");
-            Object formatResult = wbFormatterClass.getMethod("getFormattedSql").invoke(wbFormatterInstance);
-            if (formatResult != null) {
-                return CommonUtils.toString(formatResult);
-            }
-
-            return source;
+            return SQLWorkbenchJManager.getInstance().format(configuration.getDataSource(), source);
         } catch (Exception e) {
             DBUserInterface.getInstance().showError("Workbench format error", "Error formatting with SQL Workbench/J", e);
             return source;
