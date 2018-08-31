@@ -298,7 +298,7 @@ public final class SQLUtils {
     {
         SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
         syntaxManager.init(dataSource.getSQLDialect(), dataSource.getContainer().getPreferenceStore());
-        SQLFormatterConfiguration configuration = new SQLFormatterConfiguration(syntaxManager);
+        SQLFormatterConfiguration configuration = new SQLFormatterConfiguration(dataSource, syntaxManager);
         SQLFormatter formatter = dataSource.getDataSource().getContainer().getPlatform().getSQLFormatterRegistry().createFormatter(configuration);
         if (formatter == null) {
             return query;

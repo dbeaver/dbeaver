@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.sql.format;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.DBPKeywordType;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -37,6 +38,7 @@ public class SQLFormatterConfiguration {
 
     private String formatterId;
 
+    private DBPDataSource dataSource;
     @NotNull
     private DBPIdentifierCase keywordCase;
     private String indentString = "    ";
@@ -49,17 +51,22 @@ public class SQLFormatterConfiguration {
     /**
      * Create formatter config with default (set in properties) formatter
      */
-    public SQLFormatterConfiguration(SQLSyntaxManager syntaxManager)
+    public SQLFormatterConfiguration(DBPDataSource dataSource, SQLSyntaxManager syntaxManager)
     {
-        this(syntaxManager, CommonUtils.notEmpty(syntaxManager.getPreferenceStore().getString(ModelPreferences.SQL_FORMAT_FORMATTER)).toUpperCase(Locale.ENGLISH));
+        this(dataSource, syntaxManager, CommonUtils.notEmpty(syntaxManager.getPreferenceStore().getString(ModelPreferences.SQL_FORMAT_FORMATTER)).toUpperCase(Locale.ENGLISH));
     }
 
-    public SQLFormatterConfiguration(SQLSyntaxManager syntaxManager, String formatterId)
+    public SQLFormatterConfiguration(DBPDataSource dataSource, SQLSyntaxManager syntaxManager, String formatterId)
     {
+        this.dataSource = dataSource;
         this.syntaxManager = syntaxManager;
         this.keywordCase = syntaxManager.getKeywordCase();
 
         this.formatterId = formatterId;
+    }
+
+    public DBPDataSource getDataSource() {
+        return dataSource;
     }
 
     public SQLSyntaxManager getSyntaxManager()
