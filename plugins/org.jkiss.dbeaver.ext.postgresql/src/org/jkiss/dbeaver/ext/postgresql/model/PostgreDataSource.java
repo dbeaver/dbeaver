@@ -89,6 +89,9 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         final boolean showNDD = CommonUtils.toBoolean(configuration.getProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB)) && !CommonUtils.isEmpty(configuration.getDatabaseName());
         List<PostgreDatabase> dbList = new ArrayList<>();
         if (!showNDD) {
+            if (CommonUtils.isEmpty(activeDatabaseName)) {
+                activeDatabaseName = PostgreConstants.DEFAULT_DATABASE;
+            }
             PostgreDatabase defDatabase = new PostgreDatabase(monitor, this, activeDatabaseName);
             dbList.add(defDatabase);
         } else {
