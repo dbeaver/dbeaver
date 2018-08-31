@@ -252,7 +252,7 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
                 protected Object getValue(Object element) {
                     DBSAttributeBase attribute = (DBSAttributeBase) element;
                     String selectedGenerator = mockDataSettings.getAttributeGeneratorProperties(attribute).getSelectedGeneratorId();
-                    if (selectedGenerator != null) {
+                    if (!CommonUtils.isEmpty(selectedGenerator)) {
                         return mockDataSettings.getGeneratorDescriptor(selectedGenerator).getLabel();
                     } else {
                         return "";
@@ -376,6 +376,9 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
     }
 
     private void selectGenerator(DBSAttributeBase attribute, String generatorName) {
+        if (CommonUtils.isEmpty(generatorName)) {
+            return;
+        }
         MockGeneratorDescriptor generatorForName = mockDataSettings.findGeneratorForName(attribute, generatorName);
         if (generatorForName != null) {
             saveGeneratorProperties();
