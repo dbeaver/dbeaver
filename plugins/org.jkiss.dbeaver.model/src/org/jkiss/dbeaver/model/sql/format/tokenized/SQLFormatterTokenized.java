@@ -372,11 +372,30 @@ public class SQLFormatterTokenized implements SQLFormatter {
                     && t1.getString().trim().isEmpty()
                     && t0.getString().equalsIgnoreCase(")")) //$NON-NLS-1$
             {
+            	// "( TOKEN )"
                 t4.setString(t4.getString() + t2.getString() + t0.getString());
                 argList.remove(index);
                 argList.remove(index - 1);
                 argList.remove(index - 2);
                 argList.remove(index - 3);
+            }
+            else if (t3.getString().equals("(") &&
+            		t2.getString().trim().isEmpty() &&
+            		t0.getString().equalsIgnoreCase(")")) {
+            	// "( TOKEN)"
+                t3.setString(t3.getString() + t1.getString() + t0.getString());
+                argList.remove(index);
+                argList.remove(index - 1);
+                argList.remove(index - 2);
+            }
+            else if (t3.getString().equals("(") &&
+            		t1.getString().trim().isEmpty() &&
+            		t0.getString().equalsIgnoreCase(")")) {
+            	// "(TOKEN )"
+                t3.setString(t3.getString() + t2.getString() + t0.getString());
+                argList.remove(index);
+                argList.remove(index - 1);
+                argList.remove(index - 2);
             }
         }
 
@@ -386,7 +405,10 @@ public class SQLFormatterTokenized implements SQLFormatter {
 
             if (prev.getType() != TokenType.SPACE &&
                 token.getType() != TokenType.SPACE &&
-                !token.getString().startsWith("("))
+                !prev.getString().equals("(") &&
+                !token.getString().startsWith("(") &&
+                !prev.getString().equals(")") &&
+                !token.getString().equals(")"))
             {
                 if (token.getString().equals(",") || statementDelimiters.contains(token.getString())) { //$NON-NLS-1$
                     continue;
