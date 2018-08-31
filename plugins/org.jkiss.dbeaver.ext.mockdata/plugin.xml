@@ -216,6 +216,7 @@
                 class="org.jkiss.dbeaver.ext.mockdata.generator.StringUuidGenerator"
                 tags="id,uuid">
             <type kind="STRING"/>
+            <type name="UUID"/>
         </generator>
 
         <generator
