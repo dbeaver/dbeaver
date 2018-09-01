@@ -55,6 +55,7 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
     private long tablespaceId;
     private List<PostgreTableInheritance> superTables;
     private List<PostgreTableInheritance> subTables;
+    private boolean hasSubClasses;
 
     public PostgreTable(PostgreSchema catalog)
     {
@@ -69,6 +70,7 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
 
         this.hasOids = JDBCUtils.safeGetBoolean(dbResult, "relhasoids");
         this.tablespaceId = JDBCUtils.safeGetLong(dbResult, "reltablespace");
+        this.hasSubClasses = JDBCUtils.safeGetBoolean(dbResult, "relhassubclass");
 
     }
 
@@ -251,9 +253,13 @@ public abstract class PostgreTable extends PostgreTableReal implements DBDPseudo
         return superTables;
     }
 
+    public boolean hasSubClasses() {
+        return hasSubClasses;
+    }
+
     @NotNull
     public List<PostgreTableInheritance> getSubInheritance(@NotNull DBRProgressMonitor monitor) throws DBException {
-        if (subTables == null && getDataSource().getServerType().supportsInheritance()) {
+        if (subTables == null && hasSubClasses && getDataSource().getServerType().supportsInheritance()) {
             try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Load table inheritance info")) {
                 String sql = "SELECT i.*,c.relnamespace " +
                     "FROM pg_catalog.pg_inherits i,pg_catalog.pg_class c " +
