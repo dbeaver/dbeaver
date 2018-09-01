@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ext.postgresql;
+package org.jkiss.dbeaver.ext.postgresql.model.impls;
 
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
@@ -27,11 +27,11 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
- * postgresql utils
+ * YellowBrickUtils
  */
-public class YellowbrickUtils {
+public class YellowBrickUtils {
 
-    private static final Log log = Log.getLog(YellowbrickUtils.class);
+    private static final Log log = Log.getLog(YellowBrickUtils.class);
     
     private static final int UNKNOWN_LENGTH = -1;
 

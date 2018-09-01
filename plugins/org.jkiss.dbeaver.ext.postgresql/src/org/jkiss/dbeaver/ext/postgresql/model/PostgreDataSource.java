@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider;
 import org.jkiss.dbeaver.ext.postgresql.PostgreServerType;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
+import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerPostgreSQL;
 import org.jkiss.dbeaver.ext.postgresql.model.jdbc.PostgreJdbcFactory;
 import org.jkiss.dbeaver.ext.postgresql.model.plan.PostgrePlanAnalyser;
 import org.jkiss.dbeaver.model.*;
@@ -71,7 +72,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
 
     private DatabaseCache databaseCache;
     private String activeDatabaseName;
-    private PostgreServerType serverType;
+    private PostgreServerExtension serverExtension;
 
     public PostgreDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
@@ -334,7 +335,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
 
         Connection pgConnection;
         if (remoteInstance != null) {
-            log.debug("Initiate connection to " + getServerType().getName() + " database [" + remoteInstance.getName() + "@" + conConfig.getHostName() + "]");
+            log.debug("Initiate connection to " + getServerType().getServerTypeName() + " database [" + remoteInstance.getName() + "@" + conConfig.getHostName() + "]");
         }
         if (remoteInstance instanceof PostgreDatabase &&
             remoteInstance.getName() != null &&
@@ -357,7 +358,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
             pgConnection = super.openConnection(monitor, remoteInstance, purpose);
         }
 
-        if (getServerType() != PostgreServerType.REDSHIFT && !getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {
+        if (getServerType().supportsClientInfo() && !getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {
             // Provide client info. Not supported by Redshift?
             try {
                 pgConnection.setClientInfo("ApplicationName", DBUtils.getClientApplicationName(getContainer(), purpose));
@@ -473,11 +474,17 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         }
     }
 
-    public PostgreServerType getServerType() {
-        if (serverType == null) {
-            serverType = PostgreUtils.getServerType(getContainer().getDriver());
+    public PostgreServerExtension getServerType() {
+        if (serverExtension == null) {
+            PostgreServerType serverType = PostgreUtils.getServerType(getContainer().getDriver());
+            try {
+                serverExtension = serverType.getImplClass().getConstructor(PostgreDataSource.class).newInstance(this);
+            } catch (Throwable e) {
+                log.error("Can't determine server type", e);
+                serverExtension = new PostgreServerPostgreSQL(this);
+            }
         }
-        return serverType;
+        return serverExtension;
     }
 
     class DatabaseCache extends JDBCObjectLookupCache<PostgreDataSource, PostgreDatabase>

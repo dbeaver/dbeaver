@@ -17,72 +17,29 @@
 
 package org.jkiss.dbeaver.ext.postgresql;
 
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreServerExtension;
+import org.jkiss.dbeaver.ext.postgresql.model.impls.*;
+
 /**
  * Database type
  */
 public enum PostgreServerType {
 
-    POSTGRESQL("PostgreSQL"),
-    GREENPLUM("Greenplum"),
-    REDSHIFT("Redshift", false, false, false, false, false, false, true),
-    TIMESCALE("Timescale"),
-    YELLOWBRICK("YellowBrick"),
-    COCKROACH("Cockroach", true, true, false, false, false, false, false),
-    OTHER("Postgre");
+    POSTGRESQL(PostgreServerPostgreSQL.class),
+    GREENPLUM(PostgreServerGreenplum.class),
+    REDSHIFT(PostgreServerRedshiftDB.class),
+    TIMESCALE(PostgreServerTimescale.class),
+    YELLOWBRICK(PostgreServerYellowBrick.class),
+    COCKROACH(PostgreServerCockroachDB.class),
+    OTHER(PostgreServerPostgreSQL.class);
 
-    private String name;
-    private boolean supportsOids;
-    private boolean supportsIndexes;
-    private boolean supportsInheritance;
-    private boolean supportsTriggers;
-    private boolean supportsEncodings;
-    private boolean supportsTablespaces;
-    private boolean supportsLimits;
+    private final Class<? extends PostgreServerExtension> implClass;
 
-    PostgreServerType(String name) {
-        this(name, true, true, true, true, true, true, true);
+    PostgreServerType(Class<? extends PostgreServerExtension> implClass) {
+        this.implClass = implClass;
     }
 
-    PostgreServerType(String name, boolean supportsOids, boolean supportsIndexes, boolean supportsInheritance, boolean supportsTriggers, boolean supportsEncodings, boolean supportsTablespaces, boolean supportsLimits) {
-        this.name = name;
-        this.supportsOids = supportsOids;
-        this.supportsIndexes = supportsIndexes;
-        this.supportsInheritance = supportsInheritance;
-        this.supportsTriggers = supportsTriggers;
-        this.supportsEncodings = supportsEncodings;
-        this.supportsTablespaces = supportsTablespaces;
-        this.supportsLimits = supportsLimits;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public boolean supportsOids() {
-        return supportsOids;
-    }
-
-    public boolean supportsIndexes() {
-        return supportsIndexes;
-    }
-
-    public boolean supportsInheritance() {
-        return supportsInheritance;
-    }
-
-    public boolean supportsTriggers() {
-        return supportsTriggers;
-    }
-
-    public boolean isSupportsLimits() {
-        return supportsLimits;
-    }
-
-    public boolean supportsEncodings() {
-        return supportsEncodings;
-    }
-
-    public boolean isSupportsTablespaces() {
-        return supportsTablespaces;
+    public Class<? extends PostgreServerExtension> getImplClass() {
+        return implClass;
     }
 }
