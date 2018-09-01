@@ -383,7 +383,9 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource> imple
             dataTypeCache.clear();
             // Cache data types
             for (final PostgreSchema pgSchema : getSchemas(monitor)) {
-                pgSchema.getDataTypes(monitor);
+                if (PostgreConstants.CATALOG_SCHEMA_NAME.equals(pgSchema.getName())) {
+                    pgSchema.getDataTypes(monitor);
+                }
             }
         }
     }
