@@ -422,6 +422,7 @@
 
                     <parameter name="query-get-active-db" value="SELECT SCHEMA()"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA = ?"/>
+                    <parameter name="omit-catalog" value="true"/>
                 </driver>
                 <driver
                     id="h2_embedded"
@@ -440,6 +441,7 @@
 
                     <parameter name="query-get-active-db" value="SELECT SCHEMA()"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA = ?"/>
+                    <parameter name="omit-catalog" value="true"/>
                 </driver>
                 <driver
                     id="odbc"
