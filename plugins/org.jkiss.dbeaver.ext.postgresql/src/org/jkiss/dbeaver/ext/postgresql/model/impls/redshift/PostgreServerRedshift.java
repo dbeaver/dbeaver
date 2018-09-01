@@ -132,9 +132,9 @@ public class PostgreServerRedshift extends PostgreServerExtensionBase {
                         }
                         sql.append(line).append("\n");
                     }
-                    String ddl = sql.toString();
+                    String ddl = sql.toString().trim();
                     if (ddl.endsWith(";")) {
-                        ddl = ddl.substring(0, ddl.length() - 1);
+                        ddl = ddl.substring(0, ddl.length() - 1).trim();
                     }
                     return ddl;
                 }
