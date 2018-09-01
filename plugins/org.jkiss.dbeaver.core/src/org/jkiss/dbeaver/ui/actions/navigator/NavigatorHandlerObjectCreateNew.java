@@ -24,11 +24,9 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBIconComposite;
 import org.jkiss.dbeaver.model.DBPImage;
-import org.jkiss.dbeaver.model.navigator.DBNContainer;
-import org.jkiss.dbeaver.model.navigator.DBNDataSource;
-import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
@@ -59,10 +57,11 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
         element.setText(CoreMessages.actions_navigator_create_new + " " + getObjectTypeName(element));
         DBPImage image = getObjectTypeIcon(element);
         if (image == null) {
-            element.setIcon(DBeaverIcons.getImageDescriptor(DBIcon.TYPE_OBJECT));
-        } else {
-            element.setIcon(DBeaverIcons.getImageDescriptor(image));
+            image = DBIcon.TYPE_OBJECT;
         }
+        element.setIcon(DBeaverIcons.getImageDescriptor(image));
+//        DBIconComposite iconComposite = new DBIconComposite(image, false, null, null, null, DBIcon.OVER_ADD);
+//        element.setIcon(DBeaverIcons.getImageDescriptor(iconComposite));
     }
 
     public static String getObjectTypeName(UIElement element) {
@@ -80,6 +79,9 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
     public static DBPImage getObjectTypeIcon(UIElement element) {
         DBNNode node = NavigatorUtils.getSelectedNode(element);
         if (node != null) {
+            if (node instanceof DBNDatabaseNode && node.getParentNode() instanceof DBNDatabaseFolder) {
+                node = node.getParentNode();
+            }
             if (node instanceof DBNDataSource) {
                 return UIIcon.SQL_CONNECT;
             } else if (node instanceof DBNDatabaseFolder) {
