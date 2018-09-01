@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model;
 
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceInfo;
 
@@ -24,14 +25,17 @@ import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceInfo;
  */
 class PostgreDataSourceInfo extends JDBCDataSourceInfo {
 
-    public PostgreDataSourceInfo(JDBCDatabaseMetaData metaData) {
+    private final boolean supportsLimits;
+
+    public PostgreDataSourceInfo(PostgreDataSource dataSource, JDBCDatabaseMetaData metaData) {
         super(metaData);
+        supportsLimits = dataSource.getServerType().isSupportsLimits();
     }
 
     @Override
     public boolean supportsResultSetLimit() {
-        // Disable maxRows for data transfer - it turns cursors off ?
-        return true;
+        // ??? Disable maxRows for data transfer - it turns cursors off ?
+        return supportsLimits;
     }
 
     @Override

@@ -53,7 +53,6 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -515,7 +514,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
             if (object != null) {
                 dbStat.setLong(1, object.getObjectId());
             } else if (objectName != null || !showNDD) {
-                dbStat.setString(1, object != null ? object.getName() : (objectName != null ? objectName : activeDatabaseName));
+                dbStat.setString(1, (objectName != null ? objectName : activeDatabaseName));
             } else if (catalogFilters != null) {
                 JDBCUtils.setFilterParameters(dbStat, 1, catalogFilters);
             }
@@ -577,7 +576,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     @Override
     protected DBPDataSourceInfo createDataSourceInfo(@NotNull JDBCDatabaseMetaData metaData)
     {
-        return new PostgreDataSourceInfo(metaData);
+        return new PostgreDataSourceInfo(this, metaData);
     }
 
     @Nullable
