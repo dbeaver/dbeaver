@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.ext.postgresql;
 
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreServerExtension;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.*;
+import org.jkiss.dbeaver.ext.postgresql.model.impls.redshift.PostgreServerRedshift;
+import org.jkiss.dbeaver.ext.postgresql.model.impls.yellowbrick.PostgreServerYellowBrick;
 
 /**
  * Database type
@@ -27,7 +29,7 @@ public enum PostgreServerType {
 
     POSTGRESQL(PostgreServerPostgreSQL.class),
     GREENPLUM(PostgreServerGreenplum.class),
-    REDSHIFT(PostgreServerRedshiftDB.class),
+    REDSHIFT(PostgreServerRedshift.class),
     TIMESCALE(PostgreServerTimescale.class),
     YELLOWBRICK(PostgreServerYellowBrick.class),
     COCKROACH(PostgreServerCockroachDB.class),

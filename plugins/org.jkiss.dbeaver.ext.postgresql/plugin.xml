@@ -21,8 +21,7 @@
 <plugin>
 
     <!--
-        Model for Generic extension (obsolete but still working).
-        Also maps Redshift driver.
+        PostgreSQL extension
      -->
     <extension point="org.jkiss.dbeaver.generic.meta">
         <meta id="postgresql" class="org.jkiss.dbeaver.ext.postgresql.model.generic.PostgreMetaModel" driverClass="org.postgresql.Driver,com.amazon.redshift.jdbc4.Driver,com.amazon.redshift.jdbc41.Driver,com.amazon.redshift.jdbc42.Driver"/>
