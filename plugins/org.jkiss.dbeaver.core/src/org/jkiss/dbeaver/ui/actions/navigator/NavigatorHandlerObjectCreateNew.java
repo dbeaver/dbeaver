@@ -85,7 +85,7 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
             } else if (node instanceof DBNDatabaseFolder) {
                 final List<DBXTreeNode> metaChildren = ((DBNDatabaseFolder)node).getMeta().getChildren(node);
                 if (!CommonUtils.isEmpty(metaChildren)) {
-                    return metaChildren.get(0).getIcon(node);
+                    return metaChildren.get(0).getIcon(null);
                 }
                 return null;
             } else {
