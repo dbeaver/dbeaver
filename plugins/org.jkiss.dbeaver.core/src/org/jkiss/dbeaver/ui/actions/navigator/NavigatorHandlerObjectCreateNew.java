@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseFolder;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -79,7 +80,9 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
     public static DBPImage getObjectTypeIcon(UIElement element) {
         DBNNode node = NavigatorUtils.getSelectedNode(element);
         if (node != null) {
-            if (node instanceof DBNDatabaseFolder) {
+            if (node instanceof DBNDataSource) {
+                return UIIcon.SQL_CONNECT;
+            } else if (node instanceof DBNDatabaseFolder) {
                 final List<DBXTreeNode> metaChildren = ((DBNDatabaseFolder)node).getMeta().getChildren(node);
                 if (!CommonUtils.isEmpty(metaChildren)) {
                     return metaChildren.get(0).getIcon(node);
