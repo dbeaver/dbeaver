@@ -120,19 +120,7 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource> imple
         this.initCaches();
         checkDatabaseConnection(monitor);
 
-        try (JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load database info")) {
-            try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT db.oid,db.*" +
-                    "\nFROM pg_catalog.pg_database db WHERE datname=?")) {
-                dbStat.setString(1, databaseName);
-                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
-                    if (dbResult.nextRow()) {
-                        loadInfo(dbResult);
-                    }
-                }
-            }
-        } catch (SQLException e) {
-            throw new DBCException(e, getDataSource());
-        }
+        readDatabaseInfo(monitor);
     }
 
     public PostgreDatabase(DBRProgressMonitor monitor, PostgreDataSource dataSource, String name, PostgreRole owner, String templateName, PostgreTablespace tablespace, PostgreCharset encoding) throws DBException {
@@ -147,6 +135,22 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource> imple
         this.tablespaceId = tablespace == null ? 0 : tablespace.getObjectId();
         this.encodingId = encoding == null ? 0 : encoding.getObjectId();
         this.initCaches();
+    }
+
+    private void readDatabaseInfo(DBRProgressMonitor monitor) throws DBCException {
+        try (JDBCSession session = getDefaultContext(true).openSession(monitor, DBCExecutionPurpose.META, "Load database info")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement("SELECT db.oid,db.*" +
+                "\nFROM pg_catalog.pg_database db WHERE datname=?")) {
+                dbStat.setString(1, name);
+                try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                    if (dbResult.nextRow()) {
+                        loadInfo(dbResult);
+                    }
+                }
+            }
+        } catch (SQLException e) {
+            throw new DBCException(e, getDataSource());
+        }
     }
 
     public PostgreRole getInitialOwner() {
@@ -447,13 +451,19 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource> imple
 
     @Override
     public DBSObject refreshObject(@NotNull DBRProgressMonitor monitor) throws DBException {
-        // Refresh all properties
-        PostgreDatabase refDatabase = dataSource.getDatabaseCache().refreshObject(monitor, dataSource, this);
-        if (refDatabase != null && refDatabase == dataSource.getDefaultInstance()) {
-            // Cache types
-            refDatabase.cacheDataTypes(monitor, true);
+        if (oid == 0) {
+            // New database
+            readDatabaseInfo(monitor);
+            return this;
+        } else {
+            // Refresh all properties
+            PostgreDatabase refDatabase = dataSource.getDatabaseCache().refreshObject(monitor, dataSource, this);
+            if (refDatabase != null && refDatabase == dataSource.getDefaultInstance()) {
+                // Cache types
+                refDatabase.cacheDataTypes(monitor, true);
+            }
+            return refDatabase;
         }
-        return refDatabase;
     }
 
     public Collection<PostgreRole> getUsers(DBRProgressMonitor monitor) throws DBException {

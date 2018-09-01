@@ -83,15 +83,15 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     @Override
     protected void initializeRemoteInstance(DBRProgressMonitor monitor) throws DBException {
         activeDatabaseName = getContainer().getConnectionConfiguration().getDatabaseName();
+        if (CommonUtils.isEmpty(activeDatabaseName)) {
+            activeDatabaseName = PostgreConstants.DEFAULT_DATABASE;
+        }
         databaseCache = new DatabaseCache();
 
         DBPConnectionConfiguration configuration = getContainer().getActualConnectionConfiguration();
-        final boolean showNDD = CommonUtils.toBoolean(configuration.getProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB)) && !CommonUtils.isEmpty(configuration.getDatabaseName());
+        final boolean showNDD = CommonUtils.toBoolean(configuration.getProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB));
         List<PostgreDatabase> dbList = new ArrayList<>();
         if (!showNDD) {
-            if (CommonUtils.isEmpty(activeDatabaseName)) {
-                activeDatabaseName = PostgreConstants.DEFAULT_DATABASE;
-            }
             PostgreDatabase defDatabase = new PostgreDatabase(monitor, this, activeDatabaseName);
             dbList.add(defDatabase);
         } else {
@@ -502,7 +502,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
             StringBuilder catalogQuery = new StringBuilder(
                 "SELECT db.oid,db.*" +
                     "\nFROM pg_catalog.pg_database db WHERE datallowconn ");
-            if (!showTemplates) {
+            if (object == null && !showTemplates) {
                 catalogQuery.append(" AND NOT datistemplate ");
             }
             if (object != null) {
@@ -511,7 +511,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
                 catalogQuery.append("\nAND db.datname=?");
             }
             DBSObjectFilter catalogFilters = owner.getContainer().getObjectFilter(PostgreDatabase.class, null, false);
-            if (showNDD) {
+            if (object == null && showNDD) {
                 if (catalogFilters != null) {
                     JDBCUtils.appendFilterClause(catalogQuery, catalogFilters, "datname", false);
                 }
