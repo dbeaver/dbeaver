@@ -36,6 +36,7 @@ public class PostgreConstants {
     public static final String DEFAULT_HOST = "localhost";
     public static final String DEFAULT_DATABASE = "postgres";
     public static final String DEFAULT_DATA_TYPE = "varchar";
+    public static final String DEFAULT_USER = "postgres";
 
     public static final String PROP_SHOW_NON_DEFAULT_DB = DBConstants.INTERNAL_PROP_PREFIX + "show-non-default-db@";
     public static final String PROP_SHOW_TEMPLATES_DB = DBConstants.INTERNAL_PROP_PREFIX + "show-template-db@";

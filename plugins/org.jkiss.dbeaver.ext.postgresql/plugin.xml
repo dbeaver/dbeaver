@@ -289,6 +289,24 @@
                 </driver>
 
                 <driver
+                        id="postgres-cockroach-jdbc"
+                        label="CockroachDB"
+                        icon="icons/cockroach_icon.png"
+                        class="org.postgresql.Driver"
+                        sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
+                        defaultPort="26257"
+                        webURL="https://www.cockroachlabs.com/product/cockroachdb/"
+                        description="%driver.cockroach.description">
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.3.jre7]" bundle="!drivers.postgresql"/>
+
+                    <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
+                    <file type="jar" path="drivers/postgresql/postgresql.jar" bundle="drivers.postgresql"/>
+                    <parameter name="serverType" value="cockroach"/>
+                    <property name="loginTimeout" value="20"/>
+                    <property name="connectTimeout" value="20"/>
+                </driver>
+
+                <driver
                         id="postgres-redshift-jdbc"
                         label="Redshift"
                         icon="icons/redshift_icon.png"

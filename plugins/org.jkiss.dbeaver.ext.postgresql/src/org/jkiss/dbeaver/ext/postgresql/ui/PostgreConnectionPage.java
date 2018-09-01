@@ -58,6 +58,7 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
     private static ImageDescriptor TS_LOGO_IMG = PostgreActivator.getImageDescriptor("icons/timescale_logo.png");
     private static ImageDescriptor YB_LOGO_IMG = PostgreActivator.getImageDescriptor("icons/yellowbrick_logo.png");
     private static ImageDescriptor RS_LOGO_IMG = PostgreActivator.getImageDescriptor("icons/redshift_logo.png");
+    private static ImageDescriptor CR_LOGO_IMG = PostgreActivator.getImageDescriptor("icons/cockroach_logo.png");
 
     @Override
     public void dispose()
@@ -182,9 +183,9 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
 
         final DBPDriver driver = site.getDriver();
 
+        PostgreServerType serverType = PostgreUtils.getServerType(driver);
         if (!activated) {
             ImageDescriptor logo;
-            PostgreServerType serverType = PostgreUtils.getServerType(driver);
             switch (serverType) {
                 case GREENPLUM:
                     logo = GP_LOGO_IMG;
@@ -197,6 +198,9 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
                     break;
                 case REDSHIFT:
                     logo = RS_LOGO_IMG;
+                    break;
+                case COCKROACH:
+                    logo = CR_LOGO_IMG;
                     break;
                 default:
                     logo = PG_LOGO_IMG;
@@ -217,21 +221,45 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
         if (portText != null) {
             if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
                 portText.setText(String.valueOf(connectionInfo.getHostPort()));
-            } else if (driver.getDefaultPort() != null) {
-                portText.setText(driver.getDefaultPort());
-            } else {
-                portText.setText("");
+            } else if (getSite().isNew()) {
+                if (driver.getDefaultPort() != null) {
+                    portText.setText(driver.getDefaultPort());
+                } else {
+                    portText.setText("");
+                }
             }
         }
         if (dbText != null) {
             String databaseName = connectionInfo.getDatabaseName();
             if (CommonUtils.isEmpty(databaseName)) {
-                databaseName = getSite().isNew() ? PostgreConstants.DEFAULT_DATABASE : "";
+                if (getSite().isNew()) {
+                    switch (serverType) {
+                        case COCKROACH:
+                            databaseName = "system";
+                            break;
+                        default:
+                            databaseName = PostgreConstants.DEFAULT_DATABASE;
+                            break;
+                    }
+                } else {
+                    databaseName = "";
+                }
             }
             dbText.setText(databaseName);
         }
         if (usernameText != null) {
-            usernameText.setText(CommonUtils.notEmpty(connectionInfo.getUserName()));
+            String userName = CommonUtils.notEmpty(connectionInfo.getUserName());
+            if (site.isNew() && CommonUtils.isEmpty(userName)) {
+                switch (serverType) {
+                    case COCKROACH:
+                        userName = "root";
+                        break;
+                    default:
+                        userName = PostgreConstants.DEFAULT_DATABASE;
+                        break;
+                }
+            }
+            usernameText.setText(userName);
         }
         if (passwordText != null) {
             passwordText.setText(CommonUtils.notEmpty(connectionInfo.getUserPassword()));

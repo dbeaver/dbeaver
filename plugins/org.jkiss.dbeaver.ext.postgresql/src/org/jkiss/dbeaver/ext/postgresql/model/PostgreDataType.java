@@ -159,16 +159,20 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         this.modOutFunc = JDBCUtils.safeGetString(dbResult, "typmodout");
         this.analyzeFunc = JDBCUtils.safeGetString(dbResult, "typanalyze");
         String typAlignStr = JDBCUtils.safeGetString(dbResult, "typalign");
-        try {
-            this.align = PostgreTypeAlign.valueOf(typAlignStr);
-        } catch (Exception e) {
-            log.debug("Invalid type align [" + typAlignStr + "] - " + e.getMessage());
+        if (!CommonUtils.isEmpty(typAlignStr)) {
+            try {
+                this.align = PostgreTypeAlign.valueOf(typAlignStr);
+            } catch (Exception e) {
+                log.debug("Invalid type align [" + typAlignStr + "] - " + e.getMessage());
+            }
         }
         String typStorageStr = JDBCUtils.safeGetString(dbResult, "typstorage");
-        try {
-            this.storage = PostgreTypeStorage.valueOf(typStorageStr);
-        } catch (Exception e) {
-            log.debug("Invalid type storage [" + typStorageStr + "] - " + e.getMessage());
+        if (!CommonUtils.isEmpty(typStorageStr)) {
+            try {
+                this.storage = PostgreTypeStorage.valueOf(typStorageStr);
+            } catch (Exception e) {
+                log.debug("Invalid type storage [" + typStorageStr + "] - " + e.getMessage());
+            }
         }
         this.isNotNull = JDBCUtils.safeGetBoolean(dbResult, "typnotnull");
         this.baseTypeId = JDBCUtils.safeGetLong(dbResult, "typbasetype");
