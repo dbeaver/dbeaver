@@ -161,7 +161,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
             srcDec.setFill(true);
             srcDec.setBackgroundColor(getParent().getViewer().getControl().getBackground());
             srcDec.setScale(10, 6);
-            conn.setSourceDecoration(srcDec);
+            conn.setTargetDecoration(srcDec);
         }
         if (association.getObject().getConstraintType() == DBSEntityConstraintType.FOREIGN_KEY) {
             final CircleDecoration targetDecor = new CircleDecoration();
