@@ -255,6 +255,9 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource> imple
 
     @Property(order = 5)
     public PostgreCharset getDefaultEncoding(DBRProgressMonitor monitor) throws DBException {
+        if (!getDataSource().getServerType().supportsEncodings()) {
+            return null;
+        }
         checkDatabaseConnection(monitor);
         return PostgreUtils.getObjectById(monitor, encodingCache, this, encodingId);
     }
@@ -319,6 +322,9 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource> imple
 
     @Association
     public Collection<PostgreCharset> getEncodings(DBRProgressMonitor monitor) throws DBException {
+        if (!getDataSource().getServerType().supportsEncodings()) {
+            return null;
+        }
         checkDatabaseConnection(monitor);
         return encodingCache.getAllObjects(monitor, this);
     }

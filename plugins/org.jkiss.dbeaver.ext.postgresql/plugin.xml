@@ -193,7 +193,7 @@
                         <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreLanguage" label="%tree.languages.node.name" icon="#languages" description="Languages">
                             <items label="%tree.language.node.name" path="language" property="languages" icon="#language"/>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTablespace" label="%tree.tablespaces.node.name" icon="#tablespaces" description="Tablespaces">
+                        <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTablespace" label="%tree.tablespaces.node.name" icon="#tablespaces" description="Tablespaces" visibleIf="object.dataSource.serverType.supportsTablespaces()">
                             <items label="%tree.tablespace.node.name" path="tablespace" property="tablespaces" icon="#tablespace"/>
                         </folder>
                     </folder>
