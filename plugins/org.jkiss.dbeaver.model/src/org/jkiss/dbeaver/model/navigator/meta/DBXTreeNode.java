@@ -270,7 +270,7 @@ public abstract class DBXTreeNode
     public DBPImage getIcon(DBNNode context)
     {
         List<DBXTreeIcon> extIcons = getIcons();
-        if (!CommonUtils.isEmpty(extIcons)) {
+        if (!CommonUtils.isEmpty(extIcons) && context != null) {
             // Try to get some icon depending on it's condition
             for (DBXTreeIcon icon : extIcons) {
                 if (icon.getExpression() == null) {
