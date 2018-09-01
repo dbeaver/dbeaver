@@ -111,12 +111,15 @@ public abstract class PostgreTableReal extends PostgreTableBase
         if (diskSpace != null) {
             return diskSpace;
         }
-        if (!isPersisted() || this instanceof PostgreView || getDataSource().getServerType() == PostgreServerType.REDSHIFT) {
+        if (!isPersisted() || this instanceof PostgreView || !getDataSource().isServerVersionAtLeast(8, 1)) {
             // Do not count rows for views
             return null;
         }
+        if (getDataSource().getServerType() == PostgreServerType.COCKROACH) {
+            return null;
+        }
 
-        // Query row count
+        // Query disk size
         try (DBCSession session = DBUtils.openMetaSession(monitor, this, "Calculate relation size on disk")) {
             try (JDBCPreparedStatement dbStat = ((JDBCSession)session).prepareStatement("select pg_total_relation_size(?)")) {
                 dbStat.setLong(1, getObjectId());
