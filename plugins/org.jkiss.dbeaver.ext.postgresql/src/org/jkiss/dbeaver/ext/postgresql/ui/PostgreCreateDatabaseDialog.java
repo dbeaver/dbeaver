@@ -69,7 +69,7 @@ public class PostgreCreateDatabaseDialog extends BaseDialog
     protected Composite createDialogArea(Composite parent) {
         boolean supportsRoles = dataSource.isServerVersionAtLeast(8, 1);
         boolean supportsEncodings = dataSource.getServerType().supportsEncodings();
-        boolean supportsTablespaces = dataSource.getServerType().isSupportsTablespaces();
+        boolean supportsTablespaces = dataSource.getServerType().supportsTablespaces();
 
         final Composite composite = super.createDialogArea(parent);
 
