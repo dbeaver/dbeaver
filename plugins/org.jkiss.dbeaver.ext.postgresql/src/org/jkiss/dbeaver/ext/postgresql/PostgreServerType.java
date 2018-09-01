@@ -27,7 +27,7 @@ public enum PostgreServerType {
     REDSHIFT("Redshift", false, false, false, false, true),
     TIMESCALE("Timescale"),
     YELLOWBRICK("YellowBrick"),
-    COCKROACH("Cockroach", true, true, true, true, false),
+    COCKROACH("Cockroach", true, true, false, false, false),
     OTHER("Postgre");
 
     private String name;
