@@ -59,6 +59,7 @@ public class PostgreCreateDatabaseDialog extends BaseDialog
     private Combo userCombo;
     private Combo encodingCombo;
     private Combo tablespaceCombo;
+    private Combo templateCombo;
 
     public PostgreCreateDatabaseDialog(Shell parentShell, PostgreDataSource dataSource) {
         super(parentShell, PostgreMessages.dialog_create_db_title, null);
@@ -70,6 +71,7 @@ public class PostgreCreateDatabaseDialog extends BaseDialog
         boolean supportsRoles = dataSource.isServerVersionAtLeast(8, 1);
         boolean supportsEncodings = dataSource.getServerType().supportsEncodings();
         boolean supportsTablespaces = dataSource.getServerType().supportsTablespaces();
+        boolean supportsTemplates = dataSource.getServerType().supportsTemplates();
 
         final Composite composite = super.createDialogArea(parent);
 
@@ -92,13 +94,15 @@ public class PostgreCreateDatabaseDialog extends BaseDialog
         }
 
         final Composite groupDefinition = UIUtils.createControlGroup(composite, PostgreMessages.dialog_create_db_group_definition, 2, GridData.FILL_HORIZONTAL, SWT.NONE);
-        final Combo templateCombo = UIUtils.createLabelCombo(groupDefinition, PostgreMessages.dialog_create_db_label_template_db, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
-        templateCombo.addSelectionListener(new SelectionAdapter() {
-            @Override
-            public void widgetSelected(SelectionEvent e) {
-                dbTemplate = templateCombo.getText();
-            }
-        });
+        if (supportsTemplates) {
+            templateCombo = UIUtils.createLabelCombo(groupDefinition, PostgreMessages.dialog_create_db_label_template_db, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
+            templateCombo.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    dbTemplate = templateCombo.getText();
+                }
+            });
+        }
 
         if (supportsEncodings) {
             encodingCombo = UIUtils.createLabelCombo(groupDefinition, PostgreMessages.dialog_create_db_label_encoding, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
@@ -135,10 +139,10 @@ public class PostgreCreateDatabaseDialog extends BaseDialog
                     allTablespaces = supportsTablespaces ? new ArrayList<>(database.getTablespaces(monitor)) : null;
                     allTemplates = new ArrayList<>(dataSource.getTemplateDatabases(monitor));
 
-                    final PostgreRole dba = database.getDBA(monitor);
+                    final PostgreRole dba = supportsRoles ? database.getDBA(monitor) : null;
                     final String defUserName = dba == null ? "" : dba.getName();
                     final PostgreCharset defCharset = supportsEncodings ? database.getDefaultEncoding(monitor) : null;
-                    final PostgreTablespace defTablespace = database.getDefaultTablespace(monitor);
+                    final PostgreTablespace defTablespace = supportsTablespaces ? database.getDefaultTablespace(monitor) : null;
 
                     UIUtils.syncExec(() -> {
                         if (userCombo != null) {
@@ -152,9 +156,11 @@ public class PostgreCreateDatabaseDialog extends BaseDialog
                             userCombo.setText(defUserName);
                         }
 
-                        templateCombo.add("");
-                        for (String tpl : allTemplates) {
-                            templateCombo.add(tpl);
+                        if (templateCombo != null) {
+                            templateCombo.add("");
+                            for (String tpl : allTemplates) {
+                                templateCombo.add(tpl);
+                            }
                         }
 
                         if (encodingCombo != null) {

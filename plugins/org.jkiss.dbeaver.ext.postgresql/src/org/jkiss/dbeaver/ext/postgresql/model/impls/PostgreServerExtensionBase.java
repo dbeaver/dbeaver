@@ -124,6 +124,11 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
     }
 
     @Override
+    public boolean supportsTemplates() {
+        return true;
+    }
+
+    @Override
     public boolean supportsRelationSizeCalc() {
         return true;
     }

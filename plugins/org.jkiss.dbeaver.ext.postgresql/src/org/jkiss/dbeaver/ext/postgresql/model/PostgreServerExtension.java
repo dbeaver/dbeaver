@@ -63,4 +63,6 @@ public interface PostgreServerExtension
     boolean supportFunctionDefRead();
 
     String readTableDDL(DBRProgressMonitor monitor, PostgreTableBase table) throws DBException;
+
+    boolean supportsTemplates();
 }
