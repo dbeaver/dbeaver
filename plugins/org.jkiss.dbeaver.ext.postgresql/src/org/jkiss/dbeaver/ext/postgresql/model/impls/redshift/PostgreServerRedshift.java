@@ -14,16 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.ext.postgresql.model.impls;
+package org.jkiss.dbeaver.ext.postgresql.model.impls.redshift;
 
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreDataSource;
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;
+import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerExtensionBase;
+import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 /**
- * PostgreServerRedshiftDB
+ * PostgreServerRedshift
  */
-public class PostgreServerRedshiftDB extends PostgreServerExtensionBase {
+public class PostgreServerRedshift extends PostgreServerExtensionBase {
 
-    public PostgreServerRedshiftDB(PostgreDataSource dataSource) {
+    public PostgreServerRedshift(PostgreDataSource dataSource) {
         super(dataSource);
     }
 
@@ -105,6 +113,35 @@ public class PostgreServerRedshiftDB extends PostgreServerExtensionBase {
     @Override
     public boolean supportsClientInfo() {
         return false;
+    }
+
+    @Override
+    public String readTableDDL(DBRProgressMonitor monitor, PostgreTableBase table) throws DBException {
+        try (JDBCSession session = DBUtils.openMetaSession(monitor, table, "Load Redshift table DDL")) {
+            try (JDBCPreparedStatement dbStat = session.prepareStatement(
+                RedshiftConstants.DDL_EXTRACT_VIEW + "\n" +
+                    "WHERE schemaname=? AND tablename=?")) {
+                dbStat.setString(1, table.getSchema().getName());
+                dbStat.setString(2, table.getName());
+                try (JDBCResultSet resultSet = dbStat.executeQuery()) {
+                    StringBuilder sql = new StringBuilder();
+                    while (resultSet.next()) {
+                        String line = resultSet.getString("ddl");
+                        if (line == null) {
+                            continue;
+                        }
+                        sql.append(line).append("\n");
+                    }
+                    String ddl = sql.toString();
+                    if (ddl.endsWith(";")) {
+                        ddl = ddl.substring(0, ddl.length() - 1);
+                    }
+                    return ddl;
+                }
+            }
+        } catch (Exception e) {
+            throw new DBException(e, table.getDataSource());
+        }
     }
 }
 

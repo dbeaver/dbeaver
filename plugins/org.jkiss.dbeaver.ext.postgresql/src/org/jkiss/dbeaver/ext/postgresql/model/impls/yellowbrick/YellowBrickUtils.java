@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ext.postgresql.model.impls;
+package org.jkiss.dbeaver.ext.postgresql.model.impls.yellowbrick;
 
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.postgresql.model.PostgreTableBase;

@@ -234,6 +234,9 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
             if (CommonUtils.isEmpty(databaseName)) {
                 if (getSite().isNew()) {
                     switch (serverType) {
+                        case REDSHIFT:
+                            databaseName = "dev";
+                            break;
                         case COCKROACH:
                             databaseName = "system";
                             break;
@@ -251,6 +254,9 @@ public class PostgreConnectionPage extends ConnectionPageAbstract implements ICo
             String userName = CommonUtils.notEmpty(connectionInfo.getUserName());
             if (site.isNew() && CommonUtils.isEmpty(userName)) {
                 switch (serverType) {
+                    case REDSHIFT:
+                        userName = "awsuser";
+                        break;
                     case COCKROACH:
                         userName = "root";
                         break;
