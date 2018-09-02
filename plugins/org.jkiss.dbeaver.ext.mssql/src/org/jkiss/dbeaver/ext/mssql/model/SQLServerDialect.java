@@ -103,8 +103,7 @@ public class SQLServerDialect extends GenericSQLDialect implements SQLRuleProvid
     public void generateStoredProcedureCall(StringBuilder sql, DBSProcedure proc, Collection<? extends DBSProcedureParameter> parameters) {
         List<DBSProcedureParameter> inParameters = new ArrayList<>();
         int maxParamLength = getMaxParameterLength(parameters, inParameters);
-        String schemaName = proc.getParentObject().getName();
-        schemaName = proc.getContainer().getParentObject().getName();
+        String schemaName = proc.getContainer().getParentObject().getName();
         sql.append("USE [").append(schemaName).append("]\n");
         sql.append("GO\n\n");
         sql.append("DECLARE	@return_value int\n\n");
