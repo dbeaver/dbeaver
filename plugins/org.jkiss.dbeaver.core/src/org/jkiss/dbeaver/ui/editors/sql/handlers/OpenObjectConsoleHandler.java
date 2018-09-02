@@ -89,19 +89,14 @@ public class OpenObjectConsoleHandler extends AbstractHandler {
                     return Status.OK_STATUS;
                 }
             };
-            execJob.addJobChangeListener(new JobChangeAdapter() {
-                @Override
-                public void done(IJobChangeEvent event) {
-                    UIUtils.syncExec(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (doRun) {
-                                editor.processSQL(false, false);
-                            }
-                        }
-                    });
-                }
-            });
+            if (doRun) {
+                execJob.addJobChangeListener(new JobChangeAdapter() {
+                    @Override
+                    public void done(IJobChangeEvent event) {
+                        UIUtils.syncExec(() -> editor.processSQL(false, false));
+                    }
+                });
+            }
             execJob.schedule();
         }
     }
