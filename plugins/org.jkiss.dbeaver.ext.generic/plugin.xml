@@ -422,6 +422,7 @@
 
                     <parameter name="query-get-active-db" value="SELECT SCHEMA()"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA = ?"/>
+                    <parameter name="omit-catalog" value="true"/>
                 </driver>
                 <driver
                     id="h2_embedded"
@@ -440,6 +441,7 @@
 
                     <parameter name="query-get-active-db" value="SELECT SCHEMA()"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA = ?"/>
+                    <parameter name="omit-catalog" value="true"/>
                 </driver>
                 <driver
                     id="odbc"
@@ -1062,6 +1064,17 @@
                         webURL="https://lucene.apache.org/solr/">
                     <file type="jar" path="maven:/org.apache.solr:solr-solrj:RELEASE"/>
                     <parameter name="supports-truncate" value="false"/>
+                </driver>
+
+                <!-- OpenEdge -->
+                <driver
+                        id="openedge_generic"
+                        label="OpenEdge"
+                        class="com.ddtek.jdbc.openedge.OpenEdgeDriver"
+                        sampleURL="jdbc:datadirect:openedge://{host}:{port};databaseName={database}"
+                        defaultPort="6718"
+                        description="OpenEdge Progress JDBC driver"
+                        webURL="https://documentation.progress.com/output/ua/OpenEdge_latest/dmsdv/connecting-from-a-java-application-using-a-url.html#">
                 </driver>
 
             </drivers>

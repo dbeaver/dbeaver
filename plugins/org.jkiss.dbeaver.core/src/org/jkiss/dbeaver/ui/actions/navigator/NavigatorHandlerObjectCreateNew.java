@@ -23,11 +23,17 @@ import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.core.CoreMessages;
-import org.jkiss.dbeaver.model.navigator.DBNContainer;
-import org.jkiss.dbeaver.model.navigator.DBNDataSource;
-import org.jkiss.dbeaver.model.navigator.DBNNode;
+import org.jkiss.dbeaver.model.DBIcon;
+import org.jkiss.dbeaver.model.DBIconComposite;
+import org.jkiss.dbeaver.model.DBPImage;
+import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
+import org.jkiss.utils.CommonUtils;
 
+import java.util.List;
 import java.util.Map;
 
 public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreateBase implements IElementUpdater {
@@ -49,6 +55,13 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
             return;
         }
         element.setText(CoreMessages.actions_navigator_create_new + " " + getObjectTypeName(element));
+        DBPImage image = getObjectTypeIcon(element);
+        if (image == null) {
+            image = DBIcon.TYPE_OBJECT;
+        }
+        element.setIcon(DBeaverIcons.getImageDescriptor(image));
+//        DBIconComposite iconComposite = new DBIconComposite(image, false, null, null, null, DBIcon.OVER_ADD);
+//        element.setIcon(DBeaverIcons.getImageDescriptor(iconComposite));
     }
 
     public static String getObjectTypeName(UIElement element) {
@@ -58,6 +71,27 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
                 return ((DBNContainer)node).getChildrenType();
             } else {
                 return node.getNodeType();
+            }
+        }
+        return null;
+    }
+
+    public static DBPImage getObjectTypeIcon(UIElement element) {
+        DBNNode node = NavigatorUtils.getSelectedNode(element);
+        if (node != null) {
+            if (node instanceof DBNDatabaseNode && node.getParentNode() instanceof DBNDatabaseFolder) {
+                node = node.getParentNode();
+            }
+            if (node instanceof DBNDataSource) {
+                return UIIcon.SQL_CONNECT;
+            } else if (node instanceof DBNDatabaseFolder) {
+                final List<DBXTreeNode> metaChildren = ((DBNDatabaseFolder)node).getMeta().getChildren(node);
+                if (!CommonUtils.isEmpty(metaChildren)) {
+                    return metaChildren.get(0).getIcon(null);
+                }
+                return null;
+            } else {
+                return node.getNodeIconDefault();
             }
         }
         return null;

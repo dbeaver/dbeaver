@@ -50,6 +50,12 @@ public class PostgreTableInheritance extends PostgreTableConstraintBase implemen
         this.sequenceNum = sequenceNum;
     }
 
+    @Override
+    public boolean isInherited() {
+        // Inheritance itself can't be inherited
+        return false;
+    }
+
     @Nullable
     @Override
     public DBSEntityConstraint getReferencedConstraint() {

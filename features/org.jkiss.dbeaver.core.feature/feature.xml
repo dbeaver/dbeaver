@@ -60,11 +60,12 @@
     <plugin id="org.jkiss.dbeaver.net.ssh.ui" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ui" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ext.erd" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.jkiss.dbeaver.ext.import_config" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ext.ui.locks" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.utils" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ext.mockdata" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.data.transfer" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <plugin id="org.jkiss.dbeaver.ext.import_config" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
+    <!--<plugin id="org.jkiss.dbeaver.ext.format.sqlworkbenchj" download-size="0" install-size="0" version="0.0.0" unpack="false"/>-->
 
     <!-- GIS -->
     <plugin id="com.vividsolutions.jts" download-size="0" install-size="0" version="0.0.0" unpack="false"/>

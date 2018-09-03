@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider;
 import org.jkiss.dbeaver.ext.postgresql.PostgreServerType;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
+import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerPostgreSQL;
 import org.jkiss.dbeaver.ext.postgresql.model.jdbc.PostgreJdbcFactory;
 import org.jkiss.dbeaver.ext.postgresql.model.plan.PostgrePlanAnalyser;
 import org.jkiss.dbeaver.model.*;
@@ -53,7 +54,6 @@ import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.lang.reflect.InvocationTargetException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -72,7 +72,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
 
     private DatabaseCache databaseCache;
     private String activeDatabaseName;
-    private PostgreServerType serverType;
+    private PostgreServerExtension serverExtension;
 
     public PostgreDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
@@ -83,15 +83,15 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     @Override
     protected void initializeRemoteInstance(DBRProgressMonitor monitor) throws DBException {
         activeDatabaseName = getContainer().getConnectionConfiguration().getDatabaseName();
+        if (CommonUtils.isEmpty(activeDatabaseName)) {
+            activeDatabaseName = PostgreConstants.DEFAULT_DATABASE;
+        }
         databaseCache = new DatabaseCache();
 
         DBPConnectionConfiguration configuration = getContainer().getActualConnectionConfiguration();
-        final boolean showNDD = CommonUtils.toBoolean(configuration.getProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB)) && !CommonUtils.isEmpty(configuration.getDatabaseName());
+        final boolean showNDD = CommonUtils.toBoolean(configuration.getProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB));
         List<PostgreDatabase> dbList = new ArrayList<>();
         if (!showNDD) {
-            if (CommonUtils.isEmpty(activeDatabaseName)) {
-                activeDatabaseName = PostgreConstants.DEFAULT_DATABASE;
-            }
             PostgreDatabase defDatabase = new PostgreDatabase(monitor, this, activeDatabaseName);
             dbList.add(defDatabase);
         } else {
@@ -335,7 +335,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
 
         Connection pgConnection;
         if (remoteInstance != null) {
-            log.debug("Initiate connection to " + getServerType().getName() + " database [" + remoteInstance.getName() + "@" + conConfig.getHostName() + "]");
+            log.debug("Initiate connection to " + getServerType().getServerTypeName() + " database [" + remoteInstance.getName() + "@" + conConfig.getHostName() + "]");
         }
         if (remoteInstance instanceof PostgreDatabase &&
             remoteInstance.getName() != null &&
@@ -358,7 +358,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
             pgConnection = super.openConnection(monitor, remoteInstance, purpose);
         }
 
-        if (getServerType() != PostgreServerType.REDSHIFT && !getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {
+        if (getServerType().supportsClientInfo() && !getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {
             // Provide client info. Not supported by Redshift?
             try {
                 pgConnection.setClientInfo("ApplicationName", DBUtils.getClientApplicationName(getContainer(), purpose));
@@ -474,11 +474,17 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         }
     }
 
-    public PostgreServerType getServerType() {
-        if (serverType == null) {
-            serverType = PostgreUtils.getServerType(getContainer().getDriver());
+    public PostgreServerExtension getServerType() {
+        if (serverExtension == null) {
+            PostgreServerType serverType = PostgreUtils.getServerType(getContainer().getDriver());
+            try {
+                serverExtension = serverType.getImplClass().getConstructor(PostgreDataSource.class).newInstance(this);
+            } catch (Throwable e) {
+                log.error("Can't determine server type", e);
+                serverExtension = new PostgreServerPostgreSQL(this);
+            }
         }
-        return serverType;
+        return serverExtension;
     }
 
     class DatabaseCache extends JDBCObjectLookupCache<PostgreDataSource, PostgreDatabase>
@@ -496,7 +502,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
             StringBuilder catalogQuery = new StringBuilder(
                 "SELECT db.oid,db.*" +
                     "\nFROM pg_catalog.pg_database db WHERE datallowconn ");
-            if (!showTemplates) {
+            if (object == null && !showTemplates) {
                 catalogQuery.append(" AND NOT datistemplate ");
             }
             if (object != null) {
@@ -505,7 +511,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
                 catalogQuery.append("\nAND db.datname=?");
             }
             DBSObjectFilter catalogFilters = owner.getContainer().getObjectFilter(PostgreDatabase.class, null, false);
-            if (showNDD) {
+            if (object == null && showNDD) {
                 if (catalogFilters != null) {
                     JDBCUtils.appendFilterClause(catalogQuery, catalogFilters, "datname", false);
                 }
@@ -515,7 +521,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
             if (object != null) {
                 dbStat.setLong(1, object.getObjectId());
             } else if (objectName != null || !showNDD) {
-                dbStat.setString(1, object != null ? object.getName() : (objectName != null ? objectName : activeDatabaseName));
+                dbStat.setString(1, (objectName != null ? objectName : activeDatabaseName));
             } else if (catalogFilters != null) {
                 JDBCUtils.setFilterParameters(dbStat, 1, catalogFilters);
             }
@@ -577,7 +583,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     @Override
     protected DBPDataSourceInfo createDataSourceInfo(@NotNull JDBCDatabaseMetaData metaData)
     {
-        return new PostgreDataSourceInfo(metaData);
+        return new PostgreDataSourceInfo(this, metaData);
     }
 
     @Nullable

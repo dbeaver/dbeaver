@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ext.postgresql.model;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.postgresql.PostgreServerType;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
@@ -111,12 +110,15 @@ public abstract class PostgreTableReal extends PostgreTableBase
         if (diskSpace != null) {
             return diskSpace;
         }
-        if (!isPersisted() || this instanceof PostgreView || getDataSource().getServerType() == PostgreServerType.REDSHIFT) {
+        if (!isPersisted() || this instanceof PostgreView || !getDataSource().isServerVersionAtLeast(8, 1)) {
             // Do not count rows for views
             return null;
         }
+        if (!getDataSource().getServerType().supportsRelationSizeCalc()) {
+            return null;
+        }
 
-        // Query row count
+        // Query disk size
         try (DBCSession session = DBUtils.openMetaSession(monitor, this, "Calculate relation size on disk")) {
             try (JDBCPreparedStatement dbStat = ((JDBCSession)session).prepareStatement("select pg_total_relation_size(?)")) {
                 dbStat.setLong(1, getObjectId());

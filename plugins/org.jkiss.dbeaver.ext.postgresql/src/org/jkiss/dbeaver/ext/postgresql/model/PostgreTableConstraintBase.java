@@ -21,6 +21,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBPInheritedObject;
 import org.jkiss.dbeaver.model.DBPScriptObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
@@ -39,18 +40,20 @@ import java.util.Map;
 /**
  * PostgreTableConstraintBase
  */
-public abstract class PostgreTableConstraintBase extends JDBCTableConstraint<PostgreTableBase> implements PostgreObject,PostgreScriptObject {
+public abstract class PostgreTableConstraintBase extends JDBCTableConstraint<PostgreTableBase> implements PostgreObject,PostgreScriptObject,DBPInheritedObject {
     private static final Log log = Log.getLog(PostgreTableConstraintBase.class);
 
     private long oid;
     private String constrDDL;
     private long indexId;
+    private boolean isLocal;
 
     public PostgreTableConstraintBase(PostgreTableBase table, String name, DBSEntityConstraintType constraintType, JDBCResultSet resultSet) throws DBException {
         super(table, name, null, constraintType, true);
 
         this.oid = JDBCUtils.safeGetLong(resultSet, "oid");
         this.indexId = JDBCUtils.safeGetLong(resultSet, "conindid");
+        this.isLocal = this instanceof PostgreTableInheritance || JDBCUtils.safeGetBoolean(resultSet, "conislocal");
 
         this.description = JDBCUtils.safeGetString(resultSet, "description");
     }
@@ -98,6 +101,11 @@ public abstract class PostgreTableConstraintBase extends JDBCTableConstraint<Pos
     //@Property(viewable = true, order = 12)
     public PostgreIndex getIndex(DBRProgressMonitor monitor) throws DBException {
         return indexId == 0 ? null : getTable().getSchema().getIndex(monitor, indexId);
+    }
+
+    @Override
+    public boolean isInherited() {
+        return !isLocal;
     }
 
     abstract void cacheAttributes(DBRProgressMonitor monitor, List<? extends PostgreTableConstraintColumn> children, boolean secondPass);

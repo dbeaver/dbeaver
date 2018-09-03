@@ -21,8 +21,7 @@
 <plugin>
 
     <!--
-        Model for Generic extension (obsolete but still working).
-        Also maps Redshift driver.
+        PostgreSQL extension
      -->
     <extension point="org.jkiss.dbeaver.generic.meta">
         <meta id="postgresql" class="org.jkiss.dbeaver.ext.postgresql.model.generic.PostgreMetaModel" driverClass="org.postgresql.Driver,com.amazon.redshift.jdbc4.Driver,com.amazon.redshift.jdbc41.Driver,com.amazon.redshift.jdbc42.Driver"/>
@@ -71,11 +70,11 @@
                                             </items>
                                         </items>
                                     </folder>
-                                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTablePartition" label="%tree.partitions.node.name" icon="#folder_table" description="Table partitions" virtual="true" visibleIf="object.dataSource.isServerVersionAtLeast(10, 0)">
+                                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTablePartition" label="%tree.partitions.node.name" icon="#folder_table" description="Table partitions" virtual="true" visibleIf="object.dataSource.serverType.supportsPartitions()">
                                         <items label="%tree.partitions.node.name" path="partition" property="partitions" icon="#partition" virtual="true" recursive="../..">
                                         </items>
                                     </folder>
-                                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableReal" label="%tree.tablechildren.node.name" icon="#folder_table" description="Table children" virtual="true" visibleIf="object.dataSource.serverType.supportsInheritance()">
+                                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTableReal" label="%tree.tablechildren.node.name" icon="#folder_table" description="Table children" virtual="true" visibleIf="object.hasSubClasses()">
                                         <items label="%tree.tablechildren.node.name" path="subTables" property="subTables" icon="#table" virtual="true" recursive="../.." >
                                         </items>
                                     </folder>
@@ -103,7 +102,7 @@
                                     </folder>
                                 </items>
                             </folder>
-                            <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreMaterializedView" label="%tree.mviews.node.name" icon="#folder_view" description="Materialized views" visibleIf="object.dataSource.isServerVersionAtLeast(9, 3)">
+                            <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreMaterializedView" label="%tree.mviews.node.name" icon="#folder_view" description="Materialized views" visibleIf="object.dataSource.serverType.supportsMaterializedViews()">
                                 <items label="%tree.mview.node.name" path="view" property="materializedViews" icon="#view">
                                     <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreAttribute" label="%tree.columns.node.name" icon="#columns" description="View columns">
                                         <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
@@ -128,7 +127,7 @@
                                     <items label="%tree.procedure_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false"/>
                                 </items>
                             </folder>
-                            <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreSequence" label="%tree.sequences.node.name" icon="#sequences" description="Sequences" visibleIf="object.dataSource.isServerVersionAtLeast(10, 0)">
+                            <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreSequence" label="%tree.sequences.node.name" icon="#sequences" description="Sequences" visibleIf="object.dataSource.serverType.supportsSequences()">
                                 <items label="%tree.sequence.node.name" path="sequence" property="sequences" icon="#sequence"/>
                             </folder>
                             <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreDataType" label="%tree.types.node.name" icon="#data_types" description="Data types">
@@ -139,17 +138,17 @@
                                 </items>
                             </folder>
                             <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreInformation" label="%tree.information.node.name" icon="#folder_info" description="Information">
-                                <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreCollation" label="%tree.collations.node.name" icon="#collations" description="Collations" visibleIf="object.dataSource.isServerVersionAtLeast(9, 1)">
+                                <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreCollation" label="%tree.collations.node.name" icon="#collations" description="Collations" visibleIf="object.dataSource.serverType.supportsCollations()">
                                     <items label="%tree.collation.node.name" path="collation" property="collations" icon="#collation"/>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreExtension" label="%tree.extensions.node.name" icon="#extensions" description="Extensions" visibleIf="object.dataSource.isServerVersionAtLeast(9, 1)">
+                                <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreExtension" label="%tree.extensions.node.name" icon="#extensions" description="Extensions" visibleIf="object.dataSource.serverType.supportsExtensions()">
                                     <items label="%tree.extension.node.name" path="extension" property="extensions" icon="#extension"/>
                                 </folder>
                             </folder>
                         </items>
                     </folder>
 
-                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreRole" label="%tree.roles.node.name" icon="#folder_user" description="Roles and users" visibleIf="object.dataSource.isServerVersionAtLeast(8, 1)">
+                    <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreRole" label="%tree.roles.node.name" icon="#folder_user" description="Roles and users" visibleIf="object.dataSource.serverType.supportsRoles()">
                         <items label="%tree.role.node.name" path="users" property="authIds" icon="#user">
                             <icon if="!object.canLogin" icon="#user_group"/>
                             <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreRoleMember" label="%tree.role.members.node.name" icon="#folder_user" description="Members" visibleIf="!object.canLogin"  navigable="false">
@@ -162,8 +161,8 @@
                     </folder>
 
                     <folder label="%tree.administer.node.name" icon="#folder_admin" description="Administer">
-                        <object type="org.jkiss.dbeaver.ext.postgresql.edit.PostgreSessionEditor" label="%tree.sessions.node.name" icon="#sessions" description="Server session manager" editor="org.jkiss.dbeaver.ext.postgresql.edit.PostgreSessionEditor"/>
-                        <object type="org.jkiss.dbeaver.ext.postgresql.edit.PostgreLockEditor" label="%tree.locks.node.name" icon="#locks" description="Server locks manager" editor="org.jkiss.dbeaver.ext.postgresql.edit.PostgreLockEditor" visibleIf="object.dataSource.isServerVersionAtLeast(9, 3)"/>
+                        <object type="org.jkiss.dbeaver.ext.postgresql.edit.PostgreSessionEditor" label="%tree.sessions.node.name" icon="#sessions" description="Server session manager" editor="org.jkiss.dbeaver.ext.postgresql.edit.PostgreSessionEditor" visibleIf="object.dataSource.serverType.supportsSessionActivity()"/>
+                        <object type="org.jkiss.dbeaver.ext.postgresql.edit.PostgreLockEditor" label="%tree.locks.node.name" icon="#locks" description="Server locks manager" editor="org.jkiss.dbeaver.ext.postgresql.edit.PostgreLockEditor" visibleIf="object.dataSource.serverType.supportsLocks()"/>
                     </folder>
 
                     <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreInformation" label="%tree.information.node.name" icon="#folder_info" description="Information">
@@ -180,10 +179,10 @@
                         <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreCharset" label="%tree.encodings.node.name" icon="#encodings" description="Encodings">
                             <items label="%tree.encoding.node.name" path="encoding" property="encodings" icon="#encoding"/>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreForeignDataWrapper" label="%tree.foreignDataWrappers.node.name" description="Foreign data wrappers" visibleIf="object.dataSource.isServerVersionAtLeast(8, 4)">
+                        <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreForeignDataWrapper" label="%tree.foreignDataWrappers.node.name" description="Foreign data wrappers" visibleIf="object.dataSource.serverType.supportsForeignServers()">
                             <items label="%tree.foreignDataWrapper.node.name" path="foreignDataWrapper" property="foreignDataWrappers"/>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreForeignServer" label="%tree.foreignServers.node.name" description="Foreign servers" visibleIf="object.dataSource.isServerVersionAtLeast(8, 4)">
+                        <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreForeignServer" label="%tree.foreignServers.node.name" description="Foreign servers" visibleIf="object.dataSource.serverType.supportsForeignServers()">
                             <items label="%tree.foreignServer.node.name" path="foreignServer" property="foreignServers">
                                 <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreUserMapping" label="%tree.userMappings.node.name" icon="#folder_user"  description="User Mappings" >
                                     <items label="%tree.userMapping.node.name" path="userMapping" property="userMappings" icon="#user" />
@@ -193,7 +192,7 @@
                         <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreLanguage" label="%tree.languages.node.name" icon="#languages" description="Languages">
                             <items label="%tree.language.node.name" path="language" property="languages" icon="#language"/>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTablespace" label="%tree.tablespaces.node.name" icon="#tablespaces" description="Tablespaces">
+                        <folder type="org.jkiss.dbeaver.ext.postgresql.model.PostgreTablespace" label="%tree.tablespaces.node.name" icon="#tablespaces" description="Tablespaces" visibleIf="object.dataSource.serverType.supportsTablespaces()">
                             <items label="%tree.tablespace.node.name" path="tablespace" property="tablespaces" icon="#tablespace"/>
                         </folder>
                     </folder>
@@ -284,6 +283,24 @@
                     <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
                     <file type="jar" path="drivers/postgresql/postgresql.jar" bundle="drivers.postgresql"/>
                     <parameter name="serverType" value="yellowbrick"/>
+                    <property name="loginTimeout" value="20"/>
+                    <property name="connectTimeout" value="20"/>
+                </driver>
+
+                <driver
+                        id="postgres-cockroach-jdbc"
+                        label="CockroachDB"
+                        icon="icons/cockroach_icon.png"
+                        class="org.postgresql.Driver"
+                        sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
+                        defaultPort="26257"
+                        webURL="https://www.cockroachlabs.com/product/cockroachdb/"
+                        description="%driver.cockroach.description">
+                    <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.3.jre7]" bundle="!drivers.postgresql"/>
+
+                    <file type="license" path="drivers/postgresql/LICENSE.txt" bundle="drivers.postgresql"/>
+                    <file type="jar" path="drivers/postgresql/postgresql.jar" bundle="drivers.postgresql"/>
+                    <parameter name="serverType" value="cockroach"/>
                     <property name="loginTimeout" value="20"/>
                     <property name="connectTimeout" value="20"/>
                 </driver>
