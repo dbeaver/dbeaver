@@ -91,7 +91,10 @@ public class DBeaverVersionChecker extends AbstractJob {
             log.debug(e);
         }
 
-        if (versionDescriptor != null && versionDescriptor.getProgramVersion().compareTo(GeneralUtils.getProductVersion()) > 0) {
+        if (versionDescriptor != null &&
+            versionDescriptor.getProgramVersion().compareTo(GeneralUtils.getProductVersion()) > 0 &&
+            !VersionUpdateDialog.isSuppressed(versionDescriptor))
+        {
             showUpdaterDialog(versionDescriptor);
         } else if (showAlways) {
             showUpdaterDialog(null);
@@ -105,7 +108,8 @@ public class DBeaverVersionChecker extends AbstractJob {
         UIUtils.asyncExec(() -> {
             VersionUpdateDialog dialog = new VersionUpdateDialog(
                 UIUtils.getActiveWorkbenchShell(),
-                versionDescriptor);
+                versionDescriptor,
+                !showAlways);
             dialog.open();
         });
     }
