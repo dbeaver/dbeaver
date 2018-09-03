@@ -48,6 +48,7 @@ import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
+import org.jkiss.dbeaver.model.impl.data.DBDValueError;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -339,11 +340,15 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
     }
 
     private String getCellString(ResultSetModel model, DBDAttributeBinding attr, ResultSetRow row, DBDDisplayFormat displayFormat) {
-        String displayString = attr.getValueHandler().getValueDisplayString(attr, model.getCellValue(attr, row), displayFormat);
+        Object cellValue = model.getCellValue(attr, row);
+        if (cellValue instanceof DBDValueError) {
+            return ((DBDValueError) cellValue).getErrorTitle();
+        }
+        String displayString = attr.getValueHandler().getValueDisplayString(attr, cellValue, displayFormat);
 
         if (displayString.isEmpty() &&
             showNulls &&
-            DBUtils.isNullValue(model.getCellValue(attr, row)))
+            DBUtils.isNullValue(cellValue))
         {
             displayString = DBConstants.NULL_VALUE_LABEL;
         }

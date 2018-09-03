@@ -21,6 +21,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBindingMeta;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.impl.data.DBDValueError;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.model.struct.DBSEntity;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -128,6 +129,9 @@ class ResultSetDataReceiver implements DBDDataReceiver {
                 // Do not reports the same error multiple times
                 // There are a lot of error could occur during result set fetch
                 // We report certain error only once
+
+                row[i] = new DBDValueError(e);
+
                 List<String> attrErrors = this.attrErrors.get(metaColumns[i].getMetaAttribute());
                 if (attrErrors == null) {
                     attrErrors = new ArrayList<>();

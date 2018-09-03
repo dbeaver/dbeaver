@@ -74,6 +74,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.impl.data.DBDValueError;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -124,6 +125,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     private Color backgroundAdded;
     private Color backgroundDeleted;
     private Color backgroundModified;
+    private Color backgroundError;
     private Color backgroundNormal;
     private Color backgroundOdd;
     private Color backgroundReadOnly;
@@ -1018,6 +1020,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         this.backgroundAdded = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_CELL_NEW_BACK);
         this.backgroundDeleted = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_CELL_DELETED_BACK);
         this.backgroundModified = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_CELL_MODIFIED_BACK);
+        this.backgroundError = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_CELL_ERROR_BACK);
         this.backgroundOdd = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_CELL_ODD_BACK);
         this.backgroundReadOnly = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_CELL_READ_ONLY);
         this.foregroundSelected = colorRegistry.get(ThemeConstants.COLOR_SQL_RESULT_SET_SELECTION_FORE);
@@ -1532,6 +1535,9 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
                 controller.readNextSegment();
             }
 
+            if (value instanceof DBDValueError) {
+                return ((DBDValueError) value).getErrorTitle();
+            }
             if (formatString) {
                 if (recordMode) {
                     if (attr.getDataKind() == DBPDataKind.ARRAY && value instanceof DBDCollection) {
@@ -1647,6 +1653,11 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
             }
             if (row.background != null) {
                 return row.background;
+            }
+
+            Object value = controller.getModel().getCellValue(attribute, row);
+            if (value instanceof DBDValueError) {
+                return backgroundError;
             }
             if (attribute.getValueHandler() instanceof DBDValueHandlerComposite) {
                 return backgroundReadOnly;

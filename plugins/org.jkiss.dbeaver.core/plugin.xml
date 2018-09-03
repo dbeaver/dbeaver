@@ -2965,6 +2965,13 @@
             <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.cell.modified.background.description</description>
         </colorDefinition>
         <colorDefinition
+                label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.cell.error.background.label"
+                categoryId="org.jkiss.dbeaver.ui.presentation.results"
+                id="org.jkiss.dbeaver.sql.resultset.color.cell.error.background"
+                value="255, 128, 255">
+            <description>%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.cell.error.background.description</description>
+        </colorDefinition>
+        <colorDefinition
                 label="%colorDefinition.org.jkiss.dbeaver.sql.resultset.color.cell.new.background.label"
                 categoryId="org.jkiss.dbeaver.ui.presentation.results"
                 id="org.jkiss.dbeaver.sql.resultset.color.cell.new.background"
