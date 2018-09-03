@@ -26,6 +26,7 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.application.internal.CoreApplicationActivator;
 import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -36,11 +37,14 @@ class VersionUpdateDialog extends Dialog {
     private VersionDescriptor newVersion;
     private static final int INFO_ID = 1000;
     private Font boldFont;
+    private boolean autoCheck;
+    private Button dontShowAgainCheck;
 
-    public VersionUpdateDialog(Shell parentShell, VersionDescriptor newVersion)
+    public VersionUpdateDialog(Shell parentShell, VersionDescriptor newVersion, boolean autoCheck)
     {
         super(parentShell);
         this.newVersion = newVersion;
+        this.autoCheck = autoCheck;
     }
 
     @Override
@@ -111,6 +115,11 @@ class VersionUpdateDialog extends Dialog {
     @Override
     protected void createButtonsForButtonBar(Composite parent)
     {
+        if (autoCheck && newVersion != null) {
+            ((GridLayout) parent.getLayout()).numColumns++;
+            dontShowAgainCheck = UIUtils.createCheckbox(parent, "Don't show for the version " + newVersion.getPlainVersion(), false);
+        }
+
         if (newVersion != null) {
 /*
             // Disable P2 update. Doesn't work and can't work properly in most cases.
@@ -140,6 +149,9 @@ class VersionUpdateDialog extends Dialog {
     @Override
     protected void buttonPressed(int buttonId)
     {
+        if (dontShowAgainCheck.getSelection()) {
+            CoreApplicationActivator.getDefault().getPreferenceStore().setValue("suppressUpdateCheck." + newVersion.getPlainVersion(), true);
+        }
         if (buttonId == INFO_ID) {
             if (newVersion != null) {
                 UIUtils.launchProgram(newVersion.getBaseURL());
@@ -155,4 +167,9 @@ class VersionUpdateDialog extends Dialog {
         }
         close();
     }
+
+    public static boolean isSuppressed(VersionDescriptor version) {
+        return CoreApplicationActivator.getDefault().getPreferenceStore().getBoolean("suppressUpdateCheck." + version.getPlainVersion());
+    }
+
 }
