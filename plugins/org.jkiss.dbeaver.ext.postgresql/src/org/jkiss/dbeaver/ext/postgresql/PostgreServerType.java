@@ -17,53 +17,31 @@
 
 package org.jkiss.dbeaver.ext.postgresql;
 
+import org.jkiss.dbeaver.ext.postgresql.model.PostgreServerExtension;
+import org.jkiss.dbeaver.ext.postgresql.model.impls.*;
+import org.jkiss.dbeaver.ext.postgresql.model.impls.redshift.PostgreServerRedshift;
+import org.jkiss.dbeaver.ext.postgresql.model.impls.yellowbrick.PostgreServerYellowBrick;
+
 /**
  * Database type
  */
 public enum PostgreServerType {
 
-    POSTGRESQL("PostgreSQL"),
-    GREENPLUM("Greenplum"),
-    REDSHIFT("Redshift", false, false, false, false),
-    TIMESCALE("Timescale"),
-    YELLOWBRICK("YellowBrick"),
-    OTHER("Postgre");
+    POSTGRESQL(PostgreServerPostgreSQL.class),
+    GREENPLUM(PostgreServerGreenplum.class),
+    REDSHIFT(PostgreServerRedshift.class),
+    TIMESCALE(PostgreServerTimescale.class),
+    YELLOWBRICK(PostgreServerYellowBrick.class),
+    COCKROACH(PostgreServerCockroachDB.class),
+    OTHER(PostgreServerPostgreSQL.class);
 
-    private String name;
-    private boolean supportsOids;
-    private boolean supportsIndexes;
-    private boolean supportsInheritance;
-    private boolean supportsTriggers;
+    private final Class<? extends PostgreServerExtension> implClass;
 
-    PostgreServerType(String name) {
-        this(name, true, true, true, true);
+    PostgreServerType(Class<? extends PostgreServerExtension> implClass) {
+        this.implClass = implClass;
     }
 
-    PostgreServerType(String name, boolean supportsOids, boolean supportsIndexes, boolean supportsInheritance, boolean supportsTriggers) {
-        this.name = name;
-        this.supportsOids = supportsOids;
-        this.supportsIndexes = supportsIndexes;
-        this.supportsInheritance = supportsInheritance;
-        this.supportsTriggers = supportsTriggers;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public boolean supportsOids() {
-        return supportsOids;
-    }
-
-    public boolean supportsIndexes() {
-        return supportsIndexes;
-    }
-
-    public boolean supportsInheritance() {
-        return supportsInheritance;
-    }
-
-    public boolean supportsTriggers() {
-        return supportsTriggers;
+    public Class<? extends PostgreServerExtension> getImplClass() {
+        return implClass;
     }
 }

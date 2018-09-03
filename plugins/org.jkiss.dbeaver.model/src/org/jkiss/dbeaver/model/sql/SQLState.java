@@ -81,6 +81,8 @@ public enum SQLState {
     SQL_42S23("42S23", "No default for column"),
     SQL_44000("44000", "WITH CHECK OPTION violation"),
 
+    SQL_S1009("S1009", "WITH CHECK OPTION violation"),
+
     SQL_HY000("HY000", "General error"),
     SQL_HY001("HY001", "Storage allocation failure"),
     SQL_HY002("HY002", "Invalid column number"),

@@ -178,6 +178,8 @@ public class PostgreUtils {
                 result[i] = objVector[i];
             }
             return result;
+        } else if (pgVector instanceof Number) {
+            return new long[] {((Number) pgVector).longValue()};
         } else {
             throw new IllegalArgumentException("Unsupported vector type: " + pgVector.getClass().getName());
         }
@@ -208,6 +210,8 @@ public class PostgreUtils {
                 result[i] = objVector[i];
             }
             return result;
+        } else if (pgVector instanceof Number) {
+            return new int[] {((Number) pgVector).intValue()};
         } else {
             throw new IllegalArgumentException("Unsupported vector type: " + pgVector.getClass().getName());
         }

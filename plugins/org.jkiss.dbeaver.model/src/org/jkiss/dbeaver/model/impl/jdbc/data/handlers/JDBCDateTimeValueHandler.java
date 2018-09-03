@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.impl.data.DateTimeCustomValueHandler;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
+import org.jkiss.dbeaver.model.sql.SQLState;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
 import java.sql.SQLException;
@@ -91,9 +92,11 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
             }
         }
         catch (SQLException e) {
-            if (e.getCause() instanceof ParseException || e.getCause() instanceof UnsupportedOperationException) {
-                // [SQLite] workaround.
-                try {
+            try {
+                if (e.getCause() instanceof ParseException ||
+                    e.getCause() instanceof UnsupportedOperationException)
+                {
+                    // [SQLite] workaround.
                     Object objectValue = ((JDBCResultSet) resultSet).getObject(index + 1);
                     if (objectValue instanceof Date) {
                         return objectValue;
@@ -107,11 +110,17 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
                     } else {
                         return null;
                     }
-
-                } catch (SQLException e1) {
-                    // Ignore
-                    log.debug("Can't retrieve datetime object");
+                } else if (
+                    SQLState.SQL_42000.getCode().equals(e.getSQLState()) ||
+                    SQLState.SQL_S1009.getCode().equals(e.getSQLState()))
+                {
+                    // [MySQL] workaround. Time value may be interval (should be read as string)
+                    return ((JDBCResultSet) resultSet).getString(index + 1);
                 }
+            } catch (SQLException e1) {
+                // Ignore
+                log.debug("Can't retrieve datetime object", e1);
+                return null;
             }
             throw new DBCException(e, session.getDataSource());
         }
@@ -124,6 +133,9 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
             // JDBC uses 1-based indexes
             if (value == null) {
                 dbStat.setNull(index + 1, type.getTypeID());
+            } else if (value instanceof String) {
+                // Some custom value format.
+                dbStat.setString(index + 1, (String) value);
             } else {
                 switch (type.getTypeID()) {
                     case Types.TIME:

@@ -298,7 +298,7 @@ public final class SQLUtils {
     {
         SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
         syntaxManager.init(dataSource.getSQLDialect(), dataSource.getContainer().getPreferenceStore());
-        SQLFormatterConfiguration configuration = new SQLFormatterConfiguration(syntaxManager);
+        SQLFormatterConfiguration configuration = new SQLFormatterConfiguration(dataSource, syntaxManager);
         SQLFormatter formatter = dataSource.getDataSource().getContainer().getPlatform().getSQLFormatterRegistry().createFormatter(configuration);
         if (formatter == null) {
             return query;
@@ -619,19 +619,13 @@ public final class SQLUtils {
     public static String convertStreamToSQL(DBSAttributeBase attribute, DBDContent content, DBDValueHandler valueHandler, SQLDataSource dataSource) {
         try {
             DBRProgressMonitor monitor = new VoidProgressMonitor();
-            if (valueHandler instanceof DBDContentValueHandler) {
-                StringWriter buffer = new StringWriter();
-                ((DBDContentValueHandler) valueHandler).writeStreamValue(monitor, dataSource, attribute, content, buffer);
-                return buffer.toString();
+            if (ContentUtils.isTextContent(content)) {
+                String strValue = ContentUtils.getContentStringValue(monitor, content);
+                strValue = dataSource.getSQLDialect().escapeString(strValue);
+                return "'" + strValue + "'";
             } else {
-                if (ContentUtils.isTextContent(content)) {
-                    String strValue = ContentUtils.getContentStringValue(monitor, content);
-                    strValue = dataSource.getSQLDialect().escapeString(strValue);
-                    return "'" + strValue + "'";
-                } else {
-                    byte[] binValue = ContentUtils.getContentBinaryValue(monitor, content);
-                    return dataSource.getSQLDialect().getNativeBinaryFormatter().toString(binValue, 0, binValue.length);
-                }
+                byte[] binValue = ContentUtils.getContentBinaryValue(monitor, content);
+                return dataSource.getSQLDialect().getNativeBinaryFormatter().toString(binValue, 0, binValue.length);
             }
         }
         catch (Throwable e) {

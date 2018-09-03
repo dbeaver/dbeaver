@@ -61,9 +61,14 @@ public class PostgreDataSourceProvider extends JDBCDataSourceProvider implements
 
     @Override
     public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo) {
+        PostgreServerType serverType = PostgreUtils.getServerType(driver);
         StringBuilder url = new StringBuilder();
-        url.append("jdbc:postgresql://")
-            .append(connectionInfo.getHostName());
+        if (serverType == PostgreServerType.REDSHIFT) {
+            url.append("jdbc:redshift://");
+        } else {
+            url.append("jdbc:postgresql://");
+        }
+        url.append(connectionInfo.getHostName());
         if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
             url.append(":").append(connectionInfo.getHostPort());
         }

@@ -252,6 +252,9 @@ public class PlainTextPresentation extends AbstractPresentation implements IAdap
             for (int i = 0; i < attrs.size(); i++) {
                 DBDAttributeBinding attr = attrs.get(i);
                 colWidths[i] = getAttributeName(attr).length();
+                if (showNulls && !attr.isRequired()) {
+                    colWidths[i] = Math.max(colWidths[i], DBConstants.NULL_VALUE_LABEL.length());
+                }
                 for (ResultSetRow row : allRows) {
                     String displayString = getCellString(model, attr, row, displayFormat);
                     colWidths[i] = Math.max(colWidths[i], displayString.length());

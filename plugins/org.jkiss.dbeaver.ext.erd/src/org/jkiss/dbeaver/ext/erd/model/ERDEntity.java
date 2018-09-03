@@ -236,6 +236,9 @@ public class ERDEntity extends ERDObject<DBSEntity> {
                         unresolvedKeys.add(fk);
                     } else {
                         if (create) {
+                            if (DBUtils.isInheritedObject(fk)) {
+                                continue;
+                            }
                             diagram.getDecorator().createAutoAssociation(diagram, fk, this, entity2, reflect);
                         }
                     }

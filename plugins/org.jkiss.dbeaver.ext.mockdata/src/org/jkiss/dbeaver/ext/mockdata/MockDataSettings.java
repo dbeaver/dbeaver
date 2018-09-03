@@ -292,7 +292,7 @@ public class MockDataSettings {
             if ((selectedGeneratorId == null || !generatorDescriptors.keySet().contains(selectedGeneratorId)) && !CommonUtils.isEmpty(getGenerators())) {
                 selectedGeneratorId = getGenerators().iterator().next();
             }
-            if (this.selectedGeneratorId != selectedGeneratorId) {
+            if (!CommonUtils.equalObjects(this.selectedGeneratorId, selectedGeneratorId)) {
                 this.selectedGeneratorId = selectedGeneratorId;
                 presetId = null;
             }
@@ -307,7 +307,7 @@ public class MockDataSettings {
             if (generatorId == null) {
                 generatorId = getSelectedGeneratorId();
             }
-            return generators.get(generatorId);
+            return generatorId == null ? null : generators.get(generatorId);
         }
 
         public String getPresetId() {

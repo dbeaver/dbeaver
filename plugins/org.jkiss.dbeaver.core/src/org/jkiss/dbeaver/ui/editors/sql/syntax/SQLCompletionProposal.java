@@ -132,7 +132,8 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
         int curOffset = wordDetector.getCursorOffset() - wordDetector.getStartOffset();
         char structSeparator = syntaxManager.getStructSeparator();
 
-        boolean useFQName = dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.PROPOSAL_ALWAYS_FQ);
+        boolean useFQName = dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.PROPOSAL_ALWAYS_FQ) &&
+            replacementString.indexOf(structSeparator) != -1;
         if (useFQName) {
             replacementOffset = wordDetector.getStartOffset();
             replacementLength = wordDetector.getLength();

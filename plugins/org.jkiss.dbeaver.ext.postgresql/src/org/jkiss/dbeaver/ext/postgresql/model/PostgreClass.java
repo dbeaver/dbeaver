@@ -37,6 +37,7 @@ public interface PostgreClass extends PostgreObject, DBSEntity, DBPRefreshableOb
         p,  // partitionedtable
         // Redshift
         e,
+        s,
     }
 
     @NotNull
