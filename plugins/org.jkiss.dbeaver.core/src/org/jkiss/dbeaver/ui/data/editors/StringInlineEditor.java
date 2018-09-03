@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.data.editors;
 
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.widgets.Composite;
@@ -57,6 +58,7 @@ public class StringInlineEditor extends BaseValueEditor<Control> {
                 SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
             editor.setTextLimit(MAX_STRING_LENGTH);
             editor.setEditable(!valueController.isReadOnly());
+            editor.setFont(JFaceResources.getFont(JFaceResources.TEXT_FONT));
             StyledTextUtils.fillDefaultStyledTextContextMenu(editor);
             return editor;
         }
