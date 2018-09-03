@@ -43,7 +43,6 @@ import org.jkiss.utils.Pair;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.io.StringWriter;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -470,7 +469,23 @@ public final class SQLUtils {
             if (conditionTable != null) {
                 query.append(conditionTable).append('.');
             }
-            query.append(DBUtils.getObjectFullName(co.getAttribute(), DBPEvaluationContext.DML));
+            String orderString = null;
+            if (co.getAttribute() instanceof DBDAttributeBindingMeta) {
+                String orderColumn = co.getAttribute().getName();
+                if (orderColumn.indexOf('(') != -1 ||
+                    orderColumn.indexOf('+') != -1 ||
+                    orderColumn.indexOf('-') != -1 ||
+                    orderColumn.indexOf('*') != -1 ||
+                    orderColumn.indexOf('|') != -1)
+                {
+                    // It is a function or expression
+                    orderString = orderColumn;
+                }
+            }
+            if (orderString == null) {
+                orderString = DBUtils.getObjectFullName(co.getAttribute(), DBPEvaluationContext.DML);
+            }
+            query.append(orderString);
             if (co.isOrderDescending()) {
                 query.append(" DESC"); //$NON-NLS-1$
             }
