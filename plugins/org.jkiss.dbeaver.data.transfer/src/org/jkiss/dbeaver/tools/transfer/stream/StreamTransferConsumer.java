@@ -34,6 +34,7 @@ import org.jkiss.dbeaver.model.exec.DBCAttributeMetaData;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.impl.data.DBDValueError;
 import org.jkiss.dbeaver.model.runtime.DBRProcessDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRShellCommand;
@@ -129,7 +130,13 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
             // Get values
             for (int i = 0; i < metaColumns.size(); i++) {
                 DBDAttributeBinding column = metaColumns.get(i);
-                Object value = column.getValueHandler().fetchValueObject(session, resultSet, column.getAttribute(), column.getOrdinalPosition());
+                Object value;
+                try {
+                    value = column.getValueHandler().fetchValueObject(session, resultSet, column.getAttribute(), column.getOrdinalPosition());
+                } catch (DBCException e) {
+                    log.debug("Error fetching '" + column.getAttribute().getName() + "' value: " + e.getMessage());
+                    value = null;//new DBDValueError(e);
+                }
                 if (value instanceof DBDContent && !settings.isOutputClipboard()) {
                     // Check for binary type export
                     if (!ContentUtils.isTextContent((DBDContent) value)) {
