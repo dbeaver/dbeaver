@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenHandler;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
+import org.jkiss.dbeaver.ui.navigator.database.load.TreeNodeSpecial;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.Collection;
@@ -119,63 +120,60 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
                 }
             }
         );
-        navigatorTree.getViewer().addDoubleClickListener(new IDoubleClickListener() {
-            @Override
-            public void doubleClick(DoubleClickEvent event)
-            {
-                TreeViewer viewer = tree.getViewer();
-                IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
-                for (Object node : selection.toArray()) {
-                    //Object node = selection.getFirstElement();
-                    if ((node instanceof DBNResource && ((DBNResource) node).getResource() instanceof IFolder)) {
+        navigatorTree.getViewer().addDoubleClickListener(event -> {
+            TreeViewer viewer = tree.getViewer();
+            IStructuredSelection selection = (IStructuredSelection) viewer.getSelection();
+            for (Object node : selection.toArray()) {
+                //Object node = selection.getFirstElement();
+                if ((node instanceof DBNResource && ((DBNResource) node).getResource() instanceof IFolder)) {
+                    toggleNode(viewer, node);
+                } else if (node instanceof DBNDataSource) {
+                    DoubleClickBehavior dsBehaviorDefault = DoubleClickBehavior.valueOf(DBeaverCore.getGlobalPreferenceStore().getString(DBeaverPreferences.NAVIGATOR_CONNECTION_DOUBLE_CLICK));
+                    if (dsBehaviorDefault == DoubleClickBehavior.EXPAND) {
                         toggleNode(viewer, node);
-                    } else if (node instanceof DBNDataSource) {
-                        DoubleClickBehavior dsBehaviorDefault = DoubleClickBehavior.valueOf(DBeaverCore.getGlobalPreferenceStore().getString(DBeaverPreferences.NAVIGATOR_CONNECTION_DOUBLE_CLICK));
-                        if (dsBehaviorDefault == DoubleClickBehavior.EXPAND) {
-                            toggleNode(viewer, node);
-                        } else {
-                            DBPDataSourceContainer dataSource = ((DBNDataSource) node).getObject();
-                            NavigatorViewBase.DoubleClickBehavior doubleClickBehavior =
-                                NavigatorViewBase.DoubleClickBehavior.valueOf(DBeaverCore.getGlobalPreferenceStore().getString(DBeaverPreferences.NAVIGATOR_CONNECTION_DOUBLE_CLICK));
-                            switch (doubleClickBehavior) {
-                                case EDIT:
-                                    NavigatorHandlerObjectOpen.openEntityEditor((DBNDataSource) node, null, UIUtils.getActiveWorkbenchWindow());
-                                    break;
-                                case CONNECT:
-                                    if (dataSource.isConnected()) {
-                                        DataSourceHandler.disconnectDataSource(dataSource, null);
-                                    } else {
-                                        DataSourceHandler.connectToDataSource(null, dataSource, null);
-                                    }
-                                    break;
-                                case SQL_EDITOR:
-                                    try {
-                                        OpenHandler.openRecentScript(getSite().getWorkbenchWindow(), dataSource, null);
-                                    } catch (CoreException e) {
-                                        DBUserInterface.getInstance().showError("Open SQL editor", "Can't open SQL editor", e);
-                                    }
-                                    break;
-                                case SQL_EDITOR_NEW:
-                                    try {
-                                        OpenHandler.openNewEditor(getSite().getWorkbenchWindow(), dataSource, null);
-                                    } catch (CoreException e) {
-                                        DBUserInterface.getInstance().showError("Open new SQL editor", "Can't open new SQL editor", e);
-                                    }
-                                    break;
-                            }
-                        }
                     } else {
-                        DoubleClickBehavior dcBehaviorDefault = DoubleClickBehavior.valueOf(DBeaverCore.getGlobalPreferenceStore().getString(DBeaverPreferences.NAVIGATOR_OBJECT_DOUBLE_CLICK));
-                        boolean hasChildren = node instanceof DBNNode && ((DBNNode) node).hasChildren(true);
-                        if (hasChildren && dcBehaviorDefault == DoubleClickBehavior.EXPAND) {
-                            toggleNode(viewer, node);
-                        } else {
-                            NavigatorUtils.executeNodeAction(DBXTreeNodeHandler.Action.open, node, getSite());
+                        DBPDataSourceContainer dataSource = ((DBNDataSource) node).getObject();
+                        DoubleClickBehavior doubleClickBehavior =
+                            DoubleClickBehavior.valueOf(DBeaverCore.getGlobalPreferenceStore().getString(DBeaverPreferences.NAVIGATOR_CONNECTION_DOUBLE_CLICK));
+                        switch (doubleClickBehavior) {
+                            case EDIT:
+                                NavigatorHandlerObjectOpen.openEntityEditor((DBNDataSource) node, null, UIUtils.getActiveWorkbenchWindow());
+                                break;
+                            case CONNECT:
+                                if (dataSource.isConnected()) {
+                                    DataSourceHandler.disconnectDataSource(dataSource, null);
+                                } else {
+                                    DataSourceHandler.connectToDataSource(null, dataSource, null);
+                                }
+                                break;
+                            case SQL_EDITOR:
+                                try {
+                                    OpenHandler.openRecentScript(getSite().getWorkbenchWindow(), dataSource, null);
+                                } catch (CoreException e) {
+                                    DBUserInterface.getInstance().showError("Open SQL editor", "Can't open SQL editor", e);
+                                }
+                                break;
+                            case SQL_EDITOR_NEW:
+                                try {
+                                    OpenHandler.openNewEditor(getSite().getWorkbenchWindow(), dataSource, null);
+                                } catch (CoreException e) {
+                                    DBUserInterface.getInstance().showError("Open new SQL editor", "Can't open new SQL editor", e);
+                                }
+                                break;
                         }
+                    }
+                } else if (node instanceof TreeNodeSpecial) {
+                    ((TreeNodeSpecial) node).handleDefaultAction(navigatorTree);
+                } else {
+                    DoubleClickBehavior dcBehaviorDefault = DoubleClickBehavior.valueOf(DBeaverCore.getGlobalPreferenceStore().getString(DBeaverPreferences.NAVIGATOR_OBJECT_DOUBLE_CLICK));
+                    boolean hasChildren = node instanceof DBNNode && ((DBNNode) node).hasChildren(true);
+                    if (hasChildren && dcBehaviorDefault == DoubleClickBehavior.EXPAND) {
+                        toggleNode(viewer, node);
+                    } else {
+                        NavigatorUtils.executeNodeAction(DBXTreeNodeHandler.Action.open, node, getSite());
                     }
                 }
             }
-
         });
 
         // Hook context menu

@@ -33,6 +33,8 @@ import org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase;
 import org.jkiss.dbeaver.utils.PrefUtils;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.Locale;
+
 /**
  * PrefPageDatabaseNavigator
  */
@@ -45,6 +47,7 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
     private Button sortCaseInsensitiveCheck;
     private Button sortFoldersFirstCheck;
     private Button groupByDriverCheck;
+    private Text longListFetchSizeText;
     private Button syncEditorDataSourceWithNavigator;
     private Combo dsDoubleClickBehavior;
     private Combo objDoubleClickBehavior;
@@ -81,6 +84,10 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
 
             groupByDriverCheck = UIUtils.createCheckbox(navigatorGroup, CoreMessages.pref_page_database_general_label_group_database_by_driver, "", false, 2);
             groupByDriverCheck.setEnabled(false);
+
+            longListFetchSizeText = UIUtils.createLabelText(navigatorGroup, CoreMessages.pref_page_database_general_label_long_list_fetch_size, "", SWT.BORDER);
+            longListFetchSizeText.setToolTipText(CoreMessages.pref_page_database_general_label_long_list_fetch_size_tip);
+            longListFetchSizeText.addVerifyListener(UIUtils.getIntegerVerifyListener(Locale.getDefault()));
 
             syncEditorDataSourceWithNavigator = UIUtils.createCheckbox(navigatorGroup, CoreMessages.pref_page_database_general_label_sync_editor_connection_with_navigator, CoreMessages.pref_page_database_general_label_sync_editor_connection_with_navigator_tip, false, 2);
 
@@ -120,6 +127,7 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
         sortCaseInsensitiveCheck.setSelection(store.getBoolean(DBeaverPreferences.NAVIGATOR_SORT_ALPHABETICALLY));
         sortFoldersFirstCheck.setSelection(store.getBoolean(DBeaverPreferences.NAVIGATOR_SORT_FOLDERS_FIRST));
         groupByDriverCheck.setSelection(store.getBoolean(DBeaverPreferences.NAVIGATOR_GROUP_BY_DRIVER));
+        longListFetchSizeText.setText(store.getString(DBeaverPreferences.NAVIGATOR_LONG_LIST_FETCH_SIZE));
         syncEditorDataSourceWithNavigator.setSelection(store.getBoolean(DBeaverPreferences.NAVIGATOR_SYNC_EDITOR_DATASOURCE));
         NavigatorViewBase.DoubleClickBehavior objDCB = NavigatorViewBase.DoubleClickBehavior.valueOf(store.getString(DBeaverPreferences.NAVIGATOR_OBJECT_DOUBLE_CLICK));
         objDoubleClickBehavior.select(objDCB == NavigatorViewBase.DoubleClickBehavior.EXPAND ? 1 : 0);
@@ -142,6 +150,7 @@ public class PrefPageDatabaseNavigator extends AbstractPrefPage implements IWork
         store.setValue(DBeaverPreferences.NAVIGATOR_SORT_ALPHABETICALLY, sortCaseInsensitiveCheck.getSelection());
         store.setValue(DBeaverPreferences.NAVIGATOR_SORT_FOLDERS_FIRST, sortFoldersFirstCheck.getSelection());
         store.setValue(DBeaverPreferences.NAVIGATOR_GROUP_BY_DRIVER, groupByDriverCheck.getSelection());
+        store.setValue(DBeaverPreferences.NAVIGATOR_LONG_LIST_FETCH_SIZE, longListFetchSizeText.getText());
         store.setValue(DBeaverPreferences.NAVIGATOR_SYNC_EDITOR_DATASOURCE, syncEditorDataSourceWithNavigator.getSelection());
         NavigatorViewBase.DoubleClickBehavior objDCB = NavigatorViewBase.DoubleClickBehavior.EXPAND;
         if (objDoubleClickBehavior.getSelectionIndex() == 0) {
