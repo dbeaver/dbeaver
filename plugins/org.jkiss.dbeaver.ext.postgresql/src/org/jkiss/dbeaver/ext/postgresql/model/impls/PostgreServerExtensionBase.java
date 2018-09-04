@@ -85,7 +85,7 @@ public abstract class PostgreServerExtensionBase implements PostgreServerExtensi
 
     @Override
     public boolean supportsSequences() {
-        return dataSource.isServerVersionAtLeast(10, 0);
+        return true;//dataSource.isServerVersionAtLeast(10, 0);
     }
 
     @Override
