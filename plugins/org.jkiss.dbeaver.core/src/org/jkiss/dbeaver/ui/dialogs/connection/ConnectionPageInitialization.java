@@ -404,7 +404,9 @@ class ConnectionPageInitialization extends ConnectionWizardPage {
             ((ConnectionWizard) newWizard).addPropertyChangeListener(event -> {
                 if (ConnectionWizard.PROP_CONNECTION_TYPE.equals(event.getProperty())) {
                     DBPConnectionType type = (DBPConnectionType) event.getNewValue();
-                    autocommit.setSelection(type.isAutocommit());
+                    if (autocommit != null) {
+                        autocommit.setSelection(type.isAutocommit());
+                    }
                 }
             });
         }
