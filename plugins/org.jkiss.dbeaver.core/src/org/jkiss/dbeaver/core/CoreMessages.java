@@ -1199,7 +1199,7 @@ public class CoreMessages extends NLS {
 	// Connection edit
 	public static String dialog_connection_edit_title;
 	public static String dialog_connection_edit_connection_settings_variables_hint_label;
-
+	public static String dialog_connection_edit_wizard_conn_conf_general_link;
 	public static String dialog_connection_edit_wizard_conn_conf_network_link;
 
 	public static String dialog_connection_edit_wizard_general;
