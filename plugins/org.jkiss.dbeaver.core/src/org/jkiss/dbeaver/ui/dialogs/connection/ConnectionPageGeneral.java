@@ -163,7 +163,7 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
     public void createControl(Composite parent)
     {
         Composite group = new Composite(parent, SWT.NONE);
-        GridLayout gl = new GridLayout(2, false);
+        GridLayout gl = new GridLayout(1, false);
         group.setLayout(gl);
 
         String connectionName = dataSourceDescriptor == null ? "" : dataSourceDescriptor.getName(); //$NON-NLS-1$
@@ -211,7 +211,9 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
             UIUtils.createControlLabel(group, CoreMessages.dialog_connection_wizard_final_label_connection_folder);
 
             connectionFolderCombo = new Combo(group, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
-            //connectionFolderCombo.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+            gd.widthHint = UIUtils.getFontHeight(connectionFolderCombo) * 30;
+            connectionFolderCombo.setLayoutData(gd);
             loadConnectionFolders();
             connectionFolderCombo.addSelectionListener(new SelectionAdapter() {
                 @Override
@@ -223,7 +225,6 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
 
         {
             Label descLabel = UIUtils.createControlLabel(group, CoreMessages.dialog_connection_wizard_description);
-            ((GridData) descLabel.getLayoutData()).horizontalSpan = 2;
             descriptionText = new Text(group, SWT.BORDER | SWT.V_SCROLL | SWT.WRAP | SWT.MULTI);
             final GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
