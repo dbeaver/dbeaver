@@ -134,9 +134,9 @@ public class NewConnectionWizard extends ConnectionWizard
                 return pageSettings;
             }
         } else if (page instanceof ConnectionPageSettings) {
-            return pageDrivers.getSelectedDriver().isEmbedded() ? pageGeneral : pageNetwork;
+            return null;//pageDrivers.getSelectedDriver().isEmbedded() ? pageGeneral : pageNetwork;
         } else if (page instanceof ConnectionPageNetwork) {
-            return pageGeneral;
+            return null;//pageGeneral;
         } else {
             return null;
         }
