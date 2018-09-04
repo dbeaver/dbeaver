@@ -43,6 +43,7 @@ public class DataImporterCSV extends StreamImporterAbstract {
     private static final String PROP_HEADER = "header";
     private static final String PROP_DELIMITER = "delimiter";
     private static final String PROP_QUOTE_CHAR = "quoteChar";
+    private static final String PROP_NULL_STRING = "nullString";
     private static final String PROP_EMPTY_STRING_NULL = "emptyStringNull";
 
     enum HeaderPosition {
