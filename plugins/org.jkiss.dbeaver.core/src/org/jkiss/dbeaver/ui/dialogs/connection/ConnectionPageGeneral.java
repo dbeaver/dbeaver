@@ -86,13 +86,18 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
     public void activatePage()
     {
         if (connectionNameText != null) {
-            ConnectionPageSettings settings = wizard.getPageSettings();
-            String newName = generateConnectionName(settings);
-            if (CommonUtils.isEmpty(connectionNameText.getText()) || !connectionNameChanged) {
-                if (newName != null) {
-                    connectionNameText.setText(newName);
+            if (dataSourceDescriptor != null && !CommonUtils.isEmpty(dataSourceDescriptor.getName())) {
+                connectionNameText.setText(dataSourceDescriptor.getName());
+                connectionNameChanged = true;
+            } else {
+                ConnectionPageSettings settings = wizard.getPageSettings();
+                if (CommonUtils.isEmpty(connectionNameText.getText()) || !connectionNameChanged) {
+                    String newName = generateConnectionName(settings);
+                    if (newName != null) {
+                        connectionNameText.setText(newName);
+                    }
+                    connectionNameChanged = false;
                 }
-                connectionNameChanged = false;
             }
         }
         if (dataSourceDescriptor != null) {
