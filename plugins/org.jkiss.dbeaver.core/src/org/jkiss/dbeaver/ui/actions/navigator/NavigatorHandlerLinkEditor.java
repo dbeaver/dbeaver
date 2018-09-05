@@ -32,6 +32,7 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
+import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
@@ -87,6 +88,10 @@ public class NavigatorHandlerLinkEditor extends AbstractHandler {
                 final NavigatorViewBase view = navigatorView;
                 UIUtils.runInUI(activePage.getWorkbenchWindow(), monitor -> {
                     DBSObject showObject = activeObject;
+                    if (showObject instanceof DBSInstance && !(showObject instanceof DBPDataSourceContainer)) {
+                        showObject = activeObject.getParentObject();
+                    }
+
                     if (showObject instanceof DBPDataSource) {
                         showObject = ((DBPDataSource) showObject).getContainer();
                     }
