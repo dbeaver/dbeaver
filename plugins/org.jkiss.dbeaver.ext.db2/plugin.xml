@@ -365,6 +365,7 @@
                     sampleURL="jdbc:db2://{host}[:{port}]/{database}"
                     defaultPort="50000"
                     webURL="http://www-01.ibm.com/support/docview.wss?uid=swg21363866"
+                    propertiesURL="https://www.ibm.com/support/knowledgecenter/en/SSEPGG_11.1.0/com.ibm.db2.luw.apdv.java.doc/src/tpc/imjcc_r0052038.html"
                     description="DB2 for Linux/Unix/Windows driver">
 
                     <property name="loginTimeout" value="20"/>
