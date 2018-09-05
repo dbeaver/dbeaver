@@ -649,6 +649,7 @@
                     sampleURL="jdbc:sqlite:{file}"
                     defaultPort=""
                     webURL="https://github.com/xerial/sqlite-jdbc"
+                    propertiesURL="https://www.sqlite.org/pragma.html"
                     embedded="true"
                     anonymous="true"
                     description="SQLite JDBC driver by Taro L. Saito (extension of Zentus driver)">
@@ -706,6 +707,7 @@
                     sampleURL="jdbc:vertica://{host}:{port}/[{database}]"
                     defaultPort="5433"
                     webURL="http://www.vertica.com/"
+                    propertiesURL="https://my.vertica.com/docs/9.0.x/HTML/index.htm#Authoring/ConnectingToVertica/ClientJDBC/JDBCConnectionProperties.htm"
                     description="Driver for Vertica Database">
 
                     <file type="jar" path="repo:/drivers/vertica/vertica-jdk5-6.1.2-0.jar" bundle="!drivers.vertica"/>

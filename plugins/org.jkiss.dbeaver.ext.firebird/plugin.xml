@@ -27,7 +27,8 @@
                         class="org.firebirdsql.jdbc.FBDriver"
                         sampleURL="jdbc:firebirdsql://{host}:{port}/{file}"
                         defaultPort="3050"
-                        webURL=""
+                        webURL="https://firebirdsql.org/en/jdbc-driver/"
+                        propertiesURL="https://github.com/FirebirdSQL/jaybird/wiki/Connection-properties"
                         description="Firebird JayBird driver">
                     <replace provider="generic" driver="firebird_jaybird"/>
                     <replace provider="generic" driver="firebird_jaybird3"/>
