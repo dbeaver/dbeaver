@@ -303,6 +303,16 @@ public class EntityDiagram extends ERDObject<DBSObject> implements ERDContainer 
         return entityMap.get(table);
     }
 
+    public List<ERDEntity> getEntities(DBSEntity table) {
+        List<ERDEntity> result = new ArrayList<>();
+        for (ERDEntity entity : entities) {
+            if (entity.getObject() == table) {
+                result.add(entity);
+            }
+        }
+        return result;
+    }
+
     public void clear() {
         this.entities.clear();
         this.entityMap.clear();
