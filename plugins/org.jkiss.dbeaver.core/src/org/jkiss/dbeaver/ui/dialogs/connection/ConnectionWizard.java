@@ -110,6 +110,7 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
             if (defaultClientLocation != null) {
                 info.getConnectionConfiguration().setClientHomeId(defaultClientLocation.getName());
             }
+            info.setSavePassword(true);
             infoMap.put(driver, info);
         }
         return info;
