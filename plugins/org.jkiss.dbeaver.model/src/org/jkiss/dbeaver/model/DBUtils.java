@@ -308,7 +308,7 @@ public final class DBUtils {
     {
         if (!CommonUtils.isEmpty(catalogName)) {
             Class<? extends DBSObject> childType = rootSC.getChildType(monitor);
-            if (DBSSchema.class.isAssignableFrom(childType)) {
+            if (DBSSchema.class.isAssignableFrom(childType) || DBSEntity.class.isAssignableFrom(childType)) {
                 // Datasource supports only schemas. Do not use catalog
                 catalogName = null;
             }
