@@ -273,7 +273,7 @@ public class GeneralUtils {
 
     @NotNull
     public static String getProductTitle() {
-        return getProductName() + " " + getProductVersion();
+        return getProductName() + " " + getPlainVersion();
     }
 
     @NotNull
@@ -300,6 +300,12 @@ public class GeneralUtils {
             return ModelActivator.getInstance().getBundle().getVersion();
         }
         return product.getDefiningBundle().getVersion();
+    }
+
+    @NotNull
+    public static String getPlainVersion() {
+        Version version = getProductVersion();
+        return version.getMajor() + "." + version.getMinor() + "." + version.getMicro();
     }
 
     @NotNull
