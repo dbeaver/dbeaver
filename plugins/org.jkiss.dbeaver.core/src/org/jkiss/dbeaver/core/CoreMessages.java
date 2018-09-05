@@ -1150,6 +1150,8 @@ public class CoreMessages extends NLS {
 	public static String pref_page_database_general_label_folders_first;
 	public static String pref_page_database_general_label_folders_first_tip;
 	public static String pref_page_database_general_label_group_database_by_driver;
+	public static String pref_page_database_general_label_long_list_fetch_size;
+	public static String pref_page_database_general_label_long_list_fetch_size_tip;
 	public static String pref_page_database_general_label_sync_editor_connection_with_navigator;
 	public static String pref_page_database_general_label_sync_editor_connection_with_navigator_tip;
 	public static String pref_page_database_general_label_double_click_node;
@@ -1197,7 +1199,7 @@ public class CoreMessages extends NLS {
 	// Connection edit
 	public static String dialog_connection_edit_title;
 	public static String dialog_connection_edit_connection_settings_variables_hint_label;
-
+	public static String dialog_connection_edit_wizard_conn_conf_general_link;
 	public static String dialog_connection_edit_wizard_conn_conf_network_link;
 
 	public static String dialog_connection_edit_wizard_general;

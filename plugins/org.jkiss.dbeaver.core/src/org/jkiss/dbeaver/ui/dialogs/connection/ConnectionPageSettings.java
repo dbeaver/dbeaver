@@ -247,7 +247,7 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
     @Override
     public boolean canFlipToNextPage()
     {
-        return true;
+        return false;
     }
 
     @Override

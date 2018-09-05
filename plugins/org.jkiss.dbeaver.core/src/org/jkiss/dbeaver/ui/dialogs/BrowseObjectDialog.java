@@ -30,7 +30,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSWrapper;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTreeFilter;
-import org.jkiss.dbeaver.ui.navigator.database.load.TreeLoadNode;
+import org.jkiss.dbeaver.ui.navigator.database.load.TreeNodeSpecial;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -96,7 +96,7 @@ public class BrowseObjectDialog extends Dialog {
             @Override
             public boolean select(Viewer viewer, Object parentElement, Object element)
             {
-                if (element instanceof TreeLoadNode || element instanceof DBNLocalFolder) {
+                if (element instanceof TreeNodeSpecial || element instanceof DBNLocalFolder) {
                     return true;
                 }
                 if (element instanceof DBNNode) {
