@@ -954,6 +954,10 @@ public class CoreMessages extends NLS {
 	public static String dialog_setting_connection_general;
 	public static String dialog_setting_connection_driver_properties_title;
 	public static String dialog_setting_connection_driver_properties_description;
+	public static String dialog_setting_connection_driver_properties_advanced;
+	public static String dialog_setting_connection_driver_properties_advanced_tip;
+	public static String dialog_setting_connection_driver_properties_docs_web_reference;
+
 	public static String dialog_connection_network_title;
 	public static String dialog_connection_wizard_final_label_connection_type;
 	public static String dialog_connection_wizard_final_label_edit;

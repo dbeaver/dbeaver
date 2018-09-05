@@ -17,9 +17,13 @@
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CLabel;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Link;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -27,6 +31,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
+import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.dbeaver.runtime.properties.PropertySourceCustom;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.utils.CommonUtils;
@@ -141,6 +146,36 @@ public class DriverPropertiesDialogPage extends ConnectionPageAbstract
         if (layoutData instanceof GridData) {
             ((GridData) layoutData).heightHint = 200;
         }
+
+        Composite linksComposite = UIUtils.createPlaceholder(ph, 2, 2);
+        linksComposite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+        {
+            CLabel infoLabel = UIUtils.createInfoLabel(linksComposite, CoreMessages.dialog_setting_connection_driver_properties_advanced);
+            GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
+            gd.grabExcessHorizontalSpace = true;
+            infoLabel.setLayoutData(gd);
+            infoLabel.setToolTipText(CoreMessages.dialog_setting_connection_driver_properties_advanced_tip);
+        }
+        {
+            Link netConfigLink = new Link(linksComposite, SWT.NONE);
+            if (!CommonUtils.isEmpty(site.getDriver().getWebURL())) {
+                netConfigLink.setText("<a>" + CoreMessages.dialog_setting_connection_driver_properties_docs_web_reference + "</a>");
+                netConfigLink.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        String url = site.getDriver().getPropertiesWebURL();
+                        if (CommonUtils.isEmpty(url)) {
+                            url = site.getDriver().getWebURL();
+                        }
+                        WebUtils.openWebBrowser(url);
+                    }
+                });
+            }
+            netConfigLink.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_END));
+        }
+
+
         setControl(ph);
     }
 
