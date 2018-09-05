@@ -130,22 +130,26 @@ public class OpenHandler extends AbstractDataSourceHandler {
 
     private static void openNewEditor(ExecutionEvent event) throws CoreException {
         IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
-        DBPDataSourceContainer dataSourceContainer = getCurrentConnection(event);
+        try {
+            DBPDataSourceContainer dataSourceContainer = getCurrentConnection(event);
 
-        openNewEditor(workbenchWindow, dataSourceContainer, HandlerUtil.getCurrentSelection(event));
+            openNewEditor(workbenchWindow, dataSourceContainer, HandlerUtil.getCurrentSelection(event));
+        } catch (InterruptedException e) {
+            // Canceled
+        }
     }
 
-    private static void openRecentEditor(ExecutionEvent event) throws ExecutionException, CoreException {
-        DBPDataSourceContainer dataSourceContainer = getCurrentConnection(event);
-        if (dataSourceContainer == null) {
-            return;
+    private static void openRecentEditor(ExecutionEvent event) throws CoreException {
+        try {
+            DBPDataSourceContainer dataSourceContainer = getCurrentConnection(event);
+            openRecentScript(HandlerUtil.getActiveWorkbenchWindow(event), dataSourceContainer, null);
+        } catch (InterruptedException e) {
+            // Canceled
         }
-        openRecentScript(HandlerUtil.getActiveWorkbenchWindow(event), dataSourceContainer, null);
     }
 
     @Nullable
-    private static DBPDataSourceContainer getCurrentConnection(ExecutionEvent event)
-    {
+    private static DBPDataSourceContainer getCurrentConnection(ExecutionEvent event) throws InterruptedException {
         DBPDataSourceContainer dataSourceContainer = getDataSourceContainer(event, false);
         final ProjectRegistry projectRegistry = DBeaverCore.getInstance().getProjectRegistry();
         IProject project = dataSourceContainer != null ? dataSourceContainer.getRegistry().getProject() : projectRegistry.getActiveProject();
@@ -160,7 +164,7 @@ public class OpenHandler extends AbstractDataSourceHandler {
             } else if (!dataSourceRegistry.getDataSources().isEmpty()) {
                 SelectDataSourceDialog dialog = new SelectDataSourceDialog(HandlerUtil.getActiveShell(event), project, null);
                 if (dialog.open() == IDialogConstants.CANCEL_ID) {
-                    return null;
+                    throw new InterruptedException();
                 }
                 dataSourceContainer = dialog.getDataSource();
             }
@@ -239,14 +243,11 @@ public class OpenHandler extends AbstractDataSourceHandler {
         }
         if (!project.isOpen()) {
             try {
-                UIUtils.runInProgressService(new DBRRunnableWithProgress() {
-                    @Override
-                    public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                        try {
-                            project.open(monitor.getNestedMonitor());
-                        } catch (CoreException e) {
-                            throw new InvocationTargetException(e);
-                        }
+                UIUtils.runInProgressService(monitor -> {
+                    try {
+                        project.open(monitor.getNestedMonitor());
+                    } catch (CoreException e) {
+                        throw new InvocationTargetException(e);
                     }
                 });
             } catch (InvocationTargetException e) {
