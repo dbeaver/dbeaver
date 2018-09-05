@@ -283,7 +283,7 @@ public class ERDEntity extends ERDObject<DBSEntity> {
 
     @Override
     public String toString() {
-        return object.getName();
+        return getName() + (CommonUtils.isEmpty(alias) ? "" : " " + alias);
     }
 
     @Override
