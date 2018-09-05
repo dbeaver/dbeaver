@@ -138,7 +138,7 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
                     newName = connectionInfo.getHostName();
                 }
                 if (CommonUtils.isEmpty(newName)) {
-                    newName = connectionInfo.getUrl();
+                    newName = connectionInfo.getServerName();
                 }
                 if (CommonUtils.isEmpty(newName)) {
                     newName = CoreMessages.dialog_connection_wizard_final_default_new_connection_name;
@@ -347,10 +347,7 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
         }
         final DBPConnectionConfiguration confConfig = dataSource.getConnectionConfiguration();
 
-        String name = connectionNameText.getText();
-        if (name.isEmpty()) {
-            name = generateConnectionName(getWizard().getPageSettings());
-        }
+        String name = connectionNameChanged ? connectionNameText.getText() : generateConnectionName(getWizard().getPageSettings());
         dataSource.setName(name);
         dataSource.setFolder(dataSourceFolder);
 
