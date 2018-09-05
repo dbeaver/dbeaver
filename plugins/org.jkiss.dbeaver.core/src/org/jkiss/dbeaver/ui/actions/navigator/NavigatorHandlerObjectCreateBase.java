@@ -181,6 +181,9 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
                     monitor.subTask("Obtain new object node");
                     // Wait for a few seconds to let listeners to add new object's node in navigator node
                     for (int i = 0; i < 50; i++) {
+                        if (monitor.isCanceled()) {
+                            break;
+                        }
                         if (DBeaverCore.getInstance().getNavigatorModel().findNode(newObject) != null) {
                             break;
                         }

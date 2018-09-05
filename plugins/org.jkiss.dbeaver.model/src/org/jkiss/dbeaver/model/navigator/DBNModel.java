@@ -406,7 +406,7 @@ public class DBNModel implements IResourceChangeListener {
                 return null;
             }
 
-            if (item == object.getParentObject()) {
+            if (item == DBUtils.getPublicObjectContainer(object.getParentObject())) {
                 // Try to find parent node withing children
                 for (DBNDatabaseNode child : children) {
                     if (child instanceof DBNDatabaseFolder) {
