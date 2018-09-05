@@ -23,6 +23,7 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
@@ -187,6 +188,13 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
             }
         });
         UIUtils.asyncExec(() -> {
+            Point treeSize = dataSourceTree.getViewer().getTree().computeSize(SWT.DEFAULT, SWT.DEFAULT);
+            Point shellSize = getShell().getSize();
+            if (treeSize.x >= shellSize.x) {
+                Point shellCompSize = getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT);
+                getShell().setSize(shellCompSize.x, shellSize.y);
+                getShell().layout(true);
+            }
             treeViewer.getControl().setFocus();
             if (showConnected) {
                 treeViewer.expandAll();
@@ -232,9 +240,9 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
         // Add the buttons to the button bar.
         createButton(composite, IDialogConstants.OK_ID, "&Select", true);
         createButton(composite, IDialogConstants.IGNORE_ID, "&None", false);
-        if (!isModeless()) {
-            createButton(composite, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
-        }
+//        if (!isModeless()) {
+//            createButton(composite, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
+//        }
 
         return composite;
     }
