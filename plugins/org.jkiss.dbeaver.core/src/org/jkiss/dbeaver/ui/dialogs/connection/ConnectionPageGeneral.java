@@ -48,6 +48,8 @@ import java.util.StringTokenizer;
  */
 class ConnectionPageGeneral extends ConnectionWizardPage {
 
+    public static final String PAGE_NAME = ConnectionPageGeneral.class.getSimpleName();
+
     private ConnectionWizard wizard;
     private DataSourceDescriptor dataSourceDescriptor;
     private Text connectionNameText;
@@ -62,9 +64,9 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
 
     ConnectionPageGeneral(ConnectionWizard wizard)
     {
-        super(ConnectionPageGeneral.class.getSimpleName());
+        super(PAGE_NAME);
         this.wizard = wizard;
-        setTitle(wizard.isNew() ? CoreMessages.dialog_connection_wizard_final_header : CoreMessages.dialog_connection_edit_wizard_general);
+        setTitle(CoreMessages.dialog_connection_edit_wizard_general);
         setDescription(CoreMessages.dialog_connection_wizard_final_description);
     }
 
@@ -84,41 +86,18 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
     public void activatePage()
     {
         if (connectionNameText != null) {
-            ConnectionPageSettings settings = wizard.getPageSettings();
-            String newName;
-            if (settings != null) {
-                DBPConnectionConfiguration connectionInfo = settings.getActiveDataSource().getConnectionConfiguration();
-                newName = dataSourceDescriptor == null ? "" : settings.getActiveDataSource().getName(); //$NON-NLS-1$
-                if (CommonUtils.isEmpty(newName)) {
-                    newName = connectionInfo.getDatabaseName();
-                    if (CommonUtils.isEmpty(newName)) {
-                        newName = connectionInfo.getHostName();
-                    }
-                    if (CommonUtils.isEmpty(newName)) {
-                        newName = connectionInfo.getUrl();
-                    }
-                    if (CommonUtils.isEmpty(newName)) {
-                        newName = CoreMessages.dialog_connection_wizard_final_default_new_connection_name;
-                    }
-                    StringTokenizer st = new StringTokenizer(newName, "/\\:,?=%$#@!^&*()"); //$NON-NLS-1$
-                    while (st.hasMoreTokens()) {
-                        newName = st.nextToken();
-                    }
-                    if (!CommonUtils.isEmpty(settings.getDriver().getCategory())) {
-                        newName = settings.getDriver().getCategory() + " - " + newName; //$NON-NLS-1$
-                    } else {
-                        newName = settings.getDriver().getName() + " - " + newName; //$NON-NLS-1$
-                    }
-                    newName = CommonUtils.truncateString(newName, 50);
-                }
+            if (dataSourceDescriptor != null && !CommonUtils.isEmpty(dataSourceDescriptor.getName())) {
+                connectionNameText.setText(dataSourceDescriptor.getName());
+                connectionNameChanged = true;
             } else {
-                newName = wizard.getSelectedDriver().getName();
-            }
-            if (CommonUtils.isEmpty(connectionNameText.getText()) || !connectionNameChanged) {
-                if (newName != null) {
-                    connectionNameText.setText(newName);
+                ConnectionPageSettings settings = wizard.getPageSettings();
+                if (CommonUtils.isEmpty(connectionNameText.getText()) || !connectionNameChanged) {
+                    String newName = generateConnectionName(settings);
+                    if (newName != null) {
+                        connectionNameText.setText(newName);
+                    }
+                    connectionNameChanged = false;
                 }
-                connectionNameChanged = false;
             }
         }
         if (dataSourceDescriptor != null) {
@@ -146,6 +125,48 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
                 connectionFolderCombo.select(0);
             }
         }
+    }
+
+    private String generateConnectionName(ConnectionPageSettings settings) {
+        String newName;
+        if (settings != null) {
+            DBPConnectionConfiguration connectionInfo = settings.getActiveDataSource().getConnectionConfiguration();
+            newName = dataSourceDescriptor == null ? "" : settings.getActiveDataSource().getName(); //$NON-NLS-1$
+            if (CommonUtils.isEmpty(newName)) {
+                newName = connectionInfo.getDatabaseName();
+                if (CommonUtils.isEmpty(newName)) {
+                    newName = connectionInfo.getHostName();
+                }
+                if (CommonUtils.isEmpty(newName)) {
+                    newName = connectionInfo.getUrl();
+                }
+                if (CommonUtils.isEmpty(newName)) {
+                    newName = CoreMessages.dialog_connection_wizard_final_default_new_connection_name;
+                }
+                StringTokenizer st = new StringTokenizer(newName, "/\\:,?=%$#@!^&*()"); //$NON-NLS-1$
+                while (st.hasMoreTokens()) {
+                    newName = st.nextToken();
+                }
+                if (!CommonUtils.isEmpty(settings.getDriver().getCategory())) {
+                    newName = settings.getDriver().getCategory() + " - " + newName; //$NON-NLS-1$
+                } else {
+                    newName = settings.getDriver().getName() + " - " + newName; //$NON-NLS-1$
+                }
+                newName = CommonUtils.truncateString(newName, 50);
+            }
+
+            String baseName = newName;
+            for (int i = 2; ; i++) {
+                if (settings.getDataSourceRegistry().findDataSourceByName(newName) != null) {
+                    newName = baseName + " " + i;
+                } else {
+                    break;
+                }
+            }
+        } else {
+            newName = wizard.getSelectedDriver().getName();
+        }
+        return newName;
     }
 
     @NotNull
@@ -315,8 +336,7 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
     @Override
     public boolean isPageComplete()
     {
-        return connectionNameText != null &&
-            !CommonUtils.isEmpty(connectionNameText.getText());
+        return true;
     }
 
     @Override
@@ -325,10 +345,14 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
             // No changes anyway
             return;
         }
-        dataSource.setName(connectionNameText.getText());
-        dataSource.setFolder(dataSourceFolder);
-
         final DBPConnectionConfiguration confConfig = dataSource.getConnectionConfiguration();
+
+        String name = connectionNameText.getText();
+        if (name.isEmpty()) {
+            name = generateConnectionName(getWizard().getPageSettings());
+        }
+        dataSource.setName(name);
+        dataSource.setFolder(dataSourceFolder);
 
         if (connectionTypeCombo.getSelectionIndex() >= 0) {
             confConfig.setConnectionType(connectionTypeCombo.getItem(connectionTypeCombo.getSelectionIndex()));

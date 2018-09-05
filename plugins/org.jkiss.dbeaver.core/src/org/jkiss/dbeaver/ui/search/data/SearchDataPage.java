@@ -37,7 +37,7 @@ import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
-import org.jkiss.dbeaver.ui.navigator.database.load.TreeLoadNode;
+import org.jkiss.dbeaver.ui.navigator.database.load.TreeNodeSpecial;
 import org.jkiss.dbeaver.ui.search.AbstractSearchPage;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -119,7 +119,7 @@ public class SearchDataPage extends AbstractSearchPage {
             viewer.addFilter(new ViewerFilter() {
                 @Override
                 public boolean select(Viewer viewer, Object parentElement, Object element) {
-                    if (element instanceof TreeLoadNode) {
+                    if (element instanceof TreeNodeSpecial) {
                         return true;
                     }
                     if (element instanceof DBNNode) {
