@@ -312,9 +312,11 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
             }
             for (String prop : metaURL.getRequiredProperties()) {
                 if (
-                    (prop.equals(DriverDescriptor.PROP_HOST) && CommonUtils.isEmpty(hostText.getText())) ||
-                        (prop.equals(DriverDescriptor.PROP_PORT) && CommonUtils.isEmpty(portText.getText())) ||
-                        (prop.equals(DriverDescriptor.PROP_DATABASE) && CommonUtils.isEmpty(dbText.getText()))) {
+                    (prop.equals(DriverDescriptor.PROP_HOST) && CommonUtils.isEmptyTrimmed(hostText.getText())) ||
+                    (prop.equals(DriverDescriptor.PROP_PORT) && CommonUtils.isEmptyTrimmed(portText.getText())) ||
+                    (prop.equals(DriverDescriptor.PROP_DATABASE) && CommonUtils.isEmptyTrimmed(pathText.getText())) ||
+                    ((prop.equals(DriverDescriptor.PROP_FILE) || prop.equals(DriverDescriptor.PROP_FOLDER)) && CommonUtils.isEmptyTrimmed(pathText.getText())))
+                {
                     return false;
                 }
             }
