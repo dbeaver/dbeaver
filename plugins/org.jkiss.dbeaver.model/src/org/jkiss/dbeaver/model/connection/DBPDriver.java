@@ -69,6 +69,9 @@ public interface DBPDriver extends DBPNamedObject
     @Nullable
     String getWebURL();
 
+    @Nullable
+    String getPropertiesWebURL();
+
     boolean isClientRequired();
 
     boolean supportsDriverProperties();

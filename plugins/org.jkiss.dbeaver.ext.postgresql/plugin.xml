@@ -210,6 +210,7 @@
                     sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                     defaultPort="5432"
                     webURL="http://jdbc.postgresql.org/"
+                    propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
                     description="%driver.postgresql.description">
                     <replace provider="generic" driver="postgresql"/>
                     <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.3.jre7]" bundle="!drivers.postgresql"/>
@@ -235,6 +236,7 @@
                         sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                         defaultPort="5432"
                         webURL="http://jdbc.postgresql.org/"
+                        propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
                         description="%driver.greenplum.description">
                     <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.3.jre7]" bundle="!drivers.postgresql"/>
                     <file type="jar" path="maven:/net.postgis:postgis-jdbc:RELEASE[2.2.1]" ignore-dependencies="true" optional="true" bundle="!drivers.postgresql"/>
@@ -257,6 +259,7 @@
                         sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                         defaultPort="5432"
                         webURL="http://timescale.com/"
+                        propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
                         description="%driver.timescale.description">
                     <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.3.jre7]" bundle="!drivers.postgresql"/>
 
@@ -277,6 +280,7 @@
                         sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                         defaultPort="5432"
                         webURL="http://yellowbrick.io/"
+                        propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
                         description="%driver.yellowbrick.description">
                     <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.3.jre7]" bundle="!drivers.postgresql"/>
 
@@ -295,6 +299,7 @@
                         sampleURL="jdbc:postgresql://{host}[:{port}]/[{database}]"
                         defaultPort="26257"
                         webURL="https://www.cockroachlabs.com/product/cockroachdb/"
+                        propertiesURL="https://jdbc.postgresql.org/documentation/head/connect.html#connection-parameters"
                         description="%driver.cockroach.description">
                     <file type="jar" path="maven:/org.postgresql:postgresql:RELEASE[42.2.3.jre7]" bundle="!drivers.postgresql"/>
 
@@ -314,7 +319,8 @@
                         sampleURL="jdbc:redshift://{host}:{port}/{database}"
                         defaultPort="5439"
                         description="AWS Redshift JDBC driver"
-                        webURL="http://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-connection.html">
+                        webURL="http://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-connection.html"
+                        propertiesURL="https://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-options.html">
                     <replace provider="generic" driver="aws_redshift"/>
                     <replace provider="generic" driver="aws_redshift_42"/>
                     <file type="jar" path="https://s3.amazonaws.com/redshift-downloads/drivers/jdbc/1.2.15.1025/RedshiftJDBC42-1.2.15.1025.jar"/>
