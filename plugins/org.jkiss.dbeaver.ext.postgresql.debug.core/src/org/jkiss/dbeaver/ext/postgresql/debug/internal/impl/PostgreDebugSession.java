@@ -332,18 +332,21 @@ public class PostgreDebugSession extends DBGJDBCSession {
                         query.append("{ CALL ").append(function.getFullyQualifiedName(DBPEvaluationContext.DML)).append("(");
                         for (int i = 0; i < parameters.size(); i++) {
                             if (i > 0) query.append(",");
-                            query.append("?");
+                            String paramValue = paramValues.get(i);
+                            query.append(paramValue);
                         }
                         query.append(") }");
                         log.debug(String.format("Prepared local call %s", query));
                         localStatement = session.prepareCall(query.toString());
 
+/*
                         for (int i = 0; i < parameters.size(); i++) {
                             PostgreProcedureParameter parameter = parameters.get(i);
                             String paramValue = paramValues.get(i);
                             DBDValueHandler valueHandler = DBUtils.findValueHandler(session, parameter);
                             valueHandler.bindValueObject(session, localStatement, parameter, i, paramValue);
                         }
+*/
                         localStatement.execute();
                         // And Now His Watch Is Ended
                         log.debug("Local statement executed (ANHWIE)");
