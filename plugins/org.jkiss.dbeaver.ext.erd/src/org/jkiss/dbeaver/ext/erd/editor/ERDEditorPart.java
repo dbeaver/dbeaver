@@ -375,14 +375,6 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     {
         GraphicalViewer viewer = createViewer(parent);
 
-        viewer.getControl().addPaintListener(e -> {
-            String message = this.errorMessage;
-            if (!CommonUtils.isEmpty(message)) {
-                e.gc.setForeground(viewer.getControl().getForeground());
-                UIUtils.drawMessageOverControl(viewer.getControl(), e, message, 0);
-            }
-        });
-
         // hook the viewer into the EditDomain
         setGraphicalViewer(viewer);
 
@@ -757,6 +749,10 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     public boolean performSearch(SearchType searchType)
     {
         return progressControl != null && progressControl.performSearch(searchType);
+    }
+
+    public String getErrorMessage() {
+        return errorMessage;
     }
 
     public void setErrorMessage(String errorMessage) {
