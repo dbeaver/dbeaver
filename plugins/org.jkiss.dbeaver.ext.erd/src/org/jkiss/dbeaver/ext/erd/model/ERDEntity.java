@@ -288,13 +288,17 @@ public class ERDEntity extends ERDObject<DBSEntity> {
 
     @Override
     public int hashCode() {
-        return object == null ? 0 : object.hashCode();
+        int aliasHC = alias == null ? 0 : alias.hashCode();
+        return (object == null ? 0 : object.hashCode()) + aliasHC;
     }
 
     @Override
     public boolean equals(Object o) {
-        return o != null && o instanceof ERDEntity &&
-            CommonUtils.equalObjects(object, ((ERDEntity) o).object);
+        if (o instanceof ERDEntity) {
+            return CommonUtils.equalObjects(object, ((ERDEntity) o).object) &&
+                CommonUtils.equalObjects(alias, ((ERDEntity) o).alias);
+        }
+        return false;
     }
 
     public boolean hasAssociationsWith(ERDEntity entity) {
