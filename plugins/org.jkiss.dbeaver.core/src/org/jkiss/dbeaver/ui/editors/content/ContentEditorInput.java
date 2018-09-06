@@ -381,6 +381,9 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider,
 
     @Override
     public String getDefaultEncoding() {
+        if (valueController.getExecutionContext() == null) {
+            return GeneralUtils.getDefaultFileEncoding();
+        }
         return DBValueFormatting.getDefaultBinaryFileEncoding(valueController.getExecutionContext().getDataSource());
     }
 
