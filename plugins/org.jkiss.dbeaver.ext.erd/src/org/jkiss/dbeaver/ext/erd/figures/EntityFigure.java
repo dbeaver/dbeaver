@@ -61,10 +61,14 @@ public class EntityFigure extends Figure {
         keyFigure = new AttributeListFigure(entity, true);
         attributeFigure = new AttributeListFigure(entity, false);
 
+        String entityName = useFQN ?
+            DBUtils.getObjectFullName(entity.getObject(), DBPEvaluationContext.DDL) :
+            entity.getObject().getName();
+        if (!CommonUtils.isEmpty(entity.getAlias())) {
+            entityName += " " + entity.getAlias();
+        }
         nameLabel = new EditableLabel(
-            useFQN ?
-                DBUtils.getObjectFullName(entity.getObject(), DBPEvaluationContext.DDL) :
-                entity.getObject().getName());
+            entityName);
         if (tableImage != null) {
             nameLabel.setIcon(tableImage);
         }
