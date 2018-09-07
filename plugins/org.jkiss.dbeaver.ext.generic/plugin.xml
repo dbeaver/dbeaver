@@ -82,14 +82,14 @@
                                 </items>
                             </items>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericScriptObject" label="%tree.procedures.node.name" icon="#procedures" description="Procedures" visibleIf="object.dataSource.info.supportsStoredCode()">
+                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericProcedure" label="%tree.procedures.node.name" icon="#procedures" description="Procedures" visibleIf="object.dataSource.info.supportsStoredCode()">
+                            <items label="%tree.procedures.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="proceduresOnly" icon="#procedure">
+                                <items label="%tree.procedure_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false"/>
+                            </items>
                             <items label="%tree.package.node.name" path="package" property="packages" icon="#package">
                                 <items label="%tree.procedures.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="procedures" icon="#procedure">
                                     <items label="%tree.procedure_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false" inline="true"/>
                                 </items>
-                            </items>
-                            <items label="%tree.procedures.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="proceduresOnly" icon="#procedure">
-                                <items label="%tree.procedure_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false"/>
                             </items>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.generic.model.GenericProcedure" label="%tree.functions.node.name" icon="#functions" description="Functions" visibleIf="object.dataSource.info.supportsStoredCode() &amp;&amp; object.dataSource.splitProceduresAndFunctions()">
