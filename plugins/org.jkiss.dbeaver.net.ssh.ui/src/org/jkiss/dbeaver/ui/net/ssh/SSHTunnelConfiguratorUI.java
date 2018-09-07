@@ -73,7 +73,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
         composite.setLayout(new GridLayout(1, false));
 
         {
-            Group settingsGroup = UIUtils.createControlGroup(composite, SSHUIMessages.model_ssh_configurator_group_settings, 2, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
+            Group settingsGroup = UIUtils.createControlGroup(composite, SSHUIMessages.model_ssh_configurator_group_settings, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, SWT.DEFAULT);
 
             hostText = UIUtils.createLabelText(settingsGroup, SSHUIMessages.model_ssh_configurator_label_host_ip, null, SWT.BORDER, new GridData(GridData.FILL_HORIZONTAL)); //$NON-NLS-2$
             portText = UIUtils.createLabelSpinner(settingsGroup, SSHUIMessages.model_ssh_configurator_label_port, SSHConstants.DEFAULT_SSH_PORT, 0, 65535);
@@ -103,7 +103,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
         }
 
         {
-            Group advancedGroup = UIUtils.createControlGroup(composite, SSHUIMessages.model_ssh_configurator_group_advanced, 2, GridData.FILL_HORIZONTAL, SWT.DEFAULT);
+            Group advancedGroup = UIUtils.createControlGroup(composite, SSHUIMessages.model_ssh_configurator_group_advanced, 2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, SWT.DEFAULT);
 
             tunnelImplCombo = UIUtils.createLabelCombo(advancedGroup, SSHUIMessages.model_ssh_configurator_label_implementation, SWT.DROP_DOWN | SWT.READ_ONLY);
             tunnelImplCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
@@ -116,12 +116,18 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
             tunnelTimeout = UIUtils.createLabelSpinner(advancedGroup, SSHUIMessages.model_ssh_configurator_label_tunnel_timeout, SSHConstants.DEFAULT_CONNECT_TIMEOUT, 0, 300000);
         }
 
-        Button testButton = UIUtils.createPushButton(composite, SSHUIMessages.model_ssh_configurator_button_test_tunnel, null, new SelectionAdapter() {
+        Composite controlGroup = UIUtils.createPlaceholder(composite, 1);
+        gd = new GridData(GridData.FILL_HORIZONTAL);
+        //gd.horizontalSpan = 2;
+        controlGroup.setLayoutData(gd);
+
+        Button testButton = UIUtils.createPushButton(controlGroup, SSHUIMessages.model_ssh_configurator_button_test_tunnel, null, new SelectionAdapter() {
             @Override
             public void widgetSelected(SelectionEvent e) {
                 testTunnelConnection();
             }
         });
+        //new Label(controlGroup, SWT.NONE);
 
         authMethodCombo.addSelectionListener(new SelectionAdapter() {
             @Override

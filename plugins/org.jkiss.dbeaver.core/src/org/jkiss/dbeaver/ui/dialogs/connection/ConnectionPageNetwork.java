@@ -19,14 +19,14 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.TabFolder;
-import org.eclipse.swt.widgets.TabItem;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -39,7 +39,6 @@ import org.jkiss.dbeaver.registry.network.NetworkHandlerDescriptor;
 import org.jkiss.dbeaver.registry.network.NetworkHandlerRegistry;
 import org.jkiss.dbeaver.ui.IObjectPropertyConfigurator;
 import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -53,18 +52,18 @@ public class ConnectionPageNetwork extends ConnectionWizardPage {
     public static final String PAGE_NAME = ConnectionPageNetwork.class.getSimpleName();
 
     private static final Log log = Log.getLog(ConnectionPageNetwork.class);
-    private TabFolder handlersFolder;
+    private CTabFolder handlersFolder;
     private DataSourceDescriptor prevDataSource;
 
     private static class HandlerBlock {
         private final IObjectPropertyConfigurator<DBWHandlerConfiguration> configurator;
         private final Composite blockControl;
         private final Button useHandlerCheck;
-        private final TabItem tabItem;
+        private final CTabItem tabItem;
         ControlEnableState blockEnableState;
         private final Map<String, DBWHandlerConfiguration> loadedConfigs = new HashMap<>();
 
-        private HandlerBlock(IObjectPropertyConfigurator<DBWHandlerConfiguration> configurator, Composite blockControl, Button useHandlerCheck, TabItem tabItem)
+        private HandlerBlock(IObjectPropertyConfigurator<DBWHandlerConfiguration> configurator, Composite blockControl, Button useHandlerCheck, CTabItem tabItem)
         {
             this.configurator = configurator;
             this.blockControl = blockControl;
@@ -87,7 +86,7 @@ public class ConnectionPageNetwork extends ConnectionWizardPage {
     @Override
     public void createControl(Composite parent)
     {
-        handlersFolder = new TabFolder(parent, SWT.TOP);
+        handlersFolder = new CTabFolder(parent, SWT.TOP);
         handlersFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         setControl(handlersFolder);
@@ -108,7 +107,7 @@ public class ConnectionPageNetwork extends ConnectionWizardPage {
             return;
         }
 
-        TabItem tabItem = new TabItem(handlersFolder, SWT.NONE);
+        CTabItem tabItem = new CTabItem(handlersFolder, SWT.NONE);
         tabItem.setText(descriptor.getLabel());
         tabItem.setToolTipText(descriptor.getDescription());
 
@@ -143,7 +142,7 @@ public class ConnectionPageNetwork extends ConnectionWizardPage {
         NetworkHandlerRegistry registry = NetworkHandlerRegistry.getInstance();
 
         if (prevDataSource == null || prevDataSource != dataSource) {
-            for (TabItem item : handlersFolder.getItems()) {
+            for (CTabItem item : handlersFolder.getItems()) {
                 item.dispose();
             }
             for (NetworkHandlerDescriptor descriptor : registry.getDescriptors(dataSource)) {
@@ -154,13 +153,13 @@ public class ConnectionPageNetwork extends ConnectionWizardPage {
                 }
             }
             prevDataSource = dataSource;
-            handlersFolder.layout();
-            for (TabItem item : handlersFolder.getItems()) {
-                ((Composite)item.getControl()).layout(false);
-            }
+            handlersFolder.layout(true, true);
+//            for (TabItem item : handlersFolder.getItems()) {
+//                ((Composite)item.getControl()).layout(false);
+//            }
         }
 
-        TabItem selectItem = null;
+        CTabItem selectItem = null;
         for (NetworkHandlerDescriptor descriptor : registry.getDescriptors(dataSource)) {
             DBWHandlerConfiguration configuration = dataSource.getConnectionConfiguration().getHandler(descriptor.getId());
             if (configuration == null) {
