@@ -575,6 +575,10 @@ public class EntityEditor extends MultiPageDatabaseEditor
         UIUtils.setHelp(getContainer(), IHelpContextIds.CTX_ENTITY_EDITOR);
     }
 
+    public IEditorPart getPageEditor(String pageId) {
+        return editorMap.get(pageId);
+    }
+
     @Override
     protected void pageChange(int newPageIndex) {
         super.pageChange(newPageIndex);
