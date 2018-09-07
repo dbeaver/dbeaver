@@ -335,7 +335,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
 
         Connection pgConnection;
         if (remoteInstance != null) {
-            log.debug("Initiate connection to " + getServerType().getServerTypeName() + " database [" + remoteInstance.getName() + "@" + conConfig.getHostName() + "]");
+            log.debug("Initiate connection to " + getServerType().getServerTypeName() + " database [" + remoteInstance.getName() + "@" + conConfig.getHostName() + "] for " + purpose);
         }
         if (remoteInstance instanceof PostgreDatabase &&
             remoteInstance.getName() != null &&
