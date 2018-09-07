@@ -261,6 +261,7 @@
         <command id="org.jkiss.dbeaver.core.sql.editor.recent" name="%command.org.jkiss.dbeaver.core.sql.editor.recent.name" description="%command.org.jkiss.dbeaver.core.sql.editor.recent.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.sql.editor.create" name="%command.org.jkiss.dbeaver.core.sql.editor.create.name" description="%command.org.jkiss.dbeaver.core.sql.editor.create.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.sql.editor.forSelection" name="%command.org.jkiss.dbeaver.core.sql.editor.forSelection.name" description="%command.org.jkiss.dbeaver.core.sql.editor.forSelection.description" categoryId="org.jkiss.dbeaver.core.database"/>
+        <command id="org.jkiss.dbeaver.ui.editors.data.forSelection" name="%command.org.jkiss.dbeaver.ui.editors.data.forSelection.name" description="%command.org.jkiss.dbeaver.ui.editors.data.forSelection.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.procedure.execute" name="%command.org.jkiss.dbeaver.core.procedure.execute.name" description="%command.org.jkiss.dbeaver.core.procedure.execute.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.object.open" name="%command.org.jkiss.dbeaver.core.object.open.name" description="%command.org.jkiss.dbeaver.core.object.open.description" categoryId="org.jkiss.dbeaver.core.database"/>
         <command id="org.jkiss.dbeaver.core.object.create" name="%command.org.jkiss.dbeaver.core.object.create.name" description="%command.org.jkiss.dbeaver.core.object.create.description" categoryId="org.jkiss.dbeaver.core.database"/>
@@ -382,6 +383,7 @@
         <image commandId="org.jkiss.dbeaver.core.sql.editor.recent" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_script_recent.png"/>
         <image commandId="org.jkiss.dbeaver.core.sql.editor.create" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_script_create.png"/>
         <image commandId="org.jkiss.dbeaver.core.sql.editor.forSelection" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_console.png"/>
+        <image commandId="org.jkiss.dbeaver.ui.editors.data.forSelection" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/sql/sql_table.png"/>
         <image commandId="org.jkiss.dbeaver.core.object.open" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/edit.png"/>
         <image commandId="org.jkiss.dbeaver.core.object.create" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/create.png"/>
         <image commandId="org.jkiss.dbeaver.core.object.delete" icon="platform:/plugin/org.jkiss.dbeaver.ui/icons/delete.png"/>
@@ -1017,6 +1019,16 @@
             </enabledWhen>
         </handler>
         <handler commandId="org.jkiss.dbeaver.core.sql.editor.forSelection" class="org.jkiss.dbeaver.ui.editors.sql.handlers.OpenObjectConsoleHandler">
+            <enabledWhen>
+                <with variable="selection">
+                    <count value="+"/>
+                    <iterate operator="and">
+                        <adapt type="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
+                    </iterate>
+                </with>
+            </enabledWhen>
+        </handler>
+        <handler commandId="org.jkiss.dbeaver.ui.editors.data.forSelection" class="org.jkiss.dbeaver.ui.editors.data.OpenDataEditorHandler">
             <enabledWhen>
                 <with variable="selection">
                     <count value="+"/>
@@ -2147,14 +2159,13 @@
         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=tools">
             <separator name="data" visible="true"/>
 
-            <command
-                  commandId="org.jkiss.dbeaver.core.procedure.execute"
-                  label="%command.org.jkiss.dbeaver.core.procedure.execute.name">
+            <command commandId="org.jkiss.dbeaver.core.procedure.execute" label="%command.org.jkiss.dbeaver.core.procedure.execute.name">
                 <visibleWhen checkEnabled="true"/>
             </command>
-            <command
-                  commandId="org.jkiss.dbeaver.core.sql.editor.forSelection"
-                  label="%command.org.jkiss.dbeaver.core.sql.editor.forSelection.name">
+            <command commandId="org.jkiss.dbeaver.ui.editors.data.forSelection" label="%command.org.jkiss.dbeaver.ui.editors.data.forSelection.name">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+            <command commandId="org.jkiss.dbeaver.core.sql.editor.forSelection" label="%command.org.jkiss.dbeaver.core.sql.editor.forSelection.name">
                 <visibleWhen checkEnabled="true"/>
             </command>
 

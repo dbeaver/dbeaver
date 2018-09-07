@@ -158,7 +158,7 @@ public abstract class AbstractDataEditor<OBJECT_TYPE extends DBSObject> extends 
                 UIUtils.getActiveWorkbenchWindow(),
                 true);
 
-            if (entityEditor instanceof MultiPageEditorPart) {
+            if (newFilter != null && entityEditor instanceof MultiPageEditorPart) {
                 Object selectedPage = ((MultiPageEditorPart) entityEditor).getSelectedPage();
                 if (selectedPage instanceof IResultSetContainer) {
                     ResultSetViewer rsv = (ResultSetViewer) ((IResultSetContainer) selectedPage).getResultSetController();

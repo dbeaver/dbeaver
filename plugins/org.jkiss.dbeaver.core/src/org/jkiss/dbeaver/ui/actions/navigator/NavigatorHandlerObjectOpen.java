@@ -154,6 +154,13 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                 if (editorInput instanceof DatabaseEditorInput) {
                     settingsChanged = setInputAttributes((DatabaseEditorInput<?>) editorInput, defaultPageId, defaultFolderId, attributes);
                 }
+                if (editor instanceof EntityEditor && defaultPageId != null) {
+                    // Set active page
+                    IEditorPart pageEditor = ((EntityEditor) editor).getPageEditor(defaultPageId);
+                    if (pageEditor != null && pageEditor != ((EntityEditor) editor).getActiveEditor()) {
+                        ((EntityEditor) editor).setActiveEditor(pageEditor);
+                    }
+                }
                 if (editor instanceof ITabbedFolderContainer && defaultFolderId != null) {
                     // Activate default folder
                     if (((ITabbedFolderContainer) editor).switchFolder(defaultFolderId)) {
