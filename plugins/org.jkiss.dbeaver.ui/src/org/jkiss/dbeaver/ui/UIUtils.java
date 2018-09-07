@@ -1251,6 +1251,15 @@ public class UIUtils {
         return false;
     }
 
+    public static boolean isInDialog() {
+        try {
+            return isInDialog(Display.getCurrent().getActiveShell());
+        } catch (Exception e) {
+            // IF we are in wrong thread
+            return false;
+        }
+    }
+
     public static boolean isInDialog(Control control) {
         return control.getShell().getData() instanceof org.eclipse.jface.dialogs.Dialog;
     }

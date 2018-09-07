@@ -70,6 +70,10 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
+        if (UIUtils.isInDialog()) {
+            // If some modal dialog is open then we don't do this
+            return null;
+        }
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
 
         if (selection instanceof IStructuredSelection) {
