@@ -36,7 +36,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.wizard.IWizard;
-import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -48,7 +47,6 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.DBPDataSourceProvider;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionBootstrap;
@@ -56,11 +54,8 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
-import org.jkiss.dbeaver.model.struct.*;
-import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
-import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
-import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
+import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.model.struct.DBSObjectContainer;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
@@ -76,7 +71,7 @@ import java.util.List;
  * Initialization connection page (common for all connection types)
  */
 class ConnectionPageInitialization extends ConnectionWizardPage {
-    public static final String PAGE_NAME = ConnectionPageInitialization.class.getSimpleName();
+    static final String PAGE_NAME = ConnectionPageInitialization.class.getSimpleName();
 
     private static final Log log = Log.getLog(ConnectionPageInitialization.class);
 
@@ -92,34 +87,15 @@ class ConnectionPageInitialization extends ConnectionWizardPage {
     private Button readOnlyConnection;
     private Font boldFont;
 
-    private List<FilterInfo> filters = new ArrayList<>();
-    private Group filtersGroup;
     private boolean activated = false;
     private List<DBPTransactionIsolation> supportedLevels = new ArrayList<>();
     private List<String> bootstrapQueries;
     private boolean ignoreBootstrapErrors;
 
-    private static class FilterInfo {
-        final Class<?> type;
-        final String title;
-        Link link;
-        DBSObjectFilter filter;
-
-        private FilterInfo(Class<?> type, String title) {
-            this.type = type;
-            this.title = title;
-        }
-    }
-
     ConnectionPageInitialization() {
         super(PAGE_NAME); //$NON-NLS-1$
         setTitle(CoreMessages.dialog_connection_wizard_connection_init);
         setDescription(CoreMessages.dialog_connection_wizard_connection_init_description);
-
-        filters.add(new FilterInfo(DBSCatalog.class, CoreMessages.dialog_connection_wizard_final_filter_catalogs));
-        filters.add(new FilterInfo(DBSSchema.class, CoreMessages.dialog_connection_wizard_final_filter_schemas_users));
-        filters.add(new FilterInfo(DBSTable.class, CoreMessages.dialog_connection_wizard_final_filter_tables));
-        filters.add(new FilterInfo(DBSEntityAttribute.class, CoreMessages.dialog_connection_wizard_final_filter_attributes));
 
         bootstrapQueries = new ArrayList<>();
     }
@@ -128,9 +104,6 @@ class ConnectionPageInitialization extends ConnectionWizardPage {
         this();
         this.dataSourceDescriptor = dataSourceDescriptor;
 
-        for (FilterInfo filterInfo : filters) {
-            filterInfo.filter = dataSourceDescriptor.getObjectFilter(filterInfo.type, null, false);
-        }
         bootstrapQueries = dataSourceDescriptor.getConnectionConfiguration().getBootstrap().getInitQueries();
         ignoreBootstrapErrors = dataSourceDescriptor.getConnectionConfiguration().getBootstrap().isIgnoreErrors();
     }
@@ -186,34 +159,6 @@ class ConnectionPageInitialization extends ConnectionWizardPage {
             readOnlyConnection.setSelection(false);
             isolationLevel.setEnabled(false);
             defaultSchema.setText("");
-        }
-        long features = getWizard().getSelectedDriver().getDataSourceProvider().getFeatures();
-
-        for (FilterInfo filterInfo : filters) {
-            if (DBSCatalog.class.isAssignableFrom(filterInfo.type)) {
-                enableFilter(filterInfo, (features & DBPDataSourceProvider.FEATURE_CATALOGS) != 0);
-            } else if (DBSSchema.class.isAssignableFrom(filterInfo.type)) {
-                enableFilter(filterInfo, (features & DBPDataSourceProvider.FEATURE_SCHEMAS) != 0);
-            } else {
-                enableFilter(filterInfo, true);
-            }
-        }
-        filtersGroup.layout();
-    }
-
-    private void enableFilter(FilterInfo filterInfo, boolean enable) {
-        filterInfo.link.setEnabled(enable);
-        if (enable) {
-            filterInfo.link.setText("<a>" + filterInfo.title + "</a>");
-            filterInfo.link.setToolTipText(NLS.bind(CoreMessages.dialog_connection_wizard_final_filter_link_tooltip, filterInfo.title));
-            if (filterInfo.filter != null && !filterInfo.filter.isNotApplicable()) {
-                filterInfo.link.setFont(boldFont);
-            } else {
-                filterInfo.link.setFont(getFont());
-            }
-        } else {
-            filterInfo.link.setText(NLS.bind(CoreMessages.dialog_connection_wizard_final_filter_link_not_supported_text, filterInfo.title));
-            filterInfo.link.setToolTipText(NLS.bind(CoreMessages.dialog_connection_wizard_final_filter_link_not_supported_tooltip, filterInfo.title, getWizard().getSelectedDriver().getName()));
         }
     }
 
@@ -315,34 +260,6 @@ class ConnectionPageInitialization extends ConnectionWizardPage {
                 //gd.horizontalSpan = 2;
                 readOnlyConnection.setLayoutData(gd);
             }
-            {
-                // Filters
-                filtersGroup = UIUtils.createControlGroup(
-                    group,
-                    CoreMessages.dialog_connection_wizard_final_group_filters,
-                    2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
-                for (final FilterInfo filterInfo : filters) {
-                    filterInfo.link = UIUtils.createLink(filtersGroup, "<a>" + filterInfo.title + "</a>", new SelectionAdapter() {
-                        @Override
-                        public void widgetSelected(SelectionEvent e) {
-                            EditObjectFilterDialog dialog = new EditObjectFilterDialog(
-                                getShell(),
-                                getWizard().getDataSourceRegistry(),
-                                filterInfo.title,
-                                filterInfo.filter != null ? filterInfo.filter : new DBSObjectFilter(),
-                                true);
-                            if (dialog.open() == IDialogConstants.OK_ID) {
-                                filterInfo.filter = dialog.getFilter();
-                                if (filterInfo.filter != null && !filterInfo.filter.isNotApplicable()) {
-                                    filterInfo.link.setFont(boldFont);
-                                } else {
-                                    filterInfo.link.setFont(getFont());
-                                }
-                            }
-                        }
-                    });
-                }
-            }
         }
 
         setControl(group);
@@ -384,11 +301,6 @@ class ConnectionPageInitialization extends ConnectionWizardPage {
 
         final DBPConnectionConfiguration confConfig = dataSource.getConnectionConfiguration();
 
-        for (FilterInfo filterInfo : filters) {
-            if (filterInfo.filter != null) {
-                dataSource.setObjectFilter(filterInfo.type, null, filterInfo.filter);
-            }
-        }
         DBPConnectionBootstrap bootstrap = confConfig.getBootstrap();
         bootstrap.setIgnoreErrors(ignoreBootstrapErrors);
         bootstrap.setInitQueries(bootstrapQueries);

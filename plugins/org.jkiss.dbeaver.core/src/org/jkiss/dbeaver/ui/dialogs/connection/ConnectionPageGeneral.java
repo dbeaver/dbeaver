@@ -16,21 +16,30 @@
  */
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
+import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.viewers.IColorProvider;
 import org.eclipse.jface.viewers.LabelProvider;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceFolder;
+import org.jkiss.dbeaver.model.DBPDataSourceProvider;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPConnectionType;
+import org.jkiss.dbeaver.model.struct.DBSEntityAttribute;
+import org.jkiss.dbeaver.model.struct.DBSObjectFilter;
+import org.jkiss.dbeaver.model.struct.rdb.DBSCatalog;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
+import org.jkiss.dbeaver.model.struct.rdb.DBSTable;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
@@ -48,7 +57,19 @@ import java.util.StringTokenizer;
  */
 class ConnectionPageGeneral extends ConnectionWizardPage {
 
-    public static final String PAGE_NAME = ConnectionPageGeneral.class.getSimpleName();
+    static final String PAGE_NAME = ConnectionPageGeneral.class.getSimpleName();
+
+    private static class FilterInfo {
+        final Class<?> type;
+        final String title;
+        Link link;
+        DBSObjectFilter filter;
+
+        private FilterInfo(Class<?> type, String title) {
+            this.type = type;
+            this.title = title;
+        }
+    }
 
     private ConnectionWizard wizard;
     private DataSourceDescriptor dataSourceDescriptor;
@@ -62,23 +83,38 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
     private DBPDataSourceFolder dataSourceFolder;
     private List<DBPDataSourceFolder> connectionFolders = new ArrayList<>();
 
+    private List<FilterInfo> filters = new ArrayList<>();
+    private Group filtersGroup;
+    private Font boldFont;
+
     ConnectionPageGeneral(ConnectionWizard wizard)
     {
         super(PAGE_NAME);
         this.wizard = wizard;
         setTitle(CoreMessages.dialog_connection_edit_wizard_general);
         setDescription(CoreMessages.dialog_connection_wizard_final_description);
+
+        filters.add(new FilterInfo(DBSCatalog.class, CoreMessages.dialog_connection_wizard_final_filter_catalogs));
+        filters.add(new FilterInfo(DBSSchema.class, CoreMessages.dialog_connection_wizard_final_filter_schemas_users));
+        filters.add(new FilterInfo(DBSTable.class, CoreMessages.dialog_connection_wizard_final_filter_tables));
+        filters.add(new FilterInfo(DBSEntityAttribute.class, CoreMessages.dialog_connection_wizard_final_filter_attributes));
+
     }
 
     ConnectionPageGeneral(ConnectionWizard wizard, DataSourceDescriptor dataSourceDescriptor)
     {
         this(wizard);
         this.dataSourceDescriptor = dataSourceDescriptor;
+
+        for (FilterInfo filterInfo : filters) {
+            filterInfo.filter = dataSourceDescriptor.getObjectFilter(filterInfo.type, null, false);
+        }
     }
 
     @Override
     public void dispose()
     {
+        UIUtils.dispose(boldFont);
         super.dispose();
     }
 
@@ -124,6 +160,35 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
             } else {
                 connectionFolderCombo.select(0);
             }
+        }
+
+        long features = getWizard().getSelectedDriver().getDataSourceProvider().getFeatures();
+
+        for (FilterInfo filterInfo : filters) {
+            if (DBSCatalog.class.isAssignableFrom(filterInfo.type)) {
+                enableFilter(filterInfo, (features & DBPDataSourceProvider.FEATURE_CATALOGS) != 0);
+            } else if (DBSSchema.class.isAssignableFrom(filterInfo.type)) {
+                enableFilter(filterInfo, (features & DBPDataSourceProvider.FEATURE_SCHEMAS) != 0);
+            } else {
+                enableFilter(filterInfo, true);
+            }
+        }
+        filtersGroup.layout();
+    }
+
+    private void enableFilter(FilterInfo filterInfo, boolean enable) {
+        filterInfo.link.setEnabled(enable);
+        if (enable) {
+            filterInfo.link.setText("<a>" + filterInfo.title + "</a>");
+            filterInfo.link.setToolTipText(NLS.bind(CoreMessages.dialog_connection_wizard_final_filter_link_tooltip, filterInfo.title));
+            if (filterInfo.filter != null && !filterInfo.filter.isNotApplicable()) {
+                filterInfo.link.setFont(boldFont);
+            } else {
+                filterInfo.link.setFont(getFont());
+            }
+        } else {
+            filterInfo.link.setText(NLS.bind(CoreMessages.dialog_connection_wizard_final_filter_link_not_supported_text, filterInfo.title));
+            filterInfo.link.setToolTipText(NLS.bind(CoreMessages.dialog_connection_wizard_final_filter_link_not_supported_tooltip, filterInfo.title, getWizard().getSelectedDriver().getName()));
         }
     }
 
@@ -183,6 +248,8 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
     @Override
     public void createControl(Composite parent)
     {
+        boldFont = UIUtils.makeBoldFont(parent.getFont());
+
         Composite group = new Composite(parent, SWT.NONE);
         GridLayout gl = new GridLayout(1, false);
         group.setLayout(gl);
@@ -253,9 +320,38 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
             descriptionText.setLayoutData(gd);
         }
 
+        Composite refsGroup = UIUtils.createPlaceholder(group, 2, 5);
+        refsGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         {
-            Group linkGroup = UIUtils.createControlGroup(group, CoreMessages.dialog_connection_wizard_final_group_other, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
-            ((GridData)linkGroup.getLayoutData()).horizontalSpan = 2;
+            // Filters
+            filtersGroup = UIUtils.createControlGroup(
+                refsGroup,
+                CoreMessages.dialog_connection_wizard_final_group_filters,
+                2, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            for (final FilterInfo filterInfo : filters) {
+                filterInfo.link = UIUtils.createLink(filtersGroup, "<a>" + filterInfo.title + "</a>", new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        EditObjectFilterDialog dialog = new EditObjectFilterDialog(
+                            getShell(),
+                            getWizard().getDataSourceRegistry(),
+                            filterInfo.title,
+                            filterInfo.filter != null ? filterInfo.filter : new DBSObjectFilter(),
+                            true);
+                        if (dialog.open() == IDialogConstants.OK_ID) {
+                            filterInfo.filter = dialog.getFilter();
+                            if (filterInfo.filter != null && !filterInfo.filter.isNotApplicable()) {
+                                filterInfo.link.setFont(boldFont);
+                            } else {
+                                filterInfo.link.setFont(getFont());
+                            }
+                        }
+                    }
+                });
+            }
+        }
+        {
+            Group linkGroup = UIUtils.createControlGroup(refsGroup, CoreMessages.dialog_connection_wizard_final_group_other, 1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
 
             Link initConfigLink = new Link(linkGroup, SWT.NONE);
             initConfigLink.setText("<a>" + CoreMessages.dialog_connection_wizard_connection_init_description + "</a>");
@@ -360,6 +456,12 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
             dataSource.setDescription(null);
         } else {
             dataSource.setDescription(description);
+        }
+
+        for (FilterInfo filterInfo : filters) {
+            if (filterInfo.filter != null) {
+                dataSource.setObjectFilter(filterInfo.type, null, filterInfo.filter);
+            }
         }
     }
 
