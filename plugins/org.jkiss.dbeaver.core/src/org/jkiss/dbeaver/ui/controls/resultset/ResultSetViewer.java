@@ -3460,7 +3460,7 @@ public class ResultSetViewer extends Viewer
             {
                 try {
                     return ResultSetUtils.getAttributeValueFromClipboard(attribute);
-                } catch (DBCException e) {
+                } catch (Exception e) {
                     log.debug("Error copying from clipboard", e);
                     return null;
                 }
