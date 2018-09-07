@@ -85,11 +85,11 @@ public class PrefPageOracle extends TargetPrefPage
         }
 
         {
-            Group miscGroup = UIUtils.createControlGroup(composite, "Misc", 2, GridData.FILL_HORIZONTAL, 0);
-            rowidSupportCheck = UIUtils.createLabelCheckbox(miscGroup, "Use ROWID to identify rows", true);
-            enableDbmsOuputCheck = UIUtils.createLabelCheckbox(miscGroup, "Enable DBMS Output", true);
-            readAllSynonymsCheck = UIUtils.createLabelCheckbox(miscGroup, "Read all synonyms", "If unchecked Java classes and package bodies will be skipped", true);
-            disableScriptEscapeProcessingCheck = UIUtils.createLabelCheckbox(miscGroup, "Disable escape processing in SQL scripts", "Disable client-side parser of driver instruction in brackets { } ", true);
+            Group miscGroup = UIUtils.createControlGroup(composite, "Misc", 1, GridData.FILL_HORIZONTAL, 0);
+            rowidSupportCheck = UIUtils.createCheckbox(miscGroup, "Use ROWID to identify rows", true);
+            enableDbmsOuputCheck = UIUtils.createCheckbox(miscGroup, "Enable DBMS Output", true);
+            readAllSynonymsCheck = UIUtils.createCheckbox(miscGroup, "Read all synonyms", "If unchecked Java classes and package bodies will be skipped", true, 1);
+            disableScriptEscapeProcessingCheck = UIUtils.createCheckbox(miscGroup, "Disable escape processing in SQL scripts", "Disable client-side parser of driver instruction in brackets { } ", true, 1);
         }
 
         return composite;
