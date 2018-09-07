@@ -227,6 +227,7 @@
                     icon="platform:/plugin/org.jkiss.dbeaver.model/icons/types/text.png"
                     label="%dataTransfer.processor.txt.name">
                 <propertyGroup label="%dataTransfer.processor.txt.propertyGroup.general.label">
+                    <property id="extension" label="%dataTransfer.processor.txt.property.extension.label" type="string" defaultValue="txt"/>
                     <property id="maxColumnLength" label="%dataTransfer.processor.txt.property.maxColumnLength.label" defaultValue="100"/>
                     <property id="showNulls" label="%dataTransfer.processor.txt.property.showNulls.label" type="boolean" defaultValue="false"/>
                     <property id="delimLeading" label="%dataTransfer.processor.txt.property.delimLeading.label" type="boolean" defaultValue="true"/>
