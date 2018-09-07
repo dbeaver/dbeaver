@@ -163,6 +163,8 @@
 
                     <parameter name="ddl-drop-column-short" value="true"/>
                     <parameter name="supports-scroll" value="false"/>
+                    <!-- Limits affect INSERT INTO and other DML queries-->
+                    <parameter name="supports-limits" value="false"/>
                 </driver>
             </drivers>
 
