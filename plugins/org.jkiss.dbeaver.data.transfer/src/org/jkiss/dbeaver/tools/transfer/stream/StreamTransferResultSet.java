@@ -37,16 +37,22 @@ public class StreamTransferResultSet implements DBCResultSet {
     private List<DBCAttributeMetaData> metaAttrs;
     private Object[] streamRow;
     private final List<StreamProducerSettings.AttributeMapping> attributeMappings;
+    private final int[] targetToSourceMap;
 
     public StreamTransferResultSet(StreamTransferSession session, DBCStatement statement, StreamProducerSettings.EntityMapping entityMapping) {
         this.session = session;
         this.statement = statement;
         this.entityMapping = entityMapping;
-        this.attributeMappings = this.entityMapping.getValuableAttributeMappings();
+        this.attributeMappings = this.entityMapping.getAttributeMappings();
         this.metaAttrs = new ArrayList<>(attributeMappings.size());
+        this.targetToSourceMap = new int[this.entityMapping.getValuableAttributeMappings().size()];
+        int mapIndex = 0;
         for (int i = 0; i < attributeMappings.size(); i++) {
             StreamProducerSettings.AttributeMapping attr = attributeMappings.get(i);
-            metaAttrs.add(new LocalResultSetColumn(this, i, attr.getTargetAttributeName(), DBPDataKind.STRING));
+            if (attr.isValuable()) {
+                metaAttrs.add(new LocalResultSetColumn(this, i, attr.getTargetAttributeName(), DBPDataKind.STRING));
+                this.targetToSourceMap[mapIndex++] = i;
+            }
         }
     }
 
@@ -72,13 +78,9 @@ public class StreamTransferResultSet implements DBCResultSet {
 
     @Override
     public Object getAttributeValue(int index) throws DBCException {
-        StreamProducerSettings.AttributeMapping attr = this.attributeMappings.get(index);
-        StreamDataImporterColumnInfo sourceColumn = attr.getSourceColumn();
-        if (sourceColumn != null) {
-            return streamRow[sourceColumn.getColumnIndex()];
-        } else {
-            return null;
-        }
+        int sourceIndex = this.targetToSourceMap[index];
+        StreamProducerSettings.AttributeMapping attr = this.attributeMappings.get(sourceIndex);
+        return streamRow[attr.getSourceAttributeIndex()];
     }
 
     @Override

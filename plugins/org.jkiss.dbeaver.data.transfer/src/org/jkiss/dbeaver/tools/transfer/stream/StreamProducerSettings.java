@@ -216,6 +216,10 @@ public class StreamProducerSettings implements IDataTransferSettings {
             return mappingType == MappingType.IMPORT || mappingType == MappingType.DEFAULT_VALUE;
         }
 
+        @Override
+        public String toString() {
+            return sourceAttributeName + " " + mappingType + " )" + targetAttributeName + ")";
+        }
     }
 
     private Map<String, EntityMapping> entityMapping = new HashMap<>();

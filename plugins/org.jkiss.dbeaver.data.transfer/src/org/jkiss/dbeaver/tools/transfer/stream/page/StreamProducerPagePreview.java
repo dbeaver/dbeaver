@@ -555,20 +555,15 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
         List<Object[]> rows = previewConsumer.getRows();
         List<String[]> strRows = new ArrayList<>(rows.size());
         try (DBCSession session = DBUtils.openUtilSession(monitor, previewConsumer.getEntityMapping().getEntity(), "Generate preview values")) {
-            List<StreamProducerSettings.AttributeMapping> attributeMappings = previewConsumer.getEntityMapping().getAttributeMappings();
+            List<StreamProducerSettings.AttributeMapping> attributeMappings = previewConsumer.getEntityMapping().getValuableAttributeMappings();
             for (Object[] row : rows) {
                 String[] strRow = new String[row.length];
-                int columnIndex = 0;
                 for (int i = 0; i < attributeMappings.size(); i++) {
                     StreamProducerSettings.AttributeMapping attr = attributeMappings.get(i);
-                    if (!attr.isValuable()) {
-                        continue;
-                    }
-                    Object srcValue = row[attr.getSourceAttributeIndex()];
+                    Object srcValue = row[i];
                     Object value = attr.getTargetValueHandler().getValueFromObject(session, attr.getTargetAttribute(), srcValue, false);
                     String valueStr = attr.getTargetValueHandler().getValueDisplayString(attr.getTargetAttribute(), value, DBDDisplayFormat.UI);
-                    strRow[columnIndex] = valueStr;
-                    columnIndex++;
+                    strRow[i] = valueStr;
                 }
                 strRows.add(strRow);
             }
@@ -669,12 +664,8 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
                     case DEFAULT_VALUE:
                         row[i] = attributes.get(i).getDefaultValue();
                         break;
-                    case IMPORT:
-                        row[i] = resultSet.getAttributeValue(i);
-                        break;
                     default:
-                        // Shouldn't be here
-                        row[i] = null;
+                        row[i] = resultSet.getAttributeValue(i);
                         break;
                 }
             }

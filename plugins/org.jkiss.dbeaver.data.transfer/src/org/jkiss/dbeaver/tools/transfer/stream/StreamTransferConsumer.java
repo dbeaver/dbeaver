@@ -361,7 +361,7 @@ public class StreamTransferConsumer implements IDataTransferConsumer<StreamConsu
         Object extension = processorProperties.get(StreamConsumerSettings.PROP_FILE_EXTENSION);
         String fileName = translatePattern(
             settings.getOutputFilePattern(),
-            null);
+            null).trim();
         if (extension != null) {
             return fileName + "." + extension;
         } else {
