@@ -441,7 +441,8 @@ public final class SQLUtils {
             if (cAttr instanceof DBDAttributeBinding) {
                 DBDAttributeBinding binding = (DBDAttributeBinding) cAttr;
                 if (binding.getEntityAttribute() != null &&
-                    binding.getEntityAttribute().getName().equals(binding.getMetaAttribute().getName()))
+                    binding.getEntityAttribute().getName().equals(binding.getMetaAttribute().getName()) ||
+                    binding instanceof DBDAttributeBindingType)
                 {
                     attrName = DBUtils.getObjectFullName(dataSource, binding, DBPEvaluationContext.DML);
                 } else {
