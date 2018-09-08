@@ -73,6 +73,7 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
     private Font boldFont;
 
     private String generatorLinkUrl;
+    private transient boolean loadingSettings;
 
     protected MockDataWizardPageSettings(MockDataSettings mockDataSettings)
     {
@@ -413,10 +414,15 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
                 log.error("Mock Data Settings initialization interrupted", e);
             }
 
-            removeOldDataCheck.setSelection(mockDataSettings.isRemoveOldData());
-            rowsText.setText(String.valueOf(mockDataSettings.getRowsNumber()));
-            batchSizeText.setText(String.valueOf(mockDataSettings.getBatchSize()));
-            generatorsTableViewer.setInput(mockDataSettings.getAttributes());
+            loadingSettings = true;
+            try {
+                removeOldDataCheck.setSelection(mockDataSettings.isRemoveOldData());
+                rowsText.setText(String.valueOf(mockDataSettings.getRowsNumber()));
+                batchSizeText.setText(String.valueOf(mockDataSettings.getBatchSize()));
+                generatorsTableViewer.setInput(mockDataSettings.getAttributes());
+            } finally {
+                loadingSettings = false;
+            }
         }
 
         entityNameText.setText(DBUtils.getObjectFullName(mockDataSettings.getEntity(), DBPEvaluationContext.DML));
@@ -490,9 +496,11 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
     }
 
     private void updateState() {
-        mockDataSettings.setRemoveOldData(removeOldDataCheck.getSelection());
-        mockDataSettings.setRowsNumber(CommonUtils.toLong(rowsText.getText()));
-        mockDataSettings.setBatchSize(CommonUtils.toInt(batchSizeText.getText()));
+        if (!loadingSettings) {
+            mockDataSettings.setRemoveOldData(removeOldDataCheck.getSelection());
+            mockDataSettings.setRowsNumber(CommonUtils.toLong(rowsText.getText()));
+            mockDataSettings.setBatchSize(CommonUtils.toInt(batchSizeText.getText()));
+        }
     }
 
     private void reloadProperties(DBSAttributeBase attribute, String generatorId) {
