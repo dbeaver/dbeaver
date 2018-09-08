@@ -318,6 +318,7 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                             if (counter++ < rowsNumber) {
                                 batch.add(DBDAttributeValue.getValues(attributeValues));
                             }
+                            monitor.worked(1);
                         }
                         if (batch != null) {
                             if (JUST_GENERATE_SCRIPT) {
@@ -326,7 +327,6 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                                 insertStats.accumulate(batch.execute(session));
                             }
                         }
-                        monitor.worked(1);
                     }
                     catch (Exception e) {
                         processGeneratorException(e);
