@@ -46,7 +46,6 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
 {
     private static final Log log = Log.getLog(MockDataExecuteWizard.class);
 
-    private static final int BATCH_SIZE = 1000;
     public static final boolean JUST_GENERATE_SCRIPT = false;
 
     private static final String RS_EXPORT_WIZARD_DIALOG_SETTINGS = "MockData"; //$NON-NLS-1$
@@ -223,8 +222,12 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                 monitor.done();
 
                 long rowsNumber = mockDataSettings.getRowsNumber();
-                long quotient = rowsNumber / BATCH_SIZE;
-                long modulo = rowsNumber % BATCH_SIZE;
+                int batchSize = mockDataSettings.getBatchSize();
+                if (batchSize <= 0) {
+                    batchSize = 1;
+                }
+                long quotient = rowsNumber / batchSize;
+                long modulo = rowsNumber % batchSize;
                 if (modulo > 0) {
                     quotient++;
                 }
@@ -260,11 +263,11 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                         }
 
                         monitor.subTask(NLS.bind(MockDataMessages.tools_mockdata_wizard_log_inserted_rows, String.valueOf(counter)));
-                        monitor.worked(BATCH_SIZE);
+                        //monitor.worked(batchSize);
                     }
 
                     try {
-                        for (int i = 0; (i < BATCH_SIZE && counter < rowsNumber); i++) {
+                        for (int i = 0; (i < batchSize && counter < rowsNumber); i++) {
                             if (monitor.isCanceled()) {
                                 break;
                             }
