@@ -18,18 +18,22 @@
 package org.jkiss.dbeaver.ext.mockdata;
 
 import org.eclipse.jface.wizard.IWizardPage;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.tools.IExternalTool;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.tools.ToolWizardDialog;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 
 public class MockDataGenerateTool implements IExternalTool {
 
@@ -37,10 +41,19 @@ public class MockDataGenerateTool implements IExternalTool {
 
     public void execute(IWorkbenchWindow window, IWorkbenchPart activePart, Collection<DBSObject> objects) throws DBException {
 
-        ArrayList<DBSDataManipulator> dbObjects = new ArrayList<>();
+        java.util.List<DBSDataManipulator> dbObjects = new ArrayList<>();
+        java.util.Set<DBPDataSource> dataSources = new HashSet<>();
         for (DBSObject obj : objects) {
             dbObjects.add((DBSDataManipulator) obj);
+            dataSources.add(obj.getDataSource());
         }
+
+        for (DBPDataSource ds : dataSources) {
+            if (ds.getInfo().isReadOnlyData()) {
+                UIUtils.showMessageBox(UIUtils.getActiveWorkbenchShell(),"Read-only database", "Database '" + ds.getContainer().getName() + "' is read-only.\nMock data generation is not possible.", SWT.ICON_WARNING);
+            }
+        }
+
 
         MockDataExecuteWizard wizard = new MockDataExecuteWizard(
                 mockDataSettings, dbObjects, MockDataMessages.tools_mockdata_wizard_page_name);
