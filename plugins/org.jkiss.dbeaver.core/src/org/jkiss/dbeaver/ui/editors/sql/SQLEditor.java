@@ -2426,7 +2426,20 @@ public class SQLEditor extends SQLEditorBase implements
                     if (dbStatement.executeStatement()) {
                         try (DBCResultSet rs = dbStatement.openResultSet()) {
                             if (rs.nextRow()) {
-                                Object countValue = rs.getAttributeValue(0);
+                                List<DBCAttributeMetaData> resultAttrs = rs.getMeta().getAttributes();
+                                Object countValue = null;
+                                if (resultAttrs.size() == 1) {
+                                    countValue = rs.getAttributeValue(0);
+                                } else {
+                                    // In some databases (Influx?) SELECT count(*) produces multiple columns. Try to find first one with 'count' in its name.
+                                    for (int i = 0; i < resultAttrs.size(); i++) {
+                                        DBCAttributeMetaData ma = resultAttrs.get(i);
+                                        if (ma.getName().toLowerCase(Locale.ENGLISH).contains("count")) {
+                                            countValue = rs.getAttributeValue(i);
+                                            break;
+                                        }
+                                    }
+                                }
                                 if (countValue instanceof Number) {
                                     return ((Number) countValue).longValue();
                                 } else {
