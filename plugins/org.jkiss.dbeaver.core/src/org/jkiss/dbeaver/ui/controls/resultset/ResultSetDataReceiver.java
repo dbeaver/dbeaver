@@ -178,11 +178,11 @@ class ResultSetDataReceiver implements DBDDataReceiver {
                 resultSetViewer.updatePresentation(resultSet);
                 resultSetViewer.setData(tmpRows, focusRow);
                 resultSetViewer.getActivePresentation().refreshData(true, false, !resultSetViewer.getModel().isMetadataChanged());
+                resultSetViewer.updateStatusMessage();
             } else {
                 resultSetViewer.appendData(tmpRows);
                 resultSetViewer.getActivePresentation().refreshData(false, true, true);
             }
-            resultSetViewer.updateStatusMessage();
             // Check for more data
             hasMoreData = maxRows > 0 && tmpRows.size() >= maxRows;
         });
