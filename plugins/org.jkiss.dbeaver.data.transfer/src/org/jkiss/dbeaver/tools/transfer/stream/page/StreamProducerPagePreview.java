@@ -564,7 +564,8 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
                     if (!attr.isValuable()) {
                         continue;
                     }
-                    Object value = attr.getTargetValueHandler().getValueFromObject(session, attr.getTargetAttribute(), row[columnIndex], false);
+                    Object srcValue = row[attr.getSourceAttributeIndex()];
+                    Object value = attr.getTargetValueHandler().getValueFromObject(session, attr.getTargetAttribute(), srcValue, false);
                     String valueStr = attr.getTargetValueHandler().getValueDisplayString(attr.getTargetAttribute(), value, DBDDisplayFormat.UI);
                     strRow[columnIndex] = valueStr;
                     columnIndex++;
