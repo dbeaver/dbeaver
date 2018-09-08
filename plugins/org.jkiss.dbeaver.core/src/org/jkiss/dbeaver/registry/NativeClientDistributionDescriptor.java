@@ -122,7 +122,7 @@ public class NativeClientDistributionDescriptor {
                                 try (OutputStream os = new FileOutputStream(targetFile)) {
                                     ContentUtils.copyStreams(is, localFile.length(), os, monitor);
                                 }
-                                return true;
+                                continue;
                             } catch (IOException e) {
                                 if (targetFile.exists()) {
                                     if (!targetFile.delete()) {
