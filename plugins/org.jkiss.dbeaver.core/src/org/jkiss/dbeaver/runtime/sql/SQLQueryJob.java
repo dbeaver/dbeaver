@@ -173,7 +173,9 @@ public class SQLQueryJob extends DataSourceJob
             DBCExecutionPurpose purpose = queries.size() > 1 ? DBCExecutionPurpose.USER_SCRIPT : DBCExecutionPurpose.USER;
             try (DBCSession session = context.openSession(monitor, purpose, "SQL Query")) {
                 // Set transaction settings (only if autocommit is off)
-                QMUtils.getDefaultHandler().handleScriptBegin(session);
+                if (session.isLoggingEnabled()) {
+                    QMUtils.getDefaultHandler().handleScriptBegin(session);
+                }
 
                 boolean oldAutoCommit = txnManager == null || txnManager.isAutoCommit();
                 boolean newAutoCommit = (commitType == SQLScriptCommitType.AUTOCOMMIT);
@@ -268,8 +270,9 @@ public class SQLQueryJob extends DataSourceJob
                 if (txnManager != null && !oldAutoCommit && newAutoCommit) {
                     txnManager.setAutoCommit(monitor, false);
                 }
-
-                QMUtils.getDefaultHandler().handleScriptEnd(session);
+                if (session.isLoggingEnabled()) {
+                    QMUtils.getDefaultHandler().handleScriptEnd(session);
+                }
 
                 // Return success
                 return new Status(

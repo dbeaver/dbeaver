@@ -186,8 +186,9 @@ public class JDBCPreparedStatementImpl extends JDBCStatementImpl<PreparedStateme
                 paramMap = new LinkedHashMap<>();
             }
             paramMap.put(parameter, o);
-
-            QMUtils.getDefaultHandler().handleStatementBind(this, parameter, o);
+            if (getSession().isLoggingEnabled()) {
+                QMUtils.getDefaultHandler().handleStatementBind(this, parameter, o);
+            }
         }
     }
 

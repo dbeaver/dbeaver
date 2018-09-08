@@ -122,6 +122,9 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
             int statementsInBatch = 0;
 
             for (Object[] rowValues : values) {
+                if (session.getProgressMonitor().isCanceled()) {
+                    break;
+                }
                 boolean reuse = reuseStatement;
                 if (reuse) {
                     for (int i = 0; i < rowValues.length; i++) {
