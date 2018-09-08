@@ -276,6 +276,9 @@ public class CoreMessages extends NLS {
 	public static String controls_resultset_viewer_action_edit;
 	public static String controls_resultset_viewer_action_order_filter;
     public static String controls_resultset_viewer_action_custom_filter;
+	public static String controls_resultset_viewer_action_view_format;
+	public static String controls_resultset_viewer_action_view_as;
+	public static String controls_resultset_viewer_action_data_formats;
 	public static String controls_resultset_viewer_action_refresh;
 	public static String controls_resultset_viewer_action_panels;
     public static String controls_resultset_viewer_action_options;
@@ -283,6 +286,8 @@ public class CoreMessages extends NLS {
 	public static String controls_resultset_viewer_dialog_status_title;
 	public static String controls_resultset_check_autocommit_state;
 	public static String controls_resultset_viewer_job_update;
+	public static String controls_resultset_viewer_action_navigate;
+	public static String controls_resultset_viewer_action_layout;
 	public static String controls_resultset_viewer_monitor_aply_changes;
 
 	public static String controls_time_ms;
