@@ -94,6 +94,7 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
     @NotNull
     private DBCStatistics processBatch(@NotNull DBCSession session, @Nullable List<DBEPersistAction> actions) throws DBCException
     {
+        session.getProgressMonitor().subTask("Save batch (" + values.size() + ")");
         DBDValueHandler[] handlers = new DBDValueHandler[attributes.length];
         for (int i = 0; i < attributes.length; i++) {
             if (attributes[i] instanceof DBDAttributeBinding) {
