@@ -2545,6 +2545,7 @@ public class ResultSetViewer extends Viewer
                 }
             };
 
+            dataReceiver.setNextSegmentRead(false);
             runDataPump(dataContainer, dataFilter, 0, segmentSize, -1, true, false, finalizer);
         } else {
             DBUserInterface.getInstance().showError(
@@ -2585,6 +2586,7 @@ public class ResultSetViewer extends Viewer
 
         DBSDataContainer dataContainer = getDataContainer();
         if (dataContainer != null) {
+            dataReceiver.setNextSegmentRead(false);
             runDataPump(
                 dataContainer,
                 filter,
@@ -2609,6 +2611,7 @@ public class ResultSetViewer extends Viewer
             if (curRow != null && curRow.getVisualNumber() >= segmentSize && segmentSize > 0) {
                 segmentSize = (curRow.getVisualNumber() / segmentSize + 1) * segmentSize;
             }
+            dataReceiver.setNextSegmentRead(false);
             return runDataPump(dataContainer, null, 0, segmentSize, curRow == null ? 0 : curRow.getRowNumber(), false, false, onSuccess);
         } else {
             return false;
