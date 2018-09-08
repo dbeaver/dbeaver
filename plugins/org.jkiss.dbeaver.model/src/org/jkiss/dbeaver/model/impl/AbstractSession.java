@@ -47,8 +47,9 @@ public abstract class AbstractSession implements DBCSession, DBRBlockingObject {
             monitor.startBlock(this, taskTitle);
             holdsBlock = true;
         }
-
-        QMUtils.getDefaultHandler().handleSessionOpen(this);
+        if (loggingEnabled) {
+            QMUtils.getDefaultHandler().handleSessionOpen(this);
+        }
     }
 
     @NotNull
@@ -117,7 +118,9 @@ public abstract class AbstractSession implements DBCSession, DBRBlockingObject {
             monitor.endBlock();
             holdsBlock = false;
         }
-        QMUtils.getDefaultHandler().handleSessionClose(this);
+        if (loggingEnabled) {
+            QMUtils.getDefaultHandler().handleSessionClose(this);
+        }
     }
 
 }

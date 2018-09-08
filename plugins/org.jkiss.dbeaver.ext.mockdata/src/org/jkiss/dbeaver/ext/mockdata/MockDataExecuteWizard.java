@@ -326,6 +326,7 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                                 insertStats.accumulate(batch.execute(session));
                             }
                         }
+                        monitor.worked(1);
                     }
                     catch (Exception e) {
                         processGeneratorException(e);
