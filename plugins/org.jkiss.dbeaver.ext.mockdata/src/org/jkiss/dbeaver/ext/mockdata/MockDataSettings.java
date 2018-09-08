@@ -35,6 +35,7 @@ public class MockDataSettings {
 
     public static final String PROP_REMOVE_OLD_DATA = "removeOldData"; //$NON-NLS-1$
     public static final String PROP_ROWS_NUMBER = "rowsNumber"; //$NON-NLS-1$
+    public static final String PROP_BATCH_SIZE = "batchSize"; //$NON-NLS-1$
 
     public static final String KEY_SELECTED_ATTRIBUTE = "selectedAttribute"; //$NON-NLS-1$
     public static final String KEY_SELECTED_GENERATOR = "selectedGenerator"; //$NON-NLS-1$
@@ -47,6 +48,7 @@ public class MockDataSettings {
 
     private boolean removeOldData;
     private long rowsNumber = 1000;
+    private int batchSize = 200;
 
     private String selectedAttribute; // attribute.name
     private Map<String, MockGeneratorDescriptor> generatorDescriptors = new HashMap<>(); // generatorId -> MockGeneratorDescriptor
@@ -134,6 +136,14 @@ public class MockDataSettings {
         this.rowsNumber = rowsNumber;
     }
 
+    public int getBatchSize() {
+        return batchSize;
+    }
+
+    public void setBatchSize(int batchSize) {
+        this.batchSize = batchSize;
+    }
+
     public Map<String, AttributeGeneratorProperties> getAttributeGenerators() {
         return attributeGenerators;
     }
@@ -150,6 +160,11 @@ public class MockDataSettings {
         removeOldData = dialogSettings.getBoolean(PROP_REMOVE_OLD_DATA);
         try {
             rowsNumber = dialogSettings.getInt(PROP_ROWS_NUMBER);
+        } catch (NumberFormatException e) {
+            // do nothing
+        }
+        try {
+            batchSize = dialogSettings.getInt(PROP_BATCH_SIZE);
         } catch (NumberFormatException e) {
             // do nothing
         }
@@ -237,6 +252,7 @@ public class MockDataSettings {
     void saveTo(IDialogSettings dialogSettings) {
         dialogSettings.put(PROP_REMOVE_OLD_DATA, removeOldData);
         dialogSettings.put(PROP_ROWS_NUMBER, rowsNumber);
+        dialogSettings.put(PROP_BATCH_SIZE, batchSize);
 
         // save selected generators
         dialogSettings.put(KEY_SELECTED_ATTRIBUTE, selectedAttribute);
