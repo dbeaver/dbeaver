@@ -191,7 +191,7 @@
 
             <nativeClients>
                 <client id="mysql_client" label="MySQL Binaries">
-                    <dist os="win32" targetPath="clients/mysql/win" remotePath="repo:/drivers/mysql/client/win" resourcePath="drivers/mysql/client/win">
+                    <dist os="win32" targetPath="clients/mysql/win" remotePath="repo:/drivers/mysql/client/win" resourcePath="clients/mysql/win">
                         <file type="exec" name="mysql.exe"/>
                         <file type="exec" name="mysqldump.exe"/>
                     </dist>

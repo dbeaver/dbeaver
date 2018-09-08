@@ -333,7 +333,7 @@
 
             <nativeClients>
                 <client id="postgresql_client" label="PostgreSQL Binaries">
-                    <dist os="win32" targetPath="clients/postgresql/win" remotePath="repo:/drivers/postgresql/client/win" resourcePath="drivers/postgresql/client/win">
+                    <dist os="win32" targetPath="clients/postgresql/win" remotePath="repo:/drivers/postgresql/client/win" resourcePath="clients/postgresql/win">
                         <file type="exec" name="psql.exe"/>
                         <file type="exec" name="pg_dump.exe"/>
                         <file type="exec" name="pg_restore.exe"/>
