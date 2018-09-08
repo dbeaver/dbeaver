@@ -2901,13 +2901,14 @@
         <factory adaptableType="org.jkiss.dbeaver.model.DBPObject" class="org.jkiss.dbeaver.ui.navigator.NavigatorAdapterFactory">
             <adapter type="org.jkiss.dbeaver.model.DBPNamedObject"/>
             <adapter type="org.jkiss.dbeaver.model.DBPQualifiedObject"/>
+            <adapter type="org.jkiss.dbeaver.model.DBPObject"/>
             <adapter type="org.jkiss.dbeaver.model.struct.DBSObject"/>
             <adapter type="org.jkiss.dbeaver.model.struct.DBSEntity"/>
             <adapter type="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
             <adapter type="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
             <adapter type="org.jkiss.dbeaver.model.struct.rdb.DBSProcedure"/>
+            <adapter type="org.jkiss.dbeaver.model.struct.rdb.DBSSchema"/>
             <adapter type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
-            <adapter type="org.jkiss.dbeaver.model.DBPObject"/>
             <adapter type="org.eclipse.ui.views.properties.IPropertySource"/>
             <adapter type="org.eclipse.core.resources.IResource"/>
             <adapter type="org.eclipse.core.resources.IProject"/>
