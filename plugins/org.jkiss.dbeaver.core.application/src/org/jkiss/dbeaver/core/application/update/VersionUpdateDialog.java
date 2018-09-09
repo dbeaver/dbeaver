@@ -149,7 +149,7 @@ class VersionUpdateDialog extends Dialog {
     @Override
     protected void buttonPressed(int buttonId)
     {
-        if (dontShowAgainCheck.getSelection()) {
+        if (dontShowAgainCheck != null && dontShowAgainCheck.getSelection()) {
             CoreApplicationActivator.getDefault().getPreferenceStore().setValue("suppressUpdateCheck." + newVersion.getPlainVersion(), true);
         }
         if (buttonId == INFO_ID) {
