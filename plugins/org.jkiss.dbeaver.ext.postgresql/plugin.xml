@@ -323,8 +323,8 @@
                         propertiesURL="https://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-options.html">
                     <replace provider="generic" driver="aws_redshift"/>
                     <replace provider="generic" driver="aws_redshift_42"/>
-                    <file type="jar" path="https://s3.amazonaws.com/redshift-downloads/drivers/jdbc/1.2.15.1025/RedshiftJDBC42-1.2.15.1025.jar"/>
-                    <!--<file type="jar" path="maven:/com.amazon.redshift:redshift-jdbc42:RELEASE"/>-->
+                    <!--<file type="jar" path="https://s3.amazonaws.com/redshift-downloads/drivers/jdbc/1.2.15.1025/RedshiftJDBC42-1.2.15.1025.jar"/>-->
+                    <file type="jar" path="maven:/com.amazon.redshift:redshift-jdbc42:RELEASE"/>
 
                     <parameter name="serverType" value="redshift"/>
                     <property name="loginTimeout" value="20"/>
@@ -350,11 +350,11 @@
     </extension>
 
     <!-- Unsecure (http) repository. We can't use it by default, sorry -->
-    <!--extension point="org.jkiss.dbeaver.mavenRepository">
-        <repository id="aws-redshift-maven-repo" name="AWS Redshift Repository" url="http://redshift-maven-repository.s3-website-us-east-1.amazonaws.com/release" order="20">
+    <extension point="org.jkiss.dbeaver.mavenRepository">
+        <repository id="aws-redshift-maven-repo" name="AWS Redshift Repository" url="https://s3.amazonaws.com/redshift-maven-repository/release" order="20">
             <scope group="com.amazon.redshift"/>
         </repository>
-    </extension-->
+    </extension>
 
     <extension point="org.jkiss.dbeaver.dataSourceView">
         <view
