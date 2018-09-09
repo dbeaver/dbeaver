@@ -37,7 +37,7 @@ public class DBWHandlerConfiguration {
     private boolean enabled;
     private String userName;
     private String password;
-    private boolean savePassword;
+    private boolean savePassword = true;
     private final Map<String, String> properties;
 
     public DBWHandlerConfiguration(@NotNull DBWHandlerDescriptor descriptor, DBPDriver driver)
