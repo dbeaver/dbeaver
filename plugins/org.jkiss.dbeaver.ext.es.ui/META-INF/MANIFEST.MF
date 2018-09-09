@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Elastic Search UI
+Bundle-Name: Elasticsearch UI
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.es.ui;singleton:=true
 Bundle-Version: 1.0.3.qualifier
 Bundle-Release-Date: 20180911
