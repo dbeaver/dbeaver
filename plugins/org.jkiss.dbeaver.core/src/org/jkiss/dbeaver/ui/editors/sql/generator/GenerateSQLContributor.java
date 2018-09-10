@@ -916,7 +916,7 @@ public class GenerateSQLContributor extends CompoundContributionItem {
                 if (dataSource instanceof SQLDataSource) {
                     SQLDataSource sqlDataSource = (SQLDataSource) dataSource;
                     SQLDialect sqlDialect = sqlDataSource.getSQLDialect();
-                    sqlDialect.generateStoredProcedureCall(sql, proc, parameters);
+                    sqlDialect.generateStoredProcedureCall(sql, proc, CommonUtils.safeCollection(parameters));
                 }
             }
         };
