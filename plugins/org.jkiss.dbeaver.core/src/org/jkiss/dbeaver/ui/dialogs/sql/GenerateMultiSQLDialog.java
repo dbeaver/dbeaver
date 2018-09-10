@@ -85,7 +85,10 @@ public abstract class GenerateMultiSQLDialog<T extends DBSObject> extends Genera
 
     @Override
     protected IDialogSettings getDialogBoundsSettings() {
-        return UIUtils.getDialogSettings(DIALOG_ID);
+        String dialogClassName = getClass().getName();
+        int divPos = dialogClassName.lastIndexOf('.');
+        dialogClassName = divPos == -1 ? dialogClassName : dialogClassName.substring(divPos + 1);
+        return UIUtils.getDialogSettings(DIALOG_ID + "." + dialogClassName);
     }
 
     protected abstract SQLScriptProgressListener<T> getScriptListener();
