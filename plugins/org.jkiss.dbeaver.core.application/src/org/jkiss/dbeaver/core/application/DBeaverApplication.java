@@ -187,21 +187,25 @@ public class DBeaverApplication implements IApplication, DBPApplication {
     private boolean setDefaultWorkspacePath(Location instanceLoc) {
         String defaultHomePath = getDefaultWorkspaceLocation(WORKSPACE_DIR_CURRENT).getAbsolutePath();
         final File homeDir = new File(defaultHomePath);
-        if (!homeDir.exists()) {
-            File previousVersionWorkspaceDir = null;
-            for (String oldDir : WORKSPACE_DIR_PREVIOUS) {
-                final File oldWorkspaceDir = new File(getDefaultWorkspaceLocation(oldDir).getAbsolutePath());
-                if (oldWorkspaceDir.exists() && GeneralUtils.getMetadataFolder(oldWorkspaceDir).exists()) {
-                    previousVersionWorkspaceDir = oldWorkspaceDir;
-                    break;
+        try {
+            if (!homeDir.exists()) {
+                File previousVersionWorkspaceDir = null;
+                for (String oldDir : WORKSPACE_DIR_PREVIOUS) {
+                    final File oldWorkspaceDir = new File(getDefaultWorkspaceLocation(oldDir).getAbsolutePath());
+                    if (oldWorkspaceDir.exists() && GeneralUtils.getMetadataFolder(oldWorkspaceDir).exists()) {
+                        previousVersionWorkspaceDir = oldWorkspaceDir;
+                        break;
+                    }
+                }
+                if (previousVersionWorkspaceDir != null) {
+                    DBeaverSettingsImporter importer = new DBeaverSettingsImporter(this, getDisplay());
+                    if (!importer.migrateFromPreviousVersion(previousVersionWorkspaceDir, homeDir)) {
+                        return false;
+                    }
                 }
             }
-            if (previousVersionWorkspaceDir != null) {
-                DBeaverSettingsImporter importer = new DBeaverSettingsImporter(this, getDisplay());
-                if (!importer.migrateFromPreviousVersion(previousVersionWorkspaceDir, homeDir)) {
-                    return false;
-                }
-            }
+        } catch (Throwable e) {
+            log.error("Error migrating old workspace version", e);
         }
         if (DBeaverCommandLine.handleCommandLine(defaultHomePath)) {
             log.debug("Commands processed. Exit " + GeneralUtils.getProductName() + ".");
