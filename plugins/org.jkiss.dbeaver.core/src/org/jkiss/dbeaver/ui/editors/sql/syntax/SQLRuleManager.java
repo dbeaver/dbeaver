@@ -124,7 +124,7 @@ public class SQLRuleManager extends RuleBasedScanner {
         return posList;
     }
 
-    public void refreshRules(@Nullable DBPDataSource dataSource, IEditorInput editorInput)
+    public void refreshRules(@Nullable DBPDataSource dataSource, @Nullable IEditorInput editorInput)
     {
         SQLDialect dialect = syntaxManager.getDialect();
         SQLRuleProvider ruleProvider = null;
@@ -133,9 +133,11 @@ public class SQLRuleManager extends RuleBasedScanner {
         }
 
         boolean minimalRules = false;
-        File file = EditorUtils.getLocalFileFromInput(editorInput);
-        if (file != null && file.length() > MAX_FILE_LENGTH_FOR_RULES) {
-            minimalRules = true;
+        if (editorInput != null) {
+            File file = EditorUtils.getLocalFileFromInput(editorInput);
+            if (file != null && file.length() > MAX_FILE_LENGTH_FOR_RULES) {
+                minimalRules = true;
+            }
         }
 
         boolean boldKeywords = dataSource == null ?
