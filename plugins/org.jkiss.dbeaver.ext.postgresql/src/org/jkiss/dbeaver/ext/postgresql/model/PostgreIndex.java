@@ -21,7 +21,6 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
-import org.jkiss.dbeaver.model.DBPHiddenObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
@@ -39,7 +38,7 @@ import java.util.Map;
 /**
  * PostgreIndex
  */
-public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase> implements PostgreObject, PostgreScriptObject, DBPHiddenObject
+public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase> implements PostgreObject, PostgreScriptObject
 {
     private long indexId;
     private boolean isUnique;
@@ -55,7 +54,7 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
     private long amId;
     private long tablespaceId;
 
-    private transient boolean isHidden;
+    private transient boolean isPrimaryKeyIndex;
     private transient String indexDDL;
 
     public PostgreIndex(DBRProgressMonitor monitor, PostgreTableBase parent, String indexName, ResultSet dbResult) throws DBException {
@@ -83,7 +82,7 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
         if (this.isUnique) {
             PostgreTableConstraintBase ownerConstraint = parent.getConstraint(monitor, getName());
             if (ownerConstraint != null && ownerConstraint.getConstraintType().isUnique()) {
-                this.isHidden = true;
+                this.isPrimaryKeyIndex = true;
             }
         }
     }
@@ -217,9 +216,8 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
             this);
     }
 
-    @Override
-    public boolean isHidden() {
-        return isHidden;
+    public boolean isPrimaryKeyIndex() {
+        return isPrimaryKeyIndex;
     }
 
     @Override
@@ -237,7 +235,7 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
     }
 
     @Override
-    public void setObjectDefinitionText(String sourceText) throws DBException {
+    public void setObjectDefinitionText(String sourceText) {
 
     }
 
