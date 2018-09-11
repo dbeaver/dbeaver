@@ -85,7 +85,8 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
                     case Types.DATE:
                         return dbResults.getDate(index + 1);
                     default:
-                        return dbResults.getTimestamp(index + 1);
+                        Object value = dbResults.getObject(index + 1);
+                        return getValueFromObject(session, type, value, false);
                 }
             } else {
                 return resultSet.getAttributeValue(index);
