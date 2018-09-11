@@ -70,6 +70,7 @@ public class VerticaSchema extends GenericSchema implements DBPSystemObject
         return children;
     }
 
+/*
     @Override
     public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName)
         throws DBException
@@ -80,6 +81,8 @@ public class VerticaSchema extends GenericSchema implements DBPSystemObject
         }
         return child;
     }
+*/
+
 /*
 
         JDBCPreparedStatement dbStat = session.prepareStatement(
