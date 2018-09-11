@@ -487,6 +487,17 @@ public abstract class LightGrid extends Canvas {
         int savedHSB = keepState ? hScroll.getSelection() : -1;
         int savedVSB = keepState ? vScroll.getSelection() : -1;
 
+        int[] oldWidths = null;
+        if (keepState) {
+            // Save widths
+            oldWidths = new int[columns.size()];
+            if (!columns.isEmpty()) {
+                for (int i = 0; i < columns.size(); i++) {
+                    oldWidths[i] = columns.get(i).getWidth();
+                }
+            }
+        }
+
         if (refreshColumns) {
             this.removeAll();
         } else {
@@ -567,6 +578,15 @@ public abstract class LightGrid extends Canvas {
                         for (GridColumn curColumn : fatColumns) {
                             curColumn.setWidth(newFatWidth);
                         }
+                    }
+                }
+            }
+
+            if (oldWidths != null) {
+                // Restore widths
+                if (oldWidths.length == columns.size()) {
+                    for (int i = 0; i < oldWidths.length; i++) {
+                        columns.get(i).setWidth(oldWidths[i]);
                     }
                 }
             }
