@@ -44,32 +44,27 @@ public abstract class SQLStructEditor<OBJECT_TYPE extends DBSObject, CONTAINER_T
 
     protected Collection<NestedObjectCommand> getNestedOrderedCommands(final StructCreateCommand structCommand)
     {
-        List<NestedObjectCommand> nestedCommands = new ArrayList<>();
-        nestedCommands.addAll(structCommand.getObjectCommands().values());
-        Collections.sort(nestedCommands, new Comparator<NestedObjectCommand>() {
-            @Override
-            public int compare(NestedObjectCommand o1, NestedObjectCommand o2)
-            {
-                final DBPObject object1 = o1.getObject();
-                final DBPObject object2 = o2.getObject();
-                if (object1 == structCommand.getObject()) {
-                    return 1;
-                } else if (object2 == structCommand.getObject()) {
-                    return -1;
-                }
-                int order1 = -1, order2 = 1;
-                Class<?>[] childTypes = getChildTypes();
-                for (int i = 0, childTypesLength = childTypes.length; i < childTypesLength; i++) {
-                    Class<?> childType = childTypes[i];
-                    if (childType.isAssignableFrom(object1.getClass())) {
-                        order1 = i;
-                    }
-                    if (childType.isAssignableFrom(object2.getClass())) {
-                        order2 = i;
-                    }
-                }
-                return order1 - order2;
+        List<NestedObjectCommand> nestedCommands = new ArrayList<>(structCommand.getObjectCommands().values());
+        nestedCommands.sort((o1, o2) -> {
+            final DBPObject object1 = o1.getObject();
+            final DBPObject object2 = o2.getObject();
+            if (object1 == structCommand.getObject()) {
+                return 1;
+            } else if (object2 == structCommand.getObject()) {
+                return -1;
             }
+            int order1 = -1, order2 = 1;
+            Class<?>[] childTypes = getChildTypes();
+            for (int i = 0, childTypesLength = childTypes.length; i < childTypesLength; i++) {
+                Class<?> childType = childTypes[i];
+                if (childType.isAssignableFrom(object1.getClass())) {
+                    order1 = i;
+                }
+                if (childType.isAssignableFrom(object2.getClass())) {
+                    order2 = i;
+                }
+            }
+            return order1 - order2;
         });
 
         return nestedCommands;
