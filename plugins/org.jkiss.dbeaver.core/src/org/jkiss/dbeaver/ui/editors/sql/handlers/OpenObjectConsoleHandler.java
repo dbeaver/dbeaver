@@ -26,6 +26,8 @@ import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
@@ -63,7 +65,11 @@ public class OpenObjectConsoleHandler extends AbstractHandler {
             }
         }
         DBRRunnableWithResult<String> generator = GenerateSQLContributor.SELECT_GENERATOR(entities, true);
-        openConsole(workbenchWindow, generator, ds, "Query", !entities.isEmpty());
+        String title = "Query";
+        if (entities.size() == 1) {
+            title = DBUtils.getObjectFullName(entities.get(0), DBPEvaluationContext.DML);
+        }
+        openConsole(workbenchWindow, generator, ds, title, !entities.isEmpty());
         return null;
     }
 
