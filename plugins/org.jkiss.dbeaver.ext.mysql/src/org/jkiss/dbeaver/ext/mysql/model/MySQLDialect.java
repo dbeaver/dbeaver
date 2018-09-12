@@ -50,8 +50,9 @@ class MySQLDialect extends JDBCSQLDialect implements SQLRuleProvider {
     );
 
     public static final String[] ADVANCED_KEYWORDS = {
-            "DATABASES",
-            "COLUMNS",
+        "AUTO_INCREMENT",
+        "DATABASES",
+        "COLUMNS",
     };
 
     public static final String[][] MYSQL_QUOTE_STRINGS = {
