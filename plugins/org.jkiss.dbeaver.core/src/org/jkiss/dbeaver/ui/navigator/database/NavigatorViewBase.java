@@ -18,7 +18,10 @@ package org.jkiss.dbeaver.ui.navigator.database;
 
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.jface.viewers.*;
+import org.eclipse.jface.viewers.ISelectionChangedListener;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.SelectionChangedEvent;
+import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IEditorPart;
@@ -39,6 +42,7 @@ import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.PropertyPageStandard;
 import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.handlers.OpenHandler;
+import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
 import org.jkiss.dbeaver.ui.navigator.INavigatorModelView;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.ui.navigator.database.load.TreeNodeSpecial;
@@ -81,7 +85,7 @@ public abstract class NavigatorViewBase extends ViewPart implements INavigatorMo
      * Implementation returns true if element shouldn't be filtered (i.e. always visible).
      * @return filter or null if no filtering is supported.
      */
-    protected IFilter getNavigatorFilter() {
+    protected INavigatorFilter getNavigatorFilter() {
         return null;
     }
 

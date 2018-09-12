@@ -43,10 +43,12 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.navigator.*;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableWithResult;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.AbstractUIJob;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectRename;
+import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
@@ -63,7 +65,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
     private TreeEditor treeEditor;
     private boolean checkEnabled;
     private ISelection defaultSelection;
-    private IFilter navigatorFilter;
+    private INavigatorFilter navigatorFilter;
     private Text filterControl;
 
     public DatabaseNavigatorTree(Composite parent, DBNNode rootNode, int style)
@@ -75,7 +77,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         this(parent, rootNode, style, showRoot, null);
     }
 
-    public DatabaseNavigatorTree(Composite parent, DBNNode rootNode, int style, boolean showRoot, IFilter navigatorFilter)
+    public DatabaseNavigatorTree(Composite parent, DBNNode rootNode, int style, boolean showRoot, INavigatorFilter navigatorFilter)
     {
         super(parent, SWT.NONE);
         this.setLayout(new FillLayout());
@@ -478,8 +480,10 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
     // Filtered tree
 
     private static class TreeFilter extends PatternFilter {
-        private final IFilter filter;
-        TreeFilter(IFilter filter) {
+        private final INavigatorFilter filter;
+        private boolean hasPattern = false;
+
+        TreeFilter(INavigatorFilter filter) {
             setIncludeLeadingWildcard(true);
             this.filter = filter;
         }
@@ -495,11 +499,37 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
             return out.toArray();
         }
 
+        @Override
+        public void setPattern(String patternString) {
+            this.hasPattern = !CommonUtils.isEmpty(patternString);
+            super.setPattern(patternString);
+        }
+
         public boolean isElementVisible(Viewer viewer, Object element){
+            if (hasPattern && filter.filterFolders() && element instanceof DBNLocalFolder) {
+                return hasVisibleConnections(viewer, (DBNLocalFolder)element);
+            }
             if (filter.select(element)) {
                 return true;
             }
             return super.isLeafMatch(viewer, element);
+        }
+
+        private boolean hasVisibleConnections(Viewer viewer, DBNLocalFolder folder) {
+            DBNNode[] children = folder.getChildren(new VoidProgressMonitor());
+            if (children == null) {
+                return false;
+            }
+            for (DBNNode child : children) {
+                if (child instanceof DBNLocalFolder) {
+                    if (hasVisibleConnections(viewer, (DBNLocalFolder) child)) {
+                        return true;
+                    }
+                } else if (isLeafMatch(viewer, child)) {
+                    return true;
+                }
+            }
+            return false;
         }
 
     }
@@ -556,6 +586,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                             // and the list is currently not filtered
                             updateToolbar(false);
                         }
+                        ((DatabaseNavigatorTree)getParent()).onTreeRefresh();
                     } finally {
                         // done updating the tree - set redraw back to true
                         redrawFalseControl.setRedraw(true);
@@ -565,6 +596,11 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                 }
             };
         }
+    }
+
+    // Called by filtering job
+    protected void onTreeRefresh() {
+
     }
 
 }
