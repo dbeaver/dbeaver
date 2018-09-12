@@ -25,11 +25,17 @@ import org.jkiss.dbeaver.model.struct.rdb.DBSPackage;
 import org.jkiss.dbeaver.model.struct.rdb.DBSProcedure;
 import org.jkiss.dbeaver.model.struct.rdb.DBSSequence;
 import org.jkiss.dbeaver.model.struct.rdb.DBSTableIndex;
+import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
 
 /**
  * Default database navigator filter
  */
-public class DatabaseNavigatorTreeFilter implements IFilter {
+public class DatabaseNavigatorTreeFilter implements INavigatorFilter {
+    @Override
+    public boolean filterFolders() {
+        return false;
+    }
+
     @Override
     public boolean select(Object element) {
         if (!(element instanceof DBNDatabaseItem)) {

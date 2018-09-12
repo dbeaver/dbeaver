@@ -29,12 +29,15 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.AbstractPopupPanel;
+import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 
 /**
@@ -90,8 +93,23 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
             }
         }
 
-        IFilter dsFilter = element -> element instanceof DBNProject || element instanceof DBNProjectDatabases || element instanceof DBNLocalFolder;
-        DatabaseNavigatorTree dataSourceTree = new DatabaseNavigatorTree(group, getTreeRootNode(), SWT.SINGLE | SWT.BORDER, false, dsFilter);
+        INavigatorFilter dsFilter = new INavigatorFilter() {
+            @Override
+            public boolean filterFolders() {
+                return true;
+            }
+
+            @Override
+            public boolean select(Object element) {
+                return element instanceof DBNProject || element instanceof DBNProjectDatabases || element instanceof DBNLocalFolder;
+            }
+        };
+        DatabaseNavigatorTree dataSourceTree = new DatabaseNavigatorTree(group, getTreeRootNode(), SWT.SINGLE | SWT.BORDER, false, dsFilter) {
+            @Override
+            protected void onTreeRefresh() {
+                expandFolders(this, getTreeRootNode());
+            }
+        };
         gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 500;
         gd.minimumHeight = 100;
@@ -210,6 +228,23 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
             showAllProjectsCheck);
 
         return group;
+    }
+
+    private void expandFolders(DatabaseNavigatorTree dataSourceTree, DBNNode node) {
+        if (node instanceof DBNLocalFolder || node instanceof DBNProjectDatabases || node instanceof DBNProject || node instanceof DBNRoot) {
+            dataSourceTree.getViewer().expandToLevel(node, 1);
+            DBNNode[] childNodes;
+            try {
+                childNodes = node.getChildren(new VoidProgressMonitor());
+            } catch (DBException e) {
+                return;
+            }
+            if (childNodes != null) {
+                for (DBNNode childNode : childNodes) {
+                    expandFolders(dataSourceTree, childNode);
+                }
+            }
+        }
     }
 
     private DBNNode getTreeRootNode() {
