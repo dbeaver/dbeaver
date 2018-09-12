@@ -196,7 +196,7 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
                 getShell().setSize(shellCompSize.x, shellSize.y);
                 getShell().layout(true);
             }
-            treeViewer.getControl().setFocus();
+            dataSourceTree.getFilterControl().setFocus();
             if (showConnected) {
                 treeViewer.expandAll();
             }
