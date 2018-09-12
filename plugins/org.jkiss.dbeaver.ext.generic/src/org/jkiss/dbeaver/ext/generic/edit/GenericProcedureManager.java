@@ -38,7 +38,7 @@ import java.util.Map;
 /**
  * Generic procedure manager
  */
-public class GenericProcedureManager extends SQLObjectEditor<GenericProcedure, GenericObjectContainer> {
+public class GenericProcedureManager extends SQLObjectEditor<GenericProcedure, GenericStructContainer> {
 
     @Override
     public long getMakerOptions(DBPDataSource dataSource) {
@@ -55,7 +55,7 @@ public class GenericProcedureManager extends SQLObjectEditor<GenericProcedure, G
 
     @Override
     protected GenericProcedure createDatabaseObject(
-        DBRProgressMonitor monitor, DBECommandContext context, final GenericObjectContainer parent,
+        DBRProgressMonitor monitor, DBECommandContext context, final GenericStructContainer parent,
         Object from)
     {
         throw new IllegalStateException("Not implemented");
@@ -79,7 +79,7 @@ public class GenericProcedureManager extends SQLObjectEditor<GenericProcedure, G
     }
 
     @Override
-    public boolean canCreateObject(GenericObjectContainer parent) {
+    public boolean canCreateObject(GenericStructContainer parent) {
         return false;
     }
 
