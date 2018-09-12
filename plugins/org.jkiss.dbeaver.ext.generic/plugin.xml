@@ -206,6 +206,7 @@
                     <parameter name="query-set-active-db" value="SET search_path = &quot;?&quot;"/>
                     <parameter name="active-entity-type" value="schema"/>
                     <parameter name="supports-scroll" value="true"/>
+                    <parameter name="omit-single-catalog" value="true"/>
                 </driver>
                 <driver
                     id="oracle"
