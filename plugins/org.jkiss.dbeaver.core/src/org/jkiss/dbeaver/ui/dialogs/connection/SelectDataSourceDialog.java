@@ -148,6 +148,7 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
                 treeViewer.setSelection(new StructuredSelection(dsNode), true);
             }
         }
+        group.setTabList(new Control[] { dataSourceTree, showConnectedCheck, showAllProjectsCheck} );
 
         treeViewer.addFilter(new ViewerFilter() {
             @Override
