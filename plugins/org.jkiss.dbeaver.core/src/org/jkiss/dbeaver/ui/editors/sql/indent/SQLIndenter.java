@@ -138,6 +138,12 @@ public class SQLIndenter {
                 return "";
             }
 
+            int indentLength = nonWS - lineOffset;
+            StringBuilder indent = createIndent();
+            if (indentLength >= indent.length() && scanner.endsWithDelimiter(lineOffset, lineOffset + line.getLength())) {
+                nonWS -= indent.length();
+            }
+
             return document.get(lineOffset, nonWS - lineOffset);
         } catch (BadLocationException e) {
 //            _log.debug(EditorMessages.error_badLocationException, e);

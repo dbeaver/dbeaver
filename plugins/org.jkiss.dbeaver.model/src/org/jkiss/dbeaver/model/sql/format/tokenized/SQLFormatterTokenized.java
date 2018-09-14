@@ -190,7 +190,7 @@ public class SQLFormatterTokenized implements SQLFormatter {
                         }
                     }
                 } else if (statementDelimiters.contains(tokenString)) { //$NON-NLS-1$
-                    indent--;
+                    indent = 0;
                     index += insertReturnAndIndent(argList, index + 1, indent);
                 }
             } else if (token.getType() == TokenType.KEYWORD) {
