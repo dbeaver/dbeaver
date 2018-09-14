@@ -901,7 +901,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
     //////////////////////////////////////////////////////
     // Column descriptor
 
-    protected static class ObjectColumn {
+    public static class ObjectColumn {
         String id;
         String displayName;
         Map<Class<?>, ObjectPropertyDescriptor> propMap = new IdentityHashMap<>();

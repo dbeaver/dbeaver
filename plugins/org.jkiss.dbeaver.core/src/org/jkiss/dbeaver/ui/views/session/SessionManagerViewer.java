@@ -21,7 +21,8 @@ import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.StructuredSelection;
+import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.StyledText;
@@ -33,9 +34,13 @@ import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchSite;
 import org.eclipse.ui.PartInitException;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSession;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -44,7 +49,6 @@ import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.autorefresh.AutoRefreshControl;
 import org.jkiss.dbeaver.ui.controls.itemlist.DatabaseObjectListControl;
-import org.jkiss.dbeaver.ui.controls.itemlist.ObjectSearcher;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
@@ -52,15 +56,17 @@ import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Collection;
 import java.util.Map;
 import java.util.regex.Pattern;
+import java.util.regex.PatternSyntaxException;
 
 /**
  * SessionManagerViewer
  */
 public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
 {
+    private static final Log log = Log.getLog(SessionManagerViewer.class);
+
     private SessionListControl sessionTable;
     //private Text sessionInfo;
     private IEditorSite subSite;
@@ -245,7 +251,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
         SessionListControl(SashForm sash, IWorkbenchSite site, DBAServerSessionManager<SESSION_TYPE> sessionManager)
         {
             super(sash, SWT.SHEET, site, sessionManager);
-            searcher = new SessionSearcher(this);
+            searcher = new SessionSearcher();
         }
 
         @Override
@@ -272,50 +278,59 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
             return searcher;
         }
 
+        private class SessionSearcher implements ISearchExecutor {
+
+            @Override
+            public boolean performSearch(String searchString, int options) {
+                try {
+                    SearchFilter searchFilter = new SearchFilter(
+                        searchString,
+                        (options & SEARCH_CASE_SENSITIVE) != 0);
+                    getItemsViewer().setFilters(searchFilter);
+                    return true;
+                } catch (PatternSyntaxException e) {
+                    log.error(e.getMessage());
+                    return false;
+                }
+            }
+
+            @Override
+            public void cancelSearch() {
+                getItemsViewer().setFilters();
+            }
+        }
+
+        private class SearchFilter extends ViewerFilter {
+            final Pattern pattern;
+
+            public SearchFilter(String searchString, boolean caseSensitiveSearch) throws PatternSyntaxException {
+                pattern = Pattern.compile(SQLUtils.makeLikePattern(searchString), caseSensitiveSearch ? 0 : Pattern.CASE_INSENSITIVE);
+            }
+
+            @Override
+            public boolean select(Viewer viewer, Object parentElement, Object element) {
+                try {
+                    if (element instanceof DBAServerSession) {
+                        boolean matches = false;
+                        for (DBPPropertyDescriptor property : getAllProperties()) {
+                            if (property instanceof ObjectPropertyDescriptor) {
+                                Object value = ((ObjectPropertyDescriptor) property).readValue(element, null);
+                                if (value != null && pattern.matcher(CommonUtils.toString(value)).find()) {
+                                    matches = true;
+                                    break;
+                                }
+                            }
+                        }
+                        return matches;
+                    }
+                    return false;
+                } catch (Exception e) {
+                    log.error(e);
+                    return false;
+                }
+            }
+        }
     }
 
-    private class SessionSearcher extends ObjectSearcher<SESSION_TYPE> {
-
-        private SessionListControl listControl;
-
-        public SessionSearcher(SessionListControl listControl) {
-            this.listControl = listControl;
-        }
-
-        @Override
-        protected void setInfo(String message)
-        {
-            listControl.setInfo(message);
-        }
-
-        @Override
-        protected Collection<SESSION_TYPE> getContent()
-        {
-            return listControl.getListData();
-        }
-
-        @Override
-        protected void selectObject(DBAServerSession object)
-        {
-            listControl.getItemsViewer().setSelection(object == null ? new StructuredSelection() : new StructuredSelection(object));
-        }
-
-        @Override
-        protected void updateObject(DBAServerSession object)
-        {
-            listControl.getItemsViewer().update(object, null);
-        }
-
-        @Override
-        protected void revealObject(DBAServerSession object)
-        {
-            listControl.getItemsViewer().reveal(object);
-        }
-
-        @Override
-        protected boolean matchesSearch(SESSION_TYPE element) {
-            return sessionMatches(element, getSearchPattern());
-        }
-    }
 
 }
