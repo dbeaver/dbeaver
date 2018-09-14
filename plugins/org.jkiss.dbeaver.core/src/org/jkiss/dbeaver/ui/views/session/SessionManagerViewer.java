@@ -26,6 +26,8 @@ import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
@@ -37,9 +39,12 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchSite;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSession;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
@@ -55,6 +60,7 @@ import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
+import org.jkiss.dbeaver.ui.views.plan.PlanNodesTree;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -69,6 +75,8 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
 {
     private static final Log log = Log.getLog(SessionManagerViewer.class);
 
+    private IWorkbenchPart workbenchPart;
+    private final DBAServerSessionManager<SESSION_TYPE> sessionManager;
     private SessionListControl sessionTable;
     //private Text sessionInfo;
     private IEditorSite subSite;
@@ -83,28 +91,32 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
 
     private IDialogSettings settings;
 
-    public DatabaseObjectListControl getSessionListControl() {
-        return sessionTable;
-    }
+    private TabFolder previewFolder;
+    private TabItem sqlViewItem;
+    private TabItem sqlPlanItem;
+    private final TabItem detailsItem;
 
-    public void dispose()
-    {
-        sessionTable.disposeControl();
-        UIUtils.dispose(boldFont);
-    }
+    private final DBCQueryPlanner planner;
+    private PlanNodesTree planTree;
+    private Object selectedPlanElement;
 
     protected SessionManagerViewer(IWorkbenchPart part, Composite parent, final DBAServerSessionManager<SESSION_TYPE> sessionManager) {
-        this.subSite = new SubEditorSite(part.getSite());
-        boldFont = UIUtils.makeBoldFont(parent.getFont());
+        this.workbenchPart = part;
+        this.sessionManager = sessionManager;
+        this.subSite = new SubEditorSite(workbenchPart.getSite());
+        this.boldFont = UIUtils.makeBoldFont(parent.getFont());
+
+        planner = DBUtils.getAdapter(DBCQueryPlanner.class, sessionManager.getDataSource());
+
         Composite composite = UIUtils.createPlaceholder(parent, 1);
 
-        sashMain = UIUtils.createPartDivider(part, composite, SWT.VERTICAL | SWT.SMOOTH);
+        sashMain = UIUtils.createPartDivider(workbenchPart, composite, SWT.VERTICAL | SWT.SMOOTH);
         sashMain.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         refreshControl = new AutoRefreshControl(sashMain, sessionManager.getClass().getSimpleName(), monitor -> UIUtils.syncExec(this::refreshSessions));
 
         {
-            sessionTable = new SessionListControl(sashMain, part.getSite(), sessionManager);
+            sessionTable = new SessionListControl(sashMain, workbenchPart.getSite(), sessionManager);
             sessionTable.getItemsViewer().addSelectionChangedListener(event -> onSessionSelect(getSelectedSession()));
             sessionTable.addDisposeListener(e -> saveSettings(settings));
 
@@ -113,11 +125,11 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
         }
 
         {
-            sashDetails = UIUtils.createPartDivider(part, sashMain, SWT.HORIZONTAL | SWT.SMOOTH);
+            sashDetails = UIUtils.createPartDivider(workbenchPart, sashMain, SWT.HORIZONTAL | SWT.SMOOTH);
             sashDetails.setLayoutData(new GridData(GridData.FILL_BOTH));
 
             {
-                TabFolder previewFolder = new TabFolder(sashDetails, SWT.TOP);
+                previewFolder = new TabFolder(sashDetails, SWT.TOP);
                 sqlViewer = new SQLEditorBase() {
                     @Override
                     public DBCExecutionContext getExecutionContext() {
@@ -140,22 +152,35 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
 
                 parent.addDisposeListener(e -> sqlViewer.dispose());
 
-                TabItem item = new TabItem(previewFolder, SWT.NONE);
-                item.setText("SQL");
-                item.setControl(sqlViewer.getEditorControlWrapper());
+                sqlViewItem = new TabItem(previewFolder, SWT.NONE);
+                sqlViewItem.setText("SQL");
+                sqlViewItem.setImage(DBeaverIcons.getImage(UIIcon.SQL_TEXT));
+                sqlViewItem.setControl(sqlViewer.getEditorControlWrapper());
 
-                previewFolder.setSelection(item);
+                previewFolder.setSelection(sqlViewItem);
+
+                if (planner != null) {
+                    createPlannerTab(previewFolder);
+                }
+
+                previewFolder.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        updatePreview();
+                    }
+                });
             }
 
             {
                 TabFolder detailsFolder = new TabFolder(sashDetails, SWT.TOP);
                 sessionProps = new PropertyTreeViewer(detailsFolder, SWT.NONE);
 
-                TabItem item = new TabItem(detailsFolder, SWT.NONE);
-                item.setText("Details");
-                item.setControl(sessionProps.getControl());
+                detailsItem = new TabItem(detailsFolder, SWT.NONE);
+                detailsItem.setText("Details");
+                detailsItem.setImage(DBeaverIcons.getImage(UIIcon.PROPERTIES));
+                detailsItem.setControl(sessionProps.getControl());
 
-                detailsFolder.setSelection(item);
+                detailsFolder.setSelection(detailsItem);
             }
 
             sashMain.setWeights(new int[]{50, 50});
@@ -164,20 +189,78 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
         sashMain.setWeights(new int[]{70, 30});
     }
 
+    private void updatePreview() {
+        if (previewFolder.getSelectionIndex() == 0) {
+            // Show SQL
+            detailsItem.setText("Session Details");
+            updateSQL();
+            if (curSession == null) {
+                sessionProps.clearProperties();
+            } else {
+                PropertyCollector propCollector = new PropertyCollector(curSession, true);
+                propCollector.collectProperties();
+                sessionProps.loadProperties(propCollector);
+            }
+        } else if (planTree != null) {
+            // Show execution plan
+            planTree.clearListData();
+            String sqlText = curSession == null ? "" : CommonUtils.notEmpty(curSession.getActiveQuery());
+            if (!CommonUtils.isEmpty(sqlText)) {
+                DBPDataSource dataSource = sessionManager.getDataSource();
+                planTree.init(DBUtils.getDefaultContext(dataSource, false), planner, sqlText);
+                planTree.loadData();
+            }
+        }
+    }
+
+    private void createPlannerTab(TabFolder previewFolder) {
+        planTree = new PlanNodesTree(previewFolder, SWT.SHEET, workbenchPart.getSite());
+        planTree.substituteProgressPanel(getSessionListControl());
+        planTree.getItemsViewer().addSelectionChangedListener(event -> showPlanNode());
+
+        sqlPlanItem = new TabItem(previewFolder, SWT.NONE);
+        sqlPlanItem.setText("Execution Plan");
+        sqlPlanItem.setImage(DBeaverIcons.getImage(UIIcon.SQL_PAGE_EXPLAIN_PLAN));
+        sqlPlanItem.setControl(planTree);
+    }
+
+    private void showPlanNode()
+    {
+        detailsItem.setText("Plan Details");
+
+        ISelection selection = planTree.getItemsViewer().getSelection();
+        if (selection.isEmpty()) {
+            sessionProps.clearProperties();
+        } else if (selection instanceof IStructuredSelection) {
+            Object element = ((IStructuredSelection) selection).getFirstElement();
+            if (element != selectedPlanElement) {
+                PropertyCollector propertySource = new PropertyCollector(element, true);
+                propertySource.collectProperties();
+                sessionProps.loadProperties(propertySource);
+                selectedPlanElement = element;
+            }
+        }
+    }
+
+    public DatabaseObjectListControl getSessionListControl() {
+        return sessionTable;
+    }
+
+    public void dispose()
+    {
+        sessionTable.disposeControl();
+        UIUtils.dispose(boldFont);
+    }
+
     protected void onSessionSelect(DBAServerSession session)
     {
-        if (curSession == session) {
+        if (curSession == session && selectedPlanElement == null) {
             return;
         }
+        selectedPlanElement = null;
+        previewFolder.setSelection(0);
         curSession = session;
-        updateSQL();
-        if (session == null) {
-            sessionProps.clearProperties();
-        } else {
-            PropertyCollector propCollector = new PropertyCollector(session, true);
-            propCollector.collectProperties();
-            sessionProps.loadProperties(propCollector);
-        }
+        updatePreview();
     }
 
     protected void contributeToToolbar(DBAServerSessionManager sessionManager, IContributionManager contributionManager)

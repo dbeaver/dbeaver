@@ -185,7 +185,7 @@ public class OraclePlanNode implements DBCPlanNode {
             return objectName == null ? "" : objectName;
         }
         String objectTypeName = objectType;
-        final int divPos = objectTypeName == null ? -1 : objectTypeName.indexOf('(');
+        int divPos = objectTypeName == null ? -1 : objectTypeName.indexOf('(');
         if (divPos != -1) {
             objectTypeName = objectTypeName.substring(0, divPos).trim();
         }
@@ -202,13 +202,20 @@ public class OraclePlanNode implements DBCPlanNode {
             objectTypeName = OracleObjectType.TABLE.name();
         }
 
+        if (objectName.startsWith("X$")) {
+            // Some internal stuff
+            return objectName;
+        }
+        divPos = objectName.indexOf("(");
+        String name = divPos == -1 ? objectName : objectName.substring(0, divPos);
+
         return OracleObjectType.resolveObject(
             monitor,
             dataSource,
             objectNode,
             objectTypeName,
             objectOwner,
-            objectName);
+            name.trim());
     }
 
     //@Property(name = "Alias", order = 6, viewable = true, description = "Object alias")
