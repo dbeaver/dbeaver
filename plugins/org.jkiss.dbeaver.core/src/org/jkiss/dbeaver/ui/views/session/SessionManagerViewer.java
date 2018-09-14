@@ -183,10 +183,10 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
                 detailsFolder.setSelection(detailsItem);
             }
 
-            sashMain.setWeights(new int[]{50, 50});
+            sashMain.setWeights(new int[]{500, 500});
         }
 
-        sashMain.setWeights(new int[]{70, 30});
+        sashMain.setWeights(new int[]{700, 300});
     }
 
     private void updatePreview() {
