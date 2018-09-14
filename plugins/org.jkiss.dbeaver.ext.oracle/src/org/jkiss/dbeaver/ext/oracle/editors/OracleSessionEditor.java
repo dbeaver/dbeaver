@@ -21,6 +21,7 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Composite;
@@ -30,12 +31,15 @@ import org.jkiss.dbeaver.ext.oracle.model.session.OracleServerSessionManager;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSession;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.dialogs.ConfirmationDialog;
 import org.jkiss.dbeaver.ui.views.session.AbstractSessionEditor;
 import org.jkiss.dbeaver.ui.views.session.SessionManagerViewer;
+import org.jkiss.utils.CommonUtils;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -57,12 +61,43 @@ public class OracleSessionEditor extends AbstractSessionEditor
     @Override
     protected SessionManagerViewer createSessionViewer(DBCExecutionContext executionContext, Composite parent) {
         return new SessionManagerViewer<OracleServerSession>(this, parent, new OracleServerSessionManager(getExecutionContext())) {
+            private boolean showBackground;
+            private boolean showInactive;
+
             @Override
             protected void contributeToToolbar(DBAServerSessionManager sessionManager, IContributionManager contributionManager)
             {
                 contributionManager.add(killSessionAction);
                 contributionManager.add(disconnectSessionAction);
                 contributionManager.add(new Separator());
+
+                contributionManager.add(ActionUtils.makeActionContribution(
+                    new Action("Show background", Action.AS_CHECK_BOX) {
+                        {
+                            setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.CONFIGURATION));
+                            setToolTipText("Show background tasks");
+                            setChecked(showBackground);
+                        }
+                        @Override
+                        public void run() {
+                            showBackground = isChecked();
+                            refreshPart(OracleSessionEditor.this, true);
+                        }
+                    }, true));
+
+                contributionManager.add(ActionUtils.makeActionContribution(
+                    new Action("Show inactive", Action.AS_CHECK_BOX) {
+                        {
+                            setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.CONFIGURATION));
+                            setToolTipText("Show inactive sessions");
+                            setChecked(showInactive);
+                        }
+                        @Override
+                        public void run() {
+                            showInactive = isChecked();
+                            refreshPart(OracleSessionEditor.this, true);
+                        }
+                    }, true));
             }
 
             @Override
@@ -72,6 +107,33 @@ public class OracleSessionEditor extends AbstractSessionEditor
                 killSessionAction.setEnabled(session != null);
                 disconnectSessionAction.setEnabled(session != null);
             }
+
+            @Override
+            protected void loadSettings(IDialogSettings settings) {
+                showBackground = CommonUtils.toBoolean(settings.get("showBackground"));
+                showInactive = CommonUtils.toBoolean(settings.get("showInactive"));
+                super.loadSettings(settings);
+            }
+
+            @Override
+            protected void saveSettings(IDialogSettings settings) {
+                super.saveSettings(settings);
+                settings.put("showBackground", showBackground);
+                settings.put("showInactive", showInactive);
+            }
+
+            @Override
+            public Map<String, Object> getSessionOptions() {
+                Map<String, Object> options = new HashMap<>();
+                if (showBackground) {
+                    options.put(OracleServerSessionManager.OPTION_SHOW_BACKGROUND, true);
+                }
+                if (showInactive) {
+                    options.put(OracleServerSessionManager.OPTION_SHOW_INACTIVE, true);
+                }
+                return options;
+            }
+
         };
     }
 
