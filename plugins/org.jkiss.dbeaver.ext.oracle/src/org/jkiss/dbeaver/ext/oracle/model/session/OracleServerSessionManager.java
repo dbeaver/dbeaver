@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -38,6 +39,9 @@ public class OracleServerSessionManager implements DBAServerSessionManager<Oracl
 
     public static final String PROP_KILL_SESSION = "killSession";
     public static final String PROP_IMMEDIATE = "immediate";
+
+    public static final String OPTION_SHOW_BACKGROUND = "showBackground";
+    public static final String OPTION_SHOW_INACTIVE = "showInactive";
 
     private final DBCExecutionContext executionContext;
 
@@ -56,11 +60,19 @@ public class OracleServerSessionManager implements DBAServerSessionManager<Oracl
     public Collection<OracleServerSession> getSessions(DBCSession session, Map<String, Object> options) throws DBException
     {
         try {
-            try (JDBCPreparedStatement dbStat = ((JDBCSession) session).prepareStatement(
-                "SELECT s.*, sq.SQL_FULLTEXT\n" +
-                "FROM V$SESSION s, V$SQL sq\n" +
-                "WHERE sq.ADDRESS(+) = s.SQL_ADDRESS AND s.TYPE = 'USER'"))
-            {
+            StringBuilder sql = new StringBuilder();
+            sql.append(
+                "SELECT s.*, sq.SQL_FULLTEXT \n" +
+                "FROM V$SESSION s \n" +
+                "LEFT OUTER JOIN v$sql sq ON (s.sql_address = sq.address AND s.sql_hash_value = sq.hash_value AND s.sql_child_number = sq.child_number)\n" +
+                "WHERE 1=1");
+            if (!CommonUtils.getOption(options, OPTION_SHOW_BACKGROUND)) {
+                sql.append(" AND s.TYPE = 'USER'");
+            }
+            if (!CommonUtils.getOption(options, OPTION_SHOW_INACTIVE)) {
+                sql.append(" AND s.STATUS <> 'INACTIVE'");
+            }
+            try (JDBCPreparedStatement dbStat = ((JDBCSession) session).prepareStatement(sql.toString())) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     List<OracleServerSession> sessions = new ArrayList<>();
                     while (dbResult.next()) {

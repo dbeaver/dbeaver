@@ -27,10 +27,16 @@ import java.sql.Timestamp;
 * Session
 */
 public class OracleServerSession implements DBAServerSession {
+
+    public static final String CAT_SESSION = "Session";
+    public static final String CAT_SQL = "SQL";
+    public static final String CAT_PROCESS = "Process";
+
     private String sid;
     private String serial;
     private String user;
     private String schema;
+    private String type;
     private String status;
     private String state;
     private String sql;
@@ -49,6 +55,7 @@ public class OracleServerSession implements DBAServerSession {
         this.serial = JDBCUtils.safeGetString(dbResult, "SERIAL#");
         this.user = JDBCUtils.safeGetString(dbResult, "USERNAME");
         this.schema = JDBCUtils.safeGetString(dbResult, "SCHEMANAME");
+        this.type = JDBCUtils.safeGetString(dbResult, "TYPE");
         this.status = JDBCUtils.safeGetString(dbResult, "STATUS");
         this.state = JDBCUtils.safeGetString(dbResult, "STATE");
         this.sql = JDBCUtils.safeGetString(dbResult, "SQL_FULLTEXT");
@@ -62,7 +69,7 @@ public class OracleServerSession implements DBAServerSession {
         this.remoteProgram = JDBCUtils.safeGetString(dbResult, "PROGRAM");
     }
 
-    @Property(category = "Session", viewable = true, order = 1)
+    @Property(category = CAT_SESSION, viewable = true, order = 1)
     public String getSid()
     {
         return sid;
@@ -73,72 +80,78 @@ public class OracleServerSession implements DBAServerSession {
         return serial;
     }
 
-    @Property(category = "Session", viewable = true, order = 2)
+    @Property(category = CAT_SESSION, viewable = true, order = 2)
     public String getUser()
     {
         return user;
     }
 
-    @Property(category = "Session", viewable = true, order = 3)
+    @Property(category = CAT_SESSION, viewable = true, order = 3)
     public String getSchema()
     {
         return schema;
     }
 
-    @Property(category = "Session", viewable = true, order = 4)
+    @Property(category = CAT_SESSION, viewable = true, order = 4)
+    public String getType()
+    {
+        return type;
+    }
+
+    @Property(category = CAT_SESSION, viewable = true, order = 5)
     public String getStatus()
     {
         return status;
     }
 
-    @Property(category = "Session", viewable = true, order = 5)
+    @Property(category = CAT_SESSION, viewable = true, order = 6)
     public String getState()
     {
         return state;
     }
 
-    @Property(category = "Session", viewable = true, order = 6)
+    @Property(category = CAT_SESSION, viewable = true, order = 7)
     public String getEvent()
     {
         return event;
     }
 
-    @Property(category = "Session", viewable = true, order = 7)
+    @Property(category = CAT_SESSION, viewable = true, order = 8)
     public String getElapsedTime()
     {
         return elapsedTime;
     }
 
-    @Property(category = "Session", order = 8)
+    @Property(category = CAT_SESSION, order = 9)
     public Timestamp getLogonTime()
     {
         return logonTime;
     }
 
-    @Property(category = "Session", order = 9)
+    @Property(category = CAT_SESSION, order = 10)
     public String getServiceName()
     {
         return serviceName;
     }
 
-    @Property(category = "SQL", order = 50)
+    @Property(category = CAT_SQL, order = 50)
     public String getSql()
     {
         return sql;
     }
 
-    @Property(category = "Process", viewable = true, order = 30)
+    @Property(category = CAT_PROCESS, viewable = true, order = 30)
     public String getRemoteHost()
     {
         return remoteHost;
     }
 
-    @Property(category = "Process", viewable = true, order = 31)
+    @Property(category = CAT_PROCESS, viewable = true, order = 31)
     public String getRemoteUser()
     {
         return remoteUser;
     }
-    @Property(category = "Process", viewable = true, order = 32)
+    @Property(category = CAT_PROCESS, viewable = true, order = 32)
     public String getRemoteProgram()
     {
         return remoteProgram;
@@ -155,4 +168,5 @@ public class OracleServerSession implements DBAServerSession {
     {
         return sid + " - " + event;
     }
+
 }

@@ -106,14 +106,14 @@ public class MySQLSessionEditor extends AbstractSessionEditor
 
             @Override
             protected void loadSettings(IDialogSettings settings) {
-                hideSleeping = CommonUtils.toBoolean(settings.get("HideSleeping"));
+                hideSleeping = CommonUtils.toBoolean(settings.get("hideSleeping"));
                 super.loadSettings(settings);
             }
 
             @Override
             protected void saveSettings(IDialogSettings settings) {
                 super.saveSettings(settings);
-                settings.put("HideSleeping", hideSleeping);
+                settings.put("hideSleeping", hideSleeping);
             }
         };
     }
