@@ -30,6 +30,8 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.TabFolder;
+import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchSite;
@@ -101,44 +103,60 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
 
         refreshControl = new AutoRefreshControl(sashMain, sessionManager.getClass().getSimpleName(), monitor -> UIUtils.syncExec(this::refreshSessions));
 
-        sessionTable = new SessionListControl(sashMain, part.getSite(), sessionManager);
-        sessionTable.getItemsViewer().addSelectionChangedListener(event -> onSessionSelect(getSelectedSession()));
-        sessionTable.addDisposeListener(e -> saveSettings(settings));
+        {
+            sessionTable = new SessionListControl(sashMain, part.getSite(), sessionManager);
+            sessionTable.getItemsViewer().addSelectionChangedListener(event -> onSessionSelect(getSelectedSession()));
+            sessionTable.addDisposeListener(e -> saveSettings(settings));
 
-        sessionTable.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-        sessionTable.createProgressPanel(composite);
+            sessionTable.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            sessionTable.createProgressPanel(composite);
+        }
 
         {
             sashDetails = UIUtils.createPartDivider(part, sashMain, SWT.HORIZONTAL | SWT.SMOOTH);
             sashDetails.setLayoutData(new GridData(GridData.FILL_BOTH));
 
+            {
+                TabFolder previewFolder = new TabFolder(sashDetails, SWT.TOP);
+                sqlViewer = new SQLEditorBase() {
+                    @Override
+                    public DBCExecutionContext getExecutionContext() {
+                        return sessionManager.getDataSource().getDefaultInstance().getDefaultContext(false);
+                    }
 
-//            sessionInfo = new Text(infoSash, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL | SWT.MULTI | SWT.WRAP);
-//            sessionInfo.setEditable(false);
-//            sessionInfo.setLayoutData(new GridData(GridData.FILL_BOTH));
-            sqlViewer = new SQLEditorBase() {
-                @Override
-                public DBCExecutionContext getExecutionContext() {
-                    return sessionManager.getDataSource().getDefaultInstance().getDefaultContext(false);
+                    @Override
+                    public boolean isFoldingEnabled() {
+                        return false;
+                    }
+                };
+                updateSQL();
+                sqlViewer.createPartControl(previewFolder);
+                Object text = sqlViewer.getAdapter(Control.class);
+                if (text instanceof StyledText) {
+                    ((StyledText) text).setWordWrap(true);
                 }
 
-                @Override
-                public boolean isFoldingEnabled() {
-                    return false;
-                }
-            };
-            updateSQL();
-            sqlViewer.createPartControl(sashDetails);
-            Object text = sqlViewer.getAdapter(Control.class);
-            if (text instanceof StyledText) {
-                ((StyledText) text).setWordWrap(true);
+                sqlViewer.reloadSyntaxRules();
+
+                parent.addDisposeListener(e -> sqlViewer.dispose());
+
+                TabItem item = new TabItem(previewFolder, SWT.NONE);
+                item.setText("SQL");
+                item.setControl(sqlViewer.getEditorControlWrapper());
+
+                previewFolder.setSelection(item);
             }
 
-            sqlViewer.reloadSyntaxRules();
+            {
+                TabFolder detailsFolder = new TabFolder(sashDetails, SWT.TOP);
+                sessionProps = new PropertyTreeViewer(detailsFolder, SWT.NONE);
 
-            parent.addDisposeListener(e -> sqlViewer.dispose());
+                TabItem item = new TabItem(detailsFolder, SWT.NONE);
+                item.setText("Details");
+                item.setControl(sessionProps.getControl());
 
-            sessionProps = new PropertyTreeViewer(sashDetails, SWT.BORDER);
+                detailsFolder.setSelection(item);
+            }
 
             sashMain.setWeights(new int[]{50, 50});
         }
@@ -248,7 +266,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
 
         private SessionSearcher searcher;
 
-        SessionListControl(SashForm sash, IWorkbenchSite site, DBAServerSessionManager<SESSION_TYPE> sessionManager)
+        SessionListControl(Composite sash, IWorkbenchSite site, DBAServerSessionManager<SESSION_TYPE> sessionManager)
         {
             super(sash, SWT.SHEET, site, sessionManager);
             searcher = new SessionSearcher();
