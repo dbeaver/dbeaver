@@ -20,13 +20,11 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
-import org.eclipse.jface.viewers.*;
+import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
-import org.eclipse.swt.events.PaintEvent;
-import org.eclipse.swt.events.PaintListener;
-import org.eclipse.swt.events.TraverseEvent;
-import org.eclipse.swt.events.TraverseListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
@@ -114,45 +112,31 @@ public class ExplainPlanViewer implements IPropertyChangeListener
         planPanel.setWeights(new int[] {70, 30});
         //planPanel.setMaximizedControl(planTree);
 
-        planTree.getControl().addPaintListener(new PaintListener() {
-            @Override
-            public void paintControl(PaintEvent e)
-            {
-                String message = null;
-                if (planner == null) {
-                    message = "No connection or data source doesn't support execution plan";
-                } else if (CommonUtils.isEmpty(sqlText.getText())) {
+        planTree.getControl().addPaintListener(e -> {
+            String message = null;
+            if (planner == null) {
+                message = "No connection or data source doesn't support execution plan";
+            } else if (CommonUtils.isEmpty(sqlText.getText())) {
 
-                    message = "Select a query and run " + ActionUtils.findCommandDescription(
-                        CoreCommands.CMD_EXPLAIN_PLAN,
-                        workbenchPart.getSite(), false);
-                }
-                if (message != null) {
-                    Rectangle bounds = planTree.getBounds();
-                    Point ext = e.gc.textExtent(message);
-                    e.gc.drawText(message, (bounds.width - ext.x) / 2, bounds.height / 3 + 20);
-                }
+                message = "Select a query and run " + ActionUtils.findCommandDescription(
+                    CoreCommands.CMD_EXPLAIN_PLAN,
+                    workbenchPart.getSite(), false);
+            }
+            if (message != null) {
+                Rectangle bounds = planTree.getBounds();
+                Point ext = e.gc.textExtent(message);
+                e.gc.drawText(message, (bounds.width - ext.x) / 2, bounds.height / 3 + 20);
             }
         });
-        planTree.getItemsViewer().addSelectionChangedListener(new ISelectionChangedListener() {
-            @Override
-            public void selectionChanged(SelectionChangedEvent event)
-            {
-                showPlanNode();
-            }
-        });
+        planTree.getItemsViewer().addSelectionChangedListener(event -> showPlanNode());
 
-        this.planTree.getControl().addTraverseListener(new TraverseListener() {
-            @Override
-            public void keyTraversed(TraverseEvent e)
+        this.planTree.getControl().addTraverseListener(e -> {
+            if (toggleViewAction.isEnabled() &&
+                (e.detail == SWT.TRAVERSE_TAB_NEXT || e.detail == SWT.TRAVERSE_TAB_PREVIOUS))
             {
-                if (toggleViewAction.isEnabled() &&
-                    (e.detail == SWT.TRAVERSE_TAB_NEXT || e.detail == SWT.TRAVERSE_TAB_PREVIOUS))
-                {
-                    toggleViewAction.run();
-                    e.doit = false;
-                    e.detail = SWT.TRAVERSE_NONE;
-                }
+                toggleViewAction.run();
+                e.doit = false;
+                e.detail = SWT.TRAVERSE_NONE;
             }
         });
     }
