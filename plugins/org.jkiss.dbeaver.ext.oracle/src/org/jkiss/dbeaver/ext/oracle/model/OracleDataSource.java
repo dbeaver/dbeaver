@@ -414,7 +414,14 @@ public class OracleDataSource extends JDBCDataSource
             }
         }
         // Cache data types
-        this.dataTypeCache.getAllObjects(monitor, this);
+        {
+            List<OracleDataType> dtList = new ArrayList<>();
+            for (Map.Entry<String, OracleDataType.TypeDesc> predefinedType : OracleDataType.PREDEFINED_TYPES.entrySet()) {
+                OracleDataType dataType = new OracleDataType(this, predefinedType.getKey(), true);
+                dtList.add(dataType);
+            }
+            this.dataTypeCache.setCache(dtList);
+        }
     }
 
     @Override
@@ -877,17 +884,6 @@ public class OracleDataSource extends JDBCDataSource
         @Override
         protected OracleDataType fetchObject(@NotNull JDBCSession session, @NotNull OracleDataSource owner, @NotNull JDBCResultSet resultSet) throws SQLException, DBException {
             return new OracleDataType(owner, resultSet);
-        }
-
-        @Override
-        protected void invalidateObjects(DBRProgressMonitor monitor, OracleDataSource owner, Iterator<OracleDataType> objectIter) {
-            // Add predefined types
-            for (Map.Entry<String, OracleDataType.TypeDesc> predefinedType : OracleDataType.PREDEFINED_TYPES.entrySet()) {
-                if (getCachedObject(predefinedType.getKey()) == null) {
-                    cacheObject(
-                        new OracleDataType(owner, predefinedType.getKey(), true));
-                }
-            }
         }
     }
 

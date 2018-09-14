@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.controls.itemlist.ObjectListControl;
 import org.jkiss.dbeaver.ui.dialogs.BaseDialog;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
@@ -476,6 +477,14 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
             }
         }
         return -1;
+    }
+
+    public ObjectListControl.ObjectColumn[] getAllColumns() {
+        ObjectListControl.ObjectColumn[] oc = new ObjectListControl.ObjectColumn[columns.size()];
+        for (int i = 0; i < columns.size(); i++) {
+            oc[i] = (ObjectListControl.ObjectColumn) columns.get(i).userData;
+        }
+        return oc;
     }
 
     private static class ColumnInfo extends ViewerColumnRegistry.ColumnState {
