@@ -25,7 +25,7 @@ import org.jkiss.dbeaver.ui.editors.SinglePageDatabaseEditor;
 /**
  * AbstractSessionEditor
  */
-public abstract class AbstractSessionEditor extends SinglePageDatabaseEditor<IDatabaseEditorInput>
+public abstract class AbstractSessionEditor extends SinglePageDatabaseEditor<IDatabaseEditorInput> implements ISearchContextProvider
 {
     private SessionManagerViewer sessionsViewer;
 
@@ -36,9 +36,7 @@ public abstract class AbstractSessionEditor extends SinglePageDatabaseEditor<IDa
     @Override
     public <T> T getAdapter(Class<T> adapter) {
         if (adapter == ISearchContextProvider.class) {
-            if (sessionsViewer != null) {
-                return adapter.cast(sessionsViewer.getSessionListControl());
-            }
+            return adapter.cast(this);
         }
         return super.getAdapter(adapter);
     }
@@ -76,6 +74,26 @@ public abstract class AbstractSessionEditor extends SinglePageDatabaseEditor<IDa
         if (sessionsViewer != null) {
             sessionsViewer.getControl().setFocus();
         }
+    }
+
+    // ISearchContextProvider
+
+    @Override
+    public boolean isSearchPossible() {
+        return true;
+    }
+
+    @Override
+    public boolean isSearchEnabled() {
+        return true;
+    }
+
+    @Override
+    public boolean performSearch(SearchType searchType) {
+        if (sessionsViewer != null) {
+            return sessionsViewer.getSessionListControl().performSearch(searchType);
+        }
+        return false;
     }
 
 }

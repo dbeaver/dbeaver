@@ -62,9 +62,12 @@ public class OracleServerSessionManager implements DBAServerSessionManager<Oracl
         try {
             StringBuilder sql = new StringBuilder();
             sql.append(
-                "SELECT s.*, sq.SQL_FULLTEXT \n" +
+                "SELECT s.*, sq.SQL_FULLTEXT, io.* \n" +
                 "FROM V$SESSION s \n" +
-                "LEFT OUTER JOIN v$sql sq ON (s.sql_address = sq.address AND s.sql_hash_value = sq.hash_value AND s.sql_child_number = sq.child_number)\n" +
+                "LEFT JOIN v$sql sq ON (s.sql_address = sq.address AND s.sql_hash_value = sq.hash_value AND s.sql_child_number = sq.child_number)\n" +
+                "LEFT JOIN v$sess_io io ON ( s.sid = io.sid)\n" +
+                //"LEFT JOIN v$sesstat stat ON ( s.sid = stat.sid)\n" +
+                //"LEFT OUTER JOIN v$process e ON (s.paddr = e.addr)\n" +
                 "WHERE 1=1");
             if (!CommonUtils.getOption(options, OPTION_SHOW_BACKGROUND)) {
                 sql.append(" AND s.TYPE = 'USER'");
