@@ -583,7 +583,8 @@
         <editor
             name="Session Manager"
             class="org.jkiss.dbeaver.ext.oracle.editors.OracleSessionEditor"
-            id="org.jkiss.dbeaver.ext.oracle.editors.OracleSessionEditor">
+            id="org.jkiss.dbeaver.ext.oracle.editors.OracleSessionEditor"
+            contributorClass="org.jkiss.dbeaver.ui.editors.EditorSearchActionsContributor">
         </editor>
         <editor
             name="Lock Manager"
