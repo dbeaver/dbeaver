@@ -323,7 +323,8 @@
             name="%editor.session_manager.name"
             icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.png"
             class="org.jkiss.dbeaver.ext.mysql.editors.MySQLSessionEditor"
-            id="org.jkiss.dbeaver.ext.mysql.editors.MySQLSessionEditor">
+            id="org.jkiss.dbeaver.ext.mysql.editors.MySQLSessionEditor"
+            contributorClass="org.jkiss.dbeaver.ui.editors.EditorSearchActionsContributor">
         </editor>
     </extension>
 

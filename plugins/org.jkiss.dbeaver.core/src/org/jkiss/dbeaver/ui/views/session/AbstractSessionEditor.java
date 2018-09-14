@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.views.session;
 
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.ui.ISearchContextProvider;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.SinglePageDatabaseEditor;
 
@@ -30,6 +31,16 @@ public abstract class AbstractSessionEditor extends SinglePageDatabaseEditor<IDa
 
     public SessionManagerViewer getSessionsViewer() {
         return sessionsViewer;
+    }
+
+    @Override
+    public <T> T getAdapter(Class<T> adapter) {
+        if (adapter == ISearchContextProvider.class) {
+            if (sessionsViewer != null) {
+                return adapter.cast(sessionsViewer.getSessionListControl());
+            }
+        }
+        return super.getAdapter(adapter);
     }
 
     @Override

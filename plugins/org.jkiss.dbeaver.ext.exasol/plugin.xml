@@ -463,7 +463,8 @@
                 name="%editor.org.jkiss.dbeaver.ext.exasol.model.app.ExasolServerSessionEditor.name"
                 icon="icons/compile.png"
                 class="org.jkiss.dbeaver.ext.exasol.model.app.ExasolServerSessionEditor"
-                id="org.jkiss.dbeaver.ext.exasol.model.app.ExasolServerSessionEditor">
+                id="org.jkiss.dbeaver.ext.exasol.model.app.ExasolServerSessionEditor"
+                contributorClass="org.jkiss.dbeaver.ui.editors.EditorSearchActionsContributor">
         </editor>
         <editor
             name="%editor.org.jkiss.dbeaver.ext.exasol.editors.ExasolLockEditor.name"

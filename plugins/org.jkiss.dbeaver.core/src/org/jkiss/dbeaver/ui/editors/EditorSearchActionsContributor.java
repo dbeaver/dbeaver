@@ -15,40 +15,37 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.ui.editors.entity;
+package org.jkiss.dbeaver.ui.editors;
 
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.part.MultiPageEditorActionBarContributor;
+import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.texteditor.IWorkbenchActionDefinitionIds;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.ui.ISearchContextProvider;
 import org.jkiss.dbeaver.ui.actions.common.ContextSearchAction;
 
 /**
- * Entity Editor contributor
+ * Search actions contributor
  */
-public class EntityEditorContributor extends MultiPageEditorActionBarContributor
+public class EditorSearchActionsContributor extends MultiPageEditorActionBarContributor
 {
-    private EntityEditor curEditor;
-    private IEditorPart curPage;
 
     @Override
     public void setActiveEditor(IEditorPart part)
     {
         super.setActiveEditor(part);
-        if (part instanceof EntityEditor) {
-            curEditor = (EntityEditor) part;
+        if (!(part instanceof MultiPageEditorPart)) {
+            registerSearchActions(part);
         }
     }
 
     @Override
     public void setActivePage(IEditorPart activeEditor) {
-        /*if (curPage != activeEditor) */{
-            curPage = activeEditor;
-            registerSearchActions(activeEditor);
-        }
+        registerSearchActions(activeEditor);
     }
 
     @Override
@@ -64,8 +61,8 @@ public class EntityEditorContributor extends MultiPageEditorActionBarContributor
         }
         IActionBars actionBars = activeEditor.getEditorSite().getActionBars();
 
-        if (activeEditor instanceof ISearchContextProvider) {
-            ISearchContextProvider provider = (ISearchContextProvider)activeEditor;
+        ISearchContextProvider provider = DBUtils.getAdapter(ISearchContextProvider.class, activeEditor);
+        if (provider != null) {
             if (provider.isSearchPossible()) {
                 ContextSearchAction findAction = new ContextSearchAction(provider, ISearchContextProvider.SearchType.NONE);
                 findAction.setActionDefinitionId(IWorkbenchCommandConstants.EDIT_FIND_AND_REPLACE);
