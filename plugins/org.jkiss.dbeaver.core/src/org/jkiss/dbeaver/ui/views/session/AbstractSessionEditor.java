@@ -47,6 +47,7 @@ public abstract class AbstractSessionEditor extends SinglePageDatabaseEditor<IDa
         if (executionContext != null) {
             setPartName("Sessions - " + executionContext.getDataSource().getContainer().getName());
             sessionsViewer = createSessionViewer(executionContext, parent);
+            sessionsViewer.loadSettings(this);
             sessionsViewer.refreshSessions();
         }
     }
@@ -65,4 +66,5 @@ public abstract class AbstractSessionEditor extends SinglePageDatabaseEditor<IDa
             sessionsViewer.getControl().setFocus();
         }
     }
+
 }
