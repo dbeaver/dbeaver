@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.ui.views.session;
 
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IContributionManager;
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.SWT;
@@ -63,6 +64,10 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
     private PropertyTreeViewer sessionProps;
     private DBAServerSession curSession;
     private AutoRefreshControl refreshControl;
+    private final SashForm sashMain;
+    private final SashForm sashDetails;
+
+    private IDialogSettings settings;
 
     public void dispose()
     {
@@ -75,20 +80,21 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
         boldFont = UIUtils.makeBoldFont(parent.getFont());
         Composite composite = UIUtils.createPlaceholder(parent, 1);
 
-        SashForm sash = UIUtils.createPartDivider(part, composite, SWT.VERTICAL | SWT.SMOOTH);
-        sash.setLayoutData(new GridData(GridData.FILL_BOTH));
+        sashMain = UIUtils.createPartDivider(part, composite, SWT.VERTICAL | SWT.SMOOTH);
+        sashMain.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-        refreshControl = new AutoRefreshControl(sash, sessionManager.getClass().getSimpleName(), monitor -> UIUtils.syncExec(this::refreshSessions));
+        refreshControl = new AutoRefreshControl(sashMain, sessionManager.getClass().getSimpleName(), monitor -> UIUtils.syncExec(this::refreshSessions));
 
-        sessionTable = new SessionListControl(sash, part.getSite(), sessionManager);
+        sessionTable = new SessionListControl(sashMain, part.getSite(), sessionManager);
         sessionTable.getItemsViewer().addSelectionChangedListener(event -> onSessionSelect(getSelectedSession()));
+        sessionTable.addDisposeListener(e -> saveSettings(settings));
 
         sessionTable.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         sessionTable.createProgressPanel(composite);
 
         {
-            SashForm infoSash = UIUtils.createPartDivider(part, sash, SWT.HORIZONTAL | SWT.SMOOTH);
-            infoSash.setLayoutData(new GridData(GridData.FILL_BOTH));
+            sashDetails = UIUtils.createPartDivider(part, sashMain, SWT.HORIZONTAL | SWT.SMOOTH);
+            sashDetails.setLayoutData(new GridData(GridData.FILL_BOTH));
 
 
 //            sessionInfo = new Text(infoSash, SWT.BORDER | SWT.H_SCROLL | SWT.V_SCROLL | SWT.MULTI | SWT.WRAP);
@@ -106,7 +112,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
                 }
             };
             updateSQL();
-            sqlViewer.createPartControl(infoSash);
+            sqlViewer.createPartControl(sashDetails);
             Object text = sqlViewer.getAdapter(Control.class);
             if (text instanceof StyledText) {
                 ((StyledText) text).setWordWrap(true);
@@ -116,13 +122,12 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
 
             parent.addDisposeListener(e -> sqlViewer.dispose());
 
+            sessionProps = new PropertyTreeViewer(sashDetails, SWT.BORDER);
 
-            sessionProps = new PropertyTreeViewer(infoSash, SWT.BORDER);
-
-            sash.setWeights(new int[]{50, 50});
+            sashMain.setWeights(new int[]{50, 50});
         }
 
-        sash.setWeights(new int[]{70, 30});
+        sashMain.setWeights(new int[]{70, 30});
     }
 
     protected void onSessionSelect(DBAServerSession session)
@@ -191,6 +196,28 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
 
     public Map<String, Object> getSessionOptions() {
         return null;
+    }
+
+    void loadSettings(AbstractSessionEditor sessionEditor) {
+        //$NON-NLS-1$
+        settings = UIUtils.getDialogSettings("DBeaver." + sessionEditor.getClass().getSimpleName());
+        loadSettings(settings);
+    }
+
+    protected void loadSettings(IDialogSettings settings) {
+        int mainSashRatio = CommonUtils.toInt(settings.get("MainSashRatio"), 0);
+        if (mainSashRatio > 0) {
+            sashMain.setWeights(new int[] { mainSashRatio, 1000 - mainSashRatio });
+        }
+        int detailsSashRatio = CommonUtils.toInt(settings.get("DetailsSashRatio"), 0);
+        if (detailsSashRatio > 0) {
+            sashDetails.setWeights(new int[] { detailsSashRatio, 1000 - detailsSashRatio });
+        }
+    }
+
+    protected void saveSettings(IDialogSettings settings) {
+        settings.put("MainSashRatio", sashMain.getWeights()[0]);
+        settings.put("DetailsSashRatio", sashDetails.getWeights()[0]);
     }
 
     private class SessionListControl extends SessionTable<SESSION_TYPE> {
