@@ -22,12 +22,11 @@ import org.eclipse.jface.fieldassist.TextContentAdapter;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
-import org.eclipse.swt.events.DisposeEvent;
-import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IEditorSite;
 import org.jkiss.dbeaver.ModelPreferences;
@@ -38,13 +37,13 @@ import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.format.external.SQLFormatterExternal;
-import org.jkiss.dbeaver.ui.editors.sql.registry.SQLFormatterConfigurationRegistry;
-import org.jkiss.dbeaver.ui.editors.sql.registry.SQLFormatterDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.ui.editors.SubEditorSite;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
+import org.jkiss.dbeaver.ui.editors.sql.registry.SQLFormatterConfigurationRegistry;
+import org.jkiss.dbeaver.ui.editors.sql.registry.SQLFormatterDescriptor;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.PrefUtils;
@@ -126,26 +125,28 @@ public class PrefPageSQLFormat extends TargetPrefPage
 
         }
 
-        Composite formatterGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_format_group_formatter, 1, GridData.FILL_BOTH, 0);
+        formatterSelector = UIUtils.createLabelCombo(composite, CoreMessages.pref_page_sql_format_label_formatter, SWT.DROP_DOWN | SWT.READ_ONLY);
+        formatterSelector.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+        formatters = SQLFormatterConfigurationRegistry.getInstance().getFormatters();
+        for (SQLFormatterDescriptor formatterDesc : formatters) {
+            formatterSelector.add(DBPIdentifierCase.capitalizeCaseName(formatterDesc.getLabel()));
+        }
+        formatterSelector.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                showFormatterSettings();
+                performApply();
+            }
+        });
+        formatterSelector.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+
+        Composite formatterGroup = UIUtils.createPlaceholder(composite, 1, 5);
+        formatterGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
         ((GridData)formatterGroup.getLayoutData()).horizontalSpan = 2;
 
         {
             Composite formatterPanel = UIUtils.createPlaceholder(formatterGroup, 4, 5);
             formatterPanel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-
-            formatterSelector = UIUtils.createLabelCombo(formatterPanel, CoreMessages.pref_page_sql_format_label_formatter, SWT.DROP_DOWN | SWT.READ_ONLY);
-            formatters = SQLFormatterConfigurationRegistry.getInstance().getFormatters();
-            for (SQLFormatterDescriptor formatterDesc : formatters) {
-                formatterSelector.add(DBPIdentifierCase.capitalizeCaseName(formatterDesc.getLabel()));
-            }
-            formatterSelector.addSelectionListener(new SelectionAdapter() {
-                @Override
-                public void widgetSelected(SelectionEvent e) {
-                    showFormatterSettings();
-                    performApply();
-                }
-            });
-            formatterSelector.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
 
             keywordCaseCombo = UIUtils.createLabelCombo(formatterPanel, CoreMessages.pref_page_sql_format_label_keyword_case, SWT.DROP_DOWN | SWT.READ_ONLY);
             keywordCaseCombo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
@@ -188,8 +189,10 @@ public class PrefPageSQLFormat extends TargetPrefPage
 
         {
             // SQL preview
-            Composite previewGroup = new Composite(formatterGroup, SWT.BORDER);
-            previewGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
+            Composite previewGroup = new Composite(composite, SWT.BORDER);
+            GridData gd = new GridData(GridData.FILL_BOTH);
+            gd.horizontalSpan = 2;
+            previewGroup.setLayoutData(gd);
             previewGroup.setLayout(new FillLayout());
 
             sqlViewer = new SQLEditorBase() {
@@ -223,12 +226,7 @@ public class PrefPageSQLFormat extends TargetPrefPage
             }
             sqlViewer.reloadSyntaxRules();
 
-            previewGroup.addDisposeListener(new DisposeListener() {
-                @Override
-                public void widgetDisposed(DisposeEvent e) {
-                    sqlViewer.dispose();
-                }
-            });
+            previewGroup.addDisposeListener(e -> sqlViewer.dispose());
         }
 
         return composite;
@@ -313,7 +311,7 @@ public class PrefPageSQLFormat extends TargetPrefPage
         boolean isExternal = selFormatter.getId().equalsIgnoreCase(SQLFormatterExternal.FORMATTER_ID);
         externalGroup.setVisible(isExternal);
         ((GridData)externalGroup.getLayoutData()).exclude = !isExternal;
-        externalGroup.getParent().layout();
+        externalGroup.getParent().getParent().layout();
     }
 
     private void formatSQL() {
