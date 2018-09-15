@@ -220,7 +220,7 @@ public class ViewerColumnController<COLUMN, ELEMENT> {
             }
             if (needRefresh && pack) {
                 viewer.refresh();
-                if (!isAllSized()) {
+                if (needRefresh || !isAllSized()) {
                     for (ColumnInfo columnInfo : getVisibleColumns()) {
                         if (columnInfo.column instanceof TreeColumn) {
                             ((TreeColumn) columnInfo.column).pack();
