@@ -40,20 +40,25 @@ import org.eclipse.ui.IWorkbenchSite;
 import org.eclipse.ui.PartInitException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSession;
+import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionDetails;
+import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionDetailsProvider;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.model.exec.DBCExecutionPurpose;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.runtime.properties.PropertyCollector;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
-import org.jkiss.dbeaver.ui.DBeaverIcons;
-import org.jkiss.dbeaver.ui.ISearchExecutor;
-import org.jkiss.dbeaver.ui.UIIcon;
-import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.controls.ListContentProvider;
 import org.jkiss.dbeaver.ui.controls.autorefresh.AutoRefreshControl;
 import org.jkiss.dbeaver.ui.controls.itemlist.DatabaseObjectListControl;
 import org.jkiss.dbeaver.ui.editors.StringEditorInput;
@@ -64,7 +69,8 @@ import org.jkiss.dbeaver.ui.views.plan.PlanNodesTree;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Map;
+import java.lang.reflect.InvocationTargetException;
+import java.util.*;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
@@ -92,13 +98,12 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
     private IDialogSettings settings;
 
     private TabFolder previewFolder;
-    private TabItem sqlViewItem;
-    private TabItem sqlPlanItem;
     private final TabItem detailsItem;
 
     private final DBCQueryPlanner planner;
     private PlanNodesTree planTree;
     private Object selectedPlanElement;
+    private final TabFolder detailsFolder;
 
     protected SessionManagerViewer(IWorkbenchPart part, Composite parent, final DBAServerSessionManager<SESSION_TYPE> sessionManager) {
         this.workbenchPart = part;
@@ -152,7 +157,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
 
                 parent.addDisposeListener(e -> sqlViewer.dispose());
 
-                sqlViewItem = new TabItem(previewFolder, SWT.NONE);
+                TabItem sqlViewItem = new TabItem(previewFolder, SWT.NONE);
                 sqlViewItem.setText("SQL");
                 sqlViewItem.setImage(DBeaverIcons.getImage(UIIcon.SQL_TEXT));
                 sqlViewItem.setControl(sqlViewer.getEditorControlWrapper());
@@ -172,7 +177,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
             }
 
             {
-                TabFolder detailsFolder = new TabFolder(sashDetails, SWT.TOP);
+                detailsFolder = new TabFolder(sashDetails, SWT.TOP);
                 sessionProps = new PropertyTreeViewer(detailsFolder, SWT.NONE);
 
                 detailsItem = new TabItem(detailsFolder, SWT.NONE);
@@ -180,7 +185,38 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
                 detailsItem.setImage(DBeaverIcons.getImage(UIIcon.PROPERTIES));
                 detailsItem.setControl(sessionProps.getControl());
 
+                if (sessionManager instanceof DBAServerSessionDetailsProvider) {
+                    List<DBAServerSessionDetails> sessionDetails = ((DBAServerSessionDetailsProvider) sessionManager).getSessionDetails();
+                    if (sessionDetails != null) {
+                        for (DBAServerSessionDetails detailsInfo : sessionDetails) {
+                            TabItem extDetailsItem = new TabItem(detailsFolder, SWT.NONE);
+                            extDetailsItem.setData(detailsInfo);
+                            extDetailsItem.setText(detailsInfo.getDetailsTitle());
+                            if (detailsInfo.getDetailsIcon() != null) {
+                                extDetailsItem.setImage(DBeaverIcons.getImage(detailsInfo.getDetailsIcon()));
+                            }
+                            if (detailsInfo.getDetailsTooltip() != null) {
+                                extDetailsItem.setToolTipText(detailsInfo.getDetailsTooltip());
+                            }
+
+                            DetailsListControl detailsProps = new DetailsListControl(detailsFolder, workbenchPart.getSite(), detailsInfo);
+                            extDetailsItem.setControl(detailsProps);
+                        }
+                    }
+                }
+
                 detailsFolder.setSelection(detailsItem);
+                detailsFolder.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        TabItem item = detailsFolder.getItem(detailsFolder.getSelectionIndex());
+                        Object data = item.getData();
+                        if (data instanceof DBAServerSessionDetails) {
+                            DetailsListControl detailsViewer = (DetailsListControl) item.getControl();
+                            detailsViewer.loadData();
+                        }
+                    }
+                });
             }
 
             sashMain.setWeights(new int[]{500, 500});
@@ -211,6 +247,14 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
                 planTree.loadData();
             }
         }
+        if (detailsFolder.getSelectionIndex() > 0) {
+            TabItem detailsItem = detailsFolder.getItem(detailsFolder.getSelectionIndex());
+            Object data = detailsItem.getData();
+            if (data instanceof DBAServerSessionDetails) {
+                DetailsListControl detailsListControl = (DetailsListControl) detailsItem.getControl();
+                detailsListControl.loadData();
+            }
+        }
     }
 
     private void createPlannerTab(TabFolder previewFolder) {
@@ -218,7 +262,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
         planTree.substituteProgressPanel(getSessionListControl());
         planTree.getItemsViewer().addSelectionChangedListener(event -> showPlanNode());
 
-        sqlPlanItem = new TabItem(previewFolder, SWT.NONE);
+        TabItem sqlPlanItem = new TabItem(previewFolder, SWT.NONE);
         sqlPlanItem.setText("Execution Plan");
         sqlPlanItem.setImage(DBeaverIcons.getImage(UIIcon.SQL_PAGE_EXPLAIN_PLAN));
         sqlPlanItem.setControl(planTree);
@@ -433,5 +477,64 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
         }
     }
 
+    private class DetailsListControl extends DatabaseObjectListControl<DBPObject> {
+
+        private DBAServerSessionDetails sessionDetails;
+
+        protected DetailsListControl(Composite parent, IWorkbenchSite site, DBAServerSessionDetails sessionDetails) {
+            super(parent, SWT.SHEET, site, new ListContentProvider());
+            this.sessionDetails = sessionDetails;
+        }
+
+        @Override
+        protected String getListConfigId(List<Class<?>> classList) {
+            return "SessionDetails/" + sessionManager.getDataSource().getContainer().getDriver().getId() + "/" + sessionDetails.getDetailsTitle();
+        }
+
+        @Override
+        protected Class<?>[] getListBaseTypes(Collection<DBPObject> items) {
+            return new Class[] { sessionDetails.getDetailsType() };
+        }
+
+        @Override
+        protected LoadingJob<Collection<DBPObject>> createLoadService() {
+            return LoadingJob.createService(
+                new SessionDetailsLoadService(sessionDetails),
+                new ObjectsLoadVisualizer());
+        }
+    }
+
+    private class SessionDetailsLoadService extends DatabaseLoadService<Collection<DBPObject>> {
+
+        private DBAServerSessionDetails sessionDetails;
+
+        public SessionDetailsLoadService(DBAServerSessionDetails sessionDetails) {
+            super("Load session details " + sessionDetails.getDetailsTitle(), sessionManager.getDataSource());
+            this.sessionDetails = sessionDetails;
+        }
+
+        @Override
+        public Collection<DBPObject> evaluate(DBRProgressMonitor monitor)
+            throws InvocationTargetException, InterruptedException
+        {
+            if (curSession == null) {
+                return Collections.emptyList();
+            }
+            try {
+                DBCExecutionContext context = DBUtils.getDefaultContext(sessionManager.getDataSource(), false);
+                try (DBCSession session = context.openSession(monitor, DBCExecutionPurpose.UTIL, "Load session details (" + sessionDetails.getDetailsTitle() + ")")) {
+                    List<? extends DBPObject> sessionDetails = this.sessionDetails.getSessionDetails(session, curSession);
+                    List<DBPObject> result = new ArrayList<>();
+                    if (sessionDetails != null) {
+                        result.addAll(sessionDetails);
+                    }
+                    return result;
+                }
+            } catch (Throwable ex) {
+                throw new InvocationTargetException(ex);
+            }
+        }
+
+    }
 
 }

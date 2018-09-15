@@ -35,7 +35,7 @@ public class OracleServerSession implements DBAServerSession {
     public static final String CAT_WAIT = "Wait";
     //public static final String CAT_STAT = "Statistics";
 
-    private String sid;
+    private long sid;
     private String serial;
     private String user;
     private String schema;
@@ -69,7 +69,7 @@ public class OracleServerSession implements DBAServerSession {
 
     public OracleServerSession(ResultSet dbResult)
     {
-        this.sid = JDBCUtils.safeGetString(dbResult, "SID");
+        this.sid = JDBCUtils.safeGetLong(dbResult, "SID");
         this.serial = JDBCUtils.safeGetString(dbResult, "SERIAL#");
         this.user = JDBCUtils.safeGetString(dbResult, "USERNAME");
         this.schema = JDBCUtils.safeGetString(dbResult, "SCHEMANAME");
@@ -104,7 +104,7 @@ public class OracleServerSession implements DBAServerSession {
     }
 
     @Property(category = CAT_SESSION, viewable = true, order = 1)
-    public String getSid()
+    public long getSid()
     {
         return sid;
     }
