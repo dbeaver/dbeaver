@@ -38,7 +38,7 @@ public class SQLFormatterTokenized implements SQLFormatter {
     public static final String FORMATTER_ID = "DEFAULT";
 
     private static final String[] DML_KEYWORD = { "SELECT", "UPDATE", "INSERT", "DELETE" };
-    private static final String[] JOIN_BEGIN = { "LEFT", "RIGHT", "INNER", "OUTER", "JOIN" };
+    private static final String[] JOIN_BEGIN = { "LEFT", "RIGHT", "INNER", "OUTER", "FULL", "CROSS", "JOIN" };
 
     private SQLFormatterConfiguration formatterCfg;
     private List<Boolean> functionBracket = new ArrayList<>();
@@ -254,6 +254,8 @@ public class SQLFormatterTokenized implements SQLFormatter {
                         case "RIGHT":
                         case "INNER":
                         case "OUTER":
+                        case "FULL":
+                        case "CROSS":
                         case "JOIN":
                             if (isJoinStart(argList, index)) {
                                 index += insertReturnAndIndent(argList, index, indent - 1);
