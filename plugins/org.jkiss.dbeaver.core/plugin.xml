@@ -2924,6 +2924,14 @@
             <adapter type="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
             <adapter type="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
         </factory>
+        <factory adaptableType="org.eclipse.ui.IEditorInput" class="org.jkiss.dbeaver.ui.editors.DatabaseEditorAdapterFactory">
+            <adapter type="org.jkiss.dbeaver.model.struct.DBSObject"/>
+            <adapter type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
+            <adapter type="org.jkiss.dbeaver.model.struct.DBSObject"/>
+            <adapter type="org.jkiss.dbeaver.model.struct.DBSEntity"/>
+            <adapter type="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
+            <adapter type="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
+        </factory>
     </extension>
 
     <extension point="org.eclipse.ui.elementFactories">
