@@ -32,6 +32,7 @@ public class OracleServerSession implements DBAServerSession {
     public static final String CAT_SQL = "SQL";
     public static final String CAT_PROCESS = "Process";
     public static final String CAT_IO = "IO";
+    public static final String CAT_WAIT = "Wait";
     //public static final String CAT_STAT = "Statistics";
 
     private String sid;
@@ -43,6 +44,7 @@ public class OracleServerSession implements DBAServerSession {
     private String state;
     private String sql;
     private String event;
+    private long secondsInWait;
     private String elapsedTime;
     private Timestamp logonTime;
     private String serviceName;
@@ -75,7 +77,6 @@ public class OracleServerSession implements DBAServerSession {
         this.status = JDBCUtils.safeGetString(dbResult, "STATUS");
         this.state = JDBCUtils.safeGetString(dbResult, "STATE");
         this.sql = JDBCUtils.safeGetString(dbResult, "SQL_FULLTEXT");
-        this.event = JDBCUtils.safeGetString(dbResult, "EVENT");
         this.elapsedTime = JDBCUtils.safeGetString(dbResult, "LAST_CALL_ET");
         this.logonTime = JDBCUtils.safeGetTimestamp(dbResult, "LOGON_TIME");
         this.serviceName = JDBCUtils.safeGetString(dbResult, "SERVICE_NAME");
@@ -94,6 +95,9 @@ public class OracleServerSession implements DBAServerSession {
         this.physicalReads = JDBCUtils.safeGetLong(dbResult, "PHYSICAL_READS");
         this.blockChanges = JDBCUtils.safeGetLong(dbResult, "BLOCK_CHANGES");
         this.consistentChanges = JDBCUtils.safeGetLong(dbResult, "CONSISTENT_CHANGES");
+
+        this.event = JDBCUtils.safeGetString(dbResult, "EVENT");
+        this.secondsInWait = JDBCUtils.safeGetLong(dbResult, "SECONDS_IN_WAIT");
 
         //this.statCPU = JDBCUtils.safeGetLong(dbResult, "STAT_CPU") * 10;
 
@@ -139,12 +143,6 @@ public class OracleServerSession implements DBAServerSession {
     public String getState()
     {
         return state;
-    }
-
-    @Property(category = CAT_SESSION, viewable = true, order = 7)
-    public String getEvent()
-    {
-        return event;
     }
 
     @Property(category = CAT_SESSION, viewable = true, order = 8)
@@ -228,7 +226,18 @@ public class OracleServerSession implements DBAServerSession {
         return consistentChanges;
     }
 
-//    @Property(category = CAT_STAT, viewable = false, order = 80)
+    @Property(category = CAT_WAIT, viewable = true, order = 41)
+    public String getEvent()
+    {
+        return event;
+    }
+
+    @Property(category = CAT_WAIT, viewable = true, order = 42)
+    public long getSecondsInWait() {
+        return secondsInWait;
+    }
+
+    //    @Property(category = CAT_STAT, viewable = false, order = 80)
 //    public long getStatCPU() {
 //        return statCPU;
 //    }
