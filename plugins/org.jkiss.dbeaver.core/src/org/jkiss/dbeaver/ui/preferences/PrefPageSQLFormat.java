@@ -63,14 +63,6 @@ public class PrefPageSQLFormat extends TargetPrefPage
 
     private final static String FORMAT_FILE_NAME = "format_preview.sql";
 
-    // Auto-close
-    private Button acSingleQuotesCheck;
-    private Button acDoubleQuotesCheck;
-    private Button acBracketsCheck;
-    // Auto-Format
-    private Button afKeywordCase;
-    private Button afExtractFromSource;
-
     private Button styleBoldKeywords;
 
     // Formatter
@@ -95,11 +87,6 @@ public class PrefPageSQLFormat extends TargetPrefPage
     {
         DBPPreferenceStore store = dataSourceDescriptor.getPreferenceStore();
         return
-            store.contains(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES) ||
-            store.contains(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES) ||
-            store.contains(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS) ||
-            store.contains(SQLPreferenceConstants.SQL_FORMAT_KEYWORD_CASE_AUTO) ||
-            store.contains(SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE) ||
             store.contains(SQLPreferenceConstants.SQL_FORMAT_BOLD_KEYWORDS) ||
 
             store.contains(ModelPreferences.SQL_FORMAT_FORMATTER) ||
@@ -120,29 +107,6 @@ public class PrefPageSQLFormat extends TargetPrefPage
     protected Control createPreferenceContent(Composite parent)
     {
         Composite composite = UIUtils.createPlaceholder(parent, 2, 5);
-
-        // Autoclose
-        {
-            Composite acGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_format_group_auto_close, 1, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
-
-            acSingleQuotesCheck = UIUtils.createCheckbox(acGroup, CoreMessages.pref_page_sql_format_label_single_quotes, false);
-            acDoubleQuotesCheck = UIUtils.createCheckbox(acGroup, CoreMessages.pref_page_sql_format_label_double_quotes, false);
-            acBracketsCheck = UIUtils.createCheckbox(acGroup, CoreMessages.pref_page_sql_format_label_brackets, false);
-        }
-
-        {
-            // Formatting
-            Composite afGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_format_group_auto_format, 1, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
-            afKeywordCase = UIUtils.createCheckbox(
-                afGroup,
-                CoreMessages.pref_page_sql_format_label_convert_keyword_case,
-                CoreMessages.pref_page_sql_format_label_convert_keyword_case_tip,
-                false, 1);
-            afExtractFromSource = UIUtils.createCheckbox(
-                afGroup,
-                CoreMessages.pref_page_sql_format_label_extract_sql_from_source_code,
-               CoreMessages.pref_page_sql_format_label_extract_sql_from_source_code_tip, false, 1);
-        }
 
         {
             // Styles
@@ -273,11 +237,6 @@ public class PrefPageSQLFormat extends TargetPrefPage
     @Override
     protected void loadPreferences(DBPPreferenceStore store)
     {
-        acSingleQuotesCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES));
-        acDoubleQuotesCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES));
-        acBracketsCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS));
-        afKeywordCase.setSelection(store.getBoolean(SQLPreferenceConstants.SQL_FORMAT_KEYWORD_CASE_AUTO));
-        afExtractFromSource.setSelection(store.getBoolean(SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE));
         styleBoldKeywords.setSelection(store.getBoolean(SQLPreferenceConstants.SQL_FORMAT_BOLD_KEYWORDS));
 
         String formatterId = store.getString(ModelPreferences.SQL_FORMAT_FORMATTER);
@@ -307,12 +266,6 @@ public class PrefPageSQLFormat extends TargetPrefPage
     @Override
     protected void savePreferences(DBPPreferenceStore store)
     {
-        store.setValue(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES, acSingleQuotesCheck.getSelection());
-        store.setValue(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES, acDoubleQuotesCheck.getSelection());
-        store.setValue(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS, acBracketsCheck.getSelection());
-
-        store.setValue(SQLPreferenceConstants.SQL_FORMAT_KEYWORD_CASE_AUTO, afKeywordCase.getSelection());
-        store.setValue(SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE, afExtractFromSource.getSelection());
         store.setValue(SQLPreferenceConstants.SQL_FORMAT_BOLD_KEYWORDS, styleBoldKeywords.getSelection());
 
         store.setValue(ModelPreferences.SQL_FORMAT_FORMATTER,
@@ -336,11 +289,6 @@ public class PrefPageSQLFormat extends TargetPrefPage
     @Override
     protected void clearPreferences(DBPPreferenceStore store)
     {
-        store.setToDefault(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES);
-        store.setToDefault(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES);
-        store.setToDefault(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS);
-        store.setToDefault(SQLPreferenceConstants.SQL_FORMAT_KEYWORD_CASE_AUTO);
-        store.setToDefault(SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE);
         store.setToDefault(SQLPreferenceConstants.SQL_FORMAT_BOLD_KEYWORDS);
 
         store.setToDefault(ModelPreferences.SQL_FORMAT_FORMATTER);
