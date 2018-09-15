@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.preferences;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -47,6 +48,14 @@ public class PrefPageSQLCompletion extends TargetPrefPage
     private Button csUseGlobalSearch;
     private Button csShowColumnProcedures;
 
+    // Auto-close
+    private Button acSingleQuotesCheck;
+    private Button acDoubleQuotesCheck;
+    private Button acBracketsCheck;
+    // Auto-Format
+    private Button afKeywordCase;
+    private Button afExtractFromSource;
+
     private Button csFoldingEnabled;
 
     public PrefPageSQLCompletion()
@@ -72,6 +81,12 @@ public class PrefPageSQLCompletion extends TargetPrefPage
             store.contains(SQLPreferenceConstants.USE_GLOBAL_ASSISTANT) ||
             store.contains(SQLPreferenceConstants.SHOW_COLUMN_PROCEDURES) ||
 
+            store.contains(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES) ||
+            store.contains(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES) ||
+            store.contains(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS) ||
+            store.contains(SQLPreferenceConstants.SQL_FORMAT_KEYWORD_CASE_AUTO) ||
+            store.contains(SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE) ||
+
             store.contains(SQLPreferenceConstants.FOLDING_ENABLED)
         ;
     }
@@ -85,11 +100,11 @@ public class PrefPageSQLCompletion extends TargetPrefPage
     @Override
     protected Control createPreferenceContent(Composite parent)
     {
-        Composite composite = UIUtils.createPlaceholder(parent, 1);
+        Composite composite = UIUtils.createPlaceholder(parent, 2, 5);
 
         // Content assistant
         {
-            Composite assistGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_completion_group_sql_assistant, 2, GridData.FILL_HORIZONTAL, 0);
+            Composite assistGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_completion_group_sql_assistant, 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
 
             csAutoActivationCheck = UIUtils.createCheckbox(assistGroup, CoreMessages.pref_page_sql_completion_label_enable_auto_activation, CoreMessages.pref_page_sql_completion_label_enable_auto_activation_tip, false, 2);
 
@@ -128,9 +143,37 @@ public class PrefPageSQLCompletion extends TargetPrefPage
             csShowColumnProcedures = UIUtils.createCheckbox(assistGroup, CoreMessages.pref_page_sql_completion_label_show_column_procedures, CoreMessages.pref_page_sql_completion_label_show_column_procedures_tip, false, 2);
         }
 
-        // Content assistant
+        Composite autoFormatPanel = new Composite(composite, SWT.NONE);
+        autoFormatPanel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+        autoFormatPanel.setLayout(new GridLayout(1, false));
+
+        // Autoclose
         {
-            Composite foldingGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_completion_group_folding, 2, GridData.FILL_HORIZONTAL, 0);
+            Composite acGroup = UIUtils.createControlGroup(autoFormatPanel, CoreMessages.pref_page_sql_format_group_auto_close, 1, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+
+            acSingleQuotesCheck = UIUtils.createCheckbox(acGroup, CoreMessages.pref_page_sql_format_label_single_quotes, false);
+            acDoubleQuotesCheck = UIUtils.createCheckbox(acGroup, CoreMessages.pref_page_sql_format_label_double_quotes, false);
+            acBracketsCheck = UIUtils.createCheckbox(acGroup, CoreMessages.pref_page_sql_format_label_brackets, false);
+        }
+
+        {
+            // Formatting
+            Composite afGroup = UIUtils.createControlGroup(autoFormatPanel, CoreMessages.pref_page_sql_format_group_auto_format, 1, GridData.FILL_HORIZONTAL | GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            afKeywordCase = UIUtils.createCheckbox(
+                afGroup,
+                CoreMessages.pref_page_sql_format_label_convert_keyword_case,
+                CoreMessages.pref_page_sql_format_label_convert_keyword_case_tip,
+                false, 1);
+            afExtractFromSource = UIUtils.createCheckbox(
+                afGroup,
+                CoreMessages.pref_page_sql_format_label_extract_sql_from_source_code,
+                CoreMessages.pref_page_sql_format_label_extract_sql_from_source_code_tip, false, 1);
+        }
+
+
+        // Folding
+        {
+            Composite foldingGroup = UIUtils.createControlGroup(autoFormatPanel, CoreMessages.pref_page_sql_completion_group_folding, 2, GridData.FILL_HORIZONTAL, 0);
 
             csFoldingEnabled = UIUtils.createCheckbox(foldingGroup, CoreMessages.pref_page_sql_completion_label_folding_enabled, CoreMessages.pref_page_sql_completion_label_folding_enabled_tip, false, 2);
         }
@@ -155,6 +198,12 @@ public class PrefPageSQLCompletion extends TargetPrefPage
             csUseGlobalSearch.setSelection(store.getBoolean(SQLPreferenceConstants.USE_GLOBAL_ASSISTANT));
             csShowColumnProcedures.setSelection(store.getBoolean(SQLPreferenceConstants.SHOW_COLUMN_PROCEDURES));
 
+            acSingleQuotesCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES));
+            acDoubleQuotesCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES));
+            acBracketsCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS));
+            afKeywordCase.setSelection(store.getBoolean(SQLPreferenceConstants.SQL_FORMAT_KEYWORD_CASE_AUTO));
+            afExtractFromSource.setSelection(store.getBoolean(SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE));
+
             csFoldingEnabled.setSelection(store.getBoolean(SQLPreferenceConstants.FOLDING_ENABLED));
         } catch (Exception e) {
             log.warn(e);
@@ -178,6 +227,13 @@ public class PrefPageSQLCompletion extends TargetPrefPage
             store.setValue(SQLPreferenceConstants.USE_GLOBAL_ASSISTANT, csUseGlobalSearch.getSelection());
             store.setValue(SQLPreferenceConstants.SHOW_COLUMN_PROCEDURES, csShowColumnProcedures.getSelection());
 
+            store.setValue(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES, acSingleQuotesCheck.getSelection());
+            store.setValue(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES, acDoubleQuotesCheck.getSelection());
+            store.setValue(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS, acBracketsCheck.getSelection());
+
+            store.setValue(SQLPreferenceConstants.SQL_FORMAT_KEYWORD_CASE_AUTO, afKeywordCase.getSelection());
+            store.setValue(SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE, afExtractFromSource.getSelection());
+
             store.setValue(SQLPreferenceConstants.FOLDING_ENABLED, csFoldingEnabled.getSelection());
         } catch (Exception e) {
             log.warn(e);
@@ -200,6 +256,12 @@ public class PrefPageSQLCompletion extends TargetPrefPage
         store.setToDefault(SQLPreferenceConstants.PROPOSALS_MATCH_CONTAINS);
         store.setToDefault(SQLPreferenceConstants.USE_GLOBAL_ASSISTANT);
         store.setToDefault(SQLPreferenceConstants.SHOW_COLUMN_PROCEDURES);
+
+        store.setToDefault(SQLPreferenceConstants.SQLEDITOR_CLOSE_SINGLE_QUOTES);
+        store.setToDefault(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES);
+        store.setToDefault(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS);
+        store.setToDefault(SQLPreferenceConstants.SQL_FORMAT_KEYWORD_CASE_AUTO);
+        store.setToDefault(SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE);
 
         store.setToDefault(SQLPreferenceConstants.FOLDING_ENABLED);
     }
