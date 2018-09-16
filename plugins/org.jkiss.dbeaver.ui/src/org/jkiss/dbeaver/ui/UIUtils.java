@@ -473,11 +473,13 @@ public class UIUtils {
         Group group = new Group(parent, SWT.NONE);
         group.setText(label);
 
-        GridData gd = new GridData(layoutStyle);
-        if (widthHint > 0) {
-            gd.widthHint = widthHint;
+        if (parent.getLayout() instanceof GridLayout) {
+            GridData gd = new GridData(layoutStyle);
+            if (widthHint > 0) {
+                gd.widthHint = widthHint;
+            }
+            group.setLayoutData(gd);
         }
-        group.setLayoutData(gd);
 
         GridLayout gl = new GridLayout(columns, false);
         group.setLayout(gl);

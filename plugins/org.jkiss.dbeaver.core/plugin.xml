@@ -3552,9 +3552,9 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.sqlFormatter">
-        <formatter id="default" class="org.jkiss.dbeaver.model.sql.format.tokenized.SQLFormatterTokenized" configurerClass="org.jkiss.dbeaver.ui.editors.sql.format.tokenized.SQLTokenizedConfigurationPage" label="Default formatter" description="Default SQL formatter"/>
-        <formatter id="compact" class="org.jkiss.dbeaver.model.sql.format.tokenized.SQLFormatterCompact" label="Compact formatter" description="Compact SQL formatter. Similar to default formatter but with more compact output"/>
-        <formatter id="external" class="org.jkiss.dbeaver.model.sql.format.external.SQLFormatterExternal" label="External formatter" description="External formatter. Uses configurable command-line executable to format SQL queries"/>
+        <formatter id="default" class="org.jkiss.dbeaver.model.sql.format.tokenized.SQLFormatterTokenized" configurerClass="org.jkiss.dbeaver.ui.editors.sql.format.tokenized.SQLTokenizedFormatterConfigurationPage" label="Default formatter" description="Default SQL formatter"/>
+        <formatter id="compact" class="org.jkiss.dbeaver.model.sql.format.tokenized.SQLFormatterCompact" configurerClass="org.jkiss.dbeaver.ui.editors.sql.format.tokenized.SQLTokenizedFormatterConfigurationPage" label="Compact formatter" description="Compact SQL formatter. Similar to default formatter but with more compact output"/>
+        <formatter id="external" class="org.jkiss.dbeaver.model.sql.format.external.SQLFormatterExternal" configurerClass="org.jkiss.dbeaver.ui.editors.sql.format.SQLExternalFormatterConfigurationPage" label="External formatter" description="External formatter. Uses configurable command-line executable to format SQL queries"/>
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataManager">

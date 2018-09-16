@@ -16,18 +16,21 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.registry;
 
-import org.jkiss.dbeaver.model.sql.format.SQLFormatter;
-import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
+import org.eclipse.jface.dialogs.IDialogPage;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 
 /**
  * SQL Formatter configurer
  */
-public interface SQLFormatterConfigurer {
+public interface SQLFormatterConfigurator extends IDialogPage {
 
     /**
      * Sets configuration parameters
-     * @return false if formatting was canceled by user
      */
-    boolean configure(String formatName, SQLFormatter formatter, SQLFormatterConfiguration configuration);
+    void configure(SQLFormatterDescriptor formatterDescriptor);
+
+    void loadSettings(DBPPreferenceStore preferenceStore);
+
+    void saveSettings(DBPPreferenceStore preferenceStore);
 
 }
