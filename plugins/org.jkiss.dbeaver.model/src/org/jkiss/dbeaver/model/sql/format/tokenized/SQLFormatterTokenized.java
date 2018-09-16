@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.model.sql.format.tokenized;
 
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatter;
@@ -34,6 +35,8 @@ import java.util.Locale;
  * SQL formatter
  */
 public class SQLFormatterTokenized implements SQLFormatter {
+
+    private static final Log log = Log.getLog(SQLFormatterTokenized.class);
 
     public static final String FORMATTER_ID = "DEFAULT";
 
@@ -138,7 +141,7 @@ public class SQLFormatterTokenized implements SQLFormatter {
             FormatterToken t2 = argList.get(index + 2);
 
             String tokenString = t0.getString().toUpperCase(Locale.ENGLISH);
-            String token2String = t2.getString().toUpperCase(Locale.ENGLISH);;
+            String token2String = t2.getString().toUpperCase(Locale.ENGLISH);
             // Concatenate tokens
             if (t0.getType() == TokenType.KEYWORD && t1.getType() == TokenType.SPACE && t2.getType() == TokenType.KEYWORD) {
                 if (((tokenString.equals("ORDER") || tokenString.equals("GROUP") || tokenString.equals("CONNECT")) && token2String.equals("BY")) ||
@@ -191,7 +194,7 @@ public class SQLFormatterTokenized implements SQLFormatter {
                     }
                 } else if (statementDelimiters.contains(tokenString)) { //$NON-NLS-1$
                     indent = 0;
-                    index += insertReturnAndIndent(argList, index + 1, indent);
+                    index += insertReturnAndIndent(argList, index, indent);
                 }
             } else if (token.getType() == TokenType.KEYWORD) {
                 if (statementDelimiters.contains(tokenString)) { //$NON-NLS-1$
@@ -553,14 +556,19 @@ public class SQLFormatterTokenized implements SQLFormatter {
 
             if (isDelimiter) {
                 if (argList.size() > argIndex + 1) {
-                    argList.add(argIndex + 1, new FormatterToken(TokenType.SPACE, s + s));
+                    FormatterToken lineFeed = new FormatterToken(TokenType.SPACE, s + s);
+                    if (argList.get(argIndex + 1).getType() == TokenType.SPACE) {
+                        argList.set(argIndex + 1, lineFeed);
+                    } else {
+                        argList.add(argIndex + 1, lineFeed);
+                    }
                 }
             } else {
                 argList.add(argIndex, new FormatterToken(TokenType.SPACE, s));
             }
             return 1;
         } catch (IndexOutOfBoundsException e) {
-            e.printStackTrace();
+            log.debug(e);
             return 0;
         }
     }
