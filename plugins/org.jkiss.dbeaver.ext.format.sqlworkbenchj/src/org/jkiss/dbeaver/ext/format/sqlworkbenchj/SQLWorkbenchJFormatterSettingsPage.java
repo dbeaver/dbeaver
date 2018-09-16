@@ -31,14 +31,17 @@ import org.jkiss.utils.CommonUtils;
  */
 public class SQLWorkbenchJFormatterSettingsPage extends BaseFormatterConfigurationPage {
 
+    public static final String label = "SQL Workbench/J path";
+
     private TextWithOpenFolder pathEdit;
 
     @Override
     protected Composite createFormatSettings(Composite parent) {
         Group settings = UIUtils.createControlGroup(parent, "Settings", 2, GridData.FILL_HORIZONTAL, 0);
 
-        pathEdit = new TextWithOpenFolder(settings, "SQL Workbench/J path");
-        pathEdit.setText(CommonUtils.toString(getConfiguration().getProperty(SQLWorkbenchJConstants.PROP_WORKBENCH_PATH)));
+        UIUtils.createControlLabel(settings, label);
+        pathEdit = new TextWithOpenFolder(settings, label);
+        pathEdit.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         return parent;
     }

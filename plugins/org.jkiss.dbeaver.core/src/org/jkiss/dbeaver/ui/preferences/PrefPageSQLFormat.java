@@ -288,7 +288,9 @@ public class PrefPageSQLFormat extends TargetPrefPage
         }
 
         ((Composite)getControl()).layout(true, true);
-        enablePreferenceContent(useDataSourceSettings());
+        if (isDataSourcePreferencePage()) {
+            enablePreferenceContent(useDataSourceSettings());
+        }
     }
 
     private void formatSQL() {

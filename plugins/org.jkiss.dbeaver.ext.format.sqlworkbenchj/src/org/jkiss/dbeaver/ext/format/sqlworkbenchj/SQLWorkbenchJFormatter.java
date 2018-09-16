@@ -36,7 +36,8 @@ public class SQLWorkbenchJFormatter implements SQLFormatter {
     public String format(String source, SQLFormatterConfiguration configuration) {
         String workbenchPath = CommonUtils.toString(configuration.getPreferenceStore().getString(SQLWorkbenchJConstants.PROP_WORKBENCH_PATH));
         if (CommonUtils.isEmpty(workbenchPath)) {
-            workbenchPath = "C:\\Java\\SQLWorkbenchJ\\";
+            log.error("SQL Workbench/J path not set");
+            return source;
         }
 
         try {
