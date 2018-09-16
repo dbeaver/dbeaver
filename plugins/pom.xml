@@ -33,6 +33,7 @@
         <module>org.jkiss.dbeaver.ext.firebird</module>
         <module>org.jkiss.dbeaver.ext.generic</module>
         <module>org.jkiss.dbeaver.ext.import_config</module>
+        <module>org.jkiss.dbeaver.ext.format.sqlworkbenchj</module>
         <module>org.jkiss.dbeaver.ext.h2</module>
         <module>org.jkiss.dbeaver.ext.hana</module>
         <module>org.jkiss.dbeaver.ext.hsqldb</module>
