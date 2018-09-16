@@ -53,8 +53,11 @@ public class SQLWorkbenchJManager {
 
     public SQLWorkbenchJManager(File wbPath) throws DBException {
         this.workbenchPath = wbPath;
+        File wbJar = new File(workbenchPath, "sqlworkbench.jar");
+        if (!wbJar.exists()) {
+            throw new DBException("SQL Workbench/J jar file not found: " + wbJar.getAbsolutePath());
+        }
         try {
-            File wbJar = new File(workbenchPath, "sqlworkbench.jar");
 
             wbClassLoader = new URLClassLoader(new URL[] { wbJar.toURI().toURL() });
             Class<?> wbManagerClass = wbClassLoader.loadClass("workbench.WbManager");
@@ -77,6 +80,8 @@ public class SQLWorkbenchJManager {
                 formatType = "postgresql";
             } else if (driverClassName.contains("oracle")) {
                 formatType = "oracle";
+            } else if (driverClassName.contains("db2")) {
+                formatType = "db2";
             }
             Object wbFormatterInstance = wbFormatterClass.getConstructor(CharSequence.class, String.class).newInstance(source, formatType);
             Object formatResult = wbFormatterClass.getMethod("getFormattedSql").invoke(wbFormatterInstance);
