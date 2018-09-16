@@ -206,6 +206,11 @@ public class UIIcon {
 
     public static final DBIcon DRIVER_MANAGER = new DBIcon("driver_manager.png"); //$NON-NLS-1$
 
+    public static final DBIcon CHART_BAR = new DBIcon("chart_bar", "chart/chart_bar.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon CHART_CURVE = new DBIcon("chart_curve", "chart/chart_curve.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon CHART_LINE = new DBIcon("chart_line", "chart/chart_line.png"); //$NON-NLS-1$ //$NON-NLS-2$
+    public static final DBIcon CHART_PIE = new DBIcon("chart_pie", "chart/chart_pie.png"); //$NON-NLS-1$ //$NON-NLS-2$
+
     static  {
         DBIcon.loadIcons(UIIcon.class);
     }
