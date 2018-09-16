@@ -90,7 +90,12 @@ public abstract class ConnectionPageAbstract extends DialogPage implements IData
     {
         saveConnectionURL(dataSource.getConnectionConfiguration());
         if (savePasswordCheck != null) {
-            ((DataSourceDescriptor)dataSource).setSavePassword(savePasswordCheck.getSelection());
+            DataSourceDescriptor descriptor = (DataSourceDescriptor) dataSource;
+            descriptor.setSavePassword(savePasswordCheck.getSelection());
+
+            if (!descriptor.isSavePassword()) {
+                descriptor.resetPassword();
+            }
         }
     }
 
