@@ -201,6 +201,12 @@ public class SQLAutoIndentStrategy extends DefaultIndentLineAutoEditStrategy {
             	case '"':
             		inString = true;
             		break;
+                case '\n':
+                    // Line feed outside of actual query
+                    if (result.length() > 0 && result.charAt(result.length() - 1) != '\n') {
+                        result.append("\n");
+                    }
+                    break;
             	}
             }
             
