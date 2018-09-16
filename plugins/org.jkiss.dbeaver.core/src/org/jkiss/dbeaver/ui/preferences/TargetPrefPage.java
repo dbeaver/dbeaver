@@ -304,7 +304,9 @@ public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbe
 
     @Override
     public final boolean performOk() {
-        DBPPreferenceStore store = getTargetPreferenceStore();
+        DBPPreferenceStore store = isDataSourcePreferencePage() ?
+            getDataSourceContainer().getPreferenceStore() :
+            DBeaverCore.getGlobalPreferenceStore();
         if (isDataSourcePreferencePage() && !useDataSourceSettings()) {
             // Just delete datasource specific settings
             clearPreferences(store);
