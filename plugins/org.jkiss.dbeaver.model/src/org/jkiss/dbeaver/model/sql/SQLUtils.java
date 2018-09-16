@@ -58,7 +58,9 @@ public final class SQLUtils {
 
     private static final Log log = Log.getLog(SQLUtils.class);
 
-    private static final Pattern PATTERN_OUT_PARAM = Pattern.compile("((\\?)|(:[a-z0-9]+))\\s*:=");
+    public static final Pattern PATTERN_OUT_PARAM = Pattern.compile("((\\?)|(:[a-z0-9]+))\\s*:=");
+    public static final Pattern PATTERN_SIMPLE_NAME = Pattern.compile("[a-z][a-z0-9]*", Pattern.CASE_INSENSITIVE);
+
     private static final Pattern CREATE_PREFIX_PATTERN = Pattern.compile("(CREATE (:OR REPLACE)?).+", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
 
     private static final int MIN_SQL_DESCRIPTION_LENGTH = 512;
@@ -473,18 +475,20 @@ public final class SQLUtils {
             String orderString = null;
             if (co.getAttribute() instanceof DBDAttributeBindingMeta) {
                 String orderColumn = co.getAttribute().getName();
-                if (orderColumn.indexOf('(') != -1 ||
-                    orderColumn.indexOf('+') != -1 ||
-                    orderColumn.indexOf('-') != -1 ||
-                    orderColumn.indexOf('*') != -1 ||
-                    orderColumn.indexOf('|') != -1)
-                {
-                    // It is a function or expression
-                    orderString = orderColumn;
+                if (PATTERN_SIMPLE_NAME.matcher(orderColumn).matches()) {
+                    // It is a simple column.
+                    orderString = DBUtils.getObjectFullName(co.getAttribute(), DBPEvaluationContext.DML);
                 }
             }
             if (orderString == null) {
-                orderString = DBUtils.getObjectFullName(co.getAttribute(), DBPEvaluationContext.DML);
+                // Use position number
+                int orderIndex = filter.getConstraints().indexOf(co);
+                if (orderIndex != -1) {
+                    orderString = String.valueOf(orderIndex + 1);
+                } else {
+                    log.debug("Can't generate column order: no name and no position found");
+                    continue;
+                }
             }
             query.append(orderString);
             if (co.isOrderDescending()) {
