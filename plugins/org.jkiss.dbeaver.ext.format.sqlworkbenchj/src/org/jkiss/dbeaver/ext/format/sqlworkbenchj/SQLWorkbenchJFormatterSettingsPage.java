@@ -20,7 +20,7 @@ package org.jkiss.dbeaver.ext.format.sqlworkbenchj;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Group;
-import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.controls.TextWithOpenFolder;
 import org.jkiss.dbeaver.ui.editors.sql.format.BaseFormatterConfigurationPage;
@@ -34,19 +34,26 @@ public class SQLWorkbenchJFormatterSettingsPage extends BaseFormatterConfigurati
     private TextWithOpenFolder pathEdit;
 
     @Override
-    protected Composite createFormatSettings(Composite parent, SQLFormatterConfiguration configuration) {
+    protected Composite createFormatSettings(Composite parent) {
         Group settings = UIUtils.createControlGroup(parent, "Settings", 2, GridData.FILL_HORIZONTAL, 0);
 
         pathEdit = new TextWithOpenFolder(settings, "SQL Workbench/J path");
-        pathEdit.setText(CommonUtils.toString(configuration.getPreferenceStore().getString(SQLWorkbenchJConstants.PROP_WORKBENCH_PATH)));
+        pathEdit.setText(CommonUtils.toString(getConfiguration().getProperty(SQLWorkbenchJConstants.PROP_WORKBENCH_PATH)));
 
         return parent;
     }
 
     @Override
-    protected void saveFormatSettings(SQLFormatterConfiguration configuration) {
+    public void loadSettings(DBPPreferenceStore preferenceStore) {
+        super.loadSettings(preferenceStore);
+        pathEdit.setText(CommonUtils.toString(preferenceStore.getString(SQLWorkbenchJConstants.PROP_WORKBENCH_PATH)));
+    }
+
+    @Override
+    public void saveSettings(DBPPreferenceStore preferenceStore) {
+        super.saveSettings(preferenceStore);
         // Save formatter settings
-        configuration.getPreferenceStore().setValue(SQLWorkbenchJConstants.PROP_WORKBENCH_PATH, pathEdit.getText());
+        preferenceStore.setValue(SQLWorkbenchJConstants.PROP_WORKBENCH_PATH, pathEdit.getText());
     }
 
 

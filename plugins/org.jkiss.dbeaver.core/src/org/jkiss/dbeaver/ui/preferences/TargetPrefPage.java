@@ -51,8 +51,7 @@ import org.jkiss.dbeaver.utils.PrefUtils;
 /**
  * TargetPrefPage
  */
-public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage
-{
+public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage {
     static final Log log = Log.getLog(TargetPrefPage.class);
 
     private DBNDataSource containerNode;
@@ -61,12 +60,10 @@ public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbe
     private Link changeSettingsTargetLink;
     private ControlEnableState blockEnableState;
 
-    protected TargetPrefPage()
-    {
+    protected TargetPrefPage() {
     }
 
-    public final boolean isDataSourcePreferencePage()
-    {
+    public final boolean isDataSourcePreferencePage() {
         return containerNode != null;
     }
 
@@ -74,37 +71,34 @@ public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbe
 
     protected abstract boolean supportsDataSourceSpecificOptions();
 
-    protected void createPreferenceHeader(Composite composite)
-    {
+    protected void createPreferenceHeader(Composite composite) {
     }
 
     protected abstract Control createPreferenceContent(Composite composite);
 
     protected abstract void loadPreferences(DBPPreferenceStore store);
+
     protected abstract void savePreferences(DBPPreferenceStore store);
+
     protected abstract void clearPreferences(DBPPreferenceStore store);
 
     protected abstract String getPropertyPageID();
 
-    public DBPDataSourceContainer getDataSourceContainer()
-    {
+    public DBPDataSourceContainer getDataSourceContainer() {
         return containerNode == null ? null : containerNode.getObject();
     }
 
     @Override
-    public void init(IWorkbench workbench)
-    {
+    public void init(IWorkbench workbench) {
     }
 
     @Override
-    public IAdaptable getElement()
-    {
+    public IAdaptable getElement() {
         return containerNode;
     }
 
     @Override
-    public void setElement(IAdaptable element)
-    {
+    public void setElement(IAdaptable element) {
         if (element == null) {
             return;
         }
@@ -140,19 +134,16 @@ public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbe
     }
 
     @Override
-    protected Label createDescriptionLabel(Composite parent)
-    {
+    protected Label createDescriptionLabel(Composite parent) {
         if (isDataSourcePreferencePage()) {
             Composite composite = UIUtils.createPlaceholder(parent, 2);
             composite.setFont(parent.getFont());
             composite.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
 
             dataSourceSettingsButton = new Button(composite, SWT.CHECK);
-            dataSourceSettingsButton.addSelectionListener(new SelectionAdapter()
-            {
+            dataSourceSettingsButton.addSelectionListener(new SelectionAdapter() {
                 @Override
-                public void widgetSelected(SelectionEvent e)
-                {
+                public void widgetSelected(SelectionEvent e) {
                     boolean enabled = dataSourceSettingsButton.getSelection();
                     enableDataSourceSpecificSettings(enabled);
                 }
@@ -185,8 +176,7 @@ public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbe
      * @see org.eclipse.jface.preference.IPreferencePage#createContents(Composite)
      */
     @Override
-    protected Control createContents(Composite parent)
-    {
+    protected Control createContents(Composite parent) {
         Composite composite = UIUtils.createPlaceholder(parent, 1);
 
         configurationBlockControl = createPreferenceContent(composite);
@@ -198,9 +188,7 @@ public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbe
         }
 
         {
-            DBPPreferenceStore store = useDataSourceSettings() ?
-                getDataSourceContainer().getPreferenceStore() :
-                DBeaverCore.getGlobalPreferenceStore();
+            DBPPreferenceStore store = getTargetPreferenceStore();
             loadPreferences(store);
         }
 
@@ -208,18 +196,21 @@ public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbe
         return composite;
     }
 
-    private Link createLink(Composite composite, String text)
-    {
+    protected DBPPreferenceStore getTargetPreferenceStore() {
+        return useDataSourceSettings() ?
+            getDataSourceContainer().getPreferenceStore() :
+            DBeaverCore.getGlobalPreferenceStore();
+    }
+
+    private Link createLink(Composite composite, String text) {
         Link link = UIUtils.createLink(composite, "<A>" + text + "</A>", new SelectionListener() {
             @Override
-            public void widgetSelected(SelectionEvent e)
-            {
+            public void widgetSelected(SelectionEvent e) {
                 doLinkActivated((Link) e.widget);
             }
 
             @Override
-            public void widgetDefaultSelected(SelectionEvent e)
-            {
+            public void widgetDefaultSelected(SelectionEvent e) {
                 widgetSelected(e);
             }
         });
@@ -227,16 +218,14 @@ public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbe
         return link;
     }
 
-    protected void enableDataSourceSpecificSettings(boolean useProjectSpecificSettings)
-    {
+    protected void enableDataSourceSpecificSettings(boolean useProjectSpecificSettings) {
         dataSourceSettingsButton.setSelection(useProjectSpecificSettings);
         enablePreferenceContent(useProjectSpecificSettings);
         updateLinkVisibility();
         doStatusChanged();
     }
 
-    protected void doStatusChanged()
-    {
+    protected void doStatusChanged() {
 /*
         if (!isProjectPreferencePage() || useDataSourceSettings()) {
             updateStatus(fBlockStatus);
@@ -246,27 +235,25 @@ public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbe
 */
     }
 
-    protected void enablePreferenceContent(boolean enable)
-    {
+    protected void enablePreferenceContent(boolean enable) {
         if (enable) {
             if (blockEnableState != null) {
                 blockEnableState.restore();
                 blockEnableState = null;
             }
         } else {
-            if (blockEnableState == null) {
-                blockEnableState = ControlEnableState.disable(configurationBlockControl);
+            if (blockEnableState != null) {
+                blockEnableState.restore();
             }
+            blockEnableState = ControlEnableState.disable(configurationBlockControl);
         }
     }
 
-    protected boolean useDataSourceSettings()
-    {
+    protected boolean useDataSourceSettings() {
         return isDataSourcePreferencePage() && dataSourceSettingsButton != null && dataSourceSettingsButton.getSelection();
     }
 
-    private void updateLinkVisibility()
-    {
+    private void updateLinkVisibility() {
         if (changeSettingsTargetLink == null || changeSettingsTargetLink.isDisposed()) {
             return;
         }
@@ -277,8 +264,7 @@ public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbe
         }
     }
 
-    private void doLinkActivated(Link link)
-    {
+    private void doLinkActivated(Link link) {
         PreferenceDialog prefDialog = null;
         if (isDataSourcePreferencePage()) {
             // Show global settings
@@ -312,17 +298,13 @@ public abstract class TargetPrefPage extends AbstractPrefPage implements IWorkbe
     }
 
     @Override
-    protected void performApply()
-    {
+    protected void performApply() {
         performOk();
     }
 
     @Override
-    public final boolean performOk()
-    {
-        DBPPreferenceStore store = isDataSourcePreferencePage() ?
-            getDataSourceContainer().getPreferenceStore() :
-            DBeaverCore.getGlobalPreferenceStore();
+    public final boolean performOk() {
+        DBPPreferenceStore store = getTargetPreferenceStore();
         if (isDataSourcePreferencePage() && !useDataSourceSettings()) {
             // Just delete datasource specific settings
             clearPreferences(store);

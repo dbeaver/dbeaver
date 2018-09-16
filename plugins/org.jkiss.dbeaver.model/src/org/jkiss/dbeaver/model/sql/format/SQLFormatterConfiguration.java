@@ -51,13 +51,11 @@ public class SQLFormatterConfiguration {
     /**
      * Create formatter config with default (set in properties) formatter
      */
-    public SQLFormatterConfiguration(DBPDataSource dataSource, SQLSyntaxManager syntaxManager)
-    {
+    public SQLFormatterConfiguration(DBPDataSource dataSource, SQLSyntaxManager syntaxManager) {
         this(dataSource, syntaxManager, CommonUtils.notEmpty(syntaxManager.getPreferenceStore().getString(ModelPreferences.SQL_FORMAT_FORMATTER)).toUpperCase(Locale.ENGLISH));
     }
 
-    public SQLFormatterConfiguration(DBPDataSource dataSource, SQLSyntaxManager syntaxManager, String formatterId)
-    {
+    public SQLFormatterConfiguration(DBPDataSource dataSource, SQLSyntaxManager syntaxManager, String formatterId) {
         this.dataSource = dataSource;
         this.syntaxManager = syntaxManager;
         this.keywordCase = syntaxManager.getKeywordCase();
@@ -69,8 +67,7 @@ public class SQLFormatterConfiguration {
         return dataSource;
     }
 
-    public SQLSyntaxManager getSyntaxManager()
-    {
+    public SQLSyntaxManager getSyntaxManager() {
         return syntaxManager;
     }
 
@@ -84,19 +81,16 @@ public class SQLFormatterConfiguration {
             ModelPreferences.SQL_FORMAT_FORMATTER, formatterId.toUpperCase(Locale.ENGLISH));
     }
 
-    public String getIndentString()
-    {
+    public String getIndentString() {
         return indentString;
     }
 
-    public void setIndentString(String indentString)
-    {
+    public void setIndentString(String indentString) {
         this.indentString = indentString;
     }
 
     @NotNull
-    public DBPIdentifierCase getKeywordCase()
-    {
+    public DBPIdentifierCase getKeywordCase() {
         return keywordCase;
     }
 
@@ -119,6 +113,10 @@ public class SQLFormatterConfiguration {
 
     public Object getProperty(String name) {
         return properties.get(name);
+    }
+
+    public void setProperty(String name, Object value) {
+        properties.put(name, value);
     }
 
     public void setProperties(Map<String, Object> properties) {

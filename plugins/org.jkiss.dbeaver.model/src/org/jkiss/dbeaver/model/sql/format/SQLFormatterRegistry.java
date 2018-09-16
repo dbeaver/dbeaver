@@ -30,10 +30,4 @@ public interface SQLFormatterRegistry {
     @Nullable
     SQLFormatter createFormatter(@NotNull SQLFormatterConfiguration configuration);
 
-    /**
-     * Creates and configures new formatter. Interacts with user in needed.
-     */
-    @Nullable
-    SQLFormatter createAndConfigureFormatter(@NotNull SQLFormatterConfiguration configuration);
-
 }

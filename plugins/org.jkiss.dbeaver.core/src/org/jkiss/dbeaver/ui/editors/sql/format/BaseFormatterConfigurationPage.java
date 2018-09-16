@@ -16,23 +16,29 @@
  */
 package org.jkiss.dbeaver.ui.editors.sql.format;
 
-import org.eclipse.jface.dialogs.IDialogConstants;
-import org.eclipse.jface.wizard.IWizardPage;
-import org.eclipse.jface.wizard.Wizard;
-import org.eclipse.jface.wizard.WizardDialog;
-import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.jface.dialogs.DialogPage;
 import org.eclipse.swt.widgets.Composite;
-import org.jkiss.dbeaver.model.sql.format.SQLFormatter;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatterConfiguration;
-import org.jkiss.dbeaver.ui.editors.sql.registry.SQLFormatterConfigurer;
-import org.jkiss.dbeaver.ui.UIUtils;
-import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
+import org.jkiss.dbeaver.ui.editors.sql.registry.SQLFormatterConfigurator;
+import org.jkiss.dbeaver.ui.editors.sql.registry.SQLFormatterDescriptor;
 
-public abstract class BaseFormatterConfigurationPage extends ActiveWizardPage implements SQLFormatterConfigurer {
+public abstract class BaseFormatterConfigurationPage extends DialogPage implements SQLFormatterConfigurator {
+
+    private SQLFormatterDescriptor formatterDescriptor;
+    private SQLFormatterConfiguration configuration;
 
     public BaseFormatterConfigurationPage()
     {
         super("SQL Format");
+    }
+
+    public SQLFormatterDescriptor getFormatterDescriptor() {
+        return formatterDescriptor;
+    }
+
+    public SQLFormatterConfiguration getConfiguration() {
+        return configuration;
     }
 
     @Override
@@ -43,64 +49,28 @@ public abstract class BaseFormatterConfigurationPage extends ActiveWizardPage im
     @Override
     public final void createControl(Composite parent) {
         setTitle("SQL Format Configuration");
-        setDescription(getWizard().getFormaterName());
-        Composite composite = createFormatSettings(parent, getWizard().getConfiguration());
-
+        setDescription(formatterDescriptor.getDescription());
+        Composite composite = createFormatSettings(parent);
 
 
         setControl(composite);
     }
 
-    @Override
-    public ConfigWizard getWizard() {
-        return (ConfigWizard)super.getWizard();
-    }
-
-    protected abstract Composite createFormatSettings(Composite parent, SQLFormatterConfiguration configuration);
-
-    protected abstract void saveFormatSettings(SQLFormatterConfiguration configuration);
+    protected abstract Composite createFormatSettings(Composite parent);
 
     @Override
-    public boolean configure(String formatName, SQLFormatter formatter, SQLFormatterConfiguration configuration) {
-        Wizard wizard = new ConfigWizard(formatName, configuration);
-        wizard.addPage(this);
-        WizardDialog configDialog = new WizardDialog(UIUtils.getActiveWorkbenchShell(), wizard) {
-            @Override
-            protected void createButtonsForButtonBar(Composite parent) {
-                super.createButtonsForButtonBar(parent);
-                UIUtils.createCheckbox(parent, "Don't show again", false);
-                ((GridLayout)parent.getLayout()).numColumns++;
-            }
-        };
-        return configDialog.open() == IDialogConstants.OK_ID;
+    public void configure(SQLFormatterDescriptor formatterDescriptor) {
+        this.formatterDescriptor = formatterDescriptor;
+        this.configuration = configuration;
     }
 
-    protected static class ConfigWizard extends Wizard {
-        private final SQLFormatterConfiguration configuration;
-        private String formaterName;
+    @Override
+    public void loadSettings(DBPPreferenceStore preferenceStore) {
 
-        public ConfigWizard(String formaterName, SQLFormatterConfiguration configuration) {
-            setWindowTitle("SQL Format");
-            this.formaterName = formaterName;
-            this.configuration = configuration;
-        }
+    }
 
-        public SQLFormatterConfiguration getConfiguration() {
-            return configuration;
-        }
+    @Override
+    public void saveSettings(DBPPreferenceStore preferenceStore) {
 
-        @Override
-        public boolean performFinish() {
-            for (IWizardPage page : getPages()) {
-                if (page instanceof BaseFormatterConfigurationPage) {
-                    ((BaseFormatterConfigurationPage) page).saveFormatSettings(this.configuration);
-                }
-            }
-            return true;
-        }
-
-        public String getFormaterName() {
-            return formaterName;
-        }
     }
 }
