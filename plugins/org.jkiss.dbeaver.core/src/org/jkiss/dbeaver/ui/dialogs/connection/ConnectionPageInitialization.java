@@ -82,9 +82,6 @@ class ConnectionPageInitialization extends ConnectionWizardPage {
     private Combo defaultSchema;
     private Spinner keepAliveInterval;
 
-    private Button showSystemObjects;
-    private Button showUtilityObjects;
-    private Button readOnlyConnection;
     private Font boldFont;
 
     private boolean activated = false;
@@ -121,9 +118,6 @@ class ConnectionPageInitialization extends ConnectionWizardPage {
                 // Get settings from data source descriptor
                 final DBPConnectionConfiguration conConfig = dataSourceDescriptor.getConnectionConfiguration();
                 autocommit.setSelection(dataSourceDescriptor.isDefaultAutoCommit());
-                showSystemObjects.setSelection(dataSourceDescriptor.isShowSystemObjects());
-                showUtilityObjects.setSelection(dataSourceDescriptor.isShowUtilityObjects());
-                readOnlyConnection.setSelection(dataSourceDescriptor.isConnectionReadOnly());
                 isolationLevel.add("");
 
                 DataSourceDescriptor originalDataSource = getWizard().getOriginalDataSource();
@@ -154,9 +148,6 @@ class ConnectionPageInitialization extends ConnectionWizardPage {
             }
         } else {
             // Default settings
-            showSystemObjects.setSelection(true);
-            showUtilityObjects.setSelection(false);
-            readOnlyConnection.setSelection(false);
             isolationLevel.setEnabled(false);
             defaultSchema.setText("");
         }
@@ -233,33 +224,6 @@ class ConnectionPageInitialization extends ConnectionWizardPage {
                     });
                 }
             }
-
-            {
-                Group miscGroup = UIUtils.createControlGroup(
-                    optionsGroup,
-                    CoreMessages.dialog_connection_wizard_final_group_misc,
-                    1, GridData.VERTICAL_ALIGN_BEGINNING, 0);
-
-                showSystemObjects = UIUtils.createCheckbox(
-                    miscGroup,
-                    CoreMessages.dialog_connection_wizard_final_checkbox_show_system_objects,
-                    dataSourceDescriptor == null || dataSourceDescriptor.isShowSystemObjects());
-                showSystemObjects.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-
-                showUtilityObjects = UIUtils.createCheckbox(
-                    miscGroup,
-                    CoreMessages.dialog_connection_wizard_final_checkbox_show_util_objects,
-                    dataSourceDescriptor == null || dataSourceDescriptor.isShowUtilityObjects());
-                showUtilityObjects.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-
-                readOnlyConnection = UIUtils.createCheckbox(
-                    miscGroup,
-                    CoreMessages.dialog_connection_wizard_final_checkbox_connection_readonly,
-                    dataSourceDescriptor != null && dataSourceDescriptor.isConnectionReadOnly());
-                gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
-                //gd.horizontalSpan = 2;
-                readOnlyConnection.setLayoutData(gd);
-            }
         }
 
         setControl(group);
@@ -292,12 +256,6 @@ class ConnectionPageInitialization extends ConnectionWizardPage {
             log.error(e);
         }
         dataSource.setDefaultActiveObject(defaultSchema.getText());
-        dataSource.setShowSystemObjects(showSystemObjects.getSelection());
-        dataSource.setShowUtilityObjects(showUtilityObjects.getSelection());
-        dataSource.setConnectionReadOnly(readOnlyConnection.getSelection());
-        if (!dataSource.isSavePassword()) {
-            dataSource.resetPassword();
-        }
 
         final DBPConnectionConfiguration confConfig = dataSource.getConnectionConfiguration();
 
