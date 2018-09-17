@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping;
 
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBeaverPreferences;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
@@ -201,10 +203,16 @@ public class GroupingResultsContainer implements IResultSetContainer {
             if (i > 0) sql.append(", ");
             sql.append(groupAttributes.get(i));
         }
+        boolean isDefaultGrouping = groupFunctions.size() == 1 && groupFunctions.get(0).equals(DEFAULT_FUNCTION);
+
+        boolean isShowDuplicatesOnly = dataContainer.getDataSource().getContainer().getPreferenceStore().getBoolean(DBeaverPreferences.RS_GROUPING_SHOW_DUPLICATES_ONLY);
+        if (isDefaultGrouping && isShowDuplicatesOnly) {
+            sql.append("\nHAVING ").append(DEFAULT_FUNCTION).append(" > 1");
+        }
 
         dataContainer.setGroupingQuery(sql.toString());
         DBDDataFilter dataFilter = new DBDDataFilter();
-        if (groupFunctions.size() == 1 && groupFunctions.get(0).equals(DEFAULT_FUNCTION)) {
+        if (isDefaultGrouping) {
             // By default sort by count in desc order
             int countPosition = groupAttributes.size() + 1;
             dataFilter.setOrder(String.valueOf(countPosition) + " DESC");
