@@ -115,6 +115,13 @@ public class OpenHandler extends AbstractDataSourceHandler {
     public static void openNewEditor(IWorkbenchWindow workbenchWindow, DBPDataSourceContainer dataSourceContainer, ISelection selection) throws CoreException {
         IProject project = dataSourceContainer != null ? dataSourceContainer.getRegistry().getProject() : DBeaverCore.getInstance().getProjectRegistry().getActiveProject();
         checkProjectIsOpen(project);
+        IFolder folder = getCurrentScriptFolder(selection);
+        IFile scriptFile = ResourceUtils.createNewScript(project, folder, dataSourceContainer);
+
+        NavigatorHandlerObjectOpen.openResource(scriptFile, workbenchWindow);
+    }
+
+    public  static IFolder getCurrentScriptFolder(ISelection selection) {
         IFolder folder = null;
         if (selection != null && !selection.isEmpty() && selection instanceof IStructuredSelection) {
             final Object element = ((IStructuredSelection) selection).getFirstElement();
@@ -122,10 +129,7 @@ public class OpenHandler extends AbstractDataSourceHandler {
                 folder = (IFolder) ((DBNResource)element).getResource();
             }
         }
-
-        IFile scriptFile = ResourceUtils.createNewScript(project, folder, dataSourceContainer);
-
-        NavigatorHandlerObjectOpen.openResource(scriptFile, workbenchWindow);
+        return folder;
     }
 
     private static void openNewEditor(ExecutionEvent event) throws CoreException {
@@ -237,7 +241,7 @@ public class OpenHandler extends AbstractDataSourceHandler {
         }
     }
 
-    private static void checkProjectIsOpen(final IProject project) throws CoreException {
+    public static void checkProjectIsOpen(final IProject project) throws CoreException {
         if (project == null) {
         	throw new CoreException(GeneralUtils.makeExceptionStatus(new IllegalStateException("No active project.")));
         }
