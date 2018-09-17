@@ -1495,6 +1495,9 @@ public class ResultSetViewer extends Viewer
             constraint.setOrderPosition(0);
             constraint.setOrderDescending(false);
         }
+        // Remove custom ordering. We can't use both custom and attribute-based ordering at once
+        // Also it is required to implement default grouping ordering (count desc)
+        dataFilter.setOrder(null);
 
         if (!ResultSetUtils.isServerSideFiltering(this) || !this.isHasMoreData()) {
             if (!this.checkForChanges()) {
