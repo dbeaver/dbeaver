@@ -203,7 +203,14 @@ public class GroupingResultsContainer implements IResultSetContainer {
         }
 
         dataContainer.setGroupingQuery(sql.toString());
-        groupingViewer.refresh();
+        DBDDataFilter dataFilter = new DBDDataFilter();
+        if (groupFunctions.size() == 1 && groupFunctions.get(0).equals(DEFAULT_FUNCTION)) {
+            // By default sort by count in desc order
+            int countPosition = groupAttributes.size() + 1;
+            dataFilter.setOrder(String.valueOf(countPosition) + " DESC");
+        }
+        groupingViewer.setDataFilter(dataFilter, true);
+        //groupingViewer.refresh();
     }
 
     public void setGrouping(List<String> attributes, List<String> functions) {
