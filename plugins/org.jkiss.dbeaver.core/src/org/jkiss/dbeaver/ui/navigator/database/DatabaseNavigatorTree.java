@@ -537,7 +537,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
     private static class CustomFilteredTree extends FilteredTree {
         CustomFilteredTree(DatabaseNavigatorTree navigatorTree, int treeStyle) {
             super(navigatorTree, treeStyle, new TreeFilter(navigatorTree.navigatorFilter), true);
-            setInitialText("Type part of object name to filter");
+            setInitialText("Enter a part of table name here");
             ((GridLayout)getLayout()).verticalSpacing = 0;
 
             UIUtils.addDefaultEditActionsSupport(UIUtils.getActiveWorkbenchWindow(), getFilterControl());
