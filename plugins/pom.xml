@@ -59,6 +59,7 @@
         <module>org.jkiss.dbeaver.ext.sample.database</module>
         <module>org.jkiss.dbeaver.ext.ui.locks</module>
         <module>org.jkiss.dbeaver.ext.ui.svg</module>
+	    <module>org.jkiss.dbeaver.ext.ui.colortheme</module>
         <module>org.jkiss.dbeaver.ext.mockdata</module>
         <module>org.jkiss.dbeaver.data.office</module>
         <module>org.jkiss.dbeaver.data.gis</module>

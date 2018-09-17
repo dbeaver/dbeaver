@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<eclipseColorThemeMapping plugin="org.jkiss.dbeaver.core" created="2018-09-18 23:30:00">
+    <mappings>
+        <mapping pluginKey="org.jkiss.dbeaver.sql.editor.color.datatype.foreground" themeKey="class"/><!-- Type -->
+        <mapping pluginKey="org.jkiss.dbeaver.sql.editor.color.keyword.foreground" themeKey="keyword"/><!-- Keyword -->
+        <mapping pluginKey="org.jkiss.dbeaver.sql.editor.color.string.foreground" themeKey="string"/><!-- String -->
+        <mapping pluginKey="org.jkiss.dbeaver.sql.editor.color.text.foreground" themeKey="foreground"/><!-- Default -->
+        <mapping pluginKey="org.jkiss.dbeaver.sql.editor.color.comment.foreground" themeKey="singleLineComment"/><!-- Single Line Comment -->
+        <mapping pluginKey="org.jkiss.dbeaver.sql.editor.color.number.foreground" themeKey="number"/><!-- Number -->
+        <mapping pluginKey="org.jkiss.dbeaver.sql.editor.color.comment.foreground" themeKey="multiLineComment"/><!-- Comment -->
+        <mapping pluginKey="org.jkiss.dbeaver.sql.editor.color.command.foreground" themeKey="method"/><!-- Command -->
+        <mapping pluginKey="org.jkiss.dbeaver.sql.editor.color.parameter.foreground" themeKey="parameterVariable"/><!-- Optional Argument -->
+        <mapping pluginKey="org.jkiss.dbeaver.sql.editor.color.delimiter.foreground" themeKey="annotation"/><!-- Special Character -->
+    </mappings>
+</eclipseColorThemeMapping>
