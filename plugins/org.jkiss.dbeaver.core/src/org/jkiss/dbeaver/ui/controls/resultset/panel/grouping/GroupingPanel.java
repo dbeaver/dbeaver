@@ -28,7 +28,9 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.ISharedImages;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
@@ -149,9 +151,11 @@ public class GroupingPanel implements IResultSetPanel {
 
     private void fillToolBar(IContributionManager contributionManager)
     {
-        contributionManager.add(new EditColumnsAction(resultsContainer));
+        contributionManager.add(new DuplicatesOnlyAction());
         contributionManager.add(new Separator());
+        contributionManager.add(new EditColumnsAction(resultsContainer));
         contributionManager.add(new DeleteColumnAction(resultsContainer));
+        contributionManager.add(new Separator());
         contributionManager.add(new ClearGroupingAction(resultsContainer));
     }
 
@@ -222,6 +226,34 @@ public class GroupingPanel implements IResultSetPanel {
         public void run() {
             resultsContainer.clearGrouping();
             resultsContainer.getOwnerPresentation().getController().updatePanelActions();
+        }
+    }
+
+    class DuplicatesOnlyAction extends Action {
+        public DuplicatesOnlyAction() {
+            super(CoreMessages.controls_resultset_grouping_show_duplicates_only, Action.AS_CHECK_BOX);
+            setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.GROUP_BY_ATTR));
+        }
+
+        @Override
+        public boolean isChecked() {
+            DBPDataSource dataSource = resultsContainer.getDataContainer().getDataSource();
+            return dataSource != null && dataSource.getContainer().getPreferenceStore().getBoolean(DBeaverPreferences.RS_GROUPING_SHOW_DUPLICATES_ONLY);
+        }
+
+        @Override
+        public void run() {
+            boolean newValue = !isChecked();
+            DBPDataSource dataSource = resultsContainer.getDataContainer().getDataSource();
+            if (dataSource == null) {
+                return;
+            }
+            dataSource.getContainer().getPreferenceStore().setValue(DBeaverPreferences.RS_GROUPING_SHOW_DUPLICATES_ONLY, newValue);
+            try {
+                resultsContainer.rebuildGrouping();
+            } catch (DBException e) {
+                DBUserInterface.getInstance().showError("Grouping error", "Can't change duplicates presentation", e);
+            }
         }
     }
 

@@ -272,6 +272,7 @@ public class CoreMessages extends NLS {
 	public static String controls_resultset_grouping_edit;
 	public static String controls_resultset_grouping_remove_column;
 	public static String controls_resultset_grouping_clear;
+	public static String controls_resultset_grouping_show_duplicates_only;
 
 	public static String controls_resultset_viewer_action_edit;
 	public static String controls_resultset_viewer_action_order_filter;
