@@ -111,7 +111,7 @@ public class EntityAddCommand extends Command
                             newBounds.height = size.height;
                             entityPart.modifyBounds(newBounds);
 
-                            curLocation.x += size.width + 20;
+                            curLocation.x += size.width + (size.width / 2);
                             break;
                         }
                     }
