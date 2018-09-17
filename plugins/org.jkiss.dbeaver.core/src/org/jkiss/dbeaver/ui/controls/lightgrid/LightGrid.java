@@ -2306,7 +2306,7 @@ public abstract class LightGrid extends Canvas {
         List<GridColumn> children = column.getChildren();
         int paintHeight = columnHeight;
         if (CommonUtils.isEmpty(children)) {
-            paintHeight = columnHeight * (maxColumnDepth - level + 1);
+            paintHeight = columnHeight + (headerHeight - y - columnHeight);
         }
         Rectangle bounds = new Rectangle(x, y, column.getWidth(), paintHeight);
         boolean hover = hoveringOnHeader && hoveringColumn == column;
