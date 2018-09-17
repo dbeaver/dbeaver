@@ -16,16 +16,14 @@
  */
 package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping;
 
-import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IContributionManager;
-import org.eclipse.jface.action.Separator;
-import org.eclipse.jface.action.ToolBarManager;
+import org.eclipse.jface.action.*;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.viewers.SelectionChangedEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.Menu;
 import org.eclipse.ui.ISharedImages;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
@@ -50,9 +48,9 @@ public class GroupingPanel implements IResultSetPanel {
 
     //private static final Log log = Log.getLog(GroupingPanel.class);
 
-    public static final String PANEL_ID = "results-grouping";
+    private static final String PANEL_ID = "results-grouping";
 
-    public static final String SETTINGS_SECTION_GROUPING = "panel-" + PANEL_ID;
+    private static final String SETTINGS_SECTION_GROUPING = "panel-" + PANEL_ID;
 
     private IResultSetPresentation presentation;
     private IDialogSettings panelSettings;
@@ -151,6 +149,7 @@ public class GroupingPanel implements IResultSetPanel {
 
     private void fillToolBar(IContributionManager contributionManager)
     {
+        contributionManager.add(new DefaultSortingAction());
         contributionManager.add(new DuplicatesOnlyAction());
         contributionManager.add(new Separator());
         contributionManager.add(new EditColumnsAction(resultsContainer));
@@ -160,16 +159,16 @@ public class GroupingPanel implements IResultSetPanel {
     }
 
     abstract static class GroupingAction extends Action {
-        protected final GroupingResultsContainer resultsContainer;
+        final GroupingResultsContainer resultsContainer;
 
-        public GroupingAction(GroupingResultsContainer resultsContainer, String text, ImageDescriptor image) {
+        GroupingAction(GroupingResultsContainer resultsContainer, String text, ImageDescriptor image) {
             super(text, image);
             this.resultsContainer = resultsContainer;
         }
     }
 
     static class EditColumnsAction extends GroupingAction {
-        public EditColumnsAction(GroupingResultsContainer resultsContainer) {
+        EditColumnsAction(GroupingResultsContainer resultsContainer) {
             super(resultsContainer, CoreMessages.controls_resultset_grouping_edit, DBeaverIcons.getImageDescriptor(UIIcon.OBJ_ADD));
         }
 
@@ -187,7 +186,7 @@ public class GroupingPanel implements IResultSetPanel {
     }
 
     static class DeleteColumnAction extends GroupingAction {
-        public DeleteColumnAction(GroupingResultsContainer resultsContainer) {
+        DeleteColumnAction(GroupingResultsContainer resultsContainer) {
             super(resultsContainer, CoreMessages.controls_resultset_grouping_remove_column, DBeaverIcons.getImageDescriptor(UIIcon.ACTION_OBJECT_DELETE));
         }
 
@@ -213,7 +212,7 @@ public class GroupingPanel implements IResultSetPanel {
     }
 
     static class ClearGroupingAction extends GroupingAction {
-        public ClearGroupingAction(GroupingResultsContainer resultsContainer) {
+        ClearGroupingAction(GroupingResultsContainer resultsContainer) {
             super(resultsContainer, CoreMessages.controls_resultset_grouping_clear, UIUtils.getShardImageDescriptor(ISharedImages.IMG_ETOOL_CLEAR));
         }
 
@@ -229,8 +228,81 @@ public class GroupingPanel implements IResultSetPanel {
         }
     }
 
+    class DefaultSortingAction extends Action implements IMenuCreator {
+        DefaultSortingAction() {
+            super(CoreMessages.controls_resultset_grouping_default_sorting, Action.AS_DROP_DOWN_MENU);
+            setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.DROP_DOWN));
+        }
+
+        @Override
+        public IMenuCreator getMenuCreator() {
+            return this;
+        }
+
+        @Override
+        public void dispose() {
+
+        }
+
+        @Override
+        public Menu getMenu(Control parent)
+        {
+            MenuManager menuManager = new MenuManager();
+            menuManager.add(new ChangeSortingAction(null));
+            menuManager.add(new ChangeSortingAction(Boolean.FALSE));
+            menuManager.add(new ChangeSortingAction(Boolean.TRUE));
+            return menuManager.createContextMenu(parent);
+        }
+
+        @Override
+        public Menu getMenu(Menu parent) {
+            return null;
+        }
+    }
+
+    class ChangeSortingAction extends Action {
+        private final Boolean descending;
+
+        ChangeSortingAction(Boolean descending) {
+            super(descending == null ? "Unsorted" : (descending ? "Decending" : "Ascending"), Action.AS_CHECK_BOX);
+            setImageDescriptor(DBeaverIcons.getImageDescriptor(descending == null ? UIIcon.SORT_UNKNOWN : (descending ? UIIcon.SORT_INCREASE : UIIcon.SORT_DECREASE)));
+            this.descending = descending;
+        }
+
+        @Override
+        public boolean isChecked() {
+            DBPDataSource dataSource = resultsContainer.getDataContainer().getDataSource();
+            if (dataSource == null) {
+                return false;
+            }
+            String defSorting = dataSource.getContainer().getPreferenceStore().getString(DBeaverPreferences.RS_GROUPING_DEFAULT_SORTING);
+            if (CommonUtils.isEmpty(defSorting)) {
+                return descending == null;
+            } else if (defSorting.equals("ASC")) {
+                return Boolean.FALSE.equals(descending);
+            } else {
+                return Boolean.TRUE.equals(descending);
+            }
+        }
+
+        @Override
+        public void run() {
+            String newValue = descending == null ? "" : (descending ? "DESC" : "ASC");
+            DBPDataSource dataSource = resultsContainer.getDataContainer().getDataSource();
+            if (dataSource == null) {
+                return;
+            }
+            dataSource.getContainer().getPreferenceStore().setValue(DBeaverPreferences.RS_GROUPING_DEFAULT_SORTING, newValue);
+            try {
+                resultsContainer.rebuildGrouping();
+            } catch (DBException e) {
+                DBUserInterface.getInstance().showError("Grouping error", "Can't change duplicates presentation", e);
+            }
+        }
+    }
+
     class DuplicatesOnlyAction extends Action {
-        public DuplicatesOnlyAction() {
+        DuplicatesOnlyAction() {
             super(CoreMessages.controls_resultset_grouping_show_duplicates_only, Action.AS_CHECK_BOX);
             setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.GROUP_BY_ATTR));
         }

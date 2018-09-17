@@ -30,6 +30,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.view.EmptyPresentation;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -198,7 +199,9 @@ public class GroupingResultsContainer implements IResultSetContainer {
         }
         sql.append(" FROM (\n");
         sql.append(queryText);
-        sql.append(") src\nGROUP BY ");
+        sql.append(") src");
+
+        sql.append("\nGROUP BY ");
         for (int i = 0; i < groupAttributes.size(); i++) {
             if (i > 0) sql.append(", ");
             sql.append(groupAttributes.get(i));
@@ -212,10 +215,12 @@ public class GroupingResultsContainer implements IResultSetContainer {
 
         dataContainer.setGroupingQuery(sql.toString());
         DBDDataFilter dataFilter = new DBDDataFilter();
-        if (isDefaultGrouping) {
+
+        String defaultSorting = dataContainer.getDataSource().getContainer().getPreferenceStore().getString(DBeaverPreferences.RS_GROUPING_DEFAULT_SORTING);
+        if (!CommonUtils.isEmpty(defaultSorting) && isDefaultGrouping) {
             // By default sort by count in desc order
             int countPosition = groupAttributes.size() + 1;
-            dataFilter.setOrder(String.valueOf(countPosition) + " DESC");
+            dataFilter.setOrder(String.valueOf(countPosition) + " " + defaultSorting);
         }
         groupingViewer.setDataFilter(dataFilter, true);
         //groupingViewer.refresh();
