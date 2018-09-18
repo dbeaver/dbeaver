@@ -5,7 +5,7 @@ Bundle-Vendor: %Bundle-Vendor
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.ui.colortheme;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Release-Date: 20180924
-Require-Bundle: com.github.eclipsecolortheme
+Require-Bundle: com.github.eclipsecolortheme;resolution:=optional
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ClassPath: .
