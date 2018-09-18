@@ -3223,38 +3223,6 @@
             <description>%colorDefinition.org.jkiss.dbeaver.txn.color.transaction.background.description</description>
         </colorDefinition>
 
-<!--
-        <theme id="org.eclipse.e4.ui.css.theme.e4_dark" label="DBeaver Colors for Dark Theme">
-            <colorOverride id="org.jkiss.dbeaver.sql.resultset.color.cell.odd.background" value="16,16,16"/>
-            <colorOverride id="org.jkiss.dbeaver.sql.resultset.color.cell.modified.background" value="210,68,0"/>
-            <colorOverride id="org.jkiss.dbeaver.sql.resultset.color.cell.error.background" value="128,0,0"/>
-            <colorOverride id="org.jkiss.dbeaver.sql.resultset.color.cell.new.background" value="0,115,0"/>
-            <colorOverride id="org.jkiss.dbeaver.sql.resultset.color.cell.deleted.background" value="140,0,0"/>
-            <colorOverride id="org.jkiss.dbeaver.sql.resultset.color.cell.matched.background" value="139,69,19"/>
-            <colorOverride id="org.jkiss.dbeaver.sql.resultset.color.lines.normal" value="64,64,64"/>
-            <colorOverride id="org.jkiss.dbeaver.sql.resultset.color.lines.selected" value="105,105,105"/>
-            <colorOverride id="org.jkiss.dbeaver.sql.resultset.color.header.background" value="120,120,120"/>
-            <colorOverride id="org.jkiss.dbeaver.sql.resultset.color.header.foreground" value="255,255,255"/>
-            <colorOverride id="org.jkiss.dbeaver.sql.resultset.color.header.selected.background" value="105,105,150"/>
-            <colorOverride id="org.jkiss.dbeaver.sql.resultset.color.null.foreground" value="100,100,100"/>
-            <colorOverride id="org.jkiss.dbeaver.sql.resultset.color.binary.foreground" value="100,100,100"/>
-            <colorOverride id="org.jkiss.dbeaver.sql.resultset.color.boolean.foreground" value="255,0,0"/>
-            <colorOverride id="org.jkiss.dbeaver.sql.resultset.color.datetime.foreground" value="0,191,0"/>
-            <colorOverride id="org.jkiss.dbeaver.sql.resultset.color.numeric.foreground" value="64,64,255"/>
-            <colorOverride id="org.jkiss.dbeaver.sql.resultset.color.string.foreground" value="111,111,111"/>
-
-            <colorOverride id="org.jkiss.dbeaver.sql.editor.color.text.foreground" value="221,221,221"/>
-            <colorOverride id="org.jkiss.dbeaver.sql.editor.color.text.background" value="65,70,74"/>
-            <colorOverride id="org.jkiss.dbeaver.sql.editor.color.disabled.background" value="0,0,0"/>
-            <colorOverride id="org.jkiss.dbeaver.sql.editor.color.keyword.foreground" value="255,128,64"/>
-            <colorOverride id="org.jkiss.dbeaver.sql.editor.color.datatype.foreground" value="255,255,128"/>
-            <colorOverride id="org.jkiss.dbeaver.sql.editor.color.string.foreground" value="144,238,144"/>
-            <colorOverride id="org.jkiss.dbeaver.sql.editor.color.number.foreground" value="0,128,128"/>
-            <colorOverride id="org.jkiss.dbeaver.sql.editor.color.comment.foreground" value="169,169,169"/>
-            <colorOverride id="org.jkiss.dbeaver.sql.editor.color.delimiter.foreground" value="255,0,0"/>
-        </theme>
--->
-
     </extension>
 
     <extension point="org.eclipse.ui.exportWizards">
