@@ -153,7 +153,7 @@ public class SSHTunnelConfiguratorUI implements IObjectPropertyConfigurator<DBWH
                 connectionConfig.setHostPort(configuration.getProperties().get(SSHConstants.PROP_PORT));
                 try {
                     monitor.subTask("Initialize tunnel");
-                    tunnel.initializeTunnel(monitor, DBeaverCore.getInstance(), configuration, connectionConfig);
+                    tunnel.initializeHandler(monitor, DBeaverCore.getInstance(), configuration, connectionConfig);
                     monitor.worked(1);
                     // Get info
                     tunnelVersions[0] = tunnel.getImplementation().getClientVersion();

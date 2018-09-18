@@ -26,7 +26,7 @@ import java.io.IOException;
 /**
  * Abstract tunnel
  */
-public interface DBWTunnel extends DBWNetworkHandler {
+public interface DBWTunnel extends DBWNetworkHandler, DBWForwarder {
 
     enum AuthCredentials {
         NONE,
@@ -36,12 +36,7 @@ public interface DBWTunnel extends DBWNetworkHandler {
 
     AuthCredentials getRequiredCredentials(DBWHandlerConfiguration configuration);
 
-    DBPConnectionConfiguration initializeTunnel(DBRProgressMonitor monitor, DBPPlatform platform, DBWHandlerConfiguration configuration, DBPConnectionConfiguration connectionInfo)
-        throws DBException, IOException;
-
     void closeTunnel(DBRProgressMonitor monitor)
         throws DBException, IOException;
-
-    boolean matchesParameters(String host, int port);
 
 }
