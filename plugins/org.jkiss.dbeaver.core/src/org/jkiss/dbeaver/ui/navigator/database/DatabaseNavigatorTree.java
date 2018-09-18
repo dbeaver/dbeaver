@@ -263,7 +263,7 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
                     }
                 };
                 UIUtils.runInProgressService(runnable);
-                if (runnable.getResult() != null) {
+                if (runnable.getResult() != null && !treeViewer.getTree().isDisposed()) {
                     showNode(runnable.getResult());
                     treeViewer.expandToLevel(runnable.getResult(), 1);
 /*
