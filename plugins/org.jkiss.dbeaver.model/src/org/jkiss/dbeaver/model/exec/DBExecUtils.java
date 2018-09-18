@@ -22,6 +22,7 @@ import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
 import org.jkiss.dbeaver.model.net.DBWTunnel;
 import org.jkiss.utils.CommonUtils;
 
+import java.net.Authenticator;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,6 +52,7 @@ public class DBExecUtils {
         synchronized (ACTIVE_CONTEXTS) {
             ACTIVE_CONTEXTS.add(context);
         }
+        //Authenticator.setDefault(new GlobalProxyAuthenticator());
     }
 
     public static void finishContextInitiation(DBPDataSourceContainer context) {

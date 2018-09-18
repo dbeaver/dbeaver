@@ -212,7 +212,6 @@ public class DBeaverCore implements DBPPlatform {
         this.queryManager.registerMetaListener(qmLogWriter);
 
         // Init default network settings
-        Authenticator.setDefault(new GlobalProxyAuthenticator());
         ProxySelector.setDefault(new GlobalProxySelector(ProxySelector.getDefault()));
 
         this.certificateStorage = new DefaultCertificateStorage(
