@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.core;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBeaverPreferences;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.access.DBAAuthInfo;
 import org.jkiss.dbeaver.model.exec.DBExecUtils;
@@ -25,8 +26,8 @@ import org.jkiss.dbeaver.model.impl.net.SocksConstants;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWHandlerType;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
-import org.jkiss.dbeaver.registry.encode.EncryptionException;
-import org.jkiss.dbeaver.registry.encode.SecuredPasswordEncrypter;
+import org.jkiss.dbeaver.runtime.encode.EncryptionException;
+import org.jkiss.dbeaver.runtime.encode.SecuredPasswordEncrypter;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.utils.CommonUtils;
 
@@ -44,7 +45,7 @@ public class GlobalProxyAuthenticator extends Authenticator {
     @Override
     protected PasswordAuthentication getPasswordAuthentication() {
         {
-            DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
+            DBPPreferenceStore store = ModelPreferences.getPreferences();
 
             // 1. Check for drivers download proxy
             final String proxyHost = store.getString(DBeaverPreferences.UI_PROXY_HOST);
