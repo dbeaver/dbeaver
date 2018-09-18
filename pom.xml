@@ -48,6 +48,11 @@
             <url>${local-p2-repo.url}</url>
             <layout>p2</layout>
         </repository>
+        <repository>
+            <id>eclipse-color-theme</id>
+            <url>http://eclipse-color-theme.github.com/update</url>
+            <layout>p2</layout>
+        </repository>
     </repositories>
 
     <build>
