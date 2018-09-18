@@ -314,7 +314,7 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
                 if (
                     (prop.equals(DriverDescriptor.PROP_HOST) && CommonUtils.isEmptyTrimmed(hostText.getText())) ||
                     (prop.equals(DriverDescriptor.PROP_PORT) && CommonUtils.isEmptyTrimmed(portText.getText())) ||
-                    (prop.equals(DriverDescriptor.PROP_DATABASE) && CommonUtils.isEmptyTrimmed(pathText.getText())) ||
+                    (prop.equals(DriverDescriptor.PROP_DATABASE) && CommonUtils.isEmptyTrimmed(dbText.getText())) ||
                     ((prop.equals(DriverDescriptor.PROP_FILE) || prop.equals(DriverDescriptor.PROP_FOLDER)) && CommonUtils.isEmptyTrimmed(pathText.getText())))
                 {
                     return false;
