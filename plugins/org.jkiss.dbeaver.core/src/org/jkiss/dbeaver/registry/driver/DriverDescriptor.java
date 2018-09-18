@@ -21,8 +21,8 @@ import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.connection.*;
@@ -1000,7 +1000,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         }
 
         // Now check driver version
-        if (DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.UI_DRIVERS_VERSION_UPDATE) && !downloaded) {
+        if (DBeaverCore.getGlobalPreferenceStore().getBoolean(ModelPreferences.UI_DRIVERS_VERSION_UPDATE) && !downloaded) {
             // TODO: implement new version check
             if (false) {
                 try {
@@ -1256,7 +1256,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     public static File getCustomDriversHome() {
         File homeFolder;
         // Try to use custom drivers path from preferences
-        String driversHome = DBeaverCore.getGlobalPreferenceStore().getString(DBeaverPreferences.UI_DRIVERS_HOME);
+        String driversHome = DBeaverCore.getGlobalPreferenceStore().getString(ModelPreferences.UI_DRIVERS_HOME);
         if (!CommonUtils.isEmpty(driversHome)) {
             homeFolder = new File(driversHome);
         } else {
@@ -1274,13 +1274,13 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     }
 
     public static String[] getDriversSources() {
-        String sourcesString = DBeaverCore.getGlobalPreferenceStore().getString(DBeaverPreferences.UI_DRIVERS_SOURCES);
+        String sourcesString = DBeaverCore.getGlobalPreferenceStore().getString(ModelPreferences.UI_DRIVERS_SOURCES);
         List<String> pathList = CommonUtils.splitString(sourcesString, '|');
         return pathList.toArray(new String[0]);
     }
 
     public static String getDriversPrimarySource() {
-        String sourcesString = DBeaverCore.getGlobalPreferenceStore().getString(DBeaverPreferences.UI_DRIVERS_SOURCES);
+        String sourcesString = DBeaverCore.getGlobalPreferenceStore().getString(ModelPreferences.UI_DRIVERS_SOURCES);
         int divPos = sourcesString.indexOf('|');
         return divPos == -1 ? sourcesString : sourcesString.substring(0, divPos);
     }

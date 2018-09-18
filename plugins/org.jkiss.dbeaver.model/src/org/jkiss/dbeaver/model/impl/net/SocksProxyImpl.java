@@ -18,19 +18,41 @@ package org.jkiss.dbeaver.model.impl.net;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSource;
+import org.jkiss.dbeaver.model.app.DBPPlatform;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.net.DBWForwarder;
+import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
 import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
 import java.io.IOException;
 
 /**
  * SOCKS proxy
  */
-public class SocksProxyImpl implements DBWNetworkHandler {
+public class SocksProxyImpl implements DBWNetworkHandler, DBWForwarder {
 
+    private DBWHandlerConfiguration configuration;
+
+    @Override
+    public DBPConnectionConfiguration initializeHandler(DBRProgressMonitor monitor, DBPPlatform platform, DBWHandlerConfiguration configuration, DBPConnectionConfiguration connectionInfo) throws DBException, IOException {
+        this.configuration = configuration;
+        return null;
+    }
 
     @Override
     public void invalidateHandler(DBRProgressMonitor monitor, DBPDataSource dataSource) throws DBException, IOException {
 
     }
+
+    @Override
+    public boolean matchesParameters(String host, int port) {
+        if (host.equals(configuration.getProperties().get(SocksConstants.PROP_HOST))) {
+            int sshPort = CommonUtils.toInt(configuration.getProperties().get(SocksConstants.PROP_PORT));
+            return sshPort == port;
+        }
+        return false;
+    }
+
 }

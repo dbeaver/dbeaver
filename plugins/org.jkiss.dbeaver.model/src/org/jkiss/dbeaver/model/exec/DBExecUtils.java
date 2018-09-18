@@ -18,8 +18,8 @@ package org.jkiss.dbeaver.model.exec;
 
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
-import org.jkiss.dbeaver.model.net.DBWNetworkHandler;
-import org.jkiss.dbeaver.model.net.DBWTunnel;
+import org.jkiss.dbeaver.model.net.*;
+import org.jkiss.dbeaver.runtime.net.GlobalProxyAuthenticator;
 import org.jkiss.utils.CommonUtils;
 
 import java.net.Authenticator;
@@ -52,7 +52,19 @@ public class DBExecUtils {
         synchronized (ACTIVE_CONTEXTS) {
             ACTIVE_CONTEXTS.add(context);
         }
-        //Authenticator.setDefault(new GlobalProxyAuthenticator());
+        // Set proxy auth (if required)
+        // Note: authenticator may be changed by Eclipse frameword on startup or later.
+        // That's why we set new default authenticator on connection initiation
+        boolean hasProxy = false;
+        for (DBWHandlerConfiguration handler : context.getConnectionConfiguration().getDeclaredHandlers()) {
+            if (handler.isEnabled() && handler.getType() == DBWHandlerType.PROXY) {
+                hasProxy = true;
+                break;
+            }
+        }
+        if (hasProxy) {
+            Authenticator.setDefault(new GlobalProxyAuthenticator());
+        }
     }
 
     public static void finishContextInitiation(DBPDataSourceContainer context) {
@@ -74,7 +86,7 @@ public class DBExecUtils {
                     return ctx;
                 }
                 for (DBWNetworkHandler networkHandler : ctx.getActiveNetworkHandlers()) {
-                    if (networkHandler instanceof DBWTunnel && ((DBWTunnel) networkHandler).matchesParameters(host, port)) {
+                    if (networkHandler instanceof DBWForwarder && ((DBWForwarder) networkHandler).matchesParameters(host, port)) {
                         return ctx;
                     }
                 }

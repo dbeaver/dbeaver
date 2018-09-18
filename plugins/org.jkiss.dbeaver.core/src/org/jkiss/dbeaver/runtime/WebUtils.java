@@ -18,8 +18,8 @@ package org.jkiss.dbeaver.runtime;
 
 import org.eclipse.swt.program.Program;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.access.DBAAuthInfo;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
@@ -67,10 +67,10 @@ public class WebUtils {
         log.debug("Open [" + urlString + "]");
 
         DBPPreferenceStore prefs = DBeaverCore.getGlobalPreferenceStore();
-        String proxyHost = prefs.getString(DBeaverPreferences.UI_PROXY_HOST);
+        String proxyHost = prefs.getString(ModelPreferences.UI_PROXY_HOST);
         Proxy proxy = null;
         if (!CommonUtils.isEmpty(proxyHost)) {
-            int proxyPort = prefs.getInt(DBeaverPreferences.UI_PROXY_PORT);
+            int proxyPort = prefs.getInt(ModelPreferences.UI_PROXY_PORT);
             if (proxyPort <= 0) {
                 log.warn("Invalid proxy port: " + proxyPort);
             }

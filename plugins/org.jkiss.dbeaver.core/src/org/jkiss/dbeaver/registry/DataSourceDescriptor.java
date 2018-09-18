@@ -153,7 +153,8 @@ public class DataSourceDescriptor
     private volatile boolean connecting = false;
     private boolean temporary;
     private final List<DBRProcessDescriptor> childProcesses = new ArrayList<>();
-    private DBWTunnel tunnel;
+    private DBWNetworkHandler proxyHandler;
+    private DBWTunnel tunnelHandler;
     @NotNull
     private final DBVModel virtualModel;
 
@@ -540,10 +541,14 @@ public class DataSourceDescriptor
 
     @Override
     public DBWNetworkHandler[] getActiveNetworkHandlers() {
-        if (tunnel == null) {
+        if (proxyHandler == null && tunnelHandler == null) {
             return new DBWNetworkHandler[0];
         }
-        return new DBWNetworkHandler[] { tunnel };
+        return proxyHandler == null ?
+            new DBWNetworkHandler[] {tunnelHandler} :
+            tunnelHandler == null ?
+                new DBWNetworkHandler[] {proxyHandler} :
+                new DBWNetworkHandler[] {proxyHandler, tunnelHandler};
     }
 
     @NotNull
@@ -687,28 +692,40 @@ public class DataSourceDescriptor
         tunnelConnectionInfo = null;
         resolvedConnectionInfo = null;
         try {
-            // Handle tunnel
-            // Open tunnel and replace connection info with new one
-            this.tunnel = null;
-            DBWHandlerConfiguration tunnelConfiguration = null;
+            // Handle tunnelHandler
+            // Open tunnelHandler and replace connection info with new one
+            this.proxyHandler = null;
+            this.tunnelHandler = null;
+            DBWHandlerConfiguration tunnelConfiguration = null, proxyConfiguration = null;
             for (DBWHandlerConfiguration handler : connectionInfo.getDeclaredHandlers()) {
-                if (handler.isEnabled() && handler.getType() == DBWHandlerType.TUNNEL) {
-                    tunnelConfiguration = handler;
-                    break;
+                if (handler.isEnabled()) {
+                    if (handler.getType() == DBWHandlerType.TUNNEL) {
+                        tunnelConfiguration = handler;
+                    } else if (handler.getType() == DBWHandlerType.PROXY) {
+                        proxyConfiguration = handler;
+                    }
                 }
             }
+
             monitor.beginTask("Connect to " + getName(), tunnelConfiguration != null ? 3 : 2);
+
+            // Setup proxy handler
+            if (proxyConfiguration != null) {
+                monitor.subTask("Initialize proxy");
+                proxyHandler = proxyConfiguration.createHandler(DBWNetworkHandler.class);
+                proxyHandler.initializeHandler(monitor, registry.getPlatform(), proxyConfiguration, connectionInfo);
+            }
 
             if (tunnelConfiguration != null) {
                 monitor.subTask("Initialize tunnel");
-                tunnel = tunnelConfiguration.createHandler(DBWTunnel.class);
+                tunnelHandler = tunnelConfiguration.createHandler(DBWTunnel.class);
                 try {
                     if (!tunnelConfiguration.isSavePassword()) {
-                        DBWTunnel.AuthCredentials rc = tunnel.getRequiredCredentials(tunnelConfiguration);
+                        DBWTunnel.AuthCredentials rc = tunnelHandler.getRequiredCredentials(tunnelConfiguration);
                         if (rc != DBWTunnel.AuthCredentials.NONE) {
                             if (!DataSourceHandler.askForPassword(this, tunnelConfiguration, rc == DBWTunnel.AuthCredentials.PASSWORD)) {
                                 DataSourceHandler.updateDataSourceObject(this);
-                                tunnel = null;
+                                tunnelHandler = null;
                                 return false;
                             }
                         }
@@ -731,7 +748,7 @@ public class DataSourceDescriptor
                     }
                     DBExecUtils.startContextInitiation(this);
                     try {
-                        tunnelConnectionInfo = tunnel.initializeTunnel(monitor, registry.getPlatform(), tunnelConfiguration, connectionInfo);
+                        tunnelConnectionInfo = tunnelHandler.initializeHandler(monitor, registry.getPlatform(), tunnelConfiguration, connectionInfo);
                     } finally {
                         DBExecUtils.finishContextInitiation(this);
                     }
@@ -782,16 +799,17 @@ public class DataSourceDescriptor
             return true;
         } catch (Exception e) {
             log.debug("Connection failed (" + getId() + ")");
-            if (tunnel != null) {
+            if (tunnelHandler != null) {
                 try {
-                    tunnel.closeTunnel(monitor);
+                    tunnelHandler.closeTunnel(monitor);
                 } catch (IOException e1) {
                     log.error("Error closing tunnel", e);
                 } finally {
-                    tunnel = null;
+                    tunnelHandler = null;
                     tunnelConnectionInfo = null;
                 }
             }
+            proxyHandler = null;
             // Failed
             connectFailed = true;
             //if (reflect) {
@@ -913,16 +931,18 @@ public class DataSourceDescriptor
             }
             monitor.worked(1);
 
-            // Close tunnel
-            if (tunnel != null) {
+            // Close tunnelHandler
+            if (tunnelHandler != null) {
                 monitor.subTask("Close tunnel");
                 try {
-                    tunnel.closeTunnel(monitor);
+                    tunnelHandler.closeTunnel(monitor);
                 } catch (Throwable e) {
                     log.error("Error closing tunnel", e);
                 }
             }
             monitor.worked(1);
+
+            proxyHandler = null;
 
             processEvents(monitor, DBPConnectionEventType.AFTER_DISCONNECT);
 

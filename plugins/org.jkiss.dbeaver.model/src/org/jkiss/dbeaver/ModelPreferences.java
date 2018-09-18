@@ -38,6 +38,8 @@ import java.util.Arrays;
  */
 public final class ModelPreferences
 {
+    public static final String PLUGIN_ID = "org.jkiss.dbeaver.model";
+
     public static final String NOTIFICATIONS_ENABLED = "notifications.enabled"; //$NON-NLS-1$
     public static final String NOTIFICATIONS_CLOSE_DELAY_TIMEOUT = "notifications.closeDelay"; //$NON-NLS-1$
 
@@ -102,7 +104,15 @@ public final class ModelPreferences
 
     public static final String READ_EXPENSIVE_PROPERTIES = "database.props.expensive"; //$NON-NLS-1$
 
-    public static final String PLUGIN_ID = "org.jkiss.dbeaver.model";
+    // Driver and proxy settings. They have prefix UI_ by historical reasons.
+    public static final String UI_DRIVERS_VERSION_UPDATE = "ui.drivers.version.update"; //$NON-NLS-1$
+    public static final String UI_DRIVERS_HOME = "ui.drivers.home"; //$NON-NLS-1$
+    public static final String UI_PROXY_HOST = "ui.proxy.host"; //$NON-NLS-1$
+    public static final String UI_PROXY_PORT = "ui.proxy.port"; //$NON-NLS-1$
+    public static final String UI_PROXY_USER = "ui.proxy.user"; //$NON-NLS-1$
+    public static final String UI_PROXY_PASSWORD = "ui.proxy.password"; //$NON-NLS-1$
+    public static final String UI_DRIVERS_SOURCES = "ui.drivers.sources"; //$NON-NLS-1$
+    public static final String UI_MAVEN_REPOSITORIES = "ui.maven.repositories"; //$NON-NLS-1$
 
     private static Bundle mainBundle;
     private static DBPPreferenceStore preferences;
@@ -195,5 +205,13 @@ public final class ModelPreferences
         PrefUtils.setDefaultPreferenceValue(store, SQL_FORMAT_EXTERNAL_TIMEOUT, 2000);
 
         PrefUtils.setDefaultPreferenceValue(store, READ_EXPENSIVE_PROPERTIES, false);
+
+        PrefUtils.setDefaultPreferenceValue(store, UI_PROXY_HOST, "");
+        PrefUtils.setDefaultPreferenceValue(store, UI_PROXY_PORT, 1080);
+        PrefUtils.setDefaultPreferenceValue(store, UI_PROXY_USER, "");
+        PrefUtils.setDefaultPreferenceValue(store, UI_PROXY_PASSWORD, "");
+        PrefUtils.setDefaultPreferenceValue(store, UI_DRIVERS_VERSION_UPDATE, false);
+        PrefUtils.setDefaultPreferenceValue(store, UI_DRIVERS_HOME, "");
+        PrefUtils.setDefaultPreferenceValue(store, UI_DRIVERS_SOURCES, "https://dbeaver.io/files/jdbc/");
     }
 }

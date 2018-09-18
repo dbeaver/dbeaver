@@ -14,10 +14,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.jkiss.dbeaver.core;
+package org.jkiss.dbeaver.runtime.net;
 
 import org.jkiss.code.Nullable;
-import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.access.DBAAuthInfo;
@@ -48,11 +47,11 @@ public class GlobalProxyAuthenticator extends Authenticator {
             DBPPreferenceStore store = ModelPreferences.getPreferences();
 
             // 1. Check for drivers download proxy
-            final String proxyHost = store.getString(DBeaverPreferences.UI_PROXY_HOST);
+            final String proxyHost = store.getString(ModelPreferences.UI_PROXY_HOST);
             if (!CommonUtils.isEmpty(proxyHost) && proxyHost.equalsIgnoreCase(getRequestingHost()) &&
-                store.getInt(DBeaverPreferences.UI_PROXY_PORT) == getRequestingPort()) {
-                String userName = store.getString(DBeaverPreferences.UI_PROXY_USER);
-                String userPassword = decryptPassword(store.getString(DBeaverPreferences.UI_PROXY_PASSWORD));
+                store.getInt(ModelPreferences.UI_PROXY_PORT) == getRequestingPort()) {
+                String userName = store.getString(ModelPreferences.UI_PROXY_USER);
+                String userPassword = decryptPassword(store.getString(ModelPreferences.UI_PROXY_PASSWORD));
                 if (CommonUtils.isEmpty(userName) || CommonUtils.isEmpty(userPassword)) {
                     DBAAuthInfo authInfo = readCredentialsInUI("Auth proxy '" + proxyHost + "'", userName, userPassword);
                     if (authInfo != null) {
@@ -60,8 +59,8 @@ public class GlobalProxyAuthenticator extends Authenticator {
                         userPassword = authInfo.getUserPassword();
                         if (authInfo.isSavePassword()) {
                             // Save in preferences
-                            store.setValue(DBeaverPreferences.UI_PROXY_USER, userName);
-                            store.setValue(DBeaverPreferences.UI_PROXY_PASSWORD, encryptPassword(userPassword));
+                            store.setValue(ModelPreferences.UI_PROXY_USER, userName);
+                            store.setValue(ModelPreferences.UI_PROXY_PASSWORD, encryptPassword(userPassword));
                         }
                     }
                 }
