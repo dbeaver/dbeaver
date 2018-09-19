@@ -3517,6 +3517,9 @@ public class ResultSetViewer extends Viewer
         Object value = type.getValue(this, attribute, operator, true);
         DBCExecutionContext executionContext = getExecutionContext();
         String strValue = executionContext == null ? String.valueOf(value) : attribute.getValueHandler().getValueDisplayString(attribute, value, DBDDisplayFormat.UI);
+        strValue = strValue.trim();
+        strValue = TextUtils.cutExtraLines(strValue, 1);
+        strValue = CommonUtils.truncateString(strValue, 30);
         if (operator.getArgumentCount() == 0) {
             return operator.getStringValue();
         } else {
