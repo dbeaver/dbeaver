@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.mockdata;
 
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IImportWizard;
@@ -376,5 +377,11 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
         String message = NLS.bind(MockDataMessages.tools_mockdata_wizard_log_error_generating, e.getMessage());
         log.error(message, e);
         logPage.appendLog(message + "\n\n", true);
+    }
+
+    @Override
+    public IWizardPage getNextPage(IWizardPage page) {
+        // We have only one page
+        return null;
     }
 }
