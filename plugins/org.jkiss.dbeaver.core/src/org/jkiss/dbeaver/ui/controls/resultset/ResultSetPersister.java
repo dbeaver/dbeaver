@@ -381,7 +381,7 @@ class ResultSetPersister {
     }
 
     @Nullable
-    private DBDRowIdentifier getDefaultRowIdentifier() {
+    public DBDRowIdentifier getDefaultRowIdentifier() {
         for (int i = 0; i < columns.length; i++) {
             DBDRowIdentifier rowIdentifier = columns[0].getRowIdentifier();
             if (rowIdentifier != null) {
