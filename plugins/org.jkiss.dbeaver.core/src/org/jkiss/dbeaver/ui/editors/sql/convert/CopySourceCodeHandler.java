@@ -93,8 +93,8 @@ public class CopySourceCodeHandler extends AbstractHandler implements IElementUp
 
     @Override
     public void updateElement(UIElement element, Map parameters) {
-        element.setText("Copy SQL as a source code");
-        element.setTooltip("Convert selected SQL to a source code in a programming language");
+        element.setText(CoreMessages.editors_sql_actions_copy_as_source_code);
+        element.setTooltip(CoreMessages.editors_sql_actions_copy_as_source_code_tip);
     }
 
     private static class TargetFormatDialog extends BaseSQLDialog {
