@@ -18,11 +18,13 @@ package org.jkiss.dbeaver.ui.actions.datasource;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.menus.UIElement;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPTransactionIsolation;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -105,7 +107,7 @@ public class DataSourceAutoCommitHandler extends AbstractDataSourceHandler imple
         // Update command image
         element.setIcon(DBeaverIcons.getImageDescriptor(autoCommit ? UIIcon.TXN_COMMIT_AUTO : UIIcon.TXN_COMMIT_MANUAL));
         String isolationName = isolation == null ? "?" : isolation.getTitle();
-        String text = autoCommit ? "Switch to manual commit (" + isolationName + ")" : "Switch to auto-commit";
+        String text = autoCommit ? NLS.bind(CoreMessages.action_menu_transaction_manualcommit_name, isolationName) : CoreMessages.action_menu_transaction_autocommit_name;
         element.setText(text);
         element.setTooltip(text);
     }
