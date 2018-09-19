@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.actions.navigator;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.jface.viewers.ISelection;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.commands.IElementUpdater;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.menus.UIElement;
@@ -54,7 +55,7 @@ public class NavigatorHandlerObjectCreateNew extends NavigatorHandlerObjectCreat
         if (!updateUI) {
             return;
         }
-        element.setText(CoreMessages.actions_navigator_create_new + " " + getObjectTypeName(element));
+        element.setText(NLS.bind(CoreMessages.actions_navigator_create_new, getObjectTypeName(element)));
         DBPImage image = getObjectTypeIcon(element);
         if (image == null) {
             image = DBIcon.TYPE_OBJECT;

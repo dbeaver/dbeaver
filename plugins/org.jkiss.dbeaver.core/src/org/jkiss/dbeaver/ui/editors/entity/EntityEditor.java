@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.text.IUndoManager;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -933,7 +934,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
                     }
                 }
             });
-            item.setToolTipText("Open " + databaseNode.getNodeType() + " Editor");
+            item.setToolTipText(NLS.bind(CoreMessages.actions_navigator_open, databaseNode.getNodeType()));
         }
     }
 

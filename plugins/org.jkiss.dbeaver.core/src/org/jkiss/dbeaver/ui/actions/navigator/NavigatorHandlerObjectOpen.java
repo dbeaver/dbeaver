@@ -22,6 +22,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
@@ -322,9 +323,9 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                 }
                 String label;
                 if (selection instanceof IStructuredSelection && ((IStructuredSelection) selection).size() > 1) {
-                    label = actionName + CoreMessages.actions_navigator__objects;
+                    label = NLS.bind(actionName, CoreMessages.actions_navigator__objects);
                 } else {
-                    label = actionName + " " + node.getNodeType(); //$NON-NLS-1$
+                    label = NLS.bind(actionName, node.getNodeType()); //$NON-NLS-1$
                 }
                 element.setText(label);
             }

@@ -288,7 +288,7 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
 
             generatorCombo = new Combo(labelCombo, SWT.READ_ONLY | SWT.DROP_DOWN);
             gd = new GridData();
-            gd.widthHint = 80;
+            gd.widthHint = UIUtils.getFontHeight(generatorCombo) * 20;
             generatorCombo.setLayoutData(gd);
             generatorCombo.addSelectionListener(new SelectionAdapter() {
                 @Override
