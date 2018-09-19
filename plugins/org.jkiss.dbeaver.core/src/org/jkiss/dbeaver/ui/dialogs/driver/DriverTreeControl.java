@@ -22,6 +22,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.dialogs.FilteredTree;
 import org.eclipse.ui.dialogs.PatternFilter;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -43,7 +44,7 @@ public class DriverTreeControl extends FilteredTree {
             SWT.H_SCROLL | SWT.V_SCROLL | SWT.BORDER,
             new DriverFilter(),
             true);
-        setInitialText("Type part of database/driver name to filter");
+        setInitialText(CoreMessages.dialog_connection_driver_treecontrol_initialText);
     }
 
     private static Composite saveInitParameters(Composite parent, Object site, List<DataSourceProviderDescriptor> providers, boolean expandRecent) {
