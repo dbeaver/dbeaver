@@ -3119,7 +3119,7 @@ public class ResultSetViewer extends Viewer
         if (entity != null) {
             // Check for value locators
             // Probably we have only virtual one with empty attribute set
-            final DBDRowIdentifier identifier = getVirtualEntityIdentifier();
+            DBDRowIdentifier identifier = getVirtualEntityIdentifier();
             if (identifier != null) {
                 if (CommonUtils.isEmpty(identifier.getAttributes())) {
                     // Empty identifier. We have to define it
@@ -3137,17 +3137,28 @@ public class ResultSetViewer extends Viewer
         }
 
         List<DBDAttributeBinding> updatedAttributes = persister.getUpdatedAttributes();
-        for (DBDAttributeBinding attr : updatedAttributes) {
-            // Check attributes of non-virtual identifier
-            DBDRowIdentifier rowIdentifier = attr.getRowIdentifier();
-            if (rowIdentifier == null) {
-                // We shouldn't be here ever!
-                // Virtual id should be created if we missing natural one
-                throw new DBCException("Attribute " + attr.getName() + " was changed but it hasn't associated unique key");
-            } else if (CommonUtils.isEmpty(rowIdentifier.getAttributes())) {
-                throw new DBCException(
-                    "Can't change attribute '" + attr.getName() +
-                        "' - attributes of key '" + DBUtils.getObjectFullName(rowIdentifier.getUniqueKey(), DBPEvaluationContext.UI) + "' are missing in result set");
+        if (persister.hasDeletes()) {
+            DBDRowIdentifier defIdentifier = persister.getDefaultRowIdentifier();
+            if (defIdentifier == null) {
+                throw new DBCException("No unique row identifier is result set. Cannot proceed with row(s) delete.");
+            } else if (CommonUtils.isEmpty(defIdentifier.getAttributes())) {
+                throw new DBCException("Attributes of unique key '" + DBUtils.getObjectFullName(defIdentifier.getUniqueKey(), DBPEvaluationContext.UI) + "' are missing in result set. Cannot proceed with row(s) delete.");
+            }
+        }
+
+        {
+            for (DBDAttributeBinding attr : updatedAttributes) {
+                // Check attributes of non-virtual identifier
+                DBDRowIdentifier rowIdentifier = attr.getRowIdentifier();
+                if (rowIdentifier == null) {
+                    // We shouldn't be here ever!
+                    // Virtual id should be created if we missing natural one
+                    throw new DBCException("Attribute " + attr.getName() + " was changed but it hasn't associated unique key");
+                } else if (CommonUtils.isEmpty(rowIdentifier.getAttributes())) {
+                    throw new DBCException(
+                        "Can't update attribute '" + attr.getName() +
+                            "' - attributes of key '" + DBUtils.getObjectFullName(rowIdentifier.getUniqueKey(), DBPEvaluationContext.UI) + "' are missing in result set");
+                }
             }
         }
     }
