@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.runtime.ide.ui.texteditor;
+package org.jkiss.dbeaver.ui.editors.text;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
@@ -26,17 +26,15 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-
-import static org.jkiss.dbeaver.runtime.DBMarkers.MARKER_ATTRIBUTE_DATASOURCE_ID;
-import static org.jkiss.dbeaver.runtime.DBMarkers.MARKER_ATTRIBUTE_NODE_PATH;
+import org.jkiss.dbeaver.runtime.DBMarkers;
 
 public class DatabaseMarkerAnnotationModel extends ResourceMarkerAnnotationModel {
 
     private static final Log log = Log.getLog(DatabaseMarkerAnnotationModel.class);
 
     private final static String[] ATTRIBUTE_NAMES = new String[] { //
-            MARKER_ATTRIBUTE_DATASOURCE_ID, //
-            MARKER_ATTRIBUTE_NODE_PATH };
+        DBMarkers.MARKER_ATTRIBUTE_DATASOURCE_ID, //
+        DBMarkers.MARKER_ATTRIBUTE_NODE_PATH };
 
     private final DBSObject databaseObject;
     private final DBNNode node;

@@ -52,7 +52,6 @@
 
     <!-- DBeaver -->
     <plugin id="org.jkiss.dbeaver.model" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <plugin id="org.jkiss.dbeaver.runtime.ide.ui" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.core" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.net.ssh" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.net.ssh.jsch" download-size="0" install-size="0" version="0.0.0" unpack="false"/>

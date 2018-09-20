@@ -16,21 +16,14 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.runtime.ide.ui.handlers;
-
-import java.lang.reflect.InvocationTargetException;
-import java.nio.file.Path;
+package org.jkiss.dbeaver.ui.actions.navigator;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.runtime.Adapters;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.OperationCanceledException;
+import org.eclipse.core.runtime.*;
 import org.eclipse.jface.operation.IRunnableContext;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.osgi.util.NLS;
@@ -41,12 +34,15 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.statushandlers.IStatusAdapterConstants;
 import org.eclipse.ui.statushandlers.StatusAdapter;
 import org.eclipse.ui.statushandlers.StatusManager;
-import org.jkiss.dbeaver.runtime.ide.ui.DBeaverIDEUI;
-import org.jkiss.dbeaver.runtime.internal.ide.ui.IdeMessages;
+import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.utils.GeneralUtils;
+
+import java.lang.reflect.InvocationTargetException;
+import java.nio.file.Path;
 
 public abstract class CreateLinkHandler extends AbstractHandler {
 
-    protected static final Path[] NO_TARGETS = new Path[0];
+    static final Path[] NO_TARGETS = new Path[0];
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -58,11 +54,10 @@ public abstract class CreateLinkHandler extends AbstractHandler {
         IResource resource = Adapters.adapt(first, IResource.class);
         IContainer container = extractContainer(resource);
         if (container == null) {
-            String message = NLS.bind(IdeMessages.CreateLinkHandler_e_create_link_validation, resource);
-            IStatus error = DBeaverIDEUI.createError(message);
+            IStatus error = GeneralUtils.makeErrorStatus(NLS.bind(CoreMessages.CreateLinkHandler_e_create_link_validation, resource));
             StatusAdapter statusAdapter = new StatusAdapter(error);
             statusAdapter.setProperty(IStatusAdapterConstants.TITLE_PROPERTY,
-                    IdeMessages.CreateLinkHandler_e_create_link_title);
+                CoreMessages.CreateLinkHandler_e_create_link_title);
             StatusManager.getManager().handle(statusAdapter, StatusManager.SHOW);
             return null;
         }
@@ -92,11 +87,11 @@ public abstract class CreateLinkHandler extends AbstractHandler {
         try {
             context.run(true, true, operation);
         } catch (InvocationTargetException e) {
-            IStatus error = DBeaverIDEUI.createError(IdeMessages.CreateLinkHandler_e_create_link_message,
+            IStatus error = GeneralUtils.makeErrorStatus(CoreMessages.CreateLinkHandler_e_create_link_message,
                     e.getTargetException());
             StatusAdapter statusAdapter = new StatusAdapter(error);
             statusAdapter.setProperty(IStatusAdapterConstants.TITLE_PROPERTY,
-                    IdeMessages.CreateLinkHandler_e_create_link_title);
+                CoreMessages.CreateLinkHandler_e_create_link_title);
             StatusManager.getManager().handle(statusAdapter, StatusManager.LOG | StatusManager.SHOW);
         } catch (InterruptedException e) {
             // skip
@@ -104,17 +99,16 @@ public abstract class CreateLinkHandler extends AbstractHandler {
         return null;
     }
 
-    protected IContainer extractContainer(IResource resource) {
+    private IContainer extractContainer(IResource resource) {
         if (resource instanceof IContainer) {
-            IContainer container = (IContainer) resource;
-            return container;
+            return (IContainer) resource;
         }
         return null;
     }
 
     protected abstract Path[] selectTargets(ExecutionEvent event);
 
-    protected IRunnableContext getRunnableContext(ExecutionEvent event) {
+    private IRunnableContext getRunnableContext(ExecutionEvent event) {
         final IWorkbenchWindow activeWindow = HandlerUtil.getActiveWorkbenchWindow(event);
         if (activeWindow != null) {
             return activeWindow;

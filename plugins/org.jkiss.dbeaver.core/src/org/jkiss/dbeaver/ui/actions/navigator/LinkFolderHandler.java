@@ -16,7 +16,7 @@
  * limitations under the License.
  */
 
-package org.jkiss.dbeaver.runtime.internal.ide.ui.handlers;
+package org.jkiss.dbeaver.ui.actions.navigator;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -30,7 +30,6 @@ import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.runtime.resource.WorkspaceResources;
-import org.jkiss.dbeaver.runtime.ide.ui.handlers.CreateLinkHandler;
 
 public class LinkFolderHandler extends CreateLinkHandler {
 
