@@ -703,7 +703,7 @@ public class SQLQueryJob extends DataSourceJob
                         try {
                             sourceName = resultSet.getResultSetName();
                         } catch (Exception e) {
-                            log.debug(e);
+                            log.debug("Can't get cursor name: " + e.getMessage());
                         }
                     }
                 }
