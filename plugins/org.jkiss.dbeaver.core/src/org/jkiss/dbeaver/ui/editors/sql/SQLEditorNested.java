@@ -55,7 +55,7 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.runtime.ide.ui.texteditor.DatabaseMarkerAnnotationModel;
+import org.jkiss.dbeaver.ui.editors.text.DatabaseMarkerAnnotationModel;
 import org.jkiss.dbeaver.runtime.resource.WorkspaceResources;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ObjectCompilerLogViewer;

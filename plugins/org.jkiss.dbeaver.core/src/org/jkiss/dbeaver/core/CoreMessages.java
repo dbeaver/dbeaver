@@ -1365,6 +1365,10 @@ public class CoreMessages extends NLS {
 	public static String grid_tooltip_sort_by_column;
 	public static String grid_tooltip_filter_by_column;
 
+	public static String CreateLinkHandler_e_create_link_message;
+	public static String CreateLinkHandler_e_create_link_title;
+	public static String CreateLinkHandler_e_create_link_validation;
+
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, CoreMessages.class);

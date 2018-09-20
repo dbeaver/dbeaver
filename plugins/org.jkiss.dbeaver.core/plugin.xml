@@ -614,7 +614,7 @@
                 </with>
             </enabledWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.core.resource.link.file" class="org.jkiss.dbeaver.runtime.internal.ide.ui.handlers.LinkFileHandler">
+        <handler commandId="org.jkiss.dbeaver.core.resource.link.file" class="org.jkiss.dbeaver.ui.actions.navigator.LinkFileHandler">
             <enabledWhen>
                 <with variable="selection">
                     <count value="1"/>
@@ -626,7 +626,7 @@
                 </with>
             </enabledWhen>
         </handler>
-        <handler commandId="org.jkiss.dbeaver.core.resource.link.folder" class="org.jkiss.dbeaver.runtime.internal.ide.ui.handlers.LinkFolderHandler">
+        <handler commandId="org.jkiss.dbeaver.core.resource.link.folder" class="org.jkiss.dbeaver.ui.actions.navigator.LinkFolderHandler">
             <enabledWhen>
                 <with variable="selection">
                     <count value="1"/>
