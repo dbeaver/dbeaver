@@ -44,6 +44,7 @@
                     category="MS SQL Server"
                     class="net.sourceforge.jtds.jdbc.Driver"
                     sampleURL="jdbc:jtds:sqlserver://{host}[:{port}][/{database}]"
+                    useURL="false"
                     defaultPort="1433"
                     webURL="http://jtds.sourceforge.net/"
                     description="jTDS SQL Server driver">
@@ -80,6 +81,7 @@
                     category="MS SQL Server"
                     class="com.microsoft.sqlserver.jdbc.SQLServerDriver"
                     sampleURL="jdbc:sqlserver://{host}[:{port}][;databaseName={database}]"
+                    useURL="false"
                     defaultPort="1433"
                     webURL="http://msdn.microsoft.com/en-us/sqlserver/aa937724"
                     description="Microsoft JDBC Driver for SQL Server">

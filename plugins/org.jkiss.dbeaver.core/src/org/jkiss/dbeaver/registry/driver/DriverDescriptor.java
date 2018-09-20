@@ -133,6 +133,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     private boolean supportsDriverProperties;
     private boolean anonymousAccess;
     private boolean customDriverLoader;
+    private boolean useURLTemplate;
     private boolean custom;
     private boolean modified;
     private boolean disabled;
@@ -204,6 +205,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             this.supportsDriverProperties = copyFrom.supportsDriverProperties;
             this.anonymousAccess = copyFrom.anonymousAccess;
             this.customDriverLoader = copyFrom.customDriverLoader;
+            this.useURLTemplate = copyFrom.customDriverLoader;
             this.nativeClientHomes.addAll(copyFrom.nativeClientHomes);
             for (DriverFileSource fs : copyFrom.fileSources) {
                 this.fileSources.add(new DriverFileSource(fs));
@@ -244,6 +246,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         this.propertiesWebURL = config.getAttribute(RegistryConstants.ATTR_PROPERTIES_WEB_URL);
         this.clientRequired = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_CLIENT_REQUIRED), false);
         this.customDriverLoader = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_CUSTOM_DRIVER_LOADER), false);
+        this.useURLTemplate = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_USE_URL_TEMPLATE), true);
         this.supportsDriverProperties = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_SUPPORTS_DRIVER_PROPERTIES), true);
         this.embedded = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_EMBEDDED));
         this.anonymousAccess = CommonUtils.getBoolean(config.getAttribute(RegistryConstants.ATTR_ANONYMOUS));
@@ -612,6 +615,11 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     }
 
     @Override
+    public boolean isUseURL() {
+        return useURLTemplate;
+    }
+
+    @Override
     public boolean isInstantiable() {
         return !CommonUtils.isEmpty(driverClassName);
     }
@@ -620,10 +628,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
     @Override
     public DBXTreeNode getNavigatorRoot() {
         return providerDescriptor.getTreeDescriptor();
-    }
-
-    private void setCustomDriverLoader(boolean customDriverLoader) {
-        this.customDriverLoader = customDriverLoader;
     }
 
     public boolean isManagable() {
@@ -1177,6 +1181,9 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             if (this.isCustomDriverLoader()) {
                 xml.addAttribute(RegistryConstants.ATTR_CUSTOM_DRIVER_LOADER, this.isCustomDriverLoader());
             }
+            if (this.isUseURL()) {
+                xml.addAttribute(RegistryConstants.ATTR_USE_URL_TEMPLATE, this.isUseURL());
+            }
 
             // Libraries
             for (DBPDriverLibrary lib : libraries) {
@@ -1430,7 +1437,12 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
                         curDriver.setDriverDefaultPort(atts.getValue(RegistryConstants.ATTR_PORT));
                         curDriver.setEmbedded(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_EMBEDDED), false));
                     }
-                    curDriver.setCustomDriverLoader(CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_CUSTOM_DRIVER_LOADER), false));
+                    if (atts.getValue(RegistryConstants.ATTR_CUSTOM_DRIVER_LOADER) != null) {
+                        curDriver.customDriverLoader = (CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_CUSTOM_DRIVER_LOADER), false));
+                    }
+                    if (atts.getValue(RegistryConstants.ATTR_USE_URL_TEMPLATE) != null) {
+                        curDriver.useURLTemplate = (CommonUtils.getBoolean(atts.getValue(RegistryConstants.ATTR_USE_URL_TEMPLATE), true));
+                    }
                     curDriver.setModified(true);
                     String disabledAttr = atts.getValue(RegistryConstants.ATTR_DISABLED);
                     if (CommonUtils.getBoolean(disabledAttr)) {

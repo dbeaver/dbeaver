@@ -329,6 +329,7 @@
                         label="%driver.exasol.label"
                         class="com.exasol.jdbc.EXADriver"
                         sampleURL="jdbc:exa:{host}[:{port}][;schema={database}]"
+                        useURL="false"
                         defaultPort="8563"
                         description="%driver.exasol.description"
                         webURL="https://www.exasol.com/portal/display/DOWNLOAD/EXASOL+Download+Section">

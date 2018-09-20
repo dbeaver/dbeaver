@@ -274,6 +274,7 @@
                     label="Oracle"
                     class="oracle.jdbc.OracleDriver"
                     sampleURL="jdbc:oracle:thin:@{host}[:{port}]/{database}"
+                    useURL="false"
                     defaultPort="1521"
                     webURL="http://www.oracle.com/technetwork/database/features/jdbc/"
                     propertiesURL="https://docs.oracle.com/cd/B19306_01/java.102/b14355/urls.htm#i1070726"
