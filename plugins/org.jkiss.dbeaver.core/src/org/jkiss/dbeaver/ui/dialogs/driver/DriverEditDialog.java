@@ -238,6 +238,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
             driverURLText = UIUtils.createLabelText(propsGroup, CoreMessages.dialog_edit_driver_label_sample_url, CommonUtils.notEmpty(driver.getSampleURL()), SWT.BORDER | advStyle, gd);
             driverURLText.setToolTipText(CoreMessages.dialog_edit_driver_label_sample_url_tip);
             driverURLText.addModifyListener(e -> onChangeProperty());
+            driverURLText.setEnabled(driver == null || driver.isUseURL());
 
             gd = new GridData(GridData.FILL_HORIZONTAL);
             driverPortText = UIUtils.createLabelText(propsGroup, CoreMessages.dialog_edit_driver_label_default_port, driver.getDefaultPort() == null ? "" : driver.getDefaultPort(), SWT.BORDER | advStyle, gd);
@@ -249,6 +250,11 @@ public class DriverEditDialog extends HelpEnabledDialog {
 
             anonymousDriverCheck = UIUtils.createCheckbox(propsGroup, CoreMessages.dialog_edit_driver_anonymous_label, CoreMessages.dialog_edit_driver_anonymous_tip, driver.isAnonymousAccess(), 1);
             anonymousDriverCheck.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+            if (isReadOnly) {
+                embeddedDriverCheck.setEnabled(false);
+                anonymousDriverCheck.setEnabled(false);
+            }
         }
 
         {
@@ -308,9 +314,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
             TabFolder tabFolder = new TabFolder(group, SWT.NONE);
             tabFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-            if (provider.isDriversManagable()) {
-                createLibrariesTab(tabFolder);
-            }
+            createLibrariesTab(tabFolder);
             createConnectionPropertiesTab(tabFolder);
             createParametersTab(tabFolder);
             // Client homes
