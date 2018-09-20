@@ -92,15 +92,14 @@ public class OracleDataSource extends JDBCDataSource
         }
         if (available == null) {
             try {
-                try (JDBCSession session = DBUtils.openUtilSession(monitor, this, "Check view existence")) {
+                try (JDBCSession session = DBUtils.openMetaSession(monitor, this, "Check view existence")) {
                     try (final JDBCPreparedStatement dbStat = session.prepareStatement(
                         "SELECT 1 FROM " + DBUtils.getQuotedIdentifier(this, schemaName) + "." +
-                        DBUtils.getQuotedIdentifier(this, viewName)))
+                        DBUtils.getQuotedIdentifier(this, viewName) + " WHERE 1<>1"))
                     {
                         dbStat.setFetchSize(1);
-                        try (JDBCResultSet dbResults = dbStat.executeQuery()) {
-                            available = dbResults.next();
-                        }
+                        dbStat.execute();
+                        available = true;
                     }
                 }
             } catch (SQLException e) {
@@ -825,7 +824,7 @@ public class OracleDataSource extends JDBCDataSource
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleDataSource owner) throws SQLException {
             StringBuilder schemasQuery = new StringBuilder();
             boolean manyObjects = "false".equals(owner.getContainer().getConnectionConfiguration().getProviderProperty(OracleConstants.PROP_CHECK_SCHEMA_CONTENT));
-            schemasQuery.append("SELECT U.* FROM SYS.ALL_USERS U\n");
+            schemasQuery.append("SELECT U.* FROM ").append(OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner, "USERS")).append(" U\n");
 
 //                if (owner.isAdmin() && false) {
 //                    schemasQuery.append(
@@ -836,7 +835,7 @@ public class OracleDataSource extends JDBCDataSource
             if (manyObjects) {
                 schemasQuery.append("U.USERNAME IS NOT NULL");
             } else {
-                schemasQuery.append("U.USERNAME IN (SELECT DISTINCT OWNER FROM SYS.ALL_OBJECTS)");
+                schemasQuery.append("U.USERNAME IN (SELECT DISTINCT OWNER FROM ").append(OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner, "OBJECTS")).append(")");
             }
 //                }
 
@@ -878,7 +877,8 @@ public class OracleDataSource extends JDBCDataSource
         @Override
         protected JDBCStatement prepareObjectsStatement(@NotNull JDBCSession session, @NotNull OracleDataSource owner) throws SQLException {
             return session.prepareStatement(
-                "SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) + " * FROM SYS.ALL_TYPES WHERE OWNER IS NULL ORDER BY TYPE_NAME");
+                "SELECT " + OracleUtils.getSysCatalogHint(owner.getDataSource()) + " * FROM " +
+                    OracleUtils.getAdminAllViewPrefix(session.getProgressMonitor(), owner, "TYPES") + " WHERE OWNER IS NULL ORDER BY TYPE_NAME");
         }
 
         @Override
