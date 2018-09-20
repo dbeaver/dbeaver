@@ -1332,6 +1332,7 @@ public class CoreMessages extends NLS {
 	// SQL editor resultset filter panel
 	public static String sql_editor_resultset_tool_item_log;
 	public static String sql_editor_resultset_tool_item_output;
+	public static String sql_editor_menu_format;
 	public static String sql_editor_resultset_filter_panel_text_enter_sql_to_filter;
 	public static String sql_editor_resultset_filter_panel_text_enter_filter_not_support;
 	public static String sql_editor_resultset_filter_panel_btn_apply;

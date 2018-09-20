@@ -44,6 +44,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreCommands;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.*;
@@ -463,7 +464,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         menu.insertBefore(IWorkbenchActionConstants.MB_ADDITIONS, ActionUtils.makeCommandContribution(getSite(), "org.jkiss.dbeaver.ui.editors.sql.navigate.object"));
 
         {
-            MenuManager formatMenu = new MenuManager("Format", "format");
+            MenuManager formatMenu = new MenuManager(CoreMessages.sql_editor_menu_format, "format");
             IAction formatAction = getAction(SQLEditorContributor.ACTION_CONTENT_FORMAT_PROPOSAL);
             if (formatAction != null) {
                 formatMenu.add(formatAction);
