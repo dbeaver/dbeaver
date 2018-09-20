@@ -58,9 +58,6 @@ public class CoreMessages extends NLS {
 	public static String action_popup_sqleditor_layout_vertical;
 	public static String action_popup_sqleditor_layout_detached;
 	
-	public static String DBeaverCore_error_can_create_temp_dir;
-	public static String DBeaverCore_error_can_create_temp_file;
-
 	public static String actions_ContentAssistProposal_label;
 	public static String actions_ContentAssistProposal_tooltip;
 	public static String actions_ContentAssistProposal_description;
@@ -101,6 +98,7 @@ public class CoreMessages extends NLS {
 	public static String actions_navigator_view_script_button;
 	public static String actions_navigator_filter_objects;
     public static String actions_spreadsheet_copy_special;
+	public static String actions_navigator_search_tip;
 	
     public static String common_error_sql;
 	
@@ -303,6 +301,7 @@ public class CoreMessages extends NLS {
 	public static String controls_resultset_viewer_status_rows_fetched;
 	public static String controls_resultset_viewer_status_rows_size;
 	public static String controls_resultset_viewer_value;
+	public static String controls_resultset_viewer_calculate_row_count;
 
 	public static String controls_resultset_ref_menu_no_references;
 	public static String controls_resultset_ref_menu_references;
