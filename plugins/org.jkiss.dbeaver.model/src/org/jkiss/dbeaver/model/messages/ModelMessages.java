@@ -22,8 +22,8 @@ import org.eclipse.osgi.util.NLS;
 public class ModelMessages extends NLS {
 	static final String BUNDLE_NAME = "org.jkiss.dbeaver.model.messages.ModelResources"; //$NON-NLS-1$
 
-	public static String DBeaverCore_error_can_create_temp_dir;
-	public static String DBeaverCore_error_can_create_temp_file;
+	public static String error_can_create_temp_dir;
+	public static String error_can_create_temp_file;
 
 	public static String common_error_sql;
 
@@ -40,15 +40,6 @@ public class ModelMessages extends NLS {
 
 	public static String model_jdbc__rows_fetched;
 	public static String model_jdbc_array_result_set;
-	public static String model_jdbc_bad_content_value_;
-	public static String model_jdbc_cant_create_null_cursor;
-	public static String model_jdbc_column_size;
-	public static String model_jdbc_content_length;
-	public static String model_jdbc_content_type;
-	public static String model_jdbc_could_not_load_content;
-	public static String model_jdbc_could_not_load_content_from_file;
-	public static String model_jdbc_could_not_save_content;
-	public static String model_jdbc_could_not_save_content_to_file_;
 	public static String model_jdbc_create_new_constraint;
 	public static String model_jdbc_create_new_foreign_key;
 	public static String model_jdbc_create_new_index;

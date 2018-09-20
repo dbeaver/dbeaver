@@ -189,8 +189,8 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
 
             pathText = new Text(settingsGroup, SWT.BORDER);
             gd = new GridData(GridData.FILL_HORIZONTAL);
-            //gd.grabExcessHorizontalSpace = true;
-            //gd.widthHint = 200;
+            gd.grabExcessHorizontalSpace = true;
+            gd.widthHint = 200;
             gd.horizontalSpan = 2;
             pathText.setLayoutData(gd);
             pathText.addModifyListener(textListener);

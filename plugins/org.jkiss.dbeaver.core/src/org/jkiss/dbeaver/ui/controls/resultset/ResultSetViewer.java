@@ -1210,7 +1210,7 @@ public class ResultSetViewer extends Viewer
             statusLabel = new StatusLabel(statusBar, SWT.NONE, this);
             statusLabel.setLayoutData(new RowData(40 * fontHeight, SWT.DEFAULT));
 
-            rowCountLabel = new ActiveStatusMessage(statusBar, DBeaverIcons.getImage(UIIcon.RS_REFRESH), "Calculate total row count", this) {
+            rowCountLabel = new ActiveStatusMessage(statusBar, DBeaverIcons.getImage(UIIcon.RS_REFRESH), CoreMessages.controls_resultset_viewer_calculate_row_count, this) {
                 @Override
                 protected boolean isActionEnabled() {
                     return hasData();

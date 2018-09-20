@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.core.application.update;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
@@ -65,7 +66,8 @@ class VersionUpdateDialog extends Dialog {
         boldFont = UIUtils.makeBoldFont(composite.getFont());
 
         final Label titleLabel = new Label(propGroup, SWT.NONE);
-        titleLabel.setText(newVersion == null ? CoreMessages.dialog_version_update_no_new_version : CoreMessages.dialog_version_update_available_new_version);
+        titleLabel.setText(
+            NLS.bind(newVersion == null ? CoreMessages.dialog_version_update_no_new_version : CoreMessages.dialog_version_update_available_new_version, GeneralUtils.getProductName()));
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 2;
         titleLabel.setLayoutData(gd);
