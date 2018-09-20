@@ -127,7 +127,6 @@ Require-Bundle: org.eclipse.core.runtime,
  org.jkiss.dbeaver.ui;visibility:=reexport,
  org.jkiss.utils;visibility:=reexport,
  org.jkiss.dbeaver.data.transfer,
- org.jkiss.dbeaver.runtime.ide.core,
  org.jkiss.dbeaver.runtime.ide.ui,
  org.jkiss.bundle.bouncycastle;resolution:=optional
 Bundle-Localization: OSGI-INF/l10n/bundle

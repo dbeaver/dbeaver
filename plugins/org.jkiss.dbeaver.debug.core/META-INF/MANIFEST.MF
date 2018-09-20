@@ -12,7 +12,6 @@ Require-Bundle: org.eclipse.osgi.services,
  org.eclipse.core.runtime,
  org.eclipse.debug.core;visibility:=reexport,
  org.jkiss.dbeaver.model;visibility:=reexport,
- org.jkiss.dbeaver.runtime.ide.core,
  org.jkiss.dbeaver.core
 Export-Package: org.jkiss.dbeaver.debug,
  org.jkiss.dbeaver.debug.core,

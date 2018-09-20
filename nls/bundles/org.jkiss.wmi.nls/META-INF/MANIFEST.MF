@@ -1,9 +1,0 @@
-Manifest-Version: 1.0
-Bundle-ManifestVersion: 2
-Bundle-Name: %Bundle-Name
-Bundle-SymbolicName: org.jkiss.wmi.nls
-Bundle-Version: 1.0.25.qualifier
-Bundle-Release-Date: 20180924
-Fragment-Host: org.jkiss.wmi
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Bundle-Vendor: JKISS

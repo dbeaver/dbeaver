@@ -21,22 +21,6 @@
       <update label="DBeaver Universal Database Manager" url="https://dbeaver.io/"/>
    </url>
 
-   <plugin
-         id="org.jkiss.wmi.nls"
-         os="win32"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         fragment="true"
-         unpack="false"/>
-
-   <plugin
-         id="org.jkiss.dbeaver.ext.wmi.nls"
-         os="win32"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         fragment="true"
-         unpack="false"/>
+   <plugin id="org.jkiss.dbeaver.ext.wmi.nls" os="win32" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
 
 </feature>

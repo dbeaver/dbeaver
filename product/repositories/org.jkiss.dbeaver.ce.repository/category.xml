@@ -11,6 +11,7 @@
     <category-def name="org.jkiss.dbeaver.external" label="DBeaver Extensions">
         <description>DBeaver extensions</description>
     </category-def>
+    <category-def name="org.jkss.dbeaver.nls.category" label="DBeaver NL Support"/>
 
     <feature id="org.jkiss.dbeaver.core.feature">
         <category name="org.jkiss.dbeaver"/>
@@ -38,6 +39,10 @@
     </feature>
     <feature id="org.jkiss.dbeaver.debug.feature">
         <category name="org.jkiss.dbeaver"/>
+    </feature>
+
+    <feature id="org.jkiss.dbeaver.runtime.nls.feature">
+        <category name="org.jkss.dbeaver.nls.category"/>
     </feature>
 
 </site>
