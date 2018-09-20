@@ -1181,9 +1181,6 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             if (this.isCustomDriverLoader()) {
                 xml.addAttribute(RegistryConstants.ATTR_CUSTOM_DRIVER_LOADER, this.isCustomDriverLoader());
             }
-            if (this.isUseURL()) {
-                xml.addAttribute(RegistryConstants.ATTR_USE_URL_TEMPLATE, this.isUseURL());
-            }
 
             // Libraries
             for (DBPDriverLibrary lib : libraries) {
