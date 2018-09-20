@@ -119,6 +119,7 @@
                         category="MS SQL Server"
                         class="com.microsoft.sqlserver.jdbc.SQLServerDriver"
                         sampleURL="jdbc:sqlserver://{host}[:{port}][;databaseName={database}]"
+                        useURL="false"
                         defaultPort="1433"
                         webURL="https://github.com/Microsoft/mssql-jdbc"
                         description="Microsoft JDBC Driver for SQL Server">
@@ -153,6 +154,7 @@
                         icon="icons/sybase_icon.png"
                         class="net.sourceforge.jtds.jdbc.Driver"
                         sampleURL="jdbc:jtds:sybase://{host}[:{port}][/{database}]"
+                        useURL="false"
                         defaultPort="5000"
                         webURL="http://jtds.sourceforge.net/"
                         description="Sybase jTDS driver">
@@ -180,6 +182,7 @@
                         icon="icons/sybase_icon.png"
                         class="com.sybase.jdbc4.jdbc.SybDriver"
                         sampleURL="jdbc:sybase:Tds:{host}[:{port}][?ServiceName={database}]"
+                        useURL="false"
                         defaultPort="5000"
                         webURL="http://infocenter.sybase.com/help/index.jsp?topic=/com.sybase.infocenter.dc01776.1604/doc/html/san1357754912881.html"
                         description="Sybase jConnect driver">
