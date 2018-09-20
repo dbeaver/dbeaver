@@ -241,7 +241,7 @@
                  id="org.jkiss.dbeaver.core.resource.link.file.contenttype"
                  name="%commandParameter.org.jkiss.dbeaver.core.resource.link.file.contenttype.name"
                  optional="true"
-                 values="org.jkiss.dbeaver.runtime.core.ContentTypeParameterValues">
+                 values="org.jkiss.dbeaver.core.ContentTypeParameterValues">
            </commandParameter>
         </command>
         <command id="org.jkiss.dbeaver.core.resource.link.folder" name="%command.org.jkiss.dbeaver.core.resource.link.folder.name" description="%command.org.jkiss.dbeaver.core.resource.link.folder.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
@@ -2896,7 +2896,7 @@
             <adapter type="org.jkiss.dbeaver.runtime.ui.DBPPlatformUI"/>
         </factory>
         <factory adaptableType="org.jkiss.dbeaver.model.struct.DBSObject" class="org.jkiss.dbeaver.core.DBeaverCoreAdapterFactory">
-            <adapter type="org.jkiss.dbeaver.runtime.ide.core.WorkspaceResourceResolver"/>
+            <adapter type="org.jkiss.dbeaver.runtime.resource.WorkspaceResourceResolver"/>
         </factory>
         <factory adaptableType="org.jkiss.dbeaver.model.DBPObject" class="org.jkiss.dbeaver.ui.navigator.NavigatorAdapterFactory">
             <adapter type="org.jkiss.dbeaver.model.DBPNamedObject"/>

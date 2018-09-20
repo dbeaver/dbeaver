@@ -147,6 +147,12 @@ public class ModelMessages extends NLS {
     public static String model_struct_Pseudo_Key;
 	public static String model_struct_Unknown;
 
+	public static String CreateLinkedFileRunnable_e_cancelled_link;
+	public static String CreateLinkedFileRunnable_e_unable_to_link;
+	public static String CreateLinkedFolderRunnable_e_cancelled_link;
+	public static String CreateLinkedFolderRunnable_e_unable_to_link;
+
+
 	static {
 		// initialize resource bundle
 		NLS.initializeMessages(BUNDLE_NAME, ModelMessages.class);

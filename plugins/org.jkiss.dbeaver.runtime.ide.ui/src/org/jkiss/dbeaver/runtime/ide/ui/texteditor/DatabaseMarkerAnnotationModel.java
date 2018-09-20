@@ -27,8 +27,8 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 
-import static org.jkiss.dbeaver.runtime.ide.core.DBeaverIDECore.MARKER_ATTRIBUTE_DATASOURCE_ID;
-import static org.jkiss.dbeaver.runtime.ide.core.DBeaverIDECore.MARKER_ATTRIBUTE_NODE_PATH;
+import static org.jkiss.dbeaver.runtime.DBMarkers.MARKER_ATTRIBUTE_DATASOURCE_ID;
+import static org.jkiss.dbeaver.runtime.DBMarkers.MARKER_ATTRIBUTE_NODE_PATH;
 
 public class DatabaseMarkerAnnotationModel extends ResourceMarkerAnnotationModel {
 

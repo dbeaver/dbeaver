@@ -29,7 +29,7 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.DirectoryDialog;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
-import org.jkiss.dbeaver.runtime.ide.core.WorkspaceResources;
+import org.jkiss.dbeaver.runtime.resource.WorkspaceResources;
 import org.jkiss.dbeaver.runtime.ide.ui.handlers.CreateLinkHandler;
 
 public class LinkFolderHandler extends CreateLinkHandler {

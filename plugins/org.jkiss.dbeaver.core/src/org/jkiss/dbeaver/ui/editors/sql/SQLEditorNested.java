@@ -55,8 +55,8 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.runtime.ide.core.DBeaverIDECore;
 import org.jkiss.dbeaver.runtime.ide.ui.texteditor.DatabaseMarkerAnnotationModel;
+import org.jkiss.dbeaver.runtime.resource.WorkspaceResources;
 import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ObjectCompilerLogViewer;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
@@ -280,7 +280,7 @@ public abstract class SQLEditorNested<T extends DBSObject>
         protected IAnnotationModel createAnnotationModel(Object element) throws CoreException {
             DBSObject databaseObject = getSourceObject();
             DBNDatabaseNode node = DBeaverCore.getInstance().getNavigatorModel().getNodeByObject(databaseObject);
-            IResource resource = DBeaverIDECore.resolveWorkspaceResource(databaseObject);
+            IResource resource = WorkspaceResources.resolveWorkspaceResource(databaseObject);
             if (resource != null) {
                 return new DatabaseMarkerAnnotationModel(databaseObject, node, resource);
             }

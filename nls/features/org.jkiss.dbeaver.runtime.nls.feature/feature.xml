@@ -21,14 +21,11 @@
       <update label="DBeaver Universal Database Manager" url="https://dbeaver.io/"/>
    </url>
 
-   <plugin id="org.jkiss.utils.nls" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
+   <plugin id="org.jkiss.dbeaver.core.eclipse.nls" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
    <plugin id="org.jkiss.dbeaver.model.nls" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
-   <plugin id="org.jkiss.dbeaver.runtime.ide.core.nls" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
    <plugin id="org.jkiss.dbeaver.core.nls" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
    <plugin id="org.jkiss.dbeaver.ui.nls" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
    <plugin id="org.jkiss.dbeaver.ext.erd.nls" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
-   <plugin id="org.jkiss.dbeaver.ext.import_config.nls" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
-   <plugin id="org.jkiss.dbeaver.ext.ui.locks.nls" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
    <plugin id="org.jkiss.dbeaver.ext.mockdata.nls" download-size="0" install-size="0" version="0.0.0" fragment="true" unpack="false"/>
 
 

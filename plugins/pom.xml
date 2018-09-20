@@ -16,7 +16,6 @@
     <modules>
         <module>org.jkiss.dbeaver.model</module>
 
-        <module>org.jkiss.dbeaver.runtime.ide.core</module>
         <module>org.jkiss.dbeaver.runtime.ide.ui</module>
         <module>org.jkiss.dbeaver.core</module>
         <module>org.jkiss.dbeaver.ui</module>

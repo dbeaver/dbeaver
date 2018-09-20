@@ -42,7 +42,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
-import org.jkiss.dbeaver.runtime.ide.core.DBeaverIDECore;
+import org.jkiss.dbeaver.runtime.resource.WorkspaceResources;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 
 public class ToggleProcedureBreakpointTarget implements IToggleBreakpointsTargetExtension2 {
@@ -105,7 +105,7 @@ public class ToggleProcedureBreakpointTarget implements IToggleBreakpointsTarget
 
     protected IResource extractResource(IEditorPart part, ISelection selection) {
         DBSObject databaseObject = DebugUI.extractDatabaseObject(part);
-        return DBeaverIDECore.resolveWorkspaceResource(databaseObject);
+        return WorkspaceResources.resolveWorkspaceResource(databaseObject);
     }
 
     @Override
