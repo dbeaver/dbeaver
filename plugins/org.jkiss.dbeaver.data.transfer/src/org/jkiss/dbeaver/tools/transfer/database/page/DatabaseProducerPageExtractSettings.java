@@ -41,6 +41,8 @@ public class DatabaseProducerPageExtractSettings extends ActiveWizardPage<DataTr
     private Text segmentSizeText;
     private Button newConnectionCheckbox;
     private Button rowCountCheckbox;
+    private Button selectedColumnsOnlyCheckbox;
+    private Button selectedRowsOnlyCheckbox;
 
     public DatabaseProducerPageExtractSettings() {
         super("Extraction settings");
@@ -133,7 +135,7 @@ public class DatabaseProducerPageExtractSettings extends ActiveWizardPage<DataTr
             boolean hasSelection = curSelection != null && !curSelection.isEmpty() && curSelection.getFirstElement() instanceof DBDCellValue;
 
             if (hasSelection) {
-                Button selectedColumnsOnlyCheckbox = UIUtils.createCheckbox(generalSettings, DTMessages.data_transfer_wizard_output_checkbox_selected_columns_only, null, false, 4);
+                selectedColumnsOnlyCheckbox = UIUtils.createCheckbox(generalSettings, DTMessages.data_transfer_wizard_output_checkbox_selected_columns_only, null, false, 4);
                 selectedColumnsOnlyCheckbox.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
@@ -141,7 +143,7 @@ public class DatabaseProducerPageExtractSettings extends ActiveWizardPage<DataTr
                     }
                 });
 
-                Button selectedRowsOnlyCheckbox = UIUtils.createCheckbox(generalSettings, DTMessages.data_transfer_wizard_output_checkbox_selected_rows_only, null, false, 4);
+                selectedRowsOnlyCheckbox = UIUtils.createCheckbox(generalSettings, DTMessages.data_transfer_wizard_output_checkbox_selected_rows_only, null, false, 4);
                 selectedRowsOnlyCheckbox.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
@@ -179,6 +181,12 @@ public class DatabaseProducerPageExtractSettings extends ActiveWizardPage<DataTr
                 case SINGLE_QUERY: rowsExtractType.select(EXTRACT_TYPE_SINGLE_QUERY); break;
                 case SEGMENTS: rowsExtractType.select(EXTRACT_TYPE_SEGMENTS); break;
             }
+        }
+        if (selectedColumnsOnlyCheckbox != null) {
+            selectedColumnsOnlyCheckbox.setSelection(settings.isSelectedColumnsOnly());
+        }
+        if (selectedRowsOnlyCheckbox != null) {
+            selectedRowsOnlyCheckbox.setSelection(settings.isSelectedRowsOnly());
         }
 
         updatePageCompletion();
