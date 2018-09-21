@@ -2740,6 +2740,37 @@
         </column>
     </extension>
 
+    <extension point="org.eclipse.ui.editors.annotationTypes">
+        <type name="org.eclipse.jdt.ui.occurrences"/>
+    </extension>
+
+    <extension point="org.eclipse.ui.editors.markerAnnotationSpecification">
+        <specification
+                annotationType="org.jkisss.dbeaver.ui.occurrences"
+                label="Editor selection occurrences"
+                icon="icons/sql/sql_script.png"
+                textPreferenceKey="occurrenceIndication"
+                textPreferenceValue="false"
+                highlightPreferenceKey="occurrenceHighlighting"
+                highlightPreferenceValue="true"
+                contributesToHeader="false"
+                overviewRulerPreferenceKey="occurrenceIndicationInOverviewRuler"
+                overviewRulerPreferenceValue="true"
+                verticalRulerPreferenceKey="occurrenceIndicationInVerticalRuler"
+                verticalRulerPreferenceValue="false"
+                colorPreferenceKey="occurrenceIndicationColor"
+                colorPreferenceValue="212,212,212"
+                presentationLayer="4"
+                showInNextPrevDropdownToolbarActionKey="showOccurrenceInNextPrevDropdownToolbarAction"
+                showInNextPrevDropdownToolbarAction="true"
+                isGoToNextNavigationTargetKey="isOccurrenceGoToNextNavigationTarget"
+                isGoToNextNavigationTarget="false"
+                isGoToPreviousNavigationTargetKey="isOccurrenceGoToPreviousNavigationTarget"
+                isGoToPreviousNavigationTarget="false"
+                textStylePreferenceKey="occurrenceTextStyle"
+                textStylePreferenceValue="NONE">
+        </specification>
+    </extension>
 
 
     <extension point="org.eclipse.core.runtime.preferences">

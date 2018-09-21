@@ -17,6 +17,11 @@
 package org.jkiss.dbeaver.ui.editors.sql;
 
 
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.*;
@@ -28,7 +33,8 @@ import org.eclipse.jface.text.source.projection.ProjectionSupport;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
-import org.eclipse.jface.viewers.ISelectionProvider;
+import org.eclipse.jface.viewers.*;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.IEditorInput;
@@ -58,6 +64,7 @@ import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLCharacterPairMatcher;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLPartitionScanner;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLRuleManager;
+import org.jkiss.dbeaver.ui.editors.sql.syntax.SQLWordDetector;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.rules.SQLVariableRule;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLControlToken;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.SQLToken;
@@ -69,17 +76,14 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.ResourceBundle;
+import java.util.*;
 import java.util.regex.Matcher;
 
 /**
  * SQL Executor
  */
 public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisualizer {
-    
+
     static protected final Log log = Log.getLog(SQLEditorBase.class);
 
     static {
@@ -91,6 +95,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
             editorStore.setDefault(SQLPreferenceConstants.MATCHING_BRACKETS_COLOR, "128,128,128"); //$NON-NLS-1$
         }
     }
+
+    private final Object LOCK_OBJECT = new Object();
 
     @NotNull
     private final SQLSyntaxManager syntaxManager;
@@ -106,6 +112,13 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
     private SQLTemplatesPage templatesPage;
     private IPropertyChangeListener themeListener;
     private SQLEditorControl editorControl;
+
+    //private ActivationListener fActivationListener = new ActivationListener();
+    private EditorSelectionChangedListener selectionChangedListener = new EditorSelectionChangedListener();
+    private Annotation[] fOccurrenceAnnotations = null;
+    private boolean fMarkOccurrenceAnnotations;
+    private OccurrencesFinderJob fOccurrencesFinderJob;
+    private OccurrencesFinderJobCanceler fOccurrencesFinderJobCanceler;
 
     public SQLEditorBase()
     {
@@ -150,6 +163,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
     @Override
     protected void initializeEditor() {
         super.initializeEditor();
+        this.fMarkOccurrenceAnnotations = DBeaverCore.getGlobalPreferenceStore().getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES);
         setEditorContextMenuId(SQLEditorContributions.SQL_EDITOR_CONTEXT_MENU_ID);
         setRulerContextMenuId(SQLEditorContributions.SQL_RULER_CONTEXT_MENU_ID);
     }
@@ -171,6 +185,25 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         }
         DBPDataSource dataSource = getDataSource();
         return dataSource == null ? DBeaverCore.getGlobalPreferenceStore() : dataSource.getContainer().getPreferenceStore();
+    }
+
+    @Override
+    protected void handlePreferenceStoreChanged(PropertyChangeEvent event) {
+        String property = event.getProperty();
+        if (SQLPreferenceConstants.MARK_OCCURRENCES.equals(property)) {
+            boolean newBooleanValue = CommonUtils.toBoolean(event.getNewValue());
+            if (newBooleanValue != this.fMarkOccurrenceAnnotations) {
+                this.fMarkOccurrenceAnnotations = newBooleanValue;
+                if (this.fMarkOccurrenceAnnotations) {
+                    this.installOccurrencesFinder();
+                } else {
+                    this.uninstallOccurrencesFinder();
+                }
+            }
+
+        } else {
+            super.handlePreferenceStoreChanged(event);
+        }
     }
 
     @NotNull
@@ -216,6 +249,14 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
 
         editorControl = new SQLEditorControl(parent, this);
         super.createPartControl(editorControl);
+
+        //this.getEditorSite().getShell().addShellListener(this.fActivationListener);
+        this.selectionChangedListener = new EditorSelectionChangedListener();
+        this.selectionChangedListener.install(this.getSelectionProvider());
+
+        if (this.fMarkOccurrenceAnnotations) {
+            this.installOccurrencesFinder();
+        }
 
         ProjectionViewer viewer = (ProjectionViewer) getSourceViewer();
         projectionSupport = new ProjectionSupport(
@@ -388,6 +429,20 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
     @Override
     public void dispose()
     {
+        if (this.selectionChangedListener != null) {
+            this.selectionChangedListener.uninstall(this.getSelectionProvider());
+            this.selectionChangedListener= null;
+        }
+/*
+        if (this.fActivationListener != null) {
+            Shell shell = this.getEditorSite().getShell();
+            if (shell != null && !shell.isDisposed()) {
+                shell.removeShellListener(this.fActivationListener);
+            }
+            this.fActivationListener = null;
+        }
+*/
+
         if (themeListener != null) {
             PlatformUI.getWorkbench().getThemeManager().removePropertyChangeListener(themeListener);
             themeListener = null;
@@ -1218,6 +1273,321 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
 
     public boolean isFoldingEnabled() {
         return getActivePreferenceStore().getBoolean(SQLPreferenceConstants.FOLDING_ENABLED);
+    }
+
+    /////////////////////////////////////////////////////////////////
+    // Occurrences highlight
+
+    protected void updateOccurrenceAnnotations(ITextSelection selection) {
+        if (this.fOccurrencesFinderJob != null) {
+            this.fOccurrencesFinderJob.cancel();
+        }
+
+        if (this.fMarkOccurrenceAnnotations) {
+            if (selection != null) {
+                IDocument document = this.getSourceViewer().getDocument();
+                if (document != null) {
+                    // Get full word
+                    SQLWordDetector wordDetector = new SQLWordDetector();
+                    int startPos = selection.getOffset();
+                    int endPos = startPos + selection.getLength();
+                    try {
+                        int documentLength = document.getLength();
+                        while (startPos > 0 && wordDetector.isWordPart(document.getChar(startPos - 1))) {
+                            startPos--;
+                        }
+                        while (endPos < documentLength && wordDetector.isWordPart(document.getChar(endPos))) {
+                            endPos++;
+                        }
+                    } catch (BadLocationException e) {
+                        log.debug("Error detecting current word: " + e.getMessage());
+                    }
+                    selection = new TextSelection(document, startPos, endPos - startPos);
+
+                    OccurrencesFinder finder = new OccurrencesFinder(document, selection);
+                    List<Position> positions = finder.perform();
+                    if (positions != null && positions.size() != 0) {
+                        this.fOccurrencesFinderJob = new OccurrencesFinderJob(positions);
+                        this.fOccurrencesFinderJob.run(new NullProgressMonitor());
+                    } else {
+                        this.removeOccurrenceAnnotations();
+                    }
+                }
+            }
+        }
+    }
+
+    private void removeOccurrenceAnnotations() {
+        IDocumentProvider documentProvider = this.getDocumentProvider();
+        if (documentProvider != null) {
+            IAnnotationModel annotationModel = documentProvider.getAnnotationModel(this.getEditorInput());
+            if (annotationModel != null && this.fOccurrenceAnnotations != null) {
+                synchronized(LOCK_OBJECT) {
+                    this.updateAnnotationModelForRemoves(annotationModel);
+                }
+
+            }
+        }
+    }
+
+    private void updateAnnotationModelForRemoves(IAnnotationModel annotationModel) {
+        if (annotationModel instanceof IAnnotationModelExtension) {
+            ((IAnnotationModelExtension)annotationModel).replaceAnnotations(this.fOccurrenceAnnotations, null);
+        } else {
+            int i = 0;
+
+            for(int length = this.fOccurrenceAnnotations.length; i < length; ++i) {
+                annotationModel.removeAnnotation(this.fOccurrenceAnnotations[i]);
+            }
+        }
+
+        this.fOccurrenceAnnotations = null;
+    }
+
+    protected void installOccurrencesFinder() {
+        this.fMarkOccurrenceAnnotations = true;
+        if (this.getSelectionProvider() != null) {
+            ISelection selection = this.getSelectionProvider().getSelection();
+            if (selection instanceof ITextSelection) {
+                this.updateOccurrenceAnnotations((ITextSelection) selection);
+            }
+        }
+
+        if (this.fOccurrencesFinderJobCanceler == null) {
+            this.fOccurrencesFinderJobCanceler = new SQLEditorBase.OccurrencesFinderJobCanceler();
+            this.fOccurrencesFinderJobCanceler.install();
+        }
+
+    }
+
+    protected void uninstallOccurrencesFinder() {
+        this.fMarkOccurrenceAnnotations = false;
+        if (this.fOccurrencesFinderJob != null) {
+            this.fOccurrencesFinderJob.cancel();
+            this.fOccurrencesFinderJob = null;
+        }
+
+        if (this.fOccurrencesFinderJobCanceler != null) {
+            this.fOccurrencesFinderJobCanceler.uninstall();
+            this.fOccurrencesFinderJobCanceler = null;
+        }
+
+        this.removeOccurrenceAnnotations();
+    }
+
+    public boolean isMarkingOccurrences() {
+        return this.fMarkOccurrenceAnnotations;
+    }
+
+/*
+    private class ActivationListener extends ShellAdapter {
+        public void shellActivated(ShellEvent e) {
+            if (SQLEditorBase.this.fMarkOccurrenceAnnotations) {
+                ISelection selection = SQLEditorBase.this.getSelectionProvider().getSelection();
+                if (selection instanceof ITextSelection) {
+                    SQLEditorBase.this.fForcedMarkOccurrencesSelection = (ITextSelection)selection;
+                    SQLEditorBase.this.updateOccurrenceAnnotations(SQLEditorBase.this.fForcedMarkOccurrencesSelection);
+                }
+            }
+
+        }
+
+        public void shellDeactivated(ShellEvent e) {
+            if (SQLEditorBase.this.fMarkOccurrenceAnnotations) {
+                SQLEditorBase.this.removeOccurrenceAnnotations();
+            }
+        }
+    }
+*/
+
+    private class EditorSelectionChangedListener implements ISelectionChangedListener {
+        public void install(ISelectionProvider selectionProvider) {
+            if (selectionProvider instanceof IPostSelectionProvider) {
+                ((IPostSelectionProvider)selectionProvider).addPostSelectionChangedListener(this);
+            } else if (selectionProvider != null) {
+                selectionProvider.addSelectionChangedListener(this);
+            }
+        }
+
+        public void uninstall(ISelectionProvider selectionProvider) {
+            if (selectionProvider instanceof IPostSelectionProvider) {
+                ((IPostSelectionProvider)selectionProvider).removePostSelectionChangedListener(this);
+            } else if (selectionProvider != null) {
+                selectionProvider.removeSelectionChangedListener(this);
+            }
+        }
+
+        public void selectionChanged(SelectionChangedEvent event) {
+            ISelection selection = event.getSelection();
+            if (selection instanceof ITextSelection) {
+                SQLEditorBase.this.updateOccurrenceAnnotations((ITextSelection)selection);
+            }
+        }
+    }
+
+    class OccurrencesFinderJob extends Job {
+        private boolean fCanceled = false;
+        private IProgressMonitor fProgressMonitor;
+        private List<Position> fPositions;
+
+        public OccurrencesFinderJob(List<Position> positions) {
+            super("Occurrences Marker");
+            this.fPositions = positions;
+        }
+
+        void doCancel() {
+            this.fCanceled = true;
+            this.cancel();
+        }
+
+        private boolean isCanceled() {
+            return this.fCanceled || this.fProgressMonitor.isCanceled();
+        }
+
+        public IStatus run(IProgressMonitor progressMonitor) {
+            this.fProgressMonitor = progressMonitor;
+            if (!this.isCanceled()) {
+                ITextViewer textViewer = SQLEditorBase.this.getViewer();
+                if (textViewer != null) {
+                    IDocument document = textViewer.getDocument();
+                    if (document != null) {
+                        IDocumentProvider documentProvider = SQLEditorBase.this.getDocumentProvider();
+                        if (documentProvider != null) {
+                            IAnnotationModel annotationModel = documentProvider.getAnnotationModel(SQLEditorBase.this.getEditorInput());
+                            if (annotationModel != null) {
+                                Map<Annotation, Position> annotationMap = new HashMap<>(this.fPositions.size());
+
+                                for (Position position : this.fPositions) {
+                                    if (this.isCanceled()) {
+                                        break;
+                                    }
+                                    try {
+                                        String message = document.get(position.offset, position.length);
+                                        annotationMap.put(new Annotation(SQLEditorContributions.OCCURRENCES_ANNOTATION_ID, false, message), position);
+                                    } catch (BadLocationException ex) {
+                                        //
+                                    }
+                                }
+
+                                if (!this.isCanceled()) {
+                                    synchronized(LOCK_OBJECT) {
+                                        this.updateAnnotations(annotationModel, annotationMap);
+                                    }
+                                    return Status.OK_STATUS;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return Status.CANCEL_STATUS;
+        }
+
+        private void updateAnnotations(IAnnotationModel annotationModel, Map<Annotation, Position> annotationMap) {
+            if (annotationModel instanceof IAnnotationModelExtension) {
+                ((IAnnotationModelExtension)annotationModel).replaceAnnotations(SQLEditorBase.this.fOccurrenceAnnotations, annotationMap);
+            } else {
+                SQLEditorBase.this.removeOccurrenceAnnotations();
+
+                for (Map.Entry<Annotation, Position> mapEntry : annotationMap.entrySet()) {
+                    annotationModel.addAnnotation(mapEntry.getKey(), mapEntry.getValue());
+                }
+            }
+
+            SQLEditorBase.this.fOccurrenceAnnotations = annotationMap.keySet().toArray(new Annotation[annotationMap.keySet().size()]);
+        }
+    }
+
+    class OccurrencesFinderJobCanceler implements IDocumentListener, ITextInputListener {
+
+        public void install() {
+            ISourceViewer sourceViewer = SQLEditorBase.this.getSourceViewer();
+            if (sourceViewer != null) {
+                StyledText text = sourceViewer.getTextWidget();
+                if (text != null && !text.isDisposed()) {
+                    sourceViewer.addTextInputListener(this);
+                    IDocument document = sourceViewer.getDocument();
+                    if (document != null) {
+                        document.addDocumentListener(this);
+                    }
+
+                }
+            }
+        }
+
+        public void uninstall() {
+            ISourceViewer sourceViewer = SQLEditorBase.this.getSourceViewer();
+            if (sourceViewer != null) {
+                sourceViewer.removeTextInputListener(this);
+            }
+
+            IDocumentProvider documentProvider = SQLEditorBase.this.getDocumentProvider();
+            if (documentProvider != null) {
+                IDocument document = documentProvider.getDocument(SQLEditorBase.this.getEditorInput());
+                if (document != null) {
+                    document.removeDocumentListener(this);
+                }
+            }
+
+        }
+
+        public void documentAboutToBeChanged(DocumentEvent event) {
+            if (SQLEditorBase.this.fOccurrencesFinderJob != null) {
+                SQLEditorBase.this.fOccurrencesFinderJob.doCancel();
+            }
+
+        }
+
+        public void documentChanged(DocumentEvent event) {
+        }
+
+        public void inputDocumentAboutToBeChanged(IDocument oldInput, IDocument newInput) {
+            if (oldInput != null) {
+                oldInput.removeDocumentListener(this);
+            }
+        }
+
+        public void inputDocumentChanged(IDocument oldInput, IDocument newInput) {
+            if (newInput != null) {
+                newInput.addDocumentListener(this);
+            }
+        }
+    }
+
+    public static class OccurrencesFinder {
+        private ITextSelection selection;
+        private IDocument fDocument;
+
+        public OccurrencesFinder(IDocument document, ITextSelection selection) {
+            this.fDocument = document;
+            this.selection = selection;
+        }
+
+        public List<Position> perform() {
+            if (selection == null || selection.isEmpty()) {
+                return null;
+            }
+            String searchFor = selection.getText().trim();
+
+            List<Position> positions = new ArrayList<>();
+
+            FindReplaceDocumentAdapter findReplaceDocumentAdapter = new FindReplaceDocumentAdapter(fDocument);
+            try {
+                for (int offset = 0;;) {
+                    IRegion region = findReplaceDocumentAdapter.find(offset, searchFor, true, false, true, false);
+                    if (region == null) {
+                        break;
+                    }
+                    positions.add(new Position(region.getOffset(), region.getLength()));
+                    offset = region.getOffset() + region.getLength();
+                }
+            } catch (BadLocationException e) {
+                log.debug("Error finding occurrences: " + e.getMessage());
+            }
+
+            return positions;
+        }
+
     }
 
 }
