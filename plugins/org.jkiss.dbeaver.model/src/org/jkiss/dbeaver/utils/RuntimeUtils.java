@@ -217,15 +217,18 @@ public class RuntimeUtils {
 
         // Wait for job to finish
         long startTime = System.currentTimeMillis();
-        if (waitTime > 0) {
-            while (!monitoringTask.finished && System.currentTimeMillis() - startTime < waitTime) {
-                try {
-                    Thread.sleep(50);
-                } catch (InterruptedException e) {
-                    break;
-                }
+        while (!monitoringTask.finished) {
+            if (waitTime > 0 && System.currentTimeMillis() - startTime > waitTime) {
+                break;
+            }
+            try {
+                Thread.sleep(50);
+            } catch (InterruptedException e) {
+                log.debug("Task '" + taskName + "' was interrupted");
+                break;
             }
         }
+
         return monitoringTask.finished;
     }
 
@@ -243,6 +246,7 @@ public class RuntimeUtils {
 
     private static class MonitoringTask implements DBRRunnableWithProgress {
         private final DBRRunnableWithProgress task;
+        private DBRProgressMonitor monitor;
         volatile boolean finished;
 
         private MonitoringTask(DBRRunnableWithProgress task) {
@@ -255,6 +259,7 @@ public class RuntimeUtils {
 
         @Override
         public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+            this.monitor = monitor;
             try {
                 task.run(monitor);
             } finally {
