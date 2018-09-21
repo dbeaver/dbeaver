@@ -435,7 +435,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         a.setActionDefinitionId(CoreCommands.CMD_CONTENT_FORMAT);
         setAction(SQLEditorContributor.ACTION_CONTENT_FORMAT_PROPOSAL, a);
 
-        setAction(ITextEditorActionConstants.CONTEXT_PREFERENCES, new Action("Preferences...") { //$NON-NLS-1$
+        setAction(ITextEditorActionConstants.CONTEXT_PREFERENCES, new Action(CoreMessages.editor_sql_preference) { //$NON-NLS-1$
             public void run() {
                 Shell shell = getSourceViewer().getTextWidget().getShell();
                 String[] preferencePages = collectContextMenuPreferencePages();
