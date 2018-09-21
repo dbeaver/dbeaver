@@ -34,6 +34,8 @@
 
     <!-- P2 for RCP -->
     <includes id="org.eclipse.equinox.p2.rcp.feature" version="0.0.0"/>
+    <includes id="org.eclipse.equinox.p2.discovery.feature" version="0.0.0"/>
+    <includes id="org.eclipse.equinox.p2.extras.feature" version="0.0.0"/>
 
     <requires>
         <import plugin="org.eclipse.core.runtime"/>
