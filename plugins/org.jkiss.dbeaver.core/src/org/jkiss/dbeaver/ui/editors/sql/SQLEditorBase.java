@@ -107,18 +107,18 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
     private ProjectionAnnotationModel annotationModel;
     //private Map<Annotation, Position> curAnnotations;
 
-    private IAnnotationAccess annotationAccess;
+    //private IAnnotationAccess annotationAccess;
     private boolean hasVerticalRuler = true;
     private SQLTemplatesPage templatesPage;
     private IPropertyChangeListener themeListener;
     private SQLEditorControl editorControl;
 
-    //private ActivationListener fActivationListener = new ActivationListener();
+    //private ActivationListener activationListener = new ActivationListener();
     private EditorSelectionChangedListener selectionChangedListener = new EditorSelectionChangedListener();
-    private Annotation[] fOccurrenceAnnotations = null;
-    private boolean fMarkOccurrenceAnnotations;
-    private OccurrencesFinderJob fOccurrencesFinderJob;
-    private OccurrencesFinderJobCanceler fOccurrencesFinderJobCanceler;
+    private Annotation[] occurrenceAnnotations = null;
+    private boolean markOccurrenceAnnotations;
+    private OccurrencesFinderJob occurrencesFinderJob;
+    private OccurrencesFinderJobCanceler occurrencesFinderJobCanceler;
 
     public SQLEditorBase()
     {
@@ -163,7 +163,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
     @Override
     protected void initializeEditor() {
         super.initializeEditor();
-        this.fMarkOccurrenceAnnotations = DBeaverCore.getGlobalPreferenceStore().getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES);
+        this.markOccurrenceAnnotations = DBeaverCore.getGlobalPreferenceStore().getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES);
         setEditorContextMenuId(SQLEditorContributions.SQL_EDITOR_CONTEXT_MENU_ID);
         setRulerContextMenuId(SQLEditorContributions.SQL_RULER_CONTEXT_MENU_ID);
     }
@@ -192,9 +192,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         String property = event.getProperty();
         if (SQLPreferenceConstants.MARK_OCCURRENCES.equals(property)) {
             boolean newBooleanValue = CommonUtils.toBoolean(event.getNewValue());
-            if (newBooleanValue != this.fMarkOccurrenceAnnotations) {
-                this.fMarkOccurrenceAnnotations = newBooleanValue;
-                if (this.fMarkOccurrenceAnnotations) {
+            if (newBooleanValue != this.markOccurrenceAnnotations) {
+                this.markOccurrenceAnnotations = newBooleanValue;
+                if (this.markOccurrenceAnnotations) {
                     this.installOccurrencesFinder();
                 } else {
                     this.uninstallOccurrencesFinder();
@@ -214,11 +214,6 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
             return ((SQLDataSource) dataSource).getSQLDialect();
         }
         return BasicSQLDialect.INSTANCE;
-    }
-
-    public boolean hasAnnotations()
-    {
-        return false;
     }
 
     @NotNull
@@ -250,11 +245,11 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         editorControl = new SQLEditorControl(parent, this);
         super.createPartControl(editorControl);
 
-        //this.getEditorSite().getShell().addShellListener(this.fActivationListener);
+        //this.getEditorSite().getShell().addShellListener(this.activationListener);
         this.selectionChangedListener = new EditorSelectionChangedListener();
         this.selectionChangedListener.install(this.getSelectionProvider());
 
-        if (this.fMarkOccurrenceAnnotations) {
+        if (this.markOccurrenceAnnotations) {
             this.installOccurrencesFinder();
         }
 
@@ -434,12 +429,12 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
             this.selectionChangedListener= null;
         }
 /*
-        if (this.fActivationListener != null) {
+        if (this.activationListener != null) {
             Shell shell = this.getEditorSite().getShell();
             if (shell != null && !shell.isDisposed()) {
-                shell.removeShellListener(this.fActivationListener);
+                shell.removeShellListener(this.activationListener);
             }
-            this.fActivationListener = null;
+            this.activationListener = null;
         }
 */
 
@@ -1279,11 +1274,11 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
     // Occurrences highlight
 
     protected void updateOccurrenceAnnotations(ITextSelection selection) {
-        if (this.fOccurrencesFinderJob != null) {
-            this.fOccurrencesFinderJob.cancel();
+        if (this.occurrencesFinderJob != null) {
+            this.occurrencesFinderJob.cancel();
         }
 
-        if (this.fMarkOccurrenceAnnotations) {
+        if (this.markOccurrenceAnnotations) {
             if (selection != null) {
                 IDocument document = this.getSourceViewer().getDocument();
                 if (document != null) {
@@ -1307,8 +1302,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                     OccurrencesFinder finder = new OccurrencesFinder(document, selection);
                     List<Position> positions = finder.perform();
                     if (positions != null && positions.size() != 0) {
-                        this.fOccurrencesFinderJob = new OccurrencesFinderJob(positions);
-                        this.fOccurrencesFinderJob.run(new NullProgressMonitor());
+                        this.occurrencesFinderJob = new OccurrencesFinderJob(positions);
+                        this.occurrencesFinderJob.run(new NullProgressMonitor());
                     } else {
                         this.removeOccurrenceAnnotations();
                     }
@@ -1321,7 +1316,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         IDocumentProvider documentProvider = this.getDocumentProvider();
         if (documentProvider != null) {
             IAnnotationModel annotationModel = documentProvider.getAnnotationModel(this.getEditorInput());
-            if (annotationModel != null && this.fOccurrenceAnnotations != null) {
+            if (annotationModel != null && this.occurrenceAnnotations != null) {
                 synchronized(LOCK_OBJECT) {
                     this.updateAnnotationModelForRemoves(annotationModel);
                 }
@@ -1332,20 +1327,20 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
 
     private void updateAnnotationModelForRemoves(IAnnotationModel annotationModel) {
         if (annotationModel instanceof IAnnotationModelExtension) {
-            ((IAnnotationModelExtension)annotationModel).replaceAnnotations(this.fOccurrenceAnnotations, null);
+            ((IAnnotationModelExtension)annotationModel).replaceAnnotations(this.occurrenceAnnotations, null);
         } else {
             int i = 0;
 
-            for(int length = this.fOccurrenceAnnotations.length; i < length; ++i) {
-                annotationModel.removeAnnotation(this.fOccurrenceAnnotations[i]);
+            for(int length = this.occurrenceAnnotations.length; i < length; ++i) {
+                annotationModel.removeAnnotation(this.occurrenceAnnotations[i]);
             }
         }
 
-        this.fOccurrenceAnnotations = null;
+        this.occurrenceAnnotations = null;
     }
 
     protected void installOccurrencesFinder() {
-        this.fMarkOccurrenceAnnotations = true;
+        this.markOccurrenceAnnotations = true;
         if (this.getSelectionProvider() != null) {
             ISelection selection = this.getSelectionProvider().getSelection();
             if (selection instanceof ITextSelection) {
@@ -1353,36 +1348,36 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
             }
         }
 
-        if (this.fOccurrencesFinderJobCanceler == null) {
-            this.fOccurrencesFinderJobCanceler = new SQLEditorBase.OccurrencesFinderJobCanceler();
-            this.fOccurrencesFinderJobCanceler.install();
+        if (this.occurrencesFinderJobCanceler == null) {
+            this.occurrencesFinderJobCanceler = new SQLEditorBase.OccurrencesFinderJobCanceler();
+            this.occurrencesFinderJobCanceler.install();
         }
 
     }
 
     protected void uninstallOccurrencesFinder() {
-        this.fMarkOccurrenceAnnotations = false;
-        if (this.fOccurrencesFinderJob != null) {
-            this.fOccurrencesFinderJob.cancel();
-            this.fOccurrencesFinderJob = null;
+        this.markOccurrenceAnnotations = false;
+        if (this.occurrencesFinderJob != null) {
+            this.occurrencesFinderJob.cancel();
+            this.occurrencesFinderJob = null;
         }
 
-        if (this.fOccurrencesFinderJobCanceler != null) {
-            this.fOccurrencesFinderJobCanceler.uninstall();
-            this.fOccurrencesFinderJobCanceler = null;
+        if (this.occurrencesFinderJobCanceler != null) {
+            this.occurrencesFinderJobCanceler.uninstall();
+            this.occurrencesFinderJobCanceler = null;
         }
 
         this.removeOccurrenceAnnotations();
     }
 
     public boolean isMarkingOccurrences() {
-        return this.fMarkOccurrenceAnnotations;
+        return this.markOccurrenceAnnotations;
     }
 
 /*
     private class ActivationListener extends ShellAdapter {
         public void shellActivated(ShellEvent e) {
-            if (SQLEditorBase.this.fMarkOccurrenceAnnotations) {
+            if (SQLEditorBase.this.markOccurrenceAnnotations) {
                 ISelection selection = SQLEditorBase.this.getSelectionProvider().getSelection();
                 if (selection instanceof ITextSelection) {
                     SQLEditorBase.this.fForcedMarkOccurrencesSelection = (ITextSelection)selection;
@@ -1393,7 +1388,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         }
 
         public void shellDeactivated(ShellEvent e) {
-            if (SQLEditorBase.this.fMarkOccurrenceAnnotations) {
+            if (SQLEditorBase.this.markOccurrenceAnnotations) {
                 SQLEditorBase.this.removeOccurrenceAnnotations();
             }
         }
@@ -1485,7 +1480,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
 
         private void updateAnnotations(IAnnotationModel annotationModel, Map<Annotation, Position> annotationMap) {
             if (annotationModel instanceof IAnnotationModelExtension) {
-                ((IAnnotationModelExtension)annotationModel).replaceAnnotations(SQLEditorBase.this.fOccurrenceAnnotations, annotationMap);
+                ((IAnnotationModelExtension)annotationModel).replaceAnnotations(SQLEditorBase.this.occurrenceAnnotations, annotationMap);
             } else {
                 SQLEditorBase.this.removeOccurrenceAnnotations();
 
@@ -1494,7 +1489,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                 }
             }
 
-            SQLEditorBase.this.fOccurrenceAnnotations = annotationMap.keySet().toArray(new Annotation[annotationMap.keySet().size()]);
+            SQLEditorBase.this.occurrenceAnnotations = annotationMap.keySet().toArray(new Annotation[annotationMap.keySet().size()]);
         }
     }
 
@@ -1532,8 +1527,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         }
 
         public void documentAboutToBeChanged(DocumentEvent event) {
-            if (SQLEditorBase.this.fOccurrencesFinderJob != null) {
-                SQLEditorBase.this.fOccurrencesFinderJob.doCancel();
+            if (SQLEditorBase.this.occurrencesFinderJob != null) {
+                SQLEditorBase.this.occurrencesFinderJob.doCancel();
             }
 
         }
