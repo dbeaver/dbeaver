@@ -29,4 +29,5 @@ Require-Bundle: org.eclipse.osgi,
  org.w3c.css.sac,
  org.jkiss.dbeaver.model,
  org.jkiss.dbeaver.core,
- org.jkiss.dbeaver.ui
+ org.jkiss.dbeaver.ui,
+ org.eclipse.nebula.widgets.opal.tipoftheday;bundle-version="1.0.0"
