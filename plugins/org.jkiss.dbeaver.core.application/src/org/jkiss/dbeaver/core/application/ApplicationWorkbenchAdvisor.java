@@ -33,6 +33,8 @@ import org.eclipse.ui.internal.ide.IDEWorkbenchPlugin;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.core.DBeaverCore;
+import org.jkiss.dbeaver.core.application.tips.TipOfTheDayJob;
 import org.jkiss.dbeaver.core.application.update.DBeaverVersionChecker;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
@@ -142,6 +144,7 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 
         startVersionChecker();
 
+        startTipOfTheDayIfNeeded();
 /*
         settingsChangeListener = event -> {
             if (isPropertyChangeRequiresRestart(event.getProperty())) {
@@ -155,6 +158,16 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
         };
         DBeaverCore.getGlobalPreferenceStore().addPropertyChangeListener(settingsChangeListener);
 */
+
+    }
+
+    private void startTipOfTheDayIfNeeded() {
+        if (!DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.UI_SHOW_TIP_OF_THE_DAY_ON_STARTUP) ||
+                DataSourceRegistry.getAllDataSources().isEmpty()) {
+            return;
+        }
+        TipOfTheDayJob tipOfTheDayJob = new TipOfTheDayJob();
+        tipOfTheDayJob.schedule(3200);
 
     }
 
