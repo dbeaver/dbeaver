@@ -1,0 +1,3 @@
+files:
+  - source: /plugins/**/*.properties
+    translation: /nls/%original_file_name%_%two_letters_code%.properties
