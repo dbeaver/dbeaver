@@ -56,8 +56,6 @@ public class PrefPageSQLCompletion extends TargetPrefPage
     private Button afKeywordCase;
     private Button afExtractFromSource;
 
-    private Button csFoldingEnabled;
-
     public PrefPageSQLCompletion()
     {
         super();
@@ -85,9 +83,7 @@ public class PrefPageSQLCompletion extends TargetPrefPage
             store.contains(SQLPreferenceConstants.SQLEDITOR_CLOSE_DOUBLE_QUOTES) ||
             store.contains(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS) ||
             store.contains(SQLPreferenceConstants.SQL_FORMAT_KEYWORD_CASE_AUTO) ||
-            store.contains(SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE) ||
-
-            store.contains(SQLPreferenceConstants.FOLDING_ENABLED)
+            store.contains(SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE)
         ;
     }
 
@@ -170,13 +166,6 @@ public class PrefPageSQLCompletion extends TargetPrefPage
                 CoreMessages.pref_page_sql_format_label_extract_sql_from_source_code_tip, false, 1);
         }
 
-
-        // Folding
-        {
-            Composite foldingGroup = UIUtils.createControlGroup(autoFormatPanel, CoreMessages.pref_page_sql_completion_group_folding, 2, GridData.FILL_HORIZONTAL, 0);
-
-            csFoldingEnabled = UIUtils.createCheckbox(foldingGroup, CoreMessages.pref_page_sql_completion_label_folding_enabled, CoreMessages.pref_page_sql_completion_label_folding_enabled_tip, false, 2);
-        }
         return composite;
     }
 
@@ -204,7 +193,6 @@ public class PrefPageSQLCompletion extends TargetPrefPage
             afKeywordCase.setSelection(store.getBoolean(SQLPreferenceConstants.SQL_FORMAT_KEYWORD_CASE_AUTO));
             afExtractFromSource.setSelection(store.getBoolean(SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE));
 
-            csFoldingEnabled.setSelection(store.getBoolean(SQLPreferenceConstants.FOLDING_ENABLED));
         } catch (Exception e) {
             log.warn(e);
         }
@@ -233,8 +221,6 @@ public class PrefPageSQLCompletion extends TargetPrefPage
 
             store.setValue(SQLPreferenceConstants.SQL_FORMAT_KEYWORD_CASE_AUTO, afKeywordCase.getSelection());
             store.setValue(SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE, afExtractFromSource.getSelection());
-
-            store.setValue(SQLPreferenceConstants.FOLDING_ENABLED, csFoldingEnabled.getSelection());
         } catch (Exception e) {
             log.warn(e);
         }
@@ -262,8 +248,6 @@ public class PrefPageSQLCompletion extends TargetPrefPage
         store.setToDefault(SQLPreferenceConstants.SQLEDITOR_CLOSE_BRACKETS);
         store.setToDefault(SQLPreferenceConstants.SQL_FORMAT_KEYWORD_CASE_AUTO);
         store.setToDefault(SQLPreferenceConstants.SQL_FORMAT_EXTRACT_FROM_SOURCE);
-
-        store.setToDefault(SQLPreferenceConstants.FOLDING_ENABLED);
     }
 
     @Override

@@ -17,10 +17,7 @@
 package org.jkiss.dbeaver.ui.editors.sql;
 
 
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.*;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.*;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -76,6 +73,7 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
+import java.io.File;
 import java.util.*;
 import java.util.regex.Matcher;
 
@@ -85,6 +83,7 @@ import java.util.regex.Matcher;
 public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisualizer {
 
     static protected final Log log = Log.getLog(SQLEditorBase.class);
+    private static final long MAX_FILE_LENGTH_FOR_RULES = 2000000;
 
     static {
         // SQL editor preferences. Do this here because it initializes display
@@ -152,6 +151,24 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         setKeyBindingScopes(getKeyBindingContexts());  //$NON-NLS-1$
     }
 
+    public static boolean isBigScript(@Nullable IEditorInput editorInput) {
+        if (editorInput != null) {
+            File file = EditorUtils.getLocalFileFromInput(editorInput);
+            if (file != null && file.length() > MAX_FILE_LENGTH_FOR_RULES) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    protected void handleInputChange(IEditorInput input) {
+        if (isBigScript(input)) {
+            uninstallOccurrencesFinder();
+        } else {
+            setMarkingOccurrences(DBeaverCore.getGlobalPreferenceStore().getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES));
+        }
+    }
+
     protected String[] getKeyBindingContexts() {
         return new String[]{
             TEXT_EDITOR_CONTEXT,
@@ -192,15 +209,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         String property = event.getProperty();
         if (SQLPreferenceConstants.MARK_OCCURRENCES.equals(property)) {
             boolean newBooleanValue = CommonUtils.toBoolean(event.getNewValue());
-            if (newBooleanValue != this.markOccurrenceAnnotations) {
-                this.markOccurrenceAnnotations = newBooleanValue;
-                if (this.markOccurrenceAnnotations) {
-                    this.installOccurrencesFinder();
-                } else {
-                    this.uninstallOccurrencesFinder();
-                }
-            }
-
+            setMarkingOccurrences(newBooleanValue);
         } else {
             super.handlePreferenceStoreChanged(event);
         }
@@ -342,6 +351,19 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
     protected ISharedTextColors getSharedColors()
     {
         return UIUtils.getSharedTextColors();
+    }
+
+    @Override
+    protected void doSetInput(IEditorInput input) throws CoreException {
+        handleInputChange(input);
+        super.doSetInput(input);
+    }
+
+    @Override
+    public void doSave(IProgressMonitor progressMonitor) {
+        super.doSave(progressMonitor);
+
+        handleInputChange(getEditorInput());
     }
 
     @Override
@@ -1372,6 +1394,17 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
 
     public boolean isMarkingOccurrences() {
         return this.markOccurrenceAnnotations;
+    }
+
+    public void setMarkingOccurrences(boolean newBooleanValue) {
+        if (newBooleanValue != this.markOccurrenceAnnotations) {
+            this.markOccurrenceAnnotations = newBooleanValue;
+            if (this.markOccurrenceAnnotations) {
+                this.installOccurrencesFinder();
+            } else {
+                this.uninstallOccurrencesFinder();
+            }
+        }
     }
 
 /*
