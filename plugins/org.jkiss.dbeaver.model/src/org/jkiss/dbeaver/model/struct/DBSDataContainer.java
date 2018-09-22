@@ -42,7 +42,7 @@ public interface DBSDataContainer extends DBSObject {
     long FLAG_NONE                  = 0;
     long FLAG_READ_PSEUDO           = 1 << 1;
     long FLAG_USE_SELECTED_ROWS     = 1 << 2;
-    long FLAG_USE_SELECTED_COLUMNS  = 1 << 2;
+    long FLAG_USE_SELECTED_COLUMNS  = 1 << 3;
 
     @Nullable
     DBPDataSource getDataSource();
