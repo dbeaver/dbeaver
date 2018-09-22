@@ -61,12 +61,16 @@ public class SQLServerDataSourceProvider extends JDBCDataSourceProvider {
             // SQL Server
             if (isJtds) {
                 url.append("jdbc:jtds:sqlserver://");
+                url.append(connectionInfo.getHostName());
+                if (!CommonUtils.isEmpty(connectionInfo.getHostPort()) && !connectionInfo.getHostPort().equals(driver.getDefaultPort())) {
+                    url.append(":").append(connectionInfo.getHostPort());
+                }
             } else {
                 url.append("jdbc:sqlserver://");
-            }
-            url.append(connectionInfo.getHostName());
-            if (!CommonUtils.isEmpty(connectionInfo.getHostPort()) && !connectionInfo.getHostPort().equals(driver.getDefaultPort())) {
-                url.append(":").append(connectionInfo.getHostPort());
+                url.append(";serverName=").append(connectionInfo.getHostName());
+                if (!CommonUtils.isEmpty(connectionInfo.getHostPort()) && !connectionInfo.getHostPort().equals(driver.getDefaultPort())) {
+                    url.append(";port=").append(connectionInfo.getHostPort());
+                }
             }
             if (isJtds) {
                 if (!CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
