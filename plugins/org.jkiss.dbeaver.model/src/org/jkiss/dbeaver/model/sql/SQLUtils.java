@@ -330,6 +330,7 @@ public final class SQLUtils {
 
     public static String trimQueryStatement(SQLSyntaxManager syntaxManager, String sql, boolean trimDelimiter)
     {
+        // This is called only when use selects query (i.e. no automatic query detection)
         if (sql.isEmpty() || !trimDelimiter) {
             // Do not trim delimiter
             return sql;
@@ -753,7 +754,7 @@ public final class SQLUtils {
     }
 
     /**
-     * Replaces single \r linefeeds with \n (some databases don't like them)
+     * Replaces single \r linefeeds with space (some databases don't like them)
      */
     public static String fixLineFeeds(String sql) {
         if (sql.indexOf('\r') == -1) {
@@ -762,8 +763,17 @@ public final class SQLUtils {
         boolean hasFixes = false;
         char[] fixed = sql.toCharArray();
         for (int i = 0; i < fixed.length; i++) {
-            if (fixed[i] == '\r' && (i == fixed.length - 1 || fixed[i + 1] != '\n')) {
-                fixed[i] = '\n';
+            if (fixed[i] == '\r') {
+                if (i > 0 && fixed[i - 1] == '\n') {
+                    // \n\r
+                    continue;
+                }
+                if (i == fixed.length - 1 || fixed[i + 1] == '\n') {
+                    // \r\n
+                    continue;
+                }
+                // Single \r - replace it with space
+                fixed[i] = ' ';
                 hasFixes = true;
             }
         }

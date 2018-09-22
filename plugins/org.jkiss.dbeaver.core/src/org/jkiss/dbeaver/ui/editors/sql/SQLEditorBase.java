@@ -648,6 +648,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                 element = parsedElement;
             } else {
                 // Use selected query as is
+                selText = SQLUtils.fixLineFeeds(selText);
                 element = new SQLQuery(getDataSource(), selText, selection.getOffset(), selection.getLength());
             }
         } else if (selection.getOffset() >= 0) {
