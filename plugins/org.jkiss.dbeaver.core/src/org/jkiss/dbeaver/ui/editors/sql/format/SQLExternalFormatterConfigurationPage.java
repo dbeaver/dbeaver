@@ -52,7 +52,7 @@ public class SQLExternalFormatterConfigurationPage extends BaseFormatterConfigur
 
         externalUseFile = UIUtils.createCheckbox(settingsGroup,
             CoreMessages.pref_page_sql_format_label_external_use_temp_file,
-            CoreMessages.pref_page_sql_format_label_external_use_temp_file_tip + GeneralUtils.variablePattern(SQLFormatterExternal.VAR_FILE),
+            CoreMessages.pref_page_sql_format_label_external_use_temp_file_tip + " " + GeneralUtils.variablePattern(SQLFormatterExternal.VAR_FILE),
             false,
             2);
         externalTimeout = UIUtils.createLabelSpinner(settingsGroup,
