@@ -19,7 +19,10 @@ package org.jkiss.dbeaver.ui.dialogs.driver;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.custom.TreeEditor;
-import org.eclipse.swt.events.*;
+import org.eclipse.swt.events.MouseAdapter;
+import org.eclipse.swt.events.MouseEvent;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
@@ -27,9 +30,7 @@ import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPDriverDependencies;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DBRRunnableContext;
-import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.registry.driver.DriverDependencies;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
@@ -95,12 +96,7 @@ class DriverDependenciesTree {
                 }
             });
 
-            filesTree.addDisposeListener(new DisposeListener() {
-                @Override
-                public void widgetDisposed(DisposeEvent e) {
-                    UIUtils.dispose(boldFont);
-                }
-            });
+            filesTree.addDisposeListener(e -> UIUtils.dispose(boldFont));
         }
     }
 
@@ -119,17 +115,14 @@ class DriverDependenciesTree {
     public boolean resolveLibraries() {
         boolean resolved = false;
         try {
-            runnableContext.run(true, true, new DBRRunnableWithProgress() {
-                @Override
-                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                    monitor.beginTask("Resolve dependencies", 100);
-                    try {
-                        dependencies.resolveDependencies(monitor);
-                    } catch (Exception e) {
-                        throw new InvocationTargetException(e);
-                    } finally {
-                        monitor.done();
-                    }
+            runnableContext.run(true, true, monitor -> {
+                monitor.beginTask("Resolve dependencies", 100);
+                try {
+                    dependencies.resolveDependencies(monitor);
+                } catch (Exception e) {
+                    throw new InvocationTargetException(e);
+                } finally {
+                    monitor.done();
                 }
             });
             resolved = true;
@@ -224,15 +217,12 @@ class DriverDependenciesTree {
         }
         final List<String> allVersions = new ArrayList<>();
         try {
-            runnableContext.run(true, true, new DBRRunnableWithProgress() {
-                @Override
-                public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
-                    try {
-                        allVersions.addAll(
-                            dependencyNode.library.getAvailableVersions(monitor));
-                    } catch (IOException e) {
-                        throw new InvocationTargetException(e);
-                    }
+            runnableContext.run(true, true, monitor -> {
+                try {
+                    allVersions.addAll(
+                        dependencyNode.library.getAvailableVersions(monitor));
+                } catch (IOException e) {
+                    throw new InvocationTargetException(e);
                 }
             });
         } catch (InvocationTargetException e) {
@@ -258,6 +248,7 @@ class DriverDependenciesTree {
         }
         if (versionIndex >= 0) {
             editor.select(versionIndex);
+            editor.setText(currentVersion);
         }
         editor.addSelectionListener(new SelectionAdapter() {
             @Override

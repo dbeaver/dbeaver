@@ -5,5 +5,7 @@ instructions.configure=\
   addRepository(type:1,location:https${#58}//dbeaver.io/update/office/latest/,name:DBeaver Office integration,enabled:true);\
   addRepository(type:0,location:https${#58}//dbeaver.io/update/svg/latest/,name:DBeaver SVG format support,enabled:true);\
   addRepository(type:1,location:https${#58}//dbeaver.io/update/svg/latest/,name:DBeaver SVG format support,enabled:true);\
+  addRepository(type:0,location:https${#58}//dbeaver.io/update/sshj/latest/,name:DBeaver SSHJ extension,enabled:true);\
+  addRepository(type:1,location:https${#58}//dbeaver.io/update/sshj/latest/,name:DBeaver SSHJ extension,enabled:true);\
   addRepository(type:0,location:http${#58}//download.eclipse.org/releases/oxygen/,name:Oxygen,enabled:true);\
   addRepository(type:1,location:http${#58}//download.eclipse.org/releases/oxygen/,name:Oxygen,enabled:true);
