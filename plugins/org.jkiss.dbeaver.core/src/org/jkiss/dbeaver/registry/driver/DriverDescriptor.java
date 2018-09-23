@@ -177,6 +177,7 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
         this.providerDescriptor = providerDescriptor;
         this.id = id;
         this.custom = true;
+        this.useURLTemplate = true;
 
         this.origName = null;
         this.origDescription = null;
