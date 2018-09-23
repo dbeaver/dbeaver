@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.dialogs.driver;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.custom.TreeEditor;
 import org.eclipse.swt.events.*;
 import org.eclipse.swt.graphics.Font;
@@ -245,7 +246,8 @@ class DriverDependenciesTree {
             allVersions.add(currentVersion);
         }
 
-        final Combo editor = new Combo(filesTree, SWT.DROP_DOWN | SWT.READ_ONLY);
+        final CCombo editor = new CCombo(filesTree, SWT.DROP_DOWN | SWT.READ_ONLY);
+        editor.setVisibleItemCount(15);
         int versionIndex = -1;
         for (int i = 0; i < allVersions.size(); i++) {
             String version = allVersions.get(i);
