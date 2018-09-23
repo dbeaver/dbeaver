@@ -27,11 +27,13 @@ import org.jkiss.dbeaver.ext.exasol.ExasolConstants;
 import org.jkiss.dbeaver.ext.exasol.ExasolDataSourceProvider;
 import org.jkiss.dbeaver.ext.exasol.ExasolSQLDialect;
 import org.jkiss.dbeaver.ext.exasol.manager.security.*;
+import org.jkiss.dbeaver.ext.exasol.model.app.ExasolServerSessionManager;
 import org.jkiss.dbeaver.ext.exasol.model.plan.ExasolPlanAnalyser;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBPErrorAssistant;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -299,6 +301,8 @@ public class ExasolDataSource extends JDBCDataSource
 	{
 		if (adapter == DBSStructureAssistant.class) {
 			return adapter.cast(new ExasolStructureAssistant(this));
+		} else if (adapter == DBAServerSessionManager.class) {
+			return adapter.cast(new ExasolServerSessionManager(this));
 		}
 		return super.getAdapter(adapter);
 	}

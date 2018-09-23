@@ -29,7 +29,9 @@ import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerPostgreSQL;
 import org.jkiss.dbeaver.ext.postgresql.model.jdbc.PostgreJdbcFactory;
 import org.jkiss.dbeaver.ext.postgresql.model.plan.PostgrePlanAnalyser;
+import org.jkiss.dbeaver.ext.postgresql.model.session.PostgreSessionManager;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.*;
@@ -398,6 +400,8 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
             return adapter.cast(new PostgreStructureAssistant(this));
         } else if (adapter == DBCServerOutputReader.class) {
             return adapter.cast(new AsyncServerOutputReader());
+        } else if (adapter == DBAServerSessionManager.class) {
+            return adapter.cast(new PostgreSessionManager(this));
         }
         return super.getAdapter(adapter);
     }

@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.ext.db2.editors.DB2StructureAssistant;
 import org.jkiss.dbeaver.ext.db2.editors.DB2TablespaceChooser;
 import org.jkiss.dbeaver.ext.db2.info.DB2Parameter;
 import org.jkiss.dbeaver.ext.db2.info.DB2XMLString;
+import org.jkiss.dbeaver.ext.db2.model.app.DB2ServerApplicationManager;
 import org.jkiss.dbeaver.ext.db2.model.fed.DB2RemoteServer;
 import org.jkiss.dbeaver.ext.db2.model.fed.DB2UserMapping;
 import org.jkiss.dbeaver.ext.db2.model.fed.DB2Wrapper;
@@ -39,6 +40,7 @@ import org.jkiss.dbeaver.ext.db2.model.security.DB2Role;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCException;
@@ -212,6 +214,8 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     {
         if (adapter == DBSStructureAssistant.class) {
             return adapter.cast(new DB2StructureAssistant(this));
+        } else if (adapter == DBAServerSessionManager.class) {
+            return adapter.cast(new DB2ServerApplicationManager(this));
         }
         return super.getAdapter(adapter);
     }

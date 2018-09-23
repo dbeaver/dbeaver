@@ -23,8 +23,10 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.oracle.model.plan.OraclePlanAnalyser;
+import org.jkiss.dbeaver.ext.oracle.model.session.OracleServerSessionManager;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
+import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.*;
@@ -547,6 +549,8 @@ public class OracleDataSource extends JDBCDataSource
             return adapter.cast(new OracleStructureAssistant(this));
         } else if (adapter == DBCServerOutputReader.class) {
             return adapter.cast(outputReader);
+        } else if (adapter == DBAServerSessionManager.class) {
+            return adapter.cast(new OracleServerSessionManager(getDefaultInstance().getDefaultContext(false)));
         }
         return super.getAdapter(adapter);
     }
