@@ -21,17 +21,25 @@ import org.eclipse.jface.action.*;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.ui.IWorkbenchPart;
-import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.*;
+import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeItem;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
+import org.jkiss.dbeaver.model.navigator.meta.DBXTreeObject;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.tools.ToolDescriptor;
 import org.jkiss.dbeaver.registry.tools.ToolGroupDescriptor;
 import org.jkiss.dbeaver.registry.tools.ToolsRegistry;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.actions.common.EmptyListAction;
 import org.jkiss.dbeaver.ui.actions.navigator.NavigatorActionExecuteTool;
+import org.jkiss.dbeaver.ui.editors.AbstractDatabaseEditor;
+import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
+import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
+import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -46,21 +54,66 @@ public class DataSourceToolsContributor extends DataSourceMenuContributor
     @Override
     protected void fillContributionItems(List<IContributionItem> menuItems)
     {
-        IWorkbenchPart activePart = UIUtils.getActiveWorkbenchWindow().getActivePage().getActivePart();
+        IWorkbenchPage activePage = UIUtils.getActiveWorkbenchWindow().getActivePage();
+        IWorkbenchPart activePart = activePage.getActivePart();
         if (activePart == null) {
             return;
         }
+        DBSObject selectedObject = null;
         final ISelectionProvider selectionProvider = activePart.getSite().getSelectionProvider();
-        if (selectionProvider == null) {
-            return;
-        }
-        ISelection selection = selectionProvider.getSelection();
-        if (selection instanceof IStructuredSelection && !selection.isEmpty()) {
-            DBSObject selectedObject = RuntimeUtils.getObjectAdapter(((IStructuredSelection) selection).getFirstElement(), DBSObject.class);
+        if (selectionProvider != null) {
+            ISelection selection = selectionProvider.getSelection();
+            if (selection instanceof IStructuredSelection && !selection.isEmpty()) {
+                selectedObject = RuntimeUtils.getObjectAdapter(((IStructuredSelection) selection).getFirstElement(), DBSObject.class);
 
-            if (selectedObject != null) {
                 List<ToolDescriptor> tools = ToolsRegistry.getInstance().getTools((IStructuredSelection) selection);
                 fillToolsMenu(menuItems, tools, selection);
+            }
+        } else if (activePart instanceof IEditorPart) {
+            IEditorInput editorInput = ((IEditorPart) activePart).getEditorInput();
+            if (editorInput instanceof IDatabaseEditorInput) {
+                selectedObject = ((IDatabaseEditorInput) editorInput).getDatabaseObject();
+            }
+        }
+
+        if (selectedObject != null) {
+
+            // Contribute standard tools like session manager
+            List<DBXTreeObject> navigatorObjectEditors = new ArrayList<>();
+            DBNDatabaseNode dsNode = NavigatorUtils.getNodeByObject(selectedObject.getDataSource());
+            if (dsNode != null) {
+                Set<DBXTreeNode> processedNodes = new HashSet<>();
+                findObjectNodes(dsNode.getMeta(), navigatorObjectEditors, processedNodes);
+            }
+            if (!navigatorObjectEditors.isEmpty()) {
+                DBNDatabaseNode objectNode = dsNode;
+//                DBNDatabaseNode objectNode = NavigatorUtils.getNodeByObject(selectedObject);
+//                if (objectNode == null) {
+//                    objectNode = dsNode;
+//                }
+                menuItems.add(new Separator());
+                for (DBXTreeObject editorMeta : navigatorObjectEditors) {
+                    menuItems.add(new ActionContributionItem(new OpenToolsEditorAction(activePage, objectNode, editorMeta)));
+                }
+            }
+        }
+    }
+
+    private void findObjectNodes(DBXTreeNode meta, List<DBXTreeObject> editors, Set<DBXTreeNode> processedNodes) {
+        if (processedNodes.contains(meta)) {
+            return;
+        }
+        if (meta instanceof DBXTreeObject) {
+            editors.add((DBXTreeObject) meta);
+        }
+        processedNodes.add(meta);
+        if (meta.getRecursiveLink() != null) {
+            return;
+        }
+        List<DBXTreeNode> children = meta.getChildren(null);
+        if (children != null) {
+            for (DBXTreeNode child : children) {
+                findObjectNodes(child, editors, processedNodes);
             }
         }
     }
@@ -123,5 +176,31 @@ public class DataSourceToolsContributor extends DataSourceMenuContributor
         }
         groupsMap.put(group, item);
         return item;
+    }
+
+    private class OpenToolsEditorAction extends Action {
+        private final IWorkbenchPage workbenchPage;
+        private final DBNDatabaseNode databaseNode;
+        private final DBXTreeObject editorMeta;
+        public OpenToolsEditorAction(IWorkbenchPage workbenchPage, DBNDatabaseNode databaseNode, DBXTreeObject editorMeta) {
+            super(editorMeta.getLabel(), editorMeta.getIcon(null) == null ? null : DBeaverIcons.getImageDescriptor(editorMeta.getIcon(null)));
+            this.workbenchPage = workbenchPage;
+            this.databaseNode = databaseNode;
+            this.editorMeta = editorMeta;
+        }
+
+        @Override
+        public void run() {
+            DatabaseEditorInput<DBNDatabaseNode> objectInput = new DatabaseEditorInput<DBNDatabaseNode>(databaseNode) {
+
+            };
+            try {
+                workbenchPage.openEditor(
+                    objectInput,
+                    editorMeta.getEditorId());
+            } catch (PartInitException e) {
+                DBUserInterface.getInstance().showError("Editor open", "Error opening tool editor '" + editorMeta.getEditorId() + "'", e.getStatus());
+            }
+        }
     }
 }

@@ -44,6 +44,10 @@ public class DBXTreeObject extends DBXTreeNode
         this.editorId = object.editorId;
     }
 
+    public String getLabel() {
+        return label;
+    }
+
     @Override
     public String getNodeType(DBPDataSource dataSource)
     {
