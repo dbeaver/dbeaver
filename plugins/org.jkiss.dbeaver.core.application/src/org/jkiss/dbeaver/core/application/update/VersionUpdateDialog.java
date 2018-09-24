@@ -171,7 +171,8 @@ class VersionUpdateDialog extends Dialog {
     }
 
     public static boolean isSuppressed(VersionDescriptor version) {
-        return CoreApplicationActivator.getDefault().getPreferenceStore().getBoolean("suppressUpdateCheck." + version.getPlainVersion());
+        CoreApplicationActivator activator = CoreApplicationActivator.getDefault();
+        return activator != null && activator.getPreferenceStore().getBoolean("suppressUpdateCheck." + version.getPlainVersion());
     }
 
 }
