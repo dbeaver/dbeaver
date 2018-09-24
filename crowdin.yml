@@ -1,3 +1,2 @@
-files:
-  - source: /plugins/*/OSGI-INF/l10n/*.properties
-    translation: '%original_file_name%_%two_letters_code%.properties'
+&ref_files
+files: []
