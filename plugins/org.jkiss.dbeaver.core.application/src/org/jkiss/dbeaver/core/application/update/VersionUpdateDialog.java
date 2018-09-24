@@ -97,7 +97,7 @@ class VersionUpdateDialog extends Dialog {
             notesText.setLayoutData(gd);
 
             final Label hintLabel = new Label(propGroup, SWT.NONE);
-            hintLabel.setText(CoreMessages.dialog_version_update_press_more_info_);
+            hintLabel.setText(NLS.bind(CoreMessages.dialog_version_update_press_more_info_, newVersion.getPlainVersion()));
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
             hintLabel.setLayoutData(gd);

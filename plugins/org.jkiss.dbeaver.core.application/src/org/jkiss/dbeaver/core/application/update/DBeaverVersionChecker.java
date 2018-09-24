@@ -92,7 +92,7 @@ public class DBeaverVersionChecker extends AbstractJob {
         }
 
         if (versionDescriptor != null &&
-            //versionDescriptor.getProgramVersion().compareTo(GeneralUtils.getProductVersion()) > 0 &&
+            versionDescriptor.getProgramVersion().compareTo(GeneralUtils.getProductVersion()) > 0 &&
             !VersionUpdateDialog.isSuppressed(versionDescriptor))
         {
             showUpdaterDialog(versionDescriptor);
