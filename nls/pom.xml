@@ -31,44 +31,44 @@
 
     <modules>
         <!-- DBeaver Runtime NLS -->
-        <module>bundles/org.jkiss.dbeaver.model.nls</module>
-        <module>bundles/org.jkiss.dbeaver.core.nls</module>
-        <module>bundles/org.jkiss.dbeaver.ui.nls</module>
-        <module>bundles/org.jkiss.dbeaver.ext.erd.nls</module>
+        <module>bundles/org.jkiss.dbeaver.model</module>
+        <module>bundles/org.jkiss.dbeaver.core</module>
+        <module>bundles/org.jkiss.dbeaver.ui</module>
+        <module>bundles/org.jkiss.dbeaver.ext.erd</module>
         <module>features/org.jkiss.dbeaver.runtime.nls.feature</module>
 
         <!-- DBeaver Ext Generic NLS -->
-        <module>bundles/org.jkiss.dbeaver.ext.generic.nls</module>
-        <module>bundles/org.jkiss.dbeaver.ext.firebird.nls</module>
-        <module>bundles/org.jkiss.dbeaver.ext.hsqldb.nls</module>
-        <module>bundles/org.jkiss.dbeaver.ext.mssql.nls</module>
-        <module>bundles/org.jkiss.dbeaver.ext.postgresql.nls</module>
-        <module>bundles/org.jkiss.dbeaver.ext.sqlite.nls</module>
-        <module>bundles/org.jkiss.dbeaver.ext.mockdata.nls</module>
+        <module>bundles/org.jkiss.dbeaver.ext.generic</module>
+        <module>bundles/org.jkiss.dbeaver.ext.firebird</module>
+        <module>bundles/org.jkiss.dbeaver.ext.hsqldb</module>
+        <module>bundles/org.jkiss.dbeaver.ext.mssql</module>
+        <module>bundles/org.jkiss.dbeaver.ext.postgresql</module>
+        <module>bundles/org.jkiss.dbeaver.ext.sqlite</module>
+        <module>bundles/org.jkiss.dbeaver.ext.mockdata</module>
         <module>features/org.jkiss.dbeaver.ext.generic.nls.feature</module>
 
         <!-- Features NLS -->
-        <module>bundles/org.jkiss.dbeaver.ext.db2.nls</module>
+        <module>bundles/org.jkiss.dbeaver.ext.db2</module>
         <module>features/org.jkiss.dbeaver.ext.db2.nls.feature</module>
-        <module>bundles/org.jkiss.dbeaver.ext.exasol.nls</module>
+        <module>bundles/org.jkiss.dbeaver.ext.exasol</module>
         <module>features/org.jkiss.dbeaver.ext.exasol.nls.feature</module>
-        <module>bundles/org.jkiss.dbeaver.ext.mysql.nls</module>
+        <module>bundles/org.jkiss.dbeaver.ext.mysql</module>
         <module>features/org.jkiss.dbeaver.ext.mysql.nls.feature</module>
-        <module>bundles/org.jkiss.dbeaver.ext.oracle.nls</module>
+        <module>bundles/org.jkiss.dbeaver.ext.oracle</module>
         <module>features/org.jkiss.dbeaver.ext.oracle.nls.feature</module>
-        <module>bundles/org.jkiss.dbeaver.ext.wmi.nls</module>
+        <module>bundles/org.jkiss.dbeaver.ext.wmi</module>
         <module>features/org.jkiss.dbeaver.ext.wmi.nls.feature</module>
 
         <!-- DBeaver Standalone NLS -->
-        <module>bundles/org.jkiss.dbeaver.core.application.nls</module>
+        <module>bundles/org.jkiss.dbeaver.core.application</module>
         <module>features/org.jkiss.dbeaver.standalone.nls.feature</module>
 
         <!-- DBeaver CE NLS -->
         <module>features/org.jkiss.dbeaver.ce.nls.feature</module>
-        <module>bundles/org.jkiss.dbeaver.core.eclipse.nls</module>
+        <module>bundles/org.jkiss.dbeaver.core.eclipse</module>
 
         <!-- DBeaver Office NLS -->
-        <module>bundles/org.jkiss.dbeaver.data.office.nls</module>
+        <module>bundles/org.jkiss.dbeaver.data.office</module>
         <module>features/org.jkiss.dbeaver.ext.office.nls.feature</module>
     </modules>
 
