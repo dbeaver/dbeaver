@@ -1,2 +1,4 @@
-&ref_files
-files: []
+files:
+  - source: /plugins/**/OSGI-INF/l10n/*.properties
+    translation: >-
+      /nls/bundles/**/OSGI-INF/l10n/%original_file_name%_%two_letters_code%.properties
