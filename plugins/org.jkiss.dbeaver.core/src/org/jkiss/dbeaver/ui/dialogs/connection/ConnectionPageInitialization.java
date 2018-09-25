@@ -187,9 +187,7 @@ class ConnectionPageInitialization extends ConnectionWizardPage {
                 autocommit.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
-                        if (dataSourceDescriptor != null && dataSourceDescriptor.isConnected()) {
-                            isolationLevel.setEnabled(!autocommit.getSelection());
-                        }
+                        isolationLevel.setEnabled(!autocommit.getSelection());
                     }
                 });
 
