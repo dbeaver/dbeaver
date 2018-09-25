@@ -583,12 +583,14 @@
     <extension point="org.eclipse.ui.editors">
         <editor
             name="Session Manager"
+            icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.png"
             class="org.jkiss.dbeaver.ext.oracle.editors.OracleSessionEditor"
             id="org.jkiss.dbeaver.ext.oracle.editors.OracleSessionEditor"
             contributorClass="org.jkiss.dbeaver.ui.editors.EditorSearchActionsContributor">
         </editor>
         <editor
             name="Lock Manager"
+            icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/locks.png"
             class="org.jkiss.dbeaver.ext.oracle.editors.OracleLockEditor"
             id="org.jkiss.dbeaver.ext.oracle.editors.OracleLockEditor">
         </editor>
