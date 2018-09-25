@@ -45,7 +45,7 @@ public class OracleServerSession implements DBAServerSession {
     private String sql;
     private String event;
     private long secondsInWait;
-    private String elapsedTime;
+    private long elapsedTime;
     private Timestamp logonTime;
     private String serviceName;
 
@@ -56,7 +56,7 @@ public class OracleServerSession implements DBAServerSession {
     private String module;
     private final String action;
     private final String clientInfo;
-    private final String process;
+    private final long process;
 
     private final long blockGets;
     private final long consistentGets;
@@ -77,7 +77,7 @@ public class OracleServerSession implements DBAServerSession {
         this.status = JDBCUtils.safeGetString(dbResult, "STATUS");
         this.state = JDBCUtils.safeGetString(dbResult, "STATE");
         this.sql = JDBCUtils.safeGetString(dbResult, "SQL_FULLTEXT");
-        this.elapsedTime = JDBCUtils.safeGetString(dbResult, "LAST_CALL_ET");
+        this.elapsedTime = JDBCUtils.safeGetLong(dbResult, "LAST_CALL_ET");
         this.logonTime = JDBCUtils.safeGetTimestamp(dbResult, "LOGON_TIME");
         this.serviceName = JDBCUtils.safeGetString(dbResult, "SERVICE_NAME");
 
@@ -88,7 +88,7 @@ public class OracleServerSession implements DBAServerSession {
         this.module = JDBCUtils.safeGetString(dbResult, "MODULE");
         this.action = JDBCUtils.safeGetString(dbResult, "ACTION");
         this.clientInfo = JDBCUtils.safeGetString(dbResult, "CLIENT_INFO");
-        this.process = JDBCUtils.safeGetString(dbResult, "PROCESS");
+        this.process = JDBCUtils.safeGetLong(dbResult, "PROCESS");
 
         this.blockGets = JDBCUtils.safeGetLong(dbResult, "BLOCK_GETS");
         this.consistentGets = JDBCUtils.safeGetLong(dbResult, "CONSISTENT_GETS");
@@ -146,7 +146,7 @@ public class OracleServerSession implements DBAServerSession {
     }
 
     @Property(category = CAT_SESSION, viewable = true, order = 8)
-    public String getElapsedTime()
+    public long getElapsedTime()
     {
         return elapsedTime;
     }
@@ -201,7 +201,7 @@ public class OracleServerSession implements DBAServerSession {
         return clientInfo;
     }
     @Property(category = CAT_PROCESS, viewable = false, order = 32)
-    public String getProcess() {
+    public long getProcess() {
         return process;
     }
 
