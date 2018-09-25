@@ -55,6 +55,7 @@ public class NavigatorHandlerAddBookmark extends NavigatorHandlerObjectBase {
                 DBUserInterface.getInstance().showError(
                     CoreMessages.actions_navigator_bookmark_error_title,
                     "Connection itself cannot be bookmarked. Choose some element under a connection element.");
+                return null;
             }
             if (node instanceof DBNDatabaseNode) {
                 try {
