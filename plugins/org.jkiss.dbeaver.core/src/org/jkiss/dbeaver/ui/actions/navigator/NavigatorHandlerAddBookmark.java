@@ -30,6 +30,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
@@ -50,6 +51,11 @@ public class NavigatorHandlerAddBookmark extends NavigatorHandlerObjectBase {
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
         if (!selection.isEmpty() && selection instanceof IStructuredSelection) {
             final DBNNode node = NavigatorUtils.getSelectedNode(selection);
+            if (node instanceof DBNDataSource) {
+                DBUserInterface.getInstance().showError(
+                    CoreMessages.actions_navigator_bookmark_error_title,
+                    "Connection itself cannot be bookmarked. Choose some element under a connection element.");
+            }
             if (node instanceof DBNDatabaseNode) {
                 try {
                     AddBookmarkDialog dialog = new AddBookmarkDialog(activeShell, (DBNDatabaseNode) node);
