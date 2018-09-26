@@ -2,7 +2,7 @@
 <feature
       id="org.jkiss.dbeaver.ext.exasol.feature"
       label="%featureName"
-      version="1.0.51.qualifier"
+      version="1.0.52.qualifier"
       provider-name="%providerName"
       plugin="org.jkiss.dbeaver.ext.exasol">
 
