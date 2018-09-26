@@ -59,7 +59,7 @@ public final class SQLUtils {
     private static final Log log = Log.getLog(SQLUtils.class);
 
     public static final Pattern PATTERN_OUT_PARAM = Pattern.compile("((\\?)|(:[a-z0-9]+))\\s*:=");
-    public static final Pattern PATTERN_SIMPLE_NAME = Pattern.compile("[a-z][a-z0-9]*", Pattern.CASE_INSENSITIVE);
+    public static final Pattern PATTERN_SIMPLE_NAME = Pattern.compile("[a-z][a-z0-9_]*", Pattern.CASE_INSENSITIVE);
 
     private static final Pattern CREATE_PREFIX_PATTERN = Pattern.compile("(CREATE (:OR REPLACE)?).+", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
 
@@ -470,15 +470,15 @@ public final class SQLUtils {
         boolean hasOrder = false;
         for (DBDAttributeConstraint co : filter.getOrderConstraints()) {
             if (hasOrder) query.append(',');
-            if (conditionTable != null) {
-                query.append(conditionTable).append('.');
-            }
             String orderString = null;
             if (co.getAttribute() instanceof DBDAttributeBindingMeta) {
                 String orderColumn = co.getAttribute().getName();
                 if (PATTERN_SIMPLE_NAME.matcher(orderColumn).matches()) {
                     // It is a simple column.
                     orderString = DBUtils.getObjectFullName(co.getAttribute(), DBPEvaluationContext.DML);
+                    if (conditionTable != null) {
+                        orderString = conditionTable + '.' + orderString;
+                    }
                 }
             }
             if (orderString == null) {
