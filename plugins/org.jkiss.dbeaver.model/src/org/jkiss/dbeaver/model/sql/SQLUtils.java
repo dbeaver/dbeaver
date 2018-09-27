@@ -669,7 +669,7 @@ public final class SQLUtils {
     public static boolean isExecQuery(@NotNull SQLDialect dialect, String query) {
         // Check for EXEC query
         final String[] executeKeywords = dialect.getExecuteKeywords();
-        if (executeKeywords.length > 0) {
+        if (executeKeywords != null && executeKeywords.length > 0) {
             final String queryStart = getFirstKeyword(dialect, query);
             for (String keyword : executeKeywords) {
                 if (keyword.equalsIgnoreCase(queryStart)) {
