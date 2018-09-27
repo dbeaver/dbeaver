@@ -24,6 +24,8 @@ import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerFilter;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CTabFolder;
+import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.SelectionAdapter;
@@ -32,8 +34,6 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
-import org.eclipse.swt.widgets.TabFolder;
-import org.eclipse.swt.widgets.TabItem;
 import org.eclipse.ui.IEditorSite;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.IWorkbenchSite;
@@ -97,13 +97,13 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
 
     private IDialogSettings settings;
 
-    private TabFolder previewFolder;
-    private final TabItem detailsItem;
+    private CTabFolder previewFolder;
+    private final CTabItem detailsItem;
 
     private final DBCQueryPlanner planner;
     private PlanNodesTree planTree;
     private Object selectedPlanElement;
-    private final TabFolder detailsFolder;
+    private final CTabFolder detailsFolder;
 
     protected SessionManagerViewer(IWorkbenchPart part, Composite parent, final DBAServerSessionManager<SESSION_TYPE> sessionManager) {
         this.workbenchPart = part;
@@ -134,7 +134,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
             sashDetails.setLayoutData(new GridData(GridData.FILL_BOTH));
 
             {
-                previewFolder = new TabFolder(sashDetails, SWT.TOP);
+                previewFolder = new CTabFolder(sashDetails, SWT.TOP);
                 sqlViewer = new SQLEditorBase() {
                     @Override
                     public DBCExecutionContext getExecutionContext() {
@@ -157,7 +157,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
 
                 parent.addDisposeListener(e -> sqlViewer.dispose());
 
-                TabItem sqlViewItem = new TabItem(previewFolder, SWT.NONE);
+                CTabItem sqlViewItem = new CTabItem(previewFolder, SWT.NONE);
                 sqlViewItem.setText("SQL");
                 sqlViewItem.setImage(DBeaverIcons.getImage(UIIcon.SQL_TEXT));
                 sqlViewItem.setControl(sqlViewer.getEditorControlWrapper());
@@ -177,10 +177,10 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
             }
 
             {
-                detailsFolder = new TabFolder(sashDetails, SWT.TOP);
+                detailsFolder = new CTabFolder(sashDetails, SWT.TOP);
                 sessionProps = new PropertyTreeViewer(detailsFolder, SWT.NONE);
 
-                detailsItem = new TabItem(detailsFolder, SWT.NONE);
+                detailsItem = new CTabItem(detailsFolder, SWT.NONE);
                 detailsItem.setText("Details");
                 detailsItem.setImage(DBeaverIcons.getImage(UIIcon.PROPERTIES));
                 detailsItem.setControl(sessionProps.getControl());
@@ -189,7 +189,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
                     List<DBAServerSessionDetails> sessionDetails = ((DBAServerSessionDetailsProvider) sessionManager).getSessionDetails();
                     if (sessionDetails != null) {
                         for (DBAServerSessionDetails detailsInfo : sessionDetails) {
-                            TabItem extDetailsItem = new TabItem(detailsFolder, SWT.NONE);
+                            CTabItem extDetailsItem = new CTabItem(detailsFolder, SWT.NONE);
                             extDetailsItem.setData(detailsInfo);
                             extDetailsItem.setText(detailsInfo.getDetailsTitle());
                             if (detailsInfo.getDetailsIcon() != null) {
@@ -209,7 +209,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
                 detailsFolder.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
-                        TabItem item = detailsFolder.getItem(detailsFolder.getSelectionIndex());
+                        CTabItem item = detailsFolder.getItem(detailsFolder.getSelectionIndex());
                         Object data = item.getData();
                         if (data instanceof DBAServerSessionDetails) {
                             DetailsListControl detailsViewer = (DetailsListControl) item.getControl();
@@ -248,7 +248,7 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
             }
         }
         if (detailsFolder.getSelectionIndex() > 0) {
-            TabItem detailsItem = detailsFolder.getItem(detailsFolder.getSelectionIndex());
+            CTabItem detailsItem = detailsFolder.getItem(detailsFolder.getSelectionIndex());
             Object data = detailsItem.getData();
             if (data instanceof DBAServerSessionDetails) {
                 DetailsListControl detailsListControl = (DetailsListControl) detailsItem.getControl();
@@ -257,12 +257,12 @@ public class SessionManagerViewer<SESSION_TYPE extends DBAServerSession>
         }
     }
 
-    private void createPlannerTab(TabFolder previewFolder) {
+    private void createPlannerTab(CTabFolder previewFolder) {
         planTree = new PlanNodesTree(previewFolder, SWT.SHEET, workbenchPart.getSite());
         planTree.substituteProgressPanel(getSessionListControl());
         planTree.getItemsViewer().addSelectionChangedListener(event -> showPlanNode());
 
-        TabItem sqlPlanItem = new TabItem(previewFolder, SWT.NONE);
+        CTabItem sqlPlanItem = new CTabItem(previewFolder, SWT.NONE);
         sqlPlanItem.setText("Execution Plan");
         sqlPlanItem.setImage(DBeaverIcons.getImage(UIIcon.SQL_PAGE_EXPLAIN_PLAN));
         sqlPlanItem.setControl(planTree);
