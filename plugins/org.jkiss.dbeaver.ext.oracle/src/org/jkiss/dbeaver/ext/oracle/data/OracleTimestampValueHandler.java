@@ -18,12 +18,14 @@ package org.jkiss.dbeaver.ext.oracle.data;
 
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.ext.oracle.model.OracleConstants;
-import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCDateTimeValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.time.ExtendedDateFormat;
 
+import java.lang.reflect.Method;
 import java.sql.Types;
 import java.text.Format;
 import java.text.SimpleDateFormat;
@@ -37,10 +39,31 @@ public class OracleTimestampValueHandler extends JDBCDateTimeValueHandler {
     private static final SimpleDateFormat DEFAULT_DATE_FORMAT = new SimpleDateFormat("'DATE '''yyyy-MM-dd''");
     private static final SimpleDateFormat DEFAULT_TIME_FORMAT = new SimpleDateFormat("'TIME '''HH:mm:ss.SSS''");
 
+    private static Method TIMESTAMP_READ_METHOD = null;
+
     public OracleTimestampValueHandler(DBDDataFormatterProfile formatterProfile) {
         super(formatterProfile);
     }
 
+    @Override
+    public Object getValueFromObject(DBCSession session, DBSTypedObject type, Object object, boolean copy) throws DBCException {
+        if (object != null && OracleConstants.TIMESTAMP_CLASS_NAME.equals(object.getClass().getName())) {
+            try {
+                return getTimestampReadMethod(object.getClass()).invoke(object);
+            } catch (Exception e) {
+                log.debug("Error extracting Oracle TIMESTAMP value", e);
+            }
+        }
+        return super.getValueFromObject(session, type, object, copy);
+    }
+
+    private static synchronized Method getTimestampReadMethod(Class<?> aClass) throws Exception {
+        if (TIMESTAMP_READ_METHOD == null) {
+            TIMESTAMP_READ_METHOD = aClass.getMethod("timestampValue");
+            TIMESTAMP_READ_METHOD.setAccessible(true);
+        }
+        return TIMESTAMP_READ_METHOD;
+    }
 
     @Nullable
     @Override
