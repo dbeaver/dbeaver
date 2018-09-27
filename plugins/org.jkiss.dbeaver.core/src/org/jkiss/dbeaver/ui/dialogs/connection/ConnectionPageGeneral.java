@@ -263,9 +263,7 @@ class ConnectionPageGeneral extends ConnectionWizardPage {
     {
         boldFont = UIUtils.makeBoldFont(parent.getFont());
 
-        Composite group = new Composite(parent, SWT.NONE);
-        GridLayout gl = new GridLayout(2, false);
-        group.setLayout(gl);
+        Composite group = UIUtils.createPlaceholder(parent, 1, 5);
 
         String connectionName = dataSourceDescriptor == null ? "" : dataSourceDescriptor.getName(); //$NON-NLS-1$
         connectionNameText = UIUtils.createLabelText(group, CoreMessages.dialog_connection_wizard_final_label_connection_name, CommonUtils.toString(connectionName));
