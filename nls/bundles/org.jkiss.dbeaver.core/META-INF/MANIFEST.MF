@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.dbeaver.core.nls
-Bundle-Version: 5.2.1.qualifier
-Bundle-Release-Date: 20180924
+Bundle-Version: 5.2.2.qualifier
+Bundle-Release-Date: 20181008
 Fragment-Host: org.jkiss.dbeaver.core
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Vendor: JKISS
