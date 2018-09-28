@@ -663,15 +663,23 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
                     case D:
                         if (typeLength == 4) {
                             valueType = Types.DATE;
-                        } else if (typeLength == 8) {
-                            if (name.equals("time")) {
-                                valueType = Types.TIME;
-                            } else {
-                                valueType = Types.TIMESTAMP;
-                            }
                         } else {
-                            // Weird
-                            valueType = Types.TIMESTAMP;
+                            switch ((int) typeId) {
+                                case PostgreOid.DATE:
+                                    valueType = Types.DATE;
+                                    break;
+                                case PostgreOid.TIME:
+                                case PostgreOid.TIMETZ:
+                                    valueType = Types.TIME;
+                                    break;
+                                case PostgreOid.TIMESTAMP:
+                                case PostgreOid.TIMESTAMPTZ:
+                                    valueType = Types.TIMESTAMP;
+                                    break;
+                                default:
+                                    valueType = Types.TIMESTAMP;
+                                    break;
+                            }
                         }
                         break;
                     case N:
