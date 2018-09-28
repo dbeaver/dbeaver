@@ -195,7 +195,7 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
             DBSObject rightTable = SQLSearchUtils.findObjectByFQN(monitor, sc, dataSource, Arrays.asList(allNames), !request.simpleMode, request.wordDetector);
             if (rightTable instanceof DBSEntity) {
                 try {
-                    String joinCriteria = SQLUtils.generateTableJoin(monitor, leftTable, leftTable.getName(), (DBSEntity) rightTable, rightTable.getName());
+                    String joinCriteria = SQLUtils.generateTableJoin(monitor, leftTable, DBUtils.getQuotedIdentifier(leftTable), (DBSEntity) rightTable, DBUtils.getQuotedIdentifier(rightTable));
                     request.proposals.add(createCompletionProposal(request, joinCriteria, joinCriteria, DBPKeywordType.OTHER, "Join condition"));
                     return true;
                 } catch (DBException e) {
