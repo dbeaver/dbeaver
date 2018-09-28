@@ -664,10 +664,10 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
                         if (typeLength == 4) {
                             valueType = Types.DATE;
                         } else if (typeLength == 8) {
-                            if (name.startsWith("timestamp")) {
-                                valueType = Types.TIMESTAMP;
-                            } else {
+                            if (name.equals("time")) {
                                 valueType = Types.TIME;
+                            } else {
+                                valueType = Types.TIMESTAMP;
                             }
                         } else {
                             // Weird
