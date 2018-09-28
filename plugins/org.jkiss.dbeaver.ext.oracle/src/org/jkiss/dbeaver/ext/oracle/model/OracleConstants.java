@@ -163,6 +163,7 @@ public class OracleConstants {
 
     public static final String XMLTYPE_CLASS_NAME = "oracle.xdb.XMLType";
     public static final String BFILE_CLASS_NAME = "oracle.sql.BFILE";
+    public static final String TIMESTAMP_CLASS_NAME = "oracle.sql.TIMESTAMP";
 
     public static final String PLAN_TABLE_DEFINITION =
         "create global temporary table ${TABLE_NAME} (\n" +

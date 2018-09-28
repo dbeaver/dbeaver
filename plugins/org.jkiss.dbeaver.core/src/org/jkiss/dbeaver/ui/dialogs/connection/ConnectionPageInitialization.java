@@ -41,7 +41,6 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
@@ -160,67 +159,52 @@ class ConnectionPageInitialization extends ConnectionWizardPage {
     @Override
     public void createControl(Composite parent) {
         boldFont = UIUtils.makeBoldFont(parent.getFont());
-        Composite group = new Composite(parent, SWT.NONE);
-        GridLayout gl = new GridLayout(2, false);
-        group.setLayout(gl);
+        Composite group = UIUtils.createPlaceholder(parent, 2, 5);
 
         {
-            Composite optionsGroup = new Composite(group, SWT.NONE);
-            gl = new GridLayout(1, true);
-            gl.verticalSpacing = 0;
-            gl.horizontalSpacing = 5;
-            gl.marginHeight = 0;
-            gl.marginWidth = 0;
-            optionsGroup.setLayout(gl);
-            GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-            gd.horizontalSpan = 2;
-            optionsGroup.setLayoutData(gd);
+            Group txnGroup = UIUtils.createControlGroup(group, CoreMessages.dialog_connection_wizard_final_label_connection, 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+            autocommit = UIUtils.createLabelCheckbox(
+                txnGroup,
+                CoreMessages.dialog_connection_wizard_final_checkbox_auto_commit,
+                "Sets auto-commit mode for all connections",
+                dataSourceDescriptor != null && dataSourceDescriptor.isDefaultAutoCommit());
+            autocommit.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
+            autocommit.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    isolationLevel.setEnabled(!autocommit.getSelection());
+                }
+            });
+
+            isolationLevel = UIUtils.createLabelCombo(txnGroup, CoreMessages.dialog_connection_wizard_final_label_isolation_level,
+                CoreMessages.dialog_connection_wizard_final_label_isolation_level_tooltip, SWT.DROP_DOWN | SWT.READ_ONLY);
+            defaultSchema = UIUtils.createLabelCombo(txnGroup, CoreMessages.dialog_connection_wizard_final_label_default_schema,
+                CoreMessages.dialog_connection_wizard_final_label_default_schema_tooltip, SWT.DROP_DOWN);
+            ((GridData)defaultSchema.getLayoutData()).widthHint = UIUtils.getFontHeight(defaultSchema) * 20;
+            keepAliveInterval = UIUtils.createLabelSpinner(txnGroup, CoreMessages.dialog_connection_wizard_final_label_keepalive,
+                CoreMessages.dialog_connection_wizard_final_label_keepalive_tooltip, 0, 0, Short.MAX_VALUE);
 
             {
-                Group txnGroup = UIUtils.createControlGroup(optionsGroup, CoreMessages.dialog_connection_wizard_final_label_connection, 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
-                autocommit = UIUtils.createLabelCheckbox(
-                    txnGroup,
-                    CoreMessages.dialog_connection_wizard_final_checkbox_auto_commit,
-                    "Sets auto-commit mode for all connections",
-                    dataSourceDescriptor != null && dataSourceDescriptor.isDefaultAutoCommit());
-                autocommit.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING));
-                autocommit.addSelectionListener(new SelectionAdapter() {
+                String bootstrapTooltip = CoreMessages.dialog_connection_wizard_final_label_bootstrap_tooltip;
+                UIUtils.createControlLabel(txnGroup, CoreMessages.dialog_connection_wizard_final_label_bootstrap_query).setToolTipText(bootstrapTooltip);
+                final Button queriesConfigButton = UIUtils.createPushButton(txnGroup, CoreMessages.dialog_connection_wizard_configure, DBeaverIcons.getImage(UIIcon.SQL_SCRIPT));
+                queriesConfigButton.setToolTipText(bootstrapTooltip);
+                if (dataSourceDescriptor != null && !CommonUtils.isEmpty(dataSourceDescriptor.getConnectionConfiguration().getBootstrap().getInitQueries())) {
+                    queriesConfigButton.setFont(boldFont);
+                }
+                queriesConfigButton.addSelectionListener(new SelectionAdapter() {
                     @Override
                     public void widgetSelected(SelectionEvent e) {
-                        isolationLevel.setEnabled(!autocommit.getSelection());
+                        EditBootstrapQueriesDialog dialog = new EditBootstrapQueriesDialog(
+                            getShell(),
+                            bootstrapQueries,
+                            ignoreBootstrapErrors);
+                        if (dialog.open() == IDialogConstants.OK_ID) {
+                            bootstrapQueries = dialog.getQueries();
+                            ignoreBootstrapErrors = dialog.isIgnoreErrors();
+                        }
                     }
                 });
-
-                isolationLevel = UIUtils.createLabelCombo(txnGroup, CoreMessages.dialog_connection_wizard_final_label_isolation_level,
-                    CoreMessages.dialog_connection_wizard_final_label_isolation_level_tooltip, SWT.DROP_DOWN | SWT.READ_ONLY);
-                defaultSchema = UIUtils.createLabelCombo(txnGroup, CoreMessages.dialog_connection_wizard_final_label_default_schema,
-                    CoreMessages.dialog_connection_wizard_final_label_default_schema_tooltip, SWT.DROP_DOWN);
-                ((GridData)defaultSchema.getLayoutData()).widthHint = UIUtils.getFontHeight(defaultSchema) * 20;
-                keepAliveInterval = UIUtils.createLabelSpinner(txnGroup, CoreMessages.dialog_connection_wizard_final_label_keepalive,
-                    CoreMessages.dialog_connection_wizard_final_label_keepalive_tooltip, 0, 0, Short.MAX_VALUE);
-
-                {
-                    String bootstrapTooltip = CoreMessages.dialog_connection_wizard_final_label_bootstrap_tooltip;
-                    UIUtils.createControlLabel(txnGroup, CoreMessages.dialog_connection_wizard_final_label_bootstrap_query).setToolTipText(bootstrapTooltip);
-                    final Button queriesConfigButton = UIUtils.createPushButton(txnGroup, CoreMessages.dialog_connection_wizard_configure, DBeaverIcons.getImage(UIIcon.SQL_SCRIPT));
-                    queriesConfigButton.setToolTipText(bootstrapTooltip);
-                    if (dataSourceDescriptor != null && !CommonUtils.isEmpty(dataSourceDescriptor.getConnectionConfiguration().getBootstrap().getInitQueries())) {
-                        queriesConfigButton.setFont(boldFont);
-                    }
-                    queriesConfigButton.addSelectionListener(new SelectionAdapter() {
-                        @Override
-                        public void widgetSelected(SelectionEvent e) {
-                            EditBootstrapQueriesDialog dialog = new EditBootstrapQueriesDialog(
-                                getShell(),
-                                bootstrapQueries,
-                                ignoreBootstrapErrors);
-                            if (dialog.open() == IDialogConstants.OK_ID) {
-                                bootstrapQueries = dialog.getQueries();
-                                ignoreBootstrapErrors = dialog.isIgnoreErrors();
-                            }
-                        }
-                    });
-                }
             }
         }
 
