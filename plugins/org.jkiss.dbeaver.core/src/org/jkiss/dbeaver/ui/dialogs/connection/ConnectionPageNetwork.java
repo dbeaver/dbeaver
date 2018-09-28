@@ -86,7 +86,7 @@ public class ConnectionPageNetwork extends ConnectionWizardPage {
     @Override
     public void createControl(Composite parent)
     {
-        handlersFolder = new CTabFolder(parent, SWT.TOP);
+        handlersFolder = new CTabFolder(parent, SWT.TOP | SWT.FLAT);
         handlersFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         setControl(handlersFolder);
