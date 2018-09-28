@@ -72,7 +72,7 @@ public class DataExporterTXT extends StreamExporterAbstract {
     }
 
     @Override
-    public void exportHeader(DBCSession session) throws DBException, IOException {
+    public void exportHeader(DBCSession session) {
         columns = getSite().getAttributes();
         printHeader();
     }
@@ -130,15 +130,15 @@ public class DataExporterTXT extends StreamExporterAbstract {
     }
 
     @Override
-    public void exportRow(DBCSession session, DBCResultSet resultSet, Object[] row) throws DBException, IOException {
+    public void exportRow(DBCSession session, DBCResultSet resultSet, Object[] row) {
         StringBuilder txt = new StringBuilder();
         if (delimLeading) txt.append("|");
         for (int k = 0; k < columns.size(); k++) {
             if (k > 0) txt.append("|");
             DBDAttributeBinding attr = columns.get(k);
             String displayString = getCellString(attr, row[k], DBDDisplayFormat.EDIT);
-            if (displayString.length() >= colWidths[k] - 1) {
-                displayString = CommonUtils.truncateString(displayString, colWidths[k] - 1);
+            if (displayString.length() > colWidths[k]) {
+                displayString = CommonUtils.truncateString(displayString, colWidths[k]);
             }
             txt.append(displayString);
             for (int j = colWidths[k] - displayString.length(); j > 0; j--) {
@@ -151,7 +151,7 @@ public class DataExporterTXT extends StreamExporterAbstract {
     }
 
     @Override
-    public void exportFooter(DBRProgressMonitor monitor) throws IOException {
+    public void exportFooter(DBRProgressMonitor monitor) {
     }
 
     private String getCellString(DBDAttributeBinding attr, Object value, DBDDisplayFormat displayFormat) {
