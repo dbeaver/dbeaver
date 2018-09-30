@@ -68,13 +68,14 @@ public class BigQueryConnectionPage extends ConnectionPageAbstract implements IC
     {
         setImageDescriptor(logoImage);
 
-        Composite control = new Composite(composite, SWT.NONE);
-        control.setLayout(new GridLayout(1, false));
-        control.setLayoutData(new GridData(GridData.FILL_BOTH));
+        Composite settingsGroup = new Composite(composite, SWT.NONE);
+        settingsGroup.setLayout(new GridLayout(1, false));
+        settingsGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
         ModifyListener textListener = e -> site.updateButtons();
 
         {
-            Composite addrGroup = UIUtils.createControlGroup(control, "Connection", 2, 0, 0);
+            Composite addrGroup = UIUtils.createControlGroup(settingsGroup, "Connection", 2, 0, 0);
+            addrGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             projectText = UIUtils.createLabelText(addrGroup, "Project", "");
             projectText.addModifyListener(textListener);
@@ -85,29 +86,32 @@ public class BigQueryConnectionPage extends ConnectionPageAbstract implements IC
         }
 
         {
-            Composite addrGroup = UIUtils.createControlGroup(control, "Security", 4, 0, 0);
+            Composite addrGroup = UIUtils.createControlGroup(settingsGroup, "Security", 4, 0, 0);
             addrGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+            usernameText = UIUtils.createLabelText(addrGroup, "Service account", "");
+            usernameText.addModifyListener(textListener);
 
             UIUtils.createControlLabel(addrGroup, "OAuth type");
             authTypeCombo = new Combo(addrGroup, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY);
             authTypeCombo.add("Service-based");
             authTypeCombo.add("User-based");
-            GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL);
+            GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING);
             authTypeCombo.setLayoutData(gd);
             authTypeCombo.addModifyListener(textListener);
             authTypeCombo.select(0);
 
-            usernameText = UIUtils.createLabelText(addrGroup, "Account", "");
-            usernameText.addModifyListener(textListener);
-
             UIUtils.createControlLabel(addrGroup, "Key path");
             authCertFile = new TextWithOpenFile(addrGroup, "Private key path (p12 or JSON)", new String[] { "*", "*.p12", "*.json" } );
+            gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL);
+            gd.horizontalSpan = 3;
+            authCertFile.setLayoutData(gd);
         }
 
 
         {
             // Def host/port
-            Composite addrGroup = UIUtils.createControlGroup(control, "Server info", 4, 0, 0);
+            Composite addrGroup = UIUtils.createControlGroup(settingsGroup, "Server info", 4, 0, 0);
             addrGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             hostText = UIUtils.createLabelText(addrGroup, "Host", BigQueryConstants.DEFAULT_HOST_NAME);
@@ -120,15 +124,17 @@ public class BigQueryConnectionPage extends ConnectionPageAbstract implements IC
             portText.addModifyListener(textListener);
         }
 
-        createDriverPanel(control);
-        setControl(control);
+        createDriverPanel(settingsGroup);
+        setControl(settingsGroup);
     }
 
     @Override
     public boolean isComplete()
     {
-        return hostText != null &&
-            !CommonUtils.isEmpty(hostText.getText());
+        return hostText != null && !CommonUtils.isEmpty(hostText.getText()) &&
+            portText != null && !CommonUtils.isEmpty(portText.getText()) &&
+            projectText != null && !CommonUtils.isEmpty(projectText.getText()) &&
+            usernameText != null && !CommonUtils.isEmpty(usernameText.getText());
     }
 
     @Override
