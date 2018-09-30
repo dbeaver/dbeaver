@@ -50,8 +50,7 @@ import org.jkiss.utils.xml.SAXReader;
 import org.jkiss.utils.xml.XMLBuilder;
 import org.xml.sax.Attributes;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -1024,7 +1023,8 @@ public class DriverDescriptor extends AbstractDescriptor implements DBPDriver {
             }
         }
 
-        return result;
+        // Check if local files are zip archives with jars inside
+        return DriverUtils.extractZipArchives(result);
     }
 
     private void checkDriverVersion(DBRProgressMonitor monitor) throws IOException {

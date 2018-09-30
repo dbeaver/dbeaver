@@ -109,7 +109,11 @@ public abstract class DriverLibraryAbstract implements DBPDriverLibrary
     protected DriverLibraryAbstract(DriverDescriptor driver, IConfigurationElement config)
     {
         this.driver = driver;
-        this.type = FileType.valueOf(config.getAttribute(RegistryConstants.ATTR_TYPE));
+        String typeStr = config.getAttribute(RegistryConstants.ATTR_TYPE);
+        if ("zip".equalsIgnoreCase(typeStr)) {
+            typeStr = FileType.jar.name();
+        }
+        this.type = FileType.valueOf(typeStr);
 
         String osName = config.getAttribute(RegistryConstants.ATTR_OS);
         this.system = osName == null ? null : new OSDescriptor(
