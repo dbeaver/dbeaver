@@ -1080,22 +1080,6 @@
                         webURL="https://documentation.progress.com/output/ua/OpenEdge_latest/dmsdv/connecting-from-a-java-application-using-a-url.html#">
                 </driver>
 
-                <!-- BigQuery -->
-<!--
-                <driver
-                        id="google_bigquery_simba"
-                        label="BigQuery"
-                        icon="icons/google_bigquery.png"
-                        class="com.simba.googlebigquery.jdbc42.Driver"
-                        sampleURL="jdbc:bigquery://{host}:{port};ProjectId={database};OAuthType=0;OAuthServiceAcctEmail={user};OAuthPvtKeyPath={server};"
-                        defaultPort="443"
-                        description="Google BigQuery driver"
-                        webURL="https://cloud.google.com/bigquery/partners/simba-drivers/"
-                        propertiesURL="http://cdn.simba.com/products/BigQuery/doc/JDBC_InstallGuide/">
-                    <file type="zip" path="https://storage.googleapis.com/simba-bq-release/jdbc/SimbaJDBCDriverforGoogleBigQuery42_1.1.8.1010.zip"/>
-                </driver>
--->
-
             </drivers>
 
         </datasource>

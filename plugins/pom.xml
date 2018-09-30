@@ -24,6 +24,7 @@
         <module>org.jkiss.dbeaver.core.application</module>
         <module>org.jkiss.dbeaver.core.eclipse</module>
         <module>org.jkiss.dbeaver.ext.db2</module>
+        <module>org.jkiss.dbeaver.ext.bigquery</module>
         <module>org.jkiss.dbeaver.ext.derby</module>
         <module>org.jkiss.dbeaver.ext.erd</module>
         <module>org.jkiss.dbeaver.ext.es.ui</module>
