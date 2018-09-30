@@ -23,10 +23,18 @@ import org.jkiss.dbeaver.model.DBConstants;
  */
 public class BigQueryConstants
 {
-    public static final String PROP_AUTHENTICATOR = DBConstants.INTERNAL_PROP_PREFIX + "authenticator@";
 
-    public static final String PROP_OAUTH_TYPE = DBConstants.INTERNAL_PROP_PREFIX + "oauth-type@";
+    //public static final String PROP_OAUTH_TYPE = DBConstants.INTERNAL_PROP_PREFIX + "oauth-type@";
+    //public static final String PROP_OAUTH_KEY_PATH = DBConstants.INTERNAL_PROP_PREFIX + "oauth-key-path@";
 
     public static final String DEFAULT_HOST_NAME = "https://www.googleapis.com/bigquery/v2";
     public static final int DEFAULT_PORT = 433;
+
+    public static final String DRIVER_PROP_ADDITIONAL_PROJECTS = "AdditionalProjects";
+    public static final String DRIVER_PROP_OAUTH_TYPE = "OAuthType";
+    public static final String DRIVER_PROP_OAUTH_PVT_KEYPATH = "OAuthPvtKeyPath";
+
+    public static final String DRIVER_PROP_ACCOUNT = "OAuthServiceAcctEmail";
+    public static final String DRIVER_PROP_PROJECT_ID = "ProjectId";
+
 }

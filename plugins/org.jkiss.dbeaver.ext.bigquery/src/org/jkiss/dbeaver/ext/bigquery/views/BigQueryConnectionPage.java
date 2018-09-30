@@ -56,6 +56,11 @@ public class BigQueryConnectionPage extends ConnectionPageAbstract implements IC
     private Text portText;
 
     private static ImageDescriptor logoImage = BigQueryActivator.getImageDescriptor("icons/google_bigquery_logo.png");
+    private DriverPropertiesDialogPage driverPropsPage;
+
+    public BigQueryConnectionPage() {
+        driverPropsPage = new DriverPropertiesDialogPage(this);
+    }
 
     @Override
     public void dispose()
@@ -90,6 +95,7 @@ public class BigQueryConnectionPage extends ConnectionPageAbstract implements IC
             addrGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
             usernameText = UIUtils.createLabelText(addrGroup, "Service account", "");
+            usernameText.setToolTipText("Google account email address. Can be left empty if auth type is service based and key file contains all user info (JSON).");
             usernameText.addModifyListener(textListener);
 
             UIUtils.createControlLabel(addrGroup, "OAuth type");
@@ -151,11 +157,19 @@ public class BigQueryConnectionPage extends ConnectionPageAbstract implements IC
             }
             projectText.setText(databaseName);
         }
+        String additionalProjects = connectionInfo.getProperty(BigQueryConstants.DRIVER_PROP_ADDITIONAL_PROJECTS);
+        if (additionalProjects != null) {
+            extraProjectsText.setText(additionalProjects);
+        }
         if (usernameText != null) {
             usernameText.setText(CommonUtils.notEmpty(connectionInfo.getUserName()));
         }
         if (authTypeCombo != null) {
-            authTypeCombo.select(CommonUtils.toInt(connectionInfo.getProviderProperty(BigQueryConstants.PROP_OAUTH_TYPE)));
+            authTypeCombo.select(CommonUtils.toInt(connectionInfo.getProperty(BigQueryConstants.DRIVER_PROP_OAUTH_TYPE)));
+        }
+        String keyPath = connectionInfo.getProperty(BigQueryConstants.DRIVER_PROP_OAUTH_PVT_KEYPATH);
+        if (keyPath != null && authCertFile != null) {
+            authCertFile.setText(keyPath);
         }
 
         if (hostText != null) {
@@ -183,11 +197,17 @@ public class BigQueryConnectionPage extends ConnectionPageAbstract implements IC
         if (projectText != null) {
             connectionInfo.setDatabaseName(projectText.getText().trim());
         }
+        if (extraProjectsText != null) {
+            connectionInfo.setProperty(BigQueryConstants.DRIVER_PROP_ADDITIONAL_PROJECTS, extraProjectsText.getText().trim());
+        }
         if (usernameText != null) {
             connectionInfo.setUserName(usernameText.getText().trim());
         }
         if (authTypeCombo != null) {
-            connectionInfo.setProviderProperty(BigQueryConstants.PROP_OAUTH_TYPE, String.valueOf(authTypeCombo.getSelectionIndex()));
+            connectionInfo.setProperty(BigQueryConstants.DRIVER_PROP_OAUTH_TYPE, String.valueOf(authTypeCombo.getSelectionIndex()));
+        }
+        if (authCertFile != null) {
+            connectionInfo.setProperty(BigQueryConstants.DRIVER_PROP_OAUTH_PVT_KEYPATH, authCertFile.getText());
         }
         if (hostText != null) {
             connectionInfo.setHostName(hostText.getText().trim());
@@ -202,7 +222,7 @@ public class BigQueryConnectionPage extends ConnectionPageAbstract implements IC
     public IDialogPage[] getSubPages()
     {
         return new IDialogPage[] {
-            new DriverPropertiesDialogPage(this)
+            driverPropsPage
         };
     }
 
