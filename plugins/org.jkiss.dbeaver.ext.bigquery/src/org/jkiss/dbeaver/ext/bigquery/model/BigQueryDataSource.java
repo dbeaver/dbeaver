@@ -18,8 +18,6 @@ package org.jkiss.dbeaver.ext.bigquery.model;
 
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
-import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
-import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
@@ -31,10 +29,10 @@ import java.util.Map;
 
 public class BigQueryDataSource extends GenericDataSource {
 
-    public BigQueryDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, GenericMetaModel metaModel)
+    public BigQueryDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container, BigQueryMetaModel metaModel)
         throws DBException
     {
-        super(monitor, container, metaModel, new GenericSQLDialect());
+        super(monitor, container, metaModel, new BigQuerySQLDialect());
     }
 
     @Override

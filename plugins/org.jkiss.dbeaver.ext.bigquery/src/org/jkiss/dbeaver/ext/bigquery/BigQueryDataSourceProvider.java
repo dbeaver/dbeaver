@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.bigquery.model.BigQueryDataSource;
+import org.jkiss.dbeaver.ext.bigquery.model.BigQueryMetaModel;
 import org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider;
 import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSource;
@@ -50,7 +51,7 @@ public class BigQueryDataSourceProvider extends GenericDataSourceProvider {
         @NotNull DBPDataSourceContainer container)
         throws DBException
     {
-        return new BigQueryDataSource(monitor, container, new GenericMetaModel());
+        return new BigQueryDataSource(monitor, container, new BigQueryMetaModel());
     }
 
     @Override
