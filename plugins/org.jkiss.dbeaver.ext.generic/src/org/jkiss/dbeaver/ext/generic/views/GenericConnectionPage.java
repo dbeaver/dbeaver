@@ -107,7 +107,7 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 3;
             gd.grabExcessHorizontalSpace = true;
-            //gd.widthHint = 355;
+            gd.widthHint = 355;
             urlText.setLayoutData(gd);
             urlText.addModifyListener(e -> site.updateButtons());
 
