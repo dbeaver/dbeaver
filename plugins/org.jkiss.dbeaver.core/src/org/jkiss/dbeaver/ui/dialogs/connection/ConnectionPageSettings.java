@@ -155,15 +155,17 @@ class ConnectionPageSettings extends ActiveWizardPage<ConnectionWizard> implemen
 
     void saveSettings(DataSourceDescriptor dataSource)
     {
-        if (connectionEditor != null) {
-            connectionEditor.saveSettings(dataSource);
-        }
         if (subPages != null) {
             for (IDialogPage page : subPages) {
                 if (page.getControl() != null && page instanceof IDataSourceConnectionEditor) {
                     ((IDataSourceConnectionEditor) page).saveSettings(dataSource);
                 }
             }
+        }
+        // Save connection settings AFTER extra pages.
+        // Because it may contain some driver properties save which will be overwrited by driver props page otherwise
+        if (connectionEditor != null) {
+            connectionEditor.saveSettings(dataSource);
         }
     }
 

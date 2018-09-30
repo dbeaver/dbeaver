@@ -25,7 +25,10 @@ import org.jkiss.dbeaver.ext.generic.model.meta.GenericMetaModel;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
+import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
 public class BigQueryDataSourceProvider extends GenericDataSourceProvider {
 
@@ -50,4 +53,14 @@ public class BigQueryDataSourceProvider extends GenericDataSourceProvider {
         return new BigQueryDataSource(monitor, container, new GenericMetaModel());
     }
 
+    @Override
+    public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo) {
+        //jdbc:bigquery://https://www.googleapis.com/bigquery/v2:443;ProjectId={server};OAuthType=0;OAuthServiceAcctEmail={user};OAuthPvtKeyPath={host};
+        StringBuilder url = new StringBuilder();
+        url.append("jdbc:bigquery://").append(connectionInfo.getHostName());
+        if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
+            url.append(":").append(connectionInfo.getHostPort());
+        }
+        return url.toString();
+    }
 }

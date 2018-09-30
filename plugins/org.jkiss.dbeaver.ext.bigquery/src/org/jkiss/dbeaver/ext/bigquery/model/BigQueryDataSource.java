@@ -25,7 +25,6 @@ import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.utils.CommonUtils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -41,10 +40,8 @@ public class BigQueryDataSource extends GenericDataSource {
     @Override
     protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor, DBPDriver driver, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException {
         Map<String, String> props = new HashMap<>();
-        String authProp = connectionInfo.getProviderProperty(BigQueryConstants.PROP_AUTHENTICATOR);
-        if (!CommonUtils.isEmpty(authProp)) {
-            //props.put("authenticator", authProp);
-        }
+        props.put(BigQueryConstants.DRIVER_PROP_PROJECT_ID, connectionInfo.getDatabaseName());
+        props.put(BigQueryConstants.DRIVER_PROP_ACCOUNT, connectionInfo.getUserName());
 
         return props;
     }
