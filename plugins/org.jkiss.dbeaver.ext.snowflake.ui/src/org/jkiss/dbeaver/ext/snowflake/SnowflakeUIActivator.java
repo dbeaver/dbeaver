@@ -23,15 +23,15 @@ import org.osgi.framework.BundleContext;
 /**
  * The activator class controls the plug-in life cycle
  */
-public class Activator extends AbstractUIPlugin {
+public class SnowflakeUIActivator extends AbstractUIPlugin {
 
 	// The plug-in ID
 	public static final String PLUGIN_ID = "org.jkiss.dbeaver.ext.snowflake.ui";
 
 	// The shared instance
-	private static Activator plugin;
+	private static SnowflakeUIActivator plugin;
 	
-	public Activator() {
+	public SnowflakeUIActivator() {
 	}
 
 	@Override
@@ -46,7 +46,7 @@ public class Activator extends AbstractUIPlugin {
 		super.stop(context);
 	}
 
-	public static Activator getDefault() {
+	public static SnowflakeUIActivator getDefault() {
 		return plugin;
 	}
 
