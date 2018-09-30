@@ -21,11 +21,11 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.generic.GenericDataSourceProvider;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
 
-public class ElasticSearchDataSourceProvider extends GenericDataSourceProvider {
+public class ElasticsearchDataSourceProvider extends GenericDataSourceProvider {
 
-    private static final Log log = Log.getLog(ElasticSearchDataSourceProvider.class);
+    private static final Log log = Log.getLog(ElasticsearchDataSourceProvider.class);
 
-    public ElasticSearchDataSourceProvider()
+    public ElasticsearchDataSourceProvider()
     {
     }
 
