@@ -8,7 +8,7 @@
         <!-- Elasticsearch -->
 
         <datasource
-                class="org.jkiss.dbeaver.ext.es.ElasticSearchDataSourceProvider"
+                class="org.jkiss.dbeaver.ext.es.ElasticsearchDataSourceProvider"
                 description="%datasource.es.description"
                 id="elasticsearch"
                 parent="generic"
