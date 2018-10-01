@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.data.handlers;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.model.data.*;
@@ -39,6 +40,7 @@ import org.jkiss.utils.IOUtils;
 
 import java.io.*;
 import java.sql.*;
+import java.util.Locale;
 
 /**
  * JDBC Content value handler.
@@ -153,8 +155,17 @@ public class JDBCContentValueHandler extends JDBCAbstractValueHandler implements
                 case java.sql.Types.SQLXML:
                     return new JDBCContentXML(session.getDataSource(), null);
                 default:
-                    log.error(ModelMessages.model_jdbc_unsupported_column_type_ + type.getTypeName());
-                    return new JDBCContentBytes(session.getDataSource());
+                    {
+                        String typeName = type.getTypeName();
+                        if (typeName.contains(DBConstants.TYPE_NAME_XML) || typeName.contains(DBConstants.TYPE_NAME_XML2)) {
+                            return new JDBCContentXML(session.getDataSource(), null);
+                        } else if (typeName.contains(DBConstants.TYPE_NAME_JSON) || typeName.contains(DBConstants.TYPE_NAME_JSON2)) {
+                            return new JDBCContentChars(session.getDataSource(), null);
+                        } else {
+                            //log.debug(ModelMessages.model_jdbc_unsupported_column_type_ + type.getTypeName());
+                            return new JDBCContentBytes(session.getDataSource());
+                        }
+                    }
             }
         } else if (object instanceof byte[]) {
             return new JDBCContentBytes(session.getDataSource(), (byte[]) object);
