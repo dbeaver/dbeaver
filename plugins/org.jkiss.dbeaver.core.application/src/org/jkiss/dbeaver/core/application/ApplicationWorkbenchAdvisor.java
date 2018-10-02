@@ -23,7 +23,11 @@ import org.eclipse.jface.dialogs.MessageDialogWithToggle;
 import org.eclipse.jface.dialogs.TrayDialog;
 import org.eclipse.jface.preference.PreferenceManager;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.ui.*;
+import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorReference;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
+import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.application.IWorkbenchConfigurer;
 import org.eclipse.ui.application.IWorkbenchWindowConfigurer;
 import org.eclipse.ui.application.WorkbenchAdvisor;
@@ -33,8 +37,6 @@ import org.eclipse.ui.internal.ide.IDEWorkbenchPlugin;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.application.tips.TipOfTheDayJob;
 import org.jkiss.dbeaver.core.application.update.DBeaverVersionChecker;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
@@ -144,7 +146,6 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
 
         startVersionChecker();
 
-        startTipOfTheDayIfNeeded();
 /*
         settingsChangeListener = event -> {
             if (isPropertyChangeRequiresRestart(event.getProperty())) {
@@ -158,16 +159,6 @@ public class ApplicationWorkbenchAdvisor extends WorkbenchAdvisor {
         };
         DBeaverCore.getGlobalPreferenceStore().addPropertyChangeListener(settingsChangeListener);
 */
-
-    }
-
-    private void startTipOfTheDayIfNeeded() {
-        if (!DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.UI_SHOW_TIP_OF_THE_DAY_ON_STARTUP) ||
-                DataSourceRegistry.getAllDataSources().isEmpty()) {
-            return;
-        }
-        TipOfTheDayJob tipOfTheDayJob = new TipOfTheDayJob();
-        tipOfTheDayJob.schedule(3200);
 
     }
 
