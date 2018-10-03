@@ -153,8 +153,7 @@ public class StringEditorInput implements INonPersistentEditorInput, IStorageEdi
 
     private class StringStorage implements IPersistentStorage, IEncodedStorage {
         @Override
-        public InputStream getContents() throws CoreException
-        {
+        public InputStream getContents() {
             return new ByteArrayInputStream(buffer.toString().getBytes(charset));
         }
 
@@ -195,7 +194,7 @@ public class StringEditorInput implements INonPersistentEditorInput, IStorageEdi
         }
 
         @Override
-        public String getCharset() throws CoreException {
+        public String getCharset() {
             return charset.name();
         }
     }

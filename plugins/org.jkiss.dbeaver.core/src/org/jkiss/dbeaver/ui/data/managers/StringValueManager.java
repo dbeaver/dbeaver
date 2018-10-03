@@ -61,7 +61,8 @@ public class StringValueManager extends ContentValueManager {
                     return null;
                 }
             case PANEL:
-                if (controller.getValueType().getMaxLength() < PLAIN_STRING_MAX_LENGTH) {
+                long maxLength = controller.getValueType().getMaxLength();
+                if (maxLength > 0 && maxLength < PLAIN_STRING_MAX_LENGTH) {
                     return new StringInlineEditor(controller);
                 } else {
                     return new ContentPanelEditor(controller);

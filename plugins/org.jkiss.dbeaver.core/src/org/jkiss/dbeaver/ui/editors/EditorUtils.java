@@ -78,7 +78,7 @@ public class EditorUtils {
             return ((IFileEditorInput) editorInput).getFile();
         } else if (editorInput instanceof IPathEditorInput) {
             final IPath path = ((IPathEditorInput) editorInput).getPath();
-            return ContentUtils.convertPathToWorkspaceFile(path);
+            return path == null ? null : ContentUtils.convertPathToWorkspaceFile(path);
         } else if (editorInput instanceof IURIEditorInput) {
             // Most likely it is an external file
             return null;
@@ -87,7 +87,7 @@ public class EditorUtils {
         final IPathEditorInput pathInput = editorInput.getAdapter(IPathEditorInput.class);
         if (pathInput != null) {
             final IPath path = pathInput.getPath();
-            return ContentUtils.convertPathToWorkspaceFile(path);
+            return path == null ? null : ContentUtils.convertPathToWorkspaceFile(path);
         }
 
         try {
