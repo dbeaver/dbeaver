@@ -136,7 +136,7 @@
                     <parameter name="native-format-time" value="''HH:mm:ss.SSS''"/>
                     <parameter name="script-delimiter-after-query" value="true"/>
 
-                    <file type="jar" path="maven:/com.microsoft.sqlserver:mssql-jdbc:RELEASE[6.2.2.jre8]" bundle="!drivers.mssql.new"/>
+                    <file type="jar" path="maven:/com.microsoft.sqlserver:mssql-jdbc:RELEASE[7.0.0.jre8]" bundle="!drivers.mssql.new"/>
                     <file type="lib" os="win32" arch="x86" path="repo:/drivers/mssql/auth/x86/sqljdbc_auth.dll" bundle="!drivers.mssql.new"/>
                     <file type="lib" os="win32" arch="x86_64" path="repo:/drivers/mssql/auth/x64/sqljdbc_auth.dll" bundle="!drivers.mssql.new"/>
 
