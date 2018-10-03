@@ -50,7 +50,7 @@ public class StringEditorInput implements INonPersistentEditorInput, IStorageEdi
     private String name;
     private StringBuilder buffer;
     private boolean readOnly;
-    private IStorage storage;
+    private StringStorage storage;
     private Charset charset;
     private Map<String, Object> properties = new HashMap<>();
 
@@ -102,7 +102,7 @@ public class StringEditorInput implements INonPersistentEditorInput, IStorageEdi
 	}
 
     @Override
-	public IStorage getStorage() {
+	public StringStorage getStorage() {
         if (storage == null) {
             storage = new StringStorage();
         }
@@ -151,7 +151,7 @@ public class StringEditorInput implements INonPersistentEditorInput, IStorageEdi
         }
     }
 
-    private class StringStorage implements IPersistentStorage, IEncodedStorage {
+    public class StringStorage implements IPersistentStorage, IEncodedStorage {
         @Override
         public InputStream getContents() {
             return new ByteArrayInputStream(buffer.toString().getBytes(charset));
@@ -196,6 +196,17 @@ public class StringEditorInput implements INonPersistentEditorInput, IStorageEdi
         @Override
         public String getCharset() {
             return charset.name();
+        }
+
+        public void setString(String str) {
+            buffer.setLength(0);
+            if (str != null) {
+                buffer.append(str);
+            }
+        }
+
+        public String getString() {
+            return buffer.toString();
         }
     }
 

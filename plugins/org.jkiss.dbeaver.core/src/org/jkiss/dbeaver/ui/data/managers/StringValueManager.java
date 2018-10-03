@@ -47,11 +47,12 @@ public class StringValueManager extends ContentValueManager {
     public IValueEditor createEditor(@NotNull IValueController controller)
         throws DBException
     {
+        DBPDataKind dataKind = controller.getValueType().getDataKind();
         switch (controller.getEditType()) {
             case INLINE:
                 // Open inline/panel editor
                 Object value = controller.getValue();
-                if (controller.getValueType().getDataKind() == DBPDataKind.STRING) {
+                if (dataKind == DBPDataKind.STRING || dataKind == DBPDataKind.NUMERIC || dataKind == DBPDataKind.DATETIME || dataKind == DBPDataKind.BOOLEAN) {
                     return new StringInlineEditor(controller);
                 } else if (value instanceof DBDContentCached &&
                     ContentUtils.isTextValue(((DBDContentCached) value).getCachedValue()))
@@ -62,7 +63,7 @@ public class StringValueManager extends ContentValueManager {
                 }
             case PANEL:
                 long maxLength = controller.getValueType().getMaxLength();
-                if (maxLength > 0 && maxLength < PLAIN_STRING_MAX_LENGTH) {
+                if (dataKind == DBPDataKind.NUMERIC || dataKind == DBPDataKind.DATETIME || dataKind == DBPDataKind.BOOLEAN || (maxLength > 0 && maxLength < PLAIN_STRING_MAX_LENGTH)) {
                     return new StringInlineEditor(controller);
                 } else {
                     return new ContentPanelEditor(controller);
