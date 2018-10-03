@@ -13,7 +13,7 @@
                 id="elasticsearch"
                 parent="generic"
                 label="Elasticsearch"
-                icon="icons/es_icon.png">
+                icon="icons/elastic_search_icon.png">
             <drivers managable="true">
 
                 <driver
@@ -27,6 +27,9 @@
                         webURL="https://www.elastic.co/guide/en/elasticsearch/reference/current/sql-jdbc.html">
                     <replace provider="generic" driver="es_generic"/>
                     <file type="jar" path="maven:/org.elasticsearch.plugin:x-pack-sql-jdbc:6.4.0"/>
+                    <parameter name="supports-references" value="false"/>
+                    <parameter name="supports-indexes" value="false"/>
+                    <parameter name="omit-catalog" value="true"/>
                 </driver>
 
             </drivers>
