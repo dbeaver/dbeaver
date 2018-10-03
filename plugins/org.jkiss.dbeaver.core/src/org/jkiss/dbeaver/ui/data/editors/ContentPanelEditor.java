@@ -108,6 +108,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
                 new StringContent(
                     dataSource, (String) content));
         } else if (content instanceof DBDContent) {
+            loadInService = !(content instanceof DBDContentCached);
             if (loadInService) {
                 StreamValueLoadService loadingService = new StreamValueLoadService((DBDContent) content);
 

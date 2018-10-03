@@ -1790,8 +1790,9 @@ public class HexEditControl extends Composite {
      * same position, but only if it falls within the new content's limits.
      *
      * @param aContent the content to be displayed
+     * @param notify
      */
-    public void setContentProvider(BinaryContent aContent)
+    public void setContentProvider(BinaryContent aContent, boolean notify)
     {
         if (isDisposed()) {
             return;
@@ -1817,10 +1818,17 @@ public class HexEditControl extends Composite {
         updateScrollBar();
         redrawTextAreas(true);
         notifyLongSelectionListeners();
-        notifyListeners(SWT.Modify, null);
+        if (notify) {
+            notifyListeners(SWT.Modify, null);
+        }
     }
 
     public void setContent(byte[] data, String charset)
+    {
+        setContent(data, charset, true);
+    }
+
+    public void setContent(byte[] data, String charset, boolean notify)
     {
         BinaryContent binaryContent = new BinaryContent();
         if (charset != null) {
@@ -1829,7 +1837,7 @@ public class HexEditControl extends Composite {
         ByteBuffer byteBuffer = ByteBuffer.wrap(data);
         binaryContent.insert(byteBuffer, 0);
 
-        setContentProvider(binaryContent);
+        setContentProvider(binaryContent, notify);
     }
 
 
