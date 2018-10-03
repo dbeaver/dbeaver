@@ -183,11 +183,7 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor> imp
     @Override
     public void extractEditorValue(@NotNull DBRProgressMonitor monitor, @NotNull StyledText control, @NotNull DBDContent value) throws DBException
     {
-        if (valueController.getValueType().getDataKind() == DBPDataKind.STRING) {
-            value.updateContents(
-                    monitor,
-                    new StringContentStorage(control.getText()));
-        } else {
+        if (valueController.getValue() instanceof DBDContent) {
             monitor.beginTask("Extract text", 1);
             try {
                 monitor.subTask("Extracting text from editor");
@@ -202,6 +198,10 @@ public abstract class AbstractTextPanelEditor<EDITOR extends BaseTextEditor> imp
             } finally {
                 monitor.done();
             }
+        } else {
+            value.updateContents(
+                monitor,
+                new StringContentStorage(control.getText()));
         }
     }
 

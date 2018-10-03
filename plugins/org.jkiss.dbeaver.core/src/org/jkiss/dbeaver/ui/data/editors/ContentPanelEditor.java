@@ -104,7 +104,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
                 new VoidProgressMonitor(),
                 control,
                 new StringContent(
-                    dataSource, (String) content));
+                    dataSource, CommonUtils.toString(content)));
         } else if (content instanceof DBDContent) {
             loadInService = !(content instanceof DBDContentCached);
             if (loadInService) {
@@ -127,7 +127,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
     }
 
     private boolean isStringValue() {
-        return valueController.getValueType().getDataKind() == DBPDataKind.STRING;
+        return !(valueController.getValue() instanceof DBDContent);
     }
 
     @Override
@@ -168,7 +168,7 @@ public class ContentPanelEditor extends BaseValueEditor<Control> implements IAda
                 } catch (Throwable e) {
                     DBUserInterface.getInstance().showError("No string editor", "Can't load string content managers", e);
                 }
-            } else if (content instanceof DBDContent) {
+            } else {
                 //UIUtils.createLabel(editPlaceholder, UIIcon.REFRESH);
                 runSreamManagerDetector((DBDContent) content, editPlaceholder);
                 return editPlaceholder;
