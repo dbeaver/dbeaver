@@ -2935,6 +2935,7 @@
             <adapter type="org.jkiss.dbeaver.model.DBPObject"/>
             <adapter type="org.jkiss.dbeaver.model.struct.DBSObject"/>
             <adapter type="org.jkiss.dbeaver.model.struct.DBSEntity"/>
+            <adapter type="org.jkiss.dbeaver.model.struct.DBSObjectContainer"/>
             <adapter type="org.jkiss.dbeaver.model.struct.DBSDataContainer"/>
             <adapter type="org.jkiss.dbeaver.model.struct.DBSDataManipulator"/>
             <adapter type="org.jkiss.dbeaver.model.struct.rdb.DBSProcedure"/>
