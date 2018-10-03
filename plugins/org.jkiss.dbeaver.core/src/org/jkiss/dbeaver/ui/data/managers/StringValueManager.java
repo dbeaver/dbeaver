@@ -19,16 +19,23 @@ package org.jkiss.dbeaver.ui.data.managers;
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.DBeaverPreferences;
+import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.data.DBDContentCached;
 import org.jkiss.dbeaver.ui.data.IValueController;
 import org.jkiss.dbeaver.ui.data.IValueEditor;
+import org.jkiss.dbeaver.ui.data.editors.ContentInlineEditor;
+import org.jkiss.dbeaver.ui.data.editors.ContentPanelEditor;
 import org.jkiss.dbeaver.ui.data.editors.StringInlineEditor;
 import org.jkiss.dbeaver.ui.dialogs.data.TextViewDialog;
 import org.jkiss.dbeaver.ui.editors.content.ContentEditor;
+import org.jkiss.dbeaver.utils.ContentUtils;
 
 /**
  * String value manager
  */
-public class StringValueManager extends BaseValueManager {
+public class StringValueManager extends ContentValueManager {
+
+    private static final long PLAIN_STRING_MAX_LENGTH = 100;
 
     @NotNull
     @Override
@@ -42,8 +49,23 @@ public class StringValueManager extends BaseValueManager {
     {
         switch (controller.getEditType()) {
             case INLINE:
+                // Open inline/panel editor
+                Object value = controller.getValue();
+                if (controller.getValueType().getDataKind() == DBPDataKind.STRING) {
+                    return new StringInlineEditor(controller);
+                } else if (value instanceof DBDContentCached &&
+                    ContentUtils.isTextValue(((DBDContentCached) value).getCachedValue()))
+                {
+                    return new ContentInlineEditor(controller);
+                } else {
+                    return null;
+                }
             case PANEL:
-                return new StringInlineEditor(controller);
+                if (controller.getValueType().getMaxLength() < PLAIN_STRING_MAX_LENGTH) {
+                    return new StringInlineEditor(controller);
+                } else {
+                    return new ContentPanelEditor(controller);
+                }
             case EDITOR:
                 if (controller.getExecutionContext().getDataSource().getContainer().getPreferenceStore().getBoolean(DBeaverPreferences.RESULT_SET_STRING_USE_CONTENT_EDITOR)) {
                     return ContentEditor.openEditor(controller);
