@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.impl.jdbc.data.handlers;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
@@ -76,6 +77,16 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
         try {
             if (resultSet instanceof JDBCResultSet) {
                 JDBCResultSet dbResults = (JDBCResultSet) resultSet;
+
+                // check for native format
+                if (session.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_NATIVE_DATETIME_FORMAT)) {
+                    try {
+                        return dbResults.getString(index + 1);
+                    } catch (SQLException e) {
+                        log.debug("Can't read date/time value as string: " + e.getMessage());
+                    }
+                }
+
                 // It seems that some drivers doesn't support reading date/time values with explicit calendar
                 // So let's use simple version
                 switch (type.getTypeID()) {

@@ -24,6 +24,7 @@ import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
@@ -63,6 +64,7 @@ public class PrefPageDataFormat extends TargetPrefPage
     private Map<String, Map<Object, Object>> profileProperties = new HashMap<>();
     private Combo profilesCombo;
     private PropertySourceCustom propertySource;
+    private Button useNativeFormatCheck;
 
     public PrefPageDataFormat()
     {
@@ -115,26 +117,36 @@ public class PrefPageDataFormat extends TargetPrefPage
     {
         boldFont = UIUtils.makeBoldFont(parent.getFont());
 
-        Composite composite = UIUtils.createPlaceholder(parent, 1);
+        Composite composite = UIUtils.createPlaceholder(parent, 2, 5);
 
         // Locale
-        localeSelector = new LocaleSelectorControl(composite, null);
-        localeSelector.addListener(SWT.Selection, new Listener() {
-            @Override
-            public void handleEvent(Event event)
-            {
+        {
+            localeSelector = new LocaleSelectorControl(composite, null);
+            localeSelector.addListener(SWT.Selection, event -> {
                 if (event.data instanceof Locale) {
                     onLocaleChange((Locale) event.data);
                 }
-            }
-        });
+            });
+        }
+
+        // Settings
+        {
+            Group settingsGroup = new Group(composite, SWT.NONE);
+            settingsGroup.setText(CoreMessages.pref_page_data_format_group_settings);
+            settingsGroup.setLayout(new GridLayout(2, false));
+            settingsGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL));
+
+            useNativeFormatCheck = UIUtils.createCheckbox(settingsGroup, CoreMessages.pref_page_data_format_datetime_use_native_formatting, CoreMessages.pref_page_data_format_datetime_use_native_formatting_tip, false, 2);
+        }
 
         // formats
         {
             Group formatGroup = new Group(composite, SWT.NONE);
             formatGroup.setText(CoreMessages.pref_page_data_format_group_format);
             formatGroup.setLayout(new GridLayout(2, false));
-            formatGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+            GridData gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL);
+            gd.horizontalSpan = 2;
+            formatGroup.setLayoutData(gd);
 
             UIUtils.createControlLabel(formatGroup, CoreMessages.pref_page_data_format_label_type);
             typeCombo = new Combo(formatGroup, SWT.DROP_DOWN | SWT.READ_ONLY);
@@ -149,13 +161,7 @@ public class PrefPageDataFormat extends TargetPrefPage
             Label propsLabel = UIUtils.createControlLabel(formatGroup, CoreMessages.pref_page_data_format_label_settingt);
             propsLabel.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
             propertiesControl = new PropertyTreeViewer(formatGroup, SWT.BORDER);
-            propertiesControl.getControl().addListener(SWT.Modify, new Listener() {
-                @Override
-                public void handleEvent(Event event)
-                {
-                    saveFormatterProperties();
-                }
-            });
+            propertiesControl.getControl().addListener(SWT.Modify, event -> saveFormatterProperties());
 
             UIUtils.createControlLabel(formatGroup, CoreMessages.pref_page_data_format_label_sample);
             sampleText = new Text(formatGroup, SWT.BORDER | SWT.READ_ONLY);
@@ -344,6 +350,8 @@ public class PrefPageDataFormat extends TargetPrefPage
         refreshProfileList();
 
         setCurrentProfile(getDefaultProfile());
+
+        useNativeFormatCheck.setSelection(store.getBoolean(ModelPreferences.RESULT_NATIVE_DATETIME_FORMAT));
     }
 
     @Override
@@ -356,6 +364,8 @@ public class PrefPageDataFormat extends TargetPrefPage
                 formatterProfile.setFormatterProperties(typeId, profileProperties.get(typeId));
             }
             formatterProfile.saveProfile();
+
+            store.setValue(ModelPreferences.RESULT_NATIVE_DATETIME_FORMAT, useNativeFormatCheck.getSelection());
         } catch (Exception e) {
             log.warn(e);
         }
@@ -365,6 +375,7 @@ public class PrefPageDataFormat extends TargetPrefPage
     protected void clearPreferences(DBPPreferenceStore store)
     {
         formatterProfile.reset();
+        store.setToDefault(ModelPreferences.RESULT_NATIVE_DATETIME_FORMAT);
     }
 
     @Override

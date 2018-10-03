@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.model.impl.data;
 
 import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.data.DBDDataFormatter;
 import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
@@ -26,6 +27,7 @@ import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.impl.data.formatters.DefaultDataFormatter;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 
+import java.sql.SQLException;
 import java.text.ParseException;
 import java.util.Date;
 
@@ -52,6 +54,11 @@ public abstract class DateTimeCustomValueHandler extends DateTimeValueHandler {
         } else if (object instanceof Date) {
             return copy ? ((Date)object).clone() : object;
         } else if (object instanceof String) {
+            if (session.getDataSource().getContainer().getPreferenceStore().getBoolean(ModelPreferences.RESULT_NATIVE_DATETIME_FORMAT)) {
+                // Do not use formatter for native format
+                return object;
+            }
+
             String strValue = (String)object;
             try {
                 return getFormatter(type).parseValue(strValue, null);
@@ -79,11 +86,8 @@ public abstract class DateTimeCustomValueHandler extends DateTimeValueHandler {
     @Override
     public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format)
     {
-        if (value instanceof String) {
-            return (String) value;
-        }
-        if (value == null) {
-            return super.getValueDisplayString(column, null, format);
+        if (value == null || value instanceof String) {
+            return super.getValueDisplayString(column, value, format);
         }
         try {
             return getFormatter(column).formatValue(value);
