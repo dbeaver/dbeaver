@@ -392,6 +392,7 @@
 
             <type standard="ARRAY"/>
             <type standard="STRUCT"/>
+            <type kind="DATETIME"/>
             <type name="HSTORE"/>
             <type name="JSON"/>
             <type name="JSONB"/>
