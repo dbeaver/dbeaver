@@ -16,17 +16,12 @@
  */
 package org.jkiss.dbeaver.ext.postgresql.model.data;
 
-import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.model.data.DBDDataFormatterProfile;
-import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCNumberValueHandler;
 import org.jkiss.dbeaver.model.impl.jdbc.data.handlers.JDBCStringValueHandler;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
-import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.sql.Types;
@@ -34,9 +29,9 @@ import java.sql.Types;
 /**
  * JDBC strict string value handler.
  */
-public class PostgresMoneyValueHandler extends JDBCStringValueHandler {
+public class PostgreMoneyValueHandler extends JDBCStringValueHandler {
 
-    public static final PostgresMoneyValueHandler INSTANCE = new PostgresMoneyValueHandler();
+    public static final PostgreMoneyValueHandler INSTANCE = new PostgreMoneyValueHandler();
 
     @Override
     protected Object fetchColumnValue(
