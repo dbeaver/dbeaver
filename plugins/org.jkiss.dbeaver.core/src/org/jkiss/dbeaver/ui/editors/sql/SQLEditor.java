@@ -1498,9 +1498,10 @@ public class SQLEditor extends SQLEditorBase implements
         } else {
             // Use current tab.
             // If current tab was pinned then use first tab
-            final QueryResultsContainer firstResults = curQueryProcessor.getFirstResults();
+            QueryResultsContainer firstResults = curQueryProcessor.getFirstResults();
             if (firstResults.isPinned()) {
                 curQueryProcessor = queryProcessors.get(0);
+                firstResults = curQueryProcessor.getFirstResults();
             }
             closeExtraResultTabs(curQueryProcessor);
             if (firstResults.tabItem != null) {
