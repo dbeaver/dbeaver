@@ -141,6 +141,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
     private boolean showCelIcons = true;
     private boolean colorizeDataTypes = true;
     private boolean rightJustifyNumbers = true;
+    private boolean rightJustifyDateTime = true;
     private IValueEditor activeInlineEditor;
 
     public SpreadsheetPresentation() {
@@ -689,6 +690,7 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
         showCelIcons = preferenceStore.getBoolean(DBeaverPreferences.RESULT_SET_SHOW_CELL_ICONS);
         colorizeDataTypes = preferenceStore.getBoolean(DBeaverPreferences.RESULT_SET_COLORIZE_DATA_TYPES);
         rightJustifyNumbers = preferenceStore.getBoolean(DBeaverPreferences.RESULT_SET_RIGHT_JUSTIFY_NUMBERS);
+        rightJustifyDateTime = preferenceStore.getBoolean(DBeaverPreferences.RESULT_SET_RIGHT_JUSTIFY_DATETIME);
 
         spreadsheet.setRedraw(false);
         try {
@@ -1459,11 +1461,13 @@ public class SpreadsheetPresentation extends AbstractPresentation implements IRe
 
         @Override
         public int getColumnAlign(@Nullable Object element) {
-            if (rightJustifyNumbers && !controller.isRecordMode()) {
+            if (!controller.isRecordMode()) {
                 DBDAttributeBinding attr = (DBDAttributeBinding)element;
                 if (attr != null) {
                     DBPDataKind dataKind = attr.getDataKind();
-                    if (dataKind == DBPDataKind.NUMERIC || dataKind == DBPDataKind.DATETIME) {
+                    if ((dataKind == DBPDataKind.NUMERIC && rightJustifyNumbers) ||
+                        (dataKind == DBPDataKind.DATETIME && rightJustifyDateTime))
+                    {
                         return ALIGN_RIGHT;
                     }
                 }
