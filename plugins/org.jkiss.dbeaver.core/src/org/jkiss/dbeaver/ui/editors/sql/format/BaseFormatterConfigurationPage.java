@@ -73,4 +73,10 @@ public abstract class BaseFormatterConfigurationPage extends DialogPage implemen
     public void saveSettings(DBPPreferenceStore preferenceStore) {
 
     }
+
+    @Override
+    public void resetSettings(DBPPreferenceStore preferenceStore) {
+
+    }
+
 }
