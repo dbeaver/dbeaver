@@ -82,7 +82,8 @@ public class MySQLConstants {
     public static final String COL_TABLE_TYPE = "TABLE_TYPE";
     public static final String COL_ENGINE = "ENGINE";
     public static final String COL_VERSION = "VERSION";
-    public static final String COL_TABLE_ROWS = "ROWS";
+    public static final String COL_ROWS = "ROWS";
+    public static final String COL_TABLE_ROWS = "TABLE_ROWS";
     public static final String COL_AUTO_INCREMENT = "AUTO_INCREMENT";
     public static final String COL_TABLE_COMMENT = "COMMENT";
     public static final String COL_COLUMNS_NAME = "COLUMNS_NAME";
