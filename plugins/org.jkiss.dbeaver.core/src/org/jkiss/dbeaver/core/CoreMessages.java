@@ -1106,6 +1106,8 @@ public class CoreMessages extends NLS {
 	public static String pref_page_sql_completion_label_folding_enabled_tip;
 	public static String pref_page_sql_completion_label_mark_occurrences;
 	public static String pref_page_sql_completion_label_mark_occurrences_tip;
+	public static String pref_page_sql_completion_label_mark_occurrences_for_selections;
+	public static String pref_page_sql_completion_label_mark_occurrences_for_selections_tip;
 	// MetaData
 	public static String pref_page_database_general_separate_meta_connection_tip;
 	public static String pref_page_database_general_checkbox_case_sensitive_names_tip;

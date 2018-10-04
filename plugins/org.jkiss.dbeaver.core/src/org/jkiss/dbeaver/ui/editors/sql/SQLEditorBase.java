@@ -115,7 +115,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
     //private ActivationListener activationListener = new ActivationListener();
     private EditorSelectionChangedListener selectionChangedListener = new EditorSelectionChangedListener();
     private Annotation[] occurrenceAnnotations = null;
-    private boolean markOccurrenceAnnotations;
+    private boolean markOccurrencesUnderCursor;
+    private boolean markOccurrencesForSelection;
     private OccurrencesFinderJob occurrencesFinderJob;
     private OccurrencesFinderJobCanceler occurrencesFinderJobCanceler;
 
@@ -165,7 +166,9 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         if (isBigScript(input)) {
             uninstallOccurrencesFinder();
         } else {
-            setMarkingOccurrences(DBeaverCore.getGlobalPreferenceStore().getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES));
+            setMarkingOccurrences(
+                DBeaverCore.getGlobalPreferenceStore().getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR),
+                DBeaverCore.getGlobalPreferenceStore().getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION));
         }
     }
 
@@ -180,7 +183,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
     @Override
     protected void initializeEditor() {
         super.initializeEditor();
-        this.markOccurrenceAnnotations = DBeaverCore.getGlobalPreferenceStore().getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES);
+        this.markOccurrencesUnderCursor = DBeaverCore.getGlobalPreferenceStore().getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR);
+        this.markOccurrencesForSelection = DBeaverCore.getGlobalPreferenceStore().getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION);
         setEditorContextMenuId(SQLEditorContributions.SQL_EDITOR_CONTEXT_MENU_ID);
         setRulerContextMenuId(SQLEditorContributions.SQL_RULER_CONTEXT_MENU_ID);
     }
@@ -207,9 +211,10 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
     @Override
     protected void handlePreferenceStoreChanged(PropertyChangeEvent event) {
         String property = event.getProperty();
-        if (SQLPreferenceConstants.MARK_OCCURRENCES.equals(property)) {
-            boolean newBooleanValue = CommonUtils.toBoolean(event.getNewValue());
-            setMarkingOccurrences(newBooleanValue);
+        if (SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR.equals(property) || SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION.equals(property)) {
+            setMarkingOccurrences(
+                DBeaverCore.getGlobalPreferenceStore().getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR),
+                DBeaverCore.getGlobalPreferenceStore().getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION));
         } else {
             super.handlePreferenceStoreChanged(event);
         }
@@ -258,7 +263,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         this.selectionChangedListener = new EditorSelectionChangedListener();
         this.selectionChangedListener.install(this.getSelectionProvider());
 
-        if (this.markOccurrenceAnnotations) {
+        if (this.markOccurrencesUnderCursor || this.markOccurrencesForSelection) {
             this.installOccurrencesFinder();
         }
 
@@ -1301,7 +1306,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
             this.occurrencesFinderJob.cancel();
         }
 
-        if (this.markOccurrenceAnnotations) {
+        if (this.markOccurrencesUnderCursor || this.markOccurrencesForSelection) {
             if (selection != null) {
                 IDocument document = this.getSourceViewer().getDocument();
                 if (document != null) {
@@ -1320,11 +1325,17 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                     } catch (BadLocationException e) {
                         log.debug("Error detecting current word: " + e.getMessage());
                     }
-                    selection = new TextSelection(document, startPos, endPos - startPos);
+                    String wordSelected = selection.getText();
+                    String wordUnderCursor = null;
+                    try {
+                        wordUnderCursor = document.get(startPos, endPos - startPos).trim();
+                    } catch (BadLocationException e) {
+                        log.debug("Error detecting word under cursor", e);
+                    }
 
-                    OccurrencesFinder finder = new OccurrencesFinder(document, selection);
-                    List<Position> positions = finder.perform();
-                    if (positions != null && positions.size() != 0) {
+                    OccurrencesFinder finder = new OccurrencesFinder(document, wordUnderCursor, wordSelected);
+                    List<OccurrencePosition> positions = finder.perform();
+                    if (!CommonUtils.isEmpty(positions)) {
                         this.occurrencesFinderJob = new OccurrencesFinderJob(positions);
                         this.occurrencesFinderJob.run(new NullProgressMonitor());
                     } else {
@@ -1363,7 +1374,6 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
     }
 
     protected void installOccurrencesFinder() {
-        this.markOccurrenceAnnotations = true;
         if (this.getSelectionProvider() != null) {
             ISelection selection = this.getSelectionProvider().getSelection();
             if (selection instanceof ITextSelection) {
@@ -1379,7 +1389,8 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
     }
 
     protected void uninstallOccurrencesFinder() {
-        this.markOccurrenceAnnotations = false;
+        this.markOccurrencesUnderCursor = false;
+        this.markOccurrencesForSelection = false;
         if (this.occurrencesFinderJob != null) {
             this.occurrencesFinderJob.cancel();
             this.occurrencesFinderJob = null;
@@ -1394,40 +1405,20 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
     }
 
     public boolean isMarkingOccurrences() {
-        return this.markOccurrenceAnnotations;
+        return this.markOccurrencesUnderCursor;
     }
 
-    public void setMarkingOccurrences(boolean newBooleanValue) {
-        if (newBooleanValue != this.markOccurrenceAnnotations) {
-            this.markOccurrenceAnnotations = newBooleanValue;
-            if (this.markOccurrenceAnnotations) {
+    public void setMarkingOccurrences(boolean markUnderCursor, boolean markSelection) {
+        if (markUnderCursor != this.markOccurrencesUnderCursor || markSelection != this.markOccurrencesForSelection) {
+            this.markOccurrencesUnderCursor = markUnderCursor;
+            this.markOccurrencesForSelection = markSelection;
+            if (this.markOccurrencesUnderCursor || this.markOccurrencesForSelection) {
                 this.installOccurrencesFinder();
             } else {
                 this.uninstallOccurrencesFinder();
             }
         }
     }
-
-/*
-    private class ActivationListener extends ShellAdapter {
-        public void shellActivated(ShellEvent e) {
-            if (SQLEditorBase.this.markOccurrenceAnnotations) {
-                ISelection selection = SQLEditorBase.this.getSelectionProvider().getSelection();
-                if (selection instanceof ITextSelection) {
-                    SQLEditorBase.this.fForcedMarkOccurrencesSelection = (ITextSelection)selection;
-                    SQLEditorBase.this.updateOccurrenceAnnotations(SQLEditorBase.this.fForcedMarkOccurrencesSelection);
-                }
-            }
-
-        }
-
-        public void shellDeactivated(ShellEvent e) {
-            if (SQLEditorBase.this.markOccurrenceAnnotations) {
-                SQLEditorBase.this.removeOccurrenceAnnotations();
-            }
-        }
-    }
-*/
 
     private class EditorSelectionChangedListener implements ISelectionChangedListener {
         public void install(ISelectionProvider selectionProvider) {
@@ -1455,26 +1446,26 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
     }
 
     class OccurrencesFinderJob extends Job {
-        private boolean fCanceled = false;
-        private IProgressMonitor fProgressMonitor;
-        private List<Position> fPositions;
+        private boolean isCanceled = false;
+        private IProgressMonitor progressMonitor;
+        private List<OccurrencePosition> positions;
 
-        public OccurrencesFinderJob(List<Position> positions) {
+        public OccurrencesFinderJob(List<OccurrencePosition> positions) {
             super("Occurrences Marker");
-            this.fPositions = positions;
+            this.positions = positions;
         }
 
         void doCancel() {
-            this.fCanceled = true;
+            this.isCanceled = true;
             this.cancel();
         }
 
         private boolean isCanceled() {
-            return this.fCanceled || this.fProgressMonitor.isCanceled();
+            return this.isCanceled || this.progressMonitor.isCanceled();
         }
 
         public IStatus run(IProgressMonitor progressMonitor) {
-            this.fProgressMonitor = progressMonitor;
+            this.progressMonitor = progressMonitor;
             if (!this.isCanceled()) {
                 ITextViewer textViewer = SQLEditorBase.this.getViewer();
                 if (textViewer != null) {
@@ -1484,15 +1475,22 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                         if (documentProvider != null) {
                             IAnnotationModel annotationModel = documentProvider.getAnnotationModel(SQLEditorBase.this.getEditorInput());
                             if (annotationModel != null) {
-                                Map<Annotation, Position> annotationMap = new HashMap<>(this.fPositions.size());
+                                Map<Annotation, Position> annotationMap = new HashMap<>(this.positions.size());
 
-                                for (Position position : this.fPositions) {
+                                for (OccurrencePosition position : this.positions) {
                                     if (this.isCanceled()) {
                                         break;
                                     }
                                     try {
                                         String message = document.get(position.offset, position.length);
-                                        annotationMap.put(new Annotation(SQLEditorContributions.OCCURRENCES_ANNOTATION_ID, false, message), position);
+                                        annotationMap.put(
+                                            new Annotation(
+                                                position.forSelection ?
+                                                    SQLEditorContributions.OCCURRENCES_FOR_SELECTION_ANNOTATION_ID :
+                                                    SQLEditorContributions.OCCURRENCES_UNDER_CURSOR_ANNOTATION_ID,
+                                                false,
+                                                message),
+                                            position);
                                     } catch (BadLocationException ex) {
                                         //
                                     }
@@ -1583,38 +1581,63 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
         }
     }
 
-    public static class OccurrencesFinder {
-        private ITextSelection selection;
-        private IDocument fDocument;
+    private static class OccurrencePosition extends Position {
+        boolean forSelection;
 
-        public OccurrencesFinder(IDocument document, ITextSelection selection) {
+        OccurrencePosition(int offset, int length, boolean forSelection) {
+            super(offset, length);
+            this.forSelection = forSelection;
+        }
+    }
+
+    private static class OccurrencesFinder {
+        private IDocument fDocument;
+        private String wordUnderCursor;
+        private String wordSelected;
+
+        OccurrencesFinder(IDocument document, String wordUnderCursor, String wordSelected) {
             this.fDocument = document;
-            this.selection = selection;
+            this.wordUnderCursor = wordUnderCursor;
+            this.wordSelected = wordSelected;
         }
 
-        public List<Position> perform() {
-            if (selection == null || selection.isEmpty()) {
+        public List<OccurrencePosition> perform() {
+            if (CommonUtils.isEmpty(wordUnderCursor) && CommonUtils.isEmpty(wordSelected)) {
                 return null;
             }
-            String searchFor = selection.getText().trim();
 
-            List<Position> positions = new ArrayList<>();
+            List<OccurrencePosition> positions = new ArrayList<>();
 
-            FindReplaceDocumentAdapter findReplaceDocumentAdapter = new FindReplaceDocumentAdapter(fDocument);
             try {
-                for (int offset = 0;;) {
-                    IRegion region = findReplaceDocumentAdapter.find(offset, searchFor, true, false, true, false);
-                    if (region == null) {
-                        break;
+                if (CommonUtils.equalObjects(wordUnderCursor, wordSelected)) {
+                    // Search only selected words
+                    findPositions(wordUnderCursor, positions, true);
+                } else {
+                    findPositions(wordUnderCursor, positions, false);
+                    if (!CommonUtils.isEmpty(wordSelected)) {
+                        findPositions(wordSelected, positions, true);
                     }
-                    positions.add(new Position(region.getOffset(), region.getLength()));
-                    offset = region.getOffset() + region.getLength();
                 }
+
             } catch (BadLocationException e) {
                 log.debug("Error finding occurrences: " + e.getMessage());
             }
 
             return positions;
+        }
+
+        private void findPositions(String searchFor, List<OccurrencePosition> positions, boolean forSelection) throws BadLocationException {
+            FindReplaceDocumentAdapter findReplaceDocumentAdapter = new FindReplaceDocumentAdapter(fDocument);
+            for (int offset = 0;;) {
+                IRegion region = findReplaceDocumentAdapter.find(offset, searchFor, true, false, !forSelection, false);
+                if (region == null) {
+                    break;
+                }
+                positions.add(
+                    new OccurrencePosition(region.getOffset(), region.getLength(), forSelection)
+                );
+                offset = region.getOffset() + region.getLength();
+            }
         }
 
     }
