@@ -987,6 +987,7 @@
                     <file type="jar" path="maven:/ru.yandex.clickhouse:clickhouse-jdbc:RELEASE"/>
 
                     <parameter name="supports-truncate" value="false"/>
+                    <parameter name="omit-catalog" value="true"/>
                 </driver>
 
                 <!-- OrientDB -->
