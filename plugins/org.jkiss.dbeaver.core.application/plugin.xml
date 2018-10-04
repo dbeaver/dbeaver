@@ -256,7 +256,7 @@
         <page category="org.eclipse.ui.preferencePages.Editors" id="org.jkiss.dbeaver.preferences.main.entityeditor" class="org.jkiss.dbeaver.ui.preferences.PrefPageEntityEditor" name="%pref.page.name.entity.editor">
           <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.entity"/>
         </page>
-        <page category="org.eclipse.ui.preferencePages.Editors" id="org.jkiss.dbeaver.preferences.main.sqleditor" class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLEditor" name="%pref.page.name.sql.editor">
+        <page category="org.jkiss.dbeaver.preferences.main" id="org.jkiss.dbeaver.preferences.main.sqleditor" class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLEditor" name="%pref.page.name.sql.editor">
           <keywordReference id="org.jkiss.dbeaver.core.keyword.pref.editor.sql"/>
         </page>
         <page category="org.jkiss.dbeaver.preferences.main.sqleditor" id="org.jkiss.dbeaver.preferences.main.sqlexecute" class="org.jkiss.dbeaver.ui.preferences.PrefPageSQLExecute" name="%pref.page.name.sql.execute"/>
