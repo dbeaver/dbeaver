@@ -174,16 +174,15 @@ public class SQLFormatterTokenized implements SQLFormatter {
                     functionBracket.add(formatterCfg.isFunction(prev.getString()) ? Boolean.TRUE : Boolean.FALSE);
                     bracketIndent.add(indent);
                     bracketsDepth++;
-                    // Adding indent after ( makes result too verbose and too multiline
-//                    if (!isCompact) {
-//                        indent++;
-//                        index += insertReturnAndIndent(argList, index + 1, indent);
-//                    }
+                    if (!isCompact) {
+                        indent++;
+                        index += insertReturnAndIndent(argList, index + 1, indent);
+                    }
                 } else if (tokenString.equals(")") && !bracketIndent.isEmpty() && !functionBracket.isEmpty()) { //$NON-NLS-1$
                     indent = bracketIndent.remove(bracketIndent.size() - 1);
-//                    if (!isCompact) {
-//                        index += insertReturnAndIndent(argList, index, indent);
-//                    }
+                    if (!isCompact) {
+                        index += insertReturnAndIndent(argList, index, indent);
+                    }
                     functionBracket.remove(functionBracket.size() - 1);
                     bracketsDepth--;
                 } else if (tokenString.equals(",")) { //$NON-NLS-1$
