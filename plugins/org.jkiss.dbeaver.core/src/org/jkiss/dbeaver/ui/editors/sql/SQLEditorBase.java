@@ -1327,10 +1327,12 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                     }
                     String wordSelected = selection.getText();
                     String wordUnderCursor = null;
-                    try {
-                        wordUnderCursor = document.get(startPos, endPos - startPos).trim();
-                    } catch (BadLocationException e) {
-                        log.debug("Error detecting word under cursor", e);
+                    if (markOccurrencesUnderCursor) {
+                        try {
+                            wordUnderCursor = document.get(startPos, endPos - startPos).trim();
+                        } catch (BadLocationException e) {
+                            log.debug("Error detecting word under cursor", e);
+                        }
                     }
 
                     OccurrencesFinder finder = new OccurrencesFinder(document, wordUnderCursor, wordSelected);
@@ -1475,7 +1477,7 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                         if (documentProvider != null) {
                             IAnnotationModel annotationModel = documentProvider.getAnnotationModel(SQLEditorBase.this.getEditorInput());
                             if (annotationModel != null) {
-                                Map<Annotation, Position> annotationMap = new HashMap<>(this.positions.size());
+                                Map<Annotation, Position> annotationMap = new LinkedHashMap<>(this.positions.size());
 
                                 for (OccurrencePosition position : this.positions) {
                                     if (this.isCanceled()) {
