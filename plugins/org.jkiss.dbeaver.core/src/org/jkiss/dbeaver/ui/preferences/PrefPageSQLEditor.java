@@ -51,7 +51,8 @@ public class PrefPageSQLEditor extends TargetPrefPage
     private Button autoSaveOnClose;
 
     private Button csFoldingEnabled;
-    private Button csMarkOccurrences;
+    private Button csMarkOccurrencesUnderCursor;
+    private Button csMarkOccurrencesForSelection;
 
     private Combo deleteEmptyCombo;
     private Button autoFoldersCheck;
@@ -79,7 +80,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
             store.contains(SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE) ||
 
             store.contains(SQLPreferenceConstants.FOLDING_ENABLED) ||
-            store.contains(SQLPreferenceConstants.MARK_OCCURRENCES) ||
+            store.contains(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR) ||
 
             store.contains(SQLPreferenceConstants.SCRIPT_DELETE_EMPTY) ||
             store.contains(SQLPreferenceConstants.SCRIPT_AUTO_FOLDERS) ||
@@ -119,7 +120,8 @@ public class PrefPageSQLEditor extends TargetPrefPage
         {
             Composite foldingGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_completion_group_misc, 2, GridData.FILL_HORIZONTAL, 0);
 
-            csMarkOccurrences = UIUtils.createCheckbox(foldingGroup, CoreMessages.pref_page_sql_completion_label_mark_occurrences, CoreMessages.pref_page_sql_completion_label_mark_occurrences_tip, false, 2);
+            csMarkOccurrencesUnderCursor = UIUtils.createCheckbox(foldingGroup, CoreMessages.pref_page_sql_completion_label_mark_occurrences, CoreMessages.pref_page_sql_completion_label_mark_occurrences_tip, false, 2);
+            csMarkOccurrencesForSelection = UIUtils.createCheckbox(foldingGroup, CoreMessages.pref_page_sql_completion_label_mark_occurrences_for_selections, CoreMessages.pref_page_sql_completion_label_mark_occurrences_for_selections_tip, false, 2);
             csFoldingEnabled = UIUtils.createCheckbox(foldingGroup, CoreMessages.pref_page_sql_completion_label_folding_enabled, CoreMessages.pref_page_sql_completion_label_folding_enabled_tip, false, 2);
         }
 
@@ -186,7 +188,8 @@ public class PrefPageSQLEditor extends TargetPrefPage
             saveOnQueryExecution.setSelection(store.getBoolean(SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE));
 
             csFoldingEnabled.setSelection(store.getBoolean(SQLPreferenceConstants.FOLDING_ENABLED));
-            csMarkOccurrences.setSelection(store.getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES));
+            csMarkOccurrencesUnderCursor.setSelection(store.getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR));
+            csMarkOccurrencesForSelection.setSelection(store.getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION));
 
             deleteEmptyCombo.setText(SQLPreferenceConstants.EmptyScriptCloseBehavior.getByName(
                 store.getString(SQLPreferenceConstants.SCRIPT_DELETE_EMPTY)).getTitle());
@@ -214,7 +217,8 @@ public class PrefPageSQLEditor extends TargetPrefPage
             store.setValue(SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE, saveOnQueryExecution.getSelection());
 
             store.setValue(SQLPreferenceConstants.FOLDING_ENABLED, csFoldingEnabled.getSelection());
-            store.setValue(SQLPreferenceConstants.MARK_OCCURRENCES, csMarkOccurrences.getSelection());
+            store.setValue(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR, csMarkOccurrencesUnderCursor.getSelection());
+            store.setValue(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION, csMarkOccurrencesForSelection.getSelection());
 
             store.setValue(SQLPreferenceConstants.SCRIPT_DELETE_EMPTY,
                 SQLPreferenceConstants.EmptyScriptCloseBehavior.getByTitle(deleteEmptyCombo.getText()).name());
@@ -247,7 +251,8 @@ public class PrefPageSQLEditor extends TargetPrefPage
         store.setToDefault(SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE);
 
         store.setToDefault(SQLPreferenceConstants.FOLDING_ENABLED);
-        store.setToDefault(SQLPreferenceConstants.MARK_OCCURRENCES);
+        store.setToDefault(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR);
+        store.setToDefault(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION);
 
         store.setToDefault(SQLPreferenceConstants.SCRIPT_DELETE_EMPTY);
         store.setToDefault(SQLPreferenceConstants.SCRIPT_AUTO_FOLDERS);

@@ -25,5 +25,6 @@ public class SQLEditorContributions {
     public static final String SQL_EDITOR_CONTEXT_MENU_ID = "#SQLEditorContext"; //$NON-NLS-1$
     public static final String SQL_RULER_CONTEXT_MENU_ID = "#SQLRulerContext"; //$NON-NLS-1$
 
-    public static final String OCCURRENCES_ANNOTATION_ID = "org.jkisss.dbeaver.ui.occurrences";
+    public static final String OCCURRENCES_UNDER_CURSOR_ANNOTATION_ID = "org.jkisss.dbeaver.ui.occurrences.underCursor";
+    public static final String OCCURRENCES_FOR_SELECTION_ANNOTATION_ID = "org.jkisss.dbeaver.ui.occurrences.forSelection";
 }

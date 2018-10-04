@@ -72,7 +72,8 @@ public class SQLPreferenceConstants
     public static final String PROPOSALS_MATCH_CONTAINS                = "SQLEditor.ContentAssistant.matching.contains";
     public static final String SHOW_COLUMN_PROCEDURES                  = "SQLEditor.ContentAssistant.show.column.procedures";
 
-    public static final String MARK_OCCURRENCES                        = "SQLEditor.markOccurrences";
+    public static final String MARK_OCCURRENCES_UNDER_CURSOR           = "SQLEditor.markOccurrences";
+    public static final String MARK_OCCURRENCES_FOR_SELECTION          = "SQLEditor.markOccurrences.forSelection";
     public static final String FOLDING_ENABLED                         = "SQLEditor.Folding.enabled";
 
     // Auto-save
