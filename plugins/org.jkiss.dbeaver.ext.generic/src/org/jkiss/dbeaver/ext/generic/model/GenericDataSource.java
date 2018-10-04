@@ -695,15 +695,17 @@ public class GenericDataSource extends JDBCDataSource
         // Get selected entity (catalog or schema)
         selectedEntityName = null;
         if (CommonUtils.isEmpty(queryGetActiveDB)) {
-            try {
-                selectedEntityName = session.getCatalog();
-                if (selectedEntityType == null && !CommonUtils.isEmpty(selectedEntityName)) {
-                    selectedEntityType = GenericConstants.ENTITY_TYPE_CATALOG;
-                    selectedEntityFromAPI = true;
+            if (!CommonUtils.isEmpty(catalogs)) {
+                try {
+                    selectedEntityName = session.getCatalog();
+                    if (selectedEntityType == null && !CommonUtils.isEmpty(selectedEntityName)) {
+                        selectedEntityType = GenericConstants.ENTITY_TYPE_CATALOG;
+                        selectedEntityFromAPI = true;
+                    }
+                } catch (SQLException e) {
+                    // Seems to be not supported
+                    log.debug(e);
                 }
-            } catch (SQLException e) {
-                // Seems to be not supported
-                log.debug(e);
             }
             if (CommonUtils.isEmpty(selectedEntityName)) {
                 // Try to use current schema
