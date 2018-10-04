@@ -53,6 +53,7 @@ public class GenericConstants {
     public static final String PARAM_QUOTE_RESERVED_WORDS = "quote-reserved-words";
     public static final String PARAM_DUAL_TABLE = "dual-table";
     public static final String PARAM_SPLIT_PROCEDURES_AND_FUNCTIONS = "split-procedures-and-functions";
+    public static final String PARAM_DRIVER_PROPERTIES = "driver-properties";
 
     public static final String PARAM_NATIVE_FORMAT_TIMESTAMP = "native-format-timestamp";
     public static final String PARAM_NATIVE_FORMAT_TIME = "native-format-time";

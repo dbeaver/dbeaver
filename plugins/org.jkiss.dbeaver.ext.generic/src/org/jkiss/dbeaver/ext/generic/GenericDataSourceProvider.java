@@ -27,7 +27,10 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
+import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.utils.CommonUtils;
@@ -139,4 +142,29 @@ public class GenericDataSourceProvider extends JDBCDataSourceProvider {
         return "{" + prop + "}"; //$NON-NLS-1$ //$NON-NLS-2$
     }
 
+    @Override
+    public DBPPropertyDescriptor[] getConnectionProperties(DBRProgressMonitor monitor, DBPDriver driver, DBPConnectionConfiguration connectionInfo) throws DBException {
+        DBPPropertyDescriptor[] connectionProperties = super.getConnectionProperties(monitor, driver, connectionInfo);
+        if (connectionProperties == null || connectionProperties.length == 0) {
+            // Try to get list of supported properties from custom driver config
+            String driverParametersString = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_DRIVER_PROPERTIES));
+            if (!driverParametersString.isEmpty()) {
+                String[] propList = driverParametersString.split(",");
+                connectionProperties = new DBPPropertyDescriptor[propList.length];
+                for (int i = 0; i < propList.length; i++) {
+                    connectionProperties[i] = new PropertyDescriptor(
+                        ModelMessages.model_jdbc_driver_properties,
+                        propList[i],
+                        propList[i],
+                        null,
+                        String.class,
+                        false,
+                        null,
+                        null,
+                        true);
+                }
+            }
+        }
+        return connectionProperties;
+    }
 }
