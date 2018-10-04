@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.model.sql.format.tokenized;
 
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatter;
@@ -48,11 +49,13 @@ public class SQLFormatterTokenized implements SQLFormatter {
     private List<String> statementDelimiters = new ArrayList<>(2);
     private String delimiterRedefiner;
     private boolean isCompact;
+    private boolean lfBeforeComma;
 
     @Override
     public String format(final String argSql, SQLFormatterConfiguration configuration)
     {
         formatterCfg = configuration;
+        lfBeforeComma = configuration.getPreferenceStore().getBoolean(ModelPreferences.SQL_FORMAT_LF_BEFORE_COMMA);
 
         for (String delim : formatterCfg.getSyntaxManager().getStatementDelimiters()) {
             statementDelimiters.add(delim.toUpperCase(Locale.ENGLISH));
@@ -189,7 +192,10 @@ public class SQLFormatterTokenized implements SQLFormatter {
                 } else if (tokenString.equals(",")) { //$NON-NLS-1$
                     if (!isCompact) {
                         /*if (bracketsDepth <= 0 || "SELECT".equals(getPrevDMLKeyword(argList, index)))*/ {
-                            index += insertReturnAndIndent(argList, index + 1, indent);
+                            index += insertReturnAndIndent(
+                                argList,
+                                lfBeforeComma ? index : index + 1,
+                                indent);
                         }
                     }
                 } else if (statementDelimiters.contains(tokenString)) { //$NON-NLS-1$
