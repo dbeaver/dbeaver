@@ -93,7 +93,7 @@ import java.util.EventObject;
 import java.util.List;
 
 /**
- * Editor implementation based on the the example editor skeleton that is built in <i>Building
+ * Editor implementation based on the example editor skeleton that is built in <i>Building
  * an editor </i> in chapter <i>Introduction to GEF </i>
  */
 public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
