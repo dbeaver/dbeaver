@@ -99,7 +99,7 @@ public class PrefPageSQLEditor extends TargetPrefPage
     @Override
     protected Control createPreferenceContent(Composite parent)
     {
-        Composite composite = UIUtils.createPlaceholder(parent, 2);
+        Composite composite = UIUtils.createPlaceholder(parent, 2, 5);
 
         {
             Group connectionsGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_editor_group_connections, 1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
@@ -111,14 +111,14 @@ public class PrefPageSQLEditor extends TargetPrefPage
         }
 
         {
-            Group autoSaveGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_editor_group_auto_save, 1, GridData.FILL_HORIZONTAL, 0);
+            Group autoSaveGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_editor_group_auto_save, 1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
             autoSaveOnClose = UIUtils.createCheckbox(autoSaveGroup, CoreMessages.pref_page_sql_editor_label_auto_save_on_close, false);
             saveOnQueryExecution = UIUtils.createCheckbox(autoSaveGroup, CoreMessages.pref_page_sql_editor_label_save_on_query_execute, false);
         }
 
         // Folding
         {
-            Composite foldingGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_completion_group_misc, 2, GridData.FILL_HORIZONTAL, 0);
+            Composite foldingGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_completion_group_misc, 2, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
 
             csMarkOccurrencesUnderCursor = UIUtils.createCheckbox(foldingGroup, CoreMessages.pref_page_sql_completion_label_mark_occurrences, CoreMessages.pref_page_sql_completion_label_mark_occurrences_tip, false, 2);
             csMarkOccurrencesForSelection = UIUtils.createCheckbox(foldingGroup, CoreMessages.pref_page_sql_completion_label_mark_occurrences_for_selections, CoreMessages.pref_page_sql_completion_label_mark_occurrences_for_selections_tip, false, 2);
