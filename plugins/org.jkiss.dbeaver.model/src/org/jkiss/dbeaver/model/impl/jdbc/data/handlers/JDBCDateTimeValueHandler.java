@@ -172,14 +172,18 @@ public class JDBCDateTimeValueHandler extends DateTimeCustomValueHandler {
     @Override
     public String getValueDisplayString(@NotNull DBSTypedObject column, Object value, @NotNull DBDDisplayFormat format)
     {
-        if (value instanceof Date && format == DBDDisplayFormat.NATIVE) {
-            Format nativeFormat = getNativeValueFormat(column);
-            if (nativeFormat != null) {
-                try {
-                    return nativeFormat.format(value);
-                } catch (Exception e) {
-                    log.error("Error formatting date", e);
+        if (format == DBDDisplayFormat.NATIVE) {
+            if (value instanceof Date) {
+                Format nativeFormat = getNativeValueFormat(column);
+                if (nativeFormat != null) {
+                    try {
+                        return nativeFormat.format(value);
+                    } catch (Exception e) {
+                        log.error("Error formatting date", e);
+                    }
                 }
+            } else if (value instanceof String) {
+                return "'" + super.getValueDisplayString(column, value, format) + "'";
             }
         }
         return super.getValueDisplayString(column, value, format);
