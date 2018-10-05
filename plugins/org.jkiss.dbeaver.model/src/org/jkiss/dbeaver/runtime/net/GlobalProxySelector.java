@@ -61,9 +61,10 @@ public class GlobalProxySelector extends ProxySelector {
             return parent.select(uri);
         }
 
-        if (ArrayUtils.contains(LOCAL_HOSTS, host)) {
-            return parent.select(uri);
-        }
+        // Skip localhosts. In fact it is a bad idea (see #3592)
+//        if (ArrayUtils.contains(LOCAL_HOSTS, host)) {
+//            return parent.select(uri);
+//        }
         int port = uri.getPort();
         String path = uri.getPath();
 

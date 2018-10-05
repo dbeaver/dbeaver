@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.dialogs.IDialogPage;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
@@ -44,9 +45,11 @@ import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.jobs.ConnectJob;
 import org.jkiss.dbeaver.runtime.jobs.DisconnectJob;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
+import org.jkiss.dbeaver.ui.ICompositeDialogPage;
 import org.jkiss.dbeaver.ui.IDataSourceConnectionTester;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
@@ -281,16 +284,14 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
                             }
                         }
                     } catch (DBException e) {
-                        e.printStackTrace();
+                        log.debug(e);
                     }
                 }
                 monitor.worked(1);
                 monitor.subTask("Load connection info");
                 try (DBCSession session = DBUtils.openUtilSession(monitor, dataSource, "Call connection testers")) {
                     for (IWizardPage page : getPages()) {
-                        if (page instanceof IDataSourceConnectionTester) {
-                            ((IDataSourceConnectionTester) page).testConnection(session);
-                        }
+                        testInPage(session, page);
                     }
                 }
                 monitor.worked(1);
@@ -303,6 +304,17 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
             }
             monitor.done();
             return Status.OK_STATUS;
+        }
+
+        private void testInPage(DBCSession session, IDialogPage page) {
+            if (page instanceof IDataSourceConnectionTester) {
+                ((IDataSourceConnectionTester) page).testConnection(session);
+            }
+            if (page instanceof ICompositeDialogPage) {
+                for (IDialogPage subPage : ArrayUtils.safeArray(((ICompositeDialogPage) page).getSubPages())) {
+                    testInPage(session, subPage);
+                }
+            }
         }
     }
 
