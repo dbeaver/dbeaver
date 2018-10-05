@@ -53,6 +53,7 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
     private List<PostgreIndexColumn> columns = new ArrayList<>();
     private long amId;
     private long tablespaceId;
+    private String predicateExpression;
 
     private transient boolean isPrimaryKeyIndex;
     private transient String indexDDL;
@@ -77,6 +78,8 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
         this.description = JDBCUtils.safeGetString(dbResult, "description");
         this.amId = JDBCUtils.safeGetLong(dbResult, "relam");
         this.tablespaceId = JDBCUtils.safeGetLong(dbResult, "reltablespace");
+
+        this.predicateExpression = JDBCUtils.safeGetString(dbResult, "pred_expr");
 
         // Unique key indexes (including PK) are implicit. We don't want to show them separately
         if (this.isUnique) {
@@ -155,6 +158,11 @@ public class PostgreIndex extends JDBCTableIndex<PostgreSchema, PostgreTableBase
     public DBSIndexType getIndexType()
     {
         return super.getIndexType();
+    }
+
+    @Property(viewable = true, order = 27)
+    public String getPredicateExpression() {
+        return predicateExpression;
     }
 
     @Nullable
