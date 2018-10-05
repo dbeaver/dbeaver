@@ -1325,13 +1325,22 @@ public abstract class SQLEditorBase extends BaseTextEditor implements IErrorVisu
                     } catch (BadLocationException e) {
                         log.debug("Error detecting current word: " + e.getMessage());
                     }
-                    String wordSelected = selection.getText();
+                    String wordSelected = null;
                     String wordUnderCursor = null;
                     if (markOccurrencesUnderCursor) {
                         try {
                             wordUnderCursor = document.get(startPos, endPos - startPos).trim();
                         } catch (BadLocationException e) {
                             log.debug("Error detecting word under cursor", e);
+                        }
+                    }
+                    if (markOccurrencesForSelection) {
+                        wordSelected = selection.getText();
+                        for (int i = 0; i < wordSelected.length(); i++) {
+                            if (!wordDetector.isWordPart(wordSelected.charAt(i))) {
+                                wordSelected = null;
+                                break;
+                            }
                         }
                     }
 

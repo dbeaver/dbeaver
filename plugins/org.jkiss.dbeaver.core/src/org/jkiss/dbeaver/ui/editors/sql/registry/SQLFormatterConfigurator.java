@@ -33,4 +33,5 @@ public interface SQLFormatterConfigurator extends IDialogPage {
 
     void saveSettings(DBPPreferenceStore preferenceStore);
 
+    void resetSettings(DBPPreferenceStore preferenceStore);
 }

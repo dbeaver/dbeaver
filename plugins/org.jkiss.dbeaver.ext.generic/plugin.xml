@@ -723,15 +723,18 @@
                     <parameter name="ddl-drop-column-short" value="true"/>
                     <parameter name="supports-scroll" value="false"/>
                 </driver>
+
                 <driver
                     id="csvjdbc"
-                    label="CSV/DBF"
-                    category="Flat files (CSV)"
+                    label="CSV"
+                    category="Flat files"
                     class="org.relique.jdbc.csv.CsvDriver"
                     sampleURL="jdbc:relique:csv:{folder}"
-                    webURL="http://csvjdbc.sourceforge.net/"
                     embedded="true"
-                    description="CsvJdbc driver for CSV and DBF files">
+                    anonymous="true"
+                    description="CsvJdbc driver for CSV files"
+                    webURL="http://csvjdbc.sourceforge.net/"
+                    propertiesURL="http://csvjdbc.sourceforge.net/doc.html">
 
                     <property name="separator" value=","/>
                     <property name="quotechar" value="&quot;"/>
@@ -742,10 +745,36 @@
                     <parameter name="supports-select-count" value="false"/>
                     <parameter name="supports-stored-code" value="false"/>
                     <parameter name="supports-truncate" value="false"/>
+                    <parameter name="driver-properties" value="charset,columnTypes,commentChar,cryptoFilterClassName,cryptoFilterParameterTypes,cryptoFilterParameters,defectiveHeaders,fileExtension,fileTailParts,fileTailPattern,fileTailPrepend,fixedWidths,function.NAME,headerline,ignoreNonParseableLines,indexedFiles,isHeaderFixedWidth,missingValue,quotechar,quoteStyle,locale,separator,skipLeadingLines,skipLeadingDataLines,suppressHeaders,timestampFormat, timeFormat, dateFormat,timeZoneName,trimHeaders,trimValues"/>
 
                     <file type="jar" path="maven:/net.sourceforge.csvjdbc:csvjdbc:RELEASE" bundle="!drivers.csvjdbc"/>
 
                     <file type="jar" path="drivers/csvjdbc/csvjdbc.jar" bundle="drivers.csvjdbc"/>
+                </driver>
+                <driver
+                    id="csvjdbc_dbf"
+                    label="DBF"
+                    category="Flat files"
+                    class="org.relique.jdbc.csv.CsvDriver"
+                    sampleURL="jdbc:relique:csv:{folder}"
+                    embedded="true"
+                    anonymous="true"
+                    description="CsvJdbc driver for DBF files"
+                    webURL="http://csvjdbc.sourceforge.net/"
+                    propertiesURL="http://csvjdbc.sourceforge.net/doc.html">
+
+                    <property name="fileExtension" value=".dbf"/>
+
+                    <parameter name="supports-select-count" value="false"/>
+                    <parameter name="supports-stored-code" value="false"/>
+                    <parameter name="supports-truncate" value="false"/>
+                    <parameter name="driver-properties" value="charset,columnTypes,commentChar,cryptoFilterClassName,cryptoFilterParameterTypes,cryptoFilterParameters,defectiveHeaders,fileExtension,fileTailParts,fileTailPattern,fileTailPrepend,fixedWidths,function.NAME,headerline,ignoreNonParseableLines,indexedFiles,isHeaderFixedWidth,missingValue,quotechar,quoteStyle,locale,separator,skipLeadingLines,skipLeadingDataLines,suppressHeaders,timestampFormat, timeFormat, dateFormat,timeZoneName,trimHeaders,trimValues"/>
+
+                    <file type="jar" path="maven:/net.sourceforge.csvjdbc:csvjdbc:RELEASE" bundle="!drivers.csvjdbc"/>
+                    <file type="jar" path="maven:/nl.knaw.dans.common:dans-dbf-lib:RELEASE" bundle="!drivers.csvjdbc"/>
+
+                    <file type="jar" path="drivers/csvjdbc/csvjdbc.jar" bundle="drivers.csvjdbc"/>
+                    <file type="jar" path="drivers/csvjdbc/dans-dbf-lib.jar" bundle="drivers.csvjdbc"/>
                 </driver>
                 <driver
                     id="msaccess_ucanaccess"

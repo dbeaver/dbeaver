@@ -248,8 +248,9 @@ public class PrefPageSQLFormat extends TargetPrefPage
         store.setToDefault(SQLPreferenceConstants.SQL_FORMAT_BOLD_KEYWORDS);
 
         store.setToDefault(ModelPreferences.SQL_FORMAT_FORMATTER);
-//        store.setToDefault(ModelPreferences.SQL_FORMAT_KEYWORD_CASE);
-//        store.setToDefault(ModelPreferences.SQL_FORMAT_EXTERNAL_CMD);
+        if (curConfigurator != null) {
+            curConfigurator.resetSettings(store);
+        }
     }
 
     @Override

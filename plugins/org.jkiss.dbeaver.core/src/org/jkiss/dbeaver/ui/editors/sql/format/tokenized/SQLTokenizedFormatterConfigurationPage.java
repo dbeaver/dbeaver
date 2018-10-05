@@ -37,6 +37,7 @@ public class SQLTokenizedFormatterConfigurationPage extends BaseFormatterConfigu
     private Spinner indentSizeSpinner;
     private Button useSpacesCheck;
     private Combo keywordCaseCombo;
+    private Button lineFeedBeforeCommaCheck;
 
     @Override
     protected Composite createFormatSettings(Composite parent) {
@@ -51,6 +52,7 @@ public class SQLTokenizedFormatterConfigurationPage extends BaseFormatterConfigu
 
         this.indentSizeSpinner = UIUtils.createLabelSpinner(settings, "Indent size", "Insert spaces for tabs", 4, 0, 100);
         this.useSpacesCheck = UIUtils.createCheckbox(settings, "Insert spaces for tabs", "Insert spaces for tabs", true, 1);
+        this.lineFeedBeforeCommaCheck = UIUtils.createCheckbox(settings, "Insert line feed before commas", "Insert line feeds before/after commas", true, 5);
 
         return parent;
     }
@@ -73,6 +75,7 @@ public class SQLTokenizedFormatterConfigurationPage extends BaseFormatterConfigu
                 keywordCaseCombo,
                 DBPIdentifierCase.capitalizeCaseName(keywordCase.name()));
         }
+        lineFeedBeforeCommaCheck.setSelection(preferenceStore.getBoolean(ModelPreferences.SQL_FORMAT_LF_BEFORE_COMMA));
 
         {
             // Text editor settings
@@ -92,6 +95,7 @@ public class SQLTokenizedFormatterConfigurationPage extends BaseFormatterConfigu
             caseName = keywordCaseCombo.getText().toUpperCase(Locale.ENGLISH);
         }
         preferenceStore.setValue(ModelPreferences.SQL_FORMAT_KEYWORD_CASE, caseName);
+        preferenceStore.setValue(ModelPreferences.SQL_FORMAT_LF_BEFORE_COMMA, lineFeedBeforeCommaCheck.getSelection());
 
         {
             // Text editor settings
@@ -100,5 +104,12 @@ public class SQLTokenizedFormatterConfigurationPage extends BaseFormatterConfigu
             textEditorPrefs.setValue(AbstractDecoratedTextEditorPreferenceConstants.EDITOR_SPACES_FOR_TABS, useSpacesCheck.getSelection());
         }
 
+    }
+
+    @Override
+    public void resetSettings(DBPPreferenceStore preferenceStore) {
+        super.resetSettings(preferenceStore);
+        preferenceStore.setToDefault(ModelPreferences.SQL_FORMAT_KEYWORD_CASE);
+        preferenceStore.setToDefault(ModelPreferences.SQL_FORMAT_LF_BEFORE_COMMA);
     }
 }
