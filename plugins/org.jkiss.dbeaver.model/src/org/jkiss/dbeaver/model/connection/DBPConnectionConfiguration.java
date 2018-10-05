@@ -343,13 +343,13 @@ public class DBPConnectionConfiguration implements DBPObject
         }
         DBPConnectionConfiguration source = (DBPConnectionConfiguration)obj;
         return
-            CommonUtils.equalObjects(this.hostName, source.hostName) &&
-            CommonUtils.equalObjects(this.hostPort, source.hostPort) &&
-            CommonUtils.equalObjects(this.serverName, source.serverName) &&
-            CommonUtils.equalObjects(this.databaseName, source.databaseName) &&
-            CommonUtils.equalObjects(this.userName, source.userName) &&
-            CommonUtils.equalObjects(this.userPassword, source.userPassword) &&
-            CommonUtils.equalObjects(this.url, source.url) &&
+            CommonUtils.equalOrEmptyStrings(this.hostName, source.hostName) &&
+            CommonUtils.equalOrEmptyStrings(this.hostPort, source.hostPort) &&
+            CommonUtils.equalOrEmptyStrings(this.serverName, source.serverName) &&
+            CommonUtils.equalOrEmptyStrings(this.databaseName, source.databaseName) &&
+            CommonUtils.equalOrEmptyStrings(this.userName, source.userName) &&
+            CommonUtils.equalOrEmptyStrings(this.userPassword, source.userPassword) &&
+            CommonUtils.equalOrEmptyStrings(this.url, source.url) &&
             CommonUtils.equalObjects(this.clientHomeId, source.clientHomeId) &&
             CommonUtils.equalObjects(this.connectionType, source.connectionType) &&
             CommonUtils.equalObjects(this.properties, source.properties) &&

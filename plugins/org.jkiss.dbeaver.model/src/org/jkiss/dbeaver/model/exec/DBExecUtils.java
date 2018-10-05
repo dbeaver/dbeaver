@@ -77,21 +77,28 @@ public class DBExecUtils {
     public static DBPDataSourceContainer findConnectionContext(String host, int port, String path) {
         DBPDataSourceContainer curContext = getCurrentThreadContext();
         if (curContext != null) {
-            return curContext;
+            return contextMatches(host, port, curContext) ? curContext : null;
         }
         synchronized (ACTIVE_CONTEXTS) {
             for (DBPDataSourceContainer ctx : ACTIVE_CONTEXTS) {
-                DBPConnectionConfiguration cfg = ctx.getActualConnectionConfiguration();
-                if (CommonUtils.equalObjects(cfg.getHostName(), host) && String.valueOf(port).equals(cfg.getHostPort())) {
+                if (contextMatches(host, port, ctx)) {
                     return ctx;
-                }
-                for (DBWNetworkHandler networkHandler : ctx.getActiveNetworkHandlers()) {
-                    if (networkHandler instanceof DBWForwarder && ((DBWForwarder) networkHandler).matchesParameters(host, port)) {
-                        return ctx;
-                    }
                 }
             }
         }
         return null;
+    }
+
+    private static boolean contextMatches(String host, int port, DBPDataSourceContainer ctx) {
+        DBPConnectionConfiguration cfg = ctx.getConnectionConfiguration();
+        if (CommonUtils.equalObjects(cfg.getHostName(), host) && String.valueOf(port).equals(cfg.getHostPort())) {
+            return true;
+        }
+        for (DBWNetworkHandler networkHandler : ctx.getActiveNetworkHandlers()) {
+            if (networkHandler instanceof DBWForwarder && ((DBWForwarder) networkHandler).matchesParameters(host, port)) {
+                return true;
+            }
+        }
+        return false;
     }
 }

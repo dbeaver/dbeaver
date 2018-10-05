@@ -1290,8 +1290,8 @@ public class DataSourceDescriptor
         }
         DataSourceDescriptor source = (DataSourceDescriptor) obj;
         return 
-            CommonUtils.equalObjects(this.name, source.name) &&
-            CommonUtils.equalObjects(this.description, source.description) &&
+            CommonUtils.equalOrEmptyStrings(this.name, source.name) &&
+            CommonUtils.equalOrEmptyStrings(this.description, source.description) &&
             CommonUtils.equalObjects(this.savePassword, source.savePassword) &&
             CommonUtils.equalObjects(this.showSystemObjects, source.showSystemObjects) &&
             CommonUtils.equalObjects(this.showUtilityObjects, source.showUtilityObjects) &&

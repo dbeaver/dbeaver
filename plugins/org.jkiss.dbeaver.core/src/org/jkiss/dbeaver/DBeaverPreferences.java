@@ -99,6 +99,7 @@ public final class DBeaverPreferences
     public static final String UI_AUTO_UPDATE_CHECK = "ui.auto.update.check"; //$NON-NLS-1$
     public static final String UI_UPDATE_CHECK_TIME = "ui.auto.update.check.time"; //$NON-NLS-1$
     public static final String UI_KEEP_DATABASE_EDITORS = "ui.editors.reopen-after-restart"; //$NON-NLS-1$
+    public static final String UI_SHOW_TIP_OF_THE_DAY_ON_STARTUP = "ui.show.tip.of.the.day.on.startup";
 
     // Resources
     public static final String RESOURCE_HANDLER_ROOT_PREFIX = "resource.root."; //$NON-NLS-1$
