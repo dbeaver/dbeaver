@@ -56,6 +56,7 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
     private static final String NOTIFICATIONS_PAGE_ID = "org.eclipse.mylyn.commons.notifications.preferencePages.Notifications";
 
     private Button automaticUpdateCheck;
+    private Button showTipOfTheDayOnStartupCheck;
     private Combo workspaceLanguage;
 
     private Button longOperationsCheck;
@@ -84,6 +85,7 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
         {
             Group groupObjects = UIUtils.createControlGroup(composite, CoreMessages.pref_page_ui_general_group_general, 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
             automaticUpdateCheck = UIUtils.createCheckbox(groupObjects, CoreMessages.pref_page_ui_general_checkbox_automatic_updates, null, false, 2);
+            showTipOfTheDayOnStartupCheck = UIUtils.createCheckbox(groupObjects, CoreMessages.pref_page_ui_general_show_tip_of_the_day_on_startup, null, false, 2);
             //automaticUpdateCheck.setLayoutData(new GridData(GridData.BEGINNING, GridData.BEGINNING, true, false, 2, 1));
         }
         {
@@ -165,6 +167,7 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
         DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
 
         automaticUpdateCheck.setSelection(store.getBoolean(DBeaverPreferences.UI_AUTO_UPDATE_CHECK));
+        showTipOfTheDayOnStartupCheck.setSelection(store.getBoolean(DBeaverPreferences.UI_SHOW_TIP_OF_THE_DAY_ON_STARTUP));
 
         notificationsEnabled.setSelection(store.getBoolean(ModelPreferences.NOTIFICATIONS_ENABLED));
         notificationsCloseDelay.setSelection(store.getInt(ModelPreferences.NOTIFICATIONS_CLOSE_DELAY_TIMEOUT));
@@ -179,6 +182,8 @@ public class PrefPageDatabaseGeneral extends AbstractPrefPage implements IWorkbe
         DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
 
         store.setValue(DBeaverPreferences.UI_AUTO_UPDATE_CHECK, automaticUpdateCheck.getSelection());
+        store.setValue(DBeaverPreferences.UI_SHOW_TIP_OF_THE_DAY_ON_STARTUP, showTipOfTheDayOnStartupCheck.getSelection());
+
 
         store.setValue(ModelPreferences.NOTIFICATIONS_ENABLED, notificationsEnabled.getSelection());
         store.setValue(ModelPreferences.NOTIFICATIONS_CLOSE_DELAY_TIMEOUT, notificationsCloseDelay.getSelection());
