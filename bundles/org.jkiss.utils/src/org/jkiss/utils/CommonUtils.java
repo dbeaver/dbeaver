@@ -237,6 +237,10 @@ public class CommonUtils {
         return o1.equals(o2);
     }
 
+    public static boolean equalOrEmptyStrings(@Nullable String s1, @Nullable String s2) {
+        return equalObjects(s1, s2) || (isEmpty(s1) && isEmpty(s2));
+    }
+
     @NotNull
     public static String toString(@Nullable Object object) {
         if (object == null) {
