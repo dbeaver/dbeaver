@@ -89,7 +89,8 @@ public class SQLPreferenceConstants
 
     // Matching brackets
     public final static String MATCHING_BRACKETS                        = "SQLEditor.matchingBrackets";
-    public final static String MATCHING_BRACKETS_COLOR                  = "SQLEditor.matchingBracketsColor";
+    // Reuse "AbstractTextEditor.Color.Foreground" color
+    public final static String MATCHING_BRACKETS_COLOR                  = "AbstractTextEditor.Color.Foreground";//"org.jkiss.dbeaver.sql.editor.color.matchingBrackets.foreground";
 
     public final static String RESET_CURSOR_ON_EXECUTE                  = "SQLEditor.resetCursorOnExecute";
     public final static String MAXIMIZE_EDITOR_ON_SCRIPT_EXECUTE        = "SQLEditor.maxEditorOnScriptExecute";
