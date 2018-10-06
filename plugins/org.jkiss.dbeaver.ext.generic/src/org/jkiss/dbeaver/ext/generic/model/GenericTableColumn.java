@@ -141,7 +141,7 @@ public class GenericTableColumn extends JDBCTableColumn<GenericTable> implements
     }
 
     @Override
-    @Property(viewable = true, order = 80)
+    @Property(viewable = false, order = 80)
     public boolean isInUniqueKey()
     {
         final Collection<GenericPrimaryKey> uniqueKeysCache = getTable().getContainer().getPrimaryKeysCache().getCachedObjects(getTable());
