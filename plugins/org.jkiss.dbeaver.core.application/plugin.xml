@@ -50,7 +50,7 @@
             <property name="applicationCSSResources" value="platform:/plugin/org.eclipse.platform/images/"/>
             <property name="rendererFactoryUri" value="bundleclass://org.jkiss.dbeaver.core/org.jkiss.dbeaver.ui.e4.DBeaverRendererFactory"/>
             <property name="preferenceCustomization" value="plugin_customization.ini"/>
-            <property name="tipsFile" value="platform:/plugin/org.jkiss.dbeaver.ext.tipoftheday/tips.xml"/>
+            <property name="tipsFile" value="platform:/plugin/org.jkiss.dbeaver.ext.ui.tipoftheday/tips.xml"/>
 
         </product>
     </extension>

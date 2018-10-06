@@ -1,4 +1,4 @@
-package org.jkiss.dbeaver.ext.tipoftheday;
+package org.jkiss.dbeaver.ext.ui.tipoftheday;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
