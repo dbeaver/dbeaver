@@ -312,7 +312,7 @@ public interface SQLDialect {
     boolean isTransactionModifyingQuery(String queryString);
 
     @Nullable
-    String getColumnTypeModifiers(@NotNull DBSTypedObject column, @NotNull String typeName, @NotNull DBPDataKind dataKind);
+    String getColumnTypeModifiers(DBPDataSource dataSource, @NotNull DBSTypedObject column, @NotNull String typeName, @NotNull DBPDataKind dataKind);
 
     /**
      * Formats stored procedure call. By default returns @sqlText.

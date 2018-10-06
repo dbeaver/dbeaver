@@ -21,6 +21,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.dbeaver.ext.generic.model.GenericSQLDialect;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.model.DBPDataKind;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
 import org.jkiss.dbeaver.model.struct.DBSTypedObject;
@@ -81,7 +82,7 @@ public class SQLServerDialect extends GenericSQLDialect implements SQLRuleProvid
     }
 
     @Override
-    public String getColumnTypeModifiers(DBSTypedObject column, String typeName, DBPDataKind dataKind) {
+    public String getColumnTypeModifiers(DBPDataSource dataSource, DBSTypedObject column, String typeName, DBPDataKind dataKind) {
         if (dataKind == DBPDataKind.DATETIME) {
             Integer scale = column.getScale();
             if (scale != null) {
@@ -92,7 +93,7 @@ public class SQLServerDialect extends GenericSQLDialect implements SQLRuleProvid
                 return "(" + scale + ')';
             }
         }
-        return super.getColumnTypeModifiers(column, typeName, dataKind);
+        return super.getColumnTypeModifiers(dataSource, column, typeName, dataKind);
     }
 
     @Override

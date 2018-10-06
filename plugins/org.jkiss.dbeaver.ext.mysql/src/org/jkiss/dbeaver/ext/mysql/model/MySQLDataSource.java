@@ -26,10 +26,7 @@ import org.jkiss.dbeaver.ext.mysql.MySQLDataSourceProvider;
 import org.jkiss.dbeaver.ext.mysql.MySQLUtils;
 import org.jkiss.dbeaver.ext.mysql.model.plan.MySQLPlanAnalyser;
 import org.jkiss.dbeaver.ext.mysql.model.session.MySQLSessionManager;
-import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.DBPDataSourceInfo;
-import org.jkiss.dbeaver.model.DBPErrorAssistant;
-import org.jkiss.dbeaver.model.DBUtils;
+import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.app.DBACertificateStorage;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -86,6 +83,19 @@ public class MySQLDataSource extends JDBCDataSource implements DBSObjectSelector
     {
         super(monitor, container, new MySQLDialect());
         dataTypeCache = new JDBCBasicDataTypeCache<>(this);
+    }
+
+    @Override
+    public Object getDataSourceFeature(String featureId) {
+        switch (featureId) {
+            case DBConstants.FEATURE_MAX_STRING_LENGTH:
+                if (isServerVersionAtLeast(5, 0)) {
+                    return 65535;
+                } else {
+                    return 255;
+                }
+        }
+        return super.getDataSourceFeature(featureId);
     }
 
     @Override
