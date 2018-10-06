@@ -189,6 +189,9 @@ public class JDBCDataType<OWNER extends DBSObject> implements DBSDataType
 
     public String toString()
     {
+        if (owner instanceof DBPDataSource) {
+            return this.name;
+        }
         return owner.getName() + "." + name;
     }
 

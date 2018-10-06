@@ -83,6 +83,10 @@ public class FireBirdTableColumnManager extends GenericTableColumnManager
         final GenericTableColumn column = command.getObject();
 
         String prefix = "ALTER TABLE " + DBUtils.getObjectFullName(column.getTable(), DBPEvaluationContext.DDL) + " ALTER COLUMN " + DBUtils.getQuotedIdentifier(column) + " ";
+        String typeClause = column.getFullTypeName();
+        if (command.getProperty(DBConstants.PROP_ID_TYPE_NAME) != null || command.getProperty("maxLength") != null || command.getProperty("precision") != null || command.getProperty("scale") != null) {
+            actionList.add(new SQLDatabasePersistAction("Set column type", prefix + "TYPE " + typeClause));
+        }
         if (command.getProperty(DBConstants.PROP_ID_DEFAULT_VALUE) != null) {
             if (CommonUtils.isEmpty(column.getDefaultValue())) {
                 actionList.add(new SQLDatabasePersistAction("Drop column default", prefix + "DROP DEFAULT"));
