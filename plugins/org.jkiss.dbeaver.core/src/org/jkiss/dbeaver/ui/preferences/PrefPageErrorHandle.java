@@ -41,6 +41,8 @@ public class PrefPageErrorHandle extends TargetPrefPage
     private Button connectionAutoRecoverEnabled;
     private Spinner connectionAutoRecoverRetryCount;
 
+    private Spinner cancelCheckTimeout;
+
     public PrefPageErrorHandle()
     {
         super();
@@ -57,7 +59,9 @@ public class PrefPageErrorHandle extends TargetPrefPage
 
             store.contains(ModelPreferences.QUERY_ROLLBACK_ON_ERROR) ||
             store.contains(ModelPreferences.EXECUTE_RECOVER_ENABLED) ||
-            store.contains(ModelPreferences.EXECUTE_RECOVER_RETRY_COUNT)
+            store.contains(ModelPreferences.EXECUTE_RECOVER_RETRY_COUNT) ||
+
+            store.contains(ModelPreferences.EXECUTE_CANCEL_CHECK_TIMEOUT)
             ;
     }
 
@@ -90,6 +94,13 @@ public class PrefPageErrorHandle extends TargetPrefPage
             connectionAutoRecoverRetryCount = UIUtils.createLabelSpinner(errorGroup, CoreMessages.pref_page_error_handle_recover_retry_count_label, CoreMessages.pref_page_error_handle_recover_retry_count_tip, 0, 0, Integer.MAX_VALUE);
         }
 
+        // Canceling
+        {
+            Group errorGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_error_handle_group_cancel_title, 2, GridData.VERTICAL_ALIGN_BEGINNING, 0);
+
+            cancelCheckTimeout = UIUtils.createLabelSpinner(errorGroup, CoreMessages.pref_page_error_handle_cancel_check_timeout, CoreMessages.pref_page_error_handle_cancel_check_timeout_tip, 0, 0, Integer.MAX_VALUE);
+        }
+
         return composite;
     }
 
@@ -104,6 +115,8 @@ public class PrefPageErrorHandle extends TargetPrefPage
             rollbackOnErrorCheck.setSelection(store.getBoolean(ModelPreferences.QUERY_ROLLBACK_ON_ERROR));
             connectionAutoRecoverEnabled.setSelection(store.getBoolean(ModelPreferences.EXECUTE_RECOVER_ENABLED));
             connectionAutoRecoverRetryCount.setSelection(store.getInt(ModelPreferences.EXECUTE_RECOVER_RETRY_COUNT));
+
+            cancelCheckTimeout.setSelection(store.getInt(ModelPreferences.EXECUTE_CANCEL_CHECK_TIMEOUT));
         } catch (Exception e) {
             log.warn(e);
         }
@@ -120,6 +133,8 @@ public class PrefPageErrorHandle extends TargetPrefPage
             store.setValue(ModelPreferences.QUERY_ROLLBACK_ON_ERROR, rollbackOnErrorCheck.getSelection());
             store.setValue(ModelPreferences.EXECUTE_RECOVER_ENABLED, connectionAutoRecoverEnabled.getSelection());
             store.setValue(ModelPreferences.EXECUTE_RECOVER_RETRY_COUNT, connectionAutoRecoverRetryCount.getSelection());
+
+            store.setValue(ModelPreferences.EXECUTE_CANCEL_CHECK_TIMEOUT, cancelCheckTimeout.getSelection());
         } catch (Exception e) {
             log.warn(e);
         }
@@ -136,6 +151,8 @@ public class PrefPageErrorHandle extends TargetPrefPage
         store.setToDefault(ModelPreferences.QUERY_ROLLBACK_ON_ERROR);
         store.setToDefault(ModelPreferences.EXECUTE_RECOVER_ENABLED);
         store.setToDefault(ModelPreferences.EXECUTE_RECOVER_RETRY_COUNT);
+
+        store.setToDefault(ModelPreferences.EXECUTE_CANCEL_CHECK_TIMEOUT);
     }
 
     @Override

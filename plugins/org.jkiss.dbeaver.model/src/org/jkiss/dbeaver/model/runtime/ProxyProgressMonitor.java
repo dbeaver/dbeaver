@@ -17,8 +17,8 @@
 package org.jkiss.dbeaver.model.runtime;
 
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
-import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
+import java.util.List;
 
 /**
  * Progress monitor default implementation
@@ -81,9 +81,9 @@ public class ProxyProgressMonitor implements DBRProgressMonitor, IProgressMonito
     }
 
     @Override
-    public DBRBlockingObject getActiveBlock()
+    public List<DBRBlockingObject> getActiveBlocks()
     {
-        return original.getActiveBlock();
+        return original.getActiveBlocks();
     }
 
     //////////////////////////////////////////

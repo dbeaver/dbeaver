@@ -1613,10 +1613,13 @@ public final class DBUtils {
                 } else {
                     monitor = new VoidProgressMonitor();
                 }
-                InvalidateJob.invalidateDataSource(monitor, dataSource, false,
-                    () -> DBUserInterface.getInstance().openConnectionEditor(dataSource.getContainer()));
-                if (i < tryCount - 1) {
-                    log.error("Operation failed. Retry count remains = " + (tryCount - i - 1), lastError);
+                if (!monitor.isCanceled()) {
+                    // Do not recover if connection was canceled
+                    InvalidateJob.invalidateDataSource(monitor, dataSource, false,
+                        () -> DBUserInterface.getInstance().openConnectionEditor(dataSource.getContainer()));
+                    if (i < tryCount - 1) {
+                        log.error("Operation failed. Retry count remains = " + (tryCount - i - 1), lastError);
+                    }
                 }
             } catch (InterruptedException e) {
                 log.error("Operation interrupted");
