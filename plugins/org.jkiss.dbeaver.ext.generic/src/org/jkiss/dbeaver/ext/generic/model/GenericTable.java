@@ -212,6 +212,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         return null;
     }
 
+    @Association
     @Nullable
     public Collection<GenericTable> getSubTables()
     {
