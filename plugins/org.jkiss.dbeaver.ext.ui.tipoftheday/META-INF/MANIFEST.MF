@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
-Bundle-SymbolicName: org.jkiss.dbeaver.ext.tipoftheday;singleton:=true
+Bundle-SymbolicName: org.jkiss.dbeaver.ext.ui.tipoftheday;singleton:=true
 Bundle-Version: 1.0.0.qualifier
 Bundle-Release-Date: 20181007
 Bundle-ActivationPolicy: lazy

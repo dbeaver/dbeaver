@@ -4,7 +4,7 @@
 <plugin>
 
     <extension point="org.jkiss.dbeaver.workbenchHandler">
-        <workbenchWindowInitializer class="org.jkiss.dbeaver.ext.tipoftheday.TipOfTheDayInitializer"/>
+        <workbenchWindowInitializer class="org.jkiss.dbeaver.ext.ui.tipoftheday.TipOfTheDayInitializer"/>
     </extension>
 
 </plugin>

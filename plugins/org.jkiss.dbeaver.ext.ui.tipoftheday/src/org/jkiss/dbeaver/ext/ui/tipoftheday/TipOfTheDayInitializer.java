@@ -1,4 +1,4 @@
-package org.jkiss.dbeaver.ext.tipoftheday;
+package org.jkiss.dbeaver.ext.ui.tipoftheday;
 
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.nebula.widgets.opal.tipoftheday.TipOfTheDay;
@@ -6,7 +6,6 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
-import org.jkiss.dbeaver.core.application.ApplicationWorkbenchAdvisor;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.ui.IWorkbenchWindowInitializer;
 import org.xml.sax.SAXException;
@@ -22,7 +21,7 @@ import java.util.Collections;
 import java.util.List;
 
 public class TipOfTheDayInitializer implements IWorkbenchWindowInitializer {
-    private static final Log LOG = Log.getLog(ApplicationWorkbenchAdvisor.class);
+    private static final Log LOG = Log.getLog(TipOfTheDayInitializer.class);
 
     @Override
     public void initializeWorkbenchWindow(IWorkbenchWindow window) {
