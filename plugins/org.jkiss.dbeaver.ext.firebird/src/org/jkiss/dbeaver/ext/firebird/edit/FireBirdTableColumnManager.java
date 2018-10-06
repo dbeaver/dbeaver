@@ -26,10 +26,12 @@ import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.edit.DBECommandContext;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
+import org.jkiss.dbeaver.model.edit.DBEObjectReorderer;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAbstract;
 import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -40,7 +42,7 @@ import java.util.Map;
  * FireBirdTableColumnManager
  */
 public class FireBirdTableColumnManager extends GenericTableColumnManager
-    implements DBEObjectRenamer<GenericTableColumn>
+    implements DBEObjectRenamer<GenericTableColumn>, DBEObjectReorderer<GenericTableColumn>
 {
 
     protected final ColumnModifier<GenericTableColumn> FBDefaultModifier = (column, sql, command) -> {
@@ -108,9 +110,42 @@ public class FireBirdTableColumnManager extends GenericTableColumnManager
                     " TO " + DBUtils.getQuotedIdentifier(column.getDataSource(), command.getNewName())));
     }
 
-
     @Override
     public void renameObject(DBECommandContext commandContext, GenericTableColumn object, String newName) throws DBException {
         processObjectRename(commandContext, object, newName);
     }
+
+    ///////////////////////////////////////////////
+    // Reorder
+
+    @Override
+    protected void addObjectReorderActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, ObjectReorderCommand command, Map<String, Object> options) {
+        final GenericTableColumn column = command.getObject();
+        actions.add(
+            new SQLDatabasePersistAction(
+                "Reorder column",
+                "ALTER TABLE " + DBUtils.getQuotedIdentifier(command.getObject().getTable()) + " ALTER COLUMN " +
+                    DBUtils.getQuotedIdentifier(command.getObject()) + " POSITION " + column.getOrdinalPosition()));
+    }
+
+    @Override
+    public int getMinimumOrdinalPosition(GenericTableColumn object) {
+        return 1;
+    }
+
+    @Override
+    public int getMaximumOrdinalPosition(GenericTableColumn object) {
+        try {
+            return object.getTable().getAttributes(new VoidProgressMonitor()).size();
+        } catch (DBException e) {
+            log.error("Error reading columns for maximum order position", e);
+            return 0;
+        }
+    }
+
+    @Override
+    public void setObjectOrdinalPosition(DBECommandContext commandContext, GenericTableColumn object, List<GenericTableColumn> siblingObjects, int newPosition) throws DBException {
+        processObjectReorder(commandContext, object, siblingObjects, newPosition);
+    }
+
 }
