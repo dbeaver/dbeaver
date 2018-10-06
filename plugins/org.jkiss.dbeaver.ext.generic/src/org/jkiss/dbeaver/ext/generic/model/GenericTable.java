@@ -151,7 +151,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
 
     @Nullable
     @Override
-    public synchronized Collection<GenericTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor)
+    public synchronized Collection<? extends GenericTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return this.getContainer().getTableCache().getChildren(monitor, getContainer(), this);
@@ -177,7 +177,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
 
     @Nullable
     @Override
-    public synchronized Collection<GenericPrimaryKey> getConstraints(@NotNull DBRProgressMonitor monitor)
+    public synchronized List<GenericPrimaryKey> getConstraints(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         if (getDataSource().getInfo().supportsReferentialIntegrity() || getDataSource().getInfo().supportsIndexes()) {

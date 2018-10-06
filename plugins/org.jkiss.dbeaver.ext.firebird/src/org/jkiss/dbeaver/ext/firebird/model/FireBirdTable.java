@@ -17,10 +17,19 @@
 package org.jkiss.dbeaver.ext.firebird.model;
 
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.generic.model.GenericStructContainer;
 import org.jkiss.dbeaver.ext.generic.model.GenericTable;
+import org.jkiss.dbeaver.ext.generic.model.GenericTableColumn;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
+import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
 public class FireBirdTable extends GenericTable implements DBPNamedObject2 {
 
@@ -31,5 +40,19 @@ public class FireBirdTable extends GenericTable implements DBPNamedObject2 {
     @Override
     protected boolean isTruncateSupported() {
         return false;
+    }
+
+    @Override
+    public synchronized Collection<FireBirdTableColumn> getAttributes(DBRProgressMonitor monitor) throws DBException {
+        Collection<? extends GenericTableColumn> childColumns = super.getAttributes(monitor);
+        if (childColumns == null) {
+            return Collections.emptyList();
+        }
+        List<FireBirdTableColumn> columns = new ArrayList<>();
+        for (GenericTableColumn gtc : childColumns) {
+            columns.add((FireBirdTableColumn) gtc);
+        }
+        columns.sort(DBUtils.orderComparator());
+        return columns;
     }
 }

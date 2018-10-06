@@ -20,6 +20,7 @@ import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPNamedObject2;
+import org.jkiss.dbeaver.model.DBPOrderedObject;
 import org.jkiss.dbeaver.model.impl.DBPositiveNumberTransformer;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCColumnKeyType;
 import org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableColumn;
@@ -32,7 +33,7 @@ import java.util.Collection;
 /**
  * Generic table column
  */
-public class GenericTableColumn extends JDBCTableColumn<GenericTable> implements DBSTableColumn, DBPNamedObject2, JDBCColumnKeyType
+public class GenericTableColumn extends JDBCTableColumn<GenericTable> implements DBSTableColumn, DBPNamedObject2, JDBCColumnKeyType, DBPOrderedObject
 {
     private int radix;
     private String remarks;
