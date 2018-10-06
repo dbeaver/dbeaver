@@ -16,13 +16,10 @@
  */
 package org.jkiss.dbeaver.model.runtime;
 
-import org.eclipse.jgit.annotations.Nullable;
 import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.utils.CommonUtils;
-
-import java.util.List;
 
 /**
  * Abstract Database Job
