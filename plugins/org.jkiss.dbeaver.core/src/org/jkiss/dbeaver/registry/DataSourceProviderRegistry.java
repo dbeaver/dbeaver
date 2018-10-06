@@ -114,6 +114,17 @@ public class DataSourceProviderRegistry
             }
         }
 
+        int driverCount = 0, customDriverCount = 0;
+        for (DataSourceProviderDescriptor pd : dataSourceProviders) {
+            for (DriverDescriptor dd : pd.getDrivers()) {
+                if (!dd.isDisabled()) {
+                    driverCount++;
+                    if (dd.isCustom()) customDriverCount++;
+                }
+            }
+        }
+        log.debug("Total database drivers: " + driverCount + " (" + (driverCount - customDriverCount) + ")");
+
         // Load connection types
         {
             for (DBPConnectionType ct : DBPConnectionType.SYSTEM_TYPES) {
