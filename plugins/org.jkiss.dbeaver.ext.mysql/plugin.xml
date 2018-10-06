@@ -162,7 +162,7 @@
                         id="mysql8"
                         label="MySQL 8.x"
                         icon="icons/mysql_icon.png"
-                        class="com.mysql.jdbc.Driver"
+                        class="com.mysql.cj.jdbc.Driver"
                         sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
                         useURL="false"
                         defaultPort="3306"
