@@ -20,7 +20,8 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.sql.SQLUtils;
+import org.jkiss.dbeaver.model.sql.SQLDataSource;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.utils.CommonUtils;
 
@@ -172,6 +173,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
         if (!CommonUtils.isEmpty(targetType)) {
             return targetType;
         }
+
         // TODO: make some smart data type matcher
         // Current solution looks like hack
         String typeName = source.getTypeName();
@@ -185,7 +187,7 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
                     typeName = dataType.getTypeName();
                 }
             }
-            if (dataType != null && dataType.getDataKind() != dataKind) {
+            if (dataType != null && !DBPDataKind.canConsume(dataKind, dataType.getDataKind())) {
                 // Type mismatch
                 dataType = null;
             }
@@ -231,10 +233,15 @@ public class DatabaseMappingAttribute implements DatabaseMappingObject {
             }
         }
 
-        String modifiers = SQLUtils.getColumnTypeModifiers(parent.getSettings().getTargetDataSource(this), source, typeName, dataKind);
-        if (modifiers != null) {
-            typeName += modifiers;
+        // Get type modifiers from target datasource
+        if (source != null && targetDataSource instanceof SQLDataSource) {
+            SQLDialect dialect = ((SQLDataSource) targetDataSource).getSQLDialect();
+            String modifiers = dialect.getColumnTypeModifiers(targetDataSource, source, typeName, dataKind);
+            if (modifiers != null) {
+                typeName += modifiers;
+            }
         }
+
         return typeName;
     }
 

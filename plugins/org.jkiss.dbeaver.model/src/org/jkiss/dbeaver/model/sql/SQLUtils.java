@@ -663,7 +663,7 @@ public final class SQLUtils {
             return null;
         }
         SQLDialect dialect = ((SQLDataSource) dataSource).getSQLDialect();
-        return dialect.getColumnTypeModifiers(column, typeName, dataKind);
+        return dialect.getColumnTypeModifiers(dataSource, column, typeName, dataKind);
     }
 
     public static boolean isExecQuery(@NotNull SQLDialect dialect, String query) {

@@ -37,6 +37,7 @@ import org.jkiss.dbeaver.ext.db2.model.security.DB2AuthIDType;
 import org.jkiss.dbeaver.ext.db2.model.security.DB2Grantee;
 import org.jkiss.dbeaver.ext.db2.model.security.DB2GranteeCache;
 import org.jkiss.dbeaver.ext.db2.model.security.DB2Role;
+import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPDataSourceInfo;
 import org.jkiss.dbeaver.model.DBUtils;
@@ -145,6 +146,16 @@ public class DB2DataSource extends JDBCDataSource implements DBSObjectSelector, 
     public DB2DataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container) throws DBException
     {
         super(monitor, container, new DB2SQLDialect());
+    }
+
+    @Override
+    public Object getDataSourceFeature(String featureId) {
+        switch (featureId) {
+            case DBConstants.FEATURE_MAX_STRING_LENGTH:
+                return 32764;
+        }
+
+        return super.getDataSourceFeature(featureId);
     }
 
     @Override

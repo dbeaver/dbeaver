@@ -83,6 +83,17 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     }
 
     @Override
+    public Object getDataSourceFeature(String featureId) {
+        switch (featureId) {
+            case DBConstants.FEATURE_MAX_STRING_LENGTH:
+                return 10485760;
+            case DBConstants.FEATURE_LOB_REQUIRE_TRANSACTIONS:
+                return true;
+        }
+        return super.getDataSourceFeature(featureId);
+    }
+
+    @Override
     protected void initializeRemoteInstance(DBRProgressMonitor monitor) throws DBException {
         activeDatabaseName = getContainer().getConnectionConfiguration().getDatabaseName();
         if (CommonUtils.isEmpty(activeDatabaseName)) {
@@ -180,14 +191,6 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
             props.put("sslfactory", factoryProp);
         }
         props.put("sslpasswordcallback", DefaultCallbackHandler.class.getName());
-    }
-
-    @Override
-    public Object getDataSourceFeature(String featureId) {
-        if (DBConstants.FEATURE_LOB_REQUIRE_TRANSACTIONS.equals(featureId)) {
-            return true;
-        }
-        return super.getDataSourceFeature(featureId);
     }
 
     protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, boolean setActiveObject) throws DBCException {

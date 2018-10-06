@@ -86,6 +86,16 @@ public class OracleDataSource extends JDBCDataSource
         this.outputReader = new OracleOutputReader();
     }
 
+    @Override
+    public Object getDataSourceFeature(String featureId) {
+        switch (featureId) {
+            case DBConstants.FEATURE_MAX_STRING_LENGTH:
+                return 4000;
+        }
+
+        return super.getDataSourceFeature(featureId);
+    }
+
     public boolean isViewAvailable(@NotNull DBRProgressMonitor monitor, @NotNull String schemaName, @NotNull String viewName) {
         viewName = viewName.toUpperCase();
         Boolean available;

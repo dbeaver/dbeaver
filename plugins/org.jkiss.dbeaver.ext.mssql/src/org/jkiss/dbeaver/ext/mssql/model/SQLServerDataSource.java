@@ -48,8 +48,11 @@ public class SQLServerDataSource extends GenericDataSource {
 
     @Override
     public Object getDataSourceFeature(String featureId) {
-        if (DBConstants.FEATURE_LIMIT_AFFECTS_DML.equals(featureId)) {
-            return true;
+        switch (featureId) {
+            case DBConstants.FEATURE_LIMIT_AFFECTS_DML:
+                return true;
+            case DBConstants.FEATURE_MAX_STRING_LENGTH:
+                return 8000;
         }
         return super.getDataSourceFeature(featureId);
     }
