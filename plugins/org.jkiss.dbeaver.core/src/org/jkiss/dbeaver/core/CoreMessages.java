@@ -817,6 +817,10 @@ public class CoreMessages extends NLS {
 	public static String pref_page_error_handle_recover_retry_count_label;
 	public static String pref_page_error_handle_recover_retry_count_tip;
 
+	public static String pref_page_error_handle_group_cancel_title;
+	public static String pref_page_error_handle_cancel_check_timeout;
+	public static String pref_page_error_handle_cancel_check_timeout_tip;
+
     public static String pref_page_query_manager_checkbox_ddl_executions;
 	public static String pref_page_query_manager_checkbox_metadata_read;
     public static String pref_page_query_manager_checkbox_metadata_write;
