@@ -99,6 +99,7 @@ public abstract class AbstractAttribute implements DBSAttributeBase, DBPToolTipO
         return ordinalPosition;
     }
 
+
     public void setOrdinalPosition(int ordinalPosition)
     {
         this.ordinalPosition = ordinalPosition;
