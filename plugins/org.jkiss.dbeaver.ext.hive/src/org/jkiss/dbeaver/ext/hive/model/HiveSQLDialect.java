@@ -25,7 +25,7 @@ public class HiveSQLDialect extends GenericSQLDialect {
     public static final String[][] DEFAULT_QUOTE_STRINGS = {{"`", "`"}};
 
     public HiveSQLDialect() {
-        super("Hive");
+        super("HiveQL");
     }
 
     public void initDriverSettings(JDBCDataSource dataSource, JDBCDatabaseMetaData metaData) {
