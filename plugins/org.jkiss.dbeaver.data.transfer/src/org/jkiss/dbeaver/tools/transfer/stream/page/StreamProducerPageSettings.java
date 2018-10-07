@@ -111,7 +111,7 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
 
             propsEditor = new PropertyTreeViewer(exporterSettings, SWT.BORDER);
         }
-        settingsDivider.setWeights(new int[]{ 300, 700 });
+        settingsDivider.setWeights(new int[]{ 400, 600 });
 
         setControl(settingsDivider);
     }

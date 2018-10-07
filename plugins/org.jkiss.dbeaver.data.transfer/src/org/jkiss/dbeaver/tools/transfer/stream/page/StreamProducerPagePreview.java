@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.tools.transfer.stream.page;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.CCombo;
 import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -150,7 +151,7 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
                                 textValue.setText(CommonUtils.notEmpty(am.getDefaultValue()));
                                 return textValue;
                             } else {
-                                final Combo sourceCombo = new Combo(table, SWT.DROP_DOWN | SWT.READ_ONLY);
+                                final CCombo sourceCombo = new CCombo(table, SWT.DROP_DOWN | SWT.READ_ONLY);
                                 sourceCombo.add("");
                                 for (StreamDataImporterColumnInfo ci : entityMappings.getStreamColumns()) {
                                     String columnName = ci.getColumnName();
@@ -172,7 +173,7 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
                         } else if (index == 2) {
                             // Mapping type
 
-                            final Combo mappingCombo = new Combo(table, SWT.DROP_DOWN | SWT.READ_ONLY);
+                            final CCombo mappingCombo = new CCombo(table, SWT.DROP_DOWN | SWT.READ_ONLY);
                             for (StreamProducerSettings.AttributeMapping.MappingType mapping : StreamProducerSettings.AttributeMapping.MappingType.values()) {
                                 if (mapping == StreamProducerSettings.AttributeMapping.MappingType.NONE) {
                                     continue;
@@ -200,7 +201,7 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
                                 }
                                 am.setDefaultValue(newValue);
                             } else {
-                                final Combo sourceCombo = (Combo) control;
+                                final CCombo sourceCombo = (CCombo) control;
                                 if (sourceCombo.getSelectionIndex() == 0) {
                                     if (am.getMappingType() == StreamProducerSettings.AttributeMapping.MappingType.SKIP) {
                                         return;
@@ -226,7 +227,7 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
                             }
 
                         } else if (index == 2) {
-                            final Combo mappingCombo = (Combo) control;
+                            final CCombo mappingCombo = (CCombo) control;
                             StreamProducerSettings.AttributeMapping.MappingType newMapping = null;
                             String newTypeTitle = mappingCombo.getText();
                             for (StreamProducerSettings.AttributeMapping.MappingType mapping : StreamProducerSettings.AttributeMapping.MappingType.values()) {
@@ -237,11 +238,13 @@ public class StreamProducerPagePreview extends ActiveWizardPage<DataTransferWiza
                             }
                             if (newMapping != null && newMapping != am.getMappingType()) {
                                 am.setMappingType(newMapping);
+                            } else {
+                                return;
                             }
                         }
-                        updateAttributeMappingItem(am, item);
-                        updatePageCompletion();
                         UIUtils.asyncExec(() -> {
+                            updateAttributeMappingItem(am, item);
+                            updatePageCompletion();
                             refreshPreviewTable(getCurrentEntityMappings());
                         });
                     }
