@@ -27,4 +27,6 @@ public interface INavigatorFilter extends IFilter
 
     boolean filterFolders();
 
+    boolean isLeafObject(Object object);
+
 }

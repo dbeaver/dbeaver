@@ -49,6 +49,7 @@ public class BrowseObjectDialog extends Dialog {
     private boolean singleSelection;
     private Class<?>[] allowedTypes;
     private Class<?>[] resultTypes;
+    private Class<?>[] leafTypes;
     private List<DBNNode> selectedObjects = new ArrayList<>();
     private DatabaseNavigatorTree navigatorTree;
 
@@ -59,7 +60,8 @@ public class BrowseObjectDialog extends Dialog {
         DBNNode selectedNode,
         boolean singleSelection,
         Class<?>[] allowedTypes,
-        Class<?>[] resultTypes)
+        Class<?>[] resultTypes,
+        Class<?>[] leafTypes)
     {
         super(parentShell);
         this.title = title;
@@ -68,6 +70,7 @@ public class BrowseObjectDialog extends Dialog {
         this.singleSelection = singleSelection;
         this.allowedTypes = allowedTypes;
         this.resultTypes = resultTypes == null ? allowedTypes : resultTypes;
+        this.leafTypes = leafTypes;
     }
 
     @Override
@@ -85,7 +88,20 @@ public class BrowseObjectDialog extends Dialog {
         GridData gd = new GridData(GridData.FILL_BOTH);
         group.setLayoutData(gd);
 
-        navigatorTree = new DatabaseNavigatorTree(group, rootNode, (singleSelection ? SWT.SINGLE : SWT.MULTI) | SWT.BORDER, false, new DatabaseNavigatorTreeFilter());
+        DatabaseNavigatorTreeFilter filter = new DatabaseNavigatorTreeFilter() {
+            @Override
+            public boolean isLeafObject(Object object) {
+                if (leafTypes != null && leafTypes.length > 0) {
+                    for (Class<?> leafType : leafTypes) {
+                        if (leafType.isAssignableFrom(object.getClass())) {
+                            return true;
+                        }
+                    }
+                }
+                return super.isLeafObject(object);
+            }
+        };
+        navigatorTree = new DatabaseNavigatorTree(group, rootNode, (singleSelection ? SWT.SINGLE : SWT.MULTI) | SWT.BORDER, false, filter);
         gd = new GridData(GridData.FILL_BOTH);
         gd.widthHint = 500;
         gd.heightHint = 500;
@@ -184,9 +200,9 @@ public class BrowseObjectDialog extends Dialog {
     }
 */
 
-    public static DBNNode selectObject(Shell parentShell, String title, DBNNode rootNode, DBNNode selectedNode, Class<?>[] allowedTypes, Class<?>[] resultTypes)
+    public static DBNNode selectObject(Shell parentShell, String title, DBNNode rootNode, DBNNode selectedNode, Class<?>[] allowedTypes, Class<?>[] resultTypes, Class<?>[] leafTypes)
     {
-        BrowseObjectDialog scDialog = new BrowseObjectDialog(parentShell, title, rootNode, selectedNode, true, allowedTypes, resultTypes);
+        BrowseObjectDialog scDialog = new BrowseObjectDialog(parentShell, title, rootNode, selectedNode, true, allowedTypes, resultTypes, leafTypes);
         if (scDialog.open() == IDialogConstants.OK_ID) {
             List<DBNNode> result = scDialog.getSelectedObjects();
             return result.isEmpty() ? null : result.get(0);
@@ -197,7 +213,7 @@ public class BrowseObjectDialog extends Dialog {
 
     public static List<DBNNode> selectObjects(Shell parentShell, String title, DBNNode rootNode, DBNNode selectedNode, Class<?>[] allowedTypes, Class<?>[] resultTypes)
     {
-        BrowseObjectDialog scDialog = new BrowseObjectDialog(parentShell, title, rootNode, selectedNode, false, allowedTypes, resultTypes);
+        BrowseObjectDialog scDialog = new BrowseObjectDialog(parentShell, title, rootNode, selectedNode, false, allowedTypes, resultTypes, null);
         if (scDialog.open() == IDialogConstants.OK_ID) {
             return scDialog.getSelectedObjects();
         } else {

@@ -117,6 +117,10 @@ public class DatabaseNavigatorTree extends Composite implements INavigatorListen
         treeViewer.setInput(new DatabaseNavigatorContent(rootNode));
     }
 
+    INavigatorFilter getNavigatorFilter() {
+        return navigatorFilter;
+    }
+
     @Nullable
     public Text getFilterControl() {
         return filterControl;

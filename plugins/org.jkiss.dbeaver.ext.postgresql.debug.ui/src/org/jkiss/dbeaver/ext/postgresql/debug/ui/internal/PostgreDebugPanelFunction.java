@@ -125,7 +125,7 @@ public class PostgreDebugPanelFunction implements DBGConfigurationPanel {
                             dsNode,
                             curNode,
                             new Class[]{DBSInstance.class, DBSObjectContainer.class, PostgreProcedure.class},
-                            new Class[]{PostgreProcedure.class});
+                            new Class[]{PostgreProcedure.class}, null);
                         if (node instanceof DBNDatabaseNode && ((DBNDatabaseNode) node).getObject() instanceof PostgreProcedure) {
                             functionCombo.removeAll();
                             selectedFunction = (PostgreProcedure) ((DBNDatabaseNode) node).getObject();
