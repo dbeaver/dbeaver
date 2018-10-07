@@ -344,9 +344,18 @@ public class SQLCompletionProposal implements ICompletionProposal, ICompletionPr
         String wordLower = wordPart.toLowerCase(Locale.ENGLISH);
         if (!CommonUtils.isEmpty(wordPart)) {
             boolean matchContains = dataSource != null && dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.PROPOSALS_MATCH_CONTAINS);
-            boolean matched = (TextUtils.fuzzyScore(replacementFull, wordLower) > 0 &&
+            boolean matched;
+            if (object == null) {
+                // For keywords use strict matching
+                matched = (matchContains ? replacementFull.contains(wordLower) : replacementFull.startsWith(wordLower)) &&
+                    (CommonUtils.isEmpty(event.getText()) || replacementFull.contains(event.getText().toLowerCase(Locale.ENGLISH))) ||
+                    (this.replacementLast != null && this.replacementLast.startsWith(wordLower));
+            } else {
+                // For objects use fuzzy matching
+                matched = (TextUtils.fuzzyScore(replacementFull, wordLower) > 0 &&
                     (CommonUtils.isEmpty(event.getText()) || TextUtils.fuzzyScore(replacementFull, event.getText()) > 0)) ||
                     (this.replacementLast != null && TextUtils.fuzzyScore(this.replacementLast, wordLower) > 0);
+            }
 
             if (matched) {
                 setPosition(wordDetector);
