@@ -886,6 +886,7 @@
                 <driver
                     id="apache_hive2"
                     label="Apache Hive"
+                    icon="icons/hive_icon.png"
                     class="org.apache.hive.jdbc.HiveDriver"
                     sampleURL="jdbc:hive2://{host}[:{port}][/{database}]"
                     defaultPort="10000"
@@ -897,6 +898,7 @@
                     <file type="jar" path="drivers/hive/hive-jdbc-uber.jar" bundle="drivers.hive"/>
 
                     <parameter name="supports-limits" value="false"/>
+                    <parameter name="supports-references" value="false"/>
                 </driver>
                 <driver
                     id="spark_hive"
@@ -911,6 +913,7 @@
                     <file type="jar" path="maven:/org.apache.hadoop:hadoop-core:RELEASE"/>
 
                     <parameter name="supports-truncate" value="false"/>
+                    <parameter name="supports-references" value="false"/>
                 </driver>
                 <driver
                     id="apache_drill"
@@ -923,6 +926,7 @@
                     <file type="jar" path="maven:/org.apache.drill.exec:drill-jdbc-all:RELEASE"/>
 
                     <parameter name="supports-truncate" value="false"/>
+                    <parameter name="supports-references" value="false"/>
                 </driver>
 
                 <!-- Cloudera -->
@@ -940,6 +944,7 @@
                     <parameter name="query-set-active-db" value="use [?]"/>
                     <parameter name="string-escape-char" value="\"/>
                     <parameter name="omit-catalog" value="true"/>
+                    <parameter name="supports-references" value="false"/>
                 </driver>
 
                 <!-- AWS -->
