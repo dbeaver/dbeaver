@@ -41,6 +41,7 @@ import org.jkiss.dbeaver.model.runtime.DBRRunnableParametrized;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
+import org.jkiss.dbeaver.ui.TextUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -95,15 +96,12 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
 
     @Override
     protected Comparator getItemsComparator() {
-        return new Comparator() {
-            @Override
-            public int compare(Object o1, Object o2) {
-                if (o1 instanceof DBPNamedObject && o2 instanceof DBPNamedObject) {
-                    return DBUtils.getObjectFullName((DBPNamedObject) o1, DBPEvaluationContext.UI).compareToIgnoreCase(
-                        DBUtils.getObjectFullName((DBPNamedObject) o2, DBPEvaluationContext.UI));
-                }
-                return 0;
+        return (o1, o2) -> {
+            if (o1 instanceof DBPNamedObject && o2 instanceof DBPNamedObject) {
+                return DBUtils.getObjectFullName((DBPNamedObject) o1, DBPEvaluationContext.UI).compareToIgnoreCase(
+                    DBUtils.getObjectFullName((DBPNamedObject) o2, DBPEvaluationContext.UI));
             }
+            return 0;
         };
     }
 
@@ -212,12 +210,13 @@ public class GotoObjectDialog extends FilteredItemsSelectionDialog {
         public boolean matchItem(Object item) {
             if (item instanceof DBPNamedObject) {
                 String objectName = ((DBPNamedObject) item).getName();
-                if (!getNamePattern().matcher(objectName).matches()) {
-                    return false;
-                }
-                // Check for filters
-
-                return true;
+                return TextUtils.fuzzyScore(objectName, getPattern()) > 0;
+//                if (!getNamePattern().matcher(objectName).matches()) {
+//                    return false;
+//                }
+//                // Check for filters
+//
+//                return true;
             } else {
                 return false;
             }
