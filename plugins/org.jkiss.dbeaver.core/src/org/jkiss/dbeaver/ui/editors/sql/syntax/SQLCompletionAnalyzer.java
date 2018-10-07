@@ -171,7 +171,7 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
             }
         } else {
             // Get list of sub-objects (filtered by wordPart)
-            makeDataSourceProposals();
+            //makeDataSourceProposals();
         }
     }
 
