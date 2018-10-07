@@ -28,4 +28,6 @@
 
     <template id="org.jkiss.dbeaver.templates.scob" autoinsert="true" context="sql" description="select with order by" enabled="true" name="sob">select * from ${table} t order by ${column};</template>
 
+    <template id="org.jkiss.dbeaver.templates.sf" autoinsert="true" context="sql" description="select * from " enabled="true" name="sf">select * from ${table}</template>
+
 </templates>
