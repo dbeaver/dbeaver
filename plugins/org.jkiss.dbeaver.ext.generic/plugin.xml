@@ -894,8 +894,7 @@
                     webURL="https://cwiki.apache.org/confluence/display/Hive/Home"
                     category="Hadoop">
 
-                    <file type="jar" path="https://github.com/timveil/hive-jdbc-uber-jar/releases/download/v1.8-2.6.3/hive-jdbc-uber-2.6.3.0-235.jar" bundle="!drivers.hive"/>
-                    <file type="jar" path="drivers/hive/hive-jdbc-uber.jar" bundle="drivers.hive"/>
+                    <file type="jar" path="https://github.com/timveil/hive-jdbc-uber-jar/releases/download/v1.9-2.6.5/hive-jdbc-uber-2.6.5.0-292.jar"/>
 
                     <parameter name="supports-limits" value="false"/>
                     <parameter name="supports-references" value="false"/>
