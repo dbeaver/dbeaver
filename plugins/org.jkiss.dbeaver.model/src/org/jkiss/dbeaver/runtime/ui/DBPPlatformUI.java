@@ -73,7 +73,7 @@ public interface DBPPlatformUI {
     /**
      * UI utilities
      */
-    DBNNode selectObject(Object parentShell, String title, DBNNode rootNode, DBNNode selectedNode, Class<?>[] allowedTypes, Class<?>[] resultTypes);
+    DBNNode selectObject(Object parentShell, String title, DBNNode rootNode, DBNNode selectedNode, Class<?>[] allowedTypes, Class<?>[] resultTypes, Class<?>[] leafTypes);
 
     void openEntityEditor(DBSObject object);
     void openEntityEditor(DBNNode selectedNode, @Nullable String defaultPageId);

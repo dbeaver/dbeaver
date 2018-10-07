@@ -87,7 +87,7 @@ public class ConsoleUserInterface implements DBPPlatformUI {
     }
 
     @Override
-    public DBNNode selectObject(Object parentShell, String title, DBNNode rootNode, DBNNode selectedNode, Class<?>[] allowedTypes, Class<?>[] resultTypes) {
+    public DBNNode selectObject(Object parentShell, String title, DBNNode rootNode, DBNNode selectedNode, Class<?>[] allowedTypes, Class<?>[] resultTypes, Class<?>[] leafTypes) {
         return null;
     }
 

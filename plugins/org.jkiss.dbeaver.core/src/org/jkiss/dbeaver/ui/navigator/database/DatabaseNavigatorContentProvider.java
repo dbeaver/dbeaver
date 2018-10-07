@@ -28,10 +28,10 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
-import org.jkiss.dbeaver.ui.navigator.database.load.TreeNodeSpecial;
 import org.jkiss.dbeaver.ui.navigator.database.load.TreeLoadService;
 import org.jkiss.dbeaver.ui.navigator.database.load.TreeLoadVisualizer;
 import org.jkiss.dbeaver.ui.navigator.database.load.TreeNodeLazyExpander;
+import org.jkiss.dbeaver.ui.navigator.database.load.TreeNodeSpecial;
 import org.jkiss.utils.ArrayUtils;
 
 /**
@@ -149,6 +149,11 @@ class DatabaseNavigatorContentProvider implements IStructuredContentProvider, IT
     @Override
     public boolean hasChildren(Object parent)
     {
+        if (parent instanceof DBNDatabaseNode) {
+            if (navigatorTree.getNavigatorFilter() != null && navigatorTree.getNavigatorFilter().isLeafObject(((DBNDatabaseNode) parent).getObject())) {
+                return false;
+            }
+        }
         return parent instanceof DBNNode && ((DBNNode) parent).hasChildren(true);
     }
 

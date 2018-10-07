@@ -277,9 +277,9 @@ public class DBeaverUI implements DBPPlatformUI {
     }
 
     @Override
-    public DBNNode selectObject(Object parentShell, String title, DBNNode rootNode, DBNNode selectedNode, Class<?>[] allowedTypes, Class<?>[] resultTypes) {
+    public DBNNode selectObject(Object parentShell, String title, DBNNode rootNode, DBNNode selectedNode, Class<?>[] allowedTypes, Class<?>[] resultTypes, Class<?>[] leafTypes) {
         Shell shell = (parentShell instanceof Shell ? (Shell)parentShell : UIUtils.getActiveWorkbenchShell());
-        return BrowseObjectDialog.selectObject(shell, title, rootNode, selectedNode, allowedTypes, resultTypes);
+        return BrowseObjectDialog.selectObject(shell, title, rootNode, selectedNode, allowedTypes, resultTypes, leafTypes);
     }
 
     @Override
