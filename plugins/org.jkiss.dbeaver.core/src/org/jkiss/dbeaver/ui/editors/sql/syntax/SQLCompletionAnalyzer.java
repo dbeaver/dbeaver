@@ -486,10 +486,6 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
                         if (objPrefix != null) combinedMatch.append(objPrefix);
                     }
                     combinedMatch.append(DBUtils.getQuotedIdentifier(child));
-                } else if (simpleMode) {
-                    if (startPart == null || objectNameMatches(startPart, child, matchContains)) {
-                        matchedObjects.add(child);
-                    }
                 } else {
                     int score = CommonUtils.isEmpty(startPart) ? 1 : TextUtils.fuzzyScore(child.getName(), startPart);
                     if (score > 0) {
