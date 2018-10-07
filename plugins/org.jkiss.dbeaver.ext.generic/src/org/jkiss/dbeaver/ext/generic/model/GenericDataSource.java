@@ -448,7 +448,7 @@ public class GenericDataSource extends JDBCDataSource
                 } catch (UnsupportedOperationException | SQLFeatureNotSupportedException e) {
                     // Just skip it
                     log.debug(e);
-                } catch (SQLException e) {
+                } catch (Throwable e) {
                     // Error reading catalogs - just warn about it
                     log.warn("Can't read catalog list", e);
                 }
@@ -466,9 +466,13 @@ public class GenericDataSource extends JDBCDataSource
                 monitor.subTask("Extract schemas");
                 monitor.worked(1);
 
-                List<GenericSchema> tmpSchemas = metaModel.loadSchemas(session, this, null);
-                if (tmpSchemas != null) {
-                    this.schemas = tmpSchemas;
+                try {
+                    List<GenericSchema> tmpSchemas = metaModel.loadSchemas(session, this, null);
+                    if (tmpSchemas != null) {
+                        this.schemas = tmpSchemas;
+                    }
+                } catch (Throwable e) {
+                    log.warn("Can't read schema list", e);
                 }
 
                 if (CommonUtils.isEmpty(schemas)) {
@@ -477,7 +481,7 @@ public class GenericDataSource extends JDBCDataSource
             }
             determineSelectedEntity(session);
 
-        } catch (SQLException ex) {
+        } catch (Throwable ex) {
             throw new DBException("Error reading metadata", ex, this);
         }
     }
