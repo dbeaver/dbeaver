@@ -45,6 +45,8 @@ public class DBeaverVersionChecker extends AbstractJob {
     {
         super("DBeaver new version release checker");
         this.showAlways = force;
+        setUser(false);
+        setSystem(true);
     }
 
     @Override
