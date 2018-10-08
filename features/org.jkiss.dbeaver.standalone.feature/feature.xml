@@ -2,7 +2,7 @@
 <feature
         id="org.jkiss.dbeaver.standalone.feature"
         label="%featureName"
-        version="5.2.2.qualifier"
+        version="5.2.3.qualifier"
         provider-name="%providerName"
         plugin="org.jkiss.dbeaver.core.application">
 
@@ -71,7 +71,7 @@
 
     <plugin id="org.jkiss.dbeaver.core.application" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
     <plugin id="org.jkiss.dbeaver.ext.sample.database" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
-    <!--<plugin id="org.jkiss.dbeaver.ext.ui.tipoftheday" download-size="0" install-size="0" version="0.0.0" unpack="false"/>-->
+    <plugin id="org.jkiss.dbeaver.ext.ui.tipoftheday" download-size="0" install-size="0" version="0.0.0" unpack="false"/>
 
 
 </feature>

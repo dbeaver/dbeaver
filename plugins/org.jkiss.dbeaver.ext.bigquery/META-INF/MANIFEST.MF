@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: BigQuery extension
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.bigquery;singleton:=true
-Bundle-Version: 1.0.0.qualifier
-Bundle-Release-Date: 20181008
+Bundle-Version: 1.0.1.qualifier
+Bundle-Release-Date: 20181022
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.jkiss.dbeaver.core,
