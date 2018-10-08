@@ -47,11 +47,14 @@ public class OracleTimestampValueHandler extends JDBCDateTimeValueHandler {
 
     @Override
     public Object getValueFromObject(DBCSession session, DBSTypedObject type, Object object, boolean copy) throws DBCException {
-        if (object != null && OracleConstants.TIMESTAMP_CLASS_NAME.equals(object.getClass().getName())) {
-            try {
-                return getTimestampReadMethod(object.getClass()).invoke(object);
-            } catch (Exception e) {
-                log.debug("Error extracting Oracle TIMESTAMP value", e);
+        if (object != null) {
+            String className = object.getClass().getName();
+            if (className.startsWith(OracleConstants.TIMESTAMP_CLASS_NAME)) {
+                try {
+                    return getTimestampReadMethod(object.getClass()).invoke(object);
+                } catch (Exception e) {
+                    log.debug("Error extracting Oracle TIMESTAMP value", e);
+                }
             }
         }
         return super.getValueFromObject(session, type, object, copy);
