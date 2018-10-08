@@ -308,7 +308,9 @@ public abstract class ConnectionWizard extends Wizard implements INewWizard {
 
         private void testInPage(DBCSession session, IDialogPage page) {
             if (page instanceof IDataSourceConnectionTester) {
-                ((IDataSourceConnectionTester) page).testConnection(session);
+                if (page.getControl() != null && !page.getControl().isDisposed()) {
+                    ((IDataSourceConnectionTester) page).testConnection(session);
+                }
             }
             if (page instanceof ICompositeDialogPage) {
                 for (IDialogPage subPage : ArrayUtils.safeArray(((ICompositeDialogPage) page).getSubPages())) {
