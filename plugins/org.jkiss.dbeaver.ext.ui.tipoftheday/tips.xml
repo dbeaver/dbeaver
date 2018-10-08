@@ -20,8 +20,13 @@
   -->
 <tips>
 	<tip>
-		Fantastic!<br/> <b>Marvelous</b> <u>Stunning!</u> <i>DBeaver has now tip of the day functionality! </i>Enjoy it!<br/>If you like...
+		Fantastic!<br/> <i>DBeaver has now tip of the day functionality!</i>
+		Enjoy it!<br/>
 	</tip>
-	<tip>You can just select your query and run it unsing Shift + Enter</tip>
-	<tip>That you can filter your table by column name or the value</tip>
+	<tip>You can execute current query using <b>Ctrl+Enter</b> shortcut.<br/>
+		Queries are separated by delimiters or empty lines.
+	</tip>
+	<tip>You can just select any part of SQL script and run it with <b>Ctrl+Enter</b></tip>
+	<tip>You can run SQL script using <b>Alt+X</b> shortcut. Script queries are separated with delimiters (like ; or go).</tip>
+	<tip>You can filter table rows by column value or using any SQL expression</tip>
 </tips>
