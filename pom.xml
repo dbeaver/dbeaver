@@ -26,7 +26,6 @@
         <module>bundles</module>
         <module>plugins</module>
         <module>features</module>
-        <module>nls</module>
 
         <!-- Products -->
         <module>product/standalone</module>
