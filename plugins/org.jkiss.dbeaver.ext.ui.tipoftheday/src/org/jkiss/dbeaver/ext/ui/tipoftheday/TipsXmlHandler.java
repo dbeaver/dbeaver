@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-public class TipsHandler extends DefaultHandler {
+public class TipsXmlHandler extends DefaultHandler {
 
     private static final String TIP = "tip";
     private boolean tipTagStarted;

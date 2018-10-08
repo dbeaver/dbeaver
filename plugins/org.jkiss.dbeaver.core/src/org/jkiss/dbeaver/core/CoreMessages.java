@@ -900,7 +900,6 @@ public class CoreMessages extends NLS {
     public static String pref_page_ui_general_label_proxy_user;
     public static String pref_page_ui_general_label_proxy_password;
     public static String pref_page_drivers_group_location;
-    public static String pref_page_ui_general_show_tip_of_the_day_on_startup;
 
 	public static String registry_entity_editor_descriptor_description;
 	public static String registry_entity_editor_descriptor_name;

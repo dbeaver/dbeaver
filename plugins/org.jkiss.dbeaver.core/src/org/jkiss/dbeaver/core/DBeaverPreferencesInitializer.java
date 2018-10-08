@@ -172,7 +172,6 @@ public class DBeaverPreferencesInitializer extends AbstractPreferenceInitializer
         // General UI
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_AUTO_UPDATE_CHECK, true);
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_KEEP_DATABASE_EDITORS, true);
-        PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.UI_SHOW_TIP_OF_THE_DAY_ON_STARTUP, true);
 
         // ResultSet
         PrefUtils.setDefaultPreferenceValue(store, DBeaverPreferences.RESULT_SET_AUTO_FETCH_NEXT_SEGMENT, true);
