@@ -8,6 +8,7 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.registry.DataSourceRegistry;
 import org.jkiss.dbeaver.ui.IWorkbenchWindowInitializer;
+import org.jkiss.utils.CommonUtils;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -21,15 +22,15 @@ import java.util.Collections;
 import java.util.List;
 
 public class TipOfTheDayInitializer implements IWorkbenchWindowInitializer {
-    private static final Log LOG = Log.getLog(TipOfTheDayInitializer.class);
+    private static final Log log = Log.getLog(TipOfTheDayInitializer.class);
 
     @Override
     public void initializeWorkbenchWindow(IWorkbenchWindow window) {
-        if (doNotShowTips()){
+        if (doNotShowTips()) {
             return;
         }
         List<String> tips = loadTips();
-        if ( !tips.isEmpty()) {
+        if (!CommonUtils.isEmpty(tips)) {
             showTipOfTheDayDialog(tips, window);
         }
     }
@@ -39,7 +40,6 @@ public class TipOfTheDayInitializer implements IWorkbenchWindowInitializer {
         boolean emptyDatasource = DataSourceRegistry.getAllDataSources().isEmpty();
         return !enabled || emptyDatasource;
     }
-
 
     private void showTipOfTheDayDialog(List<String> tips, IWorkbenchWindow window) {
         final TipOfTheDay tipDialog = new TipOfTheDay();
@@ -51,13 +51,18 @@ public class TipOfTheDayInitializer implements IWorkbenchWindowInitializer {
         tipDialog.open(window.getShell());
 
         DBeaverCore.getGlobalPreferenceStore().
-                setValue(DBeaverPreferences.UI_SHOW_TIP_OF_THE_DAY_ON_STARTUP, tipDialog.isShowOnStartup());
+            setValue(DBeaverPreferences.UI_SHOW_TIP_OF_THE_DAY_ON_STARTUP, tipDialog.isShowOnStartup());
     }
 
     private List<String> loadTips() {
         List<String> result = new ArrayList<>();
 
-        try (InputStream tipsInputStream = getTipsFileStream()) {
+        String pathToTipsFile = Platform.getProduct().getProperty("tipsFile");
+        if (pathToTipsFile == null) {
+            return result;
+        }
+
+        try (InputStream tipsInputStream = new URL(pathToTipsFile).openConnection().getInputStream()) {
 
             SAXParserFactory factory = SAXParserFactory.newInstance();
             SAXParser saxParser = factory.newSAXParser();
@@ -67,22 +72,14 @@ public class TipOfTheDayInitializer implements IWorkbenchWindowInitializer {
             result.addAll(handler.getTips());
 
         } catch (SAXException | ParserConfigurationException e) {
-            LOG.error("Unable to parse tips file:", e);
+            log.error("Unable to parse tips file:", e);
         } catch (IOException ioe) {
-            LOG.error("Tips file wasn't found", ioe);
+            log.error("Tips file wasn't found", ioe);
         }
         if (!result.isEmpty() && result.size() > 1) {
             Collections.shuffle(result);
         }
         return result;
-    }
-
-
-    private InputStream getTipsFileStream() throws IOException {
-        String pathToTipsFile = Platform.getProduct().getProperty("tipsFile");
-
-        URL url = new URL(pathToTipsFile);
-        return url.openConnection().getInputStream();
     }
 
 }

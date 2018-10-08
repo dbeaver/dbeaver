@@ -9,19 +9,20 @@ import java.util.Arrays;
 import java.util.List;
 
 public class TipsHandler extends DefaultHandler {
+
     private static final String TIP = "tip";
     private boolean tipTagStarted;
     private StringBuilder tipTagContent = new StringBuilder();
     private List<String> tips = new ArrayList<>();
     private static final String BR = "br";
-    private static final List<String> HTML_TAGS = Arrays.asList(BR, "b", "i", "u", "q" );
+    private static final List<String> HTML_TAGS = Arrays.asList(BR, "b", "i", "u", "q");
     private static final String TAG_BRACKET_BEGIN = "<";
     private static final String TAG_BRACKET_END = ">";
     private static final String SLASH = "/";
 
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-        if (HTML_TAGS.contains(qName) && tipTagStarted){
+        if (HTML_TAGS.contains(qName) && tipTagStarted) {
             tipTagContent.append(TAG_BRACKET_BEGIN).append(qName).append(TAG_BRACKET_END);
         }
         if (qName.equalsIgnoreCase(TIP)) {
@@ -44,7 +45,7 @@ public class TipsHandler extends DefaultHandler {
             tipTagContent = new StringBuilder();
         }
 
-        if (!qName.equals(BR) && HTML_TAGS.contains(qName) && tipTagStarted){
+        if (!qName.equals(BR) && HTML_TAGS.contains(qName) && tipTagStarted) {
             tipTagContent.append(TAG_BRACKET_BEGIN).append(SLASH).append(qName).append(TAG_BRACKET_END);
         }
     }
