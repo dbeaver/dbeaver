@@ -117,7 +117,7 @@ public class DataSourceProviderRegistry
         int driverCount = 0, customDriverCount = 0;
         for (DataSourceProviderDescriptor pd : dataSourceProviders) {
             for (DriverDescriptor dd : pd.getDrivers()) {
-                if (!dd.isDisabled()) {
+                if (!dd.isDisabled() && dd.getReplacedBy() == null) {
                     driverCount++;
                     if (dd.isCustom()) customDriverCount++;
                 }
