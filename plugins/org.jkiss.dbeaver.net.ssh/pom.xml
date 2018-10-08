@@ -10,7 +10,7 @@
         <relativePath>../../</relativePath>
     </parent>
     <artifactId>org.jkiss.dbeaver.net.ssh</artifactId>
-    <version>1.0.15-SNAPSHOT</version>
+    <version>1.0.16-SNAPSHOT</version>
     <packaging>eclipse-plugin</packaging>
 
 </project>

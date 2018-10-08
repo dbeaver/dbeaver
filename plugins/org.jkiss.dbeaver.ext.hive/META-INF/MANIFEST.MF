@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.hive;singleton:=true
-Bundle-Version: 1.0.0.qualifier
-Bundle-Release-Date: 20181008
+Bundle-Version: 1.0.1.qualifier
+Bundle-Release-Date: 20181022
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.ui.views,

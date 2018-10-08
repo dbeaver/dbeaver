@@ -2,8 +2,8 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: SQL Server extension NLS
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.mssql.nls
-Bundle-Version: 1.0.26.qualifier
-Bundle-Release-Date: 20181008
+Bundle-Version: 1.0.27.qualifier
+Bundle-Release-Date: 20181022
 Fragment-Host: org.jkiss.dbeaver.ext.mssql
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Vendor: JKISS
