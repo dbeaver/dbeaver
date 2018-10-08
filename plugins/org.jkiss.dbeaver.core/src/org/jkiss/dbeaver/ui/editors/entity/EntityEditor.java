@@ -779,6 +779,12 @@ public class EntityEditor extends MultiPageDatabaseEditor
         if (getContainer() == null || getContainer().isDisposed()) {
             return;
         }
+
+        if (source instanceof DBNEvent && ((DBNEvent) source).getNodeChange() == DBNEvent.NodeChange.REFRESH) {
+            // This may happen if editor was refreshed indirectly (it is a child of refreshed node)
+            force = true;
+        }
+
         if (force && getDatabaseObject().isPersisted()) {
             // Lists and commands should be refreshed only if we make real refresh from remote storage
             // Otherwise just update object's properties
