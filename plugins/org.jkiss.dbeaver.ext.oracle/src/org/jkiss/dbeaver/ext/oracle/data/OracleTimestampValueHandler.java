@@ -53,7 +53,7 @@ public class OracleTimestampValueHandler extends JDBCDateTimeValueHandler {
                 try {
                     return getTimestampReadMethod(object.getClass()).invoke(object);
                 } catch (Exception e) {
-                    log.debug("Error extracting Oracle TIMESTAMP value", e);
+                    throw new DBCException("Error extracting Oracle TIMESTAMP value", e);
                 }
             }
         }
