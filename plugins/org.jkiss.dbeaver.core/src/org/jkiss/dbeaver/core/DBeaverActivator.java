@@ -62,7 +62,6 @@ public class DBeaverActivator extends AbstractUIPlugin {
         preferences = new BundlePreferenceStore(bundle);
 
         DBRFeatureRegistry.getInstance().registerFeatures(CoreFeatures.class);
-        DBeaverUI.getInstance();
 
         try {
             coreResourceBundle = ResourceBundle.getBundle(CoreMessages.BUNDLE_NAME);
