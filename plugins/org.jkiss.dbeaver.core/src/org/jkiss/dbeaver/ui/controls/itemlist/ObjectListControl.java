@@ -129,7 +129,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             TreeViewer treeViewer = new TreeViewer(this, viewerStyle);
             final Tree tree = treeViewer.getTree();
             tree.setHeaderVisible(true);
-            tree.setLinesVisible(true);
+            //tree.setLinesVisible(true);
             itemsViewer = treeViewer;
             editorActivationStrategy = new EditorActivationStrategy(treeViewer);
             TreeViewerEditor.create(treeViewer, editorActivationStrategy, ColumnViewerEditor.TABBING_CYCLE_IN_ROW);
@@ -146,7 +146,7 @@ public abstract class ObjectListControl<OBJECT_TYPE> extends ProgressPageControl
             TableViewer tableViewer = new TableViewer(this, viewerStyle);
             final Table table = tableViewer.getTable();
             table.setHeaderVisible(true);
-            table.setLinesVisible(true);
+            //table.setLinesVisible(true);
             itemsViewer = tableViewer;
             //UIUtils.applyCustomTolTips(table);
             //itemsEditor = new TableEditor(table);

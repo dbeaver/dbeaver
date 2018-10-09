@@ -101,7 +101,7 @@ public class PropertyTreeViewer extends TreeViewer {
             treeControl.setLayoutData(gd);
         }
         treeControl.setHeaderVisible(true);
-        treeControl.setLinesVisible(true);
+        //treeControl.setLinesVisible(true);
         treeControl.addListener(SWT.PaintItem, new PaintListener());
         this.boldFont = UIUtils.makeBoldFont(treeControl.getFont());
 
