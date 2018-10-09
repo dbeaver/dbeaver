@@ -389,6 +389,11 @@ public class BasicSQLDialect implements SQLDialect {
     }
 
     @Override
+    public boolean supportsOrderByIndex() {
+        return true;
+    }
+
+    @Override
     public boolean supportsCommentQuery() {
         return false;
     }

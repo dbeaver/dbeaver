@@ -222,6 +222,8 @@ public interface SQLDialect {
 
     boolean supportsTableDropCascade();
 
+    boolean supportsOrderByIndex();
+
     /**
      * Check whether dialect support plain comment queries (queries which contains only comments)
      */
