@@ -15,9 +15,16 @@
         <tycho-versions-version>0.26.0</tycho-versions-version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.build.timestamp.format>yyyyMMddHHmm</maven.build.timestamp.format>
-        <eclipse-p2-repo.url>http://download.eclipse.org/releases/oxygen/</eclipse-p2-repo.url>
-        <local-p2-repo.url>https://dbeaver.io/eclipse-repo</local-p2-repo.url>
+
+        <!-- SimRel 2018-09 -->
+        <eclipse-p2-repo.url>http://download.eclipse.org/releases/2018-09/</eclipse-p2-repo.url>
+        <!-- Orbit. From Photon because we need com.ibm.icu.base -->
+        <orbit-p2-repo.url>http://download.eclipse.org/tools/orbit/downloads/drops/R20180330011457/repository</orbit-p2-repo.url>
+        <!-- Nebula -->
         <nebula-p2-repo.url>http://download.eclipse.org/nebula/releases/latest</nebula-p2-repo.url>
+        <!-- DBeaver Maven dependencies -->
+        <local-p2-repo.url>https://dbeaver.io/eclipse-repo</local-p2-repo.url>
+
         <key.storage.path>/etc/</key.storage.path>
         <tsa/>
     </properties>
@@ -40,6 +47,11 @@
         <repository>
             <id>eclipse-p2-repo</id>
             <url>${eclipse-p2-repo.url}</url>
+            <layout>p2</layout>
+        </repository>
+        <repository>
+            <id>eclipse-orbit-repo</id>
+            <url>${orbit-p2-repo.url}</url>
             <layout>p2</layout>
         </repository>
         <repository>

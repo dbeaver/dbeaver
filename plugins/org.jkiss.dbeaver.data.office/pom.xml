@@ -13,14 +13,4 @@
     <version>1.1.32-SNAPSHOT</version>
     <packaging>eclipse-plugin</packaging>
 
-<!--
-    <repositories>
-        <repository>
-            <id>eclipse-orbit-repo</id>
-            <url>http://download.eclipse.org/tools/orbit/R-builds/R20170307180635/repository</url>
-            <layout>p2</layout>
-        </repository>
-    </repositories>
--->
-
 </project>
