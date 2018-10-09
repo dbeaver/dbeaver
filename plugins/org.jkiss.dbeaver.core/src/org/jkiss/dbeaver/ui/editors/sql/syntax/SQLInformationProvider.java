@@ -87,6 +87,9 @@ public class SQLInformationProvider implements IInformationProvider, IInformatio
     {
 
         IWorkbenchWindow window = editor.getSite().getWorkbenchWindow();
+        if (window == null) {
+            return;
+        }
         IWorkbenchPage page = window.getActivePage();
         if (page != null) {
 
