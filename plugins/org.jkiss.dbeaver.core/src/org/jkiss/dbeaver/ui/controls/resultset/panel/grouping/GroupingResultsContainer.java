@@ -27,6 +27,8 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.view.EmptyPresentation;
@@ -208,7 +210,8 @@ public class GroupingResultsContainer implements IResultSetContainer {
         }
         boolean isDefaultGrouping = groupFunctions.size() == 1 && groupFunctions.get(0).equals(DEFAULT_FUNCTION);
 
-        boolean isShowDuplicatesOnly = dataContainer.getDataSource().getContainer().getPreferenceStore().getBoolean(DBeaverPreferences.RS_GROUPING_SHOW_DUPLICATES_ONLY);
+        DBPDataSource dataSource = dataContainer.getDataSource();
+        boolean isShowDuplicatesOnly = dataSource.getContainer().getPreferenceStore().getBoolean(DBeaverPreferences.RS_GROUPING_SHOW_DUPLICATES_ONLY);
         if (isDefaultGrouping && isShowDuplicatesOnly) {
             sql.append("\nHAVING ").append(DEFAULT_FUNCTION).append(" > 1");
         }
@@ -216,11 +219,16 @@ public class GroupingResultsContainer implements IResultSetContainer {
         dataContainer.setGroupingQuery(sql.toString());
         DBDDataFilter dataFilter = new DBDDataFilter();
 
-        String defaultSorting = dataContainer.getDataSource().getContainer().getPreferenceStore().getString(DBeaverPreferences.RS_GROUPING_DEFAULT_SORTING);
+        String defaultSorting = dataSource.getContainer().getPreferenceStore().getString(DBeaverPreferences.RS_GROUPING_DEFAULT_SORTING);
         if (!CommonUtils.isEmpty(defaultSorting) && isDefaultGrouping) {
-            // By default sort by count in desc order
-            int countPosition = groupAttributes.size() + 1;
-            dataFilter.setOrder(String.valueOf(countPosition) + " " + defaultSorting);
+            SQLDialect dialecy = SQLUtils.getDialectFromDataSource(dataSource);
+            if (dialecy.supportsOrderByIndex()) {
+                // By default sort by count in desc order
+                int countPosition = groupAttributes.size() + 1;
+                dataFilter.setOrder(String.valueOf(countPosition) + " " + defaultSorting);
+            } else {
+                dataFilter.setOrder(groupFunctions.get(groupFunctions.size() - 1));
+            }
         }
         groupingViewer.setDataFilter(dataFilter, true);
         //groupingViewer.refresh();
