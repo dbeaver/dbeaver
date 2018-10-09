@@ -293,6 +293,7 @@ public class GroupingPanel implements IResultSetPanel {
                 return;
             }
             dataSource.getContainer().getPreferenceStore().setValue(DBeaverPreferences.RS_GROUPING_DEFAULT_SORTING, newValue);
+            dataSource.getContainer().getRegistry().flushConfig();
             try {
                 resultsContainer.rebuildGrouping();
             } catch (DBException e) {
