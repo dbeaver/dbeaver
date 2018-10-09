@@ -1019,6 +1019,7 @@
                     webURL="https://github.com/yandex/clickhouse-jdbc">
                     <file type="jar" path="maven:/ru.yandex.clickhouse:clickhouse-jdbc:RELEASE"/>
 
+                    <parameter name="supports-references" value="false"/>
                     <parameter name="supports-truncate" value="false"/>
                     <parameter name="omit-catalog" value="true"/>
                 </driver>
