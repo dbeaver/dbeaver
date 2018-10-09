@@ -192,7 +192,7 @@ public class ProjectExplorerView extends NavigatorViewBase implements DBPProject
                 return "";
             }
         }));
-        columnController.createColumns();
+        columnController.createColumns(false);
     }
 
     @Override
