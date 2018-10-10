@@ -69,6 +69,7 @@ import org.jkiss.dbeaver.ext.erd.directedit.StatusLineValidationMessageHandler;
 import org.jkiss.dbeaver.ext.erd.dnd.DataEditDropTargetListener;
 import org.jkiss.dbeaver.ext.erd.dnd.NodeDropTargetListener;
 import org.jkiss.dbeaver.ext.erd.editor.tools.ChangeZOrderAction;
+import org.jkiss.dbeaver.ext.erd.editor.tools.ResetPartColorAction;
 import org.jkiss.dbeaver.ext.erd.editor.tools.SetPartColorAction;
 import org.jkiss.dbeaver.ext.erd.export.ERDExportFormatHandler;
 import org.jkiss.dbeaver.ext.erd.export.ERDExportFormatRegistry;
@@ -692,6 +693,10 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         menu.add(new ChangeZOrderAction(this, selection, true));
         menu.add(new ChangeZOrderAction(this, selection, false));
         menu.add(new SetPartColorAction(this, selection));
+        ResetPartColorAction resetPartColorAction = new ResetPartColorAction(this, selection);
+        if (resetPartColorAction.isEnabled()) {
+            menu.add(resetPartColorAction);
+        }
 
 /*
         Set<IAction> actionSet = new HashSet<>();
