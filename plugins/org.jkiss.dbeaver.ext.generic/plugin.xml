@@ -979,7 +979,7 @@
                     defaultPort="5439"
                     description="AWS Athena JDBC driver"
                     webURL="https://docs.aws.amazon.com/athena/latest/ug/connect-with-jdbc.html">
-                    <file type="jar" path="https://s3.amazonaws.com/athena-downloads/drivers/JDBC/SimbaAthenaJDBC_2.0.2/AthenaJDBC42_2.0.2.jar"/>
+                    <file type="jar" path="https://s3.amazonaws.com/athena-downloads/drivers/JDBC/SimbaAthenaJDBC_2.0.5/AthenaJDBC42_2.0.5.jar"/>
                 </driver>
 
                 <!-- Virtuoso  -->
