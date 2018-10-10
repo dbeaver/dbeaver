@@ -81,7 +81,7 @@ public class OracleTimestampValueHandler extends JDBCDateTimeValueHandler {
                         TIMESTAMPTZ_READ_METHOD.setAccessible(true);
                     }
                 }
-                return TIMESTAMP_READ_METHOD.invoke(object, connection);
+                return TIMESTAMPTZ_READ_METHOD.invoke(object, connection);
             case OracleConstants.TIMESTAMPLTZ_CLASS_NAME:
                 synchronized (OracleTimestampValueHandler.class) {
                     if (TIMESTAMPLTZ_READ_METHOD == null) {
