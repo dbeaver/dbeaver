@@ -687,11 +687,11 @@ public abstract class JDBCDataSource
     }
 
     public void cancelStatementExecute(DBRProgressMonitor monitor, JDBCStatement statement) throws DBException {
-//        try {
-//            statement.cancel();
-//        }
-//        catch (SQLException e) {
-//            throw new DBException(e, this);
-//        }
+        try {
+            statement.cancel();
+        }
+        catch (SQLException e) {
+            throw new DBException(e, this);
+        }
     }
 }

@@ -122,8 +122,6 @@ public abstract class AbstractJob extends Job
         // Run canceling job
         if (!blockCanceled) {
             runBlockCanceler();
-
-
         }
     }
 
