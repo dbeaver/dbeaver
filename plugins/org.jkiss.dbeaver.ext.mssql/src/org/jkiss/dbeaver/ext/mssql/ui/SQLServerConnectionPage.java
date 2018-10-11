@@ -47,6 +47,7 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
     private Label passwordLabel;
     private Text passwordText;
     private Button windowsAuthenticationButton;
+    private Button adpAuthenticationButton;
     private Button showAllSchemas;
 
     private boolean activated;
@@ -114,15 +115,20 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
         }
 
         {
-            if (SQLServerUtils.isDriverSqlServer(getSite().getDriver()) && !isDriverAzure) {
-                windowsAuthenticationButton = UIUtils.createLabelCheckbox(settingsGroup, SQLServerMessages.dialog_connection_windows_authentication_button, false);
-                windowsAuthenticationButton.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        enableTexts();
-                    }
-                });
-                UIUtils.createEmptyLabel(settingsGroup, 2, 1);
+            if (SQLServerUtils.isDriverSqlServer(getSite().getDriver())) {
+                if (!isDriverAzure) {
+                    windowsAuthenticationButton = UIUtils.createLabelCheckbox(settingsGroup, SQLServerMessages.dialog_connection_windows_authentication_button, false);
+                    windowsAuthenticationButton.addSelectionListener(new SelectionAdapter() {
+                        @Override
+                        public void widgetSelected(SelectionEvent e) {
+                            enableTexts();
+                        }
+                    });
+                    UIUtils.createEmptyLabel(settingsGroup, 2, 1);
+                } else {
+                    adpAuthenticationButton = UIUtils.createLabelCheckbox(settingsGroup, SQLServerMessages.dialog_connection_adp_authentication_button, false);
+                    UIUtils.createEmptyLabel(settingsGroup, 2, 1);
+                }
             }
 
             userNameLabel = new Label(settingsGroup, SWT.NONE);
@@ -230,6 +236,9 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
             windowsAuthenticationButton.setSelection(SQLServerUtils.isWindowsAuth(connectionInfo));
             enableTexts();
         }
+        if (adpAuthenticationButton != null) {
+            adpAuthenticationButton.setSelection(SQLServerUtils.isActiveDirectoryAuth(connectionInfo));
+        }
         showAllSchemas.setSelection(CommonUtils.toBoolean(connectionInfo.getProviderProperty(SQLServerConstants.PROP_SHOW_ALL_SCHEMAS)));
 
         activated = true;
@@ -257,6 +266,13 @@ public class SQLServerConnectionPage extends ConnectionPageAbstract implements I
         if (windowsAuthenticationButton != null) {
             connectionInfo.getProperties().put(SQLServerConstants.PROP_CONNECTION_INTEGRATED_SECURITY,
                     String.valueOf(windowsAuthenticationButton.getSelection()));
+        }
+        if (adpAuthenticationButton != null) {
+            if (adpAuthenticationButton.getSelection()) {
+                connectionInfo.getProperties().put(SQLServerConstants.PROP_CONNECTION_AUTHENTICATION, SQLServerConstants.AUTH_ACTIVE_DIRECTORY_PASSWORD);
+            } else {
+                connectionInfo.getProperties().remove(SQLServerConstants.PROP_CONNECTION_AUTHENTICATION);
+            }
         }
         if (showAllSchemas != null) {
             connectionInfo.setProviderProperty(SQLServerConstants.PROP_SHOW_ALL_SCHEMAS,

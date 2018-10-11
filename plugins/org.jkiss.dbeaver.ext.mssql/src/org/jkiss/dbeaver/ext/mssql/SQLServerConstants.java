@@ -40,8 +40,12 @@ public class SQLServerConstants {
 
 
     public static final String PROP_CONNECTION_WINDOWS_AUTH = DBConstants.INTERNAL_PROP_PREFIX + "connection-windows-auth@";
+    public static final String PROP_CONNECTION_ADP_AUTH = DBConstants.INTERNAL_PROP_PREFIX + "connection-active-directory-auth@";
     public static final String PROP_SHOW_ALL_SCHEMAS = DBConstants.INTERNAL_PROP_PREFIX + "show-all-schemas@";
     public static final String PROP_CONNECTION_INTEGRATED_SECURITY = "integratedSecurity";
+    public static final String PROP_CONNECTION_AUTHENTICATION = "authentication";
+
+    public static final String AUTH_ACTIVE_DIRECTORY_PASSWORD = "ActiveDirectoryPassword";
 
     // https://support.microsoft.com/en-us/help/321185/how-to-determine-the-version--edition-and-update-level-of-sql-server-a
     public static final int SQL_SERVER_2016_VERSION_MAJOR = 13;
