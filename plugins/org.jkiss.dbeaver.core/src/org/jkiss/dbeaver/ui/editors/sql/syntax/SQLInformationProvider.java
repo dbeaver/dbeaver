@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.model.struct.DBSObjectReference;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditor;
 import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.util.SQLAnnotationHover;
 import org.jkiss.dbeaver.ui.perspective.AbstractPartListener;
@@ -73,7 +74,7 @@ public class SQLInformationProvider implements IInformationProvider, IInformatio
         this.editor = editor;
         implementation = new SQLAnnotationHover(editor);
 
-        if (this.editor != null) {
+        if (this.editor instanceof SQLEditor) {
 
             partListener = new EditorWatcher();
             IWorkbenchWindow window = this.editor.getSite().getWorkbenchWindow();
