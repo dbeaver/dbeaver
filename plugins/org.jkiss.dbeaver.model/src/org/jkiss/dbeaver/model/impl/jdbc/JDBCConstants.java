@@ -113,5 +113,4 @@ public class JDBCConstants
     public static final String REF_GENERATION_USER = "USER"; //$NON-NLS-1$
     public static final String REF_GENERATION_DERIVED = "DERIVED"; //$NON-NLS-1$
 
-    public static final String ERROR_API_NOT_SUPPORTED_17 = "JDBC 1.7 API is not supported by driver";
 }
