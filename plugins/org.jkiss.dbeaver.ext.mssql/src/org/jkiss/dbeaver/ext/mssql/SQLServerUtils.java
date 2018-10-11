@@ -34,6 +34,10 @@ public class SQLServerUtils {
         return driver.getSampleURL().contains(":sqlserver");
     }
 
+    public static boolean isDriverAzure(DBPDriver driver) {
+        return driver.getId().contains("azure");
+    }
+
     public static boolean isDriverJtds(DBPDriver driver) {
         return driver.getSampleURL().startsWith("jdbc:jtds");
     }

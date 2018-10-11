@@ -57,6 +57,8 @@ public class SQLServerDataSourceProvider extends JDBCDataSourceProvider {
         StringBuilder url = new StringBuilder();
         boolean isJtds = SQLServerUtils.isDriverJtds(driver);
         boolean isSqlServer = SQLServerUtils.isDriverSqlServer(driver);
+        boolean isDriverAzure = isSqlServer && SQLServerUtils.isDriverAzure(driver);
+
         if (isSqlServer) {
             // SQL Server
             if (isJtds) {
@@ -80,6 +82,10 @@ public class SQLServerDataSourceProvider extends JDBCDataSourceProvider {
                 url.append(";");
                 if (!CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
                     url.append("databaseName=").append(connectionInfo.getDatabaseName());
+                }
+
+                if (isDriverAzure) {
+                    url.append(";encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;");
                 }
             }
 /*

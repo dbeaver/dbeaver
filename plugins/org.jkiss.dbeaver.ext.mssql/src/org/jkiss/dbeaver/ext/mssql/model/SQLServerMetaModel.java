@@ -235,10 +235,6 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
 
     @Override
     public List<GenericSchema> loadSchemas(JDBCSession session, GenericDataSource dataSource, GenericCatalog catalog) throws DBException {
-        if (catalog == null) {
-            // Schemas MUST be in catalog
-            return null;
-        }
         boolean showAllSchemas = ((SQLServerDataSource) dataSource).isShowAllSchemas();
         final DBSObjectFilter schemaFilters = dataSource.getContainer().getObjectFilter(GenericSchema.class, catalog, false);
 
@@ -398,7 +394,7 @@ public class SQLServerMetaModel extends GenericMetaModel implements DBCQueryTran
     }
 
     private String getSystemSchemaFQN(GenericDataSource dataSource, GenericCatalog catalog) {
-        return dataSource.isServerVersionAtLeast(SQLServerConstants.SQL_SERVER_2005_VERSION_MAJOR ,0) ?
+        return catalog != null && dataSource.isServerVersionAtLeast(SQLServerConstants.SQL_SERVER_2005_VERSION_MAJOR ,0) ?
             DBUtils.getQuotedIdentifier(catalog) + "." + getSystemSchema() : getSystemSchema();
     }
 }
