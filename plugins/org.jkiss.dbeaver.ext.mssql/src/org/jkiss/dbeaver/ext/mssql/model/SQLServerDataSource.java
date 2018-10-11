@@ -36,7 +36,7 @@ public class SQLServerDataSource extends GenericDataSource {
     {
         this(monitor, container,
             new SQLServerMetaModel(
-                container.getDriver().getSampleURL().contains(":sqlserver")
+                SQLServerUtils.isDriverSqlServer(container.getDriver())
             ));
     }
 

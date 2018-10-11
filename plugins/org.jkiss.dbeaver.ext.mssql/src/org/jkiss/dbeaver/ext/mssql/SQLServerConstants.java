@@ -23,7 +23,9 @@ public class SQLServerConstants {
 
     public static final int DEFAULT_PORT = 1433;
     public static final String DEFAULT_HOST = "localhost";
+    public static final String DEFAULT_HOST_AZURE = ".database.windows.net";
     public static final String DEFAULT_DATABASE = "master";
+    public static final String DEFAULT_DATABASE_AZURE = "master";
 
     public static final String DRIVER_JTDS = "mssql_jdbc_jtds";
     public static final String DRIVER_MS = "mssql_jdbc_ms";
