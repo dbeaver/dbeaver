@@ -119,7 +119,7 @@ public abstract class JDBCDataSource
         }
 
         DBPConnectionConfiguration connectionInfo = container.getActualConnectionConfiguration();
-        Properties connectProps = getAllConnectionProperties(monitor, connectionInfo);
+        Properties connectProps = getAllConnectionProperties(monitor, purpose, connectionInfo);
 
         // Obtain connection
         try {
@@ -186,13 +186,13 @@ public abstract class JDBCDataSource
         }
     }
 
-    protected Properties getAllConnectionProperties(@NotNull DBRProgressMonitor monitor, DBPConnectionConfiguration connectionInfo) throws DBCException {
+    protected Properties getAllConnectionProperties(@NotNull DBRProgressMonitor monitor, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException {
         // Set properties
         Properties connectProps = new Properties();
 
         {
             // Use properties defined by datasource itself
-            Map<String,String> internalProps = getInternalConnectionProperties(monitor, getContainer().getDriver(), "Get connection properties", connectionInfo);
+            Map<String,String> internalProps = getInternalConnectionProperties(monitor, getContainer().getDriver(), purpose, connectionInfo);
             if (internalProps != null) {
                 connectProps.putAll(internalProps);
             }
