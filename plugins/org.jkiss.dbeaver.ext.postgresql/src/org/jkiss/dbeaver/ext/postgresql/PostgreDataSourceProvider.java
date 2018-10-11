@@ -27,6 +27,7 @@ import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
 import org.jkiss.dbeaver.model.connection.DBPNativeClientLocationManager;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCURL;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
@@ -62,12 +63,13 @@ public class PostgreDataSourceProvider extends JDBCDataSourceProvider implements
     @Override
     public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo) {
         PostgreServerType serverType = PostgreUtils.getServerType(driver);
-        StringBuilder url = new StringBuilder();
         if (serverType == PostgreServerType.REDSHIFT) {
-            url.append("jdbc:redshift://");
-        } else {
-            url.append("jdbc:postgresql://");
+            return JDBCURL.generateUrlByTemplate(driver, connectionInfo);
         }
+
+        StringBuilder url = new StringBuilder();
+        url.append("jdbc:postgresql://");
+
         url.append(connectionInfo.getHostName());
         if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
             url.append(":").append(connectionInfo.getHostPort());

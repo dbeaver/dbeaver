@@ -322,7 +322,7 @@
                         category="AWS"
                         class="com.amazon.redshift.jdbc42.Driver"
                         sampleURL="jdbc:redshift://{host}:{port}/{database}"
-                        useURL="false"
+                        useURL="true"
                         defaultPort="5439"
                         description="AWS Redshift JDBC driver"
                         webURL="http://docs.aws.amazon.com/redshift/latest/mgmt/configure-jdbc-connection.html"
