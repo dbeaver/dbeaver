@@ -18,6 +18,7 @@
 package org.jkiss.dbeaver.ext.mssql;
 
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 
 public class SQLServerConstants {
 
@@ -47,4 +48,8 @@ public class SQLServerConstants {
     public static final int SQL_SERVER_2008_VERSION_MAJOR = 10;
     public static final int SQL_SERVER_2005_VERSION_MAJOR = 9;
     public static final int SQL_SERVER_2000_VERSION_MAJOR = 8;
+
+    public static final String APPNAME_CLIENT_PROPERTY = "APPNAME";
+    public static final String APPLICATION_NAME_CLIENT_PROPERTY = JDBCConstants.APPLICATION_NAME_CLIENT_PROPERTY;
+
 }

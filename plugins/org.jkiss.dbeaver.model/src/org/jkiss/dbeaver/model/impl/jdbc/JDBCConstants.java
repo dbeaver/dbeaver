@@ -113,4 +113,5 @@ public class JDBCConstants
     public static final String REF_GENERATION_USER = "USER"; //$NON-NLS-1$
     public static final String REF_GENERATION_DERIVED = "DERIVED"; //$NON-NLS-1$
 
+    public static final String APPLICATION_NAME_CLIENT_PROPERTY = "ApplicationName";
 }

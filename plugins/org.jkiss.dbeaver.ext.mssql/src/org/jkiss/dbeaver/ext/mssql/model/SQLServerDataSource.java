@@ -17,17 +17,27 @@
 package org.jkiss.dbeaver.ext.mssql.model;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.generic.model.GenericDataSource;
 import org.jkiss.dbeaver.ext.mssql.SQLServerConstants;
 import org.jkiss.dbeaver.ext.mssql.SQLServerUtils;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPDataKind;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
+import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
+import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.StandardConstants;
 
+import java.sql.Connection;
 import java.sql.Types;
+import java.util.HashMap;
+import java.util.Map;
 
 public class SQLServerDataSource extends GenericDataSource {
 
@@ -44,6 +54,18 @@ public class SQLServerDataSource extends GenericDataSource {
         throws DBException
     {
         super(monitor, container, metaModel, new SQLServerDialect());
+    }
+
+    @Override
+    protected Map<String, String> getInternalConnectionProperties(DBRProgressMonitor monitor, DBPDriver driver, String purpose, DBPConnectionConfiguration connectionInfo) throws DBCException {
+        Map<String, String> connectionsProps = new HashMap<>();
+        if (!getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {
+            // App name
+            connectionsProps.put(
+                SQLServerUtils.isDriverJtds(driver) ? SQLServerConstants.APPNAME_CLIENT_PROPERTY : SQLServerConstants.APPLICATION_NAME_CLIENT_PROPERTY,
+                CommonUtils.truncateString(DBUtils.getClientApplicationName(getContainer(), purpose), 64));
+        }
+        return connectionsProps;
     }
 
     @Override
@@ -98,6 +120,11 @@ public class SQLServerDataSource extends GenericDataSource {
         } else {
             return super.getConnectionUserPassword(connectionInfo);
         }
+    }
+
+    @Override
+    protected boolean isPopulateClientAppName() {
+        return false;
     }
 
 }
