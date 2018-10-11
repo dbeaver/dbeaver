@@ -1080,12 +1080,12 @@ public class JDBCCallableStatementImpl extends JDBCPreparedStatementImpl impleme
 
     @Override
     public <T> T getObject(int parameterIndex, Class<T> type) throws SQLException {
-        return JDBCUtils.callMethod17(getOriginal(), "getObject", type, new Class[] {Integer.TYPE, Class.class}, parameterIndex, type);
+        return getOriginal().getObject(parameterIndex, type);
     }
 
     @Override
     public <T> T getObject(String parameterName, Class<T> type) throws SQLException {
-        return JDBCUtils.callMethod17(getOriginal(), "getObject", type, new Class[] {String.class, Class.class}, parameterName, type);
+        return getOriginal().getObject(parameterName, type);
     }
 
 }
