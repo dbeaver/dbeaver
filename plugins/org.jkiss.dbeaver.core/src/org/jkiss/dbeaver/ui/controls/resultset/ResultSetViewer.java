@@ -368,7 +368,7 @@ public class ResultSetViewer extends Viewer
                         }
                     }
 
-                    if (model.hasData() && container.isReadyToRun() && !model.isUpdateInProgress()) {
+                    if (container.isReadyToRun() && !model.isUpdateInProgress()) {
                         enableFilters = true;
                     }
                 }
