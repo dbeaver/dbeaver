@@ -37,5 +37,10 @@ public class PostgreServerGreenplum extends PostgreServerExtensionBase {
         return false;
     }
 
+    @Override
+    public boolean supportsSessionActivity() {
+        return true;
+    }
+
 }
 
