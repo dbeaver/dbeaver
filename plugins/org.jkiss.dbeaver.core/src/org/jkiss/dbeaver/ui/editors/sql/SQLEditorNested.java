@@ -41,6 +41,8 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorSite;
+import org.eclipse.ui.IWorkbenchCommandConstants;
+import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.part.MultiPageEditorSite;
 import org.eclipse.ui.texteditor.IDocumentProvider;
 import org.jkiss.dbeaver.DBException;
@@ -55,6 +57,7 @@ import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSObject;
+import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
 import org.jkiss.dbeaver.ui.editors.text.DatabaseMarkerAnnotationModel;
 import org.jkiss.dbeaver.runtime.resource.WorkspaceResources;
 import org.jkiss.dbeaver.ui.*;
@@ -365,6 +368,10 @@ public abstract class SQLEditorNested<T extends DBSObject>
         @Override
         protected void fillCustomActions(IContributionManager contributionManager) {
             contributeEditorCommands(contributionManager);
+            IWorkbenchPartSite site = getSite();
+            if (site != null) {
+                DatabaseEditorUtils.contributeStandardEditorActions(site, contributionManager);
+            }
         }
     }
 

@@ -501,7 +501,6 @@ public class PostgresRolePrivilegesEditor extends AbstractDatabaseObjectEditor<P
             IWorkbenchSite workbenchSite = getSite();
             if (workbenchSite != null) {
                 DatabaseEditorUtils.contributeStandardEditorActions(workbenchSite, contributionManager);
-                contributionManager.add(ActionUtils.makeCommandContribution(workbenchSite, IWorkbenchCommandConstants.FILE_REFRESH));
             }
         }
     }
