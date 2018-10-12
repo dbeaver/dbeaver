@@ -63,6 +63,12 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentS
         this.data = this.originalData = DBValueFormatting.getBinaryPresentation(dataSource).toBytes(data);
     }
 
+    private JDBCContentBytes(JDBCContentBytes copyFrom) {
+        super(copyFrom);
+        this.originalData = copyFrom.originalData;
+        this.data = copyFrom.data;
+    }
+
     @Override
     public InputStream getContentStream()
         throws IOException
@@ -208,7 +214,7 @@ public class JDBCContentBytes extends JDBCContentAbstract implements DBDContentS
     @Override
     public JDBCContentBytes cloneValue(DBRProgressMonitor monitor)
     {
-        return new JDBCContentBytes(dataSource, data);
+        return new JDBCContentBytes(this);
     }
 
     @Override

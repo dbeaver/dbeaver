@@ -50,6 +50,12 @@ public class JDBCContentChars extends JDBCContentAbstract implements DBDContentS
         this.data = this.originalData = data;
     }
 
+    public JDBCContentChars(JDBCContentChars copyFrom) {
+        super(copyFrom);
+        this.originalData = copyFrom.originalData;
+        this.data = copyFrom.data;
+    }
+
     @Override
     public InputStream getContentStream()
         throws IOException
