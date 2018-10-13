@@ -174,7 +174,7 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                     }
                 } catch (Exception e) {
                     success = false;
-                    String message = NLS.bind(MockDataMessages.tools_mockdata_wizard_log_removing_error, e.getMessage());
+                    String message = MockDataMessages.tools_mockdata_wizard_log_removing_error + "\n" + e.getMessage();
                     log.error(message, e);
                     logPage.appendLog(message + "\n\n", true);
                 }
