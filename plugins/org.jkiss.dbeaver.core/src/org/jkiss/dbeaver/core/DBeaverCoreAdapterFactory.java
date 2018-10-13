@@ -23,7 +23,7 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBWorkbench;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
-import org.jkiss.dbeaver.runtime.ide.core.WorkspaceResourceResolver;
+import org.jkiss.dbeaver.runtime.resource.WorkspaceResourceResolver;
 import org.jkiss.dbeaver.runtime.ui.DBPPlatformUI;
 
 //FIXME: AF: we can rework this after "org.jkiss.dbeaver.core" bundle will be split for parts

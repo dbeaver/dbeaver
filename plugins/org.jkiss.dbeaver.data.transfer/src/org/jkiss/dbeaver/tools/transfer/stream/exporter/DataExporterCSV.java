@@ -200,9 +200,9 @@ public class DataExporterCSV extends StreamExporterAbstract {
         }
         // check for needed quote
         final boolean hasQuotes = useQuotes && value.indexOf(quoteChar) != -1;
-        if (quoteAlways) {
+        if (quoteAlways || (useQuotes && value.isEmpty())) {
             quote = true;
-        } else if (!quote && !value.isEmpty()) {
+        } else if (!quote) {
             if (hasQuotes ||
                 value.contains(delimiter) ||
                 value.indexOf('\r') != -1 ||

@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<eclipseColorThemeMapping plugin="org.jkiss.dbeaver.core" created="2018-09-18 23:30:00">
+    <mappings>
+        <!-- SQL Editor -->
+        <mapping pluginKey="org.jkiss.dbeaver.sql.editor.color.datatype.foreground" themeKey="class"/><!-- Type -->
+        <mapping pluginKey="org.jkiss.dbeaver.sql.editor.color.keyword.foreground" themeKey="keyword"/><!-- Keyword -->
+        <mapping pluginKey="org.jkiss.dbeaver.sql.editor.color.string.foreground" themeKey="string"/><!-- String -->
+        <mapping pluginKey="org.jkiss.dbeaver.sql.editor.color.text.foreground" themeKey="foreground"/><!-- Default -->
+        <mapping pluginKey="org.jkiss.dbeaver.sql.editor.color.comment.foreground" themeKey="singleLineComment"/><!-- Single Line Comment -->
+        <mapping pluginKey="org.jkiss.dbeaver.sql.editor.color.number.foreground" themeKey="number"/><!-- Number -->
+        <mapping pluginKey="org.jkiss.dbeaver.sql.editor.color.comment.foreground" themeKey="multiLineComment"/><!-- Comment -->
+        <mapping pluginKey="org.jkiss.dbeaver.sql.editor.color.command.foreground" themeKey="method"/><!-- Command -->
+        <mapping pluginKey="org.jkiss.dbeaver.sql.editor.color.parameter.foreground" themeKey="parameterVariable"/><!-- Optional Argument -->
+        <mapping pluginKey="org.jkiss.dbeaver.sql.editor.color.delimiter.foreground" themeKey="annotation"/><!-- Special Character -->
+        <mapping pluginKey="org.jkiss.dbeaver.sql.editor.color.text.background" themeKey="background"/><!-- Background -->
+        <mapping pluginKey="org.jkiss.dbeaver.sql.editor.color.disabled.background" themeKey="background"/><!-- Disabled Background -->
+
+        <!-- Results viewer -->
+
+<!--
+        <mapping pluginKey="org.jkiss.dbeaver.sql.resultset.color.selection.foreground" themeKey="selectionForeground"/>
+        <mapping pluginKey="org.jkiss.dbeaver.sql.resultset.color.selection.background" themeKey="selectionBackground"/>
+        <mapping pluginKey="org.jkiss.dbeaver.sql.resultset.color.preview.background" themeKey="background"/>
+
+        <mapping pluginKey="org.jkiss.dbeaver.sql.resultset.color.cell.foreground" themeKey="foreground"/>
+        <mapping pluginKey="org.jkiss.dbeaver.sql.resultset.color.cell.odd.background" themeKey="selectionBackground"/>
+        <mapping pluginKey="org.jkiss.dbeaver.sql.resultset.color.cell.modified.background" themeKey="operator"/>
+        <mapping pluginKey="org.jkiss.dbeaver.sql.resultset.color.cell.error.background" themeKey="annotation"/>
+        <mapping pluginKey="org.jkiss.dbeaver.sql.resultset.color.cell.new.background" themeKey="localVariable"/>
+        <mapping pluginKey="org.jkiss.dbeaver.sql.resultset.color.cell.deleted.background" themeKey="commentTaskTag"/>
+        <mapping pluginKey="org.jkiss.dbeaver.sql.resultset.color.cell.readonly.background" themeKey="singleLineComment"/>
+        <mapping pluginKey="org.jkiss.dbeaver.sql.resultset.color.cell.matched.background" themeKey="occurrenceIndication"/>
+        <mapping pluginKey="org.jkiss.dbeaver.sql.resultset.color.header.background" themeKey="background"/>
+        <mapping pluginKey="org.jkiss.dbeaver.sql.resultset.color.header.foreground" themeKey="foreground"/>
+        <mapping pluginKey="org.jkiss.dbeaver.sql.resultset.color.header.selected.background" themeKey="background"/>
+        <mapping pluginKey="org.jkiss.dbeaver.sql.resultset.color.null.foreground" themeKey="staticMethod"/>
+-->
+        <mapping pluginKey="org.jkiss.dbeaver.sql.resultset.color.binary.foreground" themeKey="constant"/>
+        <mapping pluginKey="org.jkiss.dbeaver.sql.resultset.color.boolean.foreground" themeKey="constant"/>
+        <mapping pluginKey="org.jkiss.dbeaver.sql.resultset.color.datetime.foreground" themeKey="constant"/>
+        <mapping pluginKey="org.jkiss.dbeaver.sql.resultset.color.numeric.foreground" themeKey="number"/>
+        <mapping pluginKey="org.jkiss.dbeaver.sql.resultset.color.string.foreground" themeKey="string"/>
+
+<!--
+        <mapping pluginKey="org.jkiss.dbeaver.sql.resultset.color.lines.normal" themeKey="lineNumber"/>
+        <mapping pluginKey="org.jkiss.dbeaver.sql.resultset.color.lines.selected" themeKey="currentLine"/>
+-->
+
+    </mappings>
+</eclipseColorThemeMapping>

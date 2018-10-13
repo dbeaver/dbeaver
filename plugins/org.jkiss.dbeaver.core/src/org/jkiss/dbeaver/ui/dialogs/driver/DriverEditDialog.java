@@ -238,6 +238,7 @@ public class DriverEditDialog extends HelpEnabledDialog {
             driverURLText = UIUtils.createLabelText(propsGroup, CoreMessages.dialog_edit_driver_label_sample_url, CommonUtils.notEmpty(driver.getSampleURL()), SWT.BORDER | advStyle, gd);
             driverURLText.setToolTipText(CoreMessages.dialog_edit_driver_label_sample_url_tip);
             driverURLText.addModifyListener(e -> onChangeProperty());
+            driverURLText.setEnabled(driver == null || driver.isUseURL());
 
             gd = new GridData(GridData.FILL_HORIZONTAL);
             driverPortText = UIUtils.createLabelText(propsGroup, CoreMessages.dialog_edit_driver_label_default_port, driver.getDefaultPort() == null ? "" : driver.getDefaultPort(), SWT.BORDER | advStyle, gd);
@@ -249,6 +250,11 @@ public class DriverEditDialog extends HelpEnabledDialog {
 
             anonymousDriverCheck = UIUtils.createCheckbox(propsGroup, CoreMessages.dialog_edit_driver_anonymous_label, CoreMessages.dialog_edit_driver_anonymous_tip, driver.isAnonymousAccess(), 1);
             anonymousDriverCheck.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+
+            if (isReadOnly) {
+                embeddedDriverCheck.setEnabled(false);
+                anonymousDriverCheck.setEnabled(false);
+            }
         }
 
         {
@@ -308,13 +314,11 @@ public class DriverEditDialog extends HelpEnabledDialog {
             TabFolder tabFolder = new TabFolder(group, SWT.NONE);
             tabFolder.setLayoutData(new GridData(GridData.FILL_BOTH));
 
-            if (provider.isDriversManagable()) {
-                createLibrariesTab(tabFolder);
-            }
+            createLibrariesTab(tabFolder);
             createConnectionPropertiesTab(tabFolder);
             createParametersTab(tabFolder);
             // Client homes
-            if (driver.getClientManager() != null) {
+            if (driver.getNativeClientManager() != null) {
                 createClientHomesTab(tabFolder);
             }
 
@@ -629,13 +633,21 @@ public class DriverEditDialog extends HelpEnabledDialog {
 
     private void createClientHomesTab(TabFolder group) {
         clientHomesPanel = new ClientHomesPanel(group, SWT.NONE);
-        clientHomesPanel.loadHomes(driver);
         clientHomesPanel.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         TabItem paramsTab = new TabItem(group, SWT.NONE);
         paramsTab.setText(CoreMessages.dialog_edit_driver_tab_name_client_homes);
         paramsTab.setToolTipText(CoreMessages.dialog_edit_driver_tab_name_client_homes);
         paramsTab.setControl(clientHomesPanel);
+        group.addSelectionListener(new SelectionAdapter() {
+            @Override
+            public void widgetSelected(SelectionEvent e) {
+                if (e.item == paramsTab) {
+                    clientHomesPanel.loadHomes(driver);
+                    group.removeSelectionListener(this);
+                }
+            }
+        });
     }
 
     private void createLicenseTab(TabFolder group, String license) {
@@ -744,9 +756,6 @@ public class DriverEditDialog extends HelpEnabledDialog {
 
         parametersEditor.loadProperties(driverPropertySource);
         connectionPropertiesEditor.loadProperties(connectionPropertySource);
-        if (clientHomesPanel != null) {
-            clientHomesPanel.loadHomes(driver);
-        }
     }
 
     @Override
@@ -795,12 +804,12 @@ public class DriverEditDialog extends HelpEnabledDialog {
 //        driver.setAnonymousAccess(anonymousCheck.getSelection());
         driver.setModified(true);
 
-        driver.setDriverParameters(driverPropertySource.getProperties());
+        driver.setDriverParameters(driverPropertySource.getPropertiesWithDefaults());
         driver.setConnectionProperties(connectionPropertySource.getProperties());
 
         // Store client homes
         if (clientHomesPanel != null) {
-            driver.setClientHomeIds(clientHomesPanel.getHomeIds());
+            driver.setNativeClientLocations(clientHomesPanel.getLocalLocations());
         }
 
         DriverDescriptor oldDriver = provider.getDriverByName(driver.getCategory(), driver.getName());

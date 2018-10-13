@@ -18,12 +18,15 @@
 package org.jkiss.dbeaver.ext.mssql;
 
 import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
 
 public class SQLServerConstants {
 
     public static final int DEFAULT_PORT = 1433;
     public static final String DEFAULT_HOST = "localhost";
+    public static final String DEFAULT_HOST_AZURE = ".database.windows.net";
     public static final String DEFAULT_DATABASE = "master";
+    public static final String DEFAULT_DATABASE_AZURE = "master";
 
     public static final String DRIVER_JTDS = "mssql_jdbc_jtds";
     public static final String DRIVER_MS = "mssql_jdbc_ms";
@@ -37,12 +40,20 @@ public class SQLServerConstants {
 
 
     public static final String PROP_CONNECTION_WINDOWS_AUTH = DBConstants.INTERNAL_PROP_PREFIX + "connection-windows-auth@";
+    public static final String PROP_CONNECTION_ADP_AUTH = DBConstants.INTERNAL_PROP_PREFIX + "connection-active-directory-auth@";
     public static final String PROP_SHOW_ALL_SCHEMAS = DBConstants.INTERNAL_PROP_PREFIX + "show-all-schemas@";
     public static final String PROP_CONNECTION_INTEGRATED_SECURITY = "integratedSecurity";
+    public static final String PROP_CONNECTION_AUTHENTICATION = "authentication";
+
+    public static final String AUTH_ACTIVE_DIRECTORY_PASSWORD = "ActiveDirectoryPassword";
 
     // https://support.microsoft.com/en-us/help/321185/how-to-determine-the-version--edition-and-update-level-of-sql-server-a
     public static final int SQL_SERVER_2016_VERSION_MAJOR = 13;
     public static final int SQL_SERVER_2008_VERSION_MAJOR = 10;
     public static final int SQL_SERVER_2005_VERSION_MAJOR = 9;
     public static final int SQL_SERVER_2000_VERSION_MAJOR = 8;
+
+    public static final String APPNAME_CLIENT_PROPERTY = "APPNAME";
+    public static final String APPLICATION_NAME_CLIENT_PROPERTY = JDBCConstants.APPLICATION_NAME_CLIENT_PROPERTY;
+
 }

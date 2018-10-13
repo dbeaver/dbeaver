@@ -329,6 +329,7 @@
                         label="%driver.exasol.label"
                         class="com.exasol.jdbc.EXADriver"
                         sampleURL="jdbc:exa:{host}[:{port}][;schema={database}]"
+                        useURL="false"
                         defaultPort="8563"
                         description="%driver.exasol.description"
                         webURL="https://www.exasol.com/portal/display/DOWNLOAD/EXASOL+Download+Section">
@@ -344,24 +345,27 @@
                               value="yyyy-MM-dd-HH.mm.ss.ffffff"/>
                 </driver>
             </drivers>
-            <views>
-                <view
-                        id="org.jkiss.dbeaver.ext.exasol.dataSourceWizardView"
-                        targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
-                        label="%dialog.connection.header"
-                        class="org.jkiss.dbeaver.ext.exasol.views.ExasolConnectionPage"
-                        icon="icons/Exasol_icon.png">
-                </view>
-                <view
-                        id="org.jkiss.dbeaver.ext.exasol.dataSourceEditorView"
-                        targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog"
-                        label="%dialog.connection.header"
-                        class="org.jkiss.dbeaver.ext.exasol.views.ExasolConnectionPage">
-                </view>
-            </views>
-
         </datasource>
     </extension>
+
+    <extension point="org.jkiss.dbeaver.dataSourceView">
+        <view
+                id="org.jkiss.dbeaver.ext.exasol.dataSourceWizardView"
+                dataSource="exasol"
+                targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
+                label="%dialog.connection.header"
+                class="org.jkiss.dbeaver.ext.exasol.views.ExasolConnectionPage"
+                icon="icons/Exasol_icon.png">
+        </view>
+        <view
+                id="org.jkiss.dbeaver.ext.exasol.dataSourceEditorView"
+                dataSource="exasol"
+                targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog"
+                label="%dialog.connection.header"
+                class="org.jkiss.dbeaver.ext.exasol.views.ExasolConnectionPage">
+        </view>
+    </extension>
+
     <extension
             point="org.jkiss.dbeaver.databaseEditor">
         <editor
@@ -460,7 +464,8 @@
                 name="%editor.org.jkiss.dbeaver.ext.exasol.model.app.ExasolServerSessionEditor.name"
                 icon="icons/compile.png"
                 class="org.jkiss.dbeaver.ext.exasol.model.app.ExasolServerSessionEditor"
-                id="org.jkiss.dbeaver.ext.exasol.model.app.ExasolServerSessionEditor">
+                id="org.jkiss.dbeaver.ext.exasol.model.app.ExasolServerSessionEditor"
+                contributorClass="org.jkiss.dbeaver.ui.editors.EditorSearchActionsContributor">
         </editor>
         <editor
             name="%editor.org.jkiss.dbeaver.ext.exasol.editors.ExasolLockEditor.name"

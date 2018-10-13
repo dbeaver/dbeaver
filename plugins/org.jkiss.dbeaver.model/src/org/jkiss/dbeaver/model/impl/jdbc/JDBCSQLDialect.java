@@ -271,7 +271,7 @@ public class JDBCSQLDialect extends BasicSQLDialect {
     }
 
     @Override
-    public boolean validUnquotedCharacter(char c)
+    public boolean validIdentifierPart(char c)
     {
         // Do not use MetaData.getExtraNameCharacters because some drivers (SQL Server)
         return Character.isLetter(c) || Character.isDigit(c) || c == '_';// || validCharacters.indexOf(c) != -1;

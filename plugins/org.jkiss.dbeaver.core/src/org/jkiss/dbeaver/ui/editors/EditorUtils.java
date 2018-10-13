@@ -78,7 +78,7 @@ public class EditorUtils {
             return ((IFileEditorInput) editorInput).getFile();
         } else if (editorInput instanceof IPathEditorInput) {
             final IPath path = ((IPathEditorInput) editorInput).getPath();
-            return ContentUtils.convertPathToWorkspaceFile(path);
+            return path == null ? null : ContentUtils.convertPathToWorkspaceFile(path);
         } else if (editorInput instanceof IURIEditorInput) {
             // Most likely it is an external file
             return null;
@@ -87,7 +87,7 @@ public class EditorUtils {
         final IPathEditorInput pathInput = editorInput.getAdapter(IPathEditorInput.class);
         if (pathInput != null) {
             final IPath path = pathInput.getPath();
-            return ContentUtils.convertPathToWorkspaceFile(path);
+            return path == null ? null : ContentUtils.convertPathToWorkspaceFile(path);
         }
 
         try {
@@ -143,7 +143,7 @@ public class EditorUtils {
     {
         if (editorInput instanceof IDatabaseEditorInput) {
             final DBSObject object = ((IDatabaseEditorInput) editorInput).getDatabaseObject();
-            if (object != null) {
+            if (object != null && object.getDataSource() != null) {
                 return object.getDataSource().getContainer();
             }
             return null;
@@ -162,7 +162,7 @@ public class EditorUtils {
                     if (CommonUtils.isEmpty(dataSourceId) || CommonUtils.isEmpty(projectName)) {
                         return null;
                     }
-                    final IProject project = DBeaverCore.getInstance().getWorkspace().getRoot().getProject(projectName);
+                    final IProject project = DBeaverCore.getInstance().getWorkspace().getEclipseWorkspace().getRoot().getProject(projectName);
                     if (project == null || !project.exists()) {
                         log.error("Can't locate project '" + projectName + "' in workspace");
                         return null;
@@ -189,7 +189,7 @@ public class EditorUtils {
             if (dataSourceId != null) {
                 IProject project = file.getProject();
                 if (projectId != null) {
-                    final IProject fileProject = DBeaverCore.getInstance().getWorkspace().getRoot().getProject(projectId);
+                    final IProject fileProject = DBeaverCore.getInstance().getWorkspace().getEclipseWorkspace().getRoot().getProject(projectId);
                     if (fileProject != null && fileProject.exists()) {
                         project = fileProject;
                     }
@@ -293,9 +293,11 @@ public class EditorUtils {
 
                 @Override
                 public void focusGained(FocusEvent e) {
-                    if (activation == null) {
-                        activation = contextService.activateContext(contextId);
+                    if (activation != null) {
+                        contextService.deactivateContext(activation);
+                        activation = null;
                     }
+                    activation = contextService.activateContext(contextId);
                 }
 
                 @Override

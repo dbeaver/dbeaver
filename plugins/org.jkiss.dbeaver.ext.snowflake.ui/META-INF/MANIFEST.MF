@@ -2,9 +2,9 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Snowflake UI
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.snowflake.ui;singleton:=true
-Bundle-Version: 1.0.13.qualifier
-Bundle-Release-Date: 20180730
-Bundle-Activator: org.jkiss.dbeaver.ext.snowflake.Activator
+Bundle-Version: 1.0.15.qualifier
+Bundle-Release-Date: 20181022
+Bundle-Activator: org.jkiss.dbeaver.ext.snowflake.SnowflakeUIActivator
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.jface.text,

@@ -308,19 +308,40 @@
     </extension>
 
     <extension point="org.eclipse.ui.commands">
+        <command id="org.jkiss.dbeaver.erd.diagram.view" name="%command.org.jkiss.dbeaver.erd.diagram.view.name" description="%command.org.jkiss.dbeaver.erd.diagram.view.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
         <command id="org.jkiss.dbeaver.erd.diagram.create" name="%command.org.jkiss.dbeaver.erd.diagram.create.name" description="%command.org.jkiss.dbeaver.erd.diagram.create.description" categoryId="org.jkiss.dbeaver.core.navigator"/>
     </extension>
 
     <extension point="org.eclipse.ui.commandImages">
+        <image commandId="org.jkiss.dbeaver.erd.diagram.view" icon="icons/erd.png"/>
         <image commandId="org.jkiss.dbeaver.erd.diagram.create" icon="icons/erd.png"/>
     </extension>
 
     <extension point="org.eclipse.ui.handlers">
+        <handler commandId="org.jkiss.dbeaver.erd.diagram.view" class="org.jkiss.dbeaver.ext.erd.navigator.ViewDiagramHandler">
+            <enabledWhen>
+                <with variable="selection">
+                    <count value="1"/>
+                    <iterate operator="and">
+                        <or>
+                            <adapt type="org.jkiss.dbeaver.model.struct.rdb.DBSSchema"/>
+                            <adapt type="org.jkiss.dbeaver.model.struct.DBSEntity"/>
+                        </or>
+                    </iterate>
+                </with>
+            </enabledWhen>
+        </handler>
         <handler commandId="org.jkiss.dbeaver.erd.diagram.create" class="org.jkiss.dbeaver.ext.erd.navigator.CreateDiagramHandler"/>
     </extension>
 
     <extension point="org.eclipse.ui.menus">
         <!-- All Context menus -->
+        <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?before=export_import">
+            <command commandId="org.jkiss.dbeaver.erd.diagram.view" label="%command.org.jkiss.dbeaver.erd.diagram.view.name">
+                <visibleWhen checkEnabled="true"/>
+            </command>
+        </menuContribution>
+
         <menuContribution allPopups="false" locationURI="popup:org.eclipse.ui.popup.any?after=create">
             <command commandId="org.jkiss.dbeaver.erd.diagram.create" label="%menu.create.new.diagram">
                 <visibleWhen>

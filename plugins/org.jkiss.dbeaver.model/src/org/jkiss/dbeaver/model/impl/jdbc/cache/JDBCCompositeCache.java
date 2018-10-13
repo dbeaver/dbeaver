@@ -100,24 +100,24 @@ public abstract class JDBCCompositeCache<
 
     @NotNull
     @Override
-    public Collection<OBJECT> getAllObjects(@NotNull DBRProgressMonitor monitor, @Nullable OWNER owner)
+    public List<OBJECT> getAllObjects(@NotNull DBRProgressMonitor monitor, @Nullable OWNER owner)
         throws DBException
     {
         return getObjects(monitor, owner, null);
     }
 
-    public Collection<OBJECT> getObjects(DBRProgressMonitor monitor, OWNER owner, PARENT forParent)
+    public List<OBJECT> getObjects(DBRProgressMonitor monitor, OWNER owner, PARENT forParent)
         throws DBException
     {
         loadObjects(monitor, owner, forParent);
         return getCachedObjects(forParent);
     }
 
-    public <TYPE extends OBJECT> Collection<TYPE > getTypedObjects(DBRProgressMonitor monitor, OWNER owner, PARENT forParent, Class<TYPE> type)
+    public <TYPE extends OBJECT> List<TYPE > getTypedObjects(DBRProgressMonitor monitor, OWNER owner, PARENT forParent, Class<TYPE> type)
         throws DBException
     {
         List<TYPE> result = new ArrayList<>();
-        Collection<OBJECT> objects = getObjects(monitor, owner, forParent);
+        List<OBJECT> objects = getObjects(monitor, owner, forParent);
         if (objects != null) {
             for (OBJECT object : objects) {
                 if (type.isInstance(object)) {
@@ -128,7 +128,7 @@ public abstract class JDBCCompositeCache<
         return result;
     }
 
-    public Collection<OBJECT> getCachedObjects(PARENT forParent)
+    public List<OBJECT> getCachedObjects(PARENT forParent)
     {
         if (forParent == null) {
             return getCachedObjects();

@@ -30,7 +30,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.Text;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.ext.snowflake.Activator;
+import org.jkiss.dbeaver.ext.snowflake.SnowflakeUIActivator;
 import org.jkiss.dbeaver.ext.snowflake.SnowflakeConstants;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
@@ -63,7 +63,7 @@ public class SnowflakeConnectionPage extends ConnectionPageAbstract implements I
     private Text usernameText;
     private Text passwordText;
 
-    private static ImageDescriptor logoImage = Activator.getImageDescriptor("icons/snowflake_logo.png");
+    private static ImageDescriptor logoImage = SnowflakeUIActivator.getImageDescriptor("icons/snowflake_logo.png");
 
     @Override
     public void dispose()

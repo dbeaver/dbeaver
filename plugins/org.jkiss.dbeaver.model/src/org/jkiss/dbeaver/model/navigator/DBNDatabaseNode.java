@@ -723,11 +723,14 @@ public abstract class DBNDatabaseNode extends DBNNode implements DBSWrapper, DBP
     public DBXTreeItem getItemsMeta()
     {
         List<DBXTreeNode> metaChildren = getMeta().getChildren(this);
-        if (metaChildren != null && metaChildren.size() == 1 && metaChildren.get(0) instanceof DBXTreeItem) {
-            return (DBXTreeItem)metaChildren.get(0);
-        } else {
-            return null;
+        if (metaChildren != null) {
+            for (DBXTreeNode cn : metaChildren) {
+                if (cn instanceof DBXTreeItem) {
+                    return (DBXTreeItem) cn;
+                }
+            }
         }
+        return null;
     }
 
     protected abstract void reloadObject(DBRProgressMonitor monitor, DBSObject object);

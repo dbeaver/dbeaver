@@ -22,6 +22,7 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
@@ -70,6 +71,10 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
 
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
+        if (UIUtils.isInDialog()) {
+            // If some modal dialog is open then we don't do this
+            return null;
+        }
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
 
         if (selection instanceof IStructuredSelection) {
@@ -153,6 +158,13 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                 IEditorInput editorInput = editor.getEditorInput();
                 if (editorInput instanceof DatabaseEditorInput) {
                     settingsChanged = setInputAttributes((DatabaseEditorInput<?>) editorInput, defaultPageId, defaultFolderId, attributes);
+                }
+                if (editor instanceof EntityEditor && defaultPageId != null) {
+                    // Set active page
+                    IEditorPart pageEditor = ((EntityEditor) editor).getPageEditor(defaultPageId);
+                    if (pageEditor != null && pageEditor != ((EntityEditor) editor).getActiveEditor()) {
+                        ((EntityEditor) editor).setActiveEditor(pageEditor);
+                    }
                 }
                 if (editor instanceof ITabbedFolderContainer && defaultFolderId != null) {
                     // Activate default folder
@@ -249,7 +261,7 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
         });
     }
 
-    private static void openConnectionEditor(IWorkbenchWindow workbenchWindow, DataSourceDescriptor dataSourceContainer) {
+    public static void openConnectionEditor(IWorkbenchWindow workbenchWindow, DataSourceDescriptor dataSourceContainer) {
         EditConnectionDialog dialog = new EditConnectionDialog(
             workbenchWindow,
             new EditConnectionWizard(dataSourceContainer));
@@ -311,9 +323,9 @@ public class NavigatorHandlerObjectOpen extends NavigatorHandlerObjectBase imple
                 }
                 String label;
                 if (selection instanceof IStructuredSelection && ((IStructuredSelection) selection).size() > 1) {
-                    label = actionName + CoreMessages.actions_navigator__objects;
+                    label = NLS.bind(actionName, CoreMessages.actions_navigator__objects);
                 } else {
-                    label = actionName + " " + node.getNodeType(); //$NON-NLS-1$
+                    label = NLS.bind(actionName, node.getNodeType()); //$NON-NLS-1$
                 }
                 element.setText(label);
             }

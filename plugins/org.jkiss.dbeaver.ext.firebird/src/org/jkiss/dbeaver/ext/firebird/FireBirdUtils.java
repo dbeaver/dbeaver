@@ -159,7 +159,7 @@ public class FireBirdUtils {
             sql.append("OR ALTER ");
         }
         sql.append("VIEW ").append(view.getName()).append(" ");
-        Collection<GenericTableColumn> columns = view.getAttributes(monitor);
+        Collection<? extends GenericTableColumn> columns = view.getAttributes(monitor);
         if (columns != null) {
             sql.append("(");
             boolean first = true;

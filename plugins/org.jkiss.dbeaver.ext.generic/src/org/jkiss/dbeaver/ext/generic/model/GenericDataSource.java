@@ -59,8 +59,6 @@ public class GenericDataSource extends JDBCDataSource
     implements DBSObjectSelector, DBPTermProvider, IAdaptable, GenericStructContainer {
     private static final Log log = Log.getLog(GenericDataSource.class);
 
-    static boolean populateClientAppName = false;
-
     private final TableTypeCache tableTypeCache;
     private final JDBCBasicDataTypeCache<GenericStructContainer, ? extends JDBCDataType> dataTypeCache;
     private List<GenericCatalog> catalogs;
@@ -125,35 +123,57 @@ public class GenericDataSource extends JDBCDataSource
     protected Connection openConnection(@NotNull DBRProgressMonitor monitor, JDBCRemoteInstance remoteInstance, @NotNull String purpose) throws DBCException {
         Connection jdbcConnection = super.openConnection(monitor, remoteInstance, purpose);
 
-        if (populateClientAppName && !getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {
-            // Provide client info
-            // "ApplicationName" property seems to be pretty standard
-            try {
-                final ResultSet ciList = jdbcConnection.getMetaData().getClientInfoProperties();
-                if (ciList != null) {
-                    try {
-                        while (ciList.next()) {
-                            final String name = JDBCUtils.safeGetString(ciList, "NAME");
-                            final int maxLength = JDBCUtils.safeGetInt(ciList, "MAX_LEN");
-                            if ("ApplicationName".equals(name)) {
-                                String appName = DBUtils.getClientApplicationName(getContainer(), purpose);
-                                if (maxLength > 0) {
-                                    appName = CommonUtils.truncateString(appName, maxLength <= 0 ? 48 : maxLength);
-                                }
-                                jdbcConnection.setClientInfo("ApplicationName", appName);
-                                break;
-                            }
-                        }
-                    } finally {
-                        ciList.close();
-                    }
-                }
-            } catch (Throwable e) {
-                // just ignore
-            }
+        if (isPopulateClientAppName() && !getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {
+            populateClientAppName(purpose, jdbcConnection);
         }
 
         return jdbcConnection;
+    }
+
+    private void populateClientAppName(@NotNull String purpose, Connection jdbcConnection) {
+        // Provide client info
+        // "ApplicationName" property seems to be pretty standard
+        boolean wasPopulated = false;
+        try {
+            final ResultSet ciList = jdbcConnection.getMetaData().getClientInfoProperties();
+            if (ciList != null) {
+                try {
+                    while (ciList.next()) {
+                        final String name = JDBCUtils.safeGetString(ciList, "NAME");
+                        int maxLength = JDBCUtils.safeGetInt(ciList, "MAX_LEN");
+                        if (JDBCConstants.APPLICATION_NAME_CLIENT_PROPERTY.equals(name)) {
+                            String appName = DBUtils.getClientApplicationName(getContainer(), purpose);
+                            if (maxLength <= 0) {
+                                maxLength = 48;
+                            }
+                            jdbcConnection.setClientInfo(JDBCConstants.APPLICATION_NAME_CLIENT_PROPERTY, CommonUtils.truncateString(appName, maxLength));
+                            wasPopulated = true;
+                            break;
+                        }
+                    }
+                } finally {
+                    ciList.close();
+                }
+            }
+        } catch (Throwable e) {
+            log.debug("Error reading and setting client application name", e);
+        }
+        if (!wasPopulated) {
+            String appName = DBUtils.getClientApplicationName(getContainer(), purpose);
+            try {
+                jdbcConnection.setClientInfo(JDBCConstants.APPLICATION_NAME_CLIENT_PROPERTY, appName);
+            } catch (Throwable e) {
+                log.debug("Error setting client application name", e);
+            }
+        }
+    }
+
+    /**
+     * Disable by default. Some drivers fail to conenct when client app name is specified
+     * Enable for all derived classes.
+     */
+    protected boolean isPopulateClientAppName() {
+        return getClass() != GenericDataSource.class;
     }
 
     protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, boolean setActiveObject) throws DBCException {
@@ -448,7 +468,7 @@ public class GenericDataSource extends JDBCDataSource
                 } catch (UnsupportedOperationException | SQLFeatureNotSupportedException e) {
                     // Just skip it
                     log.debug(e);
-                } catch (SQLException e) {
+                } catch (Throwable e) {
                     // Error reading catalogs - just warn about it
                     log.warn("Can't read catalog list", e);
                 }
@@ -466,9 +486,13 @@ public class GenericDataSource extends JDBCDataSource
                 monitor.subTask("Extract schemas");
                 monitor.worked(1);
 
-                List<GenericSchema> tmpSchemas = metaModel.loadSchemas(session, this, null);
-                if (tmpSchemas != null) {
-                    this.schemas = tmpSchemas;
+                try {
+                    List<GenericSchema> tmpSchemas = metaModel.loadSchemas(session, this, null);
+                    if (tmpSchemas != null) {
+                        this.schemas = tmpSchemas;
+                    }
+                } catch (Throwable e) {
+                    log.warn("Can't read schema list", e);
                 }
 
                 if (CommonUtils.isEmpty(schemas)) {
@@ -477,12 +501,16 @@ public class GenericDataSource extends JDBCDataSource
             }
             determineSelectedEntity(session);
 
-        } catch (SQLException ex) {
+        } catch (Throwable ex) {
             throw new DBException("Error reading metadata", ex, this);
         }
     }
 
-    protected boolean isOmitCatalog() {
+    public boolean isOmitSingleSchema() {
+        return CommonUtils.getBoolean(getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_OMIT_SINGLE_SCHEMA), false);
+    }
+
+    public boolean isOmitCatalog() {
         return CommonUtils.getBoolean(getContainer().getDriver().getDriverParameter(GenericConstants.PARAM_OMIT_CATALOG), false);
     }
 
@@ -691,15 +719,17 @@ public class GenericDataSource extends JDBCDataSource
         // Get selected entity (catalog or schema)
         selectedEntityName = null;
         if (CommonUtils.isEmpty(queryGetActiveDB)) {
-            try {
-                selectedEntityName = session.getCatalog();
-                if (selectedEntityType == null && !CommonUtils.isEmpty(selectedEntityName)) {
-                    selectedEntityType = GenericConstants.ENTITY_TYPE_CATALOG;
-                    selectedEntityFromAPI = true;
+            if (!CommonUtils.isEmpty(catalogs)) {
+                try {
+                    selectedEntityName = session.getCatalog();
+                    if (selectedEntityType == null && !CommonUtils.isEmpty(selectedEntityName)) {
+                        selectedEntityType = GenericConstants.ENTITY_TYPE_CATALOG;
+                        selectedEntityFromAPI = true;
+                    }
+                } catch (SQLException e) {
+                    // Seems to be not supported
+                    log.debug(e);
                 }
-            } catch (SQLException e) {
-                // Seems to be not supported
-                log.debug(e);
             }
             if (CommonUtils.isEmpty(selectedEntityName)) {
                 // Try to use current schema

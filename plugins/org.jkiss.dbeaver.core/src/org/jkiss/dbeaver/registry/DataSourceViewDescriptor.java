@@ -28,15 +28,17 @@ public class DataSourceViewDescriptor extends AbstractDescriptor
 {
     private String id;
     private String targetID;
+    private String dataSourceId;
     private String label;
     private ObjectType viewType;
     private DBPImage icon;
 
-    public DataSourceViewDescriptor(DataSourceProviderDescriptor provider, IConfigurationElement config)
+    public DataSourceViewDescriptor(IConfigurationElement config)
     {
-        super(provider.getPluginId());
+        super(config.getContributor().getName());
         this.id = config.getAttribute(RegistryConstants.ATTR_ID);
         this.targetID = config.getAttribute(RegistryConstants.ATTR_TARGET_ID);
+        this.dataSourceId = config.getAttribute(RegistryConstants.ATTR_DATA_SOURCE);
         this.label = config.getAttribute(RegistryConstants.ATTR_LABEL);
         this.viewType = new ObjectType(config.getAttribute(RegistryConstants.ATTR_CLASS));
         this.icon = iconToImage(config.getAttribute(RegistryConstants.ATTR_ICON));
@@ -50,6 +52,10 @@ public class DataSourceViewDescriptor extends AbstractDescriptor
     public String getTargetID()
     {
         return targetID;
+    }
+
+    public String getDataSourceId() {
+        return dataSourceId;
     }
 
     public String getLabel()
@@ -70,5 +76,10 @@ public class DataSourceViewDescriptor extends AbstractDescriptor
         catch (Throwable ex) {
             throw new IllegalStateException("Can't create view '" + viewType.getImplName() + "'", ex);
         }
+    }
+
+    @Override
+    public String toString() {
+        return id;
     }
 }

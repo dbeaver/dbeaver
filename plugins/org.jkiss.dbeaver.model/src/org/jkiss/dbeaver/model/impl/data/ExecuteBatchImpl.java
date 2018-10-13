@@ -16,13 +16,12 @@
  */
 package org.jkiss.dbeaver.model.impl.data;
 
-import org.jkiss.dbeaver.Log;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
 import org.jkiss.dbeaver.model.data.DBDDataReceiver;
-import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.data.DBDValueHandler;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.*;
@@ -30,11 +29,12 @@ import org.jkiss.dbeaver.model.impl.edit.SQLDatabasePersistAction;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSAttributeBase;
 import org.jkiss.dbeaver.model.struct.DBSDataManipulator;
-import org.jkiss.dbeaver.model.struct.DBSTypedObject;
 import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Execute batch.
@@ -94,6 +94,7 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
     @NotNull
     private DBCStatistics processBatch(@NotNull DBCSession session, @Nullable List<DBEPersistAction> actions) throws DBCException
     {
+        //session.getProgressMonitor().subTask("Save batch (" + values.size() + ")");
         DBDValueHandler[] handlers = new DBDValueHandler[attributes.length];
         for (int i = 0; i < attributes.length; i++) {
             if (attributes[i] instanceof DBDAttributeBinding) {
@@ -122,6 +123,9 @@ public abstract class ExecuteBatchImpl implements DBSDataManipulator.ExecuteBatc
             int statementsInBatch = 0;
 
             for (Object[] rowValues : values) {
+                if (session.getProgressMonitor().isCanceled()) {
+                    break;
+                }
                 boolean reuse = reuseStatement;
                 if (reuse) {
                     for (int i = 0; i < rowValues.length; i++) {

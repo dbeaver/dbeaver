@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.mockdata;
 
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.jface.wizard.IWizardPage;
 import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IImportWizard;
@@ -28,7 +29,6 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mockdata.model.MockGeneratorDescriptor;
 import org.jkiss.dbeaver.ext.mockdata.model.MockValueGenerator;
 import org.jkiss.dbeaver.model.DBUtils;
-import org.jkiss.dbeaver.model.connection.DBPClientHome;
 import org.jkiss.dbeaver.model.data.DBDAttributeValue;
 import org.jkiss.dbeaver.model.edit.DBEPersistAction;
 import org.jkiss.dbeaver.model.exec.*;
@@ -47,7 +47,6 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
 {
     private static final Log log = Log.getLog(MockDataExecuteWizard.class);
 
-    private static final int BATCH_SIZE = 1000;
     public static final boolean JUST_GENERATE_SCRIPT = false;
 
     private static final String RS_EXPORT_WIZARD_DIALOG_SETTINGS = "MockData"; //$NON-NLS-1$
@@ -57,7 +56,7 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
 
     MockDataExecuteWizard(MockDataSettings mockDataSettings, Collection<DBSDataManipulator> dbObjects, String task) {
         super(dbObjects, task);
-        this.clientHomeRequired = false;
+        this.nativeClientHomeRequired = false;
         this.mockDataSettings = mockDataSettings;
     }
 
@@ -121,10 +120,6 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                 CommonUtils.truncateString(NLS.bind(MockDataMessages.tools_mockdata_wizard_message_process_completed, getObjectsName()), 255),
                 SWT.ICON_INFORMATION);
 */
-    }
-
-    public DBPClientHome findServerHome(String clientHomeId) {
-        return null;
     }
 
     @Override
@@ -228,8 +223,12 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                 monitor.done();
 
                 long rowsNumber = mockDataSettings.getRowsNumber();
-                long quotient = rowsNumber / BATCH_SIZE;
-                long modulo = rowsNumber % BATCH_SIZE;
+                int batchSize = mockDataSettings.getBatchSize();
+                if (batchSize <= 0) {
+                    batchSize = 1;
+                }
+                long quotient = rowsNumber / batchSize;
+                long modulo = rowsNumber % batchSize;
                 if (modulo > 0) {
                     quotient++;
                 }
@@ -265,11 +264,11 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                         }
 
                         monitor.subTask(NLS.bind(MockDataMessages.tools_mockdata_wizard_log_inserted_rows, String.valueOf(counter)));
-                        monitor.worked(BATCH_SIZE);
+                        //monitor.worked(batchSize);
                     }
 
                     try {
-                        for (int i = 0; (i < BATCH_SIZE && counter < rowsNumber); i++) {
+                        for (int i = 0; (i < batchSize && counter < rowsNumber); i++) {
                             if (monitor.isCanceled()) {
                                 break;
                             }
@@ -323,6 +322,7 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
                             if (counter++ < rowsNumber) {
                                 batch.add(DBDAttributeValue.getValues(attributeValues));
                             }
+                            monitor.worked(1);
                         }
                         if (batch != null) {
                             if (JUST_GENERATE_SCRIPT) {
@@ -377,5 +377,11 @@ public class MockDataExecuteWizard  extends AbstractToolWizard<DBSDataManipulato
         String message = NLS.bind(MockDataMessages.tools_mockdata_wizard_log_error_generating, e.getMessage());
         log.error(message, e);
         logPage.appendLog(message + "\n\n", true);
+    }
+
+    @Override
+    public IWizardPage getNextPage(IWizardPage page) {
+        // We have only one page
+        return null;
     }
 }

@@ -18,15 +18,11 @@
 package org.jkiss.dbeaver.ext.mysql.editors;
 
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.ControlContribution;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.action.Separator;
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.osgi.util.NLS;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.ISharedImages;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ext.mysql.MySQLMessages;
@@ -36,6 +32,7 @@ import org.jkiss.dbeaver.ext.mysql.model.session.MySQLSessionManager;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSession;
 import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -74,20 +71,20 @@ public class MySQLSessionEditor extends AbstractSessionEditor
                 contributionManager.add(killSessionAction);
                 contributionManager.add(terminateQueryAction);
                 contributionManager.add(new Separator());
-                contributionManager.add(new ControlContribution("MySQLSessionHideSleep") {
-                    @Override
-                    protected Control createControl(Composite parent) {
-                        Button hideSleepingCheck = UIUtils.createCheckbox(parent, "Hide sleeping", "Show only active connections", hideSleeping, 0);
-                        hideSleepingCheck.addSelectionListener(new SelectionAdapter() {
-                            @Override
-                            public void widgetSelected(SelectionEvent e) {
-                                hideSleeping = hideSleepingCheck.getSelection();
-                                refreshPart(MySQLSessionEditor.this, true);
-                            }
-                        });
-                        return hideSleepingCheck;
-                    }
-                });
+
+                contributionManager.add(ActionUtils.makeActionContribution(
+                    new Action("Hide sleeping", Action.AS_CHECK_BOX) {
+                        {
+                            setToolTipText("Show only active connections");
+                            setChecked(hideSleeping);
+                        }
+                        @Override
+                        public void run() {
+                            hideSleeping = isChecked();
+                            refreshPart(MySQLSessionEditor.this, true);
+                        }
+                    }, true));
+
                 contributionManager.add(new Separator());
             }
 
@@ -105,6 +102,18 @@ public class MySQLSessionEditor extends AbstractSessionEditor
                     return Collections.singletonMap(MySQLSessionManager.OPTION_HIDE_SLEEPING, true);
                 }
                 return super.getSessionOptions();
+            }
+
+            @Override
+            protected void loadSettings(IDialogSettings settings) {
+                hideSleeping = CommonUtils.toBoolean(settings.get("hideSleeping"));
+                super.loadSettings(settings);
+            }
+
+            @Override
+            protected void saveSettings(IDialogSettings settings) {
+                super.saveSettings(settings);
+                settings.put("hideSleeping", hideSleeping);
             }
         };
     }

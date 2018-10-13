@@ -188,7 +188,12 @@ public class NavigatorUtils {
                 return;
             }
 
-            manager.add(new GroupMarker(CoreCommands.GROUP_NAVIGATOR_ADDITIONS));
+            manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
+
+            manager.add(new GroupMarker(CoreCommands.GROUP_TOOLS));
+            manager.add(new GroupMarker(CoreCommands.GROUP_TOOLS_END));
+
+            manager.add(new Separator());
 
             final IStructuredSelection selection = (IStructuredSelection)viewer.getSelection();
             final DBNNode selectedNode = getSelectedNode(viewer);
@@ -210,10 +215,13 @@ public class NavigatorUtils {
                 }
 
                 manager.add(new Separator());
+            }
 
-                manager.add(new GroupMarker(IWorkbenchActionConstants.MB_ADDITIONS));
-                manager.add(new GroupMarker(IActionConstants.MB_ADDITIONS_END));
+            manager.add(new GroupMarker(CoreCommands.GROUP_NAVIGATOR_ADDITIONS));
+            manager.add(new GroupMarker(IActionConstants.MB_ADDITIONS_END));
 
+            if (selectedNode != null && !selectedNode.isLocked() && workbenchSite != null) {
+                manager.add(new Separator());
                 // Add properties button
                 if (PreferencesUtil.hasPropertiesContributors(selection.getFirstElement())) {
                     manager.add(ActionUtils.makeCommandContribution(workbenchSite, IWorkbenchCommandConstants.FILE_PROPERTIES));
@@ -224,9 +232,6 @@ public class NavigatorUtils {
                     manager.add(ActionUtils.makeCommandContribution(workbenchSite, IWorkbenchCommandConstants.FILE_REFRESH));
                 }
             }
-
-            manager.add(new GroupMarker(CoreCommands.GROUP_TOOLS));
-            manager.add(new GroupMarker(CoreCommands.GROUP_TOOLS_END));
 
             if (menuListener != null) {
                 menuListener.menuAboutToShow(manager);

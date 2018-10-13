@@ -40,8 +40,7 @@ public class SQLFormatterDescriptor extends AbstractContextDescriptor {
     private final AbstractDescriptor.ObjectType configurerImplClass;
 
 
-    public SQLFormatterDescriptor(IConfigurationElement config)
-    {
+    public SQLFormatterDescriptor(IConfigurationElement config) {
         super(config);
         this.id = config.getAttribute("id");
         this.label = config.getAttribute("label");
@@ -68,19 +67,17 @@ public class SQLFormatterDescriptor extends AbstractContextDescriptor {
 
     @NotNull
     public SQLFormatter createFormatter()
-        throws DBException
-    {
+        throws DBException {
         return formatterImplClass.createInstance(SQLFormatter.class);
     }
 
     @Nullable
-    public SQLFormatterConfigurer createConfigurer()
-        throws DBException
-    {
+    public SQLFormatterConfigurator createConfigurer()
+        throws DBException {
         if (configurerImplClass == null) {
             return null;
         }
-        return configurerImplClass.createInstance(SQLFormatterConfigurer.class);
+        return configurerImplClass.createInstance(SQLFormatterConfigurator.class);
     }
 
 }

@@ -27,6 +27,7 @@ import org.eclipse.swt.dnd.*;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.texteditor.FindReplaceAction;
+import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.jkiss.dbeaver.ui.ActionUtils;
 
 import java.util.ResourceBundle;
@@ -70,6 +71,19 @@ public class StyledTextUtils {
         menu.add(new StyledTextAction(IWorkbenchCommandConstants.EDIT_PASTE, text.getEditable(), text, ST.PASTE));
         menu.add(new StyledTextAction(IWorkbenchCommandConstants.EDIT_CUT, selectionRange.y > 0, text, ST.CUT));
         menu.add(new StyledTextAction(IWorkbenchCommandConstants.EDIT_SELECT_ALL, true, text, ST.SELECT_ALL));
+
+        menu.add(new StyledTextActionEx(ITextEditorActionDefinitionIds.WORD_WRAP, Action.AS_CHECK_BOX) {
+            @Override
+            public boolean isChecked() {
+                return text.getWordWrap();
+            }
+
+            @Override
+            public void run() {
+                text.setWordWrap(!text.getWordWrap());
+            }
+        });
+
         IFindReplaceTarget stFindReplaceTarget = new StyledTextFindReplaceTarget(text);
         menu.add(new FindReplaceAction(
             ResourceBundle.getBundle("org.eclipse.ui.texteditor.ConstructedEditorMessages"),
@@ -94,6 +108,14 @@ public class StyledTextUtils {
         public void run() {
             styledText.invokeAction(action);
         }
+    }
+
+    private static class StyledTextActionEx extends Action {
+        public StyledTextActionEx(String actionId, int style) {
+            super(ActionUtils.findCommandName(actionId), style);
+            this.setActionDefinitionId(actionId);
+        }
+
     }
 
 }

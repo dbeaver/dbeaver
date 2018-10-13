@@ -27,7 +27,7 @@ public class VerticaTable extends GenericTable
 {
     public static final String TABLE_TYPE_FLEX = "FLEXTABLE";
 
-    public VerticaTable(GenericStructContainer container, String tableName, String tableType, JDBCResultSet dbResult) {
+    public VerticaTable(VerticaSchema container, String tableName, String tableType, JDBCResultSet dbResult) {
         super(container, tableName, tableType, dbResult);
     }
 
@@ -37,7 +37,7 @@ public class VerticaTable extends GenericTable
     }
 
     public boolean isFlexTable() {
-        return TABLE_TYPE_FLEX.equals(getTableType());
+        return ((VerticaSchema)getContainer()).isFlexTableName(getName());
     }
 
 }

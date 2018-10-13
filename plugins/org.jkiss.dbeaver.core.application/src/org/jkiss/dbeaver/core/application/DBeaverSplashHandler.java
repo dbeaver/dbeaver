@@ -112,23 +112,19 @@ public class DBeaverSplashHandler extends BasicSplashHandler {
 
         final Color versionColor = new Color(getContent().getDisplay(), versionInfoRGB);
 
-        getContent().addPaintListener(new PaintListener() {
-
-            @Override
-            public void paintControl(PaintEvent e) {
-                String productVersion = "";
-                if (product != null) {
-                    productVersion = GeneralUtils.getProductVersion().toString();
-                }
-                //String osVersion = Platform.getOS() + " " + Platform.getOSArch();
-                if (boldFont != null) {
-                    e.gc.setFont(boldFont);
-                }
-                e.gc.setForeground(versionColor);
-                e.gc.drawText(productVersion, versionCoord.x, versionCoord.y, true);
-                //e.gc.drawText(osVersion, 115, 200, true);
-                e.gc.setFont(normalFont);
+        getContent().addPaintListener(e -> {
+            String productVersion = "";
+            if (product != null) {
+                productVersion = GeneralUtils.getPlainVersion();
             }
+            //String osVersion = Platform.getOS() + " " + Platform.getOSArch();
+            if (boldFont != null) {
+                e.gc.setFont(boldFont);
+            }
+            e.gc.setForeground(versionColor);
+            e.gc.drawText(productVersion, versionCoord.x, versionCoord.y, true);
+            //e.gc.drawText(osVersion, 115, 200, true);
+            e.gc.setFont(normalFont);
         });
     }
 

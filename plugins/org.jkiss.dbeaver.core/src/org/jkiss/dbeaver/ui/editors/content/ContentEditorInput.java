@@ -41,7 +41,6 @@ import org.jkiss.dbeaver.model.impl.BytesContentStorage;
 import org.jkiss.dbeaver.model.impl.ExternalContentStorage;
 import org.jkiss.dbeaver.model.impl.StringContentStorage;
 import org.jkiss.dbeaver.model.impl.TemporaryContentStorage;
-import org.jkiss.dbeaver.model.impl.data.StringContent;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.DefaultProgressMonitor;
 import org.jkiss.dbeaver.runtime.LocalFileStorage;
@@ -49,9 +48,11 @@ import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IRefreshablePart;
 import org.jkiss.dbeaver.ui.data.IAttributeController;
 import org.jkiss.dbeaver.ui.data.IValueController;
+import org.jkiss.dbeaver.ui.editors.StringEditorInput;
 import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.IOUtils;
 
 import java.io.*;
@@ -66,9 +67,11 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider,
     private IValueController valueController;
     private IEditorPart[] editorParts;
     private IEditorPart defaultPart;
-    private File contentFile;
+
     private boolean contentDetached = false;
+    private File contentFile;
     private String fileCharset;
+    private StringEditorInput.StringStorage stringStorage;
 
     public ContentEditorInput(
         IValueController valueController,
@@ -82,10 +85,6 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider,
         this.defaultPart = defaultPart;
         this.fileCharset = getDefaultEncoding();
         this.prepareContent(monitor);
-    }
-
-    public File getContentFile() {
-        return contentFile;
     }
 
     public IValueController getValueController()
@@ -153,30 +152,32 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider,
     public <T> T getAdapter(Class<T> adapter)
     {
         if (adapter == IStorage.class) {
-            return adapter.cast(new LocalFileStorage(contentFile, fileCharset));
+            if (stringStorage != null) {
+                return adapter.cast(stringStorage);
+            } else {
+                return adapter.cast(new LocalFileStorage(contentFile, fileCharset));
+            }
         }
         return null;
     }
 
-    public Object getValue() throws DBCException {
+    public Object getValue() {
         return valueController.getValue();
-    }
-
-    private DBDContent getContent() throws DBCException {
-        Object value = getValue();
-        if (value instanceof DBDContent) {
-            return (DBDContent) value;
-        } else if (value instanceof String) {
-            return new StringContent(valueController.getExecutionContext().getDataSource(), (String)value);
-        } else {
-            throw new DBCException("Unsupported content value type: " + value);
-        }
     }
 
     private void prepareContent(DBRProgressMonitor monitor)
         throws DBException
     {
-        DBDContent content = getContent();
+        Object value = getValue();
+        DBDContent content;
+        if (value instanceof DBDContent) {
+            content = (DBDContent) value;
+        } else {
+            // No need to do init
+            stringStorage = new StringEditorInput(getName(), CommonUtils.toString(value), isReadOnly(), fileCharset).getStorage();
+            return;
+        }
+
         DBDContentStorage storage = content.getContents(monitor);
 
         if (contentDetached) {
@@ -237,6 +238,7 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider,
             }
             contentDetached = true;
         }
+        stringStorage = null;
     }
 
     @Nullable
@@ -253,15 +255,19 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider,
     void saveToExternalFile(File file, IProgressMonitor monitor)
         throws CoreException
     {
-        try (InputStream is = new FileInputStream(contentFile)) {
+        try (InputStream is = openContents()) {
             ContentUtils.saveContentToFile(
                 is,
                 file,
                 RuntimeUtils.makeMonitor(monitor));
         }
-        catch (IOException e) {
+        catch (Exception e) {
             throw new CoreException(GeneralUtils.makeExceptionStatus(e));
         }
+    }
+
+    private InputStream openContents() throws Exception {
+        return stringStorage == null ? new FileInputStream(contentFile) : stringStorage.getContents();
     }
 
     void loadFromExternalFile(File extFile, IProgressMonitor monitor)
@@ -289,7 +295,9 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider,
     private void updateStringValueFromFile(File extFile) throws DBException {
         try (FileReader is = new FileReader(extFile)) {
             String str = IOUtils.readToString(is);
+            stringStorage.setString(str);
             valueController.updateValue(str, false);
+
         } catch (IOException e) {
             throw new DBException("Error reading content from file", e);
         }
@@ -339,12 +347,13 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider,
             DBDContent content = (DBDContent) value;
             DBDContentStorage storage = content.getContents(monitor);
             if (storage instanceof DBDContentStorageLocal) {
-                // Nothing to update - we user content's storage
+                // Nothing to update - we use content's storage
+                content.updateContents(monitor, storage);
                 contentDetached = true;
             } else if (storage instanceof DBDContentCached) {
                 // Create new storage and pass it to content
                 try (FileInputStream is = new FileInputStream(contentFile)) {
-                    if (storage instanceof StringContentStorage) {
+                    if (ContentUtils.isTextContent(content)) {
                         try (Reader reader = new InputStreamReader(is, fileCharset)) {
                             storage = StringContentStorage.createFromReader(reader);
                         }
@@ -361,9 +370,9 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider,
                 storage = new TemporaryContentStorage(DBeaverCore.getInstance(), contentFile, fileCharset);
                 contentDetached = content.updateContents(monitor, storage);
             }
-        } else {
+        } else if (stringStorage != null) {
             // Just read as string
-            updateStringValueFromFile(contentFile);
+            valueController.updateValue(stringStorage.getString(), false);
             contentDetached = true;
         }
     }
@@ -380,6 +389,9 @@ public class ContentEditorInput implements IPathEditorInput, DBPContextProvider,
 
     @Override
     public String getDefaultEncoding() {
+        if (valueController.getExecutionContext() == null) {
+            return GeneralUtils.getDefaultFileEncoding();
+        }
         return DBValueFormatting.getDefaultBinaryFileEncoding(valueController.getExecutionContext().getDataSource());
     }
 

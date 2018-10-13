@@ -69,6 +69,7 @@ import org.jkiss.dbeaver.ext.erd.directedit.StatusLineValidationMessageHandler;
 import org.jkiss.dbeaver.ext.erd.dnd.DataEditDropTargetListener;
 import org.jkiss.dbeaver.ext.erd.dnd.NodeDropTargetListener;
 import org.jkiss.dbeaver.ext.erd.editor.tools.ChangeZOrderAction;
+import org.jkiss.dbeaver.ext.erd.editor.tools.ResetPartColorAction;
 import org.jkiss.dbeaver.ext.erd.editor.tools.SetPartColorAction;
 import org.jkiss.dbeaver.ext.erd.export.ERDExportFormatHandler;
 import org.jkiss.dbeaver.ext.erd.export.ERDExportFormatRegistry;
@@ -140,6 +141,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
     private volatile String errorMessage;
     private ERDDecorator decorator;
+    private ZoomComboContributionItem zoomCombo;
 
     /**
      * No-arg constructor
@@ -374,14 +376,6 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     protected void createGraphicalViewer(Composite parent)
     {
         GraphicalViewer viewer = createViewer(parent);
-
-        viewer.getControl().addPaintListener(e -> {
-            String message = this.errorMessage;
-            if (!CommonUtils.isEmpty(message)) {
-                e.gc.setForeground(viewer.getControl().getForeground());
-                UIUtils.drawMessageOverControl(viewer.getControl(), e, message, 0);
-            }
-        });
 
         // hook the viewer into the EditDomain
         setGraphicalViewer(viewer);
@@ -699,6 +693,10 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         menu.add(new ChangeZOrderAction(this, selection, true));
         menu.add(new ChangeZOrderAction(this, selection, false));
         menu.add(new SetPartColorAction(this, selection));
+        ResetPartColorAction resetPartColorAction = new ResetPartColorAction(this, selection);
+        if (resetPartColorAction.isEnabled()) {
+            menu.add(resetPartColorAction);
+        }
 
 /*
         Set<IAction> actionSet = new HashSet<>();
@@ -759,8 +757,99 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
         return progressControl != null && progressControl.performSearch(searchType);
     }
 
+    public String getErrorMessage() {
+        return errorMessage;
+    }
+
     public void setErrorMessage(String errorMessage) {
         this.errorMessage = errorMessage;
+    }
+
+    protected void fillDefaultEditorContributions(IContributionManager toolBarManager) {
+        ZoomManager zoomManager = rootPart.getZoomManager();
+
+        String[] zoomStrings = new String[]{
+            ZoomManager.FIT_ALL,
+            ZoomManager.FIT_HEIGHT,
+            ZoomManager.FIT_WIDTH
+        };
+        // Init zoom combo with dummy part service
+        // to prevent zoom disable on part change - as it is standalone zoom control, not global one
+        zoomCombo = new ZoomComboContributionItem(
+            new IPartService() {
+                @Override
+                public void addPartListener(IPartListener listener)
+                {
+                }
+
+                @Override
+                public void addPartListener(IPartListener2 listener)
+                {
+                }
+
+                @Override
+                public IWorkbenchPart getActivePart()
+                {
+                    return ERDEditorPart.this;
+                }
+
+                @Override
+                public IWorkbenchPartReference getActivePartReference()
+                {
+                    return null;
+                }
+
+                @Override
+                public void removePartListener(IPartListener listener)
+                {
+                }
+
+                @Override
+                public void removePartListener(IPartListener2 listener)
+                {
+                }
+            },
+            zoomStrings);
+        toolBarManager.add(zoomCombo);
+
+        //toolBarManager.add(new UndoAction(ERDEditorPart.this));
+        //toolBarManager.add(new RedoAction(ERDEditorPart.this));
+        //toolBarManager.add(new PrintAction(ERDEditorPart.this));
+
+        toolBarManager.add(new ZoomInAction(zoomManager));
+        toolBarManager.add(new ZoomOutAction(zoomManager));
+        toolBarManager.add(new Separator());
+        //toolBarManager.add(createAttributeVisibilityMenu());
+        toolBarManager.add(new DiagramLayoutAction(ERDEditorPart.this));
+        toolBarManager.add(new DiagramToggleGridAction());
+        toolBarManager.add(new DiagramRefreshAction(ERDEditorPart.this));
+        toolBarManager.add(new Separator());
+        {
+            toolBarManager.add(ActionUtils.makeCommandContribution(
+                getSite(),
+                IWorkbenchCommandConstants.FILE_SAVE_AS,
+                ERDMessages.erd_editor_control_action_save_external_format,
+                UIIcon.PICTURE_SAVE));
+            toolBarManager.add(ActionUtils.makeCommandContribution(
+                getSite(),
+                IWorkbenchCommandConstants.FILE_PRINT,
+                ERDMessages.erd_editor_control_action_print_diagram,
+                UIIcon.PRINT));
+        }
+        {
+            Action configAction = new Action(ERDMessages.erd_editor_control_action_configuration) {
+                @Override
+                public void run()
+                {
+                    UIUtils.showPreferencesFor(
+                        getSite().getShell(),
+                        ERDEditorPart.this,
+                        ERDPreferencePage.PAGE_ID);
+                }
+            };
+            configAction.setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.CONFIGURATION));
+            toolBarManager.add(configAction);
+        }
     }
 
     protected abstract void loadDiagram(boolean refreshMetadata);
@@ -834,7 +923,6 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
     protected class ProgressControl extends ProgressPageControl {
 
         private Searcher searcher;
-        private ZoomComboContributionItem zoomCombo;
 
         private ProgressControl(Composite parent, int style)
         {
@@ -860,90 +948,7 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
 
         @Override
         protected void fillCustomActions(IContributionManager toolBarManager) {
-            ZoomManager zoomManager = rootPart.getZoomManager();
-
-            String[] zoomStrings = new String[]{
-                ZoomManager.FIT_ALL,
-                ZoomManager.FIT_HEIGHT,
-                ZoomManager.FIT_WIDTH
-            };
-            // Init zoom combo with dummy part service
-            // to prevent zoom disable on part change - as it is standalone zoom control, not global one
-            zoomCombo = new ZoomComboContributionItem(
-                new IPartService() {
-                    @Override
-                    public void addPartListener(IPartListener listener)
-                    {
-                    }
-
-                    @Override
-                    public void addPartListener(IPartListener2 listener)
-                    {
-                    }
-
-                    @Override
-                    public IWorkbenchPart getActivePart()
-                    {
-                        return ERDEditorPart.this;
-                    }
-
-                    @Override
-                    public IWorkbenchPartReference getActivePartReference()
-                    {
-                        return null;
-                    }
-
-                    @Override
-                    public void removePartListener(IPartListener listener)
-                    {
-                    }
-
-                    @Override
-                    public void removePartListener(IPartListener2 listener)
-                    {
-                    }
-                },
-                zoomStrings);
-            toolBarManager.add(zoomCombo);
-
-            //toolBarManager.add(new UndoAction(ERDEditorPart.this));
-            //toolBarManager.add(new RedoAction(ERDEditorPart.this));
-            //toolBarManager.add(new PrintAction(ERDEditorPart.this));
-
-            toolBarManager.add(new ZoomInAction(zoomManager));
-            toolBarManager.add(new ZoomOutAction(zoomManager));
-            toolBarManager.add(new Separator());
-            //toolBarManager.add(createAttributeVisibilityMenu());
-            toolBarManager.add(new DiagramLayoutAction(ERDEditorPart.this));
-            toolBarManager.add(new DiagramToggleGridAction());
-            toolBarManager.add(new DiagramRefreshAction(ERDEditorPart.this));
-            toolBarManager.add(new Separator());
-            {
-                toolBarManager.add(ActionUtils.makeCommandContribution(
-                        getSite(),
-                        IWorkbenchCommandConstants.FILE_SAVE_AS,
-                        ERDMessages.erd_editor_control_action_save_external_format,
-                        UIIcon.PICTURE_SAVE));
-                toolBarManager.add(ActionUtils.makeCommandContribution(
-                        getSite(),
-                        IWorkbenchCommandConstants.FILE_PRINT,
-                        ERDMessages.erd_editor_control_action_print_diagram,
-                        UIIcon.PRINT));
-            }
-            {
-                Action configAction = new Action(ERDMessages.erd_editor_control_action_configuration) {
-                    @Override
-                    public void run()
-                    {
-                        UIUtils.showPreferencesFor(
-                            getSite().getShell(),
-                            ERDEditorPart.this,
-                            ERDPreferencePage.PAGE_ID);
-                    }
-                };
-                configAction.setImageDescriptor(DBeaverIcons.getImageDescriptor(UIIcon.CONFIGURATION));
-                toolBarManager.add(configAction);
-            }
+            fillDefaultEditorContributions(toolBarManager);
         }
 
         @Override
@@ -995,7 +1000,9 @@ public abstract class ERDEditorPart extends GraphicalEditorWithFlyoutPalette
                 }
                 getCommandStack().flush();
                 getGraphicalViewer().setContents(entityDiagram);
-                zoomCombo.setZoomManager(rootPart.getZoomManager());
+                if (zoomCombo != null) {
+                    zoomCombo.setZoomManager(rootPart.getZoomManager());
+                }
                 //toolBarManager.getControl().setEnabled(true);
             }
         }

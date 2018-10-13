@@ -72,7 +72,9 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
             getDataSource().isServerVersionAtLeast(10, 0) &&
             JDBCUtils.safeGetBoolean(dbResult, "relispartition");
         this.acl = JDBCUtils.safeGetObject(dbResult, "relacl");
-        this.relOptions = JDBCUtils.safeGetArray(dbResult, "reloptions");
+        if (getDataSource().isServerVersionAtLeast(8, 2)) {
+            this.relOptions = JDBCUtils.safeGetArray(dbResult, "reloptions");
+        }
         //this.reloptions = PostgreUtils.parseObjectString()
     }
 
@@ -123,6 +125,9 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
 
     @Property(viewable = true, editable = false, updatable = false, order = 10)
     public PostgreRole getOwner(DBRProgressMonitor monitor) throws DBException {
+        if (!getDataSource().isServerVersionAtLeast(8, 1)) {
+            return null;
+        }
         return PostgreUtils.getObjectById(monitor, getDatabase().roleCache, getDatabase(), ownerId);
     }
 
@@ -215,8 +220,12 @@ public abstract class PostgreTableBase extends JDBCTable<PostgreDataSource, Post
         }
         tablePermissions = new ArrayList<>(tablePermissions);
         for (PostgreTableColumn column : CommonUtils.safeCollection(getAttributes(monitor))) {
+            if (column.getAcl() == null || column.isHidden()) {
+                continue;
+            }
             tablePermissions.addAll(column.getPermissions(monitor, true));
         }
+
         return tablePermissions;
     }
 

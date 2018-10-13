@@ -24,10 +24,7 @@ import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.navigator.DBNLocalFolder;
-import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
-import org.jkiss.dbeaver.registry.DataSourceProviderRegistry;
-import org.jkiss.dbeaver.registry.DataSourceViewDescriptor;
+import org.jkiss.dbeaver.registry.*;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.ui.IActionConstants;
 
@@ -101,7 +98,7 @@ public class NewConnectionWizard extends ConnectionWizard
 
         for (DataSourceProviderDescriptor provider : DataSourceProviderRegistry.getInstance().getEnabledDataSourceProviders()) {
             availableProvides.add(provider);
-            DataSourceViewDescriptor view = provider.getView(IActionConstants.NEW_CONNECTION_POINT);
+            DataSourceViewDescriptor view = DataSourceViewRegistry.getInstance().findView(provider, IActionConstants.NEW_CONNECTION_POINT);
             if (view != null) {
                 ConnectionPageSettings pageSettings = new ConnectionPageSettings(
                     NewConnectionWizard.this,
@@ -137,9 +134,9 @@ public class NewConnectionWizard extends ConnectionWizard
                 return pageSettings;
             }
         } else if (page instanceof ConnectionPageSettings) {
-            return pageDrivers.getSelectedDriver().isEmbedded() ? pageGeneral : pageNetwork;
+            return null;//pageDrivers.getSelectedDriver().isEmbedded() ? pageGeneral : pageNetwork;
         } else if (page instanceof ConnectionPageNetwork) {
-            return pageGeneral;
+            return null;//pageGeneral;
         } else {
             return null;
         }

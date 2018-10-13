@@ -25,6 +25,7 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.DBPEvaluationContext;
 import org.jkiss.dbeaver.model.DBPMessageType;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.*;
@@ -141,12 +142,12 @@ class ResultSetPersister {
         throws DBException
     {
         if (hasDeletes()) {
-            prepareDeleteStatements();
+            prepareDeleteStatements(monitor);
         }
         if (hasInserts()) {
-            prepareInsertStatements();
+            prepareInsertStatements(monitor);
         }
-        prepareUpdateStatements();
+        prepareUpdateStatements(monitor);
         return execute(monitor, generateScript, listener);
     }
 
@@ -207,7 +208,7 @@ class ResultSetPersister {
         }
     }
 
-    private void prepareDeleteStatements()
+    private void prepareDeleteStatements(DBRProgressMonitor monitor)
         throws DBException
     {
         // Make delete statements
@@ -228,7 +229,7 @@ class ResultSetPersister {
         }
     }
 
-    private void prepareInsertStatements()
+    private void prepareInsertStatements(DBRProgressMonitor monitor)
         throws DBException
     {
         // Make insert statements
@@ -251,7 +252,7 @@ class ResultSetPersister {
         }
     }
 
-    private void prepareUpdateStatements()
+    private void prepareUpdateStatements(DBRProgressMonitor monitor)
         throws DBException
     {
         // Make statements
@@ -276,6 +277,14 @@ class ResultSetPersister {
                     // Try to find old key oldValue
                     if (row.changes != null && row.changes.containsKey(metaColumn)) {
                         keyValue = row.changes.get(metaColumn);
+                        if (keyValue instanceof DBDContent) {
+                            if (keyValue instanceof DBDValueCloneable) {
+                                keyValue = ((DBDValueCloneable) keyValue).cloneValue(monitor);
+                                ((DBDContent) keyValue).resetContents();
+                            } else {
+                                throw new DBCException("Column '" + metaColumn.getFullyQualifiedName(DBPEvaluationContext.UI) + "' can't be used as a key. Value clone is not supported.");
+                            }
+                        }
                     }
                     statement.keyAttributes.add(new DBDAttributeValue(metaColumn, keyValue));
                 }
@@ -381,7 +390,7 @@ class ResultSetPersister {
     }
 
     @Nullable
-    private DBDRowIdentifier getDefaultRowIdentifier() {
+    public DBDRowIdentifier getDefaultRowIdentifier() {
         for (int i = 0; i < columns.length; i++) {
             DBDRowIdentifier rowIdentifier = columns[0].getRowIdentifier();
             if (rowIdentifier != null) {

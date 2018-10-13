@@ -31,6 +31,7 @@ import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.struct.DBSEntityType;
 import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -53,20 +54,30 @@ public class EntityFigure extends Figure {
 
         ERDEntity entity = part.getEntity();
         boolean useFQN = part.getDiagram().hasAttributeStyle(ERDViewStyle.ENTITY_FQN);
+        boolean showComments = part.getDiagram().hasAttributeStyle(ERDViewStyle.COMMENTS);
 
         Image tableImage = DBeaverIcons.getImage(entity.getObject().getEntityType().getIcon());
 
         keyFigure = new AttributeListFigure(entity, true);
         attributeFigure = new AttributeListFigure(entity, false);
 
+        String entityName = useFQN ?
+            DBUtils.getObjectFullName(entity.getObject(), DBPEvaluationContext.DDL) :
+            entity.getObject().getName();
+        if (!CommonUtils.isEmpty(entity.getAlias())) {
+            entityName += " " + entity.getAlias();
+        }
         nameLabel = new EditableLabel(
-            useFQN ?
-                DBUtils.getObjectFullName(entity.getObject(), DBPEvaluationContext.DDL) :
-                entity.getObject().getName());
+            entityName);
         if (tableImage != null) {
             nameLabel.setIcon(tableImage);
         }
         nameLabel.setBorder(new MarginBorder(3));
+
+        Label descLabel = null;
+        if (showComments && !CommonUtils.isEmpty(entity.getObject().getDescription())) {
+            descLabel = new Label(entity.getObject().getDescription());
+        }
 
 /*
         GridLayout layout = new GridLayout(1, false);
@@ -86,6 +97,9 @@ public class EntityFigure extends Figure {
         setOpaque(true);
 
         add(nameLabel);
+        if (descLabel != null) {
+            add(descLabel);
+        }
         add(keyFigure);
         add(attributeFigure);
 

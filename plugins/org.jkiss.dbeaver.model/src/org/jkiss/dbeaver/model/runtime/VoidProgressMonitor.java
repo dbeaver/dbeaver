@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.model.runtime;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 
+import java.util.List;
+
 /**
  * Progress monitor null implementation
  */
@@ -74,7 +76,7 @@ public class VoidProgressMonitor implements DBRProgressMonitor {
     }
 
     @Override
-    public DBRBlockingObject getActiveBlock()
+    public List<DBRBlockingObject> getActiveBlocks()
     {
         return null;
     }

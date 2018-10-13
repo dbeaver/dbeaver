@@ -17,29 +17,20 @@
  */
 package org.jkiss.dbeaver.tools.transfer.stream.exporter;
 
-import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDAttributeBinding;
-import org.jkiss.dbeaver.model.data.DBDContent;
-import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.exec.DBCResultSet;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.tools.transfer.stream.IStreamDataExporterSite;
-import org.jkiss.dbeaver.tools.transfer.stream.StreamTransferUtils;
 import org.jkiss.dbeaver.ui.TextUtils;
-import org.jkiss.dbeaver.utils.ContentUtils;
 import org.jkiss.utils.CommonUtils;
 
-import javax.imageio.ImageIO;
-import java.awt.*;
-import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.io.Reader;
 import java.util.List;
 import java.util.Map;
 
@@ -57,6 +48,7 @@ public class DataExporterTXT extends StreamExporterAbstract {
     private List<DBDAttributeBinding> columns;
     private String tableName;
     private int maxColumnSize = 100;
+    private int minColumnSize = 3;
     private boolean showNulls;
     private boolean delimLeading, delimTrailing;
 
@@ -80,7 +72,7 @@ public class DataExporterTXT extends StreamExporterAbstract {
     }
 
     @Override
-    public void exportHeader(DBCSession session) throws DBException, IOException {
+    public void exportHeader(DBCSession session) {
         columns = getSite().getAttributes();
         printHeader();
     }
@@ -101,10 +93,12 @@ public class DataExporterTXT extends StreamExporterAbstract {
             colWidths[i] = Math.max(getAttributeName(attr).length(), (int) attr.getMaxLength());
         }
         for (int i = 0; i < colWidths.length; i++) {
-            colWidths[i]++;
             if (colWidths[i] > maxColumnSize) {
                 colWidths[i] = maxColumnSize;
+            } else if (colWidths[i] < minColumnSize) {
+                colWidths[i] = minColumnSize;
             }
+
         }
 
         StringBuilder txt = new StringBuilder();
@@ -136,15 +130,15 @@ public class DataExporterTXT extends StreamExporterAbstract {
     }
 
     @Override
-    public void exportRow(DBCSession session, DBCResultSet resultSet, Object[] row) throws DBException, IOException {
+    public void exportRow(DBCSession session, DBCResultSet resultSet, Object[] row) {
         StringBuilder txt = new StringBuilder();
         if (delimLeading) txt.append("|");
         for (int k = 0; k < columns.size(); k++) {
             if (k > 0) txt.append("|");
             DBDAttributeBinding attr = columns.get(k);
             String displayString = getCellString(attr, row[k], DBDDisplayFormat.EDIT);
-            if (displayString.length() >= colWidths[k] - 1) {
-                displayString = CommonUtils.truncateString(displayString, colWidths[k] - 1);
+            if (displayString.length() > colWidths[k]) {
+                displayString = CommonUtils.truncateString(displayString, colWidths[k]);
             }
             txt.append(displayString);
             for (int j = colWidths[k] - displayString.length(); j > 0; j--) {
@@ -157,7 +151,7 @@ public class DataExporterTXT extends StreamExporterAbstract {
     }
 
     @Override
-    public void exportFooter(DBRProgressMonitor monitor) throws IOException {
+    public void exportFooter(DBRProgressMonitor monitor) {
     }
 
     private String getCellString(DBDAttributeBinding attr, Object value, DBDDisplayFormat displayFormat) {

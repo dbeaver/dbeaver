@@ -23,8 +23,8 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.ext.mysql.model.MySQLDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.connection.DBPClientHome;
-import org.jkiss.dbeaver.model.connection.DBPClientManager;
+import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
+import org.jkiss.dbeaver.model.connection.DBPNativeClientLocationManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
@@ -33,12 +33,15 @@ import org.jkiss.dbeaver.model.runtime.OSDescriptor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.WinRegistry;
 import org.jkiss.utils.CommonUtils;
+import org.jkiss.utils.IOUtils;
 import org.jkiss.utils.StandardConstants;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.InputStreamReader;
 import java.util.*;
 
-public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements DBPClientManager {
+public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements DBPNativeClientLocationManager {
 
     private static final Log log = Log.getLog(MySQLDataSourceProvider.class);
 
@@ -127,27 +130,27 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
     // Client manager
 
     @Override
-    public Collection<String> findClientHomeIds()
+    public List<DBPNativeClientLocation> findLocalClientLocations()
     {
         findLocalClients();
-        Set<String> homes = new LinkedHashSet<>();
-        for (MySQLServerHome home : localServers.values()) {
-            homes.add(home.getHomeId());
-        }
-        return homes;
+        return new ArrayList<>(localServers.values());
     }
 
     @Override
-    public String getDefaultClientHomeId()
+    public DBPNativeClientLocation getDefaultLocalClientLocation()
     {
         findLocalClients();
-        return localServers.isEmpty() ? null : localServers.values().iterator().next().getHomeId();
+        return localServers.isEmpty() ? null : localServers.values().iterator().next();
     }
 
     @Override
-    public DBPClientHome getClientHome(String homeId)
-    {
-        return getServerHome(homeId);
+    public String getProductName(DBPNativeClientLocation location) throws DBException {
+        return "MySQL/MariaDB";
+    }
+
+    @Override
+    public String getProductVersion(DBPNativeClientLocation location) throws DBException {
+        return getFullServerVersion(location.getPath());
     }
 
     public static MySQLServerHome getServerHome(String homeId)
@@ -194,8 +197,9 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
                                 for (String key : valuesMap.keySet()) {
                                     if (SERER_LOCATION_KEY.equalsIgnoreCase(key)) {
                                         String serverPath = CommonUtils.removeTrailingSlash(valuesMap.get(key));
-                                        localServers.put(serverPath, new MySQLServerHome(serverPath, homeKey));
-                                        break;
+                                        if (new File(serverPath, "bin").exists()) {
+                                            localServers.put(serverPath, new MySQLServerHome(serverPath, homeKey));
+                                        }
                                     }
                                 }
                             }
@@ -212,8 +216,9 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
                                 for (String key : valuesMap.keySet()) {
                                     if (INSTALLDIR_KEY.equalsIgnoreCase(key)) {
                                         String serverPath = CommonUtils.removeTrailingSlash(valuesMap.get(key));
-                                        localServers.put(serverPath, new MySQLServerHome(serverPath, homeKey));
-                                        break;
+                                        if (new File(serverPath, "bin").exists()) {
+                                            localServers.put(serverPath, new MySQLServerHome(serverPath, homeKey));
+                                        }
                                     }
                                 }
                             }
@@ -224,6 +229,45 @@ public class MySQLDataSourceProvider extends JDBCDataSourceProvider implements D
                 log.warn("Error reading Windows registry", e);
             }
         }
+    }
+
+    static String getFullServerVersion(File path)
+    {
+        File binPath = path;
+        File binSubfolder = new File(binPath, "bin");
+        if (binSubfolder.exists()) {
+            binPath = binSubfolder;
+        }
+
+        String cmd = new File(
+            binPath,
+            MySQLUtils.getMySQLConsoleBinaryName()).getAbsolutePath();
+
+        try {
+            Process p = Runtime.getRuntime().exec(new String[] {cmd, "-V"});
+            try {
+                BufferedReader input = new BufferedReader(new InputStreamReader(p.getInputStream()));
+                try {
+                    String line;
+                    while ((line = input.readLine()) != null) {
+                        int pos = line.indexOf("Distrib ");
+                        if (pos != -1) {
+                            pos += 8;
+                            int pos2 = line.indexOf(",", pos);
+                            return line.substring(pos, pos2);
+                        }
+                    }
+                } finally {
+                    IOUtils.close(input);
+                }
+            } finally {
+                p.destroy();
+            }
+        }
+        catch (Exception ex) {
+            log.warn("Error reading MySQL server version from " + cmd, ex);
+        }
+        return null;
     }
 
 }

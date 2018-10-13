@@ -19,7 +19,7 @@ package org.jkiss.dbeaver.ext.postgresql.edit;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
-import org.jkiss.dbeaver.ext.postgresql.YellowbrickUtils;
+import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
 import org.jkiss.dbeaver.ext.postgresql.model.*;
 import org.jkiss.dbeaver.model.DBConstants;
 import org.jkiss.dbeaver.model.DBPEvaluationContext;
@@ -83,14 +83,11 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
     @Override
     protected void addStructObjectCreateActions(DBRProgressMonitor monitor, List<DBEPersistAction> actions, StructCreateCommand command, Map<String, Object> options) throws DBException {
         PostgreTableBase tableBase = command.getObject();
-        if (tableBase.getDataSource().isYellowbrick()) {
-            // Extract main portion from server
-            StringBuilder ddl = new StringBuilder();
 
-            String tableDDL = YellowbrickUtils.extractTableDDL(monitor, tableBase);
-            if (!CommonUtils.isEmpty(tableDDL)) {
-                ddl.append(tableDDL);
-                actions.add( 0, new SQLDatabasePersistAction(ModelMessages.model_jdbc_create_new_table, ddl.toString()) );
+        if (tableBase.isPersisted()) {
+            String tableDDL = tableBase.getDataSource().getServerType().readTableDDL(monitor, tableBase);
+            if (tableDDL != null) {
+                actions.add(0, new SQLDatabasePersistAction(ModelMessages.model_jdbc_create_new_table, tableDDL));
                 return;
             }
         }
@@ -150,8 +147,10 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
             PostgreTableRegular table = (PostgreTableRegular) tableBase;
             try {
                 if (!alter) {
-                    ddl.append("\nWITH (\n\tOIDS=").append(table.isHasOids() ? "TRUE" : "FALSE");
-                    ddl.append("\n)");
+                    if (table.getDataSource().getServerType().supportsOids() && table.isHasOids()) {
+                        ddl.append("\nWITH (\n\tOIDS=").append(table.isHasOids() ? "TRUE" : "FALSE");
+                        ddl.append("\n)");
+                    }
                 }
                 boolean hasOtherSpecs = false;
                 PostgreTablespace tablespace = table.getTablespace(monitor);
@@ -176,11 +175,7 @@ public class PostgreTableManager extends PostgreTableManagerBase implements DBEO
                 }
                 String[] foreignOptions = table.getForeignOptions(monitor);
                 if (!ArrayUtils.isEmpty(foreignOptions)) {
-                    ddl.append("\nOPTIONS ");
-                    for (int i = 0; i < foreignOptions.length; i++) {
-                        if (i > 0) ddl.append(", ");
-                        ddl.append(foreignOptions[i]);
-                    }
+                    ddl.append("\nOPTIONS ").append(PostgreUtils.getOptionsString(foreignOptions));
                 }
             } catch (DBException e) {
                 log.error(e);

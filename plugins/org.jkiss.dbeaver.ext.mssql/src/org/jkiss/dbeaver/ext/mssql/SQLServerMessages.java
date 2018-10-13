@@ -26,6 +26,7 @@ public class SQLServerMessages extends NLS {
     public static String dialog_setting_connection_settings;
 
     public static String dialog_connection_windows_authentication_button;
+    public static String dialog_connection_adp_authentication_button;
     public static String dialog_connection_database_schema_label;
     public static String dialog_connection_host_label;
     public static String dialog_connection_password_label;

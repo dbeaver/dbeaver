@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.app.DBPDataSourceRegistry;
 import org.jkiss.dbeaver.model.data.*;
 import org.jkiss.dbeaver.model.exec.*;
+import org.jkiss.dbeaver.model.impl.data.DBDValueError;
 import org.jkiss.dbeaver.model.impl.data.DefaultValueHandler;
 import org.jkiss.dbeaver.model.impl.sql.BasicSQLDialect;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
@@ -35,6 +36,7 @@ import org.jkiss.dbeaver.model.sql.*;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.model.struct.rdb.*;
 import org.jkiss.dbeaver.runtime.jobs.InvalidateJob;
+import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.ArrayUtils;
@@ -42,6 +44,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
+import java.util.function.ToIntFunction;
 
 /**
  * DBUtils
@@ -49,6 +52,12 @@ import java.util.*;
 public final class DBUtils {
 
     private static final Log log = Log.getLog(DBUtils.class);
+
+    @NotNull
+    public static String getQuotedIdentifier(@NotNull DBPNamedObject object)
+    {
+        return object instanceof DBSObject ? getQuotedIdentifier(((DBSObject) object).getDataSource(), object.getName()) : object.getName();
+    }
 
     @NotNull
     public static String getQuotedIdentifier(@NotNull DBSObject object)
@@ -139,11 +148,11 @@ public final class DBUtils {
             sqlDialect.isQuoteReservedWords();
 
         if (!hasBadChars && !str.isEmpty()) {
-            hasBadChars = Character.isDigit(str.charAt(0));
+            hasBadChars = !sqlDialect.validIdentifierStart(str.charAt(0));
         }
-        if (caseSensitiveNames) {
+        if (!hasBadChars && caseSensitiveNames) {
             // Check for case of quoted idents. Do not check for unquoted case - we don't need to quote em anyway
-            if (!hasBadChars && sqlDialect.supportsQuotedMixedCase()) {
+            if (sqlDialect.supportsQuotedMixedCase()) {
                 // See how unquoted idents are stored
                 // If passed identifier case differs from unquoted then we need to escape it
                 if (sqlDialect.storesUnquotedCase() == DBPIdentifierCase.UPPER) {
@@ -156,14 +165,10 @@ public final class DBUtils {
 
         // Check for bad characters
         if (!hasBadChars && !str.isEmpty()) {
-            if (str.charAt(0) == '_') {
-                hasBadChars = true;
-            } else {
-                for (int i = 0; i < str.length(); i++) {
-                    if (!sqlDialect.validUnquotedCharacter(str.charAt(i))) {
-                        hasBadChars = true;
-                        break;
-                    }
+            for (int i = 0; i < str.length(); i++) {
+                if (!sqlDialect.validIdentifierPart(str.charAt(i))) {
+                    hasBadChars = true;
+                    break;
                 }
             }
         }
@@ -303,7 +308,7 @@ public final class DBUtils {
     {
         if (!CommonUtils.isEmpty(catalogName)) {
             Class<? extends DBSObject> childType = rootSC.getChildType(monitor);
-            if (DBSSchema.class.isAssignableFrom(childType)) {
+            if (DBSSchema.class.isAssignableFrom(childType) || DBSEntity.class.isAssignableFrom(childType)) {
                 // Datasource supports only schemas. Do not use catalog
                 catalogName = null;
             }
@@ -509,10 +514,12 @@ public final class DBUtils {
         int depth = 0;
         final DBSObject root = includeSelf ? object : object.getParentObject();
         for (DBSObject obj = root; obj != null; obj = obj.getParentObject()) {
+            obj = getPublicObjectContainer(obj);
             depth++;
         }
         DBSObject[] path = new DBSObject[depth];
         for (DBSObject obj = root; obj != null; obj = obj.getParentObject()) {
+            obj = getPublicObjectContainer(obj);
             path[depth-- - 1] = obj;
         }
         return path;
@@ -533,6 +540,11 @@ public final class DBUtils {
     public static boolean isNullValue(@Nullable Object value)
     {
         return (value == null || (value instanceof DBDValue && ((DBDValue) value).isNull()));
+    }
+
+    public static boolean isErrorValue(@Nullable Object value)
+    {
+        return value instanceof DBDValueError;
     }
 
     @Nullable
@@ -1178,6 +1190,18 @@ public final class DBUtils {
         }
     }
 
+    /**
+     * Returns DBPDataSourceContainer fro DBPDataSource or object itself otherwise
+     */
+    public static DBSObject getPublicObjectContainer(@NotNull DBSObject object)
+    {
+        if (object instanceof DBPDataSource) {
+            return ((DBPDataSource) object).getContainer();
+        } else {
+            return object;
+        }
+    }
+
     @Nullable
     public static DBPDataSourceContainer getContainer(@Nullable DBSObject object)
     {
@@ -1427,6 +1451,24 @@ public final class DBUtils {
         return new DBSObject[0];
     }
 
+    public static DBSObjectContainer getSchemaContainer(DBSObjectContainer root) {
+        DBSObjectContainer schemaContainer = root;
+        if (root instanceof DBSObjectSelector) {
+            DBSObject defaultObject = ((DBSObjectSelector) root).getDefaultObject();
+            if (defaultObject instanceof DBSCatalog) {
+                try {
+                    Class<? extends DBSObject> childType = ((DBSCatalog) defaultObject).getChildType(new VoidProgressMonitor());
+                    if (childType != null && DBSObjectContainer.class.isAssignableFrom(childType)) {
+                        schemaContainer = (DBSObjectContainer) defaultObject;
+                    }
+                } catch (DBException e) {
+                    log.debug(e);
+                }
+            }
+        }
+        return schemaContainer;
+    }
+
     public static boolean isHiddenObject(Object object) {
         return object instanceof DBPHiddenObject && ((DBPHiddenObject) object).isHidden();
     }
@@ -1475,9 +1517,12 @@ public final class DBUtils {
         return attr instanceof DBDAttributeBinding && ((DBDAttributeBinding) attr).isPseudoAttribute();
     }
 
-    public static <TYPE extends DBPNamedObject> Comparator<TYPE> nameComparator()
-    {
+    public static <TYPE extends DBPNamedObject> Comparator<TYPE> nameComparator() {
         return Comparator.comparing(DBPNamedObject::getName);
+    }
+
+    public static <TYPE extends DBPNamedObject> Comparator<DBPNamedObject> nameComparatorIgnoreCase() {
+        return (o1, o2) -> o1.getName().compareToIgnoreCase(o2.getName());
     }
 
     public static Comparator<? super DBSAttributeBase> orderComparator() {
@@ -1568,9 +1613,13 @@ public final class DBUtils {
                 } else {
                     monitor = new VoidProgressMonitor();
                 }
-                InvalidateJob.invalidateDataSource(monitor, dataSource, false);
-                if (i < tryCount - 1) {
-                    log.error("Operation failed. Retry count remains = " + (tryCount - i - 1), lastError);
+                if (!monitor.isCanceled()) {
+                    // Do not recover if connection was canceled
+                    InvalidateJob.invalidateDataSource(monitor, dataSource, false,
+                        () -> DBUserInterface.getInstance().openConnectionEditor(dataSource.getContainer()));
+                    if (i < tryCount - 1) {
+                        log.error("Operation failed. Retry count remains = " + (tryCount - i - 1), lastError);
+                    }
                 }
             } catch (InterruptedException e) {
                 log.error("Operation interrupted");
@@ -1610,7 +1659,7 @@ public final class DBUtils {
     }
 
     public static UNIQ_TYPE checkUnique(DBRProgressMonitor monitor, DBSEntity dbsEntity, DBSAttributeBase attribute) throws DBException {
-        for (DBSEntityConstraint constraint : dbsEntity.getConstraints(monitor)) {
+        for (DBSEntityConstraint constraint : CommonUtils.safeCollection(dbsEntity.getConstraints(monitor))) {
             DBSEntityConstraintType constraintType = constraint.getConstraintType();
             if (constraintType.isUnique()) {
                 DBSEntityAttributeRef constraintAttribute = getConstraintAttribute(monitor, ((DBSEntityReferrer) constraint), attribute.getName());
@@ -1628,7 +1677,7 @@ public final class DBUtils {
     }
 
     public static DBSEntityConstraint getConstraint(DBRProgressMonitor monitor, DBSEntity dbsEntity, DBSAttributeBase attribute) throws DBException {
-        for (DBSEntityConstraint constraint : dbsEntity.getConstraints(monitor)) {
+        for (DBSEntityConstraint constraint : CommonUtils.safeCollection(dbsEntity.getConstraints(monitor))) {
             DBSEntityAttributeRef constraintAttribute = getConstraintAttribute(monitor, ((DBSEntityReferrer) constraint), attribute.getName());
             if (constraintAttribute != null && constraintAttribute.getAttribute() == attribute) {
                 return constraint;

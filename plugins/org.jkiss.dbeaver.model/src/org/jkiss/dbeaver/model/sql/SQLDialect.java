@@ -202,12 +202,13 @@ public interface SQLDialect {
     @NotNull
     SQLStateType getSQLStateType();
 
+    boolean validIdentifierStart(char c);
     /**
      * Checks that specified character is a valid identifier part. Non-valid characters should be quoted in queries.
      * @param c character
      * @return true or false
      */
-    boolean validUnquotedCharacter(char c);
+    boolean validIdentifierPart(char c);
 
     boolean supportsUnquotedMixedCase();
 
@@ -220,6 +221,8 @@ public interface SQLDialect {
     boolean supportsAliasInUpdate();
 
     boolean supportsTableDropCascade();
+
+    boolean supportsOrderByIndex();
 
     /**
      * Check whether dialect support plain comment queries (queries which contains only comments)
@@ -311,7 +314,7 @@ public interface SQLDialect {
     boolean isTransactionModifyingQuery(String queryString);
 
     @Nullable
-    String getColumnTypeModifiers(@NotNull DBSTypedObject column, @NotNull String typeName, @NotNull DBPDataKind dataKind);
+    String getColumnTypeModifiers(DBPDataSource dataSource, @NotNull DBSTypedObject column, @NotNull String typeName, @NotNull DBPDataKind dataKind);
 
     /**
      * Formats stored procedure call. By default returns @sqlText.
@@ -319,5 +322,7 @@ public interface SQLDialect {
     String formatStoredProcedureCall(DBPDataSource dataSource, String sqlText);
 
     void generateStoredProcedureCall(StringBuilder sql, DBSProcedure proc, Collection<? extends DBSProcedureParameter> parameters);
+
+    boolean isDisableScriptEscapeProcessing();
 
 }

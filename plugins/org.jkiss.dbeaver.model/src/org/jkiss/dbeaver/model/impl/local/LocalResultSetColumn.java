@@ -32,7 +32,7 @@ import org.jkiss.dbeaver.model.struct.DBSTypedObject;
  */
 public class LocalResultSetColumn implements DBCAttributeMetaData
 {
-    private final DBCResultSet resultSet;
+    protected final DBCResultSet resultSet;
     private final int index;
     private final String label;
     private final DBPDataKind dataKind;
@@ -161,4 +161,8 @@ public class LocalResultSetColumn implements DBCAttributeMetaData
         return typedObject == null ? 0 : typedObject.getMaxLength();
     }
 
+    @Override
+    public String toString() {
+        return getName();
+    }
 }

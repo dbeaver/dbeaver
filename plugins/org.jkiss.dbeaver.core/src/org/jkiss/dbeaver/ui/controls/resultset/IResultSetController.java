@@ -179,7 +179,7 @@ public interface IResultSetController extends DBPContextProvider {
 
     IResultSetPanel[] getActivePanels();
 
-    void activatePanel(String id, boolean setActive, boolean showPanels);
+    boolean activatePanel(String id, boolean setActive, boolean showPanels);
 
     void updatePanelActions();
 

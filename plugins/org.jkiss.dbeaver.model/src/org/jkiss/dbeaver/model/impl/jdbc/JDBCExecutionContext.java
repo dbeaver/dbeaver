@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.impl.jdbc.exec.JDBCSavepointImpl;
 import org.jkiss.dbeaver.model.messages.ModelMessages;
 import org.jkiss.dbeaver.model.qm.QMUtils;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.struct.DBSInstance;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
 import org.jkiss.utils.CommonUtils;
 
@@ -58,7 +59,8 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
         this.instance = instance;
     }
 
-    public JDBCRemoteInstance getInstance() {
+    @Override
+    public JDBCRemoteInstance getOwnerInstance() {
         return instance;
     }
 
@@ -410,6 +412,11 @@ public class JDBCExecutionContext extends AbstractExecutionContext<JDBCDataSourc
                 QMUtils.getDefaultHandler().handleTransactionRollback(this, savepoint);
             }
         }
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return instance.getDataSource().getInfo().supportsTransactions();
     }
 
     public void reconnect(DBRProgressMonitor monitor) throws DBCException {

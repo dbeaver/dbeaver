@@ -34,6 +34,10 @@ public class SQLServerUtils {
         return driver.getSampleURL().contains(":sqlserver");
     }
 
+    public static boolean isDriverAzure(DBPDriver driver) {
+        return driver.getId().contains("azure");
+    }
+
     public static boolean isDriverJtds(DBPDriver driver) {
         return driver.getSampleURL().startsWith("jdbc:jtds");
     }
@@ -42,4 +46,10 @@ public class SQLServerUtils {
         return CommonUtils.toBoolean(connectionInfo.getProviderProperty(SQLServerConstants.PROP_CONNECTION_WINDOWS_AUTH)) ||
                 CommonUtils.toBoolean(connectionInfo.getProperties().get(SQLServerConstants.PROP_CONNECTION_INTEGRATED_SECURITY));
     }
+
+    public static boolean isActiveDirectoryAuth(DBPConnectionConfiguration connectionInfo) {
+        return SQLServerConstants.AUTH_ACTIVE_DIRECTORY_PASSWORD.equals(
+            connectionInfo.getProperty(SQLServerConstants.PROP_CONNECTION_AUTHENTICATION));
+    }
+
 }

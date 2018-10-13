@@ -45,6 +45,7 @@ public class DataSourcePropertyTester extends PropertyTester
     public static final String NAMESPACE = "org.jkiss.dbeaver.core.datasource";
     public static final String PROP_CONNECTED = "connected";
     public static final String PROP_TRANSACTIONAL = "transactional";
+    public static final String PROP_SUPPORTS_TRANSACTIONS = "supportsTransactions";
     public static final String PROP_TRANSACTION_ACTIVE = "transactionActive";
 
     @Override
@@ -68,7 +69,7 @@ public class DataSourcePropertyTester extends PropertyTester
                 }
                 boolean checkConnected = Boolean.TRUE.equals(expectedValue);
                 return checkConnected ? isConnected : !isConnected;
-            case PROP_TRANSACTIONAL:
+            case PROP_TRANSACTIONAL: {
                 if (context == null) {
                     return false;
                 }
@@ -82,6 +83,14 @@ public class DataSourcePropertyTester extends PropertyTester
                     log.debug("Error checking auto-commit state", e);
                     return false;
                 }
+            }
+            case PROP_SUPPORTS_TRANSACTIONS: {
+                if (context == null || !context.isConnected()) {
+                    return false;
+                }
+                DBCTransactionManager txnManager = DBUtils.getTransactionManager(context);
+                return txnManager != null && txnManager.isEnabled();
+            }
             case PROP_TRANSACTION_ACTIVE:
                 if (context != null && context.isConnected()) {
                     boolean active = QMUtils.isTransactionActive(context);

@@ -31,6 +31,7 @@ import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreCommands;
+import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.actions.AbstractDataSourceHandler;
@@ -84,7 +85,7 @@ public class ToolsContextMenuHandler extends AbstractDataSourceHandler
 */
         }
         if (part instanceof IEditorPart) {
-            menuManager.add(ActionUtils.makeCommandContribution(part.getSite(), CoreCommands.CMD_LINK_EDITOR, "Find in navigator", null));
+            menuManager.add(ActionUtils.makeCommandContribution(part.getSite(), CoreCommands.CMD_LINK_EDITOR, CoreMessages.action_menu_tools_find_in_navigator, null));
         }
 
         final Menu contextMenu = menuManager.createContextMenu(focusControl);

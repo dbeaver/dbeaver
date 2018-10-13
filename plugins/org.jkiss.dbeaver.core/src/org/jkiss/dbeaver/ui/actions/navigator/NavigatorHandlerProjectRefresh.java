@@ -19,10 +19,7 @@ package org.jkiss.dbeaver.ui.actions.navigator;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -35,17 +32,12 @@ public class NavigatorHandlerProjectRefresh extends NavigatorHandlerObjectBase {
     @Override
     public Object execute(ExecutionEvent event) throws ExecutionException {
         final IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
-        final IWorkspace workspace = DBeaverCore.getInstance().getWorkspace();
         try {
-            workbenchWindow.run(true, true, new IRunnableWithProgress() {
-                @Override
-                public void run(IProgressMonitor monitor) throws InvocationTargetException, InterruptedException
-                {
-                    try {
-                        workspace.getRoot().refreshLocal(IResource.DEPTH_INFINITE, monitor);
-                    } catch (CoreException e) {
-                        throw new InvocationTargetException(e);
-                    }
+            workbenchWindow.run(true, true, monitor -> {
+                try {
+                    DBeaverCore.getInstance().getWorkspace().getEclipseWorkspace().getRoot().refreshLocal(IResource.DEPTH_INFINITE, monitor);
+                } catch (CoreException e) {
+                    throw new InvocationTargetException(e);
                 }
             });
         } catch (InvocationTargetException e) {

@@ -159,16 +159,20 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         this.modOutFunc = JDBCUtils.safeGetString(dbResult, "typmodout");
         this.analyzeFunc = JDBCUtils.safeGetString(dbResult, "typanalyze");
         String typAlignStr = JDBCUtils.safeGetString(dbResult, "typalign");
-        try {
-            this.align = PostgreTypeAlign.valueOf(typAlignStr);
-        } catch (Exception e) {
-            log.debug("Invalid type align [" + typAlignStr + "] - " + e.getMessage());
+        if (!CommonUtils.isEmpty(typAlignStr)) {
+            try {
+                this.align = PostgreTypeAlign.valueOf(typAlignStr);
+            } catch (Exception e) {
+                log.debug("Invalid type align [" + typAlignStr + "] - " + e.getMessage());
+            }
         }
         String typStorageStr = JDBCUtils.safeGetString(dbResult, "typstorage");
-        try {
-            this.storage = PostgreTypeStorage.valueOf(typStorageStr);
-        } catch (Exception e) {
-            log.debug("Invalid type storage [" + typStorageStr + "] - " + e.getMessage());
+        if (!CommonUtils.isEmpty(typStorageStr)) {
+            try {
+                this.storage = PostgreTypeStorage.valueOf(typStorageStr);
+            } catch (Exception e) {
+                log.debug("Invalid type storage [" + typStorageStr + "] - " + e.getMessage());
+            }
         }
         this.isNotNull = JDBCUtils.safeGetBoolean(dbResult, "typnotnull");
         this.baseTypeId = JDBCUtils.safeGetLong(dbResult, "typbasetype");
@@ -659,15 +663,23 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
                     case D:
                         if (typeLength == 4) {
                             valueType = Types.DATE;
-                        } else if (typeLength == 8) {
-                            if (name.startsWith("timestamp")) {
-                                valueType = Types.TIMESTAMP;
-                            } else {
-                                valueType = Types.TIME;
-                            }
                         } else {
-                            // Weird
-                            valueType = Types.TIMESTAMP;
+                            switch ((int) typeId) {
+                                case PostgreOid.DATE:
+                                    valueType = Types.DATE;
+                                    break;
+                                case PostgreOid.TIME:
+                                case PostgreOid.TIMETZ:
+                                    valueType = Types.TIME;
+                                    break;
+                                case PostgreOid.TIMESTAMP:
+                                case PostgreOid.TIMESTAMPTZ:
+                                    valueType = Types.TIMESTAMP;
+                                    break;
+                                default:
+                                    valueType = Types.TIMESTAMP;
+                                    break;
+                            }
                         }
                         break;
                     case N:

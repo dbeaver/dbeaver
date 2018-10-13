@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.model.impl.jdbc.exec;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCDatabaseMetaData;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
 
 import java.sql.DatabaseMetaData;
 import java.sql.ResultSet;
@@ -243,15 +242,13 @@ public class JDBCDatabaseMetaDataImpl implements JDBCDatabaseMetaData  {
     @Override
     public ResultSet getPseudoColumns(String catalog, String schemaPattern, String tableNamePattern, String columnNamePattern) throws SQLException {
         return makeResultSet(
-            JDBCUtils.callMethod17(getOriginal(), "getPseudoColumns", ResultSet.class,
-                new Class[]{String.class, String.class, String.class, String.class},
-                catalog, schemaPattern, tableNamePattern, columnNamePattern),
+            getOriginal().getPseudoColumns(catalog, schemaPattern, tableNamePattern, columnNamePattern),
             "Load pseudo columns", catalog, schemaPattern, tableNamePattern, columnNamePattern);
     }
 
     @Override
     public boolean generatedKeyAlwaysReturned() throws SQLException {
-        return JDBCUtils.callMethod17(getOriginal(), "generatedKeyAlwaysReturned", Boolean.TYPE, null);
+        return getOriginal().generatedKeyAlwaysReturned();
     }
 
     @Override

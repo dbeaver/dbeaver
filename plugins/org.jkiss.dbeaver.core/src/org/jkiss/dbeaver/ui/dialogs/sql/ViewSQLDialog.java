@@ -19,7 +19,9 @@ package org.jkiss.dbeaver.ui.dialogs.sql;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbenchPartSite;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.core.CoreMessages;
@@ -66,6 +68,18 @@ public class ViewSQLDialog extends BaseSQLDialog {
 
     public void setWordWrap(boolean wordWrap) {
         this.wordWrap = wordWrap;
+    }
+
+    @Override
+    protected Control createContents(Composite parent) {
+        Control contents = super.createContents(parent);
+
+        Button closeButton = getButton(showSaveButton ? IDialogConstants.PROCEED_ID : IDialogConstants.OK_ID);
+        if (closeButton != null) {
+            UIUtils.asyncExec(closeButton::setFocus);
+        }
+
+        return contents;
     }
 
     @Override

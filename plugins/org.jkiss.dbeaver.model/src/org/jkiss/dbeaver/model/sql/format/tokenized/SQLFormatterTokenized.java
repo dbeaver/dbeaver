@@ -17,6 +17,8 @@
 
 package org.jkiss.dbeaver.model.sql.format.tokenized;
 
+import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.model.DBPIdentifierCase;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.sql.format.SQLFormatter;
@@ -35,21 +37,25 @@ import java.util.Locale;
  */
 public class SQLFormatterTokenized implements SQLFormatter {
 
+    private static final Log log = Log.getLog(SQLFormatterTokenized.class);
+
     public static final String FORMATTER_ID = "DEFAULT";
 
     private static final String[] DML_KEYWORD = { "SELECT", "UPDATE", "INSERT", "DELETE" };
-    private static final String[] JOIN_BEGIN = { "LEFT", "RIGHT", "INNER", "OUTER", "JOIN" };
+    private static final String[] JOIN_BEGIN = { "LEFT", "RIGHT", "INNER", "OUTER", "FULL", "CROSS", "JOIN" };
 
     private SQLFormatterConfiguration formatterCfg;
     private List<Boolean> functionBracket = new ArrayList<>();
     private List<String> statementDelimiters = new ArrayList<>(2);
     private String delimiterRedefiner;
     private boolean isCompact;
+    private boolean lfBeforeComma;
 
     @Override
     public String format(final String argSql, SQLFormatterConfiguration configuration)
     {
         formatterCfg = configuration;
+        lfBeforeComma = configuration.getPreferenceStore().getBoolean(ModelPreferences.SQL_FORMAT_LF_BEFORE_COMMA);
 
         for (String delim : formatterCfg.getSyntaxManager().getStatementDelimiters()) {
             statementDelimiters.add(delim.toUpperCase(Locale.ENGLISH));
@@ -138,7 +144,7 @@ public class SQLFormatterTokenized implements SQLFormatter {
             FormatterToken t2 = argList.get(index + 2);
 
             String tokenString = t0.getString().toUpperCase(Locale.ENGLISH);
-            String token2String = t2.getString().toUpperCase(Locale.ENGLISH);;
+            String token2String = t2.getString().toUpperCase(Locale.ENGLISH);
             // Concatenate tokens
             if (t0.getType() == TokenType.KEYWORD && t1.getType() == TokenType.SPACE && t2.getType() == TokenType.KEYWORD) {
                 if (((tokenString.equals("ORDER") || tokenString.equals("GROUP") || tokenString.equals("CONNECT")) && token2String.equals("BY")) ||
@@ -186,12 +192,15 @@ public class SQLFormatterTokenized implements SQLFormatter {
                 } else if (tokenString.equals(",")) { //$NON-NLS-1$
                     if (!isCompact) {
                         /*if (bracketsDepth <= 0 || "SELECT".equals(getPrevDMLKeyword(argList, index)))*/ {
-                            index += insertReturnAndIndent(argList, index + 1, indent);
+                            index += insertReturnAndIndent(
+                                argList,
+                                lfBeforeComma ? index : index + 1,
+                                indent);
                         }
                     }
                 } else if (statementDelimiters.contains(tokenString)) { //$NON-NLS-1$
-                    indent--;
-                    index += insertReturnAndIndent(argList, index + 1, indent);
+                    indent = 0;
+                    index += insertReturnAndIndent(argList, index, indent);
                 }
             } else if (token.getType() == TokenType.KEYWORD) {
                 if (statementDelimiters.contains(tokenString)) { //$NON-NLS-1$
@@ -254,6 +263,8 @@ public class SQLFormatterTokenized implements SQLFormatter {
                         case "RIGHT":
                         case "INNER":
                         case "OUTER":
+                        case "FULL":
+                        case "CROSS":
                         case "JOIN":
                             if (isJoinStart(argList, index)) {
                                 index += insertReturnAndIndent(argList, index, indent - 1);
@@ -372,11 +383,30 @@ public class SQLFormatterTokenized implements SQLFormatter {
                     && t1.getString().trim().isEmpty()
                     && t0.getString().equalsIgnoreCase(")")) //$NON-NLS-1$
             {
+            	// "( TOKEN )"
                 t4.setString(t4.getString() + t2.getString() + t0.getString());
                 argList.remove(index);
                 argList.remove(index - 1);
                 argList.remove(index - 2);
                 argList.remove(index - 3);
+            }
+            else if (t3.getString().equals("(") &&
+            		t2.getString().trim().isEmpty() &&
+            		t0.getString().equalsIgnoreCase(")")) {
+            	// "( TOKEN)"
+                t3.setString(t3.getString() + t1.getString() + t0.getString());
+                argList.remove(index);
+                argList.remove(index - 1);
+                argList.remove(index - 2);
+            }
+            else if (t3.getString().equals("(") &&
+            		t1.getString().trim().isEmpty() &&
+            		t0.getString().equalsIgnoreCase(")")) {
+            	// "(TOKEN )"
+                t3.setString(t3.getString() + t2.getString() + t0.getString());
+                argList.remove(index);
+                argList.remove(index - 1);
+                argList.remove(index - 2);
             }
         }
 
@@ -386,7 +416,10 @@ public class SQLFormatterTokenized implements SQLFormatter {
 
             if (prev.getType() != TokenType.SPACE &&
                 token.getType() != TokenType.SPACE &&
-                !token.getString().startsWith("("))
+                !prev.getString().equals("(") &&
+                !token.getString().startsWith("(") &&
+                !prev.getString().equals(")") &&
+                !token.getString().equals(")"))
             {
                 if (token.getString().equals(",") || statementDelimiters.contains(token.getString())) { //$NON-NLS-1$
                     continue;
@@ -447,6 +480,9 @@ public class SQLFormatterTokenized implements SQLFormatter {
             case "]":
             case "#":
             case "-":
+            case "'":
+            case "\"":
+            case "`":
                 return true;
             default:
                 return false;
@@ -529,14 +565,19 @@ public class SQLFormatterTokenized implements SQLFormatter {
 
             if (isDelimiter) {
                 if (argList.size() > argIndex + 1) {
-                    argList.add(argIndex + 1, new FormatterToken(TokenType.SPACE, s + s));
+                    FormatterToken lineFeed = new FormatterToken(TokenType.SPACE, s + s);
+                    if (argList.get(argIndex + 1).getType() == TokenType.SPACE) {
+                        argList.set(argIndex + 1, lineFeed);
+                    } else {
+                        argList.add(argIndex + 1, lineFeed);
+                    }
                 }
             } else {
                 argList.add(argIndex, new FormatterToken(TokenType.SPACE, s));
             }
             return 1;
         } catch (IndexOutOfBoundsException e) {
-            e.printStackTrace();
+            log.debug(e);
             return 0;
         }
     }

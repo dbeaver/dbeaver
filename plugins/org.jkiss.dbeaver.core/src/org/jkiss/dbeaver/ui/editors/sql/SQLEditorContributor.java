@@ -24,6 +24,7 @@ import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.editors.text.TextEditorActionContributor;
 import org.eclipse.ui.texteditor.ITextEditorActionDefinitionIds;
 import org.eclipse.ui.texteditor.RetargetTextEditorAction;
+import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.core.CoreCommands;
 import org.jkiss.dbeaver.core.DBeaverActivator;
 import org.jkiss.dbeaver.ui.ActionUtils;
@@ -36,6 +37,8 @@ import java.util.ResourceBundle;
  */
 public class SQLEditorContributor extends TextEditorActionContributor
 {
+    private static final Log log = Log.getLog(SQLEditorContributor.class);
+
     static final String ACTION_CONTENT_ASSIST_PROPOSAL = "ContentAssistProposal"; //$NON-NLS-1$
     static final String ACTION_CONTENT_ASSIST_TIP = "ContentAssistTip"; //$NON-NLS-1$
     static final String ACTION_CONTENT_ASSIST_INFORMATION = "ContentAssistInfo"; //$NON-NLS-1$
@@ -122,7 +125,11 @@ public class SQLEditorContributor extends TextEditorActionContributor
     public void contributeToMenu(IMenuManager manager)
     {
         if (!isNestedEditor()) {
-            super.contributeToMenu(manager);
+            try {
+                super.contributeToMenu(manager);
+            } catch (Exception e) {
+                log.debug("Error contributing base SQL actions", e);
+            }
         }
 
         if (!isNestedEditor()) {
@@ -148,7 +155,11 @@ public class SQLEditorContributor extends TextEditorActionContributor
     public void contributeToCoolBar(ICoolBarManager manager)
     {
         if (!isNestedEditor()) {
-            super.contributeToCoolBar(manager);
+            try {
+                super.contributeToCoolBar(manager);
+            } catch (Exception e) {
+                log.debug("Error contributing to base SQL cool bar", e);
+            }
         }
     }
 
@@ -162,7 +173,11 @@ public class SQLEditorContributor extends TextEditorActionContributor
     public void contributeToStatusLine(IStatusLineManager statusLineManager)
     {
         if (!isNestedEditor()) {
-            super.contributeToStatusLine(statusLineManager);
+            try {
+                super.contributeToStatusLine(statusLineManager);
+            } catch (Exception e) {
+                log.debug("Error contributing to base SQL status line", e);
+            }
         }
     }
 

@@ -36,6 +36,7 @@ public class PostgreConstants {
     public static final String DEFAULT_HOST = "localhost";
     public static final String DEFAULT_DATABASE = "postgres";
     public static final String DEFAULT_DATA_TYPE = "varchar";
+    public static final String DEFAULT_USER = "postgres";
 
     public static final String PROP_SHOW_NON_DEFAULT_DB = DBConstants.INTERNAL_PROP_PREFIX + "show-non-default-db@";
     public static final String PROP_SHOW_TEMPLATES_DB = DBConstants.INTERNAL_PROP_PREFIX + "show-template-db@";
@@ -45,9 +46,7 @@ public class PostgreConstants {
     public static final String PROP_SSL_ROOT_CERT = "rootCert";
     public static final String PROP_SSL_MODE = "sslMode";
     public static final String PROP_SSL_FACTORY = "sslFactory";
-    public static final String PROP_GREENPLUM_DRIVER = "greenplum";
-    public static final String PROP_TIMESCALE_DRIVER = "timescale";
-    public static final String PROP_YELLOWBRICK_DRIVER = "yellowbrick";
+    public static final String PROP_SERVER_TYPE = "serverType";
 
     public static final String OPTION_DDL_SHOW_PERMISSIONS = "pg.ddl.show.permissions";
     public static final String OPTION_DDL_SHOW_COLUMN_COMMENTS = "pg.ddl.show.column.comments";
@@ -104,6 +103,7 @@ public class PostgreConstants {
     public static final String TYPE_FLOAT8 = "float8";
 
     public static final String ERROR_ADMIN_SHUTDOWN = "57P01";
+    public static final String PSQL_EXCEPTION_CLASS_NAME = "org.postgresql.util.PSQLException";
 
     static {
         DATA_TYPE_ALIASES.put("integer", TYPE_INT4);
@@ -127,5 +127,178 @@ public class PostgreConstants {
         DATA_TYPE_CANONICAL_NAMES.put(TYPE_FLOAT4, "real");
         DATA_TYPE_CANONICAL_NAMES.put("character varying", "varchar");
     }
-    
+
+    public static final String[] POSTGIS_FUNCTIONS = {
+
+        // 8.3. Management Functions
+
+        "AddGeometryColumn",
+        "DropGeometryColumn",
+        "DropGeometryTable",
+        "PostGIS_Full_Version",
+        "PostGIS_GEOS_Version",
+        "PostGIS_Liblwgeom_Version",
+        "PostGIS_LibXML_Version",
+        "PostGIS_Lib_Build_Date",
+        "PostGIS_Lib_Version",
+        "PostGIS_PROJ_Version",
+        "PostGIS_Scripts_Build_Date",
+        "PostGIS_Scripts_Installed",
+        "PostGIS_Scripts_Released",
+        "PostGIS_Version",
+        "Populate_Geometry_Columns",
+        "UpdateGeometrySRID",
+
+        // 8.4. Geometry Constructors
+
+        "ST_BdPolyFromText",
+        "ST_BdMPolyFromText",
+        "ST_Box2dFromGeoHash",
+        "ST_GeogFromText",
+        "ST_GeographyFromText",
+        "ST_GeogFromWKB",
+        "ST_GeomFromTWKB",
+        "ST_GeomCollFromText",
+        "ST_GeomFromEWKB",
+        "ST_GeomFromEWKT",
+        "ST_GeometryFromText",
+        "ST_GeomFromGeoHash",
+        "ST_GeomFromGML",
+        "ST_GeomFromGeoJSON",
+        "ST_GeomFromKML",
+        "ST_GMLToSQL",
+        "ST_GeomFromText",
+        "ST_GeomFromWKB",
+        "ST_LineFromEncodedPolyline",
+        "ST_LineFromMultiPoint",
+        "ST_LineFromText",
+        "ST_LineFromWKB",
+        "ST_LinestringFromWKB",
+        "ST_MakeBox2D",
+        "ST_3DMakeBox",
+        "ST_MakeLine",
+        "ST_MakeEnvelope",
+        "ST_MakePolygon",
+        "ST_MakePoint",
+        "ST_MakePointM",
+        "ST_MLineFromText",
+        "ST_MPointFromText",
+        "ST_MPolyFromText",
+        "ST_Point",
+        "ST_PointFromGeoHash",
+        "ST_PointFromText",
+        "ST_PointFromWKB",
+        "ST_Polygon",
+        "ST_PolygonFromText",
+        "ST_WKBToSQL",
+        "ST_WKTToSQL",
+
+        //8.5. Geometry Accessors
+
+        "GeometryType",
+        "ST_Boundary",
+        "ST_CoordDim",
+        "ST_Dimension",
+        "ST_EndPoint",
+        "ST_Envelope",
+        "ST_BoundingDiagonal",
+        "ST_ExteriorRing",
+        "ST_GeometryN",
+        "ST_GeometryType",
+        "ST_InteriorRingN",
+        "ST_IsPolygonCCW",
+        "ST_IsPolygonCW",
+        "ST_IsClosed",
+        "ST_IsCollection",
+        "ST_IsEmpty",
+        "ST_IsRing",
+        "ST_IsSimple",
+        "ST_IsValid",
+        "ST_IsValidReason",
+        "ST_IsValidDetail",
+        "ST_M",
+        "ST_NDims",
+        "ST_NPoints",
+        "ST_NRings",
+        "ST_NumGeometries",
+        "ST_NumInteriorRings",
+        "ST_NumInteriorRing",
+        "ST_NumPatches",
+        "ST_NumPoints",
+        "ST_PatchN",
+        "ST_PointN",
+        "ST_Points",
+        "ST_SRID",
+        "ST_StartPoint",
+        "ST_Summary",
+        "ST_X",
+        "ST_XMax",
+        "ST_XMin",
+        "ST_Y",
+        "ST_YMax",
+        "ST_YMin",
+        "ST_Z",
+        "ST_ZMax",
+        "ST_Zmflag",
+        "ST_ZMin",
+
+        //8.6. Geometry Editors
+
+        "ST_AddPoint",
+        "ST_Affine",
+        "ST_Force2D",
+        "ST_Force3D",
+        "ST_Force3DZ",
+        "ST_Force3DM",
+        "ST_Force4D",
+        "ST_ForcePolygonCCW",
+        "ST_ForceCollection",
+        "ST_ForcePolygonCW",
+        "ST_ForceSFS",
+        "ST_ForceRHR",
+        "ST_ForceCurve",
+        "ST_LineMerge",
+        "ST_CollectionExtract",
+        "ST_CollectionHomogenize",
+        "ST_Multi",
+        "ST_Normalize",
+        "ST_RemovePoint",
+        "ST_Reverse",
+        "ST_Rotate",
+        "ST_RotateX",
+        "ST_RotateY",
+        "ST_RotateZ",
+        "ST_Scale",
+        "ST_Segmentize",
+        "ST_SetPoint",
+        "ST_SetSRID",
+        "ST_SnapToGrid",
+        "ST_Snap",
+        "ST_Transform",
+        "ST_Translate",
+        "ST_TransScale",
+
+        //8.7. Geometry Outputs
+
+        "ST_AsBinary",
+        "ST_AsEncodedPolyline",
+        "ST_AsEWKB",
+        "ST_AsEWKT",
+        "ST_AsGeoJSON",
+        "ST_AsGML",
+        "ST_AsHEXEWKB",
+        "ST_AsKML",
+        "ST_AsLatLonText",
+        "ST_AsSVG",
+        "ST_AsText",
+        "ST_AsTWKB",
+        "ST_AsX3D",
+        "ST_GeoHash",
+        "ST_AsGeobuf",
+        "ST_AsMVTGeom",
+        "ST_AsMVT",
+
+
+    };
+
 }

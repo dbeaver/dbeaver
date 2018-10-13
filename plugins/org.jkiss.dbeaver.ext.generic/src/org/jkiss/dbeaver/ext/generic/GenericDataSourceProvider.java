@@ -27,9 +27,12 @@ import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.impl.PropertyDescriptor;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCURL;
+import org.jkiss.dbeaver.model.messages.ModelMessages;
+import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.utils.CommonUtils;
 
 import java.util.HashMap;
@@ -63,45 +66,7 @@ public class GenericDataSourceProvider extends JDBCDataSourceProvider {
     @Override
     public String getConnectionURL(DBPDriver driver, DBPConnectionConfiguration connectionInfo)
     {
-        try {
-            String urlTemplate = driver.getSampleURL();
-            if (CommonUtils.isEmptyTrimmed(urlTemplate)) {
-                return connectionInfo.getUrl();
-            }
-            DriverDescriptor.MetaURL metaURL = DriverDescriptor.parseSampleURL(urlTemplate);
-            StringBuilder url = new StringBuilder();
-            for (String component : metaURL.getUrlComponents()) {
-                String newComponent = component;
-                if (!CommonUtils.isEmpty(connectionInfo.getHostName())) {
-                    newComponent = newComponent.replace(makePropPattern(DriverDescriptor.PROP_HOST), connectionInfo.getHostName());
-                }
-                if (!CommonUtils.isEmpty(connectionInfo.getHostPort())) {
-                    newComponent = newComponent.replace(makePropPattern(DriverDescriptor.PROP_PORT), connectionInfo.getHostPort());
-                }
-                if (!CommonUtils.isEmpty(connectionInfo.getServerName())) {
-                    newComponent = newComponent.replace(makePropPattern(DriverDescriptor.PROP_SERVER), connectionInfo.getServerName());
-                }
-                if (!CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
-                    newComponent = newComponent.replace(makePropPattern(DriverDescriptor.PROP_DATABASE), connectionInfo.getDatabaseName());
-                    newComponent = newComponent.replace(makePropPattern(DriverDescriptor.PROP_FOLDER), connectionInfo.getDatabaseName());
-                    newComponent = newComponent.replace(makePropPattern(DriverDescriptor.PROP_FILE), connectionInfo.getDatabaseName());
-                }
-                newComponent = newComponent.replace(makePropPattern(DriverDescriptor.PROP_USER), CommonUtils.notEmpty(connectionInfo.getUserName()));
-                newComponent = newComponent.replace(makePropPattern(DriverDescriptor.PROP_PASSWORD), CommonUtils.notEmpty(connectionInfo.getUserPassword()));
-
-                if (newComponent.startsWith("[")) { //$NON-NLS-1$
-                    if (!newComponent.equals(component)) {
-                        url.append(newComponent.substring(1, newComponent.length() - 1));
-                    }
-                } else {
-                    url.append(newComponent);
-                }
-            }
-            return url.toString();
-        } catch (DBException e) {
-            log.error(e);
-            return null;
-        }
+        return JDBCURL.generateUrlByTemplate(driver, connectionInfo);
     }
 
     @NotNull
@@ -134,9 +99,29 @@ public class GenericDataSourceProvider extends JDBCDataSourceProvider {
         return metaModels.get(GenericConstants.META_MODEL_STANDARD);
     }
 
-    private static String makePropPattern(String prop)
-    {
-        return "{" + prop + "}"; //$NON-NLS-1$ //$NON-NLS-2$
+    @Override
+    public DBPPropertyDescriptor[] getConnectionProperties(DBRProgressMonitor monitor, DBPDriver driver, DBPConnectionConfiguration connectionInfo) throws DBException {
+        DBPPropertyDescriptor[] connectionProperties = super.getConnectionProperties(monitor, driver, connectionInfo);
+        if (connectionProperties == null || connectionProperties.length == 0) {
+            // Try to get list of supported properties from custom driver config
+            String driverParametersString = CommonUtils.toString(driver.getDriverParameter(GenericConstants.PARAM_DRIVER_PROPERTIES));
+            if (!driverParametersString.isEmpty()) {
+                String[] propList = driverParametersString.split(",");
+                connectionProperties = new DBPPropertyDescriptor[propList.length];
+                for (int i = 0; i < propList.length; i++) {
+                    connectionProperties[i] = new PropertyDescriptor(
+                        ModelMessages.model_jdbc_driver_properties,
+                        propList[i],
+                        propList[i],
+                        null,
+                        String.class,
+                        false,
+                        null,
+                        null,
+                        true);
+                }
+            }
+        }
+        return connectionProperties;
     }
-
 }

@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.access.DBAAuthInfo;
 import org.jkiss.dbeaver.model.access.DBAPasswordChangeInfo;
@@ -86,7 +87,7 @@ public class ConsoleUserInterface implements DBPPlatformUI {
     }
 
     @Override
-    public DBNNode selectObject(Object parentShell, String title, DBNNode rootNode, DBNNode selectedNode, Class<?>[] allowedTypes, Class<?>[] resultTypes) {
+    public DBNNode selectObject(Object parentShell, String title, DBNNode rootNode, DBNNode selectedNode, Class<?>[] allowedTypes, Class<?>[] resultTypes, Class<?>[] leafTypes) {
         return null;
     }
 
@@ -103,6 +104,11 @@ public class ConsoleUserInterface implements DBPPlatformUI {
     @Override
     public void openSQLViewer(DBCExecutionContext context, String title, DBPImage image, String text) {
         System.out.println(text);
+    }
+
+    @Override
+    public void openConnectionEditor(DBPDataSourceContainer dataSourceContainer) {
+        // do nothing
     }
 
     @Override

@@ -19,9 +19,12 @@ package org.jkiss.dbeaver.model.runtime.load;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.BlockCanceler;
+import org.jkiss.dbeaver.model.runtime.DBRBlockingObject;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
+import java.util.List;
 
 /**
  * Lazy loading service
@@ -61,7 +64,10 @@ public abstract class AbstractLoadService<RESULT> implements ILoadService<RESULT
             return this.ownerJob.cancel();
         } else if (progressMonitor != null) {
             try {
-                BlockCanceler.cancelBlock(progressMonitor, null);
+                List<DBRBlockingObject> activeBlocks = progressMonitor.getActiveBlocks();
+                if (!CommonUtils.isEmpty(activeBlocks)) {
+                    BlockCanceler.cancelBlock(progressMonitor, activeBlocks.get(activeBlocks.size() - 1), null);
+                }
                 return true;
             } catch (DBException e) {
                 throw new InvocationTargetException(e);

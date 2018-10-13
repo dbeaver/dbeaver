@@ -741,45 +741,6 @@ public class JDBCUtils {
         }
     }
 
-    /**
-     * Invoke JDBC method from Java 1.7 API
-     * 
-     * @param object
-     *            object
-     * @param methodName
-     *            method name
-     * @param resultType
-     *            result type or null
-     * @param paramTypes
-     *            parameter type array or null
-     * @param paramValues
-     *            parameter value array or null
-     * @return result or null
-     * @throws SQLException
-     *             on error. Throws SQLFeatureNotSupportedException if specified method is not implemented
-     */
-    @Nullable
-    public static <T> T callMethod17(Object object, String methodName, @Nullable Class<T> resultType, @Nullable Class[] paramTypes,
-        Object... paramValues) throws SQLException
-    {
-        try {
-            Object result = object.getClass().getMethod(methodName, paramTypes).invoke(object, paramValues);
-            if (result == null || resultType == null) {
-                return null;
-            } else {
-                return resultType.cast(result);
-            }
-        } catch (InvocationTargetException e) {
-            if (e.getTargetException() instanceof SQLException) {
-                throw (SQLException) e.getTargetException();
-            } else {
-                throw new SQLException(e.getTargetException());
-            }
-        } catch (Throwable e) {
-            throw new SQLFeatureNotSupportedException(JDBCConstants.ERROR_API_NOT_SUPPORTED_17, e);
-        }
-    }
-
     public static String generateTableDDL(@NotNull DBRProgressMonitor monitor, @NotNull JDBCTable table, Map<String, Object> options, boolean addComments) throws DBException {
         final DBERegistry editorsRegistry = table.getDataSource().getContainer().getPlatform().getEditorsRegistry();
         final SQLObjectEditor entityEditor = editorsRegistry.getObjectManager(table.getClass(), SQLObjectEditor.class);

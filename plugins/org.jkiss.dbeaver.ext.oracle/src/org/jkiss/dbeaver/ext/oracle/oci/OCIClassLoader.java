@@ -36,8 +36,8 @@ public class OCIClassLoader extends ClassLoader
         super(parent);
         //this.oracleHomeDescriptor = oracleHomeDescriptor;
 
-        File oraHomeFile = new File(oracleHomeDescriptor.getHomeId());
-        File dllFolder = oracleHomeDescriptor.isInstantClient() ? oraHomeFile : new File(oraHomeFile, "bin");
+        File oraHomeFile = new File(oracleHomeDescriptor.getName());
+        File dllFolder = OCIUtils.isInstantClient(oracleHomeDescriptor.getName()) ? oraHomeFile : new File(oraHomeFile, "bin");
         if (dllFolder.exists()) {
             oraHomeLibraries = dllFolder.listFiles(new FilenameFilter()
             {
@@ -67,7 +67,7 @@ public class OCIClassLoader extends ClassLoader
 */
         }
         else {
-            log.warn("Binary folder isn't found in Oracle home " + oracleHomeDescriptor.getHomeId());
+            log.warn("Binary folder isn't found in Oracle home " + oracleHomeDescriptor.getName());
         }
     }
 

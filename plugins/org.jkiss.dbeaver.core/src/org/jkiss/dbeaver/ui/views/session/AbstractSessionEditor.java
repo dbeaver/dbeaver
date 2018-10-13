@@ -18,18 +18,27 @@ package org.jkiss.dbeaver.ui.views.session;
 
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
+import org.jkiss.dbeaver.ui.ISearchContextProvider;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.editors.SinglePageDatabaseEditor;
 
 /**
  * AbstractSessionEditor
  */
-public abstract class AbstractSessionEditor extends SinglePageDatabaseEditor<IDatabaseEditorInput>
+public abstract class AbstractSessionEditor extends SinglePageDatabaseEditor<IDatabaseEditorInput> implements ISearchContextProvider
 {
     private SessionManagerViewer sessionsViewer;
 
     public SessionManagerViewer getSessionsViewer() {
         return sessionsViewer;
+    }
+
+    @Override
+    public <T> T getAdapter(Class<T> adapter) {
+        if (adapter == ISearchContextProvider.class) {
+            return adapter.cast(this);
+        }
+        return super.getAdapter(adapter);
     }
 
     @Override
@@ -47,6 +56,7 @@ public abstract class AbstractSessionEditor extends SinglePageDatabaseEditor<IDa
         if (executionContext != null) {
             setPartName("Sessions - " + executionContext.getDataSource().getContainer().getName());
             sessionsViewer = createSessionViewer(executionContext, parent);
+            sessionsViewer.loadSettings(this);
             sessionsViewer.refreshSessions();
         }
     }
@@ -65,4 +75,25 @@ public abstract class AbstractSessionEditor extends SinglePageDatabaseEditor<IDa
             sessionsViewer.getControl().setFocus();
         }
     }
+
+    // ISearchContextProvider
+
+    @Override
+    public boolean isSearchPossible() {
+        return true;
+    }
+
+    @Override
+    public boolean isSearchEnabled() {
+        return true;
+    }
+
+    @Override
+    public boolean performSearch(SearchType searchType) {
+        if (sessionsViewer != null) {
+            return sessionsViewer.getSessionListControl().performSearch(searchType);
+        }
+        return false;
+    }
+
 }

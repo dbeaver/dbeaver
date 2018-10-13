@@ -35,6 +35,9 @@ public interface PostgreClass extends PostgreObject, DBSEntity, DBPRefreshableOb
         t,  // TOAST table
         f,  // = foreign table
         p,  // partitionedtable
+        // Redshift
+        e,
+        s,
     }
 
     @NotNull

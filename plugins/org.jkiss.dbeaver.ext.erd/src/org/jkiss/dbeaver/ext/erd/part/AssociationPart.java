@@ -28,6 +28,7 @@ import org.eclipse.gef.*;
 import org.eclipse.gef.editpolicies.ConnectionEndpointEditPolicy;
 import org.eclipse.swt.SWT;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
+import org.jkiss.dbeaver.ext.erd.editor.ERDViewStyle;
 import org.jkiss.dbeaver.ext.erd.model.ERDAssociation;
 import org.jkiss.dbeaver.ext.erd.model.ERDEntityAttribute;
 import org.jkiss.dbeaver.ext.erd.model.ERDUtils;
@@ -85,6 +86,21 @@ public class AssociationPart extends PropertyAwareConnectionPart {
         PolylineConnection conn = new PolylineConnection();
 
         conn.setForegroundColor(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_LINES_FOREGROUND));
+
+        boolean showComments = getDiagramPart().getDiagram().hasAttributeStyle(ERDViewStyle.COMMENTS);
+        if (showComments) {
+            ERDAssociation association = getAssociation();
+            if (association != null && association.getObject() != null && !CommonUtils.isEmpty(association.getObject().getDescription())) {
+                ConnectionLocator descLabelLocator = new ConnectionLocator(conn, ConnectionLocator.MIDDLE);
+                //descLabelLocator.setRelativePosition(50);
+                //descLabelLocator.setGap(50);
+                Label descLabel = new Label(association.getObject().getDescription());
+                descLabel.setForegroundColor(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_ATTR_FOREGROUND));
+//                Border border = new MarginBorder(20, 0, 0, 0);
+//                descLabel.setBorder(border);
+                conn.add(descLabel, descLabelLocator);
+            }
+        }
 
         setConnectionStyles(conn);
         setConnectionRouting(conn);
@@ -145,7 +161,7 @@ public class AssociationPart extends PropertyAwareConnectionPart {
             srcDec.setFill(true);
             srcDec.setBackgroundColor(getParent().getViewer().getControl().getBackground());
             srcDec.setScale(10, 6);
-            conn.setSourceDecoration(srcDec);
+            conn.setTargetDecoration(srcDec);
         }
         if (association.getObject().getConstraintType() == DBSEntityConstraintType.FOREIGN_KEY) {
             final CircleDecoration targetDecor = new CircleDecoration();

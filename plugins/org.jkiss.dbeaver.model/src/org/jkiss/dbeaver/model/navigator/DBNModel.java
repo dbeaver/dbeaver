@@ -26,6 +26,7 @@ import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.DBIconComposite;
+import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.app.DBPPlatform;
@@ -59,7 +60,7 @@ public class DBNModel implements IResourceChangeListener {
         DBNNode.NodePathType type;
         List<String> pathItems;
 
-        public NodePath(DBNNode.NodePathType type, List<String> pathItems) {
+        NodePath(DBNNode.NodePathType type, List<String> pathItems) {
             this.type = type;
             this.pathItems = pathItems;
         }
@@ -96,14 +97,14 @@ public class DBNModel implements IResourceChangeListener {
             root.addProject(project, false);
         }
 
-        platform.getWorkspace().addResourceChangeListener(this);
+        platform.getWorkspace().getEclipseWorkspace().addResourceChangeListener(this);
 
         new EventProcessingJob().schedule();
     }
 
     public void dispose()
     {
-        platform.getWorkspace().removeResourceChangeListener(this);
+        platform.getWorkspace().getEclipseWorkspace().removeResourceChangeListener(this);
         this.root.dispose(false);
         synchronized (nodeMap) {
             this.nodeMap.clear();
@@ -141,6 +142,8 @@ public class DBNModel implements IResourceChangeListener {
         if (object instanceof DBNDatabaseNode) {
             return (DBNDatabaseNode)object;
         }
+        object = DBUtils.getPublicObjectContainer(object);
+
         Object obj;
         synchronized (nodeMap) {
             obj = nodeMap.get(object);
@@ -216,8 +219,7 @@ public class DBNModel implements IResourceChangeListener {
     }
 
     @Nullable
-    public DBNDataSource getDataSourceByPath(String path) throws DBException
-    {
+    public DBNDataSource getDataSourceByPath(String path) {
         String dsId = getNodePath(path).first();
         for (DBNProject projectNode : getRoot().getProjects()) {
             DBNDataSource dataSource = projectNode.getDatabases().getDataSource(dsId);
@@ -404,7 +406,7 @@ public class DBNModel implements IResourceChangeListener {
                 return null;
             }
 
-            if (item == object.getParentObject()) {
+            if (item == DBUtils.getPublicObjectContainer(object.getParentObject())) {
                 // Try to find parent node withing children
                 for (DBNDatabaseNode child : children) {
                     if (child instanceof DBNDatabaseFolder) {

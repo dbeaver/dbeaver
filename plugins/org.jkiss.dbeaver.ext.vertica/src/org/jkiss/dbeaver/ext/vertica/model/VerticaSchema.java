@@ -38,9 +38,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.utils.ArrayUtils;
 
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 /**
  * VerticaSchema
@@ -59,6 +57,8 @@ public class VerticaSchema extends GenericSchema implements DBPSystemObject
     final ProjectionCache projectionCache = new ProjectionCache();
     final UDFCache udfCache = new UDFCache();
 
+    final Set<String> flexTablNames = new HashSet<>();
+
     public VerticaSchema(GenericDataSource dataSource, GenericCatalog catalog, String schemaName) {
         super(dataSource, catalog, schemaName);
     }
@@ -70,6 +70,7 @@ public class VerticaSchema extends GenericSchema implements DBPSystemObject
         return children;
     }
 
+/*
     @Override
     public DBSObject getChild(@NotNull DBRProgressMonitor monitor, @NotNull String childName)
         throws DBException
@@ -80,14 +81,38 @@ public class VerticaSchema extends GenericSchema implements DBPSystemObject
         }
         return child;
     }
+*/
 
+/*
+
+        JDBCPreparedStatement dbStat = session.prepareStatement(
+        "SELECT tv.*,c.comment as REMARKS FROM (\n" +
+            "SELECT NULL as TABLE_CAT, t.table_schema as TABLE_SCHEM, t.table_name as TABLE_NAME, (CASE t.is_flextable WHEN true THEN 'FLEXTABLE' ELSE 'TABLE' END) as TABLE_TYPE, NULL as TYPE_CAT,\n" +
+            "\tt.owner_name, t.table_definition as DEFINITION \n" +
+            "FROM v_catalog.tables t\n" +
+            "UNION ALL\n" +
+            "SELECT NULL as TABLE_CAT, v.table_schema as TABLE_SCHEM, v.table_name as TABLE_NAME, 'VIEW' as TABLE_TYPE, NULL as TYPE_CAT,\n" +
+            "\tv.owner_name, v.view_definition as DEFINITION \n" +
+            "FROM v_catalog.views v) tv\n" +
+            "LEFT OUTER JOIN v_catalog.comments c ON c.object_type = tv.TABLE_TYPE AND c.object_schema = tv.table_schem AND c.object_name = tv.table_name \n" +
+            "WHERE tv.table_schem=?" +
+                (object == null && objectName == null ? "" : " AND tv.table_name LIKE ?") + "\n" +
+            "ORDER BY 2, 3");
+        dbStat.setString(1, owner.getName());
+        if (object != null || objectName != null) {
+            dbStat.setString(2, object != null ? object.getName() : objectName);
+        }
+        return dbStat;
+
+
+* */
     @Association
     public Collection<GenericTable> getFlexTables(DBRProgressMonitor monitor) throws DBException {
         Collection<GenericTable> tables = getTables(monitor);
         if (tables != null) {
             List<GenericTable> filtered = new ArrayList<>();
             for (GenericTable table : tables) {
-                if (table instanceof VerticaTable && ((VerticaTable) table).isFlexTable()) {
+                if (table instanceof VerticaTable && flexTablNames.contains(table.getName())) {
                     filtered.add(table);
                 }
             }
@@ -114,6 +139,14 @@ public class VerticaSchema extends GenericSchema implements DBPSystemObject
     @Override
     public boolean isSystem() {
         return ArrayUtils.contains(SYSTEM_SCHEMAS, getName());
+    }
+
+    boolean isFlexTableName(String tableName) {
+        return flexTablNames.contains(tableName);
+    }
+
+    public void cacheFlexTableName(String tableName) {
+        flexTablNames.add(tableName);
     }
 
     public class ProjectionCache extends JDBCStructLookupCache<VerticaSchema, VerticaProjection, VerticaProjectionColumn> {

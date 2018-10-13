@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.model.runtime;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 
+import java.util.List;
+
 /**
  * Database progress monitor.
  * Similar to IProgressMonitor but with DBP specific features
@@ -28,7 +30,6 @@ public interface DBRProgressMonitor {
     /**
      * Obtains eclipse progress monitor.
      * Can be used to pass to eclipse API.
-     * @return
      */
     IProgressMonitor getNestedMonitor();
 
@@ -46,6 +47,6 @@ public interface DBRProgressMonitor {
 
     void endBlock();
 
-    DBRBlockingObject getActiveBlock();
+    List<DBRBlockingObject> getActiveBlocks();
 
 }

@@ -17,13 +17,16 @@
 package org.jkiss.dbeaver.ext.oracle.model.session;
 
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPDataSource;
-import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
+import org.jkiss.dbeaver.model.DBPObject;
+import org.jkiss.dbeaver.model.admin.sessions.*;
 import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCSession;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCPreparedStatement;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCResultSet;
 import org.jkiss.dbeaver.model.exec.jdbc.JDBCSession;
+import org.jkiss.utils.CommonUtils;
 
 import java.sql.SQLException;
 import java.util.ArrayList;
@@ -34,10 +37,13 @@ import java.util.Map;
 /**
  * MySQL session manager
  */
-public class OracleServerSessionManager implements DBAServerSessionManager<OracleServerSession> {
+public class OracleServerSessionManager implements DBAServerSessionManager<OracleServerSession>, DBAServerSessionDetailsProvider {
 
     public static final String PROP_KILL_SESSION = "killSession";
     public static final String PROP_IMMEDIATE = "immediate";
+
+    public static final String OPTION_SHOW_BACKGROUND = "showBackground";
+    public static final String OPTION_SHOW_INACTIVE = "showInactive";
 
     private final DBCExecutionContext executionContext;
 
@@ -56,11 +62,22 @@ public class OracleServerSessionManager implements DBAServerSessionManager<Oracl
     public Collection<OracleServerSession> getSessions(DBCSession session, Map<String, Object> options) throws DBException
     {
         try {
-            try (JDBCPreparedStatement dbStat = ((JDBCSession) session).prepareStatement(
-                "SELECT s.*, sq.SQL_FULLTEXT\n" +
-                "FROM V$SESSION s, V$SQL sq\n" +
-                "WHERE sq.ADDRESS(+) = s.SQL_ADDRESS AND s.TYPE = 'USER'"))
-            {
+            StringBuilder sql = new StringBuilder();
+            sql.append(
+                "SELECT s.*, sq.SQL_FULLTEXT, io.* \n" +
+                "FROM V$SESSION s \n" +
+                "LEFT JOIN v$sql sq ON (s.sql_address = sq.address AND s.sql_hash_value = sq.hash_value AND s.sql_child_number = sq.child_number)\n" +
+                "LEFT JOIN v$sess_io io ON ( s.sid = io.sid)\n" +
+                //"LEFT JOIN v$sesstat stat ON ( s.sid = stat.sid)\n" +
+                //"LEFT OUTER JOIN v$process e ON (s.paddr = e.addr)\n" +
+                "WHERE 1=1");
+            if (!CommonUtils.getOption(options, OPTION_SHOW_BACKGROUND)) {
+                sql.append(" AND s.TYPE = 'USER'");
+            }
+            if (!CommonUtils.getOption(options, OPTION_SHOW_INACTIVE)) {
+                sql.append(" AND s.STATUS <> 'INACTIVE'");
+            }
+            try (JDBCPreparedStatement dbStat = ((JDBCSession) session).prepareStatement(sql.toString())) {
                 try (JDBCResultSet dbResult = dbStat.executeQuery()) {
                     List<OracleServerSession> sessions = new ArrayList<>();
                     while (dbResult.next()) {
@@ -102,4 +119,35 @@ public class OracleServerSessionManager implements DBAServerSessionManager<Oracl
         }
     }
 
+    @Override
+    public List<DBAServerSessionDetails> getSessionDetails() {
+        List<DBAServerSessionDetails> extDetails = new ArrayList<>();
+        extDetails.add(new AbstractServerSessionDetails("Long Operations", "Displays the status of various operations that run for longer than 6 seconds (in absolute time)", DBIcon.TYPE_DATETIME) {
+            @Override
+            public List<OracleServerLongOp> getSessionDetails(DBCSession session, DBAServerSession serverSession) throws DBException {
+                try {
+                    try (JDBCPreparedStatement dbStat = ((JDBCSession) session).prepareStatement(
+                        "SELECT * FROM V$SESSION_LONGOPS WHERE SID=?"))
+                    {
+                        dbStat.setLong(1, ((OracleServerSession) serverSession).getSid());
+                        try (JDBCResultSet dbResult = dbStat.executeQuery()) {
+                            List<OracleServerLongOp> longOps = new ArrayList<>();
+                            while (dbResult.next()) {
+                                longOps.add(new OracleServerLongOp(dbResult));
+                            }
+                            return longOps;
+                        }
+                    }
+                } catch (SQLException e) {
+                    throw new DBException(e, session.getDataSource());
+                }
+            }
+
+            @Override
+            public Class<? extends DBPObject> getDetailsType() {
+                return OracleServerLongOp.class;
+            }
+        });
+        return extDetails;
+    }
 }

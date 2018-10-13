@@ -92,7 +92,7 @@ public class StringTextGenerator extends AbstractStringValueGenerator {
                     sb.append(templateString);
                 }
                 sb.append(templateString.substring(0, newlength % tplLength));
-                return tune(sb.toString());
+                return tune(sb.toString().trim());
             }
         }
     }

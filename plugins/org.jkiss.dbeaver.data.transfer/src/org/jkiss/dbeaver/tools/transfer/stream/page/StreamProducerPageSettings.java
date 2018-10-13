@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.tools.transfer.stream.page;
 
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.SashForm;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -63,12 +64,11 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
 
         initializeDialogUnits(parent);
 
-        Composite composite = new Composite(parent, SWT.NULL);
-        composite.setLayout(new GridLayout());
-        composite.setLayoutData(new GridData(GridData.FILL_BOTH));
+        SashForm settingsDivider = new SashForm(parent, SWT.VERTICAL);
+        settingsDivider.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
-            Group inputFilesGroup = new Group(composite, SWT.NONE);
+            Group inputFilesGroup = new Group(settingsDivider, SWT.NONE);
             inputFilesGroup.setText(DTMessages.data_transfer_wizard_settings_group_input_files);
             inputFilesGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
             inputFilesGroup.setLayout(new GridLayout(1, false));
@@ -104,15 +104,16 @@ public class StreamProducerPageSettings extends ActiveWizardPage<DataTransferWiz
         }
 
         {
-            Group exporterSettings = new Group(composite, SWT.NONE);
+            Group exporterSettings = new Group(settingsDivider, SWT.NONE);
             exporterSettings.setText(DTMessages.data_transfer_wizard_settings_group_importer);
             exporterSettings.setLayoutData(new GridData(GridData.FILL_BOTH));
             exporterSettings.setLayout(new GridLayout(1, false));
 
             propsEditor = new PropertyTreeViewer(exporterSettings, SWT.BORDER);
         }
+        settingsDivider.setWeights(new int[]{ 400, 600 });
 
-        setControl(composite);
+        setControl(settingsDivider);
     }
 
     private boolean chooseSourceFile(DataTransferPipe pipe) {

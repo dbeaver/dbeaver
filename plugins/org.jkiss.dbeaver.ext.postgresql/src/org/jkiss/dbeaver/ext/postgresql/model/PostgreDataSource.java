@@ -24,10 +24,14 @@ import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.ext.postgresql.PostgreConstants;
 import org.jkiss.dbeaver.ext.postgresql.PostgreDataSourceProvider;
+import org.jkiss.dbeaver.ext.postgresql.PostgreServerType;
 import org.jkiss.dbeaver.ext.postgresql.PostgreUtils;
+import org.jkiss.dbeaver.ext.postgresql.model.impls.PostgreServerPostgreSQL;
 import org.jkiss.dbeaver.ext.postgresql.model.jdbc.PostgreJdbcFactory;
 import org.jkiss.dbeaver.ext.postgresql.model.plan.PostgrePlanAnalyser;
+import org.jkiss.dbeaver.ext.postgresql.model.session.PostgreSessionManager;
 import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.admin.sessions.DBAServerSessionManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.exec.*;
@@ -36,10 +40,7 @@ import org.jkiss.dbeaver.model.exec.plan.DBCPlan;
 import org.jkiss.dbeaver.model.exec.plan.DBCPlanStyle;
 import org.jkiss.dbeaver.model.exec.plan.DBCQueryPlanner;
 import org.jkiss.dbeaver.model.impl.AsyncServerOutputReader;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSource;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCExecutionContext;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCRemoteInstance;
-import org.jkiss.dbeaver.model.impl.jdbc.JDBCUtils;
+import org.jkiss.dbeaver.model.impl.jdbc.*;
 import org.jkiss.dbeaver.model.impl.jdbc.cache.JDBCObjectLookupCache;
 import org.jkiss.dbeaver.model.impl.sql.QueryTransformerLimit;
 import org.jkiss.dbeaver.model.net.DBWHandlerConfiguration;
@@ -48,6 +49,8 @@ import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.sql.SQLState;
 import org.jkiss.dbeaver.model.struct.*;
 import org.jkiss.dbeaver.runtime.net.DefaultCallbackHandler;
+import org.jkiss.dbeaver.utils.GeneralUtils;
+import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.sql.Connection;
@@ -68,6 +71,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
 
     private DatabaseCache databaseCache;
     private String activeDatabaseName;
+    private PostgreServerExtension serverExtension;
 
     public PostgreDataSource(DBRProgressMonitor monitor, DBPDataSourceContainer container)
         throws DBException
@@ -76,12 +80,26 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     }
 
     @Override
+    public Object getDataSourceFeature(String featureId) {
+        switch (featureId) {
+            case DBConstants.FEATURE_MAX_STRING_LENGTH:
+                return 10485760;
+            case DBConstants.FEATURE_LOB_REQUIRE_TRANSACTIONS:
+                return true;
+        }
+        return super.getDataSourceFeature(featureId);
+    }
+
+    @Override
     protected void initializeRemoteInstance(DBRProgressMonitor monitor) throws DBException {
         activeDatabaseName = getContainer().getConnectionConfiguration().getDatabaseName();
+        if (CommonUtils.isEmpty(activeDatabaseName)) {
+            activeDatabaseName = PostgreConstants.DEFAULT_DATABASE;
+        }
         databaseCache = new DatabaseCache();
 
         DBPConnectionConfiguration configuration = getContainer().getActualConnectionConfiguration();
-        final boolean showNDD = CommonUtils.toBoolean(configuration.getProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB)) && !CommonUtils.isEmpty(configuration.getDatabaseName());
+        final boolean showNDD = CommonUtils.toBoolean(configuration.getProviderProperty(PostgreConstants.PROP_SHOW_NON_DEFAULT_DB));
         List<PostgreDatabase> dbList = new ArrayList<>();
         if (!showNDD) {
             PostgreDatabase defDatabase = new PostgreDatabase(monitor, this, activeDatabaseName);
@@ -170,14 +188,6 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
             props.put("sslfactory", factoryProp);
         }
         props.put("sslpasswordcallback", DefaultCallbackHandler.class.getName());
-    }
-
-    @Override
-    public Object getDataSourceFeature(String featureId) {
-        if (DBConstants.FEATURE_LOB_REQUIRE_TRANSACTIONS.equals(featureId)) {
-            return true;
-        }
-        return super.getDataSourceFeature(featureId);
     }
 
     protected void initializeContextState(@NotNull DBRProgressMonitor monitor, @NotNull JDBCExecutionContext context, boolean setActiveObject) throws DBCException {
@@ -327,7 +337,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
 
         Connection pgConnection;
         if (remoteInstance != null) {
-            log.debug("Initiate connection to PostgreSQL database [" + remoteInstance.getName() + "@" + conConfig.getHostName() + "]");
+            log.debug("Initiate connection to " + getServerType().getServerTypeName() + " database [" + remoteInstance.getName() + "@" + conConfig.getHostName() + "] for " + purpose);
         }
         if (remoteInstance instanceof PostgreDatabase &&
             remoteInstance.getName() != null &&
@@ -350,10 +360,10 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
             pgConnection = super.openConnection(monitor, remoteInstance, purpose);
         }
 
-        if (!getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {
-            // Provide client info
+        if (getServerType().supportsClientInfo() && !getContainer().getPreferenceStore().getBoolean(ModelPreferences.META_CLIENT_NAME_DISABLE)) {
+            // Provide client info. Not supported by Redshift?
             try {
-                pgConnection.setClientInfo("ApplicationName", DBUtils.getClientApplicationName(getContainer(), purpose));
+                pgConnection.setClientInfo(JDBCConstants.APPLICATION_NAME_CLIENT_PROPERTY, DBUtils.getClientApplicationName(getContainer(), purpose));
             } catch (Throwable e) {
                 // just ignore
                 log.debug(e);
@@ -390,6 +400,8 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
             return adapter.cast(new PostgreStructureAssistant(this));
         } else if (adapter == DBCServerOutputReader.class) {
             return adapter.cast(new AsyncServerOutputReader());
+        } else if (adapter == DBAServerSessionManager.class) {
+            return adapter.cast(new PostgreSessionManager(this));
         }
         return super.getAdapter(adapter);
     }
@@ -466,16 +478,17 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
         }
     }
 
-    public boolean isGreenplum() {
-        return PostgreUtils.isGreenplumDriver(getContainer().getDriver());
-    }
-
-    public boolean isTimescale() {
-        return PostgreUtils.isTimescaleDriver(getContainer().getDriver());
-    }
-
-    public boolean isYellowbrick() {
-        return PostgreUtils.isYellowbrickDriver(getContainer().getDriver());
+    public PostgreServerExtension getServerType() {
+        if (serverExtension == null) {
+            PostgreServerType serverType = PostgreUtils.getServerType(getContainer().getDriver());
+            try {
+                serverExtension = serverType.getImplClass().getConstructor(PostgreDataSource.class).newInstance(this);
+            } catch (Throwable e) {
+                log.error("Can't determine server type", e);
+                serverExtension = new PostgreServerPostgreSQL(this);
+            }
+        }
+        return serverExtension;
     }
 
     class DatabaseCache extends JDBCObjectLookupCache<PostgreDataSource, PostgreDatabase>
@@ -493,7 +506,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
             StringBuilder catalogQuery = new StringBuilder(
                 "SELECT db.oid,db.*" +
                     "\nFROM pg_catalog.pg_database db WHERE datallowconn ");
-            if (!showTemplates) {
+            if (object == null && !showTemplates) {
                 catalogQuery.append(" AND NOT datistemplate ");
             }
             if (object != null) {
@@ -502,7 +515,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
                 catalogQuery.append("\nAND db.datname=?");
             }
             DBSObjectFilter catalogFilters = owner.getContainer().getObjectFilter(PostgreDatabase.class, null, false);
-            if (showNDD) {
+            if (object == null && showNDD) {
                 if (catalogFilters != null) {
                     JDBCUtils.appendFilterClause(catalogQuery, catalogFilters, "datname", false);
                 }
@@ -512,7 +525,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
             if (object != null) {
                 dbStat.setLong(1, object.getObjectId());
             } else if (objectName != null || !showNDD) {
-                dbStat.setString(1, object != null ? object.getName() : (objectName != null ? objectName : activeDatabaseName));
+                dbStat.setString(1, (objectName != null ? objectName : activeDatabaseName));
             } else if (catalogFilters != null) {
                 JDBCUtils.setFilterParameters(dbStat, 1, catalogFilters);
             }
@@ -525,6 +538,22 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     @Nullable
     @Override
     public ErrorPosition[] getErrorPosition(@NotNull DBRProgressMonitor monitor, @NotNull DBCExecutionContext context, @NotNull String query, @NotNull Throwable error) {
+        Throwable rootCause = GeneralUtils.getRootCause(error);
+        if (rootCause != null && PostgreConstants.PSQL_EXCEPTION_CLASS_NAME.equals(rootCause.getClass().getName())) {
+            try {
+                Object serverErrorMessage = BeanUtils.readObjectProperty(rootCause, "serverErrorMessage");
+                if (serverErrorMessage != null) {
+                    Object position = BeanUtils.readObjectProperty(serverErrorMessage, "position");
+                    if (position instanceof Number) {
+                        ErrorPosition pos = new ErrorPosition();
+                        pos.position = ((Number) position).intValue();
+                        return new ErrorPosition[] {pos};
+                    }
+                }
+            } catch (Throwable e) {
+                // Something went wrong. Doesn't matter, ignore it as we are already in error handling routine
+            }
+        }
         String message = error.getMessage();
         if (!CommonUtils.isEmpty(message)) {
             Matcher matcher = ERROR_POSITION_PATTERN.matcher(message);
@@ -558,7 +587,7 @@ public class PostgreDataSource extends JDBCDataSource implements DBSObjectSelect
     @Override
     protected DBPDataSourceInfo createDataSourceInfo(@NotNull JDBCDatabaseMetaData metaData)
     {
-        return new PostgreDataSourceInfo(metaData);
+        return new PostgreDataSourceInfo(this, metaData);
     }
 
     @Nullable

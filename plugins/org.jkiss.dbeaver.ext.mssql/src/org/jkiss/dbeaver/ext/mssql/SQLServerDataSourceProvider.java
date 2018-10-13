@@ -22,20 +22,16 @@ import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.ext.mssql.model.SQLServerDataSource;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.connection.DBPClientHome;
-import org.jkiss.dbeaver.model.connection.DBPClientManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
-import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SQLServerDataSourceProvider extends JDBCDataSourceProvider implements DBPClientManager {
+public class SQLServerDataSourceProvider extends JDBCDataSourceProvider {
 
     private static Map<String,String> connectionsProps;
 
@@ -61,16 +57,22 @@ public class SQLServerDataSourceProvider extends JDBCDataSourceProvider implemen
         StringBuilder url = new StringBuilder();
         boolean isJtds = SQLServerUtils.isDriverJtds(driver);
         boolean isSqlServer = SQLServerUtils.isDriverSqlServer(driver);
+        boolean isDriverAzure = isSqlServer && SQLServerUtils.isDriverAzure(driver);
+
         if (isSqlServer) {
             // SQL Server
             if (isJtds) {
                 url.append("jdbc:jtds:sqlserver://");
+                url.append(connectionInfo.getHostName());
+                if (!CommonUtils.isEmpty(connectionInfo.getHostPort()) && !connectionInfo.getHostPort().equals(driver.getDefaultPort())) {
+                    url.append(":").append(connectionInfo.getHostPort());
+                }
             } else {
                 url.append("jdbc:sqlserver://");
-            }
-            url.append(connectionInfo.getHostName());
-            if (!CommonUtils.isEmpty(connectionInfo.getHostPort()) && !connectionInfo.getHostPort().equals(driver.getDefaultPort())) {
-                url.append(":").append(connectionInfo.getHostPort());
+                url.append(";serverName=").append(connectionInfo.getHostName());
+                if (!CommonUtils.isEmpty(connectionInfo.getHostPort()) && !connectionInfo.getHostPort().equals(driver.getDefaultPort())) {
+                    url.append(";port=").append(connectionInfo.getHostPort());
+                }
             }
             if (isJtds) {
                 if (!CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
@@ -80,6 +82,10 @@ public class SQLServerDataSourceProvider extends JDBCDataSourceProvider implemen
                 url.append(";");
                 if (!CommonUtils.isEmpty(connectionInfo.getDatabaseName())) {
                     url.append("databaseName=").append(connectionInfo.getDatabaseName());
+                }
+
+                if (isDriverAzure) {
+                    url.append(";encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;");
                 }
             }
 /*
@@ -123,18 +129,4 @@ public class SQLServerDataSourceProvider extends JDBCDataSourceProvider implemen
         return new SQLServerDataSource(monitor, container);
     }
 
-    @Override
-    public Collection<String> findClientHomeIds() {
-        return Collections.emptyList();
-    }
-
-    @Override
-    public String getDefaultClientHomeId() {
-        return null;
-    }
-
-    @Override
-    public DBPClientHome getClientHome(String homeId) {
-        return null;
-    }
 }

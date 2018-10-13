@@ -113,5 +113,14 @@ public class JDBCConstants
     public static final String REF_GENERATION_USER = "USER"; //$NON-NLS-1$
     public static final String REF_GENERATION_DERIVED = "DERIVED"; //$NON-NLS-1$
 
-    public static final String ERROR_API_NOT_SUPPORTED_17 = "JDBC 1.7 API is not supported by driver";
+    public static final String APPLICATION_NAME_CLIENT_PROPERTY = "ApplicationName";
+
+    public static final String PROP_HOST = "host"; //$NON-NLS-1$
+    public static final String PROP_PORT = "port"; //$NON-NLS-1$
+    public static final String PROP_DATABASE = "database"; //$NON-NLS-1$
+    public static final String PROP_SERVER = "server"; //$NON-NLS-1$
+    public static final String PROP_FOLDER = "folder"; //$NON-NLS-1$
+    public static final String PROP_FILE = "file"; //$NON-NLS-1$
+    public static final String PROP_USER = "user"; //$NON-NLS-1$
+    public static final String PROP_PASSWORD = "password"; //$NON-NLS-1$
 }

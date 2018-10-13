@@ -5,28 +5,31 @@
 
     <extension point="org.jkiss.dbeaver.dataSourceProvider">
 
-        <!-- ElasticSearch -->
+        <!-- Elasticsearch -->
 
         <datasource
-                class="org.jkiss.dbeaver.ext.es.ElasticSearchDataSourceProvider"
+                class="org.jkiss.dbeaver.ext.es.ElasticsearchDataSourceProvider"
                 description="%datasource.es.description"
                 id="elasticsearch"
                 parent="generic"
-                label="ElasticSearch"
-                icon="icons/es_icon.png">
+                label="Elasticsearch"
+                icon="icons/elastic_search_icon.png">
             <drivers managable="true">
 
                 <driver
                         id="elastic_search_jdbc"
-                        label="Elastic Search"
+                        label="Elasticsearch"
                         class="org.elasticsearch.xpack.sql.jdbc.jdbc.JdbcDriver"
                         icon="icons/elastic_search_icon.png"
                         sampleURL="jdbc:es://{host}:{port}/"
                         defaultPort="9200"
-                        description="ElasticSearch JDBC driver"
+                        description="Elasticsearch JDBC driver"
                         webURL="https://www.elastic.co/guide/en/elasticsearch/reference/current/sql-jdbc.html">
                     <replace provider="generic" driver="es_generic"/>
-                    <file type="jar" path="maven:/org.elasticsearch.plugin:jdbc:6.3.1"/>
+                    <file type="jar" path="maven:/org.elasticsearch.plugin:x-pack-sql-jdbc:6.4.0"/>
+                    <parameter name="supports-references" value="false"/>
+                    <parameter name="supports-indexes" value="false"/>
+                    <parameter name="omit-catalog" value="true"/>
                 </driver>
 
             </drivers>
@@ -35,7 +38,7 @@
     </extension>
 
     <extension point="org.jkiss.dbeaver.mavenRepository">
-        <repository id="elastic-search-maven-repo" name="Elastic Search Repository" url="https://artifacts.elastic.co/maven" order="20">
+        <repository id="elastic-search-maven-repo" name="Elasticsearch Repository" url="https://artifacts.elastic.co/maven" order="20">
             <scope group="org.elasticsearch.plugin"/>
         </repository>
 

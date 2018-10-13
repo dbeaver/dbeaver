@@ -20,6 +20,7 @@ import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
@@ -29,6 +30,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.model.navigator.DBNDataSource;
 import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNResource;
@@ -49,6 +51,12 @@ public class NavigatorHandlerAddBookmark extends NavigatorHandlerObjectBase {
         final ISelection selection = HandlerUtil.getCurrentSelection(event);
         if (!selection.isEmpty() && selection instanceof IStructuredSelection) {
             final DBNNode node = NavigatorUtils.getSelectedNode(selection);
+            if (node instanceof DBNDataSource) {
+                DBUserInterface.getInstance().showError(
+                    CoreMessages.actions_navigator_bookmark_error_title,
+                    "Connection itself cannot be bookmarked. Choose some element under a connection element.");
+                return null;
+            }
             if (node instanceof DBNDatabaseNode) {
                 try {
                     AddBookmarkDialog dialog = new AddBookmarkDialog(activeShell, (DBNDatabaseNode) node);
@@ -72,6 +80,10 @@ public class NavigatorHandlerAddBookmark extends NavigatorHandlerObjectBase {
         public AddBookmarkDialog(Shell parentShell, DBNDatabaseNode node) {
             super(parentShell, CoreMessages.actions_navigator_bookmark_title, node.getNodeName());
             this.node = node;
+        }
+
+        protected IDialogSettings getDialogBoundsSettings() {
+            return UIUtils.getDialogSettings("DBeaver.AddBookmarkDialog"); //$NON-NLS-1$
         }
 
         @Override

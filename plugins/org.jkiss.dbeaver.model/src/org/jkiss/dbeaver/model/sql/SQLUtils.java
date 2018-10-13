@@ -43,7 +43,6 @@ import org.jkiss.utils.Pair;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
-import java.io.StringWriter;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -59,7 +58,9 @@ public final class SQLUtils {
 
     private static final Log log = Log.getLog(SQLUtils.class);
 
-    private static final Pattern PATTERN_OUT_PARAM = Pattern.compile("((\\?)|(:[a-z0-9]+))\\s*:=");
+    public static final Pattern PATTERN_OUT_PARAM = Pattern.compile("((\\?)|(:[a-z0-9]+))\\s*:=");
+    public static final Pattern PATTERN_SIMPLE_NAME = Pattern.compile("[a-z][a-z0-9_]*", Pattern.CASE_INSENSITIVE);
+
     private static final Pattern CREATE_PREFIX_PATTERN = Pattern.compile("(CREATE (:OR REPLACE)?).+", Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
 
     private static final int MIN_SQL_DESCRIPTION_LENGTH = 512;
@@ -298,7 +299,7 @@ public final class SQLUtils {
     {
         SQLSyntaxManager syntaxManager = new SQLSyntaxManager();
         syntaxManager.init(dataSource.getSQLDialect(), dataSource.getContainer().getPreferenceStore());
-        SQLFormatterConfiguration configuration = new SQLFormatterConfiguration(syntaxManager);
+        SQLFormatterConfiguration configuration = new SQLFormatterConfiguration(dataSource, syntaxManager);
         SQLFormatter formatter = dataSource.getDataSource().getContainer().getPlatform().getSQLFormatterRegistry().createFormatter(configuration);
         if (formatter == null) {
             return query;
@@ -329,6 +330,7 @@ public final class SQLUtils {
 
     public static String trimQueryStatement(SQLSyntaxManager syntaxManager, String sql, boolean trimDelimiter)
     {
+        // This is called only when use selects query (i.e. no automatic query detection)
         if (sql.isEmpty() || !trimDelimiter) {
             // Do not trim delimiter
             return sql;
@@ -442,7 +444,8 @@ public final class SQLUtils {
             if (cAttr instanceof DBDAttributeBinding) {
                 DBDAttributeBinding binding = (DBDAttributeBinding) cAttr;
                 if (binding.getEntityAttribute() != null &&
-                    binding.getEntityAttribute().getName().equals(binding.getMetaAttribute().getName()))
+                    binding.getEntityAttribute().getName().equals(binding.getMetaAttribute().getName()) ||
+                    binding instanceof DBDAttributeBindingType)
                 {
                     attrName = DBUtils.getObjectFullName(dataSource, binding, DBPEvaluationContext.DML);
                 } else {
@@ -467,10 +470,28 @@ public final class SQLUtils {
         boolean hasOrder = false;
         for (DBDAttributeConstraint co : filter.getOrderConstraints()) {
             if (hasOrder) query.append(',');
-            if (conditionTable != null) {
-                query.append(conditionTable).append('.');
+            String orderString = null;
+            if (co.getAttribute() instanceof DBDAttributeBindingMeta) {
+                String orderColumn = co.getAttribute().getName();
+                if (PATTERN_SIMPLE_NAME.matcher(orderColumn).matches()) {
+                    // It is a simple column.
+                    orderString = DBUtils.getObjectFullName(co.getAttribute(), DBPEvaluationContext.DML);
+                    if (conditionTable != null) {
+                        orderString = conditionTable + '.' + orderString;
+                    }
+                }
             }
-            query.append(DBUtils.getObjectFullName(co.getAttribute(), DBPEvaluationContext.DML));
+            if (orderString == null) {
+                // Use position number
+                int orderIndex = filter.getConstraints().indexOf(co);
+                if (orderIndex != -1) {
+                    orderString = String.valueOf(orderIndex + 1);
+                } else {
+                    log.debug("Can't generate column order: no name and no position found");
+                    continue;
+                }
+            }
+            query.append(orderString);
             if (co.isOrderDescending()) {
                 query.append(" DESC"); //$NON-NLS-1$
             }
@@ -619,19 +640,13 @@ public final class SQLUtils {
     public static String convertStreamToSQL(DBSAttributeBase attribute, DBDContent content, DBDValueHandler valueHandler, SQLDataSource dataSource) {
         try {
             DBRProgressMonitor monitor = new VoidProgressMonitor();
-            if (valueHandler instanceof DBDContentValueHandler) {
-                StringWriter buffer = new StringWriter();
-                ((DBDContentValueHandler) valueHandler).writeStreamValue(monitor, dataSource, attribute, content, buffer);
-                return buffer.toString();
+            if (ContentUtils.isTextContent(content)) {
+                String strValue = ContentUtils.getContentStringValue(monitor, content);
+                strValue = dataSource.getSQLDialect().escapeString(strValue);
+                return "'" + strValue + "'";
             } else {
-                if (ContentUtils.isTextContent(content)) {
-                    String strValue = ContentUtils.getContentStringValue(monitor, content);
-                    strValue = dataSource.getSQLDialect().escapeString(strValue);
-                    return "'" + strValue + "'";
-                } else {
-                    byte[] binValue = ContentUtils.getContentBinaryValue(monitor, content);
-                    return dataSource.getSQLDialect().getNativeBinaryFormatter().toString(binValue, 0, binValue.length);
-                }
+                byte[] binValue = ContentUtils.getContentBinaryValue(monitor, content);
+                return dataSource.getSQLDialect().getNativeBinaryFormatter().toString(binValue, 0, binValue.length);
             }
         }
         catch (Throwable e) {
@@ -648,13 +663,13 @@ public final class SQLUtils {
             return null;
         }
         SQLDialect dialect = ((SQLDataSource) dataSource).getSQLDialect();
-        return dialect.getColumnTypeModifiers(column, typeName, dataKind);
+        return dialect.getColumnTypeModifiers(dataSource, column, typeName, dataKind);
     }
 
     public static boolean isExecQuery(@NotNull SQLDialect dialect, String query) {
         // Check for EXEC query
         final String[] executeKeywords = dialect.getExecuteKeywords();
-        if (executeKeywords.length > 0) {
+        if (executeKeywords != null && executeKeywords.length > 0) {
             final String queryStart = getFirstKeyword(dialect, query);
             for (String keyword : executeKeywords) {
                 if (keyword.equalsIgnoreCase(queryStart)) {
@@ -739,7 +754,7 @@ public final class SQLUtils {
     }
 
     /**
-     * Replaces single \r linefeeds with \n (some databases don't like them)
+     * Replaces single \r linefeeds with space (some databases don't like them)
      */
     public static String fixLineFeeds(String sql) {
         if (sql.indexOf('\r') == -1) {
@@ -748,8 +763,17 @@ public final class SQLUtils {
         boolean hasFixes = false;
         char[] fixed = sql.toCharArray();
         for (int i = 0; i < fixed.length; i++) {
-            if (fixed[i] == '\r' && (i == fixed.length - 1 || fixed[i + 1] != '\n')) {
-                fixed[i] = '\n';
+            if (fixed[i] == '\r') {
+                if (i > 0 && fixed[i - 1] == '\n') {
+                    // \n\r
+                    continue;
+                }
+                if (i == fixed.length - 1 || fixed[i + 1] == '\n') {
+                    // \r\n
+                    continue;
+                }
+                // Single \r - replace it with space
+                fixed[i] = ' ';
                 hasFixes = true;
             }
         }

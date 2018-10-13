@@ -28,6 +28,7 @@ import org.jkiss.dbeaver.model.navigator.meta.DBXTreeNode;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -40,12 +41,6 @@ public interface DBPDriver extends DBPNamedObject
      */
     @NotNull
     DBPDataSourceProvider getDataSourceProvider();
-
-    /**
-     * Client manager or null
-     */
-    @Nullable
-    DBPClientManager getClientManager();
 
     @NotNull
     String getId();
@@ -74,6 +69,9 @@ public interface DBPDriver extends DBPNamedObject
     @Nullable
     String getWebURL();
 
+    @Nullable
+    String getPropertiesWebURL();
+
     boolean isClientRequired();
 
     boolean supportsDriverProperties();
@@ -81,6 +79,7 @@ public interface DBPDriver extends DBPNamedObject
     boolean isEmbedded();
     boolean isAnonymousAccess();
     boolean isCustomDriverLoader();
+    boolean isUseURL();
     boolean isInstantiable();
     boolean isInternalDriver();
 
@@ -104,17 +103,20 @@ public interface DBPDriver extends DBPNamedObject
 
     boolean isSupportedByLocalSystem();
 
-    @NotNull
-    Collection<String> getClientHomeIds();
-
+    /**
+     * Client manager or null
+     */
     @Nullable
-    DBPClientHome getClientHome(String homeId);
+    DBPNativeClientLocationManager getNativeClientManager();
+
+    @NotNull
+    List<DBPNativeClientLocation> getNativeClientLocations();
 
     @Nullable
     ClassLoader getClassLoader();
 
     @NotNull
-    Collection<? extends DBPDriverLibrary> getDriverLibraries();
+    List<? extends DBPDriverLibrary> getDriverLibraries();
 
     @NotNull
     Object getDriverInstance(@NotNull DBRProgressMonitor monitor) throws DBException;

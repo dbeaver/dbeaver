@@ -71,29 +71,31 @@ public class ContentValueManager extends BaseValueManager {
     public static void contributeContentActions(@NotNull IContributionManager manager, @NotNull final IValueController controller, final IValueEditor activeEditor)
         throws DBCException
     {
-        if (controller.getValue() instanceof DBDContent && !((DBDContent)controller.getValue()).isNull()) {
-            manager.add(new Action(CoreMessages.model_jdbc_save_to_file_, DBeaverIcons.getImageDescriptor(UIIcon.SAVE_AS)) {
+        if (controller.getValue() instanceof DBDContent) {
+            if (!((DBDContent) controller.getValue()).isNull()) {
+                manager.add(new Action(CoreMessages.model_jdbc_save_to_file_, DBeaverIcons.getImageDescriptor(UIIcon.SAVE_AS)) {
+                    @Override
+                    public void run() {
+                        saveToFile(controller);
+                    }
+                });
+            }
+            manager.add(new Action(CoreMessages.model_jdbc_load_from_file_, DBeaverIcons.getImageDescriptor(UIIcon.LOAD)) {
                 @Override
                 public void run() {
-                    saveToFile(controller);
-                }
-            });
-        }
-        manager.add(new Action(CoreMessages.model_jdbc_load_from_file_, DBeaverIcons.getImageDescriptor(UIIcon.LOAD)) {
-            @Override
-            public void run() {
-                if (loadFromFile(controller)) {
-                    if (activeEditor != null) {
-                        try {
-                            activeEditor.primeEditorValue(controller.getValue());
-                        } catch (DBException e) {
-                            DBUserInterface.getInstance().showError("Load from file", "Error loading contents from file", e);
+                    if (loadFromFile(controller)) {
+                        if (activeEditor != null) {
+                            try {
+                                activeEditor.primeEditorValue(controller.getValue());
+                            } catch (DBException e) {
+                                DBUserInterface.getInstance().showError("Load from file", "Error loading contents from file", e);
+                            }
                         }
                     }
                 }
-            }
-        });
-        manager.add(new Separator());
+            });
+            manager.add(new Separator());
+        }
     }
 
     public static IValueEditor openContentEditor(@NotNull IValueController controller)

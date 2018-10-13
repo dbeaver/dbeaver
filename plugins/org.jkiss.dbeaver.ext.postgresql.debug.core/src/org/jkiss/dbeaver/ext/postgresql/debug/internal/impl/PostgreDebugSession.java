@@ -332,18 +332,21 @@ public class PostgreDebugSession extends DBGJDBCSession {
                         query.append("{ CALL ").append(function.getFullyQualifiedName(DBPEvaluationContext.DML)).append("(");
                         for (int i = 0; i < parameters.size(); i++) {
                             if (i > 0) query.append(",");
-                            query.append("?");
+                            String paramValue = paramValues.get(i);
+                            query.append(paramValue);
                         }
                         query.append(") }");
                         log.debug(String.format("Prepared local call %s", query));
                         localStatement = session.prepareCall(query.toString());
 
+/*
                         for (int i = 0; i < parameters.size(); i++) {
                             PostgreProcedureParameter parameter = parameters.get(i);
                             String paramValue = paramValues.get(i);
                             DBDValueHandler valueHandler = DBUtils.findValueHandler(session, parameter);
                             valueHandler.bindValueObject(session, localStatement, parameter, i, paramValue);
                         }
+*/
                         localStatement.execute();
                         // And Now His Watch Is Ended
                         log.debug("Local statement executed (ANHWIE)");
@@ -380,7 +383,7 @@ public class PostgreDebugSession extends DBGJDBCSession {
     private void attachLocal(DBRProgressMonitor monitor, PostgreProcedure function, List<String> parameters) throws DBGException {
 
         try {
-            JDBCExecutionContext connection = (JDBCExecutionContext) controllerConnection.getInstance().openIsolatedContext(monitor, "Debug process session");
+            JDBCExecutionContext connection = (JDBCExecutionContext) controllerConnection.getOwnerInstance().openIsolatedContext(monitor, "Debug process session");
             log.debug("Attaching locally....");
             this.sessionInfo = getSessionDescriptor(monitor, connection);
 

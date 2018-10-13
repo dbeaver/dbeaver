@@ -88,7 +88,7 @@ public class ValueViewerPanel implements IResultSetPanel, IAdaptable {
         viewPlaceholder = new Composite(parent, SWT.NONE);
         viewPlaceholder.setLayout(new FillLayout());
         viewPlaceholder.addPaintListener(e -> {
-            if (viewPlaceholder.getChildren().length == 0) {
+            if (previewController == null && viewPlaceholder.getChildren().length == 0) {
                 String hidePanelCmd = ActionUtils.findCommandDescription(
                     ResultSetCommandHandler.CMD_TOGGLE_PANELS,
                     ValueViewerPanel.this.presentation.getController().getSite(),

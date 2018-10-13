@@ -18,6 +18,8 @@ package org.jkiss.dbeaver.ui.controls.resultset.panel.grouping;
 
 import org.eclipse.swt.widgets.Composite;
 import org.jkiss.dbeaver.DBException;
+import org.jkiss.dbeaver.DBeaverPreferences;
+import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBUtils;
 import org.jkiss.dbeaver.model.data.DBDDataFilter;
@@ -25,9 +27,12 @@ import org.jkiss.dbeaver.model.exec.DBCExecutionContext;
 import org.jkiss.dbeaver.model.exec.DBCStatistics;
 import org.jkiss.dbeaver.model.impl.DBObjectNameCaseTransformer;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.sql.SQLDialect;
+import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.model.struct.DBSDataContainer;
 import org.jkiss.dbeaver.ui.controls.resultset.*;
 import org.jkiss.dbeaver.ui.controls.resultset.view.EmptyPresentation;
+import org.jkiss.utils.CommonUtils;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -196,14 +201,37 @@ public class GroupingResultsContainer implements IResultSetContainer {
         }
         sql.append(" FROM (\n");
         sql.append(queryText);
-        sql.append(") src\nGROUP BY ");
+        sql.append(") src");
+
+        sql.append("\nGROUP BY ");
         for (int i = 0; i < groupAttributes.size(); i++) {
             if (i > 0) sql.append(", ");
             sql.append(groupAttributes.get(i));
         }
+        boolean isDefaultGrouping = groupFunctions.size() == 1 && groupFunctions.get(0).equals(DEFAULT_FUNCTION);
+
+        DBPDataSource dataSource = dataContainer.getDataSource();
+        boolean isShowDuplicatesOnly = dataSource.getContainer().getPreferenceStore().getBoolean(DBeaverPreferences.RS_GROUPING_SHOW_DUPLICATES_ONLY);
+        if (isDefaultGrouping && isShowDuplicatesOnly) {
+            sql.append("\nHAVING ").append(DEFAULT_FUNCTION).append(" > 1");
+        }
 
         dataContainer.setGroupingQuery(sql.toString());
-        groupingViewer.refresh();
+        DBDDataFilter dataFilter = new DBDDataFilter();
+
+        String defaultSorting = dataSource.getContainer().getPreferenceStore().getString(DBeaverPreferences.RS_GROUPING_DEFAULT_SORTING);
+        if (!CommonUtils.isEmpty(defaultSorting) && isDefaultGrouping) {
+            SQLDialect dialecy = SQLUtils.getDialectFromDataSource(dataSource);
+            if (dialecy.supportsOrderByIndex()) {
+                // By default sort by count in desc order
+                int countPosition = groupAttributes.size() + 1;
+                dataFilter.setOrder(String.valueOf(countPosition) + " " + defaultSorting);
+            } else {
+                dataFilter.setOrder(groupFunctions.get(groupFunctions.size() - 1));
+            }
+        }
+        groupingViewer.setDataFilter(dataFilter, true);
+        //groupingViewer.refresh();
     }
 
     public void setGrouping(List<String> attributes, List<String> functions) {

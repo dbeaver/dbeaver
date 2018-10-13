@@ -370,7 +370,7 @@ public class QueryLogViewer extends Viewer implements QMMetaListener, DBPPrefere
             parent,
             SWT.MULTI | SWT.FULL_SELECTION | SWT.H_SCROLL | SWT.V_SCROLL | (inDialog ? SWT.BORDER : SWT.NONE));
         logTable.setData(this);
-        logTable.setLinesVisible(true);
+        //logTable.setLinesVisible(true);
         logTable.setHeaderVisible(true);
         GridData gd = new GridData(GridData.FILL_BOTH);
         logTable.setLayoutData(gd);

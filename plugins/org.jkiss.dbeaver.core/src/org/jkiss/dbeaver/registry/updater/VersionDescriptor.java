@@ -17,6 +17,7 @@
 
 package org.jkiss.dbeaver.registry.updater;
 
+import org.jkiss.dbeaver.model.app.DBPPlatform;
 import org.jkiss.dbeaver.runtime.WebUtils;
 import org.jkiss.utils.xml.SAXListener;
 import org.jkiss.utils.xml.SAXReader;
@@ -44,48 +45,44 @@ public class VersionDescriptor {
     private final List<DistributionDescriptor> distributions = new ArrayList<>();
     private final List<UpdateSiteDescriptor> updateSites = new ArrayList<>();
 
-    public VersionDescriptor(String fileAddr)
-        throws IOException
-    {
-        try (InputStream inputStream = WebUtils.openConnection(fileAddr).getInputStream()) {
+    public VersionDescriptor(DBPPlatform platform, String fileAddr)
+        throws IOException {
+        try (InputStream inputStream = WebUtils.openConnection(fileAddr, platform.getWorkspace().getWorkspaceId()).getInputStream()) {
             parseVersionInfo(inputStream);
         } catch (XMLException e) {
             throw new IOException("XML parse error", e);
         }
     }
 
-    public String getProgramName()
-    {
+    public String getProgramName() {
         return programName;
     }
 
-    public Version getProgramVersion()
-    {
+    public Version getProgramVersion() {
         return programVersion;
     }
 
-    public String getUpdateTime()
-    {
+    public String getPlainVersion() {
+        return programVersion.getMajor() + "." + programVersion.getMinor() + "." + programVersion.getMicro();
+    }
+
+    public String getUpdateTime() {
         return updateTime;
     }
 
-    public String getBaseURL()
-    {
+    public String getBaseURL() {
         return baseURL;
     }
 
-    public String getReleaseNotes()
-    {
+    public String getReleaseNotes() {
         return releaseNotes;
     }
 
-    public Collection<DistributionDescriptor> getDistributions()
-    {
+    public Collection<DistributionDescriptor> getDistributions() {
         return distributions;
     }
 
-    public Collection<UpdateSiteDescriptor> getUpdateSites()
-    {
+    public Collection<UpdateSiteDescriptor> getUpdateSites() {
         return updateSites;
     }
 
@@ -94,24 +91,37 @@ public class VersionDescriptor {
         SAXListener dsp = new SAXListener() {
             private String lastTag;
             private StringBuilder textBuffer = new StringBuilder();
+
             @Override
             public void saxStartElement(SAXReader reader, String namespaceURI, String localName, Attributes atts) throws XMLException {
                 lastTag = localName;
                 textBuffer.setLength(0);
             }
+
             @Override
             public void saxText(SAXReader reader, String data) throws XMLException {
                 textBuffer.append(data);
             }
+
             @Override
             public void saxEndElement(SAXReader reader, String namespaceURI, String localName) throws XMLException {
                 final String text = textBuffer.toString();
                 switch (lastTag) {
-                    case "name": programName = text; break;
-                    case "number": programVersion = Version.parseVersion(text); break;
-                    case "date": updateTime = text; break;
-                    case "base-url": baseURL = text; break;
-                    case "release-notes": releaseNotes = text; break;
+                    case "name":
+                        programName = text;
+                        break;
+                    case "number":
+                        programVersion = Version.parseVersion(text);
+                        break;
+                    case "date":
+                        updateTime = text;
+                        break;
+                    case "base-url":
+                        baseURL = text;
+                        break;
+                    case "release-notes":
+                        releaseNotes = text;
+                        break;
                 }
                 textBuffer.setLength(0);
             }

@@ -38,7 +38,7 @@ public class PostgreResultSetMetaDataImpl extends JDBCResultSetMetaDataImpl
      */
     @Override
     public String getCatalogName(int column) throws SQLException {
-        return resultSet.getSession().getExecutionContext().getInstance().getName();
+        return resultSet.getSession().getExecutionContext().getOwnerInstance().getName();
     }
 
     @Override

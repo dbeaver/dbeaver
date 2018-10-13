@@ -122,8 +122,16 @@ public abstract class JDBCTableColumn<TABLE_TYPE extends DBSEntity> extends JDBC
         if (dataSource instanceof DBPDataTypeProvider) {
             DBSDataType dataType = ((DBPDataTypeProvider) dataSource).getLocalDataType(typeName);
             if (dataType != null) {
-                this.valueType = dataType.getTypeID();
+                updateColumnDataType(dataType);
+            } else {
+                updateColumnDataType(null);
             }
+        }
+    }
+
+    protected void updateColumnDataType(@Nullable DBSDataType dataType) {
+        if (dataType != null) {
+            this.valueType = dataType.getTypeID();
         }
     }
 

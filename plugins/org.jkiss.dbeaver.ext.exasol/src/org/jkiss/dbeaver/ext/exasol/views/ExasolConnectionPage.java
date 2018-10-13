@@ -180,8 +180,6 @@ public class ExasolConnectionPage extends ConnectionPageAbstract implements ICom
     public void loadSettings() {
         super.loadSettings();
 
-        setImageDescriptor(EXASOL_LOGO_IMG);
-
         // Load values from new connection info
         DBPConnectionConfiguration connectionInfo = site.getActiveDataSource().getConnectionConfiguration();
         if (hostText != null) {

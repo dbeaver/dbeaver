@@ -44,7 +44,7 @@
                                         </items>
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableForeignKey" label="%tree.references.node.name" icon="#references" description="Table references" visibleIf="!object.view &amp;&amp; object.dataSource.info.supportsReferentialIntegrity()" virtual="true">
+                                <folder label="%tree.references.node.name" icon="#references" description="Table references" visibleIf="!object.view &amp;&amp; object.dataSource.info.supportsReferentialIntegrity()" virtual="true">
                                     <items label="%tree.reference.node.name" path="reference" property="references" icon="#reference" virtual="true">
                                         <items label="%tree.reference_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true" virtual="true">
                                         </items>
@@ -163,27 +163,33 @@
 
                     <parameter name="ddl-drop-column-short" value="true"/>
                     <parameter name="supports-scroll" value="false"/>
+                    <!-- Limits affect INSERT INTO and other DML queries-->
+                    <parameter name="supports-limits" value="false"/>
+
+                    <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                 </driver>
             </drivers>
 
-            <views>
-                <view
-                        id="org.jkiss.dbeaver.ext.vertica.dataSourceWizardView"
-                        targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
-                        label="%dialog.connection.header"
-                        class="org.jkiss.dbeaver.ext.generic.views.GenericConnectionPage"
-                        icon="icons/vertica_icon.png">
-                </view>
-                <view
-                        class="org.jkiss.dbeaver.ext.generic.views.GenericConnectionPage"
-                        icon="icons/vertica_icon.png"
-                        id="org.jkiss.dbeaver.ext.vertica.dataSourceEditorView"
-                        label="%dialog.connection.header"
-                        targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog">
-                </view>
-            </views>
-
         </datasource>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataSourceView">
+        <view
+                id="org.jkiss.dbeaver.ext.vertica.dataSourceWizardView"
+                dataSource="vertica"
+                targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
+                label="%dialog.connection.header"
+                class="org.jkiss.dbeaver.ext.generic.views.GenericConnectionPage"
+                icon="icons/vertica_icon.png">
+        </view>
+        <view
+                class="org.jkiss.dbeaver.ext.generic.views.GenericConnectionPage"
+                icon="icons/vertica_icon.png"
+                id="org.jkiss.dbeaver.ext.vertica.dataSourceEditorView"
+                dataSource="vertica"
+                label="%dialog.connection.header"
+                targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog">
+        </view>
     </extension>
 
     <extension point="org.jkiss.dbeaver.databaseEditor">

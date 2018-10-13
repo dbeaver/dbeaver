@@ -164,7 +164,7 @@ public class ERDDecoratorDefault implements ERDDecorator {
                             // usual thing in some systems like WMI/CIM model
                             continue;
                         }
-                        if (DBUtils.isHiddenObject(attribute)) {
+                        if (DBUtils.isHiddenObject(attribute) || DBUtils.isInheritedObject(attribute)) {
                             // Skip hidden attributes
                             continue;
                         }

@@ -43,6 +43,7 @@ public class DataImporterCSV extends StreamImporterAbstract {
     private static final String PROP_HEADER = "header";
     private static final String PROP_DELIMITER = "delimiter";
     private static final String PROP_QUOTE_CHAR = "quoteChar";
+    private static final String PROP_NULL_STRING = "nullString";
     private static final String PROP_EMPTY_STRING_NULL = "emptyStringNull";
 
     enum HeaderPosition {
@@ -119,6 +120,7 @@ public class DataImporterCSV extends StreamImporterAbstract {
         Map<Object, Object> properties = site.getProcessorProperties();
         HeaderPosition headerPosition = getHeaderPosition(properties);
         boolean emptyStringNull = CommonUtils.getBoolean(properties.get(PROP_EMPTY_STRING_NULL), false);
+        String nullValueMark = CommonUtils.toString(properties.get(PROP_NULL_STRING));
 
         try (StreamTransferSession producerSession = new StreamTransferSession(monitor, DBCExecutionPurpose.UTIL, "Transfer stream data")) {
             LocalStatement localStatement = new LocalStatement(producerSession, "SELECT * FROM Stream");
@@ -160,7 +162,14 @@ public class DataImporterCSV extends StreamImporterAbstract {
                         }
                         if (emptyStringNull) {
                             for (int i = 0; i < line.length; i++) {
-                                if (line[i].equals("")) {
+                                if ("".equals(line[i])) {
+                                    line[i] = null;
+                                }
+                            }
+                        }
+                        if (!CommonUtils.isEmpty(nullValueMark)) {
+                            for (int i = 0; i < line.length; i++) {
+                                if (nullValueMark.equals(line[i])) {
                                     line[i] = null;
                                 }
                             }

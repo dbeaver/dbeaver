@@ -59,4 +59,4 @@ Web
 
 Contacts
 ==============
-  serge@jkiss.org       - Technical support, feature suggestions and any other questions.
+  dbeaver@jkiss.org       - Technical support, feature suggestions and any other questions.

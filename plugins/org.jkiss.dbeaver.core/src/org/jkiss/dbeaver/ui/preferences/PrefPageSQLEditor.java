@@ -50,6 +50,10 @@ public class PrefPageSQLEditor extends TargetPrefPage
     private Button saveOnQueryExecution;
     private Button autoSaveOnClose;
 
+    private Button csFoldingEnabled;
+    private Button csMarkOccurrencesUnderCursor;
+    private Button csMarkOccurrencesForSelection;
+
     private Combo deleteEmptyCombo;
     private Button autoFoldersCheck;
     private Button connectionFoldersCheck;
@@ -75,6 +79,9 @@ public class PrefPageSQLEditor extends TargetPrefPage
             store.contains(SQLPreferenceConstants.AUTO_SAVE_ON_CLOSE) ||
             store.contains(SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE) ||
 
+            store.contains(SQLPreferenceConstants.FOLDING_ENABLED) ||
+            store.contains(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR) ||
+
             store.contains(SQLPreferenceConstants.SCRIPT_DELETE_EMPTY) ||
             store.contains(SQLPreferenceConstants.SCRIPT_AUTO_FOLDERS) ||
 
@@ -92,10 +99,11 @@ public class PrefPageSQLEditor extends TargetPrefPage
     @Override
     protected Control createPreferenceContent(Composite parent)
     {
-        Composite composite = UIUtils.createPlaceholder(parent, 1);
+        Composite composite = UIUtils.createPlaceholder(parent, 2, 5);
 
         {
             Group connectionsGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_editor_group_connections, 1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
+            ((GridData)connectionsGroup.getLayoutData()).horizontalSpan = 2;
             editorSeparateConnectionCheck = UIUtils.createCheckbox(connectionsGroup, CoreMessages.pref_page_sql_editor_label_separate_connection_each_editor, false);
 
             connectOnActivationCheck = UIUtils.createCheckbox(connectionsGroup, CoreMessages.pref_page_sql_editor_label_connect_on_editor_activation, false);
@@ -103,9 +111,18 @@ public class PrefPageSQLEditor extends TargetPrefPage
         }
 
         {
-            Group connectionsGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_editor_group_auto_save, 1, GridData.FILL_HORIZONTAL, 0);
-            autoSaveOnClose = UIUtils.createCheckbox(connectionsGroup, CoreMessages.pref_page_sql_editor_label_auto_save_on_close, false);
-            saveOnQueryExecution = UIUtils.createCheckbox(connectionsGroup, CoreMessages.pref_page_sql_editor_label_save_on_query_execute, false);
+            Group autoSaveGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_editor_group_auto_save, 1, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
+            autoSaveOnClose = UIUtils.createCheckbox(autoSaveGroup, CoreMessages.pref_page_sql_editor_label_auto_save_on_close, false);
+            saveOnQueryExecution = UIUtils.createCheckbox(autoSaveGroup, CoreMessages.pref_page_sql_editor_label_save_on_query_execute, false);
+        }
+
+        // Folding
+        {
+            Composite foldingGroup = UIUtils.createControlGroup(composite, CoreMessages.pref_page_sql_completion_group_misc, 2, GridData.VERTICAL_ALIGN_BEGINNING | GridData.FILL_HORIZONTAL, 0);
+
+            csMarkOccurrencesUnderCursor = UIUtils.createCheckbox(foldingGroup, CoreMessages.pref_page_sql_completion_label_mark_occurrences, CoreMessages.pref_page_sql_completion_label_mark_occurrences_tip, false, 2);
+            csMarkOccurrencesForSelection = UIUtils.createCheckbox(foldingGroup, CoreMessages.pref_page_sql_completion_label_mark_occurrences_for_selections, CoreMessages.pref_page_sql_completion_label_mark_occurrences_for_selections_tip, false, 2);
+            csFoldingEnabled = UIUtils.createCheckbox(foldingGroup, CoreMessages.pref_page_sql_completion_label_folding_enabled, CoreMessages.pref_page_sql_completion_label_folding_enabled_tip, false, 2);
         }
 
         // Scripts
@@ -125,11 +142,11 @@ public class PrefPageSQLEditor extends TargetPrefPage
             UIUtils.installContentProposal(
                     scriptTitlePattern,
                     new TextContentAdapter(),
-                    new SimpleContentProposalProvider(
+                    new SimpleContentProposalProvider(new String[] {
                         GeneralUtils.variablePattern(SQLEditor.VAR_CONNECTION_NAME),
                         GeneralUtils.variablePattern(SQLEditor.VAR_DRIVER_NAME),
                         GeneralUtils.variablePattern(SQLEditor.VAR_FILE_NAME),
-                        GeneralUtils.variablePattern(SQLEditor.VAR_FILE_EXT)));
+                        GeneralUtils.variablePattern(SQLEditor.VAR_FILE_EXT)}));
             UIUtils.setContentProposalToolTip(scriptTitlePattern, "Output file name patterns",
                     SQLEditor.VAR_CONNECTION_NAME, SQLEditor.VAR_DRIVER_NAME, SQLEditor.VAR_FILE_NAME, SQLEditor.VAR_FILE_EXT);
         }
@@ -170,6 +187,10 @@ public class PrefPageSQLEditor extends TargetPrefPage
             autoSaveOnClose.setSelection(store.getBoolean(SQLPreferenceConstants.AUTO_SAVE_ON_CLOSE));
             saveOnQueryExecution.setSelection(store.getBoolean(SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE));
 
+            csFoldingEnabled.setSelection(store.getBoolean(SQLPreferenceConstants.FOLDING_ENABLED));
+            csMarkOccurrencesUnderCursor.setSelection(store.getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR));
+            csMarkOccurrencesForSelection.setSelection(store.getBoolean(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION));
+
             deleteEmptyCombo.setText(SQLPreferenceConstants.EmptyScriptCloseBehavior.getByName(
                 store.getString(SQLPreferenceConstants.SCRIPT_DELETE_EMPTY)).getTitle());
             autoFoldersCheck.setSelection(store.getBoolean(SQLPreferenceConstants.SCRIPT_AUTO_FOLDERS));
@@ -194,6 +215,10 @@ public class PrefPageSQLEditor extends TargetPrefPage
 
             store.setValue(SQLPreferenceConstants.AUTO_SAVE_ON_CLOSE, autoSaveOnClose.getSelection());
             store.setValue(SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE, saveOnQueryExecution.getSelection());
+
+            store.setValue(SQLPreferenceConstants.FOLDING_ENABLED, csFoldingEnabled.getSelection());
+            store.setValue(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR, csMarkOccurrencesUnderCursor.getSelection());
+            store.setValue(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION, csMarkOccurrencesForSelection.getSelection());
 
             store.setValue(SQLPreferenceConstants.SCRIPT_DELETE_EMPTY,
                 SQLPreferenceConstants.EmptyScriptCloseBehavior.getByTitle(deleteEmptyCombo.getText()).name());
@@ -224,6 +249,10 @@ public class PrefPageSQLEditor extends TargetPrefPage
 
         store.setToDefault(SQLPreferenceConstants.AUTO_SAVE_ON_CLOSE);
         store.setToDefault(SQLPreferenceConstants.AUTO_SAVE_ON_EXECUTE);
+
+        store.setToDefault(SQLPreferenceConstants.FOLDING_ENABLED);
+        store.setToDefault(SQLPreferenceConstants.MARK_OCCURRENCES_UNDER_CURSOR);
+        store.setToDefault(SQLPreferenceConstants.MARK_OCCURRENCES_FOR_SELECTION);
 
         store.setToDefault(SQLPreferenceConstants.SCRIPT_DELETE_EMPTY);
         store.setToDefault(SQLPreferenceConstants.SCRIPT_AUTO_FOLDERS);
