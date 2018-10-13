@@ -60,7 +60,7 @@ public class AthenaDataSourceProvider extends GenericDataSourceProvider {
         //jdbc:awsathena://AwsRegion=us-east-1;
         StringBuilder url = new StringBuilder();
         url.append(AthenaConstants.JDBC_URL_PREFIX)
-            .append(AthenaConstants.DRIVER_PROP_REGION).append("=").append(connectionInfo.getServerName());
+            .append(AthenaConstants.DRIVER_PROP_REGION).append("=").append(connectionInfo.getServerName()).append(";");
         return url.toString();
     }
 }
