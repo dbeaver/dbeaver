@@ -52,6 +52,7 @@ import org.jkiss.dbeaver.ui.controls.IProgressControlProvider;
 import org.jkiss.dbeaver.ui.controls.ProgressPageControl;
 import org.jkiss.dbeaver.ui.controls.folders.TabbedFolderPage;
 import org.jkiss.dbeaver.ui.editors.DatabaseEditorInput;
+import org.jkiss.dbeaver.ui.editors.DatabaseEditorUtils;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.utils.CommonUtils;
@@ -222,15 +223,15 @@ public class TabbedFolderPageProperties extends TabbedFolderPage implements IRef
         protected void fillCustomActions(IContributionManager contributionManager) {
             super.fillCustomActions(contributionManager);
             {
-                contributionManager.add(ActionUtils.makeCommandContribution(
-                    UIUtils.getActiveWorkbenchWindow(),
-                    IWorkbenchCommandConstants.FILE_REFRESH));
                 contributionManager.add(new Action(isAttached() ? "Detach properties to top panel" : "Move properties to tab", DBeaverIcons.getImageDescriptor(UIIcon.ASTERISK)) {
                     @Override
                     public void run() {
                         detachPropertiesPanel();
                     }
                 });
+            }
+            if (part != null) {
+                DatabaseEditorUtils.contributeStandardEditorActions(part.getSite(), contributionManager);
             }
         }
 

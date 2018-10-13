@@ -367,7 +367,7 @@ public class OracleConnectionPage extends ConnectionPageAbstract implements ICom
         }
 
         //if (isOCI) {
-        oraHomeSelector.populateHomes(site.getDriver(), connectionInfo.getClientHomeId());
+        oraHomeSelector.populateHomes(site.getDriver(), connectionInfo.getClientHomeId(), site.isNew());
         //}
 
         if (tnsNameCombo.getItemCount() == 0) {

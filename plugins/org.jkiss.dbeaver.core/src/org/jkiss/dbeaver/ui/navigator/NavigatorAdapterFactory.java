@@ -50,6 +50,7 @@ public class NavigatorAdapterFactory implements IAdapterFactory
         DBSEntity.class,
         DBSDataContainer.class,
         DBSDataManipulator.class,
+        DBSObjectContainer.class,
         DBPDataSourceContainer.class,
         IPropertySource.class,
         IProject.class,

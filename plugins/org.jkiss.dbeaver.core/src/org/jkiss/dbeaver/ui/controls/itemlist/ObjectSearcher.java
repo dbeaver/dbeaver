@@ -17,6 +17,7 @@
 package org.jkiss.dbeaver.ui.controls.itemlist;
 
 import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.DBPObject;
 import org.jkiss.dbeaver.model.sql.SQLUtils;
 import org.jkiss.dbeaver.ui.ISearchExecutor;
 import org.jkiss.utils.CommonUtils;
@@ -27,7 +28,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-public abstract class ObjectSearcher<OBJECT_TYPE extends DBPNamedObject> implements ISearchExecutor {
+public abstract class ObjectSearcher<OBJECT_TYPE extends DBPObject> implements ISearchExecutor {
 
     private Pattern curSearchPattern;
     private int curSearchIndex;
@@ -119,12 +120,20 @@ public abstract class ObjectSearcher<OBJECT_TYPE extends DBPNamedObject> impleme
         }
     }
 
-    private boolean matchesSearch(DBPNamedObject element)
+    protected boolean matchesSearch(OBJECT_TYPE element)
     {
         if (curSearchPattern == null) {
             return false;
         }
-        return curSearchPattern.matcher(element.getName()).find();
+        if (element instanceof DBPNamedObject) {
+            return curSearchPattern.matcher(((DBPNamedObject)element).getName()).find();
+        } else {
+            return false;
+        }
+    }
+
+    protected Pattern getSearchPattern() {
+        return curSearchPattern;
     }
 
     public boolean hasObject(OBJECT_TYPE object)

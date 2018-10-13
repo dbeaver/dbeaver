@@ -20,25 +20,78 @@
  */
 package org.jkiss.dbeaver.ext.erd.figures;
 
-import org.eclipse.draw2d.FreeformLayer;
-import org.eclipse.jface.resource.ColorRegistry;
-import org.eclipse.ui.PlatformUI;
+import org.eclipse.draw2d.*;
+import org.eclipse.draw2d.geometry.Dimension;
+import org.eclipse.draw2d.geometry.Point;
+import org.eclipse.draw2d.geometry.Rectangle;
+import org.eclipse.draw2d.text.FlowPage;
+import org.eclipse.draw2d.text.TextFlow;
+import org.eclipse.jface.resource.JFaceResources;
 import org.jkiss.dbeaver.ext.erd.ERDConstants;
+import org.jkiss.dbeaver.ext.erd.editor.ERDGraphicalViewer;
+import org.jkiss.dbeaver.ext.erd.part.DiagramPart;
 import org.jkiss.dbeaver.ui.UIUtils;
+import org.jkiss.utils.CommonUtils;
 
 /**
  * Figure which represents the whole diagram - the view which corresponds to the
  * Schema model object
+ *
  * @author Serge Rider
  */
-public class EntityDiagramFigure extends FreeformLayer
-{
+public class EntityDiagramFigure extends FreeformLayer {
 
-	public EntityDiagramFigure()
-	{
-		//setOpaque(true);
+    private DiagramPart part;
+    private FlowPage hintFigure;
+
+    public EntityDiagramFigure(DiagramPart diagramPart) {
+        this.part = diagramPart;
+        hintFigure = new FlowPage();
+        hintFigure.setHorizontalAligment(PositionConstants.CENTER);
+        TextFlow flow = new TextFlow();
+        flow.setFont(JFaceResources.getFont(JFaceResources.HEADER_FONT));
+        hintFigure.add(flow);
+        //hintFigure.setTextAlignment(PositionConstants.CENTER);
+        //hintFigure.setTextPlacement(PositionConstants.MIDDLE);
+        add(hintFigure, null);
+
+        //setOpaque(true);
         //setChildrenOrientation(Orientable.HORIZONTAL);
-		setBackgroundColor(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_DIAGRAM_BACKGROUND));
-	}
+        setBackgroundColor(UIUtils.getColorRegistry().get(ERDConstants.COLOR_ERD_DIAGRAM_BACKGROUND));
 
+        addFigureListener(new FigureListener() {
+            @Override
+            public void figureMoved(IFigure iFigure) {
+                if (hintFigure != null) {
+                    Rectangle clientArea = EntityDiagramFigure.this.getClientArea();
+                    String message = ((ERDGraphicalViewer) part.getViewer()).getEditor().getErrorMessage();
+                    if (!CommonUtils.isEmpty(message)) {
+                        TextFlow textFlow = (TextFlow) hintFigure.getChildren().get(0);
+                        textFlow.setText(message);
+                        Dimension textExtents = FigureUtilities.getTextExtents(message, textFlow.getFont());
+                        hintFigure.setLocation(new Point((clientArea.width - textExtents.width) / 2, (clientArea.height - textExtents.height) / 2));
+                        hintFigure.setVisible(true);
+
+                        //setConstraint(hintFigure, );
+                    } else {
+                        hintFigure.setVisible(false);
+                    }
+                }
+                EntityDiagramFigure.this.removeFigureListener(this);
+            }
+        });
+    }
+
+    public DiagramPart getPart() {
+        return part;
+    }
+
+    @Override
+    public void add(IFigure child, Object constraint, int index) {
+        if (hintFigure != null && child != hintFigure) {
+            remove(hintFigure);
+            hintFigure = null;
+        }
+        super.add(child, constraint, index);
+    }
 }

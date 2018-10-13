@@ -179,12 +179,6 @@ public class TableCache extends JDBCStructLookupCache<GenericStructContainer, Ge
             }
         }
 
-/*
-        if (charLength > 0) {
-            typeName = typeName + "(" + charLength + ")";
-        }
-*/
-
         return getDataSource().getMetaModel().createTableColumnImpl(
             session.getProgressMonitor(),
             table,

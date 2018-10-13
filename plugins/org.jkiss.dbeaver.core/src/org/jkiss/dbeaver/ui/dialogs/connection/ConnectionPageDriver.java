@@ -18,9 +18,13 @@ package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.jface.viewers.*;
+import org.eclipse.jface.wizard.WizardDialog;
+import org.eclipse.nebula.widgets.gallery.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.events.TraverseEvent;
+import org.eclipse.swt.events.TraverseListener;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Composite;
@@ -30,7 +34,9 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
 import org.jkiss.dbeaver.registry.DataSourceProviderDescriptor;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
+import org.jkiss.dbeaver.ui.DBeaverIcons;
 import org.jkiss.dbeaver.ui.IHelpContextIds;
+import org.jkiss.dbeaver.ui.UIIcon;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.ActiveWizardPage;
 import org.jkiss.dbeaver.ui.dialogs.driver.DriverTreeControl;
@@ -63,6 +69,53 @@ class ConnectionPageDriver extends ActiveWizardPage implements ISelectionChanged
         GridData gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 200;
         driverTreeControl.setLayoutData(gd);
+
+/*
+        {
+            Gallery gallery = new Gallery(placeholder, SWT.V_SCROLL | SWT.MULTI);
+            gallery.setLayoutData(new GridData(GridData.FILL_BOTH));
+
+            gallery.addTraverseListener(new TraverseListener() {
+                @Override
+                public void keyTraversed(TraverseEvent e) {
+                    if (e.detail == SWT.TRAVERSE_ESCAPE) {
+                        ((WizardDialog)getContainer()).close();
+                        //getWizard().performCancel();
+                    }
+                }
+            });
+
+            // Renderers
+            NoGroupRenderer gr = new NoGroupRenderer();
+            gr.setItemHeight(80);
+            gr.setItemWidth(140);
+            gr.setMinMargin(2);
+            gr.setAutoMargin(false);
+            gallery.setGroupRenderer(gr);
+
+
+            AbstractGalleryItemRenderer ir = new ListItemRenderer();
+            //ir.setDropShadows(false);
+            //ir.setShowLabels(false);
+            gallery.setItemRenderer(ir);
+
+            for (int g = 0; g < 1; g++) {
+                GalleryItem group = new GalleryItem(gallery, SWT.NONE);
+                group.setText("Group " + g); //$NON-NLS-1$
+                group.setExpanded(true);
+
+                for (int i = 0; i < 50; i++) {
+                    GalleryItem item = new GalleryItem(group, SWT.NONE);
+                    item.setImage(DBeaverIcons.getImage(UIIcon.DBEAVER_LOGO));
+//                    if (itemImage != null) {
+//                        item.setImage(itemImage);
+//                    }
+                    item.setText("Item " + i); //$NON-NLS-1$
+                }
+            }
+        }
+*/
+
         setControl(placeholder);
 
         Group projectGroup = UIUtils.createControlGroup(placeholder, CoreMessages.dialog_connection_driver_project, 1, GridData.FILL_HORIZONTAL, SWT.DEFAULT);

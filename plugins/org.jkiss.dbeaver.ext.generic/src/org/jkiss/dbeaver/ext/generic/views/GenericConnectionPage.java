@@ -31,9 +31,10 @@ import org.jkiss.dbeaver.ext.generic.GenericMessages;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCConstants;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCURL;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.dbeaver.registry.DataSourceDescriptor;
-import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.ui.ICompositeDialogPage;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -65,7 +66,7 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
     private Text urlText;
 
     private boolean isCustom;
-    private DriverDescriptor.MetaURL metaURL;
+    private JDBCURL.MetaURL metaURL;
 
     private Composite settingsGroup;
 
@@ -107,7 +108,7 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 3;
             gd.grabExcessHorizontalSpace = true;
-            //gd.widthHint = 355;
+            gd.widthHint = 355;
             urlText.setLayoutData(gd);
             urlText.addModifyListener(e -> site.updateButtons());
 
@@ -189,8 +190,8 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
 
             pathText = new Text(settingsGroup, SWT.BORDER);
             gd = new GridData(GridData.FILL_HORIZONTAL);
-            //gd.grabExcessHorizontalSpace = true;
-            //gd.widthHint = 200;
+            gd.grabExcessHorizontalSpace = true;
+            gd.widthHint = 200;
             gd.horizontalSpan = 2;
             pathText.setLayoutData(gd);
             pathText.addModifyListener(textListener);
@@ -213,7 +214,7 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
                 @Override
                 public void widgetSelected(SelectionEvent e)
                 {
-                    if (metaURL.getAvailableProperties().contains(DriverDescriptor.PROP_FILE)) {
+                    if (metaURL.getAvailableProperties().contains(JDBCConstants.PROP_FILE)) {
                         FileDialog dialog = new FileDialog(getShell(), SWT.OPEN | SWT.SINGLE);
                         dialog.setFileName(pathText.getText());
                         dialog.setText(GenericMessages.dialog_connection_db_file_chooser_text);
@@ -312,9 +313,11 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
             }
             for (String prop : metaURL.getRequiredProperties()) {
                 if (
-                    (prop.equals(DriverDescriptor.PROP_HOST) && CommonUtils.isEmpty(hostText.getText())) ||
-                        (prop.equals(DriverDescriptor.PROP_PORT) && CommonUtils.isEmpty(portText.getText())) ||
-                        (prop.equals(DriverDescriptor.PROP_DATABASE) && CommonUtils.isEmpty(dbText.getText()))) {
+                    (prop.equals(JDBCConstants.PROP_HOST) && CommonUtils.isEmptyTrimmed(hostText.getText())) ||
+                    (prop.equals(JDBCConstants.PROP_PORT) && CommonUtils.isEmptyTrimmed(portText.getText())) ||
+                    (prop.equals(JDBCConstants.PROP_DATABASE) && CommonUtils.isEmptyTrimmed(dbText.getText())) ||
+                    ((prop.equals(JDBCConstants.PROP_FILE) || prop.equals(JDBCConstants.PROP_FOLDER)) && CommonUtils.isEmptyTrimmed(pathText.getText())))
+                {
                     return false;
                 }
             }
@@ -418,19 +421,19 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
         DBPConnectionConfiguration connectionInfo = dataSource.getConnectionConfiguration();
         final Set<String> properties = metaURL == null ? Collections.emptySet() : metaURL.getAvailableProperties();
 
-        if (hostText != null && properties.contains(DriverDescriptor.PROP_HOST)) {
+        if (hostText != null && properties.contains(JDBCConstants.PROP_HOST)) {
             connectionInfo.setHostName(hostText.getText().trim());
         }
-        if (portText != null && properties.contains(DriverDescriptor.PROP_PORT)) {
+        if (portText != null && properties.contains(JDBCConstants.PROP_PORT)) {
             connectionInfo.setHostPort(portText.getText().trim());
         }
-        if (serverText != null && properties.contains(DriverDescriptor.PROP_SERVER)) {
+        if (serverText != null && properties.contains(JDBCConstants.PROP_SERVER)) {
             connectionInfo.setServerName(serverText.getText().trim());
         }
-        if (dbText != null && properties.contains(DriverDescriptor.PROP_DATABASE)) {
+        if (dbText != null && properties.contains(JDBCConstants.PROP_DATABASE)) {
             connectionInfo.setDatabaseName(dbText.getText().trim());
         }
-        if (pathText != null && (properties.contains(DriverDescriptor.PROP_FOLDER) || properties.contains(DriverDescriptor.PROP_FILE))) {
+        if (pathText != null && (properties.contains(JDBCConstants.PROP_FOLDER) || properties.contains(JDBCConstants.PROP_FILE))) {
             connectionInfo.setDatabaseName(pathText.getText().trim());
         }
         if (userNameText != null) {
@@ -458,17 +461,17 @@ public class GenericConnectionPage extends ConnectionPageAbstract implements ICo
         if (!CommonUtils.isEmpty(driver.getSampleURL())) {
             isCustom = false;
             try {
-                metaURL = DriverDescriptor.parseSampleURL(driver.getSampleURL());
+                metaURL = JDBCURL.parseSampleURL(driver.getSampleURL());
             } catch (DBException e) {
                 setErrorMessage(e.getMessage());
             }
             final Set<String> properties = metaURL.getAvailableProperties();
             urlText.setEditable(false);
 
-            showControlGroup(GROUP_HOST, properties.contains(DriverDescriptor.PROP_HOST));
-            showControlGroup(GROUP_SERVER, properties.contains(DriverDescriptor.PROP_SERVER));
-            showControlGroup(GROUP_DB, properties.contains(DriverDescriptor.PROP_DATABASE));
-            showControlGroup(GROUP_PATH, properties.contains(DriverDescriptor.PROP_FOLDER) || properties.contains(DriverDescriptor.PROP_FILE));
+            showControlGroup(GROUP_HOST, properties.contains(JDBCConstants.PROP_HOST));
+            showControlGroup(GROUP_SERVER, properties.contains(JDBCConstants.PROP_SERVER));
+            showControlGroup(GROUP_DB, properties.contains(JDBCConstants.PROP_DATABASE));
+            showControlGroup(GROUP_PATH, properties.contains(JDBCConstants.PROP_FOLDER) || properties.contains(JDBCConstants.PROP_FILE));
         } else {
             isCustom = true;
             showControlGroup(GROUP_HOST, false);

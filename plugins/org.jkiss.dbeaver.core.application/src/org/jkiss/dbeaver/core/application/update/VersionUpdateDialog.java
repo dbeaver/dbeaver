@@ -18,6 +18,7 @@ package org.jkiss.dbeaver.core.application.update;
 
 import org.eclipse.jface.dialogs.Dialog;
 import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.layout.GridData;
@@ -26,6 +27,7 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.jkiss.dbeaver.core.CoreMessages;
+import org.jkiss.dbeaver.core.application.internal.CoreApplicationActivator;
 import org.jkiss.dbeaver.registry.updater.VersionDescriptor;
 import org.jkiss.dbeaver.ui.ActionUtils;
 import org.jkiss.dbeaver.ui.UIUtils;
@@ -36,11 +38,14 @@ class VersionUpdateDialog extends Dialog {
     private VersionDescriptor newVersion;
     private static final int INFO_ID = 1000;
     private Font boldFont;
+    private boolean autoCheck;
+    private Button dontShowAgainCheck;
 
-    public VersionUpdateDialog(Shell parentShell, VersionDescriptor newVersion)
+    public VersionUpdateDialog(Shell parentShell, VersionDescriptor newVersion, boolean autoCheck)
     {
         super(parentShell);
         this.newVersion = newVersion;
+        this.autoCheck = autoCheck;
     }
 
     @Override
@@ -61,7 +66,8 @@ class VersionUpdateDialog extends Dialog {
         boldFont = UIUtils.makeBoldFont(composite.getFont());
 
         final Label titleLabel = new Label(propGroup, SWT.NONE);
-        titleLabel.setText(newVersion == null ? CoreMessages.dialog_version_update_no_new_version : CoreMessages.dialog_version_update_available_new_version);
+        titleLabel.setText(
+            NLS.bind(newVersion == null ? CoreMessages.dialog_version_update_no_new_version : CoreMessages.dialog_version_update_available_new_version, GeneralUtils.getProductName()));
         GridData gd = new GridData(GridData.FILL_HORIZONTAL);
         gd.horizontalSpan = 2;
         titleLabel.setLayoutData(gd);
@@ -91,7 +97,7 @@ class VersionUpdateDialog extends Dialog {
             notesText.setLayoutData(gd);
 
             final Label hintLabel = new Label(propGroup, SWT.NONE);
-            hintLabel.setText(CoreMessages.dialog_version_update_press_more_info_);
+            hintLabel.setText(NLS.bind(CoreMessages.dialog_version_update_press_more_info_, newVersion.getPlainVersion()));
             gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.horizontalSpan = 2;
             hintLabel.setLayoutData(gd);
@@ -111,6 +117,11 @@ class VersionUpdateDialog extends Dialog {
     @Override
     protected void createButtonsForButtonBar(Composite parent)
     {
+        if (autoCheck && newVersion != null) {
+            ((GridLayout) parent.getLayout()).numColumns++;
+            dontShowAgainCheck = UIUtils.createCheckbox(parent, "Don't show for the version " + newVersion.getPlainVersion(), false);
+        }
+
         if (newVersion != null) {
 /*
             // Disable P2 update. Doesn't work and can't work properly in most cases.
@@ -140,6 +151,9 @@ class VersionUpdateDialog extends Dialog {
     @Override
     protected void buttonPressed(int buttonId)
     {
+        if (dontShowAgainCheck != null && dontShowAgainCheck.getSelection()) {
+            CoreApplicationActivator.getDefault().getPreferenceStore().setValue("suppressUpdateCheck." + newVersion.getPlainVersion(), true);
+        }
         if (buttonId == INFO_ID) {
             if (newVersion != null) {
                 UIUtils.launchProgram(newVersion.getBaseURL());
@@ -155,4 +169,10 @@ class VersionUpdateDialog extends Dialog {
         }
         close();
     }
+
+    public static boolean isSuppressed(VersionDescriptor version) {
+        CoreApplicationActivator activator = CoreApplicationActivator.getDefault();
+        return activator != null && activator.getPreferenceStore().getBoolean("suppressUpdateCheck." + version.getPlainVersion());
+    }
+
 }

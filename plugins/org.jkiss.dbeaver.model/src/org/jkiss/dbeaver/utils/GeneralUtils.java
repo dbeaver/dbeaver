@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.utils;
 
 import org.eclipse.core.runtime.*;
 import org.jkiss.code.NotNull;
-import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.bundle.ModelActivator;
@@ -69,10 +68,10 @@ public class GeneralUtils {
     public static final char[] nibbleToHex = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
     static final Map<String, byte[]> BOM_MAP = new HashMap<>();
     private static final char[] HEX_CHAR_TABLE = {
-      '0', '1', '2', '3',
-      '4', '5', '6', '7',
-      '8', '9', 'a', 'b',
-      'c', 'd', 'e', 'f'
+        '0', '1', '2', '3',
+        '4', '5', '6', '7',
+        '8', '9', 'a', 'b',
+        'c', 'd', 'e', 'f'
     };
 
     static {
@@ -87,20 +86,17 @@ public class GeneralUtils {
     /**
      * Default encoding (UTF-8)
      */
-    public static String getDefaultFileEncoding()
-    {
+    public static String getDefaultFileEncoding() {
         return UTF8_ENCODING;
         //return System.getProperty("file.encoding", DEFAULT_FILE_CHARSET_NAME);
     }
 
-    public static String getDefaultLocalFileEncoding()
-    {
+    public static String getDefaultLocalFileEncoding() {
         return System.getProperty(StandardConstants.ENV_FILE_ENCODING, getDefaultFileEncoding());
     }
 
 
-    public static String getDefaultConsoleEncoding()
-    {
+    public static String getDefaultConsoleEncoding() {
         String consoleEncoding = System.getProperty(StandardConstants.ENV_CONSOLE_ENCODING);
         if (CommonUtils.isEmpty(consoleEncoding)) {
             consoleEncoding = System.getProperty(StandardConstants.ENV_FILE_ENCODING);
@@ -111,25 +107,21 @@ public class GeneralUtils {
         return consoleEncoding;
     }
 
-    public static String getDefaultLineSeparator()
-    {
+    public static String getDefaultLineSeparator() {
         return System.getProperty(StandardConstants.ENV_LINE_SEPARATOR, "\n");
     }
 
-    public static byte[] getCharsetBOM(String charsetName)
-    {
+    public static byte[] getCharsetBOM(String charsetName) {
         return BOM_MAP.get(charsetName.toUpperCase());
     }
 
-    public static void writeByteAsHex(Writer out, byte b) throws IOException
-    {
+    public static void writeByteAsHex(Writer out, byte b) throws IOException {
         int v = b & 0xFF;
         out.write(HEX_CHAR_TABLE[v >>> 4]);
         out.write(HEX_CHAR_TABLE[v & 0xF]);
     }
 
-    public static void writeBytesAsHex(Writer out, byte[] buf, int off, int len) throws IOException
-    {
+    public static void writeBytesAsHex(Writer out, byte[] buf, int off, int len) throws IOException {
         for (int i = 0; i < len; i++) {
             byte b = buf[off + i];
             int v = b & 0xFF;
@@ -138,8 +130,7 @@ public class GeneralUtils {
         }
     }
 
-    public static String convertToString(byte[] bytes, int offset, int length)
-    {
+    public static String convertToString(byte[] bytes, int offset, int length) {
         char[] chars = new char[length];
         for (int i = offset; i < offset + length; i++) {
             int b = bytes[i];
@@ -154,8 +145,7 @@ public class GeneralUtils {
      * Converts string to byte array.
      * This is loosy algorithm because it gets only first byte from each char.
      */
-    public static byte[] convertToBytes(String strValue)
-    {
+    public static byte[] convertToBytes(String strValue) {
         int length = strValue.length();
         byte[] bytes = new byte[length];
         for (int i = 0; i < length; i++) {
@@ -163,13 +153,12 @@ public class GeneralUtils {
             if (c > 127) {
                 c = -(c - 127);
             }
-            bytes[i] = (byte)c;
+            bytes[i] = (byte) c;
         }
         return bytes;
     }
 
-    public static Object makeDisplayString(Object object)
-    {
+    public static Object makeDisplayString(Object object) {
         if (object == null) {
             return ""; //$NON-NLS-1$
         }
@@ -201,8 +190,7 @@ public class GeneralUtils {
         return object;
     }
 
-    public static Object convertString(String value, Class<?> valueType)
-    {
+    public static Object convertString(String value, Class<?> valueType) {
         try {
             if (CommonUtils.isEmpty(value)) {
                 return null;
@@ -284,14 +272,12 @@ public class GeneralUtils {
     }
 
     @NotNull
-    public static String getProductTitle()
-    {
-        return getProductName() + " " + getProductVersion();
+    public static String getProductTitle() {
+        return getProductName() + " " + getPlainVersion();
     }
 
     @NotNull
-    public static String getProductName()
-    {
+    public static String getProductName() {
         ApplicationDescriptor application = ApplicationRegistry.getInstance().getApplication();
         if (application != null) {
             return ApplicationRegistry.getInstance().getApplication().getName();
@@ -304,8 +290,7 @@ public class GeneralUtils {
     }
 
     @NotNull
-    public static Version getProductVersion()
-    {
+    public static Version getProductVersion() {
         ApplicationDescriptor application = ApplicationRegistry.getInstance().getApplication();
         if (application != null) {
             return application.getContributorBundle().getVersion();
@@ -315,6 +300,18 @@ public class GeneralUtils {
             return ModelActivator.getInstance().getBundle().getVersion();
         }
         return product.getDefiningBundle().getVersion();
+    }
+
+    @NotNull
+    public static String getPlainVersion() {
+        Version version = getProductVersion();
+        return version.getMajor() + "." + version.getMinor() + "." + version.getMicro();
+    }
+
+    @NotNull
+    public static String getMajorVersion() {
+        Version version = getProductVersion();
+        return version.getMajor() + "." + version.getMinor();
     }
 
     @NotNull
@@ -446,8 +443,7 @@ public class GeneralUtils {
         return args;
     }
 
-    public static IStatus makeExceptionStatus(Throwable ex)
-    {
+    public static IStatus makeExceptionStatus(Throwable ex) {
         return makeExceptionStatus(IStatus.ERROR, ex);
     }
 
@@ -455,10 +451,9 @@ public class GeneralUtils {
         return makeExceptionStatus(severity, ex, false);
     }
 
-    private static IStatus makeExceptionStatus(int severity, Throwable ex, boolean nested)
-    {
+    private static IStatus makeExceptionStatus(int severity, Throwable ex, boolean nested) {
         // Skip chain of nested DBExceptions. Show only last message
-        while (ex.getCause() != null && ex.getMessage().equals(ex.getCause().getMessage())) {
+        while (ex.getCause() != null && ex.getMessage() != null && ex.getMessage().equals(ex.getCause().getMessage())) {
             ex = ex.getCause();
         }
         Throwable cause = ex.getCause();
@@ -503,13 +498,11 @@ public class GeneralUtils {
         }
     }
 
-    public static IStatus makeExceptionStatus(String message, Throwable ex)
-    {
+    public static IStatus makeExceptionStatus(String message, Throwable ex) {
         return makeExceptionStatus(IStatus.ERROR, message, ex);
     }
 
-    public static IStatus makeExceptionStatus(int severity, String message, Throwable ex)
-    {
+    public static IStatus makeExceptionStatus(int severity, String message, Throwable ex) {
         return new MultiStatus(
             ModelPreferences.PLUGIN_ID,
             0,
@@ -541,8 +534,7 @@ public class GeneralUtils {
     /**
      * Returns first non-null and non-empty message from this exception or it's cause
      */
-    public static String getFirstMessage(Throwable ex)
-    {
+    public static String getFirstMessage(Throwable ex) {
         for (Throwable e = ex; e != null; e = e.getCause()) {
             String message = e.getMessage();
             if (!CommonUtils.isEmpty(message)) {
@@ -552,11 +544,10 @@ public class GeneralUtils {
         return null;
     }
 
-    public static String getExceptionMessage(@NotNull Throwable ex)
-    {
+    public static String getExceptionMessage(@NotNull Throwable ex) {
 /*
         StringBuilder msg = new StringBuilder(*/
-/*CommonUtils.getShortClassName(ex.getClass())*//*
+        /*CommonUtils.getShortClassName(ex.getClass())*//*
 );
         msg.append(ex.getClass().getSimpleName());
         if (ex.getMessage() != null) {
@@ -616,7 +607,7 @@ public class GeneralUtils {
     public static URI makeURIFromFilePath(@NotNull String path) throws URISyntaxException {
         return new URI(path.replace(" ", "%20"));
     }
-    
+
     public static String encodeTopic(@NotNull String topic) {
         return topic.replace(".", "__dot__");
     }

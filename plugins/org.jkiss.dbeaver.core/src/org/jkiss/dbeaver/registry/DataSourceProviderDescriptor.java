@@ -62,7 +62,7 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
     private boolean driversManagable;
     private final List<DBPPropertyDescriptor> driverProperties = new ArrayList<>();
     private final List<DriverDescriptor> drivers = new ArrayList<>();
-    private final List<DataSourceViewDescriptor> views = new ArrayList<>();
+    private final List<NativeClientDescriptor> nativeClients = new ArrayList<>();
 
     public DataSourceProviderDescriptor(DataSourceProviderRegistry registry, IConfigurationElement config)
     {
@@ -132,17 +132,11 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
             }
         }
 
-        // Load views
+        // Load native clients
         {
-            for (IConfigurationElement viewsElement : config.getChildren(RegistryConstants.TAG_VIEWS)) {
-                for (IConfigurationElement viewElement : viewsElement.getChildren(RegistryConstants.TAG_VIEW)) {
-                    this.views.add(
-                        new DataSourceViewDescriptor(this, viewElement));
-                }
-            }
-            if (this.views.isEmpty()) {
-                if (parentProvider != null) {
-                    this.views.addAll(parentProvider.views);
+            for (IConfigurationElement nativeClientsElement : config.getChildren("nativeClients")) {
+                for (IConfigurationElement clientElement : nativeClientsElement.getChildren("client")) {
+                    this.nativeClients.add(new NativeClientDescriptor(clientElement));
                 }
             }
         }
@@ -157,6 +151,10 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
     public DataSourceProviderRegistry getRegistry()
     {
         return registry;
+    }
+
+    public DataSourceProviderDescriptor getParentProvider() {
+        return parentProvider;
     }
 
     public String getId()
@@ -198,14 +196,13 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
         return instance;
     }
 
-    private void initProviderBundle(DriverDescriptor driver)
-    {
-    }
-
     public DBXTreeNode getTreeDescriptor()
     {
         return treeDescriptor;
     }
+
+    //////////////////////////////////////
+    // Drivers
 
     public boolean isDriversManagable()
     {
@@ -287,14 +284,19 @@ public class DataSourceProviderDescriptor extends AbstractDescriptor
         }
     }
 
-    public DataSourceViewDescriptor getView(String targetID)
+    //////////////////////////////////////
+    // Native clients
+
+    public List<NativeClientDescriptor> getNativeClients() {
+        return nativeClients;
+    }
+
+    //////////////////////////////////////
+    // Internal
+
+
+    private void initProviderBundle(DriverDescriptor driver)
     {
-        for (DataSourceViewDescriptor view : views) {
-            if (view.getTargetID().equals(targetID)) {
-                return view;
-            }
-        }
-        return null;
     }
 
     private DBXTreeItem loadTreeInfo(IConfigurationElement config)

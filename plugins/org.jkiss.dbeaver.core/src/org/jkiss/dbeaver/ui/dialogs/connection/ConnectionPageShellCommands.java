@@ -17,8 +17,6 @@
 package org.jkiss.dbeaver.ui.dialogs.connection;
 
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.ModifyEvent;
-import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.layout.GridData;
@@ -74,22 +72,19 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
     @Override
     public void createControl(Composite parent)
     {
-        Composite group = UIUtils.createPlaceholder(parent, 2);
+        Composite group = UIUtils.createPlaceholder(parent, 2, 5);
         group.setLayoutData(new GridData(GridData.FILL_BOTH));
 
         {
-            Composite eventGroup = new Composite(group, SWT.NONE);
-            eventGroup.setLayout(new GridLayout(1, false));
+            Composite eventGroup = UIUtils.createPlaceholder(group, 1);
             eventGroup.setLayoutData(new GridData(GridData.FILL_VERTICAL));
 
             UIUtils.createControlLabel(eventGroup, CoreMessages.dialog_connection_events_label_event);
             eventTypeTable = new Table(eventGroup, SWT.BORDER | SWT.CHECK | SWT.SINGLE | SWT.FULL_SELECTION);
             eventTypeTable.setLayoutData(new GridData(GridData.FILL_VERTICAL));
-            eventTypeTable.addListener(SWT.Selection, new Listener() {
-                public void handleEvent(Event event) {
-                    if (event.detail == SWT.CHECK) {
-                        eventTypeTable.select(eventTypeTable.indexOf((TableItem) event.item));
-                    }
+            eventTypeTable.addListener(SWT.Selection, event -> {
+                if (event.detail == SWT.CHECK) {
+                    eventTypeTable.select(eventTypeTable.indexOf((TableItem) event.item));
                 }
             });
 
@@ -117,20 +112,12 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
             });
         }
         {
-            Composite detailsGroup = new Composite(group, SWT.NONE);
-            detailsGroup.setLayout(new GridLayout(1, false));
+            Composite detailsGroup = UIUtils.createPlaceholder(group, 1, 5);
             detailsGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
-                //UIUtils.createControlGroup(group, "Event", 1, GridData.FILL_BOTH | GridData.HORIZONTAL_ALIGN_BEGINNING, 0);
 
             UIUtils.createControlLabel(detailsGroup, CoreMessages.dialog_connection_events_label_command);
             commandText = new Text(detailsGroup, SWT.BORDER | SWT.MULTI | SWT.WRAP | SWT.V_SCROLL);
-            commandText.addModifyListener(new ModifyListener() {
-                @Override
-                public void modifyText(ModifyEvent e)
-                {
-                    updateEvent(true);
-                }
-            });
+            commandText.addModifyListener(e -> updateEvent(true));
             GridData gd = new GridData(GridData.FILL_HORIZONTAL);
             gd.heightHint = 60;
             gd.widthHint = 300;
@@ -162,14 +149,10 @@ public class ConnectionPageShellCommands extends ConnectionWizardPage {
                 UIUtils.createControlLabel(pauseComposite, CoreMessages.dialog_connection_edit_wizard_shell_cmd_directory_label);
                 workingDirectory = new TextWithOpenFolder(pauseComposite, CoreMessagesdialog_connection_edit_wizard_shell_cmd_directory_title);
                 workingDirectory.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-                workingDirectory.getTextControl().addModifyListener(new ModifyListener() {
-                    @Override
-                    public void modifyText(ModifyEvent e)
-                    {
-                        DBRShellCommand command = getActiveCommand();
-                        if (command != null) {
-                            command.setWorkingDirectory(workingDirectory.getText());
-                        }
+                workingDirectory.getTextControl().addModifyListener(e -> {
+                    DBRShellCommand command = getActiveCommand();
+                    if (command != null) {
+                        command.setWorkingDirectory(workingDirectory.getText());
                     }
                 });
             }

@@ -22,8 +22,14 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
+import org.jkiss.dbeaver.model.exec.DBCSession;
+import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+import org.jkiss.utils.CommonUtils;
+
+import java.util.List;
 
 /**
  * Abstract Database Job
@@ -115,36 +121,87 @@ public abstract class AbstractJob extends Job
         }
         // Run canceling job
         if (!blockCanceled) {
-            Job cancelJob = new Job("Cancel block") { //$NON-N LS-1$
-                {
-                    setSystem(true);
-                    setUser(false);
-                }
-                @Override
-                protected IStatus run(IProgressMonitor monitor)
-                {
-                    if (!finished && !blockCanceled) {
-                        try {
-                            BlockCanceler.cancelBlock(progressMonitor, getActiveThread());
-                        } catch (DBException e) {
-                            return GeneralUtils.makeExceptionStatus(e);
-                        } catch (Throwable e) {
-                            log.debug("Cancel error", e);
-                            return Status.CANCEL_STATUS;
-                        }
-                        blockCanceled = true;
-                    }
-                    return Status.OK_STATUS;
-                }
-            };
-            try {
-                // Schedule cancel after short pause
-                cancelJob.schedule(TIMEOUT_BEFORE_BLOCK_CANCEL);
-            } catch (Exception e) {
-                // If this happens during shutdown and job manager is not active
-                log.debug(e);
-            }
+            runBlockCanceler();
         }
     }
 
+    private void runBlockCanceler() {
+        final List<DBRBlockingObject> activeBlocks = progressMonitor.getActiveBlocks();
+        if (CommonUtils.isEmpty(activeBlocks)) {
+            // Nothing to cancel
+            return;
+        }
+
+        final DBRBlockingObject lastBlock = activeBlocks.remove(activeBlocks.size() - 1);
+
+        try {
+            new JobCanceler(lastBlock).schedule();
+        } catch (Exception e) {
+            // If this happens during shutdown and job manager is not active
+            log.debug(e);
+        }
+
+        if (!activeBlocks.isEmpty()) {
+            DBPPreferenceStore preferenceStore;
+            if (activeBlocks.get(0) instanceof DBCSession) {
+                preferenceStore = ((DBCSession) activeBlocks.get(0)).getDataSource().getContainer().getPreferenceStore();
+            } else {
+                preferenceStore = ModelPreferences.getPreferences();
+            }
+
+            int cancelCheckTimeout = preferenceStore.getInt(ModelPreferences.EXECUTE_CANCEL_CHECK_TIMEOUT);
+
+            if (cancelCheckTimeout > 0) {
+                // There are other blocks. If last one can't be canceled then try others
+                Job cancelChecker = new Job("Cancel checker block") { //$NON-N LS-1$
+                    {
+                        setSystem(true);
+                        setUser(false);
+                    }
+
+                    @Override
+                    protected IStatus run(IProgressMonitor monitor) {
+                        if (!finished) {
+                            DBRBlockingObject nextBlock = activeBlocks.remove(activeBlocks.size() - 1);
+                            new JobCanceler(nextBlock).schedule();
+                            if (!activeBlocks.isEmpty()) {
+                                schedule(cancelCheckTimeout);
+                            }
+                        }
+                        return Status.OK_STATUS;
+                    }
+                };
+                cancelChecker.schedule(cancelCheckTimeout);
+            }
+        }
+
+    }
+
+    private class JobCanceler extends Job {
+        private final DBRBlockingObject block;
+
+        public JobCanceler(DBRBlockingObject block) {
+            super("Cancel block " + block);
+            this.block = block;
+            setSystem(true);
+            setUser(false);
+        }  //$NON-N LS-1$
+
+        @Override
+        protected IStatus run(IProgressMonitor monitor)
+        {
+            if (!finished) {
+                try {
+                    BlockCanceler.cancelBlock(progressMonitor, block, getActiveThread());
+                } catch (DBException e) {
+                    return GeneralUtils.makeExceptionStatus(e);
+                } catch (Throwable e) {
+                    log.debug("Cancel error", e);
+                    return Status.CANCEL_STATUS;
+                }
+                blockCanceled = true;
+            }
+            return Status.OK_STATUS;
+        }
+    }
 }

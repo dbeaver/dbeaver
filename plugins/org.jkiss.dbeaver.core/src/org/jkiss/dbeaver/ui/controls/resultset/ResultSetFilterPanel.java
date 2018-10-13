@@ -974,7 +974,7 @@ class ResultSetFilterPanel extends Composite implements IContentProposalProvider
 
         EditFilterPanel(Composite addressBar) {
             super(addressBar, SWT.NONE);
-            setToolTipText("Expan filter panel");
+            setToolTipText("Expand filter panel");
             enabledImageExpand = DBeaverIcons.getImage(UIIcon.FIT_WINDOW);
             disabledImageExpand = new Image(enabledImageExpand.getDevice(), enabledImageExpand, SWT.IMAGE_GRAY);
             enabledImageCollapse = DBeaverIcons.getImage(UIIcon.ORIGINAL_SIZE);

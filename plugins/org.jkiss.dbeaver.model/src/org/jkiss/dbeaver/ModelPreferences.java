@@ -38,6 +38,8 @@ import java.util.Arrays;
  */
 public final class ModelPreferences
 {
+    public static final String PLUGIN_ID = "org.jkiss.dbeaver.model";
+
     public static final String NOTIFICATIONS_ENABLED = "notifications.enabled"; //$NON-NLS-1$
     public static final String NOTIFICATIONS_CLOSE_DELAY_TIMEOUT = "notifications.closeDelay"; //$NON-NLS-1$
 
@@ -45,6 +47,7 @@ public final class ModelPreferences
 
     public static final String EXECUTE_RECOVER_ENABLED = "execute.recover.enabled"; //$NON-NLS-1$
     public static final String EXECUTE_RECOVER_RETRY_COUNT = "execute.recover.retryCount"; //$NON-NLS-1$
+    public static final String EXECUTE_CANCEL_CHECK_TIMEOUT = "execute.cancel.checkTimeout"; //$NON-NLS-1$
 
     public static final String CONNECTION_OPEN_TIMEOUT = "connection.open.timeout"; //$NON-NLS-1$
     public static final String CONNECTION_VALIDATION_TIMEOUT = "connection.validation.timeout"; //$NON-NLS-1$
@@ -70,6 +73,7 @@ public final class ModelPreferences
 
     public static final String CONNECT_USE_ENV_VARS = "database.connect.processEnvVars"; //$NON-NLS-1$
 
+    public static final String RESULT_NATIVE_DATETIME_FORMAT = "resultset.format.datetime.native"; //$NON-NLS-1$
     public static final String RESULT_TRANSFORM_COMPLEX_TYPES = "resultset.transform.complex.type"; //$NON-NLS-1$
 
     // Network
@@ -99,10 +103,19 @@ public final class ModelPreferences
     public final static String SQL_FORMAT_EXTERNAL_FILE = "sql.format.external.file";
     //public final static String SQL_FORMAT_EXTERNAL_DIR = "sql.format.external.dir";
     public final static String SQL_FORMAT_EXTERNAL_TIMEOUT = "sql.format.external.timeout";
+    public final static String SQL_FORMAT_LF_BEFORE_COMMA = "sql.format.lf.before.comma";
 
     public static final String READ_EXPENSIVE_PROPERTIES = "database.props.expensive"; //$NON-NLS-1$
 
-    public static final String PLUGIN_ID = "org.jkiss.dbeaver.model";
+    // Driver and proxy settings. They have prefix UI_ by historical reasons.
+    public static final String UI_DRIVERS_VERSION_UPDATE = "ui.drivers.version.update"; //$NON-NLS-1$
+    public static final String UI_DRIVERS_HOME = "ui.drivers.home"; //$NON-NLS-1$
+    public static final String UI_PROXY_HOST = "ui.proxy.host"; //$NON-NLS-1$
+    public static final String UI_PROXY_PORT = "ui.proxy.port"; //$NON-NLS-1$
+    public static final String UI_PROXY_USER = "ui.proxy.user"; //$NON-NLS-1$
+    public static final String UI_PROXY_PASSWORD = "ui.proxy.password"; //$NON-NLS-1$
+    public static final String UI_DRIVERS_SOURCES = "ui.drivers.sources"; //$NON-NLS-1$
+    public static final String UI_MAVEN_REPOSITORIES = "ui.maven.repositories"; //$NON-NLS-1$
 
     private static Bundle mainBundle;
     private static DBPPreferenceStore preferences;
@@ -129,8 +142,9 @@ public final class ModelPreferences
         PrefUtils.setDefaultPreferenceValue(store, QUERY_ROLLBACK_ON_ERROR, false);
         PrefUtils.setDefaultPreferenceValue(store, EXECUTE_RECOVER_ENABLED, true);
         PrefUtils.setDefaultPreferenceValue(store, EXECUTE_RECOVER_RETRY_COUNT, 1);
+        PrefUtils.setDefaultPreferenceValue(store, EXECUTE_CANCEL_CHECK_TIMEOUT, 0);
 
-        PrefUtils.setDefaultPreferenceValue(store, CONNECTION_OPEN_TIMEOUT, 20000);
+        PrefUtils.setDefaultPreferenceValue(store, CONNECTION_OPEN_TIMEOUT, 0);
         PrefUtils.setDefaultPreferenceValue(store, CONNECTION_VALIDATION_TIMEOUT, 5000);
         PrefUtils.setDefaultPreferenceValue(store, CONNECTION_CLOSE_TIMEOUT, 5000);
 
@@ -151,6 +165,7 @@ public final class ModelPreferences
 
         PrefUtils.setDefaultPreferenceValue(store, CONNECT_USE_ENV_VARS, false);
 
+        PrefUtils.setDefaultPreferenceValue(store, RESULT_NATIVE_DATETIME_FORMAT, false);
         PrefUtils.setDefaultPreferenceValue(store, RESULT_TRANSFORM_COMPLEX_TYPES, true);
 
         PrefUtils.setDefaultPreferenceValue(store, CONTENT_HEX_ENCODING, GeneralUtils.getDefaultFileEncoding());
@@ -190,10 +205,19 @@ public final class ModelPreferences
 
         PrefUtils.setDefaultPreferenceValue(store, SQL_FORMAT_FORMATTER, SQLFormatterTokenized.FORMATTER_ID);
         PrefUtils.setDefaultPreferenceValue(store, SQL_FORMAT_KEYWORD_CASE, "");
+        PrefUtils.setDefaultPreferenceValue(store, SQL_FORMAT_LF_BEFORE_COMMA, false);
         PrefUtils.setDefaultPreferenceValue(store, SQL_FORMAT_EXTERNAL_CMD, "");
         PrefUtils.setDefaultPreferenceValue(store, SQL_FORMAT_EXTERNAL_FILE, false);
         PrefUtils.setDefaultPreferenceValue(store, SQL_FORMAT_EXTERNAL_TIMEOUT, 2000);
 
         PrefUtils.setDefaultPreferenceValue(store, READ_EXPENSIVE_PROPERTIES, false);
+
+        PrefUtils.setDefaultPreferenceValue(store, UI_PROXY_HOST, "");
+        PrefUtils.setDefaultPreferenceValue(store, UI_PROXY_PORT, 1080);
+        PrefUtils.setDefaultPreferenceValue(store, UI_PROXY_USER, "");
+        PrefUtils.setDefaultPreferenceValue(store, UI_PROXY_PASSWORD, "");
+        PrefUtils.setDefaultPreferenceValue(store, UI_DRIVERS_VERSION_UPDATE, false);
+        PrefUtils.setDefaultPreferenceValue(store, UI_DRIVERS_HOME, "");
+        PrefUtils.setDefaultPreferenceValue(store, UI_DRIVERS_SOURCES, "https://dbeaver.io/files/jdbc/");
     }
 }

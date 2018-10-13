@@ -37,7 +37,7 @@
                                     <items label="%tree.column.node.name" path="attribute" property="attributes" icon="#column">
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericPrimaryKey" label="%tree.uni_keys.node.name" icon="#constraints" description="Table unique keys" visibleIf="!object.view">
+                                <folder type="org.jkiss.dbeaver.ext.generic.model.GenericPrimaryKey" label="%tree.uni_keys.node.name" icon="#constraints" description="Table unique keys" visibleIf="!object.view &amp;&amp; object.dataSource.info.supportsReferentialIntegrity()">
                                     <items label="%tree.uni_key.node.name" path="uniqueKey" property="constraints" icon="#unique-key">
                                         <items label="%tree.uni_key.columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true">
                                         </items>
@@ -55,7 +55,7 @@
                                         </items>
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.model.impl.jdbc.struct.JDBCTableForeignKey" label="%tree.references.node.name" icon="#references" description="Table references" visibleIf="!object.view &amp;&amp; object.dataSource.info.supportsReferentialIntegrity()" virtual="true">
+                                <folder label="%tree.references.node.name" icon="#references" description="Table references" visibleIf="!object.view &amp;&amp; object.dataSource.info.supportsReferentialIntegrity()" virtual="true">
                                     <items label="%tree.reference.node.name" path="reference" property="references" icon="#reference" virtual="true">
                                         <items label="%tree.reference_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true" virtual="true">
                                         </items>
@@ -82,14 +82,14 @@
                                 </items>
                             </items>
                         </folder>
-                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericScriptObject" label="%tree.procedures.node.name" icon="#procedures" description="Procedures" visibleIf="object.dataSource.info.supportsStoredCode()">
+                        <folder type="org.jkiss.dbeaver.ext.generic.model.GenericProcedure" label="%tree.procedures.node.name" icon="#procedures" description="Procedures" visibleIf="object.dataSource.info.supportsStoredCode()">
+                            <items label="%tree.procedures.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="proceduresOnly" icon="#procedure">
+                                <items label="%tree.procedure_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false"/>
+                            </items>
                             <items label="%tree.package.node.name" path="package" property="packages" icon="#package">
                                 <items label="%tree.procedures.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="procedures" icon="#procedure">
                                     <items label="%tree.procedure_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false" inline="true"/>
                                 </items>
-                            </items>
-                            <items label="%tree.procedures.node.name" itemLabel="%tree.procedure.node.name" path="procedure" property="proceduresOnly" icon="#procedure">
-                                <items label="%tree.procedure_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="parameters" navigable="false"/>
                             </items>
                         </folder>
                         <folder type="org.jkiss.dbeaver.ext.generic.model.GenericProcedure" label="%tree.functions.node.name" icon="#functions" description="Functions" visibleIf="object.dataSource.info.supportsStoredCode() &amp;&amp; object.dataSource.splitProceduresAndFunctions()">
@@ -132,6 +132,7 @@
                     <property id="all-objects-pattern" label="All Objects Pattern" description="SQL pattern for all metadata objects" type="string" required="false" defaultValue="%" validValues="null,%"/>
                     <property id="omit-catalog" label="Omit catalog(s)" description="Do not read and use catalog (aka database) information" type="boolean" required="false" defaultValue="false"/>
                     <property id="omit-single-catalog" label="Omit single catalog" description="Hide catalog (database) is there is only one catalog on server" type="boolean" required="false" defaultValue="false"/>
+                    <property id="omit-single-schema" label="Omit single schema" description="Hide schema is there is only one schema on server" type="boolean" required="false" defaultValue="false"/>
                     <property id="omit-type-cache" label="Omit type cache" description="Do not use data types provided by driver" type="boolean" required="false" defaultValue="false"/>
                     <property id="shutdown-url-param" label="Shutdown parameter" description="Database shutdown URL parameter" type="string" required="false" defaultValue=""/>
                     <property id="create-url-param" label="Create database parameter" description="Database create URL parameter" type="string" required="false" defaultValue=""/>
@@ -205,6 +206,7 @@
                     <parameter name="query-set-active-db" value="SET search_path = &quot;?&quot;"/>
                     <parameter name="active-entity-type" value="schema"/>
                     <parameter name="supports-scroll" value="true"/>
+                    <parameter name="omit-single-catalog" value="true"/>
                 </driver>
                 <driver
                     id="oracle"
@@ -421,6 +423,7 @@
 
                     <parameter name="query-get-active-db" value="SELECT SCHEMA()"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA = ?"/>
+                    <parameter name="omit-catalog" value="true"/>
                 </driver>
                 <driver
                     id="h2_embedded"
@@ -439,6 +442,7 @@
 
                     <parameter name="query-get-active-db" value="SELECT SCHEMA()"/>
                     <parameter name="query-set-active-db" value="SET SCHEMA = ?"/>
+                    <parameter name="omit-catalog" value="true"/>
                 </driver>
                 <driver
                     id="odbc"
@@ -646,6 +650,7 @@
                     sampleURL="jdbc:sqlite:{file}"
                     defaultPort=""
                     webURL="https://github.com/xerial/sqlite-jdbc"
+                    propertiesURL="https://www.sqlite.org/pragma.html"
                     embedded="true"
                     anonymous="true"
                     description="SQLite JDBC driver by Taro L. Saito (extension of Zentus driver)">
@@ -703,6 +708,7 @@
                     sampleURL="jdbc:vertica://{host}:{port}/[{database}]"
                     defaultPort="5433"
                     webURL="http://www.vertica.com/"
+                    propertiesURL="https://my.vertica.com/docs/9.0.x/HTML/index.htm#Authoring/ConnectingToVertica/ClientJDBC/JDBCConnectionProperties.htm"
                     description="Driver for Vertica Database">
 
                     <file type="jar" path="repo:/drivers/vertica/vertica-jdk5-6.1.2-0.jar" bundle="!drivers.vertica"/>
@@ -717,15 +723,18 @@
                     <parameter name="ddl-drop-column-short" value="true"/>
                     <parameter name="supports-scroll" value="false"/>
                 </driver>
+
                 <driver
                     id="csvjdbc"
-                    label="CSV/DBF"
-                    category="Flat files (CSV)"
+                    label="CSV"
+                    category="Flat files"
                     class="org.relique.jdbc.csv.CsvDriver"
                     sampleURL="jdbc:relique:csv:{folder}"
-                    webURL="http://csvjdbc.sourceforge.net/"
                     embedded="true"
-                    description="CsvJdbc driver for CSV and DBF files">
+                    anonymous="true"
+                    description="CsvJdbc driver for CSV files"
+                    webURL="http://csvjdbc.sourceforge.net/"
+                    propertiesURL="http://csvjdbc.sourceforge.net/doc.html">
 
                     <property name="separator" value=","/>
                     <property name="quotechar" value="&quot;"/>
@@ -736,10 +745,36 @@
                     <parameter name="supports-select-count" value="false"/>
                     <parameter name="supports-stored-code" value="false"/>
                     <parameter name="supports-truncate" value="false"/>
+                    <parameter name="driver-properties" value="charset,columnTypes,commentChar,cryptoFilterClassName,cryptoFilterParameterTypes,cryptoFilterParameters,defectiveHeaders,fileExtension,fileTailParts,fileTailPattern,fileTailPrepend,fixedWidths,function.NAME,headerline,ignoreNonParseableLines,indexedFiles,isHeaderFixedWidth,missingValue,quotechar,quoteStyle,locale,separator,skipLeadingLines,skipLeadingDataLines,suppressHeaders,timestampFormat, timeFormat, dateFormat,timeZoneName,trimHeaders,trimValues"/>
 
                     <file type="jar" path="maven:/net.sourceforge.csvjdbc:csvjdbc:RELEASE" bundle="!drivers.csvjdbc"/>
 
                     <file type="jar" path="drivers/csvjdbc/csvjdbc.jar" bundle="drivers.csvjdbc"/>
+                </driver>
+                <driver
+                    id="csvjdbc_dbf"
+                    label="DBF"
+                    category="Flat files"
+                    class="org.relique.jdbc.csv.CsvDriver"
+                    sampleURL="jdbc:relique:csv:{folder}"
+                    embedded="true"
+                    anonymous="true"
+                    description="CsvJdbc driver for DBF files"
+                    webURL="http://csvjdbc.sourceforge.net/"
+                    propertiesURL="http://csvjdbc.sourceforge.net/doc.html">
+
+                    <property name="fileExtension" value=".dbf"/>
+
+                    <parameter name="supports-select-count" value="false"/>
+                    <parameter name="supports-stored-code" value="false"/>
+                    <parameter name="supports-truncate" value="false"/>
+                    <parameter name="driver-properties" value="charset,columnTypes,commentChar,cryptoFilterClassName,cryptoFilterParameterTypes,cryptoFilterParameters,defectiveHeaders,fileExtension,fileTailParts,fileTailPattern,fileTailPrepend,fixedWidths,function.NAME,headerline,ignoreNonParseableLines,indexedFiles,isHeaderFixedWidth,missingValue,quotechar,quoteStyle,locale,separator,skipLeadingLines,skipLeadingDataLines,suppressHeaders,timestampFormat, timeFormat, dateFormat,timeZoneName,trimHeaders,trimValues"/>
+
+                    <file type="jar" path="maven:/net.sourceforge.csvjdbc:csvjdbc:RELEASE" bundle="!drivers.csvjdbc"/>
+                    <file type="jar" path="maven:/nl.knaw.dans.common:dans-dbf-lib:RELEASE" bundle="!drivers.csvjdbc"/>
+
+                    <file type="jar" path="drivers/csvjdbc/csvjdbc.jar" bundle="drivers.csvjdbc"/>
+                    <file type="jar" path="drivers/csvjdbc/dans-dbf-lib.jar" bundle="drivers.csvjdbc"/>
                 </driver>
                 <driver
                     id="msaccess_ucanaccess"
@@ -851,6 +886,7 @@
                 <driver
                     id="apache_hive2"
                     label="Apache Hive"
+                    icon="icons/hive_icon.png"
                     class="org.apache.hive.jdbc.HiveDriver"
                     sampleURL="jdbc:hive2://{host}[:{port}][/{database}]"
                     defaultPort="10000"
@@ -858,10 +894,10 @@
                     webURL="https://cwiki.apache.org/confluence/display/Hive/Home"
                     category="Hadoop">
 
-                    <file type="jar" path="https://github.com/timveil/hive-jdbc-uber-jar/releases/download/v1.8-2.6.3/hive-jdbc-uber-2.6.3.0-235.jar" bundle="!drivers.hive"/>
-                    <file type="jar" path="drivers/hive/hive-jdbc-uber.jar" bundle="drivers.hive"/>
+                    <file type="jar" path="https://github.com/timveil/hive-jdbc-uber-jar/releases/download/v1.9-2.6.5/hive-jdbc-uber-2.6.5.0-292.jar"/>
 
                     <parameter name="supports-limits" value="false"/>
+                    <parameter name="supports-references" value="false"/>
                 </driver>
                 <driver
                     id="spark_hive"
@@ -876,6 +912,7 @@
                     <file type="jar" path="maven:/org.apache.hadoop:hadoop-core:RELEASE"/>
 
                     <parameter name="supports-truncate" value="false"/>
+                    <parameter name="supports-references" value="false"/>
                 </driver>
                 <driver
                     id="apache_drill"
@@ -888,6 +925,7 @@
                     <file type="jar" path="maven:/org.apache.drill.exec:drill-jdbc-all:RELEASE"/>
 
                     <parameter name="supports-truncate" value="false"/>
+                    <parameter name="supports-references" value="false"/>
                 </driver>
 
                 <!-- Cloudera -->
@@ -904,6 +942,8 @@
                     <parameter name="query-get-active-db" value="select current_database()"/>
                     <parameter name="query-set-active-db" value="use [?]"/>
                     <parameter name="string-escape-char" value="\"/>
+                    <parameter name="omit-catalog" value="true"/>
+                    <parameter name="supports-references" value="false"/>
                 </driver>
 
                 <!-- AWS -->
@@ -939,7 +979,10 @@
                     defaultPort="5439"
                     description="AWS Athena JDBC driver"
                     webURL="https://docs.aws.amazon.com/athena/latest/ug/connect-with-jdbc.html">
-                    <file type="jar" path="https://s3.amazonaws.com/athena-downloads/drivers/JDBC/SimbaAthenaJDBC_2.0.2/AthenaJDBC42_2.0.2.jar"/>
+                    <file type="jar" path="https://s3.amazonaws.com/athena-downloads/drivers/JDBC/SimbaAthenaJDBC_2.0.5/AthenaJDBC42_2.0.5.jar"/>
+
+                    <parameter name="supports-references" value="false"/>
+                    <parameter name="supports-indexes" value="false"/>
                 </driver>
 
                 <!-- Virtuoso  -->
@@ -979,7 +1022,9 @@
                     webURL="https://github.com/yandex/clickhouse-jdbc">
                     <file type="jar" path="maven:/ru.yandex.clickhouse:clickhouse-jdbc:RELEASE"/>
 
+                    <parameter name="supports-references" value="false"/>
                     <parameter name="supports-truncate" value="false"/>
+                    <parameter name="omit-catalog" value="true"/>
                 </driver>
 
                 <!-- OrientDB -->
@@ -1062,25 +1107,39 @@
                     <parameter name="supports-truncate" value="false"/>
                 </driver>
 
+                <!-- OpenEdge -->
+                <driver
+                        id="openedge_generic"
+                        label="OpenEdge"
+                        class="com.ddtek.jdbc.openedge.OpenEdgeDriver"
+                        sampleURL="jdbc:datadirect:openedge://{host}:{port};databaseName={database}"
+                        defaultPort="6718"
+                        description="OpenEdge Progress JDBC driver"
+                        webURL="https://documentation.progress.com/output/ua/OpenEdge_latest/dmsdv/connecting-from-a-java-application-using-a-url.html#">
+                </driver>
+
             </drivers>
 
-            <views>
-                <view
-                    id="org.jkiss.dbeaver.ext.generic.dataSourceWizardView"
-                    targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
-                    label="%dialog.connection.header"
-                    class="org.jkiss.dbeaver.ext.generic.views.GenericConnectionPage"
-                    icon="icons/database.png">
-                </view>
-                <view
-                      class="org.jkiss.dbeaver.ext.generic.views.GenericConnectionPage"
-                      icon="icons/database.png"
-                      id="org.jkiss.dbeaver.ext.generic.dataSourceEditorView"
-                      label="%dialog.connection.header"
-                      targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog">
-                </view>
-            </views>
         </datasource>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataSourceView">
+        <view
+                id="org.jkiss.dbeaver.ext.generic.dataSourceWizardView"
+                dataSource="generic"
+                targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
+                label="%dialog.connection.header"
+                class="org.jkiss.dbeaver.ext.generic.views.GenericConnectionPage"
+                icon="icons/database.png">
+        </view>
+        <view
+                class="org.jkiss.dbeaver.ext.generic.views.GenericConnectionPage"
+                icon="icons/database.png"
+                id="org.jkiss.dbeaver.ext.generic.dataSourceEditorView"
+                dataSource="generic"
+                label="%dialog.connection.header"
+                targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog">
+        </view>
     </extension>
 
     <extension point="org.jkiss.dbeaver.dataTypeProvider">

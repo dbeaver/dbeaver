@@ -78,6 +78,9 @@ public class FKGenerator extends AbstractMockValueGenerator
                 refValues.add(value.getValue());
             }
         }
+        if (refValues.isEmpty()) {
+            return null;
+        }
         return refValues.get(random.nextInt(refValues.size()));
     }
 }

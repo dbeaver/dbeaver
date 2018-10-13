@@ -3,8 +3,8 @@ Bundle-ManifestVersion: 2
 Bundle-Vendor: %Bundle-Vendor
 Bundle-Name: %Bundle-Name
 Bundle-SymbolicName: org.jkiss.dbeaver.ext.db2;singleton:=true
-Bundle-Version: 2.1.75.qualifier
-Bundle-Release-Date: 20180813
+Bundle-Version: 2.1.80.qualifier
+Bundle-Release-Date: 20181022
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Bundle-Activator: org.jkiss.dbeaver.ext.db2.Activator

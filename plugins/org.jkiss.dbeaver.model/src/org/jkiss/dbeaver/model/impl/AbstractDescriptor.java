@@ -20,7 +20,6 @@ import org.apache.commons.jexl2.Expression;
 import org.apache.commons.jexl2.JexlContext;
 import org.apache.commons.jexl2.JexlEngine;
 import org.apache.commons.jexl2.JexlException;
-import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.Platform;
 import org.jkiss.code.NotNull;
@@ -31,6 +30,9 @@ import org.jkiss.dbeaver.model.DBIcon;
 import org.jkiss.dbeaver.model.DBPImage;
 import org.jkiss.utils.CommonUtils;
 import org.osgi.framework.Bundle;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * EntityEditorDescriptor
@@ -160,10 +162,13 @@ public abstract class AbstractDescriptor {
 
         public boolean matchesType(Class<?> clazz)
         {
-            // Don't remember why we check this. With this check contributions aren't loaded
-//            if (!forceCheck && getContributorBundle().getState() != Bundle.ACTIVE) {
-//                return false;
-//            }
+            // Check class only if bundle was loaded or forceCheck is set. Otherwise we'll load ALL bundles which have some
+            // data type mappings (no matter which type they refer)
+
+            if (getContributorBundle().getState() != Bundle.ACTIVE && !forceCheck) {
+                // Use only type name
+                return getTypeInfoCache(clazz).containsKey(implName);
+            }
             getObjectClass();
             return implClass != null && implClass.isAssignableFrom(clazz);
         }
@@ -193,7 +198,36 @@ public abstract class AbstractDescriptor {
                 }
             };
         }
+
+        @Override
+        public String toString() {
+            return implName;
+        }
     }
+
+    private static Map<String, Map<String, Boolean>> classInfoCache = new HashMap<>();
+
+    private static synchronized Map<String, Boolean> getTypeInfoCache(Class<?> clazz) {
+        Map<String, Boolean> intCache = classInfoCache.get(clazz.getName());
+        if (intCache != null) {
+            return intCache;
+        }
+        intCache = new HashMap<>();
+        classInfoCache.put(clazz.getName(), intCache);
+        for (Class sc = clazz; sc != null && sc != Object.class; sc = sc.getSuperclass()) {
+            collectInterface(sc, intCache);
+        }
+
+        return intCache;
+    }
+
+    private static void collectInterface(Class clazz, Map<String, Boolean> intCache) {
+        intCache.put(clazz.getName(), Boolean.TRUE);
+        for (Class i : clazz.getInterfaces()) {
+            collectInterface(i, intCache);
+        }
+    }
+
 
     private String pluginId;
     private Bundle originBundle;

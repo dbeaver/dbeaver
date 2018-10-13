@@ -28,8 +28,25 @@ import java.util.Locale;
  */
 public class DBConstants {
 
+    /////////////////////////////////
+    // Features
+
+    /**
+     * Row limit (setMaxSize) affects DML (UPDATE, INSERT, etc) statements.
+     */
     public static final String FEATURE_LIMIT_AFFECTS_DML = "datasource.limit-affects-dml";
+    /**
+     * LOB value operations require enabled transactions. I.e. LOB locator life time is 1 transaction.
+     */
     public static final String FEATURE_LOB_REQUIRE_TRANSACTIONS = "datasource.lob-require-transactions";
+    /**
+     * Max string length. Used by data transfer/compare/migration tools.
+     * null means "unknown", -1 means any length (i.e. explicit length is not needed)
+     */
+    public static final String FEATURE_MAX_STRING_LENGTH = "datasource.max-string-type-length";
+
+    /////////////////////////////////
+    // Misc
 
     public static final int METADATA_FETCH_SIZE = 1000;
 
@@ -96,4 +113,5 @@ public class DBConstants {
 
     public static final String MODEL_BUNDLE_ID = "org.jkiss.dbeaver.model";
 
+    public static final String WORKSPACE_PROPS_FILE = "dbeaver-workspace.properties"; //$NON-NLS-1$
 }

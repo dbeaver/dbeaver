@@ -17,20 +17,33 @@
 
 package org.jkiss.dbeaver.model.app;
 
+import org.jkiss.code.NotNull;
+import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 
 import java.io.File;
+import java.security.KeyStore;
 
 /**
  * Certificate storage
  */
 public interface DBACertificateStorage
 {
-    void addCertificate(DBPDataSourceContainer dataSource, String certType, byte[] caCertStream, byte[] clientCertStream, byte[] keyStream) throws DBException;
+    void addCertificate(
+        @NotNull DBPDataSourceContainer dataSource,
+        @NotNull String certType,
+        @Nullable byte[] caCertStream,
+        @Nullable byte[] clientCertStream,
+        @Nullable byte[] keyStream) throws DBException;
 
-    void deleteCertificate(DBPDataSourceContainer dataSource, String certType) throws DBException;
+    void deleteCertificate(
+        @NotNull DBPDataSourceContainer dataSource,
+        @NotNull String certType) throws DBException;
+
+    KeyStore getKeyStore(DBPDataSourceContainer container, String certType) throws DBException;
 
     File getKeyStorePath(DBPDataSourceContainer dataSource, String certType);
 
+    String getKeyStoreType(DBPDataSourceContainer dataSource);
 }

@@ -57,7 +57,6 @@
          <sequence>
             <element ref="tree" minOccurs="0" maxOccurs="1"/>
             <element ref="drivers" minOccurs="0" maxOccurs="1"/>
-            <element ref="views" minOccurs="0" maxOccurs="1"/>
             <element ref="tools" minOccurs="0" maxOccurs="1"/>
             <element ref="templates" minOccurs="0" maxOccurs="1"/>
          </sequence>
@@ -486,69 +485,6 @@
                </documentation>
                <appInfo>
                   <meta.attribute translatable="true"/>
-               </appInfo>
-            </annotation>
-         </attribute>
-      </complexType>
-   </element>
-
-   <element name="views">
-      <annotation>
-         <documentation>
-            Data source contributed ui
-         </documentation>
-      </annotation>
-      <complexType>
-         <sequence>
-            <element ref="view" minOccurs="0" maxOccurs="unbounded"/>
-         </sequence>
-      </complexType>
-   </element>
-
-   <element name="view">
-      <complexType>
-         <attribute name="id" type="string" use="required">
-            <annotation>
-               <documentation>
-                  View unique ID
-               </documentation>
-            </annotation>
-         </attribute>
-         <attribute name="targetID" type="string" use="required">
-            <annotation>
-               <documentation>
-                  ID of extension point view.
-               </documentation>
-            </annotation>
-         </attribute>
-         <attribute name="label" type="string">
-            <annotation>
-               <documentation>
-                  View title
-               </documentation>
-               <appInfo>
-                  <meta.attribute translatable="true"/>
-               </appInfo>
-            </annotation>
-         </attribute>
-         <attribute name="class" type="string" use="required">
-            <annotation>
-               <documentation>
-                  View implementation class.
-View must implement interface(s) depending on targetID.
-               </documentation>
-               <appInfo>
-                  <meta.attribute kind="java"/>
-               </appInfo>
-            </annotation>
-         </attribute>
-         <attribute name="icon" type="string">
-            <annotation>
-               <documentation>
-                  View icon
-               </documentation>
-               <appInfo>
-                  <meta.attribute kind="resource"/>
                </appInfo>
             </annotation>
          </attribute>

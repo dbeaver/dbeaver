@@ -363,8 +363,10 @@
                     category="DB2"
                     class="com.ibm.db2.jcc.DB2Driver"
                     sampleURL="jdbc:db2://{host}[:{port}]/{database}"
+                    useURL="false"
                     defaultPort="50000"
                     webURL="http://www-01.ibm.com/support/docview.wss?uid=swg21363866"
+                    propertiesURL="https://www.ibm.com/support/knowledgecenter/en/SSEPGG_11.1.0/com.ibm.db2.luw.apdv.java.doc/src/tpc/imjcc_r0052038.html"
                     description="DB2 for Linux/Unix/Windows driver">
 
                     <property name="loginTimeout" value="20"/>
@@ -392,24 +394,25 @@
 
                 </driver>
             </drivers>
-
-            <views>
-                <view
-                    id="org.jkiss.dbeaver.ext.db2.dataSourceWizardView"
-                    targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
-                    label="%dialog.connection.header"
-                    class="org.jkiss.dbeaver.ext.db2.views.DB2ConnectionPage"
-                    icon="icons/db2_icon.png">
-                </view>
-                <view
-                    id="org.jkiss.dbeaver.ext.db2.dataSourceEditorView"
-                    targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog"
-                    label="%dialog.connection.header"
-                    class="org.jkiss.dbeaver.ext.db2.views.DB2ConnectionPage">
-                </view>
-            </views>
-            
         </datasource>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataSourceView">
+        <view
+                id="org.jkiss.dbeaver.ext.db2.dataSourceWizardView"
+                dataSource="db2"
+                targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
+                label="%dialog.connection.header"
+                class="org.jkiss.dbeaver.ext.db2.views.DB2ConnectionPage"
+                icon="icons/db2_icon.png">
+        </view>
+        <view
+                id="org.jkiss.dbeaver.ext.db2.dataSourceEditorView"
+                dataSource="db2"
+                targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog"
+                label="%dialog.connection.header"
+                class="org.jkiss.dbeaver.ext.db2.views.DB2ConnectionPage">
+        </view>
     </extension>
 
     <extension point="org.jkiss.dbeaver.databaseEditor">
@@ -559,7 +562,8 @@
             name="%editor.org.jkiss.dbeaver.ext.db2.model.app.DB2ServerApplicationEditor.name"
             icon="icons/compile.png"
             class="org.jkiss.dbeaver.ext.db2.model.app.DB2ServerApplicationEditor"
-            id="org.jkiss.dbeaver.ext.db2.model.app.DB2ServerApplicationEditor">
+            id="org.jkiss.dbeaver.ext.db2.model.app.DB2ServerApplicationEditor"
+            contributorClass="org.jkiss.dbeaver.ui.editors.EditorSearchActionsContributor">
         </editor>
     </extension>
     

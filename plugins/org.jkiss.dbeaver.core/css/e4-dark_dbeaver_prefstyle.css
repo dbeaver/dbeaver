@@ -2,10 +2,11 @@
 /* ############################# DBeaver preferences ############################# */
 /* Includes styles for all plugins. Eclipse bug? */
 
- IEclipsePreferences#org-eclipse-ui-workbench {
+ IEclipsePreferences#org-eclipse-ui-workbench:org-jkiss-dbeaver-core {
         preferences:
             'org.jkiss.dbeaver.sql.resultset.color.cell.odd.background=16,16,16'
             'org.jkiss.dbeaver.sql.resultset.color.cell.modified.background=210,68,0'
+            'org.jkiss.dbeaver.sql.resultset.color.cell.error.background=128,0,0'
             'org.jkiss.dbeaver.sql.resultset.color.cell.new.background=0,115,0'
             'org.jkiss.dbeaver.sql.resultset.color.cell.deleted.background=140,0,0'
             'org.jkiss.dbeaver.sql.resultset.color.cell.matched.background=139,69,19'

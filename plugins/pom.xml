@@ -15,9 +15,6 @@
 
     <modules>
         <module>org.jkiss.dbeaver.model</module>
-
-        <module>org.jkiss.dbeaver.runtime.ide.core</module>
-        <module>org.jkiss.dbeaver.runtime.ide.ui</module>
         <module>org.jkiss.dbeaver.core</module>
         <module>org.jkiss.dbeaver.ui</module>
 
@@ -26,6 +23,10 @@
 
         <module>org.jkiss.dbeaver.core.application</module>
         <module>org.jkiss.dbeaver.core.eclipse</module>
+
+        <module>org.jkiss.dbeaver.ext.athena</module>
+        <module>org.jkiss.dbeaver.ext.bigquery</module>
+        <module>org.jkiss.dbeaver.ext.clickhouse</module>
         <module>org.jkiss.dbeaver.ext.db2</module>
         <module>org.jkiss.dbeaver.ext.derby</module>
         <module>org.jkiss.dbeaver.ext.erd</module>
@@ -33,8 +34,10 @@
         <module>org.jkiss.dbeaver.ext.firebird</module>
         <module>org.jkiss.dbeaver.ext.generic</module>
         <module>org.jkiss.dbeaver.ext.import_config</module>
+        <module>org.jkiss.dbeaver.ext.format.sqlworkbenchj</module>
         <module>org.jkiss.dbeaver.ext.h2</module>
         <module>org.jkiss.dbeaver.ext.hana</module>
+        <module>org.jkiss.dbeaver.ext.hive</module>
         <module>org.jkiss.dbeaver.ext.hsqldb</module>
         <module>org.jkiss.dbeaver.ext.informix</module>
         <module>org.jkiss.dbeaver.ext.mssql</module>
@@ -58,6 +61,8 @@
         <module>org.jkiss.dbeaver.ext.sample.database</module>
         <module>org.jkiss.dbeaver.ext.ui.locks</module>
         <module>org.jkiss.dbeaver.ext.ui.svg</module>
+	    <module>org.jkiss.dbeaver.ext.ui.colortheme</module>
+        <module>org.jkiss.dbeaver.ext.ui.tipoftheday</module>
         <module>org.jkiss.dbeaver.ext.mockdata</module>
         <module>org.jkiss.dbeaver.data.office</module>
         <module>org.jkiss.dbeaver.data.gis</module>

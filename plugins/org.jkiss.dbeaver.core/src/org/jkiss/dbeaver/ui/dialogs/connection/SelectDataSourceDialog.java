@@ -23,17 +23,21 @@ import org.eclipse.jface.viewers.*;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.*;
 import org.jkiss.code.NotNull;
 import org.jkiss.code.Nullable;
+import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
 import org.jkiss.dbeaver.model.navigator.*;
+import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.AbstractPopupPanel;
+import org.jkiss.dbeaver.ui.navigator.INavigatorFilter;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorTree;
 
 /**
@@ -89,8 +93,28 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
             }
         }
 
-        IFilter dsFilter = element -> element instanceof DBNProject || element instanceof DBNProjectDatabases || element instanceof DBNLocalFolder;
-        DatabaseNavigatorTree dataSourceTree = new DatabaseNavigatorTree(group, getTreeRootNode(), SWT.SINGLE | SWT.BORDER, false, dsFilter);
+        INavigatorFilter dsFilter = new INavigatorFilter() {
+            @Override
+            public boolean filterFolders() {
+                return true;
+            }
+
+            @Override
+            public boolean isLeafObject(Object object) {
+                return object instanceof DBPDataSourceContainer;
+            }
+
+            @Override
+            public boolean select(Object element) {
+                return element instanceof DBNProject || element instanceof DBNProjectDatabases || element instanceof DBNLocalFolder;
+            }
+        };
+        DatabaseNavigatorTree dataSourceTree = new DatabaseNavigatorTree(group, getTreeRootNode(), SWT.SINGLE | SWT.BORDER, false, dsFilter) {
+            @Override
+            protected void onTreeRefresh() {
+                expandFolders(this, getTreeRootNode());
+            }
+        };
         gd = new GridData(GridData.FILL_BOTH);
         gd.heightHint = 500;
         gd.minimumHeight = 100;
@@ -147,6 +171,7 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
                 treeViewer.setSelection(new StructuredSelection(dsNode), true);
             }
         }
+        group.setTabList(new Control[] { dataSourceTree, showConnectedCheck, showAllProjectsCheck} );
 
         treeViewer.addFilter(new ViewerFilter() {
             @Override
@@ -187,7 +212,14 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
             }
         });
         UIUtils.asyncExec(() -> {
-            treeViewer.getControl().setFocus();
+            Point treeSize = dataSourceTree.getViewer().getTree().computeSize(SWT.DEFAULT, SWT.DEFAULT);
+            Point shellSize = getShell().getSize();
+            if (treeSize.x >= shellSize.x) {
+                Point shellCompSize = getShell().computeSize(SWT.DEFAULT, SWT.DEFAULT);
+                getShell().setSize(shellCompSize.x, shellSize.y);
+                getShell().layout(true);
+            }
+            dataSourceTree.getFilterControl().setFocus();
             if (showConnected) {
                 treeViewer.expandAll();
             }
@@ -201,6 +233,23 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
             showAllProjectsCheck);
 
         return group;
+    }
+
+    private void expandFolders(DatabaseNavigatorTree dataSourceTree, DBNNode node) {
+        if (node instanceof DBNLocalFolder || node instanceof DBNProjectDatabases || node instanceof DBNProject || node instanceof DBNRoot) {
+            dataSourceTree.getViewer().expandToLevel(node, 1);
+            DBNNode[] childNodes;
+            try {
+                childNodes = node.getChildren(new VoidProgressMonitor());
+            } catch (DBException e) {
+                return;
+            }
+            if (childNodes != null) {
+                for (DBNNode childNode : childNodes) {
+                    expandFolders(dataSourceTree, childNode);
+                }
+            }
+        }
     }
 
     private DBNNode getTreeRootNode() {
@@ -232,9 +281,9 @@ public class SelectDataSourceDialog extends AbstractPopupPanel {
         // Add the buttons to the button bar.
         createButton(composite, IDialogConstants.OK_ID, "&Select", true);
         createButton(composite, IDialogConstants.IGNORE_ID, "&None", false);
-        if (!isModeless()) {
-            createButton(composite, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
-        }
+//        if (!isModeless()) {
+//            createButton(composite, IDialogConstants.CANCEL_ID, IDialogConstants.CANCEL_LABEL, false);
+//        }
 
         return composite;
     }

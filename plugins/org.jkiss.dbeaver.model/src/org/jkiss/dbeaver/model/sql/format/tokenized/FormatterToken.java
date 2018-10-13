@@ -68,14 +68,7 @@ class FormatterToken {
         return fPos;
     }
 
-    public String toString()
-    {
-        final StringBuilder buf = new StringBuilder();
-        buf.append(getClass().getName());
-        buf.append("type=").append(fType);
-        buf.append(",string=").append(fString);
-        buf.append(",pos=").append(fPos);
-        buf.append("]");
-        return buf.toString();
+    public String toString() {
+        return fString + " [" + fType + "]";
     }
 }

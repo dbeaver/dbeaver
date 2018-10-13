@@ -60,6 +60,7 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
     private Text entityNameText;
     private Button removeOldDataCheck;
     private Text rowsText;
+    private Text batchSizeText;
 
     private PropertyTreeViewer propsEditor;
     private PropertySourceCustom propertySource;
@@ -72,6 +73,7 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
     private Font boldFont;
 
     private String generatorLinkUrl;
+    private transient boolean loadingSettings;
 
     protected MockDataWizardPageSettings(MockDataSettings mockDataSettings)
     {
@@ -112,19 +114,21 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
                     MockDataMessages.tools_mockdata_wizard_page_settings_checkbox_remove_old_data,
                     null,
                     mockDataSettings.isRemoveOldData(), 4);
-            removeOldDataCheck.addSelectionListener(changeListener);
+            this.removeOldDataCheck.addSelectionListener(changeListener);
 
             this.rowsText = UIUtils.createLabelText(
                     settingsGroup, MockDataMessages.tools_mockdata_wizard_page_settings_combo_rows, String.valueOf(mockDataSettings.getRowsNumber()), SWT.BORDER,
                     new GridData(110, SWT.DEFAULT));
-            rowsText.addSelectionListener(changeListener);
-            rowsText.addVerifyListener(UIUtils.getLongVerifyListener(rowsText));
-            rowsText.addModifyListener(new ModifyListener() {
-                @Override
-                public void modifyText(ModifyEvent e) {
-                    updateState();
-                }
-            });
+            this.rowsText.addSelectionListener(changeListener);
+            this.rowsText.addVerifyListener(UIUtils.getLongVerifyListener(rowsText));
+            this.rowsText.addModifyListener(e -> updateState());
+
+            this.batchSizeText = UIUtils.createLabelText(
+                settingsGroup, MockDataMessages.tools_mockdata_wizard_page_settings_batch_size, String.valueOf(mockDataSettings.getBatchSize()), SWT.BORDER,
+                new GridData(110, SWT.DEFAULT));
+            this.batchSizeText.addSelectionListener(changeListener);
+            this.batchSizeText.addVerifyListener(UIUtils.getLongVerifyListener(batchSizeText));
+            this.batchSizeText.addModifyListener(e -> updateState());
         }
 
         {
@@ -228,7 +232,12 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
                         return textCellEditor;
                     } else {
                         for (String generatorId : attributeGenerators.getGenerators()) {
-                            generators.add(mockDataSettings.getGeneratorDescriptor(generatorId).getLabel());
+                            if (!CommonUtils.isEmpty(generatorId)) {
+                                MockGeneratorDescriptor generatorDescriptor = mockDataSettings.getGeneratorDescriptor(generatorId);
+                                if (generatorDescriptor != null) {
+                                    generators.add(generatorDescriptor.getLabel());
+                                }
+                            }
                         }
 
                         CustomComboBoxCellEditor customComboBoxCellEditor = new CustomComboBoxCellEditor(
@@ -247,7 +256,7 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
                 protected Object getValue(Object element) {
                     DBSAttributeBase attribute = (DBSAttributeBase) element;
                     String selectedGenerator = mockDataSettings.getAttributeGeneratorProperties(attribute).getSelectedGeneratorId();
-                    if (selectedGenerator != null) {
+                    if (!CommonUtils.isEmpty(selectedGenerator)) {
                         return mockDataSettings.getGeneratorDescriptor(selectedGenerator).getLabel();
                     } else {
                         return "";
@@ -279,7 +288,7 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
 
             generatorCombo = new Combo(labelCombo, SWT.READ_ONLY | SWT.DROP_DOWN);
             gd = new GridData();
-            gd.widthHint = 80;
+            gd.widthHint = UIUtils.getFontHeight(generatorCombo) * 20;
             generatorCombo.setLayoutData(gd);
             generatorCombo.addSelectionListener(new SelectionAdapter() {
                 @Override
@@ -371,6 +380,9 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
     }
 
     private void selectGenerator(DBSAttributeBase attribute, String generatorName) {
+        if (CommonUtils.isEmpty(generatorName)) {
+            return;
+        }
         MockGeneratorDescriptor generatorForName = mockDataSettings.findGeneratorForName(attribute, generatorName);
         if (generatorForName != null) {
             saveGeneratorProperties();
@@ -402,9 +414,15 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
                 log.error("Mock Data Settings initialization interrupted", e);
             }
 
-            removeOldDataCheck.setSelection(mockDataSettings.isRemoveOldData());
-            rowsText.setText(String.valueOf(mockDataSettings.getRowsNumber()));
-            generatorsTableViewer.setInput(mockDataSettings.getAttributes());
+            loadingSettings = true;
+            try {
+                removeOldDataCheck.setSelection(mockDataSettings.isRemoveOldData());
+                rowsText.setText(String.valueOf(mockDataSettings.getRowsNumber()));
+                batchSizeText.setText(String.valueOf(mockDataSettings.getBatchSize()));
+                generatorsTableViewer.setInput(mockDataSettings.getAttributes());
+            } finally {
+                loadingSettings = false;
+            }
         }
 
         entityNameText.setText(DBUtils.getObjectFullName(mockDataSettings.getEntity(), DBPEvaluationContext.DML));
@@ -478,8 +496,11 @@ public class MockDataWizardPageSettings extends ActiveWizardPage<MockDataExecute
     }
 
     private void updateState() {
-        mockDataSettings.setRemoveOldData(removeOldDataCheck.getSelection());
-        mockDataSettings.setRowsNumber(Long.parseLong(rowsText.getText()));
+        if (!loadingSettings) {
+            mockDataSettings.setRemoveOldData(removeOldDataCheck.getSelection());
+            mockDataSettings.setRowsNumber(CommonUtils.toLong(rowsText.getText()));
+            mockDataSettings.setBatchSize(CommonUtils.toInt(batchSizeText.getText()));
+        }
     }
 
     private void reloadProperties(DBSAttributeBase attribute, String generatorId) {

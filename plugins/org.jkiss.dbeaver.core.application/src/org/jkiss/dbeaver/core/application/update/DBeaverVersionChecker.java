@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.core.application.update;
 
+import org.eclipse.core.runtime.IProduct;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
@@ -44,6 +45,8 @@ public class DBeaverVersionChecker extends AbstractJob {
     {
         super("DBeaver new version release checker");
         this.showAlways = force;
+        setUser(false);
+        setSystem(true);
     }
 
     @Override
@@ -80,18 +83,27 @@ public class DBeaverVersionChecker extends AbstractJob {
         }
 
         DBeaverCore.getGlobalPreferenceStore().setValue(DBeaverPreferences.UI_UPDATE_CHECK_TIME, System.currentTimeMillis());
-        final String updateURL = Platform.getProduct().getProperty("versionUpdateURL");
+        IProduct product = Platform.getProduct();
+        if (product == null) {
+            // No product!
+            log.error("No Eclipse product found. Installation is corrupted");
+            return Status.OK_STATUS;
+        }
+        final String updateURL = product.getProperty("versionUpdateURL");
         if (updateURL == null) {
             return Status.OK_STATUS;
         }
         VersionDescriptor versionDescriptor = null;
         try {
-            versionDescriptor = new VersionDescriptor(updateURL);
+            versionDescriptor = new VersionDescriptor(DBeaverCore.getInstance(), updateURL);
         } catch (IOException e) {
             log.debug(e);
         }
 
-        if (versionDescriptor != null && versionDescriptor.getProgramVersion().compareTo(GeneralUtils.getProductVersion()) > 0) {
+        if (versionDescriptor != null &&
+            versionDescriptor.getProgramVersion().compareTo(GeneralUtils.getProductVersion()) > 0 &&
+            !VersionUpdateDialog.isSuppressed(versionDescriptor))
+        {
             showUpdaterDialog(versionDescriptor);
         } else if (showAlways) {
             showUpdaterDialog(null);
@@ -105,7 +117,8 @@ public class DBeaverVersionChecker extends AbstractJob {
         UIUtils.asyncExec(() -> {
             VersionUpdateDialog dialog = new VersionUpdateDialog(
                 UIUtils.getActiveWorkbenchShell(),
-                versionDescriptor);
+                versionDescriptor,
+                !showAlways);
             dialog.open();
         });
     }

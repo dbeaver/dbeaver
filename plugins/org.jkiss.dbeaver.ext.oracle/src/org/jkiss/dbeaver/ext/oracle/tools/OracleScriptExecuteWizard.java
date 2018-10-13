@@ -57,9 +57,9 @@ class OracleScriptExecuteWizard extends AbstractScriptExecuteWizard<OracleDataSo
     public void fillProcessParameters(List<String> cmd, OracleDataSource arg) throws IOException
     {
         String sqlPlusExec = RuntimeUtils.getNativeBinaryName("sqlplus"); //$NON-NLS-1$
-        File sqlPlusBinary = new File(getClientHome().getHomePath(), "bin/" + sqlPlusExec); //$NON-NLS-1$
+        File sqlPlusBinary = new File(getClientHome().getPath(), "bin/" + sqlPlusExec); //$NON-NLS-1$
         if (!sqlPlusBinary.exists()) {
-            sqlPlusBinary = new File(getClientHome().getHomePath(), sqlPlusExec);
+            sqlPlusBinary = new File(getClientHome().getPath(), sqlPlusExec);
         }
         if (!sqlPlusBinary.exists()) {
             throw new IOException(NLS.bind(OracleMessages.tools_script_execute_wizard_error_sqlplus_not_found, getClientHome().getDisplayName()));
@@ -69,7 +69,7 @@ class OracleScriptExecuteWizard extends AbstractScriptExecuteWizard<OracleDataSo
     }
 
     @Override
-    public OracleHomeDescriptor findServerHome(String clientHomeId)
+    public OracleHomeDescriptor findNativeClientHome(String clientHomeId)
     {
         return OCIUtils.getOraHome(clientHomeId);
     }

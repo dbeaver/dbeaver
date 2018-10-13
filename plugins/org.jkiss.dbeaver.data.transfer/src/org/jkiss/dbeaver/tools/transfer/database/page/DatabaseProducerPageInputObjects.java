@@ -166,7 +166,7 @@ public class DatabaseProducerPageInputObjects extends ActiveWizardPage<DataTrans
             rootNode,
             lastSelection,
             new Class[] {DBSObjectContainer.class, DBSDataContainer.class},
-            new Class[] {chooseConsumer ? DBSDataManipulator.class : DBSDataContainer.class});
+            new Class[] {chooseConsumer ? DBSDataManipulator.class : DBSDataContainer.class}, null);
         if (node instanceof DBNDatabaseNode) {
             lastSelection = (DBNDatabaseNode) node;
             DBSObject object = ((DBNDatabaseNode) node).getObject();

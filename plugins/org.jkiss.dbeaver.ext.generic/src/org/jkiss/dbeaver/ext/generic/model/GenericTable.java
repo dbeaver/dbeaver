@@ -151,7 +151,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
 
     @Nullable
     @Override
-    public synchronized Collection<GenericTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor)
+    public synchronized Collection<? extends GenericTableColumn> getAttributes(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
         return this.getContainer().getTableCache().getChildren(monitor, getContainer(), this);
@@ -168,18 +168,24 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
     public synchronized Collection<GenericTableIndex> getIndexes(DBRProgressMonitor monitor)
         throws DBException
     {
-        // Read indexes using cache
-        return this.getContainer().getIndexCache().getObjects(monitor, getContainer(), this);
+        if (getDataSource().getInfo().supportsIndexes()) {
+            // Read indexes using cache
+            return this.getContainer().getIndexCache().getObjects(monitor, getContainer(), this);
+        }
+        return null;
     }
 
     @Nullable
     @Override
-    public synchronized Collection<GenericPrimaryKey> getConstraints(@NotNull DBRProgressMonitor monitor)
+    public synchronized List<GenericPrimaryKey> getConstraints(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        // ensure all columns are already cached
-        getAttributes(monitor);
-        return getContainer().getPrimaryKeysCache().getObjects(monitor, getContainer(), this);
+        if (getDataSource().getInfo().supportsReferentialIntegrity() || getDataSource().getInfo().supportsIndexes()) {
+            // ensure all columns are already cached
+            getAttributes(monitor);
+            return getContainer().getPrimaryKeysCache().getObjects(monitor, getContainer(), this);
+        }
+        return null;
     }
 
     synchronized void addUniqueKey(GenericPrimaryKey constraint) {
@@ -190,7 +196,10 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
     public Collection<GenericTableForeignKey> getReferences(@NotNull DBRProgressMonitor monitor)
         throws DBException
     {
-        return loadReferences(monitor);
+        if (getDataSource().getInfo().supportsReferentialIntegrity()) {
+            return loadReferences(monitor);
+        }
+        return null;
     }
 
     @Override
@@ -203,6 +212,7 @@ public class GenericTable extends JDBCTable<GenericDataSource, GenericStructCont
         return null;
     }
 
+    @Association
     @Nullable
     public Collection<GenericTable> getSubTables()
     {

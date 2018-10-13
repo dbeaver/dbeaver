@@ -6,4 +6,4 @@ Bundle-Version: 4.2.2.qualifier
 Bundle-Vendor: %Bundle-Vendor
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Require-Bundle: org.junit,
- org.jkiss.dbeaver.runtime.ide.core
+ org.jkiss.dbeaver.model

@@ -112,14 +112,14 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
                     // Try to get from active object
                     DBSObject selectedObject = DBUtils.getActiveInstanceObject(dataSource.getDefaultInstance());
                     if (selectedObject != null) {
-                        makeProposalsFromChildren(selectedObject, null);
+                        makeProposalsFromChildren(selectedObject, null, false);
                         rootObject = DBUtils.getPublicObject(selectedObject.getParentObject());
                     } else {
                         rootObject = dataSource;
                     }
                 }
                 if (rootObject != null) {
-                    makeProposalsFromChildren(rootObject, null);
+                    makeProposalsFromChildren(rootObject, null, false);
                 }
                 if (request.queryType == SQLCompletionProcessor.QueryType.JOIN && !request.proposals.isEmpty() && dataSource instanceof DBSObjectContainer) {
                     // Filter out non-joinable tables
@@ -143,7 +143,7 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
                     rootObject = getTableFromAlias(sc, tableAlias);
                 }
                 if (rootObject != null) {
-                    makeProposalsFromChildren(rootObject, request.wordPart);
+                    makeProposalsFromChildren(rootObject, request.wordPart, false);
                 } else {
                     // Get root object or objects from active database (if any)
                     makeDataSourceProposals();
@@ -171,7 +171,7 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
             }
         } else {
             // Get list of sub-objects (filtered by wordPart)
-            makeDataSourceProposals();
+            //makeDataSourceProposals();
         }
     }
 
@@ -195,7 +195,7 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
             DBSObject rightTable = SQLSearchUtils.findObjectByFQN(monitor, sc, dataSource, Arrays.asList(allNames), !request.simpleMode, request.wordDetector);
             if (rightTable instanceof DBSEntity) {
                 try {
-                    String joinCriteria = SQLUtils.generateTableJoin(monitor, leftTable, leftTable.getName(), (DBSEntity) rightTable, rightTable.getName());
+                    String joinCriteria = SQLUtils.generateTableJoin(monitor, leftTable, DBUtils.getQuotedIdentifier(leftTable), (DBSEntity) rightTable, DBUtils.getQuotedIdentifier(rightTable));
                     request.proposals.add(createCompletionProposal(request, joinCriteria, joinCriteria, DBPKeywordType.OTHER, "Join condition"));
                     return true;
                 } catch (DBException e) {
@@ -329,22 +329,22 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
         }
         if (lastToken == null) {
             // Get all children objects as proposals
-            makeProposalsFromChildren(childObject, null);
+            makeProposalsFromChildren(childObject, null, false);
         } else {
             // Get matched children
-            makeProposalsFromChildren(childObject, lastToken);
+            makeProposalsFromChildren(childObject, lastToken, false);
             if (tokens.length == 1) {
                 // Get children from selected object
             }
-            if (request.proposals.isEmpty() || tokens.length == 1) {
+            if (tokens.length == 1) {
                 // Try in active object
                 for (int k = 0; k < selectedContainers.length; k++) {
                     if (selectedContainers[k] != null && selectedContainers[k] != childObject) {
-                        makeProposalsFromChildren(selectedContainers[k], lastToken);
+                        makeProposalsFromChildren(selectedContainers[k], lastToken, true);
                     }
                 }
 
-                if (!request.simpleMode) {
+                if (request.proposals.isEmpty() && !request.simpleMode) {
                     // At last - try to find child tables by pattern
                     DBSStructureAssistant structureAssistant = null;
                     for (DBSObject object = childObject; object != null; object =  object.getParentObject()) {
@@ -441,7 +441,7 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
         return SQLSearchUtils.findObjectByFQN(monitor, sc, dataSource, nameList, !request.simpleMode, request.wordDetector);
     }
 
-    private void makeProposalsFromChildren(DBPObject parent, @Nullable String startPart) throws DBException {
+    private void makeProposalsFromChildren(DBPObject parent, @Nullable String startPart, boolean addFirst) throws DBException {
         if (startPart != null) {
             startPart = request.wordDetector.removeQuotes(startPart).toUpperCase(Locale.ENGLISH);
             int divPos = startPart.lastIndexOf(request.editor.getSyntaxManager().getStructSeparator());
@@ -486,10 +486,6 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
                         if (objPrefix != null) combinedMatch.append(objPrefix);
                     }
                     combinedMatch.append(DBUtils.getQuotedIdentifier(child));
-                } else if (simpleMode) {
-                    if (startPart == null || objectNameMatches(startPart, child, matchContains)) {
-                        matchedObjects.add(child);
-                    }
                 } else {
                     int score = CommonUtils.isEmpty(startPart) ? 1 : TextUtils.fuzzyScore(child.getName(), startPart);
                     if (score > 0) {
@@ -508,25 +504,31 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
                     DBPKeywordType.OTHER,
                     "All objects"));
             } else if (!matchedObjects.isEmpty()) {
-                if (startPart != null) {
-                    if (simpleMode) {
-                        matchedObjects.sort(Comparator.comparing(DBPNamedObject::getName));
-                    } else {
-                        matchedObjects.sort((o1, o2) -> {
-                            int score1 = scoredMatches.get(o1.getName());
-                            int score2 = scoredMatches.get(o2.getName());
-                            if (score1 == score2) {
-                                if (o1 instanceof DBSAttributeBase) {
-                                    return ((DBSAttributeBase) o1).getOrdinalPosition() - ((DBSAttributeBase) o2).getOrdinalPosition();
-                                }
-                                return o1.getName().compareTo(o2.getName());
+                if (simpleMode || startPart == null) {
+                    matchedObjects.sort(DBUtils.nameComparatorIgnoreCase());
+                } else {
+                    matchedObjects.sort((o1, o2) -> {
+                        int score1 = scoredMatches.get(o1.getName());
+                        int score2 = scoredMatches.get(o2.getName());
+                        if (score1 == score2) {
+                            if (o1 instanceof DBSAttributeBase) {
+                                return ((DBSAttributeBase) o1).getOrdinalPosition() - ((DBSAttributeBase) o2).getOrdinalPosition();
                             }
-                            return score2 - score1;
-                        });
-                    }
+                            return o1.getName().compareToIgnoreCase(o2.getName());
+                        }
+                        return score2 - score1;
+                    });
                 }
+                List<SQLCompletionProposal> childProposals = new ArrayList<>(matchedObjects.size());
                 for (DBSObject child : matchedObjects) {
-                    request.proposals.add(makeProposalsFromObject(child));
+                    childProposals.add(
+                        makeProposalsFromObject(child, !(parent instanceof DBPDataSource)));
+                }
+                if (addFirst) {
+                    // Add proposals in the beginning (because the most strict identifiers have to be first)
+                    request.proposals.addAll(0, childProposals);
+                } else {
+                    request.proposals.addAll(childProposals);
                 }
             }
         }
@@ -553,7 +555,10 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
             dataSource.getContainer().getPreferenceStore().getBoolean(SQLPreferenceConstants.USE_GLOBAL_ASSISTANT),
             100);
         for (DBSObjectReference reference : references) {
-            request.proposals.add(makeProposalsFromObject(reference, reference.getObjectType().getImage()));
+            request.proposals.add(makeProposalsFromObject(
+                reference,
+                !(rootSC instanceof DBPDataSource),
+                reference.getObjectType().getImage()));
         }
     }
 
@@ -565,17 +570,20 @@ class SQLCompletionAnalyzer implements DBRRunnableParametrized<DBRProgressMonito
         }
     }
 
-    private SQLCompletionProposal makeProposalsFromObject(DBSObject object)
+    private SQLCompletionProposal makeProposalsFromObject(DBSObject object, boolean useShortName)
     {
         DBNNode node = NavigatorUtils.getNodeByObject(monitor, object, false);
-        return makeProposalsFromObject(object, node == null ? null : node.getNodeIconDefault());
+        return makeProposalsFromObject(object, useShortName, node == null ? null : node.getNodeIconDefault());
     }
 
     private SQLCompletionProposal makeProposalsFromObject(
         DBPNamedObject object,
+        boolean useShortName,
         @Nullable DBPImage objectIcon)
     {
-        String objectName = DBUtils.getObjectFullName(object, DBPEvaluationContext.DML);
+        String objectName = useShortName ?
+            object.getName() :
+            DBUtils.getObjectFullName(object, DBPEvaluationContext.DML);
 
         boolean isSingleObject = true;
         String replaceString = null;

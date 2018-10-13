@@ -38,6 +38,7 @@ import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.navigator.DBNProject;
 import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.struct.*;
+import org.jkiss.dbeaver.model.struct.rdb.DBSSchema;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
 import org.jkiss.dbeaver.tools.transfer.database.*;
 import org.jkiss.dbeaver.tools.transfer.wizard.DataTransferPipe;
@@ -141,7 +142,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                             rootNode.getDatabases(),
                             selectedNode,
                             new Class[] {DBSObjectContainer.class},
-                            null);
+                            null, new Class[] { DBSSchema.class });
                         if (node instanceof DBNDatabaseNode) {
                             settings.setContainerNode((DBNDatabaseNode) node);
                             containerIcon.setImage(DBeaverIcons.getImage(node.getNodeIconDefault()));
@@ -599,7 +600,7 @@ public class DatabaseConsumerPageMapping extends ActiveWizardPage<DataTransferWi
                 rootNode,
                 selectedNode,
                 new Class[] {DBSObjectContainer.class, DBSDataManipulator.class},
-                new Class[] {DBSDataManipulator.class});
+                new Class[] {DBSDataManipulator.class}, null);
             if (node != null && node instanceof DBSWrapper) {
                 DBSObject object = ((DBSWrapper) node).getObject();
                 try {

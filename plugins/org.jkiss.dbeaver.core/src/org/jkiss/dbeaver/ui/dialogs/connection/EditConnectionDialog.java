@@ -87,15 +87,18 @@ public class EditConnectionDialog extends MultiPageWizardDialog
             testConnection();
             return;
         }
-        if (buttonId == IDialogConstants.OK_ID || buttonId == IDialogConstants.CANCEL_ID) {
-            if (getCurrentPage() != null) {
-                String currentPageName = getCurrentPage().getName();
-                if (!CommonUtils.isEmptyTrimmed(currentPageName)) {
-                    getDialogBoundsSettings().put("activePage", currentPageName);
-                }
+        super.buttonPressed(buttonId);
+    }
+
+    @Override
+    public boolean close() {
+        if (getCurrentPage() != null) {
+            String currentPageName = getCurrentPage().getName();
+            if (!CommonUtils.isEmptyTrimmed(currentPageName)) {
+                getDialogBoundsSettings().put("activePage", currentPageName);
             }
         }
-        super.buttonPressed(buttonId);
+        return super.close();
     }
 
     @Override

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.dataSourceProvider">
+
+        <!-- BigQuery -->
+
+        <datasource
+                class="org.jkiss.dbeaver.ext.bigquery.BigQueryDataSourceProvider"
+                description="%datasource.bq.description"
+                id="bigquery"
+                parent="generic"
+                label="BigQuery"
+                icon="icons/google_bigquery.png">
+            <drivers managable="true">
+
+                <!-- Simba JDBC driver -->
+                <driver
+                        id="google_bigquery_jdbc_simba"
+                        label="BigQuery"
+                        icon="icons/google_bigquery.png"
+                        class="com.simba.googlebigquery.jdbc42.Driver"
+                        sampleURL="jdbc:bigquery://{host}:{port};ProjectId={database};OAuthType=0;OAuthServiceAcctEmail={user};OAuthPvtKeyPath={server};"
+                        defaultPort="443"
+                        description="Google BigQuery driver"
+                        category="Google"
+                        webURL="https://cloud.google.com/bigquery/partners/simba-drivers/"
+                        propertiesURL="http://cdn.simba.com/products/BigQuery/doc/JDBC_InstallGuide/">
+                    <file type="jar" path="https://storage.googleapis.com/simba-bq-release/jdbc/SimbaJDBCDriverforGoogleBigQuery42_1.1.8.1010.zip"/>
+                    <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
+                </driver>
+
+            </drivers>
+
+        </datasource>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataSourceView">
+        <view
+                id="org.jkiss.dbeaver.ext.snowflake.dataSourceWizardView"
+                targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
+                dataSource="bigquery"
+                label="%bigquery.dialog.connection.header"
+                class="org.jkiss.dbeaver.ext.bigquery.views.BigQueryConnectionPage"
+                icon="icons/google_bigquery_icon.png">
+        </view>
+        <view
+                class="org.jkiss.dbeaver.ext.bigquery.views.BigQueryConnectionPage"
+                icon="icons/google_bigquery_icon.png"
+                id="org.jkiss.dbeaver.ext.snowflake.dataSourceEditorView"
+                dataSource="bigquery"
+                label="%bigquery.dialog.connection.header"
+                targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog">
+        </view>
+    </extension>
+
+</plugin>

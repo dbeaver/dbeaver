@@ -35,6 +35,7 @@ import org.jkiss.dbeaver.ext.erd.figures.NoteFigure;
 import org.jkiss.dbeaver.ext.erd.model.ERDNote;
 import org.jkiss.dbeaver.ext.erd.model.EntityDiagram;
 import org.jkiss.dbeaver.ext.erd.policy.NoteDirectEditPolicy;
+import org.jkiss.dbeaver.ext.erd.policy.NoteEditPolicy;
 import org.jkiss.dbeaver.model.DBPNamedObject;
 import org.jkiss.dbeaver.ui.controls.MultilineTextCellEditor;
 
@@ -68,7 +69,7 @@ public class NotePart extends NodePart
             //installEditPolicy(EditPolicy.GRAPHICAL_NODE_ROLE, new EntityConnectionEditPolicy());
             //installEditPolicy(EditPolicy.LAYOUT_ROLE, new EntityLayoutEditPolicy());
             //installEditPolicy(EditPolicy.CONTAINER_ROLE, new EntityContainerEditPolicy());
-            //installEditPolicy(EditPolicy.COMPONENT_ROLE, new NoteEditPolicy());
+            installEditPolicy(EditPolicy.COMPONENT_ROLE, new NoteEditPolicy());
             installEditPolicy(EditPolicy.DIRECT_EDIT_ROLE, new NoteDirectEditPolicy());
             //installEditPolicy(EditPolicy.COMPONENT_ROLE, new NoteDirectEditPolicy());
 

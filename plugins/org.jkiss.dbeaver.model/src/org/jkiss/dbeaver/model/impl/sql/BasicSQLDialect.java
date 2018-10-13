@@ -299,7 +299,12 @@ public class BasicSQLDialect implements SQLDialect {
     }
 
     @Override
-    public boolean validUnquotedCharacter(char c)
+    public boolean validIdentifierStart(char c) {
+        return Character.isLetter(c);
+    }
+
+    @Override
+    public boolean validIdentifierPart(char c)
     {
         return Character.isLetter(c) || Character.isDigit(c) || c == '_';
     }
@@ -381,6 +386,11 @@ public class BasicSQLDialect implements SQLDialect {
     @Override
     public boolean supportsTableDropCascade() {
         return false;
+    }
+
+    @Override
+    public boolean supportsOrderByIndex() {
+        return true;
     }
 
     @Override
@@ -484,6 +494,9 @@ public class BasicSQLDialect implements SQLDialect {
         for (String executeKeyword : ArrayUtils.safeArray(getExecuteKeywords())) {
             addSQLKeyword(executeKeyword);
         }
+        for (String ddlKeyword : ArrayUtils.safeArray(getDDLKeywords())) {
+            addSQLKeyword(ddlKeyword);
+        }
 
         if (isStandardSQL()) {
             // Add default types
@@ -496,7 +509,7 @@ public class BasicSQLDialect implements SQLDialect {
     }
 
     @Override
-    public String getColumnTypeModifiers(@NotNull DBSTypedObject column, @NotNull String typeName, @NotNull DBPDataKind dataKind) {
+    public String getColumnTypeModifiers(@NotNull DBPDataSource dataSource, @NotNull DBSTypedObject column, @NotNull String typeName, @NotNull DBPDataKind dataKind) {
         typeName = CommonUtils.notEmpty(typeName).toUpperCase(Locale.ENGLISH);
         if (column instanceof DBSObject) {
             // If type is UDT (i.e. we can find it in type list) and type precision == column precision
@@ -511,8 +524,17 @@ public class BasicSQLDialect implements SQLDialect {
         }
         if (dataKind == DBPDataKind.STRING) {
             if (typeName.indexOf('(') == -1) {
-                final long maxLength = column.getMaxLength();
+                long maxLength = column.getMaxLength();
                 if (maxLength > 0) {
+                    Object maxStringLength = dataSource.getDataSourceFeature(DBConstants.FEATURE_MAX_STRING_LENGTH);
+                    if (maxStringLength instanceof Number) {
+                        int lengthLimit = ((Number) maxStringLength).intValue();
+                        if (lengthLimit < 0) {
+                            return null;
+                        } else if (lengthLimit < maxLength) {
+                            maxLength = lengthLimit;
+                        }
+                    }
                     return "(" + maxLength + ")";
                 }
             }
@@ -592,5 +614,10 @@ public class BasicSQLDialect implements SQLDialect {
                 .append(" parameter value instead of '").append(parameter.getName()).append("' (").append(typeName).append(")\n");
         }
         sql.append(");\n\n");
+    }
+
+    @Override
+    public boolean isDisableScriptEscapeProcessing() {
+        return false;
     }
 }

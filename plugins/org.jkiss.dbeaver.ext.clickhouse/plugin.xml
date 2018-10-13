@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.2"?>
+
+<plugin>
+
+    <extension point="org.jkiss.dbeaver.generic.meta">
+        <meta id="clickhouse" class="org.jkiss.dbeaver.ext.clickhouse.model.ClickhouseMetaModel" driverClass="ru.yandex.clickhouse.ClickHouseDriver"/>
+    </extension>
+
+</plugin>

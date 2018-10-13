@@ -61,6 +61,7 @@ public class DefaultCertificateStorage implements DBACertificateStorage {
         }
     }
 
+    @Override
     public KeyStore getKeyStore(DBPDataSourceContainer container, String certType) throws DBException {
         try {
             File ksFile = getKeyStorePath(container, certType);
@@ -151,6 +152,11 @@ public class DefaultCertificateStorage implements DBACertificateStorage {
     @Override
     public File getKeyStorePath(DBPDataSourceContainer dataSource, String certType) {
         return new File(localPath, dataSource.getId() + "-" + certType + JKS_EXTENSION);
+    }
+
+    @Override
+    public String getKeyStoreType(DBPDataSourceContainer dataSource) {
+        return KeyStore.getDefaultType();
     }
 
     /**

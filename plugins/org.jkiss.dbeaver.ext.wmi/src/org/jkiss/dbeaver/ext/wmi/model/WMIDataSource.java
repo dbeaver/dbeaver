@@ -122,6 +122,11 @@ public class WMIDataSource implements DBPDataSource, DBSInstance, DBCExecutionCo
     }
 
     @Override
+    public DBSInstance getOwnerInstance() {
+        return this;
+    }
+
+    @Override
     public boolean isConnected()
     {
         return true;

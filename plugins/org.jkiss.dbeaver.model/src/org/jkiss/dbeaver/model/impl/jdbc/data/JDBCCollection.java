@@ -198,13 +198,7 @@ public class JDBCCollection implements DBDCollection, DBDValueCloneable {
         }
         if (elementType == null) {
             try {
-                if (array == null) {
-                    String arrayTypeName = column.getTypeName();
-                    DBSDataType arrayType = session.getDataSource().resolveDataType(monitor, arrayTypeName);
-                    if (arrayType != null) {
-                        elementType = arrayType.getComponentType(monitor);
-                    }
-                } else {
+                if (array != null) {
                     String baseTypeName = array.getBaseTypeName();
                     elementType = session.getDataSource().resolveDataType(monitor, baseTypeName);
                 }
@@ -216,7 +210,7 @@ public class JDBCCollection implements DBDCollection, DBDValueCloneable {
         try {
             if (elementType == null) {
                 if (array == null) {
-                    throw new DBCException("Can't resolve NULL array data type");
+                    return null;
                 }
                 try {
                     return makeCollectionFromResultSet(session, array, null);

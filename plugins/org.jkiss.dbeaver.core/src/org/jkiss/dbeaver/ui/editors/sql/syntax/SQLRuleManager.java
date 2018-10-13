@@ -34,9 +34,9 @@ import org.jkiss.dbeaver.model.sql.SQLConstants;
 import org.jkiss.dbeaver.model.sql.SQLDialect;
 import org.jkiss.dbeaver.runtime.sql.SQLRuleProvider;
 import org.jkiss.dbeaver.model.sql.SQLSyntaxManager;
+import org.jkiss.dbeaver.ui.editors.sql.SQLEditorBase;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLCommandHandlerDescriptor;
 import org.jkiss.dbeaver.ui.editors.sql.registry.SQLCommandsRegistry;
-import org.jkiss.dbeaver.ui.editors.EditorUtils;
 import org.jkiss.dbeaver.ui.editors.sql.SQLPreferenceConstants;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.rules.*;
 import org.jkiss.dbeaver.ui.editors.sql.syntax.tokens.*;
@@ -45,7 +45,6 @@ import org.jkiss.utils.ArrayUtils;
 import org.jkiss.utils.CommonUtils;
 import org.jkiss.utils.Pair;
 
-import java.io.File;
 import java.util.*;
 
 /**
@@ -55,8 +54,6 @@ import java.util.*;
  * Support runtime change of datasource (reloads syntax information)
  */
 public class SQLRuleManager extends RuleBasedScanner {
-
-    private static final long MAX_FILE_LENGTH_FOR_RULES = 2000000;
 
     @NotNull
     private final IThemeManager themeManager;
@@ -124,7 +121,7 @@ public class SQLRuleManager extends RuleBasedScanner {
         return posList;
     }
 
-    public void refreshRules(@Nullable DBPDataSource dataSource, IEditorInput editorInput)
+    public void refreshRules(@Nullable DBPDataSource dataSource, @Nullable IEditorInput editorInput)
     {
         SQLDialect dialect = syntaxManager.getDialect();
         SQLRuleProvider ruleProvider = null;
@@ -132,11 +129,7 @@ public class SQLRuleManager extends RuleBasedScanner {
             ruleProvider = (SQLRuleProvider) dialect;
         }
 
-        boolean minimalRules = false;
-        File file = EditorUtils.getLocalFileFromInput(editorInput);
-        if (file != null && file.length() > MAX_FILE_LENGTH_FOR_RULES) {
-            minimalRules = true;
-        }
+        boolean minimalRules = SQLEditorBase.isBigScript(editorInput);
 
         boolean boldKeywords = dataSource == null ?
             DBeaverCore.getGlobalPreferenceStore().getBoolean(SQLPreferenceConstants.SQL_FORMAT_BOLD_KEYWORDS) :

@@ -25,6 +25,7 @@ import org.jkiss.code.NotNull;
 public class DBNEvent {
 
     public static final Object FORCE_REFRESH = new Object();
+    public static final Object UPDATE_ON_SAVE = new Object();
 
     public enum Action
     {

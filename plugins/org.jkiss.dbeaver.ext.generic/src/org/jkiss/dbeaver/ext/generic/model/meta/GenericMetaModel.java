@@ -110,7 +110,7 @@ public class GenericMetaModel {
 
             final List<GenericSchema> tmpSchemas = new ArrayList<>();
             JDBCResultSet dbResult = null;
-            boolean catalogSchemas = false;
+            boolean catalogSchemas = false, schemasFiltered = false;
             if (catalog != null) {
                 try {
                     dbResult = session.getMetaData().getSchemas(
@@ -142,14 +142,17 @@ public class GenericMetaModel {
                     }
                     if (schemaFilters != null && !schemaFilters.matches(schemaName)) {
                         // Doesn't match filter
+                        schemasFiltered = true;
                         continue;
                     }
                     String catalogName = GenericUtils.safeGetString(schemaObject, dbResult, JDBCConstants.TABLE_CATALOG);
 
                     if (!CommonUtils.isEmpty(catalogName)) {
                         if (catalog == null) {
-                            // Invalid schema's catalog or schema without catalog (then do not use schemas as structure)
-                            log.debug("Catalog name (" + catalogName + ") found for schema '" + schemaName + "' while schema doesn't have parent catalog");
+                            if (!dataSource.isOmitCatalog()) {
+                                // Invalid schema's catalog or schema without catalog (then do not use schemas as structure)
+                                log.debug("Catalog name (" + catalogName + ") found for schema '" + schemaName + "' while schema doesn't have parent catalog");
+                            }
                         } else if (!catalog.getName().equals(catalogName)) {
                             if (!catalogSchemas) {
                                 // Just skip it - we have list of all existing schemas and this one belongs to another catalog
@@ -167,7 +170,11 @@ public class GenericMetaModel {
             } finally {
                 dbResult.close();
             }
-            if (catalog == null && tmpSchemas.size() == 1 && (schemaFilters == null || schemaFilters.isNotApplicable())) {
+            if (tmpSchemas.isEmpty() && catalogSchemas && !schemasFiltered && dataSource.getCatalogs().size() == 1) {
+                // There is just one catalog and empty schema list. Try to read global schemas
+                return loadSchemas(session, dataSource, null);
+            }
+            if (dataSource.isOmitSingleSchema() && catalog == null && tmpSchemas.size() == 1 && (schemaFilters == null || schemaFilters.isNotApplicable())) {
                 // Only one schema and no catalogs
                 // Most likely it is a fake one, let's skip it
                 // Anyway using "%" instead is ok

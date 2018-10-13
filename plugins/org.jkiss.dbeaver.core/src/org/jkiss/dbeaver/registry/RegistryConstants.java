@@ -83,11 +83,13 @@ public class RegistryConstants {
     public static final String ATTR_DEFAULT_PORT = "defaultPort"; //$NON-NLS-1$
     public static final String ATTR_SAMPLE_URL = "sampleURL"; //$NON-NLS-1$
     public static final String ATTR_WEB_URL = "webURL"; //$NON-NLS-1$
+    public static final String ATTR_PROPERTIES_WEB_URL = "propertiesURL"; //$NON-NLS-1$
     public static final String ATTR_SUPPORTS_DRIVER_PROPERTIES = "supportsDriverProperties"; //$NON-NLS-1$
     public static final String ATTR_CLIENT_REQUIRED = "clientRequired"; //$NON-NLS-1$
     public static final String ATTR_ANONYMOUS = "anonymous"; //$NON-NLS-1$
     public static final String ATTR_EMBEDDED = "embedded"; //$NON-NLS-1$
     public static final String ATTR_CUSTOM_DRIVER_LOADER = "customDriverLoader"; //$NON-NLS-1$
+    public static final String ATTR_USE_URL_TEMPLATE = "useURL"; //$NON-NLS-1$
 
     public static final String ATTR_ICON = "icon"; //$NON-NLS-1$
     public static final String ATTR_STANDARD = "standard"; //$NON-NLS-1$
@@ -112,6 +114,7 @@ public class RegistryConstants {
     public static final String ATTR_SAMPLE_CLASS = "sampleClass"; //$NON-NLS-1$
     public static final String ATTR_SOURCE_TYPE = "sourceType"; //$NON-NLS-1$
     public static final String ATTR_EMBEDDABLE = "embeddable"; //$NON-NLS-1$
+    public static final String ATTR_DATA_SOURCE = "dataSource"; //$NON-NLS-1$
 
     public static final String TAG_FOLDER = "folder"; //$NON-NLS-1$
     public static final String TAG_ITEMS = "items"; //$NON-NLS-1$

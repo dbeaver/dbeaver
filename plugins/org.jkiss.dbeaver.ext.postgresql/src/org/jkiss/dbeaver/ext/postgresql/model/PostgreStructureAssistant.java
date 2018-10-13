@@ -207,6 +207,10 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant
                     final String procName = JDBCUtils.safeGetString(dbResult, "proname");
                     final long procId = JDBCUtils.safeGetLong(dbResult, "oid");
                     final PostgreSchema procSchema = dataSource.getDefaultInstance().getSchema(session.getProgressMonitor(), schemaId);
+                    if (procSchema == null) {
+                        log.debug("Procedure's schema '" + schemaId + "' not found");
+                        continue;
+                    }
                     objects.add(new AbstractObjectReference(procName, procSchema, null, PostgreProcedure.class, RelationalObjectType.TYPE_PROCEDURE) {
                         @Override
                         public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
@@ -247,6 +251,10 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant
                     final long constrId = JDBCUtils.safeGetLong(dbResult, "oid");
                     final String constrName = JDBCUtils.safeGetString(dbResult, "conname");
                     final PostgreSchema constrSchema = dataSource.getDefaultInstance().getSchema(session.getProgressMonitor(), schemaId);
+                    if (constrSchema == null) {
+                        log.debug("Constraint's schema '" + schemaId + "' not found");
+                        continue;
+                    }
                     objects.add(new AbstractObjectReference(constrName, constrSchema, null, PostgreTableConstraintBase.class, RelationalObjectType.TYPE_TABLE) {
                         @Override
                         public DBSObject resolveObject(DBRProgressMonitor monitor) throws DBException {
@@ -289,7 +297,7 @@ public class PostgreStructureAssistant extends JDBCStructureAssistant
                     final String attributeName = JDBCUtils.safeGetString(dbResult, "attname");
                     final PostgreSchema constrSchema = dataSource.getDefaultInstance().getSchema(session.getProgressMonitor(), schemaId);
                     if (constrSchema == null) {
-                        log.debug("Schema '" + schemaId + "' not found");
+                        log.debug("Attribute's schema '" + schemaId + "' not found");
                         continue;
                     }
                     objects.add(new AbstractObjectReference(attributeName, constrSchema, null, PostgreTableBase.class, RelationalObjectType.TYPE_TABLE) {

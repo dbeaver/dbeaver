@@ -222,7 +222,7 @@ public class MySQLConnectionPage extends ConnectionPageAbstract implements IComp
             }
         }
 
-        homesSelector.populateHomes(site.getDriver(), connectionInfo.getClientHomeId());
+        homesSelector.populateHomes(site.getDriver(), connectionInfo.getClientHomeId(), site.isNew());
 
         activated = true;
     }

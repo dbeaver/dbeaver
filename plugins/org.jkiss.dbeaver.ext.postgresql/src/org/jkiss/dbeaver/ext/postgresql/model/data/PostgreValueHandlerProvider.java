@@ -36,28 +36,35 @@ public class PostgreValueHandlerProvider implements DBDValueHandlerProvider {
     public DBDValueHandler getValueHandler(DBPDataSource dataSource, DBDPreferences preferences, DBSTypedObject typedObject)
     {
         int typeID = typedObject.getTypeID();
-        if (typeID == Types.ARRAY) {
-            return PostgreArrayValueHandler.INSTANCE;
-        } else if (typeID == Types.STRUCT) {
-            return PostgreStructValueHandler.INSTANCE;
-        } else {
-            switch (typedObject.getTypeName()) {
-                case PostgreConstants.TYPE_JSONB:
-                case PostgreConstants.TYPE_JSON:
-                    return PostgreJSONValueHandler.INSTANCE;
-                case PostgreConstants.TYPE_HSTORE:
-                    return PostgreHStoreValueHandler.INSTANCE;
-                case PostgreConstants.TYPE_BIT:
-                    return PostgreBitStringValueHandler.INSTANCE;
-                case PostgreConstants.TYPE_REFCURSOR:
-                    return PostgreRefCursorValueHandler.INSTANCE;
-                case PostgreConstants.TYPE_MONEY:
-                    return PostgresMoneyValueHandler.INSTANCE;
-                case PostgreConstants.TYPE_GEOMETRY:
-                    return PostgreGeometryValueHandler.INSTANCE;
-                default:
-                    return null;
-            }
+        switch (typeID) {
+            case Types.ARRAY:
+                return PostgreArrayValueHandler.INSTANCE;
+            case Types.STRUCT:
+                return PostgreStructValueHandler.INSTANCE;
+            case Types.DATE:
+            case Types.TIME:
+            case Types.TIME_WITH_TIMEZONE:
+            case Types.TIMESTAMP:
+            case Types.TIMESTAMP_WITH_TIMEZONE:
+                return new PostgreDateTimeValueHandler(preferences.getDataFormatterProfile());
+            default:
+                switch (typedObject.getTypeName()) {
+                    case PostgreConstants.TYPE_JSONB:
+                    case PostgreConstants.TYPE_JSON:
+                        return PostgreJSONValueHandler.INSTANCE;
+                    case PostgreConstants.TYPE_HSTORE:
+                        return PostgreHStoreValueHandler.INSTANCE;
+                    case PostgreConstants.TYPE_BIT:
+                        return PostgreBitStringValueHandler.INSTANCE;
+                    case PostgreConstants.TYPE_REFCURSOR:
+                        return PostgreRefCursorValueHandler.INSTANCE;
+                    case PostgreConstants.TYPE_MONEY:
+                        return PostgreMoneyValueHandler.INSTANCE;
+                    case PostgreConstants.TYPE_GEOMETRY:
+                        return PostgreGeometryValueHandler.INSTANCE;
+                    default:
+                        return null;
+                }
         }
     }
 

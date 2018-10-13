@@ -10,7 +10,7 @@
 
 	<properties>
 		<tycho-version>1.1.0</tycho-version>
-		<reficio-p2-version>1.2.0-SNAPSHOT</reficio-p2-version>
+		<reficio-p2-version>1.2.0</reficio-p2-version>
 		<repo-name>DBeaver CE dependencies</repo-name>
 	</properties>
 
@@ -48,8 +48,8 @@
 								<artifact><id>org.apache.xmlbeans:xmlbeans:2.6.0</id></artifact>
 
 								<!-- SSH and BouncyCastle -->
-								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.sshj:0.23.0</id></artifact>
-								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.bouncycastle:1.59.0</id></artifact>
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.sshj:0.26.0</id></artifact>
+								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.bouncycastle:1.60.0</id></artifact>
 
 								<!-- Batik -->
 								<artifact><id>org.jkiss.bundle:org.jkiss.bundle.apache.batik:1.9.1</id></artifact>

@@ -125,6 +125,12 @@ public class DatabaseProducerSettings implements IDataTransferSettings {
         if (!CommonUtils.isEmpty(dialogSettings.get("queryRowCount"))) {
             queryRowCount = dialogSettings.getBoolean("queryRowCount");
         }
+        if (!CommonUtils.isEmpty(dialogSettings.get("selectedColumnsOnly"))) {
+            selectedColumnsOnly = dialogSettings.getBoolean("selectedColumnsOnly");
+        }
+        if (!CommonUtils.isEmpty(dialogSettings.get("selectedRowsOnly"))) {
+            selectedRowsOnly = dialogSettings.getBoolean("selectedRowsOnly");
+        }
     }
 
     @Override
@@ -134,5 +140,7 @@ public class DatabaseProducerSettings implements IDataTransferSettings {
         dialogSettings.put("segmentSize", segmentSize);
         dialogSettings.put("openNewConnections", openNewConnections);
         dialogSettings.put("queryRowCount", queryRowCount);
+        dialogSettings.put("selectedColumnsOnly", selectedColumnsOnly);
+        dialogSettings.put("selectedRowsOnly", selectedRowsOnly);
     }
 }

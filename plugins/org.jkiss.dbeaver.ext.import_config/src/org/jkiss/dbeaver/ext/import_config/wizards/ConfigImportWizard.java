@@ -26,6 +26,7 @@ import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriverLibrary;
 import org.jkiss.dbeaver.model.exec.DBCException;
+import org.jkiss.dbeaver.model.impl.jdbc.JDBCURL;
 import org.jkiss.dbeaver.registry.*;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
@@ -208,7 +209,7 @@ public abstract class ConfigImportWizard extends Wizard implements IImportWizard
         String url = connectionInfo.getUrl();
         if (url != null) {
             // Parse url
-            final DriverDescriptor.MetaURL metaURL = DriverDescriptor.parseSampleURL(sampleURL);
+            final JDBCURL.MetaURL metaURL = JDBCURL.parseSampleURL(sampleURL);
             int sourceOffset = 0;
             List<String> urlComponents = metaURL.getUrlComponents();
             for (int i = 0, urlComponentsSize = urlComponents.size(); i < urlComponentsSize; i++) {

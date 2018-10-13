@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jface.dialogs.IDialogConstants;
 import org.eclipse.jface.text.IUndoManager;
+import org.eclipse.osgi.util.NLS;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
@@ -29,6 +30,7 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.*;
+import org.eclipse.ui.part.MultiPageEditorSite;
 import org.eclipse.ui.views.properties.IPropertySheetPage;
 import org.jkiss.code.Nullable;
 import org.jkiss.dbeaver.DBException;
@@ -297,6 +299,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
             log.warn("Null command context");
             return true;
         }
+        boolean isNewObject = getDatabaseObject() == null || !getDatabaseObject().isPersisted();
         try {
             commandContext.saveChanges(monitor, options);
         } catch (DBException e) {
@@ -319,7 +322,8 @@ public class EntityEditor extends MultiPageDatabaseEditor
             try {
                 UIUtils.runInProgressService(monitor1 -> {
                     try {
-                        treeNode.refreshNode(monitor1, DBNEvent.FORCE_REFRESH);
+                        treeNode.refreshNode(monitor1,
+                            isNewObject ? DBNEvent.FORCE_REFRESH : DBNEvent.UPDATE_ON_SAVE);
                     } catch (DBException e) {
                         throw new InvocationTargetException(e);
                     }
@@ -424,42 +428,49 @@ public class EntityEditor extends MultiPageDatabaseEditor
             return IDialogConstants.IGNORE_ID;
         }
         StringBuilder script = new StringBuilder();
-        for (DBECommand command : commands) {
-            try {
-                command.validateCommand();
-            } catch (final DBException e) {
-                log.debug(e);
-                UIUtils.syncExec(() -> DBUserInterface.getInstance().showError("Validation", e.getMessage()));
-                return IDialogConstants.CANCEL_ID;
-            }
-            Map<String, Object> options = new HashMap<>();
-            options.put(DBPScriptObject.OPTION_OBJECT_SAVE, true);
 
-            try {
-                UIUtils.runInProgressService(monitor -> {
-                    try {
-                        DBEPersistAction[] persistActions = command.getPersistActions(monitor, options);
-                        script.append(SQLUtils.generateScript(
-                            commandContext.getExecutionContext().getDataSource(),
-                            persistActions,
-                            false));
-                    } catch (DBException e) {
-                        throw new InvocationTargetException(e);
-                    }
-                });
-            } catch (InvocationTargetException e) {
-                DBeaverUI.getInstance().showError("Script generate error", "Couldn't generate alter script", e.getTargetException());
-                return IDialogConstants.CANCEL_ID;
-            } catch (InterruptedException e) {
-                return IDialogConstants.CANCEL_ID;
+        try {
+            saveInProgress = true;
+            for (DBECommand command : commands) {
+                try {
+                    command.validateCommand();
+                } catch (final DBException e) {
+                    log.debug(e);
+                    UIUtils.syncExec(() -> DBUserInterface.getInstance().showError("Validation", e.getMessage()));
+                    return IDialogConstants.CANCEL_ID;
+                }
+                Map<String, Object> options = new HashMap<>();
+                options.put(DBPScriptObject.OPTION_OBJECT_SAVE, true);
+
+                try {
+                    UIUtils.runInProgressService(monitor -> {
+                        try {
+                            DBEPersistAction[] persistActions = command.getPersistActions(monitor, options);
+                            script.append(SQLUtils.generateScript(
+                                commandContext.getExecutionContext().getDataSource(),
+                                persistActions,
+                                false));
+                        } catch (DBException e) {
+                            throw new InvocationTargetException(e);
+                        }
+                    });
+                } catch (InvocationTargetException e) {
+                    DBeaverUI.getInstance().showError("Script generate error", "Couldn't generate alter script", e.getTargetException());
+                    return IDialogConstants.CANCEL_ID;
+                } catch (InterruptedException e) {
+                    return IDialogConstants.CANCEL_ID;
+                }
             }
+            if (script.length() == 0) {
+                return IDialogConstants.PROCEED_ID;
+            }
+            ChangesPreviewer changesPreviewer = new ChangesPreviewer(script, allowSave);
+            UIUtils.syncExec(changesPreviewer);
+            return changesPreviewer.getResult();
         }
-        if (script.length() == 0) {
-            return IDialogConstants.PROCEED_ID;
+        finally {
+            saveInProgress = false;
         }
-        ChangesPreviewer changesPreviewer = new ChangesPreviewer(script, allowSave);
-        UIUtils.syncExec(changesPreviewer);
-        return changesPreviewer.getResult();
     }
 
     @Override
@@ -571,6 +582,10 @@ public class EntityEditor extends MultiPageDatabaseEditor
         }
 
         UIUtils.setHelp(getContainer(), IHelpContextIds.CTX_ENTITY_EDITOR);
+    }
+
+    public IEditorPart getPageEditor(String pageId) {
+        return editorMap.get(pageId);
     }
 
     @Override
@@ -769,9 +784,15 @@ public class EntityEditor extends MultiPageDatabaseEditor
     @Override
     public void refreshPart(final Object source, boolean force)
     {
-        if (getContainer() == null || getContainer().isDisposed()) {
+        if (getContainer() == null || getContainer().isDisposed() || isSaveInProgress()) {
             return;
         }
+
+        if (source instanceof DBNEvent && ((DBNEvent) source).getNodeChange() == DBNEvent.NodeChange.REFRESH) {
+            // This may happen if editor was refreshed indirectly (it is a child of refreshed node)
+            force = true;
+        }
+
         if (force && getDatabaseObject().isPersisted()) {
             // Lists and commands should be refreshed only if we make real refresh from remote storage
             // Otherwise just update object's properties
@@ -927,7 +948,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
                     }
                 }
             });
-            item.setToolTipText("Open " + databaseNode.getNodeType() + " Editor");
+            item.setToolTipText(NLS.bind(CoreMessages.actions_navigator_open, databaseNode.getNodeType()));
         }
     }
 

@@ -41,6 +41,10 @@ public class PostgreContentJSON extends JDBCContentChars {
         super(dataSource, json);
     }
 
+    private PostgreContentJSON(PostgreContentJSON copyFrom) {
+        super(copyFrom);
+    }
+
     @NotNull
     @Override
     public String getContentType()
@@ -76,7 +80,7 @@ public class PostgreContentJSON extends JDBCContentChars {
     @Override
     public PostgreContentJSON cloneValue(DBRProgressMonitor monitor)
     {
-        return new PostgreContentJSON(dataSource, data);
+        return new PostgreContentJSON(this);
     }
 
 }

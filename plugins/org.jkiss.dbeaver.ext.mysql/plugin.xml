@@ -50,7 +50,7 @@
                                         </items>
                                     </items>
                                 </folder>
-                                <folder type="org.jkiss.dbeaver.model.struct.rdb.DBSTableForeignKey" label="%tree.references.node.name" icon="#references" description="Table references" virtual="true">
+                                <folder label="%tree.references.node.name" icon="#references" description="Table references" virtual="true">
                                     <items label="%tree.reference_key.node.name" path="referenceKey" property="references" icon="#reference" virtual="true">
                                         <items label="%tree.reference_key_columns.node.name" itemLabel="%tree.column.node.name" path="column" property="attributeReferences" navigable="false" inline="true" virtual="true">
                                         </items>
@@ -147,31 +147,33 @@
                         icon="icons/mysql_icon.png"
                         class="com.mysql.jdbc.Driver"
                         sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
+                        useURL="false"
                         defaultPort="3306"
                         webURL="http://www.mysql.com/products/connector/"
+                        propertiesURL="https://dev.mysql.com/doc/connector-j/5.1/en/connector-j-reference-configuration-properties.html"
                         description="Driver for MySQL 4.x-5.7">
                     <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE[5.1.44]" bundle="!drivers.mysql"/>
                     <file type="license" path="drivers/mysql/LICENSE.txt" bundle="drivers.mysql"/>
                     <file type="jar" path="drivers/mysql/mysql-connector-java.jar" bundle="drivers.mysql"/>
                     <property name="connectTimeout" value="20000"/>
-                    <!--<property name="zeroDateTimeBehavior" value="convertToNull"/>-->
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                 </driver>
                 <driver
                         id="mysql8"
                         label="MySQL 8.x"
                         icon="icons/mysql_icon.png"
-                        class="com.mysql.jdbc.Driver"
+                        class="com.mysql.cj.jdbc.Driver"
                         sampleURL="jdbc:mysql://{host}[:{port}]/[{database}]"
+                        useURL="false"
                         defaultPort="3306"
                         webURL="http://www.mysql.com/products/connector/"
+                        propertiesURL="https://dev.mysql.com/doc/connector-j/8.0/en/connector-j-reference-configuration-properties.html"
                         description="Driver for MySQL 8.x and later">
                     <file type="jar" path="maven:/mysql:mysql-connector-java:RELEASE[8.0.11]" bundle="!drivers.mysql"/>
                     <file type="license" path="drivers/mysql/LICENSE.txt" bundle="drivers.mysql"/>
                     <file type="jar" path="drivers/mysql/mysql-connector-java-8.jar" bundle="drivers.mysql"/>
                     <file type="jar" path="drivers/mysql/protobuf-java.jar" bundle="drivers.mysql"/>
                     <property name="connectTimeout" value="20000"/>
-                    <!--<property name="zeroDateTimeBehavior" value="CONVERT_TO_NULL"/>-->
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                 </driver>
                 <driver
@@ -182,27 +184,40 @@
                     sampleURL="jdbc:mariadb://{host}[:{port}]/[{database}]"
                     defaultPort="3306"
                     webURL="https://mariadb.com/kb/en/mariadb/about-mariadb-connector-j/"
+                    propertiesURL="https://mariadb.com/kb/en/library/about-mariadb-connector-j/#optional-url-parameters"
                     description="MySQL standard driver">
                     <file type="jar" path="maven:/org.mariadb.jdbc:mariadb-java-client:RELEASE[1.5.5]" bundle="!drivers.mariadb"/>
                     <property name="@dbeaver-default-resultset.maxrows.sql" value="true"/>
                 </driver>
             </drivers>
-            <views>
-                <view
-                    id="org.jkiss.dbeaver.ext.mysql.dataSourceWizardView"
-                    targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
-                    label="%dialog.connection.header"
-                    class="org.jkiss.dbeaver.ext.mysql.views.MySQLConnectionPage"
-                    icon="icons/mysql_icon.png">
-                </view>
-                <view
-                    id="org.jkiss.dbeaver.ext.mysql.dataSourceEditorView"
-                    targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog"
-                    label="%dialog.connection.header"
-                    class="org.jkiss.dbeaver.ext.mysql.views.MySQLConnectionPage">
-                </view>
-            </views>
+
+            <nativeClients>
+                <client id="mysql_client" label="MySQL Binaries">
+                    <dist os="win32" targetPath="clients/mysql/win" remotePath="repo:/drivers/mysql/client/win" resourcePath="clients/mysql/win">
+                        <file type="exec" name="mysql.exe"/>
+                        <file type="exec" name="mysqldump.exe"/>
+                    </dist>
+                </client>
+            </nativeClients>
         </datasource>
+    </extension>
+
+    <extension point="org.jkiss.dbeaver.dataSourceView">
+        <view
+                id="org.jkiss.dbeaver.ext.mysql.dataSourceWizardView"
+                dataSource="mysql"
+                targetID="org.jkiss.dbeaver.ext.ui.newConnectionWizard"
+                label="%dialog.connection.header"
+                class="org.jkiss.dbeaver.ext.mysql.views.MySQLConnectionPage"
+                icon="icons/mysql_icon.png">
+        </view>
+        <view
+                id="org.jkiss.dbeaver.ext.mysql.dataSourceEditorView"
+                dataSource="mysql"
+                targetID="org.jkiss.dbeaver.ext.ui.editConnectionDialog"
+                label="%dialog.connection.header"
+                class="org.jkiss.dbeaver.ext.mysql.views.MySQLConnectionPage">
+        </view>
     </extension>
 
     <extension point="org.jkiss.dbeaver.databaseEditor">
@@ -292,6 +307,7 @@
             <type standard="DATE"/>
             <type standard="TIME"/>
             <type standard="TIMESTAMP"/>
+            <type standard="BIT"/>
             <type name="JSON"/>
             <type name="GEOMETRY"/>
 
@@ -310,7 +326,8 @@
             name="%editor.session_manager.name"
             icon="platform:/plugin/org.jkiss.dbeaver.model/icons/tree/sessions.png"
             class="org.jkiss.dbeaver.ext.mysql.editors.MySQLSessionEditor"
-            id="org.jkiss.dbeaver.ext.mysql.editors.MySQLSessionEditor">
+            id="org.jkiss.dbeaver.ext.mysql.editors.MySQLSessionEditor"
+            contributorClass="org.jkiss.dbeaver.ui.editors.EditorSearchActionsContributor">
         </editor>
     </extension>
 

@@ -23,7 +23,7 @@ import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchActionConstants;
 import org.eclipse.ui.part.EditorActionBarContributor;
-import org.jkiss.dbeaver.ui.editors.entity.EntityEditorContributor;
+import org.jkiss.dbeaver.ui.editors.EditorSearchActionsContributor;
 
 /**
  * SQL Editor contributor
@@ -67,7 +67,7 @@ public class ERDEditorContributor extends EditorActionBarContributor
 
 
         }
-        EntityEditorContributor.registerSearchActions(activeEditorPart);
+        EditorSearchActionsContributor.registerSearchActions(activeEditorPart);
     }
 
     @Override

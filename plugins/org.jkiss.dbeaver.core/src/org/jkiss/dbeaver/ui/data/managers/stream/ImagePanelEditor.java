@@ -24,6 +24,7 @@ import org.jkiss.dbeaver.model.data.DBDContent;
 import org.jkiss.dbeaver.model.data.DBDContentStorage;
 import org.jkiss.dbeaver.model.exec.DBCException;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.ui.UITask;
 import org.jkiss.dbeaver.ui.controls.imageview.ImageViewer;
 import org.jkiss.dbeaver.ui.data.IStreamValueEditor;
 import org.jkiss.dbeaver.ui.data.IValueController;
@@ -49,7 +50,13 @@ public class ImagePanelEditor implements IStreamValueEditor<ImageViewer> {
         DBDContentStorage data = value.getContents(monitor);
         if (data != null) {
             try (InputStream contentStream = data.getContentStream()) {
-                if (!control.loadImage(contentStream)) {
+                if (!(new UITask<Boolean>() {
+                    @Override
+                    protected Boolean runTask() {
+                        return control.loadImage(contentStream);
+                    }
+                }).execute())
+                {
                     throw new DBException("Can't load image: " + control.getLastError().getMessage());
                 }
             } catch (IOException e) {

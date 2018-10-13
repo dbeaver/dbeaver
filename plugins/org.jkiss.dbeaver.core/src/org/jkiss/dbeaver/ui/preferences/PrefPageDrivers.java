@@ -26,14 +26,14 @@ import org.eclipse.swt.widgets.*;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.eclipse.ui.IWorkbenchPropertyPage;
-import org.jkiss.dbeaver.DBeaverPreferences;
 import org.jkiss.dbeaver.Log;
+import org.jkiss.dbeaver.ModelPreferences;
 import org.jkiss.dbeaver.core.CoreMessages;
 import org.jkiss.dbeaver.core.DBeaverCore;
 import org.jkiss.dbeaver.model.preferences.DBPPreferenceStore;
 import org.jkiss.dbeaver.registry.driver.DriverDescriptor;
-import org.jkiss.dbeaver.registry.encode.EncryptionException;
-import org.jkiss.dbeaver.registry.encode.SecuredPasswordEncrypter;
+import org.jkiss.dbeaver.runtime.encode.EncryptionException;
+import org.jkiss.dbeaver.runtime.encode.SecuredPasswordEncrypter;
 import org.jkiss.dbeaver.ui.UIUtils;
 import org.jkiss.dbeaver.ui.dialogs.DialogUtils;
 import org.jkiss.dbeaver.ui.dialogs.EnterNameDialog;
@@ -143,13 +143,13 @@ public class PrefPageDrivers extends AbstractPrefPage implements IWorkbenchPrefe
     {
         DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
 
-        versionUpdateCheck.setSelection(store.getBoolean(DBeaverPreferences.UI_DRIVERS_VERSION_UPDATE));
+        versionUpdateCheck.setSelection(store.getBoolean(ModelPreferences.UI_DRIVERS_VERSION_UPDATE));
 
-        proxyHostText.setText(store.getString(DBeaverPreferences.UI_PROXY_HOST));
-        proxyPortSpinner.setSelection(store.getInt(DBeaverPreferences.UI_PROXY_PORT));
-        proxyUserText.setText(store.getString(DBeaverPreferences.UI_PROXY_USER));
+        proxyHostText.setText(store.getString(ModelPreferences.UI_PROXY_HOST));
+        proxyPortSpinner.setSelection(store.getInt(ModelPreferences.UI_PROXY_PORT));
+        proxyUserText.setText(store.getString(ModelPreferences.UI_PROXY_USER));
         // Load and decrypt password
-        String passwordString = store.getString(DBeaverPreferences.UI_PROXY_PASSWORD);
+        String passwordString = store.getString(ModelPreferences.UI_PROXY_PASSWORD);
         if (!CommonUtils.isEmpty(passwordString) && encrypter != null) {
             try {
                 passwordString = encrypter.decrypt(passwordString);
@@ -170,11 +170,11 @@ public class PrefPageDrivers extends AbstractPrefPage implements IWorkbenchPrefe
     public boolean performOk()
     {
         DBPPreferenceStore store = DBeaverCore.getGlobalPreferenceStore();
-        store.setValue(DBeaverPreferences.UI_DRIVERS_VERSION_UPDATE, versionUpdateCheck.getSelection());
+        store.setValue(ModelPreferences.UI_DRIVERS_VERSION_UPDATE, versionUpdateCheck.getSelection());
 
-        store.setValue(DBeaverPreferences.UI_PROXY_HOST, proxyHostText.getText());
-        store.setValue(DBeaverPreferences.UI_PROXY_PORT, proxyPortSpinner.getSelection());
-        store.setValue(DBeaverPreferences.UI_PROXY_USER, proxyUserText.getText());
+        store.setValue(ModelPreferences.UI_PROXY_HOST, proxyHostText.getText());
+        store.setValue(ModelPreferences.UI_PROXY_PORT, proxyPortSpinner.getSelection());
+        store.setValue(ModelPreferences.UI_PROXY_USER, proxyUserText.getText());
         String password = proxyPasswordText.getText();
         if (!CommonUtils.isEmpty(password) && encrypter != null) {
             // Encrypt password
@@ -184,8 +184,8 @@ public class PrefPageDrivers extends AbstractPrefPage implements IWorkbenchPrefe
                 log.warn(e);
             }
         }
-        store.setValue(DBeaverPreferences.UI_PROXY_PASSWORD, password);
-        store.setValue(DBeaverPreferences.UI_DRIVERS_HOME, customDriversHome.getText());
+        store.setValue(ModelPreferences.UI_PROXY_PASSWORD, password);
+        store.setValue(ModelPreferences.UI_DRIVERS_HOME, customDriversHome.getText());
 
         {
             StringBuilder sources = new StringBuilder();
@@ -193,7 +193,7 @@ public class PrefPageDrivers extends AbstractPrefPage implements IWorkbenchPrefe
                 if (sources.length() > 0) sources.append('|');
                 sources.append(item);
             }
-            store.setValue(DBeaverPreferences.UI_DRIVERS_SOURCES, sources.toString());
+            store.setValue(ModelPreferences.UI_DRIVERS_SOURCES, sources.toString());
         }
 
         PrefUtils.savePreferenceStore(store);

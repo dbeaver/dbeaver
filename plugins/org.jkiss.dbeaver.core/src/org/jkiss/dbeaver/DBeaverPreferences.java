@@ -26,6 +26,8 @@ public final class DBeaverPreferences
     public static final String AGENT_LONG_OPERATION_NOTIFY = "agent.long.operation.notify"; //$NON-NLS-1$
     public static final String AGENT_LONG_OPERATION_TIMEOUT = "agent.long.operation.timeout"; //$NON-NLS-1$
 
+    public static final String SECURITY_USE_BOUNCY_CASTLE = "security.jce.bc"; //$NON-NLS-1$
+
     public static final String PLATFORM_LANGUAGE = "platform.language"; //$NON-NLS-1$
 
     public static final String NAVIGATOR_EXPAND_ON_CONNECT = "navigator.expand.on.connect"; //$NON-NLS-1$
@@ -39,8 +41,10 @@ public final class DBeaverPreferences
     public static final String NAVIGATOR_CONNECTION_DOUBLE_CLICK = "navigator.connection.doubleClick"; //$NON-NLS-1$
     public static final String NAVIGATOR_SHOW_SQL_PREVIEW = "navigator.editor.show.preview"; //$NON-NLS-1$
     public static final String NAVIGATOR_SHOW_OBJECT_TIPS = "navigator.show.objects.tips"; //$NON-NLS-1$
+    public static final String NAVIGATOR_LONG_LIST_FETCH_SIZE = "navigator.long.list.fetch.size"; //$NON-NLS-1$
 
     public static final String TOOLBARS_SHOW_GENERAL_ALWAYS = "toolbars.show.general.always"; //$NON-NLS-1$
+    public static final String TOOLBARS_SHOW_EDIT = "toolbars.show.edit"; //$NON-NLS-1$
     public static final String TOOLBARS_DATABASE_SELECTOR_WIDTH = "toolbars.database.selector.width"; //$NON-NLS-1$
     public static final String TOOLBARS_SCHEMA_SELECTOR_WIDTH = "toolbars.schema.selector.width"; //$NON-NLS-1$
 
@@ -76,6 +80,7 @@ public final class DBeaverPreferences
     public static final String CONFIRM_ENTITY_REVERT = "entity_revert"; //$NON-NLS-1$
     //public static final String CONFIRM_ENTITY_RENAME = "entity_rename"; //$NON-NLS-1$
     public static final String CONFIRM_EDITOR_CLOSE = "close_editor_edit"; //$NON-NLS-1$
+    public static final String CONFIRM_RUNNING_QUERY_CLOSE = "close_running_query"; //$NON-NLS-1$
     public static final String CONFIRM_DRIVER_DOWNLOAD = "driver_download"; //$NON-NLS-1$
     public static final String CONFIRM_MANUAL_DOWNLOAD = "driver_download_manual"; //$NON-NLS-1$
     public static final String CONFIRM_VERSION_CHECK = "version_check"; //$NON-NLS-1$
@@ -95,17 +100,6 @@ public final class DBeaverPreferences
     public static final String UI_UPDATE_CHECK_TIME = "ui.auto.update.check.time"; //$NON-NLS-1$
     public static final String UI_KEEP_DATABASE_EDITORS = "ui.editors.reopen-after-restart"; //$NON-NLS-1$
 
-    public static final String UI_DRIVERS_VERSION_UPDATE = "ui.drivers.version.update"; //$NON-NLS-1$
-    public static final String UI_DRIVERS_HOME = "ui.drivers.home"; //$NON-NLS-1$
-
-    public static final String UI_PROXY_HOST = "ui.proxy.host"; //$NON-NLS-1$
-    public static final String UI_PROXY_PORT = "ui.proxy.port"; //$NON-NLS-1$
-    public static final String UI_PROXY_USER = "ui.proxy.user"; //$NON-NLS-1$
-    public static final String UI_PROXY_PASSWORD = "ui.proxy.password"; //$NON-NLS-1$
-
-    public static final String UI_DRIVERS_SOURCES = "ui.drivers.sources"; //$NON-NLS-1$
-    public static final String UI_MAVEN_REPOSITORIES = "ui.maven.repositories"; //$NON-NLS-1$
-
     // Resources
     public static final String RESOURCE_HANDLER_ROOT_PREFIX = "resource.root."; //$NON-NLS-1$
 
@@ -118,6 +112,8 @@ public final class DBeaverPreferences
     public static final String RS_COMMIT_ON_CONTENT_APPLY = "resultset.commit.oncontentapply"; //$NON-NLS-1$
     public static final String RS_EDIT_NEW_ROWS_AFTER = "resultset.edit.new.row.after";
     public static final String RS_EDIT_REFRESH_AFTER_UPDATE = "resultset.edit.refreshAfterUpdate"; //$NON-NLS-1$
+    public static final String RS_GROUPING_DEFAULT_SORTING = "resultset.grouping.defaultSorting"; //$NON-NLS-1$
+    public static final String RS_GROUPING_SHOW_DUPLICATES_ONLY = "resultset.grouping.showDuplicatesOnly"; //$NON-NLS-1$
 
     public static final String RESULT_SET_AUTO_FETCH_NEXT_SEGMENT = "resultset.autofetch.next.segment"; //$NON-NLS-1$
     public static final String RESULT_SET_READ_METADATA = "resultset.read.metadata"; //$NON-NLS-1$
@@ -136,6 +132,7 @@ public final class DBeaverPreferences
     public static final String RESULT_SET_SHOW_CONNECTION_NAME = "resultset.show.connectionName"; //$NON-NLS-1$
     public static final String RESULT_SET_COLORIZE_DATA_TYPES = "resultset.show.colorizeDataTypes"; //$NON-NLS-1$
     public static final String RESULT_SET_RIGHT_JUSTIFY_NUMBERS = "resultset.show.rightJustifyNumbers"; //$NON-NLS-1$
+    public static final String RESULT_SET_RIGHT_JUSTIFY_DATETIME = "resultset.show.rightJustifyDateTime"; //$NON-NLS-1$
     public static final String RESULT_SET_AUTO_SWITCH_MODE = "resultset.behavior.autoSwitchMode"; //$NON-NLS-1$
     public static final String RESULT_SET_DOUBLE_CLICK = "resultset.behavior.doubleClick"; //$NON-NLS-1$
     public static final String RESULT_SET_ROW_BATCH_SIZE = "resultset.show.row.batch.size"; //$NON-NLS-1$

@@ -40,6 +40,7 @@ public class GenericConstants {
     public static final String PARAM_OMIT_TYPE_CACHE = "omit-type-cache";
     public static final String PARAM_OMIT_CATALOG = "omit-catalog";
     public static final String PARAM_OMIT_SINGLE_CATALOG = "omit-single-catalog";
+    public static final String PARAM_OMIT_SINGLE_SCHEMA = "omit-single-schema";
     public static final String PARAM_ALL_OBJECTS_PATTERN = "all-objects-pattern";
     public static final String PARAM_SCRIPT_DELIMITER = "script-delimiter";
     public static final String PARAM_SCRIPT_DELIMITER_REDEFINER = "script-delimiter-redefiner";
@@ -52,6 +53,7 @@ public class GenericConstants {
     public static final String PARAM_QUOTE_RESERVED_WORDS = "quote-reserved-words";
     public static final String PARAM_DUAL_TABLE = "dual-table";
     public static final String PARAM_SPLIT_PROCEDURES_AND_FUNCTIONS = "split-procedures-and-functions";
+    public static final String PARAM_DRIVER_PROPERTIES = "driver-properties";
 
     public static final String PARAM_NATIVE_FORMAT_TIMESTAMP = "native-format-timestamp";
     public static final String PARAM_NATIVE_FORMAT_TIME = "native-format-time";

@@ -240,7 +240,7 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
         if (im != null) {
             try {
                 for (DBSTableIndex index : CommonUtils.safeCollection(table.getIndexes(monitor))) {
-                    if (DBUtils.isHiddenObject(index) || DBUtils.isInheritedObject(index)) {
+                    if (!isIncludeIndexInDDL(index)) {
                         continue;
                     }
                     command.aggregateCommand(im.makeCreateCommand(index));
@@ -253,6 +253,10 @@ public abstract class SQLTableManager<OBJECT_TYPE extends JDBCTable, CONTAINER_T
         Collections.addAll(actions, command.getPersistActions(monitor, options));
 
         return actions.toArray(new DBEPersistAction[actions.size()]);
+    }
+
+    protected boolean isIncludeIndexInDDL(DBSTableIndex index) {
+        return !DBUtils.isHiddenObject(index) && !DBUtils.isInheritedObject(index);
     }
 
     protected boolean isIncludeDropInDDL() {

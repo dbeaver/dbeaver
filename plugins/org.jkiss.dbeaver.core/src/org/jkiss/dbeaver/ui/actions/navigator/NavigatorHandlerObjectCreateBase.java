@@ -19,6 +19,8 @@ package org.jkiss.dbeaver.ui.actions.navigator;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.jkiss.dbeaver.DBException;
 import org.jkiss.dbeaver.core.DBeaverCore;
@@ -34,6 +36,7 @@ import org.jkiss.dbeaver.model.navigator.DBNDatabaseNode;
 import org.jkiss.dbeaver.model.navigator.DBNNode;
 import org.jkiss.dbeaver.model.runtime.AbstractJob;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
+import org.jkiss.dbeaver.model.runtime.DBRRunnableWithProgress;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
 import org.jkiss.dbeaver.runtime.ui.DBUserInterface;
@@ -44,6 +47,8 @@ import org.jkiss.dbeaver.ui.editors.entity.EntityEditorInput;
 import org.jkiss.dbeaver.ui.navigator.database.DatabaseNavigatorView;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.dbeaver.utils.RuntimeUtils;
+
+import java.lang.reflect.InvocationTargetException;
 
 public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerObjectBase {
 
@@ -115,7 +120,16 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
         CONTAINER_TYPE parentObject,
         DBSObject sourceObject) throws DBException
     {
-        final CreateJob<OBJECT_TYPE, CONTAINER_TYPE> job = new CreateJob<>(commandTarget, objectMaker, parentObject, sourceObject);
+        ObjectCreator<OBJECT_TYPE, CONTAINER_TYPE> objectCreator = new ObjectCreator<>(objectMaker, commandTarget, parentObject, sourceObject);
+        try {
+            UIUtils.runInProgressService(objectCreator);
+        } catch (InvocationTargetException e) {
+            DBUserInterface.getInstance().showError("New object", "Error creating new object", e);
+            return;
+        } catch (InterruptedException e) {
+            return;
+        }
+        final CreateJob<OBJECT_TYPE, CONTAINER_TYPE> job = new CreateJob<OBJECT_TYPE, CONTAINER_TYPE>(commandTarget, objectMaker, parentObject, sourceObject, objectCreator.newObject);
         job.schedule();
     }
 
@@ -126,53 +140,73 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
         private final DBSObject sourceObject;
         private OBJECT_TYPE newObject;
 
-        public CreateJob(CommandTarget commandTarget, DBEObjectMaker<OBJECT_TYPE, CONTAINER_TYPE> objectMaker, CONTAINER_TYPE parentObject, DBSObject sourceObject) {
+        public CreateJob(CommandTarget commandTarget, DBEObjectMaker<OBJECT_TYPE, CONTAINER_TYPE> objectMaker, CONTAINER_TYPE parentObject, DBSObject sourceObject, OBJECT_TYPE newObject) {
             super("Create new database object with " + objectMaker.getClass().getSimpleName());
             setUser(true);
+            setSystem(false);
             this.commandTarget = commandTarget;
             this.objectMaker = objectMaker;
             this.parentObject = parentObject;
             this.sourceObject = sourceObject;
+            this.newObject = newObject;
         }
 
         @Override
         protected IStatus run(DBRProgressMonitor monitor) {
+            if (newObject == null) {
+                return Status.CANCEL_STATUS;//GeneralUtils.makeErrorStatus("Null object returned");
+            }
+            monitor.beginTask("Save " + newObject.getClass().getSimpleName(), 3);
             try {
-                newObject = objectMaker.createNewObject(monitor, commandTarget.getContext(), parentObject, sourceObject);
-                if (newObject == null) {
-                    return Status.CANCEL_STATUS;//GeneralUtils.makeErrorStatus("Null object returned");
-                }
                 if (parentObject instanceof DBSObject) {
                     if ((objectMaker.getMakerOptions(((DBSObject) parentObject).getDataSource()) & DBEObjectMaker.FEATURE_SAVE_IMMEDIATELY) != 0) {
                         // Save object manager's content
+                        monitor.subTask("Save object");
                         commandTarget.getContext().saveChanges(monitor, DBPScriptObject.EMPTY_OPTIONS);
+                        monitor.worked(2);
                         // Refresh new object (so it can load some props from database)
                         if (newObject instanceof DBPRefreshableObject) {
+                            monitor.subTask("Load object from server");
                             final DBNDatabaseNode newChild = DBeaverCore.getInstance().getNavigatorModel().findNode(newObject);
                             if (newChild != null) {
                                 newChild.refreshNode(monitor, this);
                                 newObject = (OBJECT_TYPE) newChild.getObject();
                             }
+                            monitor.worked(1);
                         }
                     }
                 }
 
                 {
+                    monitor.subTask("Obtain new object node");
                     // Wait for a few seconds to let listeners to add new object's node in navigator node
                     for (int i = 0; i < 50; i++) {
+                        if (monitor.isCanceled()) {
+                            break;
+                        }
                         if (DBeaverCore.getInstance().getNavigatorModel().findNode(newObject) != null) {
                             break;
                         }
                         RuntimeUtils.pause(100);
                     }
+                    monitor.worked(1);
                 }
 
                 // Open object in UI thread
-                UIUtils.syncExec(this::openNewObject);
+                addJobChangeListener(new JobChangeAdapter() {
+                    @Override
+                    public void done(IJobChangeEvent event) {
+                        UIUtils.syncExec(() -> {
+                            openNewObject();
+                        });
+                    }
+                });
 
                 return Status.OK_STATUS;
             } catch (Exception e) {
                 return GeneralUtils.makeExceptionStatus(e);
+            } finally {
+                monitor.done();
             }
         }
 
@@ -211,4 +245,27 @@ public abstract class NavigatorHandlerObjectCreateBase extends NavigatorHandlerO
 
     }
 
+    private static class ObjectCreator<OBJECT_TYPE extends DBSObject, CONTAINER_TYPE extends DBPObject> implements DBRRunnableWithProgress {
+        private final DBEObjectMaker<OBJECT_TYPE, CONTAINER_TYPE> objectMaker;
+        private final CommandTarget commandTarget;
+        private final CONTAINER_TYPE parentObject;
+        private final DBSObject sourceObject;
+        private OBJECT_TYPE newObject;
+
+        public ObjectCreator(DBEObjectMaker<OBJECT_TYPE, CONTAINER_TYPE> objectMaker, CommandTarget commandTarget, CONTAINER_TYPE parentObject, DBSObject sourceObject) {
+            this.objectMaker = objectMaker;
+            this.commandTarget = commandTarget;
+            this.parentObject = parentObject;
+            this.sourceObject = sourceObject;
+        }
+
+        @Override
+        public void run(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
+            try {
+                newObject = objectMaker.createNewObject(monitor, commandTarget.getContext(), parentObject, sourceObject);
+            } catch (DBException e) {
+                throw new InvocationTargetException(e);
+            }
+        }
+    }
 }

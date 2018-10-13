@@ -26,21 +26,20 @@ import org.jkiss.dbeaver.ext.oracle.oci.OCIUtils;
 import org.jkiss.dbeaver.ext.oracle.oci.OracleHomeDescriptor;
 import org.jkiss.dbeaver.model.DBPDataSource;
 import org.jkiss.dbeaver.model.DBPDataSourceContainer;
-import org.jkiss.dbeaver.model.connection.DBPClientHome;
-import org.jkiss.dbeaver.model.connection.DBPClientManager;
 import org.jkiss.dbeaver.model.connection.DBPConnectionConfiguration;
 import org.jkiss.dbeaver.model.connection.DBPDriver;
+import org.jkiss.dbeaver.model.connection.DBPNativeClientLocation;
+import org.jkiss.dbeaver.model.connection.DBPNativeClientLocationManager;
 import org.jkiss.dbeaver.model.impl.jdbc.JDBCDataSourceProvider;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
 import org.jkiss.utils.CommonUtils;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-public class OracleDataSourceProvider extends JDBCDataSourceProvider implements DBPClientManager {
+public class OracleDataSourceProvider extends JDBCDataSourceProvider implements DBPNativeClientLocationManager {
 
     public OracleDataSourceProvider()
     {
@@ -80,7 +79,7 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
             } else {
                 final String clientHomeId = connectionInfo.getClientHomeId();
                 final OracleHomeDescriptor oraHome = CommonUtils.isEmpty(clientHomeId) ? null : OCIUtils.getOraHome(clientHomeId);
-                oraHomePath = oraHome == null ? null : oraHome.getHomePath();
+                oraHomePath = oraHome == null ? null : oraHome.getPath();
                 checkTnsAdmin = true;
             }
 
@@ -135,29 +134,53 @@ public class OracleDataSourceProvider extends JDBCDataSourceProvider implements 
     // Client manager
 
     @Override
-    public Collection<String> findClientHomeIds()
+    public List<DBPNativeClientLocation> findLocalClientLocations()
     {
-        List<String> homeIds = new ArrayList<>();
+        List<DBPNativeClientLocation> homeIds = new ArrayList<>();
         for (OracleHomeDescriptor home : OCIUtils.getOraHomes()) {
-            homeIds.add(home.getHomeId());
+            homeIds.add(home);
         }
         return homeIds;
     }
 
     @Override
-    public String getDefaultClientHomeId()
+    public DBPNativeClientLocation getDefaultLocalClientLocation()
     {
         List<OracleHomeDescriptor> oraHomes = OCIUtils.getOraHomes();
         if (!oraHomes.isEmpty()) {
-            return oraHomes.get(0).getHomeId();
+            return oraHomes.get(0);
         }
         return null;
     }
 
     @Override
-    public DBPClientHome getClientHome(String homeId)
+    public String getProductName(DBPNativeClientLocation location) throws DBException {
+        Integer oraVersion = getOracleVersion(location);
+        return "Oracle" + (oraVersion == null ? "" : " " + oraVersion);
+    }
+
+    @Override
+    public String getProductVersion(DBPNativeClientLocation location) throws DBException {
+        boolean isInstantClient = OCIUtils.isInstantClient(location.getName());
+        return OCIUtils.getFullOraVersion(location.getName(), isInstantClient);
+    }
+
+    public static Integer getOracleVersion(DBPNativeClientLocation location)
     {
-        return new OracleHomeDescriptor(homeId);
+        File oraHome = location.getPath();
+        boolean isInstantClient = OCIUtils.isInstantClient(location.getName());
+        File folder = isInstantClient ? oraHome : new File(oraHome, "bin");
+        if (!folder.exists()) {
+            return null;
+        }
+        for (int counter = 7; counter <= 15; counter++) {
+            String dllName = System.mapLibraryName("ocijdbc" + counter);
+            File ociLibFile = new File(folder, dllName);
+            if (ociLibFile.exists()) {
+                return counter;
+            }
+        }
+        return null;
     }
 
 }

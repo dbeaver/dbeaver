@@ -42,6 +42,9 @@ public class NumberInlineEditor extends BaseValueEditor<Text> {
     private static final Log log = Log.getLog(NumberInlineEditor.class);
     private static final int MAX_NUMBER_LENGTH = 100;
 
+    // Disable numbers verification. Life is complicated, sometimes numbers aren't actually "classic" numbers
+    private static final boolean VALIDATE_NUMBER_INPUT = false;
+
     private DBDDataFormatterProfile formatterProfile;
 
     public NumberInlineEditor(IValueController controller) {
@@ -60,15 +63,17 @@ public class NumberInlineEditor extends BaseValueEditor<Text> {
         final Text editor = new Text(valueController.getEditPlaceholder(), inline ? SWT.BORDER : SWT.MULTI);
         editor.setEditable(!valueController.isReadOnly());
         editor.setTextLimit(MAX_NUMBER_LENGTH);
-        Object curValue = valueController.getValue();
-        Class<?> type = curValue instanceof Number ?
-            curValue.getClass() :
-            valueController.getValueHandler().getValueObjectType(valueController.getValueType());
-        Locale locale = formatterProfile.getLocale();
-        if (type == Float.class || type == Double.class || type == BigDecimal.class) {
-            editor.addVerifyListener(UIUtils.getNumberVerifyListener(locale));
-        } else {
-            editor.addVerifyListener(UIUtils.getIntegerVerifyListener(locale));
+        if (VALIDATE_NUMBER_INPUT) {
+            Object curValue = valueController.getValue();
+            Class<?> type = curValue instanceof Number ?
+                curValue.getClass() :
+                valueController.getValueHandler().getValueObjectType(valueController.getValueType());
+            Locale locale = formatterProfile.getLocale();
+            if (type == Float.class || type == Double.class || type == BigDecimal.class) {
+                editor.addVerifyListener(UIUtils.getNumberVerifyListener(locale));
+            } else {
+                editor.addVerifyListener(UIUtils.getIntegerVerifyListener(locale));
+            }
         }
         return editor;
     }
@@ -77,7 +82,8 @@ public class NumberInlineEditor extends BaseValueEditor<Text> {
     public void primeEditorValue(@Nullable Object value) throws DBException
     {
         if (value != null) {
-            control.setText(valueController.getValueHandler().getValueDisplayString(valueController.getValueType(), value, DBDDisplayFormat.UI));
+            String strValue = valueController.getValueHandler().getValueDisplayString(valueController.getValueType(), value, DBDDisplayFormat.EDIT);
+            control.setText(strValue);
         } else {
             control.setText("");
         }
@@ -95,6 +101,9 @@ public class NumberInlineEditor extends BaseValueEditor<Text> {
             return null;
         }
         Object curValue = valueController.getValue();
+        if (curValue instanceof String) {
+            return text;
+        }
         Class<?> hintType = curValue instanceof Number ?
             curValue.getClass() :
             valueController.getValueHandler().getValueObjectType(valueController.getValueType());

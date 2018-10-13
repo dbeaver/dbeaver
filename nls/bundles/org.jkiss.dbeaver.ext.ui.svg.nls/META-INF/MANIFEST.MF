@@ -1,9 +1,0 @@
-Manifest-Version: 1.0
-Bundle-ManifestVersion: 2
-Bundle-Name: %Bundle-Name
-Bundle-SymbolicName: org.jkiss.dbeaver.ext.ui.svg.nls
-Bundle-Version: 1.0.22.qualifier
-Bundle-Release-Date: 20180813
-Fragment-Host: org.jkiss.dbeaver.ext.ui.svg
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Bundle-Vendor: JKISS

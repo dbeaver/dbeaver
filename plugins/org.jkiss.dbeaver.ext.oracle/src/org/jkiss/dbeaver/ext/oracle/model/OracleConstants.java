@@ -125,6 +125,7 @@ public class OracleConstants {
     public static final String PREF_SUPPORT_ROWID = "oracle.support.rowid";
     public static final String PREF_DBMS_OUTPUT = "oracle.dbms.output";
     public static final String PREF_DBMS_READ_ALL_SYNONYMS = "oracle.read.all.synonyms";
+    public static final String PREF_DISABLE_SCRIPT_ESCAPE_PROCESSING = "oracle.disable.script.escape";
 
     public static final String NLS_DEFAULT_VALUE = "Default";
     public static final String PREF_KEY_DDL_FORMAT = "oracle.ddl.format";
@@ -162,6 +163,9 @@ public class OracleConstants {
 
     public static final String XMLTYPE_CLASS_NAME = "oracle.xdb.XMLType";
     public static final String BFILE_CLASS_NAME = "oracle.sql.BFILE";
+    public static final String TIMESTAMP_CLASS_NAME     = "oracle.sql.TIMESTAMP";
+    public static final String TIMESTAMPTZ_CLASS_NAME   = "oracle.sql.TIMESTAMPTZ";
+    public static final String TIMESTAMPLTZ_CLASS_NAME  = "oracle.sql.TIMESTAMPLTZ";
 
     public static final String PLAN_TABLE_DEFINITION =
         "create global temporary table ${TABLE_NAME} (\n" +

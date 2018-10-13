@@ -80,6 +80,10 @@ public class MySQLDateTimeValueHandler extends JDBCDateTimeValueHandler {
                     Calendar cal = Calendar.getInstance();
                     cal.setTime((Date) value);
                     dbStat.setInt(index + 1, cal.get(Calendar.YEAR));
+                } else if (value instanceof String) {
+                    dbStat.setString(index + 1, (String) value);
+                } else {
+                    dbStat.setObject(index + 1, value);
                 }
             }
             catch (SQLException e) {
@@ -116,6 +120,7 @@ public class MySQLDateTimeValueHandler extends JDBCDateTimeValueHandler {
                     }
                     break;
             }
+            return object;
         }
         return super.getValueFromObject(session, type, object, copy);
     }
