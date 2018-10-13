@@ -161,7 +161,7 @@ public class AthenaConnectionPage extends ConnectionPageAbstract implements ICom
             connectionInfo.setUserName(accessKeyText.getText().trim());
         }
         if (secretAccessKeyText != null && savePasswordCheck.getSelection()) {
-            connectionInfo.setUserName(secretAccessKeyText.getText().trim());
+            connectionInfo.setUserPassword(secretAccessKeyText.getText().trim());
         }
         super.saveSettings(dataSource);
     }

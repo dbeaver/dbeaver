@@ -47,4 +47,13 @@ public class AthenaDataSource extends GenericDataSource {
         return props;
     }
 
+    @Override
+    public boolean isOmitCatalog() {
+        return true;
+    }
+
+    @Override
+    protected boolean isPopulateClientAppName() {
+        return false;
+    }
 }

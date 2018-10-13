@@ -149,8 +149,10 @@ public class GenericMetaModel {
 
                     if (!CommonUtils.isEmpty(catalogName)) {
                         if (catalog == null) {
-                            // Invalid schema's catalog or schema without catalog (then do not use schemas as structure)
-                            log.debug("Catalog name (" + catalogName + ") found for schema '" + schemaName + "' while schema doesn't have parent catalog");
+                            if (!dataSource.isOmitCatalog()) {
+                                // Invalid schema's catalog or schema without catalog (then do not use schemas as structure)
+                                log.debug("Catalog name (" + catalogName + ") found for schema '" + schemaName + "' while schema doesn't have parent catalog");
+                            }
                         } else if (!catalog.getName().equals(catalogName)) {
                             if (!catalogSchemas) {
                                 // Just skip it - we have list of all existing schemas and this one belongs to another catalog
