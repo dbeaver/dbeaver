@@ -26,22 +26,22 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.layout.RowLayout;
 import org.eclipse.swt.widgets.*;
+import org.eclipse.ui.IWorkbenchCommandConstants;
 import org.eclipse.ui.IWorkbenchPart;
-import org.jkiss.dbeaver.DBException;
+import org.eclipse.ui.IWorkbenchPartSite;
+import org.eclipse.ui.part.MultiPageEditorPart;
+import org.eclipse.ui.part.MultiPageEditorSite;
 import org.jkiss.dbeaver.Log;
 import org.jkiss.dbeaver.model.*;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
-import org.jkiss.dbeaver.model.edit.prop.DBECommandComposite;
 import org.jkiss.dbeaver.model.edit.prop.DBECommandProperty;
-import org.jkiss.dbeaver.model.edit.prop.DBEPropertyHandler;
 import org.jkiss.dbeaver.model.impl.edit.DBECommandAdapter;
 import org.jkiss.dbeaver.model.meta.IPropertyValueListProvider;
 import org.jkiss.dbeaver.model.preferences.DBPPropertyDescriptor;
 import org.jkiss.dbeaver.model.preferences.DBPPropertySource;
 import org.jkiss.dbeaver.model.runtime.DBRProgressMonitor;
-import org.jkiss.dbeaver.model.runtime.VoidProgressMonitor;
 import org.jkiss.dbeaver.model.runtime.load.DatabaseLoadService;
 import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
@@ -50,6 +50,7 @@ import org.jkiss.dbeaver.ui.*;
 import org.jkiss.dbeaver.ui.controls.ObjectEditorPageControl;
 import org.jkiss.dbeaver.ui.controls.folders.TabbedFolderPage;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
+import org.jkiss.dbeaver.ui.editors.entity.EntityEditor;
 import org.jkiss.dbeaver.utils.GeneralUtils;
 import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
@@ -230,19 +231,44 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                 rowLayout.pack = true;
                 rowLayout.fill = true;
                 buttonsGroup.setLayout(rowLayout);
-                saveButton = UIUtils.createPushButton(buttonsGroup, "Save", DBeaverIcons.getImage(UIIcon.SAVE));
-                scriptButton = UIUtils.createPushButton(buttonsGroup, "View script", DBeaverIcons.getImage(UIIcon.SQL_SCRIPT));
-                revertButton = UIUtils.createPushButton(buttonsGroup, "Revert", DBeaverIcons.getImage(UIIcon.REVERT));
+                saveButton = UIUtils.createPushButton(buttonsGroup, "Save", DBeaverIcons.getImage(UIIcon.SAVE), new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        ActionUtils.runCommand(IWorkbenchCommandConstants.FILE_SAVE, part.getSite());
+                    }
+                });
+                scriptButton = UIUtils.createPushButton(buttonsGroup, "View script", DBeaverIcons.getImage(UIIcon.SQL_SCRIPT), new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        showAlterScript();
+                    }
+                });
+                revertButton = UIUtils.createPushButton(buttonsGroup, "Revert", DBeaverIcons.getImage(UIIcon.REVERT), new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        ActionUtils.runCommand(IWorkbenchCommandConstants.FILE_REVERT, part.getSite());
+                    }
+                });
                 saveButton.setEnabled(false);
                 scriptButton.setEnabled(false);
                 revertButton.setEnabled(false);
             }
         }
 
-        refreshPropertyValues(allProps, null, firstInit);
+        refreshPropertyValues(allProps, firstInit);
     }
 
-    private void refreshPropertyValues(List<DBPPropertyDescriptor> allProps, Object excludePropId, boolean disableControls) {
+    private void showAlterScript() {
+        IWorkbenchPartSite site = part.getSite();
+        if (site instanceof MultiPageEditorSite) {
+            MultiPageEditorPart mainEditor = ((MultiPageEditorSite) site).getMultiPageEditor();
+            if (mainEditor instanceof EntityEditor) {
+                ((EntityEditor) mainEditor).showChanges(false);
+            }
+        }
+    }
+
+    private void refreshPropertyValues(List<DBPPropertyDescriptor> allProps, boolean disableControls) {
         ControlEnableState blockEnableState = disableControls ? ControlEnableState.disable(propertiesGroup) : null;
 
         ownerControl.runService(
@@ -255,9 +281,6 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                         for (DBPPropertyDescriptor prop : allProps) {
                             if (monitor.isCanceled()) {
                                 break;
-                            }
-                            if (excludePropId != null && excludePropId.equals(prop.getId())) {
-                                continue;
                             }
                             Object value = curPropertySource.getPropertyValue(monitor, prop.getId());
                             propValues.put(prop, value);
