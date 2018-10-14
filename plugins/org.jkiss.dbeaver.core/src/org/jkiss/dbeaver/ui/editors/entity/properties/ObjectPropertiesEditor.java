@@ -1,6 +1,6 @@
 /*
  * DBeaver - Universal Database Manager
- * Copyright (C) 2010-2017 Serge Rider (serge@jkiss.org)
+ * Copyright (C) 2010-2018 Serge Rider (serge@jkiss.org)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.SashForm;
+import org.eclipse.swt.layout.FillLayout;
 import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
@@ -87,7 +88,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
     private boolean activated = false;
     private Composite propsPlaceholder;
     @Nullable
-    private TabbedFolderPageProperties propertiesPanel;
+    private TabbedFolderPageForm propertiesPanel;
 
     public ObjectPropertiesEditor()
     {
@@ -137,8 +138,8 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
 
     private void createPropertiesPanel(Composite container) {
         // Main panel
-        propsPlaceholder = UIUtils.createPlaceholder(container, 2, 0);
-        propsPlaceholder.setLayoutData(new GridData(GridData.FILL_BOTH));
+        propsPlaceholder = new Composite(container, SWT.NONE);
+        propsPlaceholder.setLayout(new FillLayout());
     }
 
     private Composite createFoldersPanel(Composite parent, TabbedFolderInfo[] folders) {
@@ -234,7 +235,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         }
         activated = true;
         if (DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.ENTITY_EDITOR_DETACH_INFO)) {
-            propertiesPanel = new TabbedFolderPageProperties(this, getEditorInput());
+            propertiesPanel = new TabbedFolderPageForm(this, pageControl, getEditorInput());
 
             propertiesPanel.createControl(propsPlaceholder);
         }
@@ -454,7 +455,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                 DBIcon.TREE_INFO,
                 "General information",
                 false,
-                new TabbedFolderPageProperties(this, getEditorInput())));
+                new TabbedFolderPageForm(this, pageControl, getEditorInput())));
         }
     }
 
@@ -468,12 +469,8 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
 
         if (!node.getMeta().isStandaloneNode()) {
             // Collect tabs from navigator tree model
-            DBRRunnableWithProgress tabsCollector = new DBRRunnableWithProgress() {
-                @Override
-                public void run(DBRProgressMonitor monitor) {
-                    collectNavigatorTabs(monitor, part, node, tabList);
-                }
-            };
+            DBRRunnableWithProgress tabsCollector = monitor ->
+                collectNavigatorTabs(monitor, part, node, tabList);
             try {
                 if (node.needsInitialization()) {
                     UIUtils.runInProgressService(tabsCollector);
