@@ -145,7 +145,8 @@ public class MySQLTableManager extends SQLTableManager<MySQLTableBase, MySQLCata
         actions.add(
             new SQLDatabasePersistAction(
                 "Rename table",
-                "RENAME TABLE " + command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL) + //$NON-NLS-1$
+                "RENAME TABLE " +
+                    DBUtils.getQuotedIdentifier(command.getObject().getContainer()) + "." + DBUtils.getQuotedIdentifier(dataSource, command.getOldName()) +
                     " TO " + DBUtils.getQuotedIdentifier(command.getObject().getContainer()) + "." + DBUtils.getQuotedIdentifier(dataSource, command.getNewName())) //$NON-NLS-1$
         );
     }
