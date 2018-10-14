@@ -32,7 +32,9 @@ import org.eclipse.ui.IWorkbenchPartSite;
 import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.part.MultiPageEditorSite;
 import org.jkiss.dbeaver.Log;
-import org.jkiss.dbeaver.model.*;
+import org.jkiss.dbeaver.model.DBConstants;
+import org.jkiss.dbeaver.model.DBPNamedObject;
+import org.jkiss.dbeaver.model.DBValueFormatting;
 import org.jkiss.dbeaver.model.data.DBDDisplayFormat;
 import org.jkiss.dbeaver.model.edit.DBECommand;
 import org.jkiss.dbeaver.model.edit.DBEObjectRenamer;
@@ -56,17 +58,18 @@ import org.jkiss.utils.BeanUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.*;
 import java.util.List;
-import java.util.Map;
 
 /**
  * TabbedFolderPageProperties
  */
-public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshablePart, DBPEventListener {
+public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshablePart {
 
     private static final Log log = Log.getLog(TabbedFolderPageForm.class);
+
+    private static final String VALUE_KEY = "form.data.value";
+    private static final String LIST_VALUE_KEY = "form.data.list.value";
 
     protected IWorkbenchPart part;
     protected ObjectEditorPageControl ownerControl;
@@ -136,14 +139,13 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
             }
         });
 
-        if (input.getDatabaseObject() != null) {
-            DBUtils.getObjectRegistry((DBSObject) curPropertySource.getEditableValue()).addDataSourceListener(TabbedFolderPageForm.this);
-        }
-
         propertiesGroup.addDisposeListener(e -> dispose());
 	}
 
     private void updateEditButtonsState() {
+        if (saveButton.isDisposed()) {
+            return;
+        }
         boolean isDirty = input.getCommandContext().isDirty();
         saveButton.setEnabled(isDirty);
         revertButton.setEnabled(isDirty);
@@ -158,7 +160,6 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
     @Override
     public void dispose() {
         if (curPropertySource != null && curPropertySource.getEditableValue() instanceof DBSObject) {
-            DBUtils.getObjectRegistry((DBSObject) curPropertySource.getEditableValue()).removeDataSourceListener(this);
             curPropertySource = null;
         }
         UIUtils.dispose(boldFont);
@@ -508,21 +509,28 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
             if (property instanceof IPropertyValueListProvider) {
                 final IPropertyValueListProvider listProvider = (IPropertyValueListProvider) property;
                 final Object[] items = listProvider.getPossibleValues(object);
+                final Object[] oldItems = (Object[]) combo.getData(LIST_VALUE_KEY);
+                combo.setData(LIST_VALUE_KEY, items);
                 if (items != null) {
-                    final String[] strings = new String[items.length];
-                    for (int i = 0, itemsLength = items.length; i < itemsLength; i++) {
-                        strings[i] = items[i] instanceof DBPNamedObject ? ((DBPNamedObject) items[i]).getName() : CommonUtils.toString(items[i]);
+                    if (oldItems == null || !Arrays.equals(items, oldItems)) {
+                        final String[] strings = new String[items.length];
+                        for (int i = 0, itemsLength = items.length; i < itemsLength; i++) {
+                            strings[i] = items[i] instanceof DBPNamedObject ? ((DBPNamedObject) items[i]).getName() : CommonUtils.toString(items[i]);
+                        }
+                        combo.setItems(strings);
                     }
-                    combo.setItems(strings);
                     combo.setText(objectValueToString(value));
                 }
             } else if (propertyType.isEnum()) {
-                final Object[] enumConstants = propertyType.getEnumConstants();
-                final String[] strings = new String[enumConstants.length];
-                for (int i = 0, itemsLength = enumConstants.length; i < itemsLength; i++) {
-                    strings[i] = ((Enum) enumConstants[i]).name();
+                if (combo.getItemCount() == 0) {
+                    // Do not refresh enum values - they are static
+                    final Object[] enumConstants = propertyType.getEnumConstants();
+                    final String[] strings = new String[enumConstants.length];
+                    for (int i = 0, itemsLength = enumConstants.length; i < itemsLength; i++) {
+                        strings[i] = ((Enum) enumConstants[i]).name();
+                    }
+                    combo.setItems(strings);
                 }
-                combo.setItems(strings);
                 combo.setText(objectValueToString(value));
             }
         } else {
@@ -565,24 +573,12 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
     }
 
     @Override
-    public void handleDataSourceEvent(DBPEvent event)
-    {
-        if (input.getDatabaseObject() == event.getObject() && !Boolean.FALSE.equals(event.getEnabled()) && !propertiesGroup.isDisposed()) {
-            //UIUtils.asyncExec(this::refreshProperties);
-        }
-    }
-
-    @Override
     public void refreshPart(Object source, boolean force) {
-        // Do not do any refresh. Everything is done in context listener
-/*
+        // Refresh props only on force refresh (manual)
         if (force) {
-            curPropertySource = input.getPropertySource();
-            if (propertiesGroup != null) {
-                refreshProperties();
-            }
+            refreshProperties();
+            updateEditButtonsState();
         }
-*/
     }
 
     @Override
