@@ -171,6 +171,7 @@ public class ObjectEditorPageControl extends ProgressPageControl {
                     }
                 }
             }
+            listeners.clear();
         }
     }
 

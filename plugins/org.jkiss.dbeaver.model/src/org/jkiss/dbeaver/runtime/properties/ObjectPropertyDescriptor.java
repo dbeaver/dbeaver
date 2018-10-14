@@ -330,6 +330,10 @@ public class ObjectPropertyDescriptor extends ObjectAttributeDescriptor implemen
         return false;
     }
 
+    public boolean hasListValueProvider() {
+        return (propInfo.listProvider() != IPropertyValueListProvider.class);
+    }
+
     @Override
     public Object[] getPossibleValues(Object object)
     {
