@@ -180,7 +180,9 @@ public class DB2TableManager extends SQLTableManager<DB2Table, DB2Schema> implem
     @Override
     public void addObjectRenameActions(List<DBEPersistAction> actions, ObjectRenameCommand command, Map<String, Object> options)
     {
-        String sql = String.format(SQL_RENAME_TABLE, command.getObject().getFullyQualifiedName(DBPEvaluationContext.DDL), DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getNewName()));
+        String sql = String.format(SQL_RENAME_TABLE,
+            DBUtils.getQuotedIdentifier(command.getObject().getSchema()) + "." + DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getOldName()),
+            DBUtils.getQuotedIdentifier(command.getObject().getDataSource(), command.getNewName()));
         actions.add(
             new SQLDatabasePersistAction(CMD_RENAME, sql)
         );
