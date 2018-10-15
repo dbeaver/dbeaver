@@ -52,7 +52,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
 {
     private static final Log log = Log.getLog(PostgreDataType.class);
 
-    private static final String CAT_MAIN = "Main";
+    //private static final String CAT_MAIN = "Main";
     private static final String CAT_MISC = "Miscellaneous";
     private static final String CAT_MODIFIERS = "Modifiers";
     private static final String CAT_FUNCTIONS = "Functions";
@@ -309,32 +309,32 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
     }
 
     @Override
-    @Property(category = CAT_MAIN, viewable = false, order = 9)
+    @Property(viewable = false, order = 9)
     public long getObjectId() {
         return typeId;
     }
 
-    @Property(category = CAT_MAIN, viewable = true, order = 10)
+    @Property(viewable = true, order = 10)
     public PostgreTypeType getTypeType() {
         return typeType;
     }
 
-    @Property(category = CAT_MAIN, viewable = true, order = 11)
+    @Property(viewable = true, order = 11)
     public PostgreTypeCategory getTypeCategory() {
         return typeCategory;
     }
 
-    @Property(category = CAT_MAIN, viewable = true, order = 12)
+    @Property(viewable = true, order = 12)
     public PostgreDataType getBaseType(DBRProgressMonitor monitor) {
         return getDatabase().getDataType(monitor, baseTypeId);
     }
 
-    @Property(category = CAT_MAIN, viewable = true, order = 13)
+    @Property(viewable = true, order = 13)
     public PostgreDataType getElementType(DBRProgressMonitor monitor) {
         return elementTypeId == 0 ? null : getDatabase().getDataType(monitor, elementTypeId);
     }
 
-    @Property(category = CAT_MAIN, order = 15)
+    @Property(order = 15)
     public PostgreRole getOwner(DBRProgressMonitor monitor) throws DBException {
         return PostgreUtils.getObjectById(monitor, getDatabase().roleCache, getDatabase(), ownerId);
     }
@@ -507,7 +507,7 @@ public class PostgreDataType extends JDBCDataType<PostgreSchema> implements Post
         return this;
     }
 
-    @Property(category = CAT_MAIN, viewable = true, order = 16)
+    @Property(viewable = true, order = 16)
     public Object[] getEnumValues() {
         return enumValues;
     }
