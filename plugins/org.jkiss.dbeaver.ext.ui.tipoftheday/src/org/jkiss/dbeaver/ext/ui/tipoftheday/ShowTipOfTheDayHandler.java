@@ -19,6 +19,7 @@ package org.jkiss.dbeaver.ext.ui.tipoftheday;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.nebula.widgets.opal.tipoftheday.TipOfTheDay;
 import org.eclipse.ui.IWorkbenchWindow;
@@ -74,7 +75,7 @@ public class ShowTipOfTheDayHandler extends AbstractHandler {
             return result;
         }
 
-        try (InputStream tipsInputStream = new URL(pathToTipsFile).openConnection().getInputStream()) {
+        try (InputStream tipsInputStream = FileLocator.find(new URL(pathToTipsFile)).openConnection().getInputStream()) {
 
             SAXParserFactory factory = SAXParserFactory.newInstance();
             SAXParser saxParser = factory.newSAXParser();
