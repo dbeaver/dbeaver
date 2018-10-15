@@ -19,7 +19,6 @@ package org.jkiss.dbeaver.ui.editors.entity.properties;
 import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.custom.ScrolledComposite;
 import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Font;
