@@ -123,7 +123,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
             createPropertiesPanel(container);
         } else {
             Composite foldersParent = container;
-            if (DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.ENTITY_EDITOR_DETACH_INFO)) {
+            if (hasPropertiesEditor() && DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.ENTITY_EDITOR_DETACH_INFO)) {
                 sashForm = UIUtils.createPartDivider(getSite().getPart(), container, SWT.VERTICAL);
                 sashForm.setLayoutData(new GridData(GridData.FILL_BOTH));
                 foldersParent = sashForm;
@@ -241,9 +241,11 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
         }
         activated = true;
         if (DBeaverCore.getGlobalPreferenceStore().getBoolean(DBeaverPreferences.ENTITY_EDITOR_DETACH_INFO)) {
-            propertiesPanel = new TabbedFolderPageForm(this, pageControl, getEditorInput());
+            if (hasPropertiesEditor()) {
+                propertiesPanel = new TabbedFolderPageForm(this, pageControl, getEditorInput());
 
-            propertiesPanel.createControl(propsPlaceholder);
+                propertiesPanel.createControl(propsPlaceholder);
+            }
         }
 
         pageControl.layout(true);
@@ -259,6 +261,10 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                 UIUtils.asyncExec(sashUpdater);
             }
         }
+    }
+
+    private boolean hasPropertiesEditor() {
+        return !(getEditorInput().getDatabaseObject() instanceof DBNDatabaseFolder);
     }
 
     @Override
