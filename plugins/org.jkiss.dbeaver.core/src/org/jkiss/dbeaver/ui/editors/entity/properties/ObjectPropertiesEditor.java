@@ -462,7 +462,7 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
                 PropertiesContributor.TAB_STANDARD,
                 CoreMessages.ui_properties_category_information,
                 DBIcon.TREE_INFO,
-                "General information",
+                CoreMessages.ui_properties_category_information_tip,
                 false,
                 new TabbedFolderPageForm(this, pageControl, getEditorInput())));
         }
@@ -491,6 +491,18 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
             } catch (InterruptedException e) {
                 // just go further
             }
+        }
+
+        // Extra properties tab (show if we have extra properties only)
+        {
+            tabList.add(new TabbedFolderInfo(
+                PropertiesContributor.TAB_PROPERTIES,
+                CoreMessages.ui_properties_category_properties,
+                DBIcon.TREE_INFO,
+                CoreMessages.ui_properties_category_properties_tip,
+                false,
+                new TabbedFolderPageProperties(this, getEditorInput())));
+
         }
 
         // Query for entity editors
