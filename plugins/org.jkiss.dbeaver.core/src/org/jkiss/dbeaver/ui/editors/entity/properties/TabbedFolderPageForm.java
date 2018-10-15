@@ -504,7 +504,12 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
             combo.setText(objectValueToString(value));
             return combo;
         } else if (DBSObject.class.isAssignableFrom(propertyType)) {
-            Link link = new Link(parent, SWT.NONE);
+            Composite linkPH = new Composite(parent, SWT.BORDER);
+            GridLayout layout = new GridLayout(1, false);
+            layout.marginHeight = 1;
+            layout.marginHeight = 1;
+            linkPH.setLayout(layout);
+            Link link = new Link(linkPH, SWT.NONE);
             link.setText(getLinktitle(value));
             link.setData(value);
             link.addSelectionListener(new SelectionAdapter() {
