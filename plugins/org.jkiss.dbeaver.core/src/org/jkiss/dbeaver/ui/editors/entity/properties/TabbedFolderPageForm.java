@@ -320,7 +320,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
 
         ownerControl.runService(
             LoadingJob.createService(
-                new DatabaseLoadService<Map<DBPPropertyDescriptor, Object>>("Load main properties", input.getExecutionContext()) {
+                new DatabaseLoadService<Map<DBPPropertyDescriptor, Object>>("Load main properties", input.getDatabaseObject().getDataSource()) {
                     @Override
                     public Map<DBPPropertyDescriptor, Object> evaluate(DBRProgressMonitor monitor) throws InvocationTargetException, InterruptedException {
                         monitor.beginTask("Load '" + DBValueFormatting.getDefaultValueDisplayString(curPropertySource.getEditableValue(), DBDDisplayFormat.UI) + "' properties", allProps.size());
@@ -393,10 +393,6 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                 prop,
                 propertyValue,
                 !editable);
-            if (editControl == null) {
-                editControl = new Text(group, SWT.BORDER | SWT.READ_ONLY);
-                ((Text)editControl).setText(objectValueToString(propertyValue));
-            }
             //boolean plainText = (CharSequence.class.isAssignableFrom(propType));
             GridData gd = (GridData) editControl.getLayoutData();
             if (gd == null ) {
@@ -509,33 +505,28 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
             combo.setText(objectValueToString(value));
             return combo;
         } else if (DBSObject.class.isAssignableFrom(propertyType)) {
-            if (value == null) {
-                if (readOnly) {
-                    return UIUtils.createLabel(parent, "<none>");
-                } else {
-                    Text editor = new Text(parent, SWT.BORDER | SWT.READ_ONLY);
-                    editor.setText("");
-                    return editor;
-                }
-            } else {
-                Link link = new Link(parent, SWT.NONE);
-                link.setText("<a>" + objectValueToString(value) + "</a>");
-                link.setData(value);
-                link.addSelectionListener(new SelectionAdapter() {
-                    @Override
-                    public void widgetSelected(SelectionEvent e) {
-                        DBSObject object = (DBSObject) link.getData();
-                        if (object != null) {
-                            NavigatorHandlerObjectOpen.openEntityEditor(object);
-                        }
+            Link link = new Link(parent, SWT.NONE);
+            link.setText(getLinktitle(value));
+            link.setData(value);
+            link.addSelectionListener(new SelectionAdapter() {
+                @Override
+                public void widgetSelected(SelectionEvent e) {
+                    DBSObject object = (DBSObject) link.getData();
+                    if (object != null) {
+                        NavigatorHandlerObjectOpen.openEntityEditor(object);
                     }
-                });
-                return link;
-            }
+                }
+            });
+            return link;
         } else {
-            log.warn("Unsupported property type: " + propertyType.getName());
-            return null;
+            Text editControl = new Text(parent, SWT.BORDER | SWT.READ_ONLY);
+            editControl.setText(objectValueToString(value));
+            return editControl;
         }
+    }
+
+    private String getLinktitle(Object value) {
+        return value == null ? "<none>" : "<a>" + objectValueToString(value) + "</a>";
     }
 
     private void loadEditorValues(Map<DBPPropertyDescriptor, Object> editorValues) {
@@ -598,7 +589,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
             } else if (editorControl instanceof Link) {
                 Link link = (Link)editorControl;
                 link.setData(value);
-                link.setText("<a>" + stringValue + "</a>");
+                link.setText(getLinktitle(value));
             }
         }
     }
