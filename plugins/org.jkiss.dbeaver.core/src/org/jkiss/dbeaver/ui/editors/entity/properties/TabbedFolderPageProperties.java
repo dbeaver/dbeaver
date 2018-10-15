@@ -59,6 +59,9 @@ import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
 import org.jkiss.dbeaver.ui.properties.PropertyTreeViewer;
 import org.jkiss.utils.CommonUtils;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * TabbedFolderPageProperties
  */
@@ -164,6 +167,19 @@ public class TabbedFolderPageProperties extends TabbedFolderPage implements IRef
         }
     }
 
+    public List<String> getExtraCategories() {
+        List<String> extraCategories = new ArrayList<>();
+        for (DBPPropertyDescriptor prop : input.getPropertySource().getPropertyDescriptors2()) {
+            String category = prop.getCategory();
+            if (!CommonUtils.isEmpty(category)) {
+                if (!extraCategories.contains(category)) {
+                    extraCategories.add(category);
+                }
+            }
+        }
+        return extraCategories;
+    }
+
     private class PropertiesPageControl extends ProgressPageControl implements ILazyPropertyLoadListener, ISearchExecutor {
 
         PropertiesPageControl(Composite parent) {
@@ -173,6 +189,19 @@ public class TabbedFolderPageProperties extends TabbedFolderPage implements IRef
                 @Override
                 protected void contributeContextMenu(IMenuManager manager, Object node, String category, DBPPropertyDescriptor property) {
                     fillCustomActions(manager);
+                }
+
+                @Override
+                protected DBPPropertyDescriptor[] filterProperties(Object object, DBPPropertyDescriptor[] properties) {
+                    // Return only properties with categories
+                    List<DBPPropertyDescriptor> result = new ArrayList<>();
+                    for (DBPPropertyDescriptor prop : properties) {
+                        if (CommonUtils.isEmpty(prop.getCategory())) {
+                            continue;
+                        }
+                        result.add(prop);
+                    }
+                    return result.toArray(new DBPPropertyDescriptor[0]);
                 }
             };
             propertyTree.setExtraLabelProvider(new PropertyLabelProvider());
@@ -222,7 +251,7 @@ public class TabbedFolderPageProperties extends TabbedFolderPage implements IRef
         }
 
         @Override
-        protected void fillCustomActions(IContributionManager contributionManager) {
+        public void fillCustomActions(IContributionManager contributionManager) {
             super.fillCustomActions(contributionManager);
             {
                 contributionManager.add(new Action(isAttached() ? "Detach properties to top panel" : "Move properties to tab", DBeaverIcons.getImageDescriptor(UIIcon.ASTERISK)) {

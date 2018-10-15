@@ -88,7 +88,7 @@ public class ExplainPlanViewer implements IPropertyChangeListener
 
             this.planTree = new PlanNodesTree(leftPanel, SWT.SHEET, workbenchPart.getSite()) {
                 @Override
-                protected void fillCustomActions(IContributionManager contributionManager) {
+                public void fillCustomActions(IContributionManager contributionManager) {
                     contributionManager.add(toggleViewAction);
                     contributionManager.add(refreshPlanAction);
                 }

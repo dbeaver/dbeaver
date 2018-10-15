@@ -16,6 +16,7 @@
  */
 package org.jkiss.dbeaver.ui.editors.entity.properties;
 
+import org.eclipse.jface.action.IContributionManager;
 import org.eclipse.jface.dialogs.ControlEnableState;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.ScrolledComposite;
@@ -64,7 +65,7 @@ import java.util.List;
 /**
  * TabbedFolderPageProperties
  */
-public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshablePart {
+public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshablePart, ICustomActionsProvider {
 
     private static final Log log = Log.getLog(TabbedFolderPageForm.class);
 
@@ -119,8 +120,8 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                 UIUtils.asyncExec(() -> {
                     updateEditButtonsState();
                     if (command instanceof DBECommandProperty) {
-                        Object propId = ((DBECommandProperty) command).getHandler().getId();
-                        updateOtherPropertyValues(propId);
+                        //Object propId = ((DBECommandProperty) command).getHandler().getId();
+                        updateOtherPropertyValues(null);
                     }
                 });
             }
@@ -536,6 +537,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
         Control editorControl = editorMap.get(property);
         Class<?> propertyType = property.getDataType();
         // List
+        String stringValue = objectValueToString(value);
         if (editorControl instanceof Combo) {
             Combo combo = (Combo) editorControl;
             if (property instanceof IPropertyValueListProvider) {
@@ -551,7 +553,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                         }
                         combo.setItems(strings);
                     }
-                    combo.setText(objectValueToString(value));
+                    combo.setText(stringValue);
                 }
             } else if (propertyType.isEnum()) {
                 if (combo.getItemCount() == 0) {
@@ -563,16 +565,19 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                     }
                     combo.setItems(strings);
                 }
-                combo.setText(objectValueToString(value));
+                combo.setText(stringValue);
             }
         } else {
             if (editorControl instanceof Text) {
-                ((Text) editorControl).setText(objectValueToString(value));
+                Text text = (Text) editorControl;
+                if (!CommonUtils.equalObjects(text.getText(), stringValue)) {
+                    text.setText(stringValue);
+                }
             } else if (editorControl instanceof Button) {
                 ((Button) editorControl).setSelection(CommonUtils.toBoolean(value));
             } else if (editorControl instanceof Link) {
                 Link link = (Link)editorControl;
-                link.setText("<a>" + objectValueToString(value) + "</a>");
+                link.setText("<a>" + stringValue + "</a>");
             }
         }
     }
@@ -618,6 +623,21 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
         if (!activated) {
             activated = true;
         }
+    }
+
+    @Override
+    public void fillCustomActions(IContributionManager contributionManager) {
+/*
+        contributionManager.add(new Action(isAttached() ? "Detach properties to top panel" : "Move properties to tab", DBeaverIcons.getImageDescriptor(UIIcon.ASTERISK)) {
+            @Override
+            public void run() {
+                detachPropertiesPanel();
+            }
+        });
+        if (part != null) {
+            DatabaseEditorUtils.contributeStandardEditorActions(part.getSite(), contributionManager);
+        }
+*/
     }
 
 }
