@@ -98,19 +98,19 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
     {
         this.boldFont = UIUtils.makeBoldFont(parent.getFont());
 
-        ScrolledComposite scrolled = new ScrolledComposite(parent, SWT.V_SCROLL);
-        scrolled.setLayout(new GridLayout(1, false));
+//        ScrolledComposite scrolled = new ScrolledComposite(parent, SWT.V_SCROLL);
+//        scrolled.setLayout(new GridLayout(1, false));
 
-        propertiesGroup = new Composite(scrolled, SWT.NONE);
-        propertiesGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
-        scrolled.setContent(propertiesGroup);
-        scrolled.setExpandHorizontal(true);
-        scrolled.setExpandVertical(true);
-
-        scrolled.addListener( SWT.Resize, event -> {
-            int width = scrolled.getClientArea().width;
-            scrolled.setMinSize( propertiesGroup.computeSize( width, SWT.DEFAULT ) );
-        } );
+        propertiesGroup = new Composite(parent, SWT.NONE);
+        //propertiesGroup.setLayoutData(new GridData(GridData.FILL_BOTH));
+//        scrolled.setContent(propertiesGroup);
+//        scrolled.setExpandHorizontal(true);
+//        scrolled.setExpandVertical(true);
+//
+//        scrolled.addListener( SWT.Resize, event -> {
+//            int width = scrolled.getClientArea().width;
+//            scrolled.setMinSize( propertiesGroup.computeSize( width, SWT.DEFAULT ) );
+//        } );
 
 
         curPropertySource = input.getPropertySource();
@@ -179,25 +179,30 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
             // Prepare property lists
             List<DBPPropertyDescriptor> primaryProps = new ArrayList<>();
             List<DBPPropertyDescriptor> secondaryProps = new ArrayList<>();
-            for (DBPPropertyDescriptor prop : allProps) {
-                if (prop.getId().equals(DBConstants.PROP_ID_NAME) ||
-                    prop.getId().equals(DBConstants.PROP_ID_DESCRIPTION) ||
-                    prop.isEditable(curPropertySource.getEditableValue())) {
-                    primaryProps.add(prop);
-                } else {
-                    secondaryProps.add(prop);
+
+            if (isEditableObject()) {
+                for (DBPPropertyDescriptor prop : allProps) {
+                    if (prop.getId().equals(DBConstants.PROP_ID_NAME) ||
+                        prop.getId().equals(DBConstants.PROP_ID_DESCRIPTION) ||
+                        prop.isEditable(curPropertySource.getEditableValue())) {
+                        primaryProps.add(prop);
+                    } else {
+                        secondaryProps.add(prop);
+                    }
                 }
-            }
-            if (primaryProps.isEmpty()) {
-                primaryProps.addAll(secondaryProps);
-                secondaryProps.clear();
+                if (primaryProps.isEmpty()) {
+                    primaryProps.addAll(secondaryProps);
+                    secondaryProps.clear();
+                }
+            } else {
+                primaryProps.addAll(allProps);
             }
 
             // Create edit panels
-            boolean hasEditbuttons = false;//isEditableObject();
+            boolean hasEditButtons = false;//isEditableObject();
             boolean hasSecondaryProps = !secondaryProps.isEmpty();
             int colCount = 1;
-            if (hasEditbuttons) colCount++;
+            if (hasEditButtons) colCount++;
             if (hasSecondaryProps) colCount++;
             GridLayout propsLayout = new GridLayout(colCount, true);
             propertiesGroup.setLayout(propsLayout);
@@ -233,7 +238,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                 secondaryGroup.setLayoutData(gd);
             }
 
-            if (hasEditbuttons) {
+            if (hasEditButtons) {
                 Composite buttonsGroup = new Composite(propertiesGroup, SWT.NONE);
                 gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
                 gd.widthHint = buttonPanelWidth;
@@ -310,6 +315,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
     }
 
     private void refreshPropertyValues(List<DBPPropertyDescriptor> allProps, boolean disableControls) {
+        disableControls = false;
         ControlEnableState blockEnableState = disableControls ? ControlEnableState.disable(propertiesGroup) : null;
 
         ownerControl.runService(
