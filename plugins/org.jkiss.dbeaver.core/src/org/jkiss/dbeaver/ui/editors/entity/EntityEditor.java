@@ -790,7 +790,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
 
         if (source instanceof DBNEvent && ((DBNEvent) source).getNodeChange() == DBNEvent.NodeChange.REFRESH) {
             // This may happen if editor was refreshed indirectly (it is a child of refreshed node)
-            force = true;
+            //force = true;
         }
 
         if (force && getDatabaseObject().isPersisted()) {
@@ -799,7 +799,7 @@ public class EntityEditor extends MultiPageDatabaseEditor
             DBECommandContext commandContext = getCommandContext();
             if (commandContext != null) {
                 // Just clear command context. Do not undo because object state was already refreshed
-                commandContext.resetChanges(false);
+                commandContext.resetChanges(true);
             }
         }
 
