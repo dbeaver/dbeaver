@@ -50,6 +50,7 @@ import org.jkiss.dbeaver.model.struct.DBSObject;
 import org.jkiss.dbeaver.registry.editor.EntityEditorsRegistry;
 import org.jkiss.dbeaver.runtime.properties.ObjectPropertyDescriptor;
 import org.jkiss.dbeaver.ui.*;
+import org.jkiss.dbeaver.ui.actions.navigator.NavigatorHandlerObjectOpen;
 import org.jkiss.dbeaver.ui.controls.ObjectEditorPageControl;
 import org.jkiss.dbeaver.ui.controls.folders.TabbedFolderPage;
 import org.jkiss.dbeaver.ui.editors.IDatabaseEditorInput;
@@ -198,10 +199,9 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
             int colCount = 1;
             if (hasEditbuttons) colCount++;
             if (hasSecondaryProps) colCount++;
-            GridLayout layout = new GridLayout(colCount, false);
-            propertiesGroup.setLayout(layout);
+            GridLayout propsLayout = new GridLayout(colCount, true);
+            propertiesGroup.setLayout(propsLayout);
 
-            //int groupWidth = UIUtils.getFontHeight(propertiesGroup) * 40;
             Control parent = propertiesGroup;
             int editorWidth = parent.getSize().x;
             while (editorWidth == 0 && parent != null) {
@@ -209,7 +209,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                 parent = parent.getParent();
             }
             int minGroupWidth = UIUtils.getFontHeight(propertiesGroup) * 30;
-            int maxGroupWidth = (editorWidth * 35) / 100; // Edit panel width max = 35%
+            int maxGroupWidth = (editorWidth * 33) / 100; // Edit panel width max = 35%
             int buttonPanelWidth = (editorWidth / 10); // Edit panel width max = 10%
             if (maxGroupWidth < minGroupWidth) {
                 // Narrow screen. Use auto-layout
@@ -219,15 +219,16 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
 
             Composite primaryGroup = new Composite(propertiesGroup, SWT.BORDER);
             primaryGroup.setLayout(new GridLayout(2, false));
-            GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_CENTER | GridData.FILL_VERTICAL);
+            GridData gd = new GridData(GridData.FILL_BOTH);
             gd.widthHint = maxGroupWidth;
+            //gd.horizontalIndent = editorWidth / 10;
             primaryGroup.setLayoutData(gd);
 
             Composite secondaryGroup = null;
             if (hasSecondaryProps) {
                 secondaryGroup = new Composite(propertiesGroup, SWT.BORDER);
                 secondaryGroup.setLayout(new GridLayout(2, false));
-                gd = new GridData(GridData.HORIZONTAL_ALIGN_CENTER | GridData.FILL_VERTICAL);
+                gd = new GridData(GridData.FILL_BOTH);
                 gd.widthHint = maxGroupWidth;
                 secondaryGroup.setLayoutData(gd);
             }
@@ -262,6 +263,12 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                 saveButton.setEnabled(false);
                 scriptButton.setEnabled(false);
                 revertButton.setEnabled(false);
+            }
+
+            if (editorWidth > 1000) {
+                Composite panelTail = UIUtils.createPlaceholder(propertiesGroup, 1);
+                panelTail.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+                propsLayout.numColumns++;
             }
 
             // Create edit forms
@@ -374,15 +381,12 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                 (prop.getId().equals(DBConstants.PROP_ID_NAME) && supportsObjectRename());
             Class<?> propType = prop.getDataType();
             Object propertyValue = curPropertySource.getPropertyValue(null, prop.getId());
-            Control editControl = null;
-            if (editable || isTextPropertyType(propType) || BeanUtils.isBooleanType(propType)) {
-                editControl = createEditorControl(
-                    group,
-                    curPropertySource.getEditableValue(),
-                    prop,
-                    propertyValue,
-                    !editable);
-            }
+            Control editControl = createEditorControl(
+                group,
+                curPropertySource.getEditableValue(),
+                prop,
+                propertyValue,
+                !editable);
             if (editControl == null) {
                 editControl = new Text(group, SWT.BORDER | SWT.READ_ONLY);
                 ((Text)editControl).setText(objectValueToString(propertyValue));
@@ -449,7 +453,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
     public Control createEditorControl(Composite parent, Object object, DBPPropertyDescriptor property, Object value, boolean readOnly)
     {
         // List
-        if (property instanceof IPropertyValueListProvider) {
+        if (!readOnly && property instanceof IPropertyValueListProvider) {
             final IPropertyValueListProvider listProvider = (IPropertyValueListProvider) property;
             Object[] items = listProvider.getPossibleValues(object);
             if (items == null && property instanceof ObjectPropertyDescriptor && ((ObjectPropertyDescriptor) property).hasListValueProvider()) {
@@ -488,7 +492,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
             }
             editor.setSelection(CommonUtils.toBoolean(value));
             return editor;
-        } else if (propertyType.isEnum()) {
+        } else if (!readOnly && propertyType.isEnum()) {
             final Object[] enumConstants = propertyType.getEnumConstants();
             final String[] strings = new String[enumConstants.length];
             for (int i = 0, itemsLength = enumConstants.length; i < itemsLength; i++) {
@@ -503,13 +507,23 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                 if (readOnly) {
                     return UIUtils.createLabel(parent, "<none>");
                 } else {
-                    Text editor = new Text(parent, SWT.BORDER);
+                    Text editor = new Text(parent, SWT.BORDER | SWT.READ_ONLY);
                     editor.setText("");
                     return editor;
                 }
             } else {
                 Link link = new Link(parent, SWT.NONE);
                 link.setText("<a>" + objectValueToString(value) + "</a>");
+                link.setData(value);
+                link.addSelectionListener(new SelectionAdapter() {
+                    @Override
+                    public void widgetSelected(SelectionEvent e) {
+                        DBSObject object = (DBSObject) link.getData();
+                        if (object != null) {
+                            NavigatorHandlerObjectOpen.openEntityEditor(object);
+                        }
+                    }
+                });
                 return link;
             }
         } else {
@@ -577,6 +591,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                 ((Button) editorControl).setSelection(CommonUtils.toBoolean(value));
             } else if (editorControl instanceof Link) {
                 Link link = (Link)editorControl;
+                link.setData(value);
                 link.setText("<a>" + stringValue + "</a>");
             }
         }
