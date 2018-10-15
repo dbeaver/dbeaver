@@ -143,7 +143,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
 	}
 
     private void updateEditButtonsState() {
-        if (saveButton.isDisposed()) {
+        if (saveButton == null || saveButton.isDisposed()) {
             return;
         }
         boolean isDirty = input.getCommandContext().isDirty();
@@ -191,43 +191,51 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                 secondaryProps.clear();
             }
 
+            // Create edit panels
+            boolean hasEditbuttons = false;//isEditableObject();
             boolean hasSecondaryProps = !secondaryProps.isEmpty();
-            GridLayout layout = new GridLayout(hasSecondaryProps ? 3 : 2, false);
+            int colCount = 1;
+            if (hasEditbuttons) colCount++;
+            if (hasSecondaryProps) colCount++;
+            GridLayout layout = new GridLayout(colCount, false);
             propertiesGroup.setLayout(layout);
 
-            int groupWidth = UIUtils.getFontHeight(propertiesGroup) * 40;
+            //int groupWidth = UIUtils.getFontHeight(propertiesGroup) * 40;
+            Control parent = propertiesGroup;
+            int editorWidth = parent.getSize().x;
+            while (editorWidth == 0 && parent != null) {
+                editorWidth = parent.getSize().x;
+                parent = parent.getParent();
+            }
+            int minGroupWidth = UIUtils.getFontHeight(propertiesGroup) * 30;
+            int maxGroupWidth = (editorWidth * 35) / 100; // Edit panel width max = 35%
+            int buttonPanelWidth = (editorWidth / 10); // Edit panel width max = 10%
+            if (maxGroupWidth < minGroupWidth) {
+                // Narrow screen. Use auto-layout
+                maxGroupWidth = minGroupWidth;
+                buttonPanelWidth = 0;
+            }
 
             Composite primaryGroup = new Composite(propertiesGroup, SWT.BORDER);
             primaryGroup.setLayout(new GridLayout(2, false));
-            GridData gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
-            gd.widthHint = groupWidth;
+            GridData gd = new GridData(GridData.HORIZONTAL_ALIGN_CENTER | GridData.FILL_VERTICAL);
+            gd.widthHint = maxGroupWidth;
             primaryGroup.setLayoutData(gd);
 
-
-            try {
-                isLoading = true;
-
-                for (DBPPropertyDescriptor primaryProp : primaryProps) {
-                    createPropertyEditor(primaryGroup, primaryProp);
-                }
-                if (hasSecondaryProps) {
-                    Composite secondaryGroup = new Composite(propertiesGroup, SWT.BORDER);
-                    secondaryGroup.setLayout(new GridLayout(2, false));
-                    gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
-                    gd.widthHint = groupWidth;
-                    secondaryGroup.setLayoutData(gd);
-
-
-                    for (DBPPropertyDescriptor secondaryProp : secondaryProps) {
-                        createPropertyEditor(secondaryGroup, secondaryProp);
-                    }
-                }
-            } finally {
-                isLoading = false;
+            Composite secondaryGroup = null;
+            if (hasSecondaryProps) {
+                secondaryGroup = new Composite(propertiesGroup, SWT.BORDER);
+                secondaryGroup.setLayout(new GridLayout(2, false));
+                gd = new GridData(GridData.HORIZONTAL_ALIGN_CENTER | GridData.FILL_VERTICAL);
+                gd.widthHint = maxGroupWidth;
+                secondaryGroup.setLayoutData(gd);
             }
-            if (isEditableObject()) {
+
+            if (hasEditbuttons) {
                 Composite buttonsGroup = new Composite(propertiesGroup, SWT.NONE);
-                buttonsGroup.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
+                gd = new GridData(GridData.VERTICAL_ALIGN_BEGINNING);
+                gd.widthHint = buttonPanelWidth;
+                buttonsGroup.setLayoutData(gd);
                 RowLayout rowLayout = new RowLayout(SWT.VERTICAL);
                 rowLayout.pack = true;
                 rowLayout.fill = true;
@@ -254,19 +262,43 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                 scriptButton.setEnabled(false);
                 revertButton.setEnabled(false);
             }
+
+            // Create edit forms
+            try {
+                isLoading = true;
+
+                for (DBPPropertyDescriptor primaryProp : primaryProps) {
+                    createPropertyEditor(primaryGroup, primaryProp);
+                }
+                if (secondaryGroup != null) {
+                    for (DBPPropertyDescriptor secondaryProp : secondaryProps) {
+                        createPropertyEditor(secondaryGroup, secondaryProp);
+                    }
+                }
+            } finally {
+                isLoading = false;
+            }
         }
 
         refreshPropertyValues(allProps, firstInit);
     }
 
     private void showAlterScript() {
+        EntityEditor ownerEditor = getOwnerEditor();
+        if (ownerEditor != null) {
+            ownerEditor.showChanges(false);
+        }
+    }
+
+    private EntityEditor getOwnerEditor() {
         IWorkbenchPartSite site = part.getSite();
         if (site instanceof MultiPageEditorSite) {
             MultiPageEditorPart mainEditor = ((MultiPageEditorSite) site).getMultiPageEditor();
             if (mainEditor instanceof EntityEditor) {
-                ((EntityEditor) mainEditor).showChanges(false);
+                return ((EntityEditor) mainEditor);
             }
         }
+        return null;
     }
 
     private void refreshPropertyValues(List<DBPPropertyDescriptor> allProps, boolean disableControls) {
@@ -354,11 +386,11 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                 editControl = new Text(group, SWT.BORDER | SWT.READ_ONLY);
                 ((Text)editControl).setText(objectValueToString(propertyValue));
             }
-            boolean plainText = (CharSequence.class.isAssignableFrom(propType));
+            //boolean plainText = (CharSequence.class.isAssignableFrom(propType));
             GridData gd = (GridData) editControl.getLayoutData();
             if (gd == null ) {
                 gd = new GridData(
-                    (plainText ? GridData.FILL_HORIZONTAL : GridData.HORIZONTAL_ALIGN_BEGINNING) | GridData.VERTICAL_ALIGN_BEGINNING);
+                    (BeanUtils.isNumericType(propType) || !(editControl instanceof Text) ? GridData.HORIZONTAL_ALIGN_BEGINNING : GridData.FILL_HORIZONTAL ) | GridData.VERTICAL_ALIGN_BEGINNING);
                 editControl.setLayoutData(gd);
             }
             if (editControl instanceof Text || editControl instanceof Combo) {
@@ -439,7 +471,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
             if (property instanceof ObjectPropertyDescriptor && ((ObjectPropertyDescriptor) property).isMultiLine()) {
                 Text editor = new Text(parent, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.WRAP | (readOnly ? SWT.READ_ONLY : SWT.NONE));
                 editor.setText(objectValueToString(value));
-                GridData gd = new GridData(GridData.FILL_HORIZONTAL);
+                GridData gd = new GridData(GridData.FILL_BOTH);
                 gd.heightHint = UIUtils.getFontHeight(editor) * 4;
                 editor.setLayoutData(gd);
                 return editor;
