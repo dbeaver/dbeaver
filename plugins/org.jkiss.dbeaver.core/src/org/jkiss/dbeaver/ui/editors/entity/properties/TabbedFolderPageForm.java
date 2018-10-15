@@ -426,11 +426,12 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
 
     private void updatePropertyValue(DBPPropertyDescriptor prop, Object value) {
         if (!isLoading) {
-            if (prop.getId().equals(DBConstants.PROP_ID_NAME)) {
+            DBSObject databaseObject = input.getDatabaseObject();
+            if (prop.getId().equals(DBConstants.PROP_ID_NAME) && databaseObject.isPersisted()) {
                 DBEObjectRenamer renamer = EntityEditorsRegistry.getInstance().getObjectManager(curPropertySource.getEditableValue().getClass(), DBEObjectRenamer.class);
                 if (renamer != null) {
                     try {
-                        renamer.renameObject(input.getCommandContext(), input.getDatabaseObject(), CommonUtils.toString(value));
+                        renamer.renameObject(input.getCommandContext(), databaseObject, CommonUtils.toString(value));
                     } catch (Throwable e) {
                         log.error("Error renaming object", e);
                     }
