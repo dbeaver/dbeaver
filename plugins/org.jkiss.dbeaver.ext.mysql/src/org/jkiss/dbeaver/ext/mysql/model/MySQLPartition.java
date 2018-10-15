@@ -34,6 +34,8 @@ import java.util.List;
  */
 public class MySQLPartition extends JDBCTableObject<MySQLTable>
 {
+    private static final String CAT_STATS = "Statistics";
+
     private MySQLPartition parent;
     private List<MySQLPartition> subPartitions;
     private int position;
@@ -157,70 +159,10 @@ public class MySQLPartition extends JDBCTableObject<MySQLTable>
 
     @Nullable
     @Override
-    @Property(viewable = true, multiline = true, order = 5)
+    @Property(viewable = true, order = 5)
     public String getDescription()
     {
         return description;
-    }
-
-    @Property(viewable = true, order = 6)
-    public long getTableRows()
-    {
-        return tableRows;
-    }
-
-    @Property(viewable = true, order = 7)
-    public long getAvgRowLength()
-    {
-        return avgRowLength;
-    }
-
-    @Property(viewable = true, order = 8)
-    public long getDataLength()
-    {
-        return dataLength;
-    }
-
-    @Property(viewable = true, order = 9)
-    public long getMaxDataLength()
-    {
-        return maxDataLength;
-    }
-
-    @Property(viewable = true, order = 10)
-    public long getIndexLength()
-    {
-        return indexLength;
-    }
-
-    @Property(viewable = true, order = 11)
-    public long getDataFree()
-    {
-        return dataFree;
-    }
-
-    @Property(viewable = false, order = 12)
-    public Date getCreateTime()
-    {
-        return createTime;
-    }
-
-    @Property(viewable = false, order = 13)
-    public Date getUpdateTime()
-    {
-        return updateTime;
-    }
-
-    @Property(viewable = false, order = 14)
-    public Date getCheckTime()
-    {
-        return checkTime;
-    }
-
-    @Property(viewable = true, order = 15)
-    public long getChecksum()
-    {
-        return checksum;
     }
 
     @Property(viewable = true, multiline = true, order = 16)
@@ -233,6 +175,66 @@ public class MySQLPartition extends JDBCTableObject<MySQLTable>
     public String getNodegroup()
     {
         return nodegroup;
+    }
+
+    @Property(category = CAT_STATS, viewable = true, order = 6)
+    public long getTableRows()
+    {
+        return tableRows;
+    }
+
+    @Property(category = CAT_STATS, viewable = true, order = 7)
+    public long getAvgRowLength()
+    {
+        return avgRowLength;
+    }
+
+    @Property(category = CAT_STATS, viewable = true, order = 8)
+    public long getDataLength()
+    {
+        return dataLength;
+    }
+
+    @Property(category = CAT_STATS, viewable = true, order = 9)
+    public long getMaxDataLength()
+    {
+        return maxDataLength;
+    }
+
+    @Property(category = CAT_STATS, viewable = true, order = 10)
+    public long getIndexLength()
+    {
+        return indexLength;
+    }
+
+    @Property(category = CAT_STATS, viewable = true, order = 11)
+    public long getDataFree()
+    {
+        return dataFree;
+    }
+
+    @Property(category = CAT_STATS, viewable = false, order = 12)
+    public Date getCreateTime()
+    {
+        return createTime;
+    }
+
+    @Property(category = CAT_STATS, viewable = false, order = 13)
+    public Date getUpdateTime()
+    {
+        return updateTime;
+    }
+
+    @Property(category = CAT_STATS, viewable = false, order = 14)
+    public Date getCheckTime()
+    {
+        return checkTime;
+    }
+
+    @Property(category = CAT_STATS, viewable = true, order = 15)
+    public long getChecksum()
+    {
+        return checksum;
     }
 
 }

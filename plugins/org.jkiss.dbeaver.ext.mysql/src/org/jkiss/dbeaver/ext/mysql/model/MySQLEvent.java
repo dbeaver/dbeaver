@@ -39,7 +39,6 @@ import java.util.Map;
  */
 public class MySQLEvent extends MySQLInformation implements MySQLSourceObject {
 
-    private static final String CAT_MAIN = "Main";
     private static final String CAT_DETAILS = "Details";
     private static final String CAT_STATS = "Statistics";
 
@@ -102,7 +101,7 @@ public class MySQLEvent extends MySQLInformation implements MySQLSourceObject {
 
     @NotNull
     @Override
-    @Property(viewable = true, category = CAT_MAIN, order = 1)
+    @Property(viewable = true, order = 1)
     public String getName()
     {
         return name;
@@ -116,22 +115,22 @@ public class MySQLEvent extends MySQLInformation implements MySQLSourceObject {
         return eventComment;
     }
 
-    @Property(viewable = true, category = CAT_MAIN, order = 10)
+    @Property(viewable = true, order = 10)
     public String getEventType() {
         return eventType;
     }
 
-    @Property(viewable = true, category = CAT_MAIN, order = 11)
+    @Property(viewable = true, order = 11)
     public Date getExecuteAt() {
         return executeAt;
     }
 
-    @Property(viewable = true, category = CAT_MAIN, order = 12)
+    @Property(viewable = true, order = 12)
     public String getIntervalValue() {
         return intervalValue;
     }
 
-    @Property(viewable = true, category = CAT_MAIN, order = 13)
+    @Property(viewable = true, order = 13)
     public String getIntervalField() {
         return intervalField;
     }
