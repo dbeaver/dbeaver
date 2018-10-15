@@ -65,10 +65,7 @@ import org.jkiss.dbeaver.ui.navigator.NavigatorUtils;
 import org.jkiss.utils.CommonUtils;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * ObjectPropertiesEditor
@@ -495,14 +492,17 @@ public class ObjectPropertiesEditor extends AbstractDatabaseObjectEditor<DBSObje
 
         // Extra properties tab (show if we have extra properties only)
         {
-            tabList.add(new TabbedFolderInfo(
-                PropertiesContributor.TAB_PROPERTIES,
-                CoreMessages.ui_properties_category_properties,
-                DBIcon.TREE_INFO,
-                CoreMessages.ui_properties_category_properties_tip,
-                false,
-                new TabbedFolderPageProperties(this, getEditorInput())));
-
+            TabbedFolderPageProperties pageProperties = new TabbedFolderPageProperties(this, getEditorInput());
+            List<String> extraCategories = pageProperties.getExtraCategories();
+            if (!extraCategories.isEmpty()) {
+                tabList.add(new TabbedFolderInfo(
+                    PropertiesContributor.TAB_PROPERTIES,
+                    extraCategories.get(0) + (extraCategories.size() == 1 ? "" :" / ... "),
+                    DBIcon.TREE_INFO,
+                    String.join(", ", extraCategories),
+                    false,
+                    pageProperties));
+            }
         }
 
         // Query for entity editors

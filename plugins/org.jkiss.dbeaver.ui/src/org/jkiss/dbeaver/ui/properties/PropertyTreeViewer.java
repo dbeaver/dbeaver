@@ -241,7 +241,7 @@ public class PropertyTreeViewer extends TreeViewer {
     private Map<String, TreeNode> loadTreeNodes(@Nullable DBRProgressMonitor monitor, TreeNode parent, DBPPropertySource propertySource)
     {
         Map<String, TreeNode> categories = new LinkedHashMap<>();
-        final DBPPropertyDescriptor[] props = propertySource.getPropertyDescriptors2();
+        final DBPPropertyDescriptor[] props = filterProperties(propertySource.getEditableValue(), propertySource.getPropertyDescriptors2());
         for (DBPPropertyDescriptor prop : props) {
             String categoryName = prop.getCategory();
             if (CommonUtils.isEmpty(categoryName)) {
@@ -284,6 +284,10 @@ public class PropertyTreeViewer extends TreeViewer {
             }
         }
         return categories;
+    }
+
+    protected DBPPropertyDescriptor[] filterProperties(Object object, DBPPropertyDescriptor[] properties) {
+        return properties;
     }
 
     public DBPPropertyDescriptor getSelectedProperty() {

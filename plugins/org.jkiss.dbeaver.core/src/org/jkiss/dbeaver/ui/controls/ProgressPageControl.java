@@ -51,7 +51,7 @@ import java.util.ArrayList;
 /**
  * ItemListControl
  */
-public class ProgressPageControl extends Composite implements ISearchContextProvider
+public class ProgressPageControl extends Composite implements ISearchContextProvider, ICustomActionsProvider
 {
     private static final Log log = Log.getLog(ProgressPageControl.class);
 
@@ -241,7 +241,8 @@ public class ProgressPageControl extends Composite implements ISearchContextProv
         return customControlsComposite;
     }
 
-    protected void fillCustomActions(IContributionManager contributionManager)
+    @Override
+    public void fillCustomActions(IContributionManager contributionManager)
     {
         if (childPageControl != null) {
             childPageControl.fillCustomActions(contributionManager);

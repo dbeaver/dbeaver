@@ -84,7 +84,7 @@ public abstract class MySQLUserEditorAbstract extends AbstractDatabaseObjectEdit
         }
 
         @Override
-        protected void fillCustomActions(IContributionManager contributionManager) {
+        public void fillCustomActions(IContributionManager contributionManager) {
             super.fillCustomActions(contributionManager);
             DatabaseEditorUtils.contributeStandardEditorActions(getSite(), contributionManager);
         }
