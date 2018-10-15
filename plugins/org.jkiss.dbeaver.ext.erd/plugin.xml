@@ -275,7 +275,7 @@
     </extension>
 
     <extension point="org.eclipse.ui.preferencePages">
-        <page id="org.jkiss.dbeaver.preferences.erd.editor" category="org.eclipse.ui.preferencePages.Editors" class="org.jkiss.dbeaver.ext.erd.editor.ERDPreferencePage" name="%pref.page.name.erd.editor"/>
+        <page id="org.jkiss.dbeaver.preferences.erd.editor" category="org.jkiss.dbeaver.preferences.editors" class="org.jkiss.dbeaver.ext.erd.editor.ERDPreferencePage" name="%pref.page.name.erd.editor"/>
     </extension>
 
     <extension point="org.eclipse.ui.propertyPages">

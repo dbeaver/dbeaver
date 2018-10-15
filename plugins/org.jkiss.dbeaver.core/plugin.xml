@@ -2931,6 +2931,16 @@
                 <instanceof value="org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase"/>
             </enabledWhen>
         </page>
+        <page class="org.jkiss.dbeaver.ui.preferences.PrefPageDatabaseEditors" id="org.jkiss.dbeaver.preferences.editors" name="%page.org.jkiss.dbeaver.preferences.editors.name">
+            <enabledWhen>
+                <or>
+                    <instanceof value="org.jkiss.dbeaver.model.navigator.DBNDataSource"/>
+                    <instanceof value="org.jkiss.dbeaver.ui.controls.resultset.ResultSetViewer"/>
+                    <instanceof value="org.jkiss.dbeaver.ui.navigator.database.NavigatorViewBase"/>
+                    <adapt type="org.jkiss.dbeaver.model.DBPDataSourceContainer"/>
+                </or>
+            </enabledWhen>
+        </page>
         <page class="org.jkiss.dbeaver.ui.preferences.PrefPageConnectionTypes" id="org.jkiss.dbeaver.preferences.connectionTypes" name="%page.org.jkiss.dbeaver.preferences.connectionTypes.name">
             <enabledWhen>
                 <or>
