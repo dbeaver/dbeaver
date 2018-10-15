@@ -129,7 +129,7 @@ public class PostgreSchema implements DBSSchema, DBPNamedObject2, DBPSaveableObj
         return PostgreUtils.getObjectById(monitor, database.roleCache, database, ownerId);
     }
 
-    @Property(viewable = true, editable = true, updatable = true, order = 100)
+    @Property(viewable = true, editable = true, updatable = true, multiline = true, order = 100)
     @Nullable
     @Override
     public String getDescription() {
