@@ -102,6 +102,8 @@ public abstract class AbstractCommandContext implements DBECommandContext {
                     log.warn("Can't commit script transaction", e1);
                 }
             }
+            // Clear commands. We can't undo after save
+            clearCommandQueues();
         } catch (Throwable e) {
             // Rollback changes
             if (txnManager != null) {
