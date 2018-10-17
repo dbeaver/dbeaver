@@ -48,7 +48,7 @@ public class PostgreObjectPermission extends PostgrePermission {
     @Override
     public PostgreRole getTargetObject(DBRProgressMonitor monitor) throws DBException
     {
-        return owner.getDatabase().roleCache.getObject(monitor, owner.getDatabase(), grantee);
+        return owner.getDatabase().getRoleByName(monitor, owner.getDatabase(), grantee);
     }
 
     public String getGrantee() {

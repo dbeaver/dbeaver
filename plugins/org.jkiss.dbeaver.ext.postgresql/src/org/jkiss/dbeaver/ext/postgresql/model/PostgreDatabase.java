@@ -251,10 +251,29 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource> imple
         return templateName;
     }
 
+    @Nullable
     @Property(order = 3)
     public PostgreRole getDBA(DBRProgressMonitor monitor) throws DBException {
         checkDatabaseConnection(monitor);
-        return PostgreUtils.getObjectById(monitor, roleCache, this, ownerId);
+        return getRoleById(monitor, ownerId);
+    }
+
+    @Nullable
+    public PostgreRole getRoleById(DBRProgressMonitor monitor, long roleId) throws DBException {
+        if (!getDataSource().getServerType().supportsRoles()) {
+            return null;
+        }
+
+        return PostgreUtils.getObjectById(monitor, roleCache, this, roleId);
+    }
+
+    @Nullable
+    public PostgreRole getRoleByName(DBRProgressMonitor monitor, PostgreDatabase owner, String roleName) throws DBException {
+        if (!getDataSource().getServerType().supportsRoles()) {
+            return null;
+        }
+
+        return roleCache.getObject(monitor, owner, roleName);
     }
 
     @Property(order = 5)
@@ -469,6 +488,9 @@ public class PostgreDatabase extends JDBCRemoteInstance<PostgreDataSource> imple
     }
 
     public Collection<PostgreRole> getUsers(DBRProgressMonitor monitor) throws DBException {
+        if (!getDataSource().getServerType().supportsRoles()) {
+            return Collections.emptyList();
+        }
         checkDatabaseConnection(monitor);
         return roleCache.getAllObjects(monitor, this);
     }
