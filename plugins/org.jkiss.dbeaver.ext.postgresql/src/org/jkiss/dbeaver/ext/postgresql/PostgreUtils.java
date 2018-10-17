@@ -94,8 +94,6 @@ public class PostgreUtils {
         }
     }
 
-    private static Method getValueMethod;
-
     public static <T extends PostgreAttribute> T getAttributeByNum(Collection<T> attrs, int attNum) {
         for (T attr : attrs) {
             if (attr.getOrdinalPosition() == attNum) {
@@ -116,19 +114,10 @@ public class PostgreUtils {
         if (!pgObject.getClass().getName().equals(PostgreConstants.PG_OBJECT_CLASS)) {
             return pgObject;
         }
-        if (getValueMethod == null) {
-            try {
-                getValueMethod = pgObject.getClass().getMethod("getValue");
-            } catch (NoSuchMethodException e) {
-                log.debug(e);
-            }
-        }
-        if (getValueMethod != null) {
-            try {
-                return getValueMethod.invoke(pgObject);
-            } catch (Exception e) {
-                log.debug(e);
-            }
+        try {
+            return pgObject.getClass().getMethod("getValue").invoke(pgObject);
+        } catch (Exception e) {
+            log.debug("Can't extract value from PgObject", e);
         }
         return null;
     }
