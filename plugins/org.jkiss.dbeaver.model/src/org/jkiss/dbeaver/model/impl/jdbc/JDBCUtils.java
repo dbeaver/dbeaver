@@ -257,11 +257,16 @@ public class JDBCUtils {
 
     public static boolean safeGetBoolean(ResultSet dbResult, String columnName)
     {
+        return safeGetBoolean(dbResult, columnName, false);
+    }
+
+    public static boolean safeGetBoolean(ResultSet dbResult, String columnName, boolean defValue)
+    {
         try {
             return dbResult.getBoolean(columnName);
         } catch (SQLException e) {
             debugColumnRead(dbResult, columnName, e);
-            return false;
+            return defValue;
         }
     }
 

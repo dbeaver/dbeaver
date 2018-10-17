@@ -40,10 +40,7 @@ import org.jkiss.utils.CommonUtils;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * PostgreProcedure
@@ -359,7 +356,10 @@ public class PostgreProcedure extends AbstractProcedure<PostgreDataSource, Postg
 
     @Property(category = CAT_PROPS, order = 10)
     public PostgreRole getOwner(DBRProgressMonitor monitor) throws DBException {
-        return PostgreUtils.getObjectById(monitor, container.getDatabase().roleCache, container.getDatabase(), ownerId);
+        if (!getDataSource().getServerType().supportsRoles()) {
+            return null;
+        }
+        return container.getDatabase().getRoleById(monitor, ownerId);
     }
 
     @Property(category = CAT_PROPS, viewable = true, order = 11)

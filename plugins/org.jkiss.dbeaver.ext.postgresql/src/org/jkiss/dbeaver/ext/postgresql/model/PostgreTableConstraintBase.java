@@ -53,7 +53,10 @@ public abstract class PostgreTableConstraintBase extends JDBCTableConstraint<Pos
 
         this.oid = JDBCUtils.safeGetLong(resultSet, "oid");
         this.indexId = JDBCUtils.safeGetLong(resultSet, "conindid");
-        this.isLocal = this instanceof PostgreTableInheritance || JDBCUtils.safeGetBoolean(resultSet, "conislocal");
+        this.isLocal =
+            !getDataSource().getServerType().supportsInheritance() ||
+            this instanceof PostgreTableInheritance ||
+            JDBCUtils.safeGetBoolean(resultSet, "conislocal", true);
 
         this.description = JDBCUtils.safeGetString(resultSet, "description");
     }
