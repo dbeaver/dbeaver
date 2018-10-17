@@ -380,8 +380,6 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
         if (prop == null) {
             UIUtils.createEmptyLabel(group, 2, 1);
         } else {
-            Label label = UIUtils.createControlLabel(group, prop.getDisplayName());
-            label.setLayoutData(new GridData(GridData.VERTICAL_ALIGN_BEGINNING));
             boolean editable = prop.isEditable(curPropertySource.getEditableValue()) ||
                 (prop.getId().equals(DBConstants.PROP_ID_NAME) && supportsObjectRename());
             Class<?> propType = prop.getDataType();
@@ -395,8 +393,7 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
             //boolean plainText = (CharSequence.class.isAssignableFrom(propType));
             GridData gd = (GridData) editControl.getLayoutData();
             if (gd == null ) {
-                gd = new GridData(
-                    (BeanUtils.isNumericType(propType) || !(editControl instanceof Text) ? GridData.HORIZONTAL_ALIGN_BEGINNING : GridData.FILL_HORIZONTAL ) | GridData.VERTICAL_ALIGN_BEGINNING);
+                gd = new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING);
                 editControl.setLayoutData(gd);
             }
             if (editControl instanceof Text || editControl instanceof Combo) {
@@ -467,44 +464,58 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
                 for (int i = 0, itemsLength = items.length; i < itemsLength; i++) {
                     strings[i] = objectValueToString(items[i]);
                 }
-                Combo combo = new Combo(parent, SWT.BORDER | SWT.DROP_DOWN | (listProvider.allowCustomValue() ? SWT.NONE : SWT.READ_ONLY) | (readOnly ? SWT.READ_ONLY : SWT.NONE));
+                Combo combo = UIUtils.createLabelCombo(parent, property.getDisplayName(), SWT.BORDER | SWT.DROP_DOWN | (listProvider.allowCustomValue() ? SWT.NONE : SWT.READ_ONLY) | (readOnly ? SWT.READ_ONLY : SWT.NONE));
                 combo.setItems(strings);
                 combo.setText(objectValueToString(value));
+                combo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING));
                 return combo;
             }
         }
-        Class<?> propertyType = property.getDataType();
-        if (isTextPropertyType(propertyType)) {
+        Class<?> propType = property.getDataType();
+        if (isTextPropertyType(propType)) {
             if (property instanceof ObjectPropertyDescriptor && ((ObjectPropertyDescriptor) property).isMultiLine()) {
-                Text editor = new Text(parent, SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.WRAP | (readOnly ? SWT.READ_ONLY : SWT.NONE));
-                editor.setText(objectValueToString(value));
+                Text editor = UIUtils.createLabelText(
+                    parent,
+                    property.getDisplayName(),
+                    objectValueToString(value),
+                    SWT.BORDER | SWT.MULTI | SWT.V_SCROLL | SWT.WRAP | (readOnly ? SWT.READ_ONLY : SWT.NONE));
                 GridData gd = new GridData(GridData.FILL_BOTH);
                 gd.heightHint = UIUtils.getFontHeight(editor) * 4;
                 editor.setLayoutData(gd);
                 return editor;
             } else {
-                Text editor = new Text(parent, SWT.BORDER | (readOnly ? SWT.READ_ONLY : SWT.NONE));
-                editor.setText(objectValueToString(value));
-                return editor;
+                Text text = UIUtils.createLabelText(
+                    parent,
+                    property.getDisplayName(),
+                    objectValueToString(value),
+                    SWT.BORDER | (readOnly ? SWT.READ_ONLY : SWT.NONE));
+                text.setLayoutData(new GridData((BeanUtils.isNumericType(propType) ? GridData.HORIZONTAL_ALIGN_BEGINNING : GridData.FILL_HORIZONTAL) | GridData.VERTICAL_ALIGN_BEGINNING));
+                return text;
             }
-        } else if (BeanUtils.isBooleanType(propertyType)) {
-            Button editor = new Button(parent, SWT.CHECK);
+        } else if (BeanUtils.isBooleanType(propType)) {
+            Button editor = UIUtils.createCheckbox(parent, property.getDisplayName(), "", CommonUtils.toBoolean(value), 2);
             if (readOnly) {
                 editor.setEnabled(false);
             }
-            editor.setSelection(CommonUtils.toBoolean(value));
             return editor;
-        } else if (!readOnly && propertyType.isEnum()) {
-            final Object[] enumConstants = propertyType.getEnumConstants();
+        } else if (!readOnly && propType.isEnum()) {
+            final Object[] enumConstants = propType.getEnumConstants();
             final String[] strings = new String[enumConstants.length];
             for (int i = 0, itemsLength = enumConstants.length; i < itemsLength; i++) {
                 strings[i] = ((Enum)enumConstants[i]).name();
             }
-            Combo combo = new Combo(parent, SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY | (readOnly ? SWT.READ_ONLY : SWT.NONE));
+            Combo combo = UIUtils.createLabelCombo(
+                parent,
+                property.getDisplayName(),
+                SWT.BORDER | SWT.DROP_DOWN | SWT.READ_ONLY | (readOnly ? SWT.READ_ONLY : SWT.NONE));
             combo.setItems(strings);
             combo.setText(objectValueToString(value));
+            combo.setLayoutData(new GridData(GridData.HORIZONTAL_ALIGN_BEGINNING | GridData.VERTICAL_ALIGN_BEGINNING));
             return combo;
-        } else if (DBSObject.class.isAssignableFrom(propertyType)) {
+        } else if (DBSObject.class.isAssignableFrom(propType)) {
+            UIUtils.createControlLabel(
+                parent,
+                property.getDisplayName());
             Composite linkPH = new Composite(parent, SWT.BORDER);
             GridLayout layout = new GridLayout(1, false);
             layout.marginHeight = 1;
@@ -524,9 +535,11 @@ public class TabbedFolderPageForm extends TabbedFolderPage implements IRefreshab
             });
             return link;
         } else {
-            Text editControl = new Text(parent, SWT.BORDER | SWT.READ_ONLY);
-            editControl.setText(objectValueToString(value));
-            return editControl;
+            return UIUtils.createLabelText(
+                parent,
+                property.getDisplayName(),
+                objectValueToString(value),
+                SWT.BORDER | SWT.READ_ONLY);
         }
     }
 
